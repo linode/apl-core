@@ -1,4 +1,4 @@
-FROM linode/apl-tools:v2.10.0 AS ci
+FROM linode/apl-tools:v2.10.2 AS ci
 
 ENV APP_HOME=/home/app/stack
 
@@ -8,17 +8,27 @@ WORKDIR $APP_HOME
 ARG SKIP_TESTS='false'
 ENV NODE_ENV='test'
 ENV CI=true
-ENV ENV_DIR=$APP_HOME/env
+ENV DIR=$APP_HOME/tests/fixtures
 ENV VERBOSITY='2'
 ENV DISABLE_SYNC='1'
 ENV NODE_PATH='dist'
 
 COPY --chown=app . .
 
-RUN npm config set update-notifier false
-RUN npm ci --ignore-scripts && npm run compile
+RUN set -e && \
+    npm config set update-notifier false && \
+    npm ci --ignore-scripts && \
+    npm run compile
 
-RUN if [ "$SKIP_TESTS" = 'false' ]; then ln -s $APP_HOME/tests/fixtures env && npm test && rm env; fi
+# Run tests with the CI-specific script that has proper Jest flags
+RUN set -e && \
+    if [ "$SKIP_TESTS" = 'false' ]; then \
+        echo "Running CI tests..." && \
+        npm run test:ci && \
+        echo "Tests completed successfully"; \
+    else \
+        echo "Skipping tests (SKIP_TESTS=true)"; \
+    fi
 
 # --------------- Cleanup
 FROM ci AS clean
@@ -26,7 +36,7 @@ FROM ci AS clean
 # below command removes the packages specified in devDependencies and set NODE_ENV to production
 RUN npm prune --production
 
-FROM linode/apl-tools:v2.10.0  AS prod
+FROM linode/apl-tools:v2.10.2 AS prod
 ARG APPS_REVISION=''
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env

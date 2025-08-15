@@ -134,6 +134,7 @@ environments:
               limits:
                 cpu: 100m
                 memory: 200Mi
+            useBackupPlugin: false
             _rawValues: {}
           drone:
             enabled: false
@@ -305,6 +306,8 @@ environments:
           gitea:
             adminUsername: otomi-admin
             _rawValues: {}
+            networkPolicies:
+              enabled: true
             resources:
               gitea:
                 limits:
@@ -594,6 +597,9 @@ environments:
                   memory: 1Gi
           kubeflow-pipelines:
             enabled: false
+            persistence:
+              mysql:
+                size: 20Gi
             resources:
               cacheDeployer:
                 requests:
@@ -731,6 +737,16 @@ environments:
                   cpu: "1"
                   memory: 512Mi
             _rawValues: {}
+          policy-reporter:
+            enabled: false
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: "1"
+                memory: 512Mi
+            _rawValues: {}
           tekton:
             resources:
               dashboard:
@@ -846,6 +862,8 @@ environments:
               ingester:
                 size: 20Gi
               querier:
+                size: 10Gi
+              compactor:
                 size: 10Gi
             autoscaling:
               ingester:
@@ -1051,7 +1069,7 @@ environments:
                   cpu: 200m
                   memory: 128Mi
           prometheus:
-            enabled: false
+            enabled: true
             disabledRules:
               - InfoInhibitor
             remoteWrite:
@@ -1427,6 +1445,7 @@ environments:
         cluster:
           provider: linode
           name: apl
+          defaultStorageClass: ''
         dns:
           domainFilters: []
           zoneIdFilters: []
@@ -1444,7 +1463,7 @@ environments:
           isMultitenant: true
           nodeSelector: {}
           isPreInstalled: false
-          useORCS: false
+          useORCS: true
         users: []
         e2e:
           enabled: false
@@ -1452,4 +1471,4 @@ environments:
             version: main
         # TODO: update this when schema version changes
         versions:
-          specVersion: 43
+          specVersion: 44

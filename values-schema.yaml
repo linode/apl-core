@@ -250,6 +250,10 @@ definitions:
         default: otomi
       provider:
         $ref: '#/definitions/provider'
+      defaultStorageClass:
+        type: string
+        description: Default storage class for platform components. Use '' for relying on the cluster's default storage class.
+        default: ''
     required:
       - name
       - provider
@@ -600,6 +604,13 @@ definitions:
     nullable: true
     type: object
     title: Kubernetes secrets
+  appNetworkPolicyConfig:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        default: false
+        description: Enable network policies for this application with sensible defaults
   netpol:
     type: object
     properties:
@@ -1171,10 +1182,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/workload'
-      projects:
-        type: array
-        items:
-          $ref: '#/definitions/project'
       policies:
         type: object
       builds:
@@ -1258,15 +1265,6 @@ definitions:
     type: string
     # At least one non whitespace character
     pattern: ^[^\s]+$
-  project:
-    type: object
-    description: A single project can represent application's build, workload and service.
-    properties:
-      name:
-        description: Name of the project
-        $ref: '#/definitions/idName'
-    required:
-      - name
   policies:
     type: object
   build:
@@ -1685,6 +1683,10 @@ properties:
             $ref: '#/definitions/resources'
           barmanPluginResources:
             $ref: '#/definitions/resources'
+          useBackupPlugin:
+            type: boolean
+            default: false
+            description: Use CNPG plugin for platform database backups
       drone:
         additionalProperties: false
         properties:
@@ -1889,6 +1891,8 @@ properties:
                 $ref: '#/definitions/resources'
               memcachedMetrics:
                 $ref: '#/definitions/resources'
+          networkPolicies:
+            $ref: '#/definitions/appNetworkPolicyConfig'
       grafana:
         additionalProperties: false
         properties:
@@ -2120,7 +2124,16 @@ properties:
                 $ref: '#/definitions/resources'
               reportsController:
                 $ref: '#/definitions/resources'
-
+      policy-reporter:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            $ref: '#/definitions/resources'
       kiali:
         additionalProperties: false
         properties:
@@ -2176,6 +2189,13 @@ properties:
           enabled:
             default: false
             type: boolean
+          persistence:
+            properties:
+              mysql:
+                properties:
+                  size:
+                    default: 20Gi
+                    $ref: '#/definitions/size'
           rootPassword:
             type: string
             x-secret: '{{ randAlphaNum 32 }}'
@@ -2342,15 +2362,20 @@ properties:
             x-secret: '{{ randAlphaNum 20 }}'
           persistence:
             properties:
-              querier:
-                properties:
-                  size:
-                    default: 20Gi
-                    $ref: '#/definitions/size'
               ingester:
                 properties:
                   size:
                     default: 20Gi
+                    $ref: '#/definitions/size'
+              querier:
+                properties:
+                  size:
+                    default: 10Gi
+                    $ref: '#/definitions/size'
+              compactor:
+                properties:
+                  size:
+                    default: 10Gi
                     $ref: '#/definitions/size'
           retention:
             additionalProperties: false

@@ -37,7 +37,7 @@ image:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  {{- with $g | get "image.gitea.tag" "1.23.8" }}
+  {{- with ($g | get "image.gitea.tag" "1.24.4") }}
   tag: {{ . }}
   {{- end }}
   pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}
@@ -184,9 +184,9 @@ postgresql:
   enabled: false
 postgresql-ha:
   enabled: false
-redis-cluster:
+valkey-cluster:
   enabled: false
-redis:
+valkey:
   enabled: true
 
 extraContainerVolumeMounts:
@@ -228,7 +228,7 @@ containerSecurityContext:
   readOnlyRootFilesystem: true
 
 global:
-  storageClass: ""
+  storageClass: {{ $v.cluster.defaultStorageClass | default "" }}
   hostAliases: []
 {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
