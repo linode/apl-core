@@ -155,6 +155,15 @@ service:
   internalTrafficPolicy: ""
   # configure service target port
   targetPort: ""
+  # Configures the service to use IPv4/IPv6 dual-stack.
+  # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/
+  ipDualStack:
+    enabled: false
+    ipFamilies: ["IPv6", "IPv4"]
+    ipFamilyPolicy: "PreferDualStack"
+  # Configure traffic distribution for the service
+  # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#traffic-distribution
+  trafficDistribution: ""
 
 ## Create or use ServiceAccount
 serviceAccount:
@@ -297,9 +306,15 @@ enableServiceLinks: true
 
 ## PodDisruptionBudget settings
 ## ref: https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
+## One of maxUnavailable and minAvailable must be set to null.
 podDisruptionBudget:
   enabled: true
+  maxUnavailable: null
   minAvailable: 1
+  # Policy for when unhealthy pods should be considered for eviction.
+  # Valid values are "IfHealthyBudget" and "AlwaysAllow".
+  # Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy
+  unhealthyPodEvictionPolicy: ""
 
 ## Horizontal Pod Autoscaling
 ## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
@@ -308,8 +323,28 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 10
   targetCPUUtilizationPercentage: 80
-#  targetMemoryUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
   annotations: {}
+  # Configure HPA behavior policies for scaling if needed
+  # Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configuring-scaling-behavior
+  behavior: {}
+    # scaleDown:
+    #   stabilizationWindowSeconds: 300
+    #   policies:
+    #   - type: Percent
+    #     value: 100
+    #     periodSeconds: 15
+    #   selectPolicy: Min
+    # scaleUp:
+    #   stabilizationWindowSeconds: 0
+    #   policies:
+    #   - type: Percent
+    #     value: 100
+    #     periodSeconds: 15
+    #   - type: Pods
+    #     value: 4
+    #     periodSeconds: 15
+    #   selectPolicy: Max
 
 # Configure Kubernetes security context for pod
 # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/

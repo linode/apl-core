@@ -1,18 +1,20 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: changed
-      description: Updated the Redis chart to the latest version
+    - kind: added
+      description: Added support for PodDisruptionBudget unhealthyPodEvictionPolicy
       links:
         - name: Github PR
-          url: https://github.com/oauth2-proxy/manifests/pull/316
+          url: https://github.com/oauth2-proxy/manifests/pull/336
+        - name: Kubernetes documentation
+          url: https://kubernetes.io/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy
 apiVersion: v2
-appVersion: 7.9.0
+appVersion: 7.11.0
 dependencies:
 - alias: redis
   condition: redis.enabled
   name: redis
   repository: https://charts.bitnami.com/bitnami
-  version: 21.2.3
+  version: 22.0.1
 description: A reverse proxy that provides authentication with Google, Github or other
   providers
 home: https://oauth2-proxy.github.io/oauth2-proxy/
@@ -36,4 +38,4 @@ name: oauth2-proxy
 sources:
 - https://github.com/oauth2-proxy/oauth2-proxy
 - https://github.com/oauth2-proxy/manifests
-version: 7.12.18
+version: 7.18.0
