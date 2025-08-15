@@ -27,7 +27,7 @@ stringData:
     {{- end }}
     
     {{- /* multiple replicas assertions */ -}}
-    {{- if gt .Values.replicaCount 1.0 -}}
+    {{- if gt (.Values.replicaCount | int) 1 -}}
       {{- if .Values.gitea.config.cron -}}
         {{- if .Values.gitea.config.cron.GIT_GC_REPOS -}}
           {{- if eq .Values.gitea.config.cron.GIT_GC_REPOS.ENABLED true -}}
