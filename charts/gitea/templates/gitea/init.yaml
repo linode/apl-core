@@ -57,25 +57,25 @@ stringData:
       exit 1
     }
 
-    {{- if include "redis.servicename" . }}
-    function test_redis_connection() {
+    {{- if include "valkey.servicename" . }}
+    function test_valkey_connection() {
       local RETRY=0
       local MAX=30
       
-      echo 'Wait for redis to become available...'
+      echo 'Wait for valkey to become avialable...'
       until [ "${RETRY}" -ge "${MAX}" ]; do
-        nc -vz -w2 {{ include "redis.servicename" . }} {{ include "redis.port" . }} && break
+        nc -vz -w2 {{ include "valkey.servicename" . }} {{ include "valkey.port" . }} && break
         RETRY=$[${RETRY}+1]
         echo "...not ready yet (${RETRY}/${MAX})"
       done
 
       if [ "${RETRY}" -ge "${MAX}" ]; then
-        echo "Redis not reachable after '${MAX}' attempts!"
+        echo "Valkey not reachable after '${MAX}' attempts!"
         exit 1
       fi
     }
 
-    test_redis_connection
+    test_valkey_connection
     {{- end }}
     
 
