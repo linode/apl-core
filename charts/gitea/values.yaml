@@ -157,33 +157,25 @@ service:
 
 ## @section Ingress
 ## @param ingress.enabled Enable ingress
-## @param ingress.className Ingress class name
+## @param ingress.className DEPRECATED: Ingress class name.
+## @param ingress.pathType Ingress Path Type
 ## @param ingress.annotations Ingress annotations
 ## @param ingress.hosts[0].host Default Ingress host
 ## @param ingress.hosts[0].paths[0].path Default Ingress path
-## @param ingress.hosts[0].paths[0].pathType Ingress path type
 ## @param ingress.tls Ingress tls settings
-## @extra ingress.apiVersion Specify APIVersion of ingress object. Mostly would only be used for argocd.
 ingress:
   enabled: false
-  # className: nginx
-  className:
-  annotations:
-    {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  className: ""
+  pathType: Prefix
+  annotations: {}
   hosts:
     - host: git.example.com
       paths:
         - path: /
-          pathType: Prefix
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - git.example.com
-  # Mostly for argocd or any other CI that uses `helm template | kubectl apply` or similar
-  # If helm doesn't correctly detect your ingress API version you can set it here.
-  # apiVersion: networking.k8s.io/v1
 
 ## @section deployment
 #
@@ -314,6 +306,8 @@ extraVolumeMounts: []
 ## @section Init
 ## @param initPreScript Bash shell script copied verbatim to the start of the init-container.
 initPreScript: ""
+## @param initContainersScriptsVolumeMountPath Path to mount the scripts consumed from the Secrets
+initContainersScriptsVolumeMountPath: "/usr/sbinx"
 #
 # initPreScript: |
 #   mkdir -p /data/git/.postgresql
@@ -347,107 +341,6 @@ signing:
   #   ...
   #   -----END PGP PRIVATE KEY BLOCK-----
   existingSecret: ""
-
-# Configure Gitea Actions
-# - must enable persistence if the job is enabled
-## @section Gitea Actions
-#
-## @param actions.enabled Create an act runner StatefulSet.
-## @param actions.init.image.repository The image used for the init containers
-## @param actions.init.image.tag The image tag used for the init containers
-## @param actions.statefulset.annotations Act runner annotations
-## @param actions.statefulset.labels Act runner labels
-## @param actions.statefulset.resources Act runner resources
-## @param actions.statefulset.nodeSelector NodeSelector for the statefulset
-## @param actions.statefulset.tolerations Tolerations for the statefulset
-## @param actions.statefulset.affinity Affinity for the statefulset
-## @param actions.statefulset.extraVolumes Extra volumes for the statefulset
-## @param actions.statefulset.actRunner.repository The Gitea act runner image
-## @param actions.statefulset.actRunner.tag The Gitea act runner tag
-## @param actions.statefulset.actRunner.pullPolicy The Gitea act runner pullPolicy
-## @param actions.statefulset.actRunner.extraVolumeMounts Allows mounting extra volumes in the act runner container
-## @param actions.statefulset.actRunner.config [default: Too complex. See values.yaml] Act runner custom configuration. See [Act Runner documentation](https://docs.gitea.com/usage/actions/act-runner#configuration) for details.
-## @param actions.statefulset.dind.repository The Docker-in-Docker image
-## @param actions.statefulset.dind.tag The Docker-in-Docker image tag
-## @param actions.statefulset.dind.pullPolicy The Docker-in-Docker pullPolicy
-## @param actions.statefulset.dind.extraVolumeMounts Allows mounting extra volumes in the Docker-in-Docker container
-## @param actions.statefulset.dind.extraEnvs Allows adding custom environment variables, such as `DOCKER_IPTABLES_LEGACY`
-## @param actions.provisioning.enabled Create a job that will create and save the token in a Kubernetes Secret
-## @param actions.provisioning.annotations Job's annotations
-## @param actions.provisioning.labels Job's labels
-## @param actions.provisioning.resources Job's resources
-## @param actions.provisioning.nodeSelector NodeSelector for the job
-## @param actions.provisioning.tolerations Tolerations for the job
-## @param actions.provisioning.affinity Affinity for the job
-## @param actions.provisioning.ttlSecondsAfterFinished ttl for the job after finished in order to allow helm to properly recognize that the job completed
-## @param actions.provisioning.publish.repository The image that can create the secret via kubectl
-## @param actions.provisioning.publish.tag The publish image tag that can create the secret
-## @param actions.provisioning.publish.pullPolicy The publish image pullPolicy that can create the secret
-## @param actions.existingSecret Secret that contains the token
-## @param actions.existingSecretKey Secret key
-actions:
-  enabled: false
-  statefulset:
-    annotations: {}
-    labels: {}
-    resources: {}
-    nodeSelector: {}
-    tolerations: []
-    affinity: {}
-    extraVolumes: []
-
-    actRunner:
-      repository: gitea/act_runner
-      tag: 0.2.11
-      pullPolicy: IfNotPresent
-      extraVolumeMounts: []
-
-      # See full example here: https://gitea.com/gitea/act_runner/src/branch/main/internal/pkg/config/config.example.yaml
-      config: |
-        log:
-          level: debug
-        cache:
-          enabled: false
-
-    dind:
-      repository: docker
-      tag: 25.0.2-dind
-      pullPolicy: IfNotPresent
-      extraVolumeMounts: []
-
-      # If the container keeps crashing in your environment, you might have to add the `DOCKER_IPTABLES_LEGACY` environment variable.
-      # See https://github.com/docker-library/docker/issues/463#issuecomment-1881909456
-      extraEnvs: []
-        #  - name: "DOCKER_IPTABLES_LEGACY"
-        #    value: "1"
-
-  init:
-    image:
-      repository: busybox
-      # Overrides the image tag whose default is the chart appVersion.
-      tag: "1.37.0"
-
-  provisioning:
-    enabled: false
-
-    annotations: {}
-    labels: {}
-    resources: {}
-    nodeSelector: {}
-    tolerations: []
-    affinity: {}
-
-    publish:
-      repository: bitnami/kubectl
-      tag: 1.29.0
-      pullPolicy: IfNotPresent
-
-    ttlSecondsAfterFinished: 300
-
-  ## Specify an existing token secret
-  ##
-  existingSecret: ""
-  existingSecretKey: ""
 
 ## @section Gitea
 #
@@ -608,41 +501,51 @@ gitea:
     successThreshold: 1
     failureThreshold: 10
 
-## @section redis-cluster
-## @param redis-cluster.enabled Enable redis cluster
-# ⚠️ The redis charts do not work well with special characters in the password (<https://gitea.com/gitea/helm-gitea/issues/690>).
+## @section valkey-cluster
+## @param valkey-cluster.enabled Enable valkey cluster
+# ⚠️ The valkey charts do not work well with special characters in the password (<https://gitea.com/gitea/helm-chart/issues/690>).
 # Consider omitting such or open an issue in the Bitnami repo and let us know once this got fixed.
-## @param redis-cluster.usePassword Whether to use password authentication
-## @param redis-cluster.cluster.nodes Number of redis cluster master nodes
-## @param redis-cluster.cluster.replicas Number of redis cluster master node replicas
+## @param valkey-cluster.usePassword Whether to use password authentication
+## @param valkey-cluster.usePasswordFiles Whether to mount passwords as files instead of environment variables
+## @param valkey-cluster.cluster.nodes Number of valkey cluster master nodes
+## @param valkey-cluster.cluster.replicas Number of valkey cluster master node replicas
+## @param valkey-cluster.service.ports.valkey Port of Valkey service
 ## @descriptionStart
-## Redis cluster and [Redis](#redis) cannot be enabled at the same time.
+## Valkey cluster and [Valkey](#valkey) cannot be enabled at the same time.
 ## @descriptionEnd
-redis-cluster:
+valkey-cluster:
   enabled: true
   usePassword: false
+  usePasswordFiles: false
   cluster:
     nodes: 3 # default: 6
     replicas: 0 # default: 1
+  service:
+    ports:
+      valkey: 6379
 
-## @section redis
-## @param redis.enabled Enable redis standalone or replicated
-## @param redis.architecture Whether to use standalone or replication
-# ⚠️ The redis charts do not work well with special characters in the password (<https://gitea.com/gitea/helm-gitea/issues/690>).
+## @section valkey
+## @param valkey.enabled Enable valkey standalone or replicated
+## @param valkey.architecture Whether to use standalone or replication
+# ⚠️ The valkey charts do not work well with special characters in the password (<https://gitea.com/gitea/helm-chart/issues/690>).
 # Consider omitting such or open an issue in the Bitnami repo and let us know once this got fixed.
-## @param redis.global.redis.password Required password
-## @param redis.master.count Number of Redis master instances to deploy
+## @param valkey.global.valkey.password Required password
+## @param valkey.master.count Number of Valkey master instances to deploy
+## @param valkey.master.service.ports.valkey Port of Valkey service
 ## @descriptionStart
-## Redis and [Redis cluster](#redis-cluster) cannot be enabled at the same time.
+## Valkey and [Valkey cluster](#valkey-cluster) cannot be enabled at the same time.
 ## @descriptionEnd
-redis:
+valkey:
   enabled: false
   architecture: standalone
   global:
-    redis:
+    valkey:
       password: changeme
   master:
     count: 1
+    service:
+      ports:
+        valkey: 6379
 
 ## @section PostgreSQL HA
 #
@@ -654,6 +557,7 @@ redis:
 ## @param postgresql-ha.postgresql.repmgrPassword Repmgr Password
 ## @param postgresql-ha.postgresql.postgresPassword postgres Password
 ## @param postgresql-ha.pgpool.adminPassword pgpool adminPassword
+## @param postgresql-ha.pgpool.srCheckPassword pgpool srCheckPassword
 ## @param postgresql-ha.service.ports.postgresql PostgreSQL service port (overrides `service.ports.postgresql`)
 ## @param postgresql-ha.persistence.size PVC Storage Request for PostgreSQL HA volume
 postgresql-ha:
@@ -669,6 +573,7 @@ postgresql-ha:
     password: changeme4
   pgpool:
     adminPassword: changeme3
+    srCheckPassword: changeme4
   service:
     ports:
       postgresql: 5432

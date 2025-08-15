@@ -10,7 +10,7 @@ metadata:
 {{ .Values.persistence.labels | toYaml | indent 4}}
 spec:
   accessModes:
-  {{- if gt .Values.replicaCount 1.0 }}
+  {{- if gt (.Values.replicaCount | int) 1 }}
       - ReadWriteMany
   {{- else }}
     {{- .Values.persistence.accessModes | toYaml | nindent 4 }}
