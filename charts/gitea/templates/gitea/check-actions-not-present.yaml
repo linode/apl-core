@@ -1,0 +1,3 @@
+{{- if .Values.actions -}}
+    {{- fail "The actions sub-chart has been outsourced to a dedicated chart available at https://gitea.com/gitea/helm-actions. For assistance with the migration process, check https://gitea.com/gitea/helm-actions/issues/9." -}}
+{{- end -}}
