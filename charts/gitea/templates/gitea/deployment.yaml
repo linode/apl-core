@@ -62,7 +62,8 @@ spec:
         - name: init-directories
           image: "{{ include "gitea.image" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/usr/sbin/init_directory_structure.sh"]
+          command:
+            - "{{ .Values.initContainersScriptsVolumeMountPath }}/init_directory_structure.sh"
           env:
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini
@@ -81,7 +82,7 @@ spec:
             {{- end }}
           volumeMounts:
             - name: init
-              mountPath: /usr/sbin
+              mountPath: {{ .Values.initContainersScriptsVolumeMountPath }}
             - name: temp
               mountPath: /tmp
             - name: data
@@ -97,7 +98,8 @@ spec:
         - name: init-app-ini
           image: "{{ include "gitea.image" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/usr/sbin/config_environment.sh"]
+          command: 
+          - "{{ .Values.initContainersScriptsVolumeMountPath }}/config_environment.sh"
           env:
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini
@@ -115,11 +117,11 @@ spec:
             {{- toYaml .Values.deployment.env | nindent 12 }}
             {{- end }}
             {{- if .Values.gitea.additionalConfigFromEnvs }}
-            {{- toYaml .Values.gitea.additionalConfigFromEnvs | nindent 12 }}
+            {{- tpl (toYaml .Values.gitea.additionalConfigFromEnvs) $ | nindent 12 }}
             {{- end }}
           volumeMounts:
             - name: config
-              mountPath: /usr/sbin
+              mountPath: {{ .Values.initContainersScriptsVolumeMountPath }}
             - name: temp
               mountPath: /tmp
             - name: data
@@ -141,7 +143,8 @@ spec:
         {{- if .Values.signing.enabled }}
         - name: configure-gpg
           image: "{{ include "gitea.image" . }}"
-          command: ["/usr/sbin/configure_gpg_environment.sh"]
+          command: 
+          - "{{ .Values.initContainersScriptsVolumeMountPath }}/configure_gpg_environment.sh"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
             {{- /* By default this container runs as user 1000 unless otherwise stated */ -}}
@@ -157,7 +160,7 @@ spec:
               value: /raw/private.asc
           volumeMounts:
             - name: init
-              mountPath: /usr/sbin
+              mountPath: {{ .Values.initContainersScriptsVolumeMountPath }}
             - name: data
               mountPath: /data
               {{- if .Values.persistence.subPath }}
@@ -174,7 +177,8 @@ spec:
         {{- end }}
         - name: configure-gitea
           image: "{{ include "gitea.image" . }}"
-          command: ["/usr/sbin/configure_gitea.sh"]
+          command:
+          - "{{ .Values.initContainersScriptsVolumeMountPath }}/configure_gitea.sh"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
             {{- /* By default this container runs as user 1000 unless otherwise stated */ -}}
@@ -257,7 +261,7 @@ spec:
             {{- end }}
           volumeMounts:
             - name: init
-              mountPath: /usr/sbin
+              mountPath: {{ .Values.initContainersScriptsVolumeMountPath }}
             - name: temp
               mountPath: /tmp
             - name: data
