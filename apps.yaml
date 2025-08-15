@@ -202,7 +202,7 @@ appsInfo:
     chartName: knative-operator
   kyverno:
     title: Kyverno
-    appVersion: 1.11.4
+    appVersion: 1.15.0
     repo: https://github.com/kyverno/kyverno
     maintainers: Nirmata
     relatedLinks:
