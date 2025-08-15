@@ -25,7 +25,7 @@ In addition, the following components are required for full HA-readiness:
 
 - A HA-ready issue (and optionally code) indexer: `elasticsearch` or `meilisearch`
 - A HA-ready external object/asset storage (`minio`) (optional, assets can also be stored on the RWX file-system)
-- A HA-ready cache (`redis-cluster`)
+- A HA-ready cache (`valkey-cluster`)
 - A HA-ready DB
 
 `postgres.enabled`, which default to `true`, must be set to `false` for a HA setup.
@@ -72,33 +72,33 @@ persistence:
 
 ## Cache, session and queue
 
-A `redis` instance is required for the in-memory cache.
+A `valkey` instance is required for the in-memory cache.
 Two options exist:
 
-- `redis`
-- `redis-cluster`
+- `valkey`
+- `valkey-cluster`
 
-The chart provides `redis-cluster` as a dependency as this one can be used for both HA and non-HA setups.
-You're also welcome to go with `redis` if you prefer or already have a running instance.
+The chart provides `valkey-cluster` as a dependency as this one can be used for both HA and non-HA setups.
+You're also welcome to go with `valkey` if you prefer or already have a running instance.
 
-It should be noted that `redis-cluster` support is only available starting with Gitea 1.19.2.
-You can also configure an external (managed) `redis` instance to be used.
+It should be noted that `valkey-cluster` support is only available starting with Gitea 1.19.2.
+You can also configure an external (managed) `valkey` instance to be used.
 To do so, you need to set the following configuration values yourself:
 
-- `gitea.config.queue.TYPE`: redis`
-- `gitea.config.queue.CONN_STR`: `<your redis connection string>`
+- `gitea.config.queue.TYPE`: valkey`
+- `gitea.config.queue.CONN_STR`: `<your valkey connection string>`
 
-- `gitea.config.session.PROVIDER`: `redis`
-- `gitea.config.session.PROVIDER_CONFIG`: `<your redis connection string>`
+- `gitea.config.session.PROVIDER`: `valkey`
+- `gitea.config.session.PROVIDER_CONFIG`: `<your valkey connection string>`
 
 - `gitea.config.cache.ENABLED`: `true`
-- `gitea.config.cache.ADAPTER`: `redis`
-- `gitea.config.cache.HOST`: `<your redis connection string>`
+- `gitea.config.cache.ADAPTER`: `valkey`
+- `gitea.config.cache.HOST`: `<your valkey connection string>`
 
-By default, the `redis-cluster` chart provisions three standalone master nodes of which each has a single replica.
+By default, the `valkey-cluster` chart provisions three standalone master nodes of which each has a single replica.
 To reduce the number of pods for a default Gitea deployment, we opted to omit the replicas (`replicas: 0`) by default.
-Only the minimum required number of master pods for a functional `redis-cluster` deployment are provisioned.
-For a "proper" `redis-cluster` setup however, we recommend to set `replicas: 1` and `nodes: 6`.
+Only the minimum required number of master pods for a functional `valkey-cluster` deployment are provisioned.
+For a "proper" `valkey-cluster` setup however, we recommend to set `replicas: 1` and `nodes: 6`.
 
 ## Object and asset storage
 

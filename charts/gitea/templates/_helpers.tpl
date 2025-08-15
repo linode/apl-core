@@ -133,29 +133,29 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 {{- end -}}
 
-{{- define "redis.dns" -}}
-{{- if and ((index .Values "redis-cluster").enabled) ((index .Values "redis").enabled) -}}
-{{- fail "redis and redis-cluster cannot be enabled at the same time. Please only choose one." -}}
-{{- else if (index .Values "redis-cluster").enabled -}}
-{{- printf "redis+cluster://:%s@%s-redis-cluster-headless.%s.svc.%s:%g/0?pool_size=100&idle_timeout=180s&" (index .Values "redis-cluster").global.redis.password .Release.Name .Release.Namespace .Values.clusterDomain (index .Values "redis-cluster").service.ports.redis -}}
-{{- else if (index .Values "redis").enabled -}}
-{{- printf "redis://:%s@%s-redis-headless.%s.svc.%s:%g/0?pool_size=100&idle_timeout=180s&" (index .Values "redis").global.redis.password .Release.Name .Release.Namespace .Values.clusterDomain (index .Values "redis").master.service.ports.redis -}}
+{{- define "valkey.dns" -}}
+{{- if and ((index .Values "valkey-cluster").enabled) ((index .Values "valkey").enabled) -}}
+{{- fail "valkey and valkey-cluster cannot be enabled at the same time. Please only choose one." -}}
+{{- else if (index .Values "valkey-cluster").enabled -}}
+{{- printf "redis+cluster://:%s@%s-valkey-cluster-headless.%s.svc.%s:%g/0?pool_size=100&idle_timeout=180s&" (index .Values "valkey-cluster").global.valkey.password .Release.Name .Release.Namespace .Values.clusterDomain (index .Values "valkey-cluster").service.ports.valkey -}}
+{{- else if (index .Values "valkey").enabled -}}
+{{- printf "redis://:%s@%s-valkey-headless.%s.svc.%s:%g/0?pool_size=100&idle_timeout=180s&" (index .Values "valkey").global.valkey.password .Release.Name .Release.Namespace .Values.clusterDomain (index .Values "valkey").master.service.ports.valkey -}}
 {{- end -}}
 {{- end -}}
 
-{{- define "redis.port" -}}
-{{- if (index .Values "redis-cluster").enabled -}}
-{{ (index .Values "redis-cluster").service.ports.redis }}
-{{- else if (index .Values "redis").enabled -}}
-{{ (index .Values "redis").master.service.ports.redis }}
+{{- define "valkey.port" -}}
+{{- if (index .Values "valkey-cluster").enabled -}}
+{{ (index .Values "valkey-cluster").service.ports.valkey }}
+{{- else if (index .Values "valkey").enabled -}}
+{{ (index .Values "valkey").master.service.ports.valkey }}
 {{- end -}}
 {{- end -}}
 
-{{- define "redis.servicename" -}}
-{{- if (index .Values "redis-cluster").enabled -}}
-{{- printf "%s-redis-cluster-headless.%s.svc.%s" .Release.Name .Release.Namespace .Values.clusterDomain -}}
-{{- else if (index .Values "redis").enabled -}}
-{{- printf "%s-redis-headless.%s.svc.%s" .Release.Name .Release.Namespace .Values.clusterDomain -}}
+{{- define "valkey.servicename" -}}
+{{- if (index .Values "valkey-cluster").enabled -}}
+{{- printf "%s-valkey-cluster-headless.%s.svc.%s" .Release.Name .Release.Namespace .Values.clusterDomain -}}
+{{- else if (index .Values "valkey").enabled -}}
+{{- printf "%s-valkey-headless.%s.svc.%s" .Release.Name .Release.Namespace .Values.clusterDomain -}}
 {{- end -}}
 {{- end -}}
 
@@ -217,15 +217,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 https
 {{- else -}}
 {{ .Values.gitea.config.server.PROTOCOL }}
-{{- end -}}
-{{- end -}}
-
-{{- define "gitea.act_runner.local_root_url" -}}
-{{- if not .Values.gitea.config.server.LOCAL_ROOT_URL -}}
-    {{- printf "http://%s-http:%.0f" (include "gitea.fullname" .) .Values.service.http.port -}}
-{{- else -}}
-  {{/* fallback for allowing to overwrite this value via inline config */}}
-  {{- .Values.gitea.config.server.LOCAL_ROOT_URL -}}
 {{- end -}}
 {{- end -}}
 
@@ -314,14 +305,14 @@ https
   {{- if and (not (hasKey .Values.gitea.config.metrics "TOKEN")) (.Values.gitea.metrics.token) (.Values.gitea.metrics.enabled) -}}
     {{- $_ := set .Values.gitea.config.metrics "TOKEN" .Values.gitea.metrics.token -}}
   {{- end -}}
-  {{- /* redis queue */ -}}
-  {{- if or ((index .Values "redis-cluster").enabled) ((index .Values "redis").enabled) -}}
+  {{- /* valkey queue */ -}}
+  {{- if or ((index .Values "valkey-cluster").enabled) ((index .Values "valkey").enabled) -}}
     {{- $_ := set .Values.gitea.config.queue "TYPE" "redis" -}}
-    {{- $_ := set .Values.gitea.config.queue "CONN_STR" (include "redis.dns" .) -}}
+    {{- $_ := set .Values.gitea.config.queue "CONN_STR" (include "valkey.dns" .) -}}
     {{- $_ := set .Values.gitea.config.session "PROVIDER" "redis" -}}
-    {{- $_ := set .Values.gitea.config.session "PROVIDER_CONFIG" (include "redis.dns" .) -}}
+    {{- $_ := set .Values.gitea.config.session "PROVIDER_CONFIG" (include "valkey.dns" .) -}}
     {{- $_ := set .Values.gitea.config.cache "ADAPTER" "redis" -}}
-    {{- $_ := set .Values.gitea.config.cache "HOST" (include "redis.dns" .) -}}
+    {{- $_ := set .Values.gitea.config.cache "HOST" (include "valkey.dns" .) -}}
   {{- else -}}
     {{- if not (get .Values.gitea.config.session "PROVIDER") -}}
       {{- $_ := set .Values.gitea.config.session "PROVIDER" "memory" -}}
@@ -345,9 +336,6 @@ https
   {{- if not .Values.gitea.config.indexer.ISSUE_INDEXER_TYPE -}}
      {{- $_ := set .Values.gitea.config.indexer "ISSUE_INDEXER_TYPE" "db" -}}
   {{- end -}}
-  {{- if not .Values.gitea.config.actions.ENABLED -}}
-     {{- $_ := set .Values.gitea.config.actions "ENABLED" (ternary "true" "false" .Values.actions.enabled) -}}
-  {{- end -}}
 {{- end -}}
 
 {{- define "gitea.inline_configuration.defaults.server" -}}
@@ -367,25 +355,24 @@ https
   {{- if not .Values.gitea.config.server.ROOT_URL -}}
     {{- $_ := set .Values.gitea.config.server "ROOT_URL" (printf "%s://%s" (include "gitea.public_protocol" .) .Values.gitea.config.server.DOMAIN) -}}
   {{- end -}}
-  {{- if .Values.actions.enabled -}}
-     {{- $_ := set .Values.gitea.config.server "LOCAL_ROOT_URL" (include "gitea.act_runner.local_root_url" .) -}}
-  {{- end -}}
   {{- if not .Values.gitea.config.server.SSH_DOMAIN -}}
     {{- $_ := set .Values.gitea.config.server "SSH_DOMAIN" .Values.gitea.config.server.DOMAIN -}}
   {{- end -}}
   {{- if not .Values.gitea.config.server.SSH_PORT -}}
     {{- $_ := set .Values.gitea.config.server "SSH_PORT" .Values.service.ssh.port -}}
   {{- end -}}
-  {{- if not (hasKey .Values.gitea.config.server "SSH_LISTEN_PORT") -}}
-    {{- if not .Values.image.rootless -}}
-      {{- $_ := set .Values.gitea.config.server "SSH_LISTEN_PORT" .Values.gitea.config.server.SSH_PORT -}}
-    {{- else -}}
-      {{- $_ := set .Values.gitea.config.server "SSH_LISTEN_PORT" "2222" -}}
-    {{- end -}}
-  {{- end -}}
   {{- if not (hasKey .Values.gitea.config.server "START_SSH_SERVER") -}}
     {{- if .Values.image.rootless -}}
       {{- $_ := set .Values.gitea.config.server "START_SSH_SERVER" "true" -}}
+      {{- if not (hasKey .Values.gitea.config.server "SSH_LISTEN_PORT") -}}
+        {{- if not .Values.gitea.config.server.SSH_LISTEN_PORT -}}
+          {{- $_ := set .Values.gitea.config.server "SSH_LISTEN_PORT" .Values.gitea.config.server.SSH_PORT -}}
+        {{- else -}}
+          {{- $_ := set .Values.gitea.config.server "SSH_LISTEN_PORT" .Values.gitea.config.server.SSH_LISTEN_PORT -}}
+        {{- end -}}
+      {{- end -}}
+    {{- else -}}
+      {{- $_ := set .Values.gitea.config.server "START_SSH_SERVER" "false" -}}
     {{- end -}}
   {{- end -}}
   {{- if not (hasKey .Values.gitea.config.server "APP_DATA_PATH") -}}
@@ -441,6 +428,18 @@ https
 
 {{- define "gitea.serviceAccountName" -}}
 {{ .Values.serviceAccount.name | default (include "gitea.fullname" .) }}
+{{- end -}}
+
+{{- define "ingress.annotations" -}}
+  {{- if .Values.ingress.annotations }}
+  annotations:
+    {{- $tp := typeOf .Values.ingress.annotations }}
+    {{- if eq $tp "string" }}
+      {{- tpl .Values.ingress.annotations . | nindent 4 }}
+    {{- else }}
+      {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- end }}
+  {{- end }}
 {{- end -}}
 
 {{- define "gitea.admin.passwordMode" -}}
