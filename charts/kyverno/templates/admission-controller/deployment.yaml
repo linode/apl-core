@@ -1,13 +1,29 @@
 {{- if not .Values.templating.debug -}}
+{{- $automountSAToken := .Values.admissionController.rbac.serviceAccount.automountServiceAccountToken }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "kyverno.admission-controller.name" . }}
   namespace: {{ template "kyverno.namespace" . }}
+  {{- if .Values.webhooksCleanup.autoDeleteWebhooks.enabled }}
+  {{- if not .Values.templating.enabled }}
+  finalizers:
+  - kyverno.io/webhooks
+  - kyverno.io/exceptionwebhooks
+  - kyverno.io/globalcontextwebhooks
+  {{- end }}
+  {{- end }}
   labels:
     {{- include "kyverno.admission-controller.labels" . | nindent 4 }}
+  {{- with .Values.admissionController.annotations }}
+  annotations:
+    {{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
 spec:
+  {{- if not .Values.admissionController.autoscaling.enabled }}
   replicas: {{ template "kyverno.deployment.replicas" .Values.admissionController.replicas }}
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.admissionController.revisionHistoryLimit }}
   {{- with .Values.admissionController.updateStrategy }}
   strategy:
     {{- toYaml . | nindent 4 }}
@@ -26,19 +42,19 @@ spec:
       annotations: {{ tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
     spec:
-      {{- with .Values.admissionController.imagePullSecrets }}
+      {{- with .Values.admissionController.imagePullSecrets | default .Values.global.imagePullSecrets }}
       imagePullSecrets:
-        {{- tpl (toYaml .) $ | nindent 8 }}
+        {{- tpl (include "kyverno.sortedImagePullSecrets" .) $ | nindent 8 }}
       {{- end }}
       {{- with .Values.admissionController.podSecurityContext }}
       securityContext:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
-      {{- with .Values.admissionController.nodeSelector }}
+      {{- with .Values.admissionController.nodeSelector | default .Values.global.nodeSelector }}
       nodeSelector:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
-      {{- with .Values.admissionController.tolerations }}
+      {{- with .Values.admissionController.tolerations | default .Values.global.tolerations}}
       tolerations:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
@@ -54,6 +70,10 @@ spec:
       {{- end }}
       {{- with .Values.admissionController.dnsPolicy }}
       dnsPolicy: {{ . }}
+      {{- end }}
+      {{- with .Values.admissionController.dnsConfig }}
+      dnsConfig:
+        {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
       {{- if or .Values.admissionController.antiAffinity.enabled .Values.admissionController.podAffinity .Values.admissionController.nodeAffinity }}
       affinity:
@@ -73,17 +93,19 @@ spec:
         {{- end }}
       {{- end }}
       serviceAccountName: {{ template "kyverno.admission-controller.serviceAccountName" . }}
+      automountServiceAccountToken: {{ $automountSAToken }}
       initContainers:
         {{- with .Values.admissionController.extraInitContainers }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
         - name: kyverno-pre
-          image: {{ include "kyverno.image" (dict "globalRegistry" ((.Values.global).image).registry "image" .Values.admissionController.initContainer.image "defaultTag" (default .Chart.AppVersion .Values.admissionController.container.image.tag)) | quote }}
+          image: {{ include "kyverno.image" (dict "globalRegistry" .Values.global.image.registry "image" .Values.admissionController.initContainer.image "defaultTag" (default .Chart.AppVersion .Values.admissionController.initContainer.image.tag)) | quote }}
           imagePullPolicy: {{ default .Values.admissionController.container.image.pullPolicy .Values.admissionController.initContainer.image.pullPolicy }}
           args:
-            {{- include "kyverno.features.flags" (pick (mergeOverwrite .Values.features .Values.admissionController.featuresOverride)
+            {{- include "kyverno.features.flags" (pick (mergeOverwrite (deepCopy .Values.features) .Values.admissionController.featuresOverride)
               "logging"
             ) | nindent 12 }}
+            - --openreportsEnabled={{ .Values.openreports.enabled }}
             {{- range $key, $value := .Values.admissionController.initContainer.extraArgs }}
             {{- if $value }}
             - --{{ $key }}={{ $value }}
@@ -100,6 +122,8 @@ spec:
           env:
           - name: KYVERNO_SERVICEACCOUNT_NAME
             value: {{ template "kyverno.admission-controller.serviceAccountName" . }}
+          - name: KYVERNO_ROLE_NAME
+            value: {{ template "kyverno.admission-controller.roleName" . }}
           - name: INIT_CONFIG
             value: {{ template "kyverno.config.configMapName" . }}
           - name: METRICS_CONFIG
@@ -116,21 +140,38 @@ spec:
             value: {{ template "kyverno.admission-controller.name" . }}
           - name: KYVERNO_SVC
             value: {{ template "kyverno.admission-controller.serviceName" . }}
-          {{- with .Values.admissionController.initContainer.extraEnvVars }}
+          {{- with (concat .Values.global.extraEnvVars .Values.admissionController.initContainer.extraEnvVars) }}
           {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- if not $automountSAToken }}
+          volumeMounts:
+            - name: serviceaccount-token
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
           {{- end }}
       containers:
         {{- with .Values.admissionController.extraContainers }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
         - name: kyverno
-          image: {{ include "kyverno.image" (dict "globalRegistry" ((.Values.global).image).registry "image" .Values.admissionController.container.image "defaultTag" .Chart.AppVersion) | quote }}
+          image: {{ include "kyverno.image" (dict "globalRegistry" .Values.global.image.registry "image" .Values.admissionController.container.image "defaultTag" .Chart.AppVersion) | quote }}
           imagePullPolicy: {{ .Values.admissionController.container.image.pullPolicy }}
           args:
             - --caSecretName={{ template "kyverno.admission-controller.serviceName" . }}.{{ template "kyverno.namespace" . }}.svc.kyverno-tls-ca
             - --tlsSecretName={{ template "kyverno.admission-controller.serviceName" . }}.{{ template "kyverno.namespace" . }}.svc.kyverno-tls-pair
+            {{- if .Values.backgroundController.enabled }}
             - --backgroundServiceAccountName=system:serviceaccount:{{ include "kyverno.namespace" . }}:{{ include "kyverno.background-controller.serviceAccountName" . }}
+            {{- end }}
+            {{- if .Values.reportsController.enabled }}
+            - --reportsServiceAccountName=system:serviceaccount:{{ include "kyverno.namespace" . }}:{{ include "kyverno.reports-controller.serviceAccountName" . }}
+            {{- end }}
             - --servicePort={{ .Values.admissionController.service.port }}
+            - --webhookServerPort={{ .Values.admissionController.webhookServer.port }}
+            - --resyncPeriod={{ .Values.admissionController.resyncPeriod | default .Values.global.resyncPeriod }}
+            - --crdWatcher={{ .Values.admissionController.crdWatcher | default .Values.global.crdWatcher }}
+            {{- if .Values.webhooksCleanup.autoDeleteWebhooks.enabled }}
+            - --autoDeleteWebhooks
+            {{- end }}
             {{- if .Values.admissionController.tracing.enabled }}
             - --enableTracing
             - --tracingAddress={{ .Values.admissionController.tracing.address }}
@@ -151,27 +192,37 @@ spec:
             {{- end }}
             {{- end }}
             {{- if or .Values.imagePullSecrets .Values.existingImagePullSecrets }}
-            - --imagePullSecrets={{- join "," (concat (keys .Values.imagePullSecrets) .Values.existingImagePullSecrets) }}
+            - --imagePullSecrets={{- $secretNames := concat (keys .Values.imagePullSecrets | sortAlpha) (.Values.existingImagePullSecrets | sortAlpha) -}}
+              {{- join "," $secretNames -}}
             {{- end }}
-            {{- include "kyverno.features.flags" (pick (mergeOverwrite .Values.features .Values.admissionController.featuresOverride)
+            {{- include "kyverno.features.flags" (pick (mergeOverwrite (deepCopy .Values.features) .Values.admissionController.featuresOverride)
               "admissionReports"
               "autoUpdateWebhooks"
               "configMapCaching"
+              "controllerRuntimeMetrics"
               "deferredLoading"
               "dumpPayload"
               "forceFailurePolicyIgnore"
               "generateValidatingAdmissionPolicy"
+              "generateMutatingAdmissionPolicy"
+              "dumpPatches"
+              "globalContext"
               "logging"
               "omitEvents"
               "policyExceptions"
               "protectManagedResources"
               "registryClient"
+              "reporting"
               "tuf"
             ) | nindent 12 }}
             {{- range $key, $value := .Values.admissionController.container.extraArgs }}
             {{- if $value }}
             - --{{ $key }}={{ $value }}
             {{- end }}
+            {{- end }}
+            {{ if .Values.admissionController.profiling.enabled }}
+            - --profile=true
+            - --profilePort={{ .Values.admissionController.profiling.port }}
             {{- end }}
           {{- with .Values.admissionController.container.resources }}
           resources:
@@ -182,12 +233,17 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           ports:
-          - containerPort: 9443
+          - containerPort: {{ .Values.admissionController.webhookServer.port }}
             name: https
             protocol: TCP
-          - containerPort: 8000
+          - containerPort: {{ .Values.admissionController.metering.port }}
             name: metrics-port
             protocol: TCP
+          {{ if .Values.admissionController.profiling.enabled }}
+          - containerPort: {{ .Values.admissionController.profiling.port }}
+            name: profiling-port
+            protocol: TCP
+          {{- end }}
           env:
           - name: INIT_CONFIG
             value: {{ template "kyverno.config.configMapName" . }}
@@ -203,11 +259,13 @@ spec:
                 fieldPath: metadata.name
           - name: KYVERNO_SERVICEACCOUNT_NAME
             value: {{ template "kyverno.admission-controller.serviceAccountName" . }}
+          - name: KYVERNO_ROLE_NAME
+            value: {{ template "kyverno.admission-controller.roleName" . }}
           - name: KYVERNO_SVC
             value: {{ template "kyverno.admission-controller.serviceName" . }}
           - name: TUF_ROOT
             value: {{ .Values.admissionController.tufRootMountPath }}
-          {{- with .Values.admissionController.container.extraEnvVars }}
+          {{- with (concat .Values.global.extraEnvVars .Values.admissionController.container.extraEnvVars) }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
           - name: KYVERNO_DEPLOYMENT
@@ -227,7 +285,52 @@ spec:
           volumeMounts:
             - mountPath: {{ .Values.admissionController.tufRootMountPath }}
               name: sigstore
+            {{- if or .Values.admissionController.caCertificates.data .Values.global.caCertificates.data .Values.admissionController.caCertificates.volume .Values.global.caCertificates.volume }}
+            - name: ca-certificates
+              mountPath: /etc/ssl/certs/ca-certificates.crt
+              {{- if or .Values.admissionController.caCertificates.data .Values.global.caCertificates.data }}
+              subPath: ca-certificates.crt
+              {{- end }}
+            {{- end }}
+            {{- if not $automountSAToken }}
+            - name: serviceaccount-token
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
+            {{- end }}
       volumes:
       - name: sigstore
         {{- toYaml (required "A valid .Values.admissionController.sigstoreVolume entry is required" .Values.admissionController.sigstoreVolume) | nindent 8 }}
+      {{- if or .Values.admissionController.caCertificates.data .Values.global.caCertificates.data }}
+      - name: ca-certificates
+        configMap:
+          name: {{ include "kyverno.admission-controller.caCertificatesConfigMapName" . }}
+          items:
+          - key: ca-certificates
+            path: ca-certificates.crt
+      {{- else if or .Values.admissionController.caCertificates.volume .Values.global.caCertificates.volume }}
+      {{- with (.Values.admissionController.caCertificates.volume | default .Values.global.caCertificates.volume) }}
+      - name: ca-certificates
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- if not $automountSAToken }}
+      - name: serviceaccount-token
+        projected:
+          defaultMode: 0444
+          sources:
+            - serviceAccountToken:
+                expirationSeconds: 3607
+                path: token
+            - configMap:
+                name: kube-root-ca.crt
+                items:
+                  - key: ca.crt
+                    path: ca.crt
+            - downwardAPI:
+                items:
+                  - path: namespace
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+      {{- end }}
 {{- end -}}
