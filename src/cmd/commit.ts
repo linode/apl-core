@@ -9,7 +9,7 @@ import { terminal } from 'src/common/debug'
 import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { createGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
-import { getFilename } from 'src/common/utils'
+import { getFilename, loadYaml } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
 import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -18,6 +18,8 @@ import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
+
+export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 
 interface Arguments extends HelmArguments, DroneArgs {
   m?: string
@@ -29,6 +31,30 @@ interface InitialData {
   username: string
   password: string
   secretName: string
+}
+
+const isConflictError = (error: any): boolean => {
+  const errorMsg = error?.message?.toLowerCase() || ''
+  return (
+    errorMsg.includes('failed to merge') ||
+    errorMsg.includes('resolve your current index first') ||
+    errorMsg.includes('you need to resolve') ||
+    errorMsg.includes('merge conflict')
+  )
+}
+
+const cleanupGitState = async (d: any): Promise<void> => {
+  try {
+    cd(env.ENV_DIR)
+    // Try to abort any ongoing merge or rebase
+    await $`git merge --abort`.nothrow().quiet()
+    await $`git rebase --abort`.nothrow().quiet()
+    // Reset to the commit before our failed commit to discard local changes
+    await $`git reset --hard HEAD~1`.quiet()
+    d.info('Git state cleaned up after conflict - local commit discarded, reconciliation will retry')
+  } catch (cleanupError) {
+    d.warn('Error during git cleanup:', cleanupError?.message)
+  }
 }
 
 const commitAndPush = async (values: Record<string, any>, branch: string): Promise<void> => {
@@ -74,7 +100,7 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
         let remoteBranchExists = true
         try {
           await $`git ls-remote --exit-code --heads origin ${branch}`.quiet()
-        } catch (e) {
+        } catch {
           remoteBranchExists = false
         }
         // We're not always sure that we are on the correct branch,
@@ -87,9 +113,19 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
           d.log(`Remote branch '${branch}' does not exist. Skipping pull.`)
         }
         await $`git push -u origin ${branch}`.quiet()
-      } catch (e) {
+      } catch (pullPushError) {
+        // Check if this is a merge conflict - if so, skip the commit
+        if (isConflictError(pullPushError)) {
+          d.warn(
+            'Merge conflict detected during pull/push. Cleaning up and skipping commit - reconciliation will retry.',
+          )
+          await cleanupGitState(d)
+          return // Exit successfully, letting reconciliation handle the retry
+        }
+
+        // For other errors, continue with retry logic
         const errorMsg = 'Could not pull and push. Retrying...'
-        d.error(errorMsg, e?.message?.replace(password, '****'))
+        d.error(errorMsg, pullPushError?.message?.replace(password, '****'))
         throw new Error(errorMsg)
       }
     },
@@ -130,22 +166,24 @@ export const commit = async (initialInstall: boolean, overrideArgs?: HelmArgumen
 
 export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:gitea-apl-charts`)
-  d.info('Checking if apl-charts already exists in Gitea')
+  const versions = await loadYaml(`${rootDir}/versions.yaml`, { noError: true })
+  const tag = versions?.aplCharts
+  d.info(`Checking if apl-charts tag '${tag}' already exists in Gitea`)
   const values = (await hfValues()) as Record<string, any>
   const { email, username, password } = getRepo(values)
   const workDir = '/tmp/apl-charts'
   const otomiChartsUrl = env.OTOMI_CHARTS_URL
   const giteaChartsUrl = `http://${username}:${password}@gitea-http.gitea.svc.cluster.local:3000/otomi/charts.git`
   try {
-    // Check if remote repository exists by verifying if output from git ls-remote is not empty
-    const repoExists = await $`git ls-remote ${giteaChartsUrl}`
-    if (repoExists.stdout.trim()) {
-      d.info('apl-charts repository already exists in Gitea. Skipping clone and initialization steps.')
+    // Check if the tag exists in the remote Gitea repository
+    const tagExists = await $`git ls-remote --tags ${giteaChartsUrl} refs/tags/${tag}`
+    if (tagExists.stdout.trim()) {
+      d.info(`Tag '${tag}' already exists in Gitea. Skipping clone and initialization steps.`)
       return
     }
-    d.info('Cloning apl-charts in Gitea')
-    await $`mkdir ${workDir}`
-    await $`git clone --depth 1 ${otomiChartsUrl} ${workDir}`
+    d.info(`Cloning apl-charts at tag '${tag}' from upstream`)
+    await $`mkdir -p ${workDir}`
+    await $`git clone --branch ${tag} --depth 1 ${otomiChartsUrl} ${workDir}`.quiet()
     cd(workDir)
     await $`rm -rf .git`
     await $`rm -rf deployment`
@@ -156,16 +194,18 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     await $`rm -f LICENSE`
     await $`git init`
     await setIdentity(username, email)
-    await $`git checkout -b main`
     await $`git add .`
-    await $`git commit -m "first commit"`
+    await $`git commit -m "first commit for tag ${tag}"`
+    await $`git branch -M main`
+    await $`git tag ${tag}`
     await $`git remote add origin ${giteaChartsUrl}`
     await $`git config http.sslVerify false`
-    await $`git push -u origin main`
+    await $`git push -u origin refs/heads/main`.quiet()
+    await $`git push origin refs/tags/${tag}`.quiet()
   } catch (error) {
-    d.info('CloneOtomiChartsInGitea Error ', error?.message?.replace(password, '****'))
+    d.info('cloneOtomiChartsInGitea Error ', error?.message?.replace(password, '****'))
   }
-  d.info('Cloned apl-charts in Gitea')
+  d.info(`Cloned apl-charts at tag '${tag}' in Gitea`)
 }
 
 export async function retryIsOAuth2ProxyRunning() {
