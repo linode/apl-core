@@ -1,5 +1,4 @@
-import { mkdirSync, rmdirSync } from 'fs'
-import { pathExists } from 'fs-extra'
+import { mkdirSync, rmSync, existsSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -21,12 +20,13 @@ const valuesDir = '/tmp/otomi/values'
 const d = terminal(`cmd:${cmdName}:apply-as-apps`)
 const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
-  rmdirSync(dir, { recursive: true })
+  rmSync(dir, { recursive: true, force: true })
 }
 
 const setup = (): void => {
   const argv: HelmArguments = getParsedArgs()
   cleanupHandler(() => cleanup(argv))
+  cleanup(argv)
   mkdirSync(dir, { recursive: true })
   mkdirSync(appsDir, { recursive: true })
   mkdirSync(valuesDir, { recursive: true })
@@ -155,7 +155,7 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
   const valuesPath = `${valuesDir}/${appName}.yaml`
   let values = {}
 
-  if (await pathExists(valuesPath)) values = (await loadYaml(valuesPath)) || {}
+  if (existsSync(valuesPath)) values = (await loadYaml(valuesPath)) || {}
   const manifest = getArgocdAppManifest(release, values, otomiVersion)
   await writeFile(applicationPath, objectToYaml(manifest))
 
