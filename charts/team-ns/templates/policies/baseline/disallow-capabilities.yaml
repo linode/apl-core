@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $p := index $v.policies "disallow-capabilities" }}
-{{- if and (get (index $v.apps "kyverno") "enabled") $p $p.customValues }}
+{{- if and $v.apps.kyverno.enabled $p $p.customValues }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -29,7 +29,7 @@ spec:
         all:
         - key: "{{`{{ request.operation || 'BACKGROUND' }}`}}"
           operator: NotEquals
-          value: DELETE              
+          value: DELETE
       skipBackgroundRequests: true
       validate:
         message: >-
