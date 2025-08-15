@@ -878,6 +878,13 @@ database:
   # supported fields: username, password, host, dsn, database
   mountedSecret: ""
 
+# Add this configuration section for periodic sync
+periodicSync:
+  # Enable periodic sync of policy reports
+  enabled: false
+  # Interval in minutes for periodic sync
+  interval: 30
+
 # enabled if replicaCount > 1
 podDisruptionBudget:
   # -- Configures the minimum available pods for policy-reporter disruptions.
@@ -942,7 +949,7 @@ ui:
     # -- (string) Image PullPolicy
     pullPolicy: IfNotPresent
     # -- (string) Image tag
-    tag: "2.4.1"
+    tag: "2.4.2"
 
   # -- Deployment replica count
   replicaCount: 1
