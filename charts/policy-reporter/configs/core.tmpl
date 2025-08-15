@@ -198,6 +198,11 @@ database:
   secretRef: {{ .Values.database.secretRef }}
   mountedSecret: {{ .Values.database.mountedSecret }}
 
+{{- with .Values.periodicSync }}
+periodicSync:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+
 {{- with .Values.extraConfig }}
 {{- toYaml . | nindent 0 }}
 {{- end }}
