@@ -94,7 +94,7 @@ appsInfo:
     integration: APL uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
-    appVersion: 2.13.1
+    appVersion: 2.13.2
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
@@ -202,7 +202,7 @@ appsInfo:
     chartName: knative-operator
   kyverno:
     title: Kyverno
-    appVersion: 1.11.4
+    appVersion: 1.15.0
     repo: https://github.com/kyverno/kyverno
     maintainers: Nirmata
     relatedLinks:
@@ -324,7 +324,7 @@ appsInfo:
     integration: APL installs and configures Thanos using sidecars ans leverages the central object storage configuration.
   trivy:
     title: Trivy Operator
-    appVersion: 0.57.1
+    appVersion: 0.28.0
     repo: https://github.com/aquasecurity/trivy-operator
     maintainers: Aqua Security
     relatedLinks:
