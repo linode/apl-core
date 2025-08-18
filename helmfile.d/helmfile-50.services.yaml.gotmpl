@@ -16,13 +16,6 @@ releases:
     installed: {{ $a | get "httpbin.enabled" }}
     namespace: httpbin
     <<: *default
-  - name: gitea
-    installed: {{ $a | get "gitea.enabled" }}
-    namespace: gitea
-    labels:
-      pkg: gitea
-      app: core
-    <<: *default
   - name: velero
     installed: {{ $a | get "velero.enabled" }}
     namespace: velero
@@ -46,4 +39,16 @@ releases:
     namespace: trivy-operator
     labels:
       pkg: trivy-operator
+    <<: *default
+  - name: kubeflow-pipelines-artifacts
+    installed: {{ $a | get "kubeflow-pipelines.enabled" }}
+    namespace: kfp
+    labels:
+      pkg: kubeflow-pipelines
+    <<: *raw
+  - name: kubeflow-pipelines
+    installed: {{ $a | get "kubeflow-pipelines.enabled" }}
+    namespace: kfp
+    labels:
+      pkg: kubeflow-pipelines
     <<: *default

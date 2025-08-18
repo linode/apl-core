@@ -35,6 +35,14 @@ export const cliEnvSpec = {
   GIT_URL: str({ default: 'gitea-http.gitea.svc.cluster.local' }),
   GIT_PORT: str({ default: '3000' }),
   GIT_PROTOCOL: str({ default: 'http' }),
+  APPS_REPO_URL: str({
+    desc: 'Repository to set for ArgoCD applications',
+    default: 'https://github.com/linode/apl-core.git',
+  }),
+  APPS_REVISION: str({
+    desc: 'Target revision to set for ArgoCD applications. If not set, uses the current image tag.',
+    default: undefined,
+  }),
 }
 
 export function cleanEnv<T>(spec: { [K in keyof T]: ValidatorSpec<T[K]> }, options?: CleanOptions<T>) {

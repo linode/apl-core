@@ -10,11 +10,19 @@
 {{- $ingressClasses := $ingress | get "spec.classes" list }}
 {{- $ingressClassNames := list }}{{- range $ingressClasses }}{{- $ingressClassNames = append $ingressClassNames .className }}{{- end }}
 {{- $ingressClassNames = append $ingressClassNames "platform" }}
+{{- $clusterFilePath := printf "%s/env/settings/cluster.yaml" $ENV_DIR }}
+{{ $cluster := dict }}
+{{- if (isFile $clusterFilePath) }}
+{{- $cluster = readFile $clusterFilePath | fromYaml }}
+{{- end }}
+{{ $clusterProvider := $cluster | get "spec.provider" "linode" }}
 
 environments:
   default:
     values:
     - apps:
+        kubeflow-pipelines:
+          rootPassword: {{ randAlphaNum 32 }}
         gitea:
           adminPassword: {{ randAlphaNum 20 }}
         {{- range $index,$ingressClassName := $ingressClassNames }}
@@ -269,3 +277,6 @@ environments:
         owner: customer
         name: apl
         k8sContext: customer-apl-admin
+        {{- if eq $clusterProvider "linode" }}
+        defaultStorageClass: linode-block-storage
+        {{- end }}

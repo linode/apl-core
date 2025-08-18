@@ -1,6 +1,7 @@
 import {
   AppsV1Api,
   CoreV1Api,
+  CustomObjectsApi,
   PatchStrategy,
   setHeaderOptions,
   V1Pod,
@@ -9,10 +10,31 @@ import {
   V1StatefulSet,
 } from '@kubernetes/client-node'
 import * as k8s from './k8s'
-import { deleteStatefulSetPods, patchContainerResourcesOfSts, patchStatefulSetResources } from './k8s'
+import {
+  checkArgoCDAppStatus,
+  deleteStatefulSetPods,
+  patchContainerResourcesOfSts,
+  patchStatefulSetResources,
+} from './k8s'
 import { terminal } from './debug'
+import retry from 'async-retry'
+import { env } from './envalid'
 
 jest.mock('@kubernetes/client-node')
+jest.mock('async-retry')
+jest.mock('./envalid')
+
+const mockRetry = retry as jest.MockedFunction<typeof retry>
+const mockEnv = {
+  RETRIES: 3,
+  RANDOM: true,
+  MIN_TIMEOUT: 1000,
+  FACTOR: 2,
+}
+;(env as any).RETRIES = mockEnv.RETRIES
+;(env as any).RANDOM = mockEnv.RANDOM
+;(env as any).MIN_TIMEOUT = mockEnv.MIN_TIMEOUT
+;(env as any).FACTOR = mockEnv.FACTOR
 describe('createGenericSecret', () => {
   const mockCoreV1Api = new CoreV1Api({} as any) as jest.Mocked<CoreV1Api>
 
@@ -188,8 +210,8 @@ describe('StatefulSet tests', () => {
         mockCoreApi,
         mockDebugger,
       )
-      expect(debugInfo).not.toBeCalled()
-      expect(debugError).toBeCalledTimes(2)
+      expect(debugInfo).not.toHaveBeenCalled()
+      expect(debugError).toHaveBeenCalledTimes(2)
     })
 
     it('should not patch resources if they already match', async () => {
@@ -222,7 +244,7 @@ describe('StatefulSet tests', () => {
         mockDebugger,
       )
 
-      expect(debug).toBeCalledTimes(1)
+      expect(debug).toHaveBeenCalledTimes(1)
     })
 
     it('should log an error if an exception occurs', async () => {
@@ -241,8 +263,8 @@ describe('StatefulSet tests', () => {
         mockDebugger,
       )
 
-      expect(debugInfo).not.toBeCalled()
-      expect(debugError).toBeCalledWith('Error patching StatefulSet argocd-application-controller:', error)
+      expect(debugInfo).not.toHaveBeenCalled()
+      expect(debugError).toHaveBeenCalledWith('Error patching StatefulSet argocd-application-controller:', error)
     })
   })
 
@@ -345,5 +367,181 @@ describe('StatefulSet tests', () => {
         new Error(`No pods found for StatefulSet my-sts`),
       )
     })
+  })
+})
+
+describe('ArgoCD Application Tests', () => {
+  const mockCustomApi = new CustomObjectsApi({} as any) as jest.Mocked<CustomObjectsApi>
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  describe('checkArgoCDAppStatus', () => {
+    it('should return status when sync status matches expected', async () => {
+      const mockApplication = {
+        status: {
+          sync: {
+            status: 'Synced',
+          },
+        },
+      }
+      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
+
+      const result = await checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')
+
+      expect(result).toBe('Synced')
+      expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
+        group: 'argoproj.io',
+        version: 'v1alpha1',
+        namespace: 'argocd',
+        plural: 'applications',
+        name: 'test-app',
+      })
+    })
+
+    it('should return status when health status matches expected', async () => {
+      const mockApplication = {
+        status: {
+          health: {
+            status: 'Healthy',
+          },
+        },
+      }
+      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
+
+      const result = await checkArgoCDAppStatus('test-app', mockCustomApi, 'health', 'Healthy')
+
+      expect(result).toBe('Healthy')
+    })
+
+    it('should throw error when sync status does not match expected', async () => {
+      const mockApplication = {
+        status: {
+          sync: {
+            status: 'OutOfSync',
+          },
+        },
+      }
+      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
+
+      await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')).rejects.toThrow(
+        "Application test-app sync status is 'OutOfSync', expected 'Synced'",
+      )
+    })
+
+    it('should throw error when health status does not match expected', async () => {
+      const mockApplication = {
+        status: {
+          health: {
+            status: 'Degraded',
+          },
+        },
+      }
+      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
+
+      await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'health', 'Healthy')).rejects.toThrow(
+        "Application test-app health status is 'Degraded', expected 'Healthy'",
+      )
+    })
+
+    it('should handle missing status fields', async () => {
+      const mockApplication = {
+        status: {},
+      }
+      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
+
+      await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')).rejects.toThrow(
+        "Application test-app sync status is 'undefined', expected 'Synced'",
+      )
+    })
+
+    it('should propagate API errors', async () => {
+      const apiError = new Error('API call failed')
+      mockCustomApi.getNamespacedCustomObject.mockRejectedValue(apiError)
+
+      await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')).rejects.toThrow('API call failed')
+    })
+  })
+})
+
+describe('restartOtomiApiDeployment', () => {
+  let mockAppApi: jest.Mocked<AppsV1Api>
+
+  beforeEach(() => {
+    mockAppApi = {
+      patchNamespacedDeployment: jest.fn(),
+    } as unknown as jest.Mocked<AppsV1Api>
+
+    jest.clearAllMocks()
+  })
+
+  it('should successfully restart otomi-api deployment', async () => {
+    mockAppApi.patchNamespacedDeployment.mockResolvedValue({} as any)
+
+    await k8s.restartOtomiApiDeployment(mockAppApi)
+
+    expect(mockAppApi.patchNamespacedDeployment).toHaveBeenCalledWith(
+      {
+        name: 'otomi-api',
+        namespace: 'otomi',
+        body: {
+          spec: {
+            template: {
+              metadata: {
+                annotations: {
+                  'kubectl.kubernetes.io/restartedAt': expect.any(String),
+                },
+              },
+            },
+          },
+        },
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+    )
+  })
+
+  it('should use valid ISO timestamp for restartedAt annotation', async () => {
+    mockAppApi.patchNamespacedDeployment.mockResolvedValue({} as any)
+
+    const startTime = new Date()
+    await k8s.restartOtomiApiDeployment(mockAppApi)
+    const endTime = new Date()
+
+    const call = mockAppApi.patchNamespacedDeployment.mock.calls[0]
+    const restartedAt = call[0].body.spec.template.metadata.annotations['kubectl.kubernetes.io/restartedAt']
+    const restartedAtTime = new Date(restartedAt)
+
+    expect(restartedAtTime).toBeInstanceOf(Date)
+    expect(restartedAtTime.getTime()).toBeGreaterThanOrEqual(startTime.getTime())
+    expect(restartedAtTime.getTime()).toBeLessThanOrEqual(endTime.getTime())
+  })
+
+  it('should throw error when API call fails', async () => {
+    const apiError = new Error('Deployment not found')
+    mockAppApi.patchNamespacedDeployment.mockRejectedValue(apiError)
+
+    await expect(k8s.restartOtomiApiDeployment(mockAppApi)).rejects.toThrow('Deployment not found')
+
+    expect(mockAppApi.patchNamespacedDeployment).toHaveBeenCalledTimes(1)
+  })
+
+  it('should use correct deployment name and namespace', async () => {
+    mockAppApi.patchNamespacedDeployment.mockResolvedValue({} as any)
+
+    await k8s.restartOtomiApiDeployment(mockAppApi)
+
+    const call = mockAppApi.patchNamespacedDeployment.mock.calls[0]
+    expect(call[0].name).toBe('otomi-api')
+    expect(call[0].namespace).toBe('otomi')
+  })
+
+  it('should use strategic merge patch headers', async () => {
+    mockAppApi.patchNamespacedDeployment.mockResolvedValue({} as any)
+
+    await k8s.restartOtomiApiDeployment(mockAppApi)
+
+    const call = mockAppApi.patchNamespacedDeployment.mock.calls[0]
+    expect(call[1]).toEqual(setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch))
   })
 })

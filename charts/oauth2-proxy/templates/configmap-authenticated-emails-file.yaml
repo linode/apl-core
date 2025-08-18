@@ -6,9 +6,9 @@ metadata:
   labels:
     app: {{ template "oauth2-proxy.name" . }}
 {{- include "oauth2-proxy.labels" . | indent 4 }}
-{{- if .Values.authenticatedEmailsFile.annotations }}
+{{- with .Values.authenticatedEmailsFile.annotations }}
   annotations:
-{{ toYaml .Values.authenticatedEmailsFile.annotations | indent 4 }}
+{{ tpl ( toYaml . ) $ | indent 4 }}
 {{- end }}
   name: {{ template "oauth2-proxy.fullname" . }}-accesslist
   namespace: {{ template "oauth2-proxy.namespace" $ }}

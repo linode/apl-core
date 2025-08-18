@@ -7,6 +7,9 @@ import { ensureTeamGitOpsDirectories } from '../common/utils'
 import { env } from '../common/envalid'
 import { commit } from '../cmd/commit'
 import { HelmArguments } from '../common/yargs'
+import { hfValues } from '../common/hf'
+import { writeValues } from '../common/values'
+import { getErrorMessage } from './utils'
 
 export interface AplOperatorConfig {
   gitRepo: GitRepository
@@ -66,6 +69,10 @@ export class AplOperator {
     })
 
     try {
+      const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
+      this.d.info('Write default values to env repo')
+      await writeValues(defaultValues)
+
       if (trigger === ApplyTrigger.Poll) {
         await this.aplOps.migrate()
 
@@ -73,12 +80,10 @@ export class AplOperator {
         await this.aplOps.validateValues()
         this.d.info(`[${trigger}] Validation process completed`)
       }
-      try {
-        await ensureTeamGitOpsDirectories(env.ENV_DIR)
-        await commit(false, {} as HelmArguments) // Pass empty object to clear any stale parsed args
-      } catch (e) {
-        this.d.error(`Failed to ensure team GitOps directories: ${e}`)
-      }
+      await ensureTeamGitOpsDirectories(env.ENV_DIR)
+
+      await commit(false, {} as HelmArguments) // Pass an empty object to clear any stale parsed args
+
       if (applyTeamsOnly) {
         await this.aplOps.applyAsAppsTeams()
       } else {
@@ -93,13 +98,14 @@ export class AplOperator {
         trigger,
       })
     } catch (error) {
-      this.d.error(`[${trigger}] Apply process failed`, error)
+      const errorMessage = getErrorMessage(error)
+      this.d.error(`[${trigger}] Apply process failed`, errorMessage)
       await updateApplyState({
         commitHash,
         status: 'failed',
         timestamp: new Date().toISOString(),
         trigger,
-        errorMessage: error instanceof Error ? error.message : String(error),
+        errorMessage,
       })
     } finally {
       this.isApplying = false
@@ -116,7 +122,7 @@ export class AplOperator {
         await this.runApplyIfNotBusy(ApplyTrigger.Reconcile)
         this.d.info('Reconciliation completed')
       } catch (error) {
-        this.d.error('Error during reconciliation:', error)
+        this.d.error('Error during reconciliation:', getErrorMessage(error))
       }
 
       await this.scheduleNextAttempt(this.reconcileInterval)
@@ -143,7 +149,7 @@ export class AplOperator {
           await this.runApplyIfNotBusy(ApplyTrigger.Poll, applyTeamsOnly)
         }
       } catch (error) {
-        this.d.error('Error during git polling cycle:', error)
+        this.d.error('Error during git polling cycle:', getErrorMessage(error))
       }
 
       await this.scheduleNextAttempt(this.pollInterval)
@@ -177,14 +183,14 @@ export class AplOperator {
       this.d.info('APL operator started successfully')
     } catch (error) {
       this.isRunning = false
-      this.d.error('Failed to start APL operator:', error)
+      this.d.error('Failed to start APL operator:', getErrorMessage(error))
       throw error
     }
 
     try {
       await Promise.all([this.pollAndApplyGitChanges(), this.reconcile()])
     } catch (error) {
-      this.d.error('Error in polling or reconcile task:', error)
+      this.d.error('Error in polling or reconcile task:', getErrorMessage(error))
     }
   }
 

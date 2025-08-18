@@ -1,0 +1,43 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+{{- $h := $a.harbor }}
+{{- $k := $a.keycloak }}
+
+releases:
+  - name: gitea-db-secret-artifacts
+    installed: true
+    namespace: gitea
+    labels:
+      pkg: gitea
+      app: core
+    <<: *raw
+  - name: gitea-otomi-db
+    installed: true
+    namespace: gitea
+    labels:
+      pkg: gitea
+      app: core
+    <<: *otomiDb
+  - name: keycloak-otomi-db
+    installed: true
+    namespace: keycloak
+    labels:
+      pkg: keycloak
+      app: core
+    <<: *otomiDb
+  - name: harbor-otomi-db
+    installed: {{ ($h | get "enabled") }}
+    namespace: harbor
+    labels:
+      pkg: harbor
+    <<: *otomiDb

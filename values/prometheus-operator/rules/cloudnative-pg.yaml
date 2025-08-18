@@ -1,0 +1,170 @@
+groups:
+  - name: cloudnative-pg
+    interval: 30s
+    rules:
+      # High Availability Critical Alerts
+      - alert: CNPGClusterHACritical
+        annotations:
+          summary: CNPG Cluster has no standby replicas!
+          description: |-
+            CloudNativePG Cluster "{{ $labels.job }}" has no ready standby replicas. Your cluster at a severe
+            risk of data loss and downtime if the primary instance fails.
+
+            The primary instance is still online and able to serve queries, although connections to the `-ro` endpoint
+            will fail. The `-r` endpoint is operating at reduced capacity and all traffic is being served by the main.
+
+            This can happen during a normal fail-over or automated minor version upgrades in a cluster with 2 or less
+            instances. The replaced instance may need some time to catch-up with the cluster primary instance.
+
+            This alarm will always trigger if your cluster is configured to run with only 1 instance. In this
+            case you may want to silence it.
+          runbook_url: https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/docs/runbooks/CNPGClusterHACritical.md
+        expr: |
+          max by (job) (cnpg_pg_replication_streaming_replicas - cnpg_pg_replication_is_wal_receiver_up) < 1
+        for: 60m
+        labels:
+          severity: critical
+
+      # High Availability Warning Alerts
+      - alert: CNPGClusterHAWarning
+        annotations:
+          summary: CNPG Cluster has only one standby replica!
+          description: |-
+            CloudNativePG Cluster "{{ $labels.job }}" has only one ready standby replica. Your cluster is at
+            risk of data loss and downtime if any instance fails.
+
+            The primary instance is still online and able to serve queries. The `-ro` endpoint is operating at
+            reduced capacity because all read-only traffic is being served by a single standby.
+
+            This can happen during a normal fail-over or automated minor version upgrades in a cluster with 3 or less
+            instances. The replaced instance may need some time to catch-up with the cluster primary instance.
+          runbook_url: https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/docs/runbooks/CNPGClusterHAWarning.md
+        expr: |
+          max by (job) (cnpg_pg_replication_streaming_replicas - cnpg_pg_replication_is_wal_receiver_up) < 1
+        for: 5m
+        labels:
+          severity: warning
+
+      # Cluster Offline Alert
+      - alert: CNPGClusterOffline
+        annotations:
+          summary: CNPG Cluster is offline!
+          description: |-
+            CloudNativePG Cluster "{{ $labels.job }}" is offline. The cluster is not accepting connections
+            and is not serving queries.
+
+            This can happen due to:
+            - A split-brain scenario
+            - All instances being down
+            - Network connectivity issues
+            - Storage issues
+
+            Immediate attention is required to restore service.
+          runbook_url: https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/docs/runbooks/CNPGClusterOffline.md
+        expr: |
+          cnpg_pg_postmaster_start_time == 0
+        for: 1m
+        labels:
+          severity: critical
+
+      # High Connection Usage Alerts
+      - alert: CNPGClusterHighConnectionCritical
+        annotations:
+          summary: CNPG Cluster connection usage is critically high!
+          description: |-
+            CloudNativePG Cluster "{{ $labels.job }}" is using {{ $value | humanizePercentage }} of
+            available connections. The cluster may start rejecting new connections soon.
+
+            Consider:
+            - Increasing max_connections in PostgreSQL configuration
+            - Optimizing application connection pooling
+            - Investigating connection leaks
+          runbook_url: https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/docs/runbooks/CNPGClusterHighConnection.md
+        expr: |
+          (cnpg_pg_stat_database_numbackends / cnpg_pg_settings_max_connections) > 0.9
+        for: 5m
+        labels:
+          severity: critical
+
+      - alert: CNPGClusterHighConnectionWarning
+        annotations:
+          summary: CNPG Cluster connection usage is high!
+          description: |-
+            CloudNativePG Cluster "{{ $labels.job }}" is using {{ $value | humanizePercentage }} of
+            available connections. Monitor connection usage to prevent reaching the limit.
+          runbook_url: https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/docs/runbooks/CNPGClusterHighConnection.md
+        expr: |
+          (cnpg_pg_stat_database_numbackends / cnpg_pg_settings_max_connections) > 0.7
+        for: 5m
+        labels:
+          severity: warning
+
+      # Disk Space Alerts
+      - alert: CNPGClusterLowDiskSpaceCritical
+        annotations:
+          summary: CNPG Cluster disk space is critically low!
+          description: |-
+            CloudNativePG Cluster "{{ $labels.job }}" has only {{ $value | humanizePercentage }} disk space
+            remaining. The cluster will stop accepting writes when disk space is exhausted.
+
+            Immediate action required:
+            - Increase storage size
+            - Clean up old WAL files
+            - Investigate data growth patterns
+          runbook_url: https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/docs/runbooks/CNPGClusterLowDiskSpace.md
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/var/lib/postgresql/data"} / node_filesystem_size_bytes{mountpoint="/var/lib/postgresql/data"}) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+
+      - alert: CNPGClusterLowDiskSpaceWarning
+        annotations:
+          summary: CNPG Cluster disk space is getting low!
+          description: |-
+            CloudNativePG Cluster "{{ $labels.job }}" has {{ $value | humanizePercentage }} disk space
+            remaining. Consider increasing storage size or investigating data growth.
+          runbook_url: https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/docs/runbooks/CNPGClusterLowDiskSpace.md
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/var/lib/postgresql/data"} / node_filesystem_size_bytes{mountpoint="/var/lib/postgresql/data"}) < 0.2
+        for: 5m
+        labels:
+          severity: warning
+
+      # Replication Lag Alert
+      - alert: CNPGClusterHighReplicationLag
+        annotations:
+          summary: CNPG Cluster has high replication lag!
+          description: |-
+            CloudNativePG Cluster "{{ $labels.job }}" has replication lag of {{ $value }} seconds.
+            This may indicate network issues, resource constraints, or heavy write load.
+
+            Consider:
+            - Checking network connectivity between instances
+            - Monitoring resource usage (CPU, memory, disk I/O)
+            - Reviewing write patterns and optimizing queries
+          runbook_url: https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/docs/runbooks/CNPGClusterHighReplicationLag.md
+        expr: |
+          cnpg_pg_replication_lag > 30
+        for: 5m
+        labels:
+          severity: warning
+
+      # Instance Distribution Alerts
+      - alert: CNPGClusterInstancesOnSameNode
+        annotations:
+          summary: CNPG Cluster instances are running on the same node!
+          description: |-
+            CloudNativePG Cluster "{{ $labels.job }}" has multiple instances running on the same Kubernetes node.
+            This reduces high availability and increases risk during node failures.
+
+            Consider:
+            - Reviewing pod anti-affinity rules
+            - Ensuring adequate cluster capacity for proper distribution
+            - Checking node selectors and constraints
+          runbook_url: https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/docs/runbooks/CNPGClusterInstancesOnSameNode.md
+        expr: |
+          count by (job) (count by (job, node) (cnpg_pg_postmaster_start_time)) > 1
+        for: 5m
+        labels:
+          severity: warning

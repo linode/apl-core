@@ -5,6 +5,7 @@
 {{- $a := $apps | get "alertmanager" }}
 {{- $g := $apps | get "grafana" }}
 {{- $p := $apps | get "prometheus" }}
+{{- $pr := index $v.apps "policy-reporter" }}
 
 {{- $hasKeycloak := $k.enabled }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
@@ -57,7 +58,7 @@ prometheusOperator:
         kind: ClusterIssuer
   priorityClassName: otomi-critical
   prometheusConfigReloader:
-    resources: {{- $p.resources.prometheusConfigReloader | toYaml | nindent 6 }}    
+    resources: {{- $p.resources.prometheusConfigReloader | toYaml | nindent 6 }}
     {{- if $v.otomi.linodeLkeImageRepository }}
     image:
       registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
@@ -115,7 +116,7 @@ prometheus:
       scheme: http
       apiVersion: v2
     {{- end }}
-    {{- end }}    
+    {{- end }}
     priorityClassName: otomi-critical
     externalLabels:
       cluster: "{{ $v.cluster.domainSuffix }}"
@@ -129,6 +130,9 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
+          {{- with $v.cluster.defaultStorageClass }}
+          storageClassName: {{ . }}
+          {{- end }}
           resources:
             requests:
               storage: {{ $p | get "storageSize" }}
@@ -174,8 +178,12 @@ prometheus:
     - {{- toYaml $m | nindent 6 }}
     {{- end }}
 additionalPrometheusRules:
+  - name: argocd
+    {{- readFile "rules/argocd.yaml" | nindent 4 }}
   - name: blackbox
     {{- readFile "rules/blackbox.yaml" | nindent 4 }}
+  - name: cloudnative-pg
+    {{- readFile "rules/cloudnative-pg.yaml" | nindent 4 }}
   {{ if $v.platformBackups.database.gitea.enabled }}
   - name: gitea-db-backup
     {{- readFile "rules/gitea-db-backup.yaml" | nindent 4 }}
@@ -187,6 +195,10 @@ additionalPrometheusRules:
   {{ if $v.platformBackups.database.keycloak.enabled }}
   - name: keycloak-db-backup
     {{- readFile "rules/keycloak-db-backup.yaml" | nindent 4 }}
+  {{- end }}
+  {{- if (and $pr.enabled $v.otomi.linodeLkeImageRepository) }}
+  - name: orcs-compliance
+    {{- readFile "rules/orcs-compliance.yaml" | nindent 4 }}
   {{- end }}
 alertmanager:
   enabled: {{ $a.enabled }}
@@ -235,7 +247,7 @@ grafana:
       enabled: true
       label: release
       labelValue: grafana-dashboards
-    {{- if $apps.thanos.enabled }}  
+    {{- if $apps.thanos.enabled }}
     datasources:
       isDefaultDatasource: false
     {{- end }}
@@ -244,9 +256,7 @@ grafana:
     labels:
       prometheus: system
   testFramework:
-    enabled: false  
-  plugins:
-    - grafana-piechart-panel
+    enabled: false
   {{- if or $apps.loki.enabled $apps.thanos.enabled $apps.tempo.enabled }}
   additionalDataSources:
     {{- if $apps.loki.enabled }}

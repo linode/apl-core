@@ -1,11 +1,18 @@
 import retry, { Options } from 'async-retry'
-import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
+import { mkdirSync, rmSync, writeFileSync } from 'fs'
 import { cloneDeep } from 'lodash'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
-import { getDeploymentState, getHelmReleases, setDeploymentState } from 'src/common/k8s'
+import {
+  applyServerSide,
+  getDeploymentState,
+  getHelmReleases,
+  k8s,
+  restartOtomiApiDeployment,
+  setDeploymentState,
+} from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -22,6 +29,7 @@ import {
   retryIsOAuth2ProxyRunning,
 } from './commit'
 import { upgrade } from './upgrade'
+import { runtimeUpgrade } from '../common/runtime-upgrade'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -29,7 +37,7 @@ const templateFile = `${dir}deploy-template.yaml`
 
 const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
-  rmdirSync(dir, { recursive: true })
+  rmSync(dir, { recursive: true })
 }
 
 const setup = (): void => {
@@ -45,7 +53,10 @@ const applyAll = async () => {
   const initialInstall = !argv.tekton
   const hfArgs = initialInstall ? HF_DEFAULT_SYNC_ARGS : ['apply', '--sync-args', '--qps=20']
 
-  await upgrade({ when: 'pre' })
+  if (!initialInstall) {
+    await upgrade({ when: 'pre' })
+    await runtimeUpgrade({ when: 'pre' })
+  }
   d.info('Start apply all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTag()
@@ -69,23 +80,25 @@ const applyAll = async () => {
   writeFileSync(templateFile, templateOutput)
 
   d.info('Deploying CRDs')
-  await $`kubectl apply -f charts/kube-prometheus-stack/crds --server-side`
+  if (initialInstall) {
+    await applyServerSide('charts/kube-prometheus-stack/charts/crds/crds')
+  }
   await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
   d.info('Deploying essential manifests')
   await $`kubectl apply -f ${templateFile}`
-  d.info('Deploying charts containing label stage=prep')
-  await hf(
-    {
-      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values at this stage):
-      fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
-      labelOpts: ['stage=prep'],
-      logLevel: logLevelString(),
-      args: hfArgs,
-    },
-    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-  )
-
   if (initialInstall) {
+    d.info('Deploying charts containing label stage=prep')
+    await hf(
+      {
+        // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values at this stage):
+        fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
+        labelOpts: ['stage=prep'],
+        logLevel: logLevelString(),
+        args: hfArgs,
+      },
+      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    )
+
     // When Otomi is installed for the very first time and ArgoCD is not yet there.
     // Only install the core apps
     await hf(
@@ -107,7 +120,10 @@ const applyAll = async () => {
     await applyAsApps(params)
   }
 
-  await upgrade({ when: 'post' })
+  if (!initialInstall) {
+    await upgrade({ when: 'post' })
+    await runtimeUpgrade({ when: 'post' })
+  }
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(initialInstall)
     if (initialInstall) {
@@ -124,6 +140,7 @@ const applyAll = async () => {
       const initialData = await initialSetupData()
       await createCredentialsSecret(initialData.secretName, initialData.username, initialData.password)
       await retryIsOAuth2ProxyRunning()
+      await restartOtomiApiDeployment(k8s.app())
       await printWelcomeMessage(initialData.secretName, initialData.domainSuffix)
     }
   }
@@ -155,15 +172,19 @@ const apply = async (): Promise<void> => {
   }
   d.info('Start apply')
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
-  await hf(
-    {
-      fileOpts: argv.file,
-      labelOpts: argv.label,
-      logLevel: logLevelString(),
-      args: ['apply', '--include-needs', skipCleanup],
-    },
-    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-  )
+  if (argv.tekton) {
+    await applyAsApps(argv)
+  } else {
+    await hf(
+      {
+        fileOpts: argv.file,
+        labelOpts: argv.label,
+        logLevel: logLevelString(),
+        args: ['apply', '--include-needs', skipCleanup],
+      },
+      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    )
+  }
 }
 
 export const module: CommandModule = {

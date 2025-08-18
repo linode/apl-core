@@ -29,6 +29,8 @@ k8s:
     - name: gitea
     - name: apl-gitea-operator
       disableIstioInjection: true
+    - name: apl-operator
+      disableIstioInjection: true
     - name: grafana
       app: grafana
     - name: istio-system
@@ -60,6 +62,10 @@ k8s:
       app: knative
       disablePolicyChecks: true
       disableIstioInjection: true
+    - name: kfp
+      app: kubeflow-pipelines
+      disablePolicyChecks: true
+      disableIstioInjection: true
     - name: kured
       app: kured
       disableIstioInjection: true
@@ -71,11 +77,9 @@ k8s:
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: tekton-pipelines
-      app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: tekton-triggers
-      app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: otel
@@ -112,10 +116,10 @@ k8s:
       app: velero
       disablePolicyChecks: true
       disableIstioInjection: true
-    - name: otomi-pipelines
-      app: tekton
-      disableIstioInjection: true
+    - name: policy-reporter
+      app: policy-reporter
       disablePolicyChecks: true
+      disableIstioInjection: true
 
 adminApps:
   - name: alertmanager
@@ -268,12 +272,22 @@ adminApps:
   - name: knative
     tags: [serverless, functions]
     deps: [istio]
+  - name: kubeflow-pipelines
+    tags: [ai, ml]
+    ownHost: true
+    isShared: true
+    ingress:
+      - svc: ml-pipeline-ui
+        namespace: kfp
+        port: 80
+        type: public
+        auth: true
   - name: kured
     tags: [security]
   - name: tekton
     tags: [buildpacks, ci, pipelines]
     ownHost: true
-    path: /#/namespaces/otomi-pipelines/pipelineruns
+    path: /#/namespaces/team-admin/pipelineruns
     ingress:
       - svc: tekton-dashboard
         namespace: tekton-pipelines

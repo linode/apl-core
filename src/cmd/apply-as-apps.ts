@@ -1,5 +1,4 @@
-import { mkdirSync, rmdirSync } from 'fs'
-import { pathExists } from 'fs-extra'
+import { mkdirSync, rmSync, existsSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -12,6 +11,7 @@ import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/co
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
 import { V1ResourceRequirements } from '@kubernetes/client-node'
+import { env } from '../common/envalid'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -20,12 +20,13 @@ const valuesDir = '/tmp/otomi/values'
 const d = terminal(`cmd:${cmdName}:apply-as-apps`)
 const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
-  rmdirSync(dir, { recursive: true })
+  rmSync(dir, { recursive: true, force: true })
 }
 
 const setup = (): void => {
   const argv: HelmArguments = getParsedArgs()
   cleanupHandler(() => cleanup(argv))
+  cleanup(argv)
   mkdirSync(dir, { recursive: true })
   mkdirSync(appsDir, { recursive: true })
   mkdirSync(valuesDir, { recursive: true })
@@ -44,7 +45,7 @@ const getAppName = (release: HelmRelease): string => {
   return `${release.namespace}-${release.name}`
 }
 
-const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>, otomiVersion) => {
+const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>, otomiVersion: string) => {
   const name = getAppName(release)
   const patch = appPatches[name] || genericPatch
   return {
@@ -72,8 +73,8 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
       project: 'default',
       source: {
         path: release.chart.replace('../', ''),
-        repoURL: 'https://github.com/linode/apl-core.git',
-        targetRevision: otomiVersion,
+        repoURL: env.APPS_REPO_URL,
+        targetRevision: env.APPS_REVISION || otomiVersion,
         helm: {
           releaseName: release.name,
           values: objectToYaml(values),
@@ -154,7 +155,7 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
   const valuesPath = `${valuesDir}/${appName}.yaml`
   let values = {}
 
-  if (await pathExists(valuesPath)) values = (await loadYaml(valuesPath)) || {}
+  if (existsSync(valuesPath)) values = (await loadYaml(valuesPath)) || {}
   const manifest = getArgocdAppManifest(release, values, otomiVersion)
   await writeFile(applicationPath, objectToYaml(manifest))
 
@@ -188,6 +189,12 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   await Promise.allSettled(
     releases.map(async (release: HelmRelease) => {
       try {
+        // Skip apl-operator when NODE_ENV is development
+        if (process.env.NODE_ENV === 'development' && release.name === 'apl-operator') {
+          d.info(`Skipping apl-operator application in development mode`)
+          return
+        }
+
         if (release.installed) await writeApplicationManifest(release, otomiVersion)
         else {
           await removeApplication(release)
