@@ -16,6 +16,11 @@ global:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
   {{- end }}
   priorityClassName: otomi-critical
+  {{- if eq $v.cluster.linode.tier "enterprise" }}
+  dnsService: "coredns"
+  {{- else }}
+  dnsService: "kube-dns"
+  {{- end }}
 serviceMonitor:
   enabled: true
   labels:
@@ -55,7 +60,7 @@ loki:
       s3forcepathstyle: true
       {{- end }}
       {{- if eq $obj.type "linode" }}
-      s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $obj.linode.buckets.loki }}     
+      s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $obj.linode.buckets.loki }}
       s3forcepathstyle: true
       sse_encryption: false
       http_config:
@@ -89,7 +94,7 @@ ingester:
 
 gateway:
   {{- if $v.otomi.linodeLkeImageRepository }}
-  image: 
+  image:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
   {{- end }}
   resources: {{- $l.resources.gateway | toYaml | nindent 4 }}
