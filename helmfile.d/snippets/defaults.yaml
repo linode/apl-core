@@ -1446,6 +1446,8 @@ environments:
           provider: linode
           name: apl
           defaultStorageClass: ''
+          linode:
+            tier: standard
         dns:
           domainFilters: []
           zoneIdFilters: []
