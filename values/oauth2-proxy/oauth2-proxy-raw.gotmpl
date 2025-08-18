@@ -33,7 +33,7 @@ resources:
           set $redirect_target "";
 
           # if $request_uri starts with "/oauth2/redirect/", the $redirect_target will be set to whatever comes after that.
-          # e.g. https://auth.lkeid.akamai-apl.net/oauth2/redirect/example.com/ will set $redirect_target to https://example.com/ 
+          # e.g. https://auth.lkeid.akamai-apl.net/oauth2/redirect/example.com/ will set $redirect_target to https://example.com/
           if ($request_uri ~* ^/oauth2/redirect/(.*)) {
             set $redirect_target $1;
           }
@@ -61,21 +61,25 @@ resources:
                   number: 80
             path: /
             pathType: Prefix
-      tls: 
+      tls:
         - secretName: {{ $v._derived.tlsSecretName }}
           hosts:
             - '{{ $domain }}'
   - apiVersion: v1
     kind: ConfigMap
     metadata:
-      name: oauth2-proxy-error-page
+      name: oauth2-proxy-custom-templates
     data:
-      error.html: |
+      robots.txt: |
+        User-agent: *
+        Disallow: /
+      redirect.html: |
         <!DOCTYPE html>
         <html lang="en">
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <meta http-equiv="refresh" content="0; url={{ $consoleUrl }}">
             <title>Login Redirect</title>
             <style>
               .container {
@@ -169,8 +173,8 @@ resources:
           <body>
             <div class="container">
               <div class="content">
-                <div>You are being redirected to <strong>console</strong>...</div>
-                <div>If you don't wish to wait, <a href="{{ $consoleUrl }}">click here</a>.</div>
+                <div>You are being redirected to <strong>console</strong> for signing in...</div>
+                <div>If you are not automatically redirected, <a href="{{ $consoleUrl }}">click here</a>.</div>
               </div>
               <div class="logo">
                 <svg
@@ -203,30 +207,6 @@ resources:
               <div class="circle1"></div>
               <div class="circle2"></div>
             </div>
-            <script>
-              document.title = "Login Redirect";
-              document.body = document.createElement("body");
-              document.body.innerHTML =
-                '<div class="container">' +
-                '<div class="content">' +
-                "<div>You are being redirected to <strong>console</strong>...</div>" +
-                '<div>If you don\'t wish to wait, <a href="{{ $consoleUrl }}">click here</a>.</div>' +
-                "</div>" +
-                '<div class="logo">' +
-                '<svg viewBox="0 0 100 108" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
-                "<title>Shape</title>" +
-                '<g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">' +
-                '<g id="akamai-logo-rgb" transform="translate(0.600000, 0.700000)" fill="#009CDE" fill-rule="nonzero">' +
-                '<path d="M54.5,104.8 C57,105.6 56.9,107.2 54.1,107.2 C24.3,107.2 0,83.2 0,53.6 C0,24 24.2,0 54.1,0 C56.9,0 57.5,1.5 55.2,2.2 C32.8,8.6 16.4,29.2 16.4,53.6 C16.4,77.7 32.4,98.1 54.5,104.8 M26.6,66.1 C26.5,64.7 26.4,63.2 26.4,61.7 C26.4,38.2 45.5,19.1 69,19.1 C91.2,19.1 97.9,29 98.7,28.4 C99.6,27.7 90.6,8 64.5,8 C41,8 21.9,27.1 21.9,50.6 C21.9,56 22.9,61.2 24.8,66 C25.6,68 26.8,68.1 26.6,66.1 M44.5,35.4 C55.6,30.6 69.5,30.4 83.1,35.2 C92.3,38.4 97.6,43 98,42.8 C98.7,42.5 92.7,32.9 81.7,28.7 C68.4,23.7 54.2,26.3 43.8,34.5 C42.7,35.4 43.1,36 44.5,35.4" id="Shape"/>' +
-                "</g>" +
-                "</g>" +
-                "</svg>" +
-                "</div>" +
-                '<div class="circle1"></div>' +
-                '<div class="circle2"></div>' +
-                "</div>";
-                window.location.href = "{{ $consoleUrl }}";
-            </script>
           </body>
         </html>
 

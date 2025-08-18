@@ -1,0 +1,67 @@
+{{- $v := .Values }}
+{{- $kfp := index $v.apps "kubeflow-pipelines" }}
+{{- $obj := $v.obj.provider }}
+{{- $lb := index $obj.linode.buckets "kubeflow-pipelines" }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+global:
+  kubeflowRegistry: "{{ $v.otomi.linodeLkeImageRepository }}/ghcr/kubeflow"
+  mlPipelineRegistry: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/ml-pipeline"
+  tfxOssPublicRegistry: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/tfx-oss-public"
+{{- end }}
+
+objectStorage:
+{{- if eq $obj.type "minioLocal" }}
+  endpoint: minio.minio.svc.cluster.local:9000
+  bucket: "kubeflow-pipelines"
+  region: us-east-1
+{{- end }}
+{{- if eq $obj.type "linode" }}
+  endpoint: {{ $obj.linode.region }}.linodeobjects.com
+  bucket: {{ $lb }}
+  region: {{ $obj.linode.region }}
+{{- end }}
+
+cacheDeployer:
+  resources: {{- $kfp.resources.cacheDeployer | toYaml | nindent 4 }}
+
+cacheServer:
+  resources: {{- $kfp.resources.cacheServer | toYaml | nindent 4 }}
+
+metadataEnvoy:
+  resources: {{- $kfp.resources.metadataEnvoy | toYaml | nindent 4 }}
+
+metadataGrpc:
+  resources: {{- $kfp.resources.metadataGrpc | toYaml | nindent 4 }}
+
+metadataWriter:
+  resources: {{- $kfp.resources.metadataWriter | toYaml | nindent 4 }}
+
+mlPipeline:
+  resources: {{- $kfp.resources.mlPipeline | toYaml | nindent 4 }}
+
+mlPipelinePersistenceagent:
+  resources: {{- $kfp.resources.mlPipelinePersistenceagent | toYaml | nindent 4 }}
+
+mlPipelineScheduledworkflow:
+  resources: {{- $kfp.resources.mlPipelineScheduledworkflow | toYaml | nindent 4 }}
+
+mlPipelineUi:
+  resources: {{- $kfp.resources.mlPipelineUi | toYaml | nindent 4 }}
+
+mlPipelineViewer:
+  resources: {{- $kfp.resources.mlPipelineViewer | toYaml | nindent 4 }}
+
+mlPipelineVisualizationserver:
+  resources: {{- $kfp.resources.mlPipelineVisualizationserver | toYaml | nindent 4 }}
+
+mysql:
+  resources: {{- $kfp.resources.mysql | toYaml | nindent 4 }}
+  storage:
+    size: {{ $kfp | get "persistence.mysql.size" "20Gi" }}
+    storageClass: {{ $v.cluster.defaultStorageClass }}
+    accessModes:
+      - ReadWriteOnce
+
+workflowController:
+  resources: {{- $kfp.resources.workflowController | toYaml | nindent 4 }}

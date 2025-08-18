@@ -24,7 +24,16 @@ check_redis() {
 # For parsing and checking connections
 parse_and_check() {
     url=$1
-    clean_url=${url#redis://}
+
+    # Strip either redis:// or rediss://
+    if [[ $url == rediss://* ]]; then
+        clean_url=${url#rediss://}
+        echo "Using secure Rediss connection..."
+    else
+        clean_url=${url#redis://}
+        echo "Using standard Redis connection..."
+    fi
+
     host=$(echo $clean_url | cut -d':' -f1)
     port=$(echo $clean_url | cut -d':' -f2)
     check_redis $host $port

@@ -1,6 +1,8 @@
 import { OtomiDebugger } from '../debug'
-import { k8s, restartOtomiApiDeployment } from '../k8s'
+import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
+import { getParsedArgs } from '../yargs'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
+import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -44,6 +46,30 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           } catch (error) {
             context.debug.error('Failed to check and restart outdated Istio sidecars:', error)
           }
+        },
+      },
+    },
+  },
+  {
+    version: '4.8.0',
+    pre: async (context: RuntimeUpgradeContext) => {
+      const path = 'charts/kube-prometheus-stack/charts/crds/crds'
+      context.debug.info(`Applying CRDs at ${path}`)
+      try {
+        const parsedArgs = getParsedArgs()
+        await applyServerSide(path, true, (parsedArgs?.dryRun || parsedArgs?.local) as boolean)
+      } catch (error) {
+        context.debug.error('Failed to apply CRDs:', error)
+      }
+      await upgradeKnativeServing(context)
+    },
+  },
+  {
+    version: '4.11.0',
+    applications: {
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
     },

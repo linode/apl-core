@@ -3,7 +3,7 @@
 {{- $k := $v.apps.keycloak }}
 {{- $minioDomain := printf "minio.%s" $v.cluster.domainSuffix }}
 {{- $rootCASecretName := "root-ca" }}
-{{- $bucketNames := list "cnpg" "gitea" "harbor" "loki" "tempo" "velero" "thanos" -}}
+{{- $bucketNames := list "cnpg" "gitea" "harbor" "loki" "tempo" "velero" "thanos" "kubeflow-pipelines" -}}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 global:
@@ -58,6 +58,7 @@ extraVolumeMounts:
 persistence:
   enabled: {{ $m.persistence.enabled}}
   size: {{ $m.persistence.size }}
+  storageClass: {{ $v.cluster.defaultStorageClass }}
 resources: {{- $m.resources | toYaml | nindent 2 }}
 provisioning:
   enabled: {{ $m.provisioning.enabled }}

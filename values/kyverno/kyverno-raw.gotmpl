@@ -32,7 +32,6 @@ resources:
               - tekton-triggers
               - tekton-pipelines-resolvers
               - thanos
-              - otomi-pipelines
               - otomi-operator
               - maintenance
               - external-secrets
@@ -61,21 +60,53 @@ resources:
                 {{- range $key, $val := . }}
                 {{ $key }}: {{ $val }}
                 {{- end }}
-      - name: otomi-taskrun-node-selector
+{{- end }}
+{{- if $v.otomi.linodeLkeImageRepository }}
+{{- if not $v.otomi.nodeSelector }}
+resources:
+{{- end }}
+  - apiVersion: kyverno.io/v1
+    kind: ClusterPolicy
+    metadata:
+      name: orcs-compliance-cluster
+      annotations:
+        policies.kyverno.io/title: ORCS Registry Compliance (Cluster-wide)
+        policies.kyverno.io/category: supply-chain-security
+        policies.kyverno.io/severity: high
+        policies.kyverno.io/subject: Pod
+        policies.kyverno.io/description: >-
+          Enforces OCI Registry Cache Service (ORCS) compliance across all namespaces
+          by ensuring all container images are pulled through the designated ORCS registry
+          for supply chain security and vulnerability management.
+        pod-policies.kyverno.io/autogen-controllers: "none"
+    spec:
+      validationFailureAction: Audit
+      background: true
+      failurePolicy: Fail
+      rules:
+      - name: validate-orcs-registry-cluster
         match:
           any:
           - resources:
               kinds:
-              - TaskRun
+              - Pod
+        exclude:
+          any:
+          # Exclude team namespaces (they have their own ORCS policies)
+          - resources:
               namespaces:
-              - otomi-pipelines
-        mutate:
-          patchStrategicMerge:
-            spec:
-              podTemplate:
-                nodeSelector:
-                  {{- range $key, $val := . }}
-                  {{ $key }}: {{ $val }}
-                  {{- end }}
+              - "team-*"
+              - "kube-system"
+        skipBackgroundRequests: false
+        validate:
+          foreach:
+          - list: request.object.spec.[containers, initContainers, ephemeralContainers][]
+            deny:
+              conditions:
+                all:
+                # Require images to come from ORCS registry
+                - key: "{{`{{ element.image }}`}}"
+                  operator: NotEquals
+                  value: "{{ $v.otomi.linodeLkeImageRepository }}/*"
+
 {{- end }}
-app.kubernetes.io/instance: loki

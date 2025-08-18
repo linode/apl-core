@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels: {{- include "kfp.labels" . | nindent 4 }}
+    app: cache-server
+    application-crd-id: kubeflow-pipelines
+  name: cache-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cache-server
+      application-crd-id: kubeflow-pipelines
+  template:
+    metadata:
+      labels: {{- include "kfp.labels" . | nindent 8 }}
+        app: cache-server
+        application-crd-id: kubeflow-pipelines
+    spec:
+      containers:
+      - args:
+        - --db_driver=$(DBCONFIG_DRIVER)
+        - --db_host=$(DBCONFIG_HOST_NAME)
+        - --db_port=$(DBCONFIG_PORT)
+        - --db_name=$(DBCONFIG_DB_NAME)
+        - --db_user=$(DBCONFIG_USER)
+        - --db_password=$(DBCONFIG_PASSWORD)
+        - --namespace_to_watch=$(NAMESPACE_TO_WATCH)
+        - --listen_port=$(WEBHOOK_PORT)
+        env:
+        - name: DEFAULT_CACHE_STALENESS
+          valueFrom:
+            configMapKeyRef:
+              key: DEFAULT_CACHE_STALENESS
+              name: pipeline-install-config
+        - name: MAXIMUM_CACHE_STALENESS
+          valueFrom:
+            configMapKeyRef:
+              key: MAXIMUM_CACHE_STALENESS
+              name: pipeline-install-config
+        - name: CACHE_IMAGE
+          valueFrom:
+            configMapKeyRef:
+              key: cacheImage
+              name: pipeline-install-config
+        - name: CACHE_NODE_RESTRICTIONS
+          valueFrom:
+            configMapKeyRef:
+              key: cacheNodeRestrictions
+              name: pipeline-install-config
+        - name: DBCONFIG_DRIVER
+          value: mysql
+        - name: DBCONFIG_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              key: cacheDb
+              name: pipeline-install-config
+        - name: DBCONFIG_HOST_NAME
+          valueFrom:
+            configMapKeyRef:
+              key: mysqlHost
+              name: pipeline-install-config
+        - name: DBCONFIG_PORT
+          valueFrom:
+            configMapKeyRef:
+              key: mysqlPort
+              name: pipeline-install-config
+        - name: DBCONFIG_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: kfp-mysql-secret
+        - name: DBCONFIG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: kfp-mysql-secret
+        - name: NAMESPACE_TO_WATCH
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: WEBHOOK_PORT
+          value: "8443"
+        image: {{ include "kubeflowRegistry" . }}/kfp-cache-server:{{ .Chart.AppVersion }}
+        imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
+        name: server
+        {{- with .Values.cacheServer.resources }}
+        resources: {{- . | toYaml | nindent 12 }}
+        {{- end }}
+        ports:
+        - containerPort: 8443
+          name: webhook-api
+        volumeMounts:
+        - mountPath: /etc/webhook/certs
+          name: webhook-tls-certs
+          readOnly: true
+      serviceAccountName: kubeflow-pipelines-cache
+      volumes:
+      - name: webhook-tls-certs
+        secret:
+          secretName: webhook-server-tls
+---

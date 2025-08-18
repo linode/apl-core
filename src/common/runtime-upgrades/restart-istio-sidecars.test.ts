@@ -1,8 +1,10 @@
 import { CoreV1Api, V1OwnerReference } from '@kubernetes/client-node'
 import {
+  deletePod,
   detectAndRestartOutdatedIstioSidecars,
   getDeploymentNameFromReplicaSet,
   getIstioVersionFromDeployment,
+  isPodManagedByTekton,
   restartCluster,
   restartDeployment,
   restartPodOwner,
@@ -474,6 +476,164 @@ describe('restartDeployment', () => {
   })
 })
 
+describe('isPodManagedByTekton', () => {
+  it('should return true for pods managed by EventListener', () => {
+    const pod = {
+      metadata: {
+        labels: {
+          'app.kubernetes.io/managed-by': 'EventListener',
+        },
+      },
+    }
+
+    expect(isPodManagedByTekton(pod)).toBe(true)
+  })
+
+  it('should return true for pods with eventlistener label', () => {
+    const pod = {
+      metadata: {
+        labels: {
+          eventlistener: 'gitea-webhook-main',
+        },
+      },
+    }
+
+    expect(isPodManagedByTekton(pod)).toBe(true)
+  })
+
+  it('should return true for pods part of Triggers', () => {
+    const pod = {
+      metadata: {
+        labels: {
+          'app.kubernetes.io/part-of': 'Triggers',
+        },
+      },
+    }
+
+    expect(isPodManagedByTekton(pod)).toBe(true)
+  })
+
+  it('should return false for pods not managed by Tekton', () => {
+    const pod = {
+      metadata: {
+        labels: {
+          'app.kubernetes.io/managed-by': 'Deployment',
+          'app.kubernetes.io/part-of': 'SomeOtherApp',
+        },
+      },
+    }
+
+    expect(isPodManagedByTekton(pod)).toBe(false)
+  })
+
+  it('should return false for pods without labels', () => {
+    const pod = {
+      metadata: {},
+    }
+
+    expect(isPodManagedByTekton(pod)).toBe(false)
+  })
+
+  it('should return false for pods without metadata', () => {
+    const pod = {}
+
+    expect(isPodManagedByTekton(pod)).toBe(false)
+  })
+})
+
+describe('deletePod', () => {
+  let mockD: any
+  let mockCoreApi: any
+
+  beforeEach(() => {
+    mockD = {
+      info: jest.fn(),
+    }
+    mockCoreApi = {
+      deleteNamespacedPod: jest.fn().mockResolvedValue({}),
+    }
+    ;(k8s.core as jest.Mock).mockReturnValue(mockCoreApi)
+    jest.clearAllMocks()
+  })
+
+  it('should delete pod when not in dry run mode', async () => {
+    const mockParsedArgs = { dryRun: false, local: false }
+    const pod = {
+      metadata: {
+        name: 'test-pod',
+        namespace: 'test-namespace',
+      },
+    }
+
+    await deletePod(pod, mockD, mockParsedArgs)
+
+    expect(mockD.info).toHaveBeenCalledWith('Deleting pod test-namespace/test-pod to refresh Istio sidecar')
+    expect(mockD.info).toHaveBeenCalledWith('Successfully deleted pod test-pod')
+    expect(mockCoreApi.deleteNamespacedPod).toHaveBeenCalledWith({
+      name: 'test-pod',
+      namespace: 'test-namespace',
+    })
+  })
+
+  it('should not delete pod in dry run mode', async () => {
+    const mockParsedArgs = { dryRun: true, local: false }
+    const pod = {
+      metadata: {
+        name: 'test-pod',
+        namespace: 'test-namespace',
+      },
+    }
+
+    await deletePod(pod, mockD, mockParsedArgs)
+
+    expect(mockD.info).toHaveBeenCalledWith('Dry run mode - would delete pod test-namespace/test-pod')
+    expect(mockCoreApi.deleteNamespacedPod).not.toHaveBeenCalled()
+  })
+
+  it('should not delete pod in local mode', async () => {
+    const mockParsedArgs = { dryRun: false, local: true }
+    const pod = {
+      metadata: {
+        name: 'test-pod',
+        namespace: 'test-namespace',
+      },
+    }
+
+    await deletePod(pod, mockD, mockParsedArgs)
+
+    expect(mockD.info).toHaveBeenCalledWith('Dry run mode - would delete pod test-namespace/test-pod')
+    expect(mockCoreApi.deleteNamespacedPod).not.toHaveBeenCalled()
+  })
+
+  it('should handle pods without name gracefully', async () => {
+    const mockParsedArgs = { dryRun: false, local: false }
+    const pod = {
+      metadata: {
+        namespace: 'test-namespace',
+      },
+    }
+
+    await deletePod(pod, mockD, mockParsedArgs)
+
+    expect(mockD.info).not.toHaveBeenCalled()
+    expect(mockCoreApi.deleteNamespacedPod).not.toHaveBeenCalled()
+  })
+
+  it('should handle pods without namespace gracefully', async () => {
+    const mockParsedArgs = { dryRun: false, local: false }
+    const pod = {
+      metadata: {
+        name: 'test-pod',
+      },
+    }
+
+    await deletePod(pod, mockD, mockParsedArgs)
+
+    expect(mockD.info).not.toHaveBeenCalled()
+    expect(mockCoreApi.deleteNamespacedPod).not.toHaveBeenCalled()
+  })
+})
+
 describe('restartPodOwner', () => {
   let mockRestartedDeployments: Set<string>
   let mockD: any
@@ -567,19 +727,78 @@ describe('restartPodOwner', () => {
     expect(mockD.info).toHaveBeenCalledWith('Restarting deployment test-deployment in namespace test-namespace')
   })
 
-  it('should handle pods with no owner references', async () => {
+  it('should warn about standalone pods with no owner references', async () => {
     const mockParsedArgs = { dryRun: false, local: false }
 
     mockPod = {
       metadata: {
         namespace: 'test-namespace',
+        name: 'standalone-pod',
       },
     }
 
     await restartPodOwner(mockPod, mockD, mockParsedArgs)
 
-    // No restart attempted since deployment name extraction failed
+    expect(mockD.warn).toHaveBeenCalledWith(
+      'Pod test-namespace/standalone-pod has no owner references (standalone pod). Cannot automatically restart - manual intervention required to update Istio sidecar.',
+    )
     expect(mockD.info).not.toHaveBeenCalled()
+  })
+
+  it('should warn about standalone pods with empty owner references', async () => {
+    const mockParsedArgs = { dryRun: false, local: false }
+
+    mockPod = {
+      metadata: {
+        namespace: 'test-namespace',
+        name: 'standalone-pod',
+        ownerReferences: [],
+      },
+    }
+
+    await restartPodOwner(mockPod, mockD, mockParsedArgs)
+
+    expect(mockD.warn).toHaveBeenCalledWith(
+      'Pod test-namespace/standalone-pod has no owner references (standalone pod). Cannot automatically restart - manual intervention required to update Istio sidecar.',
+    )
+    expect(mockD.info).not.toHaveBeenCalled()
+  })
+
+  it('should delete Tekton-managed pods instead of restarting deployment', async () => {
+    const mockParsedArgs = { dryRun: false, local: false }
+    const mockCoreApi = {
+      deleteNamespacedPod: jest.fn().mockResolvedValue({}),
+    }
+    ;(k8s.core as jest.Mock).mockReturnValue(mockCoreApi)
+
+    mockPod = {
+      metadata: {
+        namespace: 'team-labs',
+        name: 'el-gitea-webhook-main-abc123',
+        labels: {
+          'app.kubernetes.io/managed-by': 'EventListener',
+          eventlistener: 'gitea-webhook-main',
+        },
+        ownerReferences: [
+          {
+            kind: 'ReplicaSet',
+            name: 'el-gitea-webhook-main-abc123',
+            apiVersion: 'apps/v1',
+            uid: 'test-uid',
+          },
+        ],
+      },
+    }
+
+    await restartPodOwner(mockPod, mockD, mockParsedArgs)
+
+    expect(mockD.info).toHaveBeenCalledWith(
+      'Deleting pod team-labs/el-gitea-webhook-main-abc123 to refresh Istio sidecar',
+    )
+    expect(mockCoreApi.deleteNamespacedPod).toHaveBeenCalledWith({
+      name: 'el-gitea-webhook-main-abc123',
+      namespace: 'team-labs',
+    })
   })
 
   it('should handle pods with no metadata', async () => {

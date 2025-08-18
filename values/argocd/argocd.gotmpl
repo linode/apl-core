@@ -159,9 +159,15 @@ configs:
     resource.customizations.knownTypeFields.cert-manager.io_Certificate: |
         - field: spec.duration
           type: meta/v1/Duration
+    resource.customizations.ignoreDifferences.cert-manager.io_Certificate: |
+      jqPathExpressions:
+        - '.metadata.generation'
     resource.customizations.ignoreDifferences.apiextensions.k8s.io_CustomResourceDefinition: |
         jqPathExpressions:
           - '.metadata.annotations'
+    resource.customizations.ignoreDifferences.admissionregistration.k8s.io_ValidatingWebhookConfiguration: |
+        jqPathExpressions:
+          - '.metadata.generation'
     oidc.config: |
       name: Otomi
       issuer: {{ $v._derived.oidcBaseUrl }}

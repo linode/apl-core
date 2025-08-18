@@ -1,18 +1,18 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: Updated the Redis chart to the latest version.
+    - kind: changed
+      description: Updated the Redis chart to the latest version
       links:
         - name: Github PR
-          url: https://github.com/oauth2-proxy/manifests/pull/243
+          url: https://github.com/oauth2-proxy/manifests/pull/316
 apiVersion: v2
-appVersion: 7.7.0
+appVersion: 7.9.0
 dependencies:
 - alias: redis
   condition: redis.enabled
   name: redis
   repository: https://charts.bitnami.com/bitnami
-  version: 20.1.7
+  version: 21.2.3
 description: A reverse proxy that provides authentication with Google, Github or other
   providers
 home: https://oauth2-proxy.github.io/oauth2-proxy/
@@ -24,19 +24,16 @@ keywords:
 - google
 - github
 - redis
-kubeVersion: '>=1.9.0-0'
+kubeVersion: '>=1.16.0-0'
 maintainers:
-- email: cedric@desaintmartin.fr
-  name: desaintmartin
-- name: tlawrie
-- email: nicholas.meves@gmail.com
-  name: NickMeves
-- email: joel.speed@hotmail.co.uk
-  name: JoelSpeed
 - email: pierluigi.lenoci@gmail.com
   name: pierluigilenoci
+- email: jan@larwig.com
+  name: tuunit
+- email: joel.speed@hotmail.co.uk
+  name: JoelSpeed
 name: oauth2-proxy
 sources:
 - https://github.com/oauth2-proxy/oauth2-proxy
 - https://github.com/oauth2-proxy/manifests
-version: 7.7.24
+version: 7.12.18

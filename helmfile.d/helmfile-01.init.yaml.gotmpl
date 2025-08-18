@@ -22,7 +22,18 @@ releases:
     labels:
       pkg: kyverno
     <<: *raw
+  - name: policy-reporter
+    installed: {{ $a | get "policy-reporter.enabled" }}
+    namespace: policy-reporter
+    <<: *default
   - name: sealed-secrets
     installed: {{ $a | get "sealed-secrets.enabled" }}
     namespace: sealed-secrets
+    <<: *default
+  - name: cert-manager
+    installed: true
+    namespace: cert-manager
+    labels:
+      pkg: cert-manager
+      app: core
     <<: *default

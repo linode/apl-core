@@ -1,0 +1,112 @@
+#
+# Copyright The CloudNativePG Contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "plugin-barman-cloud.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ include "plugin-barman-cloud.fullname" . }}
+  namespace: {{ include "plugin-barman-cloud.namespace" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "plugin-barman-cloud.selectorLabels" . | nindent 6 }}
+  # RollingUpdate strategy is not supported by the operator yet, so it can only use the Recreate strategy.
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        {{- include "plugin-barman-cloud.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      containers:
+      - args:
+        - operator
+        - --server-cert=/server/tls.crt
+        - --server-key=/server/tls.key
+        - --client-cert=/client/tls.crt
+        - --server-address=:9090
+        - --leader-elect
+        - --log-level=debug
+        {{- range .Values.additionalArgs }}
+        - {{ . }}
+        {{- end }}
+        env:
+        - name: SIDECAR_IMAGE
+          valueFrom:
+            configMapKeyRef:
+              key: SIDECAR_IMAGE
+              name: plugin-barman-cloud-config
+        {{- if .Values.additionalEnv }}
+        {{- tpl (.Values.additionalEnv | toYaml) . | nindent 8 }}
+        {{- end }}
+        image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        name: barman-cloud
+        ports:
+        - containerPort: 9090
+          protocol: TCP
+        readinessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          tcpSocket:
+            port: 9090
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        securityContext:
+          {{- toYaml .Values.containerSecurityContext | nindent 10 }}
+        volumeMounts:
+        - mountPath: /server
+          name: server
+        - mountPath: /client
+          name: client
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ include "plugin-barman-cloud.serviceAccountName" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: server
+        secret:
+          secretName: barman-cloud-server-tls
+      - name: client
+        secret:
+          secretName: barman-cloud-client-tls

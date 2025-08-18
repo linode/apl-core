@@ -1,7 +1,8 @@
+import { ApiException } from '@kubernetes/client-node'
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
-import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
-import { mkdir, readFile, writeFile } from 'fs/promises'
+import { existsSync, renameSync, rmSync, writeFileSync } from 'fs'
+import { cp, mkdir, readFile, rename as fsRename, writeFile } from 'fs/promises'
 import { glob, globSync } from 'glob'
 import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
 import { basename, dirname, join } from 'path'
@@ -19,7 +20,6 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { k8s } from '../common/k8s'
-import { ApiException } from '@kubernetes/client-node'
 
 const cmdName = getFilename(__filename)
 
@@ -62,16 +62,16 @@ export type Changes = Array<Change>
 export const deleteFile = async (
   relativeFilePath: string,
   dryRun = false,
-  deps = { pathExists, renameSync, terminal, copy, rm },
+  deps = { existsSync, renameSync, terminal, rmSync },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:rename`)
   const path = `${env.ENV_DIR}/${relativeFilePath}`
-  if (!(await deps.pathExists(path))) {
+  if (!deps.existsSync(path)) {
     d.warn(`File does not exist: "${path}". Already removed?`)
     return
   }
   if (!dryRun) {
-    await deps.rm(path)
+    deps.rmSync(path)
   }
 }
 
@@ -79,10 +79,10 @@ export const rename = async (
   oldName: string,
   newName: string,
   dryRun = false,
-  deps = { pathExists, renameSync, terminal, move, copy, rm },
+  deps = { pathExists: existsSync, renameSync, terminal, move: fsRename, cp, rmSync },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:rename`)
-  if (!(await deps.pathExists(`${env.ENV_DIR}/${oldName}`))) {
+  if (!deps.pathExists(`${env.ENV_DIR}/${oldName}`)) {
     d.warn(`File does not exist: "${env.ENV_DIR}/${oldName}". Already renamed?`)
     return
   }
@@ -92,7 +92,7 @@ export const rename = async (
   if (oldName.includes('.yaml') && !oldName.includes('secrets.')) {
     const lastSlashPosOld = oldName.lastIndexOf('/') + 1
     const tmpOld = `${oldName.substring(0, lastSlashPosOld)}secrets.${oldName.substring(lastSlashPosOld)}`
-    if (await deps.pathExists(`${env.ENV_DIR}/${secretsCompanionOld}`)) {
+    if (deps.pathExists(`${env.ENV_DIR}/${secretsCompanionOld}`)) {
       secretsCompanionOld = tmpOld
       const lastSlashPosNew = oldName.lastIndexOf('/') + 1
       secretsCompanionNew = `${newName.substring(0, lastSlashPosNew)}secrets.${newName.substring(lastSlashPosNew)}`
@@ -105,16 +105,16 @@ export const rename = async (
       if (secretsCompanionOld) {
         // we also rename the secret companion
         await deps.move(`${env.ENV_DIR}/${secretsCompanionOld}`, `${env.ENV_DIR}/${secretsCompanionNew}`)
-        if (await deps.pathExists(`${env.ENV_DIR}/${secretsCompanionOld}.dec`))
+        if (deps.pathExists(`${env.ENV_DIR}/${secretsCompanionOld}.dec`))
           // and remove the old decrypted file
-          await deps.rm(`${env.ENV_DIR}/${secretsCompanionOld}.dec`)
+          deps.rmSync(`${env.ENV_DIR}/${secretsCompanionOld}.dec`)
       }
     } catch (e) {
       if (e.message === 'dest already exists.') {
         // we were given a folder that already exists, which is allowed,
         // so we defer to copying the contents and remove the source
-        await deps.copy(`${env.ENV_DIR}/${oldName}`, `${env.ENV_DIR}/${newName}`, { preserveTimestamps: true })
-        await deps.rm(`${env.ENV_DIR}/${oldName}`, { recursive: true, force: true })
+        await deps.cp(`${env.ENV_DIR}/${oldName}`, `${env.ENV_DIR}/${newName}`, { preserveTimestamps: true })
+        deps.rmSync(`${env.ENV_DIR}/${oldName}`, { recursive: true, force: true })
       }
     }
   }
@@ -274,7 +274,7 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
           servicePermissions.filter((s: any) => s !== 'networkPolicy'),
         )
 
-      createFileSync(`${env.ENV_DIR}/env/teams/netpols.${teamName}.yaml`)
+      writeFileSync(`${env.ENV_DIR}/env/teams/netpols.${teamName}.yaml`, '')
       let services = get(values, `teamConfig.${teamName}.services`)
       if (!services || services.length === 0) return
       const valuesToWrite = {
@@ -650,7 +650,7 @@ export const applyChanges = async (
   for (const c of changes) {
     c.renamings?.forEach((entry) => each(entry, async (newName, oldName) => deps.rename(oldName, newName, dryRun)))
     // same for any new file additions
-    c.fileAdditions?.forEach((path) => createFileSync(`${env.ENV_DIR}/${path}`))
+    c.fileAdditions?.forEach((path) => writeFileSync(`${env.ENV_DIR}/${path}`, ''))
   }
   // only then can we get the values and do mutations on them
   const prevValues = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
@@ -879,7 +879,7 @@ export const migrate = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
   d.log('Migrating values')
-  if (await pathExists(`${env.ENV_DIR}/env/settings.yaml`)) {
+  if (existsSync(`${env.ENV_DIR}/env/settings.yaml`)) {
     d.log('Detected the old values file structure')
     await migrateLegacyValues(env.ENV_DIR)
   }
