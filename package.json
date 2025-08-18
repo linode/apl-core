@@ -173,5 +173,5 @@
     "bootstrap-tests-fixtures": "CI=1 ENV_DIR=$PWD/tests/fixtures binzx/otomi bootstrap"
   },
   "type": "commonjs",
-  "version": "4.8.0"
+  "version": "4.9.0"
 }
