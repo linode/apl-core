@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels: {{- include "kfp.labels" . | nindent 4 }}
+    application-crd-id: kubeflow-pipelines
+    component: metadata-grpc-server
+  name: metadata-grpc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      application-crd-id: kubeflow-pipelines
+      component: metadata-grpc-server
+  template:
+    metadata:
+      labels: {{- include "kfp.labels" . | nindent 8 }}
+        application-crd-id: kubeflow-pipelines
+        component: metadata-grpc-server
+    spec:
+      containers:
+      - args:
+        - --grpc_port=8080
+        - --mysql_config_database=$(MYSQL_DATABASE)
+        - --mysql_config_host=$(MYSQL_HOST)
+        - --mysql_config_port=$(MYSQL_PORT)
+        - --mysql_config_user=$(DBCONFIG_USER)
+        - --mysql_config_password=$(DBCONFIG_PASSWORD)
+        - --enable_database_upgrade=true
+        command:
+        - /bin/metadata_store_server
+        env:
+        - name: DBCONFIG_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: kfp-mysql-secret
+        - name: DBCONFIG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: kfp-mysql-secret
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              key: mlmdDb
+              name: pipeline-install-config
+        - name: MYSQL_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: mysqlHost
+              name: pipeline-install-config
+        - name: MYSQL_PORT
+          valueFrom:
+            configMapKeyRef:
+              key: mysqlPort
+              name: pipeline-install-config
+        image: {{ include "tfxOssPublicRegistry" . }}/ml_metadata_store_server:1.14.0
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
+        name: container
+        {{- with .Values.metadataGrpc.resources }}
+        resources: {{- . | toYaml | nindent 12 }}
+        {{- end }}
+        ports:
+        - containerPort: 8080
+          name: grpc-api
+        readinessProbe:
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          tcpSocket:
+            port: grpc-api
+          timeoutSeconds: 2
+        livenessProbe:
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          tcpSocket:
+            port: grpc-api
+          timeoutSeconds: 2
+      serviceAccountName: metadata-grpc-server
+---

@@ -32,6 +32,20 @@ async function writeYamlFile(fileName, data) {
   await fs.writeFile(fileName, yamlContent, 'utf8')
 }
 
+async function renderKyvernoCrdTemplates(chartDir) {
+  console.log(`Rendering templates from ${chartDir}`)
+  const crdPath = `${chartDir}/crds`
+  const tempPath = await $`mktemp -d`
+  await $`helm template --output-dir ${tempPath} ${chartDir}`
+  console.log(`Adding templates in ${crdPath}`)
+  await $`mv ${tempPath}/kyverno/charts/crds/templates ${crdPath}`
+  await $`rm -R ${tempPath}`
+}
+
+const CHART_POST_FUNCS = {
+  kyverno: renderKyvernoCrdTemplates,
+}
+
 async function main() {
   config()
   const env = envalid.cleanEnv(process.env, {
@@ -169,18 +183,24 @@ async function main() {
         await $`mkdir -p ${tempDir}`
         await $`helm pull ${dependency.name}/${dependency.name} --version ${latestVersion} --destination ${tempDir}`
 
+        const postFunc = CHART_POST_FUNCS[chartName]
         if (dependency.alias) {
           await $`rm -R ${chartsDir}/${dependency.alias}`
           await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${tempDir}`
+          if (postFunc) {
+            await func(`${tempDir}/${dependency.name}`)
+          }
           await $`mv ${tempDir}/${dependency.name} ${chartsDir}/${dependency.alias}`
         } else {
           await $`rm -R ${chartsDir}/${dependency.name}`
           await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${chartsDir}`
+          if (postFunc) {
+            await func(`${chartsDir}/${dependency.name}`)
+          }
         }
 
         const appInfo = chartApps[dependency.name]
-        // By default create a draft PR only if appInfo is not found for chart
-        let setPrDraft = Boolean(!appInfo)
+        let appsVersionSet = false
         if (appInfo) {
           console.log(`Chart ${dependency.name} assigned to app – looking up new version`)
           try {
@@ -191,17 +211,15 @@ async function main() {
               try {
                 await writeYamlFile(appsFile, apps)
                 await $`git add ${appsFile}`
+                appsVersionSet = true
               } catch (error) {
                 console.error(`Error updating app version for ${dependency.name}:`, error)
-                setPrDraft = true
               }
             } else {
               console.info(`Updated app version not found in chart ${dependency.name}`)
-              setPrDraft = true
             }
           } catch (error) {
             console.error(`Error checking dependency app version ${dependency.name}:`, error)
-            setPrDraft = true
           }
         } else {
           console.log(`No app found for ${dependency.name}`)
@@ -218,20 +236,23 @@ async function main() {
         }
         if (ciCreateGithubPr) {
           // Create a pull request
-          const prBody = `This PR updates the dependency **${dependency.name}** to version **${latestVersion}**.`
+          const prBody = [`This PR updates the dependency **${dependency.name}** to version **${latestVersion}**.`]
+          if (!appsVersionSet) {
+            prBody.push('TODO: Update app version in apps.yaml.')
+          }
           const args = [
             '--title',
             commitMessage,
             '--body',
-            prBody,
+            prBody.join('\n'),
             '--base',
             baseBranch,
             '--head',
             branchName,
+            '--draft',
+            '--label',
+            'chart-deps',
           ]
-          if (setPrDraft) {
-            args.push('--draft')
-          }
           await $`gh pr create ${args}`
         }
       } catch (error) {

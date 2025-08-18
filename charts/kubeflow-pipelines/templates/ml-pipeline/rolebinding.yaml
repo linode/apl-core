@@ -1,0 +1,16 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app: ml-pipeline
+    application-crd-id: kubeflow-pipelines
+  name: ml-pipeline
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ml-pipeline
+subjects:
+- kind: ServiceAccount
+  name: ml-pipeline
+  namespace: {{ .Release.Namespace }}
+---

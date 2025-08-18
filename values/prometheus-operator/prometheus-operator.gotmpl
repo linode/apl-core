@@ -5,6 +5,7 @@
 {{- $a := $apps | get "alertmanager" }}
 {{- $g := $apps | get "grafana" }}
 {{- $p := $apps | get "prometheus" }}
+{{- $pr := index $v.apps "policy-reporter" }}
 
 {{- $hasKeycloak := $k.enabled }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
@@ -129,6 +130,9 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
+          {{- with $v.cluster.defaultStorageClass }}
+          storageClassName: {{ . }}
+          {{- end }}
           resources:
             requests:
               storage: {{ $p | get "storageSize" }}
@@ -178,6 +182,8 @@ additionalPrometheusRules:
     {{- readFile "rules/argocd.yaml" | nindent 4 }}
   - name: blackbox
     {{- readFile "rules/blackbox.yaml" | nindent 4 }}
+  - name: cloudnative-pg
+    {{- readFile "rules/cloudnative-pg.yaml" | nindent 4 }}
   {{ if $v.platformBackups.database.gitea.enabled }}
   - name: gitea-db-backup
     {{- readFile "rules/gitea-db-backup.yaml" | nindent 4 }}
@@ -189,6 +195,10 @@ additionalPrometheusRules:
   {{ if $v.platformBackups.database.keycloak.enabled }}
   - name: keycloak-db-backup
     {{- readFile "rules/keycloak-db-backup.yaml" | nindent 4 }}
+  {{- end }}
+  {{- if (and $pr.enabled $v.otomi.linodeLkeImageRepository) }}
+  - name: orcs-compliance
+    {{- readFile "rules/orcs-compliance.yaml" | nindent 4 }}
   {{- end }}
 alertmanager:
   enabled: {{ $a.enabled }}
@@ -247,8 +257,6 @@ grafana:
       prometheus: system
   testFramework:
     enabled: false
-  plugins:
-    - grafana-piechart-panel
   {{- if or $apps.loki.enabled $apps.thanos.enabled $apps.tempo.enabled }}
   additionalDataSources:
     {{- if $apps.loki.enabled }}

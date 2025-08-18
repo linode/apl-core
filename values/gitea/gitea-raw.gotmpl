@@ -3,9 +3,14 @@
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $obj := $v.obj.provider }}
 {{- $giteaBackupConfig := $v.platformBackups.gitea }}
-{{- $rcloneVersion := "1.69.0" }}
-{{- $rcloneZipSha512 := "35ee43f2c52599f80fcd753f7fef3fd8ad7ddcc4d22025ab67cbcfb9cf516bb819a303f3fe9d79b38593c392fd6c4748cdbc24c87ba2a93fd42c6ebfef0908b0" }}
-{{- $rcloneBinSha512 := "cb5de4f3d5a5f03791c19fe25304eac874fa1a5db30867c1b7919bc9a99f1fb30d709b1ad16a18f5ef878952282f376b97001ba48578f2006d8a400a130ee542" }}
+{{- $rcloneVersion := "1.70.3" }}
+{{- $rcloneZipSha512 := "472165c3989671f4163242c67cdb9da4c3d3e4548cd1222015f552d6d2fda1cbd616b133ec45e78d8efb088368e18cc314bfeea764e253b6a5d6a693d67a11ef" }}
+{{- $rcloneBinSha512 := "b98a32f87cc1d0ac292829d12de45d1e827fd0a3f480d4b5a5242f1af0ecbc48e6ef6901c98f22289c77571adb4ee79e09af28750f031e8b038f55eeea40f910" }}
+{{- $kubectlTag := "v1.33.3" }}
+{{- $kubectlImage := print "registry.k8s.io/kubectl:" $kubectlTag }}
+{{- if $v.otomi.linodeLkeImageRepository }}
+{{- $kubectlImage = print $v.otomi.linodeLkeImageRepository "/k8s/kubectl:" $kubectlTag }}
+{{- end }}
 
 resources:
 {{- if $v._derived.untrustedCA }}
@@ -54,6 +59,9 @@ resources:
     resources:
       requests:
         storage: 1Gi
+    {{- if $v.cluster.defaultStorageClass }}
+    storageClassName: {{ $v.cluster.defaultStorageClass }}
+    {{- end }}
 {{- end }}
 {{- if $giteaBackupConfig.enabled }}
 - apiVersion: v1
@@ -101,13 +109,16 @@ resources:
           spec:
             serviceAccountName: gitea-backup
             containers:
-              - image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/docker/{{- end }}bitnami/kubectl:1.31"
+              - image: {{ $kubectlImage }}
                 name: kubectl
                 command:
+                  - kubectl
+                  - exec
+                  - deployments/gitea
+                  - '--'
                   - /bin/sh
                   - -ec
                   - >-
-                    kubectl exec deployments/gitea -- /bin/sh -ec "
                     echo 'Verifying Rclone...' &&
                     ( test ! -f '/backup/.bin/rclone' || echo '{{ $rcloneBinSha512 }}  /backup/.bin/rclone' | sha512sum -c - || rm '/backup/.bin/rclone' ) &&
                     if [ ! -f '/backup/.bin/rclone' ]; then
@@ -123,11 +134,11 @@ resources:
                     echo 'Creating backup...' &&
                     gitea dump --type tar.bz2 &&
                     echo 'Uploading to object storage...' &&
-                    .bin/rclone copy --exclude '\.*/**' /backup gitea:/\$BUCKET_NAME &&
+                    .bin/rclone copy --exclude '\.*/**' /backup gitea:/$BUCKET_NAME &&
                     echo 'Removing old backups from object storage...' &&
-                    .bin/rclone delete --min-age $RETENTION_TIME --exclude '\.*/**' gitea:/\$BUCKET_NAME &&
+                    .bin/rclone delete --min-age '{{ $giteaBackupConfig.retentionPolicy }}' --exclude '\.*/**' gitea:/$BUCKET_NAME &&
                     echo 'Cleaning up local backups...' &&
-                    find . -type f -iname '*.tar.bz2' -ctime +1 -delete"
+                    find . -type f -iname '*.tar.bz2' -ctime +1 -delete
                 resources:
                   limits:
                     cpu: 250m
@@ -135,9 +146,6 @@ resources:
                   requests:
                     cpu: 100m
                     memory: 128Mi
-                env:
-                  - name: RETENTION_TIME
-                    value: {{ $giteaBackupConfig.retentionPolicy }}
                 securityContext:
                   runAsNonRoot: true
                   runAsUser: 65535

@@ -1,0 +1,184 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels: {{- include "kfp.labels" . | nindent 4 }}
+    app: ml-pipeline
+    application-crd-id: kubeflow-pipelines
+  name: ml-pipeline
+spec:
+  selector:
+    matchLabels:
+      app: ml-pipeline
+      application-crd-id: kubeflow-pipelines
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels: {{- include "kfp.labels" . | nindent 8 }}
+        app: ml-pipeline
+        application-crd-id: kubeflow-pipelines
+    spec:
+      containers:
+      - env:
+        - name: LOG_LEVEL
+          value: info
+        - name: AUTO_UPDATE_PIPELINE_DEFAULT_VERSION
+          valueFrom:
+            configMapKeyRef:
+              key: autoUpdatePipelineDefaultVersion
+              name: pipeline-install-config
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: DBCONFIG_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: kfp-mysql-secret
+        - name: DBCONFIG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: kfp-mysql-secret
+        - name: DBCONFIG_DBNAME
+          valueFrom:
+            configMapKeyRef:
+              key: pipelineDb
+              name: pipeline-install-config
+        - name: DBCONFIG_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: mysqlHost
+              name: pipeline-install-config
+        - name: DBCONFIG_PORT
+          valueFrom:
+            configMapKeyRef:
+              key: mysqlPort
+              name: pipeline-install-config
+        - name: DBCONFIG_CONMAXLIFETIME
+          valueFrom:
+            configMapKeyRef:
+              key: ConMaxLifeTime
+              name: pipeline-install-config
+        - name: DB_DRIVER_NAME
+          valueFrom:
+            configMapKeyRef:
+              key: dbType
+              name: pipeline-install-config
+        - name: DBCONFIG_MYSQLCONFIG_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: kfp-mysql-secret
+        - name: DBCONFIG_MYSQLCONFIG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: kfp-mysql-secret
+        - name: DBCONFIG_MYSQLCONFIG_DBNAME
+          valueFrom:
+            configMapKeyRef:
+              key: pipelineDb
+              name: pipeline-install-config
+        - name: DBCONFIG_MYSQLCONFIG_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: mysqlHost
+              name: pipeline-install-config
+        - name: DBCONFIG_MYSQLCONFIG_PORT
+          valueFrom:
+            configMapKeyRef:
+              key: mysqlPort
+              name: pipeline-install-config
+        - name: OBJECTSTORECONFIG_ACCESSKEY
+          valueFrom:
+            secretKeyRef:
+              key: accesskey
+              name: mlpipeline-minio-artifact
+        - name: OBJECTSTORECONFIG_SECRETACCESSKEY
+          valueFrom:
+            secretKeyRef:
+              key: secretkey
+              name: mlpipeline-minio-artifact
+        - name: OBJECTSTORECONFIG_SECURE
+          value: "true"
+        - name: OBJECTSTORECONFIG_BUCKETNAME
+          valueFrom:
+            configMapKeyRef:
+              name: pipeline-install-config
+              key: bucketName
+        - name: OBJECTSTORECONFIG_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: pipeline-install-config
+              key: objHost
+        - name: OBJECTSTORECONFIG_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: pipeline-install-config
+              key: objRegion
+        - name: OBJECTSTORECONFIG_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: pipeline-install-config
+              key: objPort
+        image: {{ include "kubeflowRegistry" . }}/kfp-api-server:{{ .Chart.AppVersion }}
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          exec:
+            command:
+            - wget
+            - -q
+            - -S
+            - -O
+            - '-'
+            - http://localhost:8888/apis/v1beta1/healthz
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+        name: ml-pipeline-api-server
+        ports:
+        - containerPort: 8888
+          name: http
+        - containerPort: 8887
+          name: grpc
+        readinessProbe:
+          exec:
+            command:
+            - wget
+            - -q
+            - -S
+            - -O
+            - '-'
+            - http://localhost:8888/apis/v1beta1/healthz
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+        {{- with .Values.mlPipeline.resources }}
+        resources: {{- . | toYaml | nindent 12 }}
+        {{- end }}
+        startupProbe:
+          exec:
+            command:
+            - wget
+            - -q
+            - -S
+            - -O
+            - '-'
+            - http://localhost:8888/apis/v1beta1/healthz
+          failureThreshold: 12
+          periodSeconds: 5
+          timeoutSeconds: 2
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
+      serviceAccountName: ml-pipeline
+---

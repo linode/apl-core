@@ -30,24 +30,32 @@ spec:
   monitoring:
     enablePodMonitor: {{ . }}
   {{- end }}
+  {{- with .Values.resources }}
   resources:
-    {{- with .Values.resources }}
     {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- end }}
   {{- with .Values.clusterAffinity }}
   {{- toYaml . | nindent 2 }}
   {{- end }}
-{{- if .Values.backup.enabled }}
+
+  {{- if .Values.backup.enabled }}
+  {{- if .Values.backup.usePlugin }}
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: {{ .Values.name }}
+  {{- else }}
   env:
     # Barman object storage compatibility (https://github.com/EnterpriseDB/barman/issues/1086)
     - name: AWS_REQUEST_CHECKSUM_CALCULATION
       value: WHEN_REQUIRED
     - name: AWS_RESPONSE_CHECKSUM_VALIDATION
       value: WHEN_REQUIRED
-  {{- if eq .Values.backup.type "minioLocal" }}
   backup:
     retentionPolicy: {{ .Values.backup.retentionPolicy }}
     barmanObjectStore:
+      {{- if eq .Values.backup.type "minioLocal" }}
       destinationPath: {{ .Values.backup.minioLocal.destinationPath }}
       endpointURL: "http://minio.minio.svc.cluster.local:9000"
       s3Credentials:
@@ -57,15 +65,7 @@ spec:
         secretAccessKey:
           name: minio-creds
           key: MINIO_SECRET_KEY
-      wal:
-        compression: gzip
-      data:
-        compression: gzip
-  {{- end }}
-  {{- if eq .Values.backup.type "linode" }}
-  backup:
-    retentionPolicy: {{ .Values.backup.retentionPolicy }}
-    barmanObjectStore:
+      {{- else if eq .Values.backup.type "linode" }}
       destinationPath: {{ .Values.backup.linode.destinationPath }}
       endpointURL: {{ .Values.backup.linode.endpointURL }}
       s3Credentials:
@@ -75,12 +75,13 @@ spec:
         secretAccessKey:
           name: linode-creds
           key: S3_STORAGE_KEY
+      {{- end }}
       wal:
         compression: gzip
       data:
         compression: gzip
   {{- end }}
-{{- end }}
+  {{- end }}
 
   {{- with .Values.clusterSpec }}
   {{- toYaml . | nindent 2 }}

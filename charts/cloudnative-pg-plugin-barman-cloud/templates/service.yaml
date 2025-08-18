@@ -1,0 +1,44 @@
+#
+# Copyright The CloudNativePG Contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "plugin-barman-cloud.labels" . | nindent 4 }}
+    cnpg.io/pluginName: barman-cloud.cloudnative-pg.io
+  annotations:
+    cnpg.io/pluginClientSecret: barman-cloud-client-tls
+    cnpg.io/pluginPort: {{ .Values.service.port | quote }}
+    cnpg.io/pluginServerSecret: barman-cloud-server-tls
+  {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ .Values.service.name }}
+  namespace: {{ include "plugin-barman-cloud.namespace" . }}
+spec:
+  {{- if .Values.service.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.service.ipFamilyPolicy }}
+  {{- end }}
+  {{- if .Values.service.ipFamilies }}
+  ipFamilies: {{ .Values.service.ipFamilies | toYaml | nindent 2 }}
+  {{- end }}
+  ports:
+  - port: {{ .Values.service.port }}
+    protocol: TCP
+    targetPort: 9090
+  selector:
+    {{- include "plugin-barman-cloud.selectorLabels" . | nindent 4 }}

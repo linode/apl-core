@@ -1,6 +1,7 @@
 {{- $kms := .Values.kms | default dict }}
 {{- $imageName := .Values.imageName | default "linode/apl-core" }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
+{{- $useORCS := .Values.otomi.useORCS | default "true"}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -30,7 +31,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: install
-          {{- if .Values.otomi.useORCS }}
+          {{- if $useORCS }}
           image: "mirror.registry.linodelke.net/docker/{{ $imageName }}:{{ $version }}"
           {{- else }}
           image: "{{ $imageName }}:{{ $version }}"
@@ -50,8 +51,8 @@ spec:
           command: [bash, -c]
           args:
             - |
-              set -e
               kubectl create ns otomi &> /dev/null
+              set -e
               binzx/otomi validate-cluster && binzx/otomi bootstrap && binzx/otomi apply
 
               {{- if .Values.cleanup.enabled }}

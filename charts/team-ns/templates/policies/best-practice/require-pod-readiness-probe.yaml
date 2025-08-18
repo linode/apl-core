@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $p := index $v.policies "require-readiness-probe" }}
-{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
+{{- if and $v.apps.kyverno.enabled $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -17,7 +17,7 @@ metadata:
       lifecycle during deployments, restarts, and upgrades. A `readinessProbe` is used by Services
       and Deployments to determine if the Pod is ready to receive network traffic.
       This policy validates that all containers have a readinessProbe defined.
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}  
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   validationFailureAction: {{ $p.action }}
   background: true
@@ -40,6 +40,18 @@ spec:
         - resources:
             annotations:
               tekton.dev/tags: git
+        - resources:
+            selector:
+              matchLabels:
+                app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
+        - resources:
+            selector:
+              matchLabels:
+                app.kubernetes.io/instance: prometheus-{{ $v.teamId }}
+        - resources:
+            selector:
+              matchLabels:
+                app.kubernetes.io/instance: tekton-dashboard-{{ $v.teamId }}
     preconditions:
       all:
       - key: "{{`{{request.operation || 'BACKGROUND'}}`}}"

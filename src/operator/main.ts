@@ -7,6 +7,7 @@ import fs from 'fs'
 import path from 'path'
 import { GitRepository } from './git-repository'
 import { AplOperations } from './apl-operations'
+import { getErrorMessage } from './utils'
 
 dotenv.config()
 
@@ -83,14 +84,14 @@ async function main(): Promise<void> {
 
     await operator.start()
   } catch (error) {
-    d.error('Failed to start APL Operator:', error)
+    d.error('Failed to start APL Operator:', getErrorMessage(error))
     process.exit(1)
   }
 }
 
 if (require.main === module) {
   main().catch((error) => {
-    d.error('Unhandled error in main:', error)
+    d.error('Unhandled error in main:', getErrorMessage(error))
     process.exit(1)
   })
 }

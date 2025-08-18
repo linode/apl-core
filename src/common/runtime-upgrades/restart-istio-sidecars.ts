@@ -235,8 +235,46 @@ export async function restartDeployment(
   return deploymentName
 }
 
+export function isPodManagedByTekton(pod: V1Pod): boolean {
+  return (
+    pod.metadata?.labels?.['app.kubernetes.io/managed-by'] === 'EventListener' ||
+    pod.metadata?.labels?.['eventlistener'] !== undefined ||
+    pod.metadata?.labels?.['app.kubernetes.io/part-of'] === 'Triggers'
+  )
+}
+
+export async function deletePod(pod: V1Pod, d: OtomiDebugger, parsedArgs: any): Promise<void> {
+  if (!pod.metadata?.name || !pod.metadata?.namespace) return
+
+  if (!parsedArgs?.dryRun && !parsedArgs?.local) {
+    d.info(`Deleting pod ${pod.metadata.namespace}/${pod.metadata.name} to refresh Istio sidecar`)
+    const coreApi = k8s.core()
+    await coreApi.deleteNamespacedPod({
+      name: pod.metadata.name,
+      namespace: pod.metadata.namespace,
+    })
+    d.info(`Successfully deleted pod ${pod.metadata.name}`)
+  } else {
+    d.info(`Dry run mode - would delete pod ${pod.metadata.namespace}/${pod.metadata.name}`)
+  }
+}
+
 export async function restartPodOwner(pod: V1Pod, d: OtomiDebugger, parsedArgs: any): Promise<void> {
-  if (!pod.metadata?.ownerReferences || !pod.metadata?.namespace) return
+  if (!pod.metadata?.namespace) return
+
+  // Handle pods without owner references (standalone pods)
+  if (!pod.metadata?.ownerReferences || pod.metadata.ownerReferences.length === 0) {
+    d.warn(
+      `Pod ${pod.metadata.namespace}/${pod.metadata.name} has no owner references (standalone pod). Cannot automatically restart - manual intervention required to update Istio sidecar.`,
+    )
+    return
+  }
+
+  // For Tekton-managed pods, delete the pod instead of restarting the deployment
+  if (isPodManagedByTekton(pod)) {
+    await deletePod(pod, d, parsedArgs)
+    return
+  }
 
   for (const ownerRef of pod.metadata.ownerReferences) {
     if (!ownerRef.name) continue
