@@ -3,9 +3,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-{{- if .Values.config.annotations }}
+{{- with .Values.config.annotations }}
   annotations:
-{{ toYaml .Values.config.annotations | indent 4 }}
+{{ tpl ( toYaml . ) $ | indent 4 }}
 {{- end }}
   labels:
     app: {{ template "oauth2-proxy.name" . }}

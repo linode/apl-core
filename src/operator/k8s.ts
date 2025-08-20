@@ -1,5 +1,6 @@
 import { terminal } from '../common/debug'
 import { ApiException, CoreV1Api, KubeConfig } from '@kubernetes/client-node'
+import { getErrorMessage } from './utils'
 
 export type ApplyStatus = 'succeeded' | 'failed' | 'in-progress' | 'unknown'
 
@@ -69,8 +70,8 @@ export async function updateApplyState(
       }
     }
 
-    d.info(`Apply state updated successfully for commit ${state.commitHash}`)
+    d.info(`Apply state updated for commit ${state.commitHash}`)
   } catch (error) {
-    d.error('Failed to update apply state:', error)
+    d.error('Failed to update apply state:', getErrorMessage(error))
   }
 }

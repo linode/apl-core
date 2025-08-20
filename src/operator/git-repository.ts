@@ -1,7 +1,9 @@
 import simpleGit, { SimpleGit } from 'simple-git'
 import { OtomiDebugger, terminal } from '../common/debug'
-import retry, { Options } from 'async-retry'
+import retry from 'async-retry'
 import { OperatorError } from './errors'
+import { getErrorMessage } from './utils'
+import { env } from '../common/envalid'
 
 export interface GitRepositoryConfig {
   username: string
@@ -30,47 +32,45 @@ export class GitRepository {
     this.git = simpleGit(this.repoPath)
   }
 
-  async hasCommits(): Promise<boolean> {
+  async setLastRevision(): Promise<void> {
     try {
       const logs = await this.git.log({ maxCount: 1 })
-      return logs.latest !== undefined && logs.total > 0
+      const hasCommits = logs.latest !== undefined && logs.total > 0
+      if (hasCommits) {
+        this._lastRevision = logs.latest?.hash || ''
+      }
     } catch (error) {
-      this.d.warn('Gitea has no commits yet:', error)
+      this.d.warn('Gitea has no commits yet:', getErrorMessage(error))
       throw error
     }
   }
 
-  async waitForCommits(maxRetries = 30, interval = 10000): Promise<void> {
+  async waitForCommits(maxRetries = env.RETRIES, interval = env.MIN_TIMEOUT): Promise<void> {
     this.d.info(`Waiting for repository to have commits (max ${maxRetries} retries, ${interval}ms interval)`)
 
-    const retryOptions: Options = {
-      retries: 20,
-      maxTimeout: 30000,
-    }
     const d = terminal('common:k8s:waitTillGitRepoAvailable')
-    await retry(async () => {
-      try {
-        await this.hasCommits()
-      } catch (e) {
-        d.warn(`The values repository has no commits yet. Retrying in ${retryOptions.maxTimeout} ms`)
-        throw e
-      }
-    }, retryOptions)
+    await retry(
+      async () => {
+        try {
+          await this.git.pull('origin', 'main')
+          await this.setLastRevision()
+        } catch (e) {
+          d.warn(`The values repository has no commits yet. Retrying in ${interval} ms`)
+          throw e
+        }
+      },
+      { retries: maxRetries, randomize: env.RANDOM, minTimeout: interval, factor: env.FACTOR },
+    )
   }
 
-  async clone(): Promise<string> {
+  async clone(): Promise<void> {
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
     try {
       await this.git.clone(this.repoUrl, this.repoPath)
-
-      const logs = await this.git.log({ maxCount: 1 })
-      this._lastRevision = logs.latest?.hash || ''
-
-      this.d.info(`Repository cloned successfully, revision: ${this._lastRevision}`)
-      return this._lastRevision
+      this.d.info(`Repository cloned successfully`)
     } catch (error) {
-      this.d.error('Failed to clone repository:', error)
+      this.d.error('Failed to clone repository:', getErrorMessage(error))
       throw new OperatorError('Repository clone failed', error as Error)
     }
   }
@@ -98,10 +98,10 @@ export class GitRepository {
 
   private async pull(): Promise<string> {
     try {
-      await this.git.pull()
+      await this.git.pull('origin', 'main')
       return this.getCurrentRevision()
     } catch (error) {
-      this.d.error('Failed to pull repository:', error)
+      this.d.error('Failed to pull repository:', getErrorMessage(error))
       throw new OperatorError('Repository pull failed', error as Error)
     }
   }
@@ -154,7 +154,7 @@ export class GitRepository {
         applyTeamsOnly: onlyTeamsChanged,
       }
     } catch (error) {
-      this.d.error('Failed to analyze repository changes:', error)
+      this.d.error('Failed to analyze repository changes:', getErrorMessage(error))
       throw new OperatorError('Repository sync and analysis failed', error as Error)
     }
   }

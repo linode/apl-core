@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels: {{- include "kfp.labels" . | nindent 4 }}
+    app: ml-pipeline-scheduledworkflow
+    application-crd-id: kubeflow-pipelines
+  name: ml-pipeline-scheduledworkflow
+spec:
+  selector:
+    matchLabels:
+      app: ml-pipeline-scheduledworkflow
+      application-crd-id: kubeflow-pipelines
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels: {{- include "kfp.labels" . | nindent 8 }}
+        app: ml-pipeline-scheduledworkflow
+        application-crd-id: kubeflow-pipelines
+    spec:
+      containers:
+      - env:
+        - name: LOG_LEVEL
+          value: "info"
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: CRON_SCHEDULE_TIMEZONE
+          valueFrom:
+            configMapKeyRef:
+              key: cronScheduleTimezone
+              name: pipeline-install-config
+        image: {{ include "kubeflowRegistry" . }}/kfp-scheduled-workflow-controller:{{ .Chart.AppVersion }}
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
+        name: ml-pipeline-scheduledworkflow
+        {{- with .Values.mlPipelineScheduledworkflow.resources }}
+        resources: {{- . | toYaml | nindent 12 }}
+        {{- end }}
+      serviceAccountName: ml-pipeline-scheduledworkflow
+---

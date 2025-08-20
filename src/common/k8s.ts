@@ -21,7 +21,7 @@ import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './cons
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import { parser } from './yargs'
+import { getParsedArgs, parser } from './yargs'
 import { askYesNo } from './zx-enhance'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
@@ -458,4 +458,122 @@ export async function deleteStatefulSetPods(
   } catch (error) {
     d.error(`Failed to delete pods for StatefulSet ${statefulSetName}:`, error)
   }
+}
+
+// Core logic functions that can be easily tested
+export async function checkArgoCDAppStatus(
+  appName: string,
+  customApi: CustomObjectsApi,
+  statusPath: 'sync' | 'health',
+  expectedValue: 'Synced' | 'Healthy',
+): Promise<string> {
+  const application = await customApi.getNamespacedCustomObject({
+    group: 'argoproj.io',
+    version: 'v1alpha1',
+    namespace: 'argocd',
+    plural: 'applications',
+    name: appName,
+  })
+
+  const actualStatus = statusPath === 'sync' ? application?.status?.sync?.status : application?.status?.health?.status
+
+  if (actualStatus !== expectedValue) {
+    throw new Error(`Application ${appName} ${statusPath} status is '${actualStatus}', expected '${expectedValue}'`)
+  }
+
+  return actualStatus
+}
+
+export async function waitForArgoCDAppSync(
+  appName: string,
+  customApi: CustomObjectsApi,
+  d: OtomiDebugger,
+): Promise<void> {
+  d.info(`Waiting for ArgoCD application '${appName}' to complete sync...`)
+
+  await retry(
+    async () => {
+      try {
+        await checkArgoCDAppStatus(appName, customApi, 'sync', 'Synced')
+        d.info(`Application '${appName}' sync completed`)
+      } catch (error) {
+        d.warn(`Application '${appName}' is not synced yet: ${error.message}`)
+        throw error
+      }
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  )
+}
+
+export async function waitForArgoCDAppHealthy(
+  appName: string,
+  customApi: CustomObjectsApi,
+  d: OtomiDebugger,
+): Promise<void> {
+  d.info(`Waiting for ArgoCD application '${appName}' to be healthy...`)
+
+  await retry(
+    async () => {
+      try {
+        await checkArgoCDAppStatus(appName, customApi, 'health', 'Healthy')
+        d.info(`Application '${appName}' is healthy`)
+      } catch (error) {
+        d.warn(`Application '${appName}' is not healthy yet: ${error.message}`)
+        throw error
+      }
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  )
+}
+
+export async function restartOtomiApiDeployment(appApi: AppsV1Api): Promise<void> {
+  const d = terminal('common:k8s:restartOtomiApiDeployment')
+
+  try {
+    d.info('Restarting otomi-api deployment')
+    // This is equivalent to the 'kubectl rollout restart' command/
+    // Read more at: https://kubernetes.io/docs/reference/labels-annotations-taints/#kubectl-k8s-io-restart-at
+    await appApi.patchNamespacedDeployment(
+      {
+        name: 'otomi-api',
+        namespace: 'otomi',
+        body: {
+          spec: {
+            template: {
+              metadata: {
+                annotations: {
+                  'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+                },
+              },
+            },
+          },
+        },
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+    )
+
+    d.info('Successfully restarted otomi-api deployment')
+  } catch (error) {
+    d.error('Failed to restart otomi-api deployment:', error)
+    throw error
+  }
+}
+
+export async function applyServerSide(
+  path: string,
+  forceConflicts: boolean = false,
+  dryRun: boolean = false,
+): Promise<void> {
+  const d = terminal('common:k8s:applyServerSide')
+  d.debug(`Applying files from ${path}`)
+  const kubectlArgs = ['-f', path]
+  if (dryRun) {
+    kubectlArgs.push('--dry-run=client')
+  } else {
+    kubectlArgs.push('--server-side')
+    if (forceConflicts) {
+      kubectlArgs.push('--force-conflicts')
+    }
+  }
+  await $`kubectl apply ${kubectlArgs}`
 }

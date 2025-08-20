@@ -1,7 +1,7 @@
 import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import cleanDeep, { CleanOptions } from 'clean-deep'
 import { createHash } from 'crypto'
-import { existsSync, pathExists, readFileSync } from 'fs-extra'
+import { existsSync, readFileSync } from 'fs'
 import { readdir, readFile, writeFile } from 'fs/promises'
 import { glob } from 'glob'
 import walk from 'ignore-walk'
@@ -73,7 +73,7 @@ export const loadYaml = async (
   path: string,
   opts?: { noError: boolean },
 ): Promise<Promise<Record<string, any> | undefined>> => {
-  if (!(await pathExists(path))) {
+  if (!existsSync(path)) {
     if (opts?.noError) return undefined
     throw new Error(`${path} does not exist`)
   }
@@ -116,7 +116,7 @@ export const gucci = async (
     let processOutput: ProcessOutput
     const templateContent: string = typeof tmpl === 'string' ? tmpl : dump(tmpl, { lineWidth: -1 })
     // Cannot be a path if it wasn't a string
-    if (typeof tmpl === 'string' && (await pathExists(templateContent))) {
+    if (typeof tmpl === 'string' && existsSync(templateContent)) {
       processOutput = await $`gucci -o missingkey=zero ${gucciArgs} ${templateContent}`
     } else {
       // input string is a go template content
@@ -182,24 +182,6 @@ const isCoreCheck = (): boolean => {
 
 export const isCore: boolean = isCoreCheck()
 
-/**
- * Compare semver version strings, returning -1, 0, or 1.
- * If the semver string a is greater than b, return 1. If the semver string b is greater than a, return -1. If a equals b, return 0
- */
-export const semverCompare = (a, b) => {
-  const pa = a.split('.')
-  const pb = b.split('.')
-  for (let i = 0; i < 3; i++) {
-    const na = Number(pa[i])
-    const nb = Number(pb[i])
-    if (na > nb) return 1
-    if (nb > na) return -1
-    if (!Number.isNaN(na) && Number.isNaN(nb)) return 1
-    if (Number.isNaN(na) && !Number.isNaN(nb)) return -1
-  }
-  return 0
-}
-
 export const getSchemaSecretsPaths = async (teams: string[]): Promise<string[]> => {
   const schema: any = await getValuesSchema()
   const leaf = 'x-secret'
@@ -226,7 +208,7 @@ export const getSchemaSecretsPaths = async (teams: string[]): Promise<string[]> 
 
 async function ensureKeepFile(keepFilePath: string, deps = { writeFile }): Promise<void> {
   const dirPath = dirname(keepFilePath)
-  if (!(await pathExists(dirPath))) {
+  if (!existsSync(dirPath)) {
     await $`mkdir -p ${dirname(keepFilePath)}`
   }
   if (existsSync(keepFilePath)) return
@@ -248,7 +230,7 @@ export async function ensureTeamGitOpsDirectories(envDir: string, deps = { write
   await Promise.allSettled(
     keepFilePaths.map(async (keepFilePath) => {
       await ensureKeepFile(keepFilePath, deps)
-      if (!(await pathExists(dirname(keepFilePath)))) {
+      if (!existsSync(dirname(keepFilePath))) {
         await $`mkdir -p ${dirname(keepFilePath)}`
       }
     }),

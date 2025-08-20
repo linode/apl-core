@@ -153,6 +153,8 @@ service:
   externalTrafficPolicy: ""
   # configure internalTrafficPolicy
   internalTrafficPolicy: ""
+  # configure service target port
+  targetPort: ""
 
 ## Create or use ServiceAccount
 serviceAccount:
@@ -215,8 +217,14 @@ extraContainers: []
   #  - name: my-sidecar
   #    image: nginx:latest
 
-# The extraInitContainers is not supported by the upstream chart!
+# Additional Init containers to be added to the pod.
 extraInitContainers: []
+  #  - name: wait-for-idp
+  #    image: my-idp-wait:latest
+  #    command:
+  #    - sh
+  #    - -c
+  #    - wait-for-idp.sh
 
 priorityClassName: ""
 
@@ -285,6 +293,7 @@ podLabels: {}
 replicaCount: 1
 revisionHistoryLimit: 10
 strategy: {}
+enableServiceLinks: true
 
 ## PodDisruptionBudget settings
 ## ref: https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
@@ -364,7 +373,8 @@ sessionStorage:
     existingSecret: ""
     # Redis password value. Applicable for all Redis configurations. Taken from redis subchart secret if not set. `sessionStorage.redis.existingSecret` takes precedence
     password: ""
-    # Key of the Kubernetes secret data containing the redis password value
+    # Key of the Kubernetes secret data containing the redis password value. If you use the redis sub chart, make sure
+    # this password matches the one used in redis.global.redis.password (see below).
     passwordKey: "redis-password"
     # Can be one of standalone|cluster|sentinel
     clientType: "standalone"
@@ -372,8 +382,10 @@ sessionStorage:
       # URL of redis standalone server for redis session storage (e.g. `redis://HOST[:PORT]`). Automatically generated if not set
       connectionUrl: ""
     cluster:
-      # List of Redis cluster connection URLs (e.g. `["redis://127.0.0.1:8000", "redis://127.0.0.1:8000"]`)
+      # List of Redis cluster connection URLs. Array or single string allowed.
       connectionUrls: []
+      # - "redis://127.0.0.1:8000"
+      # - "redis://127.0.0.1:8001"
     sentinel:
       # Name of the Kubernetes secret containing the redis sentinel password value (see also `sessionStorage.redis.sentinel.passwordKey`). Default: `sessionStorage.redis.existingSecret`
       existingSecret: ""
@@ -383,8 +395,10 @@ sessionStorage:
       passwordKey: "redis-sentinel-password"
       # Redis sentinel master name
       masterName: ""
-      # List of Redis sentinel connection URLs (e.g. `["redis://127.0.0.1:8000", "redis://127.0.0.1:8000"]`)
+      # List of Redis cluster connection URLs. Array or single string allowed.
       connectionUrls: []
+      # - "redis://127.0.0.1:8000"
+      # - "redis://127.0.0.1:8001"
 
 # Enables and configure the automatic deployment of the redis subchart
 redis:
@@ -392,6 +406,11 @@ redis:
   enabled: false
   # Redis specific helm chart settings, please see:
   # https://github.com/bitnami/charts/tree/master/bitnami/redis#parameters
+  # global:
+  #   redis:
+  #     password: yourpassword
+  # If you install Redis using this sub chart, make sure that the password of the sub chart matches the password
+  # you set in sessionStorage.redis.password (see above).
   # redisPort: 6379
   # architecture: standalone
 

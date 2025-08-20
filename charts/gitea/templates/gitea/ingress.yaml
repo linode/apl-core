@@ -1,15 +1,7 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "gitea.fullname" . -}}
 {{- $httpPort := .Values.service.http.port -}}
-{{- $apiVersion := "extensions/v1beta1" -}}
-{{- if .Values.ingress.apiVersion -}}
-{{- $apiVersion = .Values.ingress.apiVersion -}}
-{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" -}}
-{{- $apiVersion = "networking.k8s.io/v1" }}
-{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1/Ingress" -}}
-{{- $apiVersion = "networking.k8s.io/v1beta1" }}
-{{- end }}
-apiVersion: {{ $apiVersion }}
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ $fullName }}
@@ -21,9 +13,7 @@ metadata:
       {{ $key }}: {{ $value | quote }}
     {{- end }}
 spec:
-{{- if .Values.ingress.className }}
   ingressClassName: {{ tpl .Values.ingress.className . }}
-{{- end }}
 {{- if .Values.ingress.tls }}
   tls:
   {{- range .Values.ingress.tls }}
@@ -39,21 +29,34 @@ spec:
     - host: {{ tpl .host $ | quote }}
       http:
         paths:
+          {{- if .paths }}
           {{- range .paths }}
-          - path: {{ .path }}
-            {{- if and .pathType (eq $apiVersion "networking.k8s.io/v1") }}
-            pathType: {{ .pathType }}
-            {{- end }}
+          {{- if kindIs "string" . }}
+          - path: {{ . }}
+            pathType: {{ default "Prefix" $.Values.ingress.pathType }}
             backend:
-            {{- if eq $apiVersion "networking.k8s.io/v1" }}
               service:
                 name: {{ $fullName }}-http
                 port:
                   number: {{ $httpPort }}
-            {{- else }}
-              serviceName: {{ $fullName }}-http
-              servicePort: {{ $httpPort }}
-            {{- end }}
+          {{- else }}
+          - path: {{ .path | default "/" }}
+            pathType: {{ .pathType | default "Prefix" }}
+            backend:
+              service:
+                name: {{ $fullName }}-http
+                port:
+                  number: {{ $httpPort }}
+          {{- end }}
+          {{- end }}
+          {{- else }}
+          - path: "/"
+            pathType: "Prefix"
+            backend:
+              service:
+                name: {{ $fullName }}-http
+                port:
+                  number: {{ $httpPort }}
           {{- end }}
     {{- end }}
 {{- end }}
