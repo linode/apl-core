@@ -1,6 +1,6 @@
 api: main
 console: main
 consoleLogin: main
-tasks: main
+tasks: openid-client-6.6.2
 tools: main
 aplCharts: main
