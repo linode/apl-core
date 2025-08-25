@@ -98,6 +98,9 @@ export class GitRepository {
 
   private async pull(): Promise<string> {
     try {
+      // to avoid re-creating deleted teams and users
+      // and to clean-up the untracked files
+      await this.git.clean('f', ['-X'])
       await this.git.pull('origin', 'main')
       return this.getCurrentRevision()
     } catch (error) {
