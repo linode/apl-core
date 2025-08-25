@@ -7,6 +7,7 @@ jest.mock('simple-git', () => {
     log: jest.fn(),
     pull: jest.fn(),
     diff: jest.fn(),
+    clean: jest.fn(),
   }
   return jest.fn().mockImplementation(() => mockGit)
 })
@@ -40,6 +41,7 @@ describe('GitRepository', () => {
 
     const simpleGit = require('simple-git')
     mockGit = simpleGit()
+    mockGit.clean.mockResolvedValue(undefined)
 
     gitRepository = new GitRepository(defaultConfig)
   })
