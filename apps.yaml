@@ -160,8 +160,8 @@ appsInfo:
       options:
         - Click 'I understand' to continue using Jaeger dashboard
   keycloak:
-    title: Keycloak Operator
-    appVersion: 26.2.4
+    title: Keycloak
+    appVersion: 26.3.2
     repo: https://github.com/keycloak/keycloak
     maintainers: Keycloak
     relatedLinks:
