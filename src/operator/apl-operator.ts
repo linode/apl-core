@@ -10,6 +10,7 @@ import { HelmArguments } from '../common/yargs'
 import { hfValues } from '../common/hf'
 import { writeValues } from '../common/values'
 import { getErrorMessage } from './utils'
+import { decrypt } from 'src/common/crypt'
 
 export interface AplOperatorConfig {
   gitRepo: GitRepository
@@ -79,6 +80,9 @@ export class AplOperator {
         this.d.info(`[${trigger}] Starting validation process`)
         await this.aplOps.validateValues()
         this.d.info(`[${trigger}] Validation process completed`)
+      }
+      if (trigger === ApplyTrigger.Reconcile) {
+        await decrypt()
       }
       await ensureTeamGitOpsDirectories(env.ENV_DIR)
 
