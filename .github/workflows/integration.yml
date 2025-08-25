@@ -107,7 +107,6 @@ env:
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
   DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
-  LINODE_API_TOKEN: ${{ secrets.LINODE_TOKEN }}
 
 jobs:
   preprocess-input:
