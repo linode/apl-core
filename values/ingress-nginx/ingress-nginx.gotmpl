@@ -18,8 +18,7 @@ controller:
     image: k8s/ingress-nginx/controller
     {{- end }}
   scope:
-    enabled: true
-    namespace: "istio-system"
+    namespaceSelector: "apl.io/ingress-controller-scope=true"
   admissionWebhooks:
     enabled: false
     patch:
