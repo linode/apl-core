@@ -13,10 +13,10 @@ controller:
     controllerValue: k8s.io/{{ $ingress.className }}
   image:
     pullPolicy:  {{ $app | get "image.pullPolicy" "IfNotPresent" }}
-{{- if $v.otomi.linodeLkeImageRepository }}
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}"
-    image: "k8s/ingress-nginx/controller"
-{{- end }}
+    {{- with $v.otomi.linodeLkeImageRepository }}
+    registry: {{ . }}
+    image: k8s/ingress-nginx/controller
+    {{- end }}
   scope:
     enabled: true
     namespace: "istio-system"
@@ -116,11 +116,11 @@ defaultBackend:
   resources: {{- $app.resources.defaultBackend | toYaml | nindent 4 }}
   service:
     omitClusterIP: true
-{{- if $v.otomi.linodeLkeImageRepository }}
+  {{- with $v.otomi.linodeLkeImageRepository }}
   image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}"
+    registry: {{ . }}
     image: k8s/defaultbackend-amd64
-{{- end }}
+  {{- end }}
 rbac:
   create: true
 
