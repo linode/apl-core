@@ -349,21 +349,25 @@ describe('AplOperator', () => {
       ;(aplOperator as any).isRunning = true
       const runApplyIfNotBusySpy = jest.spyOn(aplOperator as any, 'runApplyIfNotBusy')
 
+      // Mock scheduleNextAttempt to resolve immediately and stop the operator
+      const scheduleNextAttemptSpy = jest
+        .spyOn(aplOperator as any, 'scheduleNextAttempt')
+        .mockImplementation(async () => {
+          ;(aplOperator as any).isRunning = false
+          return Promise.resolve()
+        })
+
       const reconcilePromise = aplOperator.reconcile(1)
 
-      await Promise.resolve()
-      await Promise.resolve()
-
-      await jest.runOnlyPendingTimersAsync()
-      ;(aplOperator as any).isRunning = false
-
       await reconcilePromise
-
+      // Wait for the reconciliation to complete
+      await Promise.resolve()
+      await Promise.resolve()
       expect(runApplyIfNotBusySpy).toHaveBeenCalledWith('reconcile')
+      expect(scheduleNextAttemptSpy).toHaveBeenCalledWith(defaultConfig.reconcileIntervalMs)
 
       const logCalls = mockInfoFn.mock.calls.flat()
       expect(logCalls).toContain('Starting reconciliation loop')
-      expect(logCalls).toContain('Reconciliation triggered')
       expect(logCalls).toContain('Reconciliation triggered')
       expect(logCalls).toContain('[reconcile] Starting apply process')
       expect(logCalls).toContain('[reconcile] Apply process completed')
