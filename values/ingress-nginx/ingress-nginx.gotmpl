@@ -6,11 +6,9 @@
 nameOverride: {{ .Release.Name }}
 
 controller:
-  enableAnnotationValidations: true
   allowSnippetAnnotations: true
-  # @TODO:
   electionID: ingress-controller-leader-{{ $ingress.className }}
-  ingressClassResource: 
+  ingressClassResource:
     enabled: false
     controllerValue: k8s.io/{{ $ingress.className }}
   image:
@@ -22,23 +20,11 @@ controller:
   scope:
     enabled: true
     namespace: "istio-system"
-  containerPort:
-    http: 80
-    https: 443
   admissionWebhooks:
     enabled: false
     patch:
       priorityClassName: otomi-critical
-  useComponentLabel: true
   resources: {{- $app.resources.controller | toYaml | nindent 4 }}
-  opentelemetry:
-    enabled: {{ $app.tracing.enabled }}
-    containerSecurityContext:
-      runAsUser: 65534
-      runAsGroup: 65534
-      runAsNonRoot: true
-      allowPrivilegeEscalation: false
-    resources: {{- $app.resources.opentelemetry | toYaml | nindent 6 }}
   replicaCount: 2
   minAvailable: 1
   autoscaling:
@@ -59,8 +45,6 @@ controller:
     enable-modsecurity: {{ $app.modsecurity.enabled }}
     enable-owasp-modsecurity-crs: {{ $app.modsecurity.owasp }}
     hsts: true
-    http2-max-field-size: 64k
-    http2-max-header-size: 128k
     large-client-header-buffers: 8 16k
     {{- if $app.modsecurity.enabled }}
     modsecurity-snippet: |
@@ -121,7 +105,7 @@ controller:
       {{- range . }}
       {{ .key }}: "{{ .value }}"
       {{- end }}
-    {{- end }}   
+    {{- end }}
   publishService:
     enabled: true
 
