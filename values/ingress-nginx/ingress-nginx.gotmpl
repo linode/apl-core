@@ -34,7 +34,6 @@ controller:
     targetMemoryUtilizationPercentage: {{ $app.autoscaling.targetMemoryUtilizationPercentage }}
   priorityClassName: otomi-critical
   extraArgs:
-    v: 3
     enable-ssl-passthrough: true
   config:
     client-body-timeout: 5
