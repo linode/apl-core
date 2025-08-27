@@ -45,7 +45,7 @@ controller:
     {{- /* required for allowing snippets */}}
     annotations-risk-level: Critical
     {{- /* suggested blocks, except curly brackets and double quotes since we need those */}}
-    annotation-value-word-blocklist: "load_module,lua_package,_by_lua,location,root,proxy_pass,serviceaccount,',"
+    annotation-value-word-blocklist: "load_module,lua_package,_by_lua,location,root,proxy_pass,serviceaccount,'"
     hsts: true
     large-client-header-buffers: 8 16k
     {{- if $app.modsecurity.enabled }}
