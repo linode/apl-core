@@ -279,7 +279,19 @@ persistence:
 extraContainers: []
 #  - name: sidecar-bob
 #    image: busybox
-#    command: [/bin/sh, -c, 'echo "Hello world"; sleep 86400']
+#    command: [/bin/sh, -c, 'echo "Hello world"']
+
+## @param preExtraInitContainers Additional init containers to run in the pod before gitea runs it owns init containers.
+preExtraInitContainers: []
+# - name: pre-init-container
+#   image: docker.io/library/busybox
+#   command: [ /bin/sh, -c, 'echo "Hello world! I am a pre init container."' ]
+
+## @param postExtraInitContainers Additional init containers to run in the pod after gitea runs it owns init containers.
+postExtraInitContainers: []
+# - name: post-init-container
+#   image: docker.io/library/busybox
+#   command: [ /bin/sh, -c, 'echo "Hello world! I am a post init container."' ]
 
 ## @param extraVolumes Additional volumes to mount to the Gitea deployment
 extraVolumes: []
