@@ -6,7 +6,7 @@ version: 0.1.0
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 8.0.9
+    version: 8.3.0
     repository: https://argoproj.github.io/argo-helm
   - name: cert-manager
     version: v1.18.2
@@ -24,30 +24,30 @@ dependencies:
     version: 0.9.7
     repository: https://falcosecurity.github.io/charts
   - name: gitea
-    version: 11.0.1
+    version: 12.1.3
     repository: https://dl.gitea.io/charts
   - name: harbor
-    version: 1.17.1
+    version: 1.17.2
     repository: https://helm.goharbor.io
   - name: ingress-nginx
     version: 4.11.6
     repository: https://kubernetes.github.io/ingress-nginx
   - name: base
     alias: istio-base
-    version: 1.26.1
+    version: 1.26.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
-    version: 1.26.1
+    version: 1.26.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
-    version: 1.26.1
+    version: 1.26.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: jaeger-operator
     version: 2.46.0
     repository: https://jaegertracing.github.io/helm-charts
   - name: keycloak
-    version: 24.7.1
+    version: 24.9.0
     repository: https://charts.bitnami.com/bitnami
   - name: kiali-operator
     version: 2.14.0
@@ -62,7 +62,7 @@ dependencies:
     version: 4.6.0
     repository: https://kubereboot.github.io/charts
   - name: kyverno
-    version: 3.1.4
+    version: 3.5.0
     repository: https://kyverno.github.io/kyverno/
   - name: loki-distributed
     alias: loki
@@ -109,11 +109,11 @@ dependencies:
     version: 15.7.25
     repository: https://charts.bitnami.com/bitnami
   - name: trivy-operator
-    version: 0.25.0
+    version: 0.30.0
     repository: https://aquasecurity.github.io/helm-charts/
   - name: velero
     version: 5.4.1
     repository: https://vmware-tanzu.github.io/helm-charts/
   - name: policy-reporter
-    version: 3.3.2
+    version: 3.4.0
     repository: https://kyverno.github.io/policy-reporter

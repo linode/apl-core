@@ -134,6 +134,7 @@ environments:
               limits:
                 cpu: 100m
                 memory: 200Mi
+            useBackupPlugin: false
             _rawValues: {}
           drone:
             enabled: false
@@ -1445,6 +1446,8 @@ environments:
           provider: linode
           name: apl
           defaultStorageClass: ''
+          linode:
+            tier: standard
         dns:
           domainFilters: []
           zoneIdFilters: []

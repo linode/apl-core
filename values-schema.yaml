@@ -250,6 +250,15 @@ definitions:
         default: otomi
       provider:
         $ref: '#/definitions/provider'
+      linode:
+        additionalProperties: false
+        properties:
+          tier:
+            type: string
+            description: Linode Kubernetes Engine tier (standard LKE or enterprise LKE-E)
+            enum:
+              - standard
+              - enterprise
       defaultStorageClass:
         type: string
         description: Default storage class for platform components. Use '' for relying on the cluster's default storage class.
@@ -1683,6 +1692,10 @@ properties:
             $ref: '#/definitions/resources'
           barmanPluginResources:
             $ref: '#/definitions/resources'
+          useBackupPlugin:
+            type: boolean
+            default: false
+            description: Use CNPG plugin for platform database backups
       drone:
         additionalProperties: false
         properties:

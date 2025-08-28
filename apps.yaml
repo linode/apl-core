@@ -12,7 +12,7 @@ appsInfo:
     integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by APL to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: Argo CD
-    appVersion: 3.0.3
+    appVersion: 3.1.0
     repo: https://github.com/argoproj/argo-helm
     maintainers: Argo Project
     relatedLinks:
@@ -73,7 +73,7 @@ appsInfo:
         - Click 'I understand' to continue using Falco dashboard
   gitea:
     title: Gitea Self-hosted GIT
-    appVersion: 1.23.8
+    appVersion: 1.24.4
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
@@ -94,7 +94,7 @@ appsInfo:
     integration: APL uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
-    appVersion: 2.13.1
+    appVersion: 2.13.2
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
@@ -132,7 +132,7 @@ appsInfo:
     integration: APL integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
-    appVersion: 1.26.1
+    appVersion: 1.26.3
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -160,8 +160,8 @@ appsInfo:
       options:
         - Click 'I understand' to continue using Jaeger dashboard
   keycloak:
-    title: Keycloak Operator
-    appVersion: 26.2.4
+    title: Keycloak
+    appVersion: 26.3.2
     repo: https://github.com/keycloak/keycloak
     maintainers: Keycloak
     relatedLinks:
@@ -202,7 +202,7 @@ appsInfo:
     chartName: knative-operator
   kyverno:
     title: Kyverno
-    appVersion: 1.11.4
+    appVersion: 1.15.0
     repo: https://github.com/kyverno/kyverno
     maintainers: Nirmata
     relatedLinks:
@@ -324,7 +324,7 @@ appsInfo:
     integration: APL installs and configures Thanos using sidecars ans leverages the central object storage configuration.
   trivy:
     title: Trivy Operator
-    appVersion: 0.57.1
+    appVersion: 0.28.0
     repo: https://github.com/aquasecurity/trivy-operator
     maintainers: Aqua Security
     relatedLinks:
@@ -360,7 +360,7 @@ appsInfo:
     integration: When enabled, Velero can be used to automatically create backups of APL platform services. Based on the selected provider, APL installs required plug-ins. APL also installs the Restic integration for Velero to back up and restore almost any type of Kubernetes volume.
   policy-reporter:
     title: policy-reporter
-    appVersion: 3.3.3
+    appVersion: 3.4.0
     repo: https://github.com/kyverno/policy-reporter
     maintainers: Frank Jogeleit
     license: Apache 2.0

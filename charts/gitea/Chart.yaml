@@ -1,22 +1,32 @@
+annotations:
+  artifacthub.io/changes: |
+    - kind: changed
+      description: remove pat-s from maintainers (#918)
+    - kind: changed
+      description: step down as maintainer (#917)
+    - kind: changed
+      description: update alpine/helm docker tag to v3.18.4 (#913)
+    - kind: changed
+      description: update postgresql docker tag to v16.7.21 (#908)
 apiVersion: v2
-appVersion: 1.23.6
+appVersion: 1.24.3
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 16.4.14
+  version: 16.7.21
 - condition: postgresql-ha.enabled
   name: postgresql-ha
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 15.2.3
-- condition: redis-cluster.enabled
-  name: redis-cluster
+  version: 16.0.22
+- condition: valkey-cluster.enabled
+  name: valkey-cluster
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 11.4.3
-- condition: redis.enabled
-  name: redis
+  version: 3.0.18
+- condition: valkey.enabled
+  name: valkey
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 20.8.0
+  version: 3.0.22
 description: Gitea Helm chart for Kubernetes
 icon: https://gitea.com/assets/img/logo.svg
 keywords:
@@ -35,14 +45,10 @@ maintainers:
   name: Konrad Lother
 - email: lucas.hahn@novum-rgi.de
   name: Lucas Hahn
-- email: sk.bunsenbrenner@gmail.com
-  name: Steven Kriegler
-- email: patrick.schratz@gmail.com
-  name: Patrick Schratz
 name: gitea
 sources:
 - https://gitea.com/gitea/helm-gitea
 - https://github.com/go-gitea/gitea
 - https://docker.gitea.com/gitea
 type: application
-version: 11.0.1
+version: 12.1.3
