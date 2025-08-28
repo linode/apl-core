@@ -262,7 +262,7 @@ jobs:
             --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
       - name: Checkout
         if: ${{ inputs.install_profile != 'no-apl' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Prepare APL chart
         if: ${{ inputs.install_profile != 'no-apl' }}
         run: |
