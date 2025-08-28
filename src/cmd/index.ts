@@ -12,6 +12,7 @@ import { module as encryptModule } from './encrypt'
 import { module as filesModule } from './files'
 import { module as genDroneModule } from './gen-drone'
 import { module as hfModule } from './hf'
+import { module as installModule } from './install'
 import { module as lintModule } from './lint'
 import { module as migrateModule } from './migrate'
 import { module as playgroundModule } from './playground'
@@ -42,6 +43,7 @@ export { module as encrypt } from './encrypt'
 export { module as files } from './files'
 export { module as genDrone } from './gen-drone'
 export { module as hf } from './hf'
+export { module as install } from './install'
 export { module as lint } from './lint'
 export { module as migrate } from './migrate'
 export { module as pull } from './pull'
@@ -71,6 +73,7 @@ export const commands: CommandModule[] = [
   filesModule,
   genDroneModule,
   hfModule,
+  installModule,
   lintModule,
   migrateModule,
   playgroundModule,
