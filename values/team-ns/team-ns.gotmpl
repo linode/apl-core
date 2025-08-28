@@ -88,4 +88,4 @@ sso:
   jwksUri: "{{ $keycloakRealm }}/protocol/openid-connect/certs"
   clientId: {{ $a.keycloak.idp.clientID }}
   authUrl: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
-  signInUrl: "https://{{ $v._derived.authDomain }}/oauth2/start?rd=$http_host$escaped_request_uri"
+  signInUrl: "https://{{ $v._derived.authDomain }}/oauth2/start?rd=https://$http_host$escaped_request_uri"
