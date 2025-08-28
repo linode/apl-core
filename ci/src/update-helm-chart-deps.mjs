@@ -195,7 +195,7 @@ async function main() {
           await $`rm -R ${chartsDir}/${dependency.name}`
           await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${chartsDir}`
           if (postFunc) {
-            await func(`${chartsDir}/${dependency.name}`)
+            await postFunc(`${chartsDir}/${dependency.name}`)
           }
         }
 
