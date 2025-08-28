@@ -55,9 +55,6 @@ controller:
       # overrides for owasp go before inclusion of the defaults in nginx-modsecurity.conf
       SecRequestBodyLimit {{ $app | get "maxBodySizeBytes" "1073741824" }}
       SecRuleRemoveById 920350
-      {{- if $app.modsecurity.owasp }}
-      # Include /etc/nginx/owasp-modsecurity-crs/nginx-modsecurity.conf
-      {{- end }}
     {{- end }}
     proxy-buffers-number: 8
     proxy-buffer-size: 16k
