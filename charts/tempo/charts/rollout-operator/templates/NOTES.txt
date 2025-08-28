@@ -1,0 +1,10 @@
+Repo : {{ .Chart.Home }}
+
+Validation:
+
+Check the logs of the pod and ensure messages for reconcilliation of the statefulsets are present.
+```
+kubectl logs -n {{ .Release.Namespace }} -l {{ include "cli.labels" . }}
+```
+Example log line:
+level=debug ts=2022-04-20T13:59:52.783051541Z msg="reconciling StatefulSet" statefulset=mimir-store-gateway-zone-a

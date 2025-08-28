@@ -51,6 +51,9 @@ spec:
             {{- range $key, $value := .Values.enterpriseGateway.extraArgs }}
             - "-{{ $key }}={{ $value }}"
             {{- end }}
+            {{- range $key, $value := .Values.global.extraArgs }}
+            - "-{{ $key }}={{ $value }}"
+            {{- end }}
           volumeMounts:
             {{- if .Values.enterpriseGateway.extraVolumeMounts }}
               {{ toYaml .Values.enterpriseGateway.extraVolumeMounts | nindent 12}}
