@@ -33,7 +33,7 @@ buildStorageClassName: {{ $v._derived.buildStorageClassName }}
 apps:
   harbor:
     enabled: {{ $a.harbor.enabled }}
-  knative: 
+  knative:
     enabled: {{ $a.knative.enabled }}
   argocd:
     enabled: {{ $a.argocd.enabled }}
@@ -88,4 +88,4 @@ sso:
   jwksUri: "{{ $keycloakRealm }}/protocol/openid-connect/certs"
   clientId: {{ $a.keycloak.idp.clientID }}
   authUrl: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
-  signInUrl: "https://{{ $v._derived.authDomain }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
+  signInUrl: "https://{{ $v._derived.authDomain }}/oauth2/start?rd=$escaped_request_uri"

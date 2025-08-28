@@ -6,7 +6,6 @@
 nameOverride: {{ .Release.Name }}
 
 controller:
-  allowSnippetAnnotations: true
   electionID: ingress-controller-leader-{{ $ingress.className }}
   ingressClassResource:
     enabled: false
@@ -42,10 +41,6 @@ controller:
     disable-ipv6: true
     enable-modsecurity: {{ $app.modsecurity.enabled }}
     enable-owasp-modsecurity-crs: {{ $app.modsecurity.owasp }}
-    {{- /* required for allowing snippets */}}
-    annotations-risk-level: Critical
-    {{- /* suggested blocks, except curly brackets and double quotes since we need those */}}
-    annotation-value-word-blocklist: "load_module,lua_package,_by_lua,location,root,proxy_pass,serviceaccount,'"
     hsts: true
     large-client-header-buffers: 8 16k
     {{- if $app.modsecurity.enabled }}
