@@ -183,7 +183,7 @@ async function main() {
         await $`mkdir -p ${tempDir}`
         await $`helm pull ${dependency.name}/${dependency.name} --version ${latestVersion} --destination ${tempDir}`
 
-        const postFunc = CHART_POST_FUNCS[chartName]
+        const postFunc = CHART_POST_FUNCS[dependency.name]
         if (dependency.alias) {
           await $`rm -R ${chartsDir}/${dependency.alias}`
           await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${tempDir}`
