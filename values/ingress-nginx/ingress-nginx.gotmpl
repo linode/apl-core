@@ -46,11 +46,7 @@ controller:
     {{- if $app.modsecurity.enabled }}
     modsecurity-snippet: |
       SecRuleEngine {{ if $app.modsecurity.block }}On{{ else }}DetectionOnly{{ end }}
-      SecAuditEngine RelevantOnly
-      # SecRequestBodyAccess Off
-      SecAuditLogParts ABDEFHIJZ
       SecAuditLogFormat JSON
-      SecAuditLogType Serial
       SecAuditLog /dev/stdout
       # overrides for owasp go before inclusion of the defaults in nginx-modsecurity.conf
       SecRequestBodyLimit {{ $app | get "maxBodySizeBytes" "1073741824" }}
