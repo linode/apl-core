@@ -19,6 +19,7 @@
 # Various IDEs
 .project
 .idea/
+examples/
 *.tmproj
 .vscode/
 # Release related files
