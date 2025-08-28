@@ -199,7 +199,7 @@ async function main() {
           }
         }
 
-        const appInfo = chartApps[dependency.name]
+        const appInfo = chartApps[dependency.alias || dependency.name]
         let appsVersionSet = false
         if (appInfo) {
           console.log(`Chart ${dependency.name} assigned to app – looking up new version`)
@@ -207,6 +207,7 @@ async function main() {
             const dependencyChart = await loadYamlFile(dependencyFileName)
             const updatedAppVersion = dependencyChart?.appVersion
             if (updatedAppVersion) {
+              const previousAppVersion = appInfo.appVersion
               appInfo.appVersion = updatedAppVersion.replace(/^v/, '')
               try {
                 await writeYamlFile(appsFile, apps)
@@ -214,6 +215,9 @@ async function main() {
                 appsVersionSet = true
               } catch (error) {
                 console.error(`Error updating app version for ${dependency.name}:`, error)
+              } finally {
+                // Restore to avoid side-effect on following run
+                appInfo.appVersion = previousAppVersion
               }
             } else {
               console.info(`Updated app version not found in chart ${dependency.name}`)
