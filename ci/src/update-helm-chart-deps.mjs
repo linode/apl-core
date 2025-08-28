@@ -199,7 +199,7 @@ async function main() {
           }
         }
 
-        const appInfo = chartApps[dependency.name]
+        const appInfo = chartApps[dependency.alias || dependency.name]
         let appsVersionSet = false
         if (appInfo) {
           console.log(`Chart ${dependency.name} assigned to app – looking up new version`)
