@@ -73,7 +73,7 @@ appsInfo:
         - Click 'I understand' to continue using Falco dashboard
   gitea:
     title: Gitea Self-hosted GIT
-    appVersion: 1.24.4
+    appVersion: 1.24.5
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
@@ -292,7 +292,7 @@ appsInfo:
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
-    appVersion: 0.28.0
+    appVersion: 0.31.0
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:
