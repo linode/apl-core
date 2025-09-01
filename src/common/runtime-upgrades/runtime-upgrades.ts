@@ -1,8 +1,9 @@
-import { OtomiDebugger } from '../debug'
+import { logLevelString, OtomiDebugger } from '../debug'
 import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
 import { getParsedArgs } from '../yargs'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
+import { hf, HF_DEFAULT_SYNC_ARGS } from '../hf'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -70,6 +71,20 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       'istio-system-istiod': {
         post: async () => {
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
+      'istio-system-oauth2-proxy-artifacts': {
+        post: async (context: RuntimeUpgradeContext) => {
+          // Perform one sync as ArgoCD does not perform diffs on annotations
+          const d = context.debug
+          await hf(
+            {
+              labelOpts: ['name=oauth2-proxy-artifacts'],
+              logLevel: logLevelString(),
+              args: [...HF_DEFAULT_SYNC_ARGS, '--take-ownership'],
+            },
+            { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+          )
         },
       },
     },
