@@ -360,7 +360,7 @@ appsInfo:
     integration: When enabled, Velero can be used to automatically create backups of APL platform services. Based on the selected provider, APL installs required plug-ins. APL also installs the Restic integration for Velero to back up and restore almost any type of Kubernetes volume.
   policy-reporter:
     title: policy-reporter
-    appVersion: 3.4.0
+    appVersion: 3.4.2
     repo: https://github.com/kyverno/policy-reporter
     maintainers: Frank Jogeleit
     license: Apache 2.0
