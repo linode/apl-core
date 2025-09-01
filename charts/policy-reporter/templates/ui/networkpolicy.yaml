@@ -46,7 +46,7 @@ spec:
     - protocol: TCP
       port: {{ .Values.plugin.trivy.service.port }}
   {{- end }}
-  {{- with .Values.networkPolicy.egress }}
+  {{- with .Values.ui.networkPolicy.egress }}
     {{- toYaml . | nindent 2 }}
   {{- end }}
 {{- end }}
