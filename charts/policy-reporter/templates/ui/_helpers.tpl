@@ -42,8 +42,12 @@ helm.sh/chart: {{ include "ui.chart" . }}
 Selector labels
 */}}
 {{- define "ui.selectorLabels" -}}
+{{- if .Values.ui.selectorLabels }}
+{{- toYaml .Values.ui.selectorLabels }}
+{{- else -}}
 app.kubernetes.io/name: {{ include "ui.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
 {{- end }}
 
 {{/*
