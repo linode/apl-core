@@ -82,7 +82,7 @@ spec:
           value: ""
         - name: ARTIFACT_HUB_API
           value: https://artifacthub.io/
-        image: ghcr.io/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.3.1@sha256:625e3314b0036766b71255791dc91cc5243a880b2f1c252f81f494facf8efd61
+        image: {{ .Values.remoteresolver.deployment.image }}
         name: controller
         ports:
         - containerPort: 9090

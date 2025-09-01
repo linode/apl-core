@@ -1,30 +1,27 @@
 {{- $v := .Values }}
 {{- $t := $v.apps.tekton }}
+{{- $registry := $v.otomi.linodeLkeImageRepository | default "ghcr.io" }}
 
 controller:
   resources: {{- $t.resources.pipelinesController | toYaml | nindent 4 }}
-  {{- if $v.otomi.linodeLkeImageRepository }}
   deployment:
-    image: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/pipeline/cmd/controller:v0.53.0@sha256:9cef507c33127c488938fd6af10c0c2242b4b667732e488545338f290025fa08"
-  {{- end }}
+    image: "{{- $registry }}/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.3.1@sha256:702fca76e77ef1dc991d72b41fe7af4be00f0e0c84160060a7bdf11cd6a3429f"
 
 remoteresolver:
   resources: {{- $t.resources.pipelinesRemoteresolver | toYaml | nindent 4 }}
-  {{- if $v.otomi.linodeLkeImageRepository }}
   deployment:
-    image: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/pipeline/cmd/resolvers:v0.53.0@sha256:6445641a3ea1afa918f92ef51d18edf1bdb40c08878374db33e290221e3564e1"
-  {{- end }}
+    image: "{{- $registry }}/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.3.1@sha256:625e3314b0036766b71255791dc91cc5243a880b2f1c252f81f494facf8efd61"
 
 events:
   resources: {{- $t.resources.pipelinesEvents | toYaml | nindent 4 }}
-  {{- if $v.otomi.linodeLkeImageRepository }}
   deployment:
-    image: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/pipeline/cmd/events:v0.53.0@sha256:340e1edd0783bdb86e396ef53499f068a42da1986a1d806ab652b448869637bd"
-  {{- end }}
+    image: "{{- $registry }}/tektoncd/pipeline/events-a9042f7efb0cbade2a868a1ee5ddd52c:v1.3.1@sha256:fb7969c7f1d27ce8689b61d25b6de1976fe4b27db80e5f840eb4ed7462608de9"
 
 webhook:
   resources: {{- $t.resources.pipelinesWebhook | toYaml | nindent 4 }}
-  {{- if $v.otomi.linodeLkeImageRepository }}
   deployment:
-    image: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/pipeline/cmd/webhook:v0.53.0@sha256:da5cefe4b29a2c0904ccdae95d5bf668068c2ac1fc1618c239425fc616360568"
-  {{- end }}
+    image: "{{- $registry }}/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.3.1@sha256:dadeab6bfad0a577b74761e3bc04f9fb3a457b831f9d0cddd2cc4af1699ca42d"
+
+featureFlags:
+  running-in-environment-with-injected-sidecars: "true"
+  await-sidecar-readiness: "true"
