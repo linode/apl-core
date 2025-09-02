@@ -27,7 +27,7 @@ apl-core
 ├── docs                          # Documentation
 ├── helmfile.d/helmfile-*.yaml*   # Helmfile specs ordered by name and executed accordingly by otomi commands
 ├── helmfile.d/snippets           # Reusable code snippets
-├── helmfile.tpl                  # Additional Helmfiles that do not have corresponding chart and are not parsed on otomi apply|template command
+├── helmfile.tpl                  # Additional Helmfiles that do not have corresponding chart and are not parsed on otomi apply|install|template command
 ├── k8s                           # Kubernetes manifests that before any other chart
 ├── src                           # APL CLI source code
 ├── tests                         # Values used for testing purposes
@@ -80,7 +80,7 @@ releases:
   - <helmfile release>
 ```
 
-From the above code snippet, the `base` statements define loading and merging values from various sources. If we would execute `otomi apply|template -f helmfile.d/999-helmfile.yaml.gotmpl` then the following data flow would take place:
+From the above code snippet, the `base` statements define loading and merging values from various sources. If we would execute `otomi apply|install|template -f helmfile.d/999-helmfile.yaml.gotmpl` then the following data flow would take place:
 
 ```mermaid
 flowchart LR
@@ -130,7 +130,7 @@ The schema is also a great source of documentation as most of the defined proper
 
 # Integrating core apps
 
-In this chapter, you will learn about defining a new core app. We will also explain what happes under the hood while executing the `otomi apply|diff|template -l name=myapp` CLI command.
+In this chapter, you will learn about defining a new core app. We will also explain what happens under the hood while executing the `otomi apply|install|diff|template -l name=myapp` CLI command.
 
 After reading this chapter, you should know how to create deployable Helmfile releases.
 
@@ -420,4 +420,4 @@ Then instruct APL to not run in docker:
 export IN_DOCKER=false
 ```
 
-Next you can execute `otomi apply` or `otomi status` against your to connect with your kubernetes cluster.
+Next you can execute `otomi install` (for initial setup) or `otomi apply` (for ongoing deployments) or `otomi status` to connect with your kubernetes cluster.
