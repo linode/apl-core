@@ -2531,6 +2531,8 @@ properties:
                 $ref: '#/definitions/resources'
               tools:
                 $ref: '#/definitions/resources'
+          networkPolicies:
+            $ref: '#/definitions/appNetworkPolicyConfig'
       otomi-console:
         additionalProperties: false
         properties:
