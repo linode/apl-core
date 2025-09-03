@@ -967,6 +967,8 @@ environments:
           otomi-api:
             editorInactivityTimeout: 1
             _rawValues: {}
+            networkPolicies:
+              enabled: true
             resources:
               api:
                 limits:
