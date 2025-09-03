@@ -92,14 +92,14 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
 const setFinalizers = async (name: string) => {
   d.info(`Setting finalizers for ${name}`)
   const resPatch =
-    await $`kubectl -n argocd patch application ${name} -p '{"metadata": {"finalizers": ["resources-finalizer.argocd.argoproj.io"]}}' --type merge`
+    await $`kubectl -n argocd patch applications.argoproj.io ${name} -p '{"metadata": {"finalizers": ["resources-finalizer.argocd.argoproj.io"]}}' --type merge`
   if (resPatch.exitCode !== 0) {
     throw new Error(`Failed to set finalizers for ${name}: ${resPatch.stderr}`)
   }
 }
 
 const getFinalizers = async (name: string): Promise<string[]> => {
-  const res = await $`kubectl -n argocd get application ${name} -o jsonpath='{.metadata.finalizers}'`
+  const res = await $`kubectl -n argocd get applications.argoproj.io ${name} -o jsonpath='{.metadata.finalizers}'`
   return res.stdout ? JSON.parse(res.stdout) : []
 }
 
@@ -112,7 +112,7 @@ const removeApplication = async (release: HelmRelease): Promise<void> => {
     if (!finalizers.includes('resources-finalizer.argocd.argoproj.io')) {
       await setFinalizers(name)
     }
-    const resDelete = await $`kubectl -n argocd delete application ${name}`
+    const resDelete = await $`kubectl -n argocd delete applications.argoproj.io ${name}`
     d.info(resDelete.stdout.toString().trim())
   } catch (e) {
     d.error(`Failed to delete application ${name}: ${e.message}`)
