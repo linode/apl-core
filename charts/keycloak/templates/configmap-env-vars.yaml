@@ -87,7 +87,7 @@ data:
   KEYCLOAK_SPI_TRUSTSTORE_FILE: {{ printf "/opt/bitnami/keycloak/spi-certs/%s" .Values.spi.truststoreFilename }}
   {{- end }}
   {{- if .Values.cache.enabled }}
-  KC_CACHE_TYPE: "ispn"
+  KC_CACHE: "ispn"
   {{- if .Values.cache.stack }}
   KC_CACHE_STACK: {{ .Values.cache.stack | quote }}
   {{- end }}
@@ -100,7 +100,7 @@ data:
   JAVA_OPTS_APPEND: {{ printf "-Djgroups.dns.query=%s-headless.%s.svc.%s" (include "common.names.fullname" .) (include "common.names.namespace" .) .Values.clusterDomain | quote }}
   {{- end }}
   {{- else }}
-  KC_CACHE_TYPE: "local"
+  KC_CACHE: "local"
   {{- end }}
   {{- if .Values.logging }}
   KEYCLOAK_LOG_OUTPUT: {{ .Values.logging.output | quote }}
