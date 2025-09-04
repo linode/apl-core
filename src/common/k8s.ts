@@ -526,6 +526,44 @@ export async function waitForArgoCDAppHealthy(
   )
 }
 
+export async function ensureAplOperatorRevision(
+  expectedRevision: string,
+  valuesCallback: () => Promise<string>,
+  customApi: CustomObjectsApi,
+  d: OtomiDebugger,
+) {
+  d.info('Checking running revision of apl-operator...')
+  const application = await customApi.getNamespacedCustomObject({
+    group: 'argoproj.io',
+    version: 'v1alpha1',
+    namespace: 'argocd',
+    plural: 'applications',
+    name: 'apl-operator-apl-operator',
+  })
+  if (process.env.NODE_ENV !== 'development' && application?.status?.sync?.status !== 'Synced') {
+    throw new Error('apl-operator is not yet in Synced state')
+  }
+  const targetRevision = application?.spec?.source?.targetRevision
+  const needsUpdate = targetRevision !== expectedRevision
+  if (needsUpdate) {
+    d.info('Updating ArgoCD application for apl-operator...')
+
+    const values = await valuesCallback()
+    await customApi.patchNamespacedCustomObject({
+      group: 'argoproj.io',
+      version: 'v1alpha1',
+      namespace: 'argocd',
+      plural: 'applications',
+      name: 'apl-operator-apl-operator',
+      body: [
+        { op: 'replace', path: '/spec/source/targetRevision', value: expectedRevision },
+        { op: 'replace', path: '/spec/source/helm/values', value: values },
+      ],
+    })
+  }
+  return needsUpdate
+}
+
 export async function restartOtomiApiDeployment(appApi: AppsV1Api): Promise<void> {
   const d = terminal('common:k8s:restartOtomiApiDeployment')
 

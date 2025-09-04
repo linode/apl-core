@@ -1,9 +1,9 @@
 import { mkdirSync, rmSync, existsSync } from 'fs'
-import { writeFile } from 'fs/promises'
+import { readFile, writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
-import { isResourcePresent, k8s, patchContainerResourcesOfSts } from 'src/common/k8s'
+import { ensureAplOperatorRevision, isResourcePresent, k8s, patchContainerResourcesOfSts } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
 import { appPatches, genericPatch } from 'src/applicationPatches.json'
@@ -162,11 +162,29 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
   await patchArgocdResources(release, values)
 }
 
-export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
+export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
   setup()
   const otomiVersion = await getImageTag()
+  const needsUpdate = await ensureAplOperatorRevision(
+    env.APPS_REVISION || otomiVersion,
+    async () => {
+      await hf({
+        fileOpts: undefined,
+        labelOpts: ['name=apl-operator'],
+        logLevel: logLevelString(),
+        args: ['write-values', `--output-file-template=${valuesDir}/{{.Release.Namespace}}-{{.Release.Name}}.yaml`],
+      })
+      return await readFile(`${valuesDir}/apl-operator-apl-operator.yaml`, 'utf-8')
+    },
+    k8s.custom(),
+    d,
+  )
+  if (needsUpdate) {
+    d.info('Skipping further updates until apl-operator has restarted.')
+    return false
+  }
 
   const res = await hf({
     fileOpts: argv.file,
@@ -218,6 +236,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
     errors.map((e) => d.error(e))
     d.error(`Not all applications has been deployed successfully`)
   }
+  return true
 }
 
 export const module: CommandModule = {
