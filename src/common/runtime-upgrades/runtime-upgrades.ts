@@ -73,6 +73,11 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
+    },
+  },
+  {
+    version: '4.12.0',
+    applications: {
       'istio-system-oauth2-proxy-artifacts': {
         post: async (context: RuntimeUpgradeContext) => {
           // Perform one sync as ArgoCD does not perform diffs on annotations
