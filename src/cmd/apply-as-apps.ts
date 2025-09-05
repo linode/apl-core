@@ -92,27 +92,24 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
 const setFinalizers = async (name: string) => {
   d.info(`Setting finalizers for ${name}`)
   const resPatch =
-    await $`kubectl -n argocd patch application ${name} -p '{"metadata": {"finalizers": ["resources-finalizer.argocd.argoproj.io"]}}' --type merge`
+    await $`kubectl -n argocd patch applications.argoproj.io ${name} -p '{"metadata": {"finalizers": ["resources-finalizer.argocd.argoproj.io"]}}' --type merge`
   if (resPatch.exitCode !== 0) {
     throw new Error(`Failed to set finalizers for ${name}: ${resPatch.stderr}`)
   }
 }
 
 const getFinalizers = async (name: string): Promise<string[]> => {
-  const res = await $`kubectl -n argocd get application ${name} -o jsonpath='{.metadata.finalizers}'`
+  const res = await $`kubectl -n argocd get applications.argoproj.io ${name} -o jsonpath='{.metadata.finalizers}'`
   return res.stdout ? JSON.parse(res.stdout) : []
 }
 
-const removeApplication = async (release: HelmRelease): Promise<void> => {
-  const name = getAppName(release)
-  if (!(await isResourcePresent('application', name, 'argocd'))) return
-
+const removeApplication = async (name: string): Promise<void> => {
   try {
     const finalizers = await getFinalizers(name)
     if (!finalizers.includes('resources-finalizer.argocd.argoproj.io')) {
       await setFinalizers(name)
     }
-    const resDelete = await $`kubectl -n argocd delete application ${name}`
+    const resDelete = await $`kubectl -n argocd delete applications.argoproj.io ${name}`
     d.info(resDelete.stdout.toString().trim())
   } catch (e) {
     d.error(`Failed to delete application ${name}: ${e.message}`)
@@ -147,6 +144,11 @@ async function patchArgocdResources(release: HelmRelease, values: Record<string,
       d,
     )
   }
+}
+
+const getApplications = async (): Promise<string[]> => {
+  const res = await $`kubectl get application.argoproj.io -n argocd -oname`
+  return res.stdout.split('\n')
 }
 
 const writeApplicationManifest = async (release: HelmRelease, otomiVersion: string): Promise<void> => {
@@ -204,6 +206,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
   const errors: Array<any> = []
   // Generate JSON object with all helmfile releases defined in helmfile.d
   const releases: [] = JSON.parse(res.stdout.toString())
+  const currentApplications = await getApplications()
   await Promise.allSettled(
     releases.map(async (release: HelmRelease) => {
       try {
@@ -215,7 +218,11 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
 
         if (release.installed) await writeApplicationManifest(release, otomiVersion)
         else {
-          await removeApplication(release)
+          const appName = getAppName(release)
+          const resourceName = `application.argoproj.io/${appName}`
+          if (currentApplications.includes(resourceName)) {
+            await removeApplication(appName)
+          }
         }
       } catch (e) {
         errors.push(e)
