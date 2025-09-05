@@ -77,6 +77,26 @@ export const runtimeUpgrades: RuntimeUpgrades = [
   },
   {
     version: '4.12.0',
+    pre: async (context: RuntimeUpgradeContext) => {
+      const namespaces = ['ingress', 'istio-system']
+      await Promise.all(
+        namespaces.map(async (namespace) => {
+          context.debug.info(`Updating label for namespace ${namespace}`)
+          await k8s.core().patchNamespace({
+            name: namespace,
+            body: [
+              {
+                op: 'merge',
+                path: '/metadata/labels',
+                value: {
+                  'apl.io/ingress-controller-scope': 'true',
+                },
+              },
+            ],
+          })
+        }),
+      )
+    },
     applications: {
       'istio-system-oauth2-proxy-artifacts': {
         post: async (context: RuntimeUpgradeContext) => {
