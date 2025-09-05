@@ -4,6 +4,7 @@ import { getParsedArgs } from '../yargs'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
 import { hf, HF_DEFAULT_SYNC_ARGS } from '../hf'
+import { PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -82,18 +83,19 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       await Promise.all(
         namespaces.map(async (namespace) => {
           context.debug.info(`Updating label for namespace ${namespace}`)
-          await k8s.core().patchNamespace({
-            name: namespace,
-            body: [
-              {
-                op: 'merge',
-                path: '/metadata/labels',
-                value: {
-                  'apl.io/ingress-controller-scope': 'true',
+          await k8s.core().patchNamespace(
+            {
+              name: namespace,
+              body: {
+                metadata: {
+                  labels: {
+                    'apl.io/ingress-controller-scope': 'true',
+                  },
                 },
               },
-            ],
-          })
+            },
+            setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+          )
         }),
       )
     },
