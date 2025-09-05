@@ -8,6 +8,7 @@ import { hfValues } from './common/hf'
 import { setValuesFile, unsetValuesFile } from './common/repo'
 import { loadYaml, rootDir } from './common/utils'
 import { objectToYaml } from './common/values'
+import { copyFile } from 'fs/promises'
 
 const d = terminal('server')
 const app = express()
@@ -42,6 +43,8 @@ app.get('/prepare', async (req: Request, res: Response): Promise<void> => {
   const { envDir, files } = req.query as QueryParams
   try {
     d.log('Request to prepare values repo on', envDir)
+    const file = '.editorconfig'
+    await copyFile(`${rootDir}/.values/${file}`, `${envDir}/${file}`)
     await bootstrapSops(envDir)
     await setValuesFile(envDir)
     // Encrypt ensures that a brand new secret file is encrypted in place
