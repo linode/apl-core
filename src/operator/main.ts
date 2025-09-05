@@ -1,19 +1,20 @@
 import * as dotenv from 'dotenv'
 import { terminal } from '../common/debug'
 import { AplOperator, AplOperatorConfig } from './apl-operator'
+import { AplInstaller } from './apl-installer'
 import { operatorEnv } from './validators'
 import { env } from '../common/envalid'
 import fs from 'fs'
 import path from 'path'
-import { GitRepository } from './git-repository'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
+import { GitRepository } from './git-repository'
 
 dotenv.config()
 
 const d = terminal('operator:main')
 
-function loadConfig(): AplOperatorConfig {
+function loadConfig(aplOps: AplOperations): AplOperatorConfig {
   const username = operatorEnv.GIT_USERNAME
   const password = operatorEnv.GIT_PASSWORD
   const gitHost = env.GIT_URL
@@ -34,7 +35,6 @@ function loadConfig(): AplOperatorConfig {
     gitOrg,
     gitRepo,
   })
-  const aplOps = new AplOperations()
 
   return {
     gitRepo: gitRepository,
@@ -76,12 +76,19 @@ async function main(): Promise<void> {
     if (!fs.existsSync(repoPath)) {
       fs.mkdirSync(repoPath, { recursive: true })
     }
-    const config = loadConfig()
+    const aplOps = new AplOperations()
 
+    // Phase 1: Run installation with retry until success
+    const installer = new AplInstaller(aplOps)
+    d.info('=== Starting APL Installation Process ===')
+    await installer.runInstallationWithRetry()
+    await installer.createGitCredentialsSecret()
+    d.info('APL installation completed successfully')
+
+    // Phase 2: Start operator for GitOps operations
+    const config = loadConfig(aplOps)
     const operator = new AplOperator(config)
-
     handleTerminationSignals(operator)
-
     await operator.start()
   } catch (error) {
     d.error('Failed to start APL Operator:', getErrorMessage(error))
