@@ -256,7 +256,7 @@ export const copyBasicFiles = async (
 
   // force copy all these
   await Promise.allSettled(
-    ['.gitignore', '.prettierrc.yml', 'README.md'].map(async (val) =>
+    ['.editorconfig', '.gitignore', '.prettierrc.yml', 'README.md'].map(async (val) =>
       deps.copyFile(`${rootDir}/.values/${val}`, `${ENV_DIR}/${val}`),
     ),
   )
