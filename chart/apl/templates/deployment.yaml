@@ -2,13 +2,15 @@
 {{- $imageName := .Values.imageName | default "linode/apl-core" }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
 {{- $useORCS := .Values.otomi.useORCS | default "true"}}
-apiVersion: batch/v1
-kind: Job
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: {{ include "apl.fullname" . }}
   labels: {{- include "apl.labels" . | nindent 4 }}
 spec:
-  backoffLimit: 2
+  replicas: 1
+  selector:
+    matchLabels: {{- include "apl.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -20,7 +22,7 @@ spec:
           nameservers:
             - 8.8.8.8
             - 8.8.4.4
-      restartPolicy: Never
+      restartPolicy: Always
       serviceAccountName: {{ include "apl.fullname" . }}
       securityContext:
         runAsNonRoot: true
@@ -30,7 +32,7 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - name: install
+        - name: apl-operator
           {{- if $useORCS }}
           image: "mirror.registry.linodelke.net/docker/{{ $imageName }}:{{ $version }}"
           {{- else }}
@@ -46,29 +48,11 @@ spec:
           resources:
             limits:
               cpu: '2'
+              memory: '2Gi'
             requests:
               cpu: '1'
-          command: [bash, -c]
-          args:
-            - |
-              kubectl create ns otomi &> /dev/null
-              set -e
-              binzx/otomi validate-cluster && binzx/otomi bootstrap && binzx/otomi install
-
-              {{- if .Values.cleanup.enabled }}
-              echo "Starting cleanup of cluster-admin ClusterRoleBinding..."
-
-              # Check if the ClusterRoleBinding exists
-              if kubectl get clusterrolebinding {{ include "apl.fullname" . }} --ignore-not-found &> /dev/null; then
-                echo "Deleting ClusterRoleBinding: {{ include "apl.fullname" . }}"
-                kubectl delete clusterrolebinding {{ include "apl.fullname" . }} --ignore-not-found &> /dev/null
-                echo "ClusterRoleBinding deleted successfully"
-              else
-                echo "ClusterRoleBinding {{ include "apl.fullname" . }} not found, nothing to clean up"
-              fi
-
-              echo "Cleanup completed successfully"
-              {{- end }}
+              memory: '1Gi'
+          command: ["npm", "run", "apl-operator"]
           env:
             - name: VERBOSITY
               value: '1'
@@ -76,6 +60,15 @@ spec:
               value: /home/app/stack/env
             - name: VALUES_INPUT
               value: /secret/values.yaml
+            # Git configuration for operator (will be set after installation)
+            - name: GIT_ORG
+              value: {{ .Values.operator.gitOrg | default "apl" | quote }}
+            - name: GIT_REPO
+              value: {{ .Values.operator.gitRepo | default "values" | quote }}
+            - name: POLL_INTERVAL_MS
+              value: {{ .Values.operator.pollIntervalMs | default "30000" | quote }}
+            - name: RECONCILE_INTERVAL_MS
+              value: {{ .Values.operator.reconcileIntervalMs | default "300000" | quote }}
           {{- if hasKey $kms "sops" }}
           envFrom:
             - secretRef:
@@ -86,6 +79,20 @@ spec:
               mountPath: /home/app/stack/env
             - name: values-secret
               mountPath: /secret
+          livenessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "pgrep -f 'apl-operator' > /dev/null"]
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "pgrep -f 'apl-operator' > /dev/null"]  
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
       volumes:
         - name: values-secret
           secret:

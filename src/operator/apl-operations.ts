@@ -5,6 +5,8 @@ import { module as applyAsAppsModule } from '../cmd/apply-as-apps'
 import { module as bootstrapModule } from '../cmd/bootstrap'
 import { module as validateValuesModule } from '../cmd/validate-values'
 import { module as migrateModule } from '../cmd/migrate'
+import { module as installModule } from '../cmd/install'
+import { module as validateClusterModule } from '../cmd/validate-cluster'
 import { OperatorError } from './errors'
 import { getErrorMessage } from './utils'
 
@@ -87,6 +89,30 @@ export class AplOperations {
     } catch (error) {
       this.d.error('ApplyAsApps for teams failed:', getErrorMessage(error))
       throw new OperatorError('ApplyAsApps for teams failed', error as Error)
+    }
+  }
+
+  async validateCluster(): Promise<void> {
+    this.d.info('Validating cluster')
+
+    try {
+      await validateClusterModule.handler({} as HelmArguments)
+      this.d.info('Cluster validation completed successfully')
+    } catch (error) {
+      this.d.error('Cluster validation failed:', getErrorMessage(error))
+      throw new OperatorError('Cluster validation failed', error as Error)
+    }
+  }
+
+  async install(): Promise<void> {
+    this.d.info('Executing install process')
+
+    try {
+      await installModule.handler({} as HelmArguments)
+      this.d.info('Install completed successfully')
+    } catch (error) {
+      this.d.error('Install failed:', getErrorMessage(error))
+      throw new OperatorError('Install process failed', error as Error)
     }
   }
 }

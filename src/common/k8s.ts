@@ -6,6 +6,7 @@ import {
   KubeConfig,
   PatchStrategy,
   setHeaderOptions,
+  V1ConfigMap,
   V1ResourceRequirements,
   V1Secret,
 } from '@kubernetes/client-node'
@@ -21,7 +22,7 @@ import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './cons
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import { getParsedArgs, parser } from './yargs'
+import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
@@ -330,6 +331,51 @@ export async function createGenericSecret(
 
 export function b64enc(value: string): string {
   return Buffer.from(value).toString('base64')
+}
+
+export async function getK8sConfigMap(namespace: string, name: string): Promise<V1ConfigMap | undefined> {
+  try {
+    const coreV1Api = kc.makeApiClient(CoreV1Api)
+    const response = await coreV1Api.readNamespacedConfigMap({ name, namespace })
+    return response
+  } catch (error: any) {
+    if (error.statusCode === 404) {
+      return undefined
+    }
+    throw error
+  }
+}
+
+export async function createK8sConfigMap(
+  namespace: string,
+  name: string,
+  data: Record<string, string>,
+): Promise<V1ConfigMap> {
+  const coreV1Api = kc.makeApiClient(CoreV1Api)
+  const configMap: V1ConfigMap = {
+    metadata: {
+      name,
+      namespace,
+    },
+    data,
+  }
+  return await coreV1Api.createNamespacedConfigMap({ namespace, body: configMap })
+}
+
+export async function updateK8sConfigMap(
+  namespace: string,
+  name: string,
+  data: Record<string, string>,
+): Promise<V1ConfigMap> {
+  const coreV1Api = kc.makeApiClient(CoreV1Api)
+  const configMap: V1ConfigMap = {
+    metadata: {
+      name,
+      namespace,
+    },
+    data,
+  }
+  return await coreV1Api.replaceNamespacedConfigMap({ name, namespace, body: configMap })
 }
 
 export async function getPodsOfStatefulSet(

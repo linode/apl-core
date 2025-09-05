@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: apl-operator
+  labels:
+    kubernetes.io/metadata.name: apl-operator
+    name: apl-operator
