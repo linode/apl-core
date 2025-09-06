@@ -232,7 +232,7 @@ appsInfo:
     integration: Kured can be activated to perform safe automatic node reboots. Only activate Kured if cluster autoscaling is enabled and make sure the cloud resource quota is sufficent.
   tekton:
     title: Tekton Pipelines
-    appVersion: 0.53.0
+    appVersion: 1.4.0
     repo: https://github.com/tektoncd/pipeline
     maintainers: Tekton
     relatedLinks:

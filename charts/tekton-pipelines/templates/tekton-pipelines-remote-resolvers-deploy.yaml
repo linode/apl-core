@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: resolvers
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/name: resolvers
+    app.kubernetes.io/part-of: tekton-pipelines
+    app.kubernetes.io/version: v1.4.0
+    pipeline.tekton.dev/release: v1.4.0
+    version: v1.4.0
+  name: tekton-pipelines-remote-resolvers
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: resolvers
+      app.kubernetes.io/instance: default
+      app.kubernetes.io/name: resolvers
+      app.kubernetes.io/part-of: tekton-pipelines
+  template:
+    metadata:
+      labels:
+        app: tekton-pipelines-resolvers
+        app.kubernetes.io/component: resolvers
+        app.kubernetes.io/instance: default
+        app.kubernetes.io/name: resolvers
+        app.kubernetes.io/part-of: tekton-pipelines
+        app.kubernetes.io/version: v1.4.0
+        pipeline.tekton.dev/release: v1.4.0
+        version: v1.4.0
+    spec:
+      affinity:
+          {{- with .Values.remoteresolver.affinity }}
+            {{- toYaml . |  nindent 8 }}
+          {{- end }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: NotIn
+                values:
+                - windows
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: resolvers
+                  app.kubernetes.io/instance: default
+                  app.kubernetes.io/name: resolvers
+                  app.kubernetes.io/part-of: tekton-pipelines
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      containers:
+      - args: []
+        command:
+        - /sbin/tini
+        - --
+        - /ko-app/resolvers
+        env:
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: KUBERNETES_MIN_VERSION
+          value: v1.28.0
+        - name: CONFIG_LOGGING_NAME
+          value: config-logging
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: config-observability
+        - name: CONFIG_FEATURE_FLAGS_NAME
+          value: feature-flags
+        - name: CONFIG_LEADERELECTION_NAME
+          value: config-leader-election-resolvers
+        - name: METRICS_DOMAIN
+          value: tekton.dev/resolution
+        - name: PROBES_PORT
+          value: "8080"
+        - name: TEKTON_HUB_API
+          value: ""
+        - name: ARTIFACT_HUB_API
+          value: https://artifacthub.io/
+        image: ghcr.io/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.4.0@sha256:25b9cbeae5b6d8d0b183d9b213fee176585552436c88e4203027d83496f9085d
+        name: controller
+        ports:
+        - containerPort: 9090
+          name: metrics
+        - containerPort: 8008
+          name: profiling
+        - containerPort: 8080
+          name: probes
+        resources:
+            {{- with .Values.remoteresolver.resources }}
+              {{- toYaml . | trim | nindent 10 }}
+            {{- end }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 65532
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp-clone-volume
+      nodeSelector:
+          {{- with .Values.remoteresolver.nodeSelector }}
+            {{- toYaml . |  nindent 8 }}
+          {{- end}}
+      serviceAccountName: tekton-pipelines-resolvers
+      tolerations:
+          {{- with .Values.remoteresolver.tolerations }}
+            {{- toYaml . |  nindent 6 }}
+          {{- end}}
+      volumes:
+      - emptyDir:
+          sizeLimit: 4Gi
+        name: tmp-clone-volume
