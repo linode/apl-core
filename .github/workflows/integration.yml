@@ -253,6 +253,16 @@ jobs:
             sleep 10
           done
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
+      - name: Create image pull secret on test cluster
+        if: ${{ inputs.install_profile != 'no-apl' }}
+        run: |
+          kubectl create secret docker-registry reg-otomi-github \
+            --docker-server=${{ env.CACHE_REGISTRY }} \
+            --docker-username=${{ env.BOT_USERNAME }} \
+            --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
+      - name: Checkout
+        if: ${{ inputs.install_profile != 'no-apl' }}
+        uses: actions/checkout@v5
       - name: Set up Wiz
         if: ${{ inputs.install_profile != 'no-apl' }}
         run: |
@@ -294,17 +304,6 @@ jobs:
           helm install wiz-lke-ac wiz-sec/wiz-admission-controller --values "$ADMISSION_PATH" -n "$NAMESPACE" --wait
 
           echo "✅ Wiz deployment for cluster $CLUSTER_NAME completed."
-
-      - name: Create image pull secret on test cluster
-        if: ${{ inputs.install_profile != 'no-apl' }}
-        run: |
-          kubectl create secret docker-registry reg-otomi-github \
-            --docker-server=${{ env.CACHE_REGISTRY }} \
-            --docker-username=${{ env.BOT_USERNAME }} \
-            --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
-      - name: Checkout
-        if: ${{ inputs.install_profile != 'no-apl' }}
-        uses: actions/checkout@v5
       - name: Prepare APL chart
         if: ${{ inputs.install_profile != 'no-apl' }}
         run: |
