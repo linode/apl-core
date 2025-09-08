@@ -10,7 +10,7 @@ import { appPatches, genericPatch } from 'src/applicationPatches.json'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { V1ResourceRequirements } from '@kubernetes/client-node'
+import { ApiException, V1ResourceRequirements } from '@kubernetes/client-node'
 import { env } from '../common/envalid'
 
 const cmdName = getFilename(__filename)
@@ -169,25 +169,32 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
   setup()
   const otomiVersion = await getImageTag()
-  const needsUpdate = await ensureAplOperatorRevision(
-    env.APPS_REVISION || otomiVersion,
-    async () => {
-      await hf({
-        fileOpts: undefined,
-        labelOpts: ['name=apl-operator'],
-        logLevel: logLevelString(),
-        args: ['write-values', `--output-file-template=${valuesDir}/{{.Release.Namespace}}-{{.Release.Name}}.yaml`],
-      })
-      return await readFile(`${valuesDir}/apl-operator-apl-operator.yaml`, 'utf-8')
-    },
-    k8s.custom(),
-    d,
-  )
-  if (needsUpdate) {
-    d.info('Skipping further updates until apl-operator has restarted.')
-    return false
+  try {
+    const needsUpdate = await ensureAplOperatorRevision(
+      env.APPS_REVISION || otomiVersion,
+      async () => {
+        await hf({
+          fileOpts: undefined,
+          labelOpts: ['name=apl-operator'],
+          logLevel: logLevelString(),
+          args: ['write-values', `--output-file-template=${valuesDir}/{{.Release.Namespace}}-{{.Release.Name}}.yaml`],
+        })
+        return await readFile(`${valuesDir}/apl-operator-apl-operator.yaml`, 'utf-8')
+      },
+      k8s.custom(),
+      d,
+    )
+    if (needsUpdate) {
+      d.info('Skipping further updates until apl-operator has restarted.')
+      return false
+    }
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      d.info('apl-operator application not found, continuing')
+    } else {
+      throw error
+    }
   }
-
   const res = await hf({
     fileOpts: argv.file,
     labelOpts: argv.label,
