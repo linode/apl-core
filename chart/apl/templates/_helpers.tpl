@@ -10,11 +10,11 @@ Create a default fully qualified app name.
 Always returns "apl-operator" to ensure consistent naming.
 */}}
 {{- define "apl-operator.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
 apl-operator
-{{- end }}
+{{- end -}}
 {{- end }}
 
 {{/*

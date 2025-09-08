@@ -5,6 +5,7 @@ import { hfValues } from '../common/hf'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 import { operatorEnv } from './validators'
+import * as process from 'node:process'
 
 export class Installer {
   private d = terminal('operator:apl-installer')
@@ -119,6 +120,7 @@ export class Installer {
       } else {
         this.d.debug('SOPS Age private key not found or encrypted, skipping')
       }
+      process.env.CI = 'true'
     } catch (error) {
       this.d.error('Failed to extract credentials:', getErrorMessage(error))
       throw error

@@ -85,6 +85,11 @@ spec:
               mountPath: /home/app/stack/env
             - name: values-secret
               mountPath: /secret
+            - name: tmp
+              mountPath: /tmp
+            - name: git-config
+              mountPath: /home/app/.gitconfig
+              subPath: .gitconfig
           livenessProbe:
             exec:
               command: ["/bin/sh", "-c", "pgrep -f 'apl-operator' > /dev/null"]
@@ -105,6 +110,14 @@ spec:
             secretName: {{ .Release.Name }}-values
         - name: otomi-values
           emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: git-config
+          configMap:
+            name: git-config
+            items:
+              - key: .gitconfig
+                path: .gitconfig
       {{- if hasKey .Values "imagePullSecretNames" }}
       imagePullSecrets:
         {{- range .Values.imagePullSecretNames }}
