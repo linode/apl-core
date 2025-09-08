@@ -10,4 +10,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ include "apl-operator.fullname" . }}
-    namespace: {{ .Release.Namespace }}
+    namespace: apl-operator

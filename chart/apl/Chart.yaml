@@ -4,7 +4,7 @@ description: A Helm chart for installing APL in Kubernetes
 home: https://techdocs.akamai.com/app-platform/docs/welcome
 type: application
 version: 0.0.0-chart-version
-appVersion: APP_VERSION_PLACEHOLDER
+appVersion: "main"
 keywords:
   - linode
   - lke
