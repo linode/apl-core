@@ -43,8 +43,10 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-              - ALL
+                - ALL
+            readOnlyRootFilesystem: true
             runAsNonRoot: true
+            runAsUser: 1001
           resources:
             limits:
               cpu: '2'
@@ -52,7 +54,10 @@ spec:
             requests:
               cpu: '1'
               memory: '1Gi'
-          command: ["npm", "run", "apl-operator"]
+          workingDir: /home/app/stack
+          command:
+            - node
+            - dist/src/operator/main.js
           env:
             - name: VERBOSITY
               value: '1'
@@ -88,7 +93,7 @@ spec:
             failureThreshold: 3
           readinessProbe:
             exec:
-              command: ["/bin/sh", "-c", "pgrep -f 'apl-operator' > /dev/null"]  
+              command: ["/bin/sh", "-c", "pgrep -f 'apl-operator' > /dev/null"]
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
