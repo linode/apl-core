@@ -11,6 +11,6 @@ export const operatorEnv = cleanEnv(process.env, {
   SOPS_AGE_KEY: str({ desc: 'SOPS age key', default: '' }),
   POLL_INTERVAL_MS: num({ desc: 'Interval in which the operator polls Git', default: 1000 }),
   RECONCILE_INTERVAL_MS: num({ desc: 'Interval in which the operator reconciles the cluster in', default: 300_000 }),
-  INSTALL_RETRIES: num({ desc: 'Number of installation retry attempts', default: 10 }),
+  INSTALL_RETRIES: num({ desc: 'Number of installation retry attempts', default: 1000 }),
   INSTALL_MAX_TIMEOUT_MS: num({ desc: 'Maximum timeout for installation retries in milliseconds', default: 10000 }),
 })
