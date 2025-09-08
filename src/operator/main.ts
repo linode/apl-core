@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv'
 import { terminal } from '../common/debug'
 import { AplOperator, AplOperatorConfig } from './apl-operator'
-import { AplInstaller } from './apl-installer'
+import { Installer } from './installer'
 import { operatorEnv } from './validators'
 import { env } from '../common/envalid'
 import fs from 'fs'
@@ -79,7 +79,7 @@ async function main(): Promise<void> {
     const aplOps = new AplOperations()
 
     // Phase 1: Run installation with retry until success
-    const installer = new AplInstaller(aplOps)
+    const installer = new Installer(aplOps)
     d.info('=== Starting APL Installation Process ===')
     await installer.runInstallationWithRetry()
     await installer.createGitCredentialsSecret()

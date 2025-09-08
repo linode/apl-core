@@ -6,7 +6,7 @@ import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 import { operatorEnv } from './validators'
 
-export class AplInstaller {
+export class Installer {
   private d = terminal('operator:apl-installer')
   private aplOps: AplOperations
 
@@ -83,10 +83,10 @@ export class AplInstaller {
   }
 
   public async createGitCredentialsSecret(): Promise<void> {
-    this.d.info('Creating git credentials secret from installation values')
+    this.d.info('Extracting credentials from installation values')
 
     try {
-      // Extract git credentials from Helmfile values after installation
+      // Extract credentials from Helmfile values after installation
       const values = (await hfValues()) as Record<string, any>
 
       // Extract git credentials from values
@@ -95,24 +95,32 @@ export class AplInstaller {
 
       if (!gitUsername || !gitPassword) {
         this.d.warn('Git credentials not found in values, operator will run without GitOps functionality')
-        return
+      } else {
+        try {
+          await createGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {
+            username: gitUsername,
+            password: gitPassword,
+          })
+          this.d.info('Created git credentials secret with real values')
+
+          process.env.GIT_USERNAME = gitUsername
+          process.env.GIT_PASSWORD = gitPassword
+          this.d.info('Set git credentials in environment variables')
+        } catch (error) {
+          this.d.debug('Git credentials secret may already exist:', getErrorMessage(error))
+        }
       }
 
-      try {
-        await createGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {
-          username: gitUsername,
-          password: gitPassword,
-        })
-        this.d.info('Created git credentials secret with real values')
-
-        process.env.GIT_USERNAME = gitUsername
-        process.env.GIT_PASSWORD = gitPassword
-        this.d.info('Set git credentials in environment variables')
-      } catch (error) {
-        this.d.debug('Git credentials secret may already exist:', getErrorMessage(error))
+      // Extract SOPS Age key from values
+      const sopsAgePrivateKey = values.kms?.sops?.age?.privateKey
+      if (sopsAgePrivateKey && !sopsAgePrivateKey.startsWith('ENC')) {
+        process.env.SOPS_AGE_KEY = sopsAgePrivateKey
+        this.d.info('Set SOPS_AGE_KEY in environment variables')
+      } else {
+        this.d.debug('SOPS Age private key not found or encrypted, skipping')
       }
     } catch (error) {
-      this.d.error('Failed to create git credentials secret:', getErrorMessage(error))
+      this.d.error('Failed to extract credentials:', getErrorMessage(error))
       throw error
     }
   }
