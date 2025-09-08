@@ -1,5 +1,5 @@
 apiVersion: v2
-name: apl
+name: apl-operator
 description: A Helm chart for installing APL in Kubernetes
 home: https://techdocs.akamai.com/app-platform/docs/welcome
 type: application

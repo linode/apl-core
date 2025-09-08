@@ -5,25 +5,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "apl.fullname" . }}
-  labels: {{- include "apl.labels" . | nindent 4 }}
+  name: {{ include "apl-operator.fullname" . }}
+  labels: {{- include "apl-operator.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
-    matchLabels: {{- include "apl.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "apl-operator.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
       annotations: {{- toYaml . | nindent 8 }}
       {{- end }}
-      labels: {{- include "apl.selectorLabels" . | nindent 8 }}
+      labels: {{- include "apl-operator.selectorLabels" . | nindent 8 }}
     spec:
       dnsConfig:
           nameservers:
             - 8.8.8.8
             - 8.8.4.4
       restartPolicy: Always
-      serviceAccountName: {{ include "apl.fullname" . }}
+      serviceAccountName: {{ include "apl-operator.serviceAccountName" . }}
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
@@ -77,7 +77,7 @@ spec:
           {{- if hasKey $kms "sops" }}
           envFrom:
             - secretRef:
-                name: {{ include "apl.fullname" . }}-sops-secrets
+                name: {{ include "apl-operator.fullname" . }}-sops-secrets
           {{- end }}
           volumeMounts:
             - name: otomi-values

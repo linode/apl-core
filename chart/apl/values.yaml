@@ -122,6 +122,12 @@ cleanup:
   # Enable the cleanup command that removes cluster-admin ClusterRoleBinding after installation
   enabled: true
 
+# Service Account requires access to gitea pod to edit the oauth through CLI commands
+serviceAccount:
+  create: true
+  name: "apl-operator"
+  annotations: {}
+
 ## APL Operator configuration
 operator:
   # Git organization/user name (will be configured during installation)

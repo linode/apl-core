@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "apl.name" -}}
+{{- define "apl-operator.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "apl.fullname" -}}
+{{- define "apl-operator.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "apl.chart" -}}
+{{- define "apl-operator.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "apl.labels" -}}
-helm.sh/chart: {{ include "apl.chart" . }}
-{{ include "apl.selectorLabels" . }}
+{{- define "apl-operator.labels" -}}
+helm.sh/chart: {{ include "apl-operator.chart" . }}
+{{ include "apl-operator.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,8 +45,19 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "apl.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "apl.name" . }}
+{{- define "apl-operator.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "apl-operator.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "apl-operator.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "apl-operator.fullname" .) .Values.serviceAccount.name }}
+{{- else }}
+{{- .Values.serviceAccount.name }}
+{{- end }}
 {{- end }}
 
