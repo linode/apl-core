@@ -1,0 +1,52 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "keycloak.fullname" . | quote }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "keycloak.labels" . | nindent 4 }}
+    {{- range $key, $value := .Values.networkPolicy.labels }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+spec:
+  policyTypes:
+    - Ingress
+  {{- if .Values.networkPolicy.egress }}
+    - Egress
+  {{- end}}
+  podSelector:
+    matchLabels:
+      {{- include "keycloak.selectorLabels" . | nindent 6 }}
+  ingress:
+    {{- with .Values.networkPolicy.extraFrom }}
+    - from:
+        {{- toYaml . | nindent 8 }}
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
+        {{ range $.Values.extraPorts }}
+        - protocol: {{ default "TCP" .protocol }}
+          port: {{ .containerPort }}
+        {{- end }}
+    {{- end }}
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "keycloak.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
+        {{ range .Values.extraPorts }}
+        - protocol: {{ default "TCP" .protocol }}
+          port: {{ .containerPort }}
+        {{- end }}
+  {{- if .Values.networkPolicy.egress }}
+  egress:
+    {{- .Values.networkPolicy.egress | toYaml | nindent 4 }}
+  {{- end }}
+{{- end }}

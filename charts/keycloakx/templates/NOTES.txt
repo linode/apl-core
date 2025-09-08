@@ -1,0 +1,61 @@
+***********************************************************************
+*                                                                     *
+*                Keycloak.X Helm Chart by codecentric AG              *
+*                                                                     *
+***********************************************************************
+
+{{- if .Values.ingress.enabled }}
+
+Keycloak was installed with an Ingress and an be reached at the following URL(s):
+{{ range $unused, $rule := .Values.ingress.rules }}
+  {{- range $rule.paths }}
+  - http{{ if $.Values.ingress.tls }}s{{ end }}://{{ tpl $rule.host $ }}{{ .path }}
+  {{-  end }}
+{{- end }}
+
+{{- else if eq "NodePort" .Values.service.type }}
+
+Keycloak was installed with a Service of type NodePort.
+{{ if .Values.service.httpNodePort }}
+Get its HTTP URL with the following commands:
+
+export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} service {{ include "keycloak.fullname" . }}-http --template='{{"{{ range .spec.ports }}{{ if eq .name \"http\" }}{{ .nodePort }}{{ end }}{{ end }}"}}')
+export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+echo "http://$NODE_IP:$NODE_PORT"
+{{- end }}
+{{ if .Values.service.httpsNodePort }}
+Get its HTTPS URL with the following commands:
+
+export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} service {{ include "keycloak.fullname" . }}-http --template='{{"{{ range .spec.ports }}{{ if eq .name \"https\" }}{{ .nodePort }}{{ end }}{{ end }}"}}')
+export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+echo "http://$NODE_IP:$NODE_PORT"
+{{- end }}
+
+{{- else if eq "LoadBalancer" .Values.service.type }}
+
+Keycloak was installed with a Service of type LoadBalancer
+
+NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+     You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} service -w {{ include "keycloak.fullname" . }}'
+
+Get its HTTP URL with the following commands:
+
+export SERVICE_IP=$(kubectl get service --namespace {{ .Release.Namespace }} {{ include "keycloak.fullname" . }}-http --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+echo "http://$SERVICE_IP:{{ .Values.service.httpPort }}"
+
+Get its HTTPS URL with the following commands:
+
+export SERVICE_IP=$(kubectl get service --namespace {{ .Release.Namespace }} {{ include "keycloak.fullname" . }}-http --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+echo "http://$SERVICE_IP:{{ .Values.service.httpsPort }}"
+
+{{- else if eq "ClusterIP" .Values.service.type }}
+
+Keycloak was installed with a Service of type ClusterIP
+
+Create a port-forwarding with the following commands:
+
+export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "keycloak.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o name)
+echo "Visit http://127.0.0.1:8080 to use your application"
+kubectl --namespace {{ .Release.Namespace }} port-forward "$POD_NAME" 8080
+
+{{- end }}
