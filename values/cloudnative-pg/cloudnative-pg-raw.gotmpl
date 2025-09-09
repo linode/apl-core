@@ -8,6 +8,6 @@ resources:
     spec:
       images:
         - major: 15
-          image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/ghcr{{- else }}ghcr.io{{- end }}/cloudnative-pg/postgresql:15.13"
+          image: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/cloudnative-pg/postgresql:15.14"
         - major: 17
-          image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/ghcr{{- else }}ghcr.io{{- end }}/cloudnative-pg/postgresql:17.5"
+          image: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/cloudnative-pg/postgresql:17.6"
