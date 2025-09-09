@@ -333,13 +333,15 @@ export function b64enc(value: string): string {
   return Buffer.from(value).toString('base64')
 }
 
-export async function getK8sConfigMap(namespace: string, name: string): Promise<V1ConfigMap | undefined> {
+export async function getK8sConfigMap(
+  namespace: string,
+  name: string,
+  coreV1Api: CoreV1Api,
+): Promise<V1ConfigMap | undefined> {
   try {
-    const coreV1Api = kc.makeApiClient(CoreV1Api)
-    const response = await coreV1Api.readNamespacedConfigMap({ name, namespace })
-    return response
+    return await coreV1Api.readNamespacedConfigMap({ name, namespace })
   } catch (error: any) {
-    if (error.statusCode === 404) {
+    if (error.code === 404) {
       return undefined
     }
     throw error
@@ -350,8 +352,8 @@ export async function createK8sConfigMap(
   namespace: string,
   name: string,
   data: Record<string, string>,
+  coreV1Api: CoreV1Api,
 ): Promise<V1ConfigMap> {
-  const coreV1Api = kc.makeApiClient(CoreV1Api)
   const configMap: V1ConfigMap = {
     metadata: {
       name,
@@ -366,8 +368,8 @@ export async function updateK8sConfigMap(
   namespace: string,
   name: string,
   data: Record<string, string>,
+  coreV1Api: CoreV1Api,
 ): Promise<V1ConfigMap> {
-  const coreV1Api = kc.makeApiClient(CoreV1Api)
   const configMap: V1ConfigMap = {
     metadata: {
       name,

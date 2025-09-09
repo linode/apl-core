@@ -57,7 +57,7 @@ export class Installer {
 
   private async getInstallationStatus(): Promise<string> {
     try {
-      const configMap = await getK8sConfigMap('apl-operator', 'apl-installation-status')
+      const configMap = await getK8sConfigMap('apl-operator', 'apl-installation-status', k8s.core())
       const status = configMap?.data?.status || 'pending'
       this.d.info(`Current installation status: ${status}`)
       if (configMap?.data) {
@@ -80,9 +80,9 @@ export class Installer {
       }
 
       try {
-        await updateK8sConfigMap('apl-operator', 'apl-installation-status', data)
+        await updateK8sConfigMap('apl-operator', 'apl-installation-status', data, k8s.core())
       } catch (updateError) {
-        await createK8sConfigMap('apl-operator', 'apl-installation-status', data)
+        await createK8sConfigMap('apl-operator', 'apl-installation-status', data, k8s.core())
       }
     } catch (err) {
       this.d.warn('Failed to update installation status:', getErrorMessage(err))
