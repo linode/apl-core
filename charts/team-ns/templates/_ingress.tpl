@@ -77,20 +77,8 @@ metadata:
     nginx.ingress.kubernetes.io/auth-signin: "{{ $v.sso.signInUrl }}"
     {{- end }}
     {{- if and (hasKey $ingress "entrypoint") (ne $ingress.entrypoint "")}}
-    external-dns.alpha.kubernetes.io/target: {{ $ingress.entrypoint }} 
+    external-dns.alpha.kubernetes.io/target: {{ $ingress.entrypoint }}
     {{- end }}
-    # websocket upgrade snippet
-    nginx.ingress.kubernetes.io/server-snippets: |
-      location ~* /(ws(s)?|socket.io)/ {
-          proxy_set_header Upgrade $http_upgrade;
-          proxy_http_version 1.1;
-          proxy_set_header X-Forwarded-Host $http_host;
-          proxy_set_header X-Forwarded-Proto $scheme;
-          proxy_set_header X-Forwarded-For $remote_addr;
-          proxy_set_header Host $host;
-          proxy_set_header Connection "upgrade";
-          proxy_cache_bypass $http_upgrade;
-        }
   labels: {{- include "team-ns.chart-labels" $.dot | nindent 4 }}
   name: nginx-team-{{ $v.teamId }}-{{ $ingress.className }}-{{ $.type }}-{{ $.name }}
   namespace: istio-system
@@ -125,7 +113,7 @@ spec:
         - {{ $domain }}
           {{- if hasKey $secrets $domain }}
             {{- if ne (index $secrets $domain) "" }}
-{{/*If a team provides its own certificate in the team namespace then Otomi cronjob makes a copy of it*/}} 
+{{/*If a team provides its own certificate in the team namespace then Otomi cronjob makes a copy of it*/}}
       secretName: copy-team-{{ $v.teamId }}-{{ index $secrets $domain }}
             {{- end }}
           {{- else }}

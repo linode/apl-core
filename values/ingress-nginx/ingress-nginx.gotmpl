@@ -6,39 +6,23 @@
 nameOverride: {{ .Release.Name }}
 
 controller:
-  enableAnnotationValidations: true
-  allowSnippetAnnotations: true
-  # @TODO:
   electionID: ingress-controller-leader-{{ $ingress.className }}
-  ingressClassResource: 
+  ingressClassResource:
     enabled: false
     controllerValue: k8s.io/{{ $ingress.className }}
   image:
     pullPolicy:  {{ $app | get "image.pullPolicy" "IfNotPresent" }}
-{{- if $v.otomi.linodeLkeImageRepository }}
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}"
-    image: "k8s/ingress-nginx/controller"
-{{- end }}
+    {{- with $v.otomi.linodeLkeImageRepository }}
+    registry: {{ . }}
+    image: k8s/ingress-nginx/controller
+    {{- end }}
   scope:
-    enabled: true
-    namespace: "istio-system"
-  containerPort:
-    http: 80
-    https: 443
+    namespaceSelector: "apl.io/ingress-controller-scope=true"
   admissionWebhooks:
     enabled: false
     patch:
       priorityClassName: otomi-critical
-  useComponentLabel: true
   resources: {{- $app.resources.controller | toYaml | nindent 4 }}
-  opentelemetry:
-    enabled: {{ $app.tracing.enabled }}
-    containerSecurityContext:
-      runAsUser: 65534
-      runAsGroup: 65534
-      runAsNonRoot: true
-      allowPrivilegeEscalation: false
-    resources: {{- $app.resources.opentelemetry | toYaml | nindent 6 }}
   replicaCount: 2
   minAvailable: 1
   autoscaling:
@@ -49,7 +33,6 @@ controller:
     targetMemoryUtilizationPercentage: {{ $app.autoscaling.targetMemoryUtilizationPercentage }}
   priorityClassName: otomi-critical
   extraArgs:
-    v: 3
     enable-ssl-passthrough: true
   config:
     client-body-timeout: 5
@@ -59,31 +42,21 @@ controller:
     enable-modsecurity: {{ $app.modsecurity.enabled }}
     enable-owasp-modsecurity-crs: {{ $app.modsecurity.owasp }}
     hsts: true
-    http2-max-field-size: 64k
-    http2-max-header-size: 128k
     large-client-header-buffers: 8 16k
     {{- if $app.modsecurity.enabled }}
     modsecurity-snippet: |
       SecRuleEngine {{ if $app.modsecurity.block }}On{{ else }}DetectionOnly{{ end }}
-      SecAuditEngine RelevantOnly
-      # SecRequestBodyAccess Off
-      SecAuditLogParts ABDEFHIJZ
       SecAuditLogFormat JSON
-      SecAuditLogType Serial
       SecAuditLog /dev/stdout
       # overrides for owasp go before inclusion of the defaults in nginx-modsecurity.conf
       SecRequestBodyLimit {{ $app | get "maxBodySizeBytes" "1073741824" }}
       SecRuleRemoveById 920350
-      {{- if $app.modsecurity.owasp }}
-      # Include /etc/nginx/owasp-modsecurity-crs/nginx-modsecurity.conf
-      {{- end }}
     {{- end }}
     proxy-buffers-number: 8
     proxy-buffer-size: 16k
+    proxy-busy-buffers-size: 24k
     proxy-body-size: {{ $app | get "maxBodySize" "1024m" }}
-    # log-format-escape-json: true
     log-format-upstream: $proxy_protocol_addr - $remote_user [$time_local] $host "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $request_length $request_time [$proxy_upstream_name] [$proxy_alternative_upstream_name] $upstream_addr $upstream_response_length $upstream_response_time $upstream_status $req_id
-    # log-format-upstream: '{"time":"$time_iso8601","remote_addr":"$proxy_protocol_addr","x_forward_for":"$proxy_add_x_forwarded_for","request_id":"$req_id","remote_user":"$remote_user","bytes_sent":$bytes_sent,"request_time":$request_time,"status":$status,"vhost":"$host","request_proto":"$server_protocol","path":"$uri","request_query":"$args","request_length":$request_length,"duration":$request_time,"method":"$request_method","http_referrer":"$http_referer","http_user_agent":"$http_user_agent"}'
     ssl-redirect: true
     use-forwarded-headers: false
     use-proxy-protocol: true
@@ -121,7 +94,7 @@ controller:
       {{- range . }}
       {{ .key }}: "{{ .value }}"
       {{- end }}
-    {{- end }}   
+    {{- end }}
   publishService:
     enabled: true
 
@@ -132,11 +105,11 @@ defaultBackend:
   resources: {{- $app.resources.defaultBackend | toYaml | nindent 4 }}
   service:
     omitClusterIP: true
-{{- if $v.otomi.linodeLkeImageRepository }}
+  {{- with $v.otomi.linodeLkeImageRepository }}
   image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}"
+    registry: {{ . }}
     image: k8s/defaultbackend-amd64
-{{- end }}
+  {{- end }}
 rbac:
   create: true
 
