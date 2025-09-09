@@ -4,29 +4,25 @@
 controller:
   resources: {{- $t.resources.pipelinesController | toYaml | nindent 4 }}
   deployment:
-    image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/ghcr{{- else }}ghcr.io{{- end }}/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.3.1@sha256:702fca76e77ef1dc991d72b41fe7af4be00f0e0c84160060a7bdf11cd6a3429f"
+    image: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.3.1@sha256:702fca76e77ef1dc991d72b41fe7af4be00f0e0c84160060a7bdf11cd6a3429f"
   images:
-    entrypoint: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/ghcr{{- else }}ghcr.io{{- end }}/tektoncd/pipeline/entrypoint-bff0a22da108bc2f16c818c97641a296:v1.3.1@sha256:ca14f0f6e815489227924f4045bd989a01253cd7618334142aa51e4f35aa15e6"
-    nop: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/ghcr{{- else }}ghcr.io{{- end }}/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.3.1@sha256:9d58dcb3ae901ecdf2a7b255f32fdf2ab4bddb35e16d84d9eaefb93155c6df55"
-    sidecarlogresults: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/ghcr{{- else }}ghcr.io{{- end }}/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.3.1@sha256:4e2567d980cf1768423f51d053fdaeb2656ab8a07fad769ce3311f8e20f1ecab"
-    workingdirinit: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/ghcr{{- else }}ghcr.io{{- end }}/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.3.1@sha256:1281a8218ba470fc5b98c055efeaef1201ec815c7c7c36786a3048ee88fcf389"
-    shell: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/{{- else }}{{- end }}busybox:1.37-musl"
+    entrypoint: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/entrypoint-bff0a22da108bc2f16c818c97641a296:v1.3.1@sha256:ca14f0f6e815489227924f4045bd989a01253cd7618334142aa51e4f35aa15e6"
+    nop: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.3.1@sha256:9d58dcb3ae901ecdf2a7b255f32fdf2ab4bddb35e16d84d9eaefb93155c6df55"
+    sidecarlogresults: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.3.1@sha256:4e2567d980cf1768423f51d053fdaeb2656ab8a07fad769ce3311f8e20f1ecab"
+    workingdirinit: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.3.1@sha256:1281a8218ba470fc5b98c055efeaef1201ec815c7c7c36786a3048ee88fcf389"
+    shell: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/{{ end }}busybox:1.37-musl"
 
 remoteresolver:
   resources: {{- $t.resources.pipelinesRemoteresolver | toYaml | nindent 4 }}
   deployment:
-    image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/ghcr{{- else }}ghcr.io{{- end }}/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.3.1@sha256:625e3314b0036766b71255791dc91cc5243a880b2f1c252f81f494facf8efd61"
+    image: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.3.1@sha256:625e3314b0036766b71255791dc91cc5243a880b2f1c252f81f494facf8efd61"
 
 events:
   resources: {{- $t.resources.pipelinesEvents | toYaml | nindent 4 }}
   deployment:
-    image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/ghcr{{- else }}ghcr.io{{- end }}/tektoncd/pipeline/events-a9042f7efb0cbade2a868a1ee5ddd52c:v1.3.1@sha256:fb7969c7f1d27ce8689b61d25b6de1976fe4b27db80e5f840eb4ed7462608de9"
+    image: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/events-a9042f7efb0cbade2a868a1ee5ddd52c:v1.3.1@sha256:fb7969c7f1d27ce8689b61d25b6de1976fe4b27db80e5f840eb4ed7462608de9"
 
 webhook:
   resources: {{- $t.resources.pipelinesWebhook | toYaml | nindent 4 }}
   deployment:
-    image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/ghcr{{- else }}ghcr.io{{- end }}/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.3.1@sha256:dadeab6bfad0a577b74761e3bc04f9fb3a457b831f9d0cddd2cc4af1699ca42d"
-
-featureFlags:
-  running-in-environment-with-injected-sidecars: "true"
-  await-sidecar-readiness: "true"
+    image: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.3.1@sha256:dadeab6bfad0a577b74761e3bc04f9fb3a457b831f9d0cddd2cc4af1699ca42d"
