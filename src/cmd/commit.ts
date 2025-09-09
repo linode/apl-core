@@ -316,10 +316,10 @@ For documentation and support, visit: https://docs.apl.akamai.com
   const instructions = `# Welcome to APL
 
 View this welcome message anytime with:
-kubectl get configmap apl-welcome -n otomi-system -o jsonpath='{.data.message}'
+kubectl get configmap apl-welcome -n apl-operator -o jsonpath='{.data.message}'
 
 Or view all welcome information:
-kubectl get configmap apl-welcome -n otomi-system -o yaml
+kubectl get configmap apl-welcome -n apl-operator -o yaml
 `
 
   const configMapManifest = {
@@ -327,7 +327,7 @@ kubectl get configmap apl-welcome -n otomi-system -o yaml
     kind: 'ConfigMap',
     metadata: {
       name: 'apl-welcome',
-      namespace: 'otomi-system',
+      namespace: 'apl-operator',
       labels: {
         'app.kubernetes.io/name': 'apl',
         'app.kubernetes.io/component': 'welcome',
@@ -344,10 +344,10 @@ kubectl get configmap apl-welcome -n otomi-system -o yaml
   }
 
   try {
-    await k8s.core().createNamespacedConfigMap({ namespace: 'default', body: configMapManifest })
+    await k8s.core().createNamespacedConfigMap({ namespace: 'apl-operator', body: configMapManifest })
     d.info('Welcome ConfigMap created successfully')
     d.info(
-      "View welcome information with: kubectl get configmap apl-welcome -n otomi-system -o jsonpath='{.data.message}'",
+      "View welcome information with: kubectl get configmap apl-welcome -n apl-operator -o jsonpath='{.data.message}'",
     )
   } catch (error: any) {
     if (error.response?.statusCode === 409) {
@@ -355,7 +355,7 @@ kubectl get configmap apl-welcome -n otomi-system -o yaml
       try {
         await k8s
           .core()
-          .replaceNamespacedConfigMap({ name: 'apl-welcome', namespace: 'default', body: configMapManifest })
+          .replaceNamespacedConfigMap({ name: 'apl-welcome', namespace: 'apl-operator', body: configMapManifest })
         d.info('Welcome ConfigMap updated successfully')
       } catch (updateError) {
         d.error('Failed to update welcome ConfigMap:', updateError)

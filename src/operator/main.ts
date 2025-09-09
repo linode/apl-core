@@ -18,12 +18,6 @@ function loadConfig(aplOps: AplOperations): AplOperatorConfig {
   // Get credentials from process.env directly since they may have been set after operatorEnv was parsed
   const username = process.env.GIT_USERNAME || operatorEnv.GIT_USERNAME
   const password = process.env.GIT_PASSWORD || operatorEnv.GIT_PASSWORD
-
-  d.info(`Loading config with credentials:`)
-  d.info(`  GIT_USERNAME from process.env: ${process.env.GIT_USERNAME ? '***SET***' : 'NOT SET'}`)
-  d.info(`  GIT_PASSWORD from process.env: ${process.env.GIT_PASSWORD ? '***SET***' : 'NOT SET'}`)
-  d.info(`  Final username: ${username ? '***SET***' : 'NOT SET'}`)
-  d.info(`  Final password: ${password ? '***SET***' : 'NOT SET'}`)
   const gitHost = env.GIT_URL
   const gitPort = env.GIT_PORT
   const gitProtocol = env.GIT_PROTOCOL
@@ -65,16 +59,7 @@ function handleTerminationSignals(operator: AplOperator): void {
 async function main(): Promise<void> {
   try {
     d.info('Starting APL Operator')
-
     const repoPath = env.ENV_DIR
-    // Only delete contents of the directory
-    if (fs.existsSync(repoPath)) {
-      d.info(`Clearing directory contents of ${repoPath}`)
-      for (const entry of fs.readdirSync(repoPath)) {
-        const entryPath = path.join(repoPath, entry)
-        fs.rmSync(entryPath, { recursive: true, force: true })
-      }
-    }
     const parentDir = path.dirname(repoPath)
     if (!fs.existsSync(parentDir)) {
       fs.mkdirSync(parentDir, { recursive: true })
