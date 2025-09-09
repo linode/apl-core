@@ -74,7 +74,7 @@ async function main(): Promise<void> {
     const installer = new Installer(aplOps)
     d.info('=== Starting APL Installation Process ===')
     await installer.runInstallationWithRetry()
-    await installer.createGitCredentialsSecret()
+    await installer.setEnvAndCreateSecrets()
     d.info('APL installation completed successfully')
 
     // Phase 2: Start operator for GitOps operations

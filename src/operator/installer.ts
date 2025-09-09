@@ -89,7 +89,7 @@ export class Installer {
     }
   }
 
-  public async createGitCredentialsSecret(): Promise<void> {
+  public async setEnvAndCreateSecrets(): Promise<void> {
     this.d.info('Extracting credentials from installation values')
 
     try {
@@ -105,8 +105,8 @@ export class Installer {
       } else {
         try {
           await createGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {
-            username: gitUsername,
-            password: gitPassword,
+            GIT_USERNAME: gitUsername,
+            GIT_PASSWORD: gitPassword,
           })
           this.d.info('Created git credentials secret with real values')
 
