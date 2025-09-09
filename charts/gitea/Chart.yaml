@@ -1,32 +1,50 @@
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: remove pat-s from maintainers (#918)
+      description: adapt indentation of extraInitContainer tests
     - kind: changed
-      description: step down as maintainer (#917)
+      description: fulfill MD044/proper-names
+    - kind: added
+      description: support further initContainers
     - kind: changed
-      description: update alpine/helm docker tag to v3.18.4 (#913)
+      description: update lockfiles (#929)
     - kind: changed
-      description: update postgresql docker tag to v16.7.21 (#908)
+      description: update bats testing framework (#927)
+    - kind: changed
+      description: update lockfiles (#926)
+    - kind: changed
+      description: update subcharts (minor & patch) (#922)
+    - kind: changed
+      description: update dependency go-gitea/gitea to v1.24.5 (#925)
+    - kind: fixed
+      description: add lockFileMaintenance (#924)
+    - kind: changed
+      description: update dependency go-gitea/gitea to v1.24.4 (#919)
+    - kind: changed
+      description: update docker.io/thegeeklab/git-sv docker tag to v2.0.4 (#921)
+    - kind: changed
+      description: update dependency helm-unittest/helm-unittest to v1 (#914)
+    - kind: changed
+      description: be compliant with markdownlint (#923)
 apiVersion: v2
-appVersion: 1.24.3
+appVersion: 1.24.5
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 16.7.21
+  version: 16.7.26
 - condition: postgresql-ha.enabled
   name: postgresql-ha
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 16.0.22
+  version: 16.2.2
 - condition: valkey-cluster.enabled
   name: valkey-cluster
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 3.0.18
+  version: 3.0.23
 - condition: valkey.enabled
   name: valkey
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 3.0.22
+  version: 3.0.30
 description: Gitea Helm chart for Kubernetes
 icon: https://gitea.com/assets/img/logo.svg
 keywords:
@@ -51,4 +69,4 @@ sources:
 - https://github.com/go-gitea/gitea
 - https://docker.gitea.com/gitea
 type: application
-version: 12.1.3
+version: 12.2.0
