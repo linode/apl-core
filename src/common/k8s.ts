@@ -468,10 +468,7 @@ export async function checkArgoCDAppStatus(
   expectedValue: 'Synced' | 'Healthy',
 ): Promise<string> {
   const application = await customApi.getNamespacedCustomObject({
-    group: 'argoproj.io',
-    version: 'v1alpha1',
-    namespace: 'argocd',
-    plural: 'applications',
+    ...ARGOCD_APP_PARAMS,
     name: appName,
   })
 

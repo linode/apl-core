@@ -20,6 +20,7 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { k8s } from '../common/k8s'
+import { ARGOCD_APP_PARAMS } from '../common/constants'
 
 const cmdName = getFilename(__filename)
 
@@ -466,10 +467,7 @@ async function appExists(name: string): Promise<boolean> {
   return await checkExists(
     async () =>
       await k8s.custom().getNamespacedCustomObject({
-        group: 'argoproj.io',
-        version: 'v1alpha1',
-        namespace: 'argocd',
-        plural: 'applications',
+        ...ARGOCD_APP_PARAMS,
         name,
       }),
   )

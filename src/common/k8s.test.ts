@@ -395,10 +395,7 @@ describe('ArgoCD Application Tests', () => {
 
       expect(result).toBe('Synced')
       expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
-        group: 'argoproj.io',
-        version: 'v1alpha1',
-        namespace: 'argocd',
-        plural: 'applications',
+        ...ARGOCD_APP_PARAMS,
         name: 'test-app',
       })
     })
