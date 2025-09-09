@@ -47,6 +47,7 @@ jest.mock('./commit', () => ({
   createCredentialsSecret: jest.fn(),
   retryIsOAuth2ProxyRunning: jest.fn(),
   printWelcomeMessage: jest.fn(),
+  createWelcomeConfigMap: jest.fn(),
 }))
 
 jest.mock('src/common/cli', () => ({

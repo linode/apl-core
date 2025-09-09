@@ -289,6 +289,81 @@ export const printWelcomeMessage = async (secretName: string, domainSuffix: stri
   d.info(message)
 }
 
+export const createWelcomeConfigMap = async (secretName: string, domainSuffix: string): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:createWelcomeConfigMap`)
+  
+  const welcomeMessage = `Welcome to Akamai Application Platform (APL)!
+
+Your APL installation has completed successfully.
+
+CONSOLE ACCESS:
+  The App Platform console is available at: https://console.${domainSuffix}
+
+LOGIN CREDENTIALS:
+  To obtain your login credentials, run the following commands:
+  
+  Username: kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.username}' | base64 -d
+  Password: kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.password}' | base64 -d
+
+NEXT STEPS:
+  1. Visit the console URL above
+  2. Log in using the credentials obtained from the commands above
+  3. Explore the platform features and start deploying your applications
+
+For documentation and support, visit: https://docs.apl.akamai.com
+`
+
+  const instructions = `# Welcome to APL
+
+View this welcome message anytime with:
+kubectl get configmap apl-welcome -n otomi-system -o jsonpath='{.data.message}'
+
+Or view all welcome information:
+kubectl get configmap apl-welcome -n otomi-system -o yaml
+`
+
+  const configMapManifest = {
+    apiVersion: 'v1',
+    kind: 'ConfigMap',
+    metadata: {
+      name: 'apl-welcome',
+      namespace: 'otomi-system',
+      labels: {
+        'app.kubernetes.io/name': 'apl',
+        'app.kubernetes.io/component': 'welcome',
+        'app.kubernetes.io/managed-by': 'apl-operator'
+      }
+    },
+    data: {
+      message: welcomeMessage,
+      instructions: instructions,
+      consoleUrl: `https://console.${domainSuffix}`,
+      secretName: secretName,
+      secretNamespace: 'keycloak'
+    }
+  }
+
+  try {
+    await k8s.core().createNamespacedConfigMap('otomi-system', configMapManifest)
+    d.info('Welcome ConfigMap created successfully')
+    d.info('View welcome information with: kubectl get configmap apl-welcome -n otomi-system -o jsonpath=\'{.data.message}\'')
+  } catch (error: any) {
+    if (error.response?.statusCode === 409) {
+      // ConfigMap already exists, update it
+      try {
+        await k8s.core().replaceNamespacedConfigMap('apl-welcome', 'otomi-system', configMapManifest)
+        d.info('Welcome ConfigMap updated successfully')
+      } catch (updateError) {
+        d.error('Failed to update welcome ConfigMap:', updateError)
+        throw updateError
+      }
+    } else {
+      d.error('Failed to create welcome ConfigMap:', error)
+      throw error
+    }
+  }
+}
+
 export const module = {
   command: cmdName,
   describe: 'Wrapper that validates values, generates the Drone pipeline and then commits and pushes changed files',
