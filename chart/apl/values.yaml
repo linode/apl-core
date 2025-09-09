@@ -131,7 +131,7 @@ serviceAccount:
 ## APL Operator configuration
 operator:
   # Git organization/user name (will be configured during installation)
-  gitOrg: "apl"
+  gitOrg: "otomi"
   # Git repository name (will be configured during installation)
   gitRepo: "values"
   # Polling interval for git changes (milliseconds)

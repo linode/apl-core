@@ -58,8 +58,14 @@ export class Installer {
   private async getInstallationStatus(): Promise<string> {
     try {
       const configMap = await getK8sConfigMap('apl-operator', 'apl-installation-status')
-      return configMap?.data?.status || 'pending'
+      const status = configMap?.data?.status || 'pending'
+      this.d.info(`Current installation status: ${status}`)
+      if (configMap?.data) {
+        this.d.info(`ConfigMap data:`, configMap.data)
+      }
+      return status
     } catch (error) {
+      this.d.info('No installation status ConfigMap found, assuming pending')
       return 'pending'
     }
   }
@@ -91,8 +97,8 @@ export class Installer {
       const values = (await hfValues()) as Record<string, any>
 
       // Extract git credentials from values
-      const gitUsername = values.gitea?.adminUsername
-      const gitPassword = values.gitea?.adminPassword
+      const gitUsername = values.apps.gitea?.adminUsername || 'otomi-admin'
+      const gitPassword = values.apps.gitea?.adminPassword
 
       if (!gitUsername || !gitPassword) {
         this.d.warn('Git credentials not found in values, operator will run without GitOps functionality')
