@@ -17,7 +17,7 @@ import { isEmpty, isEqual, map, mapValues } from 'lodash'
 import { dirname, join } from 'path'
 import { parse, stringify } from 'yaml'
 import { $, cd, sleep } from 'zx'
-import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
+import { ARGOCD_APP_PARAMS, DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
@@ -526,42 +526,32 @@ export async function waitForArgoCDAppHealthy(
   )
 }
 
-export async function ensureAplOperatorRevision(
-  expectedRevision: string,
-  valuesCallback: () => Promise<string>,
-  customApi: CustomObjectsApi,
-  d: OtomiDebugger,
-) {
-  d.info('Checking running revision of apl-operator...')
+export async function appRevisionMatches(appName: string, expectedRevision: string, customApi: CustomObjectsApi) {
   const application = await customApi.getNamespacedCustomObject({
-    group: 'argoproj.io',
-    version: 'v1alpha1',
-    namespace: 'argocd',
-    plural: 'applications',
-    name: 'apl-operator-apl-operator',
+    ...ARGOCD_APP_PARAMS,
+    name: appName,
   })
   if (process.env.NODE_ENV !== 'development' && application?.status?.sync?.status !== 'Synced') {
-    throw new Error('apl-operator is not yet in Synced state')
+    throw new Error(`${appName} is not yet in Synced state`)
   }
   const targetRevision = application?.spec?.source?.targetRevision
-  const needsUpdate = targetRevision !== expectedRevision
-  if (needsUpdate) {
-    d.info('Updating ArgoCD application for apl-operator...')
+  return expectedRevision === targetRevision
+}
 
-    const values = await valuesCallback()
-    await customApi.patchNamespacedCustomObject({
-      group: 'argoproj.io',
-      version: 'v1alpha1',
-      namespace: 'argocd',
-      plural: 'applications',
-      name: 'apl-operator-apl-operator',
-      body: [
-        { op: 'replace', path: '/spec/source/targetRevision', value: expectedRevision },
-        { op: 'replace', path: '/spec/source/helm/values', value: values },
-      ],
-    })
-  }
-  return needsUpdate
+export async function patchArgoCdApp(
+  appName: string,
+  targetRevision: string,
+  values: string,
+  customApi: CustomObjectsApi,
+) {
+  return await customApi.patchNamespacedCustomObject({
+    ...ARGOCD_APP_PARAMS,
+    name: appName,
+    body: [
+      { op: 'replace', path: '/spec/source/targetRevision', value: targetRevision },
+      { op: 'replace', path: '/spec/source/helm/values', value: values },
+    ],
+  })
 }
 
 export async function restartOtomiApiDeployment(appApi: AppsV1Api): Promise<void> {

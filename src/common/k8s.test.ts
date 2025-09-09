@@ -11,15 +11,17 @@ import {
 } from '@kubernetes/client-node'
 import * as k8s from './k8s'
 import {
+  appRevisionMatches,
   checkArgoCDAppStatus,
   deleteStatefulSetPods,
-  ensureAplOperatorRevision,
+  patchArgoCdApp,
   patchContainerResourcesOfSts,
   patchStatefulSetResources,
 } from './k8s'
 import { terminal } from './debug'
 import retry from 'async-retry'
 import { env } from './envalid'
+import { ARGOCD_APP_PARAMS } from './constants'
 
 jest.mock('@kubernetes/client-node')
 jest.mock('async-retry')
@@ -466,18 +468,14 @@ describe('ArgoCD Application Tests', () => {
   })
 })
 
-describe('ensureAplOperatorRevision', () => {
+describe('appRevisionMatches', () => {
   const mockCustomApi = new CustomObjectsApi({} as any) as jest.Mocked<CustomObjectsApi>
-  const mockDebugger = terminal(`k8s:tests:`)
-  const mockValuesCallback = jest.fn(async () => {
-    return 'test-values'
-  })
 
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it('should return false if the current revision equals the expected one', async () => {
+  it('should return true if the current revision equals the expected one', async () => {
     const mockApplication = {
       spec: {
         source: {
@@ -491,58 +489,37 @@ describe('ensureAplOperatorRevision', () => {
       },
     }
     mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
-    mockCustomApi.patchNamespacedCustomObject.mockResolvedValue(mockApplication as any)
 
-    const result = await ensureAplOperatorRevision('1', mockValuesCallback, mockCustomApi, mockDebugger)
-
-    expect(result).toBe(false)
-    expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
-      group: 'argoproj.io',
-      version: 'v1alpha1',
-      namespace: 'argocd',
-      plural: 'applications',
-      name: 'apl-operator-apl-operator',
-    })
-    expect(mockCustomApi.patchNamespacedCustomObject).toHaveBeenCalledTimes(0)
-    expect(mockValuesCallback).toHaveBeenCalledTimes(0)
-  })
-
-  it('should return true if the current revision does not equal the expected one', async () => {
-    const mockApplication = {
-      spec: {
-        source: {
-          targetRevision: '1',
-        },
-      },
-      status: {
-        sync: {
-          status: 'Synced',
-        },
-      },
-    }
-    mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
-    mockCustomApi.patchNamespacedCustomObject.mockResolvedValue(mockApplication as any)
-
-    const result = await ensureAplOperatorRevision('2', mockValuesCallback, mockCustomApi, mockDebugger)
+    const result = await appRevisionMatches('app-name', '1', mockCustomApi)
 
     expect(result).toBe(true)
     expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
-      group: 'argoproj.io',
-      version: 'v1alpha1',
-      namespace: 'argocd',
-      plural: 'applications',
-      name: 'apl-operator-apl-operator',
+      ...ARGOCD_APP_PARAMS,
+      name: 'app-name',
     })
-    expect(mockCustomApi.patchNamespacedCustomObject).toHaveBeenCalledWith({
-      group: 'argoproj.io',
-      version: 'v1alpha1',
-      namespace: 'argocd',
-      plural: 'applications',
-      name: 'apl-operator-apl-operator',
-      body: [
-        { op: 'replace', path: '/spec/source/targetRevision', value: '2' },
-        { op: 'replace', path: '/spec/source/helm/values', value: 'test-values' },
-      ],
+  })
+
+  it('should return false if the current revision does not equal the expected one', async () => {
+    const mockApplication = {
+      spec: {
+        source: {
+          targetRevision: '1',
+        },
+      },
+      status: {
+        sync: {
+          status: 'Synced',
+        },
+      },
+    }
+    mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
+
+    const result = await appRevisionMatches('app-name', '2', mockCustomApi)
+
+    expect(result).toBe(false)
+    expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
+      ...ARGOCD_APP_PARAMS,
+      name: 'app-name',
     })
   })
 
@@ -555,20 +532,35 @@ describe('ensureAplOperatorRevision', () => {
       },
     }
     mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
-    mockCustomApi.patchNamespacedCustomObject.mockResolvedValue(mockApplication as any)
 
-    await expect(ensureAplOperatorRevision('1', mockValuesCallback, mockCustomApi, mockDebugger)).rejects.toThrow(
-      'apl-operator is not yet in Synced state',
+    await expect(appRevisionMatches('app-name', '1', mockCustomApi)).rejects.toThrow(
+      'app-name is not yet in Synced state',
     )
     expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
-      group: 'argoproj.io',
-      version: 'v1alpha1',
-      namespace: 'argocd',
-      plural: 'applications',
-      name: 'apl-operator-apl-operator',
+      ...ARGOCD_APP_PARAMS,
+      name: 'app-name',
     })
-    expect(mockCustomApi.patchNamespacedCustomObject).toHaveBeenCalledTimes(0)
-    expect(mockValuesCallback).toHaveBeenCalledTimes(0)
+  })
+})
+
+describe('patchArgoCdApp', () => {
+  const mockCustomApi = new CustomObjectsApi({} as any) as jest.Mocked<CustomObjectsApi>
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should call patch endpoint with parameters', async () => {
+    await patchArgoCdApp('app-name', '2', 'test-values', mockCustomApi)
+
+    expect(mockCustomApi.patchNamespacedCustomObject).toHaveBeenCalledWith({
+      ...ARGOCD_APP_PARAMS,
+      name: 'app-name',
+      body: [
+        { op: 'replace', path: '/spec/source/targetRevision', value: '2' },
+        { op: 'replace', path: '/spec/source/helm/values', value: 'test-values' },
+      ],
+    })
   })
 })
 

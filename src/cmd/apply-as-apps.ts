@@ -3,7 +3,7 @@ import { readFile, writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
-import { ensureAplOperatorRevision, isResourcePresent, k8s, patchContainerResourcesOfSts } from 'src/common/k8s'
+import { appRevisionMatches, k8s, patchArgoCdApp, patchContainerResourcesOfSts } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
 import { appPatches, genericPatch } from 'src/applicationPatches.json'
@@ -164,27 +164,34 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
   await patchArgocdResources(release, values)
 }
 
+const getAplOperatorValues = async (): Promise<string> => {
+  await hf({
+    labelOpts: ['name=apl-operator'],
+    logLevel: logLevelString(),
+    args: ['write-values', `--output-file-template=${valuesDir}/{{.Release.Namespace}}-{{.Release.Name}}.yaml`],
+  })
+  return await readFile(`${valuesDir}/apl-operator-apl-operator.yaml`, 'utf-8')
+}
+
 export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
   setup()
   const otomiVersion = await getImageTag()
   try {
-    const needsUpdate = await ensureAplOperatorRevision(
+    const expectedRevision = env.APPS_REVISION || otomiVersion
+    d.info('Checking running revision of apl-operator...')
+    const operatorRevisionMatches = await appRevisionMatches(
+      'apl-operator-apl-operator',
       env.APPS_REVISION || otomiVersion,
-      async () => {
-        await hf({
-          fileOpts: undefined,
-          labelOpts: ['name=apl-operator'],
-          logLevel: logLevelString(),
-          args: ['write-values', `--output-file-template=${valuesDir}/{{.Release.Namespace}}-{{.Release.Name}}.yaml`],
-        })
-        return await readFile(`${valuesDir}/apl-operator-apl-operator.yaml`, 'utf-8')
-      },
       k8s.custom(),
-      d,
     )
-    if (needsUpdate) {
+    if (operatorRevisionMatches) {
+      d.info(`Expected revision ${expectedRevision} found for apl-operator.`)
+    } else {
+      const values = await getAplOperatorValues()
+      d.info(`Updating apl-operator application to revision ${expectedRevision}.`)
+      await patchArgoCdApp('apl-operator-apl-operator', expectedRevision, values, k8s.custom())
       d.info('Skipping further updates until apl-operator has restarted.')
       return false
     }
