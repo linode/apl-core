@@ -35,12 +35,16 @@ k8s:
       app: grafana
     - name: istio-system
       disableIstioInjection: true
+      labels:
+        "apl.io/ingress-controller-scope": "true"
     - name: httpbin
       app: httpbin
     - name: ingress
       # disabling istio sidecar as it does not preserve client ip (yet)
       # TODO: enable once it does
       disableIstioInjection: true
+      labels:
+        "apl.io/ingress-controller-scope": "true"
     - name: jaeger
       app: jaeger
     - name: jaeger-operator
