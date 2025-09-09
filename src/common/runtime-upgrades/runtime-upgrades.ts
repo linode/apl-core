@@ -1,8 +1,10 @@
-import { OtomiDebugger } from '../debug'
+import { logLevelString, OtomiDebugger } from '../debug'
 import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
 import { getParsedArgs } from '../yargs'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
+import { hf, HF_DEFAULT_SYNC_ARGS } from '../hf'
+import { PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -62,6 +64,56 @@ export const runtimeUpgrades: RuntimeUpgrades = [
         context.debug.error('Failed to apply CRDs:', error)
       }
       await upgradeKnativeServing(context)
+    },
+  },
+  {
+    version: '4.11.0',
+    applications: {
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
+    },
+  },
+  {
+    version: '4.12.0',
+    pre: async (context: RuntimeUpgradeContext) => {
+      const namespaces = ['ingress', 'istio-system']
+      await Promise.all(
+        namespaces.map(async (namespace) => {
+          context.debug.info(`Updating label for namespace ${namespace}`)
+          await k8s.core().patchNamespace(
+            {
+              name: namespace,
+              body: {
+                metadata: {
+                  labels: {
+                    'apl.io/ingress-controller-scope': 'true',
+                  },
+                },
+              },
+            },
+            setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+          )
+        }),
+      )
+    },
+    applications: {
+      'istio-system-oauth2-proxy-artifacts': {
+        post: async (context: RuntimeUpgradeContext) => {
+          // Perform one sync as ArgoCD does not perform diffs on annotations
+          const d = context.debug
+          await hf(
+            {
+              labelOpts: ['name=oauth2-proxy-artifacts'],
+              logLevel: logLevelString(),
+              args: [...HF_DEFAULT_SYNC_ARGS, '--take-ownership'],
+            },
+            { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+          )
+        },
+      },
     },
   },
 ]
