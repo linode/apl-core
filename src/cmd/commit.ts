@@ -291,7 +291,7 @@ export const printWelcomeMessage = async (secretName: string, domainSuffix: stri
 
 export const createWelcomeConfigMap = async (secretName: string, domainSuffix: string): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:createWelcomeConfigMap`)
-  
+
   const welcomeMessage = `Welcome to Akamai Application Platform (APL)!
 
 Your APL installation has completed successfully.
@@ -301,7 +301,7 @@ CONSOLE ACCESS:
 
 LOGIN CREDENTIALS:
   To obtain your login credentials, run the following commands:
-  
+
   Username: kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.username}' | base64 -d
   Password: kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.password}' | base64 -d
 
@@ -331,27 +331,31 @@ kubectl get configmap apl-welcome -n otomi-system -o yaml
       labels: {
         'app.kubernetes.io/name': 'apl',
         'app.kubernetes.io/component': 'welcome',
-        'app.kubernetes.io/managed-by': 'apl-operator'
-      }
+        'app.kubernetes.io/managed-by': 'apl-operator',
+      },
     },
     data: {
       message: welcomeMessage,
-      instructions: instructions,
+      instructions,
       consoleUrl: `https://console.${domainSuffix}`,
-      secretName: secretName,
-      secretNamespace: 'keycloak'
-    }
+      secretName,
+      secretNamespace: 'keycloak',
+    },
   }
 
   try {
-    await k8s.core().createNamespacedConfigMap('otomi-system', configMapManifest)
+    await k8s.core().createNamespacedConfigMap({ namespace: 'default', body: configMapManifest })
     d.info('Welcome ConfigMap created successfully')
-    d.info('View welcome information with: kubectl get configmap apl-welcome -n otomi-system -o jsonpath=\'{.data.message}\'')
+    d.info(
+      "View welcome information with: kubectl get configmap apl-welcome -n otomi-system -o jsonpath='{.data.message}'",
+    )
   } catch (error: any) {
     if (error.response?.statusCode === 409) {
       // ConfigMap already exists, update it
       try {
-        await k8s.core().replaceNamespacedConfigMap('apl-welcome', 'otomi-system', configMapManifest)
+        await k8s
+          .core()
+          .replaceNamespacedConfigMap({ name: 'apl-welcome', namespace: 'default', body: configMapManifest })
         d.info('Welcome ConfigMap updated successfully')
       } catch (updateError) {
         d.error('Failed to update welcome ConfigMap:', updateError)
