@@ -4,6 +4,7 @@
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
 {{- $globalPullSecret := $v.otomi | get "globalPullSecret" nil }}
 
+# TODO
 {{- if or $v.otomi.linodeLkeImageRepository $v.cluster.defaultStorageClass }}
 global:
   {{- if $v.otomi.linodeLkeImageRepository }}
@@ -13,35 +14,32 @@ global:
   storageClass: {{ $v.cluster.defaultStorageClass }}
 {{- end }}
 
+# TODO
 auth:
-  adminUser: {{ $k.adminUsername | quote }}
   existingSecret: keycloak-initial-admin
   passwordSecretKey: password
-service:
-  ports:
-    http: 8080
 
+service:
+  httpport: 8080
 enableServiceLinks: false
-customCaExistingSecret: custom-ca
-production: true
-proxy: edge
+
 resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
 priorityClassName: otomi-critical
 
 
 {{- if or $v.otomi.linodeLkeImageRepository $globalPullSecret}}
 image:
-{{- with $globalPullSecret }}
-  pullSecrets:
-    - name: otomi-pullsecret-global
-{{- end }}
 {{- if $v.otomi.linodeLkeImageRepository }}
   registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-  repository: bitnami/keycloak
+  repository:  quay.io/keycloak/keycloak
+{{- end }}
+{{- with $globalPullSecret }}
+pullSecrets:
+  - name: otomi-pullsecret-global
 {{- end }}
 {{- end }}
 
-initContainers:
+extraInitContainers:
   # Akamai branding init container
   - name: init-container-theme-copy
     {{- if $v.otomi.linodeLkeImageRepository }}
@@ -61,17 +59,20 @@ initContainers:
       - name: empty-dir  # Mounted by Keycloak pod
         mountPath: /opt/bitnami/keycloak/providers
         subPath: app-providers-dir
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  - name: keycloakConfigCli
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}"
+    repository: quay.io/adorsys/keycloak-config-cli
+  {{- end }}
+
 
 # Use CNPG platform database
 postgresql:
   enabled: false
-externalDatabase:
-  host: keycloak-db-rw.keycloak.svc.cluster.local
+database:
+  hostname: keycloak-db-rw.keycloak.svc.cluster.local
   port: 5432
   existingSecret: keycloak-db-app
-  existingSecretUserKey: username
-  existingSecretDatabaseKey: dbname
-  existingSecretPasswordKey: password
 
 extraEnv: |
   - name: KC_DB_POOL_INITIAL_SIZE
@@ -80,10 +81,26 @@ extraEnv: |
     value: "5"
   - name: KC_DB_POOL_MAX_SIZE
     value: "32"
-
-{{- if $v.otomi.linodeLkeImageRepository }}
-keycloakConfigCli:
-  image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}"
-    repository: bitnami/keycloak-config-cli
-{{- end }}
+  - name: KC_DB_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-db-app
+        key: username
+  - name: KC_DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-db-app
+        key: password
+  - name: KC_DB_URL_DATABASE
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-db-app
+        key: dbname
+  - name: KC_TRUSTSTORE_PATHS
+    value: custom-ca
+  - name: KEYCLOAK_PRODUCTION
+    value: true
+  - name: KEYCLOAK_PROXY_HEADERS:
+    value: edge
+  - name: KC_BOOTSTRAP_ADMIN_USERNAME
+    value: {{ $k.adminUsername | quote }}
