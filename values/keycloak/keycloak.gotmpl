@@ -4,21 +4,6 @@
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
 {{- $globalPullSecret := $v.otomi | get "globalPullSecret" nil }}
 
-# TODO
-{{- if or $v.otomi.linodeLkeImageRepository $v.cluster.defaultStorageClass }}
-global:
-  {{- if $v.otomi.linodeLkeImageRepository }}
-  security:
-    allowInsecureImages: true
-  {{- end }}
-  storageClass: {{ $v.cluster.defaultStorageClass }}
-{{- end }}
-
-# TODO
-auth:
-  existingSecret: keycloak-initial-admin
-  passwordSecretKey: password
-
 service:
   httpport: 8080
 enableServiceLinks: false
@@ -104,3 +89,13 @@ extraEnv: |
     value: edge
   - name: KC_BOOTSTRAP_ADMIN_USERNAME
     value: {{ $k.adminUsername | quote }}
+  - name: KEYCLOAK_ADMIN
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-initial-admin
+        key: username
+  - name: KEYCLOAK_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-initial-admin
+        key: password
