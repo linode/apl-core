@@ -19,8 +19,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: tekton-pipelines
-    pipeline.tekton.dev/release: "v1.3.1"
-    version: "v1.3.1"
+    pipeline.tekton.dev/release: "v1.4.0"
+    version: "v1.4.0"
 spec:
   group: tekton.dev
   preserveUnknownFields: false

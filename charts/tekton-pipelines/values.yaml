@@ -19,7 +19,7 @@ serviceaccount:
 # Values for tekton-pipelines-controller
 controller:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.3.1@sha256:702fca76e77ef1dc991d72b41fe7af4be00f0e0c84160060a7bdf11cd6a3429f
+    image: ghcr.io/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.4.0@sha256:8fd3eba94a15ce667fad65cfaebd095c9ecff2e1a39cee9b9b02edf2814bc678
     labels: {}
   pod:
     labels: {}
@@ -209,6 +209,14 @@ configDefaults:
     # This value is used by the sidecar-tekton-log-results container and can be tuned for performance or test scenarios.
     # Example values: "100ms", "500ms", "1s"
     default-sidecar-log-polling-interval: "100ms"
+
+    # default-step-ref-concurrency-limit specifies the concurrency limit for resolving step references.
+    # This setting controls the maximum number of concurrent goroutines used to resolve
+    # step references (`step.ref` fields) simultaneously. This limit acts as a throttle
+    # to prevent overwhelming remote servers (e.g., git providers, OCI registries) or
+    # the Kubernetes API server, especially when a TaskRun contains many steps that
+    # reference StepActions.
+    default-step-ref-concurrency-limit: "5"
 gitResolverConfig:
   # The maximum amount of time a single anonymous cloning resolution may take.
   fetch-timeout: "1m"
