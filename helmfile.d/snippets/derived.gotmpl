@@ -70,9 +70,9 @@
 
 # Set image tag suffix added to minor version, according to
 # https://github.com/cloudnative-pg/postgres-containers/pkgs/container/postgresql
-{{- $cnpgImageSuffix := "-system-oldstable" }}
+{{- $cnpgImageSuffix := "-system-bookworm" }}
 {{- if $v.apps.cnpg.useBackupPlugin }}
-  {{- $cnpgImageSuffix = "-standard-oldstable" }}
+  {{- $cnpgImageSuffix = "-standard-bookworm" }}
 {{- end }}
 # Set default platform database image for CloudnativePG
 {{- $cnpgDefaultPlatformImage := print "cloudnative-pg/postgresql:15.14" $cnpgImageSuffix }}
