@@ -68,6 +68,13 @@
 {{- $istioEgressReleaseName := print "istio-egressgateway-" $istioCanaryRevision }}
 {{- $istioEgressReleaseLabel := print "egressgateway-" $istioCanaryRevision }}
 
+# Set default platform database image for CloudnativePG
+{{- $cnpgImageSuffix := "-system-trixie" }}
+{{- if $v.apps.cnpg.useBackupPlugin }}
+  {{- $cnpgImageSuffix = "-standard-trixie" }}
+{{- end }}
+{{- $cnpgDefaultPlatformImage := print "cloudnative-pg/postgresql:15.14" $cnpgImageSuffix }}
+
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
   kubeContext: {{ $v.cluster.k8sContext }}
@@ -202,6 +209,9 @@ environments:
         apps:
           argocd:
             enabled: true
+          cnpg:
+            pgImageSuffix: {{ $cnpgImageSuffix | quote }}
+            pgDefaultPlatformImage: {{ $cnpgDefaultPlatformImage }}
           cert-manager:
             enabled: true
             {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
