@@ -6,6 +6,7 @@ import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 import { operatorEnv } from './validators'
 import * as process from 'node:process'
+import { PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 
 export class Installer {
   private d = terminal('operator:apl-installer')
@@ -104,18 +105,39 @@ export class Installer {
         this.d.warn('Git credentials not found in values, operator will run without GitOps functionality')
       } else {
         try {
-          await createGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {
-            GIT_USERNAME: gitUsername,
-            GIT_PASSWORD: gitPassword,
-          })
+          await k8s.core().patchNamespacedSecret(
+            {
+              name: 'gitea-credentials',
+              namespace: 'apl-operator',
+              body: {
+                data: {
+                  GIT_USERNAME: gitUsername,
+                  GIT_PASSWORD: gitPassword,
+                },
+              },
+            },
+            setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+          )
           this.d.info('Created git credentials secret with real values')
-
-          process.env.GIT_USERNAME = gitUsername
-          process.env.GIT_PASSWORD = gitPassword
-          this.d.info('Set git credentials in environment variables')
         } catch (error) {
-          this.d.debug('Git credentials secret may already exist:', getErrorMessage(error))
+          if (error?.code === 404) {
+            try {
+              await createGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {
+                GIT_USERNAME: gitUsername,
+                GIT_PASSWORD: gitPassword,
+              })
+              this.d.info('Patched existing git credentials secret with real values')
+            } catch (updateError) {
+              this.d.error('Failed to update git credentials secret:', getErrorMessage(updateError))
+            }
+          } else {
+            this.d.error('Failed to create git credentials secret:', getErrorMessage(error))
+          }
         }
+
+        process.env.GIT_USERNAME = gitUsername
+        process.env.GIT_PASSWORD = gitPassword
+        this.d.info('Set git credentials in environment variables')
       }
 
       // Extract SOPS Age key from values
