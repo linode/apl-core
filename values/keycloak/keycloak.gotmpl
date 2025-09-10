@@ -4,25 +4,23 @@
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
 {{- $globalPullSecret := $v.otomi | get "globalPullSecret" nil }}
 
+image:
+  repository: {{ if $v.otomi.linodeLkeImageRepository }}{{ $v.otomi.linodeLkeImageRepository }}/docker/keycloak/keycloak{{ else }}quay.io/keycloak/keycloak{{ end }}
+  tag: "26.3.3"
+  pullPolicy: IfNotPresent
+
+{{- if $globalPullSecret }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+
 service:
-  httpport: 8080
+  httpPort: 8080
+
 enableServiceLinks: false
 
 resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
 priorityClassName: otomi-critical
-
-
-{{- if or $v.otomi.linodeLkeImageRepository $globalPullSecret}}
-image:
-{{- if $v.otomi.linodeLkeImageRepository }}
-  registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-  repository:  quay.io/keycloak/keycloak
-{{- end }}
-{{- with $globalPullSecret }}
-pullSecrets:
-  - name: otomi-pullsecret-global
-{{- end }}
-{{- end }}
 
 extraInitContainers:
   # Akamai branding init container
@@ -39,10 +37,10 @@ extraInitContainers:
       - -c
       - |
         echo "Copying theme..."
-        cp -Rv /app/APL.jar /opt/bitnami/keycloak/providers/
+        cp -Rv /app/APL.jar /opt/keycloak/providers/
     volumeMounts:
-      - name: empty-dir  # Mounted by Keycloak pod
-        mountPath: /opt/bitnami/keycloak/providers
+      - name: empty-dir
+        mountPath: /opt/keycloak/providers
         subPath: app-providers-dir
   {{- if $v.otomi.linodeLkeImageRepository }}
   - name: keycloakConfigCli
@@ -54,12 +52,13 @@ extraInitContainers:
 # Use CNPG platform database
 postgresql:
   enabled: false
+
 database:
   hostname: keycloak-db-rw.keycloak.svc.cluster.local
   port: 5432
   existingSecret: keycloak-db-app
 
-extraEnv: |
+extraEnv:
   - name: KC_DB_POOL_INITIAL_SIZE
     value: "5"
   - name: KC_DB_POOL_MIN_SIZE
@@ -85,10 +84,15 @@ extraEnv: |
     value: custom-ca
   - name: KEYCLOAK_PRODUCTION
     value: true
-  - name: KEYCLOAK_PROXY_HEADERS:
+  - name: KEYCLOAK_PROXY_HEADERS
     value: edge
   - name: KC_BOOTSTRAP_ADMIN_USERNAME
     value: {{ $k.adminUsername | quote }}
+  - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-initial-admin
+        key: password
   - name: KEYCLOAK_ADMIN
     valueFrom:
       secretKeyRef:
