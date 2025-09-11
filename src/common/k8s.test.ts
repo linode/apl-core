@@ -11,14 +11,17 @@ import {
 } from '@kubernetes/client-node'
 import * as k8s from './k8s'
 import {
+  appRevisionMatches,
   checkArgoCDAppStatus,
   deleteStatefulSetPods,
+  patchArgoCdApp,
   patchContainerResourcesOfSts,
   patchStatefulSetResources,
 } from './k8s'
 import { terminal } from './debug'
 import retry from 'async-retry'
 import { env } from './envalid'
+import { ARGOCD_APP_PARAMS } from './constants'
 
 jest.mock('@kubernetes/client-node')
 jest.mock('async-retry')
@@ -392,10 +395,7 @@ describe('ArgoCD Application Tests', () => {
 
       expect(result).toBe('Synced')
       expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
-        group: 'argoproj.io',
-        version: 'v1alpha1',
-        namespace: 'argocd',
-        plural: 'applications',
+        ...ARGOCD_APP_PARAMS,
         name: 'test-app',
       })
     })
@@ -461,6 +461,102 @@ describe('ArgoCD Application Tests', () => {
       mockCustomApi.getNamespacedCustomObject.mockRejectedValue(apiError)
 
       await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')).rejects.toThrow('API call failed')
+    })
+  })
+})
+
+describe('appRevisionMatches', () => {
+  const mockCustomApi = new CustomObjectsApi({} as any) as jest.Mocked<CustomObjectsApi>
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should return true if the current revision equals the expected one', async () => {
+    const mockApplication = {
+      spec: {
+        source: {
+          targetRevision: '1',
+        },
+      },
+      status: {
+        sync: {
+          status: 'Synced',
+        },
+      },
+    }
+    mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
+
+    const result = await appRevisionMatches('app-name', '1', mockCustomApi)
+
+    expect(result).toBe(true)
+    expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
+      ...ARGOCD_APP_PARAMS,
+      name: 'app-name',
+    })
+  })
+
+  it('should return false if the current revision does not equal the expected one', async () => {
+    const mockApplication = {
+      spec: {
+        source: {
+          targetRevision: '1',
+        },
+      },
+      status: {
+        sync: {
+          status: 'Synced',
+        },
+      },
+    }
+    mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
+
+    const result = await appRevisionMatches('app-name', '2', mockCustomApi)
+
+    expect(result).toBe(false)
+    expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
+      ...ARGOCD_APP_PARAMS,
+      name: 'app-name',
+    })
+  })
+
+  it('should throw error when sync status does not match expected', async () => {
+    const mockApplication = {
+      status: {
+        sync: {
+          status: 'Syncing',
+        },
+      },
+    }
+    mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
+
+    await expect(appRevisionMatches('app-name', '1', mockCustomApi)).rejects.toThrow(
+      'app-name is not yet in Synced state',
+    )
+    expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
+      ...ARGOCD_APP_PARAMS,
+      name: 'app-name',
+    })
+  })
+})
+
+describe('patchArgoCdApp', () => {
+  const mockCustomApi = new CustomObjectsApi({} as any) as jest.Mocked<CustomObjectsApi>
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should call patch endpoint with parameters', async () => {
+    await patchArgoCdApp('app-name', '2', 'test-values', mockCustomApi)
+
+    expect(mockCustomApi.patchNamespacedCustomObject).toHaveBeenCalledWith({
+      ...ARGOCD_APP_PARAMS,
+      name: 'app-name',
+      body: [
+        { op: 'replace', path: '/spec/source/targetRevision', value: '2' },
+        { op: 'replace', path: '/spec/source/helm/values', value: 'test-values' },
+      ],
     })
   })
 })
