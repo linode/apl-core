@@ -102,7 +102,7 @@ describe('Apply command', () => {
     mockDeps.getDeploymentState.mockResolvedValue({ status: 'deployed' })
     mockDeps.getCurrentVersion.mockResolvedValue('1.0.0')
     mockDeps.getImageTag.mockResolvedValue('v1.0.0')
-    mockDeps.applyAsApps.mockResolvedValue(undefined)
+    mockDeps.applyAsApps.mockResolvedValue(true)
     mockDeps.commit.mockResolvedValue(undefined)
     mockDeps.upgrade.mockResolvedValue(undefined)
     mockDeps.runtimeUpgrade.mockResolvedValue(undefined)
