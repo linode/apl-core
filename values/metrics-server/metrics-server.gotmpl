@@ -12,13 +12,14 @@ imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
 
+{{- if or (eq $provider "linode") (hasKey $m "extraArgs") }}
 args:
-  - --kubelet-preferred-address-types=InternalIP
 {{- if eq $provider "linode" }}
   - --kubelet-insecure-tls=true
 {{- end }}
 {{- if (hasKey $m "extraArgs") }}
   {{- $m.extraArgs | toYaml | nindent 2 }}
+{{- end }}
 {{- end }}
 
 apiService:
