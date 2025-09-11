@@ -46,10 +46,14 @@ export const applyAll = async () => {
   // We still need to deploy all teams because some settings depend on platform apps.
   // Note that team-ns-admin contains ingress for platform apps.
   const params = cloneDeep(argv)
-  await applyAsApps(params)
+  const applyCompleted = await applyAsApps(params)
 
-  await upgrade({ when: 'post' })
-  await runtimeUpgrade({ when: 'post' })
+  if (applyCompleted) {
+    await upgrade({ when: 'post' })
+    await runtimeUpgrade({ when: 'post' })
+  } else {
+    d.info('Apply step not completed, skipping upgrade checks')
+  }
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(false)
