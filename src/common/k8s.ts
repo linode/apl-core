@@ -17,7 +17,7 @@ import { isEmpty, isEqual, map, mapValues } from 'lodash'
 import { dirname, join } from 'path'
 import { parse, stringify } from 'yaml'
 import { $, cd, sleep } from 'zx'
-import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
+import { ARGOCD_APP_PARAMS, DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
@@ -468,10 +468,7 @@ export async function checkArgoCDAppStatus(
   expectedValue: 'Synced' | 'Healthy',
 ): Promise<string> {
   const application = await customApi.getNamespacedCustomObject({
-    group: 'argoproj.io',
-    version: 'v1alpha1',
-    namespace: 'argocd',
-    plural: 'applications',
+    ...ARGOCD_APP_PARAMS,
     name: appName,
   })
 
@@ -524,6 +521,34 @@ export async function waitForArgoCDAppHealthy(
     },
     { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
   )
+}
+
+export async function appRevisionMatches(appName: string, expectedRevision: string, customApi: CustomObjectsApi) {
+  const application = await customApi.getNamespacedCustomObject({
+    ...ARGOCD_APP_PARAMS,
+    name: appName,
+  })
+  if (process.env.NODE_ENV !== 'development' && application?.status?.sync?.status !== 'Synced') {
+    throw new Error(`${appName} is not yet in Synced state`)
+  }
+  const targetRevision = application?.spec?.source?.targetRevision
+  return expectedRevision === targetRevision
+}
+
+export async function patchArgoCdApp(
+  appName: string,
+  targetRevision: string,
+  values: string,
+  customApi: CustomObjectsApi,
+) {
+  return await customApi.patchNamespacedCustomObject({
+    ...ARGOCD_APP_PARAMS,
+    name: appName,
+    body: [
+      { op: 'replace', path: '/spec/source/targetRevision', value: targetRevision },
+      { op: 'replace', path: '/spec/source/helm/values', value: values },
+    ],
+  })
 }
 
 export async function restartOtomiApiDeployment(appApi: AppsV1Api): Promise<void> {
