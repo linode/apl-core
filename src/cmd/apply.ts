@@ -86,6 +86,7 @@ const applyAll = async () => {
   await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
   d.info('Deploying essential manifests')
   await $`kubectl apply -f ${templateFile}`
+  let applyCompleted = false
   if (initialInstall) {
     d.info('Deploying charts containing label stage=prep')
     await hf(
@@ -116,13 +117,15 @@ const applyAll = async () => {
     // We still need to deploy all teams because some settings depend on platform apps.
     // Note that team-ns-admin contains ingress for platform apps.
     const params = cloneDeep(argv)
-    //TODO here happens the real installation of the apps
-    await applyAsApps(params)
+    applyCompleted = await applyAsApps(params)
   }
-
   if (!initialInstall) {
-    await upgrade({ when: 'post' })
-    await runtimeUpgrade({ when: 'post' })
+    if (applyCompleted) {
+      await upgrade({ when: 'post' })
+      await runtimeUpgrade({ when: 'post' })
+    } else {
+      d.info('Apply step not completed, skipping upgrade checks')
+    }
   }
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(initialInstall)
