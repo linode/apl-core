@@ -22,7 +22,7 @@ enableServiceLinks: false
 resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
 priorityClassName: otomi-critical
 
-extraInitContainers:
+extraInitContainers: |
   # Akamai branding init container
   - name: init-container-theme-copy
     {{- if $v.otomi.linodeLkeImageRepository }}
@@ -58,7 +58,7 @@ database:
   port: 5432
   existingSecret: keycloak-db-app
 
-extraEnv:
+extraEnv: |
   - name: KC_DB_POOL_INITIAL_SIZE
     value: "5"
   - name: KC_DB_POOL_MIN_SIZE
