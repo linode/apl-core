@@ -1,17 +1,16 @@
-import { mkdirSync, rmdirSync } from 'fs'
-import { pathExists } from 'fs-extra'
-import { writeFile } from 'fs/promises'
+import { mkdirSync, rmSync, existsSync } from 'fs'
+import { readFile, writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
-import { isResourcePresent, k8s, patchContainerResourcesOfSts } from 'src/common/k8s'
+import { appRevisionMatches, k8s, patchArgoCdApp, patchContainerResourcesOfSts } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
 import { appPatches, genericPatch } from 'src/applicationPatches.json'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { V1ResourceRequirements } from '@kubernetes/client-node'
+import { ApiException, V1ResourceRequirements } from '@kubernetes/client-node'
 import { env } from '../common/envalid'
 
 const cmdName = getFilename(__filename)
@@ -164,12 +163,44 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
   await patchArgocdResources(release, values)
 }
 
-export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
+const getAplOperatorValues = async (): Promise<string> => {
+  await hf({
+    labelOpts: ['name=apl-operator'],
+    logLevel: logLevelString(),
+    args: ['write-values', `--output-file-template=${valuesDir}/{{.Release.Namespace}}-{{.Release.Name}}.yaml`],
+  })
+  return await readFile(`${valuesDir}/apl-operator-apl-operator.yaml`, 'utf-8')
+}
+
+export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
   setup()
   const otomiVersion = await getImageTag()
-
+  try {
+    const expectedRevision = env.APPS_REVISION || otomiVersion
+    d.info('Checking running revision of apl-operator...')
+    const operatorRevisionMatches = await appRevisionMatches(
+      'apl-operator-apl-operator',
+      env.APPS_REVISION || otomiVersion,
+      k8s.custom(),
+    )
+    if (operatorRevisionMatches) {
+      d.info(`Expected revision ${expectedRevision} found for apl-operator.`)
+    } else {
+      const values = await getAplOperatorValues()
+      d.info(`Updating apl-operator application to revision ${expectedRevision}.`)
+      await patchArgoCdApp('apl-operator-apl-operator', expectedRevision, values, k8s.custom())
+      d.info('Skipping further updates until apl-operator has restarted.')
+      return false
+    }
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      d.info('apl-operator application not found, continuing')
+    } else {
+      throw error
+    }
+  }
   const res = await hf({
     fileOpts: argv.file,
     labelOpts: argv.label,
@@ -225,6 +256,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
     errors.map((e) => d.error(e))
     d.error(`Not all applications has been deployed successfully`)
   }
+  return true
 }
 
 export const module: CommandModule = {
