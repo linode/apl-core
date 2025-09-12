@@ -19,8 +19,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: tekton-pipelines
-    pipeline.tekton.dev/release: "v1.3.1"
-    version: "v1.3.1"
+    pipeline.tekton.dev/release: "v1.4.0"
+    version: "v1.4.0"
 spec:
   group: tekton.dev
   preserveUnknownFields: false
@@ -349,7 +349,7 @@ spec:
                         x-kubernetes-preserve-unknown-fields: true
                       timeout:
                         description: |-
-                          Time after which the TaskRun times out. Defaults to 1 hour.
+                          Duration after which the TaskRun times out. Defaults to 1 hour.
                           Refer Go's ParseDuration documentation for expected format: https://golang.org/pkg/time/#ParseDuration
                         type: string
                       when:
@@ -794,7 +794,7 @@ spec:
                         x-kubernetes-preserve-unknown-fields: true
                       timeout:
                         description: |-
-                          Time after which the TaskRun times out. Defaults to 1 hour.
+                          Duration after which the TaskRun times out. Defaults to 1 hour.
                           Refer Go's ParseDuration documentation for expected format: https://golang.org/pkg/time/#ParseDuration
                         type: string
                       when:
@@ -1126,7 +1126,7 @@ spec:
                         x-kubernetes-preserve-unknown-fields: true
                       timeout:
                         description: |-
-                          Time after which the TaskRun times out. Defaults to 1 hour.
+                          Duration after which the TaskRun times out. Defaults to 1 hour.
                           Refer Go's ParseDuration documentation for expected format: https://golang.org/pkg/time/#ParseDuration
                         type: string
                       when:
@@ -1465,7 +1465,7 @@ spec:
                         x-kubernetes-preserve-unknown-fields: true
                       timeout:
                         description: |-
-                          Time after which the TaskRun times out. Defaults to 1 hour.
+                          Duration after which the TaskRun times out. Defaults to 1 hour.
                           Refer Go's ParseDuration documentation for expected format: https://golang.org/pkg/time/#ParseDuration
                         type: string
                       when:
