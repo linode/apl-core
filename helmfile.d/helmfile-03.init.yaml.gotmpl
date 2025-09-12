@@ -19,7 +19,7 @@ releases:
       pkg: gitea
       app: core
     <<: *raw
-  - name: gitea-valkey
+  - name: valkey
     installed: {{ $a | get "gitea.enabled" }}
     namespace: gitea
     labels:
