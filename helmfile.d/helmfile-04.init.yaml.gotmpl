@@ -18,12 +18,12 @@ releases:
     labels:
       app: core
     <<: *default
+  # Its a core app but its installed with initial helm install
   - name: apl-operator
     installed: true
     namespace: apl-operator
     labels:
       pkg: apl-operator
-      app: core
     <<: *default
   - name: otomi-operator
     installed: true

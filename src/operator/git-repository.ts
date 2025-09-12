@@ -4,6 +4,8 @@ import retry from 'async-retry'
 import { OperatorError } from './errors'
 import { getErrorMessage } from './utils'
 import { env } from '../common/envalid'
+import * as fs from 'fs'
+import * as path from 'path'
 
 export interface GitRepositoryConfig {
   username: string
@@ -64,6 +66,13 @@ export class GitRepository {
   }
 
   async clone(): Promise<void> {
+    // Check if the repository already exists locally
+    const gitPath = path.join(this.repoPath, '.git')
+    if (fs.existsSync(gitPath)) {
+      this.d.info(`Repository already exists at ${this.repoPath}, skipping clone`)
+      return
+    }
+
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
     try {

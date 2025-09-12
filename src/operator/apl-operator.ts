@@ -49,6 +49,7 @@ export class AplOperator {
     this.repoUrl = gitRepo.repoUrl
 
     this.d.info(`Initializing APL Operator with repo URL: ${maskRepoUrl(gitRepo.repoUrl)}`)
+    this.d.info(`Initializing APL Operator with repo URL: ${gitRepo.repoUrl}`)
   }
 
   // public for testing

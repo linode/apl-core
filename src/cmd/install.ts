@@ -22,8 +22,8 @@ import {
   cloneOtomiChartsInGitea,
   commit,
   createCredentialsSecret,
+  createWelcomeConfigMap,
   initialSetupData,
-  printWelcomeMessage,
   retryIsOAuth2ProxyRunning,
 } from './commit'
 
@@ -40,6 +40,28 @@ const setup = (): void => {
   const argv: HelmArguments = getParsedArgs()
   cleanupHandler(() => cleanup(argv))
   mkdirSync(dir, { recursive: true })
+}
+
+function runPostInstallSteps(initialData: any) {
+  void (async () => {
+    const postInstallLogger = terminal(`cmd:${cmdName}:post-install`)
+    try {
+      postInstallLogger.info('Starting post-install steps...')
+
+      await retryIsOAuth2ProxyRunning()
+      postInstallLogger.info('OAuth2 proxy check completed successfully')
+
+      await restartOtomiApiDeployment(k8s.app())
+      postInstallLogger.info('API restart completed successfully')
+
+      await createWelcomeConfigMap(initialData.secretName, initialData.domainSuffix)
+      postInstallLogger.info('Welcome ConfigMap creation completed successfully')
+
+      postInstallLogger.info('All post-install steps completed successfully')
+    } catch (error) {
+      postInstallLogger.error('Post-install steps failed:', error)
+    }
+  })()
 }
 
 export const installAll = async () => {
@@ -112,9 +134,9 @@ export const installAll = async () => {
     await cloneOtomiChartsInGitea()
     const initialData = await initialSetupData()
     await createCredentialsSecret(initialData.secretName, initialData.username, initialData.password)
-    await retryIsOAuth2ProxyRunning()
-    await restartOtomiApiDeployment(k8s.app())
-    await printWelcomeMessage(initialData.secretName, initialData.domainSuffix)
+
+    // Run post-install steps synchronously but asynchronously without blocking
+    runPostInstallSteps(initialData)
   }
   await setDeploymentState({ status: 'deployed', version })
   d.info('Installation completed')

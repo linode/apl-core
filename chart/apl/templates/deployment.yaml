@@ -1,0 +1,128 @@
+{{- $kms := .Values.kms | default dict }}
+{{- $imageName := .Values.imageName | default "linode/apl-core" }}
+{{- $version := .Values.otomi.version | default .Chart.AppVersion }}
+{{- $useORCS := .Values.otomi.useORCS | default "true"}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "apl-operator.fullname" . }}
+  namespace: apl-operator
+  labels: {{- include "apl-operator.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{- include "apl-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels: {{- include "apl-operator.selectorLabels" . | nindent 8 }}
+    spec:
+      dnsConfig:
+          nameservers:
+            - 8.8.8.8
+            - 8.8.4.4
+      restartPolicy: Always
+      serviceAccountName: {{ include "apl-operator.serviceAccountName" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 3000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: apl-operator
+          {{- if $useORCS }}
+          image: "mirror.registry.linodelke.net/docker/{{ $imageName }}:{{ $version }}"
+          {{- else }}
+          image: "{{ $imageName }}:{{ $version }}"
+          {{- end }}
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+          resources:
+            limits:
+              cpu: '2'
+              memory: '2Gi'
+            requests:
+              cpu: '1'
+              memory: '1Gi'
+          workingDir: /home/app/stack
+          command:
+            - node
+            - dist/src/operator/main.js
+          env:
+            - name: VERBOSITY
+              value: '1'
+            - name: ENV_DIR
+              value: /home/app/stack/env
+            - name: VALUES_INPUT
+              value: /secret/values.yaml
+            # Git configuration for operator (will be set after installation)
+            - name: GIT_ORG
+              value: {{ .Values.operator.gitOrg | default "apl" | quote }}
+            - name: GIT_REPO
+              value: {{ .Values.operator.gitRepo | default "values" | quote }}
+            - name: POLL_INTERVAL_MS
+              value: {{ .Values.operator.pollIntervalMs | default "30000" | quote }}
+            - name: RECONCILE_INTERVAL_MS
+              value: {{ .Values.operator.reconcileIntervalMs | default "300000" | quote }}
+          {{- if hasKey $kms "sops" }}
+          envFrom:
+            - secretRef:
+                name: apl-sops-secrets
+            - secretRef:
+                name: gitea-credentials
+          {{- end }}
+          volumeMounts:
+            - name: otomi-values
+              mountPath: /home/app/stack/env
+            - name: values-secret
+              mountPath: /secret
+            - name: tmp
+              mountPath: /tmp
+            - name: git-config
+              mountPath: /home/app/.gitconfig
+              subPath: .gitconfig
+          livenessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "pgrep -f 'apl-operator' > /dev/null"]
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "pgrep -f 'apl-operator' > /dev/null"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: values-secret
+          secret:
+            secretName: {{ .Release.Name }}-values
+        - name: otomi-values
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: git-config
+          configMap:
+            name: git-config
+            items:
+              - key: .gitconfig
+                path: .gitconfig
+      {{- if hasKey .Values "imagePullSecretNames" }}
+      imagePullSecrets:
+        {{- range .Values.imagePullSecretNames }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
