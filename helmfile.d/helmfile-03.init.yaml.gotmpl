@@ -27,7 +27,7 @@ releases:
       app: core
     chart: ../charts/valkey
     values:
-      - ../values/valkey/valkey.gotmpl
+      - ../values/gitea/gitea-valkey.gotmpl
   - name: gitea
     installed: {{ $a | get "gitea.enabled" }}
     namespace: gitea
