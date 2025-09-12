@@ -19,7 +19,7 @@ releases:
       pkg: gitea
       app: core
     <<: *raw
-  - name: valkey
+  - name: gitea-valkey
     installed: {{ $a | get "gitea.enabled" }}
     namespace: gitea
     labels:
@@ -28,7 +28,6 @@ releases:
     chart: ../charts/valkey
     values:
       - ../values/valkey/valkey.gotmpl
-    <<: *default
   - name: gitea
     installed: {{ $a | get "gitea.enabled" }}
     namespace: gitea
