@@ -69,7 +69,7 @@ dependencies:
     version: 0.79.4
     repository: https://grafana.github.io/helm-charts
   - name: metrics-server
-    version: 7.4.10
+    version: 7.4.12
     repository: https://charts.bitnami.com/bitnami
   - name: minio
     version: 11.10.13
