@@ -8,6 +8,7 @@
     "esbenp.prettier-vscode",
     "foxundermoon.shell-format",
     "mads-hartmann.bash-ide-vscode",
+    "moshfeu.compare-folders",
     "ms-azuretools.vscode-docker",
     "ms-kubernetes-tools.vscode-kubernetes-tools",
     "ms-vscode-remote.remote-containers",
