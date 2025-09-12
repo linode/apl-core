@@ -53,6 +53,9 @@ spec:
             {{- range $key, $value := .Values.adminApi.extraArgs }}
             - "-{{ $key }}={{ $value }}"
             {{- end }}
+            {{- range $key, $value := .Values.global.extraArgs }}
+            - "-{{ $key }}={{ $value }}"
+            {{- end }}
           volumeMounts:
             - mountPath: /conf
               name: config
