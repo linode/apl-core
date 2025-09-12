@@ -23,7 +23,8 @@ cluster: {}
   ##
   # owner: ''
 
-otomi: {}
+otomi:
+  useORCS: true
 
   ## Set the admin password
   ## Will be automatically generated if not filled-in
