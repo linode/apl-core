@@ -30,7 +30,9 @@ releases:
     namespace: keycloak
     labels:
       pkg: keycloak
-    <<: *raw
+    chart: ../charts/keycloakx
+    values:
+      - ../values/keycloak/keycloak-raw.gotmpl
   - name: keycloakx
     installed: true
     namespace: keycloak
@@ -39,5 +41,4 @@ releases:
     chart: ../charts/keycloakx
     values: 
       - ../values/keycloak/keycloak.gotmpl
-      - ../values/keycloak/keycloak-raw.gotmpl
       - ../values/keycloak/keycloak-otomi-db.gotmpl
