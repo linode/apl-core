@@ -69,8 +69,8 @@ dependencies:
     version: 0.79.4
     repository: https://grafana.github.io/helm-charts
   - name: metrics-server
-    version: 7.4.10
-    repository: https://charts.bitnami.com/bitnami
+    version: 3.13.0
+    repository: https://kubernetes-sigs.github.io/metrics-server
   - name: minio
     version: 11.10.13
     repository: https://charts.bitnami.com/bitnami
