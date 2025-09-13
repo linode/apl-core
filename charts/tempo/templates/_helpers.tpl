@@ -189,7 +189,7 @@ Renders the overrides config
 */}}
 {{- define "tempo.overridesConfig" -}}
 overrides:
-{{ toYaml .Values.overrides | indent 2 }}
+{{ toYaml .Values.per_tenant_overrides | indent 2 }}
 {{- end -}}
 
 {{/*
@@ -227,7 +227,7 @@ configMap:
 Internal servers http listen port - derived from Loki default
 */}}
 {{- define "tempo.serverHttpListenPort" -}}
-{{ (((.Values.tempo).structuredConfig).server).http_listen_port | default "3100" }}
+{{ (((.Values.tempo).structuredConfig).server).http_listen_port | default "3200" }}
 {{- end -}}
 
 {{/*
