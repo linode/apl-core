@@ -292,7 +292,7 @@ appsInfo:
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
-    appVersion: 0.31.0
+    appVersion: 0.32.1
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:
