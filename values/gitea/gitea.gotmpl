@@ -248,8 +248,3 @@ global:
     - otomi-pullsecret-global
 {{- end }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
-  imageRegistry: "{{ $v.otomi.linodeLkeImageRepository }}/docker"
-  security:
-    allowInsecureImages: true
-{{- end }}
