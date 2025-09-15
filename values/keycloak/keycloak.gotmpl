@@ -70,11 +70,6 @@ extraEnv: |
       secretKeyRef:
         name: keycloak-db-app
         key: username
-  - name: KC_DB_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: keycloak-db-app
-        key: password
   - name: KC_DB_URL_DATABASE
     valueFrom:
       secretKeyRef:
