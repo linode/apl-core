@@ -30,14 +30,10 @@ releases:
     namespace: keycloak
     labels:
       pkg: keycloak
-    chart: ../charts/raw
-    values:
-      - ../values/keycloak/keycloak-raw.gotmpl
+    <<: *raw
   - name: keycloak
     installed: true
     namespace: keycloak
     labels:
       pkg: keycloak
-    chart: ../charts/keycloakx
-    values: 
-      - ../values/keycloak/keycloak.gotmpl
+    <<: *raw
