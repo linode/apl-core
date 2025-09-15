@@ -22,7 +22,7 @@ enableServiceLinks: false
 resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
 priorityClassName: otomi-critical
 
-extraVolumes:
+extraVolumes: |
   - name: empty-dir
     emptyDir: {}
 
