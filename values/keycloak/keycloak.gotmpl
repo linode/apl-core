@@ -22,6 +22,10 @@ enableServiceLinks: false
 resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
 priorityClassName: otomi-critical
 
+extraVolumes:
+  - name: empty-dir
+    emptyDir: {}
+
 extraInitContainers: |
   # Akamai branding init container
   - name: init-container-theme-copy
