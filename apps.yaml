@@ -33,7 +33,7 @@ appsInfo:
     integration: Cert-manager is used by APL to automatically create and rotate TLS certificates for service endpoints. You may bring your own CA, or let APL create one for you (default). It is recommended to use Let's Encrypt for production certificates. Setting cert-manager to use Let's Encrypt requires DNS availability of the requesting domains, and forces APL to install external-dns. Because a lot of DNS settings are used by other APL contexts, most DNS configuration is found under settings/dns.
   cnpg:
     title: CloudNative PostgreSQL Operator
-    appVersion: 1.26.0
+    appVersion: 1.27.0
     repo: https://github.com/cloudnative-pg/cloudnative-pg
     maintainers: EDB
     relatedLinks:
@@ -45,7 +45,7 @@ appsInfo:
     chartName: cloudnative-pg
   external-dns:
     title: External DNS
-    appVersion: 0.13.4
+    appVersion: 0.18.0
     repo: https://github.com/kubernetes-sigs/external-dns
     maintainers: Kubernetes SIGs
     relatedLinks:
@@ -73,7 +73,7 @@ appsInfo:
         - Click 'I understand' to continue using Falco dashboard
   gitea:
     title: Gitea Self-hosted GIT
-    appVersion: 1.24.4
+    appVersion: 1.24.5
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
@@ -122,7 +122,7 @@ appsInfo:
         - Click 'I understand' to continue using Httpbin service
   ingress-nginx:
     title: Ingress-NGINX
-    appVersion: 1.11.6
+    appVersion: 1.13.1
     repo: https://github.com/kubernetes/ingress-nginx
     maintainers: NGINX
     relatedLinks:
@@ -202,7 +202,7 @@ appsInfo:
     chartName: knative-operator
   kyverno:
     title: Kyverno
-    appVersion: 1.15.0
+    appVersion: 1.15.1
     repo: https://github.com/kyverno/kyverno
     maintainers: Nirmata
     relatedLinks:
@@ -232,7 +232,7 @@ appsInfo:
     integration: Kured can be activated to perform safe automatic node reboots. Only activate Kured if cluster autoscaling is enabled and make sure the cloud resource quota is sufficent.
   tekton:
     title: Tekton Pipelines
-    appVersion: 0.53.0
+    appVersion: 1.3.1
     repo: https://github.com/tektoncd/pipeline
     maintainers: Tekton
     relatedLinks:
@@ -292,7 +292,7 @@ appsInfo:
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
-    appVersion: 0.28.0
+    appVersion: 0.31.0
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:

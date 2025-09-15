@@ -1,0 +1,47 @@
+{{- if .Values.netpols.otomiApi }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: otomi-api-platform-policy
+  namespace: otomi
+  labels:
+    {{- include "apl-network-policies.labels" . | nindent 4 }}
+    app: otomi-api
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: otomi-api
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow access from Istio public ingress gateway
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: istio-ingressgateway-public
+    # Allow access from gitea for webhook notifications
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: gitea
+          podSelector:
+            matchLabels:
+              app: gitea
+    # Allow monitoring access for metrics scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: po-prometheus
+    # Allow internal otomi namespace communication
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: otomi
+{{- end }}
