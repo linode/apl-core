@@ -1,5 +1,4 @@
-import { rmSync } from 'fs'
-import { pathExists } from 'fs-extra'
+import { existsSync, rmSync } from 'fs'
 import { rm, writeFile } from 'fs/promises'
 import { globSync } from 'glob'
 import jsonpath from 'jsonpath'
@@ -490,7 +489,10 @@ export function getUniqueIdentifierFromFilePath(filePath: string): string {
     .replace(/\.yaml$/, '')
 }
 
-export async function setValuesFile(envDir: string, deps = { pathExists, loadValues, writeFile }): Promise<string> {
+export async function setValuesFile(
+  envDir: string,
+  deps = { pathExists: existsSync, loadValues, writeFile },
+): Promise<string> {
   const valuesPath = path.join(envDir, 'values-repo.yaml')
   // if (await deps.pathExists(valuesPath)) return valuesPath
   const allValues = await deps.loadValues(envDir)
