@@ -58,9 +58,12 @@ postgresql:
   enabled: false
 
 database:
-  hostname: keycloak-db-rw.keycloak.svc.cluster.local
+  vendor: postgres
+  host: keycloak-db-rw.keycloak.svc.cluster.local
   port: 5432
   existingSecret: keycloak-db-app
+  username: keycloak
+  database: keycloak
 
 extraEnv: |
   - name: KC_DB_POOL_INITIAL_SIZE
@@ -69,29 +72,12 @@ extraEnv: |
     value: "5"
   - name: KC_DB_POOL_MAX_SIZE
     value: "32"
-  - name: KC_DB_USERNAME
-    valueFrom:
-      secretKeyRef:
-        name: keycloak-db-app
-        key: username
-  - name: KC_DB_URL_DATABASE
-    valueFrom:
-      secretKeyRef:
-        name: keycloak-db-app
-        key: jdbc-uri
   - name: KC_TRUSTSTORE_PATHS
     value: custom-ca
   - name: KEYCLOAK_PRODUCTION
     value: "true"
   - name: KEYCLOAK_PROXY_HEADERS
     value: edge
-  - name: KC_BOOTSTRAP_ADMIN_USERNAME
-    value: {{ $k.adminUsername | quote }}
-  - name: KC_BOOTSTRAP_ADMIN_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: keycloak-initial-admin
-        key: password
   - name: KEYCLOAK_ADMIN
     valueFrom:
       secretKeyRef:
