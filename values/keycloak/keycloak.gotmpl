@@ -28,21 +28,31 @@ postgresql:
 
 database:
   vendor: postgres
-  host: keycloak-db-rw.keycloak.svc.cluster.local
+  hostname: keycloak-db-rw.keycloak.svc.cluster.local
   port: 5432
   existingSecret: keycloak-db-app
   username: keycloak
   database: keycloak
 
 extraEnv: |
+  - name: KC_CACHE_STACK
+    value: jdbc-ping
+  - name: KC_CACHE
+    value: ispn
+  - name: KC_HOSTNAME
+    value: keycloak.{{ $v.cluster.domainSuffix }}
+  - name: QUARKUS_LOG_LEVEL
+    value: DEBUG
+  - name: KC_LOG_LEVEL
+    value: DEBUG
+  - name: KC_LOG_CONSOLE_OUTPUT
+    value: json
   - name: KC_DB_POOL_INITIAL_SIZE
     value: "5"
   - name: KC_DB_POOL_MIN_SIZE
     value: "5"
   - name: KC_DB_POOL_MAX_SIZE
     value: "32"
-  - name: KC_TRUSTSTORE_PATHS
-    value: custom-ca
   - name: KEYCLOAK_PRODUCTION
     value: "true"
   - name: KEYCLOAK_PROXY_HEADERS
