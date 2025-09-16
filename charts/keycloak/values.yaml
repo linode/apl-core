@@ -104,6 +104,9 @@ terminationGracePeriodSeconds: 60
 # The internal Kubernetes cluster domain
 clusterDomain: cluster.local
 
+## Overrides the default entrypoint of the Keycloak container
+command: []
+
 ## Overrides the default args for the Keycloak container
 args: []
 

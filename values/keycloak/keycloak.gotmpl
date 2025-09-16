@@ -78,7 +78,7 @@ extraEnv: |
     valueFrom:
       secretKeyRef:
         name: keycloak-db-app
-        key: dbname
+        key: jdbc-uri
   - name: KC_TRUSTSTORE_PATHS
     value: custom-ca
   - name: KEYCLOAK_PRODUCTION
