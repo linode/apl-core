@@ -63,8 +63,6 @@
 [Gitea](https://gitea.com) is a community managed lightweight code hosting solution written in Go.
 It is published under the MIT license.
 
-> :warning: This chart is currently unmaintained and in desperate need of a new maintainer. If you want to apply as a maintainer, please comment on [#916](https://gitea.com/gitea/helm-gitea/issues/916)
-
 ## Introduction
 
 This helm chart has taken some inspiration from [jfelten's helm chart](https://github.com/jfelten/gitea-helm-chart).

@@ -1,50 +1,56 @@
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: adapt indentation of extraInitContainer tests
+      description: update lockfiles (#950)
     - kind: changed
-      description: fulfill MD044/proper-names
-    - kind: added
-      description: support further initContainers
+      description: update workflow dependencies (minor & patch) (#949)
     - kind: changed
-      description: update lockfiles (#929)
+      description: update dependency go-gitea/gitea to v1.24.6 (#948)
     - kind: changed
-      description: update bats testing framework (#927)
+      description: update lockfiles (#947)
     - kind: changed
-      description: update lockfiles (#926)
+      description: update https://github.com/aws-actions/configure-aws-credentials action to v5 (#946)
     - kind: changed
-      description: update subcharts (minor & patch) (#922)
+      description: update lockfiles (#945)
     - kind: changed
-      description: update dependency go-gitea/gitea to v1.24.5 (#925)
-    - kind: fixed
-      description: add lockFileMaintenance (#924)
+      description: update actions/checkout action to v5 (#928)
     - kind: changed
-      description: update dependency go-gitea/gitea to v1.24.4 (#919)
+      description: update workflow dependencies (minor & patch) (#943)
     - kind: changed
-      description: update docker.io/thegeeklab/git-sv docker tag to v2.0.4 (#921)
+      description: update subcharts (minor & patch) (#942)
     - kind: changed
-      description: update dependency helm-unittest/helm-unittest to v1 (#914)
+      description: update subcharts (minor & patch) (#941)
     - kind: changed
-      description: be compliant with markdownlint (#923)
+      description: update unittests/bash/test_helper/bats-support digest to 0954abb (#939)
+    - kind: changed
+      description: update alpine/helm docker tag to v3.18.5 (#940)
+    - kind: changed
+      description: update maintainers list - add ChristopherHX (#937)
+    - kind: changed
+      description: update maintainers list - DaanSelen (#936)
+    - kind: changed
+      description: update maintainers list - volker.raschek (#933)
+    - kind: changed
+      description: update maintainers list - rossigee (#932)
 apiVersion: v2
-appVersion: 1.24.5
+appVersion: 1.24.6
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 16.7.26
+  version: 16.7.27
 - condition: postgresql-ha.enabled
   name: postgresql-ha
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 16.2.2
+  version: 16.3.2
 - condition: valkey-cluster.enabled
   name: valkey-cluster
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 3.0.23
+  version: 3.0.24
 - condition: valkey.enabled
   name: valkey
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 3.0.30
+  version: 3.0.31
 description: Gitea Helm chart for Kubernetes
 icon: https://gitea.com/assets/img/logo.svg
 keywords:
@@ -55,18 +61,18 @@ keywords:
 - gitea
 - gogs
 maintainers:
-- email: charlie@charliedrage.com
-  name: Charlie Drage
-- email: maintainers@gitea.io
-  name: Gitea Authors
-- email: konrad.lother@novum-rgi.de
-  name: Konrad Lother
-- email: lucas.hahn@novum-rgi.de
-  name: Lucas Hahn
+- email: ross@golder.org
+  name: Ross Golder
+- email: markus.pesch+apps@cryptic.systems
+  name: Markus Pesch
+- email: dselen@nerthus.nl
+  name: Daan Selen
+- email: christopher.homberger@web.de
+  name: Christopher Homberger
 name: gitea
 sources:
 - https://gitea.com/gitea/helm-gitea
 - https://github.com/go-gitea/gitea
 - https://docker.gitea.com/gitea
 type: application
-version: 12.2.0
+version: 12.3.0
