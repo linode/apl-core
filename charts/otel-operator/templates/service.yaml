@@ -1,11 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
+  {{- with .Values.manager.serviceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller-manager
   name: {{ template "opentelemetry-operator.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
 spec:
   ports:
     {{- if .Values.kubeRBACProxy.enabled }}
@@ -27,14 +31,18 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  {{- with .Values.admissionWebhooks.serviceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller-manager
   name: {{ template "opentelemetry-operator.fullname" . }}-webhook
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
 spec:
   ports:
-    - port: 443
+    - port: {{ .Values.admissionWebhooks.servicePort }}
       protocol: TCP
       targetPort: webhook-server
   selector:
