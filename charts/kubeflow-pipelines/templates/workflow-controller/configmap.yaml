@@ -3,7 +3,7 @@ data:
   artifactRepository: |
     archiveLogs: true
     s3:
-      endpoint: {{ .Values.objectStorage.region }}.linodeobjects.com:443
+      endpoint: {{ .Values.objectStorage.region }}.{{ .Values.objectStorage.endpoint }}:{{ .Values.objectStorage.port }}
       bucket: {{ .Values.objectStorage.bucket }}
       keyFormat: "artifacts/{{`{{workflow.name}}`}}/{{`{{workflow.creationTimestamp.Y}}`}}/{{`{{workflow.creationTimestamp.m}}`}}/{{`{{workflow.creationTimestamp.d}}`}}/{{`{{pod.name}}`}}"
       # insecure will disable TLS. Primarily used for minio installs not configured with TLS

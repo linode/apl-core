@@ -11,6 +11,8 @@ objectStorage:
   endpoint: ""
   region: ""
   bucket: ""
+  port: 443
+  secure: true
 
 cacheDeployer:
   resources: {}

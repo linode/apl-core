@@ -18,7 +18,7 @@ data:
   autoUpdatePipelineDefaultVersion: "true"
   objHost: {{ .Values.objectStorage.endpoint }}
   objRegion: {{ .Values.objectStorage.region }}
-  objPort: "443"
+  objPort: {{ .Values.objectStorage.port }}
   bucketName: {{ .Values.objectStorage.bucket }}
   cacheDb: cachedb
   mlmdDb: metadb
