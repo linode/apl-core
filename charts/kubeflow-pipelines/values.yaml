@@ -8,6 +8,7 @@ global:
   tfxOssPublicRegistry:
 
 objectStorage:
+  type: "linode"  # linode or minio
   endpoint: ""
   region: ""
   bucket: ""

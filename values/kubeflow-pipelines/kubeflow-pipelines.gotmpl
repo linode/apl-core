@@ -17,6 +17,7 @@ objectStorage:
   bucket: "kubeflow-pipelines"
   region: us-east-1
   secure: false
+  type: "minio"
 {{- end }}
 {{- if eq $obj.type "linode" }}
   endpoint: linodeobjects.com
@@ -24,6 +25,7 @@ objectStorage:
   region: {{ $obj.linode.region }}
   port: 443
   secure: true
+  type: "linode"
 {{- end }}
 
 cacheDeployer:
