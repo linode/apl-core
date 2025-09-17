@@ -7,7 +7,7 @@ data:
       bucket: {{ .Values.objectStorage.bucket }}
       keyFormat: "artifacts/{{`{{workflow.name}}`}}/{{`{{workflow.creationTimestamp.Y}}`}}/{{`{{workflow.creationTimestamp.m}}`}}/{{`{{workflow.creationTimestamp.d}}`}}/{{`{{pod.name}}`}}"
       # insecure will disable TLS. Primarily used for minio installs not configured with TLS
-      insecure: {{ .Values.objectStorage.secure }}
+      insecure: {{ not .Values.objectStorage.secure }}
       accessKeySecret:
         name: mlpipeline-minio-artifact
         key: accesskey
