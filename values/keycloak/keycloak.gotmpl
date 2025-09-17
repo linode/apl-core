@@ -26,6 +26,9 @@ priorityClassName: otomi-critical
 postgresql:
   enabled: false
 
+proxy:
+  mode: xforwarded
+
 database:
   vendor: postgres
   hostname: keycloak-db-rw.keycloak.svc.cluster.local
@@ -45,10 +48,8 @@ args:
   - '--log-level=DEBUG'
 
 extraEnv: |
-  - name: KC_CACHE_STACK
-    value: jdbc-ping
   - name: KC_CACHE
-    value: ispn
+    value: local
   - name: KC_HOSTNAME
     value: keycloak.{{ $v.cluster.domainSuffix }}
   - name: QUARKUS_LOG_LEVEL
@@ -65,8 +66,6 @@ extraEnv: |
     value: "32"
   - name: KEYCLOAK_PRODUCTION
     value: "true"
-  - name: KEYCLOAK_PROXY_HEADERS
-    value: edge
   - name: KEYCLOAK_ADMIN
     valueFrom:
       secretKeyRef:
