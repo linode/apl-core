@@ -46,6 +46,39 @@ cache:
 args:
   - start
 
+extraVolumes: |
+  - name: empty-dir
+    emptyDir: {}
+
+extraVolumeMounts: |
+    - mountPath: /opt/keycloak/providers
+      name: empty-dir
+      subPath: app-providers-dir
+
+extraInitContainers: |
+
+  # Akamai branding init container
+  - name: init-container-theme-copy
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-console:{{ printf "%s%s" ($isSemver | ternary "v" "") $consoleLoginVersion }}"
+    {{- else }}
+    image: docker.io/linode/apl-console:{{ printf "%s%s" ($isSemver | ternary "v" "") $consoleLoginVersion }}
+    {{- end }}
+    resources: {{ $k.resources.keycloak | toYaml | nindent 6 }}
+    command:
+      - sh
+    args:
+      - -c
+      - |
+        echo "Copying theme..."
+        cp -Rv /app/APL.jar /opt/keycloak/providers/
+        echo "Copied:"
+        ls /opt/keycloak/providers/
+    volumeMounts:
+      - name: empty-dir
+        mountPath: /opt/keycloak/providers
+        subPath: app-providers-dir
+
 extraEnv: |
   - name: KC_CACHE
     value: local
