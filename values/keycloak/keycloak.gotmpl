@@ -37,6 +37,13 @@ database:
 cache:
   stack: custom
 
+command:
+  - /opt/keycloak/bin/kc.sh
+
+args:
+  - start
+  - '--log-level=DEBUG'
+
 extraEnv: |
   - name: KC_CACHE_STACK
     value: jdbc-ping
