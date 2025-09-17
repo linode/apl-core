@@ -19,7 +19,7 @@ objectStorage:
   secure: false
 {{- end }}
 {{- if eq $obj.type "linode" }}
-  endpoint: {{ $obj.linode.region }}.linodeobjects.com
+  endpoint: linodeobjects.com
   bucket: {{ $lb }}
   region: {{ $obj.linode.region }}
   port: 443
