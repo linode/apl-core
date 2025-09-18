@@ -53,6 +53,12 @@ apps:
     enabled: true
   thanos:
     enabled: true
+  keycloak:
+    rawValues:
+      image:
+        registry: mirror.registry.linodelke.net/docker/bitnami/keycloak
+        repository: docker/bitnami/keycloak
+        tag: 26.3.2-debian-12-r0
 teamConfig:
   demo:
     settings:
