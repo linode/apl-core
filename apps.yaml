@@ -94,7 +94,7 @@ appsInfo:
     integration: APL uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
-    appVersion: 2.13.2
+    appVersion: 2.14.0
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
@@ -372,4 +372,4 @@ appsInfo:
     repo: https://github.com/valkey-io/valkey
     maintainers: Valkey Project
     license: BSD-3-
-    about: 'Valkey is a high-performance data structure server that primarily serves key/value workloads. It supports a wide range of native structures and an extensible plugin system for adding new data structures and access patterns.'
+    about: Valkey is a high-performance data structure server that primarily serves key/value workloads. It supports a wide range of native structures and an extensible plugin system for adding new data structures and access patterns.
