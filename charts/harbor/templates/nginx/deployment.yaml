@@ -1,4 +1,4 @@
-{{- if ne .Values.expose.type "ingress" }}
+{{- if and (ne .Values.expose.type "ingress") (ne .Values.expose.type "route") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
