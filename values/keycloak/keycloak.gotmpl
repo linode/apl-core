@@ -90,12 +90,12 @@ extraEnv: |
     value: "5"
   - name: KC_DB_POOL_MAX_SIZE
     value: "32"
-  - name: KEYCLOAK_ADMIN
+  - name: KC_BOOTSTRAP_ADMIN_USERNAME
     valueFrom:
       secretKeyRef:
         name: keycloak-initial-admin
         key: username
-  - name: KEYCLOAK_ADMIN_PASSWORD
+  - name: KC_BOOTSTRAP_ADMIN_PASSWORD
     valueFrom:
       secretKeyRef:
         name: keycloak-initial-admin
