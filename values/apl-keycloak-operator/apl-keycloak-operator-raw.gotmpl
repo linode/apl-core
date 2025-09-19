@@ -53,7 +53,7 @@ resources:
       FEAT_EXTERNAL_IDP: "{{ $v.otomi.hasExternalIDP | toString }}"
       KEYCLOAK_HOSTNAME_URL: https://keycloak.{{ $v.cluster.domainSuffix }}
       KEYCLOAK_HOSTNAME: keycloak.{{ $v.cluster.domainSuffix }}
-      KEYCLOAK_ADDRESS_INTERNAL: http://keycloak.keycloak.svc.cluster.local
+      KEYCLOAK_ADDRESS_INTERNAL: http://keycloak-keycloakx-http.keycloak.svc.cluster.local
       KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
       KEYCLOAK_REALM: 'master'
       KEYCLOAK_THEME_LOGIN: {{ $k.theme }}

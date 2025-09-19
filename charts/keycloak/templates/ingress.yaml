@@ -1,57 +1,112 @@
-{{- /*
-Copyright Broadcom, Inc. All Rights Reserved.
-SPDX-License-Identifier: APACHE-2.0
-*/}}
-
-{{- if .Values.ingress.enabled }}
-apiVersion: {{ include "common.capabilities.ingress.apiVersion" . }}
+{{- $ingress := .Values.ingress -}}
+{{- if $ingress.enabled -}}
+{{- $apiVersion := "networking.k8s.io/v1" -}}
+apiVersion: {{ $apiVersion }}
 kind: Ingress
 metadata:
-  name: {{ include "common.names.fullname" . }}
-  namespace: {{ include "common.names.namespace" . | quote }}
-  {{- $labels := include "common.tplvalues.merge" ( dict "values" ( list .Values.ingress.labels .Values.commonLabels ) "context" . ) }}
-  labels: {{- include "common.labels.standard" ( dict "customLabels" $labels "context" $ ) | nindent 4 }}
-    app.kubernetes.io/component: keycloak
-  {{- if or .Values.ingress.annotations .Values.commonAnnotations }}
-  {{- $annotations := include "common.tplvalues.merge" ( dict "values" ( list .Values.ingress.annotations .Values.commonAnnotations ) "context" . ) }}
-  annotations: {{- include "common.tplvalues.render" ( dict "value" $annotations "context" $) | nindent 4 }}
+  name: {{ include "keycloak.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  {{- with $ingress.annotations }}
+  annotations:
+    {{- range $key, $value := . }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
   {{- end }}
+  labels:
+    {{- include "keycloak.labels" . | nindent 4 }}
+    {{- range $key, $value := $ingress.labels }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
 spec:
-  {{- if .Values.ingress.ingressClassName }}
-  ingressClassName: {{ include "common.tplvalues.render" ( dict "value" .Values.ingress.ingressClassName "context" $ ) | quote }}
-  {{- end }}
-  rules:
-    {{- if .Values.ingress.hostname }}
-    - host: {{ (tpl .Values.ingress.hostname .) | quote }}
-      http:
-        paths:
-          {{- if .Values.ingress.extraPaths }}
-          {{- toYaml .Values.ingress.extraPaths | nindent 10 }}
-          {{- end }}
-          - path: {{ include "common.tplvalues.render" ( dict "value" .Values.ingress.path "context" $) }}
-            pathType: {{ .Values.ingress.pathType }}
-            backend: {{- include "common.ingress.backend" (dict "serviceName" (include "common.names.fullname" .) "servicePort" .Values.ingress.servicePort "context" $)  | nindent 14 }}
-    {{- end }}
-    {{- range .Values.ingress.extraHosts }}
-    - host: {{ (tpl .name $) }}
-      http:
-        paths:
-          - path: {{ default "/" .path }}
-            pathType: {{ default "ImplementationSpecific" .pathType }}
-            backend: {{- include "common.ingress.backend" (dict "serviceName" (include "common.names.fullname" $) "servicePort" $.Values.ingress.servicePort "context" $) | nindent 14 }}
-    {{- end }}
-    {{- if .Values.ingress.extraRules }}
-    {{- include "common.tplvalues.render" (dict "value" .Values.ingress.extraRules "context" $) | nindent 4 }}
-    {{- end }}
-  {{- if or (and .Values.ingress.tls (or (include "common.ingress.certManagerRequest" ( dict "annotations" .Values.ingress.annotations )) .Values.ingress.selfSigned .Values.ingress.secrets )) .Values.ingress.extraTls }}
-  tls:
-  {{- if and .Values.ingress.tls (or (include "common.ingress.certManagerRequest" ( dict "annotations" .Values.ingress.annotations )) .Values.ingress.secrets .Values.ingress.selfSigned) }}
-    - hosts:
-        - {{ (tpl .Values.ingress.hostname .) | quote }}
-      secretName: {{ printf "%s-tls" (tpl .Values.ingress.hostname .) }}
-    {{- end }}
-    {{- if .Values.ingress.extraTls }}
-    {{- include "common.tplvalues.render" (dict "value" .Values.ingress.extraTls "context" $) | nindent 4 }}
-    {{- end }}
-  {{- end }}
+{{- if $ingress.ingressClassName }}
+  ingressClassName: {{ $ingress.ingressClassName }}
 {{- end }}
+{{- if $ingress.tls }}
+  tls:
+    {{- range $ingress.tls }}
+    - hosts:
+      {{- range .hosts }}
+        - {{ tpl . $ | quote }}
+      {{- end }}
+      {{- with .secretName }}
+      secretName: {{ tpl . $ }}
+      {{- end }}
+    {{- end }}
+{{- end }}
+  rules:
+    {{- range .Values.ingress.rules }}
+    - host: {{ tpl .host $ | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ tpl .path $ | quote }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "keycloak.fullname" $ }}-http
+                port:
+                  name: {{ $ingress.servicePort }}
+          {{- end }}
+    {{- end }}
+{{- if $ingress.console.enabled }}
+---
+apiVersion: {{ $apiVersion }}
+kind: Ingress
+metadata:
+  name: {{ include "keycloak.fullname" . }}-console
+  namespace: {{ .Release.Namespace }}
+  {{- with $ingress.console.annotations }}
+  annotations:
+    {{- range $key, $value := . }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  labels:
+    {{- include "keycloak.labels" . | nindent 4 }}
+    {{- range $key, $value := $ingress.labels }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+spec:
+{{- if $ingress.console.ingressClassName }}
+  ingressClassName: {{ $ingress.console.ingressClassName }}
+{{- end }}
+{{- if $ingress.console.tls }}
+  tls:
+    {{- range $ingress.console.tls }}
+    - hosts:
+      {{- range .hosts }}
+        - {{ tpl . $ | quote }}
+      {{- end }}
+      {{- with .secretName }}
+      secretName: {{ tpl . $ }}
+      {{- end }}
+    {{- end }}
+{{ else if $ingress.tls }}
+  tls:
+    {{- range $ingress.tls }}
+    - hosts:
+      {{- range .hosts }}
+        - {{ tpl . $ | quote }}
+      {{- end }}
+      {{- with .secretName }}
+      secretName: {{ tpl . $ }}
+      {{- end }}
+    {{- end }}
+{{- end }}
+  rules:
+    {{- range .Values.ingress.console.rules }}
+    - host: {{ tpl .host $ | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ tpl .path $ | quote }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "keycloak.fullname" $ }}-http
+                port:
+                  name: {{ $ingress.servicePort }}
+          {{- end }}
+    {{- end }}
+{{- end -}}
+{{- end -}}

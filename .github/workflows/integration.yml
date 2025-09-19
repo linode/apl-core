@@ -122,6 +122,7 @@ jobs:
           echo 'domain_zone: ${{ inputs.domain_zone }}'
           echo 'certificate: ${{ inputs.certificate }}'
           echo 'is_pre_installed: ${{ inputs.is_pre_installed }}'
+          echo 'disableORCS: ${{ inputs.disableORCS }}'
 
   preprocess-linode-input:
     needs: preprocess-input
