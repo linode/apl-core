@@ -4,7 +4,7 @@
 
 {{- with $v.otomi.linodeLkeImageRepository }}
 image:
-  repository: "{{ . }}/registry.k8s.io/metrics-server/metrics-server"
+  repository: "{{ . }}/k8s/metrics-server/metrics-server"
 {{- end }}
 
 {{- if .Values.otomi | get "globalPullSecret" nil }}
