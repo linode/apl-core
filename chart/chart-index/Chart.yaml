@@ -53,7 +53,7 @@ dependencies:
     version: 2.10.0
     repository: https://kiali.org/helm-charts
   - name: knative-operator
-    version: 1.18.1
+    version: v1.19.3
     repository: https://knative.github.io/operator
   - name: kube-prometheus-stack
     version: 75.18.1
