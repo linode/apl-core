@@ -16,10 +16,10 @@ data:
   appName: pipeline
   appVersion: {{ .Chart.AppVersion }}
   autoUpdatePipelineDefaultVersion: "true"
-  objHost: {{ .Values.objectStorage.endpoint }}
-  objRegion: {{ .Values.objectStorage.region }}
-  objPort: "443"
-  bucketName: {{ .Values.objectStorage.bucket }}
+  objHost: {{ .Values.objectStorage.endpoint | quote }}
+  objRegion: {{ .Values.objectStorage.region | quote }}
+  objPort: {{ .Values.objectStorage.port | quote}}
+  bucketName: {{ .Values.objectStorage.bucket | quote }}
   cacheDb: cachedb
   mlmdDb: metadb
   pipelineDb: mlpipeline
