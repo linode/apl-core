@@ -20,9 +20,9 @@ imageName: {{ regexReplaceAll "^ghcr\\.io" $hdb.imageName (printf "%s/ghcr" $v.o
 imageName: {{ $hdb.imageName }}
   {{- end }}
 {{- else if $v.otomi.linodeLkeImageRepository }}
-imageName: {{ $v.otomi.linodeLkeImageRepository }}/ghcr/cloudnative-pg/postgresql:15.13
+imageName: {{ $v.otomi.linodeLkeImageRepository }}/ghcr/{{ $cnpg.pgDefaultPlatformImage }}
 {{- else }}
-imageName: ghcr.io/cloudnative-pg/postgresql:15.13
+imageName: ghcr.io/{{ $cnpg.pgDefaultPlatformImage }}
 {{- end }}
 
 postgresql:
