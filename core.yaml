@@ -318,7 +318,7 @@ adminApps:
     tags: [storage, backup]
     ownHost: true
     ingress:
-      - svc: minio
+      - svc: minio-console
         port: 9001
         namespace: minio
         type: public
