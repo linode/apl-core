@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.11.0](https://github.com/linode/apl-core/compare/v4.10.1...v4.11.0) (2025-09-22)
+
+
+### Features
+
+* add deprecated labels for Jaeger, Falco, Httpbin and Kiali apps ([#2421](https://github.com/linode/apl-core/issues/2421)) ([c1ec6ad](https://github.com/linode/apl-core/commit/c1ec6ad1d8dfbb332a0db40a18d215b0bb4fd54e))
+* add network policies chart ([#2434](https://github.com/linode/apl-core/issues/2434)) ([e86ef65](https://github.com/linode/apl-core/commit/e86ef653e96956487edbca7984cae93b32704ef7))
+* added ORCS support for external-dns ([#2386](https://github.com/linode/apl-core/issues/2386)) ([b29224c](https://github.com/linode/apl-core/commit/b29224cff86c001c387e2c24a50f5c46307eab19))
+* adding aplCharts version support ([#2401](https://github.com/linode/apl-core/issues/2401)) ([e2a34aa](https://github.com/linode/apl-core/commit/e2a34aa37a77c17a887a78c85c5f8424d1205d6d))
+* adding ORCS support for kubeflow ([#2420](https://github.com/linode/apl-core/issues/2420)) ([a0dd5a3](https://github.com/linode/apl-core/commit/a0dd5a3e9872b006eaaf2ce5ff3b14022ae3f713))
+* cleanup /tmp/otomi directory before applying apps ([#2422](https://github.com/linode/apl-core/issues/2422)) ([14d96d0](https://github.com/linode/apl-core/commit/14d96d00c525bc791c121fe9c9050db0aca4adc4))
+* enable prometheus by default ([#2425](https://github.com/linode/apl-core/issues/2425)) ([edc3c98](https://github.com/linode/apl-core/commit/edc3c989203939faf5594fbff754cf5d55d34936))
+* optionally use cnpg backup plugin ([#2451](https://github.com/linode/apl-core/issues/2451)) ([6a2ed5f](https://github.com/linode/apl-core/commit/6a2ed5fc0997dec67909d80f68658cd39dfd3a37))
+
+
+### Bug Fixes
+
+* deploying apl ([#2442](https://github.com/linode/apl-core/issues/2442)) ([e5f68d5](https://github.com/linode/apl-core/commit/e5f68d597a4b1d98b4b3dc81425cd45805474205))
+* disabling immediate cnpg backups ([#2443](https://github.com/linode/apl-core/issues/2443)) ([5d3d76e](https://github.com/linode/apl-core/commit/5d3d76e20e4addacb6f9d6b79729742cabfc055d))
+* handle merge conflicts in apl-operator ([#2452](https://github.com/linode/apl-core/issues/2452)) ([08212c9](https://github.com/linode/apl-core/commit/08212c92e3a5a58484448e60c5c738f59debe3fb))
+* push apl-charts repository with tag ([#2455](https://github.com/linode/apl-core/issues/2455)) ([d3e0d62](https://github.com/linode/apl-core/commit/d3e0d62c914bf9380c1cbb2505dd4ac85157bc20))
+* re-creation of team files ([#2466](https://github.com/linode/apl-core/issues/2466)) ([23ccd89](https://github.com/linode/apl-core/commit/23ccd8955b4fd2eec40ea936ec5d3cc6cc09ac75))
+* replace fs-extra with fs ([#2427](https://github.com/linode/apl-core/issues/2427)) ([c13a263](https://github.com/linode/apl-core/commit/c13a2630be69b1cc5d8605901cff986fa15d543a))
+* smoke tests should fail on template rendering failure ([#2426](https://github.com/linode/apl-core/issues/2426)) ([a550fd6](https://github.com/linode/apl-core/commit/a550fd619ec37d2de1dca3cfffd7fef38927ff5b))
+* unambiguously refer to ArgoCD apps ([#2493](https://github.com/linode/apl-core/issues/2493)) ([4c719f1](https://github.com/linode/apl-core/commit/4c719f1becda1ec5e3e2a4e308204f410a6fe65b))
+* update apl-operator before other upgrades ([#2500](https://github.com/linode/apl-core/issues/2500)) ([ed87801](https://github.com/linode/apl-core/commit/ed87801b68aab1205e83ec5e5cfc0a6f122251de))
+
+
+### CI
+
+* always set PR to draft, mention pending version update ([#2439](https://github.com/linode/apl-core/issues/2439)) ([0af02f6](https://github.com/linode/apl-core/commit/0af02f64ca8164e5a3a05c5f1284c6306af91010))
+
+
+### Others
+
+* **chart-deps:** update cert-manager to version v1.18.2 ([#2305](https://github.com/linode/apl-core/issues/2305)) ([add84f1](https://github.com/linode/apl-core/commit/add84f1dfcc689a022e578670b41cd17a97d0310))
+* **chart-deps:** update istiod to version 1.26.3 ([#2398](https://github.com/linode/apl-core/issues/2398)) ([0031651](https://github.com/linode/apl-core/commit/0031651c5808ef63b2d5db87a24716632cab14d2))
+* **chart-deps:** update kyverno to version 3.5.0 ([#2404](https://github.com/linode/apl-core/issues/2404)) ([041a194](https://github.com/linode/apl-core/commit/041a1941c1fa910ff9e6f936f8cfdb6e10d22d03))
+* **chart-deps:** update policy-reporter to version 3.3.2 ([#2408](https://github.com/linode/apl-core/issues/2408)) ([d4a8c0a](https://github.com/linode/apl-core/commit/d4a8c0ab333dabb27dc04b708a05a148d51a97dc))
+* **chart-deps:** update policy-reporter to version 3.4.0 ([#2462](https://github.com/linode/apl-core/issues/2462)) ([b1139b8](https://github.com/linode/apl-core/commit/b1139b8af2f4abed2ed046cd685d30e113d3979a))
+* **chart-deps:** update trivy-operator to version 0.30.0 ([#2433](https://github.com/linode/apl-core/issues/2433)) ([a1c62d4](https://github.com/linode/apl-core/commit/a1c62d40f5ef2f5e9c7cf7f8afa71b0c6b879320))
+* **deps:** bump ignore-walk from 7.0.0 to 8.0.0 ([#2415](https://github.com/linode/apl-core/issues/2415)) ([69f34e0](https://github.com/linode/apl-core/commit/69f34e09ad54f8bf47bfa2fef6cc7b2a1393fa00))
+* **deps:** bump the npm-dependencies group across 1 directory with 12 updates ([#2444](https://github.com/linode/apl-core/issues/2444)) ([d3b1995](https://github.com/linode/apl-core/commit/d3b1995af657e81f979eb15a97ced453facc067b))
+* remove project schema ([#2441](https://github.com/linode/apl-core/issues/2441)) ([23e988c](https://github.com/linode/apl-core/commit/23e988c275e17497e63611f30a1ce34f5827c059))
+* update version for runtime upgrade ([#2463](https://github.com/linode/apl-core/issues/2463)) ([83e9906](https://github.com/linode/apl-core/commit/83e9906370b3620c1d76a5a7cf21286ada004a33))
+* upgrade Gitea ([#2454](https://github.com/linode/apl-core/issues/2454)) ([20e5662](https://github.com/linode/apl-core/commit/20e566272aabe8bf02ec674ba4dcd61f4ec7a1e8))
+
 ## [4.9.0](https://github.com/linode/apl-core/compare/v4.8.0...v4.9.0) (2025-08-06)
 
 
