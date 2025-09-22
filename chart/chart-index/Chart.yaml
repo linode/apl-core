@@ -48,7 +48,7 @@ dependencies:
     repository: https://jaegertracing.github.io/helm-charts
   - name: keycloakx
     alias: keycloak
-    version: 24.9.0
+    version: 7.1.3
     repository: https://github.com/codecentric/helm-charts
   - name: kiali-operator
     version: 2.10.0

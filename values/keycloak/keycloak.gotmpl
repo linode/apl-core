@@ -4,10 +4,10 @@
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
 {{- $globalPullSecret := $v.otomi | get "globalPullSecret" nil }}
 
+{{ if $v.otomi.linodeLkeImageRepository }}
 image:
-  repository: {{ if $v.otomi.linodeLkeImageRepository }}{{ $v.otomi.linodeLkeImageRepository }}/docker/keycloak/keycloak{{ else }}quay.io/keycloak/keycloak{{ end }}
-  tag: "26.3.3"
-  pullPolicy: IfNotPresent
+  repository: {{ $v.otomi.linodeLkeImageRepository }}/quay/keycloak/keycloak
+{{ end }}
 
 {{- if $globalPullSecret }}
 imagePullSecrets:
