@@ -73,7 +73,7 @@ dependencies:
     version: 3.13.0
     repository: https://kubernetes-sigs.github.io/metrics-server
   - name: minio
-    version: 11.10.13
+    version: 5.4.0
     repository: https://github.com/minio/minio
   - name: oauth2-proxy
     version: 7.12.18
