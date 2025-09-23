@@ -14,17 +14,17 @@ annotations:
   artifacthub.io/operator: "false"
   artifacthub.io/prerelease: "false"
 apiVersion: v2
-appVersion: v1.15.1
+appVersion: v1.15.2
 dependencies:
 - condition: grafana.enabled
   name: grafana
   repository: ""
-  version: 3.5.1
+  version: 3.5.2
 - condition: crds.install
   name: crds
   repository: ""
-  version: 3.5.1
-- condition: openreports.enabled
+  version: 3.5.2
+- condition: openreports.installCrds
   name: openreports
   repository: https://openreports.github.io/reports-api
   version: 0.1.0
@@ -52,4 +52,4 @@ name: kyverno
 sources:
 - https://github.com/kyverno/kyverno
 type: application
-version: 3.5.1
+version: 3.5.2
