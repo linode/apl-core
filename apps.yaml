@@ -161,7 +161,7 @@ appsInfo:
         - Click 'I understand' to continue using Jaeger dashboard
   keycloak:
     title: Keycloak
-    appVersion: 26.3.2
+    appVersion: 26.3.3
     repo: https://github.com/keycloak/keycloak
     maintainers: Keycloak
     relatedLinks:
