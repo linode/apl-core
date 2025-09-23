@@ -171,7 +171,7 @@ appsInfo:
     integration: The SSO login page for APL is served by Keycloak. Keycloak is used as an identity broker or provider for all APL integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of APL and is always enabled.
   kiali:
     title: Kiali Operator
-    appVersion: 2.10.0
+    appVersion: 2.16.0
     repo: https://github.com/kiali/kiali
     maintainers: Kiali
     relatedLinks:
@@ -372,4 +372,4 @@ appsInfo:
     repo: https://github.com/valkey-io/valkey
     maintainers: Valkey Project
     license: BSD-3-
-    about: 'Valkey is a high-performance data structure server that primarily serves key/value workloads. It supports a wide range of native structures and an extensible plugin system for adding new data structures and access patterns.'
+    about: Valkey is a high-performance data structure server that primarily serves key/value workloads. It supports a wide range of native structures and an extensible plugin system for adding new data structures and access patterns.
