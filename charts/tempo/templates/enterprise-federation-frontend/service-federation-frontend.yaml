@@ -14,8 +14,8 @@ spec:
   type: {{ .Values.enterpriseFederationFrontend.service.type }}
   ports:
     - name: http-metrics
-      port: 3100
-      targetPort: 3100
+      port: 3200
+      targetPort: http-metrics
   {{- if .Values.enterpriseFederationFrontend.service.loadBalancerIP }}
   loadBalancerIP: {{ .Values.enterpriseFederationFrontend.service.loadBalancerIP  }}
   {{- end }}
