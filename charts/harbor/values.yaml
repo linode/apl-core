@@ -48,6 +48,17 @@ expose:
       nginx.ingress.kubernetes.io/proxy-body-size: "0"
     # ingress-specific labels
     labels: {}
+  route:
+    labels: {}
+    annotations: {}
+      # - name: envoy-internal
+      #   namespace: networking
+      #   sectionName: https
+      #   group: gateway.networking.k8s.io
+      #   kind: Gateway
+    parentRefs: {}
+      # - "harbor.example.com"
+    hosts: []
   clusterIP:
     # The name of ClusterIP service
     name: harbor
@@ -270,7 +281,7 @@ persistence:
 # The initial password of Harbor admin. Change it from portal after launching Harbor
 # or give an existing secret for it
 # key in secret is given via (default to HARBOR_ADMIN_PASSWORD)
-# existingSecretAdminPassword:
+existingSecretAdminPassword: ""
 existingSecretAdminPasswordKey: HARBOR_ADMIN_PASSWORD
 harborAdminPassword: "Harbor12345"
 
@@ -336,6 +347,11 @@ ipFamily:
   # ipv4Enabled set to true if ipv4 is enabled in cluster, currently it affected the nginx related component
   ipv4:
     enabled: true
+
+  # Sets the IP family policy for services to be able to configure dual-stack; see [Configure dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services).
+  policy: ""
+  # A list of IP families for services that should be supported, in the order in which they should be applied to ClusterIP. Can be "IPv4" and/or "IPv6".
+  families: []
 
 imagePullPolicy: IfNotPresent
 
@@ -483,7 +499,7 @@ containerSecurityContext:
 nginx:
   image:
     repository: goharbor/nginx-photon
-    tag: v2.13.2
+    tag: v2.14.0
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -514,7 +530,7 @@ nginx:
 portal:
   image:
     repository: goharbor/harbor-portal
-    tag: v2.13.2
+    tag: v2.14.0
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -554,7 +570,7 @@ portal:
 core:
   image:
     repository: goharbor/harbor-core
-    tag: v2.13.2
+    tag: v2.14.0
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -626,7 +642,7 @@ core:
   tokenCert: |
   # The XSRF key. Will be generated automatically if it isn't specified
   # While you specified, Please make sure it is 32 characters, otherwise would have validation issue at the harbor-core runtime
-  # https://github.com/goharbor/harbor/pull/21154 
+  # https://github.com/goharbor/harbor/pull/21154
   xsrfKey: ""
   # If using existingSecret, the key is defined by core.existingXsrfSecretKey
   existingXsrfSecret: ""
@@ -643,7 +659,7 @@ core:
 jobservice:
   image:
     repository: goharbor/harbor-jobservice
-    tag: v2.13.2
+    tag: v2.14.0
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -706,7 +722,7 @@ registry:
   registry:
     image:
       repository: goharbor/registry-photon
-      tag: v2.13.2
+      tag: v2.14.0
     # resources:
     #  requests:
     #    memory: 256Mi
@@ -715,7 +731,7 @@ registry:
   controller:
     image:
       repository: goharbor/harbor-registryctl
-      tag: v2.13.2
+      tag: v2.14.0
     # resources:
     #  requests:
     #    memory: 256Mi
@@ -796,7 +812,7 @@ trivy:
     # repository the repository for Trivy adapter image
     repository: goharbor/trivy-adapter-photon
     # tag the tag for Trivy adapter image
-    tag: v2.13.2
+    tag: v2.14.0
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -854,7 +870,7 @@ trivy:
   # Anonymous downloads from GitHub are subject to the limit of 60 requests per hour. Normally such rate limit is enough
   # for production operations. If, for any reason, it's not enough, you could increase the rate limit to 5000
   # requests per hour by specifying the GitHub access token. For more details on GitHub rate limiting please consult
-  # https://developer.github.com/v3/#rate-limiting
+  # https://v2.14.0eloper.github.com/v3/#rate-limiting
   #
   # You can create a GitHub token by following the instructions in
   # https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line
@@ -867,8 +883,19 @@ trivy:
   skipUpdate: false
   # skipJavaDBUpdate If the flag is enabled you have to manually download the `trivy-java.db` file and mount it in the
   # `/home/scanner/.cache/trivy/java-db/trivy-java.db` path
-  #
   skipJavaDBUpdate: false
+  # The dbRepository and javaDBRepository flags can take multiple values, improving reliability when downloading databases.
+  # Databases are downloaded in priority order until one is successful.
+  # An attempt to download from the next repository is only made if a temporary error is received (e.g. status 429 or 5xx).
+  #
+  # OCI repository(ies) to retrieve the trivy vulnerability database in order of priority
+  dbRepository:
+    - "mirror.gcr.io/aquasec/trivy-db"
+    - "ghcr.io/aquasecurity/trivy-db"
+  # OCI repository(ies) to retrieve the Java trivy vulnerability database in order of priority
+  javaDBRepository:
+    - "mirror.gcr.io/aquasec/trivy-java-db"
+    - "ghcr.io/aquasecurity/trivy-java-db"
   # The offlineScan option prevents Trivy from sending API requests to identify dependencies.
   #
   # Scanning JAR files and pom.xml may require Internet access for better detection, but this option tries to avoid it.
@@ -889,7 +916,7 @@ database:
   internal:
     image:
       repository: goharbor/harbor-db
-      tag: v2.13.2
+      tag: v2.14.0
     # set the service account to be used, default if left empty
     serviceAccountName: ""
     # mount the service account token
@@ -969,7 +996,7 @@ redis:
   internal:
     image:
       repository: goharbor/redis-photon
-      tag: v2.13.2
+      tag: v2.14.0
     # set the service account to be used, default if left empty
     serviceAccountName: ""
     # mount the service account token
@@ -1029,7 +1056,7 @@ redis:
     # username field can be an empty string, and it will be authenticated against the default user
     username: ""
     password: ""
-    # If using existingSecret, the key must be REDIS_PASSWORD
+    # If using existingSecret, the key must be REDIS_PASSWORD, if ACL mode enabled, also inlcudes data of username, the keys must be REDIS_USERNAME
     existingSecret: ""
   ## Additional deployment annotations
   podAnnotations: {}
@@ -1039,7 +1066,7 @@ redis:
 exporter:
   image:
     repository: goharbor/harbor-exporter
-    tag: v2.13.2
+    tag: v2.14.0
   serviceAccountName: ""
   # mount the service account token
   automountServiceAccountToken: false
