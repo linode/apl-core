@@ -131,6 +131,9 @@ export const getStandaloneFiles = async (envDir: string): Promise<Record<string,
   const pathGlobs = maps.map((fileMap) => {
     return fileMap.pathGlob
   })
+  // Edge case to also include any database yaml files
+  // as these are not in the repo file map
+  pathGlobs.push(`${envDir}/env/teams/*/databases/*.yaml`)
   const filePaths = await glob(pathGlobs)
 
   await Promise.allSettled(

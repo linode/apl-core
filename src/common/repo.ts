@@ -39,6 +39,7 @@ type AplKind =
   | 'AplTeamWorkloadValues'
   | 'AplTeamTool'
   | 'AplVersion'
+  | 'AkamaiKnowledgeBase'
 
 export interface FileMap {
   envDir: string
@@ -314,6 +315,16 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       processAs: 'arrayItem',
       resourceGroup: 'team',
       resourceDir: 'sealedsecrets',
+      loadToSpec: false,
+    },
+    {
+      kind: 'AkamaiKnowledgeBase',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.knowledgebases[*]',
+      pathGlob: `${envDir}/env/teams/*/knowledgebases/*.yaml`,
+      processAs: 'arrayItem',
+      resourceGroup: 'team',
+      resourceDir: 'knowledgebases',
       loadToSpec: false,
     },
     {
