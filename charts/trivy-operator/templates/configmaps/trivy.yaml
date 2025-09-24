@@ -80,6 +80,10 @@ data:
   {{- with .Values.trivy.timeout }}
   trivy.timeout: {{ . | quote }}
   {{- end }}
+  {{- if .Values.trivy.configFile }}
+  trivy.configFile: |
+  {{- .Values.trivy.configFile | toYaml | nindent 4 }}
+  {{- end }}
   {{- if .Values.trivy.ignoreFile }}
   trivy.ignoreFile: |
 {{- range .Values.trivy.ignoreFile }}
