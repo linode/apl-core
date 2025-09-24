@@ -8,16 +8,16 @@ metadata:
   namespace: argocd
 spec:
   project: team-{{ $v.teamId }}
-    sources:
-    - repoURL: {{ $v.gitOps.valuesRepoUrl }}
-      targetRevision: HEAD
-      path: 'env/teams/{{ $v.teamId }}/sealedsecrets'
-    - repoURL: {{ $v.gitOps.valuesRepoUrl }}
-      targetRevision: HEAD
-      path: 'env/teams/{{ $v.teamId }}/knowledgebases'
-    - repoURL: {{ $v.gitOps.valuesRepoUrl }}
-      targetRevision: HEAD
-      path: 'env/teams/{{ $v.teamId }}/databases'
+  sources:
+  - repoURL: {{ $v.gitOps.valuesRepoUrl }}
+    targetRevision: HEAD
+    path: 'env/teams/{{ $v.teamId }}/sealedsecrets'
+  - repoURL: {{ $v.gitOps.valuesRepoUrl }}
+    targetRevision: HEAD
+    path: 'env/teams/{{ $v.teamId }}/knowledgebases'
+  - repoURL: {{ $v.gitOps.valuesRepoUrl }}
+    targetRevision: HEAD
+    path: 'env/teams/{{ $v.teamId }}/databases'
   destination:
     server: https://kubernetes.default.svc
     namespace: team-{{ $v.teamId }}
