@@ -218,7 +218,7 @@ async function ensureKeepFile(keepFilePath: string, deps = { writeFile }): Promi
 
 export async function ensureTeamGitOpsDirectories(envDir: string, deps = { writeFile, glob }) {
   const dirs = await deps.glob(`${envDir}/env/teams/*`)
-  const gitOpsDirs = ['sealedsecrets', 'workloadValues']
+  const gitOpsDirs = ['sealedsecrets', 'workloadValues', 'databases', 'knowledgebases']
 
   const keepFilePaths: string[] = []
   for (const teamDir of dirs) {
