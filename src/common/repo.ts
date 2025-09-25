@@ -40,6 +40,7 @@ type AplKind =
   | 'AplTeamTool'
   | 'AplVersion'
   | 'AkamaiKnowledgeBase'
+  | 'AkamaiAgent'
 
 export interface FileMap {
   envDir: string
@@ -325,6 +326,16 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       processAs: 'arrayItem',
       resourceGroup: 'team',
       resourceDir: 'knowledgebases',
+      loadToSpec: false,
+    },
+    {
+      kind: 'AkamaiAgent',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.agents[*]',
+      pathGlob: `${envDir}/env/teams/*/agents/*.yaml`,
+      processAs: 'arrayItem',
+      resourceGroup: 'team',
+      resourceDir: 'agents',
       loadToSpec: false,
     },
     {
