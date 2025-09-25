@@ -70,13 +70,8 @@ export const runtimeUpgrades: RuntimeUpgrades = [
   {
     version: '4.11.0',
     applications: {
-      'istio-system-istiod': {
-        post: async () => {
-          await detectAndRestartOutdatedIstioSidecars(k8s.core())
-        },
-      },
       minio: {
-        post: async (context: RuntimeUpgradeContext) => {
+        pre: async (context: RuntimeUpgradeContext) => {
           const d = context.debug
           d.info('Deleting old minio resources in namespace minio before sync')
           try {
@@ -85,6 +80,11 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           } catch (error) {
             d.error('Failed to delete minio resources:', error)
           }
+        },
+      },
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
     },
