@@ -75,6 +75,18 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
+      'minio-minio': {
+        post: async (context: RuntimeUpgradeContext) => {
+          const d = context.debug
+          d.info('Deleting old minio resources in namespace minio before sync')
+          try {
+            await removeOldMinioResources()
+            d.info('Successfully deleted minio resources')
+          } catch (error) {
+            d.error('Failed to delete minio resources:', error)
+          }
+        },
+      },
     },
   },
   {
