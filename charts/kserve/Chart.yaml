@@ -7,3 +7,8 @@ keywords:
   - modelmesh
 sources:
   - http://github.com/kserve/kserve
+dependencies:
+- condition: crds.install
+  name: kserve-crd
+  repository: ""
+  version: v0.15.2
