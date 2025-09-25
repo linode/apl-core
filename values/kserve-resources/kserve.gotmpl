@@ -1,0 +1,10 @@
+{{- $v := .Values -}}
+{{- $ks := $v.apps.kserve -}}
+
+kserve:
+  controller:
+    rbacProxy:
+      resources: {{- $ks.resources.rbacProxy | toYaml | nindent 8 }}
+    resources: {{- $ks.resources.controller | toYaml | nindent 6 }}
+  inferenceservice:
+    resources: {{- $ks.resources.inferenceService | toYaml | nindent 8 }}
