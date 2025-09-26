@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
----
+### [4.10.1](https://github.com/linode/apl-core/compare/v4.10.0...v4.10.1) (2025-09-17)
+
+
+### Bug Fixes
+
+* apl-operator upgrade ([f601e38](https://github.com/linode/apl-core/commit/f601e38c93d30f453eafd2dd2ceb7a03efc270de))
+
 ## [4.10.0](https://github.com/linode/apl-core/compare/v4.9.0...v4.10.0) (2025-08-21)
 
 ### Bug Fixes

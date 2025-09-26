@@ -2,26 +2,24 @@
 {{- $provider := $v.cluster.provider }}
 {{- $m := $v.apps | get "metrics-server" }}
 
-{{- if (or $v.otomi.linodeLkeImageRepository (.Values.otomi | get "globalPullSecret" nil)) }}
-global:
-  {{- if $v.otomi.linodeLkeImageRepository }}
-  imageRegistry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-  security:
-    allowInsecureImages: true
-  {{- end }}
-  {{- if .Values.otomi | get "globalPullSecret" nil }}
-  imagePullSecrets:
-    - otomi-pullsecret-global
-  {{- end }}
+{{- with $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: "{{ . }}/k8s/metrics-server/metrics-server"
 {{- end }}
 
-extraArgs:
-  - --kubelet-preferred-address-types=InternalIP
+{{- if .Values.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+
+{{- if or (eq $provider "linode") (hasKey $m "extraArgs") }}
+args:
 {{- if eq $provider "linode" }}
   - --kubelet-insecure-tls=true
 {{- end }}
 {{- if (hasKey $m "extraArgs") }}
   {{- $m.extraArgs | toYaml | nindent 2 }}
+{{- end }}
 {{- end }}
 
 apiService:
@@ -38,3 +36,5 @@ resources:
     cpu: 100m
     memory: 64Mi
   {{- end }}
+
+priorityClassName: otomi-critical
