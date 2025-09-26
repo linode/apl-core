@@ -70,7 +70,7 @@ export const runtimeUpgrades: RuntimeUpgrades = [
   {
     version: '4.11.0',
     applications: {
-      minio: {
+      'minio-minio': {
         pre: async (context: RuntimeUpgradeContext) => {
           const d = context.debug
           d.info('Deleting old minio resources in namespace minio before sync')

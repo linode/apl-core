@@ -8,7 +8,7 @@ const appsApi = kubeConfig.makeApiClient(AppsV1Api)
 const batchApi = kubeConfig.makeApiClient(BatchV1Api)
 
 const namespace = 'minio'
-const minioDeploymentName = 'minio-minio'
+const minioDeploymentName = 'minio'
 const minioPostJobName = 'minio-post-job'
 const minioProvisioningJobName = 'minio-provisioning'
 
