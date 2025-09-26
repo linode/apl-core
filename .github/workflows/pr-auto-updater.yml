@@ -12,12 +12,6 @@ jobs:
   pr-autoupdate:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.BOT_TOKEN }}
-
       - name: Install GitHub CLI
         run: |
           sudo apt update
