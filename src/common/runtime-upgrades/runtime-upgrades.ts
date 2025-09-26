@@ -70,18 +70,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
   {
     version: '4.11.0',
     applications: {
-      'minio-minio': {
-        pre: async (context: RuntimeUpgradeContext) => {
-          const d = context.debug
-          d.info('Deleting old minio resources in namespace minio before sync')
-          try {
-            await removeOldMinioResources()
-            d.info('Successfully deleted minio resources')
-          } catch (error) {
-            d.error('Failed to delete minio resources:', error)
-          }
-        },
-      },
       'istio-system-istiod': {
         post: async () => {
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
@@ -113,6 +101,18 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       )
     },
     applications: {
+      'minio-minio': {
+        post: async (context: RuntimeUpgradeContext) => {
+          const d = context.debug
+          d.info('Deleting old minio resources in namespace minio before sync')
+          try {
+            await removeOldMinioResources()
+            d.info('Successfully deleted minio resources')
+          } catch (error) {
+            d.error('Failed to delete minio resources:', error)
+          }
+        },
+      },
       'istio-system-oauth2-proxy-artifacts': {
         post: async (context: RuntimeUpgradeContext) => {
           // Perform one sync as ArgoCD does not perform diffs on annotations
