@@ -3,11 +3,15 @@ data:
   artifactRepository: |
     archiveLogs: true
     s3:
-      endpoint: {{ .Values.objectStorage.region }}.linodeobjects.com:443
+      {{- if eq .Values.objectStorage.type "minio" }}
+      endpoint: {{ .Values.objectStorage.endpoint }}:{{ .Values.objectStorage.port }}
+      {{- else }}
+      endpoint: {{ .Values.objectStorage.region }}.{{ .Values.objectStorage.endpoint }}:{{ .Values.objectStorage.port }}
+      {{- end }}
       bucket: {{ .Values.objectStorage.bucket }}
       keyFormat: "artifacts/{{`{{workflow.name}}`}}/{{`{{workflow.creationTimestamp.Y}}`}}/{{`{{workflow.creationTimestamp.m}}`}}/{{`{{workflow.creationTimestamp.d}}`}}/{{`{{pod.name}}`}}"
       # insecure will disable TLS. Primarily used for minio installs not configured with TLS
-      insecure: false
+      insecure: {{ not .Values.objectStorage.secure }}
       accessKeySecret:
         name: mlpipeline-minio-artifact
         key: accesskey

@@ -46,9 +46,10 @@ dependencies:
   - name: jaeger-operator
     version: 2.46.0
     repository: https://jaegertracing.github.io/helm-charts
-  - name: keycloak
-    version: 24.9.0
-    repository: https://charts.bitnami.com/bitnami
+  - name: keycloakx
+    alias: keycloak
+    version: 7.1.3
+    repository: https://github.com/codecentric/helm-charts
   - name: kiali-operator
     version: 2.10.0
     repository: https://kiali.org/helm-charts
@@ -69,8 +70,8 @@ dependencies:
     version: 0.79.4
     repository: https://grafana.github.io/helm-charts
   - name: metrics-server
-    version: 7.4.10
-    repository: https://charts.bitnami.com/bitnami
+    version: 3.13.0
+    repository: https://kubernetes-sigs.github.io/metrics-server
   - name: minio
     version: 11.10.13
     repository: https://charts.bitnami.com/bitnami
