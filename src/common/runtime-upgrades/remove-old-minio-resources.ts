@@ -13,6 +13,7 @@ const minioAppName = 'minio-minio'
 
 export async function removeOldMinioResources() {
   const d = terminal('removeOldMinioResources')
+  let disableAutoSync = false
   try {
     // Disable argocd auto-sync for minio application if it exists
     const patch = [{ op: 'remove', path: '/spec/syncPolicy/automated' }]
@@ -25,6 +26,7 @@ export async function removeOldMinioResources() {
       name: minioAppName,
       body: patch,
     })
+    disableAutoSync = true
     d.info('Disabled auto-sync for minio application.')
   } catch (error) {
     d.error('Failed to disable auto-sync for minio application:', error)
@@ -38,5 +40,23 @@ export async function removeOldMinioResources() {
     d.info('Deleted minio deployment.')
   } catch (err) {
     d.error('Error deleting resources:', err)
+  }
+  if (disableAutoSync) {
+    try {
+      // Re-enable argocd auto-sync for minio application on the off chance that it is stuck in a bad state
+      const patch = [{ op: 'add', path: '/spec/syncPolicy/automated', value: {} }]
+      const custom = k8s.custom()
+      await custom.patchNamespacedCustomObject({
+        group: 'argoproj.io',
+        version: 'v1alpha1',
+        namespace: 'argocd',
+        plural: 'applications',
+        name: minioAppName,
+        body: patch,
+      })
+      d.info('Re-enabled auto-sync for minio application.')
+    } catch (error) {
+      d.error('Failed to re-enable auto-sync for minio application:', error)
+    }
   }
 }
