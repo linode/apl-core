@@ -1,10 +1,11 @@
+import { PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { logLevelString, OtomiDebugger } from '../debug'
+import { hf, HF_DEFAULT_SYNC_ARGS } from '../hf'
 import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
 import { getParsedArgs } from '../yargs'
+import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
-import { hf, HF_DEFAULT_SYNC_ARGS } from '../hf'
-import { PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -100,6 +101,18 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       )
     },
     applications: {
+      'minio-minio': {
+        post: async (context: RuntimeUpgradeContext) => {
+          const d = context.debug
+          d.info('Deleting old minio resources in namespace minio before sync')
+          try {
+            await removeOldMinioResources()
+            d.info('Successfully deleted minio resources')
+          } catch (error) {
+            d.error('Failed to delete minio resources:', error)
+          }
+        },
+      },
       'istio-system-oauth2-proxy-artifacts': {
         post: async (context: RuntimeUpgradeContext) => {
           // Perform one sync as ArgoCD does not perform diffs on annotations
