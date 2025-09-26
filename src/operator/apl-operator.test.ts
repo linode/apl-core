@@ -52,6 +52,7 @@ jest.mock('../cmd/commit', () => ({
 
 jest.mock('./k8s', () => ({
   updateApplyState: jest.fn().mockResolvedValue(undefined),
+  appRevisionMatches: jest.fn().mockResolvedValue(true),
 }))
 
 jest.mock('./git-repository', () => ({

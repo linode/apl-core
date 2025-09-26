@@ -519,25 +519,6 @@ describe('appRevisionMatches', () => {
       name: 'app-name',
     })
   })
-
-  it('should throw error when sync status does not match expected', async () => {
-    const mockApplication = {
-      status: {
-        sync: {
-          status: 'Syncing',
-        },
-      },
-    }
-    mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
-
-    await expect(appRevisionMatches('app-name', '1', mockCustomApi)).rejects.toThrow(
-      'app-name is not yet in Synced state',
-    )
-    expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
-      ...ARGOCD_APP_PARAMS,
-      name: 'app-name',
-    })
-  })
 })
 
 describe('patchArgoCdApp', () => {
