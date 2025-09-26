@@ -104,15 +104,19 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           {
             namespace: 'istio-system',
             name: 'oauth2-proxy',
-            body: [{ op: 'remove', path: '/metadata/annotations/nginx.ingress.kubernetes.io/configuration-snippet' }],
+            body: {
+              metadata: {
+                'nginx.ingress.kubernetes.io/configuration-snippet': null,
+              },
+            },
           },
-          setHeaderOptions('Content-Type', PatchStrategy.JsonPatch),
+          setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
         )
       } catch (error) {
-        if (error instanceof ApiException && error.code !== 404) {
-          context.debug.error("Failed to patch ingress 'oauth2-proxy'", error)
-        } else {
+        if (error instanceof ApiException && error.code === 404) {
           context.debug.info("Ingress 'oauth2-proxy' not found, patch not required")
+        } else {
+          context.debug.error("Failed to patch ingress 'oauth2-proxy'", error)
         }
       }
     },
