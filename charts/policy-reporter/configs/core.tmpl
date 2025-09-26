@@ -195,6 +195,12 @@ database:
   host: {{ .Values.database.host }}
   enableSSL: {{ .Values.database.enableSSL }}
   dsn: {{ .Values.database.dsn }}
+  maxOpenConnections: {{ .Values.database.maxOpenConnections }}
+  maxIdleConnections: {{ .Values.database.maxIdleConnections }}
+  connectionMaxIdleTime: {{ .Values.database.connectionMaxIdleTime }}
+  connectionMaxLifetime: {{ .Values.database.connectionMaxLifetime }}
+  timeout: {{ .Values.database.timeout }}
+  metrics: {{ .Values.database.metrics }}
   secretRef: {{ .Values.database.secretRef }}
   mountedSecret: {{ .Values.database.mountedSecret }}
 
