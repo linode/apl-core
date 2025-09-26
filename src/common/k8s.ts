@@ -4,6 +4,7 @@ import {
   CoreV1Api,
   CustomObjectsApi,
   KubeConfig,
+  NetworkingV1Api,
   PatchStrategy,
   setHeaderOptions,
   V1ResourceRequirements,
@@ -21,7 +22,7 @@ import { ARGOCD_APP_PARAMS, DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFI
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import { getParsedArgs, parser } from './yargs'
+import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
@@ -31,6 +32,7 @@ let kc: KubeConfig
 let coreClient: CoreV1Api
 let appClient: AppsV1Api
 let batchClient: BatchV1Api
+let networkingClient: NetworkingV1Api
 let customClient: CustomObjectsApi
 export const k8s = {
   kc: (): KubeConfig => {
@@ -53,6 +55,11 @@ export const k8s = {
     if (batchClient) return batchClient
     batchClient = k8s.kc().makeApiClient(BatchV1Api)
     return batchClient
+  },
+  networking: (): NetworkingV1Api => {
+    if (networkingClient) return networkingClient
+    networkingClient = k8s.kc().makeApiClient(NetworkingV1Api)
+    return networkingClient
   },
   custom: (): CustomObjectsApi => {
     if (customClient) return customClient

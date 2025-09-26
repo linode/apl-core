@@ -1,10 +1,9 @@
-import { logLevelString, OtomiDebugger } from '../debug'
+import { OtomiDebugger } from '../debug'
 import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
 import { getParsedArgs } from '../yargs'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
-import { hf, HF_DEFAULT_SYNC_ARGS } from '../hf'
-import { PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
+import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -98,22 +97,24 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           )
         }),
       )
-    },
-    applications: {
-      'istio-system-oauth2-proxy-artifacts': {
-        post: async (context: RuntimeUpgradeContext) => {
-          // Perform one sync as ArgoCD does not perform diffs on annotations
-          const d = context.debug
-          await hf(
-            {
-              labelOpts: ['name=oauth2-proxy-artifacts'],
-              logLevel: logLevelString(),
-              args: [...HF_DEFAULT_SYNC_ARGS, '--take-ownership'],
-            },
-            { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-          )
-        },
-      },
+      // Perform manual patch as ArgoCD does not perform diffs on annotations
+      context.debug.info("Removing obsolete annotation from Ingress 'oauth2-proxy'")
+      try {
+        await k8s.networking().patchNamespacedIngress(
+          {
+            namespace: 'istio-system',
+            name: 'oauth2-proxy',
+            body: [{ op: 'remove', path: '/metadata/annotations/nginx.ingress.kubernetes.io/configuration-snippet' }],
+          },
+          setHeaderOptions('Content-Type', PatchStrategy.JsonPatch),
+        )
+      } catch (error) {
+        if (error instanceof ApiException && error.code !== 404) {
+          context.debug.error("Failed to patch ingress 'oauth2-proxy'", error)
+        } else {
+          context.debug.info("Ingress 'oauth2-proxy' not found, patch not required")
+        }
+      }
     },
   },
 ]
