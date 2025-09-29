@@ -291,9 +291,9 @@ adminApps:
         type: public
         auth: true
   - name: kserve
-    tags: [security]
+    tags: [ai]
   - name: kured
-    tags: [ai, ml]
+    tags: [security]
   - name: tekton
     tags: [buildpacks, ci, pipelines]
     ownHost: true

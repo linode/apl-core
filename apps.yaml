@@ -210,6 +210,7 @@ appsInfo:
     license: Apache 2.0
     about: Standardized Distributed Generative and Predictive AI Inference Platform for Scalable, Multi-Framework Deployment on Kubernetes.
     chartName: kserve
+    isAlpha: true
   kyverno:
     title: Kyverno
     appVersion: 1.15.1
