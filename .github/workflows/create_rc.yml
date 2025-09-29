@@ -41,7 +41,7 @@ jobs:
             echo "commit_sha=$commit_sha" >> $GITHUB_ENV
           fi
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '20'
 
