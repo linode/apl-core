@@ -36,7 +36,7 @@ jobs:
             echo "RC_RELEASE=false" >> $GITHUB_ENV
           fi
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '20'
 
