@@ -44,8 +44,3 @@ releases:
     labels:
       pkg: tekton-triggers
     <<: *default
-  - name: kserve-crds
-    installed: {{ $a | get "kserve.enabled" }}
-    labels:
-      pkg: kserve
-    <<: *default

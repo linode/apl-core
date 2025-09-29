@@ -2111,7 +2111,7 @@ properties:
               operator:
                 $ref: '#/definitions/resources'
       kserve:
-       additionalProperties: false
+        additionalProperties: false
         properties:
           enabled:
             type: boolean

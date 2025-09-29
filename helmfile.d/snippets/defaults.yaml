@@ -596,6 +596,7 @@ environments:
                   cpu: "1"
                   memory: 1Gi
           kserve:
+            enabled: false
             resources:
               rbacProxy:
                 limits:

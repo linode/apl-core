@@ -124,3 +124,4 @@ dependencies:
   - name: kserve-resources
     version: 0.15.2
     repository: https://github.com/kserve/kserve
+    alias: kserve
