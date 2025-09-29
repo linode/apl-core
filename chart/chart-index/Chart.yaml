@@ -49,7 +49,7 @@ dependencies:
   - name: keycloakx
     alias: keycloak
     version: 7.1.3
-    repository: https://github.com/codecentric/helm-charts
+    repository: https://codecentric.github.io/helm-charts
   - name: kiali-operator
     version: 2.10.0
     repository: https://kiali.org/helm-charts
