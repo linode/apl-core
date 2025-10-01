@@ -528,9 +528,6 @@ export async function appRevisionMatches(appName: string, expectedRevision: stri
     ...ARGOCD_APP_PARAMS,
     name: appName,
   })
-  if (process.env.NODE_ENV !== 'development' && application?.status?.sync?.status !== 'Synced') {
-    throw new Error(`${appName} is not yet in Synced state`)
-  }
   const targetRevision = application?.spec?.source?.targetRevision
   return expectedRevision === targetRevision
 }
