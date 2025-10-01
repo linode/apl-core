@@ -40,23 +40,7 @@ resources:
       - name: otomi-pullsecret-global
       {{- end }}
   {{- end }}
-
-  # patching service account here as helm does not recognize it as it's own
-  - apiVersion: v1
-    kind: ServiceAccount
-    metadata:
-      name: default
-      namespace: {{ $ns }}
-    {{- if or ($v.otomi | get "globalPullSecret" nil) $v.apps.harbor.enabled }}
-    imagePullSecrets:
-    {{- if $v.otomi | get "globalPullSecret" nil }}
-      - name: otomi-pullsecret-global
-    {{- end }}
-    {{- if $v.apps.harbor.enabled }}
-      - name: harbor-pullsecret
-    {{- end }}
-    {{- end }}
-  {{- end }}
+  
   - apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding
     metadata:

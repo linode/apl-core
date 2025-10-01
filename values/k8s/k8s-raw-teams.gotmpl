@@ -26,4 +26,19 @@ resources:
     data:
       .dockerconfigjson: {{ tpl $dockerConfigTpl . | b64enc }}
     {{- end }}
+  # patching service account here as helm does not recognize it as it's own
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: default
+      namespace: {{ $ns }}
+    {{- if or ($v.otomi | get "globalPullSecret" nil) $v.apps.harbor.enabled }}
+    imagePullSecrets:
+    {{- if $v.otomi | get "globalPullSecret" nil }}
+      - name: otomi-pullsecret-global
+    {{- end }}
+    {{- if $v.apps.harbor.enabled }}
+      - name: harbor-pullsecret
+    {{- end }}
+    {{- end }}
   {{- end }}
