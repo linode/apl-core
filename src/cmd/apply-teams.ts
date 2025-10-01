@@ -15,14 +15,14 @@ const d = terminal(`cmd:${cmdName}:apply-teams`)
 export const applyTeams = async (): Promise<boolean> => {
   // Debug current working directory and file structure
   d.info(`Current working directory: ${process.cwd()}`)
-
+  const errors: Array<any> = []
   // The helmfile templates are in the main apl-core repo, not the values repo
   // We need to find the path to the main apl-core repository
   const aplCoreDir = rootDir || resolve(process.cwd(), '../apl-core')
   const helmfileSource = resolve(aplCoreDir, 'helmfile.tpl/helmfile-teams.yaml.gotmpl')
 
   if (!existsSync(helmfileSource)) {
-    throw new Error(`Helmfile teams template not found at: ${helmfileSource}`)
+    errors.push(`Helmfile teams template not found at: ${helmfileSource}`)
   }
 
   d.info(`Parsing team namespaces defined in ${helmfileSource}`)
@@ -32,15 +32,20 @@ export const applyTeams = async (): Promise<boolean> => {
     { streams: { stderr: d.stream.error } },
   )
   if (output.exitCode > 0) {
-    throw new Error(output.stderr)
+    errors.push(output.stderr)
   } else if (output.stderr.length > 0) {
-    d.error(output.stderr)
+    errors.push(output.stderr)
   }
   const templateOutput = output.stdout
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
 
-  d.info('Teams applied')
+  if (errors.length === 0) d.info(`Teams applied`)
+  else {
+    errors.map((e) => d.error(e))
+    d.error(`Not all applications has been deployed successfully`)
+  }
+
   return true
 }
 
