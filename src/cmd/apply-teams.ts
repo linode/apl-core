@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 import { terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
@@ -8,7 +8,7 @@ import { CommandModule } from 'yargs'
 import { $ } from 'zx/core'
 
 const cmdName = getFilename(__filename)
-const dir = '/tmp/apl-operator/'
+const dir = '/tmp/otomi/'
 const templateFile = `${dir}deploy-template.yaml`
 const d = terminal(`cmd:${cmdName}:apply-teams`)
 
@@ -37,6 +37,9 @@ export const applyTeams = async (): Promise<boolean> => {
     errors.push(output.stderr)
   }
   const templateOutput = output.stdout
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true })
+  }
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
 
