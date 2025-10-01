@@ -44,10 +44,10 @@ serviceMonitor:
   additionalLabels:
     prometheus: system
 
-global:
 {{- with .Values.otomi | get "globalPullSecret" nil }}
+global:
   imagePullSecrets:
-    - otomi-pullsecret-global
+    - name: otomi-pullsecret-global
 {{- end }}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
