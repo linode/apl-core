@@ -10,29 +10,24 @@ sources:
 {{- range $provider, $config := $dns.provider }}
 {{- $providerConfigKey := $provider | replace "azure-private-dns" "azure" }}
 {{- if eq $provider "other" }}
-provider: {{ $config.name }}
+provider:
+  name: {{ $config.name }}
 {{ $config.name }}: {{- $config | get "external-dns" | toYaml | nindent 2 }}
 {{- else }}
-provider: {{ $provider }}
+provider:
+  name: {{ $provider }}
 {{ $providerConfigKey }}: {{- $config | toYaml | nindent 2 }}
 {{- end }}
 {{- end }}
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
-zoneIdFilters: {{ $dns | get "zoneIdFilters" list | toYaml | nindent 2 }}
 annotationFilter: "externaldns=true"
 policy: {{ $dns.policy }}
 logLevel: {{ $externalDns | get "logLevel" }}
-dryRun: false
-crd:
-  create: false
-  apiversion: ""
-  kind: ""
 
 rbac:
   create: true
-  pspEnabled: false
 
-containerSecurityContext:
+securityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
   capabilities:
@@ -44,12 +39,10 @@ priorityClassName: otomi-critical
 
 resources: {{- $externalDns.resources | toYaml | nindent 4 }}
 
-metrics:
+serviceMonitor:
   enabled: true
-  serviceMonitor:
-    enabled: true
-    additionalLabels:
-      prometheus: system
+  additionalLabels:
+    prometheus: system
 
 global:
 {{- with .Values.otomi | get "globalPullSecret" nil }}
@@ -58,12 +51,11 @@ global:
 {{- end }}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
-  security:
-    allowInsecureImages: true
 image:
-  registry: "{{- $v.otomi.linodeLkeImageRepository }}"
-  repository: "docker/bitnami/external-dns"
-{{- else }}
-  security:
-    allowInsecureImages: false
+  repository: "{{- $v.otomi.linodeLkeImageRepository }}/k8s/external-dns"
+{{- end }}
+
+extraArgs:
+{{- range $dns | get "zoneIdFilters" list }}
+- --zone-id-filter={{ . }}
 {{- end }}
