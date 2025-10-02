@@ -2110,6 +2110,23 @@ properties:
                 $ref: '#/definitions/resources'
               operator:
                 $ref: '#/definitions/resources'
+      kserve:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            additionalProperties: false
+            properties:
+              controller:
+                $ref: '#/definitions/resources'
+              rbacProxy:
+                $ref: '#/definitions/resources'
+              inferenceService:
+                $ref: '#/definitions/resources'
       kyverno:
         additionalProperties: false
         properties:
