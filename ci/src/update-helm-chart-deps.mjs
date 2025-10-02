@@ -42,8 +42,17 @@ async function renderKyvernoCrdTemplates(chartDir) {
   await $`rm -R ${tempPath}`
 }
 
+async function copyKserveCrdTemplates(chartDir) {
+  console.log(`Copying templates from ${chartDir}`)
+  const crdPath = `${chartDir}/../kserve/crds`
+  console.log(`Adding CRDs to ${crdPath}`)
+  await $`mv ${chartDir}/templates ${crdPath}`
+  await $`rm -R ${chartDir}`
+}
+
 const CHART_POST_FUNCS = {
   kyverno: renderKyvernoCrdTemplates,
+  'kserve-crds': copyKserveCrdTemplates,
 }
 
 async function main() {
