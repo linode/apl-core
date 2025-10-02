@@ -66,6 +66,7 @@
     "kubes",
     "kubeval",
     "kured",
+    "kserve",
     "kubeflow-pipelines",
     "Kaniko",
     "Kapsule",
