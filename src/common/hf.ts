@@ -117,7 +117,7 @@ export const hfValues = async (
   }
 
   if (withWorkloadValues) {
-    const files = await getStandaloneFiles(envDir)
+    const files = await getStandaloneFiles(envDir, res)
     res.files = files
   }
 
@@ -125,12 +125,30 @@ export const hfValues = async (
 }
 
 // Get file content for those files that are not automatically loaded to the spec
-export const getStandaloneFiles = async (envDir: string): Promise<Record<string, any>> => {
+export const getStandaloneFiles = async (
+  envDir: string,
+  values?: Record<string, any>,
+): Promise<Record<string, any>> => {
   const files = {}
-  const maps = getFileMaps(envDir).filter((map) => map.loadToSpec === false)
+
+  // Check aiEnabled flag from passed values
+  const aiEnabled = values?.otomi?.aiEnabled ?? false
+
+  // Filter maps based on aiEnabled flag
+  let maps = getFileMaps(envDir).filter((map) => !map.loadToSpec)
+  if (!aiEnabled) {
+    // Exclude knowledgebases and agents when AI is not enabled
+    maps = maps.filter((map) => map.resourceDir !== 'knowledgebases').filter((map) => map.resourceDir !== 'agents')
+  }
+
   const pathGlobs = maps.map((fileMap) => {
     return fileMap.pathGlob
   })
+
+  // Only include databases when AI is enabled
+  if (aiEnabled) {
+    pathGlobs.push(`${envDir}/env/teams/*/databases/*.yaml`)
+  }
   const filePaths = await glob(pathGlobs)
 
   await Promise.allSettled(
