@@ -19,7 +19,7 @@ export const applyTeams = async (): Promise<boolean> => {
   // The helmfile templates are in the main apl-core repo, not the values repo
   // We need to find the path to the main apl-core repository
   const aplCoreDir = rootDir || resolve(process.cwd(), '../apl-core')
-  const helmfileSource = resolve(aplCoreDir, 'helmfile.tpl/helmfile-teams.yaml.gotmpl')
+  const helmfileSource = resolve(aplCoreDir, 'helmfile.tpl/helmfile-init.yaml.gotmpl')
 
   if (!existsSync(helmfileSource)) {
     errors.push(`Helmfile teams template not found at: ${helmfileSource}`)
@@ -28,7 +28,7 @@ export const applyTeams = async (): Promise<boolean> => {
   d.info(`Parsing team namespaces defined in ${helmfileSource}`)
 
   const output: ProcessOutputTrimmed = await hf(
-    { fileOpts: helmfileSource, args: 'template' },
+    { fileOpts: helmfileSource, args: 'template', labelOpts: ['team=true'] },
     { streams: { stderr: d.stream.error } },
   )
   if (output.exitCode > 0) {

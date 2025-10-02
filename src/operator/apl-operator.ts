@@ -87,9 +87,9 @@ export class AplOperator {
       await ensureTeamGitOpsDirectories(env.ENV_DIR)
 
       await commit(false, {} as HelmArguments) // Pass an empty object to clear any stale parsed args
-      await this.aplOps.applyTeams()
 
       if (applyTeamsOnly) {
+        await this.aplOps.applyTeams()
         await this.aplOps.applyAsAppsTeams()
       } else {
         await this.aplOps.apply()
