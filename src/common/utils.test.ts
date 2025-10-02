@@ -38,8 +38,12 @@ describe('ensureTeamGitopsDirectories', () => {
     expect(result).toEqual([
       '/values/env/teams/team1/sealedsecrets/.gitkeep',
       '/values/env/teams/team1/workloadValues/.gitkeep',
+      '/values/env/teams/team1/databases/.gitkeep',
+      '/values/env/teams/team1/knowledgebases/.gitkeep',
       '/values/env/teams/team2/sealedsecrets/.gitkeep',
       '/values/env/teams/team2/workloadValues/.gitkeep',
+      '/values/env/teams/team2/databases/.gitkeep',
+      '/values/env/teams/team2/knowledgebases/.gitkeep',
     ])
   })
 })
