@@ -13,11 +13,9 @@ const templateFile = `${dir}deploy-template.yaml`
 const d = terminal(`cmd:${cmdName}:apply-teams`)
 
 export const applyTeams = async (): Promise<boolean> => {
-  // Debug current working directory and file structure
   d.info(`Current working directory: ${process.cwd()}`)
   const errors: Array<any> = []
-  // The helmfile templates are in the main apl-core repo, not the values repo
-  // We need to find the path to the main apl-core repository
+
   const aplCoreDir = rootDir || resolve(process.cwd(), '../apl-core')
   const helmfileSource = resolve(aplCoreDir, 'helmfile.tpl/helmfile-init.yaml.gotmpl')
 
@@ -46,7 +44,7 @@ export const applyTeams = async (): Promise<boolean> => {
   if (errors.length === 0) d.info(`Teams applied`)
   else {
     errors.map((e) => d.error(e))
-    d.error(`Not all applications has been deployed successfully`)
+    d.error(`Not all teams have been deployed successfully`)
   }
 
   return true
