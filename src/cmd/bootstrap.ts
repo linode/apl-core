@@ -475,7 +475,7 @@ export const bootstrap = async (
 
   await deps.handleFileEntry()
   await deps.bootstrapSops()
-  await ensureTeamGitOpsDirectories(ENV_DIR)
+  await ensureTeamGitOpsDirectories(ENV_DIR, originalValues)
   if (!hasOtomi) {
     d.log('You can now use the otomi CLI')
   }
