@@ -1,6 +1,22 @@
 apiVersion: v1
 data:
-  defaultPipelineRoot: ""
+  defaultPipelineRoot: "s3://{{ .Values.objectStorage.bucket }}/v2/artifacts"
+  providers: |-
+    s3:
+      default:
+        {{- if eq .Values.objectStorage.type "minio" }}
+        endpoint: {{ .Values.objectStorage.endpoint }}:{{ .Values.objectStorage.port }}
+        {{- else }}
+        endpoint: {{ .Values.objectStorage.region }}.{{ .Values.objectStorage.endpoint }}:{{ .Values.objectStorage.port }}
+        {{- end }}
+        region: {{ .Values.objectStorage.region | quote }}
+        disableSSL: {{ not .Values.objectStorage.secure }}
+        credentials:
+          fromEnv: false
+          secretRef:
+            secretName: mlpipeline-minio-artifact
+            accessKeyKey: accesskey
+            secretKeyKey: secretkey
 kind: ConfigMap
 metadata:
   labels:
@@ -27,7 +43,7 @@ data:
   cacheNodeRestrictions: "false"
   cronScheduleTimezone: UTC
   dbType: mysql
-  defaultPipelineRoot: "minio://{{ .Values.objectStorage.bucket }}/v2/artifacts"
+  defaultPipelineRoot: "s3://{{ .Values.objectStorage.bucket }}/v2/artifacts"
   mysqlHost: ml-pipeline-mysql
   mysqlPort: "3306"
 kind: ConfigMap
