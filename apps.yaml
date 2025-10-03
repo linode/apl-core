@@ -269,7 +269,7 @@ appsInfo:
     integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When APL is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. APL shortcuts can be used to provide selections of logs based on interest.
   minio:
     title: Minio
-    appVersion: 2022.10.29
+    appVersion: RELEASE.2025-09-07T16-13-09Z
     repo: https://github.com/minio/minio
     maintainers: Minio
     relatedLinks:
