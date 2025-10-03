@@ -94,13 +94,12 @@ spec:
               name: {{ .Values.existingSecretAdminPassword }}
               key: {{ .Values.existingSecretAdminPasswordKey }}
         {{- end }}
+        {{- with .Values.exporter.extraEnvVars }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
 {{- if .Values.exporter.resources }}
         resources:
 {{ toYaml .Values.exporter.resources | indent 10 }}
-{{- end }}
-{{- with .Values.exporter.extraEnvVars }}
-        env:
-{{- toYaml . | nindent 10 }}
 {{- end }}
         {{- if not (empty .Values.containerSecurityContext) }}
         securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 10 }}
