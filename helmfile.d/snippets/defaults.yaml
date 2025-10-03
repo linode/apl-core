@@ -595,6 +595,30 @@ environments:
                 limits:
                   cpu: "1"
                   memory: 1Gi
+          kserve:
+            enabled: false
+            resources:
+              rbacProxy:
+                limits:
+                  cpu: 100m
+                  memory: 300Mi
+                requests:
+                  cpu: 100m
+                  memory: 300Mi
+              controller:
+                limits:
+                  cpu: 100m
+                  memory: 300Mi
+                requests:
+                  cpu: 100m
+                  memory: 300Mi
+              inferenceService:
+                  limits:
+                      cpu: "1"
+                      memory: "2Gi"
+                  requests:
+                      cpu: "1"
+                      memory: "2Gi"
           kubeflow-pipelines:
             enabled: false
             persistence:
@@ -1468,6 +1492,7 @@ environments:
           nodeSelector: {}
           isPreInstalled: false
           useORCS: true
+          aiEnabled: false
         users: []
         e2e:
           enabled: false
