@@ -84,7 +84,8 @@ export class AplOperator {
       if (trigger === ApplyTrigger.Reconcile) {
         await decrypt()
       }
-      await ensureTeamGitOpsDirectories(env.ENV_DIR)
+      const values = await hfValues({}, env.ENV_DIR)
+      await ensureTeamGitOpsDirectories(env.ENV_DIR, values ?? {})
 
       await commit(false, {} as HelmArguments) // Pass an empty object to clear any stale parsed args
 
