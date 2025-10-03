@@ -10,10 +10,11 @@ import { getCurrentVersion, getImageTag } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { cd } from 'zx'
+import { runtimeUpgrade } from '../common/runtime-upgrade'
 import { applyAsApps } from './apply-as-apps'
+import { applyTeams } from './apply-teams'
 import { commit } from './commit'
 import { upgrade } from './upgrade'
-import { runtimeUpgrade } from '../common/runtime-upgrade'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -44,15 +45,19 @@ export const applyAll = async () => {
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
 
   // We still need to deploy all teams because some settings depend on platform apps.
+  const teamsApplyCompleted = await applyTeams()
+  if (!teamsApplyCompleted) {
+    d.info('Teams apply step not completed')
+  }
   // Note that team-ns-admin contains ingress for platform apps.
   const params = cloneDeep(argv)
-  const applyCompleted = await applyAsApps(params)
+  const appsApplyCompleted = await applyAsApps(params)
 
-  if (applyCompleted) {
+  if (appsApplyCompleted) {
     await upgrade({ when: 'post' })
     await runtimeUpgrade({ when: 'post' })
   } else {
-    d.info('Apply step not completed, skipping upgrade checks')
+    d.info('Apps apply step not completed, skipping upgrade checks')
   }
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
@@ -85,6 +90,7 @@ export const apply = async (): Promise<void> => {
     return
   }
   d.info('Start apply')
+  await applyTeams()
   await applyAsApps(argv)
 }
 

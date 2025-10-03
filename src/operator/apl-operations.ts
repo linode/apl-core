@@ -1,10 +1,11 @@
-import { OtomiDebugger, terminal } from '../common/debug'
-import { HelmArguments } from '../common/yargs'
 import { module as applyModule } from '../cmd/apply'
 import { module as applyAsAppsModule } from '../cmd/apply-as-apps'
+import { module as applyTeamsModule } from '../cmd/apply-teams'
 import { module as bootstrapModule } from '../cmd/bootstrap'
-import { module as validateValuesModule } from '../cmd/validate-values'
 import { module as migrateModule } from '../cmd/migrate'
+import { module as validateValuesModule } from '../cmd/validate-values'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { HelmArguments } from '../common/yargs'
 import { OperatorError } from './errors'
 import { getErrorMessage } from './utils'
 
@@ -71,6 +72,23 @@ export class AplOperations {
     } catch (error) {
       this.d.error('Apply failed:', getErrorMessage(error))
       throw new OperatorError('Apply operation failed', error as Error)
+    }
+  }
+
+  async applyTeams(): Promise<void> {
+    this.d.info('Executing applyTeams')
+
+    try {
+      const args: HelmArguments = {
+        _: [] as string[],
+        $0: '',
+      } as HelmArguments
+
+      await applyTeamsModule.handler(args)
+      this.d.info('ApplyTeams completed successfully')
+    } catch (error) {
+      this.d.error('ApplyTeams failed:', getErrorMessage(error))
+      throw new OperatorError('ApplyTeams operation failed', error as Error)
     }
   }
 

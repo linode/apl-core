@@ -1,16 +1,16 @@
-import { terminal } from '../common/debug'
-import { waitTillGitRepoAvailable } from '../common/k8s'
-import { GitRepository } from './git-repository'
-import { AplOperations } from './apl-operations'
-import { updateApplyState } from './k8s'
-import { ensureTeamGitOpsDirectories } from '../common/utils'
-import { env } from '../common/envalid'
-import { commit } from '../cmd/commit'
-import { HelmArguments } from '../common/yargs'
-import { hfValues } from '../common/hf'
-import { writeValues } from '../common/values'
-import { getErrorMessage } from './utils'
 import { decrypt } from 'src/common/crypt'
+import { commit } from '../cmd/commit'
+import { terminal } from '../common/debug'
+import { env } from '../common/envalid'
+import { hfValues } from '../common/hf'
+import { waitTillGitRepoAvailable } from '../common/k8s'
+import { ensureTeamGitOpsDirectories } from '../common/utils'
+import { writeValues } from '../common/values'
+import { HelmArguments } from '../common/yargs'
+import { AplOperations } from './apl-operations'
+import { GitRepository } from './git-repository'
+import { updateApplyState } from './k8s'
+import { getErrorMessage } from './utils'
 
 export interface AplOperatorConfig {
   gitRepo: GitRepository
@@ -90,6 +90,7 @@ export class AplOperator {
       await commit(false, {} as HelmArguments) // Pass an empty object to clear any stale parsed args
 
       if (applyTeamsOnly) {
+        await this.aplOps.applyTeams()
         await this.aplOps.applyAsAppsTeams()
       } else {
         await this.aplOps.apply()
