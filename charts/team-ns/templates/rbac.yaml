@@ -263,8 +263,8 @@ rules:
   resources: ["roles", "rolebindings"]
   verbs: ["get", "list", "watch"]
 - apiGroups: ["rabbitmq.com"]
-  resources: ["rabbitmqclusters"]
-  verbs: ["get", "list", "watch"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 # RoleBinding for the above Role in team namespace
 apiVersion: rbac.authorization.k8s.io/v1
@@ -288,7 +288,7 @@ metadata:
   name: adeptia-rabbitmq-messaging-topology-operator-service-account
   namespace: team-{{ $v.teamId }}
 rules:
-# Allows the adeptia-rabbitmq-cluster-operator to create, get and list secrets in the team namespace. This is necessary to create service accounts for build in harbor.
+# Allows the adeptia-rabbitmq-messaging-topology-operator to create, get and list secrets in the team namespace. This is necessary to create service accounts for build in harbor.
 - apiGroups: [""]
   resources: ["services", "configmaps"]
   verbs: ["get", "list", "watch"]
@@ -299,8 +299,8 @@ rules:
   resources: ["roles", "rolebindings"]
   verbs: ["get", "list", "watch"]
 - apiGroups: ["rabbitmq.com"]
-  resources: ["users", "permissions", "queues", "exchanges", "operatorpolicies", "policies", "topicpermissions", "vhosts", "schemareplications", "bindings", "shovels", "superstreams", "federations"]
-  verbs: ["get", "list", "watch"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 # RoleBinding for the above Role in team namespace
 apiVersion: rbac.authorization.k8s.io/v1
