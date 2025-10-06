@@ -262,6 +262,9 @@ rules:
 - apiGroups: ["rbac.authorization.k8s.io"]
   resources: ["roles", "rolebindings"]
   verbs: ["get", "list", "watch"]
+- apiGroups: ["rabbitmq.com"]
+  resources: ["rabbitmqclusters"]
+  verbs: ["get", "list", "watch"]
 ---
 # RoleBinding for the above Role in team namespace
 apiVersion: rbac.authorization.k8s.io/v1
@@ -296,7 +299,7 @@ rules:
   resources: ["roles", "rolebindings"]
   verbs: ["get", "list", "watch"]
 - apiGroups: ["rabbitmq.com"]
-  resources: ["users", "permissions", "queues", "exchanges", "operatorpolicies", "policies", "topicpermissions", "vhosts", "schemareplications", "bindings", "shovels", "superstreams"]
+  resources: ["users", "permissions", "queues", "exchanges", "operatorpolicies", "policies", "topicpermissions", "vhosts", "schemareplications", "bindings", "shovels", "superstreams", "federations"]
   verbs: ["get", "list", "watch"]
 ---
 # RoleBinding for the above Role in team namespace
