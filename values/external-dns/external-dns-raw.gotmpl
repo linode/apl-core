@@ -1,0 +1,25 @@
+{{- $v := .Values }}
+{{- $d := $v.dns}}
+
+{{- with $d.provider | get "akamai" nil }}
+resources:
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: AKAMAI-DNS
+  data:
+    EXTERNAL_DNS_AKAMAI_SERVICECONSUMERDOMAIN: "{{ $d.provider.akamai.host | b64enc }}"
+    EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN: "{{ $d.provider.akamai.clientToken | b64enc }}"
+    EXTERNAL_DNS_AKAMAI_CLIENT_SECRET: "{{ $d.provider.akamai.clientSecret | b64enc }}"
+    EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN: "{{ $d.provider.akamai.accessToken | b64enc }}"
+{{- end }}
+
+{{- with $d.provider | get "linode" nil }}
+resources:
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: LINODE-DNS-API-TOKEN
+  data:
+    LINODE_TOKEN: "{{ $d.provider.linode.apiToken | b64enc }}"
+{{- end }}
