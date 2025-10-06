@@ -326,7 +326,7 @@ jobs:
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
           [[ '${{ inputs.kms }}' == 'age' ]] && additional_args+=" --set kms.sops.provider=age"
           [[ '${{ inputs.is_pre_installed }}' == 'true' ]] && additional_args+=" --set otomi.isPreInstalled=true"
-          if [[ '${{ inputs.disableORCS }}' == 'true' ]];
+          if [[ '${{ inputs.disableORCS }}' == 'true' ]]; then
             additional_args+=" --set otomi.useORCS=false"
             if [[ ! ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]]; then
               # If a pipeline installs APL from the semver tag then pull container image from DockerHub
