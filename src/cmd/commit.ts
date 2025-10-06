@@ -174,6 +174,12 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   const workDir = '/tmp/apl-charts'
   const otomiChartsUrl = env.OTOMI_CHARTS_URL
   const giteaChartsUrl = `http://${username}:${password}@gitea-http.gitea.svc.cluster.local:3000/otomi/charts.git`
+  const retryOptions = {
+    retries: env.RETRIES,
+    randomize: env.RANDOM,
+    minTimeout: env.MIN_TIMEOUT,
+    factor: env.FACTOR,
+  }
   try {
     // Check if the tag exists in the remote Gitea repository
     const tagExists = await $`git ls-remote --tags ${giteaChartsUrl} refs/tags/${tag}`
@@ -183,7 +189,18 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     }
     d.info(`Cloning apl-charts at tag '${tag}' from upstream`)
     await $`mkdir -p ${workDir}`
-    await $`git clone --branch ${tag} --depth 1 ${otomiChartsUrl} ${workDir}`.quiet()
+    await retry(
+      async () => {
+        await $`git clone --branch ${tag} --depth 1 ${otomiChartsUrl} ${workDir}`.quiet()
+      },
+      {
+        ...retryOptions,
+        onRetry: async () => {
+          d.warn('Failed to clone from external charts repo. Retrying...')
+        },
+      },
+    )
+
     cd(workDir)
     await $`rm -rf .git`
     await $`rm -rf deployment`
@@ -200,8 +217,18 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     await $`git tag ${tag}`
     await $`git remote add origin ${giteaChartsUrl}`
     await $`git config http.sslVerify false`
-    await $`git push -u origin refs/heads/main`.quiet()
-    await $`git push origin refs/tags/${tag}`.quiet()
+    await retry(
+      async () => {
+        await $`git push -u origin refs/heads/main`.quiet()
+        await $`git push origin refs/tags/${tag}`.quiet()
+      },
+      {
+        ...retryOptions,
+        onRetry: async () => {
+          d.warn('Failed to push to charts repo. Retrying...')
+        },
+      },
+    )
   } catch (error) {
     d.info('cloneOtomiChartsInGitea Error ', error?.message?.replace(password, '****'))
   }

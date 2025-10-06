@@ -42,6 +42,24 @@ const setup = (): void => {
   mkdirSync(dir, { recursive: true })
 }
 
+const retryInstallStep = async <T, Args extends any[]>(
+  fn: (...args: Args) => Promise<T>,
+  ...args: Args
+): Promise<T> => {
+  const d = terminal(`cmd:${cmdName}`)
+  return await retry(
+    async () => {
+      return await fn(...args)
+    },
+    {
+      retries: 5,
+      onRetry: async (e, attempt) => {
+        d.info(`Retrying (${attempt}/5)})...`)
+      },
+    },
+  )
+}
+
 export const installAll = async () => {
   const d = terminal(`cmd:${cmdName}:installAll`)
   const prevState = await getDeploymentState()
@@ -87,7 +105,6 @@ export const installAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 
-  // When Otomi is installed for the very first time and ArgoCD is not yet there.
   // Only install the core apps
   await hf(
     {
@@ -100,20 +117,11 @@ export const installAll = async () => {
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(true)
-    await hf(
-      {
-        // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this stage):
-        fileOpts: `${rootDir}/helmfile.tpl/helmfile-e2e.yaml.gotmpl`,
-        logLevel: logLevelString(),
-        args: hfArgs,
-      },
-      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-    )
     await cloneOtomiChartsInGitea()
     const initialData = await initialSetupData()
-    await createCredentialsSecret(initialData.secretName, initialData.username, initialData.password)
+    await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)
     await retryIsOAuth2ProxyRunning()
-    await restartOtomiApiDeployment(k8s.app())
+    await retryInstallStep(restartOtomiApiDeployment, k8s.app())
     await printWelcomeMessage(initialData.secretName, initialData.domainSuffix)
   }
   await setDeploymentState({ status: 'deployed', version })
