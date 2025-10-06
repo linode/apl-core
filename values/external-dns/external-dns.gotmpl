@@ -27,11 +27,6 @@ logLevel: {{ $externalDns | get "logLevel" }}
 rbac:
   create: true
 
-securityContext:
-  allowPrivilegeEscalation: false
-  readOnlyRootFilesystem: true
-  capabilities:
-    drop: ["ALL"]
 podSecurityContext:
   runAsUser: 1001
 
