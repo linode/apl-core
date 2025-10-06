@@ -244,3 +244,57 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: tekton-triggers-secrets-team-{{ $v.teamId }}
+---
+# Role for adeptia-rabbitmq-cluster-operator to manage service account in team namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: adeptia-rabbitmq-cluster-operator-service-account
+  namespace: team-{{ $v.teamId }}
+rules:
+# Allows the adeptia-rabbitmq-cluster-operator to create, get and list secrets in the team namespace. This is necessary to create service accounts for build in harbor.
+- apiGroups: [""]
+  resources: ["services, configmaps, statefulsets"]
+  verbs: ["get", "list", "watch"]
+---
+# RoleBinding for the above Role in team namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: adeptia-rabbitmq-cluster-operator-service-account-binding
+  namespace: team-{{ $v.teamId }}
+subjects:
+- kind: ServiceAccount
+  namespace: rabbitmq
+  name: adeptia-rabbitmq-cluster-operator
+roleRef:
+  kind: Role
+  name: adeptia-rabbitmq-cluster-operator-service-account
+  apiGroup: rbac.authorization.k8s.io
+---
+# Role for adeptia-rabbitmq-cluster-operator to manage service account in team namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: adeptia-rabbitmq-messaging-topology-operator-service-account
+  namespace: team-{{ $v.teamId }}
+rules:
+# Allows the adeptia-rabbitmq-cluster-operator to create, get and list secrets in the team namespace. This is necessary to create service accounts for build in harbor.
+- apiGroups: [""]
+  resources: ["services, configmaps, statefulsets"]
+  verbs: ["get", "list", "watch"]
+---
+# RoleBinding for the above Role in team namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: adeptia-rabbitmq-messaging-topology-operator-service-account-binding
+  namespace: team-{{ $v.teamId }}
+subjects:
+- kind: ServiceAccount
+  namespace: rabbitmq
+  name: adeptia-rabbitmq-messaging-topology-operator
+roleRef:
+  kind: Role
+  name: adeptia-rabbitmq-messaging-topology-operator-service-account
+  apiGroup: rbac.authorization.k8s.io
