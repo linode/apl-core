@@ -254,7 +254,7 @@ metadata:
 rules:
 # Allows the adeptia-rabbitmq-cluster-operator to create, get and list secrets in the team namespace. This is necessary to create service accounts for build in harbor.
 - apiGroups: [""]
-  resources: ["services", "configmaps", "secrets" , "serviceaccounts", "endpoints"]
+  resources: ["endpoints", "pods"]
   verbs: ["get", "list", "watch"]
 - apiGroups: ["apps"]
   resources: ["statefulsets"]
@@ -266,7 +266,7 @@ rules:
   resources: ["*"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 - apiGroups: [""]
-  resources: ["events"]
+  resources: ["events", "services", "secrets", "configmaps", "serviceaccounts", "persistentvolumeclaims"]
   verbs: ["create", "patch", "update", "list", "watch", "get", "delete"]
 ---
 # RoleBinding for the above Role in team namespace
