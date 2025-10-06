@@ -120,6 +120,15 @@ export const installAll = async () => {
     await cloneOtomiChartsInGitea()
     const initialData = await initialSetupData()
     await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)
+    await retryInstallStep(
+      hf,
+      {
+        labelOpts: ['pkg=apl-operator'],
+        logLevel: logLevelString(),
+        args: hfArgs,
+      },
+      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    )
     await retryIsOAuth2ProxyRunning()
     await retryInstallStep(restartOtomiApiDeployment, k8s.app())
     await printWelcomeMessage(initialData.secretName, initialData.domainSuffix)
