@@ -265,6 +265,9 @@ rules:
 - apiGroups: ["rabbitmq.com"]
   resources: ["*"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch", "update", "list", "watch", "get", "delete"]
 ---
 # RoleBinding for the above Role in team namespace
 apiVersion: rbac.authorization.k8s.io/v1
