@@ -73,7 +73,7 @@ appsInfo:
         - Click 'I understand' to continue using Falco dashboard
   gitea:
     title: Gitea Self-hosted GIT
-    appVersion: 1.24.5
+    appVersion: 1.24.6
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
@@ -383,4 +383,4 @@ appsInfo:
     repo: https://github.com/valkey-io/valkey
     maintainers: Valkey Project
     license: BSD-3-
-    about: 'Valkey is a high-performance data structure server that primarily serves key/value workloads. It supports a wide range of native structures and an extensible plugin system for adding new data structures and access patterns.'
+    about: Valkey is a high-performance data structure server that primarily serves key/value workloads. It supports a wide range of native structures and an extensible plugin system for adding new data structures and access patterns.
