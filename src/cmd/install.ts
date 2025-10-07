@@ -54,7 +54,7 @@ const retryInstallStep = async <T, Args extends any[]>(
     {
       retries: 5,
       onRetry: async (e, attempt) => {
-        d.info(`Retrying (${attempt}/5)})...`)
+        d.info(`Retrying (${attempt}/5))...`)
       },
     },
   )
