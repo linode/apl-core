@@ -124,15 +124,18 @@ describe('createGenericSecret', () => {
       },
       namespace: 'default',
     })
-    expect(mockCoreV1Api.patchNamespacedSecret).toHaveBeenCalledWith({
-      body: {
-        data: { password: 'cGFzc3dvcmQxMjM=', username: 'YWRtaW4=' },
-        metadata: { name: 'test-secret', namespace: 'default' },
-        type: 'Opaque',
+    expect(mockCoreV1Api.patchNamespacedSecret).toHaveBeenCalledWith(
+      {
+        body: {
+          data: { password: 'cGFzc3dvcmQxMjM=', username: 'YWRtaW4=' },
+          metadata: { name: 'test-secret', namespace: 'default' },
+          type: 'Opaque',
+        },
+        name: 'test-secret',
+        namespace: 'default',
       },
-      name: 'test-secret',
-      namespace: 'default',
-    })
+      undefined,
+    )
 
     expect(result).toEqual(mockResponse)
   })

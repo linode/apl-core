@@ -337,7 +337,10 @@ export async function createUpdateGenericSecret(
     return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
   } catch (error) {
     if (error instanceof ApiException && error.code === 409) {
-      return await coreV1Api.patchNamespacedSecret({ name, namespace, body: secret })
+      return await coreV1Api.patchNamespacedSecret(
+        { name, namespace, body: secret },
+        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+      )
     } else {
       throw error
     }
