@@ -1,4 +1,5 @@
 import {
+  ApiException,
   AppsV1Api,
   CoreV1Api,
   CustomObjectsApi,
@@ -7,6 +8,7 @@ import {
   V1Pod,
   V1PodList,
   V1ResourceRequirements,
+  V1Secret,
   V1StatefulSet,
 } from '@kubernetes/client-node'
 import * as k8s from './k8s'
@@ -22,6 +24,29 @@ import { terminal } from './debug'
 import retry from 'async-retry'
 import { env } from './envalid'
 import { ARGOCD_APP_PARAMS } from './constants'
+
+class MockApiException<T> extends ApiException<T> {
+  code: number
+  body: T
+  headers: {
+    [key: string]: string
+  }
+
+  constructor(
+    code: number,
+    message: string,
+    body: T,
+    headers: {
+      [key: string]: string
+    },
+  ) {
+    super(code, message, body, headers)
+    this.code = code
+    this.body = body
+    this.headers = headers
+    this.name = 'ApiException'
+  }
+}
 
 jest.mock('@kubernetes/client-node')
 jest.mock('async-retry')
@@ -59,7 +84,7 @@ describe('createGenericSecret', () => {
 
     const mockResponse = { metadata: { name, namespace }, data: encodedData } as any
     mockCoreV1Api.createNamespacedSecret.mockResolvedValue(mockResponse)
-    const result = await k8s.createGenericSecret(mockCoreV1Api, name, namespace, secretData)
+    const result = await k8s.createUpdateGenericSecret(mockCoreV1Api, name, namespace, secretData)
 
     expect(mockCoreV1Api.createNamespacedSecret).toHaveBeenCalledWith({
       body: {
@@ -67,6 +92,45 @@ describe('createGenericSecret', () => {
         metadata: { name: 'test-secret', namespace: 'default' },
         type: 'Opaque',
       },
+      namespace: 'default',
+    })
+
+    expect(result).toEqual(mockResponse)
+  })
+
+  it('should patch instead if the secret exists', async () => {
+    const name = 'test-secret'
+    const namespace = 'default'
+    const secretData = {
+      username: 'admin',
+      password: 'password123',
+    }
+    const encodedData = {
+      username: 'YWRtaW4=', // base64 of 'admin'
+      password: 'cGFzc3dvcmQxMjM=', // base64 of 'password123'
+    }
+
+    const mockError = new MockApiException(409, 'Conflict', {}, {})
+    mockCoreV1Api.createNamespacedSecret.mockRejectedValue(mockError)
+    const mockResponse = { metadata: { name, namespace }, data: encodedData }
+    mockCoreV1Api.patchNamespacedSecret.mockResolvedValue(mockResponse)
+    const result = await k8s.createUpdateGenericSecret(mockCoreV1Api, name, namespace, secretData)
+
+    expect(mockCoreV1Api.createNamespacedSecret).toHaveBeenCalledWith({
+      body: {
+        data: { password: 'cGFzc3dvcmQxMjM=', username: 'YWRtaW4=' },
+        metadata: { name: 'test-secret', namespace: 'default' },
+        type: 'Opaque',
+      },
+      namespace: 'default',
+    })
+    expect(mockCoreV1Api.patchNamespacedSecret).toHaveBeenCalledWith({
+      body: {
+        data: { password: 'cGFzc3dvcmQxMjM=', username: 'YWRtaW4=' },
+        metadata: { name: 'test-secret', namespace: 'default' },
+        type: 'Opaque',
+      },
+      name: 'test-secret',
       namespace: 'default',
     })
 
@@ -84,7 +148,9 @@ describe('createGenericSecret', () => {
     const errorMessage = 'Failed to create secret'
     mockCoreV1Api.createNamespacedSecret.mockRejectedValue(new Error(errorMessage))
 
-    await expect(k8s.createGenericSecret(mockCoreV1Api, name, namespace, secretData)).rejects.toThrow(errorMessage)
+    await expect(k8s.createUpdateGenericSecret(mockCoreV1Api, name, namespace, secretData)).rejects.toThrow(
+      errorMessage,
+    )
   })
 })
 

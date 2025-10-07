@@ -8,7 +8,7 @@ import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { createGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
+import { createUpdateGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
 import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
@@ -298,7 +298,7 @@ export async function initialSetupData(): Promise<InitialData> {
 
 export async function createCredentialsSecret(secretName: string, username: string, password: string): Promise<void> {
   const secretData = { username, password }
-  await createGenericSecret(k8s.core(), secretName, 'keycloak', secretData)
+  await createUpdateGenericSecret(k8s.core(), secretName, 'keycloak', secretData)
 }
 
 export const printWelcomeMessage = async (secretName: string, domainSuffix: string): Promise<void> => {

@@ -1,4 +1,5 @@
 import {
+  ApiException,
   AppsV1Api,
   BatchV1Api,
   CoreV1Api,
@@ -315,7 +316,7 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
   }, retryOptions)
 }
 
-export async function createGenericSecret(
+export async function createUpdateGenericSecret(
   coreV1Api: CoreV1Api,
   name: string,
   namespace: string,
@@ -332,7 +333,15 @@ export async function createGenericSecret(
     type: 'Opaque',
   }
 
-  return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
+  try {
+    return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 409) {
+      return await coreV1Api.patchNamespacedSecret({ name, namespace, body: secret })
+    } else {
+      throw error
+    }
+  }
 }
 
 export function b64enc(value: string): string {
