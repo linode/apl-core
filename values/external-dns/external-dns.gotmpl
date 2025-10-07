@@ -58,25 +58,16 @@ extraArgs:
 env:
 {{- with $dns.provider | get "akamai" nil }}
 - name: EXTERNAL_DNS_AKAMAI_SERVICECONSUMERDOMAIN
-  valueFrom:
-    secretKeyRef:
-      name: AKAMAI-DNS
-      key: EXTERNAL_DNS_AKAMAI_SERVICECONSUMERDOMAIN
+  value: "{{ $dns.provider.akamai.host }}"
 - name: EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN
-  valueFrom:
-    secretKeyRef:
-      name: AKAMAI-DNS
-      key: EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN
+  value: "{{ $dns.provider.akamai.clientToken }}"
+- name: EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN
+  value: "{{ $dns.provider.akamai.accessToken }}"
 - name: EXTERNAL_DNS_AKAMAI_CLIENT_SECRET
   valueFrom:
     secretKeyRef:
       name: AKAMAI-DNS
       key: EXTERNAL_DNS_AKAMAI_CLIENT_SECRET
-- name: EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN
-  valueFrom:
-    secretKeyRef:
-      name: AKAMAI-DNS
-      key: EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN
 {{- end }}
 
 {{- with $dns.provider | get "linode" nil }}
