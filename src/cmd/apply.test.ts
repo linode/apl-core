@@ -32,6 +32,10 @@ jest.mock('./apply-as-apps', () => ({
   applyAsApps: jest.fn(),
 }))
 
+jest.mock('./apply-teams', () => ({
+  applyTeams: jest.fn(),
+}))
+
 jest.mock('./commit', () => ({
   commit: jest.fn(),
 }))
@@ -73,7 +77,7 @@ jest.mock('src/common/envalid', () => ({
 }))
 
 // Import the actual functions to test (after mocks are set up)
-import { applyAll, apply } from './apply'
+import { apply, applyAll } from './apply'
 
 describe('Apply command', () => {
   let mockDeps: any
