@@ -1492,7 +1492,7 @@ environments:
           nodeSelector: {}
           isPreInstalled: false
           useORCS: true
-          aiEnabled: false
+          aiEnabled: true
         users: []
         e2e:
           enabled: false
