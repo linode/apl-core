@@ -122,7 +122,7 @@ appsInfo:
         - Click 'I understand' to continue using Httpbin service
   ingress-nginx:
     title: Ingress-NGINX
-    appVersion: 1.13.1
+    appVersion: 1.13.3
     repo: https://github.com/kubernetes/ingress-nginx
     maintainers: NGINX
     relatedLinks:
