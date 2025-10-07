@@ -1,9 +1,10 @@
-import { getDeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
 import { isEmpty } from 'lodash'
-import { getCurrentVersion } from './values'
-import { RuntimeUpgradeContext, RuntimeUpgrades, runtimeUpgrades } from './runtime-upgrades/runtime-upgrades'
-import { terminal } from './debug'
 import semver from 'semver'
+import { getApplications } from 'src/cmd/apply-as-apps'
+import { terminal } from './debug'
+import { getDeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
+import { RuntimeUpgradeContext, RuntimeUpgrades, runtimeUpgrades } from './runtime-upgrades/runtime-upgrades'
+import { getCurrentVersion } from './values'
 
 interface RuntimeUpgradeArgs {
   when: string
@@ -20,6 +21,7 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
 
   const declaredVersion = await getCurrentVersion()
   const deployedVersion: string = deploymentState.version ?? declaredVersion
+  const apps = await getApplications()
 
   d.info(`Current version of otomi: ${deployedVersion}`)
 
@@ -50,7 +52,7 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
         const applicationOperation = applicationUpgrade[when as keyof typeof applicationUpgrade] as (
           context: RuntimeUpgradeContext,
         ) => Promise<void>
-        if (applicationOperation && typeof applicationOperation === 'function') {
+        if (apps.includes(applicationName) && applicationOperation && typeof applicationOperation === 'function') {
           d.info(`Runtime upgrade operations detected for version ${upgrade.version}, application: ${applicationName}`)
           // Wait for the ArgoCD app to be synced and healthy before running the operation
           await waitForArgoCDAppSync(applicationName, k8s.custom(), d)
