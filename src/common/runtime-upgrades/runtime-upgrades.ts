@@ -1,6 +1,5 @@
-import { PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
-import { logLevelString, OtomiDebugger } from '../debug'
-import { hf, HF_DEFAULT_SYNC_ARGS } from '../hf'
+import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
+import { OtomiDebugger } from '../debug'
 import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
 import { getParsedArgs } from '../yargs'
 import { removeOldMinioResources } from './remove-old-minio-resources'
@@ -99,6 +98,28 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           )
         }),
       )
+      // Perform manual patch as ArgoCD does not perform diffs on annotations
+      context.debug.info("Removing obsolete annotation from Ingress 'oauth2-proxy'")
+      try {
+        await k8s.networking().patchNamespacedIngress(
+          {
+            namespace: 'istio-system',
+            name: 'oauth2-proxy',
+            body: {
+              metadata: {
+                'nginx.ingress.kubernetes.io/configuration-snippet': null,
+              },
+            },
+          },
+          setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+        )
+      } catch (error) {
+        if (error instanceof ApiException && error.code === 404) {
+          context.debug.info("Ingress 'oauth2-proxy' not found, patch not required")
+        } else {
+          context.debug.error("Failed to patch ingress 'oauth2-proxy'", error)
+        }
+      }
     },
     applications: {
       'minio-minio': {
@@ -111,20 +132,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           } catch (error) {
             d.error('Failed to delete minio resources:', error)
           }
-        },
-      },
-      'istio-system-oauth2-proxy-artifacts': {
-        post: async (context: RuntimeUpgradeContext) => {
-          // Perform one sync as ArgoCD does not perform diffs on annotations
-          const d = context.debug
-          await hf(
-            {
-              labelOpts: ['name=oauth2-proxy-artifacts'],
-              logLevel: logLevelString(),
-              args: [...HF_DEFAULT_SYNC_ARGS, '--take-ownership'],
-            },
-            { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-          )
         },
       },
     },
