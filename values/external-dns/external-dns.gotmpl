@@ -77,3 +77,33 @@ env:
       name: LINODE-DNS-API-TOKEN
       key: LINODE_TOKEN
 {{- end }}
+
+{{- with $dns.provider | get "digitalocean" nil }}
+- name: DO_TOKEN
+  valueFrom:
+    secretKeyRef:
+      name: DO_TOKEN
+      key: DO_TOKEN
+{{- end }}
+
+{{- with $d.provider | get "cloudflare" nil }}
+  {{- with $d.provider.cloudflare | get "apiToken" nil }}
+- name: CF_API_TOKEN
+  valueFrom:
+    secretKeyRef:
+      name: cloudflare-api-key
+      key: CF_API_TOKEN
+  {{- end }}
+  {{- with $d.provider.cloudflare | get "apiSecret" nil }}
+  - name: CF_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: cloudflare-api-key
+        key: CF_API_KEY
+  - name: CF_API_EMAIL
+    valueFrom:
+      secretKeyRef:
+        name: cloudflare-api-key
+        key: CF_API_EMAIL
+  {{- end }}
+{{- end }}

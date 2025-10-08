@@ -21,12 +21,34 @@ resources:
     LINODE_TOKEN: "{{ $d.provider.linode.apiToken | b64enc }}"
 {{- end }}
 
-{{- with $d.provider | get "aws" nil }}
+{{- with $d.provider | get "digitalocean" nil }}
 resources:
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: LINODE-DNS-API-TOKEN
+    name: DO_TOKEN
   data:
-    LINODE_TOKEN: "{{ $d.provider.linode.apiToken | b64enc }}"
+    DO_TOKEN: "{{ $d.provider.digitalocean.apiToken | b64enc }}"
+{{- end }}
+
+{{- with $d.provider | get "cloudflare" nil }}
+  {{- with $d.provider.cloudflare | get "apiToken" nil }}
+resources:
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: cloudflare-api-key
+  data:
+    CF_API_TOKEN: "{{ $d.provider.cloudflare.apiToken | b64enc }}"
+  {{- end }}
+  {{- with $d.provider.cloudflare | get "apiSecret" nil }}
+resources:
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: cloudflare-api-key
+  data:
+    CF_API_KEY: "{{ $d.provider.cloudflare.apiSecret | b64enc }}"
+    CF_API_EMAIL: "{{ $d.provider.cloudflare.email | b64enc }}"
+  {{- end }}
 {{- end }}
