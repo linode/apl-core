@@ -108,3 +108,111 @@ env:
   {{- end }}
 {{- end }}
 
+{{- with $dns.provider | get "aws" nil }}
+provider:
+  name: aws
+env:
+- name: AWS_DEFAULT_REGION
+  value: "{{ .region }}"
+{{- with $dns.provider.aws | get "credentials" nil }}
+- name: AWS_ACCESS_KEY_ID
+  valueFrom:
+    secretKeyRef:
+      name: AWS-DNS-CREDENTIALS
+      key: AWS_ACCESS_KEY_ID
+- name: AWS_SECRET_ACCESS_KEY
+  valueFrom:
+    secretKeyRef:
+      name: AWS-DNS-CREDENTIALS
+      key: AWS_SECRET_ACCESS_KEY
+{{- end }}
+{{- with $dns.provider.aws | get "role" nil }}
+extraArgs:
+- --aws-assume-role={{ . }}
+{{- end }}
+{{- end }}
+
+{{- with $dns.provider | get "azure" nil }}
+provider:
+  name: azure
+env:
+- name: AZURE_TENANT_ID
+  valueFrom:
+    secretKeyRef:
+      name: AZURE-DNS
+      key: AZURE_TENANT_ID
+- name: AZURE_SUBSCRIPTION_ID
+  valueFrom:
+    secretKeyRef:
+      name: AZURE-DNS
+      key: AZURE_SUBSCRIPTION_ID
+- name: AZURE_RESOURCE_GROUP
+  valueFrom:
+    secretKeyRef:
+      name: AZURE-DNS
+      key: AZURE_RESOURCE_GROUP
+- name: AZURE_CLIENT_ID
+  valueFrom:
+    secretKeyRef:
+      name: AZURE-DNS
+      key: AZURE_CLIENT_ID
+- name: AZURE_CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: AZURE-DNS
+      key: AZURE_CLIENT_SECRET
+{{- end }}
+
+{{- with $dns.provider | get "azure-private-dns" nil }}
+provider:
+  name: azure
+env:
+- name: AZURE_TENANT_ID
+  valueFrom:
+    secretKeyRef:
+      name: AZURE-PRIVATE-DNS
+      key: AZURE_TENANT_ID
+- name: AZURE_SUBSCRIPTION_ID
+  valueFrom:
+    secretKeyRef:
+      name: AZURE-PRIVATE-DNS
+      key: AZURE_SUBSCRIPTION_ID
+- name: AZURE_RESOURCE_GROUP
+  valueFrom:
+    secretKeyRef:
+      name: AZURE-PRIVATE-DNS
+      key: AZURE_RESOURCE_GROUP
+- name: AZURE_CLIENT_ID
+  valueFrom:
+    secretKeyRef:
+      name: AZURE-PRIVATE-DNS
+      key: AZURE_CLIENT_ID
+- name: AZURE_CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: AZURE-PRIVATE-DNS
+      key: AZURE_CLIENT_SECRET
+{{- end }}
+
+{{- with $dns.provider | get "google" nil }}
+provider:
+  name: google
+secretConfiguration:
+  enabled: true
+  mountPath: /etc/secrets/service-account
+  subPath: service-account.json
+env:
+- name: GOOGLE_PROJECT
+  value: "{{ .project }}"
+- name: GOOGLE_APPLICATION_CREDENTIALS
+  value: /etc/secrets/service-account/service-account.json
+extraVolumes:
+- name: google-service-account
+  secret:
+    secretName: GOOGLE-DNS
+extraVolumeMounts:
+- name: google-service-account
+  mountPath: /etc/secrets/service-account
+  readOnly: true
+{{- end }}
+

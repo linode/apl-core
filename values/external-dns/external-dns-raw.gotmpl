@@ -8,7 +8,7 @@ resources:
   metadata:
     name: AKAMAI-DNS
   data:
-    EXTERNAL_DNS_AKAMAI_CLIENT_SECRET: "{{ $d.provider.akamai.clientSecret | b64enc }}"
+    EXTERNAL_DNS_AKAMAI_CLIENT_SECRET: "{{.clientSecret | b64enc }}"
 {{- end }}
 
 {{- with $d.provider | get "linode" nil }}
@@ -18,7 +18,7 @@ resources:
   metadata:
     name: LINODE-DNS-API-TOKEN
   data:
-    LINODE_TOKEN: "{{ $d.provider.linode.apiToken | b64enc }}"
+    LINODE_TOKEN: "{{ .apiToken | b64enc }}"
 {{- end }}
 
 {{- with $d.provider | get "digitalocean" nil }}
@@ -28,27 +28,78 @@ resources:
   metadata:
     name: DO_TOKEN
   data:
-    DO_TOKEN: "{{ $d.provider.digitalocean.apiToken | b64enc }}"
+    DO_TOKEN: "{{ .apiToken | b64enc }}"
 {{- end }}
 
 {{- with $d.provider | get "cloudflare" nil }}
-  {{- with $d.provider.cloudflare | get "apiToken" nil }}
+  {{- with .apiToken  }}
 resources:
 - apiVersion: v1
   kind: Secret
   metadata:
     name: cloudflare-api-key
   data:
-    CF_API_TOKEN: "{{ $d.provider.cloudflare.apiToken | b64enc }}"
+    CF_API_TOKEN: "{{ . | b64enc }}"
   {{- end }}
-  {{- with $d.provider.cloudflare | get "apiSecret" nil }}
+  {{- with .apiSecret }}
 resources:
 - apiVersion: v1
   kind: Secret
   metadata:
     name: cloudflare-api-key
   data:
-    CF_API_KEY: "{{ $d.provider.cloudflare.apiSecret | b64enc }}"
+    CF_API_KEY: "{{ . | b64enc }}"
     CF_API_EMAIL: "{{ $d.provider.cloudflare.email | b64enc }}"
   {{- end }}
+{{- end }}
+
+{{- with $d.provider | get "aws" nil }}
+  {{- with .credentials }}
+resources:
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: AWS-DNS-CREDENTIALS
+  data:
+    AWS_ACCESS_KEY_ID: "{{ .accessKey | b64enc }}"
+    AWS_SECRET_ACCESS_KEY: "{{ .secretKey | b64enc }}"
+  {{- end }}
+{{- end }}
+
+{{- with $d.provider | get "azure" nil }}
+resources:
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: AZURE-DNS
+  data:
+    AZURE_TENANT_ID: "{{ .tenantId | b64enc }}"
+    AZURE_SUBSCRIPTION_ID: "{{ .subscriptionId | b64enc }}"
+    AZURE_RESOURCE_GROUP: "{{ .resourceGroup | b64enc }}"
+    AZURE_CLIENT_ID: "{{ .aadClientId | b64enc }}"
+    AZURE_CLIENT_SECRET: "{{ .aadClientSecret | b64enc }}"
+{{- end }}
+
+{{- with $d.provider | get "azure-private-dns" nil }}
+resources:
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: AZURE-PRIVATE-DNS
+  data:
+    AZURE_TENANT_ID: "{{ .tenantId | b64enc }}"
+    AZURE_SUBSCRIPTION_ID: "{{ .subscriptionId | b64enc }}"
+    AZURE_RESOURCE_GROUP: "{{ .resourceGroup | b64enc }}"
+    AZURE_CLIENT_ID: "{{ .aadClientId | b64enc }}"
+    AZURE_CLIENT_SECRET: "{{ .aadClientSecret | b64enc }}"
+{{- end }}
+
+{{- with $d.provider | get "google" nil }}
+resources:
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: GOOGLE-DNS
+  data:
+    GOOGLE_APPLICATION_CREDENTIALS: "{{ .serviceAccountKey | b64enc }}"
 {{- end }}
