@@ -7,18 +7,6 @@ sources:
 ## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
 
 
-{{- range $provider, $config := $dns.provider }}
-{{- $providerConfigKey := $provider | replace "azure-private-dns" "azure" }}
-{{- if eq $provider "other" }}
-provider:
-  name: {{ $config.name }}
-{{ $config.name }}: {{- $config | get "external-dns" | toYaml | nindent 2 }}
-{{- else }}
-provider:
-  name: {{ $provider }}
-{{ $providerConfigKey }}: {{- $config | toYaml | nindent 2 }}
-{{- end }}
-{{- end }}
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
 annotationFilter: "externaldns=true"
 policy: {{ $dns.policy }}
@@ -55,8 +43,11 @@ extraArgs:
 - --zone-id-filter={{ . }}
 {{- end }}
 
-env:
+
 {{- with $dns.provider | get "akamai" nil }}
+provider:
+  name: akamai
+env:
 - name: EXTERNAL_DNS_AKAMAI_SERVICECONSUMERDOMAIN
   value: "{{ $dns.provider.akamai.host }}"
 - name: EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN
@@ -71,6 +62,9 @@ env:
 {{- end }}
 
 {{- with $dns.provider | get "linode" nil }}
+provider:
+  name: linode
+env:
 - name: LINODE_TOKEN
   valueFrom:
     secretKeyRef:
@@ -79,6 +73,9 @@ env:
 {{- end }}
 
 {{- with $dns.provider | get "digitalocean" nil }}
+provider:
+  name: digitalocean
+env:
 - name: DO_TOKEN
   valueFrom:
     secretKeyRef:
@@ -87,6 +84,9 @@ env:
 {{- end }}
 
 {{- with $dns.provider | get "cloudflare" nil }}
+provider:
+  name: cloudflare
+env:
   {{- with $dns.provider.cloudflare | get "apiToken" nil }}
 - name: CF_API_TOKEN
   valueFrom:
@@ -107,3 +107,4 @@ env:
         key: CF_API_EMAIL
   {{- end }}
 {{- end }}
+
