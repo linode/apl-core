@@ -86,15 +86,15 @@ env:
       key: DO_TOKEN
 {{- end }}
 
-{{- with $d.provider | get "cloudflare" nil }}
-  {{- with $d.provider.cloudflare | get "apiToken" nil }}
+{{- with $dns.provider | get "cloudflare" nil }}
+  {{- with $dns.provider.cloudflare | get "apiToken" nil }}
 - name: CF_API_TOKEN
   valueFrom:
     secretKeyRef:
       name: cloudflare-api-key
       key: CF_API_TOKEN
   {{- end }}
-  {{- with $d.provider.cloudflare | get "apiSecret" nil }}
+  {{- with $dns.provider.cloudflare | get "apiSecret" nil }}
   - name: CF_API_KEY
     valueFrom:
       secretKeyRef:
