@@ -1,6 +1,6 @@
-api: main
+api: APL-1142
 console: APL-1142
 consoleLogin: main
 tasks: main
 tools: main
-aplCharts: APL-1042-test
+aplCharts: APL-1142
