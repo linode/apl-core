@@ -52,7 +52,11 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
         const applicationOperation = applicationUpgrade[when as keyof typeof applicationUpgrade] as (
           context: RuntimeUpgradeContext,
         ) => Promise<void>
-        if (apps.includes(applicationName) && applicationOperation && typeof applicationOperation === 'function') {
+        if (
+          apps.find((app) => app.includes(applicationName)) &&
+          applicationOperation &&
+          typeof applicationOperation === 'function'
+        ) {
           d.info(`Runtime upgrade operations detected for version ${upgrade.version}, application: ${applicationName}`)
           // Wait for the ArgoCD app to be synced and healthy before running the operation
           await waitForArgoCDAppSync(applicationName, k8s.custom(), d)
