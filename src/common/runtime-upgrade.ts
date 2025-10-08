@@ -52,6 +52,9 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
         const applicationOperation = applicationUpgrade[when as keyof typeof applicationUpgrade] as (
           context: RuntimeUpgradeContext,
         ) => Promise<void>
+        d.info(`Checking if application ${applicationName} is deployed`)
+        d.info(`Deployed applications: ${apps.join(', ')}`)
+        d.info(`Checking applicationOperation for ${applicationName} and operation type ${when}`)
         if (
           apps.find((app) => app.includes(applicationName)) &&
           applicationOperation &&
