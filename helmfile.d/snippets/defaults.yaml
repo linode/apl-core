@@ -5,6 +5,24 @@ environments:
           appgw:
             isManaged: false
         apps:
+          ai-operators:
+            kbOperator:
+              resources:
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+            agentOperator:
+              resources:
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+            _rawValues: {}
           alertmanager:
             enabled: false
             resources:

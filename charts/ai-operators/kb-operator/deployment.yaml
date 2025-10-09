@@ -1,0 +1,94 @@
+{{- if .Values.kbOperator.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ai-operators.kb-operator.fullname" . }}
+  labels:
+    {{- include "ai-operators.kb-operator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.kbOperator.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ai-operators.kb-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.kbOperator.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "ai-operators.kb-operator.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ai-operators.kb-operator.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: kb-operator
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "{{ .Values.kbOperator.image.repository }}:{{ .Values.kbOperator.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.kbOperator.image.pullPolicy }}
+        command:
+        - kopf
+        - run
+        - -m
+        - ai_operators.kb_operator.main
+        args:
+        - --all-namespaces
+        {{- if .Values.kbOperator.kopf.verbose }}
+        - --verbose
+        {{- end }}
+        {{- with .Values.kbOperator.kopf.logFormat }}
+        - --log-format={{ . }}
+        {{- end }}
+        {{- if eq (int .Values.kbOperator.replicaCount) 1 }}
+        - --standalone
+        {{- else }}
+        - --peering={{ .Values.kbOperator.kopf.peeringName }}
+        {{- end }}
+        - "--liveness=http://0.0.0.0:8080/healthz"
+        env:
+        - name: KOPF_LOG_FORMAT
+          value: "json"
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: WATCH_NAMESPACES
+          value: {{ .Values.kbOperator.watchNamespaces | quote }}
+        {{- range $key, $value := .Values.kbOperator.env }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.kbOperator.resources | nindent 12 }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

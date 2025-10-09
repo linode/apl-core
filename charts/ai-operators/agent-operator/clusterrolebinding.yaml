@@ -1,0 +1,16 @@
+{{- if .Values.agentOperator.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "ai-operators.agent-operator.fullname" . }}
+  labels:
+    {{- include "ai-operators.agent-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "ai-operators.agent-operator.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "ai-operators.agent-operator.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

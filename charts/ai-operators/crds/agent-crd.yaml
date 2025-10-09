@@ -1,0 +1,147 @@
+{{- if .Values.agentOperator.enabled }}
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: akamaiagents.akamai.io
+spec:
+  group: akamai.io
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        description: AkamaiAgent is a custom resource for managing AI agents with foundation models
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object.'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents.'
+            type: string
+          metadata:
+            type: object
+            properties:
+              name:
+                type: string
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+                maxLength: 253
+          spec:
+            type: object
+            required:
+            - foundationModel
+            - agentInstructions
+            properties:
+              foundationModel:
+                description: The foundation model to use for the agent
+                type: string
+                minLength: 1
+                example: llama
+              agentInstructions:
+                description: Instructions that define the agent's behavior and personality
+                type: string
+                minLength: 1
+                maxLength: 4096
+              maxTokens:
+                description: Maximum number of tokens for model responses
+                type: integer
+                default: 512
+                minimum: 1
+                maximum: 2048
+              tools:
+                description: Tools available to the agent
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      description: Type of tool (knowledgeBase, function, mcpServer)
+                      type: string
+                      enum:
+                      - knowledgeBase
+                      - function
+                      - mcpServer
+                    name:
+                      description: Name of the tool
+                      type: string
+                    description:
+                      description: Description of how the agent can use this tool
+                      type: string
+                    endpoint:
+                      description: Endpoint for mcpServer type tools
+                      type: string
+                  required:
+                  - type
+          status:
+            type: object
+            x-kubernetes-preserve-unknown-fields: true
+            properties:
+              phase:
+                description: Current phase of the agent (Deployed, Failed)
+                type: string
+              conditions:
+                description: Current conditions of the agent
+                type: array
+                items:
+                  description: Condition represents the current condition of the agent
+                  type: object
+                  required:
+                  - type
+                  - status
+                  properties:
+                    type:
+                      description: Type of condition
+                      type: string
+                      enum:
+                      - AgentDeployed
+                      - AgentFailed
+                    status:
+                      description: Status of the condition
+                      type: string
+                      enum:
+                      - "True"
+                      - "False"
+                      - "Unknown"
+                    reason:
+                      description: Reason for the condition status
+                      type: string
+                    message:
+                      description: Human readable message describing the condition
+                      type: string
+                      maxLength: 1024
+                    lastTransitionTime:
+                      description: Last time the condition transitioned from one status to another
+                      type: string
+                      format: date-time
+                    lastUpdateTime:
+                      description: Last time the condition was updated
+                      type: string
+                      format: date-time
+    additionalPrinterColumns:
+    - name: Model
+      type: string
+      description: Foundation model
+      jsonPath: .spec.foundationModel
+    - name: Tools
+      type: string
+      description: Number of tools
+      jsonPath: .spec.tools.length
+    - name: Status
+      type: string
+      description: Agent deployment status
+      jsonPath: .status.conditions[?(@.type=="AgentDeployed")].status
+    - name: Created
+      type: string
+      format: date-time
+      jsonPath: .metadata.creationTimestamp
+  scope: Namespaced
+  names:
+    plural: akamaiagents
+    singular: akamaiagent
+    kind: AkamaiAgent
+    shortNames:
+    - aag
+    categories:
+    - apl
+{{- end }}

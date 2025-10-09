@@ -2622,6 +2622,57 @@ properties:
               operator:
                 $ref: '#/definitions/resources'
 
+      ai-operators:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          kbOperator:
+            additionalProperties: false
+            properties:
+              replicaCount:
+                type: integer
+                default: 1
+              image:
+                additionalProperties: false
+                properties:
+                  repository:
+                    type: string
+                    default: "linode/ai-operators"
+                  tag:
+                    $ref: '#/definitions/imageTag'
+                    default: "latest"
+              resources:
+                $ref: '#/definitions/resources'
+          agentOperator:
+            additionalProperties: false
+            properties:
+              replicaCount:
+                type: integer
+                default: 1
+              image:
+                additionalProperties: false
+                properties:
+                  repository:
+                    type: string
+                    default: "linode/ai-agent-operator"
+                  tag:
+                    $ref: '#/definitions/imageTag'
+                    default: "latest"
+              resources:
+                $ref: '#/definitions/resources'
+              chart:
+                additionalProperties: false
+                properties:
+                  repo:
+                    type: string
+                    default: "https://github.com/linode/ai-operators.git"
+                  revision:
+                    type: string
+                    default: "main"
+                  path:
+                    type: string
+                    default: "agent"
       oltp:
         additionalProperties: false
         properties:

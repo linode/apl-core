@@ -1,0 +1,44 @@
+{{- if .Values.kbOperator.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "ai-operators.kb-operator.fullname" . }}
+  labels:
+    {{- include "ai-operators.kb-operator.labels" . | nindent 4 }}
+rules:
+# Watch and manage AkamaiKnowledgeBase custom resources
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiknowledgebases"]
+  verbs: ["get", "list", "watch", "patch"]
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiknowledgebases/status"]
+  verbs: ["get", "update", "patch"]
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiknowledgebases/finalizers"]
+  verbs: ["update"]
+
+# Watch namespaces for namespace-level events
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list", "watch"]
+
+# Kopf framework requirements for operator functionality
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+
+# Leader election (if using kopf peering)
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Kopf operator annotations and status
+- apiGroups: ["kopf.dev"]
+  resources: ["clusterkopfpeerings", "kopfpeerings"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# CustomResourceDefinitions access for Kopf framework
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list", "watch"]
+{{- end }}

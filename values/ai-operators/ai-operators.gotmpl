@@ -1,0 +1,70 @@
+{{- $v := .Values }}
+{{- $a := $v.apps | get "ai-operators" }}
+{{- $kb := $a.kbOperator }}
+{{- $ag := $a.agentOperator }}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 1001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1001
+
+# Service account configuration
+serviceAccount:
+  create: true
+  annotations: {}
+
+# Knowledge Base Operator configuration
+kbOperator:
+  enabled: true
+  replicaCount: {{ $ag.replicaCount }}
+  image:
+    repository: {{ $kb.image.repository }}
+    pullPolicy: IfNotPresent
+    tag: {{ $kb.image.tag }}
+  resources: {{ $kb.resources | toYaml | nindent 4 }}
+  # Namespaces to watch (comma-separated, empty means all namespaces)
+  watchNamespaces: ""
+  # Kopf configuration
+  kopf:
+    verbose: false
+    logFormat: plain
+    peeringName: "kb-operator"
+  # Environment variables
+  env:
+    KUBEFLOW_ENDPOINT: http://ml-pipeline-ui.kfp.svc.cluster.local
+  # Pod annotations
+  podAnnotations: {}
+
+# Agent Operator configuration
+agentOperator:
+  enabled: true
+  replicaCount: {{ $ag.replicaCount }}
+  provider: apl
+  image:
+    repository: {{ $ag.image.repository }}
+    pullPolicy: IfNotPresent
+    tag: {{ $ag.image.tag }}
+  resources: {{ $ag.resources | toYaml | nindent 4 }}
+  # Namespaces to watch (comma-separated, empty means all namespaces)
+  watchNamespaces: ""
+  # Kopf configuration
+  kopf:
+    verbose: false
+    logFormat: plain
+    peeringName: "agent-operator"
+  # Environment variables (PROVIDER, AGENT_CHART_REPO_URL, etc.)
+  env:
+    AGENT_CHART_REPO_URL: {{ $ag.chart.repo }} # https://github.com/linode/ai-operators.git
+    AGENT_CHART_REPO_REVISION: {{ $ag.chart.revision }}
+    AGENT_CHART_PATH: {{ $ag.chart.path }}
