@@ -5,8 +5,8 @@
 
 podSecurityContext:
   runAsNonRoot: true
-  runAsUser: 1001
-  fsGroup: 1001
+  runAsUser: 65534
+  fsGroup: 65534
   seccompProfile:
     type: RuntimeDefault
 
@@ -17,7 +17,7 @@ securityContext:
       - ALL
   readOnlyRootFilesystem: true
   runAsNonRoot: true
-  runAsUser: 1001
+  runAsUser: 65534
 
 # Service account configuration
 serviceAccount:
