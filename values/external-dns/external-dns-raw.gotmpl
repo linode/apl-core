@@ -6,7 +6,7 @@ resources:
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: AKAMAI-DNS
+    name: akamai-dns
   data:
     EXTERNAL_DNS_AKAMAI_CLIENT_SECRET: "{{.clientSecret | b64enc }}"
 {{- end }}
@@ -16,7 +16,7 @@ resources:
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: LINODE-DNS-API-TOKEN
+    name: linode-dns-api-token
   data:
     LINODE_TOKEN: "{{ .apiToken | b64enc }}"
 {{- end }}
@@ -26,7 +26,7 @@ resources:
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: DO_TOKEN
+    name: do-token
   data:
     DO_TOKEN: "{{ .apiToken | b64enc }}"
 {{- end }}
@@ -59,7 +59,7 @@ resources:
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: AWS-DNS-CREDENTIALS
+    name: aws-dns-credentials
   data:
     AWS_ACCESS_KEY_ID: "{{ .accessKey | b64enc }}"
     AWS_SECRET_ACCESS_KEY: "{{ .secretKey | b64enc }}"
@@ -71,7 +71,7 @@ resources:
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: AZURE-DNS
+    name: azure-dns
   data:
     AZURE_TENANT_ID: "{{ .tenantId | b64enc }}"
     AZURE_SUBSCRIPTION_ID: "{{ .subscriptionId | b64enc }}"
@@ -85,7 +85,7 @@ resources:
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: AZURE-PRIVATE-DNS
+    name: azure-private-dns
   data:
     AZURE_TENANT_ID: "{{ .tenantId | b64enc }}"
     AZURE_SUBSCRIPTION_ID: "{{ .subscriptionId | b64enc }}"
@@ -99,7 +99,7 @@ resources:
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: GOOGLE-DNS
+    name: google-dns
   data:
     GOOGLE_APPLICATION_CREDENTIALS: "{{ .serviceAccountKey | b64enc }}"
 {{- end }}

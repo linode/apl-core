@@ -56,7 +56,7 @@ env:
 - name: EXTERNAL_DNS_AKAMAI_CLIENT_SECRET
   valueFrom:
     secretKeyRef:
-      name: AKAMAI-DNS
+      name: akamai-dns
       key: EXTERNAL_DNS_AKAMAI_CLIENT_SECRET
 {{- end }}
 
@@ -67,7 +67,7 @@ env:
 - name: LINODE_TOKEN
   valueFrom:
     secretKeyRef:
-      name: LINODE-DNS-API-TOKEN
+      name: linode-dns-api-token
       key: LINODE_TOKEN
 {{- end }}
 
@@ -78,7 +78,7 @@ env:
 - name: DO_TOKEN
   valueFrom:
     secretKeyRef:
-      name: DO_TOKEN
+      name: do-token
       key: DO_TOKEN
 {{- end }}
 
@@ -117,12 +117,12 @@ env:
 - name: AWS_ACCESS_KEY_ID
   valueFrom:
     secretKeyRef:
-      name: AWS-DNS-CREDENTIALS
+      name: aws-dns-credentials
       key: AWS_ACCESS_KEY_ID
 - name: AWS_SECRET_ACCESS_KEY
   valueFrom:
     secretKeyRef:
-      name: AWS-DNS-CREDENTIALS
+      name: aws-dns-credentials
       key: AWS_SECRET_ACCESS_KEY
 {{- end }}
 {{- with $dns.provider.aws | get "role" nil }}
@@ -138,27 +138,27 @@ env:
 - name: AZURE_TENANT_ID
   valueFrom:
     secretKeyRef:
-      name: AZURE-DNS
+      name: azure-dns
       key: AZURE_TENANT_ID
 - name: AZURE_SUBSCRIPTION_ID
   valueFrom:
     secretKeyRef:
-      name: AZURE-DNS
+      name: azure-dns
       key: AZURE_SUBSCRIPTION_ID
 - name: AZURE_RESOURCE_GROUP
   valueFrom:
     secretKeyRef:
-      name: AZURE-DNS
+      name: azure-dns
       key: AZURE_RESOURCE_GROUP
 - name: AZURE_CLIENT_ID
   valueFrom:
     secretKeyRef:
-      name: AZURE-DNS
+      name: azure-dns
       key: AZURE_CLIENT_ID
 - name: AZURE_CLIENT_SECRET
   valueFrom:
     secretKeyRef:
-      name: AZURE-DNS
+      name: azure-dns
       key: AZURE_CLIENT_SECRET
 {{- end }}
 
@@ -169,27 +169,27 @@ env:
 - name: AZURE_TENANT_ID
   valueFrom:
     secretKeyRef:
-      name: AZURE-PRIVATE-DNS
+      name: azure-private-dns
       key: AZURE_TENANT_ID
 - name: AZURE_SUBSCRIPTION_ID
   valueFrom:
     secretKeyRef:
-      name: AZURE-PRIVATE-DNS
+      name: azure-private-dns
       key: AZURE_SUBSCRIPTION_ID
 - name: AZURE_RESOURCE_GROUP
   valueFrom:
     secretKeyRef:
-      name: AZURE-PRIVATE-DNS
+      name: azure-private-dns
       key: AZURE_RESOURCE_GROUP
 - name: AZURE_CLIENT_ID
   valueFrom:
     secretKeyRef:
-      name: AZURE-PRIVATE-DNS
+      name: azure-private-dns
       key: AZURE_CLIENT_ID
 - name: AZURE_CLIENT_SECRET
   valueFrom:
     secretKeyRef:
-      name: AZURE-PRIVATE-DNS
+      name: azure-private-dns
       key: AZURE_CLIENT_SECRET
 {{- end }}
 
