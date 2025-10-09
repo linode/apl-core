@@ -107,7 +107,9 @@ export const runtimeUpgrades: RuntimeUpgrades = [
             name: 'oauth2-proxy',
             body: {
               metadata: {
-                'nginx.ingress.kubernetes.io/configuration-snippet': null,
+                annotations: {
+                  'nginx.ingress.kubernetes.io/configuration-snippet': null,
+                },
               },
             },
           },
