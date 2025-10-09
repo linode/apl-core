@@ -125,10 +125,9 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       'minio-minio': {
         post: async (context: RuntimeUpgradeContext) => {
           const d = context.debug
-          d.info('Deleting old minio resources in namespace minio before sync')
+          d.info('checking minio resources in namespace minio')
           try {
             await removeOldMinioResources()
-            d.info('Successfully deleted minio resources')
           } catch (error) {
             d.error('Failed to delete minio resources:', error)
           }

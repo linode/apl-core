@@ -14,6 +14,11 @@ const minioAppName = 'minio-minio'
 export async function removeOldMinioResources() {
   const d = terminal('removeOldMinioResources')
   try {
+    const minioDeployment = await appsApi.readNamespacedDeployment({ name: minioDeploymentName, namespace })
+    if (minioDeployment.metadata?.labels?.chart === 'minio-5.4.0') {
+      d.info('Minio deployment is up-to-date, no need to remove old resources.')
+      return
+    }
     // Disable argocd auto-sync for minio application if it exists
     const patch = [{ op: 'remove', path: '/spec/syncPolicy/automated' }]
     const custom = k8s.custom()
@@ -55,4 +60,5 @@ export async function removeOldMinioResources() {
   } catch (error) {
     d.error('Failed to re-enable auto-sync for minio application:', error)
   }
+  d.info('Successfully deleted minio resources')
 }
