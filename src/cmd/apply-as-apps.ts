@@ -1,16 +1,16 @@
-import { mkdirSync, rmSync, existsSync } from 'fs'
+import { ApiException, V1ResourceRequirements } from '@kubernetes/client-node'
+import { existsSync, mkdirSync, rmSync } from 'fs'
 import { readFile, writeFile } from 'fs/promises'
+import { appPatches, genericPatch } from 'src/applicationPatches.json'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
 import { appRevisionMatches, k8s, patchArgoCdApp, patchContainerResourcesOfSts } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
-import { appPatches, genericPatch } from 'src/applicationPatches.json'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { ApiException, V1ResourceRequirements } from '@kubernetes/client-node'
 import { env } from '../common/envalid'
 
 const cmdName = getFilename(__filename)
@@ -146,7 +146,7 @@ async function patchArgocdResources(release: HelmRelease, values: Record<string,
   }
 }
 
-const getApplications = async (): Promise<string[]> => {
+export const getApplications = async (): Promise<string[]> => {
   const res = await $`kubectl get application.argoproj.io -n argocd -oname`
   return res.stdout.split('\n')
 }
