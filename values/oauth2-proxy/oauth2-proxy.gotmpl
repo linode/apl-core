@@ -119,8 +119,7 @@ redis:
   {{- end }}
   enabled: true
   architecture: {{ $r | get "architecture" }}
-  auth:
-    password: {{ $r | get "password" | quote }}
+  redisPassword: {{ $r | get "password" | quote }}
 
   sentinel:
     persistence:
