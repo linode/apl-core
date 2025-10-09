@@ -8,6 +8,9 @@ environments:
           ai-operators:
             kbOperator:
               replicaCount: 1
+              image:
+                repository: linode/ai-operators
+                tag: v0.1.0
               resources:
                 limits:
                   cpu: 200m
@@ -17,6 +20,13 @@ environments:
                   memory: 128Mi
             agentOperator:
               replicaCount: 1
+              image:
+                repository: linode/ai-operators
+                tag: v0.1.0
+              chart:
+                repo: "https://github.com/linode/ai-operators.git"
+                revision: main
+                path: agent
               resources:
                 limits:
                   cpu: 200m

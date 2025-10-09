@@ -2632,16 +2632,13 @@ properties:
             properties:
               replicaCount:
                 type: integer
-                default: 1
               image:
                 additionalProperties: false
                 properties:
                   repository:
                     type: string
-                    default: "linode/ai-operators"
                   tag:
                     $ref: '#/definitions/imageTag'
-                    default: "latest"
               resources:
                 $ref: '#/definitions/resources'
           agentOperator:
@@ -2649,16 +2646,13 @@ properties:
             properties:
               replicaCount:
                 type: integer
-                default: 1
               image:
                 additionalProperties: false
                 properties:
                   repository:
                     type: string
-                    default: "linode/ai-agent-operator"
                   tag:
                     $ref: '#/definitions/imageTag'
-                    default: "latest"
               resources:
                 $ref: '#/definitions/resources'
               chart:
@@ -2666,13 +2660,10 @@ properties:
                 properties:
                   repo:
                     type: string
-                    default: "https://github.com/linode/ai-operators.git"
                   revision:
                     type: string
-                    default: "main"
                   path:
                     type: string
-                    default: "agent"
       oltp:
         additionalProperties: false
         properties:
