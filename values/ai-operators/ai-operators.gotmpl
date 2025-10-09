@@ -3,22 +3,6 @@
 {{- $kb := $a.kbOperator }}
 {{- $ag := $a.agentOperator }}
 
-podSecurityContext:
-  runAsNonRoot: true
-  runAsUser: 65534
-  fsGroup: 65534
-  seccompProfile:
-    type: RuntimeDefault
-
-securityContext:
-  allowPrivilegeEscalation: false
-  capabilities:
-    drop:
-      - ALL
-  readOnlyRootFilesystem: true
-  runAsNonRoot: true
-  runAsUser: 65534
-
 # Service account configuration
 serviceAccount:
   create: true
