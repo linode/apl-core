@@ -10,7 +10,7 @@ environments:
               replicaCount: 1
               image:
                 repository: linode/ai-operators
-                tag: v0.1.0
+                tag: APL-1189
               resources:
                 limits:
                   cpu: 200m
@@ -22,7 +22,7 @@ environments:
               replicaCount: 1
               image:
                 repository: linode/ai-operators
-                tag: v0.1.0
+                tag: APL-1189
               chart:
                 repo: "https://github.com/linode/ai-operators.git"
                 revision: main
