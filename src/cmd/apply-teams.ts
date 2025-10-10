@@ -35,11 +35,14 @@ export const applyTeams = async (): Promise<boolean> => {
     errors.push(output.stderr)
   }
   const templateOutput = output.stdout
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true })
+  if (templateOutput) {
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true })
+    }
+    writeFileSync(templateFile, templateOutput)
+
+    await $`kubectl apply -f ${templateFile}`
   }
-  writeFileSync(templateFile, templateOutput)
-  await $`kubectl apply -f ${templateFile}`
 
   if (errors.length === 0) d.info(`Teams applied`)
   else {
