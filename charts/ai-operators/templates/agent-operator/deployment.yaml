@@ -1,0 +1,96 @@
+{{- if .Values.agentOperator.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ai-operators.agent-operator.fullname" . }}
+  labels:
+    {{- include "ai-operators.agent-operator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.agentOperator.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ai-operators.agent-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.agentOperator.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "ai-operators.agent-operator.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ai-operators.agent-operator.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: agent-operator
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "{{ .Values.agentOperator.image.repository }}:{{ .Values.agentOperator.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.agentOperator.image.pullPolicy }}
+        command:
+        - kopf
+        - run
+        - -m
+        - ai_operators.agent_operator.main
+        args:
+        - --all-namespaces
+        {{- if .Values.agentOperator.kopf.verbose }}
+        - --verbose
+        {{- end }}
+        {{- with .Values.agentOperator.kopf.logFormat }}
+        - --log-format={{ . }}
+        {{- end }}
+        {{- if eq (int .Values.agentOperator.replicaCount) 1 }}
+        - --standalone
+        {{- else }}
+        - --peering={{ .Values.agentOperator.kopf.peeringName }}
+        {{- end }}
+        - "--liveness=http://0.0.0.0:8080/healthz"
+        env:
+        - name: KOPF_LOG_FORMAT
+          value: "json"
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: WATCH_NAMESPACES
+          value: {{ .Values.agentOperator.watchNamespaces | quote }}
+        - name: PROVIDER
+          value: {{ .Values.agentOperator.provider | quote }}
+        {{- range $key, $value := .Values.agentOperator.env }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.agentOperator.resources | nindent 12 }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

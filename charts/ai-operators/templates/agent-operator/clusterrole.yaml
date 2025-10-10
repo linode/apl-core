@@ -1,0 +1,92 @@
+{{- if .Values.agentOperator.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "ai-operators.agent-operator.fullname" . }}
+  labels:
+    {{- include "ai-operators.agent-operator.labels" . | nindent 4 }}
+rules:
+# Watch namespaces for namespace-level events
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list", "watch"]
+
+# Kopf framework requirements for operator functionality
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+
+# Leader election (if using kopf peering)
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Kopf operator annotations and status
+- apiGroups: ["kopf.dev"]
+  resources: ["clusterkopfpeerings", "kopfpeerings"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# CustomResourceDefinitions access for Kopf framework
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list", "watch"]
+
+# AkamaiAgent custom resources
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiagents"]
+  verbs: ["get", "list", "watch", "patch"]
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiagents/status"]
+  verbs: ["get", "update", "patch"]
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiagents/finalizers"]
+  verbs: ["update"]
+
+# AkamaiKnowledgeBase custom resources
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiknowledgebases"]
+  verbs: ["get", "list", "watch"]
+
+# TODO strict this down further for only some namespaces
+# This is needed to deploy the agent via kubectl
+# Service discovery for foundation models and agent services
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+
+# ConfigMaps for agent configuration
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+
+# Secrets for database credentials (needed to grant agents access to secrets)
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+
+# PVCs for agent storage
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+
+# ServiceAccounts for agents
+- apiGroups: [""]
+  resources: ["serviceaccounts"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+
+# RBAC for agents
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["roles", "rolebindings"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+
+# Deployment management
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+
+{{- if eq (.Values.agentOperator.provider | default "") "apl" }}
+- apiGroups: ["argoproj.io"]
+  resources: ["applications"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+{{- end }}
+{{- end }}

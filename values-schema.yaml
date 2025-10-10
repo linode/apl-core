@@ -2622,6 +2622,48 @@ properties:
               operator:
                 $ref: '#/definitions/resources'
 
+      ai-operators:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          kbOperator:
+            additionalProperties: false
+            properties:
+              replicaCount:
+                type: integer
+              image:
+                additionalProperties: false
+                properties:
+                  repository:
+                    type: string
+                  tag:
+                    $ref: '#/definitions/imageTag'
+              resources:
+                $ref: '#/definitions/resources'
+          agentOperator:
+            additionalProperties: false
+            properties:
+              replicaCount:
+                type: integer
+              image:
+                additionalProperties: false
+                properties:
+                  repository:
+                    type: string
+                  tag:
+                    $ref: '#/definitions/imageTag'
+              resources:
+                $ref: '#/definitions/resources'
+              chart:
+                additionalProperties: false
+                properties:
+                  repo:
+                    type: string
+                  revision:
+                    type: string
+                  path:
+                    type: string
       oltp:
         additionalProperties: false
         properties:

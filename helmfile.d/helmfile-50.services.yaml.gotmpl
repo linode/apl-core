@@ -58,3 +58,9 @@ releases:
     labels:
       pkg: kserve
     <<: *default
+  - name: ai-operators
+    installed: {{ $v.otomi.aiEnabled }}
+    namespace: ai-operators
+    labels:
+      pkg: ai-operators
+    <<: *default

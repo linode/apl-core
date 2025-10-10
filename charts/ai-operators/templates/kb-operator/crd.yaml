@@ -1,0 +1,120 @@
+{{- if .Values.kbOperator.enabled }}
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: akamaiknowledgebases.akamai.io
+spec:
+  group: akamai.io
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        description: AkamaiKnowledgeBase is a custom resource for managing team knowledge bases with vector embeddings
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object.'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents.'
+            type: string
+          metadata:
+            type: object
+            properties:
+              name:
+                type: string
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+                maxLength: 253
+          spec:
+            type: object
+            required:
+            - pipelineName
+            - pipelineParameters
+            properties:
+              pipelineName:
+                description: Name of the pipeline to execute
+                type: string
+                minLength: 1
+              pipelineParameters:
+                description: Flexible parameters passed to the kubeflow pipeline. Parameters must be in snake_case.
+                type: object
+                additionalProperties: true
+          status:
+            type: object
+            properties:
+              indexingProgress:
+                description: Indexing progress percentage
+                type: string
+                pattern: '^([0-9]|[1-9][0-9]|100)%$'
+              conditions:
+                description: Current conditions of the resource
+                type: array
+                items:
+                  description: Condition represents the current condition of the knowledge base
+                  type: object
+                  required:
+                  - type
+                  - status
+                  properties:
+                    type:
+                      description: Type of condition
+                      type: string
+                      enum:
+                      - IndexingStarted
+                      - IndexingFinished
+                      - IndexingFailed
+                    status:
+                      description: Status of the condition
+                      type: string
+                      enum:
+                      - "True"
+                      - "False"
+                      - "Unknown"
+                    reason:
+                      description: Reason for the condition status
+                      type: string
+                      enum:
+                      - Scheduled
+                      - Misconfiguration
+                      - DataSourceError
+                      - DatabaseError
+                      - ModelError
+                    message:
+                      description: Human readable message describing the condition
+                      type: string
+                      maxLength: 1024
+                    lastTransitionTime:
+                      description: Last time the condition transitioned from one status to another
+                      type: string
+                      format: date-time
+                    lastUpdateTime:
+                      description: Last time the condition was updated
+                      type: string
+                      format: date-time
+    additionalPrinterColumns:
+    - name: Pipeline
+      type: string
+      description: Pipeline name
+      jsonPath: .spec.pipelineName
+    - name: Progress
+      type: string
+      description: Indexing progress
+      jsonPath: .status.indexingProgress
+    - name: Created
+      type: string
+      format: date-time
+      jsonPath: .metadata.creationTimestamp
+    subresources:
+      status: {}
+  scope: Namespaced
+  names:
+    plural: akamaiknowledgebases
+    singular: akamaiknowledgebase
+    kind: AkamaiKnowledgeBase
+    shortNames:
+    - akb
+    categories:
+    - apl
+{{- end }}
