@@ -121,7 +121,10 @@ redis:
   architecture: {{ $r | get "architecture" }}
   redisPassword: {{ $r | get "password" | quote }}
   replicas: 1
-
+  redis:
+    config:
+      # See http://download.redis.io/redis-stable/redis.conf
+      min-replicas-to-write: 0
   sentinel:
     persistence:
       size: {{ $r.persistence.sentinel.size }}
