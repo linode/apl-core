@@ -114,8 +114,8 @@ global:
 
 redis:
   {{- if $v.otomi.linodeLkeImageRepository }}
-  global:
-    imageRegistry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/redis"
   {{- end }}
   enabled: true
   architecture: {{ $r | get "architecture" }}
