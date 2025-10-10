@@ -120,6 +120,7 @@ redis:
   enabled: true
   architecture: {{ $r | get "architecture" }}
   redisPassword: {{ $r | get "password" | quote }}
+  replicas: 1
 
   sentinel:
     persistence:
