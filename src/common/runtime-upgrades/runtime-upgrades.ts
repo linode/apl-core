@@ -5,6 +5,7 @@ import { getParsedArgs } from '../yargs'
 import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
+import { ARGOCD_APP_PARAMS } from '../constants'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -135,6 +136,22 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           }
         },
       },
+    },
+  },
+  {
+    version: '4.13.0',
+    pre: async (context: RuntimeUpgradeContext) => {
+      const d = context.debug
+      d.info('Removing old ArgoCD Image Updater deployment')
+      try {
+        await k8s
+          .custom()
+          .deleteNamespacedCustomObject({ ...ARGOCD_APP_PARAMS, name: 'argocd-argocd-image-updater-artifacts' })
+      } catch (error) {
+        if (!(error instanceof ApiException && error.code === 404)) {
+          d.error('Failed to delete old ArgoCD Image Updater', error)
+        }
+      }
     },
   },
 ]
