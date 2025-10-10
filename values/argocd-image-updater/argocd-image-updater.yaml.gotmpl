@@ -1,0 +1,9 @@
+{{- $v := .Values }}
+{{- $a := $v.apps.argocd }}
+argocdImageUpdater:
+  argocdImageUpdater:
+    {{- with $v.otomi.linodeLkeImageRepository }}
+    image:
+      repository: {{ . }}/quay/argoprojlabs/argocd-image-updater
+    {{- end }}
+    resources: {{- $a.resources.imageUpdater | toYaml | nindent 6 }}

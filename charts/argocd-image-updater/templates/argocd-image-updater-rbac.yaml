@@ -1,0 +1,79 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: argocd-image-updater
+  namespace: {{ .Release.Namespace | quote  }}
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/part-of: argocd-image-updater
+  {{- include "argocd-image-updater.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argocd-image-updater
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/part-of: argocd-image-updater
+  {{- include "argocd-image-updater.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+- apiGroups:
+  - argoproj.io
+  resources:
+  - applications
+  verbs:
+  - get
+  - list
+  - update
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: argocd-image-updater
+  namespace: {{ .Release.Namespace | quote  }}
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/part-of: argocd-image-updater
+  {{- include "argocd-image-updater.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: argocd-image-updater
+subjects:
+- kind: ServiceAccount
+  name: argocd-image-updater
+  namespace: '{{ .Release.Namespace }}'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argocd-image-updater
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/part-of: argocd-image-updater
+  {{- include "argocd-image-updater.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argocd-image-updater
+subjects:
+- kind: ServiceAccount
+  name: argocd-image-updater
+  namespace: '{{ .Release.Namespace }}'
