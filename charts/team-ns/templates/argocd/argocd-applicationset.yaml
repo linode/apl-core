@@ -11,7 +11,7 @@ metadata:
 spec:
   generators:
   - git:
-      repoURL: "{{ $v.gitOps.workloadValuesRepoUrl }}"
+      repoURL: {{ $v.gitOps.workloadValuesRepoUrl | quote }}
       revision: HEAD
       files:
       - path: "env/teams/{{ $v.teamId }}/workloadValues/{{ .name }}.yaml"
@@ -24,6 +24,7 @@ spec:
         argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.force-update: 'true'
         argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.pull-secret: 'pullsecret:argocd/copy-team-{{ $v.teamId }}-harbor-pullsecret'
         argocd-image-updater.argoproj.io/git-branch: main
+        argocd-image-updater.argoproj.io/git-repository: {{ $v.gitOps.workloadValuesRepoUrl | quote }}
         argocd-image-updater.argoproj.io/write-back-method: 'git:secret:argocd/team-{{ $v.teamId }}-gitea-repo-creds'
         {{- if eq $a.type "semver" }}
         argocd-image-updater.argoproj.io/image-list: 'team-{{ $v.teamId }}-{{ .name }}={{ $a.semver.imageRepository }}:~{{ $a.semver.versionConstraint }}'
@@ -39,16 +40,16 @@ spec:
         {{- end }}
       {{- end }}
     spec:
-      {{- if and ( eq $v.teamId "admin" ) .namespace }} 
+      {{- if and ( eq $v.teamId "admin" ) .namespace }}
       project: 'default' # project is not restricted
-      {{- else }} 
+      {{- else }}
       project: 'team-{{ $v.teamId }}' # project is restricted
       {{- end }}
       source:
         repoURL: '{{ .url }}'
-        targetRevision: '{{ .revision }}' 
-        path: '{{ .path }}' 
-        chart: '{{ .chart }}'  
+        targetRevision: '{{ .revision }}'
+        path: '{{ .path }}'
+        chart: '{{ .chart }}'
         helm:
           # The argocd template the values parameter is taken from the git generator path
           values: '{{ "{{values}}" }}'
@@ -72,7 +73,7 @@ spec:
             duration: 10s
             factor: 3
           limit: 3
-        {{- if eq $v.teamId "admin" }} 
+        {{- if eq $v.teamId "admin" }}
         syncOptions:
           - RespectIgnoreDifferences=true
           - ServerSideApply=true
@@ -97,9 +98,9 @@ spec:
         {{- end }}
       destination:
         server: 'https://kubernetes.default.svc'
-        {{- if and ( eq $v.teamId "admin" ) .namespace }} 
+        {{- if and ( eq $v.teamId "admin" ) .namespace }}
         namespace: '{{- .namespace }}'
-        {{- else }} 
+        {{- else }}
         namespace: 'team-{{ $v.teamId }}'
         {{- end }}
         # helm-specific config
