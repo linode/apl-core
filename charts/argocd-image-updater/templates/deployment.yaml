@@ -11,12 +11,11 @@ spec:
   strategy:
     type: {{ .Values.argocdImageUpdater.strategy.type | quote }}
   selector:
-    matchLabels: {}
+    matchLabels:
     {{- include "argocd-image-updater.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {}
       {{- include "argocd-image-updater.selectorLabels" . | nindent 8 }}
     spec:
       containers:
