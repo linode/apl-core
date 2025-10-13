@@ -1,6 +1,9 @@
 import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import express, { Request, Response } from 'express'
+import rateLimit from 'express-rate-limit'
+import { copyFile } from 'fs/promises'
 import { Server } from 'http'
+import * as path from 'path'
 import { bootstrapSops } from 'src/cmd/bootstrap'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
@@ -8,11 +11,17 @@ import { hfValues } from './common/hf'
 import { setValuesFile, unsetValuesFile } from './common/repo'
 import { loadYaml, rootDir } from './common/utils'
 import { objectToYaml } from './common/values'
-import { copyFile } from 'fs/promises'
 
 const d = terminal('server')
 const app = express()
 let server: Server
+
+// Rate limiter for expensive routes
+const prepareLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 10, // Limit each IP to 10 requests per minute
+  message: 'Too many requests, please try again later.',
+})
 
 export const stopServer = (): void => {
   server?.close()
@@ -39,18 +48,28 @@ app.get('/init', async (req: Request, res: Response): Promise<void> => {
   }
 })
 
-app.get('/prepare', async (req: Request, res: Response): Promise<void> => {
+app.get('/prepare', prepareLimiter, async (req: Request, res: Response): Promise<void> => {
   const { envDir, files } = req.query as QueryParams
+  // Define the allowed environment root directory
+  const allowedEnvsRoot = path.resolve(rootDir, '.envs')
+  let resolvedEnvDir = path.resolve(allowedEnvsRoot, envDir || '')
   try {
-    d.log('Request to prepare values repo on', envDir)
+    // Check if the resolved environment directory is inside the allowed root
+    if (!resolvedEnvDir.startsWith(allowedEnvsRoot)) {
+      res.status(403).send('Forbidden: Invalid envDir path.')
+      return
+    }
+    d.log('Request to prepare values repo on', resolvedEnvDir)
     const file = '.editorconfig'
-    await copyFile(`${rootDir}/.values/${file}`, `${envDir}/${file}`)
-    await bootstrapSops(envDir)
-    await setValuesFile(envDir)
+    const srcFile = path.resolve(rootDir, '.values', file)
+    const destFile = path.resolve(resolvedEnvDir, file)
+    await copyFile(srcFile, destFile)
+    await bootstrapSops(resolvedEnvDir)
+    await setValuesFile(resolvedEnvDir)
     // Encrypt ensures that a brand new secret file is encrypted in place
-    await encrypt(envDir, ...(files ?? []))
+    await encrypt(resolvedEnvDir, ...(files ?? []))
     // Decrypt ensures that a brand new encrypted secret file is decrypted to the .dec file
-    await decrypt(envDir, ...(files ?? []))
+    await decrypt(resolvedEnvDir, ...(files ?? []))
     res.status(200).send('ok')
   } catch (error) {
     const err = `${error}`
@@ -61,7 +80,7 @@ app.get('/prepare', async (req: Request, res: Response): Promise<void> => {
     }
     res.status(status).send(err)
   } finally {
-    await unsetValuesFile(envDir)
+    await unsetValuesFile(resolvedEnvDir)
   }
 })
 
