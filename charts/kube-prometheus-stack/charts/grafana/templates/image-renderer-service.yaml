@@ -22,7 +22,7 @@ spec:
     - name: {{ .Values.imageRenderer.service.portName }}
       port: {{ .Values.imageRenderer.service.port }}
       protocol: TCP
-      targetPort: {{ .Values.imageRenderer.service.targetPort }}
+      targetPort: {{ .Values.imageRenderer.service.portName }}
       {{- with .Values.imageRenderer.appProtocol }}
       appProtocol: {{ . }}
       {{- end }}
