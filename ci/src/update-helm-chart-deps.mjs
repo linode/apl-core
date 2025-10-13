@@ -123,7 +123,7 @@ async function main() {
         console.log(`Pre-check for dependency ${dependency.name}`)
         try {
           const dependencyChart = await loadYamlFile(dependencyFileName)
-          if (dependencyChart.version !== currentDependencyVersion) {
+          if (dependencyChart.version !== currentDependencyVersion.replace(/^v/, '')) {
             console.error(
               `Skipping update, indexed version of dependency ${dependency.name} is not consistent with chart version.`,
             )
