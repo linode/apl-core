@@ -206,20 +206,21 @@ async function main() {
         // Write the updated Chart.yaml file
         await writeYamlFile(chartFile, chart)
         // Fetch and unpack the new chart version
-        const tempDir = `./tmp/charts/${dependency.name}`
-        await $`mkdir -p ${tempDir}`
+        const downloadDir = `./tmp/charts/${dependency.name}`
+        const tempDir = `${downloadDir}/${dirName}`
+        await fs.mkdir(downloadDir, { recursive: true })
+        await fs.rm(tempDir, { force: true, recursive: true })
         const pullArg = isRegistry ? dependency.repository : `${dependency.name}/${dependency.name}`
-        await $`helm pull ${pullArg} --version ${latestVersion} --destination ${tempDir}`
+        await $`helm pull ${pullArg} --version ${latestVersion} --destination ${downloadDir} --untar`
 
         const postFunc = CHART_POST_FUNCS[dependency.name]
-        await $`rm -R ${chartsDir}/${dirName}`
-        await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${tempDir}`
         let moveFiles = true
         if (postFunc) {
-          moveFiles = await func(`${tempDir}/${dependency.name}`)
+          moveFiles = await func(tempDir)
         }
         if (moveFiles) {
-          await $`mv ${tempDir}/${dependency.name} ${chartsDir}/${dirName}`
+          await fs.rm(`${chartsDir}/${dirName}`, { force: true, recursive: true })
+          await $`mv ${tempDir} ${chartsDir}/${dirName}`
         }
 
         const appInfo = chartApps[dependency.alias || dependency.name]
