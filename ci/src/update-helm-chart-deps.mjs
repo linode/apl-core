@@ -50,6 +50,7 @@ async function copyKserveCrdTemplates(chartDir) {
   await $`rm -R ${chartDir}`
 }
 
+const CHART_SKIP_PRECHECK = ['kserve-crds']
 const CHART_POST_FUNCS = {
   kyverno: renderKyvernoCrdTemplates,
   'kserve-crds': copyKserveCrdTemplates,
@@ -114,20 +115,24 @@ async function main() {
         continue
       }
 
-      console.log(`Pre-check for dependency ${dependency.name}`)
-      const dependencyFileName = `${chartsDir}/${dependency.alias || dependency.name}/Chart.yaml`
-      try {
-        const dependencyChart = await loadYamlFile(dependencyFileName)
-        if (dependencyChart.version !== currentDependencyVersion) {
-          console.error(`Skipping update, indexed version of dependency ${dependency.name} is not consistent with chart version.`)
-          dependencyErrors[dependency.name] = 'Indexed version of dependency is not consistent with chart version.'
-          fixedChartVersions[dependency.name] = dependencyChart.version
+      if (!CHART_SKIP_PRECHECK.includes(dependency.name)) {
+        console.log(`Pre-check for dependency ${dependency.name}`)
+        const dependencyFileName = `${chartsDir}/${dependency.alias || dependency.name}/Chart.yaml`
+        try {
+          const dependencyChart = await loadYamlFile(dependencyFileName)
+          if (dependencyChart.version !== currentDependencyVersion) {
+            console.error(`Skipping update, indexed version of dependency ${dependency.name} is not consistent with chart version.`)
+            dependencyErrors[dependency.name] = 'Indexed version of dependency is not consistent with chart version.'
+            fixedChartVersions[dependency.name] = dependencyChart.version
+            continue
+          }
+        } catch (error) {
+          console.error(`Error checking dependency ${dependency.name}:`, error)
+          dependencyErrors[dependency.name] = error
           continue
         }
-      } catch (error) {
-        console.error(`Error checking dependency ${dependency.name}:`, error)
-        dependencyErrors[dependency.name] = error
-        continue
+      } else {
+        console.log("Skipping pre-check for dependency ${dependency.name}`")
       }
 
       console.log(`Checking updates for dependency: ${dependency.name}`)
