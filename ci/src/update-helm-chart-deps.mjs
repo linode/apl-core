@@ -7,6 +7,11 @@ import yaml from 'js-yaml'
 import semver from 'semver'
 import { $ } from 'zx'
 
+// Path to the Chart.yaml file
+const CHART_FILE = '../chart/chart-index/Chart.yaml'
+const CHARTS_DIR = '../charts'
+const APPS_FILE = '../apps.yaml'
+
 function isVersionApplicable(currentVersion, version, allowedUpgradeType) {
   if (semver.lte(version, currentVersion)) {
     return false // Ignore versions that are <= current version
@@ -45,17 +50,17 @@ async function renderKyvernoCrdTemplates(chartDir) {
 
 async function copyKserveCrdTemplates(chartDir) {
   console.log(`Copying templates from ${chartDir}`)
-  const crdPath = `${chartDir}/../kserve/crds`
+  const crdPath = `${CHARTS_DIR}/kserve/crds`
   console.log(`Adding CRDs to ${crdPath}`)
+  await fs.rm(crdPath, { force: true, recursive: true })
   await $`mv ${chartDir}/templates ${crdPath}`
-  await $`rm -R ${chartDir}`
   return false
 }
 
-const CHART_SKIP_PRECHECK = ['kserve-crds']
+const CHART_SKIP_PRECHECK = ['kserve-crd']
 const CHART_POST_FUNCS = {
   kyverno: renderKyvernoCrdTemplates,
-  'kserve-crds': copyKserveCrdTemplates,
+  'kserve-crd': copyKserveCrdTemplates,
 }
 
 async function main() {
@@ -72,11 +77,6 @@ async function main() {
     CI_GIT_LOCAL_BRANCH_ONLY: bool({ desc: 'Perform changes only on local branches', default: false }),
   })
 
-  // Path to the Chart.yaml file
-  const chartFile = '../chart/chart-index/Chart.yaml'
-  const chartsDir = '../charts'
-  const appsFile = '../apps.yaml'
-
   // Specify allowed upgrade types: 'minor', 'patch', or leave undefined for all
   const allowedUpgradeType = env.CI_UPDATE_TYPE
 
@@ -88,7 +88,7 @@ async function main() {
 
   try {
     // Read the Chart.yaml file
-    const chart = await loadYamlFile(chartFile)
+    const chart = await loadYamlFile(CHART_FILE)
     const dependencyErrors = {}
     const fixedChartVersions = {}
 
@@ -97,7 +97,7 @@ async function main() {
       process.exit(1)
     }
 
-    const apps = await loadYamlFile(appsFile)
+    const apps = await loadYamlFile(APPS_FILE)
     const appsInfo = apps.appsInfo
     if (!appsInfo || Object.keys(appsInfo).length === 0) {
       console.error('No app information found in apps.yaml')
@@ -105,7 +105,7 @@ async function main() {
     }
     // Mapping to look up / update apps info by chart
     const chartApps = Object.fromEntries(
-      Object.entries(appsInfo).map(([appName, appInfo]) => [appInfo.chartName || appName, appInfo])
+      Object.entries(appsInfo).map(([appName, appInfo]) => [appInfo.chartName || appName, appInfo]),
     )
 
     for (const dependency of chart.dependencies) {
@@ -118,13 +118,15 @@ async function main() {
         continue
       }
 
-      const dependencyFileName = `${chartsDir}/${dirName}/Chart.yaml`
+      const dependencyFileName = `${CHARTS_DIR}/${dirName}/Chart.yaml`
       if (!CHART_SKIP_PRECHECK.includes(dependency.name)) {
         console.log(`Pre-check for dependency ${dependency.name}`)
         try {
           const dependencyChart = await loadYamlFile(dependencyFileName)
           if (dependencyChart.version !== currentDependencyVersion) {
-            console.error(`Skipping update, indexed version of dependency ${dependency.name} is not consistent with chart version.`)
+            console.error(
+              `Skipping update, indexed version of dependency ${dependency.name} is not consistent with chart version.`,
+            )
             dependencyErrors[dependency.name] = 'Indexed version of dependency is not consistent with chart version.'
             fixedChartVersions[dependency.name] = dependencyChart.version
             continue
@@ -147,7 +149,6 @@ async function main() {
           allVersions = await $`skopeo list-tags ${registry}`
             .then((output) => JSON.parse(output.stdout))
             .then((results) => results.Tags.filter((version) => semver.valid(version)))
-
         } else {
           // Add the Helm repository (idempotent)
           await $`helm repo add ${dependency.name} ${dependency.repository}`
@@ -184,7 +185,9 @@ async function main() {
           continue
         }
         const branchName = `ci-update-${dependency.name}-to-${latestVersion}`
-        const checkBranchCmd = ciPushtoBranch ? $`git ls-remote --heads origin ${branchName}` : $`git branch --list ${branchName}`
+        const checkBranchCmd = ciPushtoBranch
+          ? $`git ls-remote --heads origin ${branchName}`
+          : $`git branch --list ${branchName}`
         const existingBranch = await checkBranchCmd
         if (existingBranch.stdout !== '') {
           console.log(
@@ -204,7 +207,7 @@ async function main() {
         }
 
         // Write the updated Chart.yaml file
-        await writeYamlFile(chartFile, chart)
+        await writeYamlFile(CHART_FILE, chart)
         // Fetch and unpack the new chart version
         const downloadDir = `./tmp/charts/${dependency.name}`
         const tempDir = `${downloadDir}/${dirName}`
@@ -219,8 +222,8 @@ async function main() {
           moveFiles = await postFunc(tempDir)
         }
         if (moveFiles) {
-          await fs.rm(`${chartsDir}/${dirName}`, { force: true, recursive: true })
-          await $`mv ${tempDir} ${chartsDir}/${dirName}`
+          await fs.rm(`${CHARTS_DIR}/${dirName}`, { force: true, recursive: true })
+          await $`mv ${tempDir} ${CHARTS_DIR}/${dirName}`
         }
 
         const appInfo = chartApps[dependency.alias || dependency.name]
@@ -234,8 +237,8 @@ async function main() {
               const previousAppVersion = appInfo.appVersion
               appInfo.appVersion = updatedAppVersion.replace(/^v/, '')
               try {
-                await writeYamlFile(appsFile, apps)
-                await $`git add ${appsFile}`
+                await writeYamlFile(APPS_FILE, apps)
+                await $`git add ${APPS_FILE}`
                 appsVersionSet = true
               } catch (error) {
                 console.error(`Error updating app version for ${dependency.name}:`, error)
@@ -254,8 +257,8 @@ async function main() {
         }
 
         if (ciCreateFeatureBranch) {
-          await $`git add ${chartFile}`
-          await $`git add ${chartsDir}`
+          await $`git add ${CHART_FILE}`
+          await $`git add ${CHARTS_DIR}`
           await $`git commit -m ${commitMessage}`
         }
         if (ciPushtoBranch) {
@@ -313,7 +316,7 @@ async function main() {
         }
       }
       // Write the updated Chart.yaml file
-      await writeYamlFile(chartFile, chart)
+      await writeYamlFile(CHART_FILE, chart)
     }
   } catch (error) {
     console.error('Error updating dependencies:', error)

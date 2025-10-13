@@ -56,7 +56,7 @@ dependencies:
   - name: knative-operator
     version: v1.18.1
     repository: https://knative.github.io/operator
-  - name: kserve-crds
+  - name: kserve-crd
     version: v0.15.2
     repository: oci://ghcr.io/kserve/charts/kserve-crd
   - name: kserve-resources
