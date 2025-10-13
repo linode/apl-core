@@ -74,7 +74,7 @@ async function main() {
   const env = envalid.cleanEnv(process.env, {
     CI_UPDATE_TYPE: str({
       desc: 'Path to the YAML file to validate',
-      choices: ['patch', 'minor', 'major'],
+      choices: ['patch', 'minor', 'major', 'prerelease'],
       default: 'minor',
     }),
     CI_HELM_CHART_NAME_FILTER: json({ desc: 'A list of names in json format', default: [] }),
