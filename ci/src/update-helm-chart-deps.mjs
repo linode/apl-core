@@ -40,6 +40,7 @@ async function renderKyvernoCrdTemplates(chartDir) {
   console.log(`Adding templates in ${crdPath}`)
   await $`mv ${tempPath}/kyverno/charts/crds/templates ${crdPath}`
   await $`rm -R ${tempPath}`
+  return true
 }
 
 async function copyKserveCrdTemplates(chartDir) {
@@ -48,6 +49,7 @@ async function copyKserveCrdTemplates(chartDir) {
   console.log(`Adding CRDs to ${crdPath}`)
   await $`mv ${chartDir}/templates ${crdPath}`
   await $`rm -R ${chartDir}`
+  return false
 }
 
 const CHART_SKIP_PRECHECK = ['kserve-crds']
@@ -132,19 +134,29 @@ async function main() {
           continue
         }
       } else {
-        console.log("Skipping pre-check for dependency ${dependency.name}`")
+        console.log(`Skipping pre-check for dependency ${dependency.name}`)
       }
 
+      const isRegistry = dependency.repository.startsWith('oci:')
       console.log(`Checking updates for dependency: ${dependency.name}`)
       try {
-        // Add the Helm repository (idempotent)
-        await $`helm repo add ${dependency.name} ${dependency.repository}`
-        await $`helm repo update ${dependency.name}`
+        let allVersions
+        if (isRegistry) {
+          const registry = dependency.repository.replace('oci://', 'docker://')
+          allVersions = await $`skopeo list-tags ${registry}`
+            .then((output) => JSON.parse(output.stdout))
+            .then((results) => results.Tags.filter((version) => semver.valid(version)))
 
-        // Get all available versions for the dependency
-        const allVersions = await $`helm search repo ${dependency.name}/${dependency.name} -l -o json`
-          .then((output) => JSON.parse(output.stdout))
-          .then((results) => results.map((entry) => entry.version).filter((version) => semver.valid(version)))
+        } else {
+          // Add the Helm repository (idempotent)
+          await $`helm repo add ${dependency.name} ${dependency.repository}`
+          await $`helm repo update ${dependency.name}`
+
+          // Get all available versions for the dependency
+          allVersions = await $`helm search repo ${dependency.name}/${dependency.name} -l -o json`
+            .then((output) => JSON.parse(output.stdout))
+            .then((results) => results.map((entry) => entry.version).filter((version) => semver.valid(version)))
+        }
 
         if (!allVersions.length) {
           console.error(`No valid versions found for dependency ${dependency.name}`)
@@ -195,22 +207,19 @@ async function main() {
         // Fetch and unpack the new chart version
         const tempDir = `./tmp/charts/${dependency.name}`
         await $`mkdir -p ${tempDir}`
-        await $`helm pull ${dependency.name}/${dependency.name} --version ${latestVersion} --destination ${tempDir}`
+        const pullArg = isRegistry ? dependency.repository : `${dependency.name}/${dependency.name}`
+        await $`helm pull ${pullArg} --version ${latestVersion} --destination ${tempDir}`
 
         const postFunc = CHART_POST_FUNCS[dependency.name]
-        if (dependency.alias) {
-          await $`rm -R ${chartsDir}/${dependency.alias}`
-          await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${tempDir}`
-          if (postFunc) {
-            await func(`${tempDir}/${dependency.name}`)
-          }
-          await $`mv ${tempDir}/${dependency.name} ${chartsDir}/${dependency.alias}`
-        } else {
-          await $`rm -R ${chartsDir}/${dependency.name}`
-          await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${chartsDir}`
-          if (postFunc) {
-            await postFunc(`${chartsDir}/${dependency.name}`)
-          }
+        const dirName = dependency.alias || dependency.name
+        await $`rm -R ${chartsDir}/${dirName}`
+        await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${tempDir}`
+        let copyFiles = true
+        if (postFunc) {
+          copyFiles = await func(`${tempDir}/${dependency.name}`)
+        }
+        if (copyFiles) {
+          await $`mv ${tempDir}/${dependency.name} ${chartsDir}/${dirName}`
         }
 
         const appInfo = chartApps[dependency.alias || dependency.name]
