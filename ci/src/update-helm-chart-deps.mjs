@@ -110,6 +110,7 @@ async function main() {
 
     for (const dependency of chart.dependencies) {
       const currentDependencyVersion = dependency.version
+      const dirName = dependency.alias || dependency.name
       if (dependencyNameFilter.length !== 0 && !dependencyNameFilter.includes(dependency.name)) {
         console.log(
           `Skipping updates for dependency: ${dependency.name} due to dependencyNameFilter: ${dependencyNameFilter} `,
@@ -119,7 +120,7 @@ async function main() {
 
       if (!CHART_SKIP_PRECHECK.includes(dependency.name)) {
         console.log(`Pre-check for dependency ${dependency.name}`)
-        const dependencyFileName = `${chartsDir}/${dependency.alias || dependency.name}/Chart.yaml`
+        const dependencyFileName = `${chartsDir}/${dirName}/Chart.yaml`
         try {
           const dependencyChart = await loadYamlFile(dependencyFileName)
           if (dependencyChart.version !== currentDependencyVersion) {
@@ -211,14 +212,13 @@ async function main() {
         await $`helm pull ${pullArg} --version ${latestVersion} --destination ${tempDir}`
 
         const postFunc = CHART_POST_FUNCS[dependency.name]
-        const dirName = dependency.alias || dependency.name
         await $`rm -R ${chartsDir}/${dirName}`
         await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${tempDir}`
-        let copyFiles = true
+        let moveFiles = true
         if (postFunc) {
-          copyFiles = await func(`${tempDir}/${dependency.name}`)
+          moveFiles = await func(`${tempDir}/${dependency.name}`)
         }
-        if (copyFiles) {
+        if (moveFiles) {
           await $`mv ${tempDir}/${dependency.name} ${chartsDir}/${dirName}`
         }
 
