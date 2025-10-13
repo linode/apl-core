@@ -103,6 +103,7 @@ env:
   GIT_USER: svcAPLBot
   CHECK_CONTEXT: continuous-integration/integration-test
   COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
+  COMMIT_REF: '${{ github.event.pull_request.head.ref || github.ref }}'
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
   DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
@@ -114,7 +115,7 @@ jobs:
     steps:
       - name: Print user input
         run: |
-          echo 'ref: ${{ github.event.pull_request.head.ref || github.ref }}'
+          echo "ref: $COMMIT_REF"
           echo 'install_profile: ${{ inputs.install_profile }}'
           echo 'kubernetes_versions: ${{ inputs.kubernetes_versions }}'
           echo 'kms: ${{ inputs.kms }}'
