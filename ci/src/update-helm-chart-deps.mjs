@@ -118,9 +118,9 @@ async function main() {
         continue
       }
 
+      const dependencyFileName = `${chartsDir}/${dirName}/Chart.yaml`
       if (!CHART_SKIP_PRECHECK.includes(dependency.name)) {
         console.log(`Pre-check for dependency ${dependency.name}`)
-        const dependencyFileName = `${chartsDir}/${dirName}/Chart.yaml`
         try {
           const dependencyChart = await loadYamlFile(dependencyFileName)
           if (dependencyChart.version !== currentDependencyVersion) {
@@ -216,7 +216,7 @@ async function main() {
         const postFunc = CHART_POST_FUNCS[dependency.name]
         let moveFiles = true
         if (postFunc) {
-          moveFiles = await func(tempDir)
+          moveFiles = await postFunc(tempDir)
         }
         if (moveFiles) {
           await fs.rm(`${chartsDir}/${dirName}`, { force: true, recursive: true })
