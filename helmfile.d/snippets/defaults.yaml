@@ -9,7 +9,7 @@ environments:
             _rawValues: {}
             image:
               repository: linode/ai-operators
-              tag: APL-1189
+              tag: main
             resources:
               limits:
                 cpu: 200m
@@ -21,10 +21,10 @@ environments:
             _rawValues: {}
             image:
               repository: linode/ai-operators
-              tag: APL-1189
+              tag: main
             chart:
               repo: "https://github.com/linode/ai-operators.git"
-              revision: APL-1189
+              revision: main
               path: charts/agent
             resources:
               limits:
