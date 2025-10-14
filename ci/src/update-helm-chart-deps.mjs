@@ -216,7 +216,7 @@ async function main() {
         await writeYamlFile(CHART_FILE, chart)
         // Fetch and unpack the new chart version
         const downloadDir = `./tmp/charts/${dependency.name}`
-        const tempDir = `${downloadDir}/${dirName}`
+        const tempDir = `${downloadDir}/${dependency.name}`
         await fs.mkdir(downloadDir, { recursive: true })
         await fs.rm(tempDir, { force: true, recursive: true })
         const pullArg = isRegistry ? dependency.repository : `${dependency.name}/${dependency.name}`
