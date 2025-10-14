@@ -27,62 +27,62 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-      - name: kb-operator
-        securityContext:
+        - name: kb-operator
+          securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command:
-        - kopf
-        - run
-        - -m
-        - ai_operators.kb_operator.main
-        args:
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - kopf
+            - run
+            - -m
+            - ai_operators.kb_operator.main
+          args:
         {{- if and .Values.rbac.namespaceScoped .Values.watchNamespaces }}
-        - --namespace={{ .Values.watchNamespaces }}
+            - --namespace={{ .Values.watchNamespaces }}
         {{- else }}
-        - --all-namespaces
+            - --all-namespaces
         {{- end }}
         {{- if .Values.kopf.verbose }}
-        - --verbose
+            - --verbose
         {{- end }}
         {{- with .Values.kopf.logFormat }}
-        - --log-format={{ . }}
+            - --log-format={{ . }}
         {{- end }}
         {{- if eq (int .Values.replicaCount) 1 }}
-        - --standalone
+            - --standalone
         {{- else }}
-        - --peering={{ .Values.kopf.peeringName }}
-        - "--liveness=http://0.0.0.0:8080/healthz"
+            - --peering={{ .Values.kopf.peeringName }}
         {{- end }}
-        env:
-        - name: KOPF_LOG_FORMAT
-          value: "json"
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: WATCH_NAMESPACES
-          value: {{ .Values.watchNamespaces | quote }}
+            - "--liveness=http://0.0.0.0:8080/healthz"
+          env:
+            - name: KOPF_LOG_FORMAT
+              value: "json"
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: WATCH_NAMESPACES
+              value: {{ .Values.watchNamespaces | quote }}
         {{- range $key, $value := .Values.env }}
-        - name: {{ $key }}
-          value: {{ $value | quote }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
         {{- end }}
-        resources:
+          resources:
           {{- toYaml .Values.resources | nindent 12 }}
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 30
-          timeoutSeconds: 5
-        volumeMounts:
-        - name: tmp
-          mountPath: /tmp
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
       volumes:
-      - name: tmp
-        emptyDir: {}
+        - name: tmp
+          emptyDir: {}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
