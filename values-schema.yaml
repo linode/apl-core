@@ -746,8 +746,8 @@ definitions:
     pattern: '^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
     type: string
   repoUrl:
-    description: Path to a remote git repo with or without protocol prefix of either https:// or file:// (https:// used if omitted)
-    pattern: '^(https://|file://)?(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$'
+    description: Path to a remote git repo with protocol prefix (https://, ssh://, git@host:path, or file://)
+    pattern: '^(https?://|ssh://|file://|git@)(.+@)*([\w\d\.\-]+)(:[/\d]+){0,1}[:/]*(.*)$'
     type: string
   repository:
     description: A container image repository.
@@ -1309,7 +1309,7 @@ definitions:
             properties:
               repoUrl:
                 description: URL of the Git repository holding the application code.
-                $ref: '#/definitions/url'
+                $ref: '#/definitions/repoUrl'
               revision:
                 description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
                 $ref: '#/definitions/wordCharacterPattern'
@@ -1334,7 +1334,7 @@ definitions:
             properties:
               repoUrl:
                 description: URL of the Git repository holding the application code.
-                $ref: '#/definitions/url'
+                $ref: '#/definitions/repoUrl'
               revision:
                 description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
                 $ref: '#/definitions/wordCharacterPattern'

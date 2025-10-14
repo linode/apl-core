@@ -200,16 +200,63 @@ spec:
         fi
 
         if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
-          cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials"
-          cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig"
-          chmod 400 "${PARAM_USER_HOME}/.git-credentials"
-          chmod 400 "${PARAM_USER_HOME}/.gitconfig"
+          # Check if this is a kubernetes.io/basic-auth secret (has username/password files)
+          if [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username" ] && [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/password" ]; then
+            # Handle kubernetes.io/basic-auth type secret
+            USERNAME=$(cat "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username")
+            PASSWORD=$(cat "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/password")
+
+            # Extract hostname from Git URL
+            HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^https?://([^/]+).*|\1|')
+
+            # Create .git-credentials file
+            echo "https://${USERNAME}:${PASSWORD}@${HOSTNAME}" > "${PARAM_USER_HOME}/.git-credentials"
+
+            # Create .gitconfig file
+            cat > "${PARAM_USER_HOME}/.gitconfig" <<'GITCONFIG'
+[credential]
+  helper = store
+GITCONFIG
+
+            chmod 400 "${PARAM_USER_HOME}/.git-credentials"
+            chmod 400 "${PARAM_USER_HOME}/.gitconfig"
+          else
+            # Handle traditional format with .git-credentials and .gitconfig files
+            cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials"
+            cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig"
+            chmod 400 "${PARAM_USER_HOME}/.git-credentials"
+            chmod 400 "${PARAM_USER_HOME}/.gitconfig"
+          fi
         fi
 
         if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then
-          cp -R "${WORKSPACE_SSH_DIRECTORY_PATH}" "${PARAM_USER_HOME}"/.ssh
+          mkdir -p "${PARAM_USER_HOME}"/.ssh
           chmod 700 "${PARAM_USER_HOME}"/.ssh
-          chmod -R 400 "${PARAM_USER_HOME}"/.ssh/*
+
+          # Check if this is a kubernetes.io/ssh-auth secret (has ssh-privatekey file)
+          if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" ]; then
+            # Handle kubernetes.io/ssh-auth type secret
+            cp "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" "${PARAM_USER_HOME}/.ssh/id_rsa"
+            chmod 400 "${PARAM_USER_HOME}/.ssh/id_rsa"
+
+            # Copy known_hosts if exists
+            if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/known_hosts" ]; then
+              cp "${WORKSPACE_SSH_DIRECTORY_PATH}/known_hosts" "${PARAM_USER_HOME}/.ssh/known_hosts"
+              chmod 400 "${PARAM_USER_HOME}/.ssh/known_hosts"
+            else
+              # Disable strict host key checking if no known_hosts provided
+              cat > "${PARAM_USER_HOME}/.ssh/config" <<EOF
+Host *
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+EOF
+              chmod 400 "${PARAM_USER_HOME}/.ssh/config"
+            fi
+          else
+            # Handle Opaque secrets with full .ssh directory structure
+            cp -R "${WORKSPACE_SSH_DIRECTORY_PATH}"/* "${PARAM_USER_HOME}"/.ssh/
+            chmod -R 400 "${PARAM_USER_HOME}"/.ssh/*
+          fi
         fi
 
         if [ "${WORKSPACE_SSL_CA_DIRECTORY_BOUND}" = "true" ] ; then
