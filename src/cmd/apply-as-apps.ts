@@ -12,6 +12,7 @@ import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/co
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
 import { env } from '../common/envalid'
+import { ARGOCD_APP_DEFAULT_SYNC_POLICY } from '../common/constants'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -62,14 +63,7 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
       },
     },
     spec: {
-      syncPolicy: {
-        automated: {
-          prune: true,
-          allowEmpty: false,
-          selfHeal: true,
-        },
-        syncOptions: ['ServerSideApply=true'],
-      },
+      syncPolicy: ARGOCD_APP_DEFAULT_SYNC_POLICY,
       project: 'default',
       source: {
         path: release.chart.replace('../', ''),

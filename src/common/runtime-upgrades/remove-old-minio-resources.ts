@@ -1,6 +1,6 @@
 import { AppsV1Api, KubeConfig } from '@kubernetes/client-node'
 import { terminal } from '../debug'
-import { k8s } from '../k8s'
+import { k8s, setArgoCdAppSync } from '../k8s'
 
 const kubeConfig = new KubeConfig()
 kubeConfig.loadFromDefault()
@@ -20,16 +20,7 @@ export async function removeOldMinioResources() {
       return
     }
     // Disable argocd auto-sync for minio application if it exists
-    const patch = [{ op: 'remove', path: '/spec/syncPolicy/automated' }]
-    const custom = k8s.custom()
-    await custom.patchNamespacedCustomObject({
-      group: 'argoproj.io',
-      version: 'v1alpha1',
-      namespace: 'argocd',
-      plural: 'applications',
-      name: minioAppName,
-      body: patch,
-    })
+    await setArgoCdAppSync(minioAppName, false, k8s.custom())
     d.info('Disabled auto-sync for minio application.')
   } catch (error) {
     d.error('Failed to disable auto-sync for minio application:', error)
@@ -46,16 +37,7 @@ export async function removeOldMinioResources() {
   }
   try {
     // Re-enable argocd auto-sync for minio application on the off chance that it is stuck in a bad state
-    const patch = [{ op: 'add', path: '/spec/syncPolicy/automated', value: {} }]
-    const custom = k8s.custom()
-    await custom.patchNamespacedCustomObject({
-      group: 'argoproj.io',
-      version: 'v1alpha1',
-      namespace: 'argocd',
-      plural: 'applications',
-      name: minioAppName,
-      body: patch,
-    })
+    await setArgoCdAppSync(minioAppName, true, k8s.custom())
     d.info('Re-enabled auto-sync for minio application.')
   } catch (error) {
     d.error('Failed to re-enable auto-sync for minio application:', error)

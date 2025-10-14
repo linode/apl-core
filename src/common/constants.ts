@@ -6,3 +6,11 @@ export const ARGOCD_APP_PARAMS = {
   namespace: 'argocd',
   plural: 'applications',
 }
+export const ARGOCD_APP_DEFAULT_SYNC_POLICY = {
+  automated: {
+    prune: true,
+    allowEmpty: false,
+    selfHeal: true,
+  },
+  syncOptions: ['ServerSideApply=true'],
+}
