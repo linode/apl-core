@@ -273,17 +273,46 @@ spec:
             # Copy the SSH private key
             cp "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" "${PARAM_USER_HOME}/.ssh/id_rsa"
             chmod 600 "${PARAM_USER_HOME}/.ssh/id_rsa"
+            
+            # Debug: show key info
+            echo "SSH key file size: $(wc -c < "${PARAM_USER_HOME}/.ssh/id_rsa")"
+            echo "SSH key first line: $(head -1 "${PARAM_USER_HOME}/.ssh/id_rsa")"
 
-            # Verify the key format and convert if necessary
+            # Verify and convert the key format if necessary
             if ! ssh-keygen -l -f "${PARAM_USER_HOME}/.ssh/id_rsa" > /dev/null 2>&1; then
               echo "SSH key format validation failed, attempting conversion..."
-              # Try to convert the key to OpenSSH format if it's in a different format
-              mv "${PARAM_USER_HOME}/.ssh/id_rsa" "${PARAM_USER_HOME}/.ssh/id_rsa.orig"
-              ssh-keygen -p -m PEM -f "${PARAM_USER_HOME}/.ssh/id_rsa.orig" -N "" -P "" || \
+              
+              # Create backup of original key
+              cp "${PARAM_USER_HOME}/.ssh/id_rsa" "${PARAM_USER_HOME}/.ssh/id_rsa.orig"
+              
+              # Try different conversion approaches
+              KEY_CONVERTED=false
+              
+              # Try converting from PEM to OpenSSH format
+              if ssh-keygen -p -m OpenSSH -f "${PARAM_USER_HOME}/.ssh/id_rsa" -N "" -P "" > /dev/null 2>&1; then
+                echo "Successfully converted key to OpenSSH format"
+                KEY_CONVERTED=true
+              # Try converting from PKCS#8 format
+              elif openssl pkcs8 -in "${PARAM_USER_HOME}/.ssh/id_rsa.orig" -out "${PARAM_USER_HOME}/.ssh/id_rsa" -nocrypt > /dev/null 2>&1; then
+                echo "Successfully converted key from PKCS#8 format"
+                KEY_CONVERTED=true
+              # Try converting RSA private key format
+              elif openssl rsa -in "${PARAM_USER_HOME}/.ssh/id_rsa.orig" -out "${PARAM_USER_HOME}/.ssh/id_rsa" > /dev/null 2>&1; then
+                echo "Successfully converted RSA key format"
+                KEY_CONVERTED=true
+              fi
+              
+              # If conversion failed, restore original and try without validation
+              if [ "$KEY_CONVERTED" = "false" ]; then
+                echo "Key conversion failed, using original key format"
                 mv "${PARAM_USER_HOME}/.ssh/id_rsa.orig" "${PARAM_USER_HOME}/.ssh/id_rsa"
+              fi
+              
+              # Clean up backup file
+              rm -f "${PARAM_USER_HOME}/.ssh/id_rsa.orig"
             fi
 
-            # Ensure correct permissions after any conversion
+            # Ensure correct permissions
             chmod 600 "${PARAM_USER_HOME}/.ssh/id_rsa"
 
             # Copy known_hosts if exists
@@ -309,8 +338,15 @@ spec:
               fi
             fi
 
-            # Set SSH environment variable to use our ssh directory
-            export GIT_SSH_COMMAND="ssh -i ${PARAM_USER_HOME}/.ssh/id_rsa -o IdentitiesOnly=yes"
+            # Final validation of the SSH key
+            if ssh-keygen -l -f "${PARAM_USER_HOME}/.ssh/id_rsa" > /dev/null 2>&1; then
+              echo "SSH key validation successful"
+            else
+              echo "Warning: SSH key validation still fails, but proceeding anyway"
+            fi
+
+            # Set SSH environment variable with additional options for better compatibility
+            export GIT_SSH_COMMAND="ssh -i ${PARAM_USER_HOME}/.ssh/id_rsa -o IdentitiesOnly=yes -o BatchMode=yes -o LogLevel=DEBUG1"
           else
             # Handle Opaque secrets with full .ssh directory structure
             mkdir -p "${PARAM_USER_HOME}"/.ssh
