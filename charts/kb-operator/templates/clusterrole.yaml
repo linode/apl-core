@@ -10,6 +10,11 @@ rules:
   resources: ["customresourcedefinitions"]
   verbs: ["list", "watch"]
 
+# Framework: Posting events about handler progress/errors
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+
 # Application: Full access to AkamaiKnowledgeBase resources in this namespace
 - apiGroups: ["akamai.io"]
   resources: ["akamaiknowledgebases"]

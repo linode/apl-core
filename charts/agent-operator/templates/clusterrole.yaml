@@ -11,6 +11,11 @@ rules:
   resources: ["customresourcedefinitions"]
   verbs: ["list", "watch"]
 
+# Framework: Posting events about handler progress/errors
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+
 # AkamaiAgent custom resources
 - apiGroups: ["akamai.io"]
   resources: ["akamaiagents"]
