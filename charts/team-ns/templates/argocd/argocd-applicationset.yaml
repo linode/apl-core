@@ -26,7 +26,7 @@ spec:
         argocd-image-updater.argoproj.io/git-branch: main
         argocd-image-updater.argoproj.io/git-repository: {{ $v.gitOps.workloadValuesRepoUrl | quote }}
         argocd-image-updater.argoproj.io/write-back-method: 'git:secret:argocd/team-{{ $v.teamId }}-gitea-repo-creds'
-        argocd-image-updater.argoproj.io/write-back-target: 'helmvalues:/env/teams/{{ $v.teamId }}/workloadValues'
+        argocd-image-updater.argoproj.io/write-back-target: 'helmvalues:/env/teams/{{ $v.teamId }}/workloadValues/.argocd-source-{{ .name }}.yaml'
         {{- if eq $a.type "semver" }}
         argocd-image-updater.argoproj.io/image-list: 'team-{{ $v.teamId }}-{{ .name }}={{ $a.semver.imageRepository }}:~{{ $a.semver.versionConstraint }}'
         argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.update-strategy: 'semver'
