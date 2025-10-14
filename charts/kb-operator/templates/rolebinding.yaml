@@ -1,21 +1,15 @@
-{{- if .Values.rbac.namespaceScoped }}
-{{- $watchNamespaces := include "kb-operator.watchNamespacesList" . | trim | splitList "," }}
-{{- range $namespace := $watchNamespaces }}
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ include "kb-operator.fullname" $ }}
-  namespace: {{ $namespace }}
+  name: {{ include "kb-operator.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "kb-operator.labels" $ | nindent 4 }}
+    {{- include "kb-operator.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ include "kb-operator.fullname" $ }}
+  name: {{ include "kb-operator.fullname" . }}
 subjects:
 - kind: ServiceAccount
-  name: {{ include "kb-operator.serviceAccountName" $ }}
-  namespace: {{ $.Release.Namespace }}
-{{- end }}
-{{- end }}
+  name: {{ include "kb-operator.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}

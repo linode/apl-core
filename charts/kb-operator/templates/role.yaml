@@ -26,7 +26,6 @@ rules:
   resources: ["leases"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
-
 # Application: Access to ConfigMaps and Secrets for pipeline configuration
 - apiGroups: [""]
   resources: ["configmaps"]
