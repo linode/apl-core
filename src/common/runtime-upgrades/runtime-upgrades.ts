@@ -161,7 +161,7 @@ export const runtimeUpgrades: RuntimeUpgrades = [
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         d.info('Setting sync override on ArgoCD Image Updater')
-        await setArgoCdAppSync('argocd-argocd-image-updater', true, k8s.custom(), ['Replace=true'])
+        await setArgoCdAppSync('argocd-argocd-image-updater', true, k8s.custom(), ['Force=true', 'Replace=true'])
       }
     },
   },
