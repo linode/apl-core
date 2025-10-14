@@ -1,0 +1,22 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "kb-operator.fullname" . }}-cluster
+  labels:
+    {{- include "kb-operator.labels" . | nindent 4 }}
+rules:
+# Framework: Runtime observation of CRDs
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["list", "watch"]
+
+# Application: Full access to AkamaiKnowledgeBase resources in this namespace
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiknowledgebases"]
+  verbs: ["list", "watch", "patch"]
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiknowledgebases/status"]
+  verbs: ["get", "update", "patch"]
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiknowledgebases/finalizers"]
+  verbs: ["update"]

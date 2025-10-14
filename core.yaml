@@ -31,7 +31,9 @@ k8s:
       disableIstioInjection: true
     - name: apl-operator
       disableIstioInjection: true
-    - name: ai-operators
+    - name: agent-operator
+      disableIstioInjection: true
+    - name: kb-operator
       disableIstioInjection: true
     - name: grafana
       app: grafana

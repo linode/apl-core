@@ -1,56 +1,56 @@
-{{- if .Values.kbOperator.enabled }}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ai-operators.kb-operator.fullname" . }}
+  name: {{ include "agent-operator.fullname" . }}
   labels:
-    {{- include "ai-operators.kb-operator.labels" . | nindent 4 }}
+    {{- include "agent-operator.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.kbOperator.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "ai-operators.kb-operator.selectorLabels" . | nindent 6 }}
+      {{- include "agent-operator.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
-        {{- with .Values.kbOperator.podAnnotations }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "ai-operators.kb-operator.selectorLabels" . | nindent 8 }}
+        {{- include "agent-operator.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "ai-operators.kb-operator.serviceAccountName" . }}
+      serviceAccountName: {{ include "agent-operator.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-      - name: kb-operator
+      - name: agent-operator
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
-        image: "{{ .Values.kbOperator.image.repository }}:{{ .Values.kbOperator.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.kbOperator.image.pullPolicy }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
         - kopf
         - run
         - -m
-        - ai_operators.kb_operator.main
+        - ai_operators.agent_operator.main
         args:
         - --all-namespaces
-        {{- if .Values.kbOperator.kopf.verbose }}
+        {{- if .Values.kopf.verbose }}
         - --verbose
         {{- end }}
-        {{- with .Values.kbOperator.kopf.logFormat }}
+        {{- with .Values.kopf.logFormat }}
         - --log-format={{ . }}
         {{- end }}
-        {{- if eq (int .Values.kbOperator.replicaCount) 1 }}
+        {{- if eq (int .Values.replicaCount) 1 }}
         - --standalone
         {{- else }}
-        - --peering={{ .Values.kbOperator.kopf.peeringName }}
-        {{- end }}
+        - --peering={{ .Values.kopf.peeringName }}
         - "--liveness=http://0.0.0.0:8080/healthz"
+        {{- end }}
         env:
         - name: KOPF_LOG_FORMAT
           value: "json"
@@ -59,13 +59,15 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         - name: WATCH_NAMESPACES
-          value: {{ .Values.kbOperator.watchNamespaces | quote }}
-        {{- range $key, $value := .Values.kbOperator.env }}
+          value: {{ .Values.watchNamespaces | quote }}
+        - name: PROVIDER
+          value: {{ .Values.provider | quote }}
+        {{- range $key, $value := .Values.env }}
         - name: {{ $key }}
           value: {{ $value | quote }}
         {{- end }}
         resources:
-          {{- toYaml .Values.kbOperator.resources | nindent 12 }}
+          {{- toYaml .Values.resources | nindent 12 }}
         livenessProbe:
           httpGet:
             path: /healthz
@@ -91,4 +93,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-{{- end }}

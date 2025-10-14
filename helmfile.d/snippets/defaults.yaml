@@ -5,36 +5,34 @@ environments:
           appgw:
             isManaged: false
         apps:
-          ai-operators:
-            kbOperator:
-              replicaCount: 1
-              image:
-                repository: linode/ai-operators
-                tag: APL-1189
-              resources:
-                limits:
-                  cpu: 200m
-                  memory: 256Mi
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-            agentOperator:
-              replicaCount: 1
-              image:
-                repository: linode/ai-operators
-                tag: APL-1189
-              chart:
-                repo: "https://github.com/linode/ai-operators.git"
-                revision: main
-                path: agent
-              resources:
-                limits:
-                  cpu: 200m
-                  memory: 256Mi
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
+          kbOperator:
             _rawValues: {}
+            image:
+              repository: linode/ai-operators
+              tag: APL-1189
+            resources:
+              limits:
+                cpu: 200m
+                memory: 256Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+          agentOperator:
+            _rawValues: {}
+            image:
+              repository: linode/ai-operators
+              tag: APL-1189
+            chart:
+              repo: "https://github.com/linode/ai-operators.git"
+              revision: APL-1189
+              path: charts/agent
+            resources:
+              limits:
+                cpu: 200m
+                memory: 256Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
           alertmanager:
             enabled: false
             resources:

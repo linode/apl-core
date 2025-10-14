@@ -1,56 +1,58 @@
-{{- if .Values.agentOperator.enabled }}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ai-operators.agent-operator.fullname" . }}
+  name: {{ include "kb-operator.fullname" . }}
   labels:
-    {{- include "ai-operators.agent-operator.labels" . | nindent 4 }}
+    {{- include "kb-operator.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.agentOperator.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "ai-operators.agent-operator.selectorLabels" . | nindent 6 }}
+      {{- include "kb-operator.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
-        {{- with .Values.agentOperator.podAnnotations }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-        {{- end }}
       labels:
-        {{- include "ai-operators.agent-operator.selectorLabels" . | nindent 8 }}
+        {{- include "kb-operator.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "ai-operators.agent-operator.serviceAccountName" . }}
+      serviceAccountName: {{ include "kb-operator.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-      - name: agent-operator
+      - name: kb-operator
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
-        image: "{{ .Values.agentOperator.image.repository }}:{{ .Values.agentOperator.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.agentOperator.image.pullPolicy }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
         - kopf
         - run
         - -m
-        - ai_operators.agent_operator.main
+        - ai_operators.kb_operator.main
         args:
+        {{- if and .Values.rbac.namespaceScoped .Values.watchNamespaces }}
+        - --namespace={{ .Values.watchNamespaces }}
+        {{- else }}
         - --all-namespaces
-        {{- if .Values.agentOperator.kopf.verbose }}
+        {{- end }}
+        {{- if .Values.kopf.verbose }}
         - --verbose
         {{- end }}
-        {{- with .Values.agentOperator.kopf.logFormat }}
+        {{- with .Values.kopf.logFormat }}
         - --log-format={{ . }}
         {{- end }}
-        {{- if eq (int .Values.agentOperator.replicaCount) 1 }}
+        {{- if eq (int .Values.replicaCount) 1 }}
         - --standalone
         {{- else }}
-        - --peering={{ .Values.agentOperator.kopf.peeringName }}
-        {{- end }}
+        - --peering={{ .Values.kopf.peeringName }}
         - "--liveness=http://0.0.0.0:8080/healthz"
+        {{- end }}
         env:
         - name: KOPF_LOG_FORMAT
           value: "json"
@@ -59,15 +61,12 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         - name: WATCH_NAMESPACES
-          value: {{ .Values.agentOperator.watchNamespaces | quote }}
-        - name: PROVIDER
-          value: {{ .Values.agentOperator.provider | quote }}
-        {{- range $key, $value := .Values.agentOperator.env }}
+          value: {{ .Values.watchNamespaces | quote }}
+        {{- range $key, $value := .Values.env }}
         - name: {{ $key }}
           value: {{ $value | quote }}
-        {{- end }}
         resources:
-          {{- toYaml .Values.agentOperator.resources | nindent 12 }}
+          {{- toYaml .Values.resources | nindent 12 }}
         livenessProbe:
           httpGet:
             path: /healthz
@@ -84,13 +83,9 @@ spec:
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
       {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
-{{- end }}

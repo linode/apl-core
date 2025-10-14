@@ -2622,48 +2622,43 @@ properties:
               operator:
                 $ref: '#/definitions/resources'
 
-      ai-operators:
+      agent-operator:
         additionalProperties: false
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          kbOperator:
+          image:
             additionalProperties: false
             properties:
-              replicaCount:
-                type: integer
-              image:
-                additionalProperties: false
-                properties:
-                  repository:
-                    type: string
-                  tag:
-                    $ref: '#/definitions/imageTag'
-              resources:
-                $ref: '#/definitions/resources'
-          agentOperator:
+              repository:
+                type: string
+              tag:
+                $ref: '#/definitions/imageTag'
+          resources:
+            $ref: '#/definitions/resources'
+          chart:
             additionalProperties: false
             properties:
-              replicaCount:
-                type: integer
-              image:
-                additionalProperties: false
-                properties:
-                  repository:
-                    type: string
-                  tag:
-                    $ref: '#/definitions/imageTag'
-              resources:
-                $ref: '#/definitions/resources'
-              chart:
-                additionalProperties: false
-                properties:
-                  repo:
-                    type: string
-                  revision:
-                    type: string
-                  path:
-                    type: string
+              repo:
+                type: string
+              revision:
+                type: string
+              path:
+                type: string
+      kb-operator:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          image:
+            additionalProperties: false
+            properties:
+              repository:
+                type: string
+              tag:
+                $ref: '#/definitions/imageTag'
+          resources:
+            $ref: '#/definitions/resources'
       oltp:
         additionalProperties: false
         properties:

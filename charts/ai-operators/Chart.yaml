@@ -1,9 +1,0 @@
-apiVersion: v2
-name: ai-operators
-description: A Helm chart for Akamai AI Operators (Agent and Knowledge Base)
-type: application
-version: 0.1.0
-appVersion: "0.1.0"
-home: https://github.com/linode/ai-operators
-sources:
-  - https://github.com/linode/ai-operators/charts

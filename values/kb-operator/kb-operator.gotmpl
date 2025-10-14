@@ -1,0 +1,35 @@
+{{- $v := .Values }}
+{{- $kb := $v.apps | get "kb-operator" }}
+
+# Service account configuration
+serviceAccount:
+  create: true
+  annotations: {}
+
+# Replica count can be adjusted to use peering
+replicaCount: 1
+
+# Image configuration
+image:
+  repository: {{ $kb.image.repository }}
+  pullPolicy: IfNotPresent
+  tag: {{ $kb.image.tag }}
+
+# Resources
+resources: {{ $kb.resources | toYaml | nindent 2 }}
+
+# Namespaces to watch (comma-separated, empty means all namespaces)
+watchNamespaces: ""
+
+# Kopf configuration
+kopf:
+  verbose: false
+  logFormat: plain
+  peeringName: "kb-operator"
+
+# Environment variables
+env:
+  KUBEFLOW_ENDPOINT: http://ml-pipeline-ui.kfp.svc.cluster.local
+
+# Pod annotations
+podAnnotations: {}

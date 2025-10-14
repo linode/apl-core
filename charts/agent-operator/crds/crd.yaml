@@ -1,4 +1,4 @@
-{{- if .Values.agentOperator.enabled }}
+
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -38,6 +38,11 @@ spec:
                 type: string
                 minLength: 1
                 example: llama
+              foundationModelEndpoint:
+                description: The foundation model endpoint to use for the agent
+                type: string
+                minLength: 1
+                example: http://llama-service.default.svc.cluster.local:8080/openai/v1
               agentInstructions:
                 description: Instructions that define the agent's behavior and personality
                 type: string
@@ -123,10 +128,6 @@ spec:
       type: string
       description: Foundation model
       jsonPath: .spec.foundationModel
-    - name: Tools
-      type: string
-      description: Number of tools
-      jsonPath: .spec.tools.length
     - name: Status
       type: string
       description: Agent deployment status
@@ -144,4 +145,3 @@ spec:
     - aag
     categories:
     - apl
-{{- end }}

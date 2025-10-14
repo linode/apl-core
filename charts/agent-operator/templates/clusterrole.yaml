@@ -1,0 +1,34 @@
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "agent-operator.fullname" . }}
+  labels:
+    {{- include "agent-operator.labels" . | nindent 4 }}
+rules:
+# Framework: Kopf requires CRD access
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["list", "watch"]
+
+# AkamaiAgent custom resources
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiagents"]
+  verbs: ["get", "list", "watch", "patch"]
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiagents/status"]
+  verbs: ["get", "update", "patch"]
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiagents/finalizers"]
+  verbs: ["update"]
+
+# AkamaiKnowledgeBase custom resources
+- apiGroups: ["akamai.io"]
+  resources: ["akamaiknowledgebases"]
+  verbs: ["get", "list", "watch"]
+
+{{- if eq (.Values.provider | default "") "apl" }}
+- apiGroups: ["argoproj.io"]
+  resources: ["applications"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+{{- end }}

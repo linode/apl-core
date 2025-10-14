@@ -1,0 +1,36 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "kb-operator.fullname" $ }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kb-operator.labels" $ | nindent 4 }}
+rules:
+# Framework: Namespace-level peering
+- apiGroups: ["kopf.dev"]
+  resources: ["kopfpeerings"]
+  verbs: ["list", "watch", "patch", "get"]
+
+# Framework: Posting events about handler progress/errors
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create"]
+
+# Framework: Runtime observation of namespaces
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["list", "watch"]
+
+# Leader election (if using kopf peering)
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+
+# Application: Access to ConfigMaps and Secrets for pipeline configuration
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]

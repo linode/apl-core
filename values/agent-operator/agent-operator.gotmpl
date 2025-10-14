@@ -1,0 +1,40 @@
+{{- $v := .Values }}
+{{- $a := $v.apps | get "agent-operator" }}
+
+# Service account configuration
+serviceAccount:
+  create: true
+  annotations: {}
+
+# Replica count can be adjusted to use peering
+replicaCount: 1
+
+# Provider: linode or apl
+provider: apl
+
+# Image configuration
+image:
+  repository: {{ $a.image.repository }}
+  pullPolicy: IfNotPresent
+  tag: {{ $a.image.tag }}
+
+# Resources
+resources: {{ $a.resources | toYaml | nindent 2 }}
+
+# Namespaces to watch (comma-separated, empty means all namespaces)
+watchNamespaces: ""
+
+# Kopf configuration
+kopf:
+  verbose: false
+  logFormat: plain
+  peeringName: "agent-operator"
+
+# Environment variables (PROVIDER, AGENT_CHART_REPO_URL, etc.)
+env:
+  AGENT_CHART_REPO_URL: {{ $a.chart.repo }}
+  AGENT_CHART_REPO_REVISION: {{ $a.chart.revision }}
+  AGENT_CHART_PATH: {{ $a.chart.path }}
+
+# Pod annotations
+podAnnotations: {}
