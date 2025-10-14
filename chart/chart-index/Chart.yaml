@@ -9,7 +9,7 @@ dependencies:
     version: 8.5.8
     repository: https://argoproj.github.io/argo-helm
   - name: cert-manager
-    version: v1.18.2
+    version: v1.19.0
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
     version: 0.26.0
