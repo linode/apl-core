@@ -689,6 +689,9 @@
         "commonLabels": {
           "$ref": "#/$defs/helm-values.global.commonLabels"
         },
+        "hostUsers": {
+          "$ref": "#/$defs/helm-values.global.hostUsers"
+        },
         "imagePullSecrets": {
           "$ref": "#/$defs/helm-values.global.imagePullSecrets"
         },
@@ -697,6 +700,9 @@
         },
         "logLevel": {
           "$ref": "#/$defs/helm-values.global.logLevel"
+        },
+        "nodeSelector": {
+          "$ref": "#/$defs/helm-values.global.nodeSelector"
         },
         "podSecurityPolicy": {
           "$ref": "#/$defs/helm-values.global.podSecurityPolicy"
@@ -717,6 +723,10 @@
       "default": {},
       "description": "Labels to apply to all resources.\nPlease note that this does not add labels to the resources created dynamically by the controllers. For these resources, you have to add the labels in the template in the cert-manager custom resource: For example, podTemplate/ ingressTemplate in ACMEChallengeSolverHTTP01Ingress. For more information, see the [cert-manager documentation](https://cert-manager.io/docs/reference/api-docs/#acme.cert-manager.io/v1.ACMEChallengeSolverHTTP01Ingress).\nFor example, secretTemplate in CertificateSpec\nFor more information, see the [cert-manager documentation](https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.CertificateSpec).",
       "type": "object"
+    },
+    "helm-values.global.hostUsers": {
+      "description": "Set all pods to run in a user namespace without host access. Experimental: may be removed once the Kubernetes User Namespaces feature is GA.\n\nRequirements:\n  - Kubernetes ≥ 1.33, or\n  - Kubernetes 1.27–1.32 with UserNamespacesSupport feature gate enabled.\n\nSet to false to run pods in a user namespace without host access.\n\nSee [limitations](https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/#limitations) for details.",
+      "type": "boolean"
     },
     "helm-values.global.imagePullSecrets": {
       "default": [],
@@ -762,6 +772,11 @@
       "default": 2,
       "description": "Set the verbosity of cert-manager. A range of 0 - 6, with 6 being the most verbose.",
       "type": "number"
+    },
+    "helm-values.global.nodeSelector": {
+      "default": {},
+      "description": "Global node selector\n\nThe nodeSelector on Pods tells Kubernetes to schedule Pods on the nodes with matching labels. For more information, see [Assigning Pods to Nodes](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/).\n\nIf a component-specific nodeSelector is also set, it will take precedence.",
+      "type": "object"
     },
     "helm-values.global.podSecurityPolicy": {
       "properties": {
@@ -1886,6 +1901,11 @@
               "ipBlock": {
                 "cidr": "0.0.0.0/0"
               }
+            },
+            {
+              "ipBlock": {
+                "cidr": "::/0"
+              }
             }
           ]
         }
@@ -1906,6 +1926,11 @@
             {
               "ipBlock": {
                 "cidr": "0.0.0.0/0"
+              }
+            },
+            {
+              "ipBlock": {
+                "cidr": "::/0"
               }
             }
           ]
