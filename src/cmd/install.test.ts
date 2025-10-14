@@ -33,6 +33,7 @@ jest.mock('src/common/hf', () => ({
 
 jest.mock('zx', () => ({
   $: jest.fn(),
+  cd: jest.fn(),
 }))
 
 jest.mock('./commit', () => ({
