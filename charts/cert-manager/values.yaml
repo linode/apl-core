@@ -12,6 +12,16 @@ global:
   #    - name: "image-pull-secret"
   imagePullSecrets: []
 
+  # Global node selector
+  #
+  # The nodeSelector on Pods tells Kubernetes to schedule Pods on the nodes with
+  # matching labels.
+  # For more information, see [Assigning Pods to Nodes](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/).
+  #
+  # If a component-specific nodeSelector is also set, it will take precedence.
+  # +docs:property
+  nodeSelector: {}
+  
   # Labels to apply to all resources.
   # Please note that this does not add labels to the resources created dynamically by the controllers.
   # For these resources, you have to add the labels in the template in the cert-manager custom resource:
@@ -27,6 +37,19 @@ global:
 
   # The optional priority class to be used for the cert-manager pods.
   priorityClassName: ""
+
+  # Set all pods to run in a user namespace without host access.
+  # Experimental: may be removed once the Kubernetes User Namespaces feature is GA.
+  #
+  # Requirements:
+  #   - Kubernetes ≥ 1.33, or
+  #   - Kubernetes 1.27–1.32 with UserNamespacesSupport feature gate enabled.
+  #
+  # Set to false to run pods in a user namespace without host access.
+  #
+  # See [limitations](https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/#limitations) for details.
+  # +docs:property
+  # hostUsers: false
 
   rbac:
     # Create required ClusterRoles and ClusterRoleBindings for cert-manager.
@@ -435,7 +458,6 @@ ingressShim: {}
 # but certain domains should be excluded.
 # +docs:property
 # no_proxy: 127.0.0.1,localhost
-
 
 # A Kubernetes Affinity, if required. For more information, see [Affinity v1 core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#affinity-v1-core).
 #
@@ -962,6 +984,8 @@ webhook:
     - from:
       - ipBlock:
           cidr: 0.0.0.0/0
+      - ipBlock:
+          cidr: "::/0"
 
     # Egress rule for the webhook network policy. By default, it allows all
     # outbound traffic to ports 80 and 443, as well as DNS ports.
@@ -983,6 +1007,8 @@ webhook:
       to:
       - ipBlock:
           cidr: 0.0.0.0/0
+      - ipBlock:
+          cidr: "::/0"
 
   # Additional volumes to add to the cert-manager controller pod.
   volumes: []

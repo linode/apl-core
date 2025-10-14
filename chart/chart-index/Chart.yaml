@@ -9,7 +9,7 @@ dependencies:
     version: 8.5.8
     repository: https://argoproj.github.io/argo-helm
   - name: cert-manager
-    version: v1.18.2
+    version: v1.19.0
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
     version: 0.26.0
@@ -54,8 +54,14 @@ dependencies:
     version: 2.10.0
     repository: https://kiali.org/helm-charts
   - name: knative-operator
-    version: 1.18.1
+    version: v1.18.1
     repository: https://knative.github.io/operator
+  - name: kserve-crd
+    version: v0.15.2
+    repository: oci://ghcr.io/kserve/charts/kserve-crd
+  - name: kserve
+    version: v0.15.2
+    repository: oci://ghcr.io/kserve/charts/kserve
   - name: kube-prometheus-stack
     version: 75.18.1
     repository: https://prometheus-community.github.io/helm-charts
@@ -74,7 +80,7 @@ dependencies:
     repository: https://kubernetes-sigs.github.io/metrics-server
   - name: minio
     version: 5.4.0
-    repository: https://github.com/minio/minio
+    repository: https://charts.min.io/
   - name: oauth2-proxy
     version: 7.12.18
     repository: https://oauth2-proxy.github.io/manifests
@@ -82,6 +88,9 @@ dependencies:
     alias: otel-operator
     version: 0.33.0
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  - name: policy-reporter
+    version: 3.4.2
+    repository: https://kyverno.github.io/policy-reporter
   - name: prometheus-blackbox-exporter
     version: 11.0.0
     repository: https://prometheus-community.github.io/helm-charts
@@ -115,13 +124,3 @@ dependencies:
   - name: velero
     version: 5.4.1
     repository: https://vmware-tanzu.github.io/helm-charts/
-  - name: policy-reporter
-    version: 3.4.2
-    repository: https://kyverno.github.io/policy-reporter
-  - name: kserve-crds
-    version: 0.15.2
-    repository: https://github.com/kserve/kserve
-  - name: kserve-resources
-    version: 0.15.2
-    repository: https://github.com/kserve/kserve
-    alias: kserve
