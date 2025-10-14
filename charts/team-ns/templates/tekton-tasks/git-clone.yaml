@@ -213,10 +213,7 @@ spec:
             echo "https://${USERNAME}:${PASSWORD}@${HOSTNAME}" > "${PARAM_USER_HOME}/.git-credentials"
 
             # Create .gitconfig file
-            cat > "${PARAM_USER_HOME}/.gitconfig" <<'GITCONFIG'
-[credential]
-  helper = store
-GITCONFIG
+            printf "[credential]\n  helper = store\n" > "${PARAM_USER_HOME}/.gitconfig"
 
             chmod 400 "${PARAM_USER_HOME}/.git-credentials"
             chmod 400 "${PARAM_USER_HOME}/.gitconfig"
@@ -245,11 +242,7 @@ GITCONFIG
               chmod 400 "${PARAM_USER_HOME}/.ssh/known_hosts"
             else
               # Disable strict host key checking if no known_hosts provided
-              cat > "${PARAM_USER_HOME}/.ssh/config" <<EOF
-Host *
-  StrictHostKeyChecking no
-  UserKnownHostsFile=/dev/null
-EOF
+              printf "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null\n" > "${PARAM_USER_HOME}/.ssh/config"
               chmod 400 "${PARAM_USER_HOME}/.ssh/config"
             fi
           else
