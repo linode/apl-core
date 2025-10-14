@@ -13,14 +13,14 @@ const CHARTS_DIR = '../charts'
 const APPS_FILE = '../apps.yaml'
 
 function isVersionApplicable(currentVersion, version, allowedUpgradeType) {
+  if (semver.lte(version, currentVersion)) {
+    return false // Ignore versions that are <= current version
+  }
   if (allowedUpgradeType === 'prerelease') {
     return true
   }
   if (semver.prerelease(version)) {
     return false
-  }
-  if (semver.lte(version, currentVersion)) {
-    return false // Ignore versions that are <= current version
   }
   if (allowedUpgradeType === 'patch') {
     return semver.diff(currentVersion, version) === 'patch'
