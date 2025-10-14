@@ -1,9 +1,10 @@
+import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { OtomiDebugger } from '../debug'
 import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
 import { getParsedArgs } from '../yargs'
+import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
-import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -106,7 +107,9 @@ export const runtimeUpgrades: RuntimeUpgrades = [
             name: 'oauth2-proxy',
             body: {
               metadata: {
-                'nginx.ingress.kubernetes.io/configuration-snippet': null,
+                annotations: {
+                  'nginx.ingress.kubernetes.io/configuration-snippet': null,
+                },
               },
             },
           },
@@ -119,6 +122,19 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           context.debug.error("Failed to patch ingress 'oauth2-proxy'", error)
         }
       }
+    },
+    applications: {
+      'minio-minio': {
+        post: async (context: RuntimeUpgradeContext) => {
+          const d = context.debug
+          d.info('checking minio resources in namespace minio')
+          try {
+            await removeOldMinioResources()
+          } catch (error) {
+            d.error('Failed to delete minio resources:', error)
+          }
+        },
+      },
     },
   },
 ]
