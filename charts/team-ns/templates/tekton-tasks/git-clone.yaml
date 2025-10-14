@@ -273,7 +273,36 @@ spec:
             # Copy the SSH private key
             cp "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" "${PARAM_USER_HOME}/.ssh/id_rsa"
             chmod 600 "${PARAM_USER_HOME}/.ssh/id_rsa"
-            
+
+            # Reformat SSH key to fix line break issues (common with sealed secrets)
+            # Extract header, footer, and base64 content
+            if grep -q "BEGIN.*PRIVATE KEY" "${PARAM_USER_HOME}/.ssh/id_rsa"; then
+              echo "Reformatting SSH key to ensure proper line breaks..."
+
+              # Extract the header line (BEGIN)
+              HEADER=$(grep "BEGIN.*PRIVATE KEY" "${PARAM_USER_HOME}/.ssh/id_rsa")
+
+              # Extract the footer line (END)
+              FOOTER=$(grep "END.*PRIVATE KEY" "${PARAM_USER_HOME}/.ssh/id_rsa")
+
+              # Extract base64 content (everything between header and footer, remove all whitespace)
+              BASE64_CONTENT=$(sed -n "/BEGIN.*PRIVATE KEY/,/END.*PRIVATE KEY/p" "${PARAM_USER_HOME}/.ssh/id_rsa" | \
+                grep -v "BEGIN\|END" | tr -d '\n\r\t ' )
+
+              # Rebuild the key with proper 70-character line breaks
+              {
+                echo "$HEADER"
+                echo "$BASE64_CONTENT" | fold -w 70
+                echo "$FOOTER"
+              } > "${PARAM_USER_HOME}/.ssh/id_rsa.reformatted"
+
+              # Replace original with reformatted version
+              mv "${PARAM_USER_HOME}/.ssh/id_rsa.reformatted" "${PARAM_USER_HOME}/.ssh/id_rsa"
+              chmod 600 "${PARAM_USER_HOME}/.ssh/id_rsa"
+
+              echo "SSH key reformatted successfully"
+            fi
+
             # Debug: show key info
             echo "SSH key file size: $(wc -c < "${PARAM_USER_HOME}/.ssh/id_rsa")"
             echo "SSH key first line: $(head -1 "${PARAM_USER_HOME}/.ssh/id_rsa")"
