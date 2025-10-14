@@ -1,6 +1,6 @@
 import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { OtomiDebugger } from '../debug'
-import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
+import { applyServerSide, checkArgoCDAppStatus, k8s, restartOtomiApiDeployment, setArgoCdAppSync } from '../k8s'
 import { getParsedArgs } from '../yargs'
 import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
@@ -151,6 +151,17 @@ export const runtimeUpgrades: RuntimeUpgrades = [
         if (!(error instanceof ApiException && error.code === 404)) {
           d.error('Failed to delete old ArgoCD Image Updater', error)
         }
+      }
+    },
+    post: async (context: RuntimeUpgradeContext) => {
+      const d = context.debug
+      d.info('Checking ArgoCD Image Updater application')
+      try {
+        await checkArgoCDAppStatus('argocd-argocd-image-updater', k8s.custom(), 'sync', 'Synced')
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (error) {
+        d.info('Setting sync override on ArgoCD Image Updater')
+        await setArgoCdAppSync('argocd-argocd-image-updater', true, k8s.custom(), ['Replace=true'])
       }
     },
   },
