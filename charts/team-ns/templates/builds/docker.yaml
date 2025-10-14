@@ -28,8 +28,24 @@ spec:
     - name: output
       workspace: shared-data
   {{- if or (not .externalRepo) .secretName }}
+    {{- if and .secretName (hasPrefix "git@" .mode.docker.repoUrl) }}
+    # SSH authentication for git@ URLs
     - name: ssh-directory
       workspace: git-credentials
+    {{- else if and .secretName (or (hasPrefix "https://" .mode.docker.repoUrl) (hasPrefix "http://" .mode.docker.repoUrl)) }}
+    # Basic auth for HTTP(S) URLs - can use either workspace name
+    # Try ssh-directory first (for backward compatibility), but also support basic-auth
+    - name: ssh-directory
+      workspace: git-credentials
+    {{- else if not .externalRepo }}
+    # Default internal Gitea repo with basic auth
+    - name: basic-auth
+      workspace: git-credentials
+    {{- else }}
+    # Fallback: use ssh-directory for backward compatibility
+    - name: ssh-directory
+      workspace: git-credentials
+    {{- end }}
   {{- end }}
     params:
     - name: url

@@ -206,8 +206,16 @@ spec:
             USERNAME=$(cat "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username")
             PASSWORD=$(cat "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/password")
 
-            # Extract hostname from Git URL
-            HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^https?://([^/]+).*|\1|')
+            # Extract hostname from Git URL - handle both HTTP(S) and git@ formats
+            if echo "${PARAM_URL}" | grep -q "^https\?://"; then
+              HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^https?://([^/]+).*|\1|')
+            elif echo "${PARAM_URL}" | grep -q "^git@"; then
+              # For git@github.com:user/repo.git format, extract github.com
+              HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^git@([^:]+):.*|\1|')
+            else
+              # Fallback: try to extract domain from URL
+              HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^[^@]*@?([^:/]+).*|\1|')
+            fi
 
             # Create .git-credentials file
             echo "https://${USERNAME}:${PASSWORD}@${HOSTNAME}" > "${PARAM_USER_HOME}/.git-credentials"
@@ -219,36 +227,104 @@ spec:
             chmod 400 "${PARAM_USER_HOME}/.gitconfig"
           else
             # Handle traditional format with .git-credentials and .gitconfig files
-            cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials"
-            cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig"
-            chmod 400 "${PARAM_USER_HOME}/.git-credentials"
-            chmod 400 "${PARAM_USER_HOME}/.gitconfig"
+            if [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" ]; then
+              cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials"
+              chmod 400 "${PARAM_USER_HOME}/.git-credentials"
+            fi
+            if [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" ]; then
+              cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig"
+              chmod 400 "${PARAM_USER_HOME}/.gitconfig"
+            fi
           fi
         fi
 
         if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then
-          mkdir -p "${PARAM_USER_HOME}"/.ssh
-          chmod 700 "${PARAM_USER_HOME}"/.ssh
+          # Check if this is a kubernetes.io/basic-auth secret bound to ssh-directory workspace
+          if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/username" ] && [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/password" ]; then
+            # Handle kubernetes.io/basic-auth type secret for HTTPS
+            USERNAME=$(cat "${WORKSPACE_SSH_DIRECTORY_PATH}/username")
+            PASSWORD=$(cat "${WORKSPACE_SSH_DIRECTORY_PATH}/password")
 
+            # Extract hostname from Git URL - handle both HTTP(S) and git@ formats
+            if echo "${PARAM_URL}" | grep -q "^https\?://"; then
+              HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^https?://([^/]+).*|\1|')
+            elif echo "${PARAM_URL}" | grep -q "^git@"; then
+              # For git@github.com:user/repo.git format, extract github.com
+              HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^git@([^:]+):.*|\1|')
+            else
+              # Fallback: try to extract domain from URL
+              HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^[^@]*@?([^:/]+).*|\1|')
+            fi
+
+            # Create .git-credentials file
+            echo "https://${USERNAME}:${PASSWORD}@${HOSTNAME}" > "${PARAM_USER_HOME}/.git-credentials"
+
+            # Create .gitconfig file
+            printf "[credential]\n  helper = store\n" > "${PARAM_USER_HOME}/.gitconfig"
+
+            chmod 400 "${PARAM_USER_HOME}/.git-credentials"
+            chmod 400 "${PARAM_USER_HOME}/.gitconfig"
           # Check if this is a kubernetes.io/ssh-auth secret (has ssh-privatekey file)
-          if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" ]; then
+          elif [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" ]; then
             # Handle kubernetes.io/ssh-auth type secret
+            mkdir -p "${PARAM_USER_HOME}"/.ssh
+            chmod 700 "${PARAM_USER_HOME}"/.ssh
+
+            # Copy the SSH private key
             cp "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" "${PARAM_USER_HOME}/.ssh/id_rsa"
-            chmod 400 "${PARAM_USER_HOME}/.ssh/id_rsa"
+            chmod 600 "${PARAM_USER_HOME}/.ssh/id_rsa"
+
+            # Verify the key format and convert if necessary
+            if ! ssh-keygen -l -f "${PARAM_USER_HOME}/.ssh/id_rsa" > /dev/null 2>&1; then
+              echo "SSH key format validation failed, attempting conversion..."
+              # Try to convert the key to OpenSSH format if it's in a different format
+              mv "${PARAM_USER_HOME}/.ssh/id_rsa" "${PARAM_USER_HOME}/.ssh/id_rsa.orig"
+              ssh-keygen -p -m PEM -f "${PARAM_USER_HOME}/.ssh/id_rsa.orig" -N "" -P "" || \
+                mv "${PARAM_USER_HOME}/.ssh/id_rsa.orig" "${PARAM_USER_HOME}/.ssh/id_rsa"
+            fi
+
+            # Ensure correct permissions after any conversion
+            chmod 600 "${PARAM_USER_HOME}/.ssh/id_rsa"
 
             # Copy known_hosts if exists
             if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/known_hosts" ]; then
               cp "${WORKSPACE_SSH_DIRECTORY_PATH}/known_hosts" "${PARAM_USER_HOME}/.ssh/known_hosts"
-              chmod 400 "${PARAM_USER_HOME}/.ssh/known_hosts"
+              chmod 600 "${PARAM_USER_HOME}/.ssh/known_hosts"
             else
-              # Disable strict host key checking if no known_hosts provided
-              printf "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null\n" > "${PARAM_USER_HOME}/.ssh/config"
-              chmod 400 "${PARAM_USER_HOME}/.ssh/config"
+              # Auto-fetch known_hosts for common Git providers or disable strict checking
+              if echo "${PARAM_URL}" | grep -q "github.com"; then
+                ssh-keyscan github.com >> "${PARAM_USER_HOME}/.ssh/known_hosts" 2>/dev/null || true
+              elif echo "${PARAM_URL}" | grep -q "gitlab.com"; then
+                ssh-keyscan gitlab.com >> "${PARAM_USER_HOME}/.ssh/known_hosts" 2>/dev/null || true
+              elif echo "${PARAM_URL}" | grep -q "bitbucket.org"; then
+                ssh-keyscan bitbucket.org >> "${PARAM_USER_HOME}/.ssh/known_hosts" 2>/dev/null || true
+              fi
+
+              # If known_hosts still doesn't exist or is empty, disable strict checking
+              if [ ! -s "${PARAM_USER_HOME}/.ssh/known_hosts" ]; then
+                printf "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null\n" > "${PARAM_USER_HOME}/.ssh/config"
+                chmod 600 "${PARAM_USER_HOME}/.ssh/config"
+              else
+                chmod 600 "${PARAM_USER_HOME}/.ssh/known_hosts"
+              fi
             fi
+
+            # Set SSH environment variable to use our ssh directory
+            export GIT_SSH_COMMAND="ssh -i ${PARAM_USER_HOME}/.ssh/id_rsa -o IdentitiesOnly=yes"
           else
             # Handle Opaque secrets with full .ssh directory structure
-            cp -R "${WORKSPACE_SSH_DIRECTORY_PATH}"/* "${PARAM_USER_HOME}"/.ssh/
-            chmod -R 400 "${PARAM_USER_HOME}"/.ssh/*
+            mkdir -p "${PARAM_USER_HOME}"/.ssh
+            chmod 700 "${PARAM_USER_HOME}"/.ssh
+
+            # Copy files individually to ensure proper handling
+            if [ -d "${WORKSPACE_SSH_DIRECTORY_PATH}" ]; then
+              for file in "${WORKSPACE_SSH_DIRECTORY_PATH}"/*; do
+                if [ -f "$file" ]; then
+                  cp "$file" "${PARAM_USER_HOME}/.ssh/"
+                  chmod 600 "${PARAM_USER_HOME}/.ssh/$(basename "$file")"
+                fi
+              done
+            fi
           fi
         fi
 
