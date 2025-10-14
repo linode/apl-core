@@ -5,7 +5,7 @@ environments:
           appgw:
             isManaged: false
         apps:
-          kbOperator:
+          kb-operator:
             _rawValues: {}
             image:
               repository: linode/ai-operators
@@ -17,7 +17,7 @@ environments:
               requests:
                 cpu: 100m
                 memory: 128Mi
-          agentOperator:
+          agent-operator:
             _rawValues: {}
             image:
               repository: linode/ai-operators
