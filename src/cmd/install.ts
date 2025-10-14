@@ -52,7 +52,7 @@ const retryInstallStep = async <T, Args extends any[]>(
       return await fn(...args)
     },
     {
-      retries: 5,
+      retries: env.INSTALL_STEP_RETRIES,
       onRetry: async (e, attempt) => {
         d.info(`Retrying (${attempt}/${env.INSTALL_STEP_RETRIES})...`)
       },
@@ -144,9 +144,9 @@ const install = async (): Promise<void> => {
   const argv: HelmArguments = getParsedArgs()
   const retryOptions: Options = {
     factor: 1,
-    retries: 3,
-    minTimeout: 30000,
-    maxTimeout: 30000,
+    retries: env.INSTALL_RETRIES,
+    minTimeout: env.INSTALL_RETRY_TIMEOUT,
+    maxTimeout: env.INSTALL_RETRY_TIMEOUT,
   }
   if (!argv.label && !argv.file) {
     await retry(async () => {
