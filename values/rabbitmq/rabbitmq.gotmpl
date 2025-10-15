@@ -16,11 +16,11 @@ msgTopologyOperator:
   watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
 
 global:
+  security:
+    allowInsecureImages: true
   storageClass: {{ $v.cluster.defaultStorageClass }}
+  imageRegistry: "docker.io/bitnamilegacy"
 {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - otomi-pullsecret-global
-{{- end }}
-{{- if $v.otomi.linodeLkeImageRepository }}
-  imageRegistry: "{{$v.otomi.linodeLkeImageRepository }}/docker"
 {{- end }}
