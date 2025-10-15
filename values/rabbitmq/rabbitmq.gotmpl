@@ -19,11 +19,18 @@ msgTopologyOperator:
   image:
     registry: docker.io
     repository: bitnamilegacy/rabbitmq-messaging-topology-operator
-    tag: 2.16.1-debian-12-r0
+    tag: 1.17.4-debian-12-r0
     digest: ""
   resources: {{- $r.resources.msgTopologyOperator | toYaml | nindent 4 }}
   watchAllNamespaces: false
   watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
+
+credentialUpdaterImage:
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/rmq-default-credential-updater
+    tag: 1.0.8-debian-12-r0
+    digest: ""
 
 global:
   security:
