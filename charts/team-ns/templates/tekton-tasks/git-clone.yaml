@@ -195,10 +195,6 @@ spec:
         #!/usr/bin/env sh
         set -eu
 
-        if [ "${PARAM_VERBOSE}" = "true" ] ; then
-          set -x
-        fi
-
         extract_hostname() {
           url="$1"
           if echo "$url" | grep -q "^https\?://"; then
@@ -241,17 +237,18 @@ spec:
             chmod 600 "${PARAM_USER_HOME}/.ssh/id_rsa"
 
             # Reformat SSH key to fix line break issues from sealed secrets
-            if grep -q "BEGIN.*PRIVATE KEY" "${PARAM_USER_HOME}/.ssh/id_rsa"; then
-              HEADER=$(grep "BEGIN.*PRIVATE KEY" "${PARAM_USER_HOME}/.ssh/id_rsa")
-              FOOTER=$(grep "END.*PRIVATE KEY" "${PARAM_USER_HOME}/.ssh/id_rsa")
-              BASE64_CONTENT=$(sed -n "/BEGIN.*PRIVATE KEY/,/END.*PRIVATE KEY/p" "${PARAM_USER_HOME}/.ssh/id_rsa" | \
-                grep -v "BEGIN\|END" | tr -d '\n\r\t ' )
-
-              {
-                echo "$HEADER"
-                echo "$BASE64_CONTENT" | fold -w 70
-                echo "$FOOTER"
-              } > "${PARAM_USER_HOME}/.ssh/id_rsa.reformatted"
+            if grep -q "BEGIN.*PRIVATE KEY" "${PARAM_USER_HOME}/.ssh/id_rsa" 2>/dev/null; then
+              sed -n "/BEGIN.*PRIVATE KEY/,/END.*PRIVATE KEY/p" "${PARAM_USER_HOME}/.ssh/id_rsa" | \
+                awk 'NR==1 {header=$0; next} /END.*PRIVATE KEY/ {footer=$0; next} {body=body$0} END {
+                  print header
+                  gsub(/[[:space:]]/, "", body)
+                  while (length(body) > 70) {
+                    print substr(body, 1, 70)
+                    body = substr(body, 71)
+                  }
+                  if (length(body) > 0) print body
+                  print footer
+                }' > "${PARAM_USER_HOME}/.ssh/id_rsa.reformatted"
 
               mv "${PARAM_USER_HOME}/.ssh/id_rsa.reformatted" "${PARAM_USER_HOME}/.ssh/id_rsa"
               chmod 600 "${PARAM_USER_HOME}/.ssh/id_rsa"
@@ -302,6 +299,12 @@ spec:
               export GIT_SSL_CAINFO="${WORKSPACE_SSL_CA_DIRECTORY_PATH}/${PARAM_CRT_FILENAME}"
            fi
         fi
+
+        # Enable verbose mode only after credentials are set up
+        if [ "${PARAM_VERBOSE}" = "true" ] ; then
+          set -x
+        fi
+
         CHECKOUT_DIR="${WORKSPACE_OUTPUT_PATH}/${PARAM_SUBDIRECTORY}"
 
         cleandir() {
