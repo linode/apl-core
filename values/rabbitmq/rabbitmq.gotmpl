@@ -18,7 +18,7 @@ clusterOperator:
 msgTopologyOperator:
   image:
     registry: docker.io
-    repository: bitnamilegacy/rabbitmq-messaging-topology-operator
+    repository: bitnamilegacy/rmq-messaging-topology-operator
     tag: 1.17.4-debian-12-r0
     digest: ""
   resources: {{- $r.resources.msgTopologyOperator | toYaml | nindent 4 }}
