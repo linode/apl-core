@@ -232,10 +232,18 @@ spec:
         HAS_SSH_KEY=false
         HAS_BASIC_AUTH=false
 
-        if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] && [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" ]; then
-          HAS_SSH_KEY=true
+        # Check ssh-directory workspace for credentials
+        if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ]; then
+          if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" ]; then
+            HAS_SSH_KEY=true
+          elif [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/username" ] && [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/password" ]; then
+            HAS_BASIC_AUTH=true
+          elif [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/.git-credentials" ]; then
+            HAS_BASIC_AUTH=true
+          fi
         fi
 
+        # Check basic-auth workspace for credentials
         if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ]; then
           if [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username" ] && [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/password" ]; then
             HAS_BASIC_AUTH=true
