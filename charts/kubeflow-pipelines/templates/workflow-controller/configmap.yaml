@@ -3,11 +3,7 @@ data:
   artifactRepository: |
     archiveLogs: true
     s3:
-      {{- if eq .Values.objectStorage.type "minio" }}
       endpoint: {{ .Values.objectStorage.endpoint }}:{{ .Values.objectStorage.port }}
-      {{- else }}
-      endpoint: {{ .Values.objectStorage.region }}.{{ .Values.objectStorage.endpoint }}:{{ .Values.objectStorage.port }}
-      {{- end }}
       region: {{ .Values.objectStorage.region | quote }}
       bucket: {{ .Values.objectStorage.bucket }}
       keyFormat: "artifacts/{{`{{workflow.name}}`}}/{{`{{workflow.creationTimestamp.Y}}`}}/{{`{{workflow.creationTimestamp.m}}`}}/{{`{{workflow.creationTimestamp.d}}`}}/{{`{{pod.name}}`}}"
