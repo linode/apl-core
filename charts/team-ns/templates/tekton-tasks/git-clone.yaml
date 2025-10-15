@@ -106,7 +106,7 @@ spec:
     - name: verbose
       description: Log the commands that are executed during `git-clone`'s operation.
       type: string
-      default: "false"
+      default: "true"
     - name: gitInitImage
       description: The image providing the git-init binary that this Task runs.
       type: string
