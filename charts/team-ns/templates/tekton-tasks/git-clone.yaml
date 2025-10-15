@@ -243,15 +243,6 @@ spec:
           fi
         fi
 
-        # Check basic-auth workspace for credentials
-        if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ]; then
-          if [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username" ] && [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/password" ]; then
-            HAS_BASIC_AUTH=true
-          elif [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" ]; then
-            HAS_BASIC_AUTH=true
-          fi
-        fi
-
         # Smart URL conversion based on credentials
         ORIGINAL_URL="${PARAM_URL}"
 
@@ -265,31 +256,6 @@ spec:
           PARAM_URL=$(convert_ssh_to_https "${PARAM_URL}")
           echo "INFO: Converted SSH URL to HTTPS format for basic authentication"
           echo "  ${ORIGINAL_URL} -> ${PARAM_URL}"
-        fi
-
-        if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
-          (
-            set +x  # Disable verbose mode for credential operations
-            if [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username" ] && [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/password" ]; then
-              USERNAME=$(cat "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username" 2>/dev/null)
-              PASSWORD=$(cat "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/password" 2>/dev/null)
-              HOSTNAME=$(extract_hostname "${PARAM_URL}")
-
-              echo "https://${USERNAME}:${PASSWORD}@${HOSTNAME}" > "${PARAM_USER_HOME}/.git-credentials" 2>/dev/null
-              printf "[credential]\n  helper = store\n" > "${PARAM_USER_HOME}/.gitconfig" 2>/dev/null
-              chmod 400 "${PARAM_USER_HOME}/.git-credentials" 2>/dev/null
-              chmod 400 "${PARAM_USER_HOME}/.gitconfig" 2>/dev/null
-            else
-              if [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" ]; then
-                cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials" 2>/dev/null
-                chmod 400 "${PARAM_USER_HOME}/.git-credentials" 2>/dev/null
-              fi
-              if [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" ]; then
-                cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig" 2>/dev/null
-                chmod 400 "${PARAM_USER_HOME}/.gitconfig" 2>/dev/null
-              fi
-            fi
-          ) 2>/dev/null
         fi
 
         if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then
@@ -344,17 +310,23 @@ spec:
               fi
 
               export GIT_SSH_COMMAND="ssh -i ${PARAM_USER_HOME}/.ssh/id_rsa -o IdentitiesOnly=yes -o BatchMode=yes"
-            else
-              mkdir -p "${PARAM_USER_HOME}"/.ssh 2>/dev/null
-              chmod 700 "${PARAM_USER_HOME}"/.ssh 2>/dev/null
+            elif [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/username" ] && [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/password" ]; then
+              # Handle basic-auth credentials from ssh-directory workspace
+              USERNAME=$(cat "${WORKSPACE_SSH_DIRECTORY_PATH}/username" 2>/dev/null)
+              PASSWORD=$(cat "${WORKSPACE_SSH_DIRECTORY_PATH}/password" 2>/dev/null)
+              HOSTNAME=$(extract_hostname "${PARAM_URL}")
 
-              if [ -d "${WORKSPACE_SSH_DIRECTORY_PATH}" ]; then
-                for file in "${WORKSPACE_SSH_DIRECTORY_PATH}"/*; do
-                  if [ -f "$file" ]; then
-                    cp "$file" "${PARAM_USER_HOME}/.ssh/" 2>/dev/null
-                    chmod 600 "${PARAM_USER_HOME}/.ssh/$(basename "$file")" 2>/dev/null
-                  fi
-                done
+              echo "https://${USERNAME}:${PASSWORD}@${HOSTNAME}" > "${PARAM_USER_HOME}/.git-credentials" 2>/dev/null
+              printf "[credential]\n  helper = store\n" > "${PARAM_USER_HOME}/.gitconfig" 2>/dev/null
+              chmod 400 "${PARAM_USER_HOME}/.git-credentials" 2>/dev/null
+              chmod 400 "${PARAM_USER_HOME}/.gitconfig" 2>/dev/null
+            elif [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/.git-credentials" ]; then
+              # Handle .git-credentials file from ssh-directory workspace
+              cp "${WORKSPACE_SSH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials" 2>/dev/null
+              chmod 400 "${PARAM_USER_HOME}/.git-credentials" 2>/dev/null
+              if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/.gitconfig" ]; then
+                cp "${WORKSPACE_SSH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig" 2>/dev/null
+                chmod 400 "${PARAM_USER_HOME}/.gitconfig" 2>/dev/null
               fi
             fi
           ) 2>/dev/null
