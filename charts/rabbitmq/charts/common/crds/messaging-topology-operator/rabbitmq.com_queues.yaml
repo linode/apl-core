@@ -1,29 +1,28 @@
-# Source: https://raw.githubusercontent.com/rabbitmq/messaging-topology-operator/v{version}/config/crd/bases/rabbitmq.com_permissions.yaml
-# Version: 1.13.0
+# Source: https://raw.githubusercontent.com/rabbitmq/messaging-topology-operator/v{version}/config/crd/bases/rabbitmq.com_queues.yaml
+# Version: 1.17.4
 # VersionOf: rmq-messaging-topology-operator
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
-  name: permissions.rabbitmq.com
+    controller-gen.kubebuilder.io/version: v0.17.1
+  name: queues.rabbitmq.com
 spec:
   group: rabbitmq.com
   names:
     categories:
-    - all
     - rabbitmq
-    kind: Permission
-    listKind: PermissionList
-    plural: permissions
-    singular: permission
+    kind: Queue
+    listKind: QueueList
+    plural: queues
+    singular: queue
   scope: Namespaced
   versions:
   - name: v1beta1
     schema:
       openAPIV3Schema:
-        description: Permission is the Schema for the permissions API
+        description: Queue is the Schema for the queues API
         properties:
           apiVersion:
             description: |-
@@ -43,23 +42,43 @@ spec:
           metadata:
             type: object
           spec:
-            description: PermissionSpec defines the desired state of Permission
+            description: QueueSpec defines the desired state of Queue
             properties:
-              permissions:
+              arguments:
                 description: |-
-                  Permissions to grant to the user in the specific vhost; required property.
-                  See RabbitMQ doc for more information: https://www.rabbitmq.com/access-control.html#user-management
-                properties:
-                  configure:
-                    type: string
-                  read:
-                    type: string
-                  write:
-                    type: string
+                  Queue arguments in the format of KEY: VALUE. e.g. x-delivery-limit: 10000.
+                  Configuring queues through arguments is not recommended because they cannot be updated once set; we recommend configuring queues through policies instead.
                 type: object
+                x-kubernetes-preserve-unknown-fields: true
+              autoDelete:
+                description: when set to true, queues that have had at least one consumer
+                  before are deleted after the last consumer unsubscribes.
+                type: boolean
+              deleteIfEmpty:
+                description: when set to true, queues are deleted only if empty.
+                type: boolean
+              deleteIfUnused:
+                description: when set to true, queues are delete only if they have
+                  no consumer.
+                type: boolean
+              deletionPolicy:
+                default: delete
+                description: |-
+                  DeletionPolicy defines the behavior of queue in the RabbitMQ cluster when the corresponding custom resource is deleted.
+                  Can be set to 'delete' or 'retain'. Default is 'delete'.
+                enum:
+                - delete
+                - retain
+                type: string
+              durable:
+                description: When set to false queues does not survive server restart.
+                type: boolean
+              name:
+                description: Name of the queue; required property.
+                type: string
               rabbitmqClusterReference:
                 description: |-
-                  Reference to the RabbitmqCluster that both the provided user and vhost are.
+                  Reference to the RabbitmqCluster that the queue will be created in.
                   Required property.
                 properties:
                   connectionSecret:
@@ -69,10 +88,13 @@ spec:
                       Have to set either name or connectionSecret, but not both.
                     properties:
                       name:
+                        default: ""
                         description: |-
                           Name of the referent.
+                          This field is effectively required, but due to backwards compatibility is
+                          allowed to be empty. Instances of this type with an empty value here are
+                          almost certainly wrong.
                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?
                         type: string
                     type: object
                     x-kubernetes-map-type: atomic
@@ -87,34 +109,18 @@ spec:
                       Defaults to the namespace of the requested resource if omitted.
                     type: string
                 type: object
-              user:
-                description: Name of an existing user; must provide user or userReference,
-                  else create/update will fail; cannot be updated
+              type:
                 type: string
-              userReference:
-                description: Reference to an existing user.rabbitmq.com object; must
-                  provide user or userReference, else create/update will fail; cannot
-                  be updated
-                properties:
-                  name:
-                    description: |-
-                      Name of the referent.
-                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                      TODO: Add other useful fields. apiVersion, kind, uid?
-                    type: string
-                type: object
-                x-kubernetes-map-type: atomic
               vhost:
-                description: Name of an existing vhost; required property; cannot
-                  be updated
+                default: /
+                description: Default to vhost '/'
                 type: string
             required:
-            - permissions
+            - name
             - rabbitmqClusterReference
-            - vhost
             type: object
           status:
-            description: PermissionStatus defines the observed state of Permission
+            description: QueueStatus defines the observed state of Queue
             properties:
               conditions:
                 items:
@@ -144,8 +150,8 @@ spec:
                 type: array
               observedGeneration:
                 description: |-
-                  observedGeneration is the most recent successful generation observed for this Permission. It corresponds to the
-                  Permission's generation, which is updated on mutation by the API Server.
+                  observedGeneration is the most recent successful generation observed for this Queue. It corresponds to the
+                  Queue's generation, which is updated on mutation by the API Server.
                 format: int64
                 type: integer
             type: object

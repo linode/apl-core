@@ -1,29 +1,28 @@
-# Source: https://raw.githubusercontent.com/rabbitmq/messaging-topology-operator/v{version}/config/crd/bases/rabbitmq.com_vhosts.yaml
-# Version: 1.13.0
+# Source: https://raw.githubusercontent.com/rabbitmq/messaging-topology-operator/v{version}/config/crd/bases/rabbitmq.com_permissions.yaml
+# Version: 1.17.4
 # VersionOf: rmq-messaging-topology-operator
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
-  name: vhosts.rabbitmq.com
+    controller-gen.kubebuilder.io/version: v0.17.1
+  name: permissions.rabbitmq.com
 spec:
   group: rabbitmq.com
   names:
     categories:
-    - all
     - rabbitmq
-    kind: Vhost
-    listKind: VhostList
-    plural: vhosts
-    singular: vhost
+    kind: Permission
+    listKind: PermissionList
+    plural: permissions
+    singular: permission
   scope: Namespaced
   versions:
   - name: v1beta1
     schema:
       openAPIV3Schema:
-        description: Vhost is the Schema for the vhosts API
+        description: Permission is the Schema for the permissions API
         properties:
           apiVersion:
             description: |-
@@ -43,23 +42,23 @@ spec:
           metadata:
             type: object
           spec:
-            description: VhostSpec defines the desired state of Vhost
+            description: PermissionSpec defines the desired state of Permission
             properties:
-              defaultQueueType:
+              permissions:
                 description: |-
-                  Default queue type for this vhost; can be set to quorum, classic or stream.
-                  Supported in RabbitMQ 3.11.12 or above.
-                enum:
-                - quorum
-                - classic
-                - stream
-                type: string
-              name:
-                description: Name of the vhost; see https://www.rabbitmq.com/vhosts.html.
-                type: string
+                  Permissions to grant to the user in the specific vhost; required property.
+                  See RabbitMQ doc for more information: https://www.rabbitmq.com/access-control.html#user-management
+                properties:
+                  configure:
+                    type: string
+                  read:
+                    type: string
+                  write:
+                    type: string
+                type: object
               rabbitmqClusterReference:
                 description: |-
-                  Reference to the RabbitmqCluster that the vhost will be created in.
+                  Reference to the RabbitmqCluster that both the provided user and vhost are.
                   Required property.
                 properties:
                   connectionSecret:
@@ -69,10 +68,13 @@ spec:
                       Have to set either name or connectionSecret, but not both.
                     properties:
                       name:
+                        default: ""
                         description: |-
                           Name of the referent.
+                          This field is effectively required, but due to backwards compatibility is
+                          allowed to be empty. Instances of this type with an empty value here are
+                          almost certainly wrong.
                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?
                         type: string
                     type: object
                     x-kubernetes-map-type: atomic
@@ -87,18 +89,37 @@ spec:
                       Defaults to the namespace of the requested resource if omitted.
                     type: string
                 type: object
-              tags:
-                items:
-                  type: string
-                type: array
-              tracing:
-                type: boolean
+              user:
+                description: Name of an existing user; must provide user or userReference,
+                  else create/update will fail; cannot be updated
+                type: string
+              userReference:
+                description: Reference to an existing user.rabbitmq.com object; must
+                  provide user or userReference, else create/update will fail; cannot
+                  be updated
+                properties:
+                  name:
+                    default: ""
+                    description: |-
+                      Name of the referent.
+                      This field is effectively required, but due to backwards compatibility is
+                      allowed to be empty. Instances of this type with an empty value here are
+                      almost certainly wrong.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    type: string
+                type: object
+                x-kubernetes-map-type: atomic
+              vhost:
+                description: Name of an existing vhost; required property; cannot
+                  be updated
+                type: string
             required:
-            - name
+            - permissions
             - rabbitmqClusterReference
+            - vhost
             type: object
           status:
-            description: VhostStatus defines the observed state of Vhost
+            description: PermissionStatus defines the observed state of Permission
             properties:
               conditions:
                 items:
@@ -128,8 +149,8 @@ spec:
                 type: array
               observedGeneration:
                 description: |-
-                  observedGeneration is the most recent successful generation observed for this Vhost. It corresponds to the
-                  Vhost's generation, which is updated on mutation by the API Server.
+                  observedGeneration is the most recent successful generation observed for this Permission. It corresponds to the
+                  Permission's generation, which is updated on mutation by the API Server.
                 format: int64
                 type: integer
             type: object

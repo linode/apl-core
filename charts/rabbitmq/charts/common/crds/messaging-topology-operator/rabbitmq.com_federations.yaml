@@ -1,29 +1,28 @@
-# Source: https://raw.githubusercontent.com/rabbitmq/messaging-topology-operator/v{version}/config/crd/bases/rabbitmq.com_shovels.yaml
-# Version: 1.13.0
+# Source: https://raw.githubusercontent.com/rabbitmq/messaging-topology-operator/v{version}/config/crd/bases/rabbitmq.com_federations.yaml
+# Version: 1.17.4
 # VersionOf: rmq-messaging-topology-operator
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
-  name: shovels.rabbitmq.com
+    controller-gen.kubebuilder.io/version: v0.17.1
+  name: federations.rabbitmq.com
 spec:
   group: rabbitmq.com
   names:
     categories:
-    - all
     - rabbitmq
-    kind: Shovel
-    listKind: ShovelList
-    plural: shovels
-    singular: shovel
+    kind: Federation
+    listKind: FederationList
+    plural: federations
+    singular: federation
   scope: Namespaced
   versions:
   - name: v1beta1
     schema:
       openAPIV3Schema:
-        description: Shovel is the Schema for the shovels API
+        description: Federation is the Schema for the federations API
         properties:
           apiVersion:
             description: |-
@@ -44,8 +43,8 @@ spec:
             type: object
           spec:
             description: |-
-              ShovelSpec defines the desired state of Shovel
-              For how to configure Shovel, see: https://www.rabbitmq.com/shovel.html.
+              FederationSpec defines the desired state of Federation
+              For how to configure federation upstreams, see: https://www.rabbitmq.com/federation-reference.html.
             properties:
               ackMode:
                 enum:
@@ -53,55 +52,45 @@ spec:
                 - on-publish
                 - no-ack
                 type: string
-              addForwardHeaders:
-                type: boolean
-              deleteAfter:
-                type: string
-              destAddForwardHeaders:
-                type: boolean
-              destAddTimestampHeader:
-                type: boolean
-              destAddress:
-                description: amqp10 configuration; required if destProtocol is amqp10
-                type: string
-              destApplicationProperties:
-                description: amqp10 configuration
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
-              destExchange:
-                description: amqp091 configuration
-                type: string
-              destExchangeKey:
-                description: amqp091 configuration
-                type: string
-              destMessageAnnotations:
-                description: amqp10 configuration
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
-              destProperties:
-                description: amqp10 configuration
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
-              destProtocol:
+              deletionPolicy:
+                default: delete
+                description: |-
+                  DeletionPolicy defines the behavior of federation in the RabbitMQ cluster when the corresponding custom resource is deleted.
+                  Can be set to 'delete' or 'retain'. Default is 'delete'.
                 enum:
-                - amqp091
-                - amqp10
+                - delete
+                - retain
                 type: string
-              destPublishProperties:
-                description: amqp091 configuration
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
-              destQueue:
-                description: amqp091 configuration
+              exchange:
                 type: string
+              expires:
+                type: integer
+              maxHops:
+                type: integer
+              messageTTL:
+                type: integer
               name:
                 description: Required property; cannot be updated
                 type: string
-              prefetchCount:
+              prefetch-count:
                 type: integer
+              queue:
+                type: string
+              queueType:
+                description: |-
+                  The queue type of the internal upstream queue used by exchange federation.
+                  Defaults to classic (a single replica queue type). Set to quorum to use a replicated queue type.
+                  Changing the queue type will delete and recreate the upstream queue by default.
+                  This may lead to messages getting lost or not routed anywhere during the re-declaration.
+                  To avoid that, set resource-cleanup-mode key to never.
+                  This requires manually deleting the old upstream queue so that it can be recreated with the new type.
+                enum:
+                - classic
+                - quorum
+                type: string
               rabbitmqClusterReference:
                 description: |-
-                  Reference to the RabbitmqCluster that this Shovel will be created in.
+                  Reference to the RabbitmqCluster that this federation upstream will be created in.
                   Required property.
                 properties:
                   connectionSecret:
@@ -111,10 +100,13 @@ spec:
                       Have to set either name or connectionSecret, but not both.
                     properties:
                       name:
+                        default: ""
                         description: |-
                           Name of the referent.
+                          This field is effectively required, but due to backwards compatibility is
+                          allowed to be empty. Instances of this type with an empty value here are
+                          almost certainly wrong.
                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?
                         type: string
                     type: object
                     x-kubernetes-map-type: atomic
@@ -131,43 +123,32 @@ spec:
                 type: object
               reconnectDelay:
                 type: integer
-              srcAddress:
-                description: amqp10 configuration; required if srcProtocol is amqp10
-                type: string
-              srcConsumerArgs:
-                description: amqp091 configuration
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
-              srcDeleteAfter:
-                type: string
-              srcExchange:
-                description: amqp091 configuration
-                type: string
-              srcExchangeKey:
-                description: amqp091 configuration
-                type: string
-              srcPrefetchCount:
-                type: integer
-              srcProtocol:
+              resourceCleanupMode:
+                description: |-
+                  Whether to delete the internal upstream queue when federation links stop.
+                  By default, the internal upstream queue is deleted immediately when a federation link stops.
+                  Set to never to keep the upstream queue around and collect messages even when changing federation configuration.
                 enum:
-                - amqp091
-                - amqp10
+                - default
+                - never
                 type: string
-              srcQueue:
-                description: amqp091 configuration
-                type: string
+              trustUserId:
+                type: boolean
               uriSecret:
                 description: |-
-                  Secret contains the AMQP URI(s) to configure Shovel destination and source.
-                  The Secret must contain the key `destUri` and `srcUri` or operator will error.
-                  Both fields should be one or multiple uris separated by ','.
+                  Secret contains the AMQP URI(s) for the upstream.
+                  The Secret must contain the key `uri` or operator will error.
+                  `uri` should be one or multiple uris separated by ','.
                   Required property.
                 properties:
                   name:
+                    default: ""
                     description: |-
                       Name of the referent.
+                      This field is effectively required, but due to backwards compatibility is
+                      allowed to be empty. Instances of this type with an empty value here are
+                      almost certainly wrong.
                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                      TODO: Add other useful fields. apiVersion, kind, uid?
                     type: string
                 type: object
                 x-kubernetes-map-type: atomic
@@ -181,7 +162,7 @@ spec:
             - uriSecret
             type: object
           status:
-            description: ShovelStatus defines the observed state of Shovel
+            description: FederationStatus defines the observed state of Federation
             properties:
               conditions:
                 items:
@@ -211,8 +192,8 @@ spec:
                 type: array
               observedGeneration:
                 description: |-
-                  observedGeneration is the most recent successful generation observed for this Shovel. It corresponds to the
-                  Shovel's generation, which is updated on mutation by the API Server.
+                  observedGeneration is the most recent successful generation observed for this Federation. It corresponds to the
+                  Federation's generation, which is updated on mutation by the API Server.
                 format: int64
                 type: integer
             type: object
