@@ -199,34 +199,28 @@ spec:
           set -x
         fi
 
+        extract_hostname() {
+          url="$1"
+          if echo "$url" | grep -q "^https\?://"; then
+            echo "$url" | sed -E 's|^https?://([^/]+).*|\1|'
+          elif echo "$url" | grep -q "^git@"; then
+            echo "$url" | sed -E 's|^git@([^:]+):.*|\1|'
+          else
+            echo "$url" | sed -E 's|^[^@]*@?([^:/]+).*|\1|'
+          fi
+        }
+
         if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
-          # Check if this is a kubernetes.io/basic-auth secret (has username/password files)
           if [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username" ] && [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/password" ]; then
-            # Handle kubernetes.io/basic-auth type secret
             USERNAME=$(cat "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username")
             PASSWORD=$(cat "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/password")
+            HOSTNAME=$(extract_hostname "${PARAM_URL}")
 
-            # Extract hostname from Git URL - handle both HTTP(S) and git@ formats
-            if echo "${PARAM_URL}" | grep -q "^https\?://"; then
-              HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^https?://([^/]+).*|\1|')
-            elif echo "${PARAM_URL}" | grep -q "^git@"; then
-              # For git@github.com:user/repo.git format, extract github.com
-              HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^git@([^:]+):.*|\1|')
-            else
-              # Fallback: try to extract domain from URL
-              HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^[^@]*@?([^:/]+).*|\1|')
-            fi
-
-            # Create .git-credentials file
             echo "https://${USERNAME}:${PASSWORD}@${HOSTNAME}" > "${PARAM_USER_HOME}/.git-credentials"
-
-            # Create .gitconfig file
             printf "[credential]\n  helper = store\n" > "${PARAM_USER_HOME}/.gitconfig"
-
             chmod 400 "${PARAM_USER_HOME}/.git-credentials"
             chmod 400 "${PARAM_USER_HOME}/.gitconfig"
           else
-            # Handle traditional format with .git-credentials and .gitconfig files
             if [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" ]; then
               cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials"
               chmod 400 "${PARAM_USER_HOME}/.git-credentials"
@@ -239,126 +233,45 @@ spec:
         fi
 
         if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then
-          # Check if this is a kubernetes.io/basic-auth secret bound to ssh-directory workspace
-          if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/username" ] && [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/password" ]; then
-            # Handle kubernetes.io/basic-auth type secret for HTTPS
-            USERNAME=$(cat "${WORKSPACE_SSH_DIRECTORY_PATH}/username")
-            PASSWORD=$(cat "${WORKSPACE_SSH_DIRECTORY_PATH}/password")
-
-            # Extract hostname from Git URL - handle both HTTP(S) and git@ formats
-            if echo "${PARAM_URL}" | grep -q "^https\?://"; then
-              HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^https?://([^/]+).*|\1|')
-            elif echo "${PARAM_URL}" | grep -q "^git@"; then
-              # For git@github.com:user/repo.git format, extract github.com
-              HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^git@([^:]+):.*|\1|')
-            else
-              # Fallback: try to extract domain from URL
-              HOSTNAME=$(echo "${PARAM_URL}" | sed -E 's|^[^@]*@?([^:/]+).*|\1|')
-            fi
-
-            # Create .git-credentials file
-            echo "https://${USERNAME}:${PASSWORD}@${HOSTNAME}" > "${PARAM_USER_HOME}/.git-credentials"
-
-            # Create .gitconfig file
-            printf "[credential]\n  helper = store\n" > "${PARAM_USER_HOME}/.gitconfig"
-
-            chmod 400 "${PARAM_USER_HOME}/.git-credentials"
-            chmod 400 "${PARAM_USER_HOME}/.gitconfig"
-          # Check if this is a kubernetes.io/ssh-auth secret (has ssh-privatekey file)
-          elif [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" ]; then
-            # Handle kubernetes.io/ssh-auth type secret
+          if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" ]; then
             mkdir -p "${PARAM_USER_HOME}"/.ssh
             chmod 700 "${PARAM_USER_HOME}"/.ssh
 
-            # Copy the SSH private key
             cp "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" "${PARAM_USER_HOME}/.ssh/id_rsa"
             chmod 600 "${PARAM_USER_HOME}/.ssh/id_rsa"
 
-            # Reformat SSH key to fix line break issues (common with sealed secrets)
-            # Extract header, footer, and base64 content
+            # Reformat SSH key to fix line break issues from sealed secrets
             if grep -q "BEGIN.*PRIVATE KEY" "${PARAM_USER_HOME}/.ssh/id_rsa"; then
-              echo "Reformatting SSH key to ensure proper line breaks..."
-
-              # Extract the header line (BEGIN)
               HEADER=$(grep "BEGIN.*PRIVATE KEY" "${PARAM_USER_HOME}/.ssh/id_rsa")
-
-              # Extract the footer line (END)
               FOOTER=$(grep "END.*PRIVATE KEY" "${PARAM_USER_HOME}/.ssh/id_rsa")
-
-              # Extract base64 content (everything between header and footer, remove all whitespace)
               BASE64_CONTENT=$(sed -n "/BEGIN.*PRIVATE KEY/,/END.*PRIVATE KEY/p" "${PARAM_USER_HOME}/.ssh/id_rsa" | \
                 grep -v "BEGIN\|END" | tr -d '\n\r\t ' )
 
-              # Rebuild the key with proper 70-character line breaks
               {
                 echo "$HEADER"
                 echo "$BASE64_CONTENT" | fold -w 70
                 echo "$FOOTER"
               } > "${PARAM_USER_HOME}/.ssh/id_rsa.reformatted"
 
-              # Replace original with reformatted version
               mv "${PARAM_USER_HOME}/.ssh/id_rsa.reformatted" "${PARAM_USER_HOME}/.ssh/id_rsa"
               chmod 600 "${PARAM_USER_HOME}/.ssh/id_rsa"
-
-              echo "SSH key reformatted successfully"
             fi
 
-            # Debug: show key info
-            echo "SSH key file size: $(wc -c < "${PARAM_USER_HOME}/.ssh/id_rsa")"
-            echo "SSH key first line: $(head -1 "${PARAM_USER_HOME}/.ssh/id_rsa")"
-
-            # Verify and convert the key format if necessary
+            # Try to convert key format if validation fails
             if ! ssh-keygen -l -f "${PARAM_USER_HOME}/.ssh/id_rsa" > /dev/null 2>&1; then
-              echo "SSH key format validation failed, attempting conversion..."
-              
-              # Create backup of original key
-              cp "${PARAM_USER_HOME}/.ssh/id_rsa" "${PARAM_USER_HOME}/.ssh/id_rsa.orig"
-              
-              # Try different conversion approaches
-              KEY_CONVERTED=false
-              
-              # Try converting from PEM to OpenSSH format
-              if ssh-keygen -p -m OpenSSH -f "${PARAM_USER_HOME}/.ssh/id_rsa" -N "" -P "" > /dev/null 2>&1; then
-                echo "Successfully converted key to OpenSSH format"
-                KEY_CONVERTED=true
-              # Try converting from PKCS#8 format
-              elif openssl pkcs8 -in "${PARAM_USER_HOME}/.ssh/id_rsa.orig" -out "${PARAM_USER_HOME}/.ssh/id_rsa" -nocrypt > /dev/null 2>&1; then
-                echo "Successfully converted key from PKCS#8 format"
-                KEY_CONVERTED=true
-              # Try converting RSA private key format
-              elif openssl rsa -in "${PARAM_USER_HOME}/.ssh/id_rsa.orig" -out "${PARAM_USER_HOME}/.ssh/id_rsa" > /dev/null 2>&1; then
-                echo "Successfully converted RSA key format"
-                KEY_CONVERTED=true
-              fi
-              
-              # If conversion failed, restore original and try without validation
-              if [ "$KEY_CONVERTED" = "false" ]; then
-                echo "Key conversion failed, using original key format"
-                mv "${PARAM_USER_HOME}/.ssh/id_rsa.orig" "${PARAM_USER_HOME}/.ssh/id_rsa"
-              fi
-              
-              # Clean up backup file
-              rm -f "${PARAM_USER_HOME}/.ssh/id_rsa.orig"
+              ssh-keygen -p -m OpenSSH -f "${PARAM_USER_HOME}/.ssh/id_rsa" -N "" -P "" > /dev/null 2>&1 || true
             fi
 
-            # Ensure correct permissions
-            chmod 600 "${PARAM_USER_HOME}/.ssh/id_rsa"
-
-            # Copy known_hosts if exists
             if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/known_hosts" ]; then
               cp "${WORKSPACE_SSH_DIRECTORY_PATH}/known_hosts" "${PARAM_USER_HOME}/.ssh/known_hosts"
               chmod 600 "${PARAM_USER_HOME}/.ssh/known_hosts"
             else
-              # Auto-fetch known_hosts for common Git providers or disable strict checking
               if echo "${PARAM_URL}" | grep -q "github.com"; then
                 ssh-keyscan github.com >> "${PARAM_USER_HOME}/.ssh/known_hosts" 2>/dev/null || true
               elif echo "${PARAM_URL}" | grep -q "gitlab.com"; then
                 ssh-keyscan gitlab.com >> "${PARAM_USER_HOME}/.ssh/known_hosts" 2>/dev/null || true
-              elif echo "${PARAM_URL}" | grep -q "bitbucket.org"; then
-                ssh-keyscan bitbucket.org >> "${PARAM_USER_HOME}/.ssh/known_hosts" 2>/dev/null || true
               fi
 
-              # If known_hosts still doesn't exist or is empty, disable strict checking
               if [ ! -s "${PARAM_USER_HOME}/.ssh/known_hosts" ]; then
                 printf "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null\n" > "${PARAM_USER_HOME}/.ssh/config"
                 chmod 600 "${PARAM_USER_HOME}/.ssh/config"
@@ -367,21 +280,11 @@ spec:
               fi
             fi
 
-            # Final validation of the SSH key
-            if ssh-keygen -l -f "${PARAM_USER_HOME}/.ssh/id_rsa" > /dev/null 2>&1; then
-              echo "SSH key validation successful"
-            else
-              echo "Warning: SSH key validation still fails, but proceeding anyway"
-            fi
-
-            # Set SSH environment variable with additional options for better compatibility
-            export GIT_SSH_COMMAND="ssh -i ${PARAM_USER_HOME}/.ssh/id_rsa -o IdentitiesOnly=yes -o BatchMode=yes -o LogLevel=DEBUG1"
+            export GIT_SSH_COMMAND="ssh -i ${PARAM_USER_HOME}/.ssh/id_rsa -o IdentitiesOnly=yes -o BatchMode=yes"
           else
-            # Handle Opaque secrets with full .ssh directory structure
             mkdir -p "${PARAM_USER_HOME}"/.ssh
             chmod 700 "${PARAM_USER_HOME}"/.ssh
 
-            # Copy files individually to ensure proper handling
             if [ -d "${WORKSPACE_SSH_DIRECTORY_PATH}" ]; then
               for file in "${WORKSPACE_SSH_DIRECTORY_PATH}"/*; do
                 if [ -f "$file" ]; then
