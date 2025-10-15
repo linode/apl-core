@@ -4,11 +4,7 @@ data:
   providers: |-
     s3:
       default:
-        {{- if eq .Values.objectStorage.type "minio" }}
         endpoint: {{ .Values.objectStorage.endpoint }}:{{ .Values.objectStorage.port }}
-        {{- else }}
-        endpoint: {{ .Values.objectStorage.region }}.{{ .Values.objectStorage.endpoint }}:{{ .Values.objectStorage.port }}
-        {{- end }}
         region: {{ .Values.objectStorage.region | quote }}
         disableSSL: {{ not .Values.objectStorage.secure }}
         credentials:

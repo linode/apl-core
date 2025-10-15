@@ -20,7 +20,7 @@ objectStorage:
   type: "minio"
 {{- end }}
 {{- if eq $obj.type "linode" }}
-  endpoint: linodeobjects.com
+  endpoint: {{ $obj.linode.region }}.linodeobjects.com
   bucket: {{ $lb }}
   region: {{ $obj.linode.region }}
   port: 443
