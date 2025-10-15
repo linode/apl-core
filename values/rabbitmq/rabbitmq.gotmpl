@@ -19,7 +19,34 @@ global:
   security:
     allowInsecureImages: true
   storageClass: {{ $v.cluster.defaultStorageClass }}
-  imageRegistry: "docker.io/bitnamilegacy"
+  imageRegistry: docker.io
+{{- with $v.otomi | get "globalPullSecret" nil }}
+  imagePullSecrets:
+    - otomi-pullsecret-global
+{{- end }}
+
+clusterOperator:
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/rabbitmq-cluster-operator
+    tag: 2.16.1-debian-12-r0
+    digest: ""
+  resources: {{- $r.resources.clusterOperator | toYaml | nindent 4 }}
+  watchAllNamespaces: false
+  watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
+
+msgTopologyOperator:
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/rabbitmq-messaging-topology-operator
+    tag: 2.16.1-debian-12-r0
+    digest: ""
+  resources: {{- $r.resources.msgTopologyOperator | toYaml | nindent 4 }}
+  watchAllNamespaces: false
+  watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
+
+global:
+  storageClass: {{ $v.cluster.defaultStorageClass }}
 {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - otomi-pullsecret-global
