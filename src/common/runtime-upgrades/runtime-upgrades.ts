@@ -6,6 +6,8 @@ import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
 import { ARGOCD_APP_PARAMS } from '../constants'
+import retry from 'async-retry'
+import { env } from '../envalid'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -152,17 +154,21 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           d.error('Failed to delete old ArgoCD Image Updater', error)
         }
       }
-    },
-    post: async (context: RuntimeUpgradeContext) => {
-      const d = context.debug
-      d.info('Checking ArgoCD Image Updater application')
-      try {
-        await checkArgoCDAppStatus('argocd-argocd-image-updater', k8s.custom(), 'sync', 'Synced')
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error) {
-        d.info('Setting sync override on ArgoCD Image Updater')
-        await setArgoCdAppSync('argocd-argocd-image-updater', true, k8s.custom(), ['Force=true', 'Replace=true'])
-      }
+      await retry(
+        async () => {
+          // Retry until deployment is gone, because otherwise ArgoCD fails to sync
+          try {
+            await k8s.app().readNamespacedDeployment({ name: 'argocd-image-updater', namespace: 'argocd' })
+          } catch (error) {
+            if (error instanceof ApiException && error.code === 404) {
+              return
+            }
+            throw error
+          }
+          throw new Error('Waiting for deployment "argocd-image-updater" to be removed')
+        },
+        { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+      )
     },
   },
 ]
