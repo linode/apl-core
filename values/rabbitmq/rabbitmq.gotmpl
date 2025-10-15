@@ -6,26 +6,6 @@
 {{- end }}
 
 clusterOperator:
-  resources: {{- $r.resources.clusterOperator | toYaml | nindent 4 }}
-  watchAllNamespaces: false
-  watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
-
-msgTopologyOperator:
-  resources: {{- $r.resources.msgTopologyOperator | toYaml | nindent 4 }}
-  watchAllNamespaces: false
-  watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
-
-global:
-  security:
-    allowInsecureImages: true
-  storageClass: {{ $v.cluster.defaultStorageClass }}
-  imageRegistry: docker.io
-{{- with $v.otomi | get "globalPullSecret" nil }}
-  imagePullSecrets:
-    - otomi-pullsecret-global
-{{- end }}
-
-clusterOperator:
   image:
     registry: docker.io
     repository: bitnamilegacy/rabbitmq-cluster-operator
@@ -46,7 +26,10 @@ msgTopologyOperator:
   watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
 
 global:
+  security:
+    allowInsecureImages: true
   storageClass: {{ $v.cluster.defaultStorageClass }}
+  imageRegistry: docker.io
 {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - otomi-pullsecret-global
