@@ -2,8 +2,15 @@
 {{- $t:= $v.apps.thanos }}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
-image: 
-  registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+image:
+  registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+  repository: "thanos/thanos"
+  tag: v0.36.1
+{{- else }}
+image:
+  registry: "quay.io"
+  repository: "thanos/thanos"
+  tag: v0.36.1
 {{- end }}
 
 ## @section Thanos Query parameters
@@ -28,7 +35,7 @@ queryFrontend:
 ## @section Thanos Compactor parameters
 compactor:
   enabled: true
-  ## By default, there is NO retention set for object storage data. This means that data is stored forever, 
+  ## By default, there is NO retention set for object storage data. This means that data is stored forever,
   ## which is a valid and recommended way of running Thanos.
   retentionResolutionRaw: {{ $t.compactor.retentionResolutionRaw }}
   retentionResolution5m: {{ $t.compactor.retentionResolution5m }}
