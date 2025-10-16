@@ -2,7 +2,7 @@
 Copyright VMware, Inc.
 SPDX-License-Identifier: APACHE-2.0
 */}}
-
+{{- if not .Values.msgTopologyOperator.customWebhookConfiguration.enabled }}
 {{- if .Values.msgTopologyOperator.enabled }}
 {{- $versionLabel := dict "app.kubernetes.io/version" ( include "common.images.version" ( dict "imageRoot" .Values.msgTopologyOperator.image "chart" .Chart ) ) }}
 {{- $labels := include "common.tplvalues.merge" ( dict "values" ( list .Values.commonLabels $versionLabel ) "context" . ) }}
@@ -115,27 +115,6 @@ webhooks:
           - UPDATE
         resources:
           - federations
-    sideEffects: None
-  - admissionReviewVersions:
-      - v1
-    clientConfig:
-      service:
-        name: {{ template "rmqco.msgTopologyOperator.webhook.fullname" . }}
-        namespace: {{ include "common.names.namespace" . | quote }}
-        path: /validate-rabbitmq-com-v1beta1-operatorpolicy
-        port: {{ .Values.msgTopologyOperator.service.ports.webhook }}
-    failurePolicy: Fail
-    name: voperatorpolicy.kb.io
-    rules:
-    - apiGroups:
-      - rabbitmq.com
-      apiVersions:
-      - v1beta1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - operatorpolicies
     sideEffects: None
   - admissionReviewVersions:
       - v1
@@ -329,4 +308,5 @@ webhooks:
         resources:
           - vhosts
     sideEffects: None
+{{- end }}
 {{- end }}
