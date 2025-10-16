@@ -10,7 +10,6 @@ import {
   V1Pod,
   V1PodList,
   V1ResourceRequirements,
-  V1Secret,
   V1StatefulSet,
   V1Status,
 } from '@kubernetes/client-node'
@@ -27,7 +26,6 @@ import { terminal } from './debug'
 import retry from 'async-retry'
 import { env } from './envalid'
 import { ARGOCD_APP_PARAMS } from './constants'
-import { executePSQLScript } from './runtime-upgrades/cloudnative-pg'
 
 class MockApiException<T> extends ApiException<T> {
   code: number
