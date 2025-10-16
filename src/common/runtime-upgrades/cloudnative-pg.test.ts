@@ -195,4 +195,144 @@ describe('CloudnativePG Kubernetes API Functions', () => {
       })
     })
   })
+
+  describe('updateDbCollation', () => {
+    const mockDebugger = terminal(`cloudnative-pg:tests:`)
+    mockDebugger.info = jest.fn()
+    mockDebugger.error = jest.fn()
+
+    it('should get primary pod and execute script', async () => {
+      const mockCluster = {
+        apiVersion: 'postgresql.cnpg.io/v1',
+        kind: 'Cluster',
+        metadata: {
+          name: 'test-cluster',
+        },
+        status: {
+          currentPrimary: 'test-cluster-2',
+        },
+      }
+
+      mockCustomApi.getNamespacedCustomObject = jest.fn().mockResolvedValue(mockCluster)
+
+      mockExec.mockResolvedValue({
+        stdout: 'output',
+        stderr: '',
+        exitCode: 0,
+      })
+
+      await updateDbCollation('production', 'test-cluster', 'user-db', mockDebugger)
+
+      expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
+        group: 'postgresql.cnpg.io',
+        version: 'v1',
+        plural: 'clusters',
+        namespace: 'production',
+        name: 'test-cluster',
+      })
+
+      expect(mockExec).toHaveBeenCalledWith(
+        'production',
+        'test-cluster-2',
+        'postgres',
+        [
+          'psql',
+          '-U',
+          'postgres',
+          '-d',
+          'postgres',
+          '-c',
+          'REINDEX DATABASE postgres',
+          '-c',
+          'ALTER DATABASE postgres REFRESH COLLATION VERSION',
+          '-S',
+        ],
+        5000,
+      )
+      expect(mockExec).toHaveBeenCalledWith(
+        'production',
+        'test-cluster-2',
+        'postgres',
+        [
+          'psql',
+          '-U',
+          'postgres',
+          '-d',
+          'user-db',
+          '-c',
+          'REINDEX DATABASE user-db',
+          '-c',
+          'ALTER DATABASE user-db REFRESH COLLATION VERSION',
+          '-S',
+        ],
+        5000,
+      )
+      expect(mockExec).toHaveBeenCalledTimes(2)
+
+      expect(mockDebugger.info).toHaveBeenCalledWith('', 'output')
+      expect(mockDebugger.error).toHaveBeenCalledTimes(0)
+    })
+
+    it('should log errors', async () => {
+      const mockCluster = {
+        apiVersion: 'postgresql.cnpg.io/v1',
+        kind: 'Cluster',
+        metadata: {
+          name: 'test-cluster',
+        },
+        status: {
+          currentPrimary: 'test-cluster-2',
+        },
+      }
+
+      mockCustomApi.getNamespacedCustomObject = jest.fn().mockResolvedValue(mockCluster)
+
+      mockExec.mockResolvedValue({
+        stdout: 'output',
+        stderr: 'error',
+        exitCode: 1,
+      })
+
+      await updateDbCollation('production', 'test-cluster', 'user-db', mockDebugger)
+
+      expect(mockDebugger.info).toHaveBeenCalledWith('Adjusting collation version for test-cluster')
+      expect(mockDebugger.info).toHaveBeenCalledWith('output')
+      expect(mockDebugger.info).toHaveBeenCalledTimes(3)
+      expect(mockDebugger.error).toHaveBeenCalledWith(
+        'Failed to update DB collation version for test-cluster, exit code 1',
+        'error',
+      )
+    })
+
+    it('should log from getPrimaryPod', async () => {
+      mockCustomApi.getNamespacedCustomObject = jest.fn().mockRejectedValue(new Error('Cluster not found'))
+
+      await updateDbCollation('default', 'nonexistent-cluster', 'any-db', mockDebugger)
+
+      expect(mockDebugger.info).toHaveBeenCalledWith('Adjusting collation version for nonexistent-cluster')
+      expect(mockDebugger.info).toHaveBeenCalledTimes(1)
+      expect(mockDebugger.error).toHaveBeenCalledWith(
+        'Failed to update DB collation version for nonexistent-cluster on command execution: Error: Cluster not found',
+      )
+    })
+
+    it('should log errors from executePSQLScript', async () => {
+      const mockCluster = {
+        status: {
+          currentPrimary: 'test-cluster-1',
+        },
+      }
+
+      mockCustomApi.getNamespacedCustomObject = jest.fn().mockResolvedValue(mockCluster)
+      mockExec.mockRejectedValue(new Error('Pod not ready'))
+
+      await updateDbCollation('default', 'test-cluster-1', 'any-db', mockDebugger)
+
+      expect(mockDebugger.info).toHaveBeenCalledWith('Adjusting collation version for test-cluster-1')
+      expect(mockDebugger.info).toHaveBeenCalledTimes(1)
+      expect(mockDebugger.error).toHaveBeenCalledWith(
+        'Failed to update DB collation version for test-cluster-1 on command execution: Error: Pod not ready',
+      )
+    })
+  })
 })

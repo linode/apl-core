@@ -93,3 +93,40 @@ export async function executePSQLOnPrimary(
   const primaryPod = await getPrimaryPod(namespace, clusterName)
   return await executePSQLScript(namespace, primaryPod, sqlScript, database, username, timeout, psqlArgs)
 }
+
+export async function updateDbCollation(
+  namespace: string,
+  clusterName: string,
+  databaseName: string,
+  d: OtomiDebugger,
+) {
+  d.info(`Adjusting collation version for ${clusterName}`)
+  // Each database must be opened separately for reindexing
+  for (const execDbName of ['postgres', databaseName]) {
+    try {
+      const result = await executePSQLOnPrimary(
+        namespace,
+        clusterName,
+        `REINDEX DATABASE ${execDbName}`,
+        execDbName,
+        'postgres',
+        5000,
+        [
+          // Need to be run as separate commands, because otherwise psql wraps
+          // this in a transaction. That is not allowed for REINDEX
+          '-c',
+          `ALTER DATABASE ${execDbName} REFRESH COLLATION VERSION`,
+          '-S',
+        ],
+      )
+      if (result.exitCode !== 0) {
+        d.error(`Failed to update DB collation version for ${clusterName}, exit code ${result.exitCode}`, result.stderr)
+        d.info(result.stdout)
+      } else {
+        d.info(result.stderr, result.stdout)
+      }
+    } catch (e) {
+      d.error(`Failed to update DB collation version for ${clusterName} on command execution: ${e}`)
+    }
+  }
+}
