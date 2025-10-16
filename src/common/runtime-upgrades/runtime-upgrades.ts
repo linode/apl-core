@@ -1,10 +1,13 @@
 import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { OtomiDebugger } from '../debug'
-import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
+import { applyServerSide, checkArgoCDAppStatus, k8s, restartOtomiApiDeployment, setArgoCdAppSync } from '../k8s'
 import { getParsedArgs } from '../yargs'
 import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
+import { ARGOCD_APP_PARAMS } from '../constants'
+import retry from 'async-retry'
+import { env } from '../envalid'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -135,6 +138,29 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           }
         },
       },
+    },
+  },
+  {
+    version: '4.13.0',
+    pre: async (context: RuntimeUpgradeContext) => {
+      const d = context.debug
+      d.info('Removing old ArgoCD Image Updater deployment')
+      try {
+        await k8s
+          .custom()
+          .deleteNamespacedCustomObject({ ...ARGOCD_APP_PARAMS, name: 'argocd-argocd-image-updater-artifacts' })
+      } catch (error) {
+        if (!(error instanceof ApiException && error.code === 404)) {
+          d.error('Failed to delete old ArgoCD Image Updater application', error)
+        }
+      }
+      try {
+        await k8s.app().deleteNamespacedDeployment({ name: 'argocd-image-updater', namespace: 'argocd' })
+      } catch (error) {
+        if (!(error instanceof ApiException && error.code === 404)) {
+          d.error('Failed to delete old ArgoCD Image Updater deployment', error)
+        }
+      }
     },
   },
 ]
