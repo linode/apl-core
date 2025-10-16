@@ -142,28 +142,29 @@ export async function exec(
   podName: string,
   containerName: string,
   command: string[],
+  timeout: number = 30000,
 ): Promise<ExecResult> {
   const execApi = new Exec(k8s.kc())
 
-  let stdout = ''
-  let stderr = ''
+  const stdoutBuffer: string[] = []
+  const stderrBuffer: string[] = []
   let exitCode = 0
 
   const outputWritable = new Writable({
     write: (chunk: Buffer, encoding: string, callback: () => void) => {
-      stdout += chunk.toString()
+      stdoutBuffer.push(chunk.toString())
       callback()
     },
   })
 
   const errorWritable = new Writable({
     write: (chunk: Buffer, encoding: string, callback: () => void) => {
-      stderr += chunk.toString()
+      stderrBuffer.push(chunk.toString())
       callback()
     },
   })
 
-  await execApi.exec(
+  const ws = await execApi.exec(
     namespace,
     podName,
     containerName,
@@ -184,8 +185,12 @@ export async function exec(
       }
     },
   )
-
-  return { stdout, stderr, exitCode }
+  await new Promise((resolve, reject) => {
+    setTimeout(() => reject(new Error('Exec command timed out')), timeout)
+    ws.once('close', resolve)
+    ws.once('error', reject)
+  })
+  return { stdout: stdoutBuffer.join(''), stderr: stderrBuffer.join(''), exitCode }
 }
 
 export const getHelmReleases = async (): Promise<Record<string, any>> => {

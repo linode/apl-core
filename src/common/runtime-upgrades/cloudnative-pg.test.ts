@@ -1,6 +1,7 @@
-import { getPrimaryPod, executePSQLScript, executePSQLOnPrimary } from './cloudnative-pg'
+import { getPrimaryPod, executePSQLScript, executePSQLOnPrimary, updateDbCollation } from './cloudnative-pg'
 import * as k8s from '../k8s'
 import { CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
+import { terminal } from '../debug'
 
 describe('CloudnativePG Kubernetes API Functions', () => {
   let mockKubeConfig: jest.Mocked<KubeConfig>
@@ -101,30 +102,26 @@ describe('CloudnativePG Kubernetes API Functions', () => {
       mockExec.mockResolvedValue(output)
       const result = await executePSQLScript('default', 'test-cluster-1', 'SELECT NOW();', 'mydb', 'myuser')
 
-      expect(mockExec).toHaveBeenCalledWith('default', 'test-cluster-1', 'postgres', [
-        'psql',
-        '-U',
-        'myuser',
-        '-d',
-        'mydb',
-        '-c',
-        'SELECT NOW();',
-      ])
+      expect(mockExec).toHaveBeenCalledWith(
+        'default',
+        'test-cluster-1',
+        'postgres',
+        ['psql', '-U', 'myuser', '-d', 'mydb', '-c', 'SELECT NOW();'],
+        30000,
+      )
       expect(result).toBe(output)
     })
 
     it('should use default database and username if not provided', async () => {
       await executePSQLScript('default', 'test-cluster-1', 'SELECT 1;')
 
-      expect(mockExec).toHaveBeenCalledWith('default', 'test-cluster-1', 'postgres', [
-        'psql',
-        '-U',
+      expect(mockExec).toHaveBeenCalledWith(
+        'default',
+        'test-cluster-1',
         'postgres',
-        '-d',
-        'postgres',
-        '-c',
-        'SELECT 1;',
-      ])
+        ['psql', '-U', 'postgres', '-d', 'postgres', '-c', 'SELECT 1;'],
+        30000,
+      )
     })
 
     describe('executePSQLOnPrimary', () => {
@@ -165,15 +162,13 @@ describe('CloudnativePG Kubernetes API Functions', () => {
           name: 'test-cluster',
         })
 
-        expect(mockExec).toHaveBeenCalledWith('production', 'test-cluster-2', 'postgres', [
-          'psql',
-          '-U',
-          'admin',
-          '-d',
+        expect(mockExec).toHaveBeenCalledWith(
+          'production',
+          'test-cluster-2',
           'postgres',
-          '-c',
-          'CREATE DATABASE testdb;',
-        ])
+          ['psql', '-U', 'admin', '-d', 'postgres', '-c', 'CREATE DATABASE testdb;'],
+          30000,
+        )
 
         expect(result.stdout).toBe(expectedOutput)
       })
