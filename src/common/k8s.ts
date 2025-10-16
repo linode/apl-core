@@ -146,20 +146,20 @@ export async function exec(
 ): Promise<ExecResult> {
   const execApi = new Exec(k8s.kc())
 
-  const stdoutBuffer: string[] = []
-  const stderrBuffer: string[] = []
+  let stdout = ''
+  let stderr = ''
   let exitCode = 0
 
   const outputWritable = new Writable({
     write: (chunk: Buffer, encoding: string, callback: () => void) => {
-      stdoutBuffer.push(chunk.toString())
+      stdout += chunk.toString()
       callback()
     },
   })
 
   const errorWritable = new Writable({
     write: (chunk: Buffer, encoding: string, callback: () => void) => {
-      stderrBuffer.push(chunk.toString())
+      stderr += chunk.toString()
       callback()
     },
   })
@@ -190,7 +190,7 @@ export async function exec(
     ws.once('close', resolve)
     ws.once('error', reject)
   })
-  return { stdout: stdoutBuffer.join(''), stderr: stderrBuffer.join(''), exitCode }
+  return { stdout, stderr, exitCode }
 }
 
 export const getHelmReleases = async (): Promise<Record<string, any>> => {
