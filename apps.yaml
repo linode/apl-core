@@ -290,7 +290,7 @@ appsInfo:
     integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When APL is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
   rabbitmq:
     title: RabbitMQ
-    appVersion: 2.7.0
+    appVersion: 2.16.1
     repo: https://github.com/rabbitmq/cluster-operator
     maintainers: RabbitMQ
     relatedLinks:

@@ -19,8 +19,12 @@ metadata:
   name: {{ $secretName }}
   namespace: {{ include "common.names.namespace" . | quote }}
   labels: {{- include "common.labels.standard" ( dict "customLabels" $labels "context" $ ) | nindent 4 }}
+
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/hook: PreSync
   {{- if .Values.commonAnnotations }}
-  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 type: kubernetes.io/tls
 data:
@@ -36,6 +40,7 @@ metadata:
     app.kubernetes.io/component: messaging-topology-operator
     app.kubernetes.io/part-of: rabbitmq
   annotations:
+    argocd.argoproj.io/sync-wave: "0"
     {{- if and (.Values.useCertManager) (not .Values.msgTopologyOperator.existingWebhookCertSecret)}}
     cert-manager.io/inject-ca-from: {{ printf "%s/%s" (include "common.names.namespace" .) ( include "rmqco.msgTopologyOperator.webhook.secretName" . ) }}
     {{- else if and (.Values.useCertManager) (.Values.msgTopologyOperator.existingWebhookCertSecret)}}
