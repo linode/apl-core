@@ -69,12 +69,18 @@ spec:
     domain:
       {{ $v.cluster.domainSuffix }}: ''
     istio:
-      gateway.knative-serving.knative-ingress-gateway: {{ $v._derived.ingressPublicGatewayName }}.istio-system.svc.cluster.local
+      local-gateways: |
+        - name: knative-local-gateway
+          namespace: istio-system
+          service: {{ $v._derived.ingressPrivateGatewayName }}.istio-system.svc.cluster.local
+          labelSelector:
+            istio: {{ $v._derived.defaultIngressGatewayLabel }}
+      external-gateways: |
+        - name: knative-ingress-gateway
+          namespace: istio-system
+          service: {{ $v._derived.ingressPublicGatewayName }}.istio-system.svc.cluster.local
+          labelSelector:
+            istio: {{ $v._derived.defaultIngressGatewayLabel }}
     features:
       podspec-securitycontext: enabled
-  ingress:
-    istio:
-      enabled: true
-      knative-ingress-gateway:
-        selector:
-          istio: {{ $v._derived.defaultIngressGatewayLabel }}
+
