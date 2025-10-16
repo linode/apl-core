@@ -195,21 +195,141 @@ spec:
         #!/usr/bin/env sh
         set -eu
 
-        if [ "${PARAM_VERBOSE}" = "true" ] ; then
-          set -x
+        extract_hostname() {
+          url="$1"
+          if echo "$url" | grep -q "^https\?://"; then
+            echo "$url" | sed -E 's|^https?://([^/]+).*|\1|'
+          elif echo "$url" | grep -q "^git@"; then
+            echo "$url" | sed -E 's|^git@([^:]+):.*|\1|'
+          else
+            echo "$url" | sed -E 's|^[^@]*@?([^:/]+).*|\1|'
+          fi
+        }
+
+        convert_https_to_ssh() {
+          url="$1"
+          if echo "$url" | grep -q "^https\?://"; then
+            host=$(echo "$url" | sed -E 's|^https?://([^/]+)/(.*)|\1|')
+            path=$(echo "$url" | sed -E 's|^https?://[^/]+/(.*)|\1|')
+            echo "git@${host}:${path}"
+          else
+            echo "$url"
+          fi
+        }
+
+        convert_ssh_to_https() {
+          url="$1"
+          if echo "$url" | grep -q "^git@"; then
+            host=$(echo "$url" | sed -E 's|^git@([^:]+):.*|\1|')
+            path=$(echo "$url" | sed -E 's|^git@[^:]+:(.*)|\1|')
+            echo "https://${host}/${path}"
+          else
+            echo "$url"
+          fi
+        }
+
+        # Detect available credentials
+        HAS_SSH_KEY=false
+        HAS_BASIC_AUTH=false
+
+        # Check ssh-directory workspace for credentials
+        if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ]; then
+          if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" ]; then
+            HAS_SSH_KEY=true
+          elif [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/username" ] && [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/password" ]; then
+            HAS_BASIC_AUTH=true
+          elif [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/.git-credentials" ]; then
+            HAS_BASIC_AUTH=true
+          fi
         fi
 
-        if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
-          cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials"
-          cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig"
-          chmod 400 "${PARAM_USER_HOME}/.git-credentials"
-          chmod 400 "${PARAM_USER_HOME}/.gitconfig"
+        # Smart URL conversion based on credentials
+        ORIGINAL_URL="${PARAM_URL}"
+
+        if [ "$HAS_SSH_KEY" = "true" ] && echo "${PARAM_URL}" | grep -q "^https\?://"; then
+          # SSH key provided but URL is HTTPS - convert to SSH
+          PARAM_URL=$(convert_https_to_ssh "${PARAM_URL}")
+          echo "INFO: Converted HTTPS URL to SSH format for SSH key authentication"
+          echo "  ${ORIGINAL_URL} -> ${PARAM_URL}"
+        elif [ "$HAS_BASIC_AUTH" = "true" ] && [ "$HAS_SSH_KEY" = "false" ] && echo "${PARAM_URL}" | grep -q "^git@"; then
+          # Basic auth provided (and no SSH key) but URL is SSH - convert to HTTPS
+          PARAM_URL=$(convert_ssh_to_https "${PARAM_URL}")
+          echo "INFO: Converted SSH URL to HTTPS format for basic authentication"
+          echo "  ${ORIGINAL_URL} -> ${PARAM_URL}"
         fi
 
         if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then
-          cp -R "${WORKSPACE_SSH_DIRECTORY_PATH}" "${PARAM_USER_HOME}"/.ssh
-          chmod 700 "${PARAM_USER_HOME}"/.ssh
-          chmod -R 400 "${PARAM_USER_HOME}"/.ssh/*
+          (
+            set +x  # Disable verbose mode for credential operations
+            if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" ]; then
+              mkdir -p "${PARAM_USER_HOME}"/.ssh 2>/dev/null
+              chmod 700 "${PARAM_USER_HOME}"/.ssh 2>/dev/null
+
+              cp "${WORKSPACE_SSH_DIRECTORY_PATH}/ssh-privatekey" "${PARAM_USER_HOME}/.ssh/id_rsa" 2>/dev/null
+              chmod 600 "${PARAM_USER_HOME}/.ssh/id_rsa" 2>/dev/null
+
+              # Reformat SSH key to fix line break issues
+              if grep -q "BEGIN.*PRIVATE KEY" "${PARAM_USER_HOME}/.ssh/id_rsa" 2>/dev/null; then
+                sed -n "/BEGIN.*PRIVATE KEY/,/END.*PRIVATE KEY/p" "${PARAM_USER_HOME}/.ssh/id_rsa" 2>/dev/null | \
+                  awk 'NR==1 {header=$0; next} /END.*PRIVATE KEY/ {footer=$0; next} {body=body$0} END {
+                    print header
+                    gsub(/[[:space:]]/, "", body)
+                    while (length(body) > 70) {
+                      print substr(body, 1, 70)
+                      body = substr(body, 71)
+                    }
+                    if (length(body) > 0) print body
+                    print footer
+                  }' > "${PARAM_USER_HOME}/.ssh/id_rsa.reformatted" 2>/dev/null
+
+                mv "${PARAM_USER_HOME}/.ssh/id_rsa.reformatted" "${PARAM_USER_HOME}/.ssh/id_rsa" 2>/dev/null
+                chmod 600 "${PARAM_USER_HOME}/.ssh/id_rsa" 2>/dev/null
+              fi
+
+              # Try to convert key format if validation fails
+              if ! ssh-keygen -l -f "${PARAM_USER_HOME}/.ssh/id_rsa" > /dev/null 2>&1; then
+                ssh-keygen -p -m OpenSSH -f "${PARAM_USER_HOME}/.ssh/id_rsa" -N "" -P "" > /dev/null 2>&1 || true
+              fi
+
+              if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/known_hosts" ]; then
+                cp "${WORKSPACE_SSH_DIRECTORY_PATH}/known_hosts" "${PARAM_USER_HOME}/.ssh/known_hosts" 2>/dev/null
+                chmod 600 "${PARAM_USER_HOME}/.ssh/known_hosts" 2>/dev/null
+              else
+                if echo "${PARAM_URL}" | grep -q "github.com" 2>/dev/null; then
+                  ssh-keyscan github.com >> "${PARAM_USER_HOME}/.ssh/known_hosts" 2>/dev/null || true
+                elif echo "${PARAM_URL}" | grep -q "gitlab.com" 2>/dev/null; then
+                  ssh-keyscan gitlab.com >> "${PARAM_USER_HOME}/.ssh/known_hosts" 2>/dev/null || true
+                fi
+
+                if [ ! -s "${PARAM_USER_HOME}/.ssh/known_hosts" ]; then
+                  printf "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null\n" > "${PARAM_USER_HOME}/.ssh/config" 2>/dev/null
+                  chmod 600 "${PARAM_USER_HOME}/.ssh/config" 2>/dev/null
+                else
+                  chmod 600 "${PARAM_USER_HOME}/.ssh/known_hosts" 2>/dev/null
+                fi
+              fi
+
+              export GIT_SSH_COMMAND="ssh -i ${PARAM_USER_HOME}/.ssh/id_rsa -o IdentitiesOnly=yes -o BatchMode=yes"
+            elif [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/username" ] && [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/password" ]; then
+              # Handle basic-auth credentials from ssh-directory workspace
+              USERNAME=$(cat "${WORKSPACE_SSH_DIRECTORY_PATH}/username" 2>/dev/null)
+              PASSWORD=$(cat "${WORKSPACE_SSH_DIRECTORY_PATH}/password" 2>/dev/null)
+              HOSTNAME=$(extract_hostname "${PARAM_URL}")
+
+              echo "https://${USERNAME}:${PASSWORD}@${HOSTNAME}" > "${PARAM_USER_HOME}/.git-credentials" 2>/dev/null
+              printf "[credential]\n  helper = store\n" > "${PARAM_USER_HOME}/.gitconfig" 2>/dev/null
+              chmod 400 "${PARAM_USER_HOME}/.git-credentials" 2>/dev/null
+              chmod 400 "${PARAM_USER_HOME}/.gitconfig" 2>/dev/null
+            elif [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/.git-credentials" ]; then
+              # Handle .git-credentials file from ssh-directory workspace
+              cp "${WORKSPACE_SSH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials" 2>/dev/null
+              chmod 400 "${PARAM_USER_HOME}/.git-credentials" 2>/dev/null
+              if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/.gitconfig" ]; then
+                cp "${WORKSPACE_SSH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig" 2>/dev/null
+                chmod 400 "${PARAM_USER_HOME}/.gitconfig" 2>/dev/null
+              fi
+            fi
+          ) 2>/dev/null
         fi
 
         if [ "${WORKSPACE_SSL_CA_DIRECTORY_BOUND}" = "true" ] ; then
@@ -218,6 +338,12 @@ spec:
               export GIT_SSL_CAINFO="${WORKSPACE_SSL_CA_DIRECTORY_PATH}/${PARAM_CRT_FILENAME}"
            fi
         fi
+
+        # Enable verbose mode only after credentials are set up
+        if [ "${PARAM_VERBOSE}" = "true" ] ; then
+          set -x
+        fi
+
         CHECKOUT_DIR="${WORKSPACE_OUTPUT_PATH}/${PARAM_SUBDIRECTORY}"
 
         cleandir() {
