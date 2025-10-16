@@ -151,24 +151,16 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           .deleteNamespacedCustomObject({ ...ARGOCD_APP_PARAMS, name: 'argocd-argocd-image-updater-artifacts' })
       } catch (error) {
         if (!(error instanceof ApiException && error.code === 404)) {
-          d.error('Failed to delete old ArgoCD Image Updater', error)
+          d.error('Failed to delete old ArgoCD Image Updater application', error)
         }
       }
-      await retry(
-        async () => {
-          // Retry until deployment is gone, because otherwise ArgoCD fails to sync
-          try {
-            await k8s.app().readNamespacedDeployment({ name: 'argocd-image-updater', namespace: 'argocd' })
-          } catch (error) {
-            if (error instanceof ApiException && error.code === 404) {
-              return
-            }
-            throw error
-          }
-          throw new Error('Waiting for deployment "argocd-image-updater" to be removed')
-        },
-        { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
-      )
+      try {
+        await k8s.app().deleteNamespacedDeployment({ name: 'argocd-image-updater', namespace: 'argocd' })
+      } catch (error) {
+        if (!(error instanceof ApiException && error.code === 404)) {
+          d.error('Failed to delete old ArgoCD Image Updater deployment', error)
+        }
+      }
     },
   },
 ]
