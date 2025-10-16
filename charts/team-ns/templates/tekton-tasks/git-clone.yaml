@@ -207,20 +207,9 @@ spec:
         fi
 
         if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then
-          # Check if ssh-directory contains basic auth credentials instead of SSH keys
-          if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/.git-credentials" ]; then
-            cp "${WORKSPACE_SSH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials"
-            chmod 400 "${PARAM_USER_HOME}/.git-credentials"
-            if [ -f "${WORKSPACE_SSH_DIRECTORY_PATH}/.gitconfig" ]; then
-              cp "${WORKSPACE_SSH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig"
-              chmod 400 "${PARAM_USER_HOME}/.gitconfig"
-            fi
-          else
-            # Handle as SSH directory
-            cp -R "${WORKSPACE_SSH_DIRECTORY_PATH}" "${PARAM_USER_HOME}"/.ssh
-            chmod 700 "${PARAM_USER_HOME}"/.ssh
-            chmod -R 400 "${PARAM_USER_HOME}"/.ssh/*
-          fi
+          cp -R "${WORKSPACE_SSH_DIRECTORY_PATH}" "${PARAM_USER_HOME}"/.ssh
+          chmod 700 "${PARAM_USER_HOME}"/.ssh
+          chmod -R 400 "${PARAM_USER_HOME}"/.ssh/*
         fi
 
         if [ "${WORKSPACE_SSL_CA_DIRECTORY_BOUND}" = "true" ] ; then
