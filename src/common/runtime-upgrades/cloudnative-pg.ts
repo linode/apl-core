@@ -28,17 +28,13 @@ interface CNPGCluster {
  * @returns The primary pod name
  */
 export async function getPrimaryPod(namespace: string, name: string): Promise<string> {
-  const response = (await k8s.custom().getNamespacedCustomObject({
+  const cluster = (await k8s.custom().getNamespacedCustomObject({
     group: 'postgresql.cnpg.io',
     version: 'v1',
     plural: 'clusters',
     namespace,
     name,
-  })) as {
-    body: CNPGCluster
-  }
-
-  const cluster = response.body
+  })) as CNPGCluster
 
   if (!cluster.status?.currentPrimary) {
     throw new Error(`No primary pod found for cluster ${name}`)
@@ -67,7 +63,7 @@ export async function executePSQLScript(
   psqlArgs: string[] = [],
 ): Promise<ExecResult> {
   const command = ['psql', '-U', username, '-d', database, '-c', sqlScript, ...psqlArgs]
-  return exec(namespace, podName, 'postgres', command)
+  return await exec(namespace, podName, 'postgres', command)
 }
 
 /**
@@ -90,5 +86,5 @@ export async function executePSQLOnPrimary(
   psqlArgs: string[] = [],
 ): Promise<ExecResult> {
   const primaryPod = await getPrimaryPod(namespace, clusterName)
-  return executePSQLScript(namespace, primaryPod, sqlScript, database, username, psqlArgs)
+  return await executePSQLScript(namespace, primaryPod, sqlScript, database, username, psqlArgs)
 }

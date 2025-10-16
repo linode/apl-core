@@ -1,6 +1,6 @@
 import { getPrimaryPod, executePSQLScript, executePSQLOnPrimary } from './cloudnative-pg'
 import * as k8s from '../k8s'
-import { CustomObjectsApi, Exec, KubeConfig } from '@kubernetes/client-node'
+import { CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
 
 describe('CloudnativePG Kubernetes API Functions', () => {
   let mockKubeConfig: jest.Mocked<KubeConfig>
@@ -21,18 +21,16 @@ describe('CloudnativePG Kubernetes API Functions', () => {
   describe('getPrimaryPod', () => {
     it('should return the primary pod name from cluster status', async () => {
       const mockCluster = {
-        body: {
-          apiVersion: 'postgresql.cnpg.io/v1',
-          kind: 'Cluster',
-          metadata: {
-            name: 'test-cluster',
-            namespace: 'default',
-          },
-          status: {
-            currentPrimary: 'test-cluster-1',
-            instances: 3,
-            readyInstances: 3,
-          },
+        apiVersion: 'postgresql.cnpg.io/v1',
+        kind: 'Cluster',
+        metadata: {
+          name: 'test-cluster',
+          namespace: 'default',
+        },
+        status: {
+          currentPrimary: 'test-cluster-1',
+          instances: 3,
+          readyInstances: 3,
         },
       }
 
@@ -52,16 +50,14 @@ describe('CloudnativePG Kubernetes API Functions', () => {
 
     it('should throw error when no primary pod is found', async () => {
       const mockCluster = {
-        body: {
-          apiVersion: 'postgresql.cnpg.io/v1',
-          kind: 'Cluster',
-          metadata: {
-            name: 'test-cluster',
-          },
-          status: {
-            instances: 3,
-            readyInstances: 0,
-          },
+        apiVersion: 'postgresql.cnpg.io/v1',
+        kind: 'Cluster',
+        metadata: {
+          name: 'test-cluster',
+        },
+        status: {
+          instances: 3,
+          readyInstances: 0,
         },
       }
 
@@ -80,12 +76,10 @@ describe('CloudnativePG Kubernetes API Functions', () => {
 
     it('should handle cluster with no status', async () => {
       const mockCluster = {
-        body: {
-          apiVersion: 'postgresql.cnpg.io/v1',
-          kind: 'Cluster',
-          metadata: {
-            name: 'test-cluster',
-          },
+        apiVersion: 'postgresql.cnpg.io/v1',
+        kind: 'Cluster',
+        metadata: {
+          name: 'test-cluster',
         },
       }
 
@@ -136,15 +130,13 @@ describe('CloudnativePG Kubernetes API Functions', () => {
     describe('executePSQLOnPrimary', () => {
       it('should get primary pod and execute script', async () => {
         const mockCluster = {
-          body: {
-            apiVersion: 'postgresql.cnpg.io/v1',
-            kind: 'Cluster',
-            metadata: {
-              name: 'test-cluster',
-            },
-            status: {
-              currentPrimary: 'test-cluster-2',
-            },
+          apiVersion: 'postgresql.cnpg.io/v1',
+          kind: 'Cluster',
+          metadata: {
+            name: 'test-cluster',
+          },
+          status: {
+            currentPrimary: 'test-cluster-2',
           },
         }
 
@@ -196,10 +188,8 @@ describe('CloudnativePG Kubernetes API Functions', () => {
 
       it('should propagate errors from executePSQLScript', async () => {
         const mockCluster = {
-          body: {
-            status: {
-              currentPrimary: 'test-cluster-1',
-            },
+          status: {
+            currentPrimary: 'test-cluster-1',
           },
         }
 
