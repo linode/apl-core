@@ -704,6 +704,7 @@ describe('exec utility test', () => {
     jest.clearAllMocks()
     mockKubeConfig = new KubeConfig() as jest.Mocked<KubeConfig>
     mockKubeConfig.loadFromDefault = jest.fn()
+    k8s.k8s.kc = jest.fn().mockResolvedValue(mockKubeConfig)
     mockExec = jest.mocked(new Exec(mockKubeConfig), { shallow: true }) as jest.Mocked<Exec>
     ;(Exec as jest.Mock).mockImplementation(() => mockExec)
   })
@@ -730,20 +731,22 @@ describe('exec utility test', () => {
   })
 
   it('should capture stdout from command execution', async () => {
-    const expectedOutput = 'row1\nrow2\nrow3\n'
+    const expectedOutput1 = 'row1\nrow2\nrow3\n'
+    const expectedOutput2 = 'row4\nrow5\nrow6\n'
 
     mockExec.exec = jest
       .fn()
       .mockImplementation(
         async (namespace: string, podName: string, containerName: string, command: string[], stdout: any) => {
-          stdout.write(Buffer.from(expectedOutput))
+          stdout.write(Buffer.from(expectedOutput1))
+          stdout.write(Buffer.from(expectedOutput2))
           return Promise.resolve()
         },
       )
 
     const result = await k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])
 
-    expect(result.stdout).toBe(expectedOutput)
+    expect(result.stdout).toBe(expectedOutput1 + expectedOutput2)
     expect(result.exitCode).toBe(0)
   })
 
@@ -796,7 +799,9 @@ describe('exec utility test', () => {
         ) => {
           const failureStatus: V1Status = {
             status: 'Failure',
-            code: 1,
+            details: {
+              causes: [{ reason: 'ExitCode', message: '255' }],
+            },
             message: 'Command failed',
           }
           statusCallback(failureStatus)
@@ -806,6 +811,6 @@ describe('exec utility test', () => {
 
     const result = await k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])
 
-    expect(result.exitCode).toBe(1)
+    expect(result.exitCode).toBe(255)
   })
 })

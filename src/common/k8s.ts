@@ -174,7 +174,13 @@ export async function exec(
     false,
     (status: V1Status) => {
       if (status.status === 'Failure') {
-        exitCode = status.code ?? 1
+        exitCode = 1
+        for (const cause of status.details?.causes || []) {
+          if (cause.reason === 'ExitCode') {
+            exitCode = parseInt(cause.message || '1')
+            break
+          }
+        }
       }
     },
   )
