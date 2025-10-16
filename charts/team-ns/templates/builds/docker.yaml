@@ -28,7 +28,7 @@ spec:
     - name: output
       workspace: shared-data
   {{- if or (not .externalRepo) .secretName }}
-    - name: ssh-directory
+    - name: basic-auth
       workspace: git-credentials
   {{- end }}
     params:
