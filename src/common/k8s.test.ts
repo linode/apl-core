@@ -697,6 +697,7 @@ describe('restartOtomiApiDeployment', () => {
 describe('exec utility test', () => {
   let mockKubeConfig: jest.Mocked<KubeConfig>
   let mockExec: jest.Mocked<Exec>
+  let mockWebsocket: jest.Mocked<WebSocket>
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -704,15 +705,16 @@ describe('exec utility test', () => {
     mockKubeConfig.loadFromDefault = jest.fn()
     k8s.k8s.kc = jest.fn().mockResolvedValue(mockKubeConfig)
     mockExec = jest.mocked(new Exec(mockKubeConfig), { shallow: true }) as jest.Mocked<Exec>
+    mockWebsocket = {
+      once: jest.fn().mockImplementation((event, callback) => {
+        if (event === 'close') callback()
+      }),
+    } as unknown as jest.Mocked<WebSocket>
+    mockExec.exec.mockResolvedValue(mockWebsocket)
     ;(Exec as jest.Mock).mockImplementation(() => mockExec)
   })
 
   it('should call command with parameters', async () => {
-    mockExec.exec = jest.fn().mockImplementation(async () => {
-      // Simulate successful execution
-      return Promise.resolve()
-    })
-
     await k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])
 
     expect(mockExec.exec).toHaveBeenCalledWith(
@@ -738,7 +740,7 @@ describe('exec utility test', () => {
         async (namespace: string, podName: string, containerName: string, command: string[], stdout: any) => {
           stdout.write(Buffer.from(expectedOutput1))
           stdout.write(Buffer.from(expectedOutput2))
-          return Promise.resolve()
+          return mockWebsocket
         },
       )
 
@@ -763,7 +765,7 @@ describe('exec utility test', () => {
           stderr: any,
         ) => {
           stderr.write(Buffer.from(expectedError))
-          return Promise.resolve()
+          return mockWebsocket
         },
       )
 
@@ -803,7 +805,7 @@ describe('exec utility test', () => {
             message: 'Command failed',
           }
           statusCallback(failureStatus)
-          return Promise.resolve()
+          return mockWebsocket
         },
       )
 
