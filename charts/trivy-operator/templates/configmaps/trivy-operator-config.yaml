@@ -20,6 +20,7 @@ data:
   OPERATOR_METRICS_FINDINGS_ENABLED: {{ .Values.operator.metricsFindingsEnabled | quote }}
   OPERATOR_METRICS_VULN_ID_ENABLED: {{ .Values.operator.metricsVulnIdEnabled | quote }}
   OPERATOR_HEALTH_PROBE_BIND_ADDRESS: ":9090"
+  OPERATOR_PPROF_BIND_ADDRESS: {{ .Values.operator.pprofBindAddress | quote }}
   OPERATOR_VULNERABILITY_SCANNER_ENABLED: {{ .Values.operator.vulnerabilityScannerEnabled | quote }}
   OPERATOR_SBOM_GENERATION_ENABLED: {{ .Values.operator.sbomGenerationEnabled | quote }}
   OPERATOR_CLUSTER_SBOM_CACHE_ENABLED: {{ .Values.operator.clusterSbomCacheEnabled | quote }}
