@@ -203,6 +203,7 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
 
     cd(workDir)
     await $`rm -rf .git`
+    await $`rm -rf .github`
     await $`rm -rf deployment`
     await $`rm -rf ksvc`
     await $`rm -rf icons`
