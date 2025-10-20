@@ -48,7 +48,7 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
 
     // Application-specific upgrade operations - wait for all applications in this upgrade
     if (upgrade.applications) {
-      await Promise.all(
+      await Promise.allSettled(
         Object.entries(upgrade.applications).map(async ([applicationName, applicationUpgrade]) => {
           const applicationOperation = applicationUpgrade[when as keyof typeof applicationUpgrade] as (
             context: RuntimeUpgradeContext,
