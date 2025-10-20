@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.11.2](https://github.com/linode/apl-core/compare/v4.11.1...v4.11.2) (2025-10-20)
+
+
+### Bug Fixes
+
+* tekton-tasks git-clone basic auth ([#2606](https://github.com/linode/apl-core/issues/2606)) ([c00ba0c](https://github.com/linode/apl-core/commit/c00ba0cf6a718dad811f9d1c39d68085513a2d15))
+
 ### [4.11.1](https://github.com/linode/apl-core/compare/v4.11.0...v4.11.1) (2025-10-07)
 
 
