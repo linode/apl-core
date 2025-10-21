@@ -34,7 +34,7 @@ dependencies:
     repository: https://kubernetes.github.io/ingress-nginx
   - name: base
     alias: istio-base
-    version: 1.26.3
+    version: 1.27.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
