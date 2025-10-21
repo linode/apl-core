@@ -37,3 +37,7 @@ releases:
       pkg: cert-manager
       app: core
     <<: *default
+  - name: external-dns-artifacts
+    installed: {{ $a | get "external-dns.enabled" }}
+    namespace: external-dns
+    <<: *raw
