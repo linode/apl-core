@@ -32,6 +32,11 @@ rules:
   resources: ["akamaiknowledgebases"]
   verbs: ["get", "list", "watch"]
 
+# Deployments access
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch"]
+
 {{- if eq (.Values.provider | default "") "apl" }}
 - apiGroups: ["argoproj.io"]
   resources: ["applications"]

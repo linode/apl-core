@@ -25,3 +25,7 @@ rules:
 - apiGroups: ["akamai.io"]
   resources: ["akamaiknowledgebases/finalizers"]
   verbs: ["update"]
+# Deployment access
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch"]

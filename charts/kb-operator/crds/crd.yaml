@@ -44,6 +44,9 @@ spec:
           status:
             type: object
             properties:
+              phase:
+                description: Current phase of the knowledge base (Indexing, Indexed, Failed)
+                type: string
               indexingProgress:
                 description: Indexing progress percentage
                 type: string
