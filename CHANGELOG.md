@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.11.3](https://github.com/linode/apl-core/compare/v4.11.2...v4.11.3) (2025-10-22)
+
+
+### Bug Fixes
+
+* team-ns builds docker.yaml ([#2617](https://github.com/linode/apl-core/issues/2617)) ([babe287](https://github.com/linode/apl-core/commit/babe28752921d27383cc9d5d7cd6e464f394e4b3))
+
 ### [4.11.2](https://github.com/linode/apl-core/compare/v4.11.1...v4.11.2) (2025-10-20)
 
 
