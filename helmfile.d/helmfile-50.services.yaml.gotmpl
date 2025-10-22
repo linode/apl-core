@@ -52,3 +52,9 @@ releases:
     labels:
       pkg: kubeflow-pipelines
     <<: *default
+  - name: kserve
+    installed: {{ $a | get "kserve.enabled" }}
+    namespace: kserve
+    labels:
+      pkg: kserve
+    <<: *default

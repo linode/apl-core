@@ -1,9 +1,11 @@
 import {
+  ApiException,
   AppsV1Api,
   BatchV1Api,
   CoreV1Api,
   CustomObjectsApi,
   KubeConfig,
+  NetworkingV1Api,
   PatchStrategy,
   setHeaderOptions,
   V1ResourceRequirements,
@@ -21,7 +23,7 @@ import { ARGOCD_APP_PARAMS, DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFI
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import { getParsedArgs, parser } from './yargs'
+import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
@@ -31,6 +33,7 @@ let kc: KubeConfig
 let coreClient: CoreV1Api
 let appClient: AppsV1Api
 let batchClient: BatchV1Api
+let networkingClient: NetworkingV1Api
 let customClient: CustomObjectsApi
 export const k8s = {
   kc: (): KubeConfig => {
@@ -53,6 +56,11 @@ export const k8s = {
     if (batchClient) return batchClient
     batchClient = k8s.kc().makeApiClient(BatchV1Api)
     return batchClient
+  },
+  networking: (): NetworkingV1Api => {
+    if (networkingClient) return networkingClient
+    networkingClient = k8s.kc().makeApiClient(NetworkingV1Api)
+    return networkingClient
   },
   custom: (): CustomObjectsApi => {
     if (customClient) return customClient
@@ -308,7 +316,7 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
   }, retryOptions)
 }
 
-export async function createGenericSecret(
+export async function createUpdateGenericSecret(
   coreV1Api: CoreV1Api,
   name: string,
   namespace: string,
@@ -325,7 +333,18 @@ export async function createGenericSecret(
     type: 'Opaque',
   }
 
-  return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
+  try {
+    return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 409) {
+      return await coreV1Api.patchNamespacedSecret(
+        { name, namespace, body: secret },
+        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+      )
+    } else {
+      throw error
+    }
+  }
 }
 
 export function b64enc(value: string): string {
@@ -528,9 +547,6 @@ export async function appRevisionMatches(appName: string, expectedRevision: stri
     ...ARGOCD_APP_PARAMS,
     name: appName,
   })
-  if (process.env.NODE_ENV !== 'development' && application?.status?.sync?.status !== 'Synced') {
-    throw new Error(`${appName} is not yet in Synced state`)
-  }
   const targetRevision = application?.spec?.source?.targetRevision
   return expectedRevision === targetRevision
 }
