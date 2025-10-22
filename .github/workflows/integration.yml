@@ -9,7 +9,7 @@ on:
       kubernetes_versions:
         description: 'Kubernetes version'
         type: string
-        default: "['1.33']"
+        default: "['1.34']"
       install_profile:
         description: 'APL installation profile'
         type: string
@@ -48,10 +48,10 @@ on:
         description: 'Kubernetes version'
         type: choice
         options:
-          - "['1.31']"
           - "['1.32']"
           - "['1.33']"
-        default: "['1.33']"
+          - "['1.34']"
+        default: "['1.34']"
       install_profile:
         description: APL installation profile
         default: minimal-with-team
