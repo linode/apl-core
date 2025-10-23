@@ -62,6 +62,10 @@ k8s:
       app: knative
       disablePolicyChecks: true
       disableIstioInjection: true
+    - name: kserve
+      app: kserve
+      disablePolicyChecks: true
+      disableIstioInjection: true
     - name: knative-operator
       app: knative
       disablePolicyChecks: true
@@ -258,7 +262,7 @@ adminApps:
     ownHost: true
     ingress:
       - namespace: keycloak
-        svc: keycloak
+        svc: keycloak-keycloakx-http
         type: public
         port: 8080
   - name: kiali
@@ -286,6 +290,8 @@ adminApps:
         port: 80
         type: public
         auth: true
+  - name: kserve
+    tags: [ai]
   - name: kured
     tags: [security]
   - name: tekton
@@ -318,7 +324,7 @@ adminApps:
     tags: [storage, backup]
     ownHost: true
     ingress:
-      - svc: minio
+      - svc: minio-console
         port: 9001
         namespace: minio
         type: public
