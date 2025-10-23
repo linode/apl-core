@@ -147,7 +147,7 @@ const applyAll = async () => {
       await printWelcomeMessage(initialData.secretName, initialData.domainSuffix)
     }
   }
-  if (!initialInstall && applyCompleted) {
+  if (initialInstall || applyCompleted) {
     await setDeploymentState({ status: 'deployed', version })
     d.info('Deployment completed')
   } else {
