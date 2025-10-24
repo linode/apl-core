@@ -1154,6 +1154,7 @@ environments:
           otel:
             enabled: false
             collector:
+              managementState: managed
               mode: deployment
               autoscaler:
                 minReplicas: 2
