@@ -8,8 +8,8 @@ metadata:
     app.kubernetes.io/instance: release-name
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: release-name-crds
-    app.kubernetes.io/version: 3.5.1
-    helm.sh/chart: crds-3.5.1
+    app.kubernetes.io/version: 3.5.2
+    helm.sh/chart: crds-3.5.2
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
   name: validatingpolicies.policies.kyverno.io
