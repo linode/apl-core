@@ -14,6 +14,10 @@ dependencies:
   - name: cloudnative-pg
     version: 0.26.0
     repository: https://cloudnative-pg.github.io/charts
+  - name: plugin-barman-cloud
+    alias: cloudnative-pg-plugin-barman-cloud
+    version: 0.1.0
+    repository: https://cloudnative-pg.github.io/charts
   - name: external-dns
     version: 8.9.2
     repository: https://kubernetes-sigs.github.io/external-dns
