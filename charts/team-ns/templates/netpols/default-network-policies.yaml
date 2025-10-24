@@ -26,6 +26,25 @@ spec:
   policyTypes:
   - Ingress
 ---
+
+# https://istio.io/latest/docs/ambient/usage/networkpolicy/
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-istio
+spec:
+  podSelector: {}
+  ingress:
+  - ports:
+      # Allow traffic from the Istio secure overlay
+    - port: 15008
+      protocol: TCP
+  ingress:
+    - from:
+      - ipBlock:
+          # Allow traffic form the fixed link-local IP address (the origin of health probes) Istio ambient uses for this traffic
+          cidr: 169.254.7.127/32
+---
 # Allow traffic from platform services
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -45,7 +64,7 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              # FIXME: it seems that knative operator wipes out 'name' label, 
+              # FIXME: it seems that knative operator wipes out 'name' label,
               # we can still rely on automatic k8s labeling but it has some prerequsites: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/#automatic-labelling
               # name: knative-serving
               kubernetes.io/metadata.name: knative-serving
