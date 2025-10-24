@@ -3,7 +3,7 @@ fullnameOverride: ""
 
 image: # see: https://quay.io/repository/kiali/kiali-operator?tab=tags
   repo: quay.io/kiali/kiali-operator # quay.io/kiali/kiali-operator
-  tag: v2.10.0 # version string like v1.39.0 or a digest hash
+  tag: v2.17.0 # version string like v1.39.0 or a digest hash
   digest: "" # use "sha256" if tag is a sha256 hash (do NOT prefix this value with a "@")
   pullPolicy: Always
   pullSecrets: []
@@ -23,6 +23,19 @@ affinity: {}
 replicaCount: 1
 priorityClassName: ""
 securityContext: {}
+
+# This helm chart will create Kubernetes resources such as cluster roles, cluster role bindings, and service accounts.
+# For very rare use-cases, users may want to manage some of these resources manually, outside
+# of this helm chart. In cases like this, you can inform this helm chart to skip the creation of
+# those resources that you want to manage yourself.
+# For example, if you want to manage cluster roles and cluster role bindings yourself, but you still want this helm
+# chart to create service accounts, set the value of "skipResources" to an array
+# value of ["clusterrole", "clusterrolebinding"].
+# If you use this feature, you must be aware that you then bear the responsibility of
+# creating these resources yourself manually; if you do not then the installation
+# will be broken. Therefore, only use this feature if you know what you are doing.
+# Valid list item values are: "clusterrole", "clusterrolebinding", "sa"
+skipResources: []
 
 # metrics.enabled: set to true if you want Prometheus to collect metrics from the operator
 metrics:

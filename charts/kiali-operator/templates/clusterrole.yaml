@@ -1,3 +1,4 @@
+{{- if eq "false" (include "kiali-operator.isSkippedResource" (dict "ctx" . "name" "clusterrole")) -}}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -135,6 +136,7 @@ rules:
 - apiGroups: ["extensions", "networking.k8s.io"]
   resources:
   - ingresses
+  - networkpolicies
   verbs:
   - create
   - delete
@@ -275,6 +277,7 @@ rules:
   - extensions.istio.io
   - telemetry.istio.io
   - gateway.networking.k8s.io
+  - inference.networking.k8s.io
   resources: ["*"]
   verbs:
   - get
@@ -295,11 +298,6 @@ rules:
   {{- if eq .Values.onlyViewOnlyMode false }}
   - patch
   {{- end }}
-- apiGroups: ["project.openshift.io"]
-  resources:
-  - projects
-  verbs:
-  - get
 - apiGroups: ["route.openshift.io"]
   resources:
   - routes
@@ -318,3 +316,4 @@ rules:
   - list
   - watch
 ...
+{{- end -}}
