@@ -110,7 +110,7 @@ export async function updateDbCollation(
         `REINDEX DATABASE ${execDbName}`,
         execDbName,
         'postgres',
-        5000,
+        10000,
         [
           // Need to be run as separate commands, because otherwise psql wraps
           // this in a transaction. That is not allowed for REINDEX
