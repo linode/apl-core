@@ -30,7 +30,7 @@ resources:
               {{ . | toYaml | nindent 16 }}
               {{- end }}
         exporters:
-          logging:
+          debug:
             loglevel: debug
           {{- if $v.apps.tempo.enabled }}
           otlp:
