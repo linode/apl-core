@@ -1,7 +1,8 @@
 import { EventEmitter } from 'events'
-import { existsSync } from 'fs'
+import { existsSync, realpathSync } from 'fs'
 import { readFile, stat, utimes, writeFile } from 'fs/promises'
 import { chunk } from 'lodash'
+import * as pathModule from 'path'
 import { $, cd, ProcessOutput } from 'zx'
 import { terminal } from './debug'
 import { cleanEnv, cliEnvSpec, env, isCli } from './envalid'
@@ -94,10 +95,32 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
 const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = []): Promise<void> => {
   const d = terminal(`common:crypt:runOnSecretFiles`)
   let files: string[] = filesArgs
+  const MAX_FILES = 1000
+
+  // Defensive: ensure files is a real array and safely sized
+  if (!Array.isArray(files)) {
+    d.error('Expected files to be an Array')
+    throw new Error("Files parameter must be an Array")
+  }
+  // Bound the files length
+  if (typeof files.length !== 'number' || !Number.isInteger(files.length) || files.length < 0 || files.length > MAX_FILES) {
+    d.warn(`Too many files supplied (${files.length}), truncating to ${MAX_FILES}`)
+    files = files.slice(0, MAX_FILES)
+  }
 
   if (files.length === 0) {
     files = await getAllSecretFiles(path)
+    // Defensive: ensure safe array and length for auto-discovered files as well
+    if (!Array.isArray(files)) {
+      d.error('Expected files from getAllSecretFiles to be an Array')
+      throw new Error("getAllSecretFiles must return an Array")
+    }
+    if (typeof files.length !== 'number' || !Number.isInteger(files.length) || files.length < 0 || files.length > MAX_FILES) {
+      d.warn(`Too many files discovered (${files.length}), truncating to ${MAX_FILES}`)
+      files = files.slice(0, MAX_FILES)
+    }
   }
+
   files = files.filter(async (f) => {
     const suffix = crypt.cmd === CryptType.ENCRYPT ? '.dec' : ''
     let file = `${f}${suffix}`
@@ -146,17 +169,30 @@ const matchTimestamps = async (path, file: string) => {
 
 export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<void> => {
   const d = terminal(`common:crypt:decrypt`)
-  if (!existsSync(`${path}/.sops.yaml`)) {
+  // Validate that `path` is within rootDir
+  const envRoot = rootDir
+  let resolvedPath: string
+  try {
+    resolvedPath = realpathSync(pathModule.resolve(envRoot, pathModule.relative(envRoot, path)))
+  } catch (err) {
+    d.warn(`Failed to resolve environment path '${path}': ${err}`)
+    return
+  }
+  if (!resolvedPath.startsWith(envRoot)) {
+    d.warn(`Denied access to environment path: '${path}' (resolved: '${resolvedPath}')`)
+    return
+  }
+  if (!existsSync(`${resolvedPath}/.sops.yaml`)) {
     d.info('Skipping decryption')
     return
   }
   d.info('Starting decryption')
 
   await runOnSecretFiles(
-    path,
+    resolvedPath,
     {
       cmd: CryptType.DECRYPT,
-      post: async (f) => matchTimestamps(path, f),
+      post: async (f) => matchTimestamps(resolvedPath, f),
     },
     files,
   )
@@ -166,13 +202,26 @@ export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
 
 export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<void> => {
   const d = terminal(`common:crypt:encrypt`)
-  if (!existsSync(`${path}/.sops.yaml`)) {
+  // Validate that `path` is within rootDir
+  const envRoot = rootDir
+  let resolvedPath: string
+  try {
+    resolvedPath = realpathSync(pathModule.resolve(envRoot, pathModule.relative(envRoot, path)))
+  } catch (err) {
+    d.warn(`Failed to resolve environment path '${path}': ${err}`)
+    return
+  }
+  if (!resolvedPath.startsWith(envRoot)) {
+    d.warn(`Denied access to environment path: '${path}' (resolved: '${resolvedPath}')`)
+    return
+  }
+  if (!existsSync(`${resolvedPath}/.sops.yaml`)) {
     d.info('Skipping encryption')
     return
   }
   d.info('Starting encryption')
   await runOnSecretFiles(
-    path,
+    resolvedPath,
     {
       condition: async (file: string): Promise<boolean> => {
         if (!existsSync(file)) {
@@ -206,7 +255,7 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
         return false
       },
       cmd: CryptType.ENCRYPT,
-      post: async (f: string) => matchTimestamps(path, f),
+      post: async (f: string) => matchTimestamps(resolvedPath, f),
     },
     files,
   )
