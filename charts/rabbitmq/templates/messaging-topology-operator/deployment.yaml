@@ -1,5 +1,5 @@
 {{- /*
-Copyright VMware, Inc.
+Copyright Broadcom, Inc. All Rights Reserved.
 SPDX-License-Identifier: APACHE-2.0
 */}}
 
@@ -14,11 +14,15 @@ metadata:
   labels: {{- include "common.labels.standard" ( dict "customLabels" $labels "context" $ ) | nindent 4 }}
     app.kubernetes.io/component: messaging-topology-operator
     app.kubernetes.io/part-of: rabbitmq
+
+  annotations:  
+      argocd.argoproj.io/sync-wave: "1"
   {{- if .Values.commonAnnotations }}
-  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 spec:
   replicas: {{ .Values.msgTopologyOperator.replicaCount }}
+  revisionHistoryLimit: {{ .Values.msgTopologyOperator.revisionHistoryLimit }}
   {{- if .Values.msgTopologyOperator.updateStrategy }}
   strategy: {{- toYaml .Values.msgTopologyOperator.updateStrategy | nindent 4 }}
   {{- end }}
@@ -91,7 +95,7 @@ spec:
           command: {{- include "common.tplvalues.render" (dict "value" .Values.msgTopologyOperator.command "context" $) | nindent 12 }}
           {{- else }}
           command:
-            - /manager
+            - manager
           {{- end }}
           {{- if .Values.msgTopologyOperator.args }}
           args: {{- include "common.tplvalues.render" (dict "value" .Values.msgTopologyOperator.args "context" $) | nindent 12 }}
@@ -104,7 +108,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            {{- if not .Values.msgTopologyOperator.watchAllNamespaces }}      
+            {{- if not .Values.msgTopologyOperator.watchAllNamespaces }}
             {{- $watchNamespaces := default (list (include "common.names.namespace" .)) .Values.msgTopologyOperator.watchNamespaces }}
             - name: OPERATOR_SCOPE_NAMESPACE
               value: {{ join "," $watchNamespaces | quote }}
@@ -127,7 +131,7 @@ spec:
           resources: {{- include "common.resources.preset" (dict "type" .Values.msgTopologyOperator.resourcesPreset) | nindent 12 }}
           {{- end }}
           ports:
-            - name: http-webhook
+            - name: https-webhook
               containerPort: 9443
               protocol: TCP
             - name: http-metrics
@@ -138,8 +142,7 @@ spec:
           livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.msgTopologyOperator.customLivenessProbe "context" $) | nindent 12 }}
           {{- else if .Values.msgTopologyOperator.livenessProbe.enabled }}
           livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.msgTopologyOperator.livenessProbe "enabled") "context" $) | nindent 12 }}
-            httpGet:
-              path: /metrics
+            tcpSocket:
               port: http-metrics
           {{- end }}
           {{- if .Values.msgTopologyOperator.customReadinessProbe }}
