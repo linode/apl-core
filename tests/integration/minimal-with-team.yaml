@@ -47,14 +47,6 @@ teamConfig:
             path: apps/java-maven
           type: buildpacks
     services:
-      - headers:
-          response:
-            set: []
-        id: 78595314-cdaf-4b60-acc2-3b1a7f80fe2b
-        ingressClassName: platform
-        name: httpbin
-        ownHost: true
-        port: 80
       - id: a106eb22-8c06-41b6-ab15-97aafb0888b5
         ingressClassName: platform
         name: nginx-deployment
@@ -74,10 +66,6 @@ teamConfig:
         url: https://github.com/linode/apl-nodejs-helloworld.git
         path: chart/hello-world
         revision: HEAD
-      - name: httpbin
-        path: charts/httpbin
-        revision: HEAD
-        url: https://github.com/linode/apl-core.git
       - name: nginx-deployment
         path: k8s-deployment
         revision: main
@@ -139,9 +127,6 @@ files:
       autoscaling:
         minReplicas: 0
         maxReplicas: 10
-  env/teams/demo/workloadValues/httpbin.yaml: |
-    values: |
-      {}
   env/teams/admin/workloadValues/nodejs-helloworld.yaml: |
     values: |
       image:
