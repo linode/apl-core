@@ -31,7 +31,7 @@ resources:
               {{- end }}
         exporters:
           logging:
-            loglevel: info
+            loglevel: debug
           {{- if $v.apps.tempo.enabled }}
           otlp:
             endpoint: tempo-distributor.tempo.svc.cluster.local:4317
@@ -58,7 +58,7 @@ resources:
               processors:
               - batch
               exporters:
-              - logging
+              - debug
             traces:
               receivers:
               - otlp
@@ -67,7 +67,7 @@ resources:
               - batch
               - k8sattributes
               exporters:
-              - logging
+              - debug
               {{- if $v.apps.tempo.enabled }}
               - otlp
               {{- end }}
