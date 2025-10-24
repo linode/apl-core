@@ -247,7 +247,7 @@ describe('CloudnativePG Kubernetes API Functions', () => {
           'ALTER DATABASE postgres REFRESH COLLATION VERSION',
           '-S',
         ],
-        5000,
+        10000,
       )
       expect(mockExec).toHaveBeenCalledWith(
         'production',
@@ -265,7 +265,7 @@ describe('CloudnativePG Kubernetes API Functions', () => {
           'ALTER DATABASE user-db REFRESH COLLATION VERSION',
           '-S',
         ],
-        5000,
+        10000,
       )
       expect(mockExec).toHaveBeenCalledTimes(2)
 
