@@ -15,7 +15,7 @@ dependencies:
     version: 0.26.0
     repository: https://cloudnative-pg.github.io/charts
   - name: external-dns
-    version: 8.9.2
+    version: 1.19.0
     repository: https://kubernetes-sigs.github.io/external-dns
   - name: falco
     version: 3.8.5
@@ -82,7 +82,7 @@ dependencies:
     version: 5.4.0
     repository: https://charts.min.io/
   - name: oauth2-proxy
-    version: 7.12.18
+    version: 8.3.1
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
