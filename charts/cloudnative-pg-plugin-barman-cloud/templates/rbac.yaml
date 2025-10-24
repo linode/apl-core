@@ -1,5 +1,6 @@
 #
-# Copyright The CloudNativePG Contributors
+# Copyright © contributors to CloudNativePG, established as
+# CloudNativePG a Series of LF Projects, LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
 #
 {{- if .Values.serviceAccount.create }}
 ---
@@ -34,7 +37,68 @@ kind: ClusterRole
 metadata:
   name: {{ include "plugin-barman-cloud.fullname" . }}
 rules:
-{{- include "plugin-barman-cloud.clusterwideRules" . }}
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - barmancloud.cnpg.io
+  resources:
+  - objectstores
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - barmancloud.cnpg.io
+  resources:
+  - objectstores/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - barmancloud.cnpg.io
+  resources:
+  - objectstores/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - postgresql.cnpg.io
+  resources:
+  - backups
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - postgresql.cnpg.io
+  resources:
+  - clusters/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  - roles
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
