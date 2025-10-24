@@ -1,0 +1,21 @@
+{{- if and (eq (.Values.provider | default "") "linode") .Values.watchNamespaces }}
+{{- $watchNamespaces := include "agent-operator.watchNamespacesList" . | trim | splitList "," }}
+{{- range $namespace := $watchNamespaces }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "agent-operator.fullname" $ }}-agent-deployer
+  namespace: {{ $namespace }}
+  labels:
+    {{- include "agent-operator.labels" $ | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "agent-operator.fullname" $ }}-agent-deployer
+subjects:
+- kind: ServiceAccount
+  name: {{ include "agent-operator.serviceAccountName" $ }}
+  namespace: {{ $.Release.Namespace }}
+{{- end }}
+{{- end }}

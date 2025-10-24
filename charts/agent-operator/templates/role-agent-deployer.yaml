@@ -1,0 +1,48 @@
+{{- if and (eq (.Values.provider | default "") "linode") .Values.watchNamespaces }}
+{{- $watchNamespaces := include "agent-operator.watchNamespacesList" . | trim | splitList "," }}
+{{- range $namespace := $watchNamespaces }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "agent-operator.fullname" $ }}-agent-deployer
+  namespace: {{ $namespace }}
+  labels:
+    {{- include "agent-operator.labels" $ | nindent 4 }}
+rules:
+# Service discovery for foundation models and agent services
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+
+# ConfigMaps for agent configuration
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+
+# Secrets for database credentials (needed to grant agents access to secrets)
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+
+# PVCs for agent storage
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+
+# ServiceAccounts for agents
+- apiGroups: [""]
+  resources: ["serviceaccounts"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+
+# RBAC for agents
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["roles", "rolebindings"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+
+# Deployment management
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+{{- end }}
+{{- end }}
