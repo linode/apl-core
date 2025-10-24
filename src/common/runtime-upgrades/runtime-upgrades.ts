@@ -5,6 +5,7 @@ import { getParsedArgs } from '../yargs'
 import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
+import { executePSQLOnPrimary, updateDbCollation } from './cloudnative-pg'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -133,6 +134,26 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           } catch (error) {
             d.error('Failed to delete minio resources:', error)
           }
+        },
+      },
+    },
+  },
+  {
+    version: '4.13.0',
+    applications: {
+      'gitea-gitea-otomi-db': {
+        post: async (context: RuntimeUpgradeContext) => {
+          await updateDbCollation('gitea', 'gitea-db', 'gitea', context.debug)
+        },
+      },
+      'keycloak-keycloak-otomi-db': {
+        post: async (context: RuntimeUpgradeContext) => {
+          await updateDbCollation('keycloak', 'keycloak-db', 'keycloak', context.debug)
+        },
+      },
+      'harbor-harbor-otomi-db': {
+        post: async (context: RuntimeUpgradeContext) => {
+          await updateDbCollation('harbor', 'harbor-otomi-db', 'registry', context.debug)
         },
       },
     },

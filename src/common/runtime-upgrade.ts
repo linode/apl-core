@@ -48,23 +48,27 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
 
     // Application-specific upgrade operations - wait for all applications in this upgrade
     if (upgrade.applications) {
-      for (const [applicationName, applicationUpgrade] of Object.entries(upgrade.applications)) {
-        const applicationOperation = applicationUpgrade[when as keyof typeof applicationUpgrade] as (
-          context: RuntimeUpgradeContext,
-        ) => Promise<void>
-        if (
-          apps.find((app) => app.includes(applicationName)) &&
-          applicationOperation &&
-          typeof applicationOperation === 'function'
-        ) {
-          d.info(`Runtime upgrade operations detected for version ${upgrade.version}, application: ${applicationName}`)
-          // Wait for the ArgoCD app to be synced and healthy before running the operation
-          await waitForArgoCDAppSync(applicationName, k8s.custom(), d)
-          await waitForArgoCDAppHealthy(applicationName, k8s.custom(), d)
-          //execute the application-specific operation
-          await applicationOperation(context)
-        }
-      }
+      await Promise.allSettled(
+        Object.entries(upgrade.applications).map(async ([applicationName, applicationUpgrade]) => {
+          const applicationOperation = applicationUpgrade[when as keyof typeof applicationUpgrade] as (
+            context: RuntimeUpgradeContext,
+          ) => Promise<void>
+          if (
+            apps.find((app) => app.includes(applicationName)) &&
+            applicationOperation &&
+            typeof applicationOperation === 'function'
+          ) {
+            d.info(
+              `Runtime upgrade operations detected for version ${upgrade.version}, application: ${applicationName}`,
+            )
+            // Wait for the ArgoCD app to be synced and healthy before running the operation
+            await waitForArgoCDAppSync(applicationName, k8s.custom(), d)
+            await waitForArgoCDAppHealthy(applicationName, k8s.custom(), d)
+            //execute the application-specific operation
+            await applicationOperation(context)
+          }
+        }),
+      )
     }
   }
 }
