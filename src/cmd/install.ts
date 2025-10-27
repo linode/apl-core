@@ -1,9 +1,9 @@
 import retry, { Options } from 'async-retry'
-import { mkdirSync, rmSync, writeFileSync } from 'fs'
+import { mkdirSync, rmSync } from 'fs'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
+import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
 import {
   applyServerSide,
   getDeploymentState,
@@ -15,7 +15,6 @@ import {
 import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
-import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
 import {
@@ -29,7 +28,6 @@ import {
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
-const templateFile = `${dir}deploy-template.yaml`
 
 const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
@@ -75,23 +73,15 @@ export const installAll = async () => {
   const releases = await getHelmReleases()
   await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, { status: { otomi: state, helm: releases } }, true)
 
-  const output: ProcessOutputTrimmed = await hf(
-    { fileOpts: 'helmfile.tpl/helmfile-init.yaml.gotmpl', args: 'template' },
-    { streams: { stderr: d.stream.error } },
-  )
-  if (output.exitCode > 0) {
-    throw new Error(output.stderr)
-  } else if (output.stderr.length > 0) {
-    d.error(output.stderr)
+  d.info('Deploying essential manifests')
+  const essentialDeployResult = await deployEssential()
+  if (!essentialDeployResult) {
+    throw new Error('Failed to deploy essential manifests')
   }
-  const templateOutput = output.stdout
-  writeFileSync(templateFile, templateOutput)
 
   d.info('Deploying CRDs')
   await applyServerSide('charts/kube-prometheus-stack/charts/crds/crds')
   await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
-  d.info('Deploying essential manifests')
-  await $`kubectl apply -f ${templateFile}`
 
   d.info('Deploying charts containing label stage=prep')
   await hf(
