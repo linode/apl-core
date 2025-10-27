@@ -4,12 +4,14 @@ import {
   BatchV1Api,
   CoreV1Api,
   CustomObjectsApi,
+  Exec,
   KubeConfig,
   NetworkingV1Api,
   PatchStrategy,
   setHeaderOptions,
   V1ResourceRequirements,
   V1Secret,
+  V1Status,
 } from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
@@ -25,6 +27,7 @@ import { env } from './envalid'
 import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
+import { Writable } from 'stream'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
@@ -35,6 +38,7 @@ let appClient: AppsV1Api
 let batchClient: BatchV1Api
 let networkingClient: NetworkingV1Api
 let customClient: CustomObjectsApi
+let execObject: Exec
 export const k8s = {
   kc: (): KubeConfig => {
     if (kc) return kc
@@ -122,6 +126,71 @@ export const getDeploymentState = async (): Promise<DeploymentState> => {
   if (env.isDev && env.DISABLE_SYNC) return {}
   const result = await $`kubectl get cm -n otomi ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`.nothrow().quiet()
   return JSON.parse(result.stdout || '{}')
+}
+
+/**
+ * Result of command execution
+ */
+export interface ExecResult {
+  stdout: string
+  stderr: string
+  exitCode: number
+}
+
+export async function exec(
+  namespace: string,
+  podName: string,
+  containerName: string,
+  command: string[],
+  timeout: number = 30000,
+): Promise<ExecResult> {
+  const execApi = new Exec(k8s.kc())
+
+  let stdout = ''
+  let stderr = ''
+  let exitCode = 0
+
+  const outputWritable = new Writable({
+    write: (chunk: Buffer, encoding: string, callback: () => void) => {
+      stdout += chunk.toString()
+      callback()
+    },
+  })
+
+  const errorWritable = new Writable({
+    write: (chunk: Buffer, encoding: string, callback: () => void) => {
+      stderr += chunk.toString()
+      callback()
+    },
+  })
+
+  const ws = await execApi.exec(
+    namespace,
+    podName,
+    containerName,
+    command,
+    outputWritable,
+    errorWritable,
+    null,
+    false,
+    (status: V1Status) => {
+      if (status.status === 'Failure') {
+        exitCode = 1
+        for (const cause of status.details?.causes || []) {
+          if (cause.reason === 'ExitCode') {
+            exitCode = parseInt(cause.message || '1')
+            break
+          }
+        }
+      }
+    },
+  )
+  await new Promise((resolve, reject) => {
+    setTimeout(() => reject(new Error('Exec command timed out')), timeout)
+    ws.once('close', resolve)
+    ws.once('error', reject)
+  })
+  return { stdout, stderr, exitCode }
 }
 
 export const getHelmReleases = async (): Promise<Record<string, any>> => {
