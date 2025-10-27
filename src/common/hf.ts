@@ -9,6 +9,8 @@ import { getFileMaps, setValuesFile } from './repo'
 import { asArray, extract, flattenObject, getValuesSchema, isCore, rootDir } from './utils'
 import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
+import { resolve } from 'path'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 
 const replaceHFPaths = (output: string, envDir = env.ENV_DIR): string => output.replaceAll('../env', envDir)
 export const HF_DEFAULT_SYNC_ARGS = ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20']
@@ -187,4 +189,34 @@ export const hfTemplate = async (
   d.debug('# Templating charts done')
   template += outAll.stdout
   return template
+}
+
+export const deployEssential = async (labelOpts: string[] | null = null) => {
+  const d = terminal('common:hf:applyEssential')
+  const dir = '/tmp/otomi/'
+
+  const aplCoreDir = rootDir || resolve(process.cwd(), '../apl-core')
+  const helmfileSource = resolve(aplCoreDir, 'helmfile.tpl/helmfile-init.yaml.gotmpl')
+  const output: ProcessOutputTrimmed = await hf(
+    { fileOpts: helmfileSource, args: 'template', labelOpts },
+    { streams: { stderr: d.stream.error } },
+  )
+  if (output.exitCode > 0) {
+    d.error(output.stderr)
+    return false
+  } else if (output.stderr.length > 0) {
+    d.warn(output.stderr)
+  }
+  const templateOutput = output.stdout
+  if (templateOutput) {
+    const templateFile = `${dir}deploy-template.yaml`
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true })
+    }
+    writeFileSync(templateFile, templateOutput)
+
+    await $`kubectl apply -f ${templateFile}`
+  }
+
+  return true
 }
