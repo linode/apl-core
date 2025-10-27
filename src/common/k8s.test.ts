@@ -3,13 +3,15 @@ import {
   AppsV1Api,
   CoreV1Api,
   CustomObjectsApi,
+  Exec,
+  KubeConfig,
   PatchStrategy,
   setHeaderOptions,
   V1Pod,
   V1PodList,
   V1ResourceRequirements,
-  V1Secret,
   V1StatefulSet,
+  V1Status,
 } from '@kubernetes/client-node'
 import * as k8s from './k8s'
 import {
@@ -689,5 +691,126 @@ describe('restartOtomiApiDeployment', () => {
 
     const call = mockAppApi.patchNamespacedDeployment.mock.calls[0]
     expect(call[1]).toEqual(setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch))
+  })
+})
+
+describe('exec utility test', () => {
+  let mockKubeConfig: jest.Mocked<KubeConfig>
+  let mockExec: jest.Mocked<Exec>
+  let mockWebsocket: jest.Mocked<WebSocket>
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockKubeConfig = new KubeConfig() as jest.Mocked<KubeConfig>
+    mockKubeConfig.loadFromDefault = jest.fn()
+    k8s.k8s.kc = jest.fn().mockResolvedValue(mockKubeConfig)
+    mockExec = jest.mocked(new Exec(mockKubeConfig), { shallow: true }) as jest.Mocked<Exec>
+    mockWebsocket = {
+      once: jest.fn().mockImplementation((event, callback) => {
+        if (event === 'close') callback()
+      }),
+    } as unknown as jest.Mocked<WebSocket>
+    mockExec.exec.mockResolvedValue(mockWebsocket)
+    ;(Exec as jest.Mock).mockImplementation(() => mockExec)
+  })
+
+  it('should call command with parameters', async () => {
+    await k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])
+
+    expect(mockExec.exec).toHaveBeenCalledWith(
+      'default',
+      'test-pod-1',
+      'container-1',
+      ['cmd-1', 'arg-1'],
+      expect.any(Object),
+      expect.any(Object),
+      null,
+      false,
+      expect.any(Function),
+    )
+  })
+
+  it('should capture stdout from command execution', async () => {
+    const expectedOutput1 = 'row1\nrow2\nrow3\n'
+    const expectedOutput2 = 'row4\nrow5\nrow6\n'
+
+    mockExec.exec = jest
+      .fn()
+      .mockImplementation(
+        async (namespace: string, podName: string, containerName: string, command: string[], stdout: any) => {
+          stdout.write(Buffer.from(expectedOutput1))
+          stdout.write(Buffer.from(expectedOutput2))
+          return mockWebsocket
+        },
+      )
+
+    const result = await k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])
+
+    expect(result.stdout).toBe(expectedOutput1 + expectedOutput2)
+    expect(result.exitCode).toBe(0)
+  })
+
+  it('should capture stderr from command execution', async () => {
+    const expectedError = 'ERROR: relation does not exist\n'
+
+    mockExec.exec = jest
+      .fn()
+      .mockImplementation(
+        async (
+          namespace: string,
+          podName: string,
+          containerName: string,
+          command: string[],
+          stdout: any,
+          stderr: any,
+        ) => {
+          stderr.write(Buffer.from(expectedError))
+          return mockWebsocket
+        },
+      )
+
+    const result = await k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])
+
+    expect(result.stderr).toBe(expectedError)
+  })
+
+  it('should propagate execution failures', async () => {
+    mockExec.exec = jest.fn().mockRejectedValue(new Error('Connection refused'))
+
+    await expect(k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])).rejects.toThrow(
+      'Connection refused',
+    )
+  })
+
+  it('should handle status callback with failure', async () => {
+    mockExec.exec = jest
+      .fn()
+      .mockImplementation(
+        async (
+          namespace: string,
+          podName: string,
+          containerName: string,
+          command: string[],
+          stdout: any,
+          stderr: any,
+          stdin: any,
+          tty: boolean,
+          statusCallback: any,
+        ) => {
+          const failureStatus: V1Status = {
+            status: 'Failure',
+            details: {
+              causes: [{ reason: 'ExitCode', message: '255' }],
+            },
+            message: 'Command failed',
+          }
+          statusCallback(failureStatus)
+          return mockWebsocket
+        },
+      )
+
+    const result = await k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])
+
+    expect(result.exitCode).toBe(255)
   })
 })
