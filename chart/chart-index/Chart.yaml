@@ -106,7 +106,7 @@ dependencies:
     repository: https://grafana.github.io/helm-charts
   - name: rabbitmq-cluster-operator
     alias: rabbitmq
-    version: 3.20.1
+    version: 4.4.34
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
     version: 2.17.7
