@@ -11,11 +11,11 @@ metadata:
   {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  minReadySeconds: 10
+  minReadySeconds: {{ .Values.queryFrontend.minReadySeconds }}
 {{- if not .Values.queryFrontend.autoscaling.enabled }}
   replicas: {{ .Values.queryFrontend.replicas }}
 {{- end }}
-  revisionHistoryLimit: 10
+  revisionHistoryLimit: {{ .Values.tempo.revisionHistoryLimit }}
   selector:
     matchLabels:
       {{- include "tempo.selectorLabels" $dict | nindent 6 }}
@@ -56,6 +56,8 @@ spec:
       hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      initContainers:
+        {{- toYaml .Values.queryFrontend.initContainers | nindent 8 }}
       containers:
         - args:
             - -target=query-frontend
@@ -68,7 +70,7 @@ spec:
           imagePullPolicy: {{ .Values.tempo.image.pullPolicy }}
           name: query-frontend
           ports:
-            - containerPort: 3100
+            - containerPort: 3200
               name: http-metrics
             - containerPort: 9095
               name: grpc
@@ -81,10 +83,19 @@ spec:
               {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
-          {{- with .Values.queryFrontend.extraEnvFrom }}
+          {{- if or .Values.global.extraEnvFrom .Values.queryFrontend.extraEnvFrom }}
           envFrom:
-            {{- toYaml . | nindent 12 }}
+            {{- with .Values.global.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.queryFrontend.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
+          livenessProbe:
+            {{- toYaml .Values.tempo.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.tempo.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.queryFrontend.resources | nindent 12 }}
           {{- with .Values.tempo.securityContext }}
@@ -107,10 +118,11 @@ spec:
             {{- end }}
         {{- if .Values.queryFrontend.query.enabled }}
         - args:
-            - --query.base-path=/
-            - --grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml
-            - --query.bearer-token-propagation=true
+            - -config=/conf/tempo.yaml
             {{- with .Values.queryFrontend.query.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.global.extraArgs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           image: {{ include "tempo.queryImage" . }}
