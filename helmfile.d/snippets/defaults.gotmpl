@@ -16,7 +16,7 @@
 {{- $cluster = readFile $clusterFilePath | fromYaml }}
 {{- end }}
 {{ $clusterProvider := $cluster | get "spec.provider" "linode" }}
-{{- $tier := $cluster | get "spec.linode.tier" }}
+{{- $tier := $cluster | get "spec.linode.tier" "" }}
 
 environments:
   default:
