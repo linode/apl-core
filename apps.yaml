@@ -23,7 +23,7 @@ appsInfo:
     integration: Argo CD is configured by APL to use the SSO provided by keycloak, and maps APL groups to Argo CD roles. The otomi-admin role is made super admin within Argo CD. The team-admin role has access to Argo CD and is admin of all team projects. Members of team roles are only allowed to administer their own projects. All Teams will automatically get access to a Git repo, and Argo CD is configured to listen to this repo. All a team has to do is to fill their repo with intended state, commit, and automation takes care of the rest.
   cert-manager:
     title: Cert-manager
-    appVersion: 1.19.0
+    appVersion: 1.19.1
     repo: https://github.com/cert-manager/cert-manager
     maintainers: The Linux Foundation
     relatedLinks:
@@ -33,7 +33,7 @@ appsInfo:
     integration: Cert-manager is used by APL to automatically create and rotate TLS certificates for service endpoints. You may bring your own CA, or let APL create one for you (default). It is recommended to use Let's Encrypt for production certificates. Setting cert-manager to use Let's Encrypt requires DNS availability of the requesting domains, and forces APL to install external-dns. Because a lot of DNS settings are used by other APL contexts, most DNS configuration is found under settings/dns.
   cnpg:
     title: CloudNative PostgreSQL Operator
-    appVersion: 1.27.0
+    appVersion: 1.27.1
     repo: https://github.com/cloudnative-pg/cloudnative-pg
     maintainers: EDB
     relatedLinks:
@@ -290,7 +290,7 @@ appsInfo:
     integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When APL is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
   rabbitmq:
     title: RabbitMQ
-    appVersion: 2.7.0
+    appVersion: 2.16.1
     repo: https://github.com/rabbitmq/cluster-operator
     maintainers: RabbitMQ
     relatedLinks:

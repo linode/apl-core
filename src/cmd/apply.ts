@@ -63,8 +63,12 @@ export const applyAll = async () => {
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(false)
   }
-  await setDeploymentState({ status: 'deployed', version })
-  d.info('Deployment completed')
+  if (appsApplyCompleted) {
+    await setDeploymentState({ status: 'deployed', version })
+    d.info('Deployment completed')
+  } else {
+    d.info('Deployment finished with actions pending')
+  }
 }
 
 export const apply = async (): Promise<void> => {
