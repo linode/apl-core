@@ -37,21 +37,9 @@ RUN apt-get update && apt-get install -y \
   coreutils \
   apache2-utils \
   apt-transport-https \
-  awscli \
   ca-certificates \
-  gettext \
   git \
-  gnupg \
-  gnupg2 \
-  groff \
   locales \
-  nano \
-  openssh-server \
-  python3 \
-  python3-pip \
-  python3-setuptools \
-  rlwrap \
-  vim \
   rsync && \
   rm -rf /var/lib/apt/lists/* && \
   locale-gen en_US.UTF-8
@@ -113,13 +101,6 @@ RUN tar -zxvf /tmp/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz -C /t
 ADD https://github.com/noqcks/gucci/releases/download/v${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-${TARGETARCH} gucci
 RUN chmod +x gucci
 
-# aws
-RUN pip3 install --upgrade --no-cache-dir awscli
-
-# aws-iam-authenticator
-ADD https://s3.us-west-2.amazonaws.com/amazon-eks/1.21.2/2021-07-05/bin/linux/${TARGETARCH}/aws-iam-authenticator aws-iam-authenticator
-RUN chmod +x aws-iam-authenticator
-
 # kubeconform
 ADD https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-${TARGETARCH}.tar.gz /tmp
 RUN tar -zxvf /tmp/kubeconform-linux-${TARGETARCH}.tar.gz -C /tmp && mv /tmp/kubeconform kubeconform
@@ -130,8 +111,7 @@ RUN set -uex && \
   curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x -o nodesource_setup.sh && \
   bash nodesource_setup.sh && \
   apt-get update && \
-  apt-get install -y nodejs && \
-  npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
+  apt-get install -y nodejs
 
 FROM ubuntu:24.04 AS final
 
