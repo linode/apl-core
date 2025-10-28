@@ -33,7 +33,7 @@ appsInfo:
     integration: Cert-manager is used by APL to automatically create and rotate TLS certificates for service endpoints. You may bring your own CA, or let APL create one for you (default). It is recommended to use Let's Encrypt for production certificates. Setting cert-manager to use Let's Encrypt requires DNS availability of the requesting domains, and forces APL to install external-dns. Because a lot of DNS settings are used by other APL contexts, most DNS configuration is found under settings/dns.
   cnpg:
     title: CloudNative PostgreSQL Operator
-    appVersion: 1.27.0
+    appVersion: 1.27.1
     repo: https://github.com/cloudnative-pg/cloudnative-pg
     maintainers: EDB
     relatedLinks:
