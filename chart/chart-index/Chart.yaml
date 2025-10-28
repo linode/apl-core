@@ -42,7 +42,7 @@ dependencies:
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
-    version: 1.26.3
+    version: 1.27.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
     version: 1.27.3
