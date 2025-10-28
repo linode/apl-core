@@ -9,10 +9,10 @@ dependencies:
     version: 8.5.8
     repository: https://argoproj.github.io/argo-helm
   - name: cert-manager
-    version: v1.19.0
+    version: v1.19.1
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
-    version: 0.26.0
+    version: 0.26.1
     repository: https://cloudnative-pg.github.io/charts
   - name: plugin-barman-cloud
     alias: cloudnative-pg-plugin-barman-cloud
