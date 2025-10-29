@@ -88,4 +88,4 @@ RUN touch ~/.bashrc && \
 WORKDIR /home/user
 
 # Command to start a tmux session and expose it via ttyd.
-CMD ["ttyd", "-W", "-p", "8080", "tmux", "new", "-A"]
+CMD ["ttyd", "-W", "-p", "8080", "tmux", "new", "-A", "/bin/bash"]
