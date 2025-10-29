@@ -9,13 +9,17 @@ dependencies:
     version: 8.5.8
     repository: https://argoproj.github.io/argo-helm
   - name: cert-manager
-    version: v1.19.0
+    version: v1.19.1
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
-    version: 0.26.0
+    version: 0.26.1
+    repository: https://cloudnative-pg.github.io/charts
+  - name: plugin-barman-cloud
+    alias: cloudnative-pg-plugin-barman-cloud
+    version: 0.1.0
     repository: https://cloudnative-pg.github.io/charts
   - name: external-dns
-    version: 8.9.2
+    version: 1.19.0
     repository: https://kubernetes-sigs.github.io/external-dns
   - name: falco
     version: 3.8.5
@@ -27,7 +31,7 @@ dependencies:
     version: 12.2.0
     repository: https://dl.gitea.io/charts
   - name: harbor
-    version: 1.17.2
+    version: 1.18.0
     repository: https://helm.goharbor.io
   - name: ingress-nginx
     version: 4.13.3
@@ -82,7 +86,7 @@ dependencies:
     version: 5.4.0
     repository: https://charts.min.io/
   - name: oauth2-proxy
-    version: 7.12.18
+    version: 8.3.1
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
@@ -102,7 +106,7 @@ dependencies:
     repository: https://grafana.github.io/helm-charts
   - name: rabbitmq-cluster-operator
     alias: rabbitmq
-    version: 3.20.1
+    version: 4.4.34
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
     version: 2.17.7
