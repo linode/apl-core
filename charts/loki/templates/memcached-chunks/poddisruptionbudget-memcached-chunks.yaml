@@ -16,5 +16,8 @@ spec:
   {{- with .Values.memcachedChunks.maxUnavailable }}
   maxUnavailable: {{ . }}
   {{- end }}
+  {{- with .Values.memcachedChunks.minAvailable }}
+  minAvailable: {{ . }}
+  {{- end }}
 {{- end }}
 {{- end }}
