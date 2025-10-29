@@ -109,7 +109,7 @@ dependencies:
     version: 1.3.4
     repository: https://prometheus-msteams.github.io/prometheus-msteams/
   - name: promtail
-    version: 6.16.6
+    version: 6.17.0
     repository: https://grafana.github.io/helm-charts
   - name: rabbitmq-cluster-operator
     alias: rabbitmq
