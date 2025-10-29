@@ -1,4 +1,4 @@
-{{- if and (ne .Values.expose.type "ingress") (not .Values.expose.tls.enabled) }}
+{{- if and (ne .Values.expose.type "ingress") (ne .Values.expose.type "route") (not .Values.expose.tls.enabled) }}
 {{- $scheme := (include "harbor.component.scheme" .) -}}
 apiVersion: v1
 kind: ConfigMap
