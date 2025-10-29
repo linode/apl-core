@@ -1,13 +1,12 @@
 import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
+import { ARGOCD_APP_PARAMS } from '../constants'
 import { OtomiDebugger } from '../debug'
-import { applyServerSide, checkArgoCDAppStatus, k8s, restartOtomiApiDeployment, setArgoCdAppSync } from '../k8s'
+import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
 import { getParsedArgs } from '../yargs'
+import { updateDbCollation } from './cloudnative-pg'
 import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
-import { ARGOCD_APP_PARAMS } from '../constants'
-import retry from 'async-retry'
-import { env } from '../envalid'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -161,6 +160,23 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           d.error('Failed to delete old ArgoCD Image Updater deployment', error)
         }
       }
+    },
+    applications: {
+      'gitea-gitea-otomi-db': {
+        post: async (context: RuntimeUpgradeContext) => {
+          await updateDbCollation('gitea', 'gitea-db', 'gitea', context.debug)
+        },
+      },
+      'keycloak-keycloak-otomi-db': {
+        post: async (context: RuntimeUpgradeContext) => {
+          await updateDbCollation('keycloak', 'keycloak-db', 'keycloak', context.debug)
+        },
+      },
+      'harbor-harbor-otomi-db': {
+        post: async (context: RuntimeUpgradeContext) => {
+          await updateDbCollation('harbor', 'harbor-otomi-db', 'registry', context.debug)
+        },
+      },
     },
   },
 ]
