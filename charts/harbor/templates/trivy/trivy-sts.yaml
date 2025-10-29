@@ -102,6 +102,10 @@ spec:
               value: {{ .Values.trivy.skipUpdate | default false | quote }}
             - name: "SCANNER_TRIVY_SKIP_JAVA_DB_UPDATE"
               value: {{ .Values.trivy.skipJavaDBUpdate | default false | quote }}
+            - name: "SCANNER_TRIVY_DB_REPOSITORY"
+              value: {{ .Values.trivy.dbRepository | join "," | quote }}
+            - name: "SCANNER_TRIVY_JAVA_DB_REPOSITORY"
+              value: {{ .Values.trivy.javaDBRepository | join "," | quote }}
             - name: "SCANNER_TRIVY_OFFLINE_SCAN"
               value: {{ .Values.trivy.offlineScan | default false | quote }}
             - name: "SCANNER_TRIVY_SECURITY_CHECKS"
@@ -207,7 +211,9 @@ spec:
     {{- end }}
 {{- if and .Values.persistence.enabled (not $trivy.existingClaim) }}
   volumeClaimTemplates:
-  - metadata:
+  - apiVersion: v1	
+    kind: PersistentVolumeClaim
+    metadata:
       name: data
       labels:
 {{ include "harbor.legacy.labels" . | indent 8 }}
