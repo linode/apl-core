@@ -15,5 +15,8 @@ spec:
   {{- with .Values.indexGateway.maxUnavailable }}
   maxUnavailable: {{ . }}
   {{- end }}
+  {{- with .Values.indexGateway.minAvailable }}
+  minAvailable: {{ . }}
+  {{- end }}
 {{- end }}
 {{- end }}
