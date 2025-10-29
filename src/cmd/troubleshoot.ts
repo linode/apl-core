@@ -293,10 +293,10 @@ export async function troubleshoot(): Promise<void> {
       summary: {
         total: failedResources.length,
         byType: failedResources.reduce(
-          (acc, r) => {
-            acc[r.kind] = (acc[r.kind] || 0) + 1
-            return acc
-          },
+          (acc, r) => ({
+            ...acc,
+            [r.kind]: (acc[r.kind] || 0) + 1,
+          }),
           {} as Record<string, number>,
         ),
       },
