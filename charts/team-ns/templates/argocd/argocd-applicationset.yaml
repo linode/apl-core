@@ -46,14 +46,12 @@ spec:
       {{- else }}
       project: 'team-{{ $v.teamId }}' # project is restricted
       {{- end }}
-      source:
-        repoURL: '{{ .url }}'
+      sources:
+      - repoURL: '{{ .url }}'
         targetRevision: '{{ .revision }}'
         path: '{{ .path }}'
         chart: '{{ .chart }}'
         helm:
-          # The argocd template the values parameter is taken from the git generator path
-          values: '{{ "{{values}}" }}'
           releaseName: '{{ .name }}'
           {{- if and (.sidecarInject) (.createNamespace) }}
           parameters:
@@ -64,6 +62,12 @@ spec:
               value: {{ $v.apps.istio.defaultRevision | quote }}
             {{- end }}
           {{- end }}
+          valueFiles:
+          - $values/env/teams/{{ $v.teamId }}/workloadValues/{{ .name }}.yaml
+          - $values/env/teams/{{ $v.teamId }}/workloadValues/.argocd-source-{{ .name }}.yaml
+      - repoURL: '{{ $v.gitOps.workloadValuesRepoUrl | quote }}'
+        targetRevision: '{{ .revision }}'
+        ref: values
       syncPolicy:
         automated:
           allowEmpty: false
