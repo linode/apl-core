@@ -1,0 +1,55 @@
+{{- if eq .Values.expose.type "route" }}
+{{- $route := .Values.expose.route -}}
+{{- $_ := set . "path_type" "PathPrefix" -}}
+{{- $_ := set . "portal_path" "/" -}}
+{{- $_ := set . "api_path" "/api/" -}}
+{{- $_ := set . "service_path" "/service/" -}}
+{{- $_ := set . "v2_path" "/v2/" -}}
+{{- $_ := set . "controller_path" "/c/" -}}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: "{{ template "harbor.route" . }}"
+  namespace: {{ .Release.Namespace | quote }}
+{{- if $route.labels }}
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+{{ toYaml $route.labels | indent 4 }}
+{{- end }}
+{{- if $route.annotations }}
+  annotations:
+{{ toYaml $route.annotations | indent 4 }}
+{{- end }}
+spec:
+  parentRefs:
+  {{- toYaml $route.parentRefs | nindent 2 }}
+  hostnames: 
+  {{- toYaml $route.hosts | nindent 2 }}
+  rules:
+  - matches:
+    - path:
+        type: {{ .path_type }}
+        value: {{ .api_path }}
+    - path:
+        type: {{ .path_type }}
+        value: {{ .service_path }}
+    - path:
+        type: {{ .path_type }}
+        value: {{ .v2_path }}
+    - path:
+        type: {{ .path_type }}
+        value: {{ .controller_path }}
+    backendRefs:
+    - name: {{ template "harbor.core" . }}
+      namespace: {{ .Release.Namespace | quote }}
+      port: {{ template "harbor.core.servicePort" . }}
+  - matches:
+    - path:
+        type: {{ .path_type }}
+        value: {{ .portal_path }}
+    backendRefs:
+    - name: {{ template "harbor.portal" . }}
+      namespace: {{ .Release.Namespace | quote }}
+      port: {{ template "harbor.portal.servicePort" . }}
+{{- end }}
