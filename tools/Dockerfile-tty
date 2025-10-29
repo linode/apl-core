@@ -67,14 +67,25 @@ RUN dpkg -i /tmp/kubectl-cnpg_${CNPG_VERSION}_linux_x86_64.deb && rm /tmp/kubect
 # Creating user named user
 RUN groupadd --gid 1001 user && useradd --uid 1001 --gid 1001 user --create-home --home-dir /home/user
 
+# Set up kubeconfig generation
+RUN mkdir /etc/kconfig && \
+  echo 'kubectl config set-cluster apl --certificate-authority=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt --server=https://kubernetes.default.svc.cluster.local' > /etc/kconfig/kconfig.sh && \
+  echo 'kubectl config set-credentials default-user --token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)' >> /etc/kconfig/kconfig.sh && \
+  echo 'kubectl config set-context default-context --cluster=apl --namespace=${NAMESPACE} --user=default-user' >> /etc/kconfig/kconfig.sh && \
+  echo 'kubectl config use-context default-context' >> /etc/kconfig/kconfig.sh
+
 # Switching to user user
 USER user
 
 # Setting up kubectl autocompletion
-RUN touch ~/.bashrc && echo 'source <(kubectl completion bash)' >> ~/.bashrc && echo 'alias k=kubectl' >> ~/.bashrc && echo 'complete -o default -F __start_kubectl k' >>~/.bashrc && mkdir ~/.kube
+RUN touch ~/.bashrc && \
+  echo 'source <(kubectl completion bash)' >> ~/.bashrc && \
+  echo 'alias k=kubectl' >> ~/.bashrc &&  \
+  echo 'complete -o default -F __start_kubectl k' >> ~/.bashrc && \
+  echo 'source /etc/kconfig/kconfig.sh > /dev/null' >> ~/.bashrc
 
 # Setting the working directory
 WORKDIR /home/user
 
 # Command to start a tmux session and expose it via ttyd.
-CMD ["ttyd", "-p", "8080", "tmux", "new", "-A"]
+CMD ["ttyd", "-W", "-p", "8080", "tmux", "new", "-A"]
