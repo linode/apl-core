@@ -15,6 +15,7 @@ test:
 webhooksCleanup:
   image:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+    image: k8s/kubectl
 {{- end }}
 
 admissionController:
