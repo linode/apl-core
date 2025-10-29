@@ -17,12 +17,6 @@ webhooksCleanup:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
 {{- end }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
-policyReportsCleanup:
-  image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-{{- end }}
-
 admissionController:
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1
