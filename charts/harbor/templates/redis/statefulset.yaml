@@ -102,7 +102,9 @@ spec:
     {{- end }}
   {{- if and .Values.persistence.enabled (not $redis.existingClaim) }}
   volumeClaimTemplates:
-  - metadata:
+  - apiVersion: v1	
+    kind: PersistentVolumeClaim
+    metadata:
       name: data
       labels:
 {{ include "harbor.legacy.labels" . | indent 8 }}
