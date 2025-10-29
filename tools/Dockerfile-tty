@@ -14,8 +14,8 @@ ARG KUBECTL_VERSION=1.34.1
 ARG KUBECTL_CHECKSUM=sha256:7721f265e18709862655affba5343e85e1980639395d5754473dafaadcaa69e3
 
 # https://github.com/derailed/k9s/releases
-ARG K9S_VERSION=0.50.6
-ARG K9S_CHECKSUM=sha256:5fc98f2dcf1d8fac6251f5a1ae1dc6fe7fe2b2d43b13bb3039e51ad492e2a70e
+ARG K9S_VERSION=0.50.16
+ARG K9S_CHECKSUM=sha256:bda09dc030a08987fe2b3bed678b15b52f23d6705e872d561932d4ca07db7818
 
 # https://github.com/helm/helm/releases
 ARG HELM_VERSION=3.19.0
@@ -35,7 +35,7 @@ ARG CNPG_CHECKSUM=sha256:765007cea37dab728d09e681bcd00221bbe71252d30212e966f0fc6
 
 
 # Installing curl, vim, wget, tmux ttyd and bash-completion
-RUN apt update && apt upgrade -y && apt install -y ttyd jq curl vim wget less tmux bash-completion
+RUN apt update && apt upgrade -y && apt install -y ttyd jq curl vim wget less tmux bash-completion && rm -rf /var/lib/apt/lists/*
 
 # Installing yq
 ADD --chmod=755 --checksum=${YQ_CHECKSUM} https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64 /usr/local/bin/yq
