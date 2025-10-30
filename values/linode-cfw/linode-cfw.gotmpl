@@ -12,7 +12,7 @@ firewall:
       action: ACCEPT
       description: Prometheus Node Exporter
       protocol: TCP
-      ports: 9100
+      ports: "9100"
       addresses:
         ipv4:
           - 192.168.128.0/17
