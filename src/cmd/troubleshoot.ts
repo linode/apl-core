@@ -250,16 +250,16 @@ async function getArgoApplicationsWithIssues(): Promise<ResourceReport[]> {
       const issues: string[] = []
 
       if (healthStatus && healthStatus !== 'Healthy') {
-        const healthMessage = app.status?.health?.message || ''
-        issues.push(`Health: ${healthStatus}${healthMessage ? ` - ${healthMessage}` : 'Unknown'}`)
+        const healthMessage = app.status?.health?.message || 'Unknown'
+        issues.push(`HealthStatus: ${healthStatus} message: ${healthMessage}`)
       }
 
       if (syncStatus && syncStatus !== 'Synced') {
-        issues.push(`Sync: ${syncStatus}`)
+        issues.push(`SyncStatus: ${syncStatus}`)
       }
 
       const operationPhase = app.status?.operationState?.phase
-      if (operationPhase !== 'Succeeded') {
+      if (operationPhase && operationPhase !== 'Succeeded') {
         const message = app.status?.operationState?.message || 'Unknown'
         issues.push(`Operation: ${operationPhase} - ${message}`)
       }
