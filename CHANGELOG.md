@@ -50,7 +50,6 @@ All notable changes to this project will be documented in this file. See [standa
 * unambiguously refer to ArgoCD apps ([#2493](https://github.com/linode/apl-core/issues/2493)) ([a493555](https://github.com/linode/apl-core/commit/a493555fad71869ff75a68672d7c9f0eb57e87c5))
 * update apl-operator before other upgrades ([#2500](https://github.com/linode/apl-core/issues/2500)) ([9575284](https://github.com/linode/apl-core/commit/95752842e71a8f13925b936da16ac9eee234b88c))
 * update ingress in pre-upgrade to avoid upgrade deadlock ([#2552](https://github.com/linode/apl-core/issues/2552)) ([d76e5d3](https://github.com/linode/apl-core/commit/d76e5d31da2e8be00165f8dd683f3d01d2485fbd))
-* versions.yaml to main ([#2562](https://github.com/linode/apl-core/issues/2562)) ([dc2bd71](https://github.com/linode/apl-core/commit/dc2bd71aafd706e8250133faaf45d0d5e3b84403))
 
 
 ### CI
@@ -96,13 +95,7 @@ All notable changes to this project will be documented in this file. See [standa
 * **deps:** bump the npm-dependencies group across 1 directory with 17 updates ([#2540](https://github.com/linode/apl-core/issues/2540)) ([cfed5e7](https://github.com/linode/apl-core/commit/cfed5e7d43811eb7f99a57c7d07136c3f1f2c55a))
 * **deps:** bump the npm-dependencies group with 10 updates ([#2469](https://github.com/linode/apl-core/issues/2469)) ([2b9d6e1](https://github.com/linode/apl-core/commit/2b9d6e18898eb450d66a07831da85b35afa74e72))
 * **deps:** bump the npm-dependencies group with 4 updates ([#2487](https://github.com/linode/apl-core/issues/2487)) ([ce4326c](https://github.com/linode/apl-core/commit/ce4326cf60151b0d1debf359885acd56ead48d7f))
-* release version updates ([#2486](https://github.com/linode/apl-core/issues/2486)) ([96f0d34](https://github.com/linode/apl-core/commit/96f0d3485c7d8b07150a0d635bc908d1ff2494a3))
-* **release:** 4.12.0-rc.5 ([e627c16](https://github.com/linode/apl-core/commit/e627c16b4eeebd13238c036b9c7d90ea424d38d6))
-* **release:** 4.12.0-rc.6 ([593d035](https://github.com/linode/apl-core/commit/593d03528b2125fa99e6bababe80c10edd8c6790))
-* updated apl-charts version ([59789bc](https://github.com/linode/apl-core/commit/59789bcfabf220f6fff36fd72004949e2575e567))
-* updated apl-charts version ([8ac87bb](https://github.com/linode/apl-core/commit/8ac87bb5fbac1d210cf94d7d761c7e3f29534dd6))
-* v4.10.1 post release updates ([#2533](https://github.com/linode/apl-core/issues/2533)) ([27ec2cb](https://github.com/linode/apl-core/commit/27ec2cbb8f527cdf5ca9b60b953e82c9ab09f951))
-* v4.11.0 post release updates ([#2542](https://github.com/linode/apl-core/issues/2542)) ([6ac1f09](https://github.com/linode/apl-core/commit/6ac1f091be244aaf702fb3a28081ea0f7e058c46))
+
 
 ## [4.11.0](https://github.com/linode/apl-core/compare/v4.10.1...v4.11.0) (2025-09-22)
 
