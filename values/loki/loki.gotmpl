@@ -16,7 +16,11 @@ global:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
   {{- end }}
   priorityClassName: otomi-critical
+  {{- if eq $v.cluster.linode.tier "enterprise" }}
   dnsService: "coredns"
+  {{- else }}
+  dnsService: "kube-dns"
+  {{- end }}
 serviceMonitor:
   enabled: true
   labels:
