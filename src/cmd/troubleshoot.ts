@@ -227,6 +227,64 @@ async function getPVsWithIssues(): Promise<ResourceReport[]> {
 }
 
 /**
+ * Get ArgoCD Applications with health or sync issues
+ */
+async function getArgoApplicationsWithIssues(): Promise<ResourceReport[]> {
+  const customApi = k8s.custom()
+  const applications: ResourceReport[] = []
+
+  try {
+    const response = await customApi.listClusterCustomObject({
+      group: 'argoproj.io',
+      version: 'v1alpha1',
+      plural: 'applications',
+    })
+
+    const items = (response as any).items || []
+
+    items.forEach((app: any) => {
+      const name = app.metadata?.name || 'unknown'
+      const namespace = app.metadata?.namespace || 'unknown'
+      const healthStatus = app.status?.health?.status
+      const syncStatus = app.status?.sync?.status
+      const issues: string[] = []
+
+      if (healthStatus && healthStatus !== 'Healthy') {
+        const healthMessage = app.status?.health?.message || ''
+        issues.push(`Health: ${healthStatus}${healthMessage ? ` - ${healthMessage}` : 'Unknown'}`)
+      }
+
+      if (syncStatus && syncStatus !== 'Synced') {
+        issues.push(`Sync: ${syncStatus}`)
+      }
+
+      const operationPhase = app.status?.operationState?.phase
+      if (operationPhase !== 'Succeeded') {
+        const message = app.status?.operationState?.message || 'Unknown'
+        issues.push(`Operation: ${operationPhase} - ${message}`)
+      }
+
+      issues.forEach((issue) => {
+        applications.push({
+          kind: 'Application',
+          name,
+          namespace,
+          value: issue,
+        })
+      })
+    })
+  } catch (error) {
+    // If ArgoCD is not installed or CRD doesn't exist, silently skip
+    if (error instanceof ApiException && (error.code === 404 || error.code === 403)) {
+      return []
+    }
+    throw error
+  }
+
+  return applications
+}
+
+/**
  * Write troubleshooting report to ConfigMap
  */
 async function writeReportToConfigMap(
@@ -238,10 +296,8 @@ async function writeReportToConfigMap(
   const reportJson = JSON.stringify(report, null, 2)
 
   try {
-    // Try to read existing ConfigMap
     const existingConfigMap = await coreApi.readNamespacedConfigMap({ name, namespace })
 
-    // Update existing ConfigMap
     if (!existingConfigMap.data) {
       existingConfigMap.data = {}
     }
@@ -250,7 +306,6 @@ async function writeReportToConfigMap(
     await coreApi.replaceNamespacedConfigMap({ name, namespace, body: existingConfigMap })
   } catch (error) {
     if (error instanceof ApiException && error.code === 404) {
-      // ConfigMap doesn't exist, create it
       await coreApi.createNamespacedConfigMap({
         namespace,
         body: {
@@ -274,7 +329,7 @@ export async function troubleshoot(): Promise<void> {
     d.info('Starting troubleshooting scan...')
 
     // Gather all failed resources
-    const [pods, deployments, statefulSets, nodes, services, pvcs, pvs] = await Promise.all([
+    const [pods, deployments, statefulSets, nodes, services, pvcs, pvs, argoApps] = await Promise.all([
       getPodsWithIssues(),
       getDeploymentsWithIssues(),
       getStatefulSetsWithIssues(),
@@ -282,9 +337,19 @@ export async function troubleshoot(): Promise<void> {
       getServicesWithIssues(),
       getPVCsWithIssues(),
       getPVsWithIssues(),
+      getArgoApplicationsWithIssues(),
     ])
 
-    const failedResources = [...pods, ...deployments, ...statefulSets, ...nodes, ...services, ...pvcs, ...pvs]
+    const failedResources = [
+      ...pods,
+      ...deployments,
+      ...statefulSets,
+      ...nodes,
+      ...services,
+      ...pvcs,
+      ...pvs,
+      ...argoApps,
+    ]
 
     // Generate report
     const report = {
