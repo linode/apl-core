@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- if $v.apps.argocd.enabled }}
+
 {{- range $v.workloads }}
 {{- $a := .imageUpdateStrategy }}
 ---
@@ -7,6 +7,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: 'team-{{ $v.teamId }}-{{ .name }}'
+  namespace: argocd
   annotations:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
   {{- if or (eq $a.type "digest") (eq $a.type "semver") }}
@@ -99,4 +100,4 @@ spec:
     {{- end }}
     # helm-specific config
 {{- end }}
-{{- end }}
+
