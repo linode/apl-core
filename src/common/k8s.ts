@@ -4,6 +4,7 @@ import {
   BatchV1Api,
   CoreV1Api,
   CustomObjectsApi,
+  DiscoveryV1Api,
   Exec,
   KubeConfig,
   NetworkingV1Api,
@@ -38,6 +39,7 @@ let appClient: AppsV1Api
 let batchClient: BatchV1Api
 let networkingClient: NetworkingV1Api
 let customClient: CustomObjectsApi
+let discoveryClient: DiscoveryV1Api
 let execObject: Exec
 export const k8s = {
   kc: (): KubeConfig => {
@@ -65,6 +67,11 @@ export const k8s = {
     if (networkingClient) return networkingClient
     networkingClient = k8s.kc().makeApiClient(NetworkingV1Api)
     return networkingClient
+  },
+  discovery: (): DiscoveryV1Api => {
+    if (discoveryClient) return discoveryClient
+    discoveryClient = k8s.kc().makeApiClient(DiscoveryV1Api)
+    return discoveryClient
   },
   custom: (): CustomObjectsApi => {
     if (customClient) return customClient
