@@ -23,7 +23,7 @@ appsInfo:
     integration: Argo CD is configured by APL to use the SSO provided by keycloak, and maps APL groups to Argo CD roles. The otomi-admin role is made super admin within Argo CD. The team-admin role has access to Argo CD and is admin of all team projects. Members of team roles are only allowed to administer their own projects. All Teams will automatically get access to a Git repo, and Argo CD is configured to listen to this repo. All a team has to do is to fill their repo with intended state, commit, and automation takes care of the rest.
   cert-manager:
     title: Cert-manager
-    appVersion: 1.18.2
+    appVersion: 1.19.1
     repo: https://github.com/cert-manager/cert-manager
     maintainers: The Linux Foundation
     relatedLinks:
@@ -33,7 +33,7 @@ appsInfo:
     integration: Cert-manager is used by APL to automatically create and rotate TLS certificates for service endpoints. You may bring your own CA, or let APL create one for you (default). It is recommended to use Let's Encrypt for production certificates. Setting cert-manager to use Let's Encrypt requires DNS availability of the requesting domains, and forces APL to install external-dns. Because a lot of DNS settings are used by other APL contexts, most DNS configuration is found under settings/dns.
   cnpg:
     title: CloudNative PostgreSQL Operator
-    appVersion: 1.27.0
+    appVersion: 1.27.1
     repo: https://github.com/cloudnative-pg/cloudnative-pg
     maintainers: EDB
     relatedLinks:
@@ -45,7 +45,7 @@ appsInfo:
     chartName: cloudnative-pg
   external-dns:
     title: External DNS
-    appVersion: 0.18.0
+    appVersion: 0.19.0
     repo: https://github.com/kubernetes-sigs/external-dns
     maintainers: Kubernetes SIGs
     relatedLinks:
@@ -94,7 +94,7 @@ appsInfo:
     integration: APL uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
-    appVersion: 2.13.2
+    appVersion: 2.14.0
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
@@ -103,23 +103,6 @@ appsInfo:
     dependencies: None
     about: Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.
     integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. APL runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
-  httpbin:
-    title: HTTPbin
-    appVersion: 0.1.0
-    repo: https://github.com/postmanlabs/httpbin
-    maintainers: Postman Inc.
-    relatedLinks:
-      - https://httpbin.org/
-    license: ISC
-    about: HTTP Request & Response Service
-    integration: Httpbin is by default available for developers to use.
-    isDeprecated: true
-    deprecationInfo:
-      message: Httpbin testing service is being deprecated.
-      reasons:
-        - This diagnostic tool is not essential to deliver platform capabilities.
-      options:
-        - Click 'I understand' to continue using Httpbin service
   ingress-nginx:
     title: Ingress-NGINX
     appVersion: 1.13.3
@@ -132,7 +115,7 @@ appsInfo:
     integration: APL integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
-    appVersion: 1.26.3
+    appVersion: 1.27.3
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -258,7 +241,7 @@ appsInfo:
     chartName: tekton-pipelines
   loki:
     title: Loki
-    appVersion: 2.9.10
+    appVersion: 2.9.15
     repo: https://github.com/grafana/loki
     maintainers: Grafana Labs
     relatedLinks:
@@ -269,7 +252,7 @@ appsInfo:
     integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When APL is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. APL shortcuts can be used to provide selections of logs based on interest.
   minio:
     title: Minio
-    appVersion: 2022.10.29
+    appVersion: RELEASE.2025-09-07T16-13-09Z
     repo: https://github.com/minio/minio
     maintainers: Minio
     relatedLinks:
@@ -290,7 +273,7 @@ appsInfo:
     integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When APL is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
   rabbitmq:
     title: RabbitMQ
-    appVersion: 2.7.0
+    appVersion: 2.16.1
     repo: https://github.com/rabbitmq/cluster-operator
     maintainers: RabbitMQ
     relatedLinks:
@@ -303,7 +286,7 @@ appsInfo:
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
-    appVersion: 0.31.0
+    appVersion: 0.32.2
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:

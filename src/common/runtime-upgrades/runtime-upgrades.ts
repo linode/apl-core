@@ -1,9 +1,11 @@
+import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { OtomiDebugger } from '../debug'
 import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
 import { getParsedArgs } from '../yargs'
+import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
-import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
+import { executePSQLOnPrimary, updateDbCollation } from './cloudnative-pg'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -40,15 +42,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           }
         },
       },
-      'istio-system-istiod': {
-        post: async (context: RuntimeUpgradeContext) => {
-          try {
-            await detectAndRestartOutdatedIstioSidecars(k8s.core())
-          } catch (error) {
-            context.debug.error('Failed to check and restart outdated Istio sidecars:', error)
-          }
-        },
-      },
     },
   },
   {
@@ -63,16 +56,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
         context.debug.error('Failed to apply CRDs:', error)
       }
       await upgradeKnativeServing(context)
-    },
-  },
-  {
-    version: '4.11.0',
-    applications: {
-      'istio-system-istiod': {
-        post: async () => {
-          await detectAndRestartOutdatedIstioSidecars(k8s.core())
-        },
-      },
     },
   },
   {
@@ -106,7 +89,9 @@ export const runtimeUpgrades: RuntimeUpgrades = [
             name: 'oauth2-proxy',
             body: {
               metadata: {
-                'nginx.ingress.kubernetes.io/configuration-snippet': null,
+                annotations: {
+                  'nginx.ingress.kubernetes.io/configuration-snippet': null,
+                },
               },
             },
           },
@@ -119,6 +104,39 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           context.debug.error("Failed to patch ingress 'oauth2-proxy'", error)
         }
       }
+    },
+    applications: {
+      'minio-minio': {
+        post: async (context: RuntimeUpgradeContext) => {
+          const d = context.debug
+          d.info('checking minio resources in namespace minio')
+          try {
+            await removeOldMinioResources()
+          } catch (error) {
+            d.error('Failed to delete minio resources:', error)
+          }
+        },
+      },
+      'gitea-gitea-otomi-db': {
+        post: async (context: RuntimeUpgradeContext) => {
+          await updateDbCollation('gitea', 'gitea-db', 'gitea', context.debug)
+        },
+      },
+      'keycloak-keycloak-otomi-db': {
+        post: async (context: RuntimeUpgradeContext) => {
+          await updateDbCollation('keycloak', 'keycloak-db', 'keycloak', context.debug)
+        },
+      },
+      'harbor-harbor-otomi-db': {
+        post: async (context: RuntimeUpgradeContext) => {
+          await updateDbCollation('harbor', 'harbor-otomi-db', 'registry', context.debug)
+        },
+      },
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
     },
   },
 ]
