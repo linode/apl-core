@@ -448,9 +448,6 @@ environments:
                   memory: 512Mi
                   cpu: 200m
             _rawValues: {}
-          httpbin:
-            enabled: false
-            _rawValues: {}
           istio:
             tracing:
               enabled: false
