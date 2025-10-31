@@ -1,24 +1,54 @@
 import {
+  ApiException,
   AppsV1Api,
   CoreV1Api,
   CustomObjectsApi,
+  Exec,
+  KubeConfig,
   PatchStrategy,
   setHeaderOptions,
   V1Pod,
   V1PodList,
   V1ResourceRequirements,
   V1StatefulSet,
+  V1Status,
 } from '@kubernetes/client-node'
 import * as k8s from './k8s'
 import {
+  appRevisionMatches,
   checkArgoCDAppStatus,
   deleteStatefulSetPods,
+  patchArgoCdApp,
   patchContainerResourcesOfSts,
   patchStatefulSetResources,
 } from './k8s'
 import { terminal } from './debug'
 import retry from 'async-retry'
 import { env } from './envalid'
+import { ARGOCD_APP_PARAMS } from './constants'
+
+class MockApiException<T> extends ApiException<T> {
+  code: number
+  body: T
+  headers: {
+    [key: string]: string
+  }
+
+  constructor(
+    code: number,
+    message: string,
+    body: T,
+    headers: {
+      [key: string]: string
+    },
+  ) {
+    super(code, message, body, headers)
+    this.code = code
+    this.body = body
+    this.headers = headers
+    this.name = 'ApiException'
+  }
+}
 
 jest.mock('@kubernetes/client-node')
 jest.mock('async-retry')
@@ -56,7 +86,7 @@ describe('createGenericSecret', () => {
 
     const mockResponse = { metadata: { name, namespace }, data: encodedData } as any
     mockCoreV1Api.createNamespacedSecret.mockResolvedValue(mockResponse)
-    const result = await k8s.createGenericSecret(mockCoreV1Api, name, namespace, secretData)
+    const result = await k8s.createUpdateGenericSecret(mockCoreV1Api, name, namespace, secretData)
 
     expect(mockCoreV1Api.createNamespacedSecret).toHaveBeenCalledWith({
       body: {
@@ -66,6 +96,48 @@ describe('createGenericSecret', () => {
       },
       namespace: 'default',
     })
+
+    expect(result).toEqual(mockResponse)
+  })
+
+  it('should patch instead if the secret exists', async () => {
+    const name = 'test-secret'
+    const namespace = 'default'
+    const secretData = {
+      username: 'admin',
+      password: 'password123',
+    }
+    const encodedData = {
+      username: 'YWRtaW4=', // base64 of 'admin'
+      password: 'cGFzc3dvcmQxMjM=', // base64 of 'password123'
+    }
+
+    const mockError = new MockApiException(409, 'Conflict', {}, {})
+    mockCoreV1Api.createNamespacedSecret.mockRejectedValue(mockError)
+    const mockResponse = { metadata: { name, namespace }, data: encodedData }
+    mockCoreV1Api.patchNamespacedSecret.mockResolvedValue(mockResponse)
+    const result = await k8s.createUpdateGenericSecret(mockCoreV1Api, name, namespace, secretData)
+
+    expect(mockCoreV1Api.createNamespacedSecret).toHaveBeenCalledWith({
+      body: {
+        data: { password: 'cGFzc3dvcmQxMjM=', username: 'YWRtaW4=' },
+        metadata: { name: 'test-secret', namespace: 'default' },
+        type: 'Opaque',
+      },
+      namespace: 'default',
+    })
+    expect(mockCoreV1Api.patchNamespacedSecret).toHaveBeenCalledWith(
+      {
+        body: {
+          data: { password: 'cGFzc3dvcmQxMjM=', username: 'YWRtaW4=' },
+          metadata: { name: 'test-secret', namespace: 'default' },
+          type: 'Opaque',
+        },
+        name: 'test-secret',
+        namespace: 'default',
+      },
+      undefined,
+    )
 
     expect(result).toEqual(mockResponse)
   })
@@ -81,7 +153,9 @@ describe('createGenericSecret', () => {
     const errorMessage = 'Failed to create secret'
     mockCoreV1Api.createNamespacedSecret.mockRejectedValue(new Error(errorMessage))
 
-    await expect(k8s.createGenericSecret(mockCoreV1Api, name, namespace, secretData)).rejects.toThrow(errorMessage)
+    await expect(k8s.createUpdateGenericSecret(mockCoreV1Api, name, namespace, secretData)).rejects.toThrow(
+      errorMessage,
+    )
   })
 })
 
@@ -392,10 +466,7 @@ describe('ArgoCD Application Tests', () => {
 
       expect(result).toBe('Synced')
       expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
-        group: 'argoproj.io',
-        version: 'v1alpha1',
-        namespace: 'argocd',
-        plural: 'applications',
+        ...ARGOCD_APP_PARAMS,
         name: 'test-app',
       })
     })
@@ -461,6 +532,83 @@ describe('ArgoCD Application Tests', () => {
       mockCustomApi.getNamespacedCustomObject.mockRejectedValue(apiError)
 
       await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')).rejects.toThrow('API call failed')
+    })
+  })
+})
+
+describe('appRevisionMatches', () => {
+  const mockCustomApi = new CustomObjectsApi({} as any) as jest.Mocked<CustomObjectsApi>
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should return true if the current revision equals the expected one', async () => {
+    const mockApplication = {
+      spec: {
+        source: {
+          targetRevision: '1',
+        },
+      },
+      status: {
+        sync: {
+          status: 'Synced',
+        },
+      },
+    }
+    mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
+
+    const result = await appRevisionMatches('app-name', '1', mockCustomApi)
+
+    expect(result).toBe(true)
+    expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
+      ...ARGOCD_APP_PARAMS,
+      name: 'app-name',
+    })
+  })
+
+  it('should return false if the current revision does not equal the expected one', async () => {
+    const mockApplication = {
+      spec: {
+        source: {
+          targetRevision: '1',
+        },
+      },
+      status: {
+        sync: {
+          status: 'Synced',
+        },
+      },
+    }
+    mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
+
+    const result = await appRevisionMatches('app-name', '2', mockCustomApi)
+
+    expect(result).toBe(false)
+    expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
+      ...ARGOCD_APP_PARAMS,
+      name: 'app-name',
+    })
+  })
+})
+
+describe('patchArgoCdApp', () => {
+  const mockCustomApi = new CustomObjectsApi({} as any) as jest.Mocked<CustomObjectsApi>
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should call patch endpoint with parameters', async () => {
+    await patchArgoCdApp('app-name', '2', 'test-values', mockCustomApi)
+
+    expect(mockCustomApi.patchNamespacedCustomObject).toHaveBeenCalledWith({
+      ...ARGOCD_APP_PARAMS,
+      name: 'app-name',
+      body: [
+        { op: 'replace', path: '/spec/source/targetRevision', value: '2' },
+        { op: 'replace', path: '/spec/source/helm/values', value: 'test-values' },
+      ],
     })
   })
 })
@@ -543,5 +691,126 @@ describe('restartOtomiApiDeployment', () => {
 
     const call = mockAppApi.patchNamespacedDeployment.mock.calls[0]
     expect(call[1]).toEqual(setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch))
+  })
+})
+
+describe('exec utility test', () => {
+  let mockKubeConfig: jest.Mocked<KubeConfig>
+  let mockExec: jest.Mocked<Exec>
+  let mockWebsocket: jest.Mocked<WebSocket>
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockKubeConfig = new KubeConfig() as jest.Mocked<KubeConfig>
+    mockKubeConfig.loadFromDefault = jest.fn()
+    k8s.k8s.kc = jest.fn().mockResolvedValue(mockKubeConfig)
+    mockExec = jest.mocked(new Exec(mockKubeConfig), { shallow: true }) as jest.Mocked<Exec>
+    mockWebsocket = {
+      once: jest.fn().mockImplementation((event, callback) => {
+        if (event === 'close') callback()
+      }),
+    } as unknown as jest.Mocked<WebSocket>
+    mockExec.exec.mockResolvedValue(mockWebsocket)
+    ;(Exec as jest.Mock).mockImplementation(() => mockExec)
+  })
+
+  it('should call command with parameters', async () => {
+    await k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])
+
+    expect(mockExec.exec).toHaveBeenCalledWith(
+      'default',
+      'test-pod-1',
+      'container-1',
+      ['cmd-1', 'arg-1'],
+      expect.any(Object),
+      expect.any(Object),
+      null,
+      false,
+      expect.any(Function),
+    )
+  })
+
+  it('should capture stdout from command execution', async () => {
+    const expectedOutput1 = 'row1\nrow2\nrow3\n'
+    const expectedOutput2 = 'row4\nrow5\nrow6\n'
+
+    mockExec.exec = jest
+      .fn()
+      .mockImplementation(
+        async (namespace: string, podName: string, containerName: string, command: string[], stdout: any) => {
+          stdout.write(Buffer.from(expectedOutput1))
+          stdout.write(Buffer.from(expectedOutput2))
+          return mockWebsocket
+        },
+      )
+
+    const result = await k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])
+
+    expect(result.stdout).toBe(expectedOutput1 + expectedOutput2)
+    expect(result.exitCode).toBe(0)
+  })
+
+  it('should capture stderr from command execution', async () => {
+    const expectedError = 'ERROR: relation does not exist\n'
+
+    mockExec.exec = jest
+      .fn()
+      .mockImplementation(
+        async (
+          namespace: string,
+          podName: string,
+          containerName: string,
+          command: string[],
+          stdout: any,
+          stderr: any,
+        ) => {
+          stderr.write(Buffer.from(expectedError))
+          return mockWebsocket
+        },
+      )
+
+    const result = await k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])
+
+    expect(result.stderr).toBe(expectedError)
+  })
+
+  it('should propagate execution failures', async () => {
+    mockExec.exec = jest.fn().mockRejectedValue(new Error('Connection refused'))
+
+    await expect(k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])).rejects.toThrow(
+      'Connection refused',
+    )
+  })
+
+  it('should handle status callback with failure', async () => {
+    mockExec.exec = jest
+      .fn()
+      .mockImplementation(
+        async (
+          namespace: string,
+          podName: string,
+          containerName: string,
+          command: string[],
+          stdout: any,
+          stderr: any,
+          stdin: any,
+          tty: boolean,
+          statusCallback: any,
+        ) => {
+          const failureStatus: V1Status = {
+            status: 'Failure',
+            details: {
+              causes: [{ reason: 'ExitCode', message: '255' }],
+            },
+            message: 'Command failed',
+          }
+          statusCallback(failureStatus)
+          return mockWebsocket
+        },
+      )
+
+    const result = await k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])
+
+    expect(result.exitCode).toBe(255)
   })
 })

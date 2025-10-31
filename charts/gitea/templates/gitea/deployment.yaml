@@ -59,6 +59,9 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
+        {{- if .Values.preExtraInitContainers }}
+        {{- toYaml .Values.preExtraInitContainers | nindent 8 }}
+        {{- end }}
         - name: init-directories
           image: "{{ include "gitea.image" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -98,7 +101,7 @@ spec:
         - name: init-app-ini
           image: "{{ include "gitea.image" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: 
+          command:
           - "{{ .Values.initContainersScriptsVolumeMountPath }}/config_environment.sh"
           env:
             - name: GITEA_APP_INI
@@ -143,7 +146,7 @@ spec:
         {{- if .Values.signing.enabled }}
         - name: configure-gpg
           image: "{{ include "gitea.image" . }}"
-          command: 
+          command:
           - "{{ .Values.initContainersScriptsVolumeMountPath }}/configure_gpg_environment.sh"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
@@ -272,6 +275,9 @@ spec:
             {{- include "gitea.init-additional-mounts" . | nindent 12 }}
           resources:
             {{- toYaml .Values.initContainers.resources | nindent 12 }}
+        {{- if .Values.postExtraInitContainers }}
+        {{- toYaml .Values.postExtraInitContainers | nindent 8 }}
+        {{- end }}
       terminationGracePeriodSeconds: {{ .Values.deployment.terminationGracePeriodSeconds }}
       containers:
         - name: {{ .Chart.Name }}

@@ -1,8 +1,8 @@
-import { AplOperator, AplOperatorConfig, ApplyTrigger } from './apl-operator'
 import { waitTillGitRepoAvailable } from '../common/k8s'
-import { updateApplyState } from './k8s'
-import { GitRepository } from './git-repository'
 import { AplOperations } from './apl-operations'
+import { AplOperator, AplOperatorConfig, ApplyTrigger } from './apl-operator'
+import { GitRepository } from './git-repository'
+import { updateApplyState } from './k8s'
 
 const mockInfoFn = jest.fn()
 const mockWarnFn = jest.fn()
@@ -22,6 +22,7 @@ const mockAplOps = {
   validateValues: jest.fn().mockResolvedValue(undefined),
   apply: jest.fn().mockResolvedValue(undefined),
   applyAsAppsTeams: jest.fn().mockResolvedValue(undefined),
+  applyTeams: jest.fn().mockResolvedValue(undefined),
   migrate: jest.fn().mockResolvedValue(undefined),
 }
 
@@ -52,6 +53,7 @@ jest.mock('../cmd/commit', () => ({
 
 jest.mock('./k8s', () => ({
   updateApplyState: jest.fn().mockResolvedValue(undefined),
+  appRevisionMatches: jest.fn().mockResolvedValue(true),
 }))
 
 jest.mock('./git-repository', () => ({

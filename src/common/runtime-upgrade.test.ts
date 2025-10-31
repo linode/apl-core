@@ -1,12 +1,16 @@
-import { runtimeUpgrade, filterRuntimeUpgrades } from './runtime-upgrade'
-import { getDeploymentState, waitForArgoCDAppHealthy, waitForArgoCDAppSync, k8s } from './k8s'
-import { getCurrentVersion } from './values'
-import { RuntimeUpgrades } from './runtime-upgrades/runtime-upgrades'
+import { getApplications } from 'src/cmd/apply-as-apps'
 import { terminal } from './debug'
+import { getDeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
+import { filterRuntimeUpgrades, runtimeUpgrade } from './runtime-upgrade'
+import { RuntimeUpgrades } from './runtime-upgrades/runtime-upgrades'
+import { getCurrentVersion } from './values'
+import { deployEssential } from './hf'
 
 jest.mock('./k8s')
+jest.mock('./hf')
 jest.mock('./values')
 jest.mock('./debug')
+jest.mock('src/cmd/apply-as-apps')
 
 // Mock the runtime upgrades module with a mutable array
 let mockRuntimeUpgrades: RuntimeUpgrades = []
@@ -20,9 +24,12 @@ const mockGetDeploymentState = getDeploymentState as jest.MockedFunction<typeof 
 const mockGetCurrentVersion = getCurrentVersion as jest.MockedFunction<typeof getCurrentVersion>
 const mockWaitForArgoCDAppSync = waitForArgoCDAppSync as jest.MockedFunction<typeof waitForArgoCDAppSync>
 const mockWaitForArgoCDAppHealthy = waitForArgoCDAppHealthy as jest.MockedFunction<typeof waitForArgoCDAppHealthy>
+const mockGetApplications = getApplications as jest.MockedFunction<typeof getApplications>
 const mockTerminal = terminal as jest.MockedFunction<typeof terminal>
+const mockDeployEssential = deployEssential as jest.MockedFunction<typeof deployEssential>
 const mockK8s = k8s as jest.Mocked<typeof k8s>
 
+mockDeployEssential.mockResolvedValue(true)
 // Mock the custom API
 const mockCustomApi = { mockCustomApi: true }
 mockK8s.custom.mockReturnValue(mockCustomApi as any)
@@ -164,7 +171,7 @@ describe('runtimeUpgrade', () => {
     it('should execute application-specific operations with ArgoCD waits', async () => {
       mockGetDeploymentState.mockResolvedValue({ version: '1.0.0' })
       mockGetCurrentVersion.mockResolvedValue('1.0.0')
-
+      mockGetApplications.mockResolvedValue(['istio-operator'])
       await runtimeUpgrade({ when: 'post' })
 
       expect(mockWaitForArgoCDAppSync).toHaveBeenCalledWith('istio-operator', mockCustomApi, mockDebugger)
@@ -180,6 +187,7 @@ describe('runtimeUpgrade', () => {
     it('should not execute application operations for wrong phase', async () => {
       mockGetDeploymentState.mockResolvedValue({ version: '1.0.0' })
       mockGetCurrentVersion.mockResolvedValue('1.0.0')
+      mockGetApplications.mockResolvedValue(['argocd'])
 
       await runtimeUpgrade({ when: 'pre' })
 
