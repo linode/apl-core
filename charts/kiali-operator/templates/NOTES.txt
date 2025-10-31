@@ -1,6 +1,17 @@
 Welcome to Kiali! For more details on Kiali, see: https://kiali.io
 
+{{- if .Values.skipResources }}
+The Kiali Operator [{{ .Chart.AppVersion }}] has been installed in namespace [{{ .Release.Namespace }}].
+===============
+!!! WARNING !!!
+===============
+You have configured the "skipResources" setting. This helm chart will not create or manage those resources.
+It is your responsibility to manually create those resources yourself. Until you create those
+resources with their correct configurations, the operator WILL NOT work.
+{{- else }}
 The Kiali Operator [{{ .Chart.AppVersion }}] has been installed in namespace [{{ .Release.Namespace }}]. It will be ready soon.
+{{- end }}
+===============
 
 {{- if .Values.cr.create }}
   {{- if or (and (not .Values.watchNamespace) (not .Values.cr.namespace)) (and (.Values.watchNamespace) (eq .Values.watchNamespace .Release.Namespace)) (and (.Values.cr.namespace) (eq .Values.cr.namespace .Release.Namespace)) }}
