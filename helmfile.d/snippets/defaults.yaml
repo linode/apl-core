@@ -761,6 +761,9 @@ environments:
                   cpu: "1"
                   memory: 512Mi
             _rawValues: {}
+          linode-cfw:
+            enabled: false
+            _rawValues: {}
           policy-reporter:
             enabled: false
             resources:
