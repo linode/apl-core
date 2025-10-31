@@ -17,8 +17,6 @@ apps:
     enabled: true
   hello:
     enabled: true
-  httpbin:
-    enabled: false
   jaeger:
     enabled: true
   kiali:
