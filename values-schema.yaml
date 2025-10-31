@@ -2267,6 +2267,14 @@ properties:
             properties:
               kuredDaemonSet:
                 $ref: '#/definitions/resources'
+      linode-cfw:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
       sealed-secrets:
         additionalProperties: false
         properties:
