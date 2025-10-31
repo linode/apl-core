@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 26.3.3
+appVersion: 26.4.2
 description: Keycloak.X - Open Source Identity and Access Management for Modern Applications
   and Services
 home: https://www.keycloak.org/
@@ -21,4 +21,4 @@ name: keycloakx
 sources:
 - https://github.com/codecentric/helm-charts
 - https://github.com/keycloak/keycloak/tree/main/quarkus/container
-version: 7.1.3
+version: 7.1.4
