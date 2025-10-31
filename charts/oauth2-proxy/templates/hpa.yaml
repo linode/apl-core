@@ -1,5 +1,5 @@
 {{- if .Values.autoscaling.enabled }}
-apiVersion: autoscaling/v2
+apiVersion: {{ include "capabilities.horizontalPodAutoscaler.apiVersion" . }}
 kind: HorizontalPodAutoscaler
 metadata:
   labels:
