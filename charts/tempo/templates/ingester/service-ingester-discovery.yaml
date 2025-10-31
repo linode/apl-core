@@ -7,7 +7,7 @@ metadata:
   labels:
     {{- include "tempo.labels" $dict | nindent 4 }}
     prometheus.io/service-monitor: "false"
-  {{- with .Values.ingester.service.annotations }}
+  {{- with .Values.ingester.serviceDiscovery.annotations }}
   annotations:
     {{- tpl (toYaml . | nindent 4) $ }}
   {{- end }}
@@ -16,13 +16,13 @@ spec:
   clusterIP: None
   ports:
     - name: http-metrics
-      port: 3100
+      port: 3200
       protocol: TCP
-      targetPort: 3100
+      targetPort: http-metrics
     - name: grpc
       port: 9095
       protocol: TCP
-      targetPort: 9095
+      targetPort: grpc
       {{- if .Values.ingester.appProtocol.grpc }}
       appProtocol: {{ .Values.ingester.appProtocol.grpc }}
       {{- end }}
