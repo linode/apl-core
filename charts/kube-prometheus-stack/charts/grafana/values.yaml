@@ -569,7 +569,7 @@ envFromSecrets: []
 ##   prefix: prefix
 ##   optional: true
 
-## The names of conifgmaps in the same kubernetes namespace which contain values to be added to the environment
+## The names of configmaps in the same kubernetes namespace which contain values to be added to the environment
 ## Each entry should contain a name key, and can optionally specify whether the configmap must be defined with an optional key.
 ## Name is templated.
 ## ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#configmapenvsource-v1-core
@@ -959,7 +959,7 @@ sidecar:
     # -- The Docker registry
     registry: quay.io
     repository: kiwigrid/k8s-sidecar
-    tag: 1.30.3
+    tag: 1.30.10
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}
