@@ -1,4 +1,4 @@
-import { CoreV1Api } from '@kubernetes/client-node'
+import { DiscoveryV1Api } from '@kubernetes/client-node'
 import retry from 'async-retry'
 import { existsSync } from 'fs'
 import { rm } from 'fs/promises'
@@ -240,7 +240,7 @@ export async function retryIsOAuth2ProxyRunning() {
   const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
   await retry(
     async () => {
-      await isOAuth2ProxyAvailable(k8s.core())
+      await isOAuth2ProxyAvailable(k8s.discovery())
     },
     { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
   ).catch((e) => {
@@ -249,26 +249,32 @@ export async function retryIsOAuth2ProxyRunning() {
   })
 }
 
-export async function isOAuth2ProxyAvailable(coreV1Api: CoreV1Api): Promise<void> {
-  const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
-  d.info('Checking if OAuth2Proxy is available, waiting...')
-  const oauth2ProxyEndpoint = await coreV1Api.readNamespacedEndpoints({
-    name: 'oauth2-proxy',
+export async function isOAuth2ProxyAvailable(discoveryV1Api: DiscoveryV1Api): Promise<void> {
+  const endpointSlices = await discoveryV1Api.listNamespacedEndpointSlice({
     namespace: 'istio-system',
+    labelSelector: 'kubernetes.io/service-name=oauth2-proxy',
   })
-  if (!oauth2ProxyEndpoint) {
-    throw new Error('OAuth2Proxy endpoint not found, waiting...')
-  }
-  const oauth2ProxySubsets = oauth2ProxyEndpoint.subsets
-  if (!oauth2ProxySubsets || oauth2ProxySubsets.length < 1) {
-    throw new Error('OAuth2Proxy has no subsets, waiting...')
-  }
-  const oauth2ProxyAddresses = oauth2ProxySubsets[0].addresses
 
-  if (!oauth2ProxyAddresses || oauth2ProxyAddresses.length < 1) {
-    throw new Error('OAuth2Proxy has no available addresses, waiting...')
+  if (!endpointSlices || !endpointSlices.items || endpointSlices.items.length === 0) {
+    throw new Error('OAuth2Proxy EndpointSlice not found, waiting...')
   }
-  d.info('OAuth2proxy is available, continuing...')
+
+  const hasReadyEndpoint = endpointSlices.items.some((slice) => {
+    const endpoints = slice.endpoints
+    if (!endpoints || endpoints.length === 0) {
+      return false
+    }
+
+    return endpoints.some((endpoint) => {
+      const isReady = endpoint.conditions?.ready === true
+      const hasAddresses = endpoint.addresses && endpoint.addresses.length > 0
+      return isReady && hasAddresses
+    })
+  })
+
+  if (!hasReadyEndpoint) {
+    throw new Error('OAuth2Proxy has no ready endpoints with addresses, waiting...')
+  }
 }
 
 export async function initialSetupData(): Promise<InitialData> {
