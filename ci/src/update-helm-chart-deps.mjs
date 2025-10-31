@@ -63,10 +63,20 @@ async function copyKserveCrdTemplates(chartDir) {
   return false
 }
 
-const CHART_SKIP_PRECHECK = ['kserve-crd']
+async function copyLinodeCfwTemplates(chartDir) {
+  console.log(`Copying templates from ${chartDir}`)
+  const crdPath = `${CHARTS_DIR}/linode-cfw/crds`
+  console.log(`Adding CRDs to ${crdPath}`)
+  await fs.rm(crdPath, { force: true, recursive: true })
+  await $`mv ${chartDir}/templates ${crdPath}`
+  return false
+}
+
+const CHART_SKIP_PRECHECK = ['cloud-firewall-crd', 'kserve-crd']
 const CHART_POST_FUNCS = {
   kyverno: renderKyvernoCrdTemplates,
   'kserve-crd': copyKserveCrdTemplates,
+  'cloud-firewall-crd': copyLinodeCfwTemplates,
 }
 
 async function main() {
@@ -74,7 +84,7 @@ async function main() {
   const env = envalid.cleanEnv(process.env, {
     CI_UPDATE_TYPE: str({
       desc: 'Path to the YAML file to validate',
-      choices: ['patch', 'minor', 'major', 'prerelease'],
+      choices: ['patch', 'minor', 'major', 'prerelease', 'init'],
       default: 'minor',
     }),
     CI_HELM_CHART_NAME_FILTER: json({ desc: 'A list of names in json format', default: [] }),
@@ -125,7 +135,7 @@ async function main() {
       }
 
       const dependencyFileName = `${CHARTS_DIR}/${dirName}/Chart.yaml`
-      if (!CHART_SKIP_PRECHECK.includes(dependency.name)) {
+      if (!CHART_SKIP_PRECHECK.includes(dependency.name) && allowedUpgradeType !== 'init') {
         console.log(`Pre-check for dependency ${dependency.name}`)
         try {
           const dependencyChart = await loadYamlFile(dependencyFileName)
