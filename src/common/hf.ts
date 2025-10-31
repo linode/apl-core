@@ -215,7 +215,7 @@ export const deployEssential = async (labelOpts: string[] | null = null) => {
     }
     writeFileSync(templateFile, templateOutput)
 
-    await $`kubectl apply -f ${templateFile}`
+    await $`kubectl apply --server-side=true -f ${templateFile}`
   }
 
   return true

@@ -25,6 +25,7 @@ import {
   printWelcomeMessage,
   retryIsOAuth2ProxyRunning,
 } from './commit'
+import { troubleshoot } from './troubleshoot'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -145,6 +146,12 @@ const install = async (): Promise<void> => {
         await installAll()
       } catch (e) {
         d.error(e)
+        // Generate troubleshooting report on installation failure
+        try {
+          await troubleshoot()
+        } catch (troubleshootError) {
+          d.error('Failed to generate troubleshooting report:', troubleshootError)
+        }
         d.info(`Retrying in ${retryOptions.maxTimeout} ms`)
         throw e
       }

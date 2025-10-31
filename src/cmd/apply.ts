@@ -14,6 +14,7 @@ import { runtimeUpgrade } from '../common/runtime-upgrade'
 import { applyAsApps } from './apply-as-apps'
 import { applyTeams } from './apply-teams'
 import { commit } from './commit'
+import { troubleshoot } from './troubleshoot'
 import { upgrade } from './upgrade'
 
 const cmdName = getFilename(__filename)
@@ -86,6 +87,12 @@ export const apply = async (): Promise<void> => {
         await applyAll()
       } catch (e) {
         d.error(e)
+        // Generate troubleshooting report on apply failure
+        try {
+          await troubleshoot()
+        } catch (troubleshootError) {
+          d.error('Failed to generate troubleshooting report:', troubleshootError)
+        }
         d.info(`Retrying in ${retryOptions.maxTimeout} ms`)
         throw e
       }
