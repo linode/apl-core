@@ -42,15 +42,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           }
         },
       },
-      'istio-system-istiod': {
-        post: async (context: RuntimeUpgradeContext) => {
-          try {
-            await detectAndRestartOutdatedIstioSidecars(k8s.core())
-          } catch (error) {
-            context.debug.error('Failed to check and restart outdated Istio sidecars:', error)
-          }
-        },
-      },
     },
   },
   {
@@ -65,16 +56,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
         context.debug.error('Failed to apply CRDs:', error)
       }
       await upgradeKnativeServing(context)
-    },
-  },
-  {
-    version: '4.11.0',
-    applications: {
-      'istio-system-istiod': {
-        post: async () => {
-          await detectAndRestartOutdatedIstioSidecars(k8s.core())
-        },
-      },
     },
   },
   {
@@ -154,6 +135,11 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       'harbor-harbor-otomi-db': {
         post: async (context: RuntimeUpgradeContext) => {
           await updateDbCollation('harbor', 'harbor-otomi-db', 'registry', context.debug)
+        },
+      },
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
     },
