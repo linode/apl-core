@@ -1,7 +1,0 @@
-kind: AplApp
-metadata:
-    name: httpbin
-    labels: {}
-spec:
-    enabled: true
-    _rawValues: {}
