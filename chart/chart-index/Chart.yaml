@@ -18,6 +18,13 @@ dependencies:
     alias: cloudnative-pg-plugin-barman-cloud
     version: 0.1.0
     repository: https://cloudnative-pg.github.io/charts
+  - name: cloud-firewall-crd
+    version: 0.2.0
+    repository: https://linode.github.io/cloud-firewall-controller
+  - name: cloud-firewall-controller
+    alias: linode-cfw
+    version: 0.2.0
+    repository: https://linode.github.io/cloud-firewall-controller
   - name: external-dns
     version: 1.19.0
     repository: https://kubernetes-sigs.github.io/external-dns
