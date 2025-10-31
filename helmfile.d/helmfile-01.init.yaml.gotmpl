@@ -12,6 +12,10 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
+  - name: linode-cfw
+    installed: {{ $a | get "linode-cfw.enabled" }}
+    namespace: kube-system
+    <<: *default
   - name: kyverno
     installed: {{ $a | get "kyverno.enabled" }}
     namespace: kyverno
