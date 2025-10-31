@@ -1,10 +1,10 @@
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Bump Redis Chart Version
+      description: Adds backwards compatibility with Kubernetes 1.20 by selecting the HPA apiVersion of autoscaling/v2beta2
       links:
         - name: Github PR
-          url: https://github.com/oauth2-proxy/manifests/pull/361
+          url: https://github.com/oauth2-proxy/manifests/pull/364
 apiVersion: v2
 appVersion: 7.12.0
 dependencies:
@@ -36,4 +36,4 @@ name: oauth2-proxy
 sources:
 - https://github.com/oauth2-proxy/oauth2-proxy
 - https://github.com/oauth2-proxy/manifests
-version: 8.3.1
+version: 8.3.2
