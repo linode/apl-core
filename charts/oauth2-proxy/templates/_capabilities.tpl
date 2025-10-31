@@ -21,3 +21,14 @@ Return the appropriate apiVersion for ingress object.
 {{- print "networking.k8s.io/v1" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Return the appropriate apiVersion for HorizontalPodAutoscaler object.
+*/}}
+{{- define "capabilities.horizontalPodAutoscaler.apiVersion" -}}
+{{- if semverCompare "<1.23-0" ( .Values.kubeVersion | default .Capabilities.KubeVersion.Version ) -}}
+{{- print "autoscaling/v2beta2" -}}
+{{- else -}}
+{{- print "autoscaling/v2" -}}
+{{- end -}}
+{{- end -}}
