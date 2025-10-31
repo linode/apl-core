@@ -83,7 +83,7 @@ appsInfo:
     integration: APL uses Gitea as its default repository for APL configuration (values). Gitea can also be used by Teams to provide application code repositories. Access to Gitea is provided by the OIDC integration in APL. Members of the otomi-admin and team-admin group can seamlessly sign in to Gitea. When Argo CD is enabled, APL will automatically create a Gitops repository for each Team in Gitea.
   grafana:
     title: Grafana
-    appVersion: 12.0.2
+    appVersion: 12.2.1
     repo: https://github.com/grafana/grafana
     maintainers: Grafana Labs
     relatedLinks:
@@ -263,7 +263,7 @@ appsInfo:
     integration: APL installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in APL capable of using object storage for data persistence.
   prometheus:
     title: Prometheus
-    appVersion: 3.4.2
+    appVersion: 3.7.2
     repo: https://github.com/prometheus/prometheus
     maintainers: Prometheus
     relatedLinks:
