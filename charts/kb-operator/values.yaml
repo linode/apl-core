@@ -1,0 +1,79 @@
+# Default values for kb-operator
+nameOverride: ""
+fullnameOverride: ""
+
+replicaCount: 1
+
+image:
+  repository: linode/kb-operator
+  pullPolicy: IfNotPresent
+  tag: "0.1.0"
+
+imagePullSecrets: []
+
+# Service account configuration
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# RBAC configuration
+rbac:
+  # Use namespace-scoped roles instead of cluster-scoped (more secure)
+  # When true, requires watchNamespaces to be set with comma-separated namespace list
+  # When false, uses ClusterRole with broad permissions (backward compatible)
+  namespaceScoped: false
+
+# Pod security settings
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  fsGroup: 65534
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65534
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Namespaces to watch (comma-separated, empty means all namespaces)
+# Required when rbac.namespaceScoped=true
+# Example: "team-kb,team-ml,team-demo"
+watchNamespaces: ""
+
+# Kopf configuration
+kopf:
+  verbose: false
+  logFormat: plain
+  peeringName: "kb-operator"
+
+# Additional environment variables
+env: {}
+
+# Pod annotations
+podAnnotations: {}
+
+# Monitoring
+monitoring:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    path: /metrics
