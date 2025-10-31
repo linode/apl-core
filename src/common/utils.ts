@@ -17,6 +17,13 @@ const packagePath = process.cwd()
 // we keep the rootDir for zx, but have to fix it for drone, which starts in /home/app/stack/env (to accommodate write perms):
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 export const pkg = JSON.parse(readFileSync(`${rootDir}/package.json`, 'utf8'))
+// Ensure a resolved path is within rootDir
+const isSubPath = (target: string, base: string): boolean => {
+  // Ensure trailing slash for correct startsWith
+  const baseNorm = resolve(base) + '/'
+  const targetNorm = resolve(target)
+  return targetNorm === resolve(base) || targetNorm.startsWith(baseNorm)
+}
 export const getFilename = (path: string): string => path.split('/').pop()?.split('.')[0] as string
 
 export const asArray = (args: string | string[]): string[] => {
@@ -35,6 +42,11 @@ export const removeBlankAttributes = (obj: Record<string, any>): Record<string, 
 }
 
 export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }): Promise<string[]> => {
+  // Validate that dir is within rootDir
+  if (!isSubPath(dir, rootDir)) {
+    terminal('common:utils').warn(`Refusing to recurse outside rootDir: ${dir}`)
+    return []
+  }
   const dirs = await readdir(dir, { withFileTypes: true })
   const files = await Promise.all(
     dirs.map(async (dirOrFile) => {

@@ -7,6 +7,8 @@ import path from 'path'
 import { getDirNames, loadYaml } from './utils'
 import { objectToYaml, writeValuesToFile } from './values'
 
+// Define the base directory allowed for all envDir input (adjust as appropriate for the project)
+const ROOT = path.resolve('/var/data')  // Change /var/data to desired allowed directory
 export async function getTeamNames(envDir: string): Promise<Array<string>> {
   const teamsDir = path.join(envDir, 'env', 'teams')
   return await getDirNames(teamsDir, { skipHidden: true })
@@ -515,21 +517,27 @@ export async function setValuesFile(
   envDir: string,
   deps = { pathExists: existsSync, loadValues, writeFile },
 ): Promise<string> {
-  const valuesPath = path.join(envDir, 'values-repo.yaml')
+  const safeEnvDir = path.resolve(ROOT, envDir)
+  if (!safeEnvDir.startsWith(ROOT)) throw new Error('Invalid envDir: outside permitted directory')
+  const valuesPath = path.join(safeEnvDir, 'values-repo.yaml')
   // if (await deps.pathExists(valuesPath)) return valuesPath
-  const allValues = await deps.loadValues(envDir)
+  const allValues = await deps.loadValues(safeEnvDir)
   await deps.writeFile(valuesPath, objectToYaml(allValues))
   return valuesPath
 }
 
 export async function unsetValuesFile(envDir: string): Promise<string> {
-  const valuesPath = path.join(envDir, 'values-repo.yaml')
+  const safeEnvDir = path.resolve(ROOT, envDir)
+  if (!safeEnvDir.startsWith(ROOT)) throw new Error('Invalid envDir: outside permitted directory')
+  const valuesPath = path.join(safeEnvDir, 'values-repo.yaml')
   await rm(valuesPath, { force: true })
   return valuesPath
 }
 
 export function unsetValuesFileSync(envDir: string): string {
-  const valuesPath = path.join(envDir, 'values-repo.yaml')
+  const safeEnvDir = path.resolve(ROOT, envDir)
+  if (!safeEnvDir.startsWith(ROOT)) throw new Error('Invalid envDir: outside permitted directory')
+  const valuesPath = path.join(safeEnvDir, 'values-repo.yaml')
   rmSync(valuesPath, { force: true })
   return valuesPath
 }

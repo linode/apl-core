@@ -37,7 +37,8 @@
     "validator": "13.15.15",
     "yaml": "2.8.1",
     "yargs": "^17.7.2",
-    "zx": "8.8.3"
+    "zx": "8.8.3",
+    "express-rate-limit": "^8.1.0"
   },
   "description": "Otomi Core is an opinionated stack of Kubernetes apps and configurations. Part of Otomi Container Platform.",
   "devDependencies": {
