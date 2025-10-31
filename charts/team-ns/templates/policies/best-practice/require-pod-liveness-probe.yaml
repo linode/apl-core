@@ -52,7 +52,10 @@ spec:
             selector:
               matchLabels:
                 app.kubernetes.io/instance: tekton-dashboard-{{ $v.teamId }}
-
+        - resources:
+            selector:
+              matchLabels:
+                otomi: tty
     preconditions:
       all:
       - key: "{{`{{request.operation || 'BACKGROUND'}}`}}"
