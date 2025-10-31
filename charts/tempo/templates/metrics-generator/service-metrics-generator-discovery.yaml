@@ -8,7 +8,7 @@ metadata:
   labels:
     {{- include "tempo.labels" $dict | nindent 4 }}
     prometheus.io/service-monitor: "false"
-  {{- with .Values.metricsGenerator.service.annotations }}
+  {{- with .Values.metricsGenerator.serviceDiscovery.annotations }}
   annotations:
     {{- tpl (toYaml . | nindent 4) $ }}
   {{- end }}
