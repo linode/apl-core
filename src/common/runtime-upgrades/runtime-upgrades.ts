@@ -117,11 +117,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           }
         },
       },
-    },
-  },
-  {
-    version: '4.13.0',
-    applications: {
       'gitea-gitea-otomi-db': {
         post: async (context: RuntimeUpgradeContext) => {
           await updateDbCollation('gitea', 'gitea-db', 'gitea', context.debug)
