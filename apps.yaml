@@ -103,23 +103,6 @@ appsInfo:
     dependencies: None
     about: Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.
     integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. APL runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
-  httpbin:
-    title: HTTPbin
-    appVersion: 0.1.0
-    repo: https://github.com/postmanlabs/httpbin
-    maintainers: Postman Inc.
-    relatedLinks:
-      - https://httpbin.org/
-    license: ISC
-    about: HTTP Request & Response Service
-    integration: Httpbin is by default available for developers to use.
-    isDeprecated: true
-    deprecationInfo:
-      message: Httpbin testing service is being deprecated.
-      reasons:
-        - This diagnostic tool is not essential to deliver platform capabilities.
-      options:
-        - Click 'I understand' to continue using Httpbin service
   ingress-nginx:
     title: Ingress-NGINX
     appVersion: 1.13.3
