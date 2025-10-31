@@ -9,7 +9,7 @@ on:
       kubernetes_versions:
         description: 'Kubernetes version'
         type: string
-        default: "['1.33']"
+        default: "['1.34']"
       install_profile:
         description: 'APL installation profile'
         type: string
@@ -48,10 +48,10 @@ on:
         description: 'Kubernetes version'
         type: choice
         options:
-          - "['1.31']"
           - "['1.32']"
           - "['1.33']"
-        default: "['1.33']"
+          - "['1.34']"
+        default: "['1.34']"
       install_profile:
         description: APL installation profile
         default: minimal-with-team
@@ -103,6 +103,7 @@ env:
   GIT_USER: svcAPLBot
   CHECK_CONTEXT: continuous-integration/integration-test
   COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
+  COMMIT_REF: '${{ github.event.pull_request.head.ref || github.ref }}'
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
   DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
@@ -114,7 +115,7 @@ jobs:
     steps:
       - name: Print user input
         run: |
-          echo 'ref: ${{ github.event.pull_request.head.ref || github.ref }}'
+          echo "ref: $COMMIT_REF"
           echo 'install_profile: ${{ inputs.install_profile }}'
           echo 'kubernetes_versions: ${{ inputs.kubernetes_versions }}'
           echo 'kms: ${{ inputs.kms }}'
@@ -297,15 +298,6 @@ jobs:
           helm install wiz-lke-ac wiz-sec/wiz-admission-controller --values "$ADMISSION_PATH" -n "$NAMESPACE" --wait
 
           echo "✅ Wiz deployment for cluster $CLUSTER_NAME completed."
-      - name: Install Cloud Firewall Controller
-        if: ${{ inputs.install_profile != 'no-apl' }}
-        run: |
-          helm repo add linode-cfw https://linode.github.io/cloud-firewall-controller
-          helm repo update linode-cfw
-
-          helm install cloud-firewall-crd linode-cfw/cloud-firewall-crd \
-            && kubectl wait --for condition=established --timeout=60s crd/cloudfirewalls.networking.linode.com \
-            && helm install cloud-firewall-ctrl linode-cfw/cloud-firewall-controller --set-json firewall='{"outbound":[],"inbound":[{"label":"allow-prometheus-node-export-tcp","action":"ACCEPT","description":"Prometheus Node Exporter","protocol":"TCP","ports":"9100","addresses":{"ipv4":["192.168.128.0/17"]}}]}'
       - name: APL install
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
@@ -354,6 +346,7 @@ jobs:
             --set cluster.name=aplinstall${{ env.LINODE_CLUSTER_ID }} \
             --set cluster.k8sContext=${{ env.LINODE_CLUSTER_CONTEXT }} \
             --set otomi.version=${GITHUB_REF##*/} \
+            --set apps.linode-cfw.enabled=true \
             $additional_args"
 
           helm install $install_args &
