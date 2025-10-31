@@ -1,4 +1,4 @@
-{{- if and (ne .Values.expose.type "ingress") .Values.expose.tls.enabled }}
+{{- if and (ne .Values.expose.type "ingress") (ne .Values.expose.type "route") (.Values.expose.tls.enabled) }}
 {{- $scheme := (include "harbor.component.scheme" .) -}}
 apiVersion: v1
 kind: ConfigMap
@@ -138,6 +138,8 @@ data:
           proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
           proxy_buffering off;
           proxy_request_buffering off;
+          proxy_send_timeout 900;
+          proxy_read_timeout 900;
         }
 
         location /service/ {

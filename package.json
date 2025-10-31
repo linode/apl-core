@@ -44,7 +44,7 @@
     "@babel/core": "^7.28.5",
     "@babel/preset-env": "^7.28.5",
     "@babel/preset-typescript": "^7.28.5",
-    "@commitlint/cli": "19.8.1",
+    "@commitlint/cli": "20.0.0",
     "@commitlint/config-conventional": "19.8.1",
     "@eslint/compat": "^1.4.0",
     "@hkdobrev/run-if-changed": "0.6.3",
@@ -178,5 +178,5 @@
     }
   },
   "type": "commonjs",
-  "version": "4.11.0"
+  "version": "4.12.0"
 }
