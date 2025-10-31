@@ -105,4 +105,13 @@ export default defineConfig([
       'prettier/prettier': 'error',
     },
   },
+  // Test files specific configuration
+  {
+    files: ['**/*.test.ts', '**/stubs/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
 ])

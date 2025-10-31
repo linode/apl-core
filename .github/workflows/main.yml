@@ -131,7 +131,7 @@ jobs:
     if: always() && contains(needs.release.result, 'success') && !github.event.act
     runs-on: ubuntu-22.04
     container:
-      image: linode/apl-tools:v2.10.3
+      image: linode/apl-tools:v2.10.4
       options: --user 0 # See https://docs.github.com/en/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
     steps:
       - name: Checkout

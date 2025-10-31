@@ -1,3 +1,13 @@
 #!/bin/sh
 
-npm run run-if-changed
+# Check if package-lock.json changed during merge
+if git diff --name-only HEAD@{1} HEAD 2>/dev/null | grep -q "^package-lock.json$"; then
+  echo "📦 package-lock.json changed, running npm install..."
+  npm install --prefer-offline --no-audit
+fi
+
+# Check if values-schema.yaml changed during merge
+if git diff --name-only HEAD@{1} HEAD 2>/dev/null | grep -q "^values-schema.yaml$"; then
+  echo "🔨 values-schema.yaml changed, regenerating schema..."
+  npm run gen:chart-schema
+fi
