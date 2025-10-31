@@ -1,0 +1,220 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-image-updater
+  namespace: {{ .Release.Namespace | quote  }}
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/part-of: argocd-image-updater
+  {{- include "argocd-image-updater.labels" . | nindent 4 }}
+spec:
+  strategy:
+    type: {{ .Values.argocdImageUpdater.strategy.type | quote }}
+  selector:
+    matchLabels:
+    {{- include "argocd-image-updater.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+      {{- include "argocd-image-updater.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - args: {{- toYaml .Values.argocdImageUpdater.argocdImageUpdater.args | nindent 8
+          }}
+        env:
+        - name: APPLICATIONS_API
+          valueFrom:
+            configMapKeyRef:
+              key: applications_api
+              name: argocd-image-updater-config
+              optional: true
+        - name: ARGOCD_GRPC_WEB
+          valueFrom:
+            configMapKeyRef:
+              key: argocd.grpc_web
+              name: argocd-image-updater-config
+              optional: true
+        - name: ARGOCD_SERVER
+          valueFrom:
+            configMapKeyRef:
+              key: argocd.server_addr
+              name: argocd-image-updater-config
+              optional: true
+        - name: ARGOCD_INSECURE
+          valueFrom:
+            configMapKeyRef:
+              key: argocd.insecure
+              name: argocd-image-updater-config
+              optional: true
+        - name: ARGOCD_PLAINTEXT
+          valueFrom:
+            configMapKeyRef:
+              key: argocd.plaintext
+              name: argocd-image-updater-config
+              optional: true
+        - name: ARGOCD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: argocd.token
+              name: argocd-image-updater-secret
+              optional: true
+        - name: IMAGE_UPDATER_INTERVAL
+          valueFrom:
+            configMapKeyRef:
+              key: interval
+              name: argocd-image-updater-config
+              optional: true
+        - name: IMAGE_UPDATER_LOGLEVEL
+          valueFrom:
+            configMapKeyRef:
+              key: log.level
+              name: argocd-image-updater-config
+              optional: true
+        - name: GIT_COMMIT_USER
+          valueFrom:
+            configMapKeyRef:
+              key: git.user
+              name: argocd-image-updater-config
+              optional: true
+        - name: GIT_COMMIT_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              key: git.email
+              name: argocd-image-updater-config
+              optional: true
+        - name: GIT_COMMIT_SIGNING_KEY
+          valueFrom:
+            configMapKeyRef:
+              key: git.commit-signing-key
+              name: argocd-image-updater-config
+              optional: true
+        - name: GIT_COMMIT_SIGNING_METHOD
+          valueFrom:
+            configMapKeyRef:
+              key: git.commit-signing-method
+              name: argocd-image-updater-config
+              optional: true
+        - name: GIT_COMMIT_SIGN_OFF
+          valueFrom:
+            configMapKeyRef:
+              key: git.commit-sign-off
+              name: argocd-image-updater-config
+              optional: true
+        - name: IMAGE_UPDATER_KUBE_EVENTS
+          valueFrom:
+            configMapKeyRef:
+              key: kube.events
+              name: argocd-image-updater-config
+              optional: true
+        - name: ARGOCD_LOGLEVEL
+          valueFrom:
+            configMapKeyRef:
+              key: log.level
+              name: argocd-image-updater-config
+              optional: true
+        - name: ENABLE_WEBHOOK
+          valueFrom:
+            configMapKeyRef:
+              key: webhook.enable
+              name: argocd-image-updater-config
+              optional: true
+        - name: WEBHOOK_PORT
+          valueFrom:
+            configMapKeyRef:
+              key: webhook.port
+              name: argocd-image-updater-config
+              optional: true
+        - name: QUAY_WEBHOOK_SECRET
+          valueFrom:
+            configMapKeyRef:
+              key: webhook.quay-secret
+              name: argocd-image-updater-secret
+              optional: true
+        - name: DOCKER_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: webhook.docker-secret
+              name: argocd-image-updater-secret
+              optional: true
+        - name: GHCR_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: webhook.ghcr-secret
+              name: argocd-image-updater-secret
+              optional: true
+        - name: HARBOR_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: webhook.harbor-secret
+              name: argocd-image-updater-secret
+              optional: true
+        - name: WEBHOOK_RATELIMIT_ALLOWED
+          valueFrom:
+            configMapKeyRef:
+              key: webhook.ratelimit-allowed
+              name: argocd-image-updater-config
+              optional: true
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: '{{ .Values.argocdImageUpdater.argocdImageUpdater.image.repository }}:{{
+          .Values.argocdImageUpdater.argocdImageUpdater.image.tag | default .Chart.AppVersion
+          }}'
+        imagePullPolicy: {{ .Values.argocdImageUpdater.argocdImageUpdater.imagePullPolicy
+          }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 30
+        name: argocd-image-updater
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 30
+        resources: {{- toYaml .Values.argocdImageUpdater.argocdImageUpdater.resources |
+          nindent 10 }}
+        securityContext: {{- toYaml .Values.argocdImageUpdater.argocdImageUpdater.containerSecurityContext
+          | nindent 10 }}
+        volumeMounts:
+        - mountPath: /app/config
+          name: image-updater-conf
+        - mountPath: /app/config/ssh
+          name: ssh-known-hosts
+        - mountPath: /app/.ssh
+          name: ssh-config
+        - mountPath: /tmp
+          name: tmp
+        - mountPath: /app/ssh-keys/id_rsa
+          name: ssh-signing-key
+          readOnly: true
+          subPath: sshPrivateKey
+      serviceAccountName: argocd-image-updater
+      volumes:
+      - configMap:
+          items:
+          - key: registries.conf
+            path: registries.conf
+          - key: git.commit-message-template
+            path: commit.template
+          name: argocd-image-updater-config
+          optional: true
+        name: image-updater-conf
+      - configMap:
+          name: argocd-ssh-known-hosts-cm
+          optional: true
+        name: ssh-known-hosts
+      - configMap:
+          name: argocd-image-updater-ssh-config
+          optional: true
+        name: ssh-config
+      - name: ssh-signing-key
+        secret:
+          optional: true
+          secretName: ssh-git-creds
+      - emptyDir: {}
+        name: tmp

@@ -1,0 +1,29 @@
+argocdImageUpdater:
+  argocdImageUpdater:
+    args:
+      - run
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    image:
+      repository: quay.io/argoprojlabs/argocd-image-updater
+      tag: null
+    imagePullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: '1'
+        memory: 1Gi
+      requests:
+        cpu: 50m
+        memory: 160Mi
+  serviceAccount:
+    annotations: {}
+  strategy:
+    type: Recreate
+kubernetesClusterDomain: cluster.local
