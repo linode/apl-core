@@ -1,6 +1,13 @@
+# Deprecation Notice
+
+**This chart is deprecated and will no longer receive updates or support.**
+
+Please consider using the [loki](https://github.com/grafana/loki/tree/main/production/helm/loki)
+chart instead, which provides comprehensive features and ongoing maintenance.
+
 # loki-distributed
 
-![Version: 0.80.5](https://img.shields.io/badge/Version-0.80.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.9.13](https://img.shields.io/badge/AppVersion-2.9.13-informational?style=flat-square)
+![Version: 0.80.6](https://img.shields.io/badge/Version-0.80.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.9.13](https://img.shields.io/badge/AppVersion-2.9.13-informational?style=flat-square)
 
 Helm chart for Grafana Loki in microservices mode
 
