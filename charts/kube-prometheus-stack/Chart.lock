@@ -15,4 +15,4 @@ dependencies:
   repository: https://prometheus-community.github.io/helm-charts
   version: 0.12.2
 digest: sha256:cf13fd30dad02b0fbbac80272eee742efeb3947c884b34f0e27bec0397815b45
-generated: "2025-10-30T03:45:08.873173787Z"
+generated: "2025-11-01T07:57:30.746790331Z"
