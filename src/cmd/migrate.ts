@@ -2,7 +2,7 @@ import { ApiException } from '@kubernetes/client-node'
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { existsSync, renameSync, rmSync, writeFileSync } from 'fs'
-import { cp, mkdir, readFile, rename as fsRename, writeFile } from 'fs/promises'
+import { cp, rename as fsRename, mkdir, readFile, writeFile } from 'fs/promises'
 import { glob, globSync } from 'glob'
 import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
 import { basename, dirname, join } from 'path'
@@ -19,8 +19,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { k8s } from '../common/k8s'
 import { ARGOCD_APP_PARAMS } from '../common/constants'
+import { k8s } from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
@@ -441,6 +441,41 @@ const teamResourceQuotaMigration = async (values: Record<string, any>): Promise<
   })
 }
 
+const workloadValuesMigration = async (
+  _values: Record<string, any>,
+  deps = {
+    loadYaml,
+    writeFile,
+    globSync,
+  },
+): Promise<void> => {
+  const fm = getFileMap('AplTeamWorkloadValues', env.ENV_DIR)
+
+  const filePaths = deps
+    .globSync(fm.pathGlob, {
+      nodir: true,
+      dot: false,
+    })
+    .sort()
+  if (filePaths.length === 0) {
+    console.info(`No workload values files found in ${fm.pathGlob}. Skipping`)
+    return
+  }
+
+  filePaths.forEach(async (filePath) => {
+    const content = (await deps.loadYaml(filePath)) || {}
+    console.info(`Migrating workload values file: ${filePath}`)
+    await deps.writeFile(filePath, content?.values || '{}', 'utf8')
+    // Although the additionalFile file is empty the argocd application still expects it to be present
+    const additionalFilePath = filePath.replace('.yaml', '.managed.yaml')
+    console.info(`Adding empty file: ${additionalFilePath}`)
+    await deps.writeFile(additionalFilePath, '', 'utf8')
+  })
+
+  console.info(`Team workload values files have been migrated successfully.`)
+  return
+}
+
 const bulkAddition = (path: string, values: any, filePath: string) => {
   const val = require(filePath)
   setAtPath(path, values, val)
@@ -624,6 +659,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   policiesMigration,
   addAplOperator,
   installIstioHelmCharts,
+  workloadValuesMigration,
 }
 
 /**
