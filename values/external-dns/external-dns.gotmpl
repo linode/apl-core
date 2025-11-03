@@ -219,3 +219,6 @@ extraVolumeMounts:
 provider: {{ .name }}
 {{ .name }}: {{- . | get "external-dns" | toYaml | nindent 2 }}
 {{- end }}
+
+deploymentStrategy:
+  type: RollingUpdate
