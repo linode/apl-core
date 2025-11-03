@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.12.1](https://github.com/linode/apl-core/compare/v4.12.0...v4.12.1) (2025-11-03)
+
+
+### Bug Fixes
+
+* PostgreSQL image upgrade considered for 4.12 release ([#2652](https://github.com/linode/apl-core/issues/2652)) ([14bf217](https://github.com/linode/apl-core/commit/14bf217ee63910f1b7bcafd739ea9222746d4bcc))
+* quote string to avoid conversion in Loki config ([#2654](https://github.com/linode/apl-core/issues/2654)) ([98dae79](https://github.com/linode/apl-core/commit/98dae7913acafea48c1ff99f0b36c534273f51dd))
+
 ## [4.12.0](https://github.com/linode/apl-core/compare/v4.11.0...v4.12.0) (2025-10-30)
 
 
