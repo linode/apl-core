@@ -30,8 +30,7 @@ resources:
               {{ . | toYaml | nindent 16 }}
               {{- end }}
         exporters:
-          debug:
-            loglevel: debug
+          debug: {}
           {{- if $v.apps.tempo.enabled }}
           otlp:
             endpoint: tempo-distributor.tempo.svc.cluster.local:4317
