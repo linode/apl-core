@@ -9,7 +9,7 @@ annotations:
       url: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/README.md#upgrading-chart
   artifacthub.io/operator: "true"
 apiVersion: v2
-appVersion: v0.83.0
+appVersion: v0.86.1
 dependencies:
 - condition: crds.enabled
   name: crds
@@ -18,15 +18,15 @@ dependencies:
 - condition: kubeStateMetrics.enabled
   name: kube-state-metrics
   repository: https://prometheus-community.github.io/helm-charts
-  version: 6.1.0
+  version: 6.3.0
 - condition: nodeExporter.enabled
   name: prometheus-node-exporter
   repository: https://prometheus-community.github.io/helm-charts
-  version: 4.47.3
+  version: 4.49.1
 - condition: grafana.enabled
   name: grafana
   repository: https://grafana.github.io/helm-charts
-  version: 9.3.1
+  version: 10.1.4
 - condition: windowsMonitoring.enabled
   name: prometheus-windows-exporter
   repository: https://prometheus-community.github.io/helm-charts
@@ -72,4 +72,4 @@ sources:
 - https://github.com/prometheus-community/helm-charts
 - https://github.com/prometheus-operator/kube-prometheus
 type: application
-version: 75.18.1
+version: 79.0.1
