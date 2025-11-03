@@ -1995,14 +1995,6 @@ properties:
           secretKey:
             type: string
             x-secret: '{{ randAlpha 16 }}'
-      httpbin:
-        description: The famous httpbin application.
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          _rawValues:
-            $ref: '#/definitions/rawValues'
       ingress-nginx-platform:
         $ref: '#/definitions/ingressNginx'
       istio:
@@ -2267,6 +2259,14 @@ properties:
             properties:
               kuredDaemonSet:
                 $ref: '#/definitions/resources'
+      linode-cfw:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
       sealed-secrets:
         additionalProperties: false
         properties:
