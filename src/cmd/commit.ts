@@ -182,7 +182,17 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   }
   try {
     // Check if the tag exists in the remote Gitea repository
-    const tagExists = await $`git ls-remote --tags ${giteaChartsUrl} refs/tags/${tag}`
+    const tagExists = await retry(
+      async () => {
+        return $`git ls-remote --tags ${giteaChartsUrl} refs/tags/${tag}`
+      },
+      {
+        ...retryOptions,
+        onRetry: async () => {
+          d.warn('Failed to connect to local charts repo. Retrying...')
+        },
+      },
+    )
     if (tagExists.stdout.trim()) {
       d.info(`Tag '${tag}' already exists in Gitea. Skipping clone and initialization steps.`)
       return
