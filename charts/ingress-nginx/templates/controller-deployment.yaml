@@ -180,13 +180,18 @@ spec:
         {{- if .Values.controller.resources }}
           resources: {{ toYaml .Values.controller.resources | nindent 12 }}
         {{- end }}
+        {{- if semverCompare ">=1.33.0-0" .Capabilities.KubeVersion.Version }}
+        {{- if .Values.controller.resizePolicy }}
+          resizePolicy: {{ toYaml .Values.controller.resizePolicy | nindent 12 }}
+        {{- end }}
+        {{- end }}
       {{- if .Values.controller.extraContainers }}
         {{- toYaml .Values.controller.extraContainers | nindent 8 }}
       {{- end }}
     {{- if (or .Values.controller.extraInitContainers .Values.controller.extraModules) }}
       initContainers:
       {{- if .Values.controller.extraInitContainers }}
-        {{- toYaml .Values.controller.extraInitContainers | nindent 8 }}
+        {{- tpl (toYaml .Values.controller.extraInitContainers) $ | nindent 8 }}
       {{- end }}
       {{- if .Values.controller.extraModules }}
         {{- range .Values.controller.extraModules }}

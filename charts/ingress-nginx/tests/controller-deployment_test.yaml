@@ -119,6 +119,23 @@ tests:
               maxSkew: 1
               whenUnsatisfiable: ScheduleAnyway
 
+  - it: should create a Deployment with templated init containers if `controller.extraInitContainers` contains Helm templates
+    set:
+      controller.extraInitContainers:
+        - name: '{{ .Release.Name }}-init'
+          image: busybox
+          command:
+            - sh
+            - -c
+            - echo '{{ .Release.Namespace }}';
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: RELEASE-NAME-init
+      - contains:
+          path: spec.template.spec.initContainers[0].command
+          content: echo 'NAMESPACE';
+
   - it: should create a Deployment with affinity if `controller.affinity` is set
     set:
       controller.affinity:
@@ -231,3 +248,22 @@ tests:
       - equal:
           path: spec.template.spec.runtimeClassName
           value: myClass
+
+  - it: should create a Deployment with resize policy if `controller.resizePolicy` is set
+    capabilities:
+      majorVersion: 1
+      minorVersion: 33
+    set:
+      controller.resizePolicy:
+        - resourceName: cpu
+          restartPolicy: NotRequired
+        - resourceName: memory
+          restartPolicy: RestartContainer
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].resizePolicy
+          value:
+            - resourceName: cpu
+              restartPolicy: NotRequired
+            - resourceName: memory
+              restartPolicy: RestartContainer

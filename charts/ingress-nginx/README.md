@@ -2,7 +2,7 @@
 
 [ingress-nginx](https://github.com/kubernetes/ingress-nginx) Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
 
-![Version: 4.13.3](https://img.shields.io/badge/Version-4.13.3-informational?style=flat-square) ![AppVersion: 1.13.3](https://img.shields.io/badge/AppVersion-1.13.3-informational?style=flat-square)
+![Version: 4.14.0](https://img.shields.io/badge/Version-4.14.0-informational?style=flat-square) ![AppVersion: 1.14.0](https://img.shields.io/badge/AppVersion-1.14.0-informational?style=flat-square)
 
 To use, add `ingressClassName: nginx` spec field or the `kubernetes.io/ingress.class: nginx` annotation to your Ingress resources.
 
@@ -264,6 +264,8 @@ metadata:
 | controller.admissionWebhooks.createSecretJob.name | string | `"create"` |  |
 | controller.admissionWebhooks.createSecretJob.resources | object | `{}` |  |
 | controller.admissionWebhooks.createSecretJob.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532,"seccompProfile":{"type":"RuntimeDefault"}}` | Security context for secret creation containers |
+| controller.admissionWebhooks.createSecretJob.volumeMounts | list | `[]` | Volume mounts for secret creation containers |
+| controller.admissionWebhooks.createSecretJob.volumes | list | `[]` | Volumes for secret creation pod |
 | controller.admissionWebhooks.enabled | bool | `true` |  |
 | controller.admissionWebhooks.extraEnvs | list | `[]` | Additional environment variables to set |
 | controller.admissionWebhooks.failurePolicy | string | `"Fail"` | Admission Webhook failure policy to use |
@@ -273,10 +275,10 @@ metadata:
 | controller.admissionWebhooks.namespaceSelector | object | `{}` |  |
 | controller.admissionWebhooks.objectSelector | object | `{}` |  |
 | controller.admissionWebhooks.patch.enabled | bool | `true` |  |
-| controller.admissionWebhooks.patch.image.digest | string | `"sha256:3d671cf20a35cd94efc5dcd484970779eb21e7938c98fbc3673693b8a117cf39"` |  |
+| controller.admissionWebhooks.patch.image.digest | string | `"sha256:bcfc926ed57831edf102d62c5c0e259572591df4796ef1420b87f9cf6092497f"` |  |
 | controller.admissionWebhooks.patch.image.image | string | `"ingress-nginx/kube-webhook-certgen"` |  |
 | controller.admissionWebhooks.patch.image.pullPolicy | string | `"IfNotPresent"` |  |
-| controller.admissionWebhooks.patch.image.tag | string | `"v1.6.3"` |  |
+| controller.admissionWebhooks.patch.image.tag | string | `"v1.6.4"` |  |
 | controller.admissionWebhooks.patch.labels | object | `{}` | Labels to be added to patch job resources |
 | controller.admissionWebhooks.patch.networkPolicy.enabled | bool | `false` | Enable 'networkPolicy' or not |
 | controller.admissionWebhooks.patch.nodeSelector."kubernetes.io/os" | string | `"linux"` |  |
@@ -295,6 +297,8 @@ metadata:
 | controller.admissionWebhooks.patchWebhookJob.name | string | `"patch"` |  |
 | controller.admissionWebhooks.patchWebhookJob.resources | object | `{}` |  |
 | controller.admissionWebhooks.patchWebhookJob.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532,"seccompProfile":{"type":"RuntimeDefault"}}` | Security context for webhook patch containers |
+| controller.admissionWebhooks.patchWebhookJob.volumeMounts | list | `[]` | Volume mounts for webhook patch containers |
+| controller.admissionWebhooks.patchWebhookJob.volumes | list | `[]` | Volumes for webhook patch pod |
 | controller.admissionWebhooks.port | int | `8443` |  |
 | controller.admissionWebhooks.service.annotations | object | `{}` |  |
 | controller.admissionWebhooks.service.externalIPs | list | `[]` |  |
@@ -331,7 +335,7 @@ metadata:
 | controller.extraArgs | object | `{}` | Additional command line arguments to pass to Ingress-Nginx Controller E.g. to specify the default SSL certificate you can use |
 | controller.extraContainers | list | `[]` | Additional containers to be added to the controller pod. See https://github.com/lemonldap-ng-controller/lemonldap-ng-controller as example. |
 | controller.extraEnvs | list | `[]` | Additional environment variables to set |
-| controller.extraInitContainers | list | `[]` | Containers, which are run before the app containers are started. |
+| controller.extraInitContainers | list | `[]` | Containers, which are run before the app containers are started. Values may contain Helm templates. |
 | controller.extraModules | list | `[]` | Modules, which are mounted into the core nginx image. |
 | controller.extraVolumeMounts | list | `[]` | Additional volumeMounts to the controller main container. |
 | controller.extraVolumes | list | `[]` | Additional volumes to the controller pod. |
@@ -345,8 +349,8 @@ metadata:
 | controller.hostname | object | `{}` | Optionally customize the pod hostname. |
 | controller.image.allowPrivilegeEscalation | bool | `false` |  |
 | controller.image.chroot | bool | `false` |  |
-| controller.image.digest | string | `"sha256:1b044f6dcac3afbb59e05d98463f1dec6f3d3fb99940bc12ca5d80270358e3bd"` |  |
-| controller.image.digestChroot | string | `"sha256:27de15aea4ec7639f7cec6ae96bff11ce57bb1171040351a0b0eedf66655d0dd"` |  |
+| controller.image.digest | string | `"sha256:e4127065d0317bd11dc64c4dd38dcf7fb1c3d72e468110b4086e636dbaac943d"` |  |
+| controller.image.digestChroot | string | `"sha256:d0158a50630981a945325c15a638e52c2d0691bc528caf5c04d2cf2051c5665f"` |  |
 | controller.image.image | string | `"ingress-nginx/controller"` |  |
 | controller.image.pullPolicy | string | `"IfNotPresent"` |  |
 | controller.image.readOnlyRootFilesystem | bool | `false` |  |
@@ -354,7 +358,7 @@ metadata:
 | controller.image.runAsNonRoot | bool | `true` |  |
 | controller.image.runAsUser | int | `101` | This value must not be changed using the official image. uid=101(www-data) gid=82(www-data) groups=82(www-data) |
 | controller.image.seccompProfile.type | string | `"RuntimeDefault"` |  |
-| controller.image.tag | string | `"v1.13.3"` |  |
+| controller.image.tag | string | `"v1.14.0"` |  |
 | controller.ingressClass | string | `"nginx"` | For backwards compatibility with ingress.class annotation, use ingressClass. Algorithm is as follows, first ingressClassName is considered, if not present, controller looks for ingress.class annotation |
 | controller.ingressClassByName | bool | `false` | Process IngressClass per name (additionally as per spec.controller). |
 | controller.ingressClassResource | object | `{"aliases":[],"annotations":{},"controllerValue":"k8s.io/ingress-nginx","default":false,"enabled":true,"name":"nginx","parameters":{}}` | This section refers to the creation of the IngressClass resource. IngressClasses are immutable and cannot be changed after creation. We do not support namespaced IngressClasses, yet, so a ClusterRole and a ClusterRoleBinding is required. |
@@ -413,6 +417,7 @@ metadata:
 | controller.metrics.serviceMonitor.relabelings | list | `[]` |  |
 | controller.metrics.serviceMonitor.sampleLimit | int | `0` | Defines a per-scrape limit on the number of scraped samples that will be accepted. |
 | controller.metrics.serviceMonitor.scrapeInterval | string | `"30s"` |  |
+| controller.metrics.serviceMonitor.scrapeTimeout | string | `""` | Timeout after which the scrape is ended. Not being set if empty and therefore defaults to the global Prometheus scrape timeout. |
 | controller.metrics.serviceMonitor.targetLabels | list | `[]` |  |
 | controller.metrics.serviceMonitor.targetLimit | int | `0` | Defines a limit on the number of scraped targets that will be accepted. |
 | controller.minAvailable | int | `1` | Minimum available pods set in PodDisruptionBudget. Define either 'minAvailable' or 'maxUnavailable', never both. |
@@ -439,6 +444,7 @@ metadata:
 | controller.readinessProbe.timeoutSeconds | int | `1` |  |
 | controller.replicaCount | int | `1` |  |
 | controller.reportNodeInternalIp | bool | `false` | Bare-metal considerations via the host network https://kubernetes.github.io/ingress-nginx/deploy/baremetal/#via-the-host-network Ingress status was blank because there is no Service exposing the Ingress-Nginx Controller in a configuration using the host network, the default --publish-service flag used in standard cloud setups does not apply |
+| controller.resizePolicy | list | `[]` | Resize policy for controller containers. Ref: https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources |
 | controller.resources.requests.cpu | string | `"100m"` |  |
 | controller.resources.requests.memory | string | `"90Mi"` |  |
 | controller.runtimeClassName | string | `""` | Instruct the kubelet to use the named RuntimeClass to run the pod |
