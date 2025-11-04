@@ -3,7 +3,7 @@ fullnameOverride: ""
 
 image: # see: https://quay.io/repository/kiali/kiali-operator?tab=tags
   repo: quay.io/kiali/kiali-operator # quay.io/kiali/kiali-operator
-  tag: v2.17.0 # version string like v1.39.0 or a digest hash
+  tag: v2.18.0 # version string like v1.39.0 or a digest hash
   digest: "" # use "sha256" if tag is a sha256 hash (do NOT prefix this value with a "@")
   pullPolicy: Always
   pullSecrets: []
