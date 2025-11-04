@@ -6,7 +6,7 @@ resources:
     metadata:
       name: otel-collector
     spec:
-      managementState: {{ default "managed" $o.collector.managementState }}
+      managementState: "managed"
       config: |
         receivers:
           otlp:
