@@ -1,6 +1,6 @@
 import { terminal } from 'src/common/debug'
-import { deployEssential, hf } from 'src/common/hf'
-import { getFilename, rootDir } from 'src/common/utils'
+import { deployEssential } from 'src/common/hf'
+import { getFilename } from 'src/common/utils'
 import { CommandModule } from 'yargs'
 
 const cmdName = getFilename(__filename)
