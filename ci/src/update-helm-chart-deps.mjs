@@ -207,7 +207,9 @@ async function updateDependency(
           appInfo.appVersion = updatedAppVersion.replace(/^v/, '')
           try {
             await writeYamlFile(APPS_FILE, apps)
-            await $`git add ${APPS_FILE}`
+            if (ciCreateFeatureBranch) {
+              await $`git add ${APPS_FILE}`
+            }
             appsVersionSet = true
           } catch (error) {
             console.error(`Error updating app version for ${dependency.name}:`, error)
