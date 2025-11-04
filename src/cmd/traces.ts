@@ -15,6 +15,16 @@ interface ResourceReport {
   value: string
 }
 
+interface TraceReport {
+  timestamp: string
+  failedResources: ResourceReport[]
+  summary: {
+    total: number
+    byType: Record<string, number>
+  }
+  errors?: string[]
+}
+
 /**
  * Get pods with issues across all namespaces
  */
@@ -25,7 +35,7 @@ async function getPodsWithIssues(): Promise<ResourceReport[]> {
 
   await Promise.all(
     response.items.map(async (pod) => {
-      const namespace = pod.metadata?.namespace || 'default'
+      const namespace = pod.metadata?.namespace || 'unknown'
       const podName = pod.metadata?.name || 'unknown'
       const issues: string[] = []
 
@@ -233,65 +243,53 @@ async function getArgoApplicationsWithIssues(): Promise<ResourceReport[]> {
   const customApi = k8s.custom()
   const applications: ResourceReport[] = []
 
-  try {
-    const response = await customApi.listClusterCustomObject({
-      group: 'argoproj.io',
-      version: 'v1alpha1',
-      plural: 'applications',
-    })
+  const response = await customApi.listClusterCustomObject({
+    group: 'argoproj.io',
+    version: 'v1alpha1',
+    plural: 'applications',
+  })
 
-    const items = (response as any).items || []
+  const items = (response as any).items || []
 
-    items.forEach((app: any) => {
-      const name = app.metadata?.name || 'unknown'
-      const namespace = app.metadata?.namespace || 'unknown'
-      const healthStatus = app.status?.health?.status
-      const syncStatus = app.status?.sync?.status
-      const issues: string[] = []
+  items.forEach((app: any) => {
+    const name = app.metadata?.name || 'unknown'
+    const namespace = app.metadata?.namespace || 'unknown'
+    const healthStatus = app.status?.health?.status
+    const syncStatus = app.status?.sync?.status
+    const issues: string[] = []
 
-      if (healthStatus && healthStatus !== 'Healthy') {
-        const healthMessage = app.status?.health?.message || 'Unknown'
-        issues.push(`HealthStatus: ${healthStatus} message: ${healthMessage}`)
-      }
+    if (healthStatus && healthStatus !== 'Healthy') {
+      const healthMessage = app.status?.health?.message || 'Unknown'
+      issues.push(`HealthStatus: ${healthStatus} message: ${healthMessage}`)
+    }
 
-      if (syncStatus && syncStatus !== 'Synced') {
-        issues.push(`SyncStatus: ${syncStatus}`)
-      }
+    if (syncStatus && syncStatus !== 'Synced') {
+      issues.push(`SyncStatus: ${syncStatus}`)
+    }
 
-      const operationPhase = app.status?.operationState?.phase
-      if (operationPhase && operationPhase !== 'Succeeded') {
-        const message = app.status?.operationState?.message || 'Unknown'
-        issues.push(`Operation: ${operationPhase} - ${message}`)
-      }
+    const operationPhase = app.status?.operationState?.phase
+    if (operationPhase && operationPhase !== 'Succeeded') {
+      const message = app.status?.operationState?.message || 'Unknown'
+      issues.push(`Operation: ${operationPhase} - ${message}`)
+    }
 
-      issues.forEach((issue) => {
-        applications.push({
-          kind: 'Application',
-          name,
-          namespace,
-          value: issue,
-        })
+    issues.forEach((issue) => {
+      applications.push({
+        kind: 'Application',
+        name,
+        namespace,
+        value: issue,
       })
     })
-  } catch (error) {
-    // If ArgoCD is not installed or CRD doesn't exist, silently skip
-    if (error instanceof ApiException && (error.code === 404 || error.code === 403)) {
-      return []
-    }
-    throw error
-  }
+  })
 
   return applications
 }
 
 /**
- * Write troubleshooting report to ConfigMap
+ * Write trace report to ConfigMap
  */
-async function writeReportToConfigMap(
-  name: string,
-  namespace: string,
-  report: { timestamp: string; failedResources: ResourceReport[]; summary: any },
-): Promise<void> {
+async function writeReportToConfigMap(name: string, namespace: string, report: TraceReport): Promise<void> {
   const coreApi = k8s.core()
   const reportJson = JSON.stringify(report, null, 2)
 
@@ -320,16 +318,16 @@ async function writeReportToConfigMap(
 }
 
 /**
- * Main troubleshoot function
+ * Main collect traces function
  */
-export async function troubleshoot(): Promise<void> {
-  const d = terminal(`cmd:${cmdName}:troubleshoot`)
+export async function collectTraces(): Promise<void> {
+  const d = terminal(`cmd:${cmdName}:collectTraces`)
 
   try {
-    d.info('Starting troubleshooting scan...')
+    d.info('Collecting traces from cluster resources...')
 
-    // Gather all failed resources
-    const [pods, deployments, statefulSets, nodes, services, pvcs, pvs, argoApps] = await Promise.all([
+    // Gather all failed resources using allSettled to continue on individual failures
+    const results = await Promise.allSettled([
       getPodsWithIssues(),
       getDeploymentsWithIssues(),
       getStatefulSetsWithIssues(),
@@ -340,19 +338,30 @@ export async function troubleshoot(): Promise<void> {
       getArgoApplicationsWithIssues(),
     ])
 
-    const failedResources = [
-      ...pods,
-      ...deployments,
-      ...statefulSets,
-      ...nodes,
-      ...services,
-      ...pvcs,
-      ...pvs,
-      ...argoApps,
-    ]
+    // Process results and collect both resources and errors
+    const failedResources: ResourceReport[] = []
+    const collectionErrors: string[] = []
+
+    results.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        failedResources.push(...result.value)
+      } else {
+        const error = result.reason
+        const errorMessage = error instanceof Error ? error.message : String(error)
+
+        // Log based on error type
+        if (error instanceof ApiException && (error.code === 404 || error.code === 403)) {
+          d.info(`Resource collection skipped (expected if not installed): ${errorMessage}`)
+        } else {
+          d.warn(`Failed to collect resources: ${errorMessage}`)
+        }
+
+        collectionErrors.push(errorMessage)
+      }
+    })
 
     // Generate report
-    const report = {
+    const report: TraceReport = {
       timestamp: new Date().toISOString(),
       failedResources,
       summary: {
@@ -365,34 +374,35 @@ export async function troubleshoot(): Promise<void> {
           {} as Record<string, number>,
         ),
       },
+      ...(collectionErrors.length > 0 && { errors: collectionErrors }),
     }
 
     // Store in ConfigMap
-    const configMapName = 'apl-troubleshooting-report'
+    const configMapName = 'apl-traces-report'
     const targetNamespace = 'apl-operator'
 
     if (failedResources.length === 0) {
-      d.info('Your APL instance seems to be healthy.')
+      d.info('No failing resources found. Your APL instance seems to be healthy.')
     } else {
       await writeReportToConfigMap(configMapName, targetNamespace, report)
       d.info(
-        `Troubleshooting report stored in ConfigMap ${targetNamespace}/${configMapName} (${failedResources.length} failed resources)`,
+        `Trace report stored in ConfigMap ${targetNamespace}/${configMapName} (${failedResources.length} failed resources)`,
       )
     }
   } catch (error) {
-    d.error('Troubleshooting scan failed:', error)
+    d.error('Failed to collect traces:', error)
     throw error
   }
 }
 
 export const module = {
-  command: cmdName,
-  describe: 'Generate troubleshooting report of failed resources and store in ConfigMap',
+  command: 'traces',
+  describe: 'Collect traces of failed resources and store report in ConfigMap',
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipEnvDirCheck: true, skipDecrypt: true })
-    await troubleshoot()
+    await collectTraces()
   },
 }

@@ -9,6 +9,7 @@ jest.mock('src/common/cli', () => ({
 jest.mock('src/common/debug', () => ({
   terminal: jest.fn(() => ({
     info: jest.fn(),
+    warn: jest.fn(),
     error: jest.fn(),
     stream: { log: process.stdout, error: process.stderr },
   })),
@@ -20,7 +21,7 @@ jest.mock('src/common/yargs', () => ({
   setParsedArgs: jest.fn(),
 }))
 
-import { troubleshoot } from './troubleshoot'
+import { collectTraces } from './traces'
 
 class MockApiException extends ApiException<any> {
   code: number
@@ -30,7 +31,7 @@ class MockApiException extends ApiException<any> {
   }
 }
 
-describe('Troubleshoot Command', () => {
+describe('Collect Traces Command', () => {
   let mockCoreApi: any
   let mockAppsApi: any
   let mockCustomApi: any
@@ -161,12 +162,12 @@ describe('Troubleshoot Command', () => {
     mockCoreApi.readNamespacedConfigMap.mockRejectedValue(new MockApiException(404, 'Not Found'))
     mockCoreApi.createNamespacedConfigMap.mockResolvedValue({})
 
-    await troubleshoot()
+    await collectTraces()
 
     expect(mockCoreApi.createNamespacedConfigMap).toHaveBeenCalledWith({
       namespace: 'apl-operator',
       body: {
-        metadata: { name: 'apl-troubleshooting-report' },
+        metadata: { name: 'apl-traces-report' },
         data: { report: expect.any(String) },
       },
     })
@@ -202,7 +203,7 @@ describe('Troubleshoot Command', () => {
     mockCoreApi.listPersistentVolume.mockResolvedValue({ items: [] })
     mockCustomApi.listClusterCustomObject.mockResolvedValue({ items: [] })
 
-    await troubleshoot()
+    await collectTraces()
 
     // Should not create ConfigMap for healthy cluster
     expect(mockCoreApi.createNamespacedConfigMap).not.toHaveBeenCalled()
@@ -211,7 +212,7 @@ describe('Troubleshoot Command', () => {
 
   it('should update existing ConfigMap instead of creating new one', async () => {
     const existingConfigMap = {
-      metadata: { name: 'apl-troubleshooting-report' },
+      metadata: { name: 'apl-traces-report' },
       data: { report: '{"old": "data"}' },
     }
 
@@ -234,7 +235,7 @@ describe('Troubleshoot Command', () => {
     mockCoreApi.readNamespacedConfigMap.mockResolvedValue(existingConfigMap)
     mockCoreApi.replaceNamespacedConfigMap.mockResolvedValue({})
 
-    await troubleshoot()
+    await collectTraces()
 
     expect(mockCoreApi.replaceNamespacedConfigMap).toHaveBeenCalled()
     expect(mockCoreApi.createNamespacedConfigMap).not.toHaveBeenCalled()
@@ -249,9 +250,117 @@ describe('Troubleshoot Command', () => {
     mockCoreApi.listPersistentVolume.mockResolvedValue({ items: [] })
     mockCustomApi.listClusterCustomObject.mockRejectedValue(new MockApiException(404, 'Not Found'))
 
-    await troubleshoot()
+    await collectTraces()
 
     // Should not throw error
     expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalled()
+  })
+
+  it('should continue collecting resources when one type fails', async () => {
+    // Mock pods to fail
+    mockCoreApi.listPodForAllNamespaces.mockRejectedValue(new Error('API error'))
+
+    // Mock deployments to succeed with issues
+    mockAppsApi.listDeploymentForAllNamespaces.mockResolvedValue({
+      items: [
+        {
+          metadata: { name: 'test-deployment', namespace: 'default' },
+          status: { replicas: 3, availableReplicas: 1 },
+        },
+      ],
+    })
+
+    mockCoreApi.listNamespace.mockResolvedValue({ items: [] })
+    mockCoreApi.listNode.mockResolvedValue({ items: [] })
+    mockCoreApi.listServiceForAllNamespaces.mockResolvedValue({ items: [] })
+    mockCoreApi.listPersistentVolume.mockResolvedValue({ items: [] })
+    mockCustomApi.listClusterCustomObject.mockResolvedValue({ items: [] })
+
+    mockCoreApi.readNamespacedConfigMap.mockRejectedValue(new MockApiException(404, 'Not Found'))
+    mockCoreApi.createNamespacedConfigMap.mockResolvedValue({})
+
+    await collectTraces()
+
+    // Should create ConfigMap with deployment issues
+    expect(mockCoreApi.createNamespacedConfigMap).toHaveBeenCalled()
+
+    // eslint-disable-next-line prefer-destructuring, @typescript-eslint/no-unsafe-argument
+    const configMapCall = mockCoreApi.createNamespacedConfigMap.mock.calls[0][0]
+    const reportData = JSON.parse(configMapCall.body.data.report)
+
+    // Should have deployment in failed resources
+    expect(reportData.failedResources).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: 'Deployment',
+          name: 'test-deployment',
+        }),
+      ]),
+    )
+
+    // Should have error entry
+    expect(reportData.errors).toEqual(expect.arrayContaining(['API error']))
+  })
+
+  it('should include errors field in report when collection failures occur', async () => {
+    mockCoreApi.listPodForAllNamespaces.mockResolvedValue({ items: [] })
+    mockAppsApi.listDeploymentForAllNamespaces.mockRejectedValue(new MockApiException(403, 'Permission denied'))
+    mockCoreApi.listNamespace.mockResolvedValue({ items: [] })
+    mockCoreApi.listNode.mockRejectedValue(new Error('Connection timeout'))
+    mockCoreApi.listServiceForAllNamespaces.mockResolvedValue({ items: [] })
+    mockCoreApi.listPersistentVolume.mockResolvedValue({ items: [] })
+    mockCustomApi.listClusterCustomObject.mockResolvedValue({ items: [] })
+
+    await collectTraces()
+
+    // Should not throw error despite multiple failures
+    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalled()
+  })
+
+  it('should not include errors field when all collections succeed', async () => {
+    mockCoreApi.listPodForAllNamespaces.mockResolvedValue({
+      items: [
+        {
+          metadata: { name: 'failed-pod', namespace: 'default' },
+          status: { phase: 'Failed' },
+        },
+      ],
+    })
+    mockAppsApi.listDeploymentForAllNamespaces.mockResolvedValue({ items: [] })
+    mockCoreApi.listNamespace.mockResolvedValue({ items: [] })
+    mockCoreApi.listNode.mockResolvedValue({ items: [] })
+    mockCoreApi.listServiceForAllNamespaces.mockResolvedValue({ items: [] })
+    mockCoreApi.listPersistentVolume.mockResolvedValue({ items: [] })
+    mockCustomApi.listClusterCustomObject.mockResolvedValue({ items: [] })
+
+    mockCoreApi.readNamespacedConfigMap.mockRejectedValue(new MockApiException(404, 'Not Found'))
+    mockCoreApi.createNamespacedConfigMap.mockResolvedValue({})
+
+    await collectTraces()
+
+    // eslint-disable-next-line prefer-destructuring, @typescript-eslint/no-unsafe-argument
+    const configMapCall = mockCoreApi.createNamespacedConfigMap.mock.calls[0][0]
+    const reportData = JSON.parse(configMapCall.body.data.report)
+
+    // Should not have errors field when all collections succeed
+    expect(reportData.errors).toBeUndefined()
+  })
+
+  it('should handle multiple simultaneous collection failures', async () => {
+    // Mock multiple resource types to fail
+    mockCoreApi.listPodForAllNamespaces.mockRejectedValue(new Error('Pods API failed'))
+    mockAppsApi.listDeploymentForAllNamespaces.mockRejectedValue(new Error('Deployments API failed'))
+    mockCoreApi.listNamespace.mockRejectedValue(new Error('Namespace API failed'))
+    mockCoreApi.listNode.mockRejectedValue(new Error('Node API failed'))
+    mockCoreApi.listServiceForAllNamespaces.mockRejectedValue(new Error('Service API failed'))
+    mockCoreApi.listPersistentVolume.mockRejectedValue(new Error('PV API failed'))
+    mockCustomApi.listClusterCustomObject.mockRejectedValue(new Error('ArgoCD API failed'))
+
+    await collectTraces()
+
+    // Should complete without throwing despite all failures
+    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalled()
+    // Should not create ConfigMap when no issues found and all failed
+    expect(mockCoreApi.createNamespacedConfigMap).not.toHaveBeenCalled()
   })
 })
