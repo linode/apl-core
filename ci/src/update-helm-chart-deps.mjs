@@ -250,7 +250,7 @@ async function updateDependency(
         '--base',
         baseBranch,
         '--head',
-        downloadResult.branchName,
+        branchName,
         '--draft',
         '--label',
         'chart-deps',
