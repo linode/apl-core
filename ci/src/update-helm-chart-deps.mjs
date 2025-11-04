@@ -79,7 +79,7 @@ const CHART_POST_FUNCS = {
   'cloud-firewall-crd': copyLinodeCfwTemplates,
 }
 
-async function downloadDependency(dependency, dirName, allowedUpgradeType, remoteBranch) {
+async function checkDependencyUpdates(dependency, allowedUpgradeType){
   const isRegistry = dependency.repository.startsWith('oci:')
   console.log(`Checking updates for dependency: ${dependency.name}`)
   let allVersions
@@ -112,7 +112,7 @@ async function downloadDependency(dependency, dirName, allowedUpgradeType, remot
 
   if (!filteredVersions.length) {
     console.log(`No matching ${allowedUpgradeType} updates for dependency ${dependency.name}`)
-    return { result: false }
+    return undefined
   }
 
   // Determine the latest matching version
@@ -120,26 +120,33 @@ async function downloadDependency(dependency, dirName, allowedUpgradeType, remot
 
   if (latestVersion === currentVersion) {
     console.log(`${dependency.name} is already up to date.`)
-    return { result: false }
+    return undefined
   }
+  return latestVersion
+}
 
-  const branchName = `ci-update-${dependency.name}-to-${latestVersion}`
-  const checkBranchCmd = remoteBranch
+async function checkBranch(dependencyName, latestVersion, checkRemote) {
+  const branchName = `ci-update-${dependencyName}-to-${latestVersion}`
+  const checkBranchCmd = checkRemote
     ? $`git ls-remote --heads origin ${branchName}`
     : $`git branch --list ${branchName}`
   const existingBranch = await checkBranchCmd
   if (existingBranch.stdout !== '') {
-    console.log(`Skipping updates for dependency: ${dependency.name}: the feature branch ${branchName} already exists`)
-    return { result: false }
+    console.log(`Skipping updates for dependency: ${dependencyName}: the feature branch ${branchName} already exists`)
+    return undefined
   }
+  return branchName
+}
 
-  console.log(`Updating ${dependency.name} from version ${currentVersion} to ${latestVersion}`)
+async function downloadDependency(dependency, dirName, latestVersion) {
+  console.log(`Updating ${dependency.name} from version ${dependency.version} to ${latestVersion}`)
 
   // Fetch and unpack the new chart version
   const downloadDir = `./tmp/charts/${dependency.name}`
   const tempDir = `${downloadDir}/${dependency.name}`
   await fs.mkdir(downloadDir, { recursive: true })
   await fs.rm(tempDir, { force: true, recursive: true })
+  const isRegistry = dependency.repository.startsWith('oci:')
   const pullArg = isRegistry ? dependency.repository : `${dependency.name}/${dependency.name}`
   await $`helm pull ${pullArg} --version ${latestVersion} --destination ${downloadDir} --untar`
 
@@ -152,8 +159,6 @@ async function downloadDependency(dependency, dirName, allowedUpgradeType, remot
     await fs.rm(`${CHARTS_DIR}/${dirName}`, { force: true, recursive: true })
     await $`mv ${tempDir} ${CHARTS_DIR}/${dirName}`
   }
-
-  return { result: true, version: latestVersion, branchName }
 }
 
 async function updateDependency(
@@ -172,16 +177,21 @@ async function updateDependency(
   const dependencyFileName = `${CHARTS_DIR}/${dirName}/Chart.yaml`
 
   try {
-    const downloadResult = await downloadDependency(dependency, dirName, allowedUpgradeType, ciPushtoBranch)
-    if (!downloadResult.result) {
+    const latestVersion = await checkDependencyUpdates(dependency, allowedUpgradeType)
+    if (!latestVersion) {
       return false
     }
-    const commitMessage = `chore(chart-deps): update ${dependency.name} to version ${downloadResult.version}`
+    const branchName = await checkBranch(dependency.name, latestVersion, ciPushtoBranch)
+    if (!branchName) {
+      return false
+    }
+    await downloadDependency(dependency, dirName, latestVersion)
+    const commitMessage = `chore(chart-deps): update ${dependency.name} to version ${latestVersion.version}`
     if (ciCreateFeatureBranch) {
-      await $`git -c core.hooksPath=/dev/null checkout -b ${downloadResult.branchName}`
+      await $`git -c core.hooksPath=/dev/null checkout -b ${branchName}`
     }
     // Update the version in Chart.yaml
-    dependency.version = downloadResult.version
+    dependency.version = latestVersion
     // Write the updated Chart.yaml file
     await writeYamlFile(CHART_FILE, chart)
 
@@ -222,11 +232,11 @@ async function updateDependency(
     }
     if (ciPushtoBranch) {
       // Push the branch
-      await $`git push --no-verify origin ${downloadResult.branchName}`
+      await $`git push --no-verify origin ${branchName}`
     }
     if (ciCreateGithubPr) {
       // Create a pull request
-      const prBody = [`This PR updates the dependency **${dependency.name}** to version **${downloadResult.version}**.`]
+      const prBody = [`This PR updates the dependency **${dependency.name}** to version **${latestVersion}**.`]
       if (!appsVersionSet) {
         prBody.push('TODO: Update app version in apps.yaml.')
       }
@@ -274,7 +284,7 @@ async function main() {
   const allowedUpgradeType = env.CI_UPDATE_TYPE
 
   const ciPushtoBranch = !env.CI_GIT_LOCAL_BRANCH_ONLY
-  const ciCreateFeatureBranch = false
+  const ciCreateFeatureBranch = true
   const ciCreateGithubPr = !env.CI_GIT_LOCAL_BRANCH_ONLY && env.CI_GH_CREATE_PR && ciCreateFeatureBranch
   const dependencyNameFilter = env.CI_HELM_CHART_NAME_FILTER || []
   const baseBranch = env.CI_GIT_BASELINE_BRANCH
