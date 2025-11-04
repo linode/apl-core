@@ -79,6 +79,183 @@ const CHART_POST_FUNCS = {
   'cloud-firewall-crd': copyLinodeCfwTemplates,
 }
 
+async function downloadDependency(dependency, dirName, allowedUpgradeType, remoteBranch) {
+  const isRegistry = dependency.repository.startsWith('oci:')
+  console.log(`Checking updates for dependency: ${dependency.name}`)
+  let allVersions
+  if (isRegistry) {
+    const registry = dependency.repository.replace('oci://', 'docker://')
+    allVersions = await $`skopeo list-tags ${registry}`
+      .then((output) => JSON.parse(output.stdout))
+      .then((results) => results.Tags.filter((version) => semver.valid(version)))
+  } else {
+    // Add the Helm repository (idempotent)
+    await $`helm repo add ${dependency.name} ${dependency.repository}`
+    await $`helm repo update ${dependency.name}`
+
+    // Get all available versions for the dependency
+    allVersions = await $`helm search repo ${dependency.name}/${dependency.name} -l -o json`
+      .then((output) => JSON.parse(output.stdout))
+      .then((results) => results.map((entry) => entry.version).filter((version) => semver.valid(version)))
+  }
+
+  if (!allVersions.length) {
+    console.error(`No valid versions found for dependency ${dependency.name}`)
+    throw 'No valid versions found.'
+  }
+
+  // Filter versions for allowed upgrades (minor/patch)
+  const currentVersion = dependency.version
+  const filteredVersions = allVersions.filter((version) => {
+    return isVersionApplicable(currentVersion, version, allowedUpgradeType)
+  })
+
+  if (!filteredVersions.length) {
+    console.log(`No matching ${allowedUpgradeType} updates for dependency ${dependency.name}`)
+    return { result: false }
+  }
+
+  // Determine the latest matching version
+  const latestVersion = filteredVersions.sort(semver.rcompare)[0]
+
+  if (latestVersion === currentVersion) {
+    console.log(`${dependency.name} is already up to date.`)
+    return { result: false }
+  }
+
+  const branchName = `ci-update-${dependency.name}-to-${latestVersion}`
+  const checkBranchCmd = remoteBranch
+    ? $`git ls-remote --heads origin ${branchName}`
+    : $`git branch --list ${branchName}`
+  const existingBranch = await checkBranchCmd
+  if (existingBranch.stdout !== '') {
+    console.log(`Skipping updates for dependency: ${dependency.name}: the feature branch ${branchName} already exists`)
+    return { result: false }
+  }
+
+  console.log(`Updating ${dependency.name} from version ${currentVersion} to ${latestVersion}`)
+
+  // Fetch and unpack the new chart version
+  const downloadDir = `./tmp/charts/${dependency.name}`
+  const tempDir = `${downloadDir}/${dependency.name}`
+  await fs.mkdir(downloadDir, { recursive: true })
+  await fs.rm(tempDir, { force: true, recursive: true })
+  const pullArg = isRegistry ? dependency.repository : `${dependency.name}/${dependency.name}`
+  await $`helm pull ${pullArg} --version ${latestVersion} --destination ${downloadDir} --untar`
+
+  const postFunc = CHART_POST_FUNCS[dependency.name]
+  let moveFiles = true
+  if (postFunc) {
+    moveFiles = await postFunc(tempDir)
+  }
+  if (moveFiles) {
+    await fs.rm(`${CHARTS_DIR}/${dirName}`, { force: true, recursive: true })
+    await $`mv ${tempDir} ${CHARTS_DIR}/${dirName}`
+  }
+
+  return { result: true, version: latestVersion, branchName }
+}
+
+async function updateDependency(
+  dependency,
+  chart,
+  chartApps,
+  apps,
+  allowedUpgradeType,
+  ciCreateFeatureBranch,
+  ciPushtoBranch,
+  ciCreateGithubPr,
+  baseBranch,
+) {
+  const currentDependencyVersion = dependency.version
+  const dirName = dependency.alias || dependency.name
+  const dependencyFileName = `${CHARTS_DIR}/${dirName}/Chart.yaml`
+
+  try {
+    const downloadResult = await downloadDependency(dependency, dirName, allowedUpgradeType, ciPushtoBranch)
+    if (!downloadResult.result) {
+      return false
+    }
+    const commitMessage = `chore(chart-deps): update ${dependency.name} to version ${downloadResult.version}`
+    if (ciCreateFeatureBranch) {
+      await $`git -c core.hooksPath=/dev/null checkout -b ${downloadResult.branchName}`
+    }
+    // Update the version in Chart.yaml
+    dependency.version = downloadResult.version
+    // Write the updated Chart.yaml file
+    await writeYamlFile(CHART_FILE, chart)
+
+    const appInfo = chartApps[dependency.alias || dependency.name]
+    let appsVersionSet = false
+    if (appInfo) {
+      console.log(`Chart ${dependency.name} assigned to app – looking up new version`)
+      try {
+        const dependencyChart = await loadYamlFile(dependencyFileName)
+        const updatedAppVersion = dependencyChart?.appVersion
+        if (updatedAppVersion) {
+          const previousAppVersion = appInfo.appVersion
+          appInfo.appVersion = updatedAppVersion.replace(/^v/, '')
+          try {
+            await writeYamlFile(APPS_FILE, apps)
+            await $`git add ${APPS_FILE}`
+            appsVersionSet = true
+          } catch (error) {
+            console.error(`Error updating app version for ${dependency.name}:`, error)
+          } finally {
+            // Restore to avoid side-effect on following run
+            appInfo.appVersion = previousAppVersion
+          }
+        } else {
+          console.info(`Updated app version not found in chart ${dependency.name}`)
+        }
+      } catch (error) {
+        console.error(`Error checking dependency app version ${dependency.name}:`, error)
+      }
+    } else {
+      console.log(`No app found for ${dependency.name}`)
+    }
+
+    if (ciCreateFeatureBranch) {
+      await $`git add ${CHART_FILE}`
+      await $`git add ${CHARTS_DIR}`
+      await $`git commit -m ${commitMessage}`
+    }
+    if (ciPushtoBranch) {
+      // Push the branch
+      await $`git push --no-verify origin ${downloadResult.branchName}`
+    }
+    if (ciCreateGithubPr) {
+      // Create a pull request
+      const prBody = [`This PR updates the dependency **${dependency.name}** to version **${downloadResult.version}**.`]
+      if (!appsVersionSet) {
+        prBody.push('TODO: Update app version in apps.yaml.')
+      }
+      const args = [
+        '--title',
+        commitMessage,
+        '--body',
+        prBody.join('\n'),
+        '--base',
+        baseBranch,
+        '--head',
+        downloadResult.branchName,
+        '--draft',
+        '--label',
+        'chart-deps',
+      ]
+      await $`gh pr create ${args}`
+    }
+  } finally {
+    // restore this version so it does not populate to the next chart update
+    dependency.version = currentDependencyVersion
+    if (ciCreateFeatureBranch) {
+      // Reset to the main branch for the next dependency
+      await $`git -c core.hooksPath=/dev/null checkout ${baseBranch}`
+      await $`git reset --hard ${ciPushtoBranch ? 'origin/' : ''}${baseBranch}`
+    }
+  }
+}
+
 async function main() {
   config()
   const env = envalid.cleanEnv(process.env, {
@@ -97,7 +274,7 @@ async function main() {
   const allowedUpgradeType = env.CI_UPDATE_TYPE
 
   const ciPushtoBranch = !env.CI_GIT_LOCAL_BRANCH_ONLY
-  const ciCreateFeatureBranch = true
+  const ciCreateFeatureBranch = false
   const ciCreateGithubPr = !env.CI_GIT_LOCAL_BRANCH_ONLY && env.CI_GH_CREATE_PR && ciCreateFeatureBranch
   const dependencyNameFilter = env.CI_HELM_CHART_NAME_FILTER || []
   const baseBranch = env.CI_GIT_BASELINE_BRANCH
@@ -125,8 +302,6 @@ async function main() {
     )
 
     for (const dependency of chart.dependencies) {
-      const currentDependencyVersion = dependency.version
-      const dirName = dependency.alias || dependency.name
       if (dependencyNameFilter.length !== 0 && !dependencyNameFilter.includes(dependency.name)) {
         console.log(
           `Skipping updates for dependency: ${dependency.name} due to dependencyNameFilter: ${dependencyNameFilter} `,
@@ -134,12 +309,13 @@ async function main() {
         continue
       }
 
-      const dependencyFileName = `${CHARTS_DIR}/${dirName}/Chart.yaml`
       if (!CHART_SKIP_PRECHECK.includes(dependency.name) && allowedUpgradeType !== 'init') {
+        const dirName = dependency.alias || dependency.name
+        const dependencyFileName = `${CHARTS_DIR}/${dirName}/Chart.yaml`
         console.log(`Pre-check for dependency ${dependency.name}`)
         try {
           const dependencyChart = await loadYamlFile(dependencyFileName)
-          if (dependencyChart.version.replace(/^v/, '') !== currentDependencyVersion.replace(/^v/, '')) {
+          if (dependencyChart.version.replace(/^v/, '') !== dependency.version.replace(/^v/, '')) {
             console.error(
               `Skipping update, indexed version of dependency ${dependency.name} is not consistent with chart version.`,
             )
@@ -156,163 +332,21 @@ async function main() {
         console.log(`Skipping pre-check for dependency ${dependency.name}`)
       }
 
-      const isRegistry = dependency.repository.startsWith('oci:')
-      console.log(`Checking updates for dependency: ${dependency.name}`)
       try {
-        let allVersions
-        if (isRegistry) {
-          const registry = dependency.repository.replace('oci://', 'docker://')
-          allVersions = await $`skopeo list-tags ${registry}`
-            .then((output) => JSON.parse(output.stdout))
-            .then((results) => results.Tags.filter((version) => semver.valid(version)))
-        } else {
-          // Add the Helm repository (idempotent)
-          await $`helm repo add ${dependency.name} ${dependency.repository}`
-          await $`helm repo update ${dependency.name}`
-
-          // Get all available versions for the dependency
-          allVersions = await $`helm search repo ${dependency.name}/${dependency.name} -l -o json`
-            .then((output) => JSON.parse(output.stdout))
-            .then((results) => results.map((entry) => entry.version).filter((version) => semver.valid(version)))
-        }
-
-        if (!allVersions.length) {
-          console.error(`No valid versions found for dependency ${dependency.name}`)
-          dependencyErrors[dependency.name] = 'No valid versions found.'
-          continue
-        }
-
-        // Filter versions for allowed upgrades (minor/patch)
-        const currentVersion = dependency.version
-        const filteredVersions = allVersions.filter((version) => {
-          return isVersionApplicable(currentVersion, version, allowedUpgradeType)
-        })
-
-        if (!filteredVersions.length) {
-          console.log(`No matching ${allowedUpgradeType} updates for dependency ${dependency.name}`)
-          continue
-        }
-
-        // Determine the latest matching version
-        const latestVersion = filteredVersions.sort(semver.rcompare)[0]
-
-        if (latestVersion === currentVersion) {
-          console.log(`${dependency.name} is already up to date.`)
-          continue
-        }
-        const branchName = `ci-update-${dependency.name}-to-${latestVersion}`
-        const checkBranchCmd = ciPushtoBranch
-          ? $`git ls-remote --heads origin ${branchName}`
-          : $`git branch --list ${branchName}`
-        const existingBranch = await checkBranchCmd
-        if (existingBranch.stdout !== '') {
-          console.log(
-            `Skipping updates for dependency: ${dependency.name}: the feature branch ${branchName} already exists`,
-          )
-          continue
-        }
-
-        console.log(`Updating ${dependency.name} from version ${currentVersion} to ${latestVersion}`)
-
-        // Update the version in Chart.yaml
-        dependency.version = latestVersion
-
-        const commitMessage = `chore(chart-deps): update ${dependency.name} to version ${latestVersion}`
-        if (ciCreateFeatureBranch) {
-          await $`git -c core.hooksPath=/dev/null checkout -b ${branchName}`
-        }
-
-        // Write the updated Chart.yaml file
-        await writeYamlFile(CHART_FILE, chart)
-        // Fetch and unpack the new chart version
-        const downloadDir = `./tmp/charts/${dependency.name}`
-        const tempDir = `${downloadDir}/${dependency.name}`
-        await fs.mkdir(downloadDir, { recursive: true })
-        await fs.rm(tempDir, { force: true, recursive: true })
-        const pullArg = isRegistry ? dependency.repository : `${dependency.name}/${dependency.name}`
-        await $`helm pull ${pullArg} --version ${latestVersion} --destination ${downloadDir} --untar`
-
-        const postFunc = CHART_POST_FUNCS[dependency.name]
-        let moveFiles = true
-        if (postFunc) {
-          moveFiles = await postFunc(tempDir)
-        }
-        if (moveFiles) {
-          await fs.rm(`${CHARTS_DIR}/${dirName}`, { force: true, recursive: true })
-          await $`mv ${tempDir} ${CHARTS_DIR}/${dirName}`
-        }
-
-        const appInfo = chartApps[dependency.alias || dependency.name]
-        let appsVersionSet = false
-        if (appInfo) {
-          console.log(`Chart ${dependency.name} assigned to app – looking up new version`)
-          try {
-            const dependencyChart = await loadYamlFile(dependencyFileName)
-            const updatedAppVersion = dependencyChart?.appVersion
-            if (updatedAppVersion) {
-              const previousAppVersion = appInfo.appVersion
-              appInfo.appVersion = updatedAppVersion.replace(/^v/, '')
-              try {
-                await writeYamlFile(APPS_FILE, apps)
-                await $`git add ${APPS_FILE}`
-                appsVersionSet = true
-              } catch (error) {
-                console.error(`Error updating app version for ${dependency.name}:`, error)
-              } finally {
-                // Restore to avoid side-effect on following run
-                appInfo.appVersion = previousAppVersion
-              }
-            } else {
-              console.info(`Updated app version not found in chart ${dependency.name}`)
-            }
-          } catch (error) {
-            console.error(`Error checking dependency app version ${dependency.name}:`, error)
-          }
-        } else {
-          console.log(`No app found for ${dependency.name}`)
-        }
-
-        if (ciCreateFeatureBranch) {
-          await $`git add ${CHART_FILE}`
-          await $`git add ${CHARTS_DIR}`
-          await $`git commit -m ${commitMessage}`
-        }
-        if (ciPushtoBranch) {
-          // Push the branch
-          await $`git push --no-verify origin ${branchName}`
-        }
-        if (ciCreateGithubPr) {
-          // Create a pull request
-          const prBody = [`This PR updates the dependency **${dependency.name}** to version **${latestVersion}**.`]
-          if (!appsVersionSet) {
-            prBody.push('TODO: Update app version in apps.yaml.')
-          }
-          const args = [
-            '--title',
-            commitMessage,
-            '--body',
-            prBody.join('\n'),
-            '--base',
-            baseBranch,
-            '--head',
-            branchName,
-            '--draft',
-            '--label',
-            'chart-deps',
-          ]
-          await $`gh pr create ${args}`
-        }
+        await updateDependency(
+          dependency,
+          chart,
+          chartApps,
+          apps,
+          allowedUpgradeType,
+          ciCreateFeatureBranch,
+          ciPushtoBranch,
+          ciCreateGithubPr,
+          baseBranch,
+        )
       } catch (error) {
-        console.error('Error updating dependencies:', error)
+        console.error(`Error updating ${dependency.name}:`, error)
         dependencyErrors[dependency.name] = error
-      } finally {
-        // restore this version so it does not populate to the next chart update
-        dependency.version = currentDependencyVersion
-        if (ciCreateFeatureBranch) {
-          // Reset to the main branch for the next dependency
-          await $`git -c core.hooksPath=/dev/null checkout ${baseBranch}`
-          await $`git reset --hard ${ciPushtoBranch ? 'origin/' : ''}${baseBranch}`
-        }
       }
     }
 
