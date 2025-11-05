@@ -871,6 +871,18 @@ database:
   # example postgres: postgres://postgres:password@localhost:5432/postgres?sslmode=disable
   # example mysql: root:password@tcp(localhost:3306)/test?tls=false
   dsn: ""
+  # -- Maximum number of open connections, supported for mysql and postgres
+  maxOpenConnections: 25
+  # -- Maximum number of idle connections, supported for mysql and postgres
+  maxIdleConnections: 25
+  # -- Maximum amount of time in minutes a connection may be reused, supported for mysql and postgres
+  connectionMaxLifetime: 0
+  # -- Maximum amount of time in minutes a connection may be idle, supported for mysql and postgres
+  connectionMaxIdleTime: 0
+  # -- Timeout for database operations in seconds, supported for mysql and postgres
+  timeout: 10
+  # -- Enables database related metrics, connection status and query histogram
+  metrics: false
   # -- Read configuration from an existing Secret
   # supported fields: username, password, host, dsn, database
   secretRef: ""
@@ -949,7 +961,7 @@ ui:
     # -- (string) Image PullPolicy
     pullPolicy: IfNotPresent
     # -- (string) Image tag
-    tag: "2.4.2"
+    tag: "2.4.3"
 
   # -- Deployment replica count
   replicaCount: 1
@@ -1267,6 +1279,9 @@ ui:
     # -- Affinity constraints.
   affinity: {}
 
+  # -- Pod Topology Spread Constraints for the policy-reporter-ui.
+  topologySpreadConstraints: {}
+
   extraVolumes:
     # -- Deployment volumeMounts
     volumeMounts: []
@@ -1289,7 +1304,7 @@ plugin:
       # -- (string) Image PullPolicy
       pullPolicy: IfNotPresent
       # -- (string) Image tag
-      tag: "0.5.0"
+      tag: "0.5.1"
 
     # -- Deployment replica count
     replicaCount: 1
@@ -1503,7 +1518,7 @@ plugin:
       pullPolicy: IfNotPresent
         # -- (string) Image tag
         # Defaults to `Chart.AppVersion` if omitted
-      tag: "0.4.9"
+      tag: "0.4.10"
 
     cli:
       image:
