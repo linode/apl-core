@@ -66,6 +66,9 @@ spec:
       {{- with .Values.global.priorityClassName }}
       priorityClassName: {{ . | quote }}
       {{- end }}
+      {{- if (hasKey .Values.global "hostUsers") }}
+      hostUsers: {{ .Values.global.hostUsers }}       
+      {{- end }}
       {{- with .Values.webhook.securityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
@@ -102,7 +105,7 @@ spec:
           - --dynamic-serving-dns-names={{ template "webhook.fullname" . }}
           - --dynamic-serving-dns-names={{ template "webhook.fullname" . }}.$(POD_NAMESPACE)
           - --dynamic-serving-dns-names={{ template "webhook.fullname" . }}.$(POD_NAMESPACE).svc
-          {{ if .Values.webhook.url.host }}
+          {{- if .Values.webhook.url.host }}
           - --dynamic-serving-dns-names={{ .Values.webhook.url.host }}
           {{- end }}
           {{- end }}
@@ -180,7 +183,7 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
-      {{- with .Values.webhook.nodeSelector }}
+      {{- with (coalesce .Values.webhook.nodeSelector .Values.global.nodeSelector) }}
       nodeSelector:
         {{- range $key, $value := . }}
         {{ $key }}: {{ $value | quote }}
