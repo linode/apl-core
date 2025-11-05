@@ -19,8 +19,6 @@ apps:
     enabled: true
   jaeger:
     enabled: true
-  kiali:
-    enabled: true
   knative:
     enabled: true
   kured:

@@ -29,11 +29,6 @@ const destroyAll = async () => {
   const d = terminal(`cmd:${cmdName}:destroyAll`)
   d.log('Uninstalling otomi...')
   const debugStream = { stdout: d.stream.debug, stderr: d.stream.error }
-  d.info('Removing problematic part: kiali finalizer...')
-  await stream(
-    $`kubectl -n kiali patch kiali kiali -p '{"metadata":{"finalizers": []}}' --type=merge`.nothrow().quiet(),
-    debugStream,
-  )
   d.info('Uninstalling all charts...')
   await hf({ args: 'destroy' }, { streams: debugStream })
   d.info('Uninstalled all charts.')
@@ -105,7 +100,6 @@ const destroyAll = async () => {
     'externalsecrets.kubernetes-client.io',
     'istio.io',
     'jaegers.jaegertracing.io',
-    'kiali.io',
     'knative.dev',
     'monitoring.coreos.com',
   ]
