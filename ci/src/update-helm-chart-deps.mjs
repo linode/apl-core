@@ -275,6 +275,7 @@ async function updateDependency(
       ]
       await $`gh pr create ${args}`
     }
+    return true
   } finally {
     // restore versions so it does not populate to the next chart update
     for (const dependency of dependencies) {
@@ -399,27 +400,25 @@ async function main() {
 
     const dependencyGroups = groupDependencies(filteredDependencies)
 
-    await Promise.all(
-      Object.entries(dependencyGroups).map(async ([groupName, dependencies]) => {
-        try {
-          await updateDependency(
-            groupName,
-            dependencies,
-            chart,
-            chartApps,
-            apps,
-            allowedUpgradeType,
-            ciCreateFeatureBranch,
-            ciPushtoBranch,
-            ciCreateGithubPr,
-            baseBranch,
-          )
-        } catch (error) {
-          console.error(`Error updating ${groupName}:`, error)
-          dependencyErrors[groupName] = error
-        }
-      })
-    )
+    for (const [groupName, dependencies] of Object.entries(dependencyGroups)) {
+      try {
+        await updateDependency(
+          groupName,
+          dependencies,
+          chart,
+          chartApps,
+          apps,
+          allowedUpgradeType,
+          ciCreateFeatureBranch,
+          ciPushtoBranch,
+          ciCreateGithubPr,
+          baseBranch,
+        )
+      } catch (error) {
+        console.error(`Error updating ${groupName}:`, error)
+        dependencyErrors[groupName] = error
+      }
+    }
 
     console.log('Dependency updates complete.')
     if (Object.keys(dependencyErrors).length > 0) {
