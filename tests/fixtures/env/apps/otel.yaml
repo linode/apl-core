@@ -4,7 +4,6 @@ metadata:
     labels: {}
 spec:
     collector:
-        managementState: managed
         attributes:
             - k8s.pod.name
             - k8s.pod.uid
