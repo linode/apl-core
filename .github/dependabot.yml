@@ -18,10 +18,10 @@ updates:
     groups:
       npm-dependencies:
         patterns:
-          - "*"
+          - '*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
   # Docker
   - package-ecosystem: 'docker'
@@ -36,10 +36,10 @@ updates:
     groups:
       docker-dependencies:
         patterns:
-          - "*"
+          - '*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
     ignore:
       - dependency-name: 'node'
         versions: ['>=23']
@@ -57,7 +57,7 @@ updates:
     groups:
       github-actions-dependencies:
         patterns:
-          - "*"
+          - '*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
