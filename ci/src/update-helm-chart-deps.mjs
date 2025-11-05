@@ -212,7 +212,7 @@ async function updateDependency(
     // Write the updated Chart.yaml file
     await writeYamlFile(CHART_FILE, chart)
 
-    const appInfo = chartApps[mainDependency.alias || mainName]
+    const appInfo = chartApps[groupName]
     let appsVersionSet = false
     if (appInfo) {
       console.log(`Chart ${mainDependency.name} assigned to app – looking up new version`)
