@@ -57,11 +57,16 @@ async function renderKyvernoCrdTemplates(chartDir) {
 async function renderOtelCrdTemplates(chartDir) {
   console.log(`Rendering templates from ${chartDir}`)
   const crdPath = `${chartDir}/crds`
+  // helm using --output-dir only considers files in templates/
+  // move the CRD templates there and drop them later
+  const tempCrdPath = `${chartDir}/templates/crds`
+  await $`mv ${chartDir}/conf/crds ${tempCrdPath}`
   const tempPath = await $`mktemp -d`
   await $`helm template --output-dir ${tempPath} ${chartDir}`
   console.log(`Adding templates in ${crdPath}`)
-  await $`mv ${tempPath}/otel-operator/conf/crds/templates ${crdPath}`
+  await $`mv ${tempPath}/opentelemetry-operator/templates/crds ${crdPath}`
   await $`rm -R ${tempPath}`
+  await $`rm -R ${tempCrdPath}`
   return true
 }
 
@@ -91,7 +96,7 @@ const CHART_GROUPS = {
 const CHART_SKIP_PRECHECK = ['cloud-firewall-crd', 'kserve-crd']
 const CHART_POST_FUNCS = {
   kyverno: renderKyvernoCrdTemplates,
-  'otel-operator': renderOtelCrdTemplates,
+  'opentelemetry-operator': renderOtelCrdTemplates,
   'kserve-crd': copyKserveCrdTemplates,
   'cloud-firewall-crd': copyLinodeCfwTemplates,
 }
