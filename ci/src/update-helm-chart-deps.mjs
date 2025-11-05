@@ -205,7 +205,7 @@ async function updateDependency(
         extraDependency.version = extraVersion
       }
     }
-    const commitMessage = `chore(chart-deps): update ${groupName} to version ${latestVersion.version}`
+    const commitMessage = `chore(chart-deps): update ${groupName} to version ${latestVersion}`
     if (ciCreateFeatureBranch) {
       await $`git -c core.hooksPath=/dev/null checkout -b ${branchName}`
     }
@@ -255,7 +255,7 @@ async function updateDependency(
     }
     if (ciCreateGithubPr) {
       // Create a pull request
-      const prBody = [`This PR updates the dependency **${dependency.name}** to version **${latestVersion}**.`]
+      const prBody = [`This PR updates the dependency **${mainName}** to version **${latestVersion}**.`]
       if (!appsVersionSet) {
         prBody.push('TODO: Update app version in apps.yaml.')
       }
