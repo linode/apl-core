@@ -1,11 +1,11 @@
 import { readFileSync, rmSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
-import { loadAll } from 'js-yaml'
 import { glob } from 'glob'
+import { loadAll } from 'js-yaml'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { hfTemplate } from 'src/common/hf'
-import { getFilename, readdirRecurse, rootDir } from 'src/common/utils'
+import { getFilename, rootDir } from 'src/common/utils'
 import { getK8sVersion } from 'src/common/values'
 import { BasicArguments, HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import * as tar from 'tar'
@@ -125,8 +125,6 @@ const processCrdWrapper = async (argv: BasicArguments) => {
       // Templates can usually not be processed directly
       '**/templates/crds/**',
       '**/crds/templates/**',
-      // These also come statically with the chart
-      'kube-prometheus-stack/charts/crds/templates/**',
     ],
     cwd: `${rootDir}/charts`,
     absolute: true,

@@ -1,18 +1,18 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: changed
-      description: Updated the Redis chart to the latest version
+    - kind: added
+      description: Adds backwards compatibility with Kubernetes 1.20 by selecting the HPA apiVersion of autoscaling/v2beta2
       links:
         - name: Github PR
-          url: https://github.com/oauth2-proxy/manifests/pull/316
+          url: https://github.com/oauth2-proxy/manifests/pull/364
 apiVersion: v2
-appVersion: 7.9.0
+appVersion: 7.12.0
 dependencies:
 - alias: redis
   condition: redis.enabled
-  name: redis
-  repository: https://charts.bitnami.com/bitnami
-  version: 21.2.3
+  name: redis-ha
+  repository: https://dandydeveloper.github.io/charts
+  version: 4.35.0
 description: A reverse proxy that provides authentication with Google, Github or other
   providers
 home: https://oauth2-proxy.github.io/oauth2-proxy/
@@ -36,4 +36,4 @@ name: oauth2-proxy
 sources:
 - https://github.com/oauth2-proxy/oauth2-proxy
 - https://github.com/oauth2-proxy/manifests
-version: 7.12.18
+version: 8.3.2

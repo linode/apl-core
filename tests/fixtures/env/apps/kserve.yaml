@@ -1,0 +1,29 @@
+kind: AplApp
+metadata:
+    name: kserve
+    labels: {}
+spec:
+    enabled: true
+    _rawValues: {}
+    resources:
+        rbacProxy:
+            limits:
+                cpu: 100m
+                memory: 300Mi
+            requests:
+                cpu: 100m
+                memory: 300Mi
+        controller:
+            limits:
+                cpu: 100m
+                memory: 300Mi
+            requests:
+                cpu: 100m
+                memory: 300Mi
+        inferenceService:
+            limits:
+                cpu: '1'
+                memory: '2Gi'
+            requests:
+                cpu: '1'
+                memory: '2Gi'

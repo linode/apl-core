@@ -12,14 +12,20 @@ global:
 
 objectStorage:
 {{- if eq $obj.type "minioLocal" }}
-  endpoint: minio.minio.svc.cluster.local:9000
+  endpoint: minio.minio.svc.cluster.local
+  port: 9000
   bucket: "kubeflow-pipelines"
   region: us-east-1
+  secure: false
+  type: "minio"
 {{- end }}
 {{- if eq $obj.type "linode" }}
   endpoint: {{ $obj.linode.region }}.linodeobjects.com
   bucket: {{ $lb }}
   region: {{ $obj.linode.region }}
+  port: 443
+  secure: true
+  type: "linode"
 {{- end }}
 
 cacheDeployer:

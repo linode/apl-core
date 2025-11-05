@@ -86,7 +86,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
 | `image.registry`                                  | Sealed Secrets image registry                                                                                      | `docker.io`                         |
 | `image.repository`                                | Sealed Secrets image repository                                                                                    | `bitnami/sealed-secrets-controller` |
-| `image.tag`                                       | Sealed Secrets image tag (immutable tags are recommended)                                                          | `0.30.0`                            |
+| `image.tag`                                       | Sealed Secrets image tag (immutable tags are recommended)                                                          | `0.32.2`                            |
 | `image.pullPolicy`                                | Sealed Secrets image pull policy                                                                                   | `IfNotPresent`                      |
 | `image.pullSecrets`                               | Sealed Secrets image pull secrets                                                                                  | `[]`                                |
 | `revisionHistoryLimit`                            | Number of old history to retain to allow rollback (If not set, default Kubernetes value is set to 10)              | `""`                                |
@@ -106,6 +106,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `logLevel`                                        | Specifies log level of controller (INFO,ERROR)                                                                     | `""`                                |
 | `logFormat`                                       | Specifies log format (text,json)                                                                                   | `""`                                |
 | `maxRetries`                                      | Number of maximum retries                                                                                          | `""`                                |
+| `watchForSecrets`                                 | Specifies whether the Sealed Secrets controller will watch for new secrets                                         | `false`                             |
 | `command`                                         | Override default container command                                                                                 | `[]`                                |
 | `args`                                            | Override default container args                                                                                    | `[]`                                |
 | `livenessProbe.enabled`                           | Enable livenessProbe on Sealed Secret containers                                                                   | `true`                              |

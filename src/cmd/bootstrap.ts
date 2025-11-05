@@ -256,7 +256,7 @@ export const copyBasicFiles = async (
 
   // force copy all these
   await Promise.allSettled(
-    ['.gitignore', '.prettierrc.yml', 'README.md'].map(async (val) =>
+    ['.editorconfig', '.gitignore', '.prettierrc.yml', 'README.md'].map(async (val) =>
       deps.copyFile(`${rootDir}/.values/${val}`, `${ENV_DIR}/${val}`),
     ),
   )
@@ -475,7 +475,7 @@ export const bootstrap = async (
 
   await deps.handleFileEntry()
   await deps.bootstrapSops()
-  await ensureTeamGitOpsDirectories(ENV_DIR)
+  await ensureTeamGitOpsDirectories(ENV_DIR, originalValues)
   if (!hasOtomi) {
     d.log('You can now use the otomi CLI')
   }
