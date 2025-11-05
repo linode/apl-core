@@ -296,7 +296,7 @@ function groupDependencies(dependencies) {
   const depsInGroups = {}
   Object.entries(CHART_GROUPS).forEach(([groupName, dependencies]) => {
     for (const dependency of dependencies) {
-      depsInGroups[dependency.name] = groupName
+      depsInGroups[dependency.name] = [groupName, dependency]
     }
   })
 
@@ -304,10 +304,8 @@ function groupDependencies(dependencies) {
   for (const dependency of dependencies) {
     const groupName = dependency[dependency.name]
     if (groupName) {
-      if (groupedDeps.hasOwnProperty(groupName)) {
-        groupedDeps[groupName].push(dependency)
-      } else {
-        groupedDeps[groupName] = [dependency]
+      if (!groupedDeps.hasOwnProperty(groupName)) {
+        groupedDeps[groupName] = CHART_GROUPS[groupName].map(depName => depsInGroups[depName])
       }
     } else {
       groupedDeps[dependency.name] = [dependency]
