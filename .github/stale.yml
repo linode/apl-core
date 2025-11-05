@@ -5,7 +5,7 @@ daysUntilClose: 7
 # Issues with these labels will never be considered stale
 exemptLabels:
   - pinned
-# Set to true to ignore issues with an assignee (defaults to false)  
+# Set to true to ignore issues with an assignee (defaults to false)
 exemptAssignees: true
 # Only mark stale when these labels are found
 onlyLabels:
