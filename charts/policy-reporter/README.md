@@ -3,7 +3,7 @@
 Policy Reporter watches for PolicyReport Resources.
 It creates Prometheus Metrics and can send rule validation events to different targets like Loki, Elasticsearch, Slack or Discord
 
-![Version: 3.4.2](https://img.shields.io/badge/Version-3.4.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.4.2](https://img.shields.io/badge/AppVersion-3.4.2-informational?style=flat-square)
+![Version: 3.5.0](https://img.shields.io/badge/Version-3.5.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.5.0](https://img.shields.io/badge/AppVersion-3.5.0-informational?style=flat-square)
 
 ## Documentation
 
@@ -360,6 +360,12 @@ Open `http://localhost:8082/` in your browser.
 | database.host | string | `""` | Host Address |
 | database.enableSSL | bool | `false` | Enables SSL |
 | database.dsn | string | `""` | Instead of configure the individual values you can also provide an DSN string example postgres: postgres://postgres:password@localhost:5432/postgres?sslmode=disable example mysql: root:password@tcp(localhost:3306)/test?tls=false |
+| database.maxOpenConnections | int | `25` | Maximum number of open connections, supported for mysql and postgres |
+| database.maxIdleConnections | int | `25` | Maximum number of idle connections, supported for mysql and postgres |
+| database.connectionMaxLifetime | int | `0` | Maximum amount of time in minutes a connection may be reused, supported for mysql and postgres |
+| database.connectionMaxIdleTime | int | `0` | Maximum amount of time in minutes a connection may be idle, supported for mysql and postgres |
+| database.timeout | int | `10` | Timeout for database operations in seconds, supported for mysql and postgres |
+| database.metrics | bool | `false` | Enables database related metrics, connection status and query histogram |
 | database.secretRef | string | `""` | Read configuration from an existing Secret supported fields: username, password, host, dsn, database |
 | database.mountedSecret | string | `""` |  |
 | periodicSync.enabled | bool | `false` |  |
@@ -381,7 +387,7 @@ Open `http://localhost:8082/` in your browser.
 | ui.image.registry | string | `"ghcr.io"` | Image registry |
 | ui.image.repository | string | `"kyverno/policy-reporter-ui"` | Image repository |
 | ui.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| ui.image.tag | string | `"2.4.2"` | Image tag |
+| ui.image.tag | string | `"2.4.3"` | Image tag |
 | ui.replicaCount | int | `1` | Deployment replica count |
 | ui.priorityClassName | string | `""` | Deployment priorityClassName |
 | ui.logging.api | bool | `false` | Enables external api request logging |
@@ -462,6 +468,7 @@ Open `http://localhost:8082/` in your browser.
 | ui.nodeSelector | object | `{}` | Node labels for pod assignment |
 | ui.tolerations | list | `[]` | List of node taints to tolerate |
 | ui.affinity | object | `{}` | Affinity constraints. |
+| ui.topologySpreadConstraints | object | `{}` | Pod Topology Spread Constraints for the policy-reporter-ui. |
 | ui.extraVolumes.volumeMounts | list | `[]` | Deployment volumeMounts |
 | ui.extraVolumes.volumes | list | `[]` | Deployment values |
 | ui.extraConfig | object | `{}` | Extra configuration options appended to UI settings |
@@ -469,7 +476,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.kyverno.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.kyverno.image.repository | string | `"kyverno/policy-reporter/kyverno-plugin"` | Image repository |
 | plugin.kyverno.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.kyverno.image.tag | string | `"0.5.0"` | Image tag |
+| plugin.kyverno.image.tag | string | `"0.5.1"` | Image tag |
 | plugin.kyverno.replicaCount | int | `1` | Deployment replica count |
 | plugin.kyverno.priorityClassName | string | `""` | Deployment priorityClassName |
 | plugin.kyverno.logging.api | bool | `false` | Enables external API request logging |
@@ -535,7 +542,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.trivy.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.trivy.image.repository | string | `"kyverno/policy-reporter/trivy-plugin"` | Image repository |
 | plugin.trivy.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.trivy.image.tag | string | `"0.4.9"` | Image tag Defaults to `Chart.AppVersion` if omitted |
+| plugin.trivy.image.tag | string | `"0.4.10"` | Image tag Defaults to `Chart.AppVersion` if omitted |
 | plugin.trivy.cli.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.trivy.cli.image.repository | string | `"aquasecurity/trivy"` | Image repository |
 | plugin.trivy.cli.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |

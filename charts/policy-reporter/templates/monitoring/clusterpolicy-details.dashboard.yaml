@@ -720,7 +720,7 @@ data:
         "pluginVersion": "7.1.5",
         "targets": [
             {
-            "expr": "max(sum(cluster_policy_report_result{policy=~\"$policy\", category=~\"$category\", severity=~\"$severity\", source=~\"$source\", kind=~\"$kind\", status=\"warn\"{{ range $filters }}, {{.}}=~\"${{.}}\"{{ end }} }) by (pod, policy,rule,kind,name,status,severity,category,source{{ range $filters }},{{.}}{{ end }})) by (policy,rule,kind,name,status,severity,category,source{{ range $filters }},{{.}}{{ end }})",
+            "expr": "max(sum(cluster_policy_report_result{policy=~\"$policy\", category=~\"$category\", severity=~\"$severity\", source=~\"$source\", kind=~\"$kind\", status=\"error\"{{ range $filters }}, {{.}}=~\"${{.}}\"{{ end }} }) by (pod, policy,rule,kind,name,status,severity,category,source{{ range $filters }},{{.}}{{ end }})) by (policy,rule,kind,name,status,severity,category,source{{ range $filters }},{{.}}{{ end }})",
             "format": "table",
             "instant": true,
             "interval": "",
