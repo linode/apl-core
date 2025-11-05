@@ -182,7 +182,6 @@ async function updateDependency(
   const mainName = mainDependency.name
   const extraDependencies = dependencies.slice(1)
   const preservedVersions = Object.fromEntries(dependencies.map((dependency) => [dependency.name, dependency.version]))
-  const currentDependencyVersion = mainDependency.version
   const dirName = mainDependency.alias || mainName
   const dependencyFileName = `${CHARTS_DIR}/${dirName}/Chart.yaml`
 
