@@ -62,7 +62,7 @@ async function renderOtelCrdTemplates(chartDir) {
   const tempCrdPath = `${chartDir}/templates/crds`
   await $`mv ${chartDir}/conf/crds ${tempCrdPath}`
   const tempPath = await $`mktemp -d`
-  await $`helm template --output-dir ${tempPath} ${chartDir}`
+  await $`helm template --namespace otel --output-dir ${tempPath} otel-operator ${chartDir}`
   console.log(`Adding templates in ${crdPath}`)
   await $`mv ${tempPath}/opentelemetry-operator/templates/crds ${crdPath}`
   await $`rm -R ${tempPath}`
