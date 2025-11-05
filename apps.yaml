@@ -123,7 +123,6 @@ appsInfo:
     license: Apache 2.0
     about: Istio is an open platform for providing a uniform way to integrate microservices, manage traffic flow across microservices, enforce policies and aggregate telemetry data. Istio's control plane provides an abstraction layer over the underlying cluster management platform.
     integration: APL has security best practices built in, and is designed for intrusion. Istio is used by APL as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of APL and can not be disabled.
-    chartName: istiod
   jaeger:
     title: Jaeger Operator
     dependencies: Open Telemetry (otel)
@@ -330,7 +329,7 @@ appsInfo:
     chartName: trivy-operator
   otel:
     title: Open Telemetry Operator
-    appVersion: 0.80.0
+    appVersion: 0.137.0
     repo: https://github.com/open-telemetry/opentelemetry-operator
     maintainers: Grafana labs
     relatedLinks:
