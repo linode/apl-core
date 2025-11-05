@@ -75,7 +75,7 @@ async function copyLinodeCfwTemplates(chartDir) {
 const CHART_GROUPS = {
   istio: ['base', 'istiod', 'gateway'],
   kserve: ['kserve', 'kserve-crd'],
-  'cloud-firewall': ['cloud-firewall', 'cloud-firewall-crd'],
+  'cloud-firewall': ['cloud-firewall-controller', 'cloud-firewall-crd'],
 }
 const CHART_SKIP_PRECHECK = ['cloud-firewall-crd', 'kserve-crd']
 const CHART_POST_FUNCS = {
