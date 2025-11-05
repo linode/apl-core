@@ -33,6 +33,7 @@
 - [Metrics and profiling](#metrics-and-profiling)
   - [Secure Metrics Endpoint](#secure-metrics-endpoint)
 - [Pod annotations](#pod-annotations)
+- [TLS certificate rotation](#tls-certificate-rotation)
 - [Themes](#themes)
 - [Renovate](#renovate)
 - [Parameters](#parameters)
@@ -47,13 +48,12 @@
   - [Persistence](#persistence-1)
   - [Init](#init)
   - [Signing](#signing)
-  - [Gitea Actions](#gitea-actions)
   - [Gitea](#gitea)
   - [LivenessProbe](#livenessprobe)
   - [ReadinessProbe](#readinessprobe)
   - [StartupProbe](#startupprobe)
-  - [redis-cluster](#redis-cluster)
-  - [redis](#redis)
+  - [valkey-cluster](#valkey-cluster)
+  - [valkey](#valkey)
   - [PostgreSQL HA](#postgresql-ha)
   - [PostgreSQL](#postgresql)
   - [Advanced](#advanced)
@@ -62,6 +62,8 @@
 
 [Gitea](https://gitea.com) is a community managed lightweight code hosting solution written in Go.
 It is published under the MIT license.
+
+> :warning: This chart is currently unmaintained and in desperate need of a new maintainer. If you want to apply as a maintainer, please comment on [#916](https://gitea.com/gitea/helm-gitea/issues/916)
 
 ## Introduction
 
@@ -96,14 +98,14 @@ Users can also configure their own external providers via the configuration.
 These dependencies are enabled by default:
 
 - PostgreSQL HA ([Bitnami PostgreSQL-HA](https://github.com/bitnami/charts/blob/main/bitnami/postgresql-ha/Chart.yaml))
-- Redis-Cluster ([Bitnami Redis-Cluster](https://github.com/bitnami/charts/blob/main/bitnami/redis-cluster/Chart.yaml))
+- Valkey-Cluster ([Bitnami Valkey-Cluster](https://github.com/bitnami/charts/blob/main/bitnami/valkey-cluster/Chart.yaml))
 
 ### Non-HA Dependencies
 
 Alternatively, the following non-HA replacements are available:
 
-- PostgreSQL ([Bitnami PostgreSQL](<Postgresql](https://github.com/bitnami/charts/blob/main/bitnami/postgresql/Chart.yaml)>))
-- Redis ([Bitnami Redis](<Redis](https://github.com/bitnami/charts/blob/main/bitnami/redis/Chart.yaml)>))
+- PostgreSQL ([Bitnami PostgreSQL](https://github.com/bitnami/charts/blob/main/bitnami/postgresql/Chart.yaml))
+- Valkey ([Bitnami Valkey](https://github.com/bitnami/charts/blob/main/bitnami/valkey/Chart.yaml))
 
 ### Dependency Versioning
 
@@ -121,8 +123,8 @@ Please double-check the image repository and available tags in the sub-chart:
 
 - [PostgreSQL-HA](https://hub.docker.com/r/bitnami/postgresql-repmgr/tags)
 - [PostgreSQL](https://hub.docker.com/r/bitnami/postgresql/tags)
-- [Redis Cluster](https://hub.docker.com/r/bitnami/redis-cluster/tags)
-- [Redis](https://hub.docker.com/r/bitnami/redis/tags)
+- [Valkey Cluster](https://hub.docker.com/r/bitnami/valkey-cluster/tags)
+- [Valkey](https://hub.docker.com/r/bitnami/valkey/tags)
 
 and look up the image tag which fits your needs on Dockerhub.
 
@@ -167,7 +169,7 @@ available. As this is a Golang application, this can be implemented using `GOMAX
 of defining `GOMAXPROCS` automatically based on the defined CPU limit like `1000m`. Please keep in mind, that the CFS
 rate of `100ms` - default on each kubernetes node, is also very important to avoid CPU throttling.
 
-Further information about this topic can be found [here](https://kanishk.io/posts/cpu-throttling-in-containerized-go-apps/).
+Further information about this topic can be found [under this link](https://kanishk.io/posts/cpu-throttling-in-containerized-go-apps/).
 
 > [!NOTE]
 > The environment variable `GOMAXPROCS` is set automatically, when a CPU limit is defined. An explicit configuration is
@@ -178,12 +180,12 @@ Further information about this topic can be found [here](https://kanishk.io/post
 ```yaml
 deployment:
   env:
-  # Will be automatically defined!
-  - name: GOMAXPROCS
-    valueFrom:
-      resourceFieldRef:
-        divisor: "1" # Is required for GitDevOps systems like ArgoCD/Flux. Otherwise throw the system a diff error. (k8s-default=1)
-        resource: limits.cpu
+    # Will be automatically defined!
+    - name: GOMAXPROCS
+      valueFrom:
+        resourceFieldRef:
+          divisor: "1" # Is required for GitDevOps systems like ArgoCD/Flux. Otherwise throw the system a diff error. (k8s-default=1)
+          resource: limits.cpu
 
 resources:
   limits:
@@ -282,28 +284,28 @@ If `.Values.image.rootless: true`, then the following will occur. In case you us
 
 #### Session, Cache and Queue
 
-The session, cache and queue settings are set to use the built-in Redis Cluster sub-chart dependency.
-If Redis Cluster is disabled, the chart will fall back to the Gitea defaults which use "memory" for `session` and `cache` and "level" for `queue`.
+The session, cache and queue settings are set to use the built-in Valkey Cluster sub-chart dependency.
+If Valkey Cluster is disabled, the chart will fall back to the Gitea defaults which use "memory" for `session` and `cache` and "level" for `queue`.
 
 While these will work and even not cause immediate issues after startup, **they are not recommended for production use**.
 Reasons being that a single pod will take on all the work for `session` and `cache` tasks in its available memory.
 It is likely that the pod will run out of memory or will face substantial memory spikes, depending on the workload.
-External tools such as `redis-cluster` or `memcached` handle these workloads much better.
+External tools such as `valkey-cluster` or `memcached` handle these workloads much better.
 
 ### Single-Pod Configurations
 
 If HA is not needed/desired, the following configurations can be used to deploy a single-pod Gitea instance.
 
-1. For a production-ready single-pod Gitea instance without external dependencies (using the chart dependency `postgresql` and `redis`):
+1. For a production-ready single-pod Gitea instance without external dependencies (using the chart dependency `postgresql` and `valkey`):
 
    <details>
 
    <summary>values.yml</summary>
 
    ```yaml
-   redis-cluster:
+   valkey-cluster:
      enabled: false
-   redis:
+   valkey:
      enabled: true
    postgresql:
      enabled: true
@@ -334,9 +336,9 @@ If HA is not needed/desired, the following configurations can be used to deploy 
    <summary>values.yml</summary>
 
    ```yaml
-   redis-cluster:
+   valkey-cluster:
      enabled: false
-   redis:
+   valkey:
      enabled: false
    postgresql:
      enabled: false
@@ -534,21 +536,21 @@ and the repository exists.
 ```
 
 To solve this problem add the capability `SYS_CHROOT` to the `securityContext`.
-More about this issue [here](https://gitea.com/gitea/helm-gitea/issues/161).
+More about this issue [under this link](https://gitea.com/gitea/helm-gitea/issues/161).
 
 ### Cache
 
-The cache handling is done via `redis-cluster` (via the `bitnami` chart) by default.
+The cache handling is done via `valkey-cluster` (via the `bitnami` chart) by default.
 This deployment is HA-ready but can also be used for single-pod deployments.
-By default, 6 replicas are deployed for a working `redis-cluster` deployment.
-Many cloud providers offer a managed redis service, which can be used instead of the built-in `redis-cluster`.
+By default, 6 replicas are deployed for a working `valkey-cluster` deployment.
+Many cloud providers offer a managed valkey service, which can be used instead of the built-in `valkey-cluster`.
 
 ```yaml
-redis-cluster:
+valkey-cluster:
   enabled: true
 ```
 
-⚠️ The redis charts [do not work well with special characters in the password](https://gitea.com/gitea/helm-gitea/issues/690).
+⚠️ The valkey charts [do not work well with special characters in the password](https://gitea.com/gitea/helm-chart/issues/690).
 Consider omitting such or open an issue in the Bitnami repo and let us know once this got fixed.
 
 ### Persistence
@@ -694,7 +696,7 @@ Affected options:
 
 Like the admin user, OAuth2 settings can be updated and disabled but not deleted.
 Deleting OAuth2 settings has to be done in the ui.
-All OAuth2 values, which are documented [here](https://docs.gitea.com/administration/command-line#admin), are
+All OAuth2 values, which are documented [under this link](https://docs.gitea.com/administration/command-line#admin), are
 available.
 
 Multiple OAuth2 sources can be configured with additional OAuth list items.
@@ -815,6 +817,31 @@ Annotations can be added to the Gitea pod.
 ```yaml
 gitea:
   podAnnotations: {}
+```
+
+## TLS certificate rotation
+
+If Gitea uses TLS certificates that are mounted as a secret in the container file system, Gitea will not automatically apply them when the TLS certificates are rotated.
+Such a rotation can be for example triggered, when the cert-manager issues new TLS certificates before expiring. Further information is described as GitHub
+[issue](https://github.com/go-gitea/gitea/issues/27962).
+
+Until the issue is present, a workaround can be applied.
+For example stakater's [reloader](https://github.com/stakater/Reloader) controller can be used to trigger a rolling update.
+The following annotation must be added to instruct the reloader controller to trigger a rolling update, when the mounted `configMaps` and `secrets` have been changed.
+
+```yaml
+deployment:
+  annotations:
+    reloader.stakater.com/auto: "true"
+```
+
+Instead of triggering a rolling update for configMap and secret resources, this action can also be defined for individual items.
+For example, when the secret named `gitea-tls` is mounted and the reloader controller should only listen for changes of this secret:
+
+```yaml
+deployment:
+  annotations:
+    secret.reloader.stakater.com/reload: "gitea-tls"
 ```
 
 ## Themes
@@ -991,16 +1018,15 @@ To comply with the Gitea helm chart definition of the digest parameter, a "custo
 
 ### Ingress
 
-| Name                                 | Description                                                                 | Value             |
-| ------------------------------------ | --------------------------------------------------------------------------- | ----------------- |
-| `ingress.enabled`                    | Enable ingress                                                              | `false`           |
-| `ingress.className`                  | Ingress class name                                                          | `nil`             |
-| `ingress.annotations`                | Ingress annotations                                                         | `{}`              |
-| `ingress.hosts[0].host`              | Default Ingress host                                                        | `git.example.com` |
-| `ingress.hosts[0].paths[0].path`     | Default Ingress path                                                        | `/`               |
-| `ingress.hosts[0].paths[0].pathType` | Ingress path type                                                           | `Prefix`          |
-| `ingress.tls`                        | Ingress tls settings                                                        | `[]`              |
-| `ingress.apiVersion`                 | Specify APIVersion of ingress object. Mostly would only be used for argocd. |                   |
+| Name                             | Description                     | Value             |
+| -------------------------------- | ------------------------------- | ----------------- |
+| `ingress.enabled`                | Enable ingress                  | `false`           |
+| `ingress.className`              | DEPRECATED: Ingress class name. | `""`              |
+| `ingress.pathType`               | Ingress Path Type               | `Prefix`          |
+| `ingress.annotations`            | Ingress annotations             | `{}`              |
+| `ingress.hosts[0].host`          | Default Ingress host            | `git.example.com` |
+| `ingress.hosts[0].paths[0].path` | Default Ingress path            | `/`               |
+| `ingress.tls`                    | Ingress tls settings            | `[]`              |
 
 ### deployment
 
@@ -1046,6 +1072,8 @@ To comply with the Gitea helm chart definition of the digest parameter, a "custo
 | `persistence.subPath`                             | Subdirectory of the volume to mount at                                                                | `nil`                  |
 | `persistence.volumeName`                          | Name of persistent volume in PVC                                                                      | `""`                   |
 | `extraContainers`                                 | Additional sidecar containers to run in the pod                                                       | `[]`                   |
+| `preExtraInitContainers`                          | Additional init containers to run in the pod before Gitea runs it owns init containers.               | `[]`                   |
+| `postExtraInitContainers`                         | Additional init containers to run in the pod after Gitea runs it owns init containers.                | `[]`                   |
 | `extraVolumes`                                    | Additional volumes to mount to the Gitea deployment                                                   | `[]`                   |
 | `extraContainerVolumeMounts`                      | Mounts that are only mapped into the Gitea runtime/main container, to e.g. override custom templates. | `[]`                   |
 | `extraInitVolumeMounts`                           | Mounts that are only mapped into the init-containers. Can be used for additional preconfiguration.    | `[]`                   |
@@ -1053,12 +1081,13 @@ To comply with the Gitea helm chart definition of the digest parameter, a "custo
 
 ### Init
 
-| Name                                       | Description                                                                          | Value   |
-| ------------------------------------------ | ------------------------------------------------------------------------------------ | ------- |
-| `initPreScript`                            | Bash shell script copied verbatim to the start of the init-container.                | `""`    |
-| `initContainers.resources.limits`          | initContainers.limits Kubernetes resource limits for init containers                 | `{}`    |
-| `initContainers.resources.requests.cpu`    | initContainers.requests.cpu Kubernetes cpu resource limits for init containers       | `100m`  |
-| `initContainers.resources.requests.memory` | initContainers.requests.memory Kubernetes memory resource limits for init containers | `128Mi` |
+| Name                                       | Description                                                                          | Value        |
+| ------------------------------------------ | ------------------------------------------------------------------------------------ | ------------ |
+| `initPreScript`                            | Bash shell script copied verbatim to the start of the init-container.                | `""`         |
+| `initContainersScriptsVolumeMountPath`     | Path to mount the scripts consumed from the Secrets                                  | `/usr/sbinx` |
+| `initContainers.resources.limits`          | initContainers.limits Kubernetes resource limits for init containers                 | `{}`         |
+| `initContainers.resources.requests.cpu`    | initContainers.requests.cpu Kubernetes cpu resource limits for init containers       | `100m`       |
+| `initContainers.resources.requests.memory` | initContainers.requests.memory Kubernetes memory resource limits for init containers | `128Mi`      |
 
 ### Signing
 
@@ -1068,44 +1097,6 @@ To comply with the Gitea helm chart definition of the digest parameter, a "custo
 | `signing.gpgHome`        | GPG home directory                                                | `/data/git/.gnupg` |
 | `signing.privateKey`     | Inline private gpg key for signed internal Git activity           | `""`               |
 | `signing.existingSecret` | Use an existing secret to store the value of `signing.privateKey` | `""`               |
-
-### Gitea Actions
-
-| Name                                              | Description                                                                                                                                 | Value                          |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| `actions.enabled`                                 | Create an act runner StatefulSet.                                                                                                           | `false`                        |
-| `actions.init.image.repository`                   | The image used for the init containers                                                                                                      | `busybox`                      |
-| `actions.init.image.tag`                          | The image tag used for the init containers                                                                                                  | `1.37.0`                       |
-| `actions.statefulset.annotations`                 | Act runner annotations                                                                                                                      | `{}`                           |
-| `actions.statefulset.labels`                      | Act runner labels                                                                                                                           | `{}`                           |
-| `actions.statefulset.resources`                   | Act runner resources                                                                                                                        | `{}`                           |
-| `actions.statefulset.nodeSelector`                | NodeSelector for the statefulset                                                                                                            | `{}`                           |
-| `actions.statefulset.tolerations`                 | Tolerations for the statefulset                                                                                                             | `[]`                           |
-| `actions.statefulset.affinity`                    | Affinity for the statefulset                                                                                                                | `{}`                           |
-| `actions.statefulset.extraVolumes`                | Extra volumes for the statefulset                                                                                                           | `[]`                           |
-| `actions.statefulset.actRunner.repository`        | The Gitea act runner image                                                                                                                  | `gitea/act_runner`             |
-| `actions.statefulset.actRunner.tag`               | The Gitea act runner tag                                                                                                                    | `0.2.11`                       |
-| `actions.statefulset.actRunner.pullPolicy`        | The Gitea act runner pullPolicy                                                                                                             | `IfNotPresent`                 |
-| `actions.statefulset.actRunner.extraVolumeMounts` | Allows mounting extra volumes in the act runner container                                                                                   | `[]`                           |
-| `actions.statefulset.actRunner.config`            | Act runner custom configuration. See [Act Runner documentation](https://docs.gitea.com/usage/actions/act-runner#configuration) for details. | `Too complex. See values.yaml` |
-| `actions.statefulset.dind.repository`             | The Docker-in-Docker image                                                                                                                  | `docker`                       |
-| `actions.statefulset.dind.tag`                    | The Docker-in-Docker image tag                                                                                                              | `25.0.2-dind`                  |
-| `actions.statefulset.dind.pullPolicy`             | The Docker-in-Docker pullPolicy                                                                                                             | `IfNotPresent`                 |
-| `actions.statefulset.dind.extraVolumeMounts`      | Allows mounting extra volumes in the Docker-in-Docker container                                                                             | `[]`                           |
-| `actions.statefulset.dind.extraEnvs`              | Allows adding custom environment variables, such as `DOCKER_IPTABLES_LEGACY`                                                                | `[]`                           |
-| `actions.provisioning.enabled`                    | Create a job that will create and save the token in a Kubernetes Secret                                                                     | `false`                        |
-| `actions.provisioning.annotations`                | Job's annotations                                                                                                                           | `{}`                           |
-| `actions.provisioning.labels`                     | Job's labels                                                                                                                                | `{}`                           |
-| `actions.provisioning.resources`                  | Job's resources                                                                                                                             | `{}`                           |
-| `actions.provisioning.nodeSelector`               | NodeSelector for the job                                                                                                                    | `{}`                           |
-| `actions.provisioning.tolerations`                | Tolerations for the job                                                                                                                     | `[]`                           |
-| `actions.provisioning.affinity`                   | Affinity for the job                                                                                                                        | `{}`                           |
-| `actions.provisioning.ttlSecondsAfterFinished`    | ttl for the job after finished in order to allow helm to properly recognize that the job completed                                          | `300`                          |
-| `actions.provisioning.publish.repository`         | The image that can create the secret via kubectl                                                                                            | `bitnami/kubectl`              |
-| `actions.provisioning.publish.tag`                | The publish image tag that can create the secret                                                                                            | `1.29.0`                       |
-| `actions.provisioning.publish.pullPolicy`         | The publish image pullPolicy that can create the secret                                                                                     | `IfNotPresent`                 |
-| `actions.existingSecret`                          | Secret that contains the token                                                                                                              | `""`                           |
-| `actions.existingSecretKey`                       | Secret key                                                                                                                                  | `""`                           |
 
 ### Gitea
 
@@ -1169,27 +1160,30 @@ To comply with the Gitea helm chart definition of the digest parameter, a "custo
 | `gitea.startupProbe.successThreshold`    | Success threshold for startup probe             | `1`     |
 | `gitea.startupProbe.failureThreshold`    | Failure threshold for startup probe             | `10`    |
 
-### redis-cluster
+### valkey-cluster
 
-Redis cluster and [Redis](#redis) cannot be enabled at the same time.
+Valkey cluster and [Valkey](#valkey) cannot be enabled at the same time.
 
-| Name                             | Description                                  | Value   |
-| -------------------------------- | -------------------------------------------- | ------- |
-| `redis-cluster.enabled`          | Enable redis cluster                         | `true`  |
-| `redis-cluster.usePassword`      | Whether to use password authentication       | `false` |
-| `redis-cluster.cluster.nodes`    | Number of redis cluster master nodes         | `3`     |
-| `redis-cluster.cluster.replicas` | Number of redis cluster master node replicas | `0`     |
+| Name                                  | Description                                                          | Value   |
+| ------------------------------------- | -------------------------------------------------------------------- | ------- |
+| `valkey-cluster.enabled`              | Enable valkey cluster                                                | `true`  |
+| `valkey-cluster.usePassword`          | Whether to use password authentication                               | `false` |
+| `valkey-cluster.usePasswordFiles`     | Whether to mount passwords as files instead of environment variables | `false` |
+| `valkey-cluster.cluster.nodes`        | Number of valkey cluster master nodes                                | `3`     |
+| `valkey-cluster.cluster.replicas`     | Number of valkey cluster master node replicas                        | `0`     |
+| `valkey-cluster.service.ports.valkey` | Port of Valkey service                                               | `6379`  |
 
-### redis
+### valkey
 
-Redis and [Redis cluster](#redis-cluster) cannot be enabled at the same time.
+Valkey and [Valkey cluster](#valkey-cluster) cannot be enabled at the same time.
 
-| Name                          | Description                                | Value        |
-| ----------------------------- | ------------------------------------------ | ------------ |
-| `redis.enabled`               | Enable redis standalone or replicated      | `false`      |
-| `redis.architecture`          | Whether to use standalone or replication   | `standalone` |
-| `redis.global.redis.password` | Required password                          | `changeme`   |
-| `redis.master.count`          | Number of Redis master instances to deploy | `1`          |
+| Name                                 | Description                                 | Value        |
+| ------------------------------------ | ------------------------------------------- | ------------ |
+| `valkey.enabled`                     | Enable valkey standalone or replicated      | `false`      |
+| `valkey.architecture`                | Whether to use standalone or replication    | `standalone` |
+| `valkey.global.valkey.password`      | Required password                           | `changeme`   |
+| `valkey.master.count`                | Number of Valkey master instances to deploy | `1`          |
+| `valkey.master.service.ports.valkey` | Port of Valkey service                      | `6379`       |
 
 ### PostgreSQL HA
 
@@ -1203,6 +1197,7 @@ Redis and [Redis cluster](#redis-cluster) cannot be enabled at the same time.
 | `postgresql-ha.postgresql.repmgrPassword`   | Repmgr Password                                                  | `changeme2` |
 | `postgresql-ha.postgresql.postgresPassword` | postgres Password                                                | `changeme1` |
 | `postgresql-ha.pgpool.adminPassword`        | pgpool adminPassword                                             | `changeme3` |
+| `postgresql-ha.pgpool.srCheckPassword`      | pgpool srCheckPassword                                           | `changeme4` |
 | `postgresql-ha.service.ports.postgresql`    | PostgreSQL service port (overrides `service.ports.postgresql`)   | `5432`      |
 | `postgresql-ha.persistence.size`            | PVC Storage Request for PostgreSQL HA volume                     | `10Gi`      |
 
@@ -1241,6 +1236,31 @@ If you miss this, blindly upgrading may delete your Postgres instance and you ma
 
 <details>
 
+<summary>To 12.0.0</summary>
+
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable-next-line -->
+**Breaking changes**
+<!-- prettier-ignore-end -->
+
+- Outsourced "Actions" related configuration.
+  To deploy and use "Actions", please see the new dedicated chart at <https://gitea.com/gitea/helm-actions>.
+  It is maintained by a seperate maintainer group and hasn't seen a release yet (at the time of the 12.0 release).
+  Feel encouraged to contribute if "Actions" is important to you!
+
+  This change was made to avoid overloading the existing helm chart, which is already quite large in size and configuration options.
+  In addition, the existing maintainers team was not actively using "Actions" which slowed down development and community contributions.
+  While the new chart is still young (and waiting for contributions! and maintainers), we believe that it is the best way moving forward for both parts.
+- Migrated from Redis/Redis-cluster to Valkey/Valkey-cluster charts (#775).
+  While marked as breaking, there is no need to migrate data.
+  The cache will start to refill automatically.
+- Migrated ingress from `networking.k8s.io/v1beta` to `networking.k8s.io/v1`.
+  We didn't make any changes to the syntax, so the upgrade should be seamless.
+
+</details>
+
+<details>
+
 <summary>To 11.0.0</summary>
 
 <!-- prettier-ignore-start -->
@@ -1258,8 +1278,7 @@ If you miss this, blindly upgrading may delete your Postgres instance and you ma
   Although there are no breaking changes in the Redis Chart itself, it updates Redis from `7.2` to `7.4`. We recommend checking the release notes:
   - [Redis Chart release notes (starting with v11.0.0)](https://github.com/bitnami/charts/blob/HEAD/bitnami/redis-cluster/CHANGELOG.md#1100-2024-08-09).
   - [Redis 7.4 release notes](https://raw.githubusercontent.com/redis/redis/7.4/00-RELEASENOTES).
-
-</details>
+  </details>
 
 <details>
 
@@ -1336,16 +1355,16 @@ gitea:
   config:
     session:
       PROVIDER: redis-cluster
-      PROVIDER_CONFIG: redis+cluster://:gitea@gitea-redis-cluster-headless.<namespace>.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&
+      PROVIDER_CONFIG: redis+cluster://:gitea@gitea-valkey-cluster-headless.<namespace>.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&
 
     cache:
       ENABLED: true
       ADAPTER: redis-cluster
-      HOST: redis+cluster://:gitea@gitea-redis-cluster-headless.<namespace>.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&
+      HOST: redis+cluster://:gitea@gitea-valkey-cluster-headless.<namespace>.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&
 
     queue:
       TYPE: redis
-      CONN_STR: redis+cluster://:gitea@gitea-redis-cluster-headless.<namespace>.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&
+      CONN_STR: redis+cluster://:gitea@gitea-valkey-cluster-headless.<namespace>.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&
 ```
 
 <!-- prettier-ignore-start -->

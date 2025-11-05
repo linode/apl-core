@@ -180,6 +180,12 @@ spec:
                 name: argocd-cmd-params-cm
                 key: controller.self.heal.backoff.cap.seconds
                 optional: true
+          - name: ARGOCD_APPLICATION_CONTROLLER_SELF_HEAL_BACKOFF_COOLDOWN_SECONDS
+            valueFrom:
+              configMapKeyRef:
+                name: argocd-cmd-params-cm
+                key: controller.self.heal.backoff.cooldown.seconds
+                optional: true
           - name: ARGOCD_APPLICATION_CONTROLLER_SYNC_TIMEOUT
             valueFrom:
               configMapKeyRef:
@@ -338,6 +344,12 @@ spec:
                 name: argocd-cmd-params-cm
                 key: controller.cluster.cache.events.processing.interval
                 optional: true
+          - name: ARGOCD_APPLICATION_CONTROLLER_COMMIT_SERVER
+            valueFrom:
+              configMapKeyRef:
+                name: argocd-cmd-params-cm
+                key: commit.server
+                optional: true
           - name: KUBECACHEDIR
             value: /tmp/kubecache
         {{- with .Values.controller.envFrom }}
@@ -417,8 +429,13 @@ spec:
         {{- else }}
         emptyDir: {}
         {{- end }}
-      - emptyDir: {}
-        name: argocd-application-controller-tmp
+      - name: argocd-application-controller-tmp
+        {{- if .Values.controller.emptyDir.sizeLimit }}
+        emptyDir:
+          sizeLimit: {{ .Values.controller.emptyDir.sizeLimit }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
       - name: argocd-repo-server-tls
         secret:
           secretName: argocd-repo-server-tls

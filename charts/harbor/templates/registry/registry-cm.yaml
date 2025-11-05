@@ -182,6 +182,7 @@ data:
       readtimeout: 10s
       writetimeout: 10s
       dialtimeout: 10s
+      enableTLS: {{ template "harbor.redis.enableTLS" . }}
       pool:
         maxidle: 100
         maxactive: 500

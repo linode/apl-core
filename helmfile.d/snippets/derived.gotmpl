@@ -27,7 +27,7 @@
 {{- $keycloakBaseUrl := printf "https://keycloak.%s" $domainSuffix }}
 {{- $oidcBaseUrl := printf "%s/realms/otomi" $keycloakBaseUrl }}
 {{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
-{{- $oidcBaseUrlBackchannel := "http://keycloak.keycloak/realms/otomi" }}
+{{- $oidcBaseUrlBackchannel := "http://keycloak-keycloakx-http.keycloak/realms/otomi" }}
 {{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
 {{- $tlsSecretName := "otomi-cert-manager-wildcard-cert" }}
 {{- if eq $cm.issuer "externally-managed-tls-secret" }}
@@ -68,6 +68,15 @@
 {{- $istioEgressReleaseName := print "istio-egressgateway-" $istioCanaryRevision }}
 {{- $istioEgressReleaseLabel := print "egressgateway-" $istioCanaryRevision }}
 
+# Set image tag suffix added to minor version, according to
+# https://github.com/cloudnative-pg/postgres-containers/pkgs/container/postgresql
+{{- $cnpgImageSuffix := "-system-trixie" }}
+{{- if $v.apps.cnpg.useBackupPlugin }}
+  {{- $cnpgImageSuffix = "-standard-trixie" }}
+{{- end }}
+# Set default platform database image for CloudnativePG
+{{- $cnpgDefaultPlatformImage := print "cloudnative-pg/postgresql:15.14" $cnpgImageSuffix }}
+
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
   kubeContext: {{ $v.cluster.k8sContext }}
@@ -76,7 +85,7 @@ environments:
   default:
     values:
       - _derived: # < introduced to hold compound logic in meaningful prop names for easier consumption
-          buildStorageClassName: {{ if eq $v.cluster.provider "linode" }}"linode-block-storage"{{ else }}""{{ end }} 
+          buildStorageClassName: {{ if eq $v.cluster.provider "linode" }}"linode-block-storage"{{ else }}""{{ end }}
           caCert: |
             {{- if eq $issuer "letsencrypt" }}
             -----BEGIN CERTIFICATE-----
@@ -202,6 +211,9 @@ environments:
         apps:
           argocd:
             enabled: true
+          cnpg:
+            pgImageSuffix: {{ $cnpgImageSuffix | quote }}
+            pgDefaultPlatformImage: {{ $cnpgDefaultPlatformImage }}
           cert-manager:
             enabled: true
             {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
@@ -259,6 +271,6 @@ environments:
           {{- end }}
         otomi:
           version: {{ $otomiTag }}
-          linodeLkeImageRepository: {{ if $v.otomi.useORCS }}mirror.registry.linodelke.net{{ end }}
+          linodeLkeImageRepository: {{ if and $v.otomi.useORCS (eq $provider "linode") }}mirror.registry.linodelke.net{{ end }}
         versions: {{- $versions | toYaml | nindent 10 }}
       - ../core.yaml

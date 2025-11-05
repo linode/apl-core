@@ -1,0 +1,1881 @@
+# -- Override the chart name used for all resources
+nameOverride: ""
+
+# -- Overwrite the fullname of all resources
+fullnameOverride: "policy-reporter"
+
+# -- Overwrite the namespace of all resources
+namespaceOverride: ""
+
+image:
+  # -- (string) Image registry
+  registry: ghcr.io
+  # -- (string) Image repository
+  repository: kyverno/policy-reporter
+  # -- (string) Image pullPolicy
+  pullPolicy: IfNotPresent
+  # -- (string) Image tag
+  tag: ~
+
+# -- Image pullSecrets
+imagePullSecrets: []
+
+# -- Deployment priorityClassName
+priorityClassName: ""
+
+# -- Deployment replica count
+replicaCount: 1
+
+# -- The number of revisions to keep
+revisionHistoryLimit: 10
+
+# -- Deployment strategy
+updateStrategy: {}
+  # rollingUpdate:
+  #  maxSurge: 25%
+  #  maxUnavailable: 25%
+  # type: RollingUpdate
+
+# -- Container port
+port:
+  name: http
+  number: 8080
+
+# -- Key/value pairs that are attached to all resources.
+annotations: {}
+
+rbac:
+  # -- Create RBAC resources
+  enabled: true
+
+serviceAccount:
+  # -- Create ServiceAccount
+  create: true
+  # -- Enable ServiceAccount automount
+  automount: true
+  # -- Annotations for the ServiceAccount
+  annotations: {}
+  # -- The ServiceAccount name
+  name: ""
+
+service:
+  # -- Create Service
+  enabled: true
+  # -- Service type
+  type: ClusterIP
+  # -- Service port
+  port: 8080
+  # -- Service annotations
+  annotations: {}
+  # -- Service labels
+  labels: {}
+
+# -- Security context for the pod
+podSecurityContext:
+  fsGroup: 1234
+
+securityContext:
+  runAsUser: 1234
+  runAsNonRoot: true
+  privileged: false
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+
+# -- Additional annotations to add to each pod
+podAnnotations: {}
+
+# -- Additional labels to add to each pod
+podLabels: {}
+
+# -- Resource constraints
+resources: {}
+  # limits:
+  #   memory: 100Mi
+  #   cpu: 10m
+  # requests:
+  #   memory: 75Mi
+  #   cpu: 5m
+
+networkPolicy:
+  # -- Create NetworkPolicy
+  enabled: false
+  # -- Egress rule to allow Kubernetes API Server access
+  egress:
+  - to:
+    ports:
+    - protocol: TCP
+      port: 6443
+  ingress: []
+
+ingress:
+  # -- Create Ingress
+  # This ingress exposes the policy-reporter core app.
+  enabled: false
+  # -- Ingress className
+  className: ""
+  # -- Labels for the Ingress
+  labels: {}
+  # -- Annotations for the Ingress
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  # -- Ingress host list
+  hosts:
+  #  - host: chart-example.local
+  #    paths: []
+  # -- Ingress tls list
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+logging:
+  # -- Enables server access logging
+  server: false
+  # -- Log encoding
+  # possible encodings are console and json
+  encoding: console
+  # -- Log level
+  # default info
+  logLevel: 0
+
+rest:
+  # -- Enables the REST API
+  enabled: false
+
+metrics:
+  # -- Enables Prometheus Metrics
+  enabled: false
+  # -- Metric Mode allows to customize labels
+  # Allowed values: detailed, simple, custom
+  mode: detailed
+  # -- List of used labels in custom mode
+  # Supported fields are: ["namespace", "rule", "policy", "report" // Report name, "kind" // resource kind, "name" // resource name, "status", "severity", "category", "source"]
+  customLabels: []
+  # -- Filter results to reduce cardinality
+  filter: {}
+#    sources:
+#      exclude: ["Trivy CIS Kube Bench"]
+#    status:
+#      exclude: ["pass", "skip"]
+
+profiling:
+  # -- Enable profiling with pprof
+  enabled: false
+
+# -- Amount of queue workers for Report resource processing
+worker: 5
+
+# -- Filter Report resources to process
+reportFilter: {}
+  # # -- Filter reports based on an namespace allow- or disallow list, wildcards are supported
+  # namespaces:
+  #  include: []
+  #  exclude: []
+  # # -- Disable the processing of cluster scoped Reports
+  # disableClusterReports: false
+
+# -- Customize source specific logic like result ID generation
+sourceConfig: []
+# - selector:
+#     source: kyverno
+#   customId:
+#     enabled: true
+#     fields: ["resource", "policy", "rule", "category", "result", "message"]
+
+# Source based Report filter
+sourceFilters:
+  - selector:
+      # -- select Report by source
+      source: kyverno
+    # -- Filter out Reports of controlled Pods and Jobs, only works for Reports with scope resource
+    uncontrolledOnly: true
+    # -- Filter out cluster scoped Reports
+    disableClusterReports: false
+    # -- Filter out Reports based on the scope resource kind
+    kinds:
+      exclude: [ReplicaSet]
+  - selector:
+      # -- select Report by source
+      source: KyvernoValidatingPolicy
+    # -- Filter out Reports of controlled Pods and Jobs, only works for Reports with scope resource
+    uncontrolledOnly: true
+    # -- Filter out cluster scoped Reports
+    disableClusterReports: false
+    # -- Filter out Reports based on the scope resource kind
+    kinds:
+      exclude: [ReplicaSet]
+
+global:
+  # -- additional labels added on each resource
+  labels: {}
+
+# basicAuth for APIs and metrics
+basicAuth:
+  # -- HTTP BasicAuth username
+  username: ""
+  # -- HTTP BasicAuth password
+  password: ""
+  # -- (optional) Secret reference to get username and/or password from
+  secretRef: ""
+
+emailReports:
+  # -- (optional) - Displayed in the email report if configured
+  clusterName: ""
+  # -- Title prefix in the email subject
+  titlePrefix: "Report"
+  # -- Resource constraints for the created CronJobs
+  resources: {}
+  smtp:
+    # -- (optional) Secret reference to provide the complete or partial SMTP configuration
+    secret: ""
+    # -- SMTP Server Host
+    host: ""
+    # -- SMTP Server Port
+    port: 465
+    # -- SMTP Username
+    username: ""
+    # -- SMTP Password
+    password: ""
+    # -- Displayed from email address
+    from: ""
+    # -- SMTP Encryption
+    # Default is none, supports ssl/tls and starttls
+    encryption: ""
+    # -- Skip SMTP TLS verification
+    skipTLS: false
+    # -- SMTP Server Certificate file path
+    certificate: ""
+
+  summary:
+    # -- Enable Summary E-Mail reports
+    enabled: false
+    # -- CronJob schedule
+    schedule: "0 8 * * *"
+    # -- CronJob activeDeadlineSeconds
+    activeDeadlineSeconds: 300
+    # -- CronJob backoffLimit
+    backoffLimit: 3
+    # -- CronJob ttlSecondsAfterFinished
+    ttlSecondsAfterFinished: 0
+    # -- CronJob restartPolicy
+    restartPolicy: Never
+    # -- List of receiver email addresses
+    to: []
+    # -- (optional) Report filter
+    filter: {}
+    #  # remove ClusterPolicyResults from Reports
+    #  disableClusterReports: false
+    #  namespaces:
+    #    include: []
+    #    exclude: []
+    #  sources:
+    #    include: []
+    #    exclude: []
+    # -- (optional) Channels can be used to to send only a subset of namespaces / sources to dedicated email addresses
+    channels: []
+    #  - to: ['team-a@company.org']
+    #    filter:
+    #      disableClusterReports: true
+    #      namespaces:
+    #        include: ['team-a-*']
+    #      sources:
+    #        include: ['Kyverno']
+
+  violations:
+    # -- Enable Violation Summary E-Mail reports
+    enabled: false
+    # -- CronJob schedule
+    schedule: "0 8 * * *"
+    # -- CronJob activeDeadlineSeconds
+    activeDeadlineSeconds: 300
+    # -- CronJob backoffLimit
+    backoffLimit: 3
+    # -- CronJob ttlSecondsAfterFinished
+    ttlSecondsAfterFinished: 0
+    # -- CronJob restartPolicy
+    restartPolicy: Never
+    # -- List of receiver email addresses
+    to: []
+    # -- (optional) Report filter
+    filter: {}
+    #  disableClusterReports: false # remove ClusterPolicyResults from Reports
+    #  namespaces:
+    #    include: []
+    #    exclude: []
+    #  sources:
+    #    include: []
+    #    exclude: []
+    # -- (optional) Channels can be used to to send only a subset of namespaces / sources to dedicated email addresses
+    channels: []
+    #  - to: ['team-a@company.org']
+    #    filter:
+    #      disableClusterReports: true
+    #      namespaces:
+    #        include: ['team-a-*']
+    #      sources:
+    #        include: ['Kyverno']
+
+existingTargetConfig:
+  # -- Use an already existing configuration
+  enabled: false
+  # -- Name of the secret with the config
+  name: ""
+  # -- SubPath within the secret (defaults to config.yaml)
+  subPath: ""
+
+target:
+  # -- enable and install TargetConfig CRD
+  crd: false
+  loki:
+    # -- Host Address
+    host: ""
+    # -- Loki API, defaults to "/loki/api/v1/push"
+    path: ""
+    # -- Server Certificate file path
+    # Can be added under extraVolumes
+    certificate: ""
+    # -- Skip TLS verification
+    skipTLS: false
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing report results on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Additional HTTP Headers
+    headers: {}
+    # -- HTTP BasicAuth username
+    username: ""
+    # -- HTTP BasicAuth password
+    password: ""
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+#      namespaces:
+#        include: ["develop"]
+#      priorities:
+#        exclude: ["debug", "info", "error"]
+#      labels:
+#        include: ["app", "owner:team-a", "monitoring:*"]
+    # -- List of channels to route results to different configurations
+    channels: []
+#    - host: "http://loki.loki-stack:3100"
+#      sources: []
+#      customLabels: {}
+#      filter:
+#        namespaces:
+#          include: ["develop"]
+#        priorities:
+#          exclude: ["debug", "info", "error"]
+#        reportLabels:
+# .         include: ["app", "owner:team-b"]
+
+  elasticsearch:
+    # -- Host address
+    host: ""
+    # -- Server Certificate file path
+    # Can be added under extraVolumes
+    certificate: ""
+    # -- Skip TLS verification
+    skipTLS: false
+    # -- Additional HTTP Headers
+    headers: {}
+    # -- Elasticsearch index (default: policy-reporter)
+    index: "policy-reporter"
+    # -- Elasticsearch index rotation and index suffix
+    # Possible values: daily, monthly, annually, none (default: daily)
+    rotation: "daily"
+    # -- Enables Elasticsearch typless API
+    # https://www.elastic.co/blog/moving-from-types-to-typeless-apis-in-elasticsearch-7-0 keeping as false for retrocompatibility.
+    typelessApi: false
+    # -- HTTP BasicAuth username
+    username: ""
+    # -- HTTP BasicAuth password
+    password: ""
+    # -- Elasticsearch API Key for api key authentication
+    apiKey: ""
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing report results on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+    # -- List of channels to route results to different configurations
+    channels: []
+
+  slack:
+    # -- Webhook Address
+    webhook: ""
+    # -- Slack Channel
+    channel: ""
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing report results on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+    # -- List of channels to route results to different configurations
+    channels: []
+#    - webhook: "https://slack.webhook1"
+#      channel: ""
+#      filter:
+#        namespaces:
+#          include: ["develop"]
+#        priorities:
+#          exclude: ["debug", "info", "error"]
+#        policies:
+#          include: ["require-run-as-nonroot"]
+#        reportLabels:
+# .         include: ["app", "owner:team-b"]
+#    - webhook: "https://slack.webhook2"
+#      minimumSeverity: "warning"
+#      filter:
+#        namespaces:
+#          include: ["team-a-*"]
+
+  discord:
+    # -- Webhook Address
+    webhook: ""
+    # -- Server Certificate file path
+    # Can be added under extraVolumes
+    certificate: ""
+    # -- Skip TLS verification
+    skipTLS: false
+    # -- Additional HTTP Headers
+    headers: {}
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing report results on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+    # -- List of channels to route results to different configurations
+    channels: []
+
+  teams:
+    # -- Webhook Address
+    webhook: ""
+    # -- Server Certificate file path
+    # Can be added under extraVolumes
+    certificate: ""
+    # -- Skip TLS verification
+    skipTLS: false
+    # -- Additional HTTP Headers
+    headers: {}
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing report results on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+    # -- List of channels to route results to different configurations
+    channels: []
+
+  webhook:
+    # -- Webhook Address
+    webhook: ""
+    # -- Server Certificate file path
+    # Can be added under extraVolumes
+    certificate: ""
+    # -- Skip TLS verification
+    skipTLS: false
+    # -- Additional HTTP Headers
+    headers: {}
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing report results on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Keepalive configuration
+    keepalive:
+      # -- Duration string like "30s" for heartbeat interval, '0' - disabled
+      interval: "0"
+      # -- Additional parameters to include in heartbeat payload
+      params: {}
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+    # -- List of channels to route results to different configurations
+    channels: []
+
+  telegram:
+    # -- Telegram bot token
+    token: ""
+    # -- Telegram chat id
+    chatId: ""
+    # -- (optional) Telegram proxy host
+    host: ""
+    # -- Server Certificate file path
+    # Can be added under extraVolumes
+    certificate: ""
+    # -- Skip TLS verification
+    skipTLS: false
+    # -- Additional HTTP Headers
+    headers: {}
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing report results on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+    # -- List of channels to route results to different configurations
+    channels: []
+
+  googleChat:
+    # -- Webhook Address
+    webhook: ""
+    # -- Server Certificate file path
+    # Can be added under extraVolumes
+    certificate: ""
+    # -- Skip TLS verification
+    skipTLS: false
+    # -- Additional HTTP Headers
+    headers: {}
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing report results on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+    # -- List of channels to route results to different configurations
+    channels: []
+
+  jira:
+    # -- JIRA server URL
+    host: ""
+    # -- JIRA username
+    username: ""
+    # -- JIRA password (use password or apiToken, not both)
+    password: ""
+    # -- JIRA API token (use password or apiToken, not both)
+    apiToken: ""
+    # -- JIRA static labels
+    apiVersion: "v3"
+    # -- JIRA project key
+    projectKey: ""
+    # -- JIRA issue type (default: "Bug")
+    issueType: ""
+    # -- JIRA component names list
+    components: []
+    # -- JIRA static labels
+    labels: []
+    # -- JIRA summary go template, available values: result, customfield
+    # default: "{{ if result.ResourceString }}{{ result.ResourceString }}: {{ end }}Policy Violation: {{ result.Policy }}"
+    summaryTemplate: ""
+    # -- Server Certificate file path
+    # Can be added under extraVolumes
+    certificate: ""
+    # -- Skip TLS verification
+    skipTLS: false
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing report results on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+    # -- List of channels to route results to different configurations
+    channels: []
+
+  alertManager:
+    # -- host address
+    host: ""
+    # -- Server Certificate file path
+    # Can be added under extraVolumes
+    certificate: ""
+    # -- Skip TLS verification
+    skipTLS: false
+    # -- Additional HTTP Headers
+    headers: {}
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing PolicyReportResults on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+    # -- List of channels to route results to different configurations
+    channels: []
+
+  # Authentication via PodIdentity or WebIdentity are also supported
+  s3:
+    # -- (optional) S3 Access key
+    accessKeyId: ""
+    # -- (optional) S3 SecretAccess key
+    secretAccessKey: ""
+    # -- (optional) S3 Storage region
+    region: ""
+    # -- (optional) S3 Storage endpoint
+    endpoint: ""
+    # -- (required) S3 Storage bucket name
+    bucket: ""
+    # -- S3 Storage to use an S3 Bucket Key for object encryption with SSE-KMS
+    bucketKeyEnabled: false
+    # -- S3 Storage KMS Key ID for object encryption with SSE-KMS
+    kmsKeyId: ""
+    # -- S3 Storage server-side encryption algorithm used when storing this object in Amazon S3, AES256, aws:kms
+    serverSideEncryption: ""
+    # -- S3 Storage, force path style configuration
+    pathStyle: false
+    # -- Used prefix, keys will have format: s3://<bucket>/<prefix>/YYYY-MM-DD/YYYY-MM-DDTHH:mm:ss.s+01:00.json
+    prefix: ""
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing report results on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+    # -- List of channels to route results to different configurations
+    channels: []
+
+  # Authentication via PodIdentity or WebIdentity are also supported
+  kinesis:
+    # -- (optional) Access key
+    accessKeyId: ""
+    # -- (optional) SecretAccess key
+    secretAccessKey: ""
+    # -- (optional) Region
+    region: ""
+    # -- (optional) Endpoint
+    endpoint: ""
+    # -- (required) StreamName
+    streamName: ""
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing report results on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+    # -- List of channels to route results to different configurations
+    channels: []
+
+  # Authentication via PodIdentity or WebIdentity are also supported
+  securityHub:
+    # -- (optional) Access key
+    accessKeyId: ""
+    # -- (optional) SecretAccess key
+    secretAccessKey: ""
+    # -- (optional) Region
+    region: ""
+    # -- (optional) Endpoint
+    endpoint: ""
+    # -- (required) AccountId
+    accountId: ""
+    # -- (optional) Used product name, defaults to "Polilcy Reporter"
+    productName: ""
+    # -- (optional) Used company name, defaults to "Kyverno"
+    companyName: ""
+    # -- Enable cleanup listener for SecurityHub
+    synchronize: true
+    # -- Delay between AWS GetFindings API calls, to avoid hitting the API RequestLimit
+    delayInSeconds: 2
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing report results on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+    # -- List of channels to route results to different configurations
+    channels: []
+
+  # Authentication via PodIdentity is also supported
+  gcs:
+    # -- (optional) GCS (Google Cloud Storage) Service Account Credentials
+    credentials: ""
+    # -- (required) GCS Bucket
+    bucket: ""
+    # -- Read configuration from an already existing Secret
+    secretRef: ""
+    # -- Mounted secret path by Secrets Controller, secret should be in json format
+    mountedSecret: ""
+    # -- Minimum severity: "" < info < low < medium < high < critical
+    minimumSeverity: ""
+    # -- List of sources which should send
+    sources: []
+    # -- Skip already existing report results on startup
+    skipExistingOnStartup: true
+    # -- Added as additional labels
+    customFields: {}
+    # -- Filter Results which should send to this target
+    # Wildcars for namespaces and policies are supported, you can either define exclude or include values
+    # Filters are available for all targets except the UI
+    filter: {}
+    # -- List of channels to route results to different configurations
+    channels: []
+
+# LeaderElection configuration for HA mode
+# will be enabled when replicaCount > 1
+leaderElection:
+  releaseOnCancel: true
+  leaseDuration: 15
+  renewDeadline: 10
+  retryPeriod: 2
+
+redis:
+  # -- Enables Redis as external result cache, uses in memory cache by default
+  enabled: false
+  # -- Redis host
+  address: ""
+  # -- Redis database
+  database: 0
+  # -- Redis key prefix
+  prefix: "policy-reporter"
+  # -- (optional) Username
+  username: ""
+  # -- (optional) Password
+  password: ""
+
+database:
+  # -- Use an external Database, supported: mysql, postgres, mariadb
+  type: ""
+  # -- Database
+  database: ""
+  # -- Username
+  username: ""
+  # -- Password
+  password: ""
+  # -- Host Address
+  host: ""
+  # -- Enables SSL
+  enableSSL: false
+  # -- Instead of configure the individual values you can also provide an DSN string
+  # example postgres: postgres://postgres:password@localhost:5432/postgres?sslmode=disable
+  # example mysql: root:password@tcp(localhost:3306)/test?tls=false
+  dsn: ""
+  # -- Maximum number of open connections, supported for mysql and postgres
+  maxOpenConnections: 25
+  # -- Maximum number of idle connections, supported for mysql and postgres
+  maxIdleConnections: 25
+  # -- Maximum amount of time in minutes a connection may be reused, supported for mysql and postgres
+  connectionMaxLifetime: 0
+  # -- Maximum amount of time in minutes a connection may be idle, supported for mysql and postgres
+  connectionMaxIdleTime: 0
+  # -- Timeout for database operations in seconds, supported for mysql and postgres
+  timeout: 10
+  # -- Enables database related metrics, connection status and query histogram
+  metrics: false
+  # -- Read configuration from an existing Secret
+  # supported fields: username, password, host, dsn, database
+  secretRef: ""
+  # Read configuration from a mounted Secret, required the information in JSON format
+  # supported fields: username, password, host, dsn, database
+  mountedSecret: ""
+
+# Add this configuration section for periodic sync
+periodicSync:
+  # Enable periodic sync of policy reports
+  enabled: false
+  # Interval in minutes for periodic sync
+  interval: 30
+
+# enabled if replicaCount > 1
+podDisruptionBudget:
+  # -- Configures the minimum available pods for policy-reporter disruptions.
+  # Cannot be used if `maxUnavailable` is set.
+  minAvailable: 1
+  # -- Configures the maximum unavailable pods for policy-reporter disruptions.
+  # Cannot be used if `minAvailable` is set.
+  maxUnavailable:
+
+# -- Node labels for pod assignment
+# ref: https://kubernetes.io/docs/user-guide/node-selection/
+nodeSelector: {}
+
+# -- Tolerations for pod assignment
+# ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+
+# -- Anti-affinity to disallow deploying client and master nodes on the same worker node
+affinity: {}
+
+# -- Topology Spread Constraints to better spread pods
+topologySpreadConstraints: []
+
+# -- Deployment livenessProbe for policy-reporter
+livenessProbe:
+  httpGet:
+    path: /ready
+    port: http
+
+# -- Deployment readinessProbe for policy-reporter
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+
+extraVolumes:
+  # -- Deployment volumeMounts
+  volumeMounts: []
+
+  # -- Deployment values
+  volumes: []
+
+# -- If set the volume for sqlite is freely configurable below "- name: sqlite". If no value is set an emptyDir is used.
+sqliteVolume: {}
+  # emptyDir:
+  #   sizeLimit: 10Mi
+
+# -- Allow additional env variables to be added
+envVars: []
+
+# -- Allow custom configuration of the /tmp volume
+tmpVolume: {}
+
+ui:
+  # -- (bool) Enable Policy Reporter UI
+  enabled: false
+  image:
+    # -- (string) Image registry
+    registry: ghcr.io
+    # -- (string) Image repository
+    repository: kyverno/policy-reporter-ui
+    # -- (string) Image PullPolicy
+    pullPolicy: IfNotPresent
+    # -- (string) Image tag
+    tag: "2.4.3"
+
+  # -- Deployment replica count
+  replicaCount: 1
+
+  # -- Deployment priorityClassName
+  priorityClassName: ""
+
+  logging:
+    # -- Enables external api request logging
+    api: false
+    # -- Enables server access logging
+    server: false
+    # -- Log encoding
+    # possible encodings are console and json
+    encoding: console
+    # -- Log level
+    # default info
+    logLevel: 0
+
+  server:
+    # -- Application port
+    port: 8080
+    # -- Enabled CORS header
+    cors: true
+    # -- Overwrites Request Host with Proxy Host and adds `X-Forwarded-Host` and `X-Origin-Host` headers
+    overwriteHost: true
+    # -- session configuration
+    sessions:
+      storage: filesystem
+      tempDir: /tmp
+
+  openIDConnect:
+    # -- Enable openID Connect authentication
+    enabled: false
+    # -- OpenID Connect Discovery URL
+    discoveryUrl: ""
+    # -- OpenID Connect Callback URL
+    callbackUrl: ""
+    # -- OpenID Connect ClientID
+    clientId: ""
+    # -- OpenID Connect ClientSecret
+    clientSecret: ""
+    # -- Optional Group Claim to map user groups to the profile
+    # groups can be used to define access control for clusters, boards and custom boards.
+    groupClaim: ""
+    # -- OpenID Connect allowed Scopes
+    scopes: []
+    # -- Skip TLS Verification
+    skipTLS: false
+    # -- TLS Certificate file path
+    certificate: ""
+    # -- Secret to rea
+    # -- Provide OpenID Connect configuration via Secret
+    # supported keys: `discoveryUrl`, `clientId`, `clientSecret`, `certificate`, `skipTLS`
+    secretRef: ""
+
+  oauth:
+    # -- Enable openID Connect authentication
+    enabled: false
+    # -- OAuth2 Provider
+    # supported: amazon, gitlab, github, apple, google, yandex, azuread
+    provider: ""
+    # -- OpenID Connect Callback URL
+    callbackUrl: ""
+    # -- OpenID Connect ClientID
+    clientId: ""
+    # -- OpenID Connect ClientSecret
+    clientSecret: ""
+    # -- OpenID Connect allowed Scopes
+    scopes: []
+    # -- Provide OpenID Connect configuration via Secret
+    # supported keys: `provider`, `clientId`, `clientSecret`
+    secretRef: ""
+
+  # -- optional banner text
+  banner: ""
+
+  logo:
+    # -- custom logo path
+    path: ""
+    # -- disable logo entirely
+    disabled: false
+
+  # -- DisplayMode dark/light/colorblind/colorblinddark
+  # uses the OS configured preferred color scheme as default
+  displayMode: ""
+
+  # -- Configure access control for all default boards.
+  boards: {}
+  #  accessControl:
+  #    groups: []
+  #    emails: []
+
+  # -- Additional customizable dashboards
+  customBoards: []
+  # - name: Team A
+  #   namespaces:
+  #     # -- list of displayed namespaces
+  #     list: []
+  #     # -- selector for displayed namespaces
+  #     selector:
+  #       team: team-a  # equal
+  #       workload: *   # label exists
+  #       infra: !*     # label does not exist
+  #       env: dev,test # label value is one of [dev, test]
+  #   sources:
+  #     # -- list of displayed sources
+  #     list: []
+  #   clusterScope:
+  #     # -- display cluster scoped resources and results
+  #     enabled: false
+  #   display: ""
+  #   filter:
+  #     include:
+  #       results: []
+  #       severities: []
+  #       clusterKinds: []
+  #       namespaceKinds: []
+
+  # -- source specific configurations
+  sources: []
+  # -- kyverno specific UI configurations
+  # - name: kyverno
+  # -- show results per category, other option: severity
+  #  type: result
+  # -- enabled action button to generate PolicyExceptions from the UI
+  #  exceptions: false
+  # -- exclude results or (cluster)kinds per source
+  #  excludes:
+  #    results:
+  #    - warn
+  #    - error
+
+  ## -- Default Cluster name
+  name: Default
+
+  # -- Connected Policy Reporter APIs
+  clusters: []
+  # - name: default
+  #   host: http://policy-reporter:8080
+  #   secretRef: ""
+  #   skipTLS: false
+  #   certificate: ""
+  #   plugins:
+  #   - name: kyverno
+  #     host: http://policy-reporter-kyverno-plugin:8080
+
+  # -- Image pull secrets for image verification policies, this will define the `--imagePullSecrets` argument
+  imagePullSecrets: []
+    # regcred:
+    #   registry: foo.example.com
+    #   username: foobar
+    #   password: secret
+
+  serviceAccount:
+    # -- Create ServiceAccount
+    create: true
+    # -- Enable ServiceAccount automount
+    automount: true
+    # -- Annotations for the ServiceAccount
+    annotations: {}
+    # -- The ServiceAccount name
+    name: ""
+
+
+  # -- Add sidecar containers to the UI deployment
+  #  sidecarContainers:
+  #    oauth-proxy:
+  #      image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+  #      args:
+  #      - --upstream=http://127.0.0.1:8080
+  #      - --http-address=0.0.0.0:8081
+  #      - ...
+  #      ports:
+  #      - containerPort: 8081
+  #        name: oauth-proxy
+  #        protocol: TCP
+  #      resources: {}
+  sidecarContainers: {}
+
+  # -- Additional annotations to add to each pod
+  podAnnotations: {}
+
+  # -- Additional labels to add to each pod
+  podLabels: {}
+
+  # -- Custom selector labels, overwrites the default set
+  selectorLabels: {}
+
+  # -- Deployment update strategy.
+  # Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+  updateStrategy: {}
+  #  rollingUpdate:
+  #    maxSurge: 1
+  #    maxUnavailable: 40%
+  #  type: RollingUpdate
+
+  # -- The number of revisions to keep
+  revisionHistoryLimit: 10
+
+  # -- Security context for the pod
+  podSecurityContext:
+    runAsUser: 1234
+    runAsGroup: 1234
+
+  # -- Allow additional env variables to be added
+  envVars: []
+
+  rbac:
+    # -- Create RBAC resources
+    enabled: true
+
+  securityContext:
+    runAsUser: 1234
+    runAsNonRoot: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
+
+  # -- Deployment livenessProbe for policy-reporter-ui
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: http
+
+  # -- Deployment readinessProbe for policy-reporter-ui
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: http
+
+  service:
+    # -- Service type.
+    type: ClusterIP
+    # -- Service port.
+    port: 8080
+    # -- Service annotations.
+    annotations: {}
+    # -- Service labels.
+    labels: {}
+    # -- Additional service ports for e.g. Sidecars  # - name: authenticated
+    # additionalPorts:
+    # - name: authenticated
+    #   port: 8081
+    #   targetPort: 8081
+    additionalPorts: []
+
+  ingress:
+    # -- Create ingress resource.
+    enabled: false
+    # -- Redirect ingress to an additional defined port on the service
+    port: null
+    # -- Ingress class name.
+    className: ""
+    # -- Ingress labels.
+    labels: {}
+    # -- Ingress annotations.
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    # -- List of ingress host configurations.
+    hosts: []
+    #  - host: chart-example.local
+    #    paths:
+    #      - path: /
+    #        pathType: ImplementationSpecific
+    # -- List of ingress TLS configurations.
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+  networkPolicy:
+    # -- When true, use a NetworkPolicy to allow ingress to the webhook
+    # This is useful on clusters using Calico and/or native k8s network policies in a default-deny setup.
+    enabled: false
+    # -- A list of valid from selectors according to https://kubernetes.io/docs/concepts/services-networking/network-policies.
+    # Enables Kubernetes API Server by default
+    egress:
+    - ports:
+      - protocol: TCP
+        port: 6443
+    # -- A list of valid from selectors according to https://kubernetes.io/docs/concepts/services-networking/network-policies.
+    ingress: []
+
+  # -- Resource constraints
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  # enabled if replicaCount > 1
+  podDisruptionBudget:
+    # -- Configures the minimum available pods for kyvernoPlugin disruptions.
+    # Cannot be used if `maxUnavailable` is set.
+    minAvailable: 1
+    # -- Configures the maximum unavailable pods for kyvernoPlugin disruptions.
+    # Cannot be used if `minAvailable` is set.
+    maxUnavailable:
+
+  # -- Node labels for pod assignment
+  nodeSelector: {}
+
+  # -- List of node taints to tolerate
+  tolerations: []
+
+    # -- Affinity constraints.
+  affinity: {}
+
+  # -- Pod Topology Spread Constraints for the policy-reporter-ui.
+  topologySpreadConstraints: {}
+
+  extraVolumes:
+    # -- Deployment volumeMounts
+    volumeMounts: []
+
+    # -- Deployment values
+    volumes: []
+
+  # -- Extra configuration options appended to UI settings
+  extraConfig: {}
+
+plugin:
+  kyverno:
+    # -- (bool) Enable Kyverno Plugin
+    enabled: false
+    image:
+      # -- (string) Image registry
+      registry: ghcr.io
+      # -- (string) Image repository
+      repository: kyverno/policy-reporter/kyverno-plugin
+      # -- (string) Image PullPolicy
+      pullPolicy: IfNotPresent
+      # -- (string) Image tag
+      tag: "0.5.1"
+
+    # -- Deployment replica count
+    replicaCount: 1
+
+    # -- Deployment priorityClassName
+    priorityClassName: ""
+
+    logging:
+      # -- Enables external API request logging
+      api: false
+      # -- Enables Server access logging
+      server: false
+      # -- log encoding
+      # possible encodings are console and json
+      encoding: console
+      # -- log level
+      # default info
+      logLevel: 0
+
+    server:
+      # -- Application port
+      port: 8080
+
+    blockReports:
+      # -- Enables he BlockReport feature
+      enabled: false
+      # -- Watches for Kyverno Events in the configured namespace
+      # leave blank to watch in all namespaces
+      eventNamespace: default
+      # -- Used value for the source field in the created (Cluster)PolicyReports
+      source: Kyverno Event
+      results:
+        # -- Max items per PolicyReport resource
+        maxPerReport: 200
+        # -- Keep only the latest of duplicated events
+        keepOnlyLatest: false
+      policyReport:
+        # -- Labels for all created (Cluster)PolicyReports
+        labels: []
+        # -- Annotations for all created (Cluster)PolicyReports
+        annotations: []
+
+    # -- Image pull secrets for image verification policies, this will define the `--imagePullSecrets` argument
+    imagePullSecrets: []
+      # regcred:
+      #   registry: foo.example.com
+      #   username: foobar
+      #   password: secret
+
+    serviceAccount:
+      # -- Create ServiceAccount
+      create: true
+      # -- Enable ServiceAccount automount
+      automount: true
+      # -- Annotations for the ServiceAccount
+      annotations: {}
+      # -- The ServiceAccount name
+      name: ""
+
+    # -- Additional annotations to add to each pod
+    podAnnotations: {}
+
+    # -- Additional labels to add to each pod
+    podLabels: {}
+
+    # -- Deployment update strategy.
+    # Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+    updateStrategy: {}
+    #  rollingUpdate:
+    #    maxSurge: 1
+    #    maxUnavailable: 40%
+    #  type: RollingUpdate
+
+    # -- The number of revisions to keep
+    revisionHistoryLimit: 10
+
+    # -- Security context for the pod
+    podSecurityContext:
+      runAsUser: 1234
+      runAsGroup: 1234
+
+    # -- Allow additional env variables to be added
+    envVars: []
+
+    rbac:
+      # -- Create RBAC resources
+      enabled: true
+
+    securityContext:
+      runAsUser: 1234
+      runAsNonRoot: true
+      privileged: false
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+      seccompProfile:
+        type: RuntimeDefault
+
+    service:
+      # -- Service type.
+      type: ClusterIP
+      # -- Service port.
+      port: 8080
+      # -- Service annotations.
+      annotations: {}
+      # -- Service labels.
+      labels: {}
+
+    ingress:
+      # -- Create ingress resource.
+      enabled: false
+      # -- Ingress class name.
+      className: ""
+      # -- Ingress labels.
+      labels: {}
+      # -- Ingress annotations.
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # kubernetes.io/tls-acme: "true"
+      # -- List of ingress host configurations.
+      hosts: []
+      #  - host: chart-example.local
+      #    paths:
+      #      - path: /
+      #        pathType: ImplementationSpecific
+      # -- List of ingress TLS configurations.
+      tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - chart-example.local
+
+    networkPolicy:
+      # -- When true, use a NetworkPolicy to allow ingress to the webhook
+      # This is useful on clusters using Calico and/or native k8s network policies in a default-deny setup.
+      enabled: false
+      # -- A list of valid from selectors according to https://kubernetes.io/docs/concepts/services-networking/network-policies.
+      # Enables Kubernetes API Server by default
+      egress:
+      - ports:
+        - protocol: TCP
+          port: 6443
+      # -- A list of valid from selectors according to https://kubernetes.io/docs/concepts/services-networking/network-policies.
+      ingress: []
+
+    # -- Resource constraints
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+    # required for HA mode
+    # if "blockReports" is disabled, leaderElection is also disabled automatically
+    # will be enabled when replicaCount > 1
+    leaderElection:
+      # -- Lock Name
+      lockName: kyverno-plugin
+      # -- Released lock when the run context is cancelled.
+      releaseOnCancel: true
+      # -- LeaseDuration is the duration that non-leader candidates will wait to force acquire leadership.
+      leaseDuration: 15
+      # -- RenewDeadline is the duration that the acting master will retry refreshing leadership before giving up.
+      renewDeadline: 10
+      # -- RetryPeriod is the duration the LeaderElector clients should wait between tries of actions.
+      retryPeriod: 2
+
+    # enabled if replicaCount > 1
+    podDisruptionBudget:
+      # -- Configures the minimum available pods for kyvernoPlugin disruptions.
+      # Cannot be used if `maxUnavailable` is set.
+      minAvailable: 1
+      # -- Configures the maximum unavailable pods for kyvernoPlugin disruptions.
+      # Cannot be used if `minAvailable` is set.
+      maxUnavailable:
+
+    # -- Node labels for pod assignment
+    nodeSelector: {}
+
+    # -- List of node taints to tolerate
+    tolerations: []
+
+    # -- Affinity constraints.
+    affinity: {}
+
+    # -- Pod Topology Spread Constraints for the kyverno plugin.
+    topologySpreadConstraints: {}
+
+    extraVolumes:
+      # -- Deployment volumeMounts
+      volumeMounts: []
+
+      # -- Deployment values
+      volumes: []
+
+    # -- Extra configuration options appended to kyverno plugin settings
+    extraConfig: {}
+
+  trivy:
+    # -- (bool) Enable Trivy Operator Plugin
+    enabled: false
+    image:
+      # -- (string) Image registry
+      registry: ghcr.io
+        # -- (string) Image repository
+      repository: kyverno/policy-reporter/trivy-plugin
+        # -- (string) Image PullPolicy
+      pullPolicy: IfNotPresent
+        # -- (string) Image tag
+        # Defaults to `Chart.AppVersion` if omitted
+      tag: "0.4.10"
+
+    cli:
+      image:
+        # -- (string) Image registry
+        registry: ghcr.io
+          # -- (string) Image repository
+        repository: aquasecurity/trivy
+          # -- (string) Image PullPolicy
+        pullPolicy: IfNotPresent
+          # -- (string) Image tag
+          # Defaults to `Chart.AppVersion` if omitted
+        tag: "0.63.0"
+
+    # -- Additional container args.
+    extraArgs: {}
+
+    cveawg:
+      # -- (bool) disable external CVEAWG API calls.
+      disable: false
+
+    github:
+      # -- (bool) disable GitHub API calls.
+      disable: false
+      # -- (string) optional github token for authenticated GitHub API calls.
+      token: ""
+
+    # -- If set the volume for dbVolume is freely configurable below "- name: dbVolume". If no value is set an emptyDir is used.
+    dbVolume: {}
+    # emptyDir:
+    #   sizeLimit: 10Mi
+
+    # -- If set the volume for tmpVolume is freely configurable below "- name: tmpVolume". If no value is set an emptyDir is used.
+    tmpVolume: {}
+    # emptyDir:
+    #   sizeLimit: 10Mi
+
+    # -- Deployment replica count
+    replicaCount: 1
+
+    # -- Deployment priorityClassName
+    priorityClassName: ""
+
+    logging:
+      # -- Enables external API request logging
+      api: false
+      # -- Enables Server access logging
+      server: false
+      # -- log encoding
+      # possible encodings are console and json
+      encoding: console
+      # -- log level
+      # default info
+      logLevel: 0
+
+    server:
+      # -- Application port
+      port: 8080
+
+    policyReporter:
+      # -- Skip TLS Verification
+      skipTLS: false
+      # -- TLS Certificate file path
+      certificate: ""
+      # -- Secret to read the API configuration from
+      # supports `host`, `certificate`, `skipTLS`, `username`, `password` key
+      secretRef: ""
+
+    # -- Image pull secrets for image verification policies, this will define the `--imagePullSecrets` argument
+    imagePullSecrets: []
+      # regcred:
+      #   registry: foo.example.com
+      #   username: foobar
+      #   password: secret
+
+    serviceAccount:
+      # -- Create ServiceAccount
+      create: true
+      # -- Enable ServiceAccount automount
+      automount: true
+      # -- Annotations for the ServiceAccount
+      annotations: {}
+      # -- The ServiceAccount name
+      name: ""
+
+    # -- Additional annotations to add to each pod
+    podAnnotations: {}
+
+    # -- Additional labels to add to each pod
+    podLabels: {}
+
+    # -- Deployment update strategy.
+    # Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+    updateStrategy: {}
+    #  rollingUpdate:
+    #    maxSurge: 1
+    #    maxUnavailable: 40%
+    #  type: RollingUpdate
+
+    # -- The number of revisions to keep
+    revisionHistoryLimit: 10
+
+    # -- Security context for the pod
+    podSecurityContext:
+      runAsUser: 1234
+      runAsGroup: 1234
+
+    # -- Deployment livenessProbe for policy-reporter-trivy-plugin
+    livenessProbe:
+      timeoutSeconds: 3
+      httpGet:
+        path: /vulnr/v1/policies
+        port: http
+
+    # -- Deployment readinessProbe for policy-reporter-trivy-plugin
+    readinessProbe:
+      timeoutSeconds: 3
+      httpGet:
+        path: /vulnr/v1/policies
+        port: http
+
+    # -- Allow additional env variables to be added
+    envVars: []
+
+    rbac:
+      # -- Create RBAC resources
+      enabled: true
+
+    securityContext:
+      runAsUser: 1234
+      runAsNonRoot: true
+      privileged: false
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+      seccompProfile:
+        type: RuntimeDefault
+
+    service:
+      # -- Service type.
+      type: ClusterIP
+      # -- Service port.
+      port: 8080
+      # -- Service annotations.
+      annotations: {}
+      # -- Service labels.
+      labels: {}
+
+    ingress:
+      # -- Create ingress resource.
+      enabled: false
+      # -- Ingress class name.
+      className: ""
+      # -- Ingress labels.
+      labels: {}
+      # -- Ingress annotations.
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # kubernetes.io/tls-acme: "true"
+      # -- List of ingress host configurations.
+      hosts: []
+      #  - host: chart-example.local
+      #    paths:
+      #      - path: /
+      #        pathType: ImplementationSpecific
+      # -- List of ingress TLS configurations.
+      tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - chart-example.local
+
+    networkPolicy:
+      # -- When true, use a NetworkPolicy to allow ingress to the webhook
+      # This is useful on clusters using Calico and/or native k8s network policies in a default-deny setup.
+      enabled: false
+      # -- A list of valid from selectors according to https://kubernetes.io/docs/concepts/services-networking/network-policies.
+      # Enables Kubernetes API Server by default
+      egress:
+      - ports:
+        - protocol: TCP
+          port: 6443
+      # -- A list of valid from selectors according to https://kubernetes.io/docs/concepts/services-networking/network-policies.
+      ingress: []
+
+    # -- Resource constraints
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+    # enabled if replicaCount > 1
+    podDisruptionBudget:
+      # -- Configures the minimum available pods for kyvernoPlugin disruptions.
+      # Cannot be used if `maxUnavailable` is set.
+      minAvailable: 1
+      # -- Configures the maximum unavailable pods for kyvernoPlugin disruptions.
+      # Cannot be used if `minAvailable` is set.
+      maxUnavailable:
+
+    # -- Node labels for pod assignment
+    nodeSelector: {}
+
+    # -- List of node taints to tolerate
+    tolerations: []
+
+    # -- Affinity constraints.
+    affinity: {}
+
+    # -- Pod Topology Spread Constraints for the trivy plugin.
+    topologySpreadConstraints: {}
+
+    extraVolumes:
+      # -- Deployment volumeMounts
+      volumeMounts: []
+
+      # -- Deployment values
+      volumes: []
+
+    # -- Extra configuration options appended to trivy plugin settings
+    extraConfig: {}
+
+monitoring:
+  # -- Enables the Prometheus Operator integration
+  enabled: false
+
+  # -- Key/value pairs that are attached to all resources.
+  annotations: {}
+
+  serviceMonitor:
+    # -- HonorLabels chooses the metrics labels on collisions with target labels
+    honorLabels: false
+    # -- Allow to override the namespace for serviceMonitor
+    namespace:
+    # -- Labels to match the serviceMonitorSelector of the Prometheus Resource
+    labels: {}
+    # -- ServiceMonitor Relabelings
+    # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#relabelconfig
+    relabelings: []
+    # -- See serviceMonitor.relabelings
+    metricRelabelings: []
+    # -- (optional) NamespaceSelector
+    namespaceSelector: {}
+    # -- (optional) ScrapeTimeout
+    scrapeTimeout:
+    # -- (optional) Scrape interval
+    interval:
+
+  grafana:
+    # -- Naamespace for configMap of grafana dashboards
+    namespace:
+    dashboards:
+      # -- Enable the deployment of grafana dashboards
+      enabled: true
+      # -- Label to find dashboards using the k8s sidecar
+      label: grafana_dashboard
+      # -- Label value to find dashboards using the k8s sidecar
+      value: "1"
+      # -- List of custom label filter
+      # Used to add filter for report label based metric labels defined in custom mode
+      labelFilter: []
+      multicluster:
+        # -- Enable cluster filter in all dashboards
+        enabled: false
+        # -- Metric Label which is used to filter clusters
+        label: cluster
+      enable:
+        # -- Enable the Overview Dashboard
+        overview: true
+        # -- Enable the PolicyReport Dashboard
+        policyReportDetails: true
+        # -- Enable the ClusterPolicyReport Dashboard
+        clusterPolicyReportDetails: true
+    folder:
+      # -- Annotation to enable folder storage using the k8s sidecar
+      annotation: grafana_folder
+      # -- Grafana folder in which to store the dashboards
+      name: Policy Reporter
+    datasource:
+      # -- Grafana Datasource Label
+      label: Prometheus
+      # -- Grafana Datasource PluginId
+      pluginId: prometheus
+      # -- Grafana Datasource PluginName
+      pluginName: Prometheus
+
+    grafanaDashboard:
+      # -- Create GrafanaDashboard custom resource referencing to the configMap.
+      # according to https://grafana-operator.github.io/grafana-operator/docs/examples/dashboard_from_configmap/readme/
+      enabled: false
+      # -- Dashboard folder
+      folder: kyverno
+      # -- Allow cross Namespace import
+      allowCrossNamespaceImport: true
+      # -- Label match selector
+      matchLabels:
+        dashboards: "grafana"
+
+  # Customize the Grafana PolicyReport Dashboard
+  policyReportDetails:
+    firstStatusRow:
+      height: 8
+    secondStatusRow:
+      enabled: true
+      height: 2
+    statusTimeline:
+      enabled: true
+      height: 8
+    passTable:
+      enabled: true
+      height: 8
+    failTable:
+      enabled: true
+      height: 8
+    warningTable:
+      enabled: true
+      height: 4
+    errorTable:
+      enabled: true
+      height: 4
+
+  # Customize the Grafana ClusterPolicyReport Dashboard
+  clusterPolicyReportDetails:
+    statusRow:
+      height: 6
+    statusTimeline:
+      enabled: true
+      height: 8
+    passTable:
+      enabled: true
+      height: 8
+    failTable:
+      enabled: true
+      height: 8
+    warningTable:
+      enabled: true
+      height: 4
+    errorTable:
+      enabled: true
+      height: 4
+
+  # Customize the Grafana Overview Dashboard
+  policyReportOverview:
+    failingSummaryRow:
+      height: 8
+    failingTimeline:
+      height: 10
+    failingPolicyRuleTable:
+      height: 10
+    failingClusterPolicyRuleTable:
+      height: 10
+
+# -- list of extra manifests
+extraManifests: []
+
+# -- Extra configuration options appended to core policy reporter
+extraConfig: {}

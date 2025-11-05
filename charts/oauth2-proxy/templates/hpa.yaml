@@ -1,13 +1,13 @@
 {{- if .Values.autoscaling.enabled }}
-apiVersion: autoscaling/v2
+apiVersion: {{ include "capabilities.horizontalPodAutoscaler.apiVersion" . }}
 kind: HorizontalPodAutoscaler
 metadata:
   labels:
     app: {{ template "oauth2-proxy.name" . }}
 {{- include "oauth2-proxy.labels" . | indent 4 }}
-  {{- if .Values.autoscaling.annotations }}
+  {{- with .Values.autoscaling.annotations }}
   annotations:
-{{ toYaml .Values.autoscaling.annotations | indent 8 }}
+{{ tpl ( toYaml . ) $ | indent 8 }}
   {{- end }}
   name: {{ template "oauth2-proxy.fullname" . }}
   namespace: {{ template "oauth2-proxy.namespace" $ }}
@@ -35,4 +35,15 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
     {{- end }}
+  {{- if .Values.autoscaling.behavior }}
+  behavior:
+    {{- with .Values.autoscaling.behavior.scaleDown }}
+    scaleDown:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.autoscaling.behavior.scaleUp }}
+    scaleUp:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+  {{- end }}
 {{- end }}

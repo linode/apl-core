@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'
-import { copy, pathExists } from 'fs-extra'
-import { copyFile, mkdir, readFile, writeFile } from 'fs/promises'
+import { existsSync } from 'fs'
+import { copyFile, cp, mkdir, readFile, writeFile } from 'fs/promises'
 import { generate as generatePassword } from 'generate-password'
 import { cloneDeep, get, isEmpty, merge, set } from 'lodash'
 import { pki } from 'node-forge'
@@ -39,7 +39,7 @@ export const bootstrapSops = async (
     encrypt,
     gucci,
     loadYaml,
-    pathExists,
+    pathExists: existsSync,
     getKmsSettings,
     readFile,
     terminal,
@@ -78,7 +78,7 @@ export const bootstrapSops = async (
     }
   }
 
-  const exists = await deps.pathExists(targetPath)
+  const exists = deps.pathExists(targetPath)
   d.log(`Creating sops file for provider ${provider}`)
   const output = (await deps.gucci(templatePath, obj, true)) as string
   await deps.writeFile(targetPath, output)
@@ -230,7 +230,7 @@ export const getUsers = (originalInput: any, deps = { generatePassword, addIniti
 }
 
 export const copyBasicFiles = async (
-  deps = { copy, copyFile, copySchema, mkdir, pathExists, terminal },
+  deps = { copy: cp, copyFile, copySchema, mkdir, pathExists: existsSync, terminal },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:copyBasicFiles`)
   const { ENV_DIR } = env
@@ -242,7 +242,7 @@ export const copyBasicFiles = async (
   ])
   d.info('Copied bin files')
   await deps.mkdir(`${ENV_DIR}/.vscode`, { recursive: true })
-  await deps.copy(`${rootDir}/.values/.vscode`, `${ENV_DIR}/.vscode`)
+  await deps.copy(`${rootDir}/.values/.vscode`, `${ENV_DIR}/.vscode`, { recursive: true })
   d.info('Copied vscode folder')
 
   await deps.copySchema()
@@ -250,13 +250,13 @@ export const copyBasicFiles = async (
   // only copy sample files if a real one is not found
   await Promise.allSettled(
     ['.secrets.sample']
-      .filter(async (val) => !(await deps.pathExists(`${ENV_DIR}/${val.replace(/\.sample$/g, '')}`)))
+      .filter((val) => !deps.pathExists(`${ENV_DIR}/${val.replace(/\.sample$/g, '')}`))
       .map(async (val) => deps.copyFile(`${rootDir}/.values/${val}`, `${ENV_DIR}/${val}`)),
   )
 
   // force copy all these
   await Promise.allSettled(
-    ['.gitignore', '.prettierrc.yml', 'README.md'].map(async (val) =>
+    ['.editorconfig', '.gitignore', '.prettierrc.yml', 'README.md'].map(async (val) =>
       deps.copyFile(`${rootDir}/.values/${val}`, `${ENV_DIR}/${val}`),
     ),
   )
@@ -276,7 +276,7 @@ export const processValues = async (
     getStoredClusterSecrets,
     getKmsValues,
     writeValues,
-    pathExists,
+    pathExists: existsSync,
     hfValues,
     validateValues,
     generateSecrets,
@@ -301,7 +301,7 @@ export const processValues = async (
     d.log(`Loading repo values from ${ENV_DIR}`)
     // we can only read values from ENV_DIR if we can determine cluster.providers
     storedSecrets = {}
-    if (await deps.pathExists(`${ENV_DIR}/env/settings/cluster.yaml`)) {
+    if (deps.pathExists(`${ENV_DIR}/env/settings/cluster.yaml`)) {
       await deps.decrypt()
       originalInput = (await deps.hfValues({ defaultValues: true })) || {}
     }
@@ -429,7 +429,7 @@ export const createCustomCA = (deps = { terminal, pki, writeValues }): Record<st
 
 export const bootstrap = async (
   deps = {
-    pathExists,
+    pathExists: existsSync,
     getDeploymentState,
     getImageTag,
     getCurrentVersion,
@@ -458,7 +458,7 @@ export const bootstrap = async (
     if (prevVersion && prevTag && version === prevVersion && tag === prevTag) return
   }
   const { ENV_DIR } = env
-  const hasOtomi = await deps.pathExists(`${ENV_DIR}/bin/otomi`)
+  const hasOtomi = deps.pathExists(`${ENV_DIR}/bin/otomi`)
 
   const otomiImage = `linode/apl-core:${tag}`
   d.log(`Installing artifacts from ${otomiImage}`)
@@ -475,7 +475,7 @@ export const bootstrap = async (
 
   await deps.handleFileEntry()
   await deps.bootstrapSops()
-  await ensureTeamGitOpsDirectories(ENV_DIR)
+  await ensureTeamGitOpsDirectories(ENV_DIR, originalValues)
   if (!hasOtomi) {
     d.log('You can now use the otomi CLI')
   }

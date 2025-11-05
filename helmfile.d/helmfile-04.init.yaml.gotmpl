@@ -1,0 +1,98 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: argocd
+    installed: {{ $a | get "argocd.enabled" }}
+    namespace: argocd
+    labels:
+      app: core
+    <<: *default
+  - name: apl-operator
+    installed: true
+    namespace: apl-operator
+    labels:
+      pkg: apl-operator
+    <<: *default
+  - name: otomi-operator
+    installed: true
+    namespace: otomi-operator
+    labels:
+      pkg: otomi-operator
+    <<: *default
+  - name: apl-keycloak-operator
+    installed: true
+    namespace: apl-keycloak-operator
+    labels:
+      pkg: apl-keycloak-operator
+    <<: *default
+  - name: apl-keycloak-operator-artifacts
+    installed: true
+    namespace: apl-keycloak-operator
+    labels:
+      pkg: apl-keycloak-operator
+    <<: *raw
+  - name: harbor-artifacts
+    installed: {{ $a | get "harbor.enabled" }}
+    namespace: harbor
+    labels:
+      pkg: harbor
+    <<: *raw
+  - name: apl-harbor-operator-artifacts
+    installed: {{ $a | get "harbor.enabled" }}
+    namespace: apl-harbor-operator
+    labels:
+      pkg: apl-harbor-operator
+    <<: *raw
+  - name: apl-harbor-operator
+    installed: {{ $a | get "harbor.enabled" }}
+    namespace: apl-harbor-operator
+    labels:
+      pkg: apl-harbor-operator
+    <<: *default
+  - name: kiali-operator-artifacts
+    installed: {{ $a | get "kiali.enabled" }}
+    namespace: kiali
+    labels:
+      pkg: kiali
+    <<: *raw
+  - name: knative-operator
+    installed: {{ $a | get "knative.enabled" }}
+    namespace: knative-operator
+    labels:
+      pkg: knative
+    <<: *default
+  - name: loki-artifacts
+    installed: {{ $a | get "loki.enabled" }}
+    namespace: monitoring
+    labels:
+      pkg: loki
+    <<: *raw
+  - name: rabbitmq
+    installed: {{ $a | get "rabbitmq.enabled" }}
+    namespace: rabbitmq
+    <<: *default
+  - name: tekton-pipelines
+    installed: true
+    namespace: tekton-pipelines
+    labels:
+      pkg: tekton-pipelines
+    <<: *default
+  - name: tekton-dashboard
+    installed: true
+    namespace: tekton-pipelines
+    labels:
+      pkg: tekton-pipelines
+    chart: ../charts/tekton-dashboard
+    values:
+      - ../values/tekton-dashboard/tekton-dashboard.gotmpl

@@ -1,8 +1,8 @@
-import { AplOperator, AplOperatorConfig, ApplyTrigger } from './apl-operator'
 import { waitTillGitRepoAvailable } from '../common/k8s'
-import { updateApplyState } from './k8s'
-import { GitRepository } from './git-repository'
 import { AplOperations } from './apl-operations'
+import { AplOperator, AplOperatorConfig, ApplyTrigger } from './apl-operator'
+import { GitRepository } from './git-repository'
+import { updateApplyState } from './k8s'
 
 const mockInfoFn = jest.fn()
 const mockWarnFn = jest.fn()
@@ -22,6 +22,7 @@ const mockAplOps = {
   validateValues: jest.fn().mockResolvedValue(undefined),
   apply: jest.fn().mockResolvedValue(undefined),
   applyAsAppsTeams: jest.fn().mockResolvedValue(undefined),
+  applyTeams: jest.fn().mockResolvedValue(undefined),
   migrate: jest.fn().mockResolvedValue(undefined),
 }
 
@@ -37,6 +38,12 @@ jest.mock('../common/debug', () => ({
 jest.mock('../common/k8s', () => ({
   waitTillGitRepoAvailable: jest.fn().mockResolvedValue(undefined),
 }))
+jest.mock('../common/hf', () => ({
+  hfValues: jest.fn().mockResolvedValue(undefined),
+}))
+jest.mock('../common/values', () => ({
+  writeValues: jest.fn().mockResolvedValue(undefined),
+}))
 jest.mock('../common/utils', () => ({
   ensureTeamGitOpsDirectories: jest.fn().mockResolvedValue(undefined),
 }))
@@ -46,6 +53,7 @@ jest.mock('../cmd/commit', () => ({
 
 jest.mock('./k8s', () => ({
   updateApplyState: jest.fn().mockResolvedValue(undefined),
+  appRevisionMatches: jest.fn().mockResolvedValue(true),
 }))
 
 jest.mock('./git-repository', () => ({
@@ -117,7 +125,7 @@ describe('AplOperator', () => {
       expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.repoUrl)
       expect(mockGitRepo.clone).toHaveBeenCalled()
 
-      expect(mockErrorFn).toHaveBeenCalledWith('Failed to start APL operator:', error)
+      expect(mockErrorFn).toHaveBeenCalledWith('Failed to start APL operator:', 'Start failed')
     })
 
     test('should log error if poll or reconcile fails after start', async () => {
@@ -136,7 +144,7 @@ describe('AplOperator', () => {
 
       await aplOperator.start()
 
-      expect(mockErrorFn).toHaveBeenCalledWith('Error in polling or reconcile task:', expect.any(Error))
+      expect(mockErrorFn).toHaveBeenCalledWith('Error in polling or reconcile task:', 'Reconcile crashed')
     })
 
     test('should handle already running state', async () => {
@@ -180,7 +188,6 @@ describe('AplOperator', () => {
       expect(mockAplOps.apply).toHaveBeenCalled()
       expect(mockAplOps.migrate).toHaveBeenCalled()
       expect(mockAplOps.validateValues).toHaveBeenCalled()
-
       expect(updateApplyState).toHaveBeenCalledWith(
         expect.objectContaining({
           commitHash: 'abc123',
@@ -250,7 +257,7 @@ describe('AplOperator', () => {
 
       expect((aplOperator as any).isApplying).toBe(false)
 
-      expect(mockErrorFn).toHaveBeenCalledWith('[poll] Apply process failed', error)
+      expect(mockErrorFn).toHaveBeenCalledWith('[poll] Apply process failed', 'Apply failed')
     })
   })
 
@@ -334,7 +341,7 @@ describe('AplOperator', () => {
 
       await pollPromise
 
-      expect(mockErrorFn).toHaveBeenCalledWith('Error during git polling cycle:', expect.any(Error))
+      expect(mockErrorFn).toHaveBeenCalledWith('Error during git polling cycle:', 'Pull failed')
     })
   })
 
@@ -385,7 +392,7 @@ describe('AplOperator', () => {
       await reconcilePromise
 
       expect(runApplyIfNotBusySpy).toHaveBeenCalled()
-      expect(mockErrorFn).toHaveBeenCalledWith('Error during reconciliation:', error)
+      expect(mockErrorFn).toHaveBeenCalledWith('Error during reconciliation:', 'Reconcile error')
       expect(mockInfoFn).toHaveBeenCalledWith('Reconciliation loop stopped')
     })
   })

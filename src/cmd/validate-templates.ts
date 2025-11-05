@@ -1,15 +1,16 @@
 import { readFileSync, rmSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
+import { glob } from 'glob'
 import { loadAll } from 'js-yaml'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { hfTemplate } from 'src/common/hf'
-import { getFilename, readdirRecurse, rootDir } from 'src/common/utils'
+import { getFilename, rootDir } from 'src/common/utils'
 import { getK8sVersion } from 'src/common/values'
 import { BasicArguments, HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import * as tar from 'tar'
 import { Argv } from 'yargs'
-import { $, cd, chalk } from 'zx'
+import { $, chalk } from 'zx'
 
 const cmdName = getFilename(__filename)
 
@@ -119,9 +120,16 @@ const processCrdWrapper = async (argv: BasicArguments) => {
   await hfTemplate(argv, `${k8sResourcesPath}/${vk8sVersion}`)
 
   d.log('Processing CRD files...')
-  cd(rootDir)
-  const chartsFiles = await readdirRecurse('charts')
-  const crdFiles = chartsFiles.filter((val: string) => val.match(/(?<!\/templates)\/crds\/.*\.yaml/g))
+  const crdFiles = await glob('**/crds/**/*.yaml', {
+    ignore: [
+      // Templates can usually not be processed directly
+      '**/templates/crds/**',
+      '**/crds/templates/**',
+    ],
+    cwd: `${rootDir}/charts`,
+    absolute: true,
+    nodir: true,
+  })
   const results = await Promise.all(crdFiles.flatMap((crdFile: string): crdSchema[] => processCrd(crdFile)))
 
   const prep: Promise<any>[] = []

@@ -1,6 +1,7 @@
 {{- $kms := .Values.kms | default dict }}
 {{- $imageName := .Values.imageName | default "linode/apl-core" }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
+{{- $useORCS := .Values.otomi.useORCS }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -30,7 +31,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: install
-          {{- if .Values.otomi.useORCS }}
+          {{- if $useORCS }}
           image: "mirror.registry.linodelke.net/docker/{{ $imageName }}:{{ $version }}"
           {{- else }}
           image: "{{ $imageName }}:{{ $version }}"
@@ -51,7 +52,23 @@ spec:
           args:
             - |
               kubectl create ns otomi &> /dev/null
-              binzx/otomi validate-cluster && binzx/otomi bootstrap && binzx/otomi apply
+              set -e
+              binzx/otomi validate-cluster && binzx/otomi bootstrap && binzx/otomi install
+
+              {{- if .Values.cleanup.enabled }}
+              echo "Starting cleanup of cluster-admin ClusterRoleBinding..."
+
+              # Check if the ClusterRoleBinding exists
+              if kubectl get clusterrolebinding {{ include "apl.fullname" . }} --ignore-not-found &> /dev/null; then
+                echo "Deleting ClusterRoleBinding: {{ include "apl.fullname" . }}"
+                kubectl delete clusterrolebinding {{ include "apl.fullname" . }} --ignore-not-found &> /dev/null
+                echo "ClusterRoleBinding deleted successfully"
+              else
+                echo "ClusterRoleBinding {{ include "apl.fullname" . }} not found, nothing to clean up"
+              fi
+
+              echo "Cleanup completed successfully"
+              {{- end }}
           env:
             - name: VERBOSITY
               value: '1'

@@ -26,11 +26,18 @@ jobs:
           tag=${GITHUB_REF##*/}
           echo "Creating tag: $tag"
           echo "TAG=$tag" >> $GITHUB_ENV
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            revision=${{ env.COMMIT_SHA }}
+            echo "Setting apps revision to: $revision"
+            echo "APPS_REVISION=$revision" >> $GITHUB_ENV
+          else
+            echo "Leaving apps revision empty"
+          fi
           git config --global user.email $BOT_EMAIL
           git config --global user.name $BOT_USERNAME
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to Github Packages
@@ -43,6 +50,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
+          build-args: |
+            APPS_REVISION=${{ env.APPS_REVISION }}
           context: .
           tags: |
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
@@ -71,7 +80,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Deploy to dev
         run: ci/scripts/trigger_dev.sh
 
@@ -83,7 +92,7 @@ jobs:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set env
         run: |
           git config --global user.email $BOT_EMAIL
@@ -109,7 +118,7 @@ jobs:
           #Cut the CHANGELOG.md file up to the first occurence of the "### \[[0-9]*" (meaning three #, a space,a square bracket and any number after it)
           sed -n '/### \[[0-9]*/q;p' CHANGELOG.md > NEW_CHANGELOG.md
       - name: Create GitHub release
-        uses: ncipollo/release-action@v1.16.0
+        uses: ncipollo/release-action@v1.20.0
         env:
           token: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -122,11 +131,11 @@ jobs:
     if: always() && contains(needs.release.result, 'success') && !github.event.act
     runs-on: ubuntu-22.04
     container:
-      image: linode/apl-tools:v2.8.2
+      image: linode/apl-tools:v2.10.4
       options: --user 0 # See https://docs.github.com/en/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Prepare chart
         id: prepare_chart
         run: |

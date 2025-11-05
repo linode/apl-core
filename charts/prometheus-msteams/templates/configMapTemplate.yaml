@@ -10,3 +10,9 @@ binaryData:
 {{- else }}
 {{ .Files.Get "card.tmpl" | b64enc | indent 4 }}
 {{- end }}
+{{- range $index, $customCardTemplate := .Values.connectorsWithCustomTemplates }}
+{{- if hasKey $customCardTemplate "template_file" }}
+  custom_card_{{ $index }}.tmpl: |-
+{{ $customCardTemplate.template_file | b64enc | indent 4 }}
+{{- end }}
+{{- end }}

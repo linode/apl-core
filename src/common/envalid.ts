@@ -32,9 +32,29 @@ export const cliEnvSpec = {
   RANDOM: bool({ desc: 'Randomizes the timeouts by multiplying with a factor between 1 to 2', default: false }),
   MIN_TIMEOUT: num({ desc: 'The number of milliseconds before starting the first retry', default: 30000 }),
   FACTOR: num({ desc: 'The factor to multiply the timeout with', default: 1 }),
+  INSTALL_RETRIES: num({
+    desc: 'The maximum amount of times to retry the installation on failure (within a single job)',
+    default: 3,
+  }),
+  INSTALL_RETRY_TIMEOUT: num({
+    desc: 'The number of milliseconds before starting an installation retry',
+    default: 30000,
+  }),
+  INSTALL_STEP_RETRIES: num({
+    desc: 'The maximum amount of times to retry single post-installation steps',
+    default: 5,
+  }),
   GIT_URL: str({ default: 'gitea-http.gitea.svc.cluster.local' }),
   GIT_PORT: str({ default: '3000' }),
   GIT_PROTOCOL: str({ default: 'http' }),
+  APPS_REPO_URL: str({
+    desc: 'Repository to set for ArgoCD applications',
+    default: 'https://github.com/linode/apl-core.git',
+  }),
+  APPS_REVISION: str({
+    desc: 'Target revision to set for ArgoCD applications. If not set, uses the current image tag.',
+    default: undefined,
+  }),
 }
 
 export function cleanEnv<T>(spec: { [K in keyof T]: ValidatorSpec<T[K]> }, options?: CleanOptions<T>) {

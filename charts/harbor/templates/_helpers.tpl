@@ -148,7 +148,21 @@ app: "{{ template "harbor.name" . }}"
 
 {{- define "harbor.redis.scheme" -}}
   {{- with .Values.redis }}
-    {{- ternary "redis+sentinel" "redis"  (and (eq .type "external" ) (not (not .external.sentinelMasterSet))) }}
+    {{- if eq .type "external" -}}
+      {{- if not (not .external.sentinelMasterSet) -}}
+        {{- ternary "rediss+sentinel" "redis+sentinel" (.external.tlsOptions.enable) }}
+      {{- else -}}
+        {{- ternary "rediss" "redis" (.external.tlsOptions.enable) }}
+      {{- end -}}
+    {{- else -}}
+      {{ print "redis" }}
+    {{- end -}}
+  {{- end }}
+{{- end -}}
+
+{{- define "harbor.redis.enableTLS" -}}
+  {{- with .Values.redis }}
+    {{- ternary "true" "false" (and ( eq .type "external") (.external.tlsOptions.enable)) }}
   {{- end }}
 {{- end -}}
 
@@ -161,7 +175,7 @@ app: "{{ template "harbor.name" . }}"
 
 {{- define "harbor.redis.masterSet" -}}
   {{- with .Values.redis }}
-    {{- ternary .external.sentinelMasterSet "" (eq "redis+sentinel" (include "harbor.redis.scheme" $)) }}
+    {{- ternary .external.sentinelMasterSet "" (contains "+sentinel" (include "harbor.redis.scheme" $)) }}
   {{- end }}
 {{- end -}}
 
@@ -172,6 +186,13 @@ app: "{{ template "harbor.name" . }}"
 {{- end -}}
 
 
+{{- define "harbor.redis.usernamefromsecret" -}}
+  {{- $existingSecret := (lookup "v1" "Secret"  .Release.Namespace (.Values.redis.external.existingSecret)) -}}
+  {{- if and (not (empty $existingSecret)) (hasKey $existingSecret.data "REDIS_USERNAME") -}}
+    {{- printf "%s" ($existingSecret.data.REDIS_USERNAME | b64dec | trim ) }}
+  {{- end -}}
+{{- end -}}
+
 {{- define "harbor.redis.pwdfromsecret" -}}
   {{- (lookup "v1" "Secret"  .Release.Namespace (.Values.redis.external.existingSecret)).data.REDIS_PASSWORD  | b64dec }}
 {{- end -}}
@@ -179,7 +200,7 @@ app: "{{ template "harbor.name" . }}"
 {{- define "harbor.redis.cred" -}}
   {{- with .Values.redis }}
     {{- if (and (eq .type "external" ) (.external.existingSecret)) }}
-      {{- printf ":%s@" (include "harbor.redis.pwdfromsecret" $) }}
+      {{- printf "%s:%s@" (include "harbor.redis.usernamefromsecret" $) (include "harbor.redis.pwdfromsecret" $) -}}
     {{- else }}
       {{- ternary (printf "%s:%s@" (.external.username | urlquery) (.external.password | urlquery)) "" (and (eq .type "external" ) (not (not .external.password))) }}
     {{- end }}
@@ -290,6 +311,10 @@ app: "{{ template "harbor.name" . }}"
 
 {{- define "harbor.ingress" -}}
   {{- printf "%s-ingress" (include "harbor.fullname" .) -}}
+{{- end -}}
+
+{{- define "harbor.route" -}}
+  {{- printf "%s-route" (include "harbor.fullname" .) -}}
 {{- end -}}
 
 {{- define "harbor.noProxy" -}}

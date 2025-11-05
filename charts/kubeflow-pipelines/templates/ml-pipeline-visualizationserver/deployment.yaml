@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels: {{- include "kfp.labels" . | nindent 4 }}
+    app: ml-pipeline-visualizationserver
+    application-crd-id: kubeflow-pipelines
+  name: ml-pipeline-visualizationserver
+spec:
+  selector:
+    matchLabels:
+      app: ml-pipeline-visualizationserver
+      application-crd-id: kubeflow-pipelines
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels: {{- include "kfp.labels" . | nindent 8 }}
+        app: ml-pipeline-visualizationserver
+        application-crd-id: kubeflow-pipelines
+    spec:
+      containers:
+      - image: {{ include "kubeflowRegistry" . }}/kfp-visualization-server:{{ .Chart.AppVersion }}
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
+        livenessProbe:
+          exec:
+            command:
+            - wget
+            - -q
+            - -S
+            - -O
+            - '-'
+            - http://localhost:8888/
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+        name: ml-pipeline-visualizationserver
+        ports:
+        - containerPort: 8888
+          name: http
+        readinessProbe:
+          exec:
+            command:
+            - wget
+            - -q
+            - -S
+            - -O
+            - '-'
+            - http://localhost:8888/
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+        {{- with .Values.mlPipelineVisualizationserver.resources }}
+        resources: {{- . | toYaml | nindent 12 }}
+        {{- end }}
+      serviceAccountName: ml-pipeline-visualizationserver
+---

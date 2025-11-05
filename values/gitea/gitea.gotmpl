@@ -37,7 +37,7 @@ image:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  {{- with $g | get "image.gitea.tag" "1.23.8" }}
+  {{- with ($g | get "image.gitea.tag" "1.24.4") }}
   tag: {{ . }}
   {{- end }}
   pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}
@@ -78,7 +78,7 @@ gitea:
       {{/*Disabled so that when an user with the same username is created in gitea, it will not be linked to another account*/}}
       ACCOUNT_LINKING: disabled
       OPENID_CONNECT_SCOPES: openid email profile
-      USERNAME: email
+      USERNAME: nickname
     repository:
       DEFAULT_BRANCH: main
     service:
@@ -127,6 +127,23 @@ gitea:
         secretKeyRef:
           name: gitea-db-secret
           key: password
+    - name: GITEA__DATABASE__MAX_OPEN_CONNS
+      value: "32"
+    - name: GITEA__DATABASE__MAX_IDLE_CONNS
+      value: "6"
+
+    - name: GITEA__CACHE__ADAPTER
+      value: "redis"
+    - name: GITEA__CACHE__HOST
+      value: "redis://:changeme@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&"
+    - name: GITEA__QUEUE__CONN_STR
+      value: "redis://:changeme@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&"
+    - name: GITEA__QUEUE__TYPE
+      value: "redis"
+    - name: GITEA__SESSION__PROVIDER
+      value: "redis"
+    - name: GITEA__SESSION__PROVIDER_CONFIG
+      value: "redis://:changeme@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&"
 
 init:
   resources: {{- $g.resources.init | toYaml | nindent 4 }}
@@ -180,10 +197,10 @@ postgresql:
   enabled: false
 postgresql-ha:
   enabled: false
-redis-cluster:
+valkey-cluster:
   enabled: false
-redis:
-  enabled: true
+valkey:
+  enabled: false
 
 extraContainerVolumeMounts:
   - name: backup
@@ -224,15 +241,10 @@ containerSecurityContext:
   readOnlyRootFilesystem: true
 
 global:
-  storageClass: ""
+  storageClass: {{ $v.cluster.defaultStorageClass | default "" }}
   hostAliases: []
 {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - otomi-pullsecret-global
 {{- end }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
-  imageRegistry: "{{ $v.otomi.linodeLkeImageRepository }}/docker"
-  security:
-    allowInsecureImages: true
-{{- end }}

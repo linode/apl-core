@@ -26,32 +26,59 @@ describe('Flatten objects', () => {
   })
 })
 
-describe('semverCompare', () => {
-  it('should indicate version to be higher', () => {
-    expect(utils.semverCompare('1.1.3', '0.1.1')).toEqual(1)
-  })
-  it('should indicate version to be equal', () => {
-    expect(utils.semverCompare('0.1.1', '0.1.1')).toEqual(0)
-  })
-  it('should indicate version to be lower', () => {
-    expect(utils.semverCompare('0.1.1', '1.1.3')).toEqual(-1)
-  })
-})
-
 describe('ensureTeamGitopsDirectories', () => {
-  it('should create .gitkeep files in all team directories', async () => {
+  it('should create .gitkeep files in all team directories when AI is enabled', async () => {
     const envDir = '/values'
+    const values = { otomi: { aiEnabled: true } }
     const deps: any = {
       writeFile: jest.fn(),
       glob: jest.fn().mockResolvedValue(['/values/env/teams/team1', '/values/env/teams/team2']),
     }
-    const result = await utils.ensureTeamGitOpsDirectories(envDir, deps)
+    const result = await utils.ensureTeamGitOpsDirectories(envDir, values, deps)
+    expect(deps.glob).toHaveBeenCalledWith(`${envDir}/env/teams/*`)
+    expect(result).toEqual([
+      '/values/env/teams/team1/sealedsecrets/.gitkeep',
+      '/values/env/teams/team1/workloadValues/.gitkeep',
+      '/values/env/teams/team1/databases/.gitkeep',
+      '/values/env/teams/team1/knowledgebases/.gitkeep',
+      '/values/env/teams/team1/agents/.gitkeep',
+      '/values/env/teams/team2/sealedsecrets/.gitkeep',
+      '/values/env/teams/team2/workloadValues/.gitkeep',
+      '/values/env/teams/team2/databases/.gitkeep',
+      '/values/env/teams/team2/knowledgebases/.gitkeep',
+      '/values/env/teams/team2/agents/.gitkeep',
+    ])
+  })
+
+  it('should only create base .gitkeep files when AI is disabled', async () => {
+    const envDir = '/values'
+    const values = { otomi: { aiEnabled: false } }
+    const deps: any = {
+      writeFile: jest.fn(),
+      glob: jest.fn().mockResolvedValue(['/values/env/teams/team1', '/values/env/teams/team2']),
+    }
+    const result = await utils.ensureTeamGitOpsDirectories(envDir, values, deps)
     expect(deps.glob).toHaveBeenCalledWith(`${envDir}/env/teams/*`)
     expect(result).toEqual([
       '/values/env/teams/team1/sealedsecrets/.gitkeep',
       '/values/env/teams/team1/workloadValues/.gitkeep',
       '/values/env/teams/team2/sealedsecrets/.gitkeep',
       '/values/env/teams/team2/workloadValues/.gitkeep',
+    ])
+  })
+
+  it('should only create base .gitkeep files when aiEnabled is not set', async () => {
+    const envDir = '/values'
+    const values = {}
+    const deps: any = {
+      writeFile: jest.fn(),
+      glob: jest.fn().mockResolvedValue(['/values/env/teams/team1']),
+    }
+    const result = await utils.ensureTeamGitOpsDirectories(envDir, values, deps)
+    expect(deps.glob).toHaveBeenCalledWith(`${envDir}/env/teams/*`)
+    expect(result).toEqual([
+      '/values/env/teams/team1/sealedsecrets/.gitkeep',
+      '/values/env/teams/team1/workloadValues/.gitkeep',
     ])
   })
 })

@@ -12,13 +12,6 @@ spec:
     oidcAutoOnboard: true
     oidcUserClaim: email
     resources:
-        chartmuseum:
-            limits:
-                cpu: 500m
-                memory: 512Mi
-            requests:
-                cpu: 20m
-                memory: 56Mi
         core:
             limits:
                 cpu: 500m

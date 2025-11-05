@@ -1,5 +1,7 @@
 {{- if .Values.reportsController.enabled -}}
+{{- include "kyverno.validateOpenReports" . -}}
 {{- if not .Values.templating.debug -}}
+{{- $automountSAToken := .Values.reportsController.rbac.serviceAccount.automountServiceAccountToken }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -7,8 +9,13 @@ metadata:
   namespace: {{ template "kyverno.namespace" . }}
   labels:
     {{- include "kyverno.reports-controller.labels" . | nindent 4 }}
+  {{- with .Values.reportsController.annotations }}
+  annotations:
+    {{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ template "kyverno.deployment.replicas" .Values.reportsController.replicas }}
+  revisionHistoryLimit: {{ .Values.reportsController.revisionHistoryLimit }}
   {{- with .Values.reportsController.updateStrategy }}
   strategy:
     {{- toYaml . | nindent 4 }}
@@ -27,19 +34,19 @@ spec:
       annotations: {{ tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
     spec:
-      {{- with .Values.reportsController.imagePullSecrets }}
-      imagePullSecrets: 
-        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- with .Values.reportsController.imagePullSecrets | default .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- tpl (include "kyverno.sortedImagePullSecrets" .) $ | nindent 8 }}
       {{- end }}
       {{- with .Values.reportsController.podSecurityContext }}
       securityContext:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
-      {{- with .Values.reportsController.nodeSelector }}
+      {{- with .Values.reportsController.nodeSelector | default .Values.global.nodeSelector }}
       nodeSelector:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
-      {{- with .Values.reportsController.tolerations }}
+      {{- with .Values.reportsController.tolerations | default .Values.global.tolerations}}
       tolerations:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
@@ -55,6 +62,10 @@ spec:
       {{- end }}
       {{- with .Values.reportsController.dnsPolicy }}
       dnsPolicy: {{ . }}
+      {{- end }}
+      {{- with .Values.reportsController.dnsConfig }}
+      dnsConfig:
+        {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
       {{- if or .Values.reportsController.antiAffinity.enabled .Values.reportsController.podAffinity .Values.reportsController.nodeAffinity }}
       affinity:
@@ -74,17 +85,23 @@ spec:
         {{- end }}
       {{- end }}
       serviceAccountName: {{ template "kyverno.reports-controller.serviceAccountName" . }}
+      automountServiceAccountToken: {{ $automountSAToken }}
       containers:
         - name: controller
-          image: {{ include "kyverno.reports-controller.image" (dict "globalRegistry" ((.Values.global).image).registry "image" .Values.reportsController.image "defaultTag" .Chart.AppVersion) | quote }}
+          image: {{ include "kyverno.reports-controller.image" (dict "globalRegistry" .Values.global.image.registry "image" .Values.reportsController.image "defaultTag" .Chart.AppVersion) | quote }}
           imagePullPolicy: {{ .Values.reportsController.image.pullPolicy }}
           ports:
-          - containerPort: 9443
+          - containerPort: {{ .Values.reportsController.server.port }}
             name: https
             protocol: TCP
-          - containerPort: 8000
+          - containerPort: {{ .Values.reportsController.metering.port }}
             name: metrics
             protocol: TCP
+          {{ if .Values.reportsController.profiling.enabled }}
+          - containerPort: {{ .Values.reportsController.profiling.port }}
+            name: profiling-port
+            protocol: TCP
+          {{- end }}
           args:
             {{- if .Values.reportsController.tracing.enabled }}
             - --enableTracing
@@ -95,6 +112,7 @@ spec:
             {{- end }}
             {{- end }}
             - --disableMetrics={{ .Values.reportsController.metering.disabled }}
+            - --openreportsEnabled={{ .Values.openreports.enabled }}
             {{- if not .Values.reportsController.metering.disabled }}
             - --otelConfig={{ .Values.reportsController.metering.config }}
             - --metricsPort={{ .Values.reportsController.metering.port }}
@@ -106,20 +124,24 @@ spec:
             {{- end }}
             {{- end }}
             {{- if or .Values.imagePullSecrets .Values.existingImagePullSecrets }}
-            - --imagePullSecrets={{- join "," (concat (keys .Values.imagePullSecrets) .Values.existingImagePullSecrets) }}
+            - --imagePullSecrets={{- $secretNames := concat (keys .Values.imagePullSecrets | sortAlpha) (.Values.existingImagePullSecrets | sortAlpha) -}}
+              {{- join "," $secretNames -}}
             {{- end }}
-            {{- include "kyverno.features.flags" (pick (mergeOverwrite .Values.features .Values.reportsController.featuresOverride)
+            - --resyncPeriod={{ .Values.reportsController.resyncPeriod | default .Values.global.resyncPeriod }}
+            {{- include "kyverno.features.flags" (pick (mergeOverwrite (deepCopy .Values.features) .Values.reportsController.featuresOverride)
+              "reporting"
               "admissionReports"
               "aggregateReports"
               "policyReports"
               "validatingAdmissionPolicyReports"
+              "mutatingAdmissionPolicyReports"
               "backgroundScan"
               "configMapCaching"
               "deferredLoading"
+              "globalContext"
               "logging"
               "omitEvents"
               "policyExceptions"
-              "reports"
               "registryClient"
               "tuf"
             ) | nindent 12 }}
@@ -127,6 +149,13 @@ spec:
             {{- if $value }}
             - --{{ $key }}={{ $value }}
             {{- end }}
+            {{- end }}
+            {{- if .Values.reportsController.profiling.enabled }}
+            - --profile=true
+            - --profilePort={{ .Values.reportsController.profiling.port }}
+            {{- end }}
+            {{- if or (not .Values.reportsController.sanityChecks) .Values.crds.reportsServer.enabled }}
+            - --reportsCRDsSanityChecks=false
             {{- end }}
           env:
           - name: KYVERNO_SERVICEACCOUNT_NAME
@@ -147,7 +176,7 @@ spec:
                 fieldPath: metadata.namespace
           - name: TUF_ROOT
             value: {{ .Values.reportsController.tufRootMountPath }}
-          {{- with .Values.reportsController.extraEnvVars }}
+          {{- with (concat .Values.global.extraEnvVars .Values.reportsController.extraEnvVars) }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
           {{- with .Values.reportsController.resources }}
@@ -161,8 +190,53 @@ spec:
           volumeMounts:
             - mountPath: {{ .Values.reportsController.tufRootMountPath }}
               name: sigstore
+            {{- if or .Values.reportsController.caCertificates.data .Values.global.caCertificates.data .Values.reportsController.caCertificates.volume .Values.global.caCertificates.volume }}
+            - name: ca-certificates
+              mountPath: /etc/ssl/certs/ca-certificates.crt
+              {{- if or .Values.reportsController.caCertificates.data .Values.global.caCertificates.data }}
+              subPath: ca-certificates.crt
+              {{- end }}
+            {{- end }}
+            {{- if not $automountSAToken }}
+            - name: serviceaccount-token
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
+            {{- end }}
       volumes:
       - name: sigstore
         {{- toYaml (required "A valid .Values.reportsController.sigstoreVolume entry is required" .Values.reportsController.sigstoreVolume) | nindent 8 }}
+      {{- if or .Values.reportsController.caCertificates.data .Values.global.caCertificates.data }}
+      - name: ca-certificates
+        configMap:
+          name: {{ include "kyverno.reports-controller.caCertificatesConfigMapName" . }}
+          items:
+          - key: ca-certificates
+            path: ca-certificates.crt
+      {{- else if or .Values.reportsController.caCertificates.volume .Values.global.caCertificates.volume }}
+      {{- with (.Values.reportsController.caCertificates.volume | default .Values.global.caCertificates.volume) }}
+      - name: ca-certificates
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- if not $automountSAToken }}
+      - name: serviceaccount-token
+        projected:
+          defaultMode: 0444
+          sources:
+            - serviceAccountToken:
+                expirationSeconds: 3607
+                path: token
+            - configMap:
+                name: kube-root-ca.crt
+                items:
+                  - key: ca.crt
+                    path: ca.crt
+            - downwardAPI:
+                items:
+                  - path: namespace
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+      {{- end }}
 {{- end -}}
 {{- end -}}

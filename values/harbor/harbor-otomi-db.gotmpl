@@ -6,8 +6,10 @@
 
 name: harbor-otomi-db
 storage:
+  storageClass: {{ $v.cluster.defaultStorageClass }}
   size: {{ $hdb.size }}
 walStorage:
+  storageClass: {{ $v.cluster.defaultStorageClass }}
   size: {{ $hdb.walStorageSize }}
 instances: {{ $hdb.replicas }}
 
@@ -18,9 +20,9 @@ imageName: {{ regexReplaceAll "^ghcr\\.io" $hdb.imageName (printf "%s/ghcr" $v.o
 imageName: {{ $hdb.imageName }}
   {{- end }}
 {{- else if $v.otomi.linodeLkeImageRepository }}
-imageName: {{ $v.otomi.linodeLkeImageRepository }}/ghcr/cloudnative-pg/postgresql:15.13
+imageName: {{ $v.otomi.linodeLkeImageRepository }}/ghcr/{{ $cnpg.pgDefaultPlatformImage }}
 {{- else }}
-imageName: ghcr.io/cloudnative-pg/postgresql:15.13
+imageName: ghcr.io/{{ $cnpg.pgDefaultPlatformImage }}
 {{- end }}
 
 postgresql:
@@ -29,23 +31,21 @@ postgresql:
     shared_buffers: 64MB
     work_mem: 2MB
 
-{{- if eq $obj.type "minioLocal" "linode" }}
-{{- if $b.enabled }}
+{{- if and $b.enabled (eq $obj.type "minioLocal" "linode") }}
 backup:
   enabled: {{ $b.enabled }}
   schedule: {{ $b.schedule | quote }}
   retentionPolicy: {{ $b.retentionPolicy }}
   type:  {{ $obj.type }}
-{{- if eq $obj.type "minioLocal" }}
+  {{- if eq $obj.type "minioLocal" }}
   minioLocal:
     destinationPath: "s3://cnpg/{{ $b.pathSuffix }}"
-{{- end }}
-{{- if eq $obj.type "linode" }}
+  {{- else if eq $obj.type "linode" }}
   linode:
     destinationPath: "s3://{{ $obj.linode.buckets.cnpg }}/{{ $b.pathSuffix }}"
     endpointURL: https://{{ $obj.linode.region }}.linodeobjects.com
-{{- end }}
-{{- end }}
+  {{- end }}
+  usePlugin: {{ $cnpg.useBackupPlugin }}
 {{- end }}
 
 clusterSpec:

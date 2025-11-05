@@ -1,6 +1,10 @@
 {{- $v := .Values -}}
 {{- $kv := $v.apps.kyverno -}}
 
+crds:
+  # Do not use Helm subchart, but statically-rendered CRDs
+  install: false
+
 {{- if $v.otomi.linodeLkeImageRepository }}
 test:
   image:
@@ -11,33 +15,8 @@ test:
 webhooksCleanup:
   image:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+    image: k8s/kubectl
 {{- end }}
-
-{{- if $v.otomi.linodeLkeImageRepository }}
-policyReportsCleanup:
-  image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-{{- end }}
-
-cleanupJobs:
-  admissionReports:
-    {{- if $v.otomi.linodeLkeImageRepository }}
-    image:
-      registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-    {{- end }}
-    resources:
-      limits:
-        cpu: 1
-        memory: 1Gi
-  clusterAdmissionReports:
-    {{- if $v.otomi.linodeLkeImageRepository }}
-    image:
-      registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-    {{- end }}
-    resources:
-      limits:
-        cpu: 1
-        memory: 1Gi
 
 admissionController:
   {{- if eq $kv.mode "DevTest" }}
@@ -57,7 +36,7 @@ admissionController:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      prometheus: systen
+      prometheus: system
   container:
   {{- if $v.otomi.linodeLkeImageRepository }}
     image:
@@ -69,7 +48,7 @@ cleanupController:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr"
-  {{- end }}  
+  {{- end }}
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1
   {{- end }}
@@ -93,7 +72,7 @@ backgroundController:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      prometheus: systen
+      prometheus: system
 
 reportsController:
   {{- if $v.otomi.linodeLkeImageRepository }}

@@ -1,0 +1,122 @@
+{{- if .Values.ui.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ui.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+  labels:
+    {{- include "ui.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.ui.replicaCount }}
+  revisionHistoryLimit: {{ .Values.ui.revisionHistoryLimit }}
+  {{- with .Values.ui.updateStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "ui.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print .Template.BasePath "/ui/config-secret.yaml") . | sha256sum | quote }}
+        checksum/cluster-secret: {{ include (print .Template.BasePath "/cluster-secret.yaml") . | sha256sum | quote }}
+        {{- with .Values.ui.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "ui.labels" . | nindent 8 }}
+	      {{- with .Values.ui.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.ui.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with .Values.ui.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ui.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.ui.serviceAccount.automount }}
+      {{- if .Values.ui.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.ui.podSecurityContext | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: policy-reporter-ui
+          {{- if .Values.ui.securityContext }}
+          securityContext:
+            {{- toYaml .Values.ui.securityContext | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.ui.image.registry }}/{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag }}"
+          imagePullPolicy: {{ .Values.ui.image.pullPolicy }}
+          args:
+            - run
+            - --config=/app/config.yaml
+            - --port={{ .Values.ui.server.port }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.ui.server.port }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.ui.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.ui.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.ui.resources | nindent 12 }}
+          volumeMounts:
+          - name: config-file
+            mountPath: /app/config.yaml
+            subPath: config.yaml
+            readOnly: true
+          - name: tmp
+            mountPath: /tmp
+          {{- with .Values.ui.extraVolumes.volumeMounts }}
+          {{ toYaml . | nindent 10 | trim }}
+          {{- end }}
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          {{- with .Values.ui.envVars }}
+          {{- . | toYaml | trim | nindent 10 }}
+          {{- end }}
+      {{- if .Values.ui.sidecarContainers }}
+        {{- range $name, $spec :=  .Values.ui.sidecarContainers }}
+        - name: {{ $name }}
+          {{- if kindIs "string" $spec }}
+            {{- tpl $spec $ | nindent 10 }}
+          {{- else }}
+            {{- toYaml $spec | nindent 10 }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      volumes:
+      - name: config-file
+        secret:
+          secretName: {{ include "ui.fullname" . }}-config
+          optional: true
+      - name: tmp
+        emptyDir: {}
+      {{- with .Values.ui.extraVolumes.volumes }}
+      {{ toYaml . | nindent 6 | trim }}
+      {{- end }}
+      {{- with .Values.ui.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ui.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ui.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ui.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

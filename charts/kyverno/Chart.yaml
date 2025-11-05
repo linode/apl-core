@@ -1,40 +1,55 @@
-apiVersion: v2
-type: application
-name: kyverno
-version: 3.1.4
-appVersion: v1.11.4
-icon: https://github.com/kyverno/kyverno/raw/main/img/logo.png
-description: Kubernetes Native Policy Management
-keywords:
-  - kubernetes
-  - nirmata
-  - policy agent
-  - policy
-  - validating webhook
-  - admission controller
-  - mutation
-  - mutate
-  - validate
-  - generate
-  - supply chain
-  - security
-home: https://kyverno.io/
-sources:
-  - https://github.com/kyverno/kyverno
-maintainers:
-  - name: Nirmata
-    url: https://kyverno.io/
-kubeVersion: ">=1.25.0-0"
 annotations:
-  artifacthub.io/operator: "false"
-  artifacthub.io/prerelease: "false"
+  artifacthub.io/changes: |
+    - kind: fixed
+      description: Ensure spec.template.metadata isn't null
+    - kind: removed
+      description: Remove the `delete` permission for policyexceptions in the admission controller
+    - kind: changed
+      description: Enable the flag `--generateValidatingAdmissionPolicy` by default in the admission controller.
+    - kind: changed
+      description: Enable the flag `--validatingAdmissionPolicyReports` by default in the reports controller.
   artifacthub.io/links: |
     - name: Documentation
       url: https://kyverno.io/docs
+  artifacthub.io/operator: "false"
+  artifacthub.io/prerelease: "false"
+apiVersion: v2
+appVersion: v1.15.2
 dependencies:
-  - name: grafana
-    version: "0.0.0"
-    condition: grafana.enabled
-  - name: crds
-    version: "3.1.4"
-    condition: crds.install
+- condition: grafana.enabled
+  name: grafana
+  repository: ""
+  version: 3.5.2
+- condition: crds.install
+  name: crds
+  repository: ""
+  version: 3.5.2
+- condition: openreports.installCrds
+  name: openreports
+  repository: https://openreports.github.io/reports-api
+  version: 0.1.0
+description: Kubernetes Native Policy Management
+home: https://kyverno.io/
+icon: https://github.com/kyverno/kyverno/raw/main/img/logo.png
+keywords:
+- kubernetes
+- nirmata
+- policy agent
+- policy
+- validating webhook
+- admission controller
+- mutation
+- mutate
+- validate
+- generate
+- supply chain
+- security
+kubeVersion: '>=1.25.0-0'
+maintainers:
+- name: Nirmata
+  url: https://kyverno.io/
+name: kyverno
+sources:
+- https://github.com/kyverno/kyverno
+type: application
+version: 3.5.2

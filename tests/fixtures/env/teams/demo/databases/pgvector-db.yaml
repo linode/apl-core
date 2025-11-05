@@ -1,0 +1,10 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+    name: pgvector-db
+    namespace: team-demo
+spec:
+    cluster:
+        name: pgvector-cluster
+    name: knowledge_base
+    owner: app

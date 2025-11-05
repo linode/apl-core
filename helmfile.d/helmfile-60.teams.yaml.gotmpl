@@ -16,7 +16,7 @@ bases:
 {{- $slackTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 releases:
-{{- range $teamId, $team := omit $tc "admin" }} 
+{{- range $teamId, $team := omit $tc "admin" }}
   {{- $teamServices := ($team | get "services" list) }}
   {{- $teamSettings := $team.settings }}
   {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
@@ -88,9 +88,7 @@ releases:
             server:
               root_url: https://grafana-{{ $teamId }}.{{ $domain }}
             analytics:
-              check_for_updates: false
               reporting_enabled: false
-              check_for_plugin_updates: false
           sidecar:
             datasources:
               defaultDatasourceEnabled: false
@@ -135,7 +133,7 @@ releases:
               url: http://loki-query-frontend-headless.monitoring:3101
               basicAuth: true
               basicAuthUser: {{ $teamId }}
-              secureJsonData: 
+              secureJsonData:
                 basicAuthPassword: {{ $teamSettings.password | quote }}
               jsonData:
                 derivedFields:

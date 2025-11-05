@@ -10,4 +10,12 @@ spec:
         requests:
             cpu: 100m
             memory: 200Mi
+    barmanPluginResources:
+        requests:
+            cpu: 100m
+            memory: 100Mi
+        limits:
+            cpu: 100m
+            memory: 200Mi
+    useBackupPlugin: false
     _rawValues: {}

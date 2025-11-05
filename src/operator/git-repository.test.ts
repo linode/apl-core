@@ -7,6 +7,7 @@ jest.mock('simple-git', () => {
     log: jest.fn(),
     pull: jest.fn(),
     diff: jest.fn(),
+    clean: jest.fn(),
   }
   return jest.fn().mockImplementation(() => mockGit)
 })
@@ -40,6 +41,7 @@ describe('GitRepository', () => {
 
     const simpleGit = require('simple-git')
     mockGit = simpleGit()
+    mockGit.clean.mockResolvedValue(undefined)
 
     gitRepository = new GitRepository(defaultConfig)
   })
@@ -50,7 +52,7 @@ describe('GitRepository', () => {
     })
   })
 
-  describe('hasCommits', () => {
+  describe('setLastRevision', () => {
     test('should return true when repository has commits', async () => {
       mockGit.log.mockResolvedValue({
         latest: { hash: 'abc123' },
@@ -58,9 +60,9 @@ describe('GitRepository', () => {
         all: [],
       })
 
-      const result = await gitRepository.hasCommits()
+      await gitRepository.setLastRevision()
 
-      expect(result).toBe(true)
+      expect('abc123').toBe(gitRepository.lastRevision)
       expect(mockGit.log).toHaveBeenCalledWith({ maxCount: 1 })
     })
 
@@ -71,9 +73,9 @@ describe('GitRepository', () => {
         all: [],
       })
 
-      const result = await gitRepository.hasCommits()
+      await gitRepository.setLastRevision()
 
-      expect(result).toBe(false)
+      expect(gitRepository.lastRevision).toBe('')
       expect(mockGit.log).toHaveBeenCalledWith({ maxCount: 1 })
     })
 
@@ -81,20 +83,21 @@ describe('GitRepository', () => {
       const error = new Error('Git error')
       mockGit.log.mockRejectedValue(error)
 
-      await expect(gitRepository.hasCommits()).rejects.toThrow(error)
+      await expect(gitRepository.setLastRevision()).rejects.toThrow(error)
       expect(mockGit.log).toHaveBeenCalledWith({ maxCount: 1 })
     })
   })
 
   describe('waitForCommits', () => {
     test('should retry until hasCommits returns true', async () => {
-      const hasCommitsSpy = jest.spyOn(gitRepository, 'hasCommits')
-
-      hasCommitsSpy.mockRejectedValueOnce(new Error('No commits yet')).mockResolvedValueOnce(true)
+      const setLastRevisionSpy = jest.spyOn(gitRepository, 'setLastRevision')
+      mockGit.pull.mockResolvedValue({})
+      setLastRevisionSpy.mockRejectedValueOnce(new Error('No commits yet')).mockResolvedValueOnce()
 
       await gitRepository.waitForCommits(2, 100)
 
-      expect(hasCommitsSpy).toHaveBeenCalledTimes(2)
+      expect(mockGit.pull).toHaveBeenCalledTimes(2)
+      expect(setLastRevisionSpy).toHaveBeenCalledTimes(2)
     })
   })
 
@@ -108,14 +111,12 @@ describe('GitRepository', () => {
         all: [],
       })
 
-      const result = await gitRepository.clone()
+      await gitRepository.clone()
 
-      expect(result).toBe('abc123')
       expect(mockGit.clone).toHaveBeenCalledWith(
         'https://testuser:testpass@github.com:443/testorg/testrepo.git',
         '/tmp/repo',
       )
-      expect(mockGit.log).toHaveBeenCalledWith({ maxCount: 1 })
     })
 
     test('should handle clone failure', async () => {

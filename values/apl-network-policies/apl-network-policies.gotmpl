@@ -1,0 +1,8 @@
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+{{- $oa := $v.apps | get "otomi-api" }}
+
+# Simple per-app network policy configuration
+netpols:
+  gitea: {{ $a.gitea.networkPolicies.enabled}}
+  otomiApi: {{ $oa.networkPolicies.enabled}}

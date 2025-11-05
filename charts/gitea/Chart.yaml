@@ -1,22 +1,50 @@
+annotations:
+  artifacthub.io/changes: |
+    - kind: changed
+      description: adapt indentation of extraInitContainer tests
+    - kind: changed
+      description: fulfill MD044/proper-names
+    - kind: added
+      description: support further initContainers
+    - kind: changed
+      description: update lockfiles (#929)
+    - kind: changed
+      description: update bats testing framework (#927)
+    - kind: changed
+      description: update lockfiles (#926)
+    - kind: changed
+      description: update subcharts (minor & patch) (#922)
+    - kind: changed
+      description: update dependency go-gitea/gitea to v1.24.5 (#925)
+    - kind: fixed
+      description: add lockFileMaintenance (#924)
+    - kind: changed
+      description: update dependency go-gitea/gitea to v1.24.4 (#919)
+    - kind: changed
+      description: update docker.io/thegeeklab/git-sv docker tag to v2.0.4 (#921)
+    - kind: changed
+      description: update dependency helm-unittest/helm-unittest to v1 (#914)
+    - kind: changed
+      description: be compliant with markdownlint (#923)
 apiVersion: v2
-appVersion: 1.23.6
+appVersion: 1.24.5
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 16.4.14
+  version: 16.7.26
 - condition: postgresql-ha.enabled
   name: postgresql-ha
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 15.2.3
-- condition: redis-cluster.enabled
-  name: redis-cluster
+  version: 16.2.2
+- condition: valkey-cluster.enabled
+  name: valkey-cluster
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 11.4.3
-- condition: redis.enabled
-  name: redis
+  version: 3.0.23
+- condition: valkey.enabled
+  name: valkey
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 20.8.0
+  version: 3.0.30
 description: Gitea Helm chart for Kubernetes
 icon: https://gitea.com/assets/img/logo.svg
 keywords:
@@ -35,14 +63,10 @@ maintainers:
   name: Konrad Lother
 - email: lucas.hahn@novum-rgi.de
   name: Lucas Hahn
-- email: sk.bunsenbrenner@gmail.com
-  name: Steven Kriegler
-- email: patrick.schratz@gmail.com
-  name: Patrick Schratz
 name: gitea
 sources:
 - https://gitea.com/gitea/helm-gitea
 - https://github.com/go-gitea/gitea
 - https://docker.gitea.com/gitea
 type: application
-version: 11.0.1
+version: 12.2.0

@@ -4,9 +4,9 @@ metadata:
   labels:
     app: {{ template "oauth2-proxy.name" . }}
 {{- include "oauth2-proxy.labels" . | indent 4 }}
-  {{- if .Values.deploymentAnnotations }}
+  {{- with .Values.deploymentAnnotations }}
   annotations:
-{{ toYaml .Values.deploymentAnnotations | indent 4 }}
+{{ tpl ( toYaml . ) $ | indent 4 }}
   {{- end }}
   name: {{ template "oauth2-proxy.fullname" . }}
   namespace: {{ template "oauth2-proxy.namespace" $ }}
@@ -58,13 +58,18 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ template "oauth2-proxy.serviceAccountName" . }}
+      enableServiceLinks: {{ .Values.enableServiceLinks }}
       automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
       {{- if .Values.hostAliases }}
       hostAliases:
         {{ toYaml .Values.hostAliases | nindent 8}}
       {{- end }}
-      {{- if and .Values.redis.enabled .Values.initContainers.waitForRedis.enabled }}
+      {{- if or (and .Values.redis.enabled .Values.initContainers.waitForRedis.enabled) .Values.extraInitContainers }}
       initContainers:
+        {{- if .Values.extraInitContainers }}
+        {{- toYaml .Values.extraInitContainers | nindent 6 }}
+        {{- end }}
+      {{- if and .Values.redis.enabled .Values.initContainers.waitForRedis.enabled }}
       - name: wait-for-redis
         image: "{{ .Values.initContainers.waitForRedis.image.repository }}:{{ .Values.initContainers.waitForRedis.image.tag }}"
         imagePullPolicy: {{ .Values.initContainers.waitForRedis.image.pullPolicy }}
@@ -79,12 +84,12 @@ spec:
         - name: OAUTH2_PROXY_REDIS_USE_CLUSTER
           value: "true"
         - name: OAUTH2_PROXY_REDIS_CLUSTER_CONNECTION_URLS
-          value: {{ .Values.sessionStorage.redis.cluster.connectionUrls }}
+          value: {{ join "," .Values.sessionStorage.redis.cluster.connectionUrls }}
         {{- else if eq (default "" .Values.sessionStorage.redis.clientType) "sentinel" }}
         - name: OAUTH2_PROXY_REDIS_USE_SENTINEL
           value: "true"
         - name: OAUTH2_PROXY_REDIS_SENTINEL_CONNECTION_URLS
-          value: {{ .Values.sessionStorage.redis.sentinel.connectionUrls }}
+          value: {{ join "," .Values.sessionStorage.redis.sentinel.connectionUrls }}
         {{- end }}
       {{- if .Values.initContainers.waitForRedis.securityContext.enabled }}
       {{- $securityContext := unset .Values.initContainers.waitForRedis.securityContext "enabled" }}
@@ -97,13 +102,10 @@ spec:
         - name: redis-script
           mountPath: /scripts
       {{- end }}
+      {{- end }}
       {{- if .Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       {{- end }}
-# The .Values.extraInitContainers is not supported by the upstream chart!
-{{- if .Values.extraInitContainers }}
-  {{- toYaml .Values.extraInitContainers | nindent 6 }}
-{{- end }}
       containers:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ include "oauth2-proxy.version" . }}"
@@ -197,7 +199,7 @@ spec:
         {{- if eq (default "cookie" .Values.sessionStorage.type) "redis" }}
         - name: OAUTH2_PROXY_SESSION_STORE_TYPE
           value: "redis"
-         {{- if or .Values.sessionStorage.redis.existingSecret .Values.sessionStorage.redis.password (and .Values.redis.enabled (.Values.redis.auth).enabled )}}
+         {{- if or .Values.sessionStorage.redis.existingSecret .Values.sessionStorage.redis.password (and .Values.redis.enabled (.Values.redis.auth))}}
         - name: OAUTH2_PROXY_REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -217,14 +219,14 @@ spec:
         - name: OAUTH2_PROXY_REDIS_USE_CLUSTER
           value: "true"
         - name: OAUTH2_PROXY_REDIS_CLUSTER_CONNECTION_URLS
-          value: {{ .Values.sessionStorage.redis.cluster.connectionUrls }}
+          value: {{ join "," .Values.sessionStorage.redis.cluster.connectionUrls }}
         {{- else if eq (default "" .Values.sessionStorage.redis.clientType) "sentinel" }}
         - name: OAUTH2_PROXY_REDIS_USE_SENTINEL
           value: "true"
         - name: OAUTH2_PROXY_REDIS_SENTINEL_MASTER_NAME
           value: {{ .Values.sessionStorage.redis.sentinel.masterName }}
         - name: OAUTH2_PROXY_REDIS_SENTINEL_CONNECTION_URLS
-          value: {{ .Values.sessionStorage.redis.sentinel.connectionUrls }}
+          value: {{ join "," .Values.sessionStorage.redis.sentinel.connectionUrls }}
         {{- if or .Values.sessionStorage.redis.sentinel.existingSecret .Values.sessionStorage.redis.existingSecret .Values.sessionStorage.redis.sentinel.password }}
         - name: OAUTH2_PROXY_REDIS_SENTINEL_PASSWORD
           valueFrom:
@@ -283,6 +285,9 @@ spec:
 {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
+{{- with .Values.resizePolicy }}
+        resizePolicy: {{ toYaml . | nindent 10 }}
+{{- end }}
         volumeMounts:
 {{- with .Values.config.google }}
 {{- if and .adminEmail (or .serviceAccountJson .existingSecret) }}
@@ -408,7 +413,7 @@ spec:
     {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
-        {{ toYaml . | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
     {{- end }}
     {{- with .Values.tolerations }}
       tolerations:

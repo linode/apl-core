@@ -1,13 +1,18 @@
 import {
+  ApiException,
   AppsV1Api,
   BatchV1Api,
   CoreV1Api,
   CustomObjectsApi,
+  DiscoveryV1Api,
+  Exec,
   KubeConfig,
+  NetworkingV1Api,
   PatchStrategy,
   setHeaderOptions,
   V1ResourceRequirements,
   V1Secret,
+  V1Status,
 } from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
@@ -17,12 +22,13 @@ import { isEmpty, isEqual, map, mapValues } from 'lodash'
 import { dirname, join } from 'path'
 import { parse, stringify } from 'yaml'
 import { $, cd, sleep } from 'zx'
-import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
+import { ARGOCD_APP_PARAMS, DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
+import { Writable } from 'stream'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
@@ -31,7 +37,10 @@ let kc: KubeConfig
 let coreClient: CoreV1Api
 let appClient: AppsV1Api
 let batchClient: BatchV1Api
+let networkingClient: NetworkingV1Api
 let customClient: CustomObjectsApi
+let discoveryClient: DiscoveryV1Api
+let execObject: Exec
 export const k8s = {
   kc: (): KubeConfig => {
     if (kc) return kc
@@ -53,6 +62,16 @@ export const k8s = {
     if (batchClient) return batchClient
     batchClient = k8s.kc().makeApiClient(BatchV1Api)
     return batchClient
+  },
+  networking: (): NetworkingV1Api => {
+    if (networkingClient) return networkingClient
+    networkingClient = k8s.kc().makeApiClient(NetworkingV1Api)
+    return networkingClient
+  },
+  discovery: (): DiscoveryV1Api => {
+    if (discoveryClient) return discoveryClient
+    discoveryClient = k8s.kc().makeApiClient(DiscoveryV1Api)
+    return discoveryClient
   },
   custom: (): CustomObjectsApi => {
     if (customClient) return customClient
@@ -114,6 +133,71 @@ export const getDeploymentState = async (): Promise<DeploymentState> => {
   if (env.isDev && env.DISABLE_SYNC) return {}
   const result = await $`kubectl get cm -n otomi ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`.nothrow().quiet()
   return JSON.parse(result.stdout || '{}')
+}
+
+/**
+ * Result of command execution
+ */
+export interface ExecResult {
+  stdout: string
+  stderr: string
+  exitCode: number
+}
+
+export async function exec(
+  namespace: string,
+  podName: string,
+  containerName: string,
+  command: string[],
+  timeout: number = 30000,
+): Promise<ExecResult> {
+  const execApi = new Exec(k8s.kc())
+
+  let stdout = ''
+  let stderr = ''
+  let exitCode = 0
+
+  const outputWritable = new Writable({
+    write: (chunk: Buffer, encoding: string, callback: () => void) => {
+      stdout += chunk.toString()
+      callback()
+    },
+  })
+
+  const errorWritable = new Writable({
+    write: (chunk: Buffer, encoding: string, callback: () => void) => {
+      stderr += chunk.toString()
+      callback()
+    },
+  })
+
+  const ws = await execApi.exec(
+    namespace,
+    podName,
+    containerName,
+    command,
+    outputWritable,
+    errorWritable,
+    null,
+    false,
+    (status: V1Status) => {
+      if (status.status === 'Failure') {
+        exitCode = 1
+        for (const cause of status.details?.causes || []) {
+          if (cause.reason === 'ExitCode') {
+            exitCode = parseInt(cause.message || '1')
+            break
+          }
+        }
+      }
+    },
+  )
+  await new Promise((resolve, reject) => {
+    setTimeout(() => reject(new Error('Exec command timed out')), timeout)
+    ws.once('close', resolve)
+    ws.once('error', reject)
+  })
+  return { stdout, stderr, exitCode }
 }
 
 export const getHelmReleases = async (): Promise<Record<string, any>> => {
@@ -308,7 +392,7 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
   }, retryOptions)
 }
 
-export async function createGenericSecret(
+export async function createUpdateGenericSecret(
   coreV1Api: CoreV1Api,
   name: string,
   namespace: string,
@@ -325,7 +409,18 @@ export async function createGenericSecret(
     type: 'Opaque',
   }
 
-  return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
+  try {
+    return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 409) {
+      return await coreV1Api.patchNamespacedSecret(
+        { name, namespace, body: secret },
+        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+      )
+    } else {
+      throw error
+    }
+  }
 }
 
 export function b64enc(value: string): string {
@@ -458,4 +553,144 @@ export async function deleteStatefulSetPods(
   } catch (error) {
     d.error(`Failed to delete pods for StatefulSet ${statefulSetName}:`, error)
   }
+}
+
+// Core logic functions that can be easily tested
+export async function checkArgoCDAppStatus(
+  appName: string,
+  customApi: CustomObjectsApi,
+  statusPath: 'sync' | 'health',
+  expectedValue: 'Synced' | 'Healthy',
+): Promise<string> {
+  const application = await customApi.getNamespacedCustomObject({
+    ...ARGOCD_APP_PARAMS,
+    name: appName,
+  })
+
+  const actualStatus = statusPath === 'sync' ? application?.status?.sync?.status : application?.status?.health?.status
+
+  if (actualStatus !== expectedValue) {
+    throw new Error(`Application ${appName} ${statusPath} status is '${actualStatus}', expected '${expectedValue}'`)
+  }
+
+  return actualStatus
+}
+
+export async function waitForArgoCDAppSync(
+  appName: string,
+  customApi: CustomObjectsApi,
+  d: OtomiDebugger,
+): Promise<void> {
+  d.info(`Waiting for ArgoCD application '${appName}' to complete sync...`)
+
+  await retry(
+    async () => {
+      try {
+        await checkArgoCDAppStatus(appName, customApi, 'sync', 'Synced')
+        d.info(`Application '${appName}' sync completed`)
+      } catch (error) {
+        d.warn(`Application '${appName}' is not synced yet: ${error.message}`)
+        throw error
+      }
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  )
+}
+
+export async function waitForArgoCDAppHealthy(
+  appName: string,
+  customApi: CustomObjectsApi,
+  d: OtomiDebugger,
+): Promise<void> {
+  d.info(`Waiting for ArgoCD application '${appName}' to be healthy...`)
+
+  await retry(
+    async () => {
+      try {
+        await checkArgoCDAppStatus(appName, customApi, 'health', 'Healthy')
+        d.info(`Application '${appName}' is healthy`)
+      } catch (error) {
+        d.warn(`Application '${appName}' is not healthy yet: ${error.message}`)
+        throw error
+      }
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  )
+}
+
+export async function appRevisionMatches(appName: string, expectedRevision: string, customApi: CustomObjectsApi) {
+  const application = await customApi.getNamespacedCustomObject({
+    ...ARGOCD_APP_PARAMS,
+    name: appName,
+  })
+  const targetRevision = application?.spec?.source?.targetRevision
+  return expectedRevision === targetRevision
+}
+
+export async function patchArgoCdApp(
+  appName: string,
+  targetRevision: string,
+  values: string,
+  customApi: CustomObjectsApi,
+) {
+  return await customApi.patchNamespacedCustomObject({
+    ...ARGOCD_APP_PARAMS,
+    name: appName,
+    body: [
+      { op: 'replace', path: '/spec/source/targetRevision', value: targetRevision },
+      { op: 'replace', path: '/spec/source/helm/values', value: values },
+    ],
+  })
+}
+
+export async function restartOtomiApiDeployment(appApi: AppsV1Api): Promise<void> {
+  const d = terminal('common:k8s:restartOtomiApiDeployment')
+
+  try {
+    d.info('Restarting otomi-api deployment')
+    // This is equivalent to the 'kubectl rollout restart' command/
+    // Read more at: https://kubernetes.io/docs/reference/labels-annotations-taints/#kubectl-k8s-io-restart-at
+    await appApi.patchNamespacedDeployment(
+      {
+        name: 'otomi-api',
+        namespace: 'otomi',
+        body: {
+          spec: {
+            template: {
+              metadata: {
+                annotations: {
+                  'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+                },
+              },
+            },
+          },
+        },
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+    )
+
+    d.info('Successfully restarted otomi-api deployment')
+  } catch (error) {
+    d.error('Failed to restart otomi-api deployment:', error)
+    throw error
+  }
+}
+
+export async function applyServerSide(
+  path: string,
+  forceConflicts: boolean = false,
+  dryRun: boolean = false,
+): Promise<void> {
+  const d = terminal('common:k8s:applyServerSide')
+  d.debug(`Applying files from ${path}`)
+  const kubectlArgs = ['-f', path]
+  if (dryRun) {
+    kubectlArgs.push('--dry-run=client')
+  } else {
+    kubectlArgs.push('--server-side')
+    if (forceConflicts) {
+      kubectlArgs.push('--force-conflicts')
+    }
+  }
+  await $`kubectl apply ${kubectlArgs}`
 }

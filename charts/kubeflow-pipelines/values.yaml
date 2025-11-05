@@ -1,0 +1,61 @@
+# Global registry override options for container images:
+# - Kubeflow: defaults to ghcr.io/kubeflow
+# - ML-Pipeline: defaults to gcr.io/ml-pipeline
+# - TensorFlow Extended (TFX): defaults to gcr.io/tfx-oss-public
+global:
+  kubeflowRegistry:
+  mlPipelineRegistry:
+  tfxOssPublicRegistry:
+
+objectStorage:
+  type: "linode"  # linode or minio
+  endpoint: ""
+  region: "us-east-1"
+  bucket: ""
+  port: 443
+  secure: true
+
+cacheDeployer:
+  resources: {}
+
+cacheServer:
+  resources: {}
+
+metadataEnvoy:
+  resources: {}
+
+metadataGrpc:
+  resources: {}
+
+metadataWriter:
+  resources: {}
+
+mlPipeline:
+  resources: {}
+
+mlPipelinePersistenceagent:
+  resources: {}
+
+mlPipelineScheduledworkflow:
+  resources: {}
+
+mlPipelineUi:
+  resources: {}
+
+mlPipelineViewer:
+  resources: {}
+
+mlPipelineVisualizationserver:
+  resources: {}
+
+mysql:
+  resources: {}
+  storage:
+    enabled: true
+    size: 20Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+
+workflowController:
+  resources: {}

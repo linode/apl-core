@@ -1,0 +1,40 @@
+groups:
+  - name: argocd
+    rules:
+      - alert: ArgoAppMissing
+        annotations:
+          description: >
+            Argo CD has not reported any applications data
+            for the past 15 minutes which means that it
+            must be down or not functioning
+            properly.  This needs to be resolved for this
+            cloud to continue to maintain state.
+          summary: '[Argo CD] No reported applications'
+        expr: |
+          absent(argocd_app_info) == 1
+        for: 15m
+        labels:
+          severity: critical
+      - alert: ArgoAppNotSynced
+        annotations:
+          description: >
+            The application [{{`{{$labels.name}}`}} has
+            not been synchronized for over 12 hours which
+            means that the state of this cloud has drifted
+            away from the state inside Git.
+          summary: '[{{`{{$labels.name}}`}}] Application not synchronized'
+        expr: |
+          argocd_app_info{sync_status!="Synced"} == 1
+        for: 45m
+        labels:
+          severity: warning
+      - alert: ArgoAppNotHealthy
+        expr: |
+          argocd_app_health_status{health_status!="Healthy"} == 1
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: '[{{`{{$labels.name}}`}}] not healthy'
+          description: |
+            The application '{{ $labels.name }}' has been in an unhealthy state ({{ $labels.health_status }}) for more than 30 minutes.

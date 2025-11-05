@@ -4,20 +4,7 @@
 {{- $oauth2 := $v.apps | get "oauth2-proxy" }}
 {{- $r := $v.apps | get "oauth2-proxy-redis" }}
 {{- $o := $v | get "oidc" dict }}
-{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 
-
-config:
-  clientID: {{ $k.idp.clientID  }}
-  clientSecret: {{ $k.idp.clientSecret | quote }}
-  cookieSecret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 16) }}
-
-replicaCount: 2
-podDisruptionBudget:
-  enabled: false
-  minAvailable: 1
-priorityClassName: otomi-critical
-resources: {{- $oauth2.resources | toYaml | nindent 2 }}
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list }}
 {{- range $teamId, $team := $v.teamConfig }}
@@ -31,53 +18,61 @@ resources: {{- $oauth2.resources | toYaml | nindent 2 }}
     {{- end }}
   {{- end }}
 {{- end }}
-{{- $domainList := tpl $joinTpl (dict "list" (append $domains (printf ".%s" $v.cluster.domainSuffix)) "sep" ",") }}
+{{- $domains = append $domains (print "." $v.cluster.domainSuffix) }}
 
-# securityContext:
-#   enabled: true
-  # runAsUser: 2000
+config:
+  clientID: {{ $k.idp.clientID | quote }}
+  clientSecret: {{ $k.idp.clientSecret | quote }}
+  cookieSecret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 16) }}
+  configFile: |-
+    # Defaults
+    email_domains = [ "*" ]
+    upstreams = [ "file:///dev/null" ]
+    # Custom
+    ssl_insecure_skip_verify = {{ $v._derived.untrustedCA }}
+    provider = "keycloak-oidc"
+    whitelist_domains = {{ $domains | toJson }}
+    scope = {{ $o | get "scope" "openid email profile" | quote }}
+    redirect_url = "https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback"
+    oidc_issuer_url = {{ $v._derived.oidcBaseUrl | quote }}
+    code_challenge_method = "S256"
+    insecure_oidc_allow_unverified_email = true
+    cookie_domains = {{ $domains | toJson }}
+    cookie_samesite = "none"
+    # set to the same as keycloak realm's accessCodeLifespan
+    cookie_refresh = "1m"
+    # set to the same as keycloak client idle timeout
+    cookie_expire = "30m"
+    reverse_proxy = true
+    set_authorization_header = true
+    pass_authorization_header = true
+    skip_auth_routes = "/manifest.json"
+    silence_ping_logging = true
+    custom_templates_dir = "/etc/oauth2-proxy"
+
+replicaCount: 2
+priorityClassName: otomi-critical
+resources: {{- $oauth2.resources | toYaml | nindent 2 }}
+
 podAnnotations:
   sidecar.istio.io/inject: "false"
-extraArgs:
-  - --ssl-insecure-skip-verify={{ $v._derived.untrustedCA }}
-  # - # supported=oidc, google, azure, github
-  - --provider=oidc
-  - --whitelist-domain={{ $domainList }}
-  - --scope={{ $o | get "scope" "openid email profile" }}
-  - --session-store-type=redis
-  - --redis-connection-url=redis://oauth2-proxy-redis-master
-  - --redis-password={{ $r | get "password" }}
-  - --redirect-url=https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback
-  - --email-domain="*"
-  - --cookie-domain={{ $domainList }}
-  - --cookie-samesite=none
-  - --cookie-secure=true
-  # - # cookie-httponly=true
-  - --reverse-proxy=true
-  - --cookie-refresh=1m # set to the same as keycloak realm's accessCodeLifespan
-  - --cookie-expire=3m
-  - --pass-authorization-header=true
-  # - # pass-basic-auth=true
-  - --skip-auth-regex='/manifest.json'
-  - --silence-ping-logging=true
-  # - # exclude-logging-paths=/ping
-  - --set-authorization-header=true
-  # - # set-xauthrequest=true
-  - --oidc-issuer-url={{ $v._derived.oidcBaseUrl }}
-  # - # oidc-issuer-url={{ $v._derived.oidcBaseUrlBackchannel }}
-  - --insecure-oidc-allow-unverified-email=true
-  - --show-debug-on-error=true
-  - --custom-templates-dir=/etc/oauth2-proxy
 
 extraVolumes:
-  - name: error-page
+  - name: custom-templates
     configMap:
-      name: oauth2-proxy-error-page
+      name: oauth2-proxy-custom-templates
+      items:
+        - key: redirect.html
+          path: sign_in.html
+        - key: redirect.html
+          path: error.html
+        - key: robots.txt
+          path: robots.txt
 
 extraVolumeMounts:
-  - name: error-page
-    mountPath: /etc/oauth2-proxy/error.html
-    subPath: error.html
+  - name: custom-templates
+    mountPath: /etc/oauth2-proxy
+    readOnly: true
 
 extraInitContainers:
   - name: wait-for-keycloak
@@ -101,19 +96,39 @@ imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
 
+enableServiceLinks: false
+
+sessionStorage:
+  # Can be one of the supported session storage cookie|redis
+  type: redis
+  redis:
+    clientType: {{ $r | get "architecture" }}
+    password: {{ $r | get "password" | quote }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+global:
+  security:
+    # Required for Redis
+    allowInsecureImages: true
+{{- end }}
+
 redis:
   {{- if $v.otomi.linodeLkeImageRepository }}
-  global:
-    imageRegistry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/redis"
   {{- end }}
   enabled: true
   architecture: {{ $r | get "architecture" }}
-  auth:
-    password: {{ $r | get "password" | quote }}
-
+  redisPassword: {{ $r | get "password" | quote }}
+  replicas: 1
+  redis:
+    config:
+      # See http://download.redis.io/redis-stable/redis.conf
+      min-replicas-to-write: 0
   sentinel:
     persistence:
       size: {{ $r.persistence.sentinel.size }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
     podAnnotations:
       sidecar.istio.io/inject: "false"
     resources: {{- $r.resources.sentinel | toYaml | nindent 6 }}
@@ -121,6 +136,7 @@ redis:
   master:
     persistence:
       size: {{ $r.persistence.master.size }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
     podAnnotations:
       sidecar.istio.io/inject: "false"
     priorityClassName: otomi-critical
@@ -129,6 +145,7 @@ redis:
   replica:
     persistence:
       size: {{ $r.persistence.replica.size }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
     podAnnotations:
       sidecar.istio.io/inject: "false"
     priorityClassName: otomi-critical

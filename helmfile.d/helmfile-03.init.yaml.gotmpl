@@ -12,30 +12,6 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: argocd
-    installed: {{ $a | get "argocd.enabled" }}
-    namespace: argocd
-    labels:
-      app: core
-    <<: *default
-  - name: otomi-operator
-    installed: true
-    namespace: otomi-operator
-    labels:
-      pkg: otomi-operator
-    <<: *default
-  - name: apl-keycloak-operator
-    installed: true
-    namespace: apl-keycloak-operator
-    labels:
-      pkg: apl-keycloak-operator
-    <<: *default
-  - name: apl-keycloak-operator-artifacts
-    installed: true
-    namespace: apl-keycloak-operator
-    labels:
-      pkg: apl-keycloak-operator
-    <<: *raw
   - name: gitea-artifacts
     installed: {{ $a | get "gitea.enabled" }}
     namespace: gitea
@@ -43,6 +19,22 @@ releases:
       pkg: gitea
       app: core
     <<: *raw
+  - name: gitea-valkey
+    installed: {{ $a | get "gitea.enabled" }}
+    namespace: gitea
+    labels:
+      pkg: gitea
+      app: core
+    chart: ../charts/valkey
+    values:
+      - ../values/gitea/gitea-valkey.gotmpl
+  - name: gitea
+    installed: {{ $a | get "gitea.enabled" }}
+    namespace: gitea
+    labels:
+      pkg: gitea
+      app: core
+    <<: *default
   - name: apl-gitea-operator-artifacts
     installed: {{ $a | get "gitea.enabled" }}
     namespace: apl-gitea-operator
@@ -57,66 +49,3 @@ releases:
       pkg: apl-gitea-operator
       app: core
     <<: *default
-  - name: harbor-artifacts
-    installed: {{ $a | get "harbor.enabled" }}
-    namespace: harbor
-    labels:
-      pkg: harbor
-    <<: *raw
-  - name: apl-harbor-operator-artifacts
-    installed: {{ $a | get "harbor.enabled" }}
-    namespace: apl-harbor-operator
-    labels:
-      pkg: apl-harbor-operator
-    <<: *raw
-  - name: apl-harbor-operator
-    installed: {{ $a | get "harbor.enabled" }}
-    namespace: apl-harbor-operator
-    labels:
-      pkg: apl-harbor-operator
-    <<: *default
-  - name: apl-operator
-    installed: true
-    namespace: apl-operator
-    labels:
-      pkg: apl-operator
-      app: core
-    <<: *default
-  - name: kiali-operator-artifacts
-    installed: {{ $a | get "kiali.enabled" }}
-    namespace: kiali
-    labels:
-      pkg: kiali
-    <<: *raw
-  - name: knative-operator
-    installed: {{ $a | get "knative.enabled" }}
-    namespace: knative-operator
-    labels:
-      pkg: knative
-    <<: *default
-  - name: loki-artifacts
-    installed: {{ $a | get "loki.enabled" }}
-    namespace: monitoring
-    labels:
-      pkg: loki
-    <<: *raw
-  - name: rabbitmq
-    installed: {{ $a | get "rabbitmq.enabled" }}
-    namespace: rabbitmq
-    <<: *default
-  - name: tekton-pipelines
-    installed: true
-    namespace: tekton-pipelines
-    labels:
-      pkg: tekton-pipelines
-      app: core
-    <<: *default
-  - name: tekton-dashboard
-    installed: true
-    namespace: tekton-pipelines
-    labels:
-      pkg: tekton-pipelines
-      app: core
-    chart: ../charts/tekton-dashboard
-    values:
-      - ../values/tekton-dashboard/tekton-dashboard.gotmpl

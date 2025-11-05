@@ -361,7 +361,7 @@ spec:
 {{- if .Values.defaultRules.additionalRuleGroupAnnotations.nodeExporterAlerting }}
 {{ toYaml .Values.defaultRules.additionalRuleGroupAnnotations.nodeExporterAlerting | indent 8 }}
 {{- end }}
-        description: '{{`{{`}} $value | humanizePercentage {{`}}`}} of conntrack entries are used.'
+        description: '{{`{{`}} $labels.instance {{`}}`}} {{`{{`}} $value | humanizePercentage {{`}}`}} of conntrack entries are used.'
         runbook_url: {{ .Values.defaultRules.runbookUrl }}/node/nodehighnumberconntrackentriesused
         summary: Number of conntrack are getting close to the limit.
       expr: (node_nf_conntrack_entries{job="node-exporter"} / node_nf_conntrack_entries_limit) > 0.75
@@ -598,7 +598,7 @@ spec:
           '
         runbook_url: {{ .Values.defaultRules.runbookUrl }}/node/nodecpuhighusage
         summary: High CPU usage.
-      expr: sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{job="node-exporter", mode!="idle"}[2m]))) * 100 > 90
+      expr: sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{job="node-exporter", mode!~"idle|iowait"}[2m]))) * 100 > 90
       for: {{ dig "NodeCPUHighUsage" "for" "15m" .Values.customRules }}
       {{- with .Values.defaultRules.keepFiringFor }}
       keep_firing_for: "{{ . }}"
@@ -770,6 +770,34 @@ spec:
         {{- end }}
       {{- end }}
 {{- end }}
+{{- if not (.Values.defaultRules.disabled.NodeSystemdServiceCrashlooping | default false) }}
+    - alert: NodeSystemdServiceCrashlooping
+      annotations:
+{{- if .Values.defaultRules.additionalRuleAnnotations }}
+{{ toYaml .Values.defaultRules.additionalRuleAnnotations | indent 8 }}
+{{- end }}
+{{- if .Values.defaultRules.additionalRuleGroupAnnotations.nodeExporterAlerting }}
+{{ toYaml .Values.defaultRules.additionalRuleGroupAnnotations.nodeExporterAlerting | indent 8 }}
+{{- end }}
+        description: Systemd service {{`{{`}} $labels.name {{`}}`}} has being restarted too many times at {{`{{`}} $labels.instance {{`}}`}} for the last 15 minutes. Please check if service is crash looping.
+        runbook_url: {{ .Values.defaultRules.runbookUrl }}/node/nodesystemdservicecrashlooping
+        summary: Systemd service keeps restaring, possibly crash looping.
+      expr: increase(node_systemd_service_restart_total{job="node-exporter"}[5m]) > 2
+      for: {{ dig "NodeSystemdServiceCrashlooping" "for" "15m" .Values.customRules }}
+      {{- with .Values.defaultRules.keepFiringFor }}
+      keep_firing_for: "{{ . }}"
+      {{- end }}
+      labels:
+        severity: {{ dig "NodeSystemdServiceCrashlooping" "severity" "warning" .Values.customRules }}
+      {{- if or .Values.defaultRules.additionalRuleLabels .Values.defaultRules.additionalRuleGroupLabels.nodeExporterAlerting }}
+        {{- with .Values.defaultRules.additionalRuleLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.defaultRules.additionalRuleGroupLabels.nodeExporterAlerting }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+{{- end }}
 {{- if not (.Values.defaultRules.disabled.NodeBondingDegraded | default false) }}
     - alert: NodeBondingDegraded
       annotations:
@@ -781,8 +809,8 @@ spec:
 {{- end }}
         description: Bonding interface {{`{{`}} $labels.master {{`}}`}} on {{`{{`}} $labels.instance {{`}}`}} is in degraded state due to one or more slave failures.
         runbook_url: {{ .Values.defaultRules.runbookUrl }}/node/nodebondingdegraded
-        summary: Bonding interface is degraded
-      expr: (node_bonding_slaves - node_bonding_active) != 0
+        summary: Bonding interface is degraded.
+      expr: (node_bonding_slaves{job="node-exporter"} - node_bonding_active{job="node-exporter"}) != 0
       for: {{ dig "NodeBondingDegraded" "for" "5m" .Values.customRules }}
       {{- with .Values.defaultRules.keepFiringFor }}
       keep_firing_for: "{{ . }}"

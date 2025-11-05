@@ -6,7 +6,7 @@ spec:
     disabledRules:
         - InfoInhibitor
         - PrometheusOperatorListErrors
-    enabled: false
+    enabled: true
     remoteWrite:
         enabled: true
         rwConfig:

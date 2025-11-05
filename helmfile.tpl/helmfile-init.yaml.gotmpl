@@ -23,7 +23,17 @@ releases:
     installed: true
     labels:
       init: true
+      upgrade: true
     namespace: kube-system
     chart: ../charts/raw
     values:
     - ../values/k8s/k8s-raw.gotmpl
+  - name: k8s-team
+    installed: true
+    labels:
+      init: true
+      team: true
+    namespace: kube-system
+    chart: ../charts/raw
+    values:
+    - ../values/k8s/k8s-raw-teams.gotmpl

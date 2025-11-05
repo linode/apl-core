@@ -16,6 +16,11 @@ global:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
   {{- end }}
   priorityClassName: otomi-critical
+  {{- if eq $v.cluster.linode.tier "enterprise" }}
+  dnsService: "coredns"
+  {{- else }}
+  dnsService: "kube-dns"
+  {{- end }}
 serviceMonitor:
   enabled: true
   labels:
@@ -27,7 +32,7 @@ loki:
   auth_enabled: true
   schemaConfig:
     configs:
-    - from: 2020-09-07
+    - from: "2020-09-07"
       store: boltdb-shipper
       {{- if $useObjectStorage }}
       object_store: s3
@@ -55,7 +60,7 @@ loki:
       s3forcepathstyle: true
       {{- end }}
       {{- if eq $obj.type "linode" }}
-      s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $obj.linode.buckets.loki }}     
+      s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $obj.linode.buckets.loki }}
       s3forcepathstyle: true
       sse_encryption: false
       http_config:
@@ -89,7 +94,7 @@ ingester:
 
 gateway:
   {{- if $v.otomi.linodeLkeImageRepository }}
-  image: 
+  image:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
   {{- end }}
   resources: {{- $l.resources.gateway | toYaml | nindent 4 }}
@@ -108,6 +113,13 @@ querier:
     maxReplicas: {{ $l.autoscaling.querier.maxReplicas }}
     targetCPUUtilizationPercentage: {{ $l.autoscaling.querier.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.querier.targetMemoryUtilizationPercentage }}
+
+  {{- if not $useObjectStorage }}
+  persistence:
+    enabled: true
+    size: {{ $l | get "persistence.querier.size" "10Gi" }}
+    storageClass: {{ $v.cluster.defaultStorageClass }}
+  {{- end }}
 
 distributor:
   resources: {{- $l.resources.distributor | toYaml | nindent 4 }}
@@ -161,3 +173,10 @@ queryFrontend:
 compactor:
   enabled: true
   resources: {{- $l.resources.compactor | toYaml | nindent 4 }}
+
+  {{- if not $useObjectStorage }}
+  persistence:
+    enabled: true
+    size: {{ $l | get "persistence.compactor.size" "10Gi" }}
+    storageClass: {{ $v.cluster.defaultStorageClass }}
+  {{- end }}
