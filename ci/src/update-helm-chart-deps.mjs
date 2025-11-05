@@ -288,24 +288,24 @@ async function updateDependency(
   }
 }
 
-function groupDependencies(dependencies) {
+function groupDependencies(dependencies, allDependencies) {
   // Dependencies in CHART_GROUPS will be handled together.
   // Any other are assigned in a self-named group with one item.
 
   // First map grouped dependencies per name to its group
   const depsInGroups = {}
-  Object.entries(CHART_GROUPS).forEach(([groupName, dependencies]) => {
-    for (const dependency of dependencies) {
-      depsInGroups[dependency.name] = [groupName, dependency]
+  Object.entries(CHART_GROUPS).forEach(([groupName, groupDepNames]) => {
+    for (const depName of groupDepNames) {
+      depsInGroups[depName] = groupName
     }
   })
 
   const groupedDeps = {}
   for (const dependency of dependencies) {
-    const groupName = dependency[dependency.name]
+    const groupName = depsInGroups[dependency.name]
     if (groupName) {
       if (!groupedDeps.hasOwnProperty(groupName)) {
-        groupedDeps[groupName] = CHART_GROUPS[groupName].map(depName => depsInGroups[depName])
+        groupedDeps[groupName] = CHART_GROUPS[groupName].map(depName => allDependencies[depName])
       }
     } else {
       groupedDeps[dependency.name] = [dependency]
@@ -359,6 +359,9 @@ async function main() {
       Object.entries(appsInfo).map(([appName, appInfo]) => [appInfo.chartName || appName, appInfo]),
     )
 
+    const allDependencies = Object.fromEntries(
+      chart.dependencies.map(dependency => [dependency.name, dependency])
+    )
     const filteredDependencies = []
 
     for (const dependency of chart.dependencies) {
@@ -395,7 +398,7 @@ async function main() {
       filteredDependencies.push(dependency)
     }
 
-    const dependencyGroups = groupDependencies(filteredDependencies)
+    const dependencyGroups = groupDependencies(filteredDependencies, allDependencies)
 
     for (const [groupName, dependencies] of Object.entries(dependencyGroups)) {
       try {
