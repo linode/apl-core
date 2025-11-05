@@ -218,7 +218,7 @@ async function updateDependency(
       console.log(`Chart ${mainDependency.name} assigned to app – looking up new version`)
       try {
         const dependencyChart = await loadYamlFile(dependencyFileName)
-        const updatedAppVersion = dependencyChart?.appVersion
+        const updatedAppVersion = dependencyChart?.appVersion || dependencyChart?.version
         if (updatedAppVersion) {
           const previousAppVersion = appInfo.appVersion
           appInfo.appVersion = updatedAppVersion.replace(/^v/, '')
