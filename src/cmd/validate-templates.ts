@@ -125,9 +125,6 @@ const processCrdWrapper = async (argv: BasicArguments) => {
       // Templates can usually not be processed directly
       '**/templates/crds/**',
       '**/crds/templates/**',
-      '**/conf/crds/**',
-      // These also come statically with the chart
-      'kube-prometheus-stack/charts/crds/templates/**',
     ],
     cwd: `${rootDir}/charts`,
     absolute: true,
