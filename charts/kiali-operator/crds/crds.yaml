@@ -1189,9 +1189,13 @@ spec:
                             description: "Password to be used when making requests to Perses, for basic authentication. May refer to a secret."
                             type: string
                           type:
-                            description: "The type of authentication to use when contacting the server. Use `basic` to connect with username and password credentials. Use `none` to not use any authentication."
+                            description: "The type of authentication to use when contacting the server. Use `bearer` to send the token to the Perses server. Use `basic` to connect with username and password credentials. Use `none` to not use any authentication."
                             type: string
                             default: "none"
+                          use_kiali_token:
+                            description: "When true and if `auth.type` is `bearer`, Kiali Service Account token will be used for the API calls to Perses (in this case, `auth.token` config is ignored)."
+                            type: boolean
+                            default: false
                           username:
                             description: "Username to be used when making requests to Perses with `basic` authentication. May refer to a secret."
                             type: string
@@ -1238,7 +1242,6 @@ spec:
                       internal_url:
                         description: "The URL used by Kiali to perform requests and queries to Perses. An example would be `http://perses.istio-system:4000`. This URL can contain query parameters if needed, such as '?orgId=1'. If not defined, it will default to `http://perses.<istio_namespace>:4000`."
                         type: string
-                        default: "http://perses.istio-system:4000"
                       is_core:
                         description: "Used in the Components health feature. When true, the unhealthy scenarios will be raised as errors. Otherwise, they will be raised as a warning."
                         type: boolean
@@ -1247,6 +1250,11 @@ spec:
                         description: "The name of the project where the Dashboards are defined."
                         type: string
                         default: "istio"
+                      url_format:
+                        description: "The url format. Use `openshift` when using Perses Dashboards via the Cluster Observability operator in OpenShift. Use `default` for standard Perses upstream. "
+                        type: string
+                        default: ""
+                        enum: ["", "openshift"]
                   prometheus:
                     description: "The Prometheus configuration defined here refers to the Prometheus instance that is used by Istio to store its telemetry."
                     type: object
