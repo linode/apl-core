@@ -29,12 +29,12 @@ pip3 install openapi2jsonschema
 3. Observe new archive created
 
 # Generate missing CRD's
+
 When there is a new CRD added and used in different helm-charts it needs to be added to the `generated-crd-schemas.tar.gz` otherwise the tests from `NODE_ENV=test binzx/otomi validate-templates` will fail.
 
 **Prerequsits**
 
 Have a Kubernetes cluster available with the correct CRD's you want to add or want to build a new list with
-
 
 **Steps for adding new CRD to the list:**
 
@@ -45,7 +45,6 @@ Have a Kubernetes cluster available with the correct CRD's you want to add or wa
 5. Add the newly generated CRD's from step 3 to the contents from step 4.
 6. Generate a new tar.gz from the diretory with: `tar -zcvf ../generated-crd-schemas.tar.gz .`
 7. Run the tests `NODE_ENV=test binzx/otomi validate-templates` they shouldn't fail anymore.
-
 
 **Steps for generating new CRD list:**
 
