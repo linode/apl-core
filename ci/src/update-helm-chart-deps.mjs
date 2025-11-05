@@ -72,6 +72,11 @@ async function copyLinodeCfwTemplates(chartDir) {
   return false
 }
 
+const CHART_GROUPS = {
+  istio: ['base', 'istiod', 'gateway'],
+  kserve: ['kserve', 'kserve-crd'],
+  'cloud-firewall': ['cloud-firewall', 'cloud-firewall-crd'],
+}
 const CHART_SKIP_PRECHECK = ['cloud-firewall-crd', 'kserve-crd']
 const CHART_POST_FUNCS = {
   kyverno: renderKyvernoCrdTemplates,
@@ -162,7 +167,8 @@ async function downloadDependency(dependency, dirName, latestVersion) {
 }
 
 async function updateDependency(
-  dependency,
+  groupName,
+  dependencies,
   chart,
   chartApps,
   apps,
@@ -172,33 +178,45 @@ async function updateDependency(
   ciCreateGithubPr,
   baseBranch,
 ) {
-  const currentDependencyVersion = dependency.version
-  const dirName = dependency.alias || dependency.name
+  const mainDependency = dependencies[0]
+  const mainName = mainDependency.name
+  const extraDependencies = dependencies.slice(1)
+  const preservedVersions = Object.fromEntries(dependencies.map((dependency) => [dependency.name, dependency.version]))
+  const currentDependencyVersion = mainDependency.version
+  const dirName = mainDependency.alias || mainName
   const dependencyFileName = `${CHARTS_DIR}/${dirName}/Chart.yaml`
 
   try {
-    const latestVersion = await checkDependencyUpdates(dependency, allowedUpgradeType)
+    const latestVersion = await checkDependencyUpdates(mainDependency, allowedUpgradeType)
     if (!latestVersion) {
       return false
     }
-    const branchName = await checkBranch(dependency.name, latestVersion, ciPushtoBranch)
+    const branchName = await checkBranch(groupName, latestVersion, ciPushtoBranch)
     if (!branchName) {
       return false
     }
-    await downloadDependency(dependency, dirName, latestVersion)
-    const commitMessage = `chore(chart-deps): update ${dependency.name} to version ${latestVersion.version}`
+    await downloadDependency(mainDependency, dirName, latestVersion)
+    // Update the version in Chart.yaml
+    mainDependency.version = latestVersion
+    for (const extraDependency of extraDependencies) {
+      const extraVersion = await checkDependencyUpdates(extraDependency, allowedUpgradeType)
+      if (extraVersion) {
+        await downloadDependency(extraDependency, extraDependency.alias || extraDependency.name, extraVersion)
+        // Update the version in Chart.yaml
+        extraDependency.version = extraVersion
+      }
+    }
+    const commitMessage = `chore(chart-deps): update ${groupName} to version ${latestVersion.version}`
     if (ciCreateFeatureBranch) {
       await $`git -c core.hooksPath=/dev/null checkout -b ${branchName}`
     }
-    // Update the version in Chart.yaml
-    dependency.version = latestVersion
     // Write the updated Chart.yaml file
     await writeYamlFile(CHART_FILE, chart)
 
-    const appInfo = chartApps[dependency.alias || dependency.name]
+    const appInfo = chartApps[mainDependency.alias || mainName]
     let appsVersionSet = false
     if (appInfo) {
-      console.log(`Chart ${dependency.name} assigned to app – looking up new version`)
+      console.log(`Chart ${mainDependency.name} assigned to app – looking up new version`)
       try {
         const dependencyChart = await loadYamlFile(dependencyFileName)
         const updatedAppVersion = dependencyChart?.appVersion
@@ -212,19 +230,19 @@ async function updateDependency(
             }
             appsVersionSet = true
           } catch (error) {
-            console.error(`Error updating app version for ${dependency.name}:`, error)
+            console.error(`Error updating app version for ${mainName}:`, error)
           } finally {
             // Restore to avoid side-effect on following run
             appInfo.appVersion = previousAppVersion
           }
         } else {
-          console.info(`Updated app version not found in chart ${dependency.name}`)
+          console.info(`Updated app version not found in chart ${mainName}`)
         }
       } catch (error) {
-        console.error(`Error checking dependency app version ${dependency.name}:`, error)
+        console.error(`Error checking dependency app version ${mainName}:`, error)
       }
     } else {
-      console.log(`No app found for ${dependency.name}`)
+      console.log(`No app found for ${mainName}`)
     }
 
     if (ciCreateFeatureBranch) {
@@ -258,14 +276,44 @@ async function updateDependency(
       await $`gh pr create ${args}`
     }
   } finally {
-    // restore this version so it does not populate to the next chart update
-    dependency.version = currentDependencyVersion
+    // restore versions so it does not populate to the next chart update
+    for (const dependency of dependencies) {
+      dependency.version = preservedVersions[dependency.name]
+    }
     if (ciCreateFeatureBranch) {
       // Reset to the main branch for the next dependency
       await $`git -c core.hooksPath=/dev/null checkout ${baseBranch}`
       await $`git reset --hard ${ciPushtoBranch ? 'origin/' : ''}${baseBranch}`
     }
   }
+}
+
+function groupDependencies(dependencies) {
+  // Dependencies in CHART_GROUPS will be handled together.
+  // Any other are assigned in a self-named group with one item.
+
+  // First map grouped dependencies per name to its group
+  const depsInGroups = {}
+  Object.entries(CHART_GROUPS).forEach(([groupName, dependencies]) => {
+    for (const dependency of dependencies) {
+      depsInGroups[dependency.name] = groupName
+    }
+  })
+
+  const groupedDeps = {}
+  for (const dependency of dependencies) {
+    const groupName = dependency[dependency.name]
+    if (groupName) {
+      if (groupedDeps.hasOwnProperty(groupName)) {
+        groupedDeps[groupName].push(dependency)
+      } else {
+        groupedDeps[groupName] = [dependency]
+      }
+    } else {
+      groupedDeps[dependency.name] = [dependency]
+    }
+  }
+  return groupedDeps
 }
 
 async function main() {
@@ -313,6 +361,8 @@ async function main() {
       Object.entries(appsInfo).map(([appName, appInfo]) => [appInfo.chartName || appName, appInfo]),
     )
 
+    const filteredDependencies = []
+
     for (const dependency of chart.dependencies) {
       if (dependencyNameFilter.length !== 0 && !dependencyNameFilter.includes(dependency.name)) {
         console.log(
@@ -344,23 +394,32 @@ async function main() {
         console.log(`Skipping pre-check for dependency ${dependency.name}`)
       }
 
-      try {
-        await updateDependency(
-          dependency,
-          chart,
-          chartApps,
-          apps,
-          allowedUpgradeType,
-          ciCreateFeatureBranch,
-          ciPushtoBranch,
-          ciCreateGithubPr,
-          baseBranch,
-        )
-      } catch (error) {
-        console.error(`Error updating ${dependency.name}:`, error)
-        dependencyErrors[dependency.name] = error
-      }
+      filteredDependencies.push(dependency)
     }
+
+    const dependencyGroups = groupDependencies(filteredDependencies)
+
+    await Promise.all(
+      Object.entries(dependencyGroups).map(async ([groupName, dependencies]) => {
+        try {
+          await updateDependency(
+            groupName,
+            dependencies,
+            chart,
+            chartApps,
+            apps,
+            allowedUpgradeType,
+            ciCreateFeatureBranch,
+            ciPushtoBranch,
+            ciCreateGithubPr,
+            baseBranch,
+          )
+        } catch (error) {
+          console.error(`Error updating ${groupName}:`, error)
+          dependencyErrors[groupName] = error
+        }
+      })
+    )
 
     console.log('Dependency updates complete.')
     if (Object.keys(dependencyErrors).length > 0) {
