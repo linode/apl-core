@@ -4,7 +4,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: "{{ include "opentelemetry-operator.fullname" . }}-metrics"
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller-manager
@@ -30,14 +30,35 @@ spec:
           then exit 0
           else exit 1
           fi
+      {{- with .Values.testFramework.securityContext }}
+      securityContext: {{ toYaml . | nindent 12 }}
+      {{- end }}
+      {{- with .Values.testFramework.resources }}
+      resources: {{ toYaml . | nindent 8 }}
+      {{- end }}
+  {{- with .Values.imagePullSecrets }}
+  imagePullSecrets:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   restartPolicy: Never
+  {{- with .Values.affinity }}
+  affinity: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.tolerations }}
+  tolerations: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.nodeSelector }}
+  nodeSelector: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  securityContext:
+{{ toYaml .Values.securityContext | indent 4 }}
 {{- end }}
 ---
 apiVersion: v1
 kind: Pod
 metadata:
   name: "{{ include "opentelemetry-operator.fullname" . }}-webhook"
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller-manager
@@ -51,7 +72,7 @@ spec:
         - name: WEBHOOK_SERVICE_CLUSTERIP
           value: "{{ include "opentelemetry-operator.fullname" . }}-webhook"
         - name: WEBHOOK_SERVICE_PORT
-          value: "443"
+          value: "{{ .Values.admissionWebhooks.servicePort }}"
       command:
         - sh
         - -c
@@ -63,4 +84,25 @@ spec:
           then exit 0
           else exit 1
           fi
+      {{- with .Values.testFramework.securityContext }}
+      securityContext: {{ toYaml . | nindent 12 }}
+      {{- end }}
+      {{- with .Values.testFramework.resources }}
+      resources: {{ toYaml . | nindent 8 }}
+      {{- end }}
+  {{- with .Values.imagePullSecrets }}
+  imagePullSecrets:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   restartPolicy: Never
+  {{- with .Values.affinity }}
+  affinity: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.tolerations }}
+  tolerations: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.nodeSelector }}
+  nodeSelector: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  securityContext:
+{{ toYaml .Values.securityContext | indent 4 }}
