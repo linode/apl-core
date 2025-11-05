@@ -2800,12 +2800,6 @@ properties:
             type: boolean
             default: false
           collector:
-            managementState: 
-              type: string
-              default: managed
-              enum:
-                - managed
-                - unmanaged
             properties:
               mode:
                 title: Collector mode
