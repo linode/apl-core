@@ -195,7 +195,7 @@ appsInfo:
     isAlpha: true
   kyverno:
     title: Kyverno
-    appVersion: 1.15.1
+    appVersion: 1.15.2
     repo: https://github.com/kyverno/kyverno
     maintainers: Nirmata
     relatedLinks:
