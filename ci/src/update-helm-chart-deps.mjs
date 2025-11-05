@@ -308,7 +308,7 @@ function groupDependencies(dependencies, allDependencies) {
         groupedDeps[groupName] = CHART_GROUPS[groupName].map(depName => allDependencies[depName])
       }
     } else {
-      groupedDeps[dependency.name] = [dependency]
+      groupedDeps[dependency.alias || dependency.name] = [dependency]
     }
   }
   return groupedDeps
