@@ -63,8 +63,6 @@
 [Gitea](https://gitea.com) is a community managed lightweight code hosting solution written in Go.
 It is published under the MIT license.
 
-> :warning: This chart is currently unmaintained and in desperate need of a new maintainer. If you want to apply as a maintainer, please comment on [#916](https://gitea.com/gitea/helm-gitea/issues/916)
-
 ## Introduction
 
 This helm chart has taken some inspiration from [jfelten's helm chart](https://github.com/jfelten/gitea-helm-chart).
@@ -1164,53 +1162,69 @@ To comply with the Gitea helm chart definition of the digest parameter, a "custo
 
 Valkey cluster and [Valkey](#valkey) cannot be enabled at the same time.
 
-| Name                                  | Description                                                          | Value   |
-| ------------------------------------- | -------------------------------------------------------------------- | ------- |
-| `valkey-cluster.enabled`              | Enable valkey cluster                                                | `true`  |
-| `valkey-cluster.usePassword`          | Whether to use password authentication                               | `false` |
-| `valkey-cluster.usePasswordFiles`     | Whether to mount passwords as files instead of environment variables | `false` |
-| `valkey-cluster.cluster.nodes`        | Number of valkey cluster master nodes                                | `3`     |
-| `valkey-cluster.cluster.replicas`     | Number of valkey cluster master node replicas                        | `0`     |
-| `valkey-cluster.service.ports.valkey` | Port of Valkey service                                               | `6379`  |
+| Name                                                | Description                                                           | Value                          |
+| --------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------ |
+| `valkey-cluster.enabled`                            | Enable valkey cluster                                                 | `true`                         |
+| `valkey-cluster.usePassword`                        | Whether to use password authentication.                               | `false`                        |
+| `valkey-cluster.usePasswordFiles`                   | Whether to mount passwords as files instead of environment variables. | `false`                        |
+| `valkey-cluster.image.repository`                   | Image repository, eg. `bitnamilegacy/valkey-cluster`.                 | `bitnamilegacy/valkey-cluster` |
+| `valkey-cluster.cluster.nodes`                      | Number of valkey cluster master nodes                                 | `3`                            |
+| `valkey-cluster.cluster.replicas`                   | Number of valkey cluster master node replicas                         | `0`                            |
+| `valkey-cluster.metrics.image.repository`           | Image repository, eg. `bitnamilegacy/redis-exporter`.                 | `bitnamilegacy/redis-exporter` |
+| `valkey-cluster.service.ports.valkey`               | Port of Valkey service                                                | `6379`                         |
+| `valkey-cluster.sysctlImage.repository`             | Image repository, eg. `bitnamilegacy/os-shell`.                       | `bitnamilegacy/os-shell`       |
+| `valkey-cluster.volumePermissions.image.repository` | Image repository, eg. `bitnamilegacy/os-shell`.                       | `bitnamilegacy/os-shell`       |
 
 ### valkey
 
 Valkey and [Valkey cluster](#valkey-cluster) cannot be enabled at the same time.
 
-| Name                                 | Description                                 | Value        |
-| ------------------------------------ | ------------------------------------------- | ------------ |
-| `valkey.enabled`                     | Enable valkey standalone or replicated      | `false`      |
-| `valkey.architecture`                | Whether to use standalone or replication    | `standalone` |
-| `valkey.global.valkey.password`      | Required password                           | `changeme`   |
-| `valkey.master.count`                | Number of Valkey master instances to deploy | `1`          |
-| `valkey.master.service.ports.valkey` | Port of Valkey service                      | `6379`       |
+| Name                                        | Description                                           | Value                           |
+| ------------------------------------------- | ----------------------------------------------------- | ------------------------------- |
+| `valkey.enabled`                            | Enable valkey standalone or replicated                | `false`                         |
+| `valkey.architecture`                       | Whether to use standalone or replication              | `standalone`                    |
+| `valkey.kubectl.image.repository`           | Image repository, eg. `bitnamilegacy/kubectl`.        | `bitnamilegacy/kubectl`         |
+| `valkey.image.repository`                   | Image repository, eg. `bitnamilegacy/valkey`.         | `bitnamilegacy/valkey`          |
+| `valkey.global.valkey.password`             | Required password                                     | `changeme`                      |
+| `valkey.master.count`                       | Number of Valkey master instances to deploy           | `1`                             |
+| `valkey.master.service.ports.valkey`        | Port of Valkey service                                | `6379`                          |
+| `valkey.metrics.image.repository`           | Image repository, eg. `bitnamilegacy/redis-exporter`. | `bitnamilegacy/redis-exporter`  |
+| `valkey.sentinel.image.repository`          | Image repository, eg. `bitnamilegacy/sentinel`.       | `bitnamilegacy/valkey-sentinel` |
+| `valkey.volumePermissions.image.repository` | Image repository, eg. `bitnamilegacy/os-shell`.       | `bitnamilegacy/os-shell`        |
 
 ### PostgreSQL HA
 
-| Name                                        | Description                                                      | Value       |
-| ------------------------------------------- | ---------------------------------------------------------------- | ----------- |
-| `postgresql-ha.enabled`                     | Enable PostgreSQL HA                                             | `true`      |
-| `postgresql-ha.postgresql.password`         | Password for the `gitea` user (overrides `auth.password`)        | `changeme4` |
-| `postgresql-ha.global.postgresql.database`  | Name for a custom database to create (overrides `auth.database`) | `gitea`     |
-| `postgresql-ha.global.postgresql.username`  | Name for a custom user to create (overrides `auth.username`)     | `gitea`     |
-| `postgresql-ha.global.postgresql.password`  | Name for a custom password to create (overrides `auth.password`) | `gitea`     |
-| `postgresql-ha.postgresql.repmgrPassword`   | Repmgr Password                                                  | `changeme2` |
-| `postgresql-ha.postgresql.postgresPassword` | postgres Password                                                | `changeme1` |
-| `postgresql-ha.pgpool.adminPassword`        | pgpool adminPassword                                             | `changeme3` |
-| `postgresql-ha.pgpool.srCheckPassword`      | pgpool srCheckPassword                                           | `changeme4` |
-| `postgresql-ha.service.ports.postgresql`    | PostgreSQL service port (overrides `service.ports.postgresql`)   | `5432`      |
-| `postgresql-ha.persistence.size`            | PVC Storage Request for PostgreSQL HA volume                     | `10Gi`      |
+| Name                                               | Description                                                      | Value                             |
+| -------------------------------------------------- | ---------------------------------------------------------------- | --------------------------------- |
+| `postgresql-ha.enabled`                            | Enable PostgreSQL HA                                             | `true`                            |
+| `postgresql-ha.global.postgresql.database`         | Name for a custom database to create (overrides `auth.database`) | `gitea`                           |
+| `postgresql-ha.global.postgresql.username`         | Name for a custom user to create (overrides `auth.username`)     | `gitea`                           |
+| `postgresql-ha.global.postgresql.password`         | Name for a custom password to create (overrides `auth.password`) | `gitea`                           |
+| `postgresql-ha.metrics.image.repository`           | Image repository, eg. `bitnamilegacy/postgres-exporter`.         | `bitnamilegacy/postgres-exporter` |
+| `postgresql-ha.postgresql.image.repository`        | Image repository, eg. `bitnamilegacy/postgresql-repmgr`.         | `bitnamilegacy/postgresql-repmgr` |
+| `postgresql-ha.postgresql.repmgrPassword`          | Repmgr Password                                                  | `changeme2`                       |
+| `postgresql-ha.postgresql.postgresPassword`        | postgres Password                                                | `changeme1`                       |
+| `postgresql-ha.postgresql.password`                | Password for the `gitea` user (overrides `auth.password`)        | `changeme4`                       |
+| `postgresql-ha.pgpool.adminPassword`               | pgpool adminPassword                                             | `changeme3`                       |
+| `postgresql-ha.pgpool.image.repository`            | Image repository, eg. `bitnamilegacy/pgpool`.                    | `bitnamilegacy/pgpool`            |
+| `postgresql-ha.pgpool.srCheckPassword`             | pgpool srCheckPassword                                           | `changeme4`                       |
+| `postgresql-ha.service.ports.postgresql`           | PostgreSQL service port (overrides `service.ports.postgresql`)   | `5432`                            |
+| `postgresql-ha.persistence.size`                   | PVC Storage Request for PostgreSQL HA volume                     | `10Gi`                            |
+| `postgresql-ha.volumePermissions.image.repository` | Image repository, eg. `bitnamilegacy/os-shell`.                  | `bitnamilegacy/os-shell`          |
 
 ### PostgreSQL
 
-| Name                                                    | Description                                                      | Value   |
-| ------------------------------------------------------- | ---------------------------------------------------------------- | ------- |
-| `postgresql.enabled`                                    | Enable PostgreSQL                                                | `false` |
-| `postgresql.global.postgresql.auth.password`            | Password for the `gitea` user (overrides `auth.password`)        | `gitea` |
-| `postgresql.global.postgresql.auth.database`            | Name for a custom database to create (overrides `auth.database`) | `gitea` |
-| `postgresql.global.postgresql.auth.username`            | Name for a custom user to create (overrides `auth.username`)     | `gitea` |
-| `postgresql.global.postgresql.service.ports.postgresql` | PostgreSQL service port (overrides `service.ports.postgresql`)   | `5432`  |
-| `postgresql.primary.persistence.size`                   | PVC Storage Request for PostgreSQL volume                        | `10Gi`  |
+| Name                                                    | Description                                                      | Value                             |
+| ------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------------- |
+| `postgresql.enabled`                                    | Enable PostgreSQL                                                | `false`                           |
+| `postgresql.global.postgresql.auth.password`            | Password for the `gitea` user (overrides `auth.password`)        | `gitea`                           |
+| `postgresql.global.postgresql.auth.database`            | Name for a custom database to create (overrides `auth.database`) | `gitea`                           |
+| `postgresql.global.postgresql.auth.username`            | Name for a custom user to create (overrides `auth.username`)     | `gitea`                           |
+| `postgresql.global.postgresql.service.ports.postgresql` | PostgreSQL service port (overrides `service.ports.postgresql`)   | `5432`                            |
+| `postgresql.image.repository`                           | Image repository, eg. `bitnamilegacy/postgresql`.                | `bitnamilegacy/postgresql`        |
+| `postgresql.primary.persistence.size`                   | PVC Storage Request for PostgreSQL volume                        | `10Gi`                            |
+| `postgresql.metrics.image.repository`                   | Image repository, eg. `bitnamilegacy/postgres-exporter`.         | `bitnamilegacy/postgres-exporter` |
+| `postgresql.volumePermissions.image.repository`         | Image repository, eg. `bitnamilegacy/os-shell`.                  | `bitnamilegacy/os-shell`          |
 
 ### Advanced
 
