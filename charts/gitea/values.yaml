@@ -514,94 +514,161 @@ gitea:
     failureThreshold: 10
 
 ## @section valkey-cluster
-## @param valkey-cluster.enabled Enable valkey cluster
-# ⚠️ The valkey charts do not work well with special characters in the password (<https://gitea.com/gitea/helm-chart/issues/690>).
-# Consider omitting such or open an issue in the Bitnami repo and let us know once this got fixed.
-## @param valkey-cluster.usePassword Whether to use password authentication
-## @param valkey-cluster.usePasswordFiles Whether to mount passwords as files instead of environment variables
-## @param valkey-cluster.cluster.nodes Number of valkey cluster master nodes
-## @param valkey-cluster.cluster.replicas Number of valkey cluster master node replicas
-## @param valkey-cluster.service.ports.valkey Port of Valkey service
 ## @descriptionStart
 ## Valkey cluster and [Valkey](#valkey) cannot be enabled at the same time.
 ## @descriptionEnd
 valkey-cluster:
+  ## @param valkey-cluster.enabled Enable valkey cluster
+  # ⚠️ The valkey charts do not work well with special characters in the password (<https://gitea.com/gitea/helm-chart/issues/690>).
+  # Consider omitting such or open an issue in the Bitnami repo and let us know once this got fixed.
+  ## @param valkey-cluster.usePassword Whether to use password authentication.
+  ## @param valkey-cluster.usePasswordFiles Whether to mount passwords as files instead of environment variables.
   enabled: true
   usePassword: false
   usePasswordFiles: false
+
+  ## @param valkey-cluster.image.repository Image repository, eg. `bitnamilegacy/valkey-cluster`.
+  image:
+    repository: bitnamilegacy/valkey-cluster
+
+  ## @param valkey-cluster.cluster.nodes Number of valkey cluster master nodes
+  ## @param valkey-cluster.cluster.replicas Number of valkey cluster master node replicas
   cluster:
     nodes: 3 # default: 6
     replicas: 0 # default: 1
+
+  ## @param valkey-cluster.metrics.image.repository Image repository, eg. `bitnamilegacy/redis-exporter`.
+  metrics:
+    image:
+      repository: bitnamilegacy/redis-exporter
+
+  ## @param valkey-cluster.service.ports.valkey Port of Valkey service
   service:
     ports:
       valkey: 6379
 
+  ## @param valkey-cluster.sysctlImage.repository Image repository, eg. `bitnamilegacy/os-shell`.
+  sysctlImage:
+    repository: bitnamilegacy/os-shell
+
+  ## @param valkey-cluster.volumePermissions.image.repository Image repository, eg. `bitnamilegacy/os-shell`.
+  volumePermissions:
+    image:
+      repository: bitnamilegacy/os-shell
+
+
 ## @section valkey
-## @param valkey.enabled Enable valkey standalone or replicated
-## @param valkey.architecture Whether to use standalone or replication
-# ⚠️ The valkey charts do not work well with special characters in the password (<https://gitea.com/gitea/helm-chart/issues/690>).
-# Consider omitting such or open an issue in the Bitnami repo and let us know once this got fixed.
-## @param valkey.global.valkey.password Required password
-## @param valkey.master.count Number of Valkey master instances to deploy
-## @param valkey.master.service.ports.valkey Port of Valkey service
+
 ## @descriptionStart
 ## Valkey and [Valkey cluster](#valkey-cluster) cannot be enabled at the same time.
 ## @descriptionEnd
 valkey:
+  ## @param valkey.enabled Enable valkey standalone or replicated
+  ## @param valkey.architecture Whether to use standalone or replication
   enabled: false
   architecture: standalone
+
+  ## @param valkey.kubectl.image.repository Image repository, eg. `bitnamilegacy/kubectl`.
+  kubectl:
+    image:
+      repository: bitnamilegacy/kubectl
+
+  ## @param valkey.image.repository Image repository, eg. `bitnamilegacy/valkey`.
+  image:
+    repository: bitnamilegacy/valkey
+
+  # ⚠️ The valkey charts do not work well with special characters in the password (<https://gitea.com/gitea/helm-chart/issues/690>).
+  # Consider omitting such or open an issue in the Bitnami repo and let us know once this got fixed.
+  ## @param valkey.global.valkey.password Required password
   global:
     valkey:
       password: changeme
+
+  ## @param valkey.master.count Number of Valkey master instances to deploy
+  ## @param valkey.master.service.ports.valkey Port of Valkey service
   master:
     count: 1
     service:
       ports:
         valkey: 6379
 
+  ## @param valkey.metrics.image.repository Image repository, eg. `bitnamilegacy/redis-exporter`.
+  metrics:
+    image:
+      repository: bitnamilegacy/redis-exporter
+
+  ## @param valkey.sentinel.image.repository Image repository, eg. `bitnamilegacy/sentinel`.
+  sentinel:
+    image:
+      repository: bitnamilegacy/valkey-sentinel
+
+  ## @param valkey.volumePermissions.image.repository Image repository, eg. `bitnamilegacy/os-shell`.
+  volumePermissions:
+    image:
+      repository: bitnamilegacy/os-shell
+
 ## @section PostgreSQL HA
-#
-## @param postgresql-ha.enabled Enable PostgreSQL HA
-## @param postgresql-ha.postgresql.password Password for the `gitea` user (overrides `auth.password`)
-## @param postgresql-ha.global.postgresql.database Name for a custom database to create (overrides `auth.database`)
-## @param postgresql-ha.global.postgresql.username Name for a custom user to create (overrides `auth.username`)
-## @param postgresql-ha.global.postgresql.password Name for a custom password to create (overrides `auth.password`)
-## @param postgresql-ha.postgresql.repmgrPassword Repmgr Password
-## @param postgresql-ha.postgresql.postgresPassword postgres Password
-## @param postgresql-ha.pgpool.adminPassword pgpool adminPassword
-## @param postgresql-ha.pgpool.srCheckPassword pgpool srCheckPassword
-## @param postgresql-ha.service.ports.postgresql PostgreSQL service port (overrides `service.ports.postgresql`)
-## @param postgresql-ha.persistence.size PVC Storage Request for PostgreSQL HA volume
 postgresql-ha:
+  ## @param postgresql-ha.enabled Enable PostgreSQL HA
+  enabled: true
+
+  ## @param postgresql-ha.global.postgresql.database Name for a custom database to create (overrides `auth.database`)
+  ## @param postgresql-ha.global.postgresql.username Name for a custom user to create (overrides `auth.username`)
+  ## @param postgresql-ha.global.postgresql.password Name for a custom password to create (overrides `auth.password`)
   global:
     postgresql:
       database: gitea
       password: gitea
       username: gitea
-  enabled: true
+
+  ## @param postgresql-ha.metrics.image.repository Image repository, eg. `bitnamilegacy/postgres-exporter`.
+  metrics:
+    image:
+      repository: bitnamilegacy/postgres-exporter
+
+  ## @param postgresql-ha.postgresql.image.repository Image repository, eg. `bitnamilegacy/postgresql-repmgr`.
+  ## @param postgresql-ha.postgresql.repmgrPassword Repmgr Password
+  ## @param postgresql-ha.postgresql.postgresPassword postgres Password
+  ## @param postgresql-ha.postgresql.password Password for the `gitea` user (overrides `auth.password`)
   postgresql:
+    image:
+      repository: bitnamilegacy/postgresql-repmgr
     repmgrPassword: changeme2
     postgresPassword: changeme1
     password: changeme4
+
+  ## @param postgresql-ha.pgpool.adminPassword pgpool adminPassword
+  ## @param postgresql-ha.pgpool.image.repository Image repository, eg. `bitnamilegacy/pgpool`.
+  ## @param postgresql-ha.pgpool.srCheckPassword pgpool srCheckPassword
   pgpool:
     adminPassword: changeme3
+    image:
+      repository: bitnamilegacy/pgpool
     srCheckPassword: changeme4
+
+  ## @param postgresql-ha.service.ports.postgresql PostgreSQL service port (overrides `service.ports.postgresql`)
   service:
     ports:
       postgresql: 5432
+
+  ## @param postgresql-ha.persistence.size PVC Storage Request for PostgreSQL HA volume
   persistence:
     size: 10Gi
 
+  ## @param postgresql-ha.volumePermissions.image.repository Image repository, eg. `bitnamilegacy/os-shell`.
+  volumePermissions:
+    image:
+      repository: bitnamilegacy/os-shell
+
 ## @section PostgreSQL
-#
-## @param postgresql.enabled Enable PostgreSQL
-## @param postgresql.global.postgresql.auth.password Password for the `gitea` user (overrides `auth.password`)
-## @param postgresql.global.postgresql.auth.database Name for a custom database to create (overrides `auth.database`)
-## @param postgresql.global.postgresql.auth.username Name for a custom user to create (overrides `auth.username`)
-## @param postgresql.global.postgresql.service.ports.postgresql PostgreSQL service port (overrides `service.ports.postgresql`)
-## @param postgresql.primary.persistence.size PVC Storage Request for PostgreSQL volume
 postgresql:
+  ## @param postgresql.enabled Enable PostgreSQL
   enabled: false
+
+  ## @param postgresql.global.postgresql.auth.password Password for the `gitea` user (overrides `auth.password`)
+  ## @param postgresql.global.postgresql.auth.database Name for a custom database to create (overrides `auth.database`)
+  ## @param postgresql.global.postgresql.auth.username Name for a custom user to create (overrides `auth.username`)
+  ## @param postgresql.global.postgresql.service.ports.postgresql PostgreSQL service port (overrides `service.ports.postgresql`)
   global:
     postgresql:
       auth:
@@ -611,9 +678,25 @@ postgresql:
       service:
         ports:
           postgresql: 5432
+
+  ## @param postgresql.image.repository Image repository, eg. `bitnamilegacy/postgresql`.
+  image:
+    repository: bitnamilegacy/postgresql
+
+  ## @param postgresql.primary.persistence.size PVC Storage Request for PostgreSQL volume
   primary:
     persistence:
       size: 10Gi
+
+  ## @param postgresql.metrics.image.repository Image repository, eg. `bitnamilegacy/postgres-exporter`.
+  metrics:
+    image:
+      repository: bitnamilegacy/postgres-exporter
+
+  ## @param postgresql.volumePermissions.image.repository Image repository, eg. `bitnamilegacy/os-shell`.
+  volumePermissions:
+    image:
+      repository: bitnamilegacy/os-shell
 
 # By default, removed or moved settings that still remain in a user defined values.yaml will cause Helm to fail running the install/update.
 # Set it to false to skip this basic validation check.
