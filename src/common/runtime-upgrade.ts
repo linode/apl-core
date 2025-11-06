@@ -21,7 +21,7 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
   }
 
   d.info('Deploying essential manifests')
-  const essentialDeployResult = await deployEssential(['upgrade=true'])
+  const essentialDeployResult = await deployEssential(['upgrade=true'], true)
   if (!essentialDeployResult) {
     throw new Error('Failed to update namespaces')
   }
