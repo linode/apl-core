@@ -1,3 +1,4 @@
+{{- if .Values.createClusterRoles }}
 # If this ClusterRoleBinding is replaced with a RoleBinding
 # then the ClusterRole would be namespaced. The access described by
 # the tekton-pipelines-controller-tenant-access ClusterRole would
@@ -18,3 +19,4 @@ roleRef:
   kind: ClusterRole
   name: tekton-pipelines-controller-tenant-access
   apiGroup: rbac.authorization.k8s.io
+{{- end }}

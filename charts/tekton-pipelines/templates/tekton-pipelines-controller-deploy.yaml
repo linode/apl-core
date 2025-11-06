@@ -6,12 +6,12 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/name: controller
     app.kubernetes.io/part-of: tekton-pipelines
-    app.kubernetes.io/version: v1.3.1
+    app.kubernetes.io/version: v1.6.0
       {{- with .Values.controller.deployment.labels }}
         {{- toYaml . | nindent 4 }}
       {{- end}}
-    pipeline.tekton.dev/release: v1.3.1
-    version: v1.3.1
+    pipeline.tekton.dev/release: v1.6.0
+    version: v1.6.0
   name: tekton-pipelines-controller
 spec:
   replicas: 1
@@ -34,12 +34,12 @@ spec:
         app.kubernetes.io/instance: default
         app.kubernetes.io/name: controller
         app.kubernetes.io/part-of: tekton-pipelines
-        app.kubernetes.io/version: v1.3.1
+        app.kubernetes.io/version: v1.6.0
           {{- with .Values.controller.pod.labels }}
             {{- toYaml . | nindent 8 }}
           {{- end}}
-        pipeline.tekton.dev/release: v1.3.1
-        version: v1.3.1
+        pipeline.tekton.dev/release: v1.6.0
+        version: v1.6.0
     spec:
       affinity:
           {{- with .Values.controller.affinity }}
@@ -59,15 +59,15 @@ spec:
       containers:
       - args:
         - -entrypoint-image
-        - {{ .Values.controller.images.entrypoint }}
+        - ghcr.io/tektoncd/pipeline/entrypoint-bff0a22da108bc2f16c818c97641a296:v1.6.0@sha256:255ea8fadab1481fbd1e562d9ac7d4008cd9515de5f952647c8959028c8990a0
         - -nop-image
-        - {{ .Values.controller.images.nop }}
+        - ghcr.io/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.6.0@sha256:b83fbfa4e59808477d83ad2022f58e1aeff2605c438d37b83fef3b7b3706cb7d
         - -sidecarlogresults-image
-        - {{ .Values.controller.images.sidecarlogresults }}
+        - ghcr.io/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.6.0@sha256:934e82f377c37aa98d42a7f37692a631f1b29a1dd1cc01e1b29b8f402b56b552
         - -workingdirinit-image
-        - {{ .Values.controller.images.workingdirinit }}
+        - ghcr.io/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.6.0@sha256:2cbe018a0158ca18dfd2edd330ef2d94ab066a994415a835c20a5eac2e0588c5
         - -shell-image
-        - {{ .Values.controller.images.shell }}
+        - cgr.dev/chainguard/busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791
         - -shell-image-win
         - mcr.microsoft.com/powershell:nanoserver@sha256:b6d5ff841b78bdf2dfed7550000fd4f3437385b8fa686ec0f010be24777654d6
         env:
