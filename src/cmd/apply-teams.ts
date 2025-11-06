@@ -8,7 +8,7 @@ const d = terminal(`cmd:${cmdName}:apply-teams`)
 
 export const applyTeams = async (): Promise<boolean> => {
   d.info('Deploying team namespaces')
-  const result = await deployEssential(['team=true'])
+  const result = await deployEssential(['team=true'], true)
 
   if (result) {
     d.info('Teams applied')
