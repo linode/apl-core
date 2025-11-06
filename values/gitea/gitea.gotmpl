@@ -37,7 +37,7 @@ image:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  {{- with ($g | get "image.gitea.tag" "1.24.4") }}
+  {{- with $g | get "image.gitea.tag" nil }}
   tag: {{ . }}
   {{- end }}
   pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}

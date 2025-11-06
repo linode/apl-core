@@ -73,7 +73,7 @@ appsInfo:
         - Click 'I understand' to continue using Falco dashboard
   gitea:
     title: Gitea Self-hosted GIT
-    appVersion: 1.24.5
+    appVersion: 1.24.7
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
