@@ -329,7 +329,7 @@ appsInfo:
     chartName: trivy-operator
   otel:
     title: Open Telemetry Operator
-    appVersion: 0.137.0
+    appVersion: 0.138.0
     repo: https://github.com/open-telemetry/opentelemetry-operator
     maintainers: Grafana labs
     relatedLinks:
