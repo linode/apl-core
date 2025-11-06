@@ -4,7 +4,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: otel/otel-operator-opentelemetry-operator-serving-cert
+    cert-manager.io/inject-ca-from: otel/otel-operator-serving-cert
     controller-gen.kubebuilder.io/version: v0.19.0
   creationTimestamp: null
   labels:
@@ -16,7 +16,7 @@ spec:
     webhook:
       clientConfig:
         service:
-          name: otel-operator-opentelemetry-operator-webhook
+          name: otel-operator-webhook
           namespace: otel
           path: /convert
           port: 443
