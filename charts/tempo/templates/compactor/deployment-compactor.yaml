@@ -11,16 +11,18 @@ metadata:
   {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  minReadySeconds: 10
+  minReadySeconds: {{ .Values.compactor.minReadySeconds }}
+{{- if not .Values.compactor.autoscaling.enabled }}
   replicas: {{ .Values.compactor.replicas }}
-  revisionHistoryLimit: 10
+{{- end }}
+  revisionHistoryLimit: {{ .Values.tempo.revisionHistoryLimit }}
   selector:
     matchLabels:
       {{- include "tempo.selectorLabels" $dict | nindent 6 }}
+{{- with .Values.compactor.strategy }}
   strategy:
-    rollingUpdate:
-      maxSurge: 0
-      maxUnavailable: 1
+{{- toYaml . | nindent 4 }}
+{{- end }}
   template:
     metadata:
       labels:
@@ -54,6 +56,8 @@ spec:
       hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      initContainers:
+        {{- toYaml .Values.compactor.initContainers | nindent 8 }}
       containers:
         - args:
             - -target=compactor
@@ -62,11 +66,14 @@ spec:
             {{- with .Values.compactor.extraArgs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+            {{- with .Values.global.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           image: {{ include "tempo.imageReference" $dict }}
           imagePullPolicy: {{ .Values.tempo.image.pullPolicy }}
           name: compactor
           ports:
-            - containerPort: 3100
+            - containerPort: 3200
               name: http-metrics
             - containerPort: {{ include "tempo.memberlistBindPort" . }}
               name: http-memberlist
@@ -79,10 +86,19 @@ spec:
               {{ toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
-          {{- with .Values.compactor.extraEnvFrom }}
+          {{- if or .Values.global.extraEnvFrom .Values.compactor.extraEnvFrom }}
           envFrom:
-            {{- toYaml . | nindent 12 }}
+            {{- with .Values.compactor.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.global.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
+          livenessProbe:
+            {{- toYaml .Values.tempo.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.tempo.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.compactor.resources | nindent 12 }}
           {{- with .Values.tempo.securityContext }}
@@ -103,6 +119,9 @@ spec:
             {{- with .Values.compactor.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+        {{- with .Values.compactor.extraContainers }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       terminationGracePeriodSeconds: {{ .Values.compactor.terminationGracePeriodSeconds }}
       {{- if semverCompare ">= 1.19-0" .Capabilities.KubeVersion.Version }}
       {{- with .Values.compactor.topologySpreadConstraints }}

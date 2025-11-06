@@ -295,7 +295,7 @@ appsInfo:
     integration: APL uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
   tempo:
     title: Tempo
-    appVersion: 2.6.0
+    appVersion: 2.9.0
     repo: https://github.com/grafana/tempo
     maintainers: Grafana labs
     relatedLinks:
