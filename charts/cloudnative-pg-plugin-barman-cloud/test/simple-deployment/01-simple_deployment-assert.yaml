@@ -1,0 +1,254 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plugin-barman-cloud
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: barman-cloud
+        args:
+          - operator
+          - --server-cert=/server/tls.crt
+          - --server-key=/server/tls.key
+          - --client-cert=/client/tls.crt
+          - --server-address=:9090
+          - --leader-elect
+          - --log-level=debug
+        ports:
+        - containerPort: 9090
+          protocol: TCP
+        readinessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          tcpSocket:
+            port: 9090
+        resources:
+          limits:
+            cpu: 100m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsUser: 10001
+          runAsGroup: 10001
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+              - "ALL"
+        volumeMounts:
+        - mountPath: /server
+          name: server
+        - mountPath: /client
+          name: client
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: plugin-barman-cloud
+      volumes:
+      - name: server
+        secret:
+          secretName: barman-cloud-server-tls
+      - name: client
+        secret:
+          secretName: barman-cloud-client-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    cnpg.io/pluginClientSecret: barman-cloud-client-tls
+    cnpg.io/pluginPort: "9090"
+    cnpg.io/pluginServerSecret: barman-cloud-server-tls
+  name: barman-cloud
+spec:
+  ports:
+  - port: 9090
+    protocol: TCP
+    targetPort: 9090
+  selector:
+    app.kubernetes.io/name: plugin-barman-cloud
+    app.kubernetes.io/instance: plugin-barman-cloud
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: plugin-barman-cloud-selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: barman-cloud-client
+spec:
+  commonName: barman-cloud-client
+  duration: 2160h
+  isCA: false
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: plugin-barman-cloud-selfsigned-issuer
+  renewBefore: 360h
+  secretName: barman-cloud-client-tls
+  usages:
+    - client auth
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: barman-cloud-server
+spec:
+  commonName: barman-cloud
+  dnsNames:
+  - barman-cloud
+  duration: 2160h
+  isCA: false
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: plugin-barman-cloud-selfsigned-issuer
+  renewBefore: 360h
+  secretName: barman-cloud-server-tls
+  usages:
+    - server auth
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: plugin-barman-cloud
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: plugin-barman-cloud
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - barmancloud.cnpg.io
+  resources:
+  - objectstores
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - barmancloud.cnpg.io
+  resources:
+  - objectstores/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - barmancloud.cnpg.io
+  resources:
+  - objectstores/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - postgresql.cnpg.io
+  resources:
+  - backups
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - postgresql.cnpg.io
+  resources:
+  - clusters/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  - roles
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: plugin-barman-cloud-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: plugin-barman-cloud
+subjects:
+- kind: ServiceAccount
+  name: plugin-barman-cloud
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: plugin-barman-cloud-leader-election-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: plugin-barman-cloud-leader-election-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: plugin-barman-cloud-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: plugin-barman-cloud
