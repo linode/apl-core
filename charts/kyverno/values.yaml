@@ -77,7 +77,10 @@ rbac:
 
 # Use openreports.io as the API group for reporting
 openreports:
+  # -- Enable OpenReports feature in controllers
   enabled: false
+  # -- Whether to install CRDs from the upstream OpenReports chart. Setting this to true requires enabled to also be true.
+  installCrds: false
 
 # CRDs configuration
 crds:
@@ -539,9 +542,9 @@ webhooksCleanup:
 
   image:
     # -- (string) Image registry
-    registry: ~
+    registry: registry.k8s.io
     # -- Image repository
-    repository: registry.k8s.io/kubectl
+    repository: kubectl
     # -- Image tag
     # Defaults to `latest` if omitted
     tag: 'v1.32.7'
