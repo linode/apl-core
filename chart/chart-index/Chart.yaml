@@ -65,7 +65,7 @@ dependencies:
     version: 2.18.0
     repository: https://kiali.org/helm-charts
   - name: knative-operator
-    version: v1.18.1
+    version: v1.20.0
     repository: https://knative.github.io/operator
   - name: kserve-crd
     version: v0.15.2

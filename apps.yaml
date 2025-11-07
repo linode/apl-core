@@ -173,7 +173,7 @@ appsInfo:
         - Click 'I understand' to continue using Kiali dashboard
   knative:
     title: Knative Operator
-    appVersion: 1.18.1
+    appVersion: 1.20.0
     repo: https://github.com/knative/serving
     maintainers: Knative
     relatedLinks:
