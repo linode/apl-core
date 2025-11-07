@@ -14,6 +14,7 @@ import { runtimeUpgrade } from '../common/runtime-upgrade'
 import { applyAsApps } from './apply-as-apps'
 import { applyTeams } from './apply-teams'
 import { commit } from './commit'
+import { collectTraces } from './traces'
 import { upgrade } from './upgrade'
 
 const cmdName = getFilename(__filename)
@@ -86,6 +87,12 @@ export const apply = async (): Promise<void> => {
         await applyAll()
       } catch (e) {
         d.error(e)
+        // Collect traces on apply failure
+        try {
+          await collectTraces()
+        } catch (traceError) {
+          d.error('Failed to collect traces:', traceError)
+        }
         d.info(`Retrying in ${retryOptions.maxTimeout} ms`)
         throw e
       }

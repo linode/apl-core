@@ -25,6 +25,7 @@ import {
   printWelcomeMessage,
   retryIsOAuth2ProxyRunning,
 } from './commit'
+import { collectTraces } from './traces'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -145,6 +146,12 @@ const install = async (): Promise<void> => {
         await installAll()
       } catch (e) {
         d.error(e)
+        // Collect traces on installation failure
+        try {
+          await collectTraces()
+        } catch (traceError) {
+          d.error('Failed to collect traces:', traceError)
+        }
         d.info(`Retrying in ${retryOptions.maxTimeout} ms`)
         throw e
       }

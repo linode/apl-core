@@ -11,6 +11,7 @@ import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 import { resolve } from 'path'
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import { applyServerSide } from './k8s'
 
 const replaceHFPaths = (output: string, envDir = env.ENV_DIR): string => output.replaceAll('../env', envDir)
 export const HF_DEFAULT_SYNC_ARGS = ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20']
@@ -191,7 +192,7 @@ export const hfTemplate = async (
   return template
 }
 
-export const deployEssential = async (labelOpts: string[] | null = null) => {
+export const deployEssential = async (labelOpts: string[] | null = null, force: boolean = false) => {
   const d = terminal('common:hf:applyEssential')
   const dir = '/tmp/otomi/'
 
@@ -215,7 +216,7 @@ export const deployEssential = async (labelOpts: string[] | null = null) => {
     }
     writeFileSync(templateFile, templateOutput)
 
-    await $`kubectl apply -f ${templateFile}`
+    await applyServerSide(templateFile, force)
   }
 
   return true

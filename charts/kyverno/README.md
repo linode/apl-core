@@ -2,7 +2,7 @@
 
 Kubernetes Native Policy Management
 
-![Version: 3.5.1](https://img.shields.io/badge/Version-3.5.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v1.15.1](https://img.shields.io/badge/AppVersion-v1.15.1-informational?style=flat-square)
+![Version: 3.5.2](https://img.shields.io/badge/Version-3.5.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v1.15.2](https://img.shields.io/badge/AppVersion-v1.15.2-informational?style=flat-square)
 
 ## About
 
@@ -758,8 +758,8 @@ The chart values are organised per component.
 | webhooksCleanup.autoDeleteWebhooks.enabled | bool | `false` | Allow webhooks controller to delete webhooks using finalizers |
 | webhooksCleanup.enabled | bool | `true` | Create a helm pre-delete hook to cleanup webhooks. |
 | webhooksCleanup.image.pullPolicy | string | `nil` | Image pull policy Defaults to image.pullPolicy if omitted |
-| webhooksCleanup.image.registry | string | `nil` | Image registry |
-| webhooksCleanup.image.repository | string | `"registry.k8s.io/kubectl"` | Image repository |
+| webhooksCleanup.image.registry | string | `"registry.k8s.io"` | Image registry |
+| webhooksCleanup.image.repository | string | `"kubectl"` | Image repository |
 | webhooksCleanup.image.tag | string | `"v1.32.7"` | Image tag Defaults to `latest` if omitted |
 | webhooksCleanup.imagePullSecrets | list | `[]` | Image pull secrets |
 | webhooksCleanup.nodeAffinity | object | `{}` | Node affinity constraints. |
@@ -817,7 +817,8 @@ The chart values are organised per component.
 | imagePullSecrets | object | `{}` | Image pull secrets for image verification policies, this will define the `--imagePullSecrets` argument |
 | nameOverride | string | `nil` | Override the name of the chart |
 | namespaceOverride | string | `nil` | Override the namespace the chart deploys to |
-| openreports.enabled | bool | `false` |  |
+| openreports.enabled | bool | `false` | Enable OpenReports feature in controllers |
+| openreports.installCrds | bool | `false` | Whether to install CRDs from the upstream OpenReports chart. Setting this to true requires enabled to also be true. |
 | rbac.roles.aggregate | object | `{"admin":true,"view":true}` | Aggregate ClusterRoles to Kubernetes default user-facing roles. For more information, see [User-facing roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) |
 | upgrade.fromV2 | bool | `false` | Upgrading from v2 to v3 is not allowed by default, set this to true once changes have been reviewed. |
 
@@ -880,8 +881,8 @@ Kubernetes: `>=1.25.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-|  | crds | 3.5.1 |
-|  | grafana | 3.5.1 |
+|  | crds | 3.5.2 |
+|  | grafana | 3.5.2 |
 | https://openreports.github.io/reports-api | openreports | 0.1.0 |
 
 ## Maintainers

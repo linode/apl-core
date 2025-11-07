@@ -21,12 +21,15 @@
 ## Getting started
 
 ### Step 1: [Install the App Platform](https://apl-docs.net/docs/get-started/installation/overview)
+
 Install the App Platform on Linode Kubernetes Engine (LKE) or any other conformant Kubernetes cluster.
 
 ### Step 2: [Follow the post installation steps ](https://apl-docs.net/docs/get-started/installation/post-installation-steps)
+
 Configure the App Platform for your use case.
 
 ### Step 3: [Explore the App Platform using the Labs](https://apl-docs.net/docs/get-started/labs/overview)
+
 Explore the App Platform with a comprehensive set of hands-on labs.
 
 ## Akamai Application Platform supports

@@ -1,13 +1,19 @@
+{{- $explicitMount := not .Values.automountServiceAccountToken }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  {{- with .Values.manager.deploymentAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller-manager
   name: {{ template "opentelemetry-operator.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ template "opentelemetry-operator.namespace" . }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   selector:
     matchLabels:
       {{- include "opentelemetry-operator.selectorLabels" . | nindent 6 }}
@@ -23,13 +29,17 @@ spec:
         {{- include "opentelemetry-operator.podAnnotations" . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "opentelemetry-operator.selectorLabels" . | nindent 8 }}
+        {{- include "opentelemetry-operator.labels" . | nindent 8 }}
         {{- if .Values.manager.podLabels }}
         {{- include "opentelemetry-operator.podLabels" . | nindent 8 }}
         {{- end }}
         app.kubernetes.io/component: controller-manager
     spec:
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
       hostNetwork: {{ .Values.hostNetwork }}
+      {{- if and (semverCompare ">=1.30-0" .Capabilities.KubeVersion.Version) (kindIs "bool" .Values.hostUsers) }}
+      hostUsers: {{ .Values.hostUsers }}
+      {{- end }}
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName | quote }}
       {{- end }}
@@ -46,6 +56,9 @@ spec:
             {{- if and .Values.manager.collectorImage.repository .Values.manager.collectorImage.tag }}
             - --collector-image={{ .Values.manager.collectorImage.repository }}:{{ .Values.manager.collectorImage.tag }}
             {{- end }}
+            {{- if and .Values.manager.opampBridgeImage.repository .Values.manager.opampBridgeImage.tag }}
+            - --operator-opamp-bridge-image={{ .Values.manager.opampBridgeImage.repository }}:{{ .Values.manager.opampBridgeImage.tag }}
+            {{- end }}
             {{- if and .Values.manager.targetAllocatorImage.repository .Values.manager.targetAllocatorImage.tag }}
             - --target-allocator-image={{ .Values.manager.targetAllocatorImage.repository }}:{{ .Values.manager.targetAllocatorImage.tag }}
             {{- end }}
@@ -61,10 +74,21 @@ spec:
             {{- if and .Values.manager.autoInstrumentationImage.dotnet.repository .Values.manager.autoInstrumentationImage.dotnet.tag }}
             - --auto-instrumentation-dotnet-image={{ .Values.manager.autoInstrumentationImage.dotnet.repository }}:{{ .Values.manager.autoInstrumentationImage.dotnet.tag }}
             {{- end }}
+            {{- if .Values.manager.autoInstrumentation.go.enabled }}
+            - --enable-go-instrumentation
+            {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.go.repository .Values.manager.autoInstrumentationImage.go.tag }}
             - --auto-instrumentation-go-image={{ .Values.manager.autoInstrumentationImage.go.repository }}:{{ .Values.manager.autoInstrumentationImage.go.tag }}
             {{- end }}
-            {{- if .Values.manager.featureGates }}
+            {{- if and .Values.manager.autoInstrumentationImage.apacheHttpd.repository .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
+            - --auto-instrumentation-apache-httpd-image={{ .Values.manager.autoInstrumentationImage.apacheHttpd.repository }}:{{ .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
+            {{- end }}
+            {{- if .Values.manager.ignoreMissingCollectorCRDs }}
+            - --ignore-missing-collector-crds=true
+            {{- end }}
+            {{- if .Values.manager.featureGatesMap }}
+            - --feature-gates={{ include "opentelemetry-operator.featureGatesMap" . }}
+            {{- else if ne .Values.manager.featureGates "" }}
             - --feature-gates={{ .Values.manager.featureGates }}
             {{- end }}
             {{-  if .Values.manager.extraArgs  }}
@@ -72,15 +96,23 @@ spec:
             {{-  end  }}
           command:
             - /manager
-          {{- if .Values.manager.env }}
           env:
+            - name: SERVICE_ACCOUNT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+            {{- if or .Values.manager.env .Values.manager.extraEnvs }}
             {{- range $name, $value := .Values.manager.env }}
             - name: {{ $name }}
-              value: {{ $value | quote -}}
+              value: {{ $value | quote }}
             {{- end }}
-          {{- end }}
-          image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}"
+            {{- with .Values.manager.extraEnvs }}
+              {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            {{- end }}
+          image: {{ include "opentelemetry-operator.image" . | quote }}
           name: manager
+          imagePullPolicy: {{ .Values.manager.image.imagePullPolicy }}
           ports:
             - containerPort: {{ .Values.manager.ports.metricsPort }}
               name: metrics
@@ -103,11 +135,18 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           resources: {{ toYaml .Values.manager.resources | nindent 12 }}
-          {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
+          {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName $explicitMount }}
           volumeMounts:
+            {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: cert
               readOnly: true
+            {{- end }}
+            {{- if $explicitMount }}
+            - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              name: access-token
+              readOnly: true
+            {{- end }}
           {{- end }}
           {{- with .Values.manager.securityContext }}
           securityContext: {{ toYaml . | nindent 12 }}
@@ -116,7 +155,6 @@ spec:
         - args:
             - --secure-listen-address=0.0.0.0:{{ .Values.kubeRBACProxy.ports.proxyPort }}
             - --upstream=http://127.0.0.1:{{ .Values.manager.ports.metricsPort }}/
-            - --logtostderr=true
             - --v=0
             {{-  if .Values.kubeRBACProxy.extraArgs  }}
             {{- .Values.kubeRBACProxy.extraArgs | toYaml | nindent 12 }}
@@ -132,6 +170,12 @@ spec:
           {{- end }}
           {{- with .Values.kubeRBACProxy.securityContext }}
           securityContext: {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if $explicitMount }}
+          volumeMounts:
+            - name: access-token
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
           {{- end }}
         {{- end }}
       {{- with .Values.imagePullSecrets }}
@@ -152,12 +196,33 @@ spec:
       {{- end }}
       serviceAccountName: {{ template "opentelemetry-operator.serviceAccountName" . }}
       terminationGracePeriodSeconds: 10
-      {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
+      {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName $explicitMount }}
       volumes:
+        {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
         - name: cert
           secret:
             defaultMode: 420
             secretName: {{ default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.fullname" .)) .Values.admissionWebhooks.secretName }}
+        {{- end }}
+        {{- if $explicitMount }}
+        - name: access-token
+          projected:
+            defaultMode: 420
+            sources:
+              - serviceAccountToken:
+                  expirationSeconds: 3607
+                  path: token
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                    - key: ca.crt
+                      path: ca.crt
+              - downwardAPI:
+                  items:
+                    - path: namespace
+                      fieldRef:
+                        fieldPath: metadata.namespace
+        {{- end }}
       {{- end }}
       securityContext:
 {{ toYaml .Values.securityContext | indent 8 }}
