@@ -72,9 +72,6 @@ k8s:
       app: kubeflow-pipelines
       disablePolicyChecks: true
       disableIstioInjection: true
-    - name: kured
-      app: kured
-      disableIstioInjection: true
     - name: kyverno
       app: kyverno
       disableIstioInjection: true

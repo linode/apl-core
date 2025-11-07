@@ -168,7 +168,6 @@ environments:
                     condition: (
                         container.image.repository in (
                           docker.io/velero/velero,
-                          docker.io/weaveworks/kured,
                           ghcr.io/aquasecurity/trivy-operator,
                           quay.io/argoproj/argocd,
                           docker.io/bitnami/keycloak,
@@ -713,17 +712,6 @@ environments:
                 limits:
                   cpu: 100m
                   memory: 128Mi
-            _rawValues: {}
-          kured:
-            enabled: false
-            resources:
-              kuredDaemonSet:
-                requests:
-                  cpu: 20m
-                  memory: 16Mi
-                limits:
-                  cpu: 50m
-                  memory: 32Mi
             _rawValues: {}
           kyverno:
             enabled: false

@@ -378,3 +378,5 @@ changes:
   - version: 44
     additions:
       - cluster.defaultStorageClass: ''
+    deleteions:
+      - 'apps.kured'
