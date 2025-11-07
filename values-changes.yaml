@@ -378,3 +378,6 @@ changes:
   - version: 44
     additions:
       - cluster.defaultStorageClass: ''
+  - version: 45
+    deletions:
+      - 'apps.falco'
