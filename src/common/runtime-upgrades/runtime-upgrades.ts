@@ -1,5 +1,4 @@
 import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
-import { ARGOCD_APP_PARAMS } from '../constants'
 import { OtomiDebugger } from '../debug'
 import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
 import { getParsedArgs } from '../yargs'
@@ -7,6 +6,7 @@ import { updateDbCollation } from './cloudnative-pg'
 import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
+import { detachApplicationFromApplicationSet, pruneArgoCDImageUpdater } from './v4.13.0'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -138,6 +138,13 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
+    },
+  },
+  {
+    version: '4.13.0',
+    pre: async (context: RuntimeUpgradeContext) => {
+      await detachApplicationFromApplicationSet(context)
+      await pruneArgoCDImageUpdater(context)
     },
   },
 ]
