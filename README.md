@@ -95,7 +95,6 @@ One-click activation of the following Kubernetes Apps:
 - [Kiali](https://github.com/kiali/kiali): Observe Istio service mesh relations and connections.
 - [Minio](https://github.com/minio/minio): High performance Object Storage compatible with Amazon S3 cloud storage service.
 - [Trivy Operator](https://github.com/aquasecurity/trivy-operator): Kubernetes-native security toolkit.
-- [Falco](https://github.com/falcosecurity/falco): Cloud Native Runtime Security.
 - [Grafana Tempo](https://github.com/grafana/tempo): High-scale distributed tracing backend.
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-operator): Instrument, generate, collect, and export telemetry data to help you analyze your software’s performance and behavior.
 
