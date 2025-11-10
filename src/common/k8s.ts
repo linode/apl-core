@@ -648,6 +648,21 @@ export async function patchArgoCdApp(
   })
 }
 
+export async function getArgoCdApp(appName: string, customApi: CustomObjectsApi) {
+  try {
+    const app = await customApi.getNamespacedCustomObject({
+      ...ARGOCD_APP_PARAMS,
+      name: appName,
+    })
+    return app
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      return undefined
+    }
+    throw error
+  }
+}
+
 export async function setArgoCdAppSync(
   appName: string,
   enabled: boolean,

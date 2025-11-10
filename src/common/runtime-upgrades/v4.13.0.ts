@@ -1,6 +1,6 @@
 import { ApiException } from '@kubernetes/client-node'
-import { ARGOCD_APP_PARAMS } from '../constants'
-import { k8s, setArgoCdAppSync } from '../k8s'
+import { ARGOCD_APP_PARAMS, ObjectMetadataCollection } from '../constants'
+import { getArgoCdApp, k8s, setArgoCdAppSync } from '../k8s'
 import { RuntimeUpgradeContext } from './runtime-upgrades'
 
 async function scaleDeployment(context: RuntimeUpgradeContext, namespace: string, name: string, replicas: number) {
@@ -23,6 +23,12 @@ export async function pruneArgoCDImageUpdater(context: RuntimeUpgradeContext) {
   const customApi = k8s.custom()
   const appApi = k8s.app()
   d.info('Removing old ArgoCD Image Updater deployment')
+
+  const app = await getArgoCdApp('argocd-argocd-image-updater-artifacts', customApi)
+  if (!app) {
+    d.info('Old ArgoCD Image Updater application not found, skipping removal')
+    return
+  }
   await setArgoCdAppSync('argocd-argocd-image-updater-artifacts', false, customApi)
   try {
     await customApi.deleteNamespacedCustomObject({
@@ -53,7 +59,7 @@ export async function detachApplicationFromApplicationSet(context: RuntimeUpgrad
   await scaleDeployment(context, 'argocd', 'argocd-applicationset-controller', 0)
 
   // Step 1: Get all ApplicationSets
-  const appSets = await customApi.listNamespacedCustomObject({
+  const appSets: ObjectMetadataCollection = await customApi.listNamespacedCustomObject({
     group: 'argoproj.io',
     version: 'v1alpha1',
     namespace,
@@ -64,7 +70,7 @@ export async function detachApplicationFromApplicationSet(context: RuntimeUpgrad
   d.log(`Found ApplicationSets: ${appSetNames.join(', ')}`)
 
   // Step 2: Get all Applications
-  const apps = await customApi.listNamespacedCustomObject({
+  const apps: ObjectMetadataCollection = await customApi.listNamespacedCustomObject({
     group: 'argoproj.io',
     version: 'v1alpha1',
     namespace,

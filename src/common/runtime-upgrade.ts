@@ -2,10 +2,10 @@ import { isEmpty } from 'lodash'
 import semver from 'semver'
 import { getApplications } from 'src/cmd/apply-as-apps'
 import { terminal } from './debug'
+import { deployEssential } from './hf'
 import { getDeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
 import { RuntimeUpgradeContext, RuntimeUpgrades, runtimeUpgrades } from './runtime-upgrades/runtime-upgrades'
 import { getCurrentVersion } from './values'
-import { deployEssential } from './hf'
 
 interface RuntimeUpgradeArgs {
   when: string
