@@ -31,10 +31,8 @@ export async function pruneArgoCDImageUpdater(context: RuntimeUpgradeContext) {
       return
     }
   } catch (error) {
-    if (error instanceof ApiException && error.code === 404) {
-      d.error('Failed to get ArgoCD Image Updater application:', (error as any).body || error)
-      return
-    }
+    d.error('Failed to get ArgoCD Image Updater application:', (error as any).body || error)
+    return
   }
 
   try {
