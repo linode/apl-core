@@ -20,6 +20,7 @@ import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { isEmpty, isEqual, map, mapValues } from 'lodash'
 import { dirname, join } from 'path'
+import { Writable } from 'stream'
 import { parse, stringify } from 'yaml'
 import { $, cd, sleep } from 'zx'
 import { ARGOCD_APP_PARAMS, DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
@@ -28,7 +29,6 @@ import { env } from './envalid'
 import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
-import { Writable } from 'stream'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
@@ -121,6 +121,16 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
   return undefined
 }
 
+export const deleteSecretForHelmRelease = async (releaseName: string, namespace: string) => {
+  try {
+    await coreClient.deleteNamespacedSecret({ name: `sh.helm.release.v1.${releaseName}.v1`, namespace })
+  } catch (error) {
+    if (error?.response?.statusCode !== 404) {
+      throw error
+    }
+  }
+}
+
 export interface DeploymentState {
   status?: 'deploying' | 'deployed'
   tag?: string
@@ -133,6 +143,21 @@ export const getDeploymentState = async (): Promise<DeploymentState> => {
   if (env.isDev && env.DISABLE_SYNC) return {}
   const result = await $`kubectl get cm -n otomi ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`.nothrow().quiet()
   return JSON.parse(result.stdout || '{}')
+}
+
+export const getPendingHelmReleases = async (): Promise<string[]> => {
+  const releases = await getK8sHelmReleases()
+  const pendingReleases: string[] = []
+  console.log(releases)
+  Object.keys(releases).forEach((key) => {
+    console.log(releases[key])
+    const release = releases[key]
+    if (release.status === 'pending-upgrade') {
+      pendingReleases.push(key)
+    }
+  })
+
+  return pendingReleases
 }
 
 /**
@@ -209,6 +234,50 @@ export const getHelmReleases = async (): Promise<Record<string, any>> => {
     return acc
   }, {})
   return status
+}
+
+export const getK8sHelmReleases = async (): Promise<Record<string, any>> => {
+  const coreApi = k8s.core()
+
+  try {
+    // Get all Helm release secrets
+    const secretsResponse = await coreApi.listSecretForAllNamespaces({
+      labelSelector: 'owner=helm,status',
+    })
+
+    const releases: Record<string, any> = {}
+
+    for (const secret of secretsResponse.items) {
+      if (!secret.metadata?.name || !secret.metadata?.namespace || !secret.metadata?.labels) continue
+
+      const match = secret.metadata.name.match(/^sh\.helm\.release\.v1\.(.+)\.v(\d+)$/)
+      if (!match) continue
+
+      const [, releaseName, revision] = match
+      const releaseKey = `${secret.metadata.namespace}/${releaseName}`
+
+      const release = {
+        name: releaseName,
+        namespace: secret.metadata.namespace,
+        revision: parseInt(revision),
+        status: secret.metadata.labels.status,
+        app_version: secret.metadata.labels.version || secret.metadata.labels.app_version,
+        chart: secret.metadata.labels.chart,
+        // Add timestamps if available
+        first_deployed: secret.metadata.creationTimestamp,
+        last_deployed: secret.metadata.labels.modifiedAt,
+      }
+
+      // Keep only the latest revision for each release
+      if (!releases[releaseKey] || releases[releaseKey].revision < release.revision) {
+        releases[releaseKey] = release
+      }
+    }
+
+    return releases
+  } catch (error) {
+    throw new Error(`Failed to get Helm releases from Kubernetes: ${error.message}`)
+  }
 }
 
 export const setDeploymentState = async (state: Record<string, any>): Promise<void> => {
