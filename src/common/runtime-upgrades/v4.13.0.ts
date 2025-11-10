@@ -24,12 +24,21 @@ export async function pruneArgoCDImageUpdater(context: RuntimeUpgradeContext) {
   const appApi = k8s.app()
   d.info('Removing old ArgoCD Image Updater deployment')
 
-  const app = await getArgoCdApp('argocd-argocd-image-updater-artifacts', customApi)
-  if (!app) {
-    d.info('Old ArgoCD Image Updater application not found, skipping removal')
-    return
+  try {
+    await getArgoCdApp('argocd-argocd-image-updater-artifacts', customApi)
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      d.info('ArgoCD Image Updater application not found, skipping prune.')
+      return
+    }
   }
-  await setArgoCdAppSync('argocd-argocd-image-updater-artifacts', false, customApi)
+
+  try {
+    await setArgoCdAppSync('argocd-argocd-image-updater-artifacts', false, customApi)
+  } catch (err) {
+    d.error('Failed to disable sync for ArgoCD Image Updater application:', (err as any).body || err)
+  }
+
   try {
     await customApi.deleteNamespacedCustomObject({
       ...ARGOCD_APP_PARAMS,

@@ -656,7 +656,7 @@ export async function getArgoCdApp(appName: string, customApi: CustomObjectsApi)
     })
     return app
   } catch (error) {
-    if (error instanceof ApiException && error.code === 404) {
+    if (error?.code === 404) {
       return undefined
     }
     throw error
