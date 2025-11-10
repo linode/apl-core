@@ -60,7 +60,7 @@ export async function detachApplicationFromApplicationSet(context: RuntimeUpgrad
     plural: 'applicationsets',
   })
 
-  const appSetNames = (appSets.body as any).items.map((i: any) => i.metadata.name)
+  const appSetNames = appSets.items.map((i: any) => i.metadata.name)
   d.log(`Found ApplicationSets: ${appSetNames.join(', ')}`)
 
   // Step 2: Get all Applications
@@ -71,10 +71,8 @@ export async function detachApplicationFromApplicationSet(context: RuntimeUpgrad
     plural: 'applications',
   })
 
-  const applications = (apps.body as any).items
-
   // Step 3: Remove ownerReferences pointing to ApplicationSets
-  for (const app of applications) {
+  for (const app of apps.items) {
     const { name, ownerReferences } = app.metadata
     if (!ownerReferences) continue
     if (!name.startsWith('team-')) continue
