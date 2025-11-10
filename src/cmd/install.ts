@@ -67,7 +67,6 @@ const retryInstallStep = async <T, Args extends any[]>(
       retries: env.INSTALL_STEP_RETRIES,
       onRetry: async (e, attempt) => {
         d.info(`Retrying (${attempt}/${env.INSTALL_STEP_RETRIES})...`)
-        await checkOperationsInProgress()
       },
     },
   )

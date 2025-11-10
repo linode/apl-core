@@ -14,6 +14,7 @@ import { runtimeUpgrade } from '../common/runtime-upgrade'
 import { applyAsApps } from './apply-as-apps'
 import { applyTeams } from './apply-teams'
 import { commit } from './commit'
+import { checkOperationsInProgress } from './install'
 import { collectTraces } from './traces'
 import { upgrade } from './upgrade'
 
@@ -94,6 +95,7 @@ export const apply = async (): Promise<void> => {
           d.error('Failed to collect traces:', traceError)
         }
         d.info(`Retrying in ${retryOptions.maxTimeout} ms`)
+        await checkOperationsInProgress()
         throw e
       }
     }, retryOptions)
