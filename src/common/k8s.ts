@@ -156,6 +156,18 @@ interface HelmRelease {
   last_deployed?: string
   chart?: string
 }
+
+export const checkOperationsInProgress = async (): Promise<void> => {
+  const d = terminal(`common:k8s:checkOperationsInProgress`)
+  const pendingHelmReleases = await getPendingHelmReleases()
+  if (pendingHelmReleases.length > 0) {
+    d.info(`Pending Helm operations detected for releases: ${pendingHelmReleases.join(', ')}. removing secrets...`)
+    for (const release of pendingHelmReleases) {
+      await deleteSecretForHelmRelease(release.name, release.namespace)
+    }
+  }
+}
+
 export const getPendingHelmReleases = async (): Promise<HelmRelease[]> => {
   const releases = await getK8sHelmReleases()
   const pendingReleases: HelmRelease[] = []
@@ -249,7 +261,6 @@ export const getK8sHelmReleases = async (): Promise<Record<string, any>> => {
   const coreApi = k8s.core()
 
   try {
-    // Get all Helm release secrets
     const secretsResponse = await coreApi.listSecretForAllNamespaces({
       labelSelector: 'owner=helm,status',
     })
@@ -272,8 +283,7 @@ export const getK8sHelmReleases = async (): Promise<Record<string, any>> => {
         status: secret.metadata.labels.status,
         app_version: secret.metadata.labels.version || secret.metadata.labels.app_version,
         chart: secret.metadata.labels.chart,
-        // Add timestamps if available
-        first_deployed: secret.metadata.creationTimestamp,
+        first_deployed: secret.metadata?.creationTimestamp,
         last_deployed: secret.metadata.labels.modifiedAt,
       }
 

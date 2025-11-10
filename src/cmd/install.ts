@@ -6,10 +6,8 @@ import { env } from 'src/common/envalid'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
 import {
   applyServerSide,
-  deleteSecretForHelmRelease,
   getDeploymentState,
   getHelmReleases,
-  getPendingHelmReleases,
   k8s,
   restartOtomiApiDeployment,
   setDeploymentState,
@@ -41,17 +39,6 @@ const setup = (): void => {
   const argv: HelmArguments = getParsedArgs()
   cleanupHandler(() => cleanup(argv))
   mkdirSync(dir, { recursive: true })
-}
-
-export const checkOperationsInProgress = async (): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:checkOperationsInProgress`)
-  const pendingHelmReleases = await getPendingHelmReleases()
-  if (pendingHelmReleases.length > 0) {
-    d.info(`Pending Helm operations detected for releases: ${pendingHelmReleases.join(', ')}. removing secrets...`)
-    for (const release of pendingHelmReleases) {
-      await deleteSecretForHelmRelease(release.name, release.namespace)
-    }
-  }
 }
 
 const retryInstallStep = async <T, Args extends any[]>(

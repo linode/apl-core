@@ -11,6 +11,7 @@ jest.mock('fs', () => ({
 }))
 
 jest.mock('src/common/k8s', () => ({
+  checkOperationsInProgress: jest.fn(),
   getDeploymentState: jest.fn(),
   setDeploymentState: jest.fn(),
   restartOtomiApiDeployment: jest.fn(),
@@ -98,6 +99,7 @@ describe('Apply command', () => {
       commit: require('./commit').commit,
       upgrade: require('./upgrade').upgrade,
       runtimeUpgrade: require('src/common/runtime-upgrade').runtimeUpgrade,
+      checkOperationsInProgress: require('src/common/k8s').checkOperationsInProgress,
       cd: require('zx').cd,
       getParsedArgs: require('src/common/yargs').getParsedArgs,
     }
@@ -110,6 +112,7 @@ describe('Apply command', () => {
     mockDeps.commit.mockResolvedValue(undefined)
     mockDeps.upgrade.mockResolvedValue(undefined)
     mockDeps.runtimeUpgrade.mockResolvedValue(undefined)
+    mockDeps.checkOperationsInProgress.mockResolvedValue(undefined)
     mockDeps.getParsedArgs.mockReturnValue({})
   })
 
