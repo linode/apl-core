@@ -25,10 +25,14 @@ export async function pruneArgoCDImageUpdater(context: RuntimeUpgradeContext) {
   d.info('Removing old ArgoCD Image Updater deployment')
 
   try {
-    await getArgoCdApp('argocd-argocd-image-updater-artifacts', customApi)
+    const app = await getArgoCdApp('argocd-argocd-image-updater-artifacts', customApi)
+    if (!app) {
+      d.info('ArgoCD Image Updater application not found, skipping prune.')
+      return
+    }
   } catch (error) {
     if (error instanceof ApiException && error.code === 404) {
-      d.info('ArgoCD Image Updater application not found, skipping prune.')
+      d.error('Failed to get ArgoCD Image Updater application:', (error as any).body || error)
       return
     }
   }
