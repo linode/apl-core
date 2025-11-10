@@ -6,6 +6,7 @@ import { env } from 'src/common/envalid'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
 import {
   applyServerSide,
+  checkOperationsInProgress,
   getDeploymentState,
   getHelmReleases,
   k8s,
@@ -153,6 +154,7 @@ const install = async (): Promise<void> => {
           d.error('Failed to collect traces:', traceError)
         }
         d.info(`Retrying in ${retryOptions.maxTimeout} ms`)
+        await checkOperationsInProgress()
         throw e
       }
     }, retryOptions)
