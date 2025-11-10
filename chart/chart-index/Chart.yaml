@@ -16,7 +16,7 @@ dependencies:
     repository: https://cloudnative-pg.github.io/charts
   - name: plugin-barman-cloud
     alias: cloudnative-pg-plugin-barman-cloud
-    version: 0.1.0
+    version: 0.3.0
     repository: https://cloudnative-pg.github.io/charts
   - name: cloud-firewall-crd
     version: 0.2.0
