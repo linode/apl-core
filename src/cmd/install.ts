@@ -43,13 +43,13 @@ const setup = (): void => {
   mkdirSync(dir, { recursive: true })
 }
 
-const checkOperationsInProgress = async (): Promise<void> => {
+export const checkOperationsInProgress = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:checkOperationsInProgress`)
   const pendingHelmReleases = await getPendingHelmReleases()
   if (pendingHelmReleases.length > 0) {
-    d.info(`Pending Helm operations detected for releases: ${pendingHelmReleases.join(', ')}. removing...`)
+    d.info(`Pending Helm operations detected for releases: ${pendingHelmReleases.join(', ')}. removing secrets...`)
     for (const release of pendingHelmReleases) {
-      await deleteSecretForHelmRelease(release, release)
+      await deleteSecretForHelmRelease(release.name, release.namespace)
     }
   }
 }

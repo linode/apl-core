@@ -122,8 +122,10 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
 }
 
 export const deleteSecretForHelmRelease = async (releaseName: string, namespace: string) => {
+  const d = terminal('common:k8s:deleteSecretForHelmRelease')
   try {
     await coreClient.deleteNamespacedSecret({ name: `sh.helm.release.v1.${releaseName}.v1`, namespace })
+    d.debug(`Deleted secret for Helm release ${releaseName} in namespace ${namespace}`)
   } catch (error) {
     if (error?.response?.statusCode !== 404) {
       throw error
@@ -144,16 +146,23 @@ export const getDeploymentState = async (): Promise<DeploymentState> => {
   const result = await $`kubectl get cm -n otomi ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`.nothrow().quiet()
   return JSON.parse(result.stdout || '{}')
 }
-
-export const getPendingHelmReleases = async (): Promise<string[]> => {
+interface HelmRelease {
+  name: string
+  namespace: string
+  status: string
+  app_version: string
+  revision: number
+  first_deployed?: string
+  last_deployed?: string
+  chart?: string
+}
+export const getPendingHelmReleases = async (): Promise<HelmRelease[]> => {
   const releases = await getK8sHelmReleases()
-  const pendingReleases: string[] = []
-  console.log(releases)
+  const pendingReleases: HelmRelease[] = []
   Object.keys(releases).forEach((key) => {
-    console.log(releases[key])
     const release = releases[key]
     if (release.status === 'pending-upgrade') {
-      pendingReleases.push(key)
+      pendingReleases.push(release)
     }
   })
 
