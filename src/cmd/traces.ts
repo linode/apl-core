@@ -44,16 +44,22 @@ async function getPodsWithIssues(): Promise<ResourceReport[]> {
         issues.push(`Pod status: ${pod.status?.phase}. ${pod.status?.message || ''}`)
       }
 
-      // Check for pending pods without node assignment
-      if (pod.status?.phase === 'Pending' && !pod.spec?.nodeName) {
+      // Check for pending pods
+      if (pod.status?.phase === 'Pending') {
         const events = await coreApi.listNamespacedEvent({ namespace })
-        const schedulingEvent = events.items.find(
-          (event) => event.involvedObject.name === podName && event.reason === 'FailedScheduling',
+        const relevantEvent = events.items.find(
+          (event) =>
+            event.involvedObject.name === podName &&
+            ['FailedScheduling', 'FailedMount', 'FailedAttachVolume', 'FailedCreatePodSandBox'].includes(
+              event.reason || '',
+            ),
         )
-        if (schedulingEvent?.message) {
-          issues.push(schedulingEvent.message)
-        } else {
+        if (relevantEvent?.message) {
+          issues.push(`Pod pending: ${relevantEvent.message}`)
+        } else if (!pod.spec?.nodeName) {
           issues.push('Pod is pending without node assignment')
+        } else {
+          issues.push('Pod is pending')
         }
       }
 
