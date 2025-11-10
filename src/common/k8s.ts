@@ -20,6 +20,7 @@ import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { isEmpty, isEqual, map, mapValues } from 'lodash'
 import { dirname, join } from 'path'
+import { Writable } from 'stream'
 import { parse, stringify } from 'yaml'
 import { $, cd, sleep } from 'zx'
 import {
@@ -33,7 +34,6 @@ import { env } from './envalid'
 import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
-import { Writable } from 'stream'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
@@ -665,13 +665,17 @@ export async function setArgoCdAppSync(
           path: '/spec/syncPolicy',
           value: syncPolicy,
         }
-      : { op: 'remove', path: '/spec/syncPolicy/automated' },
+      : { op: 'replace', path: '/spec/syncPolicy', value: { automated: null } },
   ]
-  return await customApi.patchNamespacedCustomObject({
-    ...ARGOCD_APP_PARAMS,
-    name: appName,
-    body: patch,
-  })
+
+  return await customApi.patchNamespacedCustomObject(
+    {
+      ...ARGOCD_APP_PARAMS,
+      name: appName,
+      body: patch,
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.JsonPatch),
+  )
 }
 
 export async function restartOtomiApiDeployment(appApi: AppsV1Api): Promise<void> {
