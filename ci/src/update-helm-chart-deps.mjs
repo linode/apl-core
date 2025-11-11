@@ -88,20 +88,64 @@ async function copyLinodeCfwTemplates(chartDir) {
   return false
 }
 
+async function getAppVersion(chartDir, defaultName) {
+  console.log(`Extracting app version for ${defaultName} from ${chartDir}`)
+  const dependencyChart = await loadYamlFile(`${chartDir}/Chart.yaml`)
+  const updatedAppVersion = dependencyChart?.appVersion || dependencyChart?.version
+  return Object.fromEntries([[defaultName, updatedAppVersion]])
+}
+
+async function getKubePromStackApps(chartDir) {
+  console.log(`Extracting app versions from ${chartDir}`)
+  try {
+    const chartValues = await loadYamlFile(`${chartDir}/values.yaml`)
+    const alertManagerVersion = chartValues.alertmanager.alertmanagerSpec.image.tag
+    const prometheusVersion = chartValues.prometheus.prometheusSpec.image.tag
+    const grafanaChart = await loadYamlFile(`${chartDir}/charts/grafana/Chart.yaml`)
+    const grafanaVersion = grafanaChart.appVersion
+    return {
+      alertmanager: alertManagerVersion,
+      prometheus: prometheusVersion,
+      grafana: grafanaVersion,
+    }
+  } catch (e) {
+    console.error('Field to extract version information from chart:', e)
+  }
+}
+
+// Charts that need to be processed together in one PR.
+// The first one is considered the main dependency.
 const CHART_GROUPS = {
   istio: ['base', 'istiod', 'gateway'],
   kserve: ['kserve', 'kserve-crd'],
   'cloud-firewall': ['cloud-firewall-controller', 'cloud-firewall-crd'],
 }
+// Skip version check for some charts, that are not stored on their own.
 const CHART_SKIP_PRECHECK = ['cloud-firewall-crd', 'kserve-crd']
+// Custom post-processing functions, modifying the charts
 const CHART_POST_FUNCS = {
   kyverno: renderKyvernoCrdTemplates,
   'opentelemetry-operator': renderOtelCrdTemplates,
   'kserve-crd': copyKserveCrdTemplates,
   'cloud-firewall-crd': copyLinodeCfwTemplates,
 }
+// List charts that are not represented in apps.yaml
+const SKIP_APP_VERSION = [
+  'plugin-barman-cloud',
+  'cloud-firewall-controller',
+  'metrics-server',
+  'oauth2-proxy',
+  'policy-reporter',
+  'prometheus-blackbox-exporter',
+  'prometheus-msteams',
+]
+// Add custom functions for charts that represent multiple
+// entries in apps.yaml
+const CHART_VERSION_FUNCS = {
+  'kube-prometheus-stack': getKubePromStackApps,
+}
 
-async function checkDependencyUpdates(dependency, allowedUpgradeType){
+async function checkDependencyUpdates(dependency, allowedUpgradeType) {
   const isRegistry = dependency.repository.startsWith('oci:')
   console.log(`Checking updates for dependency: ${dependency.name}`)
   let allVersions
@@ -174,6 +218,8 @@ async function downloadDependency(dependency, dirName, latestVersion) {
 
   const postFunc = CHART_POST_FUNCS[dependency.name]
   let moveFiles = true
+  // If a post-processing function is defined, and handles moving of files into the final structure,
+  // it can return false.
   if (postFunc) {
     moveFiles = await postFunc(tempDir)
   }
@@ -200,7 +246,6 @@ async function updateDependency(
   const extraDependencies = dependencies.slice(1)
   const preservedVersions = Object.fromEntries(dependencies.map((dependency) => [dependency.name, dependency.version]))
   const dirName = mainDependency.alias || mainName
-  const dependencyFileName = `${CHARTS_DIR}/${dirName}/Chart.yaml`
 
   try {
     const latestVersion = await checkDependencyUpdates(mainDependency, allowedUpgradeType)
@@ -229,36 +274,41 @@ async function updateDependency(
     // Write the updated Chart.yaml file
     await writeYamlFile(CHART_FILE, chart)
 
-    const appInfo = chartApps[groupName]
-    let appsVersionSet = false
-    if (appInfo) {
-      console.log(`Chart ${mainDependency.name} assigned to app – looking up new version`)
+    let appsVersionPending = !SKIP_APP_VERSION.includes(groupName)
+    if (appsVersionPending) {
       try {
-        const dependencyChart = await loadYamlFile(dependencyFileName)
-        const updatedAppVersion = dependencyChart?.appVersion || dependencyChart?.version
-        if (updatedAppVersion) {
-          const previousAppVersion = appInfo.appVersion
-          appInfo.appVersion = updatedAppVersion.replace(/^v/, '')
-          try {
-            await writeYamlFile(APPS_FILE, apps)
-            if (ciCreateFeatureBranch) {
-              await $`git add ${APPS_FILE}`
+        const appVersionFunc = CHART_VERSION_FUNCS[groupName] || (chartApps.hasOwnProperty(groupName) ? getAppVersion : undefined)
+        if (appVersionFunc) {
+          const updatedVersions = await appVersionFunc(`${CHARTS_DIR}/${dirName}`, groupName)
+          if (updatedVersions) {
+            const previousAppVersions = {}
+            try {
+              Object.entries(updatedVersions).forEach(([key, value]) => {
+                previousAppVersions[key] = chartApps[key].appVersion
+                chartApps[key].appVersion = value.replace(/^v/, '')
+              })
+              await writeYamlFile(APPS_FILE, apps)
+              if (ciCreateFeatureBranch) {
+                await $`git add ${APPS_FILE}`
+              }
+              appsVersionPending = false
+            } catch (error) {
+              console.error(`Error updating app version for ${groupName}:`, error)
+            } finally {
+              // Restore to avoid side-effect on following run
+              Object.entries(previousAppVersions).forEach(([key, value]) => {
+                chartApps[key].appVersion = value
+              })
             }
-            appsVersionSet = true
-          } catch (error) {
-            console.error(`Error updating app version for ${mainName}:`, error)
-          } finally {
-            // Restore to avoid side-effect on following run
-            appInfo.appVersion = previousAppVersion
+          } else {
+            console.info(`Updated app version not found in chart ${groupName}`)
           }
         } else {
-          console.info(`Updated app version not found in chart ${mainName}`)
+          console.log(`No app found for ${groupName}`)
         }
       } catch (error) {
-        console.error(`Error checking dependency app version ${mainName}:`, error)
+        console.error(`Error checking dependency app version ${groupName}:`, error)
       }
-    } else {
-      console.log(`No app found for ${mainName}`)
     }
 
     if (ciCreateFeatureBranch) {
@@ -273,7 +323,7 @@ async function updateDependency(
     if (ciCreateGithubPr) {
       // Create a pull request
       const prBody = [`This PR updates the dependency **${mainName}** to version **${latestVersion}**.`]
-      if (!appsVersionSet) {
+      if (appsVersionPending) {
         prBody.push('TODO: Update app version in apps.yaml.')
       }
       const args = [
@@ -322,7 +372,7 @@ function groupDependencies(dependencies, allDependencies) {
     const groupName = depsInGroups[dependency.name]
     if (groupName) {
       if (!groupedDeps.hasOwnProperty(groupName)) {
-        groupedDeps[groupName] = CHART_GROUPS[groupName].map(depName => allDependencies[depName])
+        groupedDeps[groupName] = CHART_GROUPS[groupName].map((depName) => allDependencies[depName])
       }
     } else {
       groupedDeps[dependency.alias || dependency.name] = [dependency]
@@ -376,9 +426,7 @@ async function main() {
       Object.entries(appsInfo).map(([appName, appInfo]) => [appInfo.chartName || appName, appInfo]),
     )
 
-    const allDependencies = Object.fromEntries(
-      chart.dependencies.map(dependency => [dependency.name, dependency])
-    )
+    const allDependencies = Object.fromEntries(chart.dependencies.map((dependency) => [dependency.name, dependency]))
     const filteredDependencies = []
 
     for (const dependency of chart.dependencies) {
