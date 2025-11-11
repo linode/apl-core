@@ -1,13 +1,13 @@
 wizApiToken:
-  clientId: "__WIZ_CLIENT_ID__"
-  clientToken: "__WIZ_CLIENT_TOKEN__"
-  clientEndpoint: ""
+  clientId: '__WIZ_CLIENT_ID__'
+  clientToken: '__WIZ_CLIENT_TOKEN__'
+  clientEndpoint: ''
 wiz-kubernetes-connector:
   enabled: true
 autoCreateConnector:
-  connectorName: "<connectorName>"
+  connectorName: '<connectorName>'
 webhook:
-  clusterExternalId: "<clusterExternalId>"
+  clusterExternalId: '<clusterExternalId>'
 wiz-admission-controller:
   enabled: true
 kubernetesAuditLogsWebhook:

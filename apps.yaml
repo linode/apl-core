@@ -73,7 +73,7 @@ appsInfo:
         - Click 'I understand' to continue using Falco dashboard
   gitea:
     title: Gitea Self-hosted GIT
-    appVersion: 1.24.5
+    appVersion: 1.24.7
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
@@ -123,7 +123,6 @@ appsInfo:
     license: Apache 2.0
     about: Istio is an open platform for providing a uniform way to integrate microservices, manage traffic flow across microservices, enforce policies and aggregate telemetry data. Istio's control plane provides an abstraction layer over the underlying cluster management platform.
     integration: APL has security best practices built in, and is designed for intrusion. Istio is used by APL as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of APL and can not be disabled.
-    chartName: istiod
   jaeger:
     title: Jaeger Operator
     dependencies: Open Telemetry (otel)
@@ -154,7 +153,7 @@ appsInfo:
     integration: The SSO login page for APL is served by Keycloak. Keycloak is used as an identity broker or provider for all APL integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of APL and is always enabled.
   kiali:
     title: Kiali Operator
-    appVersion: 2.17.0
+    appVersion: 2.18.0
     repo: https://github.com/kiali/kiali
     maintainers: Kiali
     relatedLinks:
@@ -196,7 +195,7 @@ appsInfo:
     isAlpha: true
   kyverno:
     title: Kyverno
-    appVersion: 1.15.1
+    appVersion: 1.15.2
     repo: https://github.com/kyverno/kyverno
     maintainers: Nirmata
     relatedLinks:
@@ -286,7 +285,7 @@ appsInfo:
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
-    appVersion: 0.32.2
+    appVersion: 0.33.1
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:
@@ -330,7 +329,7 @@ appsInfo:
     chartName: trivy-operator
   otel:
     title: Open Telemetry Operator
-    appVersion: 0.80.0
+    appVersion: 0.137.0
     repo: https://github.com/open-telemetry/opentelemetry-operator
     maintainers: Grafana labs
     relatedLinks:
@@ -354,7 +353,7 @@ appsInfo:
     integration: When enabled, Velero can be used to automatically create backups of APL platform services. Based on the selected provider, APL installs required plug-ins. APL also installs the Restic integration for Velero to back up and restore almost any type of Kubernetes volume.
   policy-reporter:
     title: policy-reporter
-    appVersion: 3.4.2
+    appVersion: 3.5.0
     repo: https://github.com/kyverno/policy-reporter
     maintainers: Frank Jogeleit
     license: Apache 2.0

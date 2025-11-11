@@ -55,7 +55,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
       - name: Install packages
         run: |
           cd ci/
@@ -67,5 +67,5 @@ jobs:
           CI_GIT_BASELINE_BRANCH: ${{ inputs.CI_GIT_BASELINE_BRANCH }}
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          cd ci/ 
+          cd ci/
           npm run update-helm-chart-deps

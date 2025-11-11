@@ -2,6 +2,9 @@
 set -ue
 
 # Usage: bin/compare.sh -l name=loki
+# Deps: dyff, helmfile
+# brew install homeport/tap/dyff
+# brew install helmfile
 
 export ENV_DIR=$PWD/tests/fixtures
 

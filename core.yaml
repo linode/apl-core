@@ -36,13 +36,13 @@ k8s:
     - name: istio-system
       disableIstioInjection: true
       labels:
-        "apl.io/ingress-controller-scope": "true"
+        'apl.io/ingress-controller-scope': 'true'
     - name: ingress
       # disabling istio sidecar as it does not preserve client ip (yet)
       # TODO: enable once it does
       disableIstioInjection: true
       labels:
-        "apl.io/ingress-controller-scope": "true"
+        'apl.io/ingress-controller-scope': 'true'
     - name: jaeger
       app: jaeger
     - name: jaeger-operator
