@@ -20,6 +20,7 @@ import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { isEmpty, isEqual, map, mapValues } from 'lodash'
 import { dirname, join } from 'path'
+import { Writable } from 'stream'
 import { parse, stringify } from 'yaml'
 import { $, cd, sleep } from 'zx'
 import { ARGOCD_APP_PARAMS, DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
@@ -28,7 +29,6 @@ import { env } from './envalid'
 import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
-import { Writable } from 'stream'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
@@ -123,6 +123,7 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
 
 export interface DeploymentState {
   status?: 'deploying' | 'deployed'
+  tag?: string
   // semantic version string (without 'v' prefix)
   version?: string
   // container image tag (can be an arbitrary name)
