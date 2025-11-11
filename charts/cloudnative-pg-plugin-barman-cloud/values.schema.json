@@ -1,260 +1,482 @@
 {
-    "$schema": "http://json-schema.org/schema#",
-    "type": "object",
-    "properties": {
-        "additionalArgs": {
-            "type": "array"
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "additionalArgs": {
+      "additionalProperties": true,
+      "description": "Additional arguments to be added to the operator's args list.",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "additionalArgs"
+    },
+    "additionalEnv": {
+      "additionalProperties": true,
+      "description": "Array containing extra environment variables which can be templated.\nFor example:\n - name: RELEASE_NAME\n   value: \"{{ .Release.Name }}\"\n - name: MY_VAR\n   value: \"mySpecialKey\"",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "additionalEnv"
+    },
+    "affinity": {
+      "additionalProperties": true,
+      "description": "Affinity for the operator to be installed.",
+      "required": [],
+      "title": "affinity"
+    },
+    "certificate": {
+      "properties": {
+        "createClientCertificate": {
+          "default": true,
+          "description": "Specifies whether the client certificate should be created.",
+          "required": [],
+          "title": "createClientCertificate",
+          "type": "boolean"
         },
-        "additionalEnv": {
-            "type": "array"
+        "createServerCertificate": {
+          "default": true,
+          "description": "Specifies whether the server certificate should be created.",
+          "required": [],
+          "title": "createServerCertificate",
+          "type": "boolean"
         },
-        "affinity": {
-            "type": "object"
+        "duration": {
+          "default": "2160h",
+          "description": "The duration of the certificates.",
+          "required": [],
+          "title": "duration",
+          "type": "string"
         },
-        "certificate": {
-            "type": "object",
-            "properties": {
-                "createClientCertificate": {
-                    "type": "boolean"
-                },
-                "createServerCertificate": {
-                    "type": "boolean"
-                },
-                "duration": {
-                    "type": "string"
-                },
-                "issuerName": {
-                    "type": "string"
-                },
-                "renewBefore": {
-                    "type": "string"
-                }
-            }
+        "issuerName": {
+          "default": "selfsigned-issuer",
+          "description": "The name of the issuer to use for the certificates.",
+          "required": [],
+          "title": "issuerName",
+          "type": "string"
         },
-        "commonAnnotations": {
-            "type": "object"
-        },
-        "containerSecurityContext": {
-            "type": "object",
-            "properties": {
-                "allowPrivilegeEscalation": {
-                    "type": "boolean"
-                },
-                "capabilities": {
-                    "type": "object",
-                    "properties": {
-                        "drop": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                },
-                "readOnlyRootFilesystem": {
-                    "type": "boolean"
-                },
-                "runAsGroup": {
-                    "type": "integer"
-                },
-                "runAsUser": {
-                    "type": "integer"
-                },
-                "seccompProfile": {
-                    "type": "object",
-                    "properties": {
-                        "type": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "crds": {
-            "type": "object",
-            "properties": {
-                "create": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "dnsPolicy": {
-            "type": "string"
-        },
-        "fullnameOverride": {
-            "type": "string"
-        },
-        "hostNetwork": {
-            "type": "boolean"
-        },
-        "image": {
-            "type": "object",
-            "properties": {
-                "pullPolicy": {
-                    "type": "string"
-                },
-                "registry": {
-                    "type": "string"
-                },
-                "repository": {
-                    "type": "string"
-                },
-                "tag": {
-                    "type": "string"
-                }
-            }
-        },
-        "imagePullSecrets": {
-            "type": "array"
-        },
-        "nameOverride": {
-            "type": "string"
-        },
-        "namespaceOverride": {
-            "type": "string"
-        },
-        "nodeSelector": {
-            "type": "object"
-        },
-        "podAnnotations": {
-            "type": "object"
-        },
-        "podLabels": {
-            "type": "object"
-        },
-        "podSecurityContext": {
-            "type": "object",
-            "properties": {
-                "runAsNonRoot": {
-                    "type": "boolean"
-                },
-                "seccompProfile": {
-                    "type": "object",
-                    "properties": {
-                        "type": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "priorityClassName": {
-            "type": "string"
-        },
-        "rbac": {
-            "type": "object",
-            "properties": {
-                "additional": {
-                    "type": "object",
-                    "properties": {
-                        "leaderElection": {
-                            "type": "object",
-                            "properties": {
-                                "create": {
-                                    "type": "boolean"
-                                }
-                            }
-                        },
-                        "metricsAuth": {
-                            "type": "object",
-                            "properties": {
-                                "create": {
-                                    "type": "boolean"
-                                }
-                            }
-                        },
-                        "metricsReader": {
-                            "type": "object",
-                            "properties": {
-                                "create": {
-                                    "type": "boolean"
-                                }
-                            }
-                        },
-                        "objectStore": {
-                            "type": "object",
-                            "properties": {
-                                "editor": {
-                                    "type": "object",
-                                    "properties": {
-                                        "create": {
-                                            "type": "boolean"
-                                        }
-                                    }
-                                },
-                                "viewer": {
-                                    "type": "object",
-                                    "properties": {
-                                        "create": {
-                                            "type": "boolean"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "create": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "replicaCount": {
-            "type": "integer"
-        },
-        "resources": {
-            "type": "object"
-        },
-        "service": {
-            "type": "object",
-            "properties": {
-                "ipFamilies": {
-                    "type": "array"
-                },
-                "ipFamilyPolicy": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                }
-            }
-        },
-        "serviceAccount": {
-            "type": "object",
-            "properties": {
-                "create": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "sidecarImage": {
-            "type": "object",
-            "properties": {
-                "registry": {
-                    "type": "string"
-                },
-                "repository": {
-                    "type": "string"
-                },
-                "tag": {
-                    "type": "string"
-                }
-            }
-        },
-        "tolerations": {
-            "type": "array"
-        },
-        "topologySpreadConstraints": {
-            "type": "array"
-        },
-        "updateStrategy": {
-            "type": "object"
+        "renewBefore": {
+          "default": "360h",
+          "description": "The renew before time for the certificates.",
+          "required": [],
+          "title": "renewBefore",
+          "type": "string"
         }
+      },
+      "required": [
+        "createClientCertificate",
+        "createServerCertificate",
+        "issuerName",
+        "duration",
+        "renewBefore"
+      ],
+      "title": "certificate",
+      "type": "object"
+    },
+    "commonAnnotations": {
+      "additionalProperties": true,
+      "description": "Annotations to be added to all other resources.",
+      "required": [],
+      "title": "commonAnnotations"
+    },
+    "containerSecurityContext": {
+      "description": "Container Security Context.",
+      "properties": {
+        "allowPrivilegeEscalation": {
+          "default": false,
+          "required": [],
+          "title": "allowPrivilegeEscalation",
+          "type": "boolean"
+        },
+        "capabilities": {
+          "properties": {
+            "drop": {
+              "items": {
+                "anyOf": [
+                  {
+                    "required": [],
+                    "type": "string"
+                  }
+                ],
+                "required": []
+              },
+              "required": [],
+              "title": "drop",
+              "type": "array"
+            }
+          },
+          "required": [
+            "drop"
+          ],
+          "title": "capabilities",
+          "type": "object"
+        },
+        "readOnlyRootFilesystem": {
+          "default": true,
+          "required": [],
+          "title": "readOnlyRootFilesystem",
+          "type": "boolean"
+        },
+        "runAsGroup": {
+          "default": 10001,
+          "required": [],
+          "title": "runAsGroup",
+          "type": "integer"
+        },
+        "runAsUser": {
+          "default": 10001,
+          "required": [],
+          "title": "runAsUser",
+          "type": "integer"
+        },
+        "seccompProfile": {
+          "properties": {
+            "type": {
+              "default": "RuntimeDefault",
+              "required": [],
+              "title": "type",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "title": "seccompProfile",
+          "type": "object"
+        }
+      },
+      "required": [
+        "allowPrivilegeEscalation",
+        "readOnlyRootFilesystem",
+        "runAsUser",
+        "runAsGroup",
+        "seccompProfile",
+        "capabilities"
+      ],
+      "title": "containerSecurityContext",
+      "type": "object"
+    },
+    "crds": {
+      "properties": {
+        "create": {
+          "default": true,
+          "description": "Specifies whether the CRDs should be created when installing the chart.",
+          "required": [],
+          "title": "create",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "create"
+      ],
+      "title": "crds",
+      "type": "object"
+    },
+    "dnsPolicy": {
+      "default": "",
+      "required": [],
+      "title": "dnsPolicy",
+      "type": "string"
+    },
+    "fullnameOverride": {
+      "default": "",
+      "required": [],
+      "title": "fullnameOverride",
+      "type": "string"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "hostNetwork": {
+      "default": false,
+      "required": [],
+      "title": "hostNetwork",
+      "type": "boolean"
+    },
+    "image": {
+      "properties": {
+        "pullPolicy": {
+          "default": "IfNotPresent",
+          "required": [],
+          "title": "pullPolicy",
+          "type": "string"
+        },
+        "registry": {
+          "default": "ghcr.io",
+          "required": [],
+          "title": "registry",
+          "type": "string"
+        },
+        "repository": {
+          "default": "cloudnative-pg/plugin-barman-cloud",
+          "required": [],
+          "title": "repository",
+          "type": "string"
+        },
+        "tag": {
+          "default": "",
+          "description": "Overrides the image tag whose default is the chart appVersion.",
+          "required": [],
+          "title": "tag",
+          "type": "string"
+        }
+      },
+      "required": [
+        "registry",
+        "repository",
+        "pullPolicy",
+        "tag"
+      ],
+      "title": "image",
+      "type": "object"
+    },
+    "imagePullSecrets": {
+      "additionalProperties": true,
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "imagePullSecrets"
+    },
+    "nameOverride": {
+      "default": "",
+      "required": [],
+      "title": "nameOverride",
+      "type": "string"
+    },
+    "namespaceOverride": {
+      "default": "",
+      "required": [],
+      "title": "namespaceOverride",
+      "type": "string"
+    },
+    "nodeSelector": {
+      "additionalProperties": true,
+      "description": "Nodeselector for the operator to be installed.",
+      "required": [],
+      "title": "nodeSelector"
+    },
+    "podAnnotations": {
+      "additionalProperties": true,
+      "description": "Annotations to be added to the pod.",
+      "required": [],
+      "title": "podAnnotations"
+    },
+    "podLabels": {
+      "additionalProperties": true,
+      "description": "Labels to be added to the pod.",
+      "required": [],
+      "title": "podLabels"
+    },
+    "podSecurityContext": {
+      "description": "Security Context for the whole pod.",
+      "properties": {
+        "runAsNonRoot": {
+          "default": true,
+          "required": [],
+          "title": "runAsNonRoot",
+          "type": "boolean"
+        },
+        "seccompProfile": {
+          "properties": {
+            "type": {
+              "default": "RuntimeDefault",
+              "required": [],
+              "title": "type",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "title": "seccompProfile",
+          "type": "object"
+        }
+      },
+      "required": [
+        "runAsNonRoot",
+        "seccompProfile"
+      ],
+      "title": "podSecurityContext",
+      "type": "object"
+    },
+    "priorityClassName": {
+      "default": "",
+      "description": "Priority indicates the importance of a Pod relative to other Pods.",
+      "required": [],
+      "title": "priorityClassName",
+      "type": "string"
+    },
+    "rbac": {
+      "properties": {
+        "create": {
+          "default": true,
+          "description": "Specifies whether Role and RoleBinding should be created.",
+          "required": [],
+          "title": "create",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "create"
+      ],
+      "title": "rbac",
+      "type": "object"
+    },
+    "replicaCount": {
+      "default": 1,
+      "required": [],
+      "title": "replicaCount",
+      "type": "integer"
+    },
+    "resources": {
+      "additionalProperties": true,
+      "required": [],
+      "title": "resources"
+    },
+    "service": {
+      "properties": {
+        "ipFamilies": {
+          "description": "Sets the families that should be supported and the order in which they should be applied to ClusterIP as well. Can be IPv4 and/or IPv6.",
+          "items": {
+            "enum": [
+              "IPv4",
+              "IPv6"
+            ],
+            "required": []
+          },
+          "required": [],
+          "title": "ipFamilies",
+          "type": "array"
+        },
+        "ipFamilyPolicy": {
+          "default": "",
+          "description": "Set the ip family policy to configure dual-stack see [Configure dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services)",
+          "required": [],
+          "title": "ipFamilyPolicy",
+          "type": "string"
+        },
+        "name": {
+          "default": "barman-cloud",
+          "description": "DO NOT CHANGE THE SERVICE NAME as it is currently used to generate the certificate\nand can not be configured",
+          "required": [],
+          "title": "name",
+          "type": "string"
+        },
+        "port": {
+          "default": 9090,
+          "required": [],
+          "title": "port",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "port",
+        "ipFamilyPolicy"
+      ],
+      "title": "service",
+      "type": "object"
+    },
+    "serviceAccount": {
+      "properties": {
+        "create": {
+          "default": true,
+          "description": "Specifies whether the service account should be created.",
+          "required": [],
+          "title": "create",
+          "type": "boolean"
+        },
+        "name": {
+          "default": "",
+          "description": "The name of the service account to use.\nIf not set and create is true, a name is generated using the fullname template.",
+          "required": [],
+          "title": "name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "create",
+        "name"
+      ],
+      "title": "serviceAccount",
+      "type": "object"
+    },
+    "sidecarImage": {
+      "properties": {
+        "registry": {
+          "default": "ghcr.io",
+          "required": [],
+          "title": "registry",
+          "type": "string"
+        },
+        "repository": {
+          "default": "cloudnative-pg/plugin-barman-cloud-sidecar",
+          "required": [],
+          "title": "repository",
+          "type": "string"
+        },
+        "tag": {
+          "default": "",
+          "description": "Overrides the image tag whose default is the chart appVersion.",
+          "required": [],
+          "title": "tag",
+          "type": "string"
+        }
+      },
+      "required": [
+        "registry",
+        "repository",
+        "tag"
+      ],
+      "title": "sidecarImage",
+      "type": "object"
+    },
+    "tolerations": {
+      "additionalProperties": true,
+      "description": "Tolerations for the operator to be installed.",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "tolerations"
+    },
+    "topologySpreadConstraints": {
+      "additionalProperties": true,
+      "description": "Topology Spread Constraints for the operator to be installed.",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "topologySpreadConstraints"
+    },
+    "updateStrategy": {
+      "additionalProperties": true,
+      "description": "Update strategy for the operator.\nref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy\nFor example:\n type: RollingUpdate\n rollingUpdate:\n   maxSurge: 25%\n   maxUnavailable: 25%\n\nWARNING: the RollingUpdate strategy is not supported by the operator yet so it can\ncurrently only use the Recreate strategy.",
+      "required": [],
+      "title": "updateStrategy"
     }
+  },
+  "required": [
+    "replicaCount",
+    "image",
+    "sidecarImage",
+    "nameOverride",
+    "fullnameOverride",
+    "namespaceOverride",
+    "hostNetwork",
+    "dnsPolicy",
+    "crds",
+    "serviceAccount",
+    "rbac",
+    "containerSecurityContext",
+    "podSecurityContext",
+    "priorityClassName",
+    "service",
+    "certificate"
+  ],
+  "type": "object"
 }

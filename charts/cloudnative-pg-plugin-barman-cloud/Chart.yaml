@@ -1,40 +1,26 @@
-#
-# Copyright The CloudNativePG Contributors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
 apiVersion: v2
-name: plugin-barman-cloud
-description: CloudNativePG plugin for barman cloud Helm Chart
-icon: https://raw.githubusercontent.com/cloudnative-pg/artwork/main/cloudnativepg-logo.svg
-type: application
-version: "0.1.0"
-# This is the version number of the application being deployed. This version number should be
-# incremented each time you make changes to the application. Versions are not expected to
-# follow Semantic Versioning, they should reflect the version the application is using.
-# It is recommended to use it with quotes.
-appVersion: "v0.5.0"
-sources:
-  - https://github.com/cloudnative-pg/plugin-barman-cloud
-keywords:
-  - barman
-  - backup
-  - postgresql
-  - postgres
-  - database
+appVersion: v0.9.0
+description: Helm Chart for CloudNativePG's CNPG-I backup plugin using Barman Cloud
 home: https://cloudnative-pg.io
+icon: https://raw.githubusercontent.com/cloudnative-pg/artwork/main/cloudnativepg-logo.svg
+keywords:
+- barman
+- cloud
+- backup
+- postgresql
+- postgres
+- database
+- cloudnativepg
+- cloudnative-pg
 maintainers:
-  - name: quantumenigmaa
-    email: thibaud.vaisseau@gmail.com
-  - name: quentinbisson
-    email: quentin.bisson@gmail.com
+- email: itay@verito.digital
+  name: itay-grudev
+- email: thibaud.vaisseau@gmail.com
+  name: quantumenigmaa
+- email: quentin.bisson@gmail.com
+  name: quentinbisson
+name: plugin-barman-cloud
+sources:
+- https://github.com/cloudnative-pg/plugin-barman-cloud
+type: application
+version: 0.3.1
