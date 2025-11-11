@@ -184,6 +184,7 @@ export class AplOperator {
       await this.gitRepo.waitForCommits()
       await this.gitRepo.syncAndAnalyzeChanges()
 
+      // TODO is this needed here?
       await this.aplOps.bootstrap()
       await this.aplOps.validateValues()
 

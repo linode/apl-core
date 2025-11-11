@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv'
 import { terminal } from '../common/debug'
 import { AplOperator, AplOperatorConfig } from './apl-operator'
-import { Installer } from './installer'
+import { GitCredentials, Installer } from './installer'
 import { operatorEnv } from './validators'
 import { env } from '../common/envalid'
 import fs from 'fs'
@@ -14,10 +14,10 @@ dotenv.config()
 
 const d = terminal('operator:main')
 
-function loadConfig(aplOps: AplOperations): AplOperatorConfig {
+function loadConfig(aplOps: AplOperations, gitCredentials: GitCredentials): AplOperatorConfig {
   // Get credentials from process.env directly since they may have been set after operatorEnv was parsed
-  const username = process.env.GIT_USERNAME || operatorEnv.GIT_USERNAME
-  const password = process.env.GIT_PASSWORD || operatorEnv.GIT_PASSWORD
+  const username = operatorEnv.GIT_USERNAME || gitCredentials.username
+  const password = operatorEnv.GIT_PASSWORD || gitCredentials.password
   const gitHost = env.GIT_URL
   const gitPort = env.GIT_PORT
   const gitProtocol = env.GIT_PROTOCOL
@@ -73,12 +73,12 @@ async function main(): Promise<void> {
     // Phase 1: Run installation with retry until success
     const installer = new Installer(aplOps)
     d.info('=== Starting APL Installation Process ===')
-    await installer.runInstallationWithRetry()
-    await installer.setEnvAndCreateSecrets()
+    await installer.reconcileInstall()
+    const gitCredentials = await installer.setEnvAndCreateSecrets()
     d.info('APL installation completed successfully')
 
     // Phase 2: Start operator for GitOps operations
-    const config = loadConfig(aplOps)
+    const config = loadConfig(aplOps, gitCredentials)
     const operator = new AplOperator(config)
     handleTerminationSignals(operator)
     await operator.start()

@@ -5,6 +5,11 @@ import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 import * as process from 'node:process'
 
+export interface GitCredentials {
+  username: string
+  password: string
+}
+
 export class Installer {
   private d = terminal('operator:apl-installer')
   private aplOps: AplOperations
@@ -14,7 +19,7 @@ export class Installer {
     this.d.info('Initializing APL Installer')
   }
 
-  public async runInstallationWithRetry(): Promise<void> {
+  public async reconcileInstall(): Promise<void> {
     let attemptNumber = 0
 
     while (true) {
@@ -81,7 +86,7 @@ export class Installer {
     }
   }
 
-  public async setEnvAndCreateSecrets(): Promise<void> {
+  public async setEnvAndCreateSecrets(): Promise<GitCredentials> {
     this.d.info('Extracting credentials from installation values')
 
     try {
@@ -89,11 +94,12 @@ export class Installer {
       const values = (await hfValues()) as Record<string, any>
 
       // Extract git credentials from values
-      const gitUsername = values.apps.gitea?.adminUsername || 'otomi-admin'
-      const gitPassword = values.apps.gitea?.adminPassword
+      const gitUsername: string = values.apps.gitea?.adminUsername || 'otomi-admin'
+      const gitPassword: string = values.apps.gitea?.adminPassword
 
       if (!gitUsername || !gitPassword) {
-        this.d.warn('Git credentials not found in values, operator will run without GitOps functionality')
+        // TODO do we want to throw here or generate random credentials?
+        throw new Error('Git credentials not found in values')
       } else {
         await createUpdateGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {
           GIT_USERNAME: gitUsername,
@@ -114,6 +120,7 @@ export class Installer {
         this.d.debug('SOPS Age private key not found or encrypted, skipping')
       }
       process.env.CI = 'true'
+      return { username: gitUsername, password: gitPassword }
     } catch (error) {
       this.d.error('Failed to extract credentials:', getErrorMessage(error))
       throw error
