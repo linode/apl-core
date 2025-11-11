@@ -176,8 +176,13 @@ export const getPendingHelmReleases = async (): Promise<HelmRelease[]> => {
   d.info(`Retrieved ${Object.keys(releases).length} Helm releases from Kubernetes`)
   const pendingReleases: HelmRelease[] = []
   Object.keys(releases).forEach((key) => {
+    d.info(`Release: ${key}, Status: ${releases[key].status}`)
     const release = releases[key]
-    if (release.status === 'pending-upgrade') {
+    if (
+      release.status === 'pending-upgrade' ||
+      release.status === 'pending-install' ||
+      release.status === 'pending-rollback'
+    ) {
       pendingReleases.push(release)
     }
   })
