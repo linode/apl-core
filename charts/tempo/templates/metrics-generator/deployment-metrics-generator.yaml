@@ -12,9 +12,9 @@ metadata:
   {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  minReadySeconds: 10
+  minReadySeconds: {{ .Values.metricsGenerator.minReadySeconds }}
   replicas: {{ .Values.metricsGenerator.replicas }}
-  revisionHistoryLimit: 10
+  revisionHistoryLimit: {{ .Values.tempo.revisionHistoryLimit }}
   selector:
     matchLabels:
       {{- include "tempo.selectorLabels" $dict | nindent 6 }}
@@ -51,12 +51,17 @@ spec:
       hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      initContainers:
+        {{- toYaml .Values.metricsGenerator.initContainers | nindent 8 }}
       containers:
         - args:
             - -target=metrics-generator
             - -config.file=/conf/tempo.yaml
             - -mem-ballast-size-mbs=1024
             {{- with .Values.metricsGenerator.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.global.extraArgs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           image: {{ include "tempo.imageReference" $dict }}
@@ -76,10 +81,17 @@ spec:
               {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
-          {{- with .Values.metricsGenerator.extraEnvFrom }}
+          {{- if or .Values.global.extraEnvFrom .Values.metricsGenerator.extraEnvFrom }}
           envFrom:
-            {{- toYaml . | nindent 12 }}
+            {{- with .Values.global.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.metricsGenerator.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
+          livenessProbe:
+            {{- toYaml .Values.tempo.livenessProbe | nindent 12 }}
           readinessProbe:
             {{- toYaml .Values.tempo.readinessProbe | nindent 12 }}
           resources:

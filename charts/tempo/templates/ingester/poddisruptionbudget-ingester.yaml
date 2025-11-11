@@ -4,6 +4,7 @@ apiVersion: {{ include "tempo.pdb.apiVersion" . }}
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "tempo.resourceName" $dict }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "tempo.labels" $dict | nindent 4 }}
 spec:
