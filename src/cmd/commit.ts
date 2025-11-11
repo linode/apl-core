@@ -8,7 +8,7 @@ import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { createUpdateGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
+import { createUpdateConfigMap, createUpdateGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
 import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
@@ -270,7 +270,7 @@ export async function isOAuth2ProxyAvailable(discoveryV1Api: DiscoveryV1Api): Pr
   }
 
   const hasReadyEndpoint = endpointSlices.items.some((slice) => {
-    const endpoints = slice.endpoints
+    const { endpoints } = slice
     if (!endpoints || endpoints.length === 0) {
       return false
     }
@@ -334,11 +334,9 @@ export const printWelcomeMessage = async (secretName: string, domainSuffix: stri
 }
 
 export const createWelcomeConfigMap = async (secretName: string, domainSuffix: string): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:createWelcomeConfigMap`)
+  const welcomeMessage = `Welcome to Akamai App Platform!
 
-  const welcomeMessage = `Welcome to Akamai Application Platform (APL)!
-
-Your APL installation has completed successfully.
+Your installation has completed successfully.
 
 CONSOLE ACCESS:
   The App Platform console is available at: https://console.${domainSuffix}
@@ -354,62 +352,15 @@ NEXT STEPS:
   2. Log in using the credentials obtained from the commands above
   3. Explore the platform features and start deploying your applications
 
-For documentation and support, visit: https://docs.apl.akamai.com
+For documentation and support, visit: https://techdocs.akamai.com/app-platform/docs/welcome
 `
 
-  const instructions = `# Welcome to APL
-
-View this welcome message anytime with:
-kubectl get configmap apl-welcome -n apl-operator -o jsonpath='{.data.message}'
-
-Or view all welcome information:
-kubectl get configmap apl-welcome -n apl-operator -o yaml
-`
-
-  const configMapManifest = {
-    apiVersion: 'v1',
-    kind: 'ConfigMap',
-    metadata: {
-      name: 'apl-welcome',
-      namespace: 'apl-operator',
-      labels: {
-        'app.kubernetes.io/name': 'apl',
-        'app.kubernetes.io/component': 'welcome',
-        'app.kubernetes.io/managed-by': 'apl-operator',
-      },
-    },
-    data: {
-      message: welcomeMessage,
-      instructions,
-      consoleUrl: `https://console.${domainSuffix}`,
-      secretName,
-      secretNamespace: 'keycloak',
-    },
-  }
-
-  try {
-    await k8s.core().createNamespacedConfigMap({ namespace: 'apl-operator', body: configMapManifest })
-    d.info('Welcome ConfigMap created successfully')
-    d.info(
-      "View welcome information with: kubectl get configmap apl-welcome -n apl-operator -o jsonpath='{.data.message}'",
-    )
-  } catch (error: any) {
-    if (error.response?.statusCode === 409) {
-      // ConfigMap already exists, update it
-      try {
-        await k8s
-          .core()
-          .replaceNamespacedConfigMap({ name: 'apl-welcome', namespace: 'apl-operator', body: configMapManifest })
-        d.info('Welcome ConfigMap updated successfully')
-      } catch (updateError) {
-        d.error('Failed to update welcome ConfigMap:', updateError)
-        throw updateError
-      }
-    } else {
-      d.error('Failed to create welcome ConfigMap:', error)
-      throw error
-    }
-  }
+  await createUpdateConfigMap(k8s.core(), 'welcome', 'apl-operator', {
+    message: welcomeMessage,
+    consoleUrl: `https://console.${domainSuffix}`,
+    secretName,
+    secretNamespace: 'keycloak',
+  })
 }
 
 export const module = {

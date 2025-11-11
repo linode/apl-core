@@ -4,14 +4,7 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
-import {
-  applyServerSide,
-  getDeploymentState,
-  getHelmReleases,
-  k8s,
-  restartOtomiApiDeployment,
-  setDeploymentState,
-} from 'src/common/k8s'
+import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -23,7 +16,6 @@ import {
   createCredentialsSecret,
   createWelcomeConfigMap,
   initialSetupData,
-  retryIsOAuth2ProxyRunning,
 } from './commit'
 import { collectTraces } from './traces'
 
@@ -57,28 +49,6 @@ const retryInstallStep = async <T, Args extends any[]>(
       },
     },
   )
-}
-
-function runPostInstallSteps(initialData: any) {
-  void (async () => {
-    const postInstallLogger = terminal(`cmd:${cmdName}:post-install`)
-    try {
-      postInstallLogger.info('Starting post-install steps...')
-
-      await retryIsOAuth2ProxyRunning()
-      postInstallLogger.info('OAuth2 proxy check completed successfully')
-
-      await restartOtomiApiDeployment(k8s.app())
-      postInstallLogger.info('API restart completed successfully')
-
-      await createWelcomeConfigMap(initialData.secretName, initialData.domainSuffix)
-      postInstallLogger.info('Welcome ConfigMap creation completed successfully')
-
-      postInstallLogger.info('All post-install steps completed successfully')
-    } catch (error) {
-      postInstallLogger.error('Post-install steps failed:', error)
-    }
-  })()
 }
 
 export const installAll = async () => {
@@ -144,10 +114,7 @@ export const installAll = async () => {
       },
       { streams: { stdout: d.stream.log, stderr: d.stream.error } },
     )
-    await cloneOtomiChartsInGitea()
-
-    // Run post-install steps synchronously but asynchronously without blocking
-    runPostInstallSteps(initialData)
+    await createWelcomeConfigMap(initialData.secretName, initialData.domainSuffix)
   }
   await setDeploymentState({ status: 'deployed', version })
   d.info('Installation completed')
