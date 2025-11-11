@@ -1,10 +1,10 @@
 # cert-manager
 
-cert-manager is a Kubernetes addon to automate the management and issuance of
-TLS certificates from various issuing sources.
+cert-manager creates TLS certificates for workloads in your Kubernetes or OpenShift cluster and renews the certificates before they expire.
 
-It will ensure certificates are valid and up to date periodically, and attempt
-to renew certificates at an appropriate time before expiry.
+cert-manager can obtain certificates from a [variety of certificate authorities](https://cert-manager.io/docs/configuration/issuers/), including:
+[Let's Encrypt](https://cert-manager.io/docs/configuration/acme/), [HashiCorp Vault](https://cert-manager.io/docs/configuration/vault/),
+[Venafi](https://cert-manager.io/docs/configuration/venafi/) and [private PKI](https://cert-manager.io/docs/configuration/ca/).
 
 ## Prerequisites
 
@@ -13,23 +13,21 @@ to renew certificates at an appropriate time before expiry.
 ## Installing the Chart
 
 Full installation instructions, including details on how to configure extra
-functionality in cert-manager can be found in the [installation docs](https://cert-manager.io/docs/installation/kubernetes/).
-
-Before installing the chart, you must first install the cert-manager CustomResourceDefinition resources.
-This is performed in a separate step to allow you to easily uninstall and reinstall cert-manager without deleting your installed custom resources.
-
-```bash
-$ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.crds.yaml
-```
+functionality in cert-manager can be found in the [installation docs](https://cert-manager.io/docs/installation/helm/).
 
 To install the chart with the release name `cert-manager`:
 
 ```console
-## Add the Jetstack Helm repository
-$ helm repo add jetstack https://charts.jetstack.io --force-update
+# Add the Jetstack Helm repository
+helm repo add jetstack https://charts.jetstack.io --force-update
 
-## Install the cert-manager helm chart
-$ helm install cert-manager --namespace cert-manager --version v1.18.2 jetstack/cert-manager
+# Install the cert-manager helm chart
+helm install \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.19.1 \
+  --set crds.enabled=true
 ```
 
 In order to begin issuing certificates, you will need to set up a ClusterIssuer
@@ -56,17 +54,25 @@ are documented in our full [upgrading guide](https://cert-manager.io/docs/instal
 To uninstall/delete the `cert-manager` deployment:
 
 ```console
-$ helm delete cert-manager --namespace cert-manager
+helm delete cert-manager --namespace cert-manager
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
 
 If you want to completely uninstall cert-manager from your cluster, you will also need to
-delete the previously installed CustomResourceDefinition resources:
+delete the previously installed CustomResourceDefinition resources.
 
-```console
-$ kubectl delete -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.crds.yaml
-```
+> ☢️ This will remove all `Issuer`,`ClusterIssuer`,`Certificate`,`CertificateRequest`,`Order` and `Challenge` resources from the cluster:
+>
+> ```console
+> kubectl delete crd \
+>   issuers.cert-manager.io \
+>   clusterissuers.cert-manager.io \
+>   certificates.cert-manager.io \
+>   certificaterequests.cert-manager.io \
+>   orders.acme.cert-manager.io \
+>   challenges.acme.cert-manager.io
+> ```
 
 ## Configuration
 <!-- AUTO-GENERATED -->
@@ -87,6 +93,18 @@ For example:
 imagePullSecrets:
   - name: "image-pull-secret"
 ```
+#### **global.nodeSelector** ~ `object`
+> Default value:
+> ```yaml
+> {}
+> ```
+
+Global node selector  
+  
+The nodeSelector on Pods tells Kubernetes to schedule Pods on the nodes with matching labels. For more information, see [Assigning Pods to Nodes](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/).  
+  
+If a component-specific nodeSelector is also set, it will take precedence.
+
 #### **global.commonLabels** ~ `object`
 > Default value:
 > ```yaml
@@ -108,6 +126,18 @@ The number of old ReplicaSets to retain to allow rollback (if not set, the defau
 > ```
 
 The optional priority class to be used for the cert-manager pods.
+#### **global.hostUsers** ~ `bool`
+
+Set all pods to run in a user namespace without host access. Experimental: may be removed once the Kubernetes User Namespaces feature is GA.  
+  
+Requirements:  
+  - Kubernetes ≥ 1.33, or  
+  - Kubernetes 1.27–1.32 with UserNamespacesSupport feature gate enabled.  
+  
+Set to false to run pods in a user namespace without host access.  
+  
+See [limitations](https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/#limitations) for details.
+
 #### **global.rbac.create** ~ `bool`
 > Default value:
 > ```yaml
@@ -1296,6 +1326,8 @@ Create network policies for the webhooks.
 > - from:
 >     - ipBlock:
 >         cidr: 0.0.0.0/0
+>     - ipBlock:
+>         cidr: ::/0
 > ```
 
 Ingress rule for the webhook network policy. By default, it allows all inbound traffic.
@@ -1317,6 +1349,8 @@ Ingress rule for the webhook network policy. By default, it allows all inbound t
 >   to:
 >     - ipBlock:
 >         cidr: 0.0.0.0/0
+>     - ipBlock:
+>         cidr: ::/0
 > ```
 
 Egress rule for the webhook network policy. By default, it allows all outbound traffic to ports 80 and 443, as well as DNS ports.

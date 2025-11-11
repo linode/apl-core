@@ -32,7 +32,7 @@ loki:
   auth_enabled: true
   schemaConfig:
     configs:
-    - from: 2020-09-07
+    - from: "2020-09-07"
       store: boltdb-shipper
       {{- if $useObjectStorage }}
       object_store: s3

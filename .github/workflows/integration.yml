@@ -9,7 +9,7 @@ on:
       kubernetes_versions:
         description: 'Kubernetes version'
         type: string
-        default: "['1.33']"
+        default: "['1.34']"
       install_profile:
         description: 'APL installation profile'
         type: string
@@ -48,10 +48,10 @@ on:
         description: 'Kubernetes version'
         type: choice
         options:
-          - "['1.31']"
           - "['1.32']"
           - "['1.33']"
-        default: "['1.33']"
+          - "['1.34']"
+        default: "['1.34']"
       install_profile:
         description: APL installation profile
         default: minimal-with-team
@@ -60,7 +60,6 @@ on:
           - minimal
           - minimal-with-team
           - full
-          - upgrade
           - no-apl
       domain_zone:
         type: choice
@@ -104,6 +103,7 @@ env:
   GIT_USER: svcAPLBot
   CHECK_CONTEXT: continuous-integration/integration-test
   COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
+  COMMIT_REF: '${{ github.event.pull_request.head.ref || github.ref }}'
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
   DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
@@ -115,13 +115,14 @@ jobs:
     steps:
       - name: Print user input
         run: |
-          echo 'ref: ${{ github.event.pull_request.head.ref || github.ref }}'
+          echo "ref: $COMMIT_REF"
           echo 'install_profile: ${{ inputs.install_profile }}'
           echo 'kubernetes_versions: ${{ inputs.kubernetes_versions }}'
           echo 'kms: ${{ inputs.kms }}'
           echo 'domain_zone: ${{ inputs.domain_zone }}'
           echo 'certificate: ${{ inputs.certificate }}'
           echo 'is_pre_installed: ${{ inputs.is_pre_installed }}'
+          echo 'disableORCS: ${{ inputs.disableORCS }}'
 
   preprocess-linode-input:
     needs: preprocess-input
@@ -253,13 +254,6 @@ jobs:
             sleep 10
           done
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
-      - name: Create image pull secret on test cluster
-        if: ${{ inputs.install_profile != 'no-apl' }}
-        run: |
-          kubectl create secret docker-registry reg-otomi-github \
-            --docker-server=${{ env.CACHE_REGISTRY }} \
-            --docker-username=${{ env.BOT_USERNAME }} \
-            --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
       - name: Checkout
         if: ${{ inputs.install_profile != 'no-apl' }}
         uses: actions/checkout@v5
@@ -304,38 +298,6 @@ jobs:
           helm install wiz-lke-ac wiz-sec/wiz-admission-controller --values "$ADMISSION_PATH" -n "$NAMESPACE" --wait
 
           echo "✅ Wiz deployment for cluster $CLUSTER_NAME completed."
-      - name: Prepare APL chart
-        if: ${{ inputs.install_profile != 'no-apl' }}
-        run: |
-          ref=${{ github.event.pull_request.head.ref || github.ref }}
-          tag=${ref##*/}
-          sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/apl/Chart.yaml
-          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.LINODE_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
-          sed --in-place "s/CLUSTER_NAME_PLACEHOLDER/aplinstall${{ env.LINODE_CLUSTER_ID }}/g" tests/integration/${{ inputs.install_profile }}.yaml
-          sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
-          touch values-container-registry.yaml
-
-          # If a pipeline installs APL from the semver tag then pull container image from DockerHub
-          [[ ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]] && exit 0
-
-          # If "disableORCS" is false, then pull image from DockerHub
-          [[ '${{ inputs.disableORCS }}' == 'false' ]] && exit 0
-
-          # Pull image from cache registry
-          cat << EOF > values-container-registry.yaml
-          imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
-          imagePullSecretNames:
-            - reg-otomi-github
-          EOF
-      - name: Install Cloud Firewall Controller
-        if: ${{ inputs.install_profile != 'no-apl' }}
-        run: |
-          helm repo add linode-cfw https://linode.github.io/cloud-firewall-controller
-          helm repo update linode-cfw
-
-          helm install cloud-firewall-crd linode-cfw/cloud-firewall-crd \
-            && kubectl wait --for condition=established --timeout=60s crd/cloudfirewalls.networking.linode.com \
-            && helm install cloud-firewall-ctrl linode-cfw/cloud-firewall-controller --set-json firewall='{"outbound":[],"inbound":[{"label":"allow-prometheus-node-export-tcp","action":"ACCEPT","description":"Prometheus Node Exporter","protocol":"TCP","ports":"9100","addresses":{"ipv4":["192.168.128.0/17"]}}]}'
       - name: APL install
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
@@ -350,29 +312,27 @@ jobs:
           touch values.yaml
 
           adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
+
+          additional_args=""
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
-          [[ '${{ inputs.kms }}' == 'age' ]] && kms="--set kms.sops.provider=age"
-          [[ '${{ inputs.disableORCS }}' == 'true' ]] && disableORCS="--set otomi.useORCS=false"
-
-          if [[ '${{ inputs.is_pre_installed }}' == 'true' ]]; then
-            cat <<EOF >> values.yaml
-          otomi:
-            isPreInstalled: true
-          EOF
+          [[ '${{ inputs.kms }}' == 'age' ]] && additional_args+=" --set kms.sops.provider=age"
+          [[ '${{ inputs.is_pre_installed }}' == 'true' ]] && additional_args+=" --set otomi.isPreInstalled=true"
+          if [[ '${{ inputs.disableORCS }}' == 'true' ]]; then
+            additional_args+=" --set otomi.useORCS=false"
+            if [[ ! ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]]; then
+              # If a pipeline installs APL from the semver tag then pull container image from DockerHub
+              # Use cache registry otherwise
+              kubectl create secret docker-registry reg-otomi-github \
+                --docker-server=${{ env.CACHE_REGISTRY }} \
+                --docker-username=${{ env.BOT_USERNAME }} \
+                --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
+              additional_args+=" --set imageName=${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }} --set imagePullSecretNames[0]=reg-otomi-github"
             fi
-
-          if [[ '${{ inputs.kms }}' == 'age' ]]; then
-            cat <<EOF >> values.yaml
-          kms:
-            sops:
-              provider: age
-          EOF
-            fi
+          fi
 
           install_args="otomi chart/apl --wait --wait-for-jobs --timeout 90m0s \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
-            --values values-container-registry.yaml \
             --values values.yaml \
             --set cluster.provider=linode \
             --set dns.domainFilters[0]=${{ env.DOMAIN }} \
@@ -383,7 +343,11 @@ jobs:
             --set otomi.hasExternalDNS=true \
             --set cluster.domainSuffix=${{ env.DOMAIN }} \
             --set otomi.adminPassword=$adminPassword \
-            $disableORCS $kms"
+            --set cluster.name=aplinstall${{ env.LINODE_CLUSTER_ID }} \
+            --set cluster.k8sContext=${{ env.LINODE_CLUSTER_CONTEXT }} \
+            --set otomi.version=${GITHUB_REF##*/} \
+            --set apps.linode-cfw.enabled=true \
+            $additional_args"
 
           helm install $install_args &
           HELM_PID=$!
@@ -422,10 +386,6 @@ jobs:
         if: failure()
         run: |
           kubectl logs jobs/otomi-apl --tail 150
-      - name: Gather otomi-e2e logs on failure
-        if: failure()
-        run: |
-          kubectl logs -n maintenance -l app.kubernetes.io/instance=job-e2e --tail 15000
       - name: Remove the test cluster
         if: ${{ always() && inputs.domain_zone == 'DNS-Integration' }}
         run: |

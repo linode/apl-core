@@ -1,0 +1,76 @@
+{{- if .Values.test.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "keycloak.fullname" . }}-test
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "keycloak.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: hook-succeeded
+data:
+  test.sh: |
+    #!/usr/bin/env bash
+    set -eu
+
+    if ! python3 -c 'import selenium' &> /dev/null
+    then
+      if ! command -v pip3 &> /dev/null
+      then
+        echo 'Installing pip3...'
+        export PATH="$PATH:$HOME/.local/bin"
+        mkdir -p "$HOME/.config/pip"
+        echo -e '[global]\nbreak-system-packages = true' > "$HOME/.config/pip/pip.conf"
+        wget -q -P "$HOME" https://bootstrap.pypa.io/get-pip.py
+        python3 "$HOME/get-pip.py" --user 1> /dev/null
+      fi
+
+      echo 'Installing selenium module...'
+      pip3 -q install selenium
+    fi
+
+    python3 "$(dirname $0)/test.py"
+  test.py: |
+    import os
+    from selenium import webdriver
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.chrome.options import Options
+    from selenium.webdriver.support import expected_conditions
+
+    print('Creating chrome driver in headless mode')
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    driver = webdriver.Chrome(options=chrome_options)
+
+    base_url = 'http://{{ include "keycloak.fullname" . }}-http{{ if ne 80 (int .Values.service.httpPort) }}:{{ .Values.service.httpPort }}{{ end }}'
+
+    print('Opening Keycloak...')
+    driver.get('{0}{{ tpl .Values.http.relativePath . | trimSuffix "/" }}/admin/'.format(base_url))
+
+    username = os.environ['KEYCLOAK_USER']
+    password = os.environ['KEYCLOAK_PASSWORD']
+
+    username_input = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located((By.ID, "username")))
+    password_input = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located((By.ID, "password")))
+    login_button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located((By.ID, "kc-login")))
+
+    print('Entering username...')
+    username_input.send_keys(username)
+
+    print('Entering password...')
+    password_input.send_keys(password)
+
+    print('Clicking login button...')
+    login_button.click()
+
+    WebDriverWait(driver, 30).until(lambda driver: '{{ tpl .Values.http.relativePath . | trimSuffix "/" }}/admin/master/console/' in driver.current_url)
+
+    print('Admin console visible. Login successful.')
+
+    driver.quit()
+
+  {{- end }}

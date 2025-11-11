@@ -13,7 +13,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ template "opentelemetry-operator.serviceAccountName" . }}
-    namespace: {{ .Release.Namespace }}
+    namespace: {{ template "opentelemetry-operator.namespace" . }}
 
 {{ if .Values.kubeRBACProxy.enabled }}
 ---
@@ -31,6 +31,6 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ template "opentelemetry-operator.serviceAccountName" . }}
-    namespace: {{ .Release.Namespace }}
+    namespace: {{ template "opentelemetry-operator.namespace" . }}
 {{- end }}
 {{ end }}

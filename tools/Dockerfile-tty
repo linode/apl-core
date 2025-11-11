@@ -2,40 +2,40 @@
 # The above is needed for the "--checksum" aurgument to work in the ADD instruction
 
 # Using ubuntu:noble base image
-FROM ubuntu:jammy
+FROM ubuntu:24.04
 
 # Version definitions and checksums
 # https://github.com/mikefarah/yq/releases
-ARG YQ_VERSION=4.44.5
-ARG YQ_CHECKSUM=sha256:638c4b251c49201fc94b598834b715f8f1c6e9b1854d2820772d2c79f0289002
+ARG YQ_VERSION=4.48.1
+ARG YQ_CHECKSUM=sha256:99df6047f5b577a9d25f969f7c3823ada3488de2e2115b30a0abb10d9324fd9f
 
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=1.33.0
-ARG KUBECTL_CHECKSUM=sha256:9efe8d3facb23e1618cba36fb1c4e15ac9dc3ed5a2c2e18109e4a66b2bac12dc
+ARG KUBECTL_VERSION=1.34.1
+ARG KUBECTL_CHECKSUM=sha256:7721f265e18709862655affba5343e85e1980639395d5754473dafaadcaa69e3
 
 # https://github.com/derailed/k9s/releases
-ARG K9S_VERSION=0.32.7
-ARG K9S_CHECKSUM=sha256:03934727bfbf39b1e61a74d8e045796cda2de14f8ce4c01df27f43d4494021de
+ARG K9S_VERSION=0.50.16
+ARG K9S_CHECKSUM=sha256:bda09dc030a08987fe2b3bed678b15b52f23d6705e872d561932d4ca07db7818
 
-# https://github.com/helm/helm/tags
-ARG HELM_VERSION=3.18.4
-ARG HELM_CHECKSUM=sha256:f8180838c23d7c7d797b208861fecb591d9ce1690d8704ed1e4cb8e2add966c1
+# https://github.com/helm/helm/releases
+ARG HELM_VERSION=3.19.0
+ARG HELM_CHECKSUM=sha256:a7f81ce08007091b86d8bd696eb4d86b8d0f2e1b9f6c714be62f82f96a594496
 
 # https://github.com/vmware-tanzu/velero/releases
-ARG VELERO_VERSION=1.14.0
-ARG VELERO_CHECKSUM=sha256:9b066714cdb874fe34ec123645385d6f8c40c43308bbedf11d3265a7af17fda6
+ARG VELERO_VERSION=1.14.1
+ARG VELERO_CHECKSUM=sha256:1e123f9deb9479f1cd41ba53b799d73b962cd6ff16acebfca233725638c73db2
 
 # https://github.com/tektoncd/cli/releases
-ARG TKN_VERSION=0.38.1
-ARG TKN_CHECKSUM=sha256:75830656f99a08bb86b421b6ff8db50b5ecf3ed2735f2fc4f665b941a43aa18b
+ARG TKN_VERSION=0.42.0
+ARG TKN_CHECKSUM=sha256:e21a96c454502457f1970d720da15153b8b0623b2de2c13598ff96fc98e69c44
 
 # https://github.com/cloudnative-pg/cloudnative-pg/releases
-ARG CNPG_VERSION=1.26.0
-ARG CNPG_CHECKSUM=sha256:c48ddfad3b176132c97c47024240aa051e8f60f69905f96b5e07ce2355456dda
+ARG CNPG_VERSION=1.26.2
+ARG CNPG_CHECKSUM=sha256:765007cea37dab728d09e681bcd00221bbe71252d30212e966f0fc62763f04ec
 
 
 # Installing curl, vim, wget, tmux ttyd and bash-completion
-RUN apt update && apt upgrade -y && apt install -y ttyd jq curl vim wget less tmux bash-completion 
+RUN apt update && apt upgrade -y && apt install -y ttyd jq curl vim wget less tmux bash-completion && rm -rf /var/lib/apt/lists/*
 
 # Installing yq
 ADD --chmod=755 --checksum=${YQ_CHECKSUM} https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64 /usr/local/bin/yq
@@ -65,16 +65,27 @@ ADD --checksum=${CNPG_CHECKSUM} https://github.com/cloudnative-pg/cloudnative-pg
 RUN dpkg -i /tmp/kubectl-cnpg_${CNPG_VERSION}_linux_x86_64.deb && rm /tmp/kubectl-cnpg_${CNPG_VERSION}_linux_x86_64.deb
 
 # Creating user named user
-RUN addgroup --gid 1000 user && adduser --uid 1000 --gid 1000 --disabled-password --gecos "" user
+RUN groupadd --gid 1001 user && useradd --uid 1001 --gid 1001 user --create-home --home-dir /home/user
+
+# Set up kubeconfig generation
+RUN mkdir /etc/kconfig && \
+  echo 'kubectl config set-cluster apl --certificate-authority=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt --server=https://kubernetes.default.svc.cluster.local' > /etc/kconfig/kconfig.sh && \
+  echo 'kubectl config set-credentials default-user --token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)' >> /etc/kconfig/kconfig.sh && \
+  echo 'kubectl config set-context default-context --cluster=apl --namespace=${NAMESPACE} --user=default-user' >> /etc/kconfig/kconfig.sh && \
+  echo 'kubectl config use-context default-context' >> /etc/kconfig/kconfig.sh
 
 # Switching to user user
 USER user
 
 # Setting up kubectl autocompletion
-RUN touch ~/.bashrc && echo 'source <(kubectl completion bash)' >> ~/.bashrc && echo 'alias k=kubectl' >> ~/.bashrc && echo 'complete -o default -F __start_kubectl k' >>~/.bashrc && mkdir ~/.kube
+RUN touch ~/.bashrc && \
+  echo 'source <(kubectl completion bash)' >> ~/.bashrc && \
+  echo 'alias k=kubectl' >> ~/.bashrc &&  \
+  echo 'complete -o default -F __start_kubectl k' >> ~/.bashrc && \
+  echo 'source /etc/kconfig/kconfig.sh > /dev/null' >> ~/.bashrc
 
 # Setting the working directory
 WORKDIR /home/user
 
 # Command to start a tmux session and expose it via ttyd.
-CMD ["ttyd", "-p", "8080", "tmux", "new", "-A"]
+CMD ["ttyd", "-W", "-p", "8080", "tmux", "new", "-A", "/bin/bash"]

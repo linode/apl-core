@@ -1,0 +1,18 @@
+apiVersion: akamai.io/v1alpha1
+kind: AkamaiKnowledgeBase
+metadata:
+    name: demo-kb
+    namespace: team-demo
+spec:
+    pipelineName: 'custom-pipeline'
+    pipelineParameters:
+        url: 'https://docs.example.com/api'
+        table_name: 'custom_knowledge_base'
+        embedding_model: 'text-embedding-3-small'
+        embedding_api_base: 'https://api.openai.com/v1'
+        embed_dim: 1536
+        embed_batch_size: 100
+        db_host: 'pgvector-cluster-rw'
+        secret_name: 'openai-secret'
+        secret_namespace: 'team-demo'
+        db_port: 5432

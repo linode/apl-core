@@ -1,6 +1,18 @@
 apiVersion: v1
 data:
-  defaultPipelineRoot: ""
+  defaultPipelineRoot: "s3://{{ .Values.objectStorage.bucket }}/v2/artifacts"
+  providers: |-
+    s3:
+      default:
+        endpoint: {{ .Values.objectStorage.endpoint }}:{{ .Values.objectStorage.port }}
+        region: {{ .Values.objectStorage.region | quote }}
+        disableSSL: {{ not .Values.objectStorage.secure }}
+        credentials:
+          fromEnv: false
+          secretRef:
+            secretName: mlpipeline-minio-artifact
+            accessKeyKey: accesskey
+            secretKeyKey: secretkey
 kind: ConfigMap
 metadata:
   labels:
@@ -16,10 +28,10 @@ data:
   appName: pipeline
   appVersion: {{ .Chart.AppVersion }}
   autoUpdatePipelineDefaultVersion: "true"
-  objHost: {{ .Values.objectStorage.endpoint }}
-  objRegion: {{ .Values.objectStorage.region }}
-  objPort: "443"
-  bucketName: {{ .Values.objectStorage.bucket }}
+  objHost: {{ .Values.objectStorage.endpoint | quote }}
+  objRegion: {{ .Values.objectStorage.region | quote }}
+  objPort: {{ .Values.objectStorage.port | quote}}
+  bucketName: {{ .Values.objectStorage.bucket | quote }}
   cacheDb: cachedb
   mlmdDb: metadb
   pipelineDb: mlpipeline
@@ -27,7 +39,7 @@ data:
   cacheNodeRestrictions: "false"
   cronScheduleTimezone: UTC
   dbType: mysql
-  defaultPipelineRoot: "minio://{{ .Values.objectStorage.bucket }}/v2/artifacts"
+  defaultPipelineRoot: "s3://{{ .Values.objectStorage.bucket }}/v2/artifacts"
   mysqlHost: ml-pipeline-mysql
   mysqlPort: "3306"
 kind: ConfigMap

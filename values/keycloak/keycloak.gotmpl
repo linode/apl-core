@@ -4,44 +4,59 @@
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
 {{- $globalPullSecret := $v.otomi | get "globalPullSecret" nil }}
 
-{{- if or $v.otomi.linodeLkeImageRepository $v.cluster.defaultStorageClass }}
-global:
-  {{- if $v.otomi.linodeLkeImageRepository }}
-  security:
-    allowInsecureImages: true
-  {{- end }}
-  storageClass: {{ $v.cluster.defaultStorageClass }}
+{{ if $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: {{ $v.otomi.linodeLkeImageRepository }}/quay/keycloak/keycloak
+{{ end }}
+
+{{- if $globalPullSecret }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
 {{- end }}
 
-auth:
-  adminUser: {{ $k.adminUsername | quote }}
-  existingSecret: keycloak-initial-admin
-  passwordSecretKey: password
 service:
-  ports:
-    http: 8080
+  httpPort: 8080
+
+http:
+  relativePath: "/"
 
 enableServiceLinks: false
-customCaExistingSecret: custom-ca
-production: true
-proxy: edge
+
 resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
 priorityClassName: otomi-critical
 
+# Use CNPG platform database
+postgresql:
+  enabled: false
 
-{{- if or $v.otomi.linodeLkeImageRepository $globalPullSecret}}
-image:
-{{- with $globalPullSecret }}
-  pullSecrets:
-    - name: otomi-pullsecret-global
-{{- end }}
-{{- if $v.otomi.linodeLkeImageRepository }}
-  registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-  repository: bitnami/keycloak
-{{- end }}
-{{- end }}
+proxy:
+  mode: xforwarded
 
-initContainers:
+database:
+  vendor: postgres
+  hostname: keycloak-db-rw.keycloak.svc.cluster.local
+  port: 5432
+  existingSecret: keycloak-db-app
+  username: keycloak
+  database: keycloak
+
+cache:
+  stack: custom
+
+args:
+  - start
+
+extraVolumes: |
+  - name: empty-dir
+    emptyDir: {}
+
+extraVolumeMounts: |
+    - mountPath: /opt/keycloak/providers
+      name: empty-dir
+      subPath: app-providers-dir
+
+extraInitContainers: |
+
   # Akamai branding init container
   - name: init-container-theme-copy
     {{- if $v.otomi.linodeLkeImageRepository }}
@@ -56,34 +71,32 @@ initContainers:
       - -c
       - |
         echo "Copying theme..."
-        cp -Rv /app/APL.jar /opt/bitnami/keycloak/providers/
+        cp -Rv /app/APL.jar /opt/keycloak/providers/
+        echo "Copied:"
+        ls /opt/keycloak/providers/
     volumeMounts:
-      - name: empty-dir  # Mounted by Keycloak pod
-        mountPath: /opt/bitnami/keycloak/providers
+      - name: empty-dir
+        mountPath: /opt/keycloak/providers
         subPath: app-providers-dir
 
-# Use CNPG platform database
-postgresql:
-  enabled: false
-externalDatabase:
-  host: keycloak-db-rw.keycloak.svc.cluster.local
-  port: 5432
-  existingSecret: keycloak-db-app
-  existingSecretUserKey: username
-  existingSecretDatabaseKey: dbname
-  existingSecretPasswordKey: password
-
 extraEnv: |
+  - name: KC_CACHE
+    value: local
+  - name: KC_HOSTNAME
+    value: keycloak.{{ $v.cluster.domainSuffix }}
   - name: KC_DB_POOL_INITIAL_SIZE
     value: "5"
   - name: KC_DB_POOL_MIN_SIZE
     value: "5"
   - name: KC_DB_POOL_MAX_SIZE
     value: "32"
-
-{{- if $v.otomi.linodeLkeImageRepository }}
-keycloakConfigCli:
-  image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}"
-    repository: bitnami/keycloak-config-cli
-{{- end }}
+  - name: KC_BOOTSTRAP_ADMIN_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-initial-admin
+        key: username
+  - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-initial-admin
+        key: password

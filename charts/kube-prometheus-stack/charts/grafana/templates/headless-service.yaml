@@ -19,4 +19,5 @@ spec:
   ports:
   - name: {{ .Values.gossipPortName }}-tcp
     port: 9094
+    targetPort: {{ .Values.gossipPortName }}-tcp
 {{- end }}

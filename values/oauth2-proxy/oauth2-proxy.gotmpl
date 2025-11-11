@@ -114,14 +114,17 @@ global:
 
 redis:
   {{- if $v.otomi.linodeLkeImageRepository }}
-  global:
-    imageRegistry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/redis"
   {{- end }}
   enabled: true
   architecture: {{ $r | get "architecture" }}
-  auth:
-    password: {{ $r | get "password" | quote }}
-
+  redisPassword: {{ $r | get "password" | quote }}
+  replicas: 1
+  redis:
+    config:
+      # See http://download.redis.io/redis-stable/redis.conf
+      min-replicas-to-write: 0
   sentinel:
     persistence:
       size: {{ $r.persistence.sentinel.size }}

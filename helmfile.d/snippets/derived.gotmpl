@@ -27,7 +27,7 @@
 {{- $keycloakBaseUrl := printf "https://keycloak.%s" $domainSuffix }}
 {{- $oidcBaseUrl := printf "%s/realms/otomi" $keycloakBaseUrl }}
 {{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
-{{- $oidcBaseUrlBackchannel := "http://keycloak.keycloak/realms/otomi" }}
+{{- $oidcBaseUrlBackchannel := "http://keycloak-keycloakx-http.keycloak/realms/otomi" }}
 {{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
 {{- $tlsSecretName := "otomi-cert-manager-wildcard-cert" }}
 {{- if eq $cm.issuer "externally-managed-tls-secret" }}
@@ -67,6 +67,15 @@
 {{- $istioIngressPublicReleaseLabel := printf "ingressgateway-%s-public" $istioCanaryRevision }}
 {{- $istioEgressReleaseName := print "istio-egressgateway-" $istioCanaryRevision }}
 {{- $istioEgressReleaseLabel := print "egressgateway-" $istioCanaryRevision }}
+
+# Set image tag suffix added to minor version, according to
+# https://github.com/cloudnative-pg/postgres-containers/pkgs/container/postgresql
+{{- $cnpgImageSuffix := "-system-trixie" }}
+{{- if $v.apps.cnpg.useBackupPlugin }}
+  {{- $cnpgImageSuffix = "-standard-trixie" }}
+{{- end }}
+# Set default platform database image for CloudnativePG
+{{- $cnpgDefaultPlatformImage := print "cloudnative-pg/postgresql:15.14" $cnpgImageSuffix }}
 
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
@@ -202,6 +211,9 @@ environments:
         apps:
           argocd:
             enabled: true
+          cnpg:
+            pgImageSuffix: {{ $cnpgImageSuffix | quote }}
+            pgDefaultPlatformImage: {{ $cnpgDefaultPlatformImage }}
           cert-manager:
             enabled: true
             {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}

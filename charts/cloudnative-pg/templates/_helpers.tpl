@@ -212,6 +212,16 @@ namespace scope or clusterwide
 - apiGroups:
   - postgresql.cnpg.io
   resources:
+  - failoverquorums
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - postgresql.cnpg.io
+  resources:
   - backups/status
   - databases/status
   - publications/status
@@ -241,6 +251,7 @@ namespace scope or clusterwide
   resources:
   - clusters/status
   - poolers/status
+  - failoverquorums/status
   verbs:
   - get
   - patch

@@ -1,9 +1,9 @@
 import retry, { Options } from 'async-retry'
-import { mkdirSync, rmSync, writeFileSync } from 'fs'
+import { mkdirSync, rmSync } from 'fs'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
+import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
 import {
   applyServerSide,
   getDeploymentState,
@@ -15,7 +15,6 @@ import {
 import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
-import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
 import {
@@ -26,10 +25,10 @@ import {
   initialSetupData,
   retryIsOAuth2ProxyRunning,
 } from './commit'
+import { collectTraces } from './traces'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
-const templateFile = `${dir}deploy-template.yaml`
 
 const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
@@ -40,6 +39,24 @@ const setup = (): void => {
   const argv: HelmArguments = getParsedArgs()
   cleanupHandler(() => cleanup(argv))
   mkdirSync(dir, { recursive: true })
+}
+
+const retryInstallStep = async <T, Args extends any[]>(
+  fn: (...args: Args) => Promise<T>,
+  ...args: Args
+): Promise<T> => {
+  const d = terminal(`cmd:${cmdName}`)
+  return await retry(
+    async () => {
+      return await fn(...args)
+    },
+    {
+      retries: env.INSTALL_STEP_RETRIES,
+      onRetry: async (e, attempt) => {
+        d.info(`Retrying (${attempt}/${env.INSTALL_STEP_RETRIES})...`)
+      },
+    },
+  )
 }
 
 function runPostInstallSteps(initialData: any) {
@@ -79,23 +96,15 @@ export const installAll = async () => {
   const releases = await getHelmReleases()
   await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, { status: { otomi: state, helm: releases } }, true)
 
-  const output: ProcessOutputTrimmed = await hf(
-    { fileOpts: 'helmfile.tpl/helmfile-init.yaml.gotmpl', args: 'template' },
-    { streams: { stderr: d.stream.error } },
-  )
-  if (output.exitCode > 0) {
-    throw new Error(output.stderr)
-  } else if (output.stderr.length > 0) {
-    d.error(output.stderr)
+  d.info('Deploying essential manifests')
+  const essentialDeployResult = await deployEssential()
+  if (!essentialDeployResult) {
+    throw new Error('Failed to deploy essential manifests')
   }
-  const templateOutput = output.stdout
-  writeFileSync(templateFile, templateOutput)
 
   d.info('Deploying CRDs')
   await applyServerSide('charts/kube-prometheus-stack/charts/crds/crds')
   await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
-  d.info('Deploying essential manifests')
-  await $`kubectl apply -f ${templateFile}`
 
   d.info('Deploying charts containing label stage=prep')
   await hf(
@@ -109,7 +118,6 @@ export const installAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 
-  // When Otomi is installed for the very first time and ArgoCD is not yet there.
   // Only install the core apps
   await hf(
     {
@@ -122,17 +130,21 @@ export const installAll = async () => {
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(true)
-    await hf(
+    await cloneOtomiChartsInGitea()
+    const initialData = await initialSetupData()
+    await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)
+    // FIXME: Migrate to use native Git client and stop cd-ing around
+    cd(rootDir)
+    await retryInstallStep(
+      hf,
       {
-        // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this stage):
-        fileOpts: `${rootDir}/helmfile.tpl/helmfile-e2e.yaml.gotmpl`,
+        labelOpts: ['pkg=apl-operator'],
         logLevel: logLevelString(),
         args: hfArgs,
       },
       { streams: { stdout: d.stream.log, stderr: d.stream.error } },
     )
     await cloneOtomiChartsInGitea()
-    const initialData = await initialSetupData()
     await createCredentialsSecret(initialData.secretName, initialData.username, initialData.password)
 
     // Run post-install steps synchronously but asynchronously without blocking
@@ -147,8 +159,9 @@ const install = async (): Promise<void> => {
   const argv: HelmArguments = getParsedArgs()
   const retryOptions: Options = {
     factor: 1,
-    retries: 3,
-    maxTimeout: 30000,
+    retries: env.INSTALL_RETRIES,
+    minTimeout: env.INSTALL_RETRY_TIMEOUT,
+    maxTimeout: env.INSTALL_RETRY_TIMEOUT,
   }
   if (!argv.label && !argv.file) {
     await retry(async () => {
@@ -157,6 +170,12 @@ const install = async (): Promise<void> => {
         await installAll()
       } catch (e) {
         d.error(e)
+        // Collect traces on installation failure
+        try {
+          await collectTraces()
+        } catch (traceError) {
+          d.error('Failed to collect traces:', traceError)
+        }
         d.info(`Retrying in ${retryOptions.maxTimeout} ms`)
         throw e
       }

@@ -1,0 +1,25 @@
+{{- if .Values.firewall }}
+apiVersion: networking.linode.com/alpha1v1
+kind: CloudFirewall
+metadata:
+  name: primary
+  namespace: kube-system
+spec:
+  # defaultRules is true by default; leave empty to use defaults only
+  # defaultRules: true
+  ruleset:
+    # Policies default to DROP/ACCEPT; override if desired
+    # inbound_policy:  "DROP"
+    # outbound_policy: "ACCEPT"
+    {{- if and (hasKey .Values.firewall "outbound") (gt (len .Values.firewall.outbound) 0) }}
+    outbound: {{ toYaml .Values.firewall.outbound | nindent 6 }}
+    {{- else }}
+    outbound: []
+    {{- end }}
+    inbound:
+      {{- if .Values.firewall.inbound }}
+      {{ toYaml .Values.firewall.inbound | nindent 6 }}
+      {{- else }}
+      []
+      {{- end }}
+{{- end }}

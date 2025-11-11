@@ -16,6 +16,7 @@
 {{- $cluster = readFile $clusterFilePath | fromYaml }}
 {{- end }}
 {{ $clusterProvider := $cluster | get "spec.provider" "linode" }}
+{{- $tier := $cluster | get "spec.linode.tier" "" }}
 
 environments:
   default:
@@ -248,7 +249,7 @@ environments:
                     - none
                 repeatInterval: 3h
             networkPolicy:
-                egressPublic: true
+                egressPublic: {{ if eq $tier "enterprise"}}false{{ else }}true{{ end }}
                 ingressPrivate: true
             resourceQuota:
                 - name: services.loadbalancers

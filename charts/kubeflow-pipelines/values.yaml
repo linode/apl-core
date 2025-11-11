@@ -8,9 +8,12 @@ global:
   tfxOssPublicRegistry:
 
 objectStorage:
+  type: "linode"  # linode or minio
   endpoint: ""
-  region: ""
+  region: "us-east-1"
   bucket: ""
+  port: 443
+  secure: true
 
 cacheDeployer:
   resources: {}

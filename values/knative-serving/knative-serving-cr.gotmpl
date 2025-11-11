@@ -78,3 +78,6 @@ spec:
       knative-ingress-gateway:
         selector:
           istio: {{ $v._derived.defaultIngressGatewayLabel }}
+      knative-local-gateway:
+        selector:
+          istio: {{ $v._derived.defaultIngressGatewayLabel }}

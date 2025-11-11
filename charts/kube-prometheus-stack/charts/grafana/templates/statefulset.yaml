@@ -44,7 +44,10 @@ spec:
     metadata:
       name: storage
     spec:
-      accessModes: {{ .Values.persistence.accessModes }}
+      accessModes:
+        {{- range .Values.persistence.accessModes }}
+        - {{ . | quote }}
+        {{- end }}
       storageClassName: {{ .Values.persistence.storageClassName }}
       {{- with .Values.persistence.volumeName }}
       volumeName: {{ . | quote }}

@@ -6,21 +6,43 @@
 {{- end }}
 
 clusterOperator:
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/rabbitmq-cluster-operator
+    tag: 2.16.1-debian-12-r0
+    digest: ""
   resources: {{- $r.resources.clusterOperator | toYaml | nindent 4 }}
   watchAllNamespaces: false
   watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
 
 msgTopologyOperator:
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/rmq-messaging-topology-operator
+    tag: 1.17.4-debian-12-r0
+    digest: ""
   resources: {{- $r.resources.msgTopologyOperator | toYaml | nindent 4 }}
   watchAllNamespaces: false
   watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
 
+credentialUpdaterImage:
+  registry: docker.io
+  repository: bitnamilegacy/rmq-default-credential-updater
+  tag: 1.0.8-debian-12-r0
+  digest: ""
+
+rabbitmqImage:
+  registry: docker.io
+  repository: bitnamilegacy/rabbitmq
+  tag: 4.1.3-debian-12-r1
+  digest: ""
+
 global:
+  security:
+    allowInsecureImages: true
   storageClass: {{ $v.cluster.defaultStorageClass }}
+  imageRegistry: docker.io
 {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - otomi-pullsecret-global
-{{- end }}
-{{- if $v.otomi.linodeLkeImageRepository }}
-  imageRegistry: "{{$v.otomi.linodeLkeImageRepository }}/docker"
 {{- end }}

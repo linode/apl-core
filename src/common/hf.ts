@@ -9,6 +9,9 @@ import { getFileMaps, setValuesFile } from './repo'
 import { asArray, extract, flattenObject, getValuesSchema, isCore, rootDir } from './utils'
 import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
+import { resolve } from 'path'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import { applyServerSide } from './k8s'
 
 const replaceHFPaths = (output: string, envDir = env.ENV_DIR): string => output.replaceAll('../env', envDir)
 export const HF_DEFAULT_SYNC_ARGS = ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20']
@@ -117,7 +120,7 @@ export const hfValues = async (
   }
 
   if (withWorkloadValues) {
-    const files = await getStandaloneFiles(envDir)
+    const files = await getStandaloneFiles(envDir, res)
     res.files = files
   }
 
@@ -125,12 +128,30 @@ export const hfValues = async (
 }
 
 // Get file content for those files that are not automatically loaded to the spec
-export const getStandaloneFiles = async (envDir: string): Promise<Record<string, any>> => {
+export const getStandaloneFiles = async (
+  envDir: string,
+  values?: Record<string, any>,
+): Promise<Record<string, any>> => {
   const files = {}
-  const maps = getFileMaps(envDir).filter((map) => map.loadToSpec === false)
+
+  // Check aiEnabled flag from passed values
+  const aiEnabled = values?.otomi?.aiEnabled ?? false
+
+  // Filter maps based on aiEnabled flag
+  let maps = getFileMaps(envDir).filter((map) => !map.loadToSpec)
+  if (!aiEnabled) {
+    // Exclude knowledgebases and agents when AI is not enabled
+    maps = maps.filter((map) => map.resourceDir !== 'knowledgebases').filter((map) => map.resourceDir !== 'agents')
+  }
+
   const pathGlobs = maps.map((fileMap) => {
     return fileMap.pathGlob
   })
+
+  // Only include databases when AI is enabled
+  if (aiEnabled) {
+    pathGlobs.push(`${envDir}/env/teams/*/databases/*.yaml`)
+  }
   const filePaths = await glob(pathGlobs)
 
   await Promise.allSettled(
@@ -169,4 +190,34 @@ export const hfTemplate = async (
   d.debug('# Templating charts done')
   template += outAll.stdout
   return template
+}
+
+export const deployEssential = async (labelOpts: string[] | null = null, force: boolean = false) => {
+  const d = terminal('common:hf:applyEssential')
+  const dir = '/tmp/otomi/'
+
+  const aplCoreDir = rootDir || resolve(process.cwd(), '../apl-core')
+  const helmfileSource = resolve(aplCoreDir, 'helmfile.tpl/helmfile-init.yaml.gotmpl')
+  const output: ProcessOutputTrimmed = await hf(
+    { fileOpts: helmfileSource, args: 'template', labelOpts },
+    { streams: { stderr: d.stream.error } },
+  )
+  if (output.exitCode > 0) {
+    d.error(output.stderr)
+    return false
+  } else if (output.stderr.length > 0) {
+    d.warn(output.stderr)
+  }
+  const templateOutput = output.stdout
+  if (templateOutput) {
+    const templateFile = `${dir}deploy-template.yaml`
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true })
+    }
+    writeFileSync(templateFile, templateOutput)
+
+    await applyServerSide(templateFile, force)
+  }
+
+  return true
 }

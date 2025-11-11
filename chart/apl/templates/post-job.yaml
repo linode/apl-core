@@ -1,7 +1,7 @@
 {{- $kms := .Values.kms | default dict }}
 {{- $imageName := .Values.imageName | default "linode/apl-core" }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
-{{- $useORCS := .Values.otomi.useORCS | default "true"}}
+{{- $useORCS := .Values.otomi.useORCS }}
 apiVersion: batch/v1
 kind: Job
 metadata:

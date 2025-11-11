@@ -118,7 +118,7 @@ jobs:
           #Cut the CHANGELOG.md file up to the first occurence of the "### \[[0-9]*" (meaning three #, a space,a square bracket and any number after it)
           sed -n '/### \[[0-9]*/q;p' CHANGELOG.md > NEW_CHANGELOG.md
       - name: Create GitHub release
-        uses: ncipollo/release-action@v1.19.0
+        uses: ncipollo/release-action@v1.20.0
         env:
           token: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -131,7 +131,7 @@ jobs:
     if: always() && contains(needs.release.result, 'success') && !github.event.act
     runs-on: ubuntu-22.04
     container:
-      image: linode/apl-tools:v2.8.2
+      image: linode/apl-tools:v2.10.4
       options: --user 0 # See https://docs.github.com/en/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
     steps:
       - name: Checkout

@@ -199,7 +199,7 @@ spec:
         {{- if eq (default "cookie" .Values.sessionStorage.type) "redis" }}
         - name: OAUTH2_PROXY_SESSION_STORE_TYPE
           value: "redis"
-         {{- if or .Values.sessionStorage.redis.existingSecret .Values.sessionStorage.redis.password (and .Values.redis.enabled (.Values.redis.auth).enabled )}}
+         {{- if or .Values.sessionStorage.redis.existingSecret .Values.sessionStorage.redis.password (and .Values.redis.enabled (.Values.redis.auth))}}
         - name: OAUTH2_PROXY_REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -285,6 +285,9 @@ spec:
 {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
+{{- with .Values.resizePolicy }}
+        resizePolicy: {{ toYaml . | nindent 10 }}
+{{- end }}
         volumeMounts:
 {{- with .Values.config.google }}
 {{- if and .adminEmail (or .serviceAccountJson .existingSecret) }}

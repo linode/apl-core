@@ -36,9 +36,9 @@ jobs:
             echo "RC_RELEASE=false" >> $GITHUB_ENV
           fi
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install dependencies
         if: ${{ env.RC_RELEASE == 'true' }}
@@ -55,7 +55,7 @@ jobs:
           echo "Detected "feat"/"fix"/"chore: trigger" commits. Running standard-version..."
           git config --global user.email $BOT_EMAIL
           git config --global user.name $BOT_USERNAME
-          npm run release -- --prerelease rc --skip.changelog 
+          npm run release -- --prerelease rc --skip.changelog
 
           git push --follow-tags
           TAG="v$(jq '.version' package.json -r)"

@@ -195,15 +195,20 @@ spec:
         #!/usr/bin/env sh
         set -eu
 
-        if [ "${PARAM_VERBOSE}" = "true" ] ; then
-          set -x
-        fi
-
         if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
-          cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials"
-          cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig"
+          if [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" ]; then
+            cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials"
+            cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig"
+          elif [ -f "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username" ]; then
+            printf "https://%s:%s@%s\n" "$(cat "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username")" "$(cat "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/password")" "$(echo ${PARAM_URL} | sed -e 's|https://||' -e 's|/.*||')" > "${PARAM_USER_HOME}/.git-credentials"
+            printf "[credential]\n  helper = store\n" > "${PARAM_USER_HOME}/.gitconfig"
+          fi
           chmod 400 "${PARAM_USER_HOME}/.git-credentials"
           chmod 400 "${PARAM_USER_HOME}/.gitconfig"
+        fi
+
+        if [ "${PARAM_VERBOSE}" = "true" ] ; then
+          set -x
         fi
 
         if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then

@@ -28,11 +28,13 @@ jest.mock('src/common/values', () => ({
 
 jest.mock('src/common/hf', () => ({
   hf: jest.fn(),
+  deployEssential: jest.fn(),
   HF_DEFAULT_SYNC_ARGS: ['apply', '--sync-args', '--include-needs'],
 }))
 
 jest.mock('zx', () => ({
   $: jest.fn(),
+  cd: jest.fn(),
 }))
 
 jest.mock('./commit', () => ({
@@ -88,6 +90,7 @@ describe('Install command', () => {
       writeValuesToFile: require('src/common/values').writeValuesToFile,
       applyServerSide: require('src/common/k8s').applyServerSide,
       hf: require('src/common/hf').hf,
+      deployEssential: require('src/common/hf').deployEssential,
       writeFileSync: require('fs').writeFileSync,
       $: require('zx').$,
     }
@@ -102,6 +105,7 @@ describe('Install command', () => {
       stdout: 'template-content',
       stderr: '',
     })
+    mockDeps.deployEssential.mockResolvedValue(true)
     mockDeps.$.mockResolvedValue(undefined)
   })
 
@@ -175,19 +179,15 @@ describe('Install command', () => {
       await installAll()
 
       expect(mockDeps.hf).toHaveBeenCalled()
-      expect(mockDeps.writeFileSync).toHaveBeenCalled()
+      expect(mockDeps.deployEssential).toHaveBeenCalled()
 
       process.env.DISABLE_SYNC = originalEnv
     })
 
-    test('should handle template generation errors', async () => {
-      const errorOutput = 'template generation failed'
+    test('should handle essential deployment errors', async () => {
+      const errorOutput = 'Failed to deploy essential manifests'
 
-      mockDeps.hf.mockResolvedValueOnce({
-        exitCode: 1,
-        stdout: '',
-        stderr: errorOutput,
-      })
+      mockDeps.deployEssential.mockResolvedValueOnce(false)
 
       await expect(installAll()).rejects.toThrow(errorOutput)
     })

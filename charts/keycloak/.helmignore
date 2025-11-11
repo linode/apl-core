@@ -10,16 +10,16 @@
 .hg/
 .hgignore
 .svn/
+ci/
+examples/
 # Common backup files
 *.swp
 *.bak
 *.tmp
+*.orig
 *~
 # Various IDEs
 .project
 .idea/
 *.tmproj
-# img folder
-img/
-# Changelog
-CHANGELOG.md
+.vscode/

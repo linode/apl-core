@@ -1,5 +1,5 @@
 {{- /*
-Copyright VMware, Inc.
+Copyright Broadcom, Inc. All Rights Reserved.
 SPDX-License-Identifier: APACHE-2.0
 */}}
 
@@ -16,6 +16,7 @@ metadata:
   {{- end }}
 spec:
   replicas: {{ .Values.clusterOperator.replicaCount }}
+  revisionHistoryLimit: {{ .Values.clusterOperator.revisionHistoryLimit }}
   {{- if .Values.clusterOperator.updateStrategy }}
   strategy: {{- toYaml .Values.clusterOperator.updateStrategy | nindent 4 }}
   {{- end }}
@@ -82,7 +83,7 @@ spec:
           command: {{- include "common.tplvalues.render" (dict "value" .Values.clusterOperator.command "context" $) | nindent 12 }}
           {{- else }}
           command:
-            - /manager
+            - manager
           {{- end }}
           {{- if .Values.clusterOperator.args }}
           args: {{- include "common.tplvalues.render" (dict "value" .Values.clusterOperator.args "context" $) | nindent 12 }}
@@ -95,7 +96,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            {{- if not .Values.clusterOperator.watchAllNamespaces }}      
+            {{- if not .Values.clusterOperator.watchAllNamespaces }}
             {{- $watchNamespaces := default (list (include "common.names.namespace" .)) .Values.clusterOperator.watchNamespaces }}
             - name: OPERATOR_SCOPE_NAMESPACE
               value: {{ join "," $watchNamespaces | quote }}
@@ -130,8 +131,7 @@ spec:
           livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.clusterOperator.customLivenessProbe "context" $) | nindent 12 }}
           {{- else if .Values.clusterOperator.livenessProbe.enabled }}
           livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.clusterOperator.livenessProbe "enabled") "context" $) | nindent 12 }}
-            httpGet:
-              path: /metrics
+            tcpSocket:
               port: http
           {{- end }}
           {{- if .Values.clusterOperator.customReadinessProbe }}

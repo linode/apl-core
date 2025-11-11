@@ -42,6 +42,7 @@ apps:
   kyverno:
     enabled: {{ $a.kyverno.enabled }}
 
+aiEnabled: {{ $v.otomi.aiEnabled }}
 isMultitenant: {{ $v.otomi.isMultitenant }}
 globalPullSecret: {{ $v | get "otomi.globalPullSecret" nil }}
 domain: {{ $domain }}

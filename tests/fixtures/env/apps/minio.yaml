@@ -7,8 +7,6 @@ spec:
     persistence:
         enabled: true
         size: 20Gi
-    provisioning:
-        enabled: true
     _rawValues: {}
     resources:
         limits:

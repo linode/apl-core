@@ -395,3 +395,10 @@ kubeScheduler:
   enabled: false
 kubeControllerManager:
   enabled: false
+
+{{- if eq $v.cluster.linode.tier "enterprise" }}
+coreDns:
+  service:
+    selector:
+      k8s-app: coredns
+{{- end }}

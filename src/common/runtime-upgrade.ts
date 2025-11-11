@@ -1,9 +1,11 @@
-import { getDeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
 import { isEmpty } from 'lodash'
-import { getCurrentVersion } from './values'
-import { RuntimeUpgradeContext, RuntimeUpgrades, runtimeUpgrades } from './runtime-upgrades/runtime-upgrades'
-import { terminal } from './debug'
 import semver from 'semver'
+import { getApplications } from 'src/cmd/apply-as-apps'
+import { terminal } from './debug'
+import { getDeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
+import { RuntimeUpgradeContext, RuntimeUpgrades, runtimeUpgrades } from './runtime-upgrades/runtime-upgrades'
+import { getCurrentVersion } from './values'
+import { deployEssential } from './hf'
 
 interface RuntimeUpgradeArgs {
   when: string
@@ -18,8 +20,15 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
     return
   }
 
+  d.info('Deploying essential manifests')
+  const essentialDeployResult = await deployEssential(['upgrade=true'], true)
+  if (!essentialDeployResult) {
+    throw new Error('Failed to update namespaces')
+  }
+
   const declaredVersion = await getCurrentVersion()
   const deployedVersion: string = deploymentState.version ?? declaredVersion
+  const apps = await getApplications()
 
   d.info(`Current version of otomi: ${deployedVersion}`)
 
@@ -46,19 +55,27 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
 
     // Application-specific upgrade operations - wait for all applications in this upgrade
     if (upgrade.applications) {
-      for (const [applicationName, applicationUpgrade] of Object.entries(upgrade.applications)) {
-        const applicationOperation = applicationUpgrade[when as keyof typeof applicationUpgrade] as (
-          context: RuntimeUpgradeContext,
-        ) => Promise<void>
-        if (applicationOperation && typeof applicationOperation === 'function') {
-          d.info(`Runtime upgrade operations detected for version ${upgrade.version}, application: ${applicationName}`)
-          // Wait for the ArgoCD app to be synced and healthy before running the operation
-          await waitForArgoCDAppSync(applicationName, k8s.custom(), d)
-          await waitForArgoCDAppHealthy(applicationName, k8s.custom(), d)
-          //execute the application-specific operation
-          await applicationOperation(context)
-        }
-      }
+      await Promise.allSettled(
+        Object.entries(upgrade.applications).map(async ([applicationName, applicationUpgrade]) => {
+          const applicationOperation = applicationUpgrade[when as keyof typeof applicationUpgrade] as (
+            context: RuntimeUpgradeContext,
+          ) => Promise<void>
+          if (
+            apps.find((app) => app.includes(applicationName)) &&
+            applicationOperation &&
+            typeof applicationOperation === 'function'
+          ) {
+            d.info(
+              `Runtime upgrade operations detected for version ${upgrade.version}, application: ${applicationName}`,
+            )
+            // Wait for the ArgoCD app to be synced and healthy before running the operation
+            await waitForArgoCDAppSync(applicationName, k8s.custom(), d)
+            await waitForArgoCDAppHealthy(applicationName, k8s.custom(), d)
+            //execute the application-specific operation
+            await applicationOperation(context)
+          }
+        }),
+      )
     }
   }
 }

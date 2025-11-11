@@ -1995,14 +1995,6 @@ properties:
           secretKey:
             type: string
             x-secret: '{{ randAlpha 16 }}'
-      httpbin:
-        description: The famous httpbin application.
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          _rawValues:
-            $ref: '#/definitions/rawValues'
       ingress-nginx-platform:
         $ref: '#/definitions/ingressNginx'
       istio:
@@ -2109,6 +2101,23 @@ properties:
               keycloak:
                 $ref: '#/definitions/resources'
               operator:
+                $ref: '#/definitions/resources'
+      kserve:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            additionalProperties: false
+            properties:
+              controller:
+                $ref: '#/definitions/resources'
+              rbacProxy:
+                $ref: '#/definitions/resources'
+              inferenceService:
                 $ref: '#/definitions/resources'
       kyverno:
         additionalProperties: false
@@ -2250,6 +2259,14 @@ properties:
             properties:
               kuredDaemonSet:
                 $ref: '#/definitions/resources'
+      linode-cfw:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
       sealed-secrets:
         additionalProperties: false
         properties:
@@ -3150,6 +3167,10 @@ properties:
       isPreInstalled:
         type: boolean
         description: Defines if APL is installed and managed by Linode
+        default: false
+      aiEnabled:
+        type: boolean
+        description: Defines if APL enables AI/ML components
         default: false
       globalPullSecret:
         title: Global pullsecret

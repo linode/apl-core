@@ -2,6 +2,7 @@ import { CommandModule } from 'yargs'
 import { module as applyModule } from './apply'
 import { module as applyAsAppsModule } from './apply-as-apps'
 import { module as applyE2eModule } from './apply-e2e'
+import { module as applyTeamsModule } from './apply-teams'
 import { module as bashModule } from './bash'
 import { module as bootstrapModule } from './bootstrap'
 import { module as commitModule } from './commit'
@@ -23,6 +24,8 @@ import { module as statusModule } from './status'
 import { module as syncModule } from './sync'
 import { module as templateModule } from './template'
 import { module as testModule } from './test'
+import { module as collectModule } from './collect'
+import { module as tracesModule } from './traces'
 import { module as upgradeModule } from './upgrade'
 import { module as validateClusterModule } from './validate-cluster'
 import { module as validateTemplatesModule } from './validate-templates'
@@ -33,6 +36,7 @@ import { module as xModule } from './x'
 export { module as apply } from './apply'
 export { module as applyAsAppsModule } from './apply-as-apps'
 export { module as applyE2e } from './apply-e2e'
+export { module as applyTeams } from './apply-teams'
 export { module as bash } from './bash'
 export { module as bootstrap } from './bootstrap'
 export { module as commit } from './commit'
@@ -53,6 +57,8 @@ export { module as status } from './status'
 export { module as sync } from './sync'
 export { module as template } from './template'
 export { module as test } from './test'
+export { module as collect } from './collect'
+export { module as traces } from './traces'
 export { module as upgrade } from './upgrade'
 export { module as validateTemplates } from './validate-templates'
 export { module as validateValues } from './validate-values'
@@ -62,6 +68,7 @@ export { module as x } from './x'
 export const commands: CommandModule[] = [
   applyModule,
   applyAsAppsModule,
+  applyTeamsModule,
   applyE2eModule,
   bashModule,
   bootstrapModule,
@@ -85,6 +92,7 @@ export const commands: CommandModule[] = [
   syncModule,
   templateModule,
   testModule,
+  collectModule,
   validateClusterModule,
   validateTemplatesModule,
   validateValuesModule,

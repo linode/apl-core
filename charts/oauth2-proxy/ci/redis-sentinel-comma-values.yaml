@@ -5,18 +5,28 @@ sessionStorage:
     sentinel:
       password: "foo"
       masterName: "mymaster"
-      connectionUrls: "redis://oauth2-proxy-redis:26379,redis://oauth2-proxy-redis:26379"
+      connectionUrls: "redis://oauth2-proxy-redis-announce-0:26379,redis://oauth2-proxy-redis-announce-1:26379"
+
+# provision an instance of the redis-ha sub-chart
 redis:
-  # provision an instance of the redis sub-chart
   enabled: true
   fullnameOverride: oauth2-proxy-redis
-  architecture: replication
-  sentinel:
-    enabled: true
-    masterSet: mymaster
-  global:
-    redis:
-      password: "foo"
+
+  redisPassword: "foo"
+
+  redis:
+    masterGroupName: mymaster
+
+  replicas: 2
+  hardAntiAffinity: false
+
+  persistentVolume:
+    enabled: false
+  haproxy:
+    enabled: false
+  exporter:
+    enabled: false
+
 initContainers:
   waitForRedis:
     enabled: true

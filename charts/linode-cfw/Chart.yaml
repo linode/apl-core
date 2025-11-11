@@ -1,0 +1,7 @@
+apiVersion: v2
+appVersion: v0.2.0
+description: Helm chart for deploying the Cloud Firewall Controller to support CF
+  management from within an LKE cluster.
+name: cloud-firewall-controller
+type: application
+version: 0.2.0

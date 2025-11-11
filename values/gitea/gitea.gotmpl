@@ -37,7 +37,7 @@ image:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  {{- with ($g | get "image.gitea.tag" "1.24.4") }}
+  {{- with $g | get "image.gitea.tag" nil }}
   tag: {{ . }}
   {{- end }}
   pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}
@@ -132,6 +132,19 @@ gitea:
     - name: GITEA__DATABASE__MAX_IDLE_CONNS
       value: "6"
 
+    - name: GITEA__CACHE__ADAPTER
+      value: "redis"
+    - name: GITEA__CACHE__HOST
+      value: "redis://:changeme@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&"
+    - name: GITEA__QUEUE__CONN_STR
+      value: "redis://:changeme@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&"
+    - name: GITEA__QUEUE__TYPE
+      value: "redis"
+    - name: GITEA__SESSION__PROVIDER
+      value: "redis"
+    - name: GITEA__SESSION__PROVIDER_CONFIG
+      value: "redis://:changeme@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&"
+
 init:
   resources: {{- $g.resources.init | toYaml | nindent 4 }}
 
@@ -187,7 +200,7 @@ postgresql-ha:
 valkey-cluster:
   enabled: false
 valkey:
-  enabled: true
+  enabled: false
 
 extraContainerVolumeMounts:
   - name: backup
@@ -235,8 +248,3 @@ global:
     - otomi-pullsecret-global
 {{- end }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
-  imageRegistry: "{{ $v.otomi.linodeLkeImageRepository }}/docker"
-  security:
-    allowInsecureImages: true
-{{- end }}

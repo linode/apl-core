@@ -36,15 +36,13 @@ k8s:
     - name: istio-system
       disableIstioInjection: true
       labels:
-        "apl.io/ingress-controller-scope": "true"
-    - name: httpbin
-      app: httpbin
+        'apl.io/ingress-controller-scope': 'true'
     - name: ingress
       # disabling istio sidecar as it does not preserve client ip (yet)
       # TODO: enable once it does
       disableIstioInjection: true
       labels:
-        "apl.io/ingress-controller-scope": "true"
+        'apl.io/ingress-controller-scope': 'true'
     - name: jaeger
       app: jaeger
     - name: jaeger-operator
@@ -60,6 +58,10 @@ k8s:
       disableIstioInjection: true
     - name: knative-serving
       app: knative
+      disablePolicyChecks: true
+      disableIstioInjection: true
+    - name: kserve
+      app: kserve
       disablePolicyChecks: true
       disableIstioInjection: true
     - name: knative-operator
@@ -229,15 +231,6 @@ adminApps:
   - name: hello
     hide: true
     tags: [demo]
-  - name: httpbin
-    tags: [dev, testing, debugging]
-    isShared: true
-    ownHost: true
-    ingress:
-      - namespace: httpbin
-        svc: httpbin
-        type: public
-        auth: true
   - name: ingress-nginx
     tags: [ingress, auth]
   - name: istio
@@ -258,7 +251,7 @@ adminApps:
     ownHost: true
     ingress:
       - namespace: keycloak
-        svc: keycloak
+        svc: keycloak-keycloakx-http
         type: public
         port: 8080
   - name: kiali
@@ -286,6 +279,8 @@ adminApps:
         port: 80
         type: public
         auth: true
+  - name: kserve
+    tags: [ai]
   - name: kured
     tags: [security]
   - name: tekton
@@ -318,7 +313,7 @@ adminApps:
     tags: [storage, backup]
     ownHost: true
     ingress:
-      - svc: minio
+      - svc: minio-console
         port: 9001
         namespace: minio
         type: public

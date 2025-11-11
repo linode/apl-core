@@ -1,0 +1,20 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: cloud-firewall-controller
+    app.kubernetes.io/managed-by: helm
+  annotations:
+    "helm.sh/hook": pre-upgrade,pre-install
+    "helm.sh/hook-weight": "-5"
+  name: cloud-firewall-controller
+  namespace: {{ required ".Values.namespace required" .Values.namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cloud-firewall-controller
+subjects:
+- kind: ServiceAccount
+  name: cloud-firewall-controller
+  namespace: {{ required ".Values.namespace required" .Values.namespace }}

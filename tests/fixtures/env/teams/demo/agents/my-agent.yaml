@@ -1,0 +1,11 @@
+apiVersion: akamai.io/v1alpha1
+kind: AkamaiAgent
+metadata:
+    name: my-agent
+    namespace: team-demo
+    labels:
+        apl.io/teamId: demo
+spec:
+    foundationModel: llama
+    systemPrompt: You're a helpful AI assistant
+    knowledgeBase: demo-kb

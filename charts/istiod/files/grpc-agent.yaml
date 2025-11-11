@@ -290,7 +290,7 @@ spec:
           path: root-cert.pem
   {{- else }}
     configMap:
-      name: istio-ca-root-cert
+      name: {{ .Values.global.trustBundleName | default "istio-ca-root-cert" }}
   {{- end }}
   {{- end }}
   {{- if .Values.global.mountMtlsCerts }}

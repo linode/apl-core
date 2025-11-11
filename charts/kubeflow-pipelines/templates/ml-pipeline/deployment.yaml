@@ -102,7 +102,7 @@ spec:
               key: secretkey
               name: mlpipeline-minio-artifact
         - name: OBJECTSTORECONFIG_SECURE
-          value: "true"
+          value: {{ .Values.objectStorage.secure | quote }}
         - name: OBJECTSTORECONFIG_BUCKETNAME
           valueFrom:
             configMapKeyRef:

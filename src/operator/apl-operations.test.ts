@@ -1,9 +1,9 @@
-import { AplOperations } from './apl-operations'
 import { module as applyModule } from '../cmd/apply'
 import { module as applyAsAppsModule } from '../cmd/apply-as-apps'
 import { module as bootstrapModule } from '../cmd/bootstrap'
-import { module as validateValuesModule } from '../cmd/validate-values'
 import { module as migrateModule } from '../cmd/migrate'
+import { module as validateValuesModule } from '../cmd/validate-values'
+import { AplOperations } from './apl-operations'
 import { OperatorError } from './errors'
 
 jest.mock('../cmd/bootstrap', () => ({
@@ -37,6 +37,12 @@ jest.mock('../cmd/install', () => ({
 }))
 
 jest.mock('../cmd/apply-as-apps', () => ({
+  module: {
+    handler: jest.fn(),
+  },
+}))
+
+jest.mock('../cmd/apply-teams', () => ({
   module: {
     handler: jest.fn(),
   },

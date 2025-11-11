@@ -1,0 +1,57 @@
+# Default values for cloud-firewall-controller.
+replicaCount: 1
+
+namespace: "kube-system"
+
+image:
+  repository: docker.io/linode/cloud-firewall-controller
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  # tag: "latest"
+
+# Only needed if hosting a private copy of the image
+# Update to match your private repository docker auth
+imagePullSecrets: []
+podAnnotations: {}
+podLabels: {}
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8081
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 8081
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+# Additional Cloud Firewall rules can be added to the default set by adding them to the list below.
+# These will be applied along with the default ruleset. Any rule added here will below
+# applied to all nodes in the cluster.
+firewall: {}
+# Example custom inbound rule.
+#  inbound: 
+#    - label:       "allow-custom-port"
+#      action:      "ACCEPT"
+#      description: "custom-rule"
+#      protocol:    "TCP"
+#      ports:       "9999"
+#      addresses:
+#        ipv4:
+#        - "192.168.128.0/17"
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

@@ -12,9 +12,6 @@ spec:
     managedMonitoring:
         alertmanager: true
         grafana: true
-    networkPolicy:
-        egressPublic: false
-        ingressPrivate: true
     resourceQuota:
         - name: pods
           value: '50'

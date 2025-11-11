@@ -1,0 +1,18 @@
+{{- $v := .Values }}
+
+{{- with $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: {{ . }}/docker/linode/cloud-firewall-controller
+{{- end }}
+
+firewall:
+  outbound: []
+  inbound:
+    - label: allow-prometheus-node-export-tcp
+      action: ACCEPT
+      description: Prometheus Node Exporter
+      protocol: TCP
+      ports: "9100"
+      addresses:
+        ipv4:
+          - 192.168.128.0/17

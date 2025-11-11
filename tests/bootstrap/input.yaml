@@ -54,7 +54,7 @@ teamConfig:
             set: []
         id: 78595314-cdaf-4b60-acc2-3b1a7f80fe2b
         ingressClassName: platform
-        name: httpbin
+        name: nodejs-helloworld
         ownHost: true
         port: 80
       - id: a106eb22-8c06-41b6-ab15-97aafb0888b5
@@ -76,7 +76,3 @@ teamConfig:
         url: https://github.com/linode/apl-nodejs-helloworld.git
         path: ./
         revision: HEAD
-      - name: httpbin
-        path: charts/httpbin
-        revision: HEAD
-        url: https://github.com/linode/apl-core.git

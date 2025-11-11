@@ -6,37 +6,14 @@ sources:
 - istio-gateway
 ## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
 
-
-{{- range $provider, $config := $dns.provider }}
-{{- $providerConfigKey := $provider | replace "azure-private-dns" "azure" }}
-{{- if eq $provider "other" }}
-provider: {{ $config.name }}
-{{ $config.name }}: {{- $config | get "external-dns" | toYaml | nindent 2 }}
-{{- else }}
-provider: {{ $provider }}
-{{ $providerConfigKey }}: {{- $config | toYaml | nindent 2 }}
-{{- end }}
-{{- end }}
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
-zoneIdFilters: {{ $dns | get "zoneIdFilters" list | toYaml | nindent 2 }}
 annotationFilter: "externaldns=true"
 policy: {{ $dns.policy }}
 logLevel: {{ $externalDns | get "logLevel" }}
-dryRun: false
-crd:
-  create: false
-  apiversion: ""
-  kind: ""
 
 rbac:
   create: true
-  pspEnabled: false
 
-containerSecurityContext:
-  allowPrivilegeEscalation: false
-  readOnlyRootFilesystem: true
-  capabilities:
-    drop: ["ALL"]
 podSecurityContext:
   runAsUser: 1001
 
@@ -44,26 +21,204 @@ priorityClassName: otomi-critical
 
 resources: {{- $externalDns.resources | toYaml | nindent 4 }}
 
-metrics:
+serviceMonitor:
   enabled: true
-  serviceMonitor:
-    enabled: true
-    additionalLabels:
-      prometheus: system
+  additionalLabels:
+    prometheus: system
 
-global:
 {{- with .Values.otomi | get "globalPullSecret" nil }}
+global:
   imagePullSecrets:
-    - otomi-pullsecret-global
+    - name: otomi-pullsecret-global
 {{- end }}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
-  security:
-    allowInsecureImages: true
 image:
-  registry: "{{- $v.otomi.linodeLkeImageRepository }}"
-  repository: "docker/bitnami/external-dns"
-{{- else }}
-  security:
-    allowInsecureImages: false
+  repository: "{{- $v.otomi.linodeLkeImageRepository }}/k8s/external-dns/external-dns"
 {{- end }}
+
+extraArgs:
+{{- range $dns | get "zoneIdFilters" list }}
+- --zone-id-filter={{ . }}
+{{- end }}
+
+
+{{- with $dns.provider | get "akamai" nil }}
+provider:
+  name: akamai
+env:
+- name: EXTERNAL_DNS_AKAMAI_SERVICECONSUMERDOMAIN
+  value: "{{ $dns.provider.akamai.host }}"
+- name: EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN
+  value: "{{ $dns.provider.akamai.clientToken }}"
+- name: EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN
+  value: "{{ $dns.provider.akamai.accessToken }}"
+- name: EXTERNAL_DNS_AKAMAI_CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: akamai-dns
+      key: EXTERNAL_DNS_AKAMAI_CLIENT_SECRET
+{{- end }}
+
+{{- with $dns.provider | get "linode" nil }}
+provider:
+  name: linode
+env:
+- name: LINODE_TOKEN
+  valueFrom:
+    secretKeyRef:
+      name: linode-dns-api-token
+      key: LINODE_TOKEN
+{{- end }}
+
+{{- with $dns.provider | get "digitalocean" nil }}
+provider:
+  name: digitalocean
+env:
+- name: DO_TOKEN
+  valueFrom:
+    secretKeyRef:
+      name: do-token
+      key: DO_TOKEN
+{{- end }}
+
+{{- with $dns.provider | get "cloudflare" nil }}
+provider:
+  name: cloudflare
+env:
+  {{- with $dns.provider.cloudflare | get "apiToken" nil }}
+- name: CF_API_TOKEN
+  valueFrom:
+    secretKeyRef:
+      name: cloudflare-api-key
+      key: CF_API_TOKEN
+  {{- end }}
+  {{- with $dns.provider.cloudflare | get "apiSecret" nil }}
+  - name: CF_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: cloudflare-api-key
+        key: CF_API_KEY
+  - name: CF_API_EMAIL
+    valueFrom:
+      secretKeyRef:
+        name: cloudflare-api-key
+        key: CF_API_EMAIL
+  {{- end }}
+{{- end }}
+
+{{- with $dns.provider | get "aws" nil }}
+provider:
+  name: aws
+env:
+- name: AWS_DEFAULT_REGION
+  value: "{{ .region }}"
+{{- with $dns.provider.aws | get "credentials" nil }}
+- name: AWS_ACCESS_KEY_ID
+  valueFrom:
+    secretKeyRef:
+      name: aws-dns-credentials
+      key: AWS_ACCESS_KEY_ID
+- name: AWS_SECRET_ACCESS_KEY
+  valueFrom:
+    secretKeyRef:
+      name: aws-dns-credentials
+      key: AWS_SECRET_ACCESS_KEY
+{{- end }}
+{{- with $dns.provider.aws | get "role" nil }}
+extraArgs:
+- --aws-assume-role={{ . }}
+{{- end }}
+{{- end }}
+
+{{- with $dns.provider | get "azure" nil }}
+provider:
+  name: azure
+env:
+- name: AZURE_TENANT_ID
+  valueFrom:
+    secretKeyRef:
+      name: azure-dns
+      key: AZURE_TENANT_ID
+- name: AZURE_SUBSCRIPTION_ID
+  valueFrom:
+    secretKeyRef:
+      name: azure-dns
+      key: AZURE_SUBSCRIPTION_ID
+- name: AZURE_RESOURCE_GROUP
+  valueFrom:
+    secretKeyRef:
+      name: azure-dns
+      key: AZURE_RESOURCE_GROUP
+- name: AZURE_CLIENT_ID
+  valueFrom:
+    secretKeyRef:
+      name: azure-dns
+      key: AZURE_CLIENT_ID
+- name: AZURE_CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: azure-dns
+      key: AZURE_CLIENT_SECRET
+{{- end }}
+
+{{- with $dns.provider | get "azure-private-dns" nil }}
+provider:
+  name: azure
+env:
+- name: AZURE_TENANT_ID
+  valueFrom:
+    secretKeyRef:
+      name: azure-private-dns
+      key: AZURE_TENANT_ID
+- name: AZURE_SUBSCRIPTION_ID
+  valueFrom:
+    secretKeyRef:
+      name: azure-private-dns
+      key: AZURE_SUBSCRIPTION_ID
+- name: AZURE_RESOURCE_GROUP
+  valueFrom:
+    secretKeyRef:
+      name: azure-private-dns
+      key: AZURE_RESOURCE_GROUP
+- name: AZURE_CLIENT_ID
+  valueFrom:
+    secretKeyRef:
+      name: azure-private-dns
+      key: AZURE_CLIENT_ID
+- name: AZURE_CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: azure-private-dns
+      key: AZURE_CLIENT_SECRET
+{{- end }}
+
+{{- with $dns.provider | get "google" nil }}
+provider:
+  name: google
+secretConfiguration:
+  enabled: true
+  mountPath: /etc/secrets/service-account
+  subPath: service-account.json
+env:
+- name: GOOGLE_PROJECT
+  value: "{{ .project }}"
+- name: GOOGLE_APPLICATION_CREDENTIALS
+  value: /etc/secrets/service-account/service-account.json
+extraVolumes:
+- name: google-service-account
+  secret:
+    secretName: GOOGLE-DNS
+extraVolumeMounts:
+- name: google-service-account
+  mountPath: /etc/secrets/service-account
+  readOnly: true
+{{- end }}
+
+{{- with $dns.provider | get "other" nil }}
+provider: {{ .name }}
+{{ .name }}: {{- . | get "external-dns" | toYaml | nindent 2 }}
+{{- end }}
+
+deploymentStrategy:
+  type: RollingUpdate

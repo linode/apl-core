@@ -1,0 +1,68 @@
+{{- if .Values.networkPolicy.enabled }}
+{{- $root := . }}
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: {{ template "redis-ha.fullname" . }}-network-policy
+  namespace: {{ .Release.Namespace | quote }}
+{{- if .Values.networkPolicy.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.networkPolicy.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+{{- end }}
+  labels:
+{{ include "labels.standard" . | indent 4 }}
+    {{- range $key, $value := .Values.networkPolicy.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  podSelector:
+    matchLabels:
+      release: {{ .Release.Name }}
+      app: {{ template "redis-ha.name" . }}
+  policyTypes:
+    - Ingress
+    - Egress
+  egress:
+    - to:
+      - podSelector: 
+          matchLabels:
+            release: {{ .Release.Name }}
+            app: {{ template "redis-ha.name" . }}
+      ports:
+      {{- include "redis-ports" . | nindent 6 }}
+{{-  range $rule := .Values.networkPolicy.egressRules }}
+    - to:
+{{ (tpl (toYaml $rule.selectors) $) | indent 7 }}
+      ports:
+{{ toYaml $rule.ports | indent 7 }}
+{{- end }}
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            release: {{ .Release.Name }}
+            app: {{ template "redis-ha.name" . }}
+      ports: 
+      {{- include "redis-ports" . | nindent 6 }}
+{{- if .Values.haproxy.enabled }}
+    - from:
+        - podSelector:
+            matchLabels:
+              release: {{ .Release.Name }}
+              app: {{ template "redis-ha.name" . }}-haproxy
+      ports:
+      {{- include "redis-ports" . | nindent 6 }}
+{{- end }}
+{{-  range $rule := .Values.networkPolicy.ingressRules }}
+    - from:
+{{ (tpl (toYaml $rule.selectors) $) | indent 7 }}
+      ports:
+{{- if $rule.ports }}
+{{ toYaml $rule.ports | indent 7 }}
+{{- else }}
+      {{- include "redis-ports" $root | nindent 6 }}
+{{- end }}
+{{- end }}
+{{- end }}

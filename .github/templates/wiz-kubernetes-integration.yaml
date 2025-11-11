@@ -1,14 +1,14 @@
 global:
   wizApiToken:
-    clientId: "__WIZ_CLIENT_ID__"
-    clientToken: "__WIZ_CLIENT_TOKEN__"
-    clientEndpoint: ""
+    clientId: '__WIZ_CLIENT_ID__'
+    clientToken: '__WIZ_CLIENT_TOKEN__'
+    clientEndpoint: ''
 
 wiz-kubernetes-connector:
   enabled: true
   autoCreateConnector:
-    connectorName: "<connectorName>"
-    clusterExternalId: "<clusterExternalId>"
+    connectorName: '<connectorName>'
+    clusterExternalId: '<clusterExternalId>'
   wiz-broker:
     enabled: true
 
@@ -16,7 +16,7 @@ wiz-sensor:
   enabled: true
   imagePullSecret:
     create: false
-    name: "sensor-image-pull"
+    name: 'sensor-image-pull'
 
 wiz-admission-controller:
   enabled: true
