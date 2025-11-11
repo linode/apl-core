@@ -26,19 +26,20 @@ export class Installer {
       attemptNumber += 1
       this.d.info(`Starting installation attempt ${attemptNumber}`)
 
-      // Check if installation already completed
-      const installStatus = await this.getInstallationStatus()
-      if (installStatus === 'completed') {
-        this.d.info('Installation already completed, skipping')
-        return
-      }
-
-      await this.updateInstallationStatus('in-progress', attemptNumber)
-
       try {
-        // Run the installation sequence
+        // Always run bootstrap to ensure the environment is ready (even on restarts)
         await this.aplOps.validateCluster()
         await this.aplOps.bootstrap()
+
+        // Check if installation already completed
+        const installStatus = await this.getInstallationStatus()
+        if (installStatus === 'completed') {
+          this.d.info('Installation already completed, skipping install steps')
+          return
+        }
+
+        // Run the installation sequence
+        await this.updateInstallationStatus('in-progress', attemptNumber)
         await this.aplOps.install()
 
         await this.updateInstallationStatus('completed', attemptNumber)
