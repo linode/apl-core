@@ -123,6 +123,7 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
 
 export const deleteSecretForHelmRelease = async (releaseName: string, namespace: string) => {
   const d = terminal('common:k8s:deleteSecretForHelmRelease')
+  d.info(`Deleting secret for Helm release ${releaseName} in namespace ${namespace}`)
   try {
     await coreClient.deleteNamespacedSecret({ name: `sh.helm.release.v1.${releaseName}.v1`, namespace })
     d.debug(`Deleted secret for Helm release ${releaseName} in namespace ${namespace}`)
@@ -169,7 +170,10 @@ export const checkOperationsInProgress = async (): Promise<void> => {
 }
 
 export const getPendingHelmReleases = async (): Promise<HelmRelease[]> => {
+  const d = terminal('common:k8s:getPendingHelmReleases')
+  d.info('Checking for pending Helm operations')
   const releases = await getK8sHelmReleases()
+  d.info(`Retrieved ${Object.keys(releases).length} Helm releases from Kubernetes`)
   const pendingReleases: HelmRelease[] = []
   Object.keys(releases).forEach((key) => {
     const release = releases[key]
@@ -177,7 +181,7 @@ export const getPendingHelmReleases = async (): Promise<HelmRelease[]> => {
       pendingReleases.push(release)
     }
   })
-
+  d.info(`Found ${pendingReleases.length} pending Helm releases`)
   return pendingReleases
 }
 
