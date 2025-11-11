@@ -1,12 +1,12 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Adds backwards compatibility with Kubernetes 1.20 by selecting the HPA apiVersion of autoscaling/v2beta2
+    - kind: changed
+      description: Updated OAuth2-Proxy image to v7.13.0
       links:
         - name: Github PR
-          url: https://github.com/oauth2-proxy/manifests/pull/364
+          url: https://github.com/oauth2-proxy/manifests/pull/366
 apiVersion: v2
-appVersion: 7.12.0
+appVersion: 7.13.0
 dependencies:
 - alias: redis
   condition: redis.enabled
@@ -36,4 +36,4 @@ name: oauth2-proxy
 sources:
 - https://github.com/oauth2-proxy/oauth2-proxy
 - https://github.com/oauth2-proxy/manifests
-version: 8.3.2
+version: 8.3.3
