@@ -123,9 +123,11 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
 
 export interface DeploymentState {
   status?: 'deploying' | 'deployed'
-  tag?: string
+  // semantic version string (without 'v' prefix)
   version?: string
+  // container image tag (can be an arbitrary name)
   deployingTag?: string
+  // semantic version string (without 'v' prefix)
   deployingVersion?: string
 }
 
