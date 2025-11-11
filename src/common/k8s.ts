@@ -475,6 +475,34 @@ export async function updateK8sConfigMap(
   return await coreV1Api.replaceNamespacedConfigMap({ name, namespace, body: configMap })
 }
 
+export async function createUpdateConfigMap(
+  coreV1Api: CoreV1Api,
+  name: string,
+  namespace: string,
+  data: Record<string, string>,
+): Promise<V1ConfigMap> {
+  const configMap: V1ConfigMap = {
+    metadata: {
+      name,
+      namespace,
+    },
+    data,
+  }
+
+  try {
+    return await coreV1Api.createNamespacedConfigMap({ namespace, body: configMap })
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 409) {
+      return await coreV1Api.patchNamespacedConfigMap(
+        { name, namespace, body: configMap },
+        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+      )
+    } else {
+      throw error
+    }
+  }
+}
+
 export async function getPodsOfStatefulSet(
   appsApi: AppsV1Api,
   statefulSetName: string,

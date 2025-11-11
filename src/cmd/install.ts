@@ -145,7 +145,6 @@ export const installAll = async () => {
       { streams: { stdout: d.stream.log, stderr: d.stream.error } },
     )
     await cloneOtomiChartsInGitea()
-    await createCredentialsSecret(initialData.secretName, initialData.username, initialData.password)
 
     // Run post-install steps synchronously but asynchronously without blocking
     runPostInstallSteps(initialData)

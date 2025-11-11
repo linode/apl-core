@@ -1,12 +1,9 @@
-import retry from 'async-retry'
 import { terminal } from '../common/debug'
-import { createGenericSecret, createK8sConfigMap, getK8sConfigMap, k8s, updateK8sConfigMap } from '../common/k8s'
+import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, k8s } from '../common/k8s'
 import { hfValues } from '../common/hf'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
-import { operatorEnv } from './validators'
 import * as process from 'node:process'
-import { PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 
 export class Installer {
   private d = terminal('operator:apl-installer')
@@ -18,42 +15,40 @@ export class Installer {
   }
 
   public async runInstallationWithRetry(): Promise<void> {
-    return retry(
-      async (bail, attemptNumber) => {
-        this.d.info(`Starting installation attempt ${attemptNumber}/${operatorEnv.INSTALL_RETRIES}`)
+    let attemptNumber = 0
 
-        // Check if installation already completed
-        const installStatus = await this.getInstallationStatus()
-        if (installStatus === 'completed') {
-          this.d.info('Installation already completed, skipping')
-          return
-        }
+    while (true) {
+      attemptNumber += 1
+      this.d.info(`Starting installation attempt ${attemptNumber}`)
 
-        await this.updateInstallationStatus('in-progress', attemptNumber)
+      // Check if installation already completed
+      const installStatus = await this.getInstallationStatus()
+      if (installStatus === 'completed') {
+        this.d.info('Installation already completed, skipping')
+        return
+      }
 
-        try {
-          // Run the installation sequence
-          await this.aplOps.validateCluster()
-          await this.aplOps.bootstrap()
-          await this.aplOps.install()
+      await this.updateInstallationStatus('in-progress', attemptNumber)
 
-          await this.updateInstallationStatus('completed', attemptNumber)
-          this.d.info('Installation completed successfully')
-        } catch (error) {
-          const errorMessage = getErrorMessage(error)
-          this.d.error(`Installation attempt ${attemptNumber} failed:`, errorMessage)
-          await this.updateInstallationStatus('failed', attemptNumber, errorMessage)
-          throw error
-        }
-      },
-      {
-        retries: operatorEnv.INSTALL_RETRIES,
-        maxTimeout: operatorEnv.INSTALL_MAX_TIMEOUT_MS,
-        onRetry: (error, attempt) => {
-          this.d.warn(`Installation attempt ${attempt} failed, retrying...`, getErrorMessage(error))
-        },
-      },
-    )
+      try {
+        // Run the installation sequence
+        await this.aplOps.validateCluster()
+        await this.aplOps.bootstrap()
+        await this.aplOps.install()
+
+        await this.updateInstallationStatus('completed', attemptNumber)
+        this.d.info('Installation completed successfully')
+        return
+      } catch (error) {
+        const errorMessage = getErrorMessage(error)
+        this.d.error(`Installation attempt ${attemptNumber} failed:`, errorMessage)
+        await this.updateInstallationStatus('failed', attemptNumber, errorMessage)
+        this.d.warn(`Installation attempt ${attemptNumber} failed, retrying in 1 second...`, getErrorMessage(error))
+
+        // Wait 1 second before retrying
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+    }
   }
 
   private async getInstallationStatus(): Promise<string> {
@@ -80,11 +75,7 @@ export class Installer {
         ...(error && { error }),
       }
 
-      try {
-        await updateK8sConfigMap('apl-operator', 'apl-installation-status', data, k8s.core())
-      } catch (updateError) {
-        await createK8sConfigMap('apl-operator', 'apl-installation-status', data, k8s.core())
-      }
+      await createUpdateConfigMap(k8s.core(), 'apl-installation-status', 'apl-operator', data)
     } catch (err) {
       this.d.warn('Failed to update installation status:', getErrorMessage(err))
     }
@@ -104,36 +95,10 @@ export class Installer {
       if (!gitUsername || !gitPassword) {
         this.d.warn('Git credentials not found in values, operator will run without GitOps functionality')
       } else {
-        try {
-          await k8s.core().patchNamespacedSecret(
-            {
-              name: 'gitea-credentials',
-              namespace: 'apl-operator',
-              body: {
-                data: {
-                  GIT_USERNAME: gitUsername,
-                  GIT_PASSWORD: gitPassword,
-                },
-              },
-            },
-            setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
-          )
-          this.d.info('Created git credentials secret with real values')
-        } catch (error) {
-          if (error?.code === 404) {
-            try {
-              await createGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {
-                GIT_USERNAME: gitUsername,
-                GIT_PASSWORD: gitPassword,
-              })
-              this.d.info('Patched existing git credentials secret with real values')
-            } catch (updateError) {
-              this.d.error('Failed to update git credentials secret:', getErrorMessage(updateError))
-            }
-          } else {
-            this.d.error('Failed to create git credentials secret:', getErrorMessage(error))
-          }
-        }
+        await createUpdateGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {
+          GIT_USERNAME: gitUsername,
+          GIT_PASSWORD: gitPassword,
+        })
 
         process.env.GIT_USERNAME = gitUsername
         process.env.GIT_PASSWORD = gitPassword
