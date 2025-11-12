@@ -35,7 +35,7 @@ dependencies:
     version: 0.9.7
     repository: https://falcosecurity.github.io/charts
   - name: gitea
-    version: 12.2.0
+    version: 12.4.0
     repository: https://dl.gitea.io/charts
   - name: harbor
     version: 1.18.0
@@ -61,9 +61,6 @@ dependencies:
     alias: keycloak
     version: 7.1.4
     repository: https://codecentric.github.io/helm-charts
-  - name: kiali-operator
-    version: 2.17.0
-    repository: https://kiali.org/helm-charts
   - name: knative-operator
     version: v1.18.1
     repository: https://knative.github.io/operator
@@ -80,7 +77,7 @@ dependencies:
     version: 4.6.0
     repository: https://kubereboot.github.io/charts
   - name: kyverno
-    version: 3.5.1
+    version: 3.5.2
     repository: https://kyverno.github.io/kyverno/
   - name: loki-distributed
     alias: loki
@@ -93,14 +90,14 @@ dependencies:
     version: 5.4.0
     repository: https://charts.min.io/
   - name: oauth2-proxy
-    version: 8.3.2
+    version: 8.3.3
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
-    version: 0.33.0
+    version: 0.98.0
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   - name: policy-reporter
-    version: 3.4.2
+    version: 3.5.0
     repository: https://kyverno.github.io/policy-reporter
   - name: prometheus-blackbox-exporter
     version: 11.4.1
@@ -116,7 +113,7 @@ dependencies:
     version: 4.4.34
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
-    version: 2.17.7
+    version: 2.17.9
     repository: https://bitnami-labs.github.io/sealed-secrets/
   - name: tekton-pipeline
     alias: tekton-pipelines

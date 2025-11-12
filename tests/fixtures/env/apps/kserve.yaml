@@ -22,8 +22,8 @@ spec:
                 memory: 300Mi
         inferenceService:
             limits:
-                cpu: "1"
-                memory: "2Gi"
+                cpu: '1'
+                memory: '2Gi'
             requests:
-                cpu: "1"
-                memory: "2Gi"
+                cpu: '1'
+                memory: '2Gi'

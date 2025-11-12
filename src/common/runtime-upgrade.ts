@@ -1,10 +1,8 @@
-import { isEmpty } from 'lodash'
 import semver from 'semver'
 import { getApplications } from 'src/cmd/apply-as-apps'
 import { terminal } from './debug'
 import { getDeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
 import { RuntimeUpgradeContext, RuntimeUpgrades, runtimeUpgrades } from './runtime-upgrades/runtime-upgrades'
-import { getCurrentVersion } from './values'
 import { deployEssential } from './hf'
 
 interface RuntimeUpgradeArgs {
@@ -15,23 +13,20 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
   const d = terminal('cmd:upgrade:runtimeUpgrade')
   const deploymentState = await getDeploymentState()
 
-  if (isEmpty(deploymentState)) {
+  if (!deploymentState?.version) {
     d.info('Skipping the runtime upgrade procedure as this is the very first installation')
     return
   }
+  const deployedVersion: string = deploymentState.version
+  d.info(`The current version of the Akamai App Platform: ${deployedVersion}`)
 
   d.info('Deploying essential manifests')
-  const essentialDeployResult = await deployEssential(['upgrade=true'])
+  const essentialDeployResult = await deployEssential(['upgrade=true'], true)
   if (!essentialDeployResult) {
     throw new Error('Failed to update namespaces')
   }
 
-  const declaredVersion = await getCurrentVersion()
-  const deployedVersion: string = deploymentState.version ?? declaredVersion
   const apps = await getApplications()
-
-  d.info(`Current version of otomi: ${deployedVersion}`)
-
   const filteredUpgrades = filterRuntimeUpgrades(deployedVersion, runtimeUpgrades)
 
   if (filteredUpgrades.length === 0) {
@@ -85,5 +80,5 @@ export function filterRuntimeUpgrades(version: string, rUpgrades: RuntimeUpgrade
   if (!currentVersion) {
     throw new Error(`Unsupported version format: ${version}`)
   }
-  return rUpgrades.filter((rUpgrade) => rUpgrade.version === 'dev' || semver.gt(rUpgrade.version, currentVersion))
+  return rUpgrades.filter((rUpgrade) => semver.gt(rUpgrade.version, currentVersion))
 }

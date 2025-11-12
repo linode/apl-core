@@ -36,13 +36,13 @@ k8s:
     - name: istio-system
       disableIstioInjection: true
       labels:
-        "apl.io/ingress-controller-scope": "true"
+        'apl.io/ingress-controller-scope': 'true'
     - name: ingress
       # disabling istio sidecar as it does not preserve client ip (yet)
       # TODO: enable once it does
       disableIstioInjection: true
       labels:
-        "apl.io/ingress-controller-scope": "true"
+        'apl.io/ingress-controller-scope': 'true'
     - name: jaeger
       app: jaeger
     - name: jaeger-operator
@@ -50,11 +50,6 @@ k8s:
       disableIstioInjection: true
     - name: keycloak
     - name: apl-keycloak-operator
-      disableIstioInjection: true
-    - name: kiali
-      app: kiali
-    - name: kiali-operator
-      app: kiali
       disableIstioInjection: true
     - name: knative-serving
       app: knative
@@ -254,18 +249,6 @@ adminApps:
         svc: keycloak-keycloakx-http
         type: public
         port: 8080
-  - name: kiali
-    tags: [tracing, telemetry, observability]
-    deps: [istio, prometheus]
-    ingress:
-      - svc: kiali
-        forwardPath: true
-        removeRequestHeaders:
-          - authorization
-        port: 20001
-        namespace: kiali
-        type: public
-        auth: true
   - name: knative
     tags: [serverless, functions]
     deps: [istio]

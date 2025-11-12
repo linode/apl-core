@@ -1,6 +1,6 @@
 import { terminal } from 'src/common/debug'
-import { deployEssential, hf } from 'src/common/hf'
-import { getFilename, rootDir } from 'src/common/utils'
+import { deployEssential } from 'src/common/hf'
+import { getFilename } from 'src/common/utils'
 import { CommandModule } from 'yargs'
 
 const cmdName = getFilename(__filename)
@@ -8,7 +8,7 @@ const d = terminal(`cmd:${cmdName}:apply-teams`)
 
 export const applyTeams = async (): Promise<boolean> => {
   d.info('Deploying team namespaces')
-  const result = await deployEssential(['team=true'])
+  const result = await deployEssential(['team=true'], true)
 
   if (result) {
     d.info('Teams applied')

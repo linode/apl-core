@@ -22,7 +22,7 @@ ARG KUBECONFORM_VERSION=0.7.0
 # https://github.com/helmfile/helmfile/releases
 ARG HELMFILE_VERSION=1.1.8
 # https://nodejs.org/en/download/
-ARG NODE_VERSION=22
+ARG NODE_VERSION=24
 # https://github.com/cloudnative-pg/cloudnative-pg/releases
 ARG CNPG_VERSION=1.26.2
 # https://github.com/jqlang/jq/releases/

@@ -97,7 +97,6 @@ One-click activation of the following Kubernetes Apps:
 - [Harbor](https://github.com/goharbor/harbor): Container image registry with role-based access control and image scanning.
 - [Kyverno](https://github.com/kyverno/kyverno): Kubernetes native policy management.
 - [Jaeger](https://github.com/jaegertracing/jaeger): End-to-end distributed tracing and monitor for complex distributed systems.
-- [Kiali](https://github.com/kiali/kiali): Observe Istio service mesh relations and connections.
 - [Minio](https://github.com/minio/minio): High performance Object Storage compatible with Amazon S3 cloud storage service.
 - [Trivy Operator](https://github.com/aquasecurity/trivy-operator): Kubernetes-native security toolkit.
 - [Falco](https://github.com/falcosecurity/falco): Cloud Native Runtime Security.
