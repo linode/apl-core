@@ -13,6 +13,10 @@ import {
   V1StatefulSet,
   V1Status,
 } from '@kubernetes/client-node'
+import retry from 'async-retry'
+import { ARGOCD_APP_PARAMS } from './constants'
+import { terminal } from './debug'
+import { env } from './envalid'
 import * as k8s from './k8s'
 import {
   appRevisionMatches,
@@ -22,10 +26,6 @@ import {
   patchContainerResourcesOfSts,
   patchStatefulSetResources,
 } from './k8s'
-import { terminal } from './debug'
-import retry from 'async-retry'
-import { env } from './envalid'
-import { ARGOCD_APP_PARAMS } from './constants'
 
 class MockApiException<T> extends ApiException<T> {
   code: number
@@ -610,6 +610,44 @@ describe('patchArgoCdApp', () => {
         { op: 'replace', path: '/spec/source/helm/values', value: 'test-values' },
       ],
     })
+  })
+})
+
+describe('helm operations in progress check', () => {
+  it('should get pending helm releases', async () => {
+    const mockGetK8sHelmReleases = jest.spyOn(k8s, 'getK8sHelmReleases').mockResolvedValue({
+      'release-1:ns-1': { name: 'release-1', namespace: 'ns-1', revision: 2, status: 'pending-upgrade' },
+      'release-2:ns-2': { name: 'release-2', namespace: 'ns-2', revision: 1, status: 'deployed' },
+    })
+
+    const pendingReleases = await k8s.getPendingHelmReleases()
+    expect(mockGetK8sHelmReleases).toHaveBeenCalled()
+    expect(pendingReleases).toEqual([{ name: 'release-1', namespace: 'ns-1', revision: 2, status: 'pending-upgrade' }])
+  })
+
+  it('should delete secrets for helm releases', async () => {
+    const mockDeleteSecretForHelmRelease = jest.spyOn(k8s, 'deleteSecretForHelmRelease').mockResolvedValue()
+    await k8s.deleteSecretForHelmRelease('release-1', 'ns-1')
+    expect(mockDeleteSecretForHelmRelease).toHaveBeenCalledWith('release-1', 'ns-1')
+  })
+
+  it('should delete secrets for pending releases', async () => {
+    const mockDeleteSecretForHelmRelease = jest.spyOn(k8s, 'deleteSecretForHelmRelease').mockResolvedValue()
+    const mockGetPendingHelmReleases = jest.spyOn(k8s, 'getPendingHelmReleases').mockResolvedValue([
+      {
+        name: 'release-1',
+        namespace: 'ns-1',
+        revision: 2,
+        status: 'pending-upgrade',
+        app_version: '',
+      },
+      { name: 'release-2', namespace: 'ns-2', revision: 1, status: 'pending-install', app_version: '' },
+    ])
+
+    await k8s.checkOperationsInProgress()
+    expect(mockGetPendingHelmReleases).toHaveBeenCalled()
+    expect(mockDeleteSecretForHelmRelease).toHaveBeenNthCalledWith(1, 'release-1', 'ns-1')
+    expect(mockDeleteSecretForHelmRelease).toHaveBeenNthCalledWith(3, 'release-2', 'ns-2')
   })
 })
 
