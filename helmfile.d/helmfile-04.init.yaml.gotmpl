@@ -61,12 +61,6 @@ releases:
     labels:
       pkg: apl-harbor-operator
     <<: *default
-  - name: kiali-operator-artifacts
-    installed: {{ $a | get "kiali.enabled" }}
-    namespace: kiali
-    labels:
-      pkg: kiali
-    <<: *raw
   - name: knative-operator
     installed: {{ $a | get "knative.enabled" }}
     namespace: knative-operator

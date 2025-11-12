@@ -61,9 +61,6 @@ dependencies:
     alias: keycloak
     version: 7.1.4
     repository: https://codecentric.github.io/helm-charts
-  - name: kiali-operator
-    version: 2.18.0
-    repository: https://kiali.org/helm-charts
   - name: knative-operator
     version: v1.18.1
     repository: https://knative.github.io/operator
@@ -93,7 +90,7 @@ dependencies:
     version: 5.4.0
     repository: https://charts.min.io/
   - name: oauth2-proxy
-    version: 8.3.2
+    version: 8.3.3
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
