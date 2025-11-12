@@ -9,6 +9,6 @@ spec:
     k8sContext: linode-dev
     owner: akamai
     provider: linode
-    # linode:
-    #     tier: enterprise
+    linode:
+        tier: standard
     defaultStorageClass: ''
