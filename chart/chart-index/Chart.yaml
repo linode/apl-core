@@ -73,9 +73,6 @@ dependencies:
   - name: kube-prometheus-stack
     version: 79.0.1
     repository: https://prometheus-community.github.io/helm-charts
-  - name: kured
-    version: 4.6.0
-    repository: https://kubereboot.github.io/charts
   - name: kyverno
     version: 3.5.2
     repository: https://kyverno.github.io/kyverno/
