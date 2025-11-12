@@ -1,10 +1,10 @@
 import { getApplications } from 'src/cmd/apply-as-apps'
 import { terminal } from './debug'
+import { deployEssential } from './hf'
 import { getDeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
 import { filterRuntimeUpgrades, runtimeUpgrade } from './runtime-upgrade'
 import { RuntimeUpgrades } from './runtime-upgrades/runtime-upgrades'
 import { getCurrentVersion } from './values'
-import { deployEssential } from './hf'
 
 jest.mock('./k8s')
 jest.mock('./hf')
@@ -43,7 +43,7 @@ describe('runtimeUpgrade', () => {
       info: jest.fn(),
       error: jest.fn(),
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     mockTerminal.mockReturnValue(mockDebugger as any)
   })
 
@@ -61,7 +61,6 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should skip runtime upgrade for null deployment state', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockGetDeploymentState.mockResolvedValue(null as any)
       mockGetCurrentVersion.mockResolvedValue('1.0.0')
 
@@ -80,17 +79,17 @@ describe('runtimeUpgrade', () => {
 
       await runtimeUpgrade({ when: 'pre' })
 
-      expect(mockDebugger.info).toHaveBeenCalledWith('Current version of otomi: 2.0.0')
+      expect(mockDebugger.info).toHaveBeenCalledWith('The current version of the Akamai App Platform: 2.0.0')
+      expect(mockDebugger.info).toHaveBeenCalledWith('Deploying essential manifests')
       expect(mockDebugger.info).toHaveBeenCalledWith('No runtime upgrade operations detected, skipping')
     })
 
     it('should use current version when deployment state has no version', async () => {
-      mockGetDeploymentState.mockResolvedValue({ status: 'deployed' })
-      mockGetCurrentVersion.mockResolvedValue('1.0.0')
+      mockGetDeploymentState.mockResolvedValue({ status: 'deployed', version: '1.0.0' })
 
       await runtimeUpgrade({ when: 'pre' })
 
-      expect(mockDebugger.info).toHaveBeenCalledWith('Current version of otomi: 1.0.0')
+      expect(mockDebugger.info).toHaveBeenCalledWith('The current version of the Akamai App Platform: 1.0.0')
     })
   })
 
@@ -231,26 +230,16 @@ describe('runtimeUpgrade', () => {
 })
 
 describe('filterRuntimeUpgrades', () => {
-  const sampleUpgrades: RuntimeUpgrades = [
-    { version: '1.0.0' },
-    { version: '1.5.0' },
-    { version: '2.0.0' },
-    { version: 'dev' },
-  ]
+  const sampleUpgrades: RuntimeUpgrades = [{ version: '1.0.0' }, { version: '1.5.0' }, { version: '2.0.0' }]
 
   it('should filter upgrades newer than current version', () => {
     const result = filterRuntimeUpgrades('1.2.0', sampleUpgrades)
-    expect(result).toEqual([{ version: '1.5.0' }, { version: '2.0.0' }, { version: 'dev' }])
-  })
-
-  it('should include dev version regardless of current version', () => {
-    const result = filterRuntimeUpgrades('99.0.0', sampleUpgrades)
-    expect(result).toEqual([{ version: 'dev' }])
+    expect(result).toEqual([{ version: '1.5.0' }, { version: '2.0.0' }])
   })
 
   it('should return empty array when no upgrades are newer', () => {
     const result = filterRuntimeUpgrades('3.0.0', sampleUpgrades)
-    expect(result).toEqual([{ version: 'dev' }])
+    expect(result).toEqual([])
   })
 
   it('should handle prerelease versions correctly', () => {
@@ -271,16 +260,16 @@ describe('filterRuntimeUpgrades', () => {
 
   it('should not run with prereleases = version', () => {
     const result = filterRuntimeUpgrades('2.0.0-rc.2', sampleUpgrades)
-    expect(result).toEqual([{ version: 'dev' }])
+    expect(result).toEqual([])
   })
 
   it('should not modify valid semantic versions', () => {
     const result = filterRuntimeUpgrades('1.0.0', sampleUpgrades)
-    expect(result).toEqual([{ version: '1.5.0' }, { version: '2.0.0' }, { version: 'dev' }])
+    expect(result).toEqual([{ version: '1.5.0' }, { version: '2.0.0' }])
   })
 
   it('should handle edge case with exact version match', () => {
     const result = filterRuntimeUpgrades('1.5.0', sampleUpgrades)
-    expect(result).toEqual([{ version: '2.0.0' }, { version: 'dev' }])
+    expect(result).toEqual([{ version: '2.0.0' }])
   })
 })
