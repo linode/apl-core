@@ -1,11 +1,14 @@
 {{- $v := .Values }}
-{{- $o := $v.apps | get "apl-gitea-operator" }}  
+{{- $o := $v.apps | get "apl-gitea-operator" }}
 {{- $version := $v.versions.tasks }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
+{{- $repository:= $o | get "image.repository" }}
 image:
-  {{ if .Values.otomi.linodeLkeImageRepository }}
+  {{- if $repository}}
+  repository: {{ $repository }}
+  {{- else if $v.otomi.linodeLkeImageRepository }}
   repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/linode/apl-tasks"
-  {{ end }}
+  {{- end }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
 
