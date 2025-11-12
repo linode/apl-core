@@ -173,10 +173,8 @@ export const getPendingHelmReleases = async (): Promise<HelmRelease[]> => {
   const d = terminal('common:k8s:getPendingHelmReleases')
   d.info('Checking for pending Helm operations')
   const releases = await getK8sHelmReleases()
-  d.info(`Retrieved ${Object.keys(releases).length} Helm releases from Kubernetes`)
   const pendingReleases: HelmRelease[] = []
   Object.keys(releases).forEach((key) => {
-    d.info(`Release: ${key}, Status: ${releases[key].status}`)
     const release = releases[key]
     if (release.labelName === 'apl' || release.labelName === 'otomi') return
     if (
@@ -187,7 +185,6 @@ export const getPendingHelmReleases = async (): Promise<HelmRelease[]> => {
       pendingReleases.push(release)
     }
   })
-  d.info(`Found ${pendingReleases.length} pending Helm releases`)
   return pendingReleases
 }
 
