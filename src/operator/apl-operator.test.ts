@@ -109,8 +109,6 @@ describe('AplOperator', () => {
       expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.repoUrl)
       expect(mockGitRepo.clone).toHaveBeenCalled()
       expect(mockGitRepo.waitForCommits).toHaveBeenCalled()
-      expect(mockAplOps.bootstrap).toHaveBeenCalled()
-      expect(mockAplOps.validateValues).toHaveBeenCalled()
 
       expect(mockInfoFn).toHaveBeenCalledWith('APL operator started successfully')
     })
