@@ -2152,21 +2152,6 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
-      kiali:
-        additionalProperties: false
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          resources:
-            additionalProperties: false
-            properties:
-              operator:
-                $ref: '#/definitions/resources'
-              pod:
-                $ref: '#/definitions/resources'
       knative:
         additionalProperties: false
         properties:

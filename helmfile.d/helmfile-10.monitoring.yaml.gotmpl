@@ -24,18 +24,6 @@ releases:
     values:
       - ../values/jaeger-operator/jaeger-operator.gotmpl
       - {{- $v.apps.jaeger | get "_rawValues" dict | toYaml | nindent 8 }}
-    <<: *upgrade
-  - name: kiali-operator
-    installed: {{ $a | get "kiali.enabled" }}
-    disableValidationOnInstall: true
-    namespace: kiali-operator
-    labels:
-      pkg: kiali
-    chart: ../charts/kiali-operator
-    values:
-      - ../values/kiali-operator/kiali-operator.gotmpl
-      - {{- $v.apps.kiali | get "_rawValues" dict | toYaml | nindent 8 }}
-    <<: *upgrade
   - name: loki
     installed: {{ $a | get "loki.enabled" }}
     namespace: monitoring
@@ -49,7 +37,7 @@ releases:
     namespace: tempo
     <<: *default
   - name: prometheus-blackbox-exporter
-    installed: {{ $a | get "prometheus.enabled" }} 
+    installed: {{ $a | get "prometheus.enabled" }}
     namespace: monitoring
     <<: *default
   - name: promtail
