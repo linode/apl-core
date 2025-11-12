@@ -4,28 +4,3 @@ cluster:
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
   version: 'OTOMI_VERSION_PLACEHOLDER'
-apps:
-  otomi-api:
-    image:
-      repository: docker.io/linode/apl-api
-    tools:
-      image:
-        repository: docker.io/linode/apl-core
-  otomi-console:
-    image:
-      repository: docker.io/linode/apl-console
-  otomi-operator:
-    image:
-      repository: docker.io/linode/apl-tasks
-  apl-harbor-operator:
-    image:
-      repository: docker.io/linode/apl-tasks
-  apl-gitea-operator:
-    image:
-      repository: docker.io/linode/apl-tasks
-  apl-keycloak-operator:
-    image:
-      repository: docker.io/linode/apl-tasks
-  apl-operator:
-    image:
-      repository: docker.io/linode/apl-operator
