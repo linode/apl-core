@@ -41,8 +41,4 @@ releases:
     labels:
       pkg: thanos
     <<: *default
-  - name: kured
-    installed: {{ $a | get "kured.enabled" }}
-    namespace: kube-system
-    <<: *default
 
