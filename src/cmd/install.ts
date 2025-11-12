@@ -105,15 +105,6 @@ export const installAll = async () => {
     await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)
     // FIXME: Migrate to use native Git client and stop cd-ing around
     cd(rootDir)
-    await retryInstallStep(
-      hf,
-      {
-        labelOpts: ['pkg=apl-operator'],
-        logLevel: logLevelString(),
-        args: hfArgs,
-      },
-      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-    )
     await createWelcomeConfigMap(initialData.secretName, initialData.domainSuffix)
   }
   await setDeploymentState({ status: 'deployed', version })

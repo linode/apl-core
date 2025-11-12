@@ -19,8 +19,7 @@ export const HF_DEFAULT_SYNC_ARGS = [
   '--concurrency=1',
   '--reuse-values', // Preserve values from existing releases on retry - makes install idempotent
   '--sync-args',
-  '--disable-openapi-validation',
-  '--qps=20',
+  '--disable-openapi-validation --qps=20',
 ]
 
 type HFParams = {
