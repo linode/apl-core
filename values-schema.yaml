@@ -2231,19 +2231,6 @@ properties:
                 $ref: '#/definitions/resources'
               workflowController:
                 $ref: '#/definitions/resources'
-      kured:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            default: false
-            type: boolean
-          resources:
-            additionalProperties: false
-            properties:
-              kuredDaemonSet:
-                $ref: '#/definitions/resources'
       linode-cfw:
         additionalProperties: false
         properties:
