@@ -31,7 +31,6 @@ apl-core
 ├── k8s                           # Kubernetes manifests that before any other chart
 ├── src                           # APL CLI source code
 ├── tests                         # Values used for testing purposes
-├── upgrades.yaml                 # Upgrade presync hooks
 ├── values                        # Value templates that serves as input to corresponding Helm charts
 ├── values-changes.yaml           # Definitions for performing data migrations
 ├── values-schema.yaml            # JSON schema that defines APL interface
@@ -70,6 +69,9 @@ bases:
   - snippets/defaults.yaml
 ---
 bases:
+  - snippets/defaults.gotmpl
+---
+bases:
   - snippets/env.gotmpl
 ---
 bases:
@@ -93,6 +95,7 @@ flowchart LR
     subgraph HB[Helmfile bases]
         snippets/derived.gotmpl --> HV[.Values]
         snippets/env.gotmpl --> HV
+        snippets/default.gotmpl --> HV
         snippets/default.yaml --> HV
     end
 
@@ -108,7 +111,7 @@ From the flow diagram, we can distinguish four stages of data, before `Kubernete
 
 **Values repo**: It contains files that define input parameters for APL. This is where you can define teams, team, services, enabled applications and their configurations, etc. A user sets the `$ENV_DIR` env variable, so APL knows about its location.
 
-**Helmfile bases**: From the flow diagram, three files incorporate the content of the `.Values` - a Helmfile variable, which is accessible while using Go templates. These files are merged together in the following order: `snippets/default.yaml` -> `snippets/env.gotmpl` -> `snippets/derived.gotmpl`.
+**Helmfile bases**: From the flow diagram, three files incorporate the content of the `.Values` - a Helmfile variable, which is accessible while using Go templates. These files are merged together in the following order: `snippets/default.yaml` -> `snippets/default.gotmpl` -> `snippets/env.gotmpl` -> `snippets/derived.gotmpl`.
 
 **Helmfile release**: At this stage, Helmfile is establishing a path to the Helm chart and the content of the Helm chart values. We will talk more about defining Helmfile releases in the next chapter.
 
@@ -117,6 +120,8 @@ From the flow diagram, we can distinguish four stages of data, before `Kubernete
 **Kubernetes manifests**: Helm generates Kubernetes manifests that can be deployed to the cluster.
 
 Let's zoom into the function of `snippets/defaults.yaml` file. It contains default app values. For example, defining the default value for enabling the app.
+
+The `snippets/defaults.yaml` allows to define dynamic defaults that can be overwritten bu the user input. Consider rendering defaults for each team.
 
 The function of the `snippets/derived.gotmpl` file is to derive those values that depend on user input (values repo). For example, you can enable an app only if a certain cluster provider is set.
 
