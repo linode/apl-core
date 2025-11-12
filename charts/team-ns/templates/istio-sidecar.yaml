@@ -10,7 +10,7 @@ metadata:
   name: default
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  outboundTrafficPolicy: 
+  outboundTrafficPolicy:
     mode: REGISTRY_ONLY
 ---
 apiVersion: networking.istio.io/v1beta1
@@ -36,5 +36,18 @@ spec:
   workloadSelector:
     labels:
       app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Sidecar
+metadata:
+  name: tekton-dashboard-sidecar
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  workloadSelector:
+    labels:
+      app: tekton-dashboard
+  egress:
+  - hosts:
+    - "default/kubernetes.default.svc.cluster.local"
 {{- end }}
 {{- end }}
