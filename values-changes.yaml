@@ -381,3 +381,5 @@ changes:
   - version: 45
     deletions:
       - 'apps.kiali'
+      - 'apps.drone'
+      - 'e2e'

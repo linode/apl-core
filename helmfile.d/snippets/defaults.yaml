@@ -136,13 +136,6 @@ environments:
                 memory: 200Mi
             useBackupPlugin: false
             _rawValues: {}
-          drone:
-            enabled: false
-            debug: false
-            trace: false
-            sourceControl:
-              provider: gitea
-              username: otomi-admin
           external-dns:
             logLevel: info
             resources:
@@ -1476,10 +1469,6 @@ environments:
           useORCS: true
           aiEnabled: false
         users: []
-        e2e:
-          enabled: false
-          upgrade:
-            version: main
         # TODO: update this when schema version changes
         versions:
-          specVersion: 44
+          specVersion: 45
