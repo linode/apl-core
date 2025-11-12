@@ -14,8 +14,6 @@ apps:
     enabled: true
   jaeger:
     enabled: true
-  kiali:
-    enabled: true
   loki:
     enabled: true
     adminPassword: blablabla
