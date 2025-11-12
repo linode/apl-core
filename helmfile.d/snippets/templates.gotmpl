@@ -1,31 +1,10 @@
 templates:
-  upgrade: &upgrade
-    hooks:
-      - events: [presync]
-        showlogs: true
-        command: ../binzx/otomiw
-        args:
-          - upgrade
-          - -r
-          - '{{ .Release.Name }}'
-          - -w
-          - pre
-      - events: [postsync]
-        showlogs: true
-        command: ../binzx/otomiw
-        args:
-          - upgrade
-          - -r
-          - '{{ .Release.Name }}'
-          - -w
-          - post
   default: &default
     missingFileHandler: Debug
     chart: ../charts/{{ .Release.Name }}
     values:
       - ../values/{{ .Release.Name }}/{{ .Release.Name }}.gotmpl
       - snippets/common.gotmpl
-    <<: *upgrade
   otomiDb: &otomiDb
     chart: ../charts/otomi-db
     values:
