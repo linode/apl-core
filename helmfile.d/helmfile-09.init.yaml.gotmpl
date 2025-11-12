@@ -22,7 +22,6 @@ releases:
       pkg: knative
     values:
       - ../values/knative-serving/knative-serving-raw.gotmpl
-    <<: *upgrade
   - name: knative-serving
     installed: {{ $a | get "knative.enabled" }}
     namespace: knative-serving
@@ -31,7 +30,6 @@ releases:
       pkg: knative
     values:
       - ../values/knative-serving/knative-serving-cr.gotmpl
-    <<: *upgrade
   - name: minio
     installed: {{ $a.minio.enabled }}
     namespace: minio
