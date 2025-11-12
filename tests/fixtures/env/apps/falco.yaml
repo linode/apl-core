@@ -18,7 +18,6 @@ spec:
                   condition: (
                       container.image.repository in (
                         docker.io/velero/velero,
-                        docker.io/weaveworks/kured,
                         ghcr.io/aquasecurity/trivy-operator,
                         quay.io/argoproj/argocd,
                         docker.io/bitnami/keycloak,
