@@ -12,11 +12,11 @@
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 {{- $version := $v.versions | get "api" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
-{{- $repository:= $o | get "image.repository" }}
+{{- $repository:= $o | get "image.repository" nil }}
 
 {{- $toolsVersion := $v.versions | get "tools" }}
 {{- $toolsIsSemver := regexMatch "^[0-9.]+" $toolsVersion }}
-{{- $toolsRepository:= $o | get "tools.image.repository" }}
+{{- $toolsRepository:= $o | get "tools.image.repository" nil }}
 
 
 replicaCount: 1

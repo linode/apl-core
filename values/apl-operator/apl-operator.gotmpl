@@ -4,7 +4,7 @@
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $g := $v.apps.gitea }}
 {{- $kms := $v | get "kms" dict }}
-{{- $repository:= $o | get "image.repository" }}
+{{- $repository:= $o | get "image.repository" nil }}
 image:
   {{- if $repository}}
   repository: {{ $repository }}

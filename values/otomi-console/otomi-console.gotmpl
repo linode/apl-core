@@ -3,7 +3,7 @@
 {{- $o := $v.apps | get "otomi-console" }}
 {{- $version := $v.versions | get "api" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
-{{- $repository:= $o | get "image.repository" }}
+{{- $repository:= $o | get "image.repository" nil }}
 replicaCount: 1
 resources: {{- $o.resources | toYaml | nindent 2 }}
 image:

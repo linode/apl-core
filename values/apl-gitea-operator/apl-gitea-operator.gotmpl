@@ -2,7 +2,7 @@
 {{- $o := $v.apps | get "apl-gitea-operator" }}
 {{- $version := $v.versions.tasks }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
-{{- $repository:= $o | get "image.repository" }}
+{{- $repository:= $o | get "image.repository" nil }}
 image:
   {{- if $repository}}
   repository: {{ $repository }}
