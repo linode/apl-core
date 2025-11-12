@@ -178,7 +178,7 @@ export const getPendingHelmReleases = async (): Promise<HelmRelease[]> => {
   Object.keys(releases).forEach((key) => {
     d.info(`Release: ${key}, Status: ${releases[key].status}`)
     const release = releases[key]
-    if (release.labelName !== 'apl' || release.labelName !== 'otomi') return
+    if (release.labelName === 'apl' || release.labelName === 'otomi') return
     if (
       release.status === 'pending-upgrade' ||
       release.status === 'pending-install' ||
