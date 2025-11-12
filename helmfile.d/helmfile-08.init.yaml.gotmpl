@@ -33,9 +33,8 @@ releases:
     values:
       - ../values/prometheus-operator/prometheus-operator.gotmpl
       - {{- $a | get "prometheus._rawValues" dict | toYaml | nindent 8 }}
-      - alertmanager: {{- $a | get "alertmanager._rawValues" dict | toYaml | nindent 10 }} 
+      - alertmanager: {{- $a | get "alertmanager._rawValues" dict | toYaml | nindent 10 }}
       - grafana: {{- $a | get "grafana._rawValues" dict | toYaml | nindent 10 }}
-    <<: *upgrade
   - name: thanos
     installed: {{ $a | get "thanos.enabled" }}
     namespace: thanos
