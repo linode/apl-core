@@ -151,26 +151,6 @@ appsInfo:
     license: Apache 2.0
     about: Keycloak is an Open Source Identity and Access Management solution for modern Applications and Services.
     integration: The SSO login page for APL is served by Keycloak. Keycloak is used as an identity broker or provider for all APL integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of APL and is always enabled.
-  kiali:
-    title: Kiali Operator
-    appVersion: 2.18.0
-    repo: https://github.com/kiali/kiali
-    maintainers: Kiali
-    relatedLinks:
-      - https://kiali.io/
-      - https://github.com/kiali/kiali-operator
-    license: Apache 2.0
-    dependencies: Prometheus
-    about: Kiali is a management console for Istio to manage, visualize, validate and troubleshoot the service mesh.
-    integration: Kiali can be activated to gain observability insights on its network traffic. Kiali runs in anonymous mode and each authenticated user is given the same authorization, allowing them to see everything.
-    chartName: kiali-operator
-    isDeprecated: true
-    deprecationInfo:
-      message: Kiali service mesh visualization is being deprecated.
-      reasons:
-        - This diagnostic tool is not essential to deliver platform capabilities.
-      options:
-        - Click 'I understand' to continue using Kiali dashboard
   knative:
     title: Knative Operator
     appVersion: 1.18.1
