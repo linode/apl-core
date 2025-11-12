@@ -14,7 +14,14 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { applyServerSide } from './k8s'
 
 const replaceHFPaths = (output: string, envDir = env.ENV_DIR): string => output.replaceAll('../env', envDir)
-export const HF_DEFAULT_SYNC_ARGS = ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20']
+export const HF_DEFAULT_SYNC_ARGS = [
+  'sync',
+  '--concurrency=1',
+  '--reuse-values', // Preserve values from existing releases on retry - makes install idempotent
+  '--sync-args',
+  '--disable-openapi-validation',
+  '--qps=20',
+]
 
 type HFParams = {
   fileOpts?: string | string[] | null
