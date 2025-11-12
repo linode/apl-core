@@ -1,6 +1,10 @@
 {{- $v := .Values }}
 {{- $o := $v.apps | get "apl-operator" }}
 {{- $version := $v.otomi.version }}
+{{- $tag:= $o | get "image.tag" nil }}
+{{- if $tag }}
+  {{- $version = $tag }}
+{{- end }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $g := $v.apps.gitea }}
 {{- $kms := $v | get "kms" dict }}

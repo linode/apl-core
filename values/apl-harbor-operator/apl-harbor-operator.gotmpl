@@ -1,6 +1,10 @@
 {{- $v := .Values }}
 {{- $o := $v.apps | get "apl-harbor-operator" }}
 {{- $version := $v.versions.tasks }}
+{{- $tag:= $o | get "image.tag" nil }}
+{{- if $tag }}
+  {{- $version = $tag }}
+{{- end }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 image:
   {{- if and $v.otomi.linodeLkeImageRepository $isSemver }}

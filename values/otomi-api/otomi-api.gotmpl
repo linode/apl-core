@@ -11,8 +11,18 @@
 {{- $defaultPlatformAdminEmail := printf "platform-admin@%s" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 {{- $version := $v.versions | get "api" }}
+{{- $tag:= $o | get "image.tag" nil }}
+{{- if $tag }}
+  {{- $version = $tag }}
+{{- end }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
+
 {{- $toolsVersion := $v.versions | get "tools" }}
+{{- $toolsTag:= $o | get "tools.image.tag" nil }}
+{{- if $toolsTag }}
+  {{- $toolsVersion = $toolsTag }}
+{{- end }}
+
 {{- $toolsIsSemver := regexMatch "^[0-9.]+" $toolsVersion }}
 
 
