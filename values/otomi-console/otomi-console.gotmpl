@@ -3,13 +3,10 @@
 {{- $o := $v.apps | get "otomi-console" }}
 {{- $version := $v.versions | get "api" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
-{{- $repository:= $o | get "image.repository" nil }}
 replicaCount: 1
 resources: {{- $o.resources | toYaml | nindent 2 }}
 image:
-  {{- if $repository}}
-  repository: {{ $repository }}
-  {{- else if $v.otomi.linodeLkeImageRepository }}
+  {{- if and $v.otomi.linodeLkeImageRepository $isSemver }}
   repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/linode/apl-console"
   {{- end }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}

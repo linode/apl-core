@@ -5,7 +5,7 @@
 image:
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
-{{- if $v.otomi.linodeLkeImageRepository }}
+{{- if and $v.otomi.linodeLkeImageRepository $isSemver }}
   repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-tasks"
 {{- end }}
 

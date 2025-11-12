@@ -4,11 +4,8 @@
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $g := $v.apps.gitea }}
 {{- $kms := $v | get "kms" dict }}
-{{- $repository:= $o | get "image.repository" nil }}
 image:
-  {{- if $repository}}
-  repository: {{ $repository }}
-  {{- else if $v.otomi.linodeLkeImageRepository }}
+  {{- if and $v.otomi.linodeLkeImageRepository $isSemver }}
   repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
   {{- end }}
   tag: {{ $version }}

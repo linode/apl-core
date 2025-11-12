@@ -12,11 +12,8 @@
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 {{- $version := $v.versions | get "api" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
-{{- $repository:= $o | get "image.repository" nil }}
-
 {{- $toolsVersion := $v.versions | get "tools" }}
 {{- $toolsIsSemver := regexMatch "^[0-9.]+" $toolsVersion }}
-{{- $toolsRepository:= $o | get "tools.image.repository" nil }}
 
 
 replicaCount: 1
@@ -24,9 +21,7 @@ clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 resources: {{- $o.resources.api | toYaml | nindent 2 }}
 
 image:
-  {{- if $repository}}
-  repository: {{ $repository }}
-  {{- else if $v.otomi.linodeLkeImageRepository }}
+  {{- if and $v.otomi.linodeLkeImageRepository $isSemver }}
   repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/linode/apl-api"
   {{- end }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
