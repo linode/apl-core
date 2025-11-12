@@ -1,11 +1,21 @@
 {{- $v := .Values }}
 {{- $c := $v.cluster }}
 {{- $o := $v.apps | get "otomi-console" }}
-
+{{- $version := $v.versions | get "api" }}
+{{- $isSemver := regexMatch "^[0-9.]+" $version }}
+{{- $repository:= $o | get "image.repository" }}
 replicaCount: 1
 resources: {{- $o.resources | toYaml | nindent 2 }}
+image:
+  {{- if $repository}}
+  repository: {{ $repository }}
+  {{- else if $v.otomi.linodeLkeImageRepository }}
+  repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/linode/apl-console"
+  {{- end }}
+  tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
+  pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
 
-{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "console" "v" $v "skipScript" true ) }}
+
 
 env:
   API_BASE_URL: /api
