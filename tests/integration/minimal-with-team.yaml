@@ -19,21 +19,21 @@ apps:
   otomi-console:
     image:
       repository: docker.io/linode/apl-console
-    otomi-operator:
-      image:
-        repository: docker.io/linode/apl-tasks
-    apl-harbor-operator:
-      image:
-        repository: docker.io/linode/apl-tasks
-    apl-gitea-operator:
-      image:
-        repository: docker.io/linode/apl-tasks
-    apl-keycloak-operator:
-      image:
-        repository: docker.io/linode/apl-tasks
-    apl-operator:
-      image:
-        repository: docker.io/linode/apl-operator
+  otomi-operator:
+    image:
+      repository: docker.io/linode/apl-tasks
+  apl-harbor-operator:
+    image:
+      repository: docker.io/linode/apl-tasks
+  apl-gitea-operator:
+    image:
+      repository: docker.io/linode/apl-tasks
+  apl-keycloak-operator:
+    image:
+      repository: docker.io/linode/apl-tasks
+  apl-operator:
+    image:
+      repository: docker.io/linode/apl-operator
 teamConfig:
   demo:
     settings:
