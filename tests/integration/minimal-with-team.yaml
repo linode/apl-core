@@ -13,6 +13,9 @@ apps:
   otomi-api:
     image:
       repository: docker.io/linode/apl-api
+    tools:
+      image:
+        repository: docker.io/linode/apl-core
   otomi-console:
     image:
       repository: docker.io/linode/apl-console
