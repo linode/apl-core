@@ -1,4 +1,4 @@
-import retry, { Options } from 'async-retry'
+import retry from 'async-retry'
 import { mkdirSync, rmSync } from 'fs'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -114,30 +114,20 @@ export const installAll = async () => {
 const install = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:install`)
   const argv: HelmArguments = getParsedArgs()
-  const retryOptions: Options = {
-    factor: 1,
-    retries: env.INSTALL_RETRIES,
-    minTimeout: env.INSTALL_RETRY_TIMEOUT,
-    maxTimeout: env.INSTALL_RETRY_TIMEOUT,
-  }
   if (!argv.label && !argv.file) {
-    await retry(async () => {
+    try {
+      cd(rootDir)
+      await installAll()
+    } catch (e) {
+      d.error(e)
+      // Collect traces on installation failure
       try {
-        cd(rootDir)
-        await installAll()
-      } catch (e) {
-        d.error(e)
-        // Collect traces on installation failure
-        try {
-          await collectTraces()
-        } catch (traceError) {
-          d.error('Failed to collect traces:', traceError)
-        }
-        d.info(`Retrying in ${retryOptions.maxTimeout} ms`)
-        throw e
+        await collectTraces()
+      } catch (traceError) {
+        d.error('Failed to collect traces:', traceError)
       }
-    }, retryOptions)
-
+      throw e
+    }
     return
   }
   d.info('Start install')

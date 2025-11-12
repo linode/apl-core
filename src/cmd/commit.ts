@@ -1,4 +1,3 @@
-import { DiscoveryV1Api } from '@kubernetes/client-node'
 import retry from 'async-retry'
 import { existsSync } from 'fs'
 import { rm } from 'fs/promises'
@@ -246,47 +245,6 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   d.info(`Cloned apl-charts at tag '${tag}' in Gitea`)
 }
 
-export async function retryIsOAuth2ProxyRunning() {
-  const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
-  await retry(
-    async () => {
-      await isOAuth2ProxyAvailable(k8s.discovery())
-    },
-    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
-  ).catch((e) => {
-    d.error('Error checking if OAuth2Proxy is ready:', e)
-    throw e
-  })
-}
-
-export async function isOAuth2ProxyAvailable(discoveryV1Api: DiscoveryV1Api): Promise<void> {
-  const endpointSlices = await discoveryV1Api.listNamespacedEndpointSlice({
-    namespace: 'istio-system',
-    labelSelector: 'kubernetes.io/service-name=oauth2-proxy',
-  })
-
-  if (!endpointSlices || !endpointSlices.items || endpointSlices.items.length === 0) {
-    throw new Error('OAuth2Proxy EndpointSlice not found, waiting...')
-  }
-
-  const hasReadyEndpoint = endpointSlices.items.some((slice) => {
-    const { endpoints } = slice
-    if (!endpoints || endpoints.length === 0) {
-      return false
-    }
-
-    return endpoints.some((endpoint) => {
-      const isReady = endpoint.conditions?.ready === true
-      const hasAddresses = endpoint.addresses && endpoint.addresses.length > 0
-      return isReady && hasAddresses
-    })
-  })
-
-  if (!hasReadyEndpoint) {
-    throw new Error('OAuth2Proxy has no ready endpoints with addresses, waiting...')
-  }
-}
-
 export async function initialSetupData(): Promise<InitialData> {
   const values = (await hfValues()) as Record<string, any>
   const { domainSuffix } = values.cluster
@@ -316,21 +274,6 @@ export async function initialSetupData(): Promise<InitialData> {
 export async function createCredentialsSecret(secretName: string, username: string, password: string): Promise<void> {
   const secretData = { username, password }
   await createUpdateGenericSecret(k8s.core(), secretName, 'keycloak', secretData)
-}
-
-export const printWelcomeMessage = async (secretName: string, domainSuffix: string): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:commit`)
-  const message = `
-  ########################################################################################################################################
-  #
-  #  The App Platform console is available at https://console.${domainSuffix}
-  #
-  #  Obtain login credentials by using the below commands:
-  #      kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.username}' | base64 -d
-  #      kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.password}' | base64 -d
-  #
-  ########################################################################################################################################`
-  d.info(message)
 }
 
 export const createWelcomeConfigMap = async (secretName: string, domainSuffix: string): Promise<void> => {
