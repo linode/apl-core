@@ -3,6 +3,8 @@ metadata:
     name: otomi-api
     labels: {}
 spec:
+    image:
+        tag: dev
     editorInactivityTimeout: 5
     git:
         email: some@secret.value
@@ -23,3 +25,5 @@ spec:
             requests:
                 cpu: 300m
                 memory: 256Mi
+            image:
+                tag: main
