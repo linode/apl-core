@@ -362,24 +362,6 @@ environments:
               alias: otomi-idp
               clientID: otomi
             _rawValues: {}
-          kiali:
-            enabled: false
-            resources:
-              pod:
-                requests:
-                  cpu: 100m
-                  memory: 768Mi
-                limits:
-                  cpu: "2"
-                  memory: 1Gi
-              operator:
-                requests:
-                  cpu: 100m
-                  memory: 256Mi
-                limits:
-                  cpu: "1"
-                  memory: 1Gi
-            _rawValues: {}
           knative:
             enabled: false
             serving:
@@ -562,17 +544,6 @@ environments:
                 limits:
                   cpu: 100m
                   memory: 128Mi
-            _rawValues: {}
-          kured:
-            enabled: false
-            resources:
-              kuredDaemonSet:
-                requests:
-                  cpu: 20m
-                  memory: 16Mi
-                limits:
-                  cpu: 50m
-                  memory: 32Mi
             _rawValues: {}
           kyverno:
             enabled: false

@@ -380,4 +380,6 @@ changes:
       - cluster.defaultStorageClass: ''
   - version: 45
     deletions:
+      - 'apps.kured'
+      - 'apps.kiali'
       - 'apps.falco'

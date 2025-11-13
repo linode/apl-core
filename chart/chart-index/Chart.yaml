@@ -55,9 +55,6 @@ dependencies:
     alias: keycloak
     version: 7.1.4
     repository: https://codecentric.github.io/helm-charts
-  - name: kiali-operator
-    version: 2.18.0
-    repository: https://kiali.org/helm-charts
   - name: knative-operator
     version: v1.18.1
     repository: https://knative.github.io/operator
@@ -68,11 +65,8 @@ dependencies:
     version: v0.15.2
     repository: oci://ghcr.io/kserve/charts/kserve
   - name: kube-prometheus-stack
-    version: 79.0.1
+    version: 79.5.0
     repository: https://prometheus-community.github.io/helm-charts
-  - name: kured
-    version: 4.6.0
-    repository: https://kubereboot.github.io/charts
   - name: kyverno
     version: 3.5.2
     repository: https://kyverno.github.io/kyverno/
@@ -97,7 +91,7 @@ dependencies:
     version: 3.5.0
     repository: https://kyverno.github.io/policy-reporter
   - name: prometheus-blackbox-exporter
-    version: 11.4.1
+    version: 11.4.2
     repository: https://prometheus-community.github.io/helm-charts
   - name: prometheus-msteams
     version: 1.3.4
@@ -124,7 +118,7 @@ dependencies:
     version: 15.7.25
     repository: https://charts.bitnami.com/bitnami
   - name: trivy-operator
-    version: 0.30.0
+    version: 0.31.0
     repository: https://aquasecurity.github.io/helm-charts/
   - name: velero
     version: 5.4.1
