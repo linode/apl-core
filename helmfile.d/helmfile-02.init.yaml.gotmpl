@@ -40,7 +40,6 @@ releases:
     values:
       - ../values/ingress-nginx/ingress-nginx.gotmpl
       - ./snippets/common.gotmpl
-    <<: *upgrade
 {{- end }}
   - name: istio-base
     installed: true

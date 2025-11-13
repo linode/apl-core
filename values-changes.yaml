@@ -381,3 +381,7 @@ changes:
   - version: 45
     customFunctions:
       - workloadValuesMigration
+    deletions:
+      - 'apps.kured'
+      - 'apps.kiali'
+      - 'apps.falco'
