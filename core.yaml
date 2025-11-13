@@ -107,10 +107,6 @@ k8s:
       disablePolicyChecks: true
     - name: sealed-secrets
       app: sealed-secrets
-    - name: velero
-      app: velero
-      disablePolicyChecks: true
-      disableIstioInjection: true
     - name: policy-reporter
       app: policy-reporter
       disablePolicyChecks: true
@@ -342,8 +338,6 @@ adminApps:
   - name: trivy
     tags: [security]
     deps: [prometheus, grafana]
-  - name: velero
-    tags: [backup]
   - name: kyverno
     tags: [security]
   - name: rabbitmq

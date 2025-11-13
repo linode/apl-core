@@ -39,8 +39,6 @@ apps:
     enabled: true
   trivy:
     enabled: true
-  velero:
-    enabled: false
   kyverno:
     enabled: true
   fabric8:
