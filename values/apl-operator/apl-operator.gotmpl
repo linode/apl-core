@@ -9,7 +9,7 @@
 {{- $g := $v.apps.gitea }}
 {{- $kms := $v | get "kms" dict }}
 image:
-  {{- if and $v.otomi.linodeLkeImageRepository $isSemver }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
   repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
   {{- end }}
   tag: {{ $version }}

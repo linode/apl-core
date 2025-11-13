@@ -31,7 +31,7 @@ clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 resources: {{- $o.resources.api | toYaml | nindent 2 }}
 
 image:
-  {{- if and $v.otomi.linodeLkeImageRepository $isSemver }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
   repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/linode/apl-api"
   {{- end }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
@@ -39,9 +39,7 @@ image:
 
 tools:
   image:
-    {{- if $toolsRepository}}
-    repository: {{ $toolsRepository }}
-    {{- else if $v.otomi.linodeLkeImageRepository }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
     repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
     {{- end }}
     tag: {{ printf "%s%s" ($toolsIsSemver | ternary "v" "") $toolsVersion }}
