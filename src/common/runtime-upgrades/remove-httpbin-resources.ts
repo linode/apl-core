@@ -1,36 +1,24 @@
-import { ApiException } from '@kubernetes/client-node'
+import { terminal } from '../debug'
 import { k8s } from '../k8s'
-import { RuntimeUpgradeContext } from './runtime-upgrades'
 
-export async function deleteHttpbinResources(context: RuntimeUpgradeContext) {
-  const d = context.debug
-  const appApi = k8s.app()
-  const coreApi = k8s.core()
-  const namespace = 'httpbin'
+const namespace = 'httpbin'
+const httpbinAppName = 'http-bin'
 
-  d.info('Removing httpbin deployment and service')
-
-  // Delete httpbin deployment
+export async function removeOldMinioResources() {
+  const d = terminal('removeOldMinioResources')
   try {
-    await appApi.deleteNamespacedDeployment({ name: 'httpbin', namespace })
-    d.log(`Deleted httpbin deployment in namespace ${namespace}`)
-  } catch (error) {
-    if (error instanceof ApiException && error.code === 404) {
-      d.info('httpbin deployment not found, skipping deletion')
-    } else {
-      d.error('Failed to delete httpbin deployment:', (error as any).body || error)
-    }
+    // Delete httpbin ArgoCD application
+    const custom = k8s.custom()
+    await custom.deleteNamespacedCustomObject({
+      group: 'argoproj.io',
+      version: 'v1alpha1',
+      namespace,
+      plural: 'applications',
+      name: httpbinAppName,
+    })
+    d.info('Deleted httpbin ArgoCD application.')
+  } catch (err) {
+    d.error('Error deleting httpbin application:', err)
   }
-
-  // Delete httpbin service
-  try {
-    await coreApi.deleteNamespacedService({ name: 'httpbin', namespace })
-    d.log(`Deleted httpbin service in namespace ${namespace}`)
-  } catch (error) {
-    if (error instanceof ApiException && error.code === 404) {
-      d.info('httpbin service not found, skipping deletion')
-    } else {
-      d.error('Failed to delete httpbin service:', (error as any).body || error)
-    }
-  }
+  d.info('Successfully deleted httpbin resources')
 }
