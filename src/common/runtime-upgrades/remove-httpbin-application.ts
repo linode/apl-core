@@ -1,8 +1,8 @@
 import { terminal } from '../debug'
 import { k8s } from '../k8s'
 
-const namespace = 'httpbin'
-const httpbinAppName = 'httpbin'
+const namespace = 'argocd'
+const httpbinAppName = 'httpbin-httpbin'
 
 export async function removeHttpBinApplication() {
   const d = terminal('removeHttpBinApplication')
@@ -16,9 +16,13 @@ export async function removeHttpBinApplication() {
       plural: 'applications',
       name: httpbinAppName,
     })
-    d.info('Deleted httpbin ArgoCD application.')
-  } catch (err) {
-    d.error('Error deleting httpbin application:', err)
+    d.info(`Deleted ${httpbinAppName} ArgoCD application.`)
+  } catch (err: any) {
+    if (err?.statusCode === 404 || err?.response?.statusCode === 404) {
+      d.info(`${httpbinAppName} application not found in ${namespace} namespace, skipping deletion.`)
+    } else {
+      d.error('Error deleting httpbin application:', err)
+    }
   }
-  d.info('Successfully deleted httpbin resources')
+  d.info('Successfully deleted httpbin Application')
 }
