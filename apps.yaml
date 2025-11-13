@@ -53,24 +53,6 @@ appsInfo:
     license: Apache 2.0
     about: ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with DNS providers.
     integration: ExternalDNS is used by APL to make public service domains accessible by registering them with APL's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then APL will rely on nip.io to create host names for all services.
-  falco:
-    title: Falco
-    appVersion: 0.36.2
-    repo: https://github.com/falcosecurity/falco
-    maintainers: The Falco Authors
-    relatedLinks:
-      - https://falco.org/docs
-    license: Apache 2.0
-    dependencies: None. Prometheus and Grafana are adviced
-    about: Falco is an open source cloud native runtime security tool that makes it easy to consume kernel events, and enrich those events with information from Kubernetes. Falco has a rich set of security rules specifically built for Kubernetes and Linux. If a rule is violated in a system, Falco will send an alert notifying the user of the violation and its severity.
-    integration: Falco can be enabled in APL for runtime intrusion detection. Macros have been configured to exclude all known platform violations so platform admins are only notified when user workloads are not compliant to the security rules. Alerts are automatically send using Alertmanager and the Falco Dashboard is added to Grafana.
-    isDeprecated: true
-    deprecationInfo:
-      message: Falco runtime security monitoring is being deprecated.
-      reasons:
-        - This security tool requires is not cloud agnostic.
-      options:
-        - Click 'I understand' to continue using Falco dashboard
   gitea:
     title: Gitea Self-hosted GIT
     appVersion: 1.24.7
