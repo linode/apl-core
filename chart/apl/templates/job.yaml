@@ -8,7 +8,7 @@ metadata:
   name: {{ include "apl.fullname" . }}
   labels: {{- include "apl.labels" . | nindent 4 }}
 spec:
-  backoffLimit: 2
+  backoffLimit: 20
   template:
     metadata:
       {{- with .Values.podAnnotations }}
