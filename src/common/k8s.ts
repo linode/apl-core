@@ -10,6 +10,7 @@ import {
   NetworkingV1Api,
   PatchStrategy,
   setHeaderOptions,
+  V1ConfigMap,
   V1ResourceRequirements,
   V1Secret,
   V1Status,
@@ -428,6 +429,81 @@ export async function createUpdateGenericSecret(
 
 export function b64enc(value: string): string {
   return Buffer.from(value).toString('base64')
+}
+
+export async function getK8sConfigMap(
+  namespace: string,
+  name: string,
+  coreV1Api: CoreV1Api,
+): Promise<V1ConfigMap | undefined> {
+  try {
+    return await coreV1Api.readNamespacedConfigMap({ name, namespace })
+  } catch (error: any) {
+    if (error.code === 404) {
+      return undefined
+    }
+    throw error
+  }
+}
+
+export async function createK8sConfigMap(
+  namespace: string,
+  name: string,
+  data: Record<string, string>,
+  coreV1Api: CoreV1Api,
+): Promise<V1ConfigMap> {
+  const configMap: V1ConfigMap = {
+    metadata: {
+      name,
+      namespace,
+    },
+    data,
+  }
+  return await coreV1Api.createNamespacedConfigMap({ namespace, body: configMap })
+}
+
+export async function updateK8sConfigMap(
+  namespace: string,
+  name: string,
+  data: Record<string, string>,
+  coreV1Api: CoreV1Api,
+): Promise<V1ConfigMap> {
+  const configMap: V1ConfigMap = {
+    metadata: {
+      name,
+      namespace,
+    },
+    data,
+  }
+  return await coreV1Api.replaceNamespacedConfigMap({ name, namespace, body: configMap })
+}
+
+export async function createUpdateConfigMap(
+  coreV1Api: CoreV1Api,
+  name: string,
+  namespace: string,
+  data: Record<string, string>,
+): Promise<V1ConfigMap> {
+  const configMap: V1ConfigMap = {
+    metadata: {
+      name,
+      namespace,
+    },
+    data,
+  }
+
+  try {
+    return await coreV1Api.createNamespacedConfigMap({ namespace, body: configMap })
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 409) {
+      return await coreV1Api.patchNamespacedConfigMap(
+        { name, namespace, body: configMap },
+        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+      )
+    } else {
+      throw error
+    }
+  }
 }
 
 export async function getPodsOfStatefulSet(

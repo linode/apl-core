@@ -122,3 +122,20 @@ otomi:
 cleanup:
   # Enable the cleanup command that removes cluster-admin ClusterRoleBinding after installation
   enabled: true
+
+# Service Account requires access to gitea pod to edit the oauth through CLI commands
+serviceAccount:
+  create: true
+  name: "apl-operator"
+  annotations: {}
+
+## APL Operator configuration
+operator:
+  # Git organization/user name (will be configured during installation)
+  gitOrg: "otomi"
+  # Git repository name (will be configured during installation)
+  gitRepo: "values"
+  # Polling interval for git changes (milliseconds)
+  pollIntervalMs: 1000
+  # Reconcile interval for applying changes (milliseconds)
+  reconcileIntervalMs: 300000

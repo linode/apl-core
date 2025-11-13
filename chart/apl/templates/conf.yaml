@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: git-config
+  namespace: apl-operator
+data:
+  .gitconfig: |
+    [safe]
+        directory = *
