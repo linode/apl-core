@@ -1,5 +1,6 @@
-import { ApiException } from '@kubernetes/client-node'
+import { ApiException, CoreV1Event, V1ContainerStatus, V1Pod } from '@kubernetes/client-node'
 import * as k8sModule from 'src/common/k8s'
+import { checkContainerStatusIssues, checkPodPhaseIssues, collectTraces, findRelevantPodEvent } from './traces'
 
 // Mock dependencies
 jest.mock('src/common/k8s')
@@ -21,8 +22,6 @@ jest.mock('src/common/yargs', () => ({
   setParsedArgs: jest.fn(),
 }))
 
-import { collectTraces } from './traces'
-
 class MockApiException extends ApiException<any> {
   code: number
   constructor(code: number, message: string) {
@@ -30,6 +29,323 @@ class MockApiException extends ApiException<any> {
     this.code = code
   }
 }
+
+describe('Pod Issue Detection Helpers', () => {
+  describe('findRelevantPodEvent', () => {
+    it('should find event with FailedScheduling reason', () => {
+      const events: CoreV1Event[] = [
+        {
+          involvedObject: { name: 'test-pod' },
+          reason: 'FailedScheduling',
+          message: 'Insufficient cpu',
+        } as CoreV1Event,
+        { involvedObject: { name: 'other-pod' }, reason: 'FailedScheduling', message: 'Other issue' } as CoreV1Event,
+      ]
+      const result = findRelevantPodEvent(events, 'test-pod')
+      expect(result).toEqual(events[0])
+      expect(result?.message).toBe('Insufficient cpu')
+    })
+
+    it('should find event with FailedMount reason', () => {
+      const events: CoreV1Event[] = [
+        { involvedObject: { name: 'test-pod' }, reason: 'FailedMount', message: 'Volume not found' } as CoreV1Event,
+      ]
+      const result = findRelevantPodEvent(events, 'test-pod')
+      expect(result).toEqual(events[0])
+      expect(result?.message).toBe('Volume not found')
+    })
+
+    it('should find event with FailedAttachVolume reason', () => {
+      const events: CoreV1Event[] = [
+        {
+          involvedObject: { name: 'test-pod' },
+          reason: 'FailedAttachVolume',
+          message: 'Volume attach failed',
+        } as CoreV1Event,
+      ]
+      const result = findRelevantPodEvent(events, 'test-pod')
+      expect(result).toEqual(events[0])
+    })
+
+    it('should find event with FailedCreatePodSandBox reason', () => {
+      const events: CoreV1Event[] = [
+        {
+          involvedObject: { name: 'test-pod' },
+          reason: 'FailedCreatePodSandBox',
+          message: 'Network error',
+        } as CoreV1Event,
+      ]
+      const result = findRelevantPodEvent(events, 'test-pod')
+      expect(result).toEqual(events[0])
+    })
+
+    it('should return undefined when no matching reason', () => {
+      const events: CoreV1Event[] = [
+        { involvedObject: { name: 'test-pod' }, reason: 'Started', message: 'Container started' } as CoreV1Event,
+      ]
+      const result = findRelevantPodEvent(events, 'test-pod')
+      expect(result).toBeUndefined()
+    })
+
+    it('should return undefined when podName does not match', () => {
+      const events: CoreV1Event[] = [
+        {
+          involvedObject: { name: 'other-pod' },
+          reason: 'FailedScheduling',
+          message: 'Insufficient cpu',
+        } as CoreV1Event,
+      ]
+      const result = findRelevantPodEvent(events, 'test-pod')
+      expect(result).toBeUndefined()
+    })
+
+    it('should return undefined for empty events array', () => {
+      const result = findRelevantPodEvent([], 'test-pod')
+      expect(result).toBeUndefined()
+    })
+
+    it('should return first match when multiple events match', () => {
+      const events: CoreV1Event[] = [
+        { involvedObject: { name: 'test-pod' }, reason: 'FailedScheduling', message: 'First issue' } as CoreV1Event,
+        { involvedObject: { name: 'test-pod' }, reason: 'FailedMount', message: 'Second issue' } as CoreV1Event,
+      ]
+      const result = findRelevantPodEvent(events, 'test-pod')
+      expect(result).toEqual(events[0])
+      expect(result?.message).toBe('First issue')
+    })
+  })
+
+  describe('checkPodPhaseIssues', () => {
+    it('should detect CrashLoopBackOff with message', () => {
+      const pod = {
+        status: { phase: 'CrashLoopBackOff', message: 'Container exited with code 1' },
+      } as V1Pod
+      const result = checkPodPhaseIssues(pod)
+      expect(result).toEqual(['Pod status: CrashLoopBackOff. Container exited with code 1'])
+    })
+
+    it('should detect Failed status with message', () => {
+      const pod = {
+        status: { phase: 'Failed', message: 'Pod failed to start' },
+      } as V1Pod
+      const result = checkPodPhaseIssues(pod)
+      expect(result).toEqual(['Pod status: Failed. Pod failed to start'])
+    })
+
+    it('should detect Unknown status with message', () => {
+      const pod = {
+        status: { phase: 'Unknown', message: 'Node lost connection' },
+      } as V1Pod
+      const result = checkPodPhaseIssues(pod)
+      expect(result).toEqual(['Pod status: Unknown. Node lost connection'])
+    })
+
+    it('should detect Pending with relevant event message', () => {
+      const pod = {
+        status: { phase: 'Pending' },
+        spec: { nodeName: 'node-1' },
+      } as V1Pod
+      const event = { message: 'Insufficient memory on node' } as CoreV1Event
+      const result = checkPodPhaseIssues(pod, event)
+      expect(result).toEqual(['Pod pending: Insufficient memory on node'])
+    })
+
+    it('should detect Pending without node assignment', () => {
+      const pod = {
+        status: { phase: 'Pending' },
+        spec: {},
+      } as V1Pod
+      const result = checkPodPhaseIssues(pod)
+      expect(result).toEqual(['Pod is pending without node assignment'])
+    })
+
+    it('should detect Pending with node but no event', () => {
+      const pod = {
+        status: { phase: 'Pending' },
+        spec: { nodeName: 'node-1' },
+      } as V1Pod
+      const result = checkPodPhaseIssues(pod)
+      expect(result).toEqual(['Pod is pending'])
+    })
+
+    it('should return empty array for Running pod', () => {
+      const pod = {
+        status: { phase: 'Running' },
+      } as V1Pod
+      const result = checkPodPhaseIssues(pod)
+      expect(result).toEqual([])
+    })
+
+    it('should return empty array for Succeeded pod', () => {
+      const pod = {
+        status: { phase: 'Succeeded' },
+      } as V1Pod
+      const result = checkPodPhaseIssues(pod)
+      expect(result).toEqual([])
+    })
+
+    it('should handle missing pod.status', () => {
+      const pod = {} as V1Pod
+      const result = checkPodPhaseIssues(pod)
+      expect(result).toEqual([])
+    })
+
+    it('should handle missing pod.spec', () => {
+      const pod = {
+        status: { phase: 'Pending' },
+      } as V1Pod
+      const result = checkPodPhaseIssues(pod)
+      expect(result).toEqual(['Pod is pending without node assignment'])
+    })
+  })
+
+  describe('checkContainerStatusIssues', () => {
+    it('should detect OOMKilled in lastState', () => {
+      const containerStatuses: V1ContainerStatus[] = [
+        {
+          name: 'app-container',
+          lastState: {
+            terminated: { reason: 'OOMKilled' },
+          },
+        } as V1ContainerStatus,
+      ]
+      const result = checkContainerStatusIssues(containerStatuses)
+      expect(result).toEqual(['Container app-container terminated (OOMKilled).'])
+    })
+
+    it('should detect terminated state with reason and message', () => {
+      const containerStatuses: V1ContainerStatus[] = [
+        {
+          name: 'app-container',
+          state: {
+            terminated: { reason: 'Error', message: 'Application crashed' },
+          },
+        } as V1ContainerStatus,
+      ]
+      const result = checkContainerStatusIssues(containerStatuses)
+      expect(result).toEqual(['Container app-container terminated (Error). Application crashed'])
+    })
+
+    it('should detect terminated state with reason only', () => {
+      const containerStatuses: V1ContainerStatus[] = [
+        {
+          name: 'app-container',
+          state: {
+            terminated: { reason: 'Completed' },
+          },
+        } as V1ContainerStatus,
+      ]
+      const result = checkContainerStatusIssues(containerStatuses)
+      expect(result).toEqual(['Container app-container terminated (Completed). '])
+    })
+
+    it('should detect waiting state with reason and message', () => {
+      const containerStatuses: V1ContainerStatus[] = [
+        {
+          name: 'app-container',
+          state: {
+            waiting: { reason: 'ImagePullBackOff', message: 'Back-off pulling image' },
+          },
+        } as V1ContainerStatus,
+      ]
+      const result = checkContainerStatusIssues(containerStatuses)
+      expect(result).toEqual(['Container app-container waiting (ImagePullBackOff). Back-off pulling image'])
+    })
+
+    it('should detect waiting state with reason only', () => {
+      const containerStatuses: V1ContainerStatus[] = [
+        {
+          name: 'app-container',
+          state: {
+            waiting: { reason: 'ContainerCreating' },
+          },
+        } as V1ContainerStatus,
+      ]
+      const result = checkContainerStatusIssues(containerStatuses)
+      expect(result).toEqual(['Container app-container waiting (ContainerCreating). '])
+    })
+
+    it('should detect multiple issues in one container', () => {
+      const containerStatuses: V1ContainerStatus[] = [
+        {
+          name: 'app-container',
+          lastState: {
+            terminated: { reason: 'OOMKilled' },
+          },
+          state: {
+            terminated: { reason: 'Error', message: 'Restarted and failed again' },
+          },
+        } as V1ContainerStatus,
+      ]
+      const result = checkContainerStatusIssues(containerStatuses)
+      expect(result).toEqual([
+        'Container app-container terminated (OOMKilled).',
+        'Container app-container terminated (Error). Restarted and failed again',
+      ])
+    })
+
+    it('should detect issues across multiple containers', () => {
+      const containerStatuses: V1ContainerStatus[] = [
+        {
+          name: 'app-container',
+          state: {
+            terminated: { reason: 'Error' },
+          },
+        } as V1ContainerStatus,
+        {
+          name: 'sidecar-container',
+          state: {
+            waiting: { reason: 'CrashLoopBackOff' },
+          },
+        } as V1ContainerStatus,
+      ]
+      const result = checkContainerStatusIssues(containerStatuses)
+      expect(result).toHaveLength(2)
+      expect(result).toContain('Container app-container terminated (Error). ')
+      expect(result).toContain('Container sidecar-container waiting (CrashLoopBackOff). ')
+    })
+
+    it('should return empty array for healthy container', () => {
+      const containerStatuses: V1ContainerStatus[] = [
+        {
+          name: 'app-container',
+          state: {
+            running: { startedAt: new Date('2024-01-01T00:00:00Z') },
+          },
+        } as V1ContainerStatus,
+      ]
+      const result = checkContainerStatusIssues(containerStatuses)
+      expect(result).toEqual([])
+    })
+
+    it('should return empty array for undefined containerStatuses', () => {
+      const result = checkContainerStatusIssues(undefined)
+      expect(result).toEqual([])
+    })
+
+    it('should return empty array for empty containerStatuses array', () => {
+      const result = checkContainerStatusIssues([])
+      expect(result).toEqual([])
+    })
+
+    it('should handle container with only name (no state)', () => {
+      const containerStatuses: V1ContainerStatus[] = [{ name: 'app-container' } as V1ContainerStatus]
+      const result = checkContainerStatusIssues(containerStatuses)
+      expect(result).toEqual([])
+    })
+
+    it('should handle container with partial state data', () => {
+      const containerStatuses: V1ContainerStatus[] = [
+        {
+          name: 'app-container',
+          state: {},
+        } as V1ContainerStatus,
+      ]
+      const result = checkContainerStatusIssues(containerStatuses)
+      expect(result).toEqual([])
+    })
+  })
+})
 
 describe('Collect Traces Command', () => {
   let mockCoreApi: any
@@ -172,7 +488,7 @@ describe('Collect Traces Command', () => {
       },
     })
 
-    // eslint-disable-next-line prefer-destructuring, @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line prefer-destructuring
     const configMapCall = mockCoreApi.createNamespacedConfigMap.mock.calls[0][0]
     const reportData = JSON.parse(configMapCall.body.data.report)
 
@@ -284,7 +600,7 @@ describe('Collect Traces Command', () => {
     // Should create ConfigMap with deployment issues
     expect(mockCoreApi.createNamespacedConfigMap).toHaveBeenCalled()
 
-    // eslint-disable-next-line prefer-destructuring, @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line prefer-destructuring
     const configMapCall = mockCoreApi.createNamespacedConfigMap.mock.calls[0][0]
     const reportData = JSON.parse(configMapCall.body.data.report)
 
@@ -338,7 +654,7 @@ describe('Collect Traces Command', () => {
 
     await collectTraces()
 
-    // eslint-disable-next-line prefer-destructuring, @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line prefer-destructuring
     const configMapCall = mockCoreApi.createNamespacedConfigMap.mock.calls[0][0]
     const reportData = JSON.parse(configMapCall.body.data.report)
 
