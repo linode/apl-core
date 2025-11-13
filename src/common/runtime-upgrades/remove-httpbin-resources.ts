@@ -3,7 +3,6 @@ import { k8s } from '../k8s'
 import { RuntimeUpgradeContext } from './runtime-upgrades'
 
 
-
 export async function deleteHttpbinResources(context: RuntimeUpgradeContext) {
   const d = context.debug
   const appApi = k8s.app()
