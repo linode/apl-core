@@ -23,6 +23,3 @@ spec:
             requests:
                 cpu: 300m
                 memory: 256Mi
-    tools:
-        image:
-            tag: main
