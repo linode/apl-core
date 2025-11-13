@@ -3,8 +3,6 @@ metadata:
     name: otomi-api
     labels: {}
 spec:
-    image:
-        tag: dev
     editorInactivityTimeout: 5
     git:
         email: some@secret.value
