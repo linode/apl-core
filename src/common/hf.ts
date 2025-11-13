@@ -17,8 +17,8 @@ const replaceHFPaths = (output: string, envDir = env.ENV_DIR): string => output.
 export const HF_DEFAULT_SYNC_ARGS = [
   'sync',
   '--concurrency=1',
-  '--sync-args',
   '--reuse-values',
+  '--sync-args',
   '--disable-openapi-validation --qps=20',
 ]
 
