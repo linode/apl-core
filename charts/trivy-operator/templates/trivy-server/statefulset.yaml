@@ -132,6 +132,9 @@ spec:
               name: ssl-cert-dir
               readOnly: true
           {{- end }}
+          {{- with .Values.trivy.server.extraServerVolumes.volumeMounts }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.trivy.server.resources }}
           resources: {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -146,6 +149,9 @@ spec:
         - name: ssl-cert-dir
           hostPath:
             path: {{ . }}
+        {{- end }}
+        {{- with .Values.trivy.server.extraServerVolumes.volumes }}
+        {{- toYaml . | nindent 8 }}
         {{- end }}
       {{- with .Values.tolerations }}
       tolerations: {{- toYaml . | nindent 8 }}
