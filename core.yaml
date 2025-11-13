@@ -19,9 +19,6 @@ k8s:
       disablePolicyChecks: true
     - name: external-dns
       disableIstioInjection: true
-    - name: falco
-      disableIstioInjection: true
-      disablePolicyChecks: true
     - name: harbor
       app: harbor
     - name: apl-harbor-operator
@@ -51,11 +48,6 @@ k8s:
     - name: keycloak
     - name: apl-keycloak-operator
       disableIstioInjection: true
-    - name: kiali
-      app: kiali
-    - name: kiali-operator
-      app: kiali
-      disableIstioInjection: true
     - name: knative-serving
       app: knative
       disablePolicyChecks: true
@@ -71,9 +63,6 @@ k8s:
     - name: kfp
       app: kubeflow-pipelines
       disablePolicyChecks: true
-      disableIstioInjection: true
-    - name: kured
-      app: kured
       disableIstioInjection: true
     - name: kyverno
       app: kyverno
@@ -182,9 +171,6 @@ adminApps:
         auth: true
   - name: external-dns
     tags: [ingress, security, tls]
-  - name: falco
-    tags: [security]
-    deps: [prometheus, grafana]
   - name: gitea
     tags: [git]
     isShared: true
@@ -254,18 +240,6 @@ adminApps:
         svc: keycloak-keycloakx-http
         type: public
         port: 8080
-  - name: kiali
-    tags: [tracing, telemetry, observability]
-    deps: [istio, prometheus]
-    ingress:
-      - svc: kiali
-        forwardPath: true
-        removeRequestHeaders:
-          - authorization
-        port: 20001
-        namespace: kiali
-        type: public
-        auth: true
   - name: knative
     tags: [serverless, functions]
     deps: [istio]

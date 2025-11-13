@@ -199,6 +199,9 @@ operator:
   # -- valuesFromSecret name of a Secret to apply OPERATOR_* environment variables. Will override Helm AND ConfigMap values.
   valuesFromSecret: ""
 
+  # -- pprofBindAddress the address to bind the pprof server to. By default, it is not enabled.
+  pprofBindAddress: ""
+
 image:
   registry: "mirror.gcr.io"
   repository: "aquasec/trivy-operator"
@@ -228,7 +231,7 @@ service:
 
 # -- Prometheus ServiceMonitor configuration -- to install the trivy operator with the ServiceMonitor
 # you must have Prometheus already installed and running. If you do not have Prometheus installed, enabling this will
-# have no effect.
+# produce an error.
 serviceMonitor:
   # -- enabled determines whether a serviceMonitor should be deployed
   enabled: false
@@ -357,7 +360,7 @@ trivy:
     # -- repository of the Trivy image
     repository: aquasec/trivy
     # -- tag version of the Trivy image
-    tag: 0.65.0
+    tag: 0.66.0
     # -- imagePullSecret is the secret name to be used when pulling trivy image from private registries example : reg-secret
     # It is the user responsibility to create the secret for the private registry in `trivy-operator` namespace
     imagePullSecret: ~
@@ -620,6 +623,20 @@ trivy:
 
     # -- the number of replicas of the trivy-server
     replicas: 1
+
+    # -- volumes set trivy-server volumes
+    extraServerVolumes:
+      # Statefulset volumeMounts
+      volumeMounts: []
+        # - name: trusted-ca
+        #   mountPath: /etc/ssl/trusted-ca
+        #   subPath: trusted-ca.crt
+        #   readOnly: true
+      # Statefulset volumes
+      volumes: []
+        # - name: trusted-ca
+        #   secret:
+        #     secretName: trusted-ca
 
   # -- vaulesFromConfigMap name of a ConfigMap to apply TRIVY_* environment variables. Will override Helm values.
   valuesFromConfigMap: ""

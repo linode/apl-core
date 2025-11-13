@@ -1,7 +1,7 @@
 appsInfo:
   alertmanager:
     title: Alertmanager
-    appVersion: 0.27.0
+    appVersion: 0.29.0
     repo: https://github.com/prometheus/alertmanager
     maintainers: Prometheus Community
     relatedLinks:
@@ -53,24 +53,6 @@ appsInfo:
     license: Apache 2.0
     about: ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with DNS providers.
     integration: ExternalDNS is used by APL to make public service domains accessible by registering them with APL's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then APL will rely on nip.io to create host names for all services.
-  falco:
-    title: Falco
-    appVersion: 0.36.2
-    repo: https://github.com/falcosecurity/falco
-    maintainers: The Falco Authors
-    relatedLinks:
-      - https://falco.org/docs
-    license: Apache 2.0
-    dependencies: None. Prometheus and Grafana are adviced
-    about: Falco is an open source cloud native runtime security tool that makes it easy to consume kernel events, and enrich those events with information from Kubernetes. Falco has a rich set of security rules specifically built for Kubernetes and Linux. If a rule is violated in a system, Falco will send an alert notifying the user of the violation and its severity.
-    integration: Falco can be enabled in APL for runtime intrusion detection. Macros have been configured to exclude all known platform violations so platform admins are only notified when user workloads are not compliant to the security rules. Alerts are automatically send using Alertmanager and the Falco Dashboard is added to Grafana.
-    isDeprecated: true
-    deprecationInfo:
-      message: Falco runtime security monitoring is being deprecated.
-      reasons:
-        - This security tool requires is not cloud agnostic.
-      options:
-        - Click 'I understand' to continue using Falco dashboard
   gitea:
     title: Gitea Self-hosted GIT
     appVersion: 1.24.7
@@ -151,26 +133,6 @@ appsInfo:
     license: Apache 2.0
     about: Keycloak is an Open Source Identity and Access Management solution for modern Applications and Services.
     integration: The SSO login page for APL is served by Keycloak. Keycloak is used as an identity broker or provider for all APL integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of APL and is always enabled.
-  kiali:
-    title: Kiali Operator
-    appVersion: 2.18.0
-    repo: https://github.com/kiali/kiali
-    maintainers: Kiali
-    relatedLinks:
-      - https://kiali.io/
-      - https://github.com/kiali/kiali-operator
-    license: Apache 2.0
-    dependencies: Prometheus
-    about: Kiali is a management console for Istio to manage, visualize, validate and troubleshoot the service mesh.
-    integration: Kiali can be activated to gain observability insights on its network traffic. Kiali runs in anonymous mode and each authenticated user is given the same authorization, allowing them to see everything.
-    chartName: kiali-operator
-    isDeprecated: true
-    deprecationInfo:
-      message: Kiali service mesh visualization is being deprecated.
-      reasons:
-        - This diagnostic tool is not essential to deliver platform capabilities.
-      options:
-        - Click 'I understand' to continue using Kiali dashboard
   knative:
     title: Knative Operator
     appVersion: 1.18.1
@@ -213,16 +175,6 @@ appsInfo:
     license: Apache 2.0
     about: Kubeflow pipelines are reusable end-to-end ML workflows built using the Kubeflow Pipelines SDK.
     isAlpha: true
-  kured:
-    title: Kured
-    appVersion: 1.13.1
-    repo: https://github.com/kubereboot/kured
-    maintainers: Kured project
-    relatedLinks:
-      - https://kured.dev/
-    license: Apache 2.0
-    about: Kured (KUbernetes REboot Daemon) is a Kubernetes daemonset that performs safe automatic node reboots when the need to do so is indicated by the package management system of the underlying OS.
-    integration: Kured can be activated to perform safe automatic node reboots. Only activate Kured if cluster autoscaling is enabled and make sure the cloud resource quota is sufficent.
   tekton:
     title: Tekton Pipelines
     appVersion: 1.3.1
@@ -262,7 +214,7 @@ appsInfo:
     integration: APL installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in APL capable of using object storage for data persistence.
   prometheus:
     title: Prometheus
-    appVersion: 3.7.2
+    appVersion: 3.7.3
     repo: https://github.com/prometheus/prometheus
     maintainers: Prometheus
     relatedLinks:
@@ -285,7 +237,7 @@ appsInfo:
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
-    appVersion: 0.32.2
+    appVersion: 0.33.1
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:
@@ -317,7 +269,7 @@ appsInfo:
     integration: APL installs and configures Thanos using sidecars ans leverages the central object storage configuration.
   trivy:
     title: Trivy Operator
-    appVersion: 0.28.0
+    appVersion: 0.29.0
     repo: https://github.com/aquasecurity/trivy-operator
     maintainers: Aqua Security
     relatedLinks:
