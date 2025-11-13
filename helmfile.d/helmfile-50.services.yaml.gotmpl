@@ -18,18 +18,6 @@ releases:
     labels:
       pkg: velero
     <<: *default
-  - name: falco
-    installed: {{ $a | get "falco.enabled" }}
-    namespace: falco
-    labels:
-      pkg: falco
-    <<: *default
-  - name: falco-exporter
-    installed: {{ $a | get "falco.enabled" }}
-    namespace: falco
-    labels:
-      pkg: falco
-    <<: *default
   - name: trivy-operator
     installed: {{ $a | get "trivy.enabled" }}
     namespace: trivy-operator
