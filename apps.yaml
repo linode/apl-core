@@ -1,7 +1,7 @@
 appsInfo:
   alertmanager:
     title: Alertmanager
-    appVersion: 0.27.0
+    appVersion: 0.29.0
     repo: https://github.com/prometheus/alertmanager
     maintainers: Prometheus Community
     relatedLinks:
@@ -232,7 +232,7 @@ appsInfo:
     integration: APL installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in APL capable of using object storage for data persistence.
   prometheus:
     title: Prometheus
-    appVersion: 3.7.2
+    appVersion: 3.7.3
     repo: https://github.com/prometheus/prometheus
     maintainers: Prometheus
     relatedLinks:
