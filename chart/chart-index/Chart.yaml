@@ -28,12 +28,6 @@ dependencies:
   - name: external-dns
     version: 1.19.0
     repository: https://kubernetes-sigs.github.io/external-dns
-  - name: falco
-    version: 3.8.5
-    repository: https://falcosecurity.github.io/charts
-  - name: falco-exporter
-    version: 0.9.7
-    repository: https://falcosecurity.github.io/charts
   - name: gitea
     version: 12.4.0
     repository: https://dl.gitea.io/charts
