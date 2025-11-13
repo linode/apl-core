@@ -143,7 +143,7 @@ export const runtimeUpgrades: RuntimeUpgrades = [
   {
     version: 'v4.13.0',
     post: async (context: RuntimeUpgradeContext) => {
-      await removeHttpBinApplication(context)
+      await removeHttpBinApplication()
     },
   },
 ]
