@@ -2,10 +2,10 @@ import { terminal } from '../debug'
 import { k8s } from '../k8s'
 
 const namespace = 'httpbin'
-const httpbinAppName = 'http-bin'
+const httpbinAppName = 'httpbin'
 
-export async function removeOldMinioResources() {
-  const d = terminal('removeOldMinioResources')
+export async function removeHttpBinApplication() {
+  const d = terminal('removeHttpBinApplication')
   try {
     // Delete httpbin ArgoCD application
     const custom = k8s.custom()

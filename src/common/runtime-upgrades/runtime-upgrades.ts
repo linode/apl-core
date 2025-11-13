@@ -6,7 +6,7 @@ import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
 import { updateDbCollation } from './cloudnative-pg'
-import { deleteHttpbinResources } from './remove-httpbin-resources'
+import { removeHttpBinApplication } from './remove-httpbin-application'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -143,7 +143,7 @@ export const runtimeUpgrades: RuntimeUpgrades = [
   {
     version: 'v4.13.0',
     post: async (context: RuntimeUpgradeContext) => {
-      await deleteHttpbinResources(context)
+      await removeHttpBinApplication(context)
     },
   },
 ]
