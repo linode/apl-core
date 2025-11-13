@@ -7,7 +7,7 @@ replicaCount: 1
 resources: {{- $o.resources | toYaml | nindent 2 }}
 image:
   {{- if $v.otomi.linodeLkeImageRepository }}
-  repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/linode/apl-console"
+  repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-console"
   {{- end }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}

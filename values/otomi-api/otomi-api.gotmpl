@@ -22,7 +22,7 @@ resources: {{- $o.resources.api | toYaml | nindent 2 }}
 
 image:
   {{- if $v.otomi.linodeLkeImageRepository }}
-  repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/linode/apl-api"
+  repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-api"
   {{- end }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
@@ -30,7 +30,7 @@ image:
 tools:
   image:
     {{- if $v.otomi.linodeLkeImageRepository }}
-    repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
+    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
     {{- end }}
     tag: {{ printf "%s%s" ($toolsIsSemver | ternary "v" "") $toolsVersion }}
     pullPolicy: {{ $toolsIsSemver | ternary "IfNotPresent" "Always" }}
