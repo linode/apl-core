@@ -5,7 +5,8 @@ import { getParsedArgs } from '../yargs'
 import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
-import { executePSQLOnPrimary, updateDbCollation } from './cloudnative-pg'
+import { updateDbCollation } from './cloudnative-pg'
+import { deleteHttpbinResources } from './remove-httpbin-resources'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -139,4 +140,10 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       },
     },
   },
+  {
+    version: 'v4.13.0',
+    post: async (context: RuntimeUpgradeContext) => {
+      await deleteHttpbinResources(context)
+    }
+  }
 ]
