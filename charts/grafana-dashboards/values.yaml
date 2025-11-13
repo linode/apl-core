@@ -1,8 +1,6 @@
 folders:
   - argo
   - cloudnative-pg
-  - falco
-  - falco-teams
   - istio-admin
   - k8s-admin
   - k8s-teams
