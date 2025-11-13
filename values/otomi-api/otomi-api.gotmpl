@@ -39,7 +39,9 @@ image:
 
 tools:
   image:
-    {{- if and $v.otomi.linodeLkeImageRepository $isSemver }}
+    {{- if $toolsRepository}}
+    repository: {{ $toolsRepository }}
+    {{- else if $v.otomi.linodeLkeImageRepository }}
     repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
     {{- end }}
     tag: {{ printf "%s%s" ($toolsIsSemver | ternary "v" "") $toolsVersion }}
