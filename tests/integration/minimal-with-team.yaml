@@ -124,50 +124,54 @@ teamConfig:
         revision: HEAD
 files:
   env/teams/demo/workloadValues/nodejs-helloworld.yaml: |
-    values: |
-      image:
-        repository: otomi/nodejs-helloworld
-        tag: v1.2.13
+    image:
+      repository: otomi/nodejs-helloworld
+      tag: v1.2.13
+  env/teams/demo/workloadValues/nodejs-helloworld.managed.yaml: |
+    {}
   env/teams/demo/workloadValues/nginx-deployment.yaml: |
-    values: |
-      fullnameOverride: nginx-deployment
-      image:
-        repository: nginxinc/nginx-unprivileged
-        tag: stable
-      containerPorts:
-        - containerPort: 8080
-          protocol: TCP
-          name: http
-      resources:
-        requests:
-          cpu: 200m
-          memory: 32Mi
-      autoscaling:
-        minReplicas: 2
-        maxReplicas: 10
+    fullnameOverride: nginx-deployment
+    image:
+      repository: nginxinc/nginx-unprivileged
+      tag: stable
+    containerPorts:
+      - containerPort: 8080
+        protocol: TCP
+        name: http
+    resources:
+      requests:
+        cpu: 200m
+        memory: 32Mi
+    autoscaling:
+      minReplicas: 2
+      maxReplicas: 10
+  env/teams/demo/workloadValues/nginx-deployment.managed.yaml: |
+    {}
   env/teams/demo/workloadValues/nginx-ksvc.yaml: |
-    values: |
-      fullnameOverride: nginx-ksvc
-      image:
-        repository: nginxinc/nginx-unprivileged
-        tag: stable
-      containerPorts:
-        - containerPort: 8080
-          name: http1
-          protocol: TCP
-      readinessProbe:
-          httpGet:
-              path: /
-              port: http1
-      resources:
-        requests:
-          cpu: 200m
-          memory: 32Mi
-      autoscaling:
-        minReplicas: 0
-        maxReplicas: 10
+    fullnameOverride: nginx-ksvc
+    image:
+      repository: nginxinc/nginx-unprivileged
+      tag: stable
+    containerPorts:
+      - containerPort: 8080
+        name: http1
+        protocol: TCP
+    readinessProbe:
+        httpGet:
+            path: /
+            port: http1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 32Mi
+    autoscaling:
+      minReplicas: 0
+      maxReplicas: 10
+  env/teams/demo/workloadValues/nginx-ksvc.managed.yaml: |
+    {}
   env/teams/admin/workloadValues/nodejs-helloworld.yaml: |
-    values: |
-      image:
-        repository: otomi/nodejs-helloworld
-        tag: v1.2.13
+    image:
+      repository: otomi/nodejs-helloworld
+      tag: v1.2.13
+  env/teams/admin/workloadValues/nodejs-helloworld.managed.yaml: |
+    {}
