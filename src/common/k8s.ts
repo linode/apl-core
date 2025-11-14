@@ -23,7 +23,12 @@ import { dirname, join } from 'path'
 import { Writable } from 'stream'
 import { parse, stringify } from 'yaml'
 import { $, cd, sleep } from 'zx'
-import { ARGOCD_APP_PARAMS, DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
+import {
+  ARGOCD_APP_DEFAULT_SYNC_POLICY,
+  ARGOCD_APP_PARAMS,
+  DEPLOYMENT_PASSWORDS_SECRET,
+  DEPLOYMENT_STATUS_CONFIGMAP,
+} from './constants'
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
@@ -644,6 +649,51 @@ export async function patchArgoCdApp(
       { op: 'replace', path: '/spec/source/helm/values', value: values },
     ],
   })
+}
+
+export async function getArgoCdApp(appName: string, customApi: CustomObjectsApi) {
+  try {
+    const app = await customApi.getNamespacedCustomObject({
+      ...ARGOCD_APP_PARAMS,
+      name: appName,
+    })
+    return app
+  } catch (error) {
+    if (error?.code === 404) {
+      return undefined
+    }
+    throw error
+  }
+}
+
+export async function setArgoCdAppSync(
+  appName: string,
+  enabled: boolean,
+  customApi: CustomObjectsApi,
+  syncOptions: string[] = ['ServerSideApply=true'],
+) {
+  const syncPolicy = {
+    ...ARGOCD_APP_DEFAULT_SYNC_POLICY,
+    syncOptions,
+  }
+  const patch = [
+    enabled
+      ? {
+          op: 'replace',
+          path: '/spec/syncPolicy',
+          value: syncPolicy,
+        }
+      : { op: 'replace', path: '/spec/syncPolicy', value: { automated: null } },
+  ]
+
+  return await customApi.patchNamespacedCustomObject(
+    {
+      ...ARGOCD_APP_PARAMS,
+      name: appName,
+      body: patch,
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.JsonPatch),
+  )
 }
 
 export async function restartOtomiApiDeployment(appApi: AppsV1Api): Promise<void> {
