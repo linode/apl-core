@@ -1,0 +1,9 @@
+apiVersion: v2
+name: kb-operator
+description: A Helm chart for Knowledge Base Operator
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+home: https://github.com/linode/ai-operators
+sources:
+  - https://github.com/linode/ai-operators

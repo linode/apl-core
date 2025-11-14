@@ -28,6 +28,10 @@ k8s:
       disableIstioInjection: true
     - name: apl-operator
       disableIstioInjection: true
+    - name: agent-operator
+      disableIstioInjection: true
+    - name: kb-operator
+      disableIstioInjection: true
     - name: grafana
       app: grafana
     - name: istio-system
