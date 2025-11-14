@@ -14,7 +14,7 @@ image:
   # -- Redis image repository
   repository: public.ecr.aws/docker/library/redis
   # -- Redis image tag
-  tag: 7.2.7-alpine
+  tag: 8.2.1-alpine
   # -- Redis image pull policy
   pullPolicy: IfNotPresent
 
@@ -141,8 +141,16 @@ haproxy:
 
   # -- HAProxy template annotations
   annotations: {}
+
+  # -- HAProxy deployment annotations
+  deploymentAnnotations: {}
+
+  # -- Annotations to be added to the HAProxy deployment pods
+  podAnnotations: {}
+
   # -- HAProxy resources
   resources: {}
+
   # -- Configuration of `emptyDir`
   emptyDir: {}
 
@@ -477,6 +485,9 @@ redis:
   # -- Annotations for the redis statefulset
   annotations: {}
 
+  # -- Annotations to be added to the redis statefulset pods
+  podAnnotations: {}
+
   # -- Update strategy for Redis StatefulSet
   ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
   updateStrategy:
@@ -615,6 +626,13 @@ securityContext:
   runAsUser: 1000
   fsGroup: 1000
   runAsNonRoot: true
+  ## Assuming your kubelet allows it, you can the following instructions to configure
+  ## specific sysctl parameters
+  ##
+  # sysctls:
+  # - name: net.core.somaxconn
+  #   value: '10000'
+
 
 # -- Security context to be added to the Redis containers.
 containerSecurityContext:
@@ -627,12 +645,6 @@ containerSecurityContext:
     drop:
     - ALL
 
-  ## Assuming your kubelet allows it, you can the following instructions to configure
-  ## specific sysctl parameters
-  ##
-  # sysctls:
-  # - name: net.core.somaxconn
-  #   value: '10000'
 
 ## Node labels, affinity, and tolerations for pod assignment
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
@@ -640,6 +652,10 @@ containerSecurityContext:
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 # -- Node labels for pod assignment
 nodeSelector: {}
+
+## -- Tolerations for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
 
 # -- Whether the Redis server pods should be forced to run on separate nodes.
 ## This is accomplished by setting their AntiAffinity with requiredDuringSchedulingIgnoredDuringExecution as opposed to preferred.
@@ -773,6 +789,22 @@ exporter:
     # -- Disable API Check on ServiceMonitor
     disableAPICheck: false
 
+    # RelabelConfigs to apply to samples before scraping.
+    relabelings: []
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace
+
+    # MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
+    metricRelabelings: []
+    # - action: keep
+    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
+    #   sourceLabels: [__name__]
+
+
   # prometheus exporter SCANS redis db which can take some time
   # allow different probe settings to not let container crashloop
   livenessProbe:
@@ -811,8 +843,12 @@ podDisruptionBudget: {}
 
 # -- Configures redis with AUTH (requirepass & masterauth conf params)
 auth: false
+
 # -- (string) A password that configures a `requirepass` and `masterauth` in the conf parameters (Requires `auth: enabled`)
 redisPassword: ~
+
+# -- Annotations for auth secret
+authSecretAnnotations: {}
 
 ## Use existing secret containing key `authKey` (ignores redisPassword)
 ## Can also store AWS S3 or SSH secrets in this secret
@@ -1006,5 +1042,6 @@ networkPolicy:
 splitBrainDetection:
   # -- Interval between redis sentinel and server split brain checks (in seconds)
   interval: 60
+  retryInterval: 10
   # -- splitBrainDetection resources
   resources: {}

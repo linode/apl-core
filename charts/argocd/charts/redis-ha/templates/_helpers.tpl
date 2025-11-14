@@ -128,3 +128,27 @@ Usage:
 {{- end -}}
 {{- omit $adaptedContext "enabled" | toYaml -}}
 {{- end -}}
+
+{{/*
+Defines the redis ports to be used inside network policies
+Usage:
+{{- include "redis-ports" . -}}
+*/}}
+{{- define "redis-ports" -}}
+{{- if ne (int .Values.redis.port) 0 }}
+- port: {{ .Values.redis.port }}
+  protocol: TCP
+{{- end -}}
+{{- if ne (int .Values.sentinel.port) 0 }}
+- port: {{ .Values.sentinel.port }}
+  protocol: TCP
+{{- end -}}
+{{- if ne (int .Values.redis.tlsPort) 0 }}
+- port: {{ .Values.redis.tlsPort }}
+  protocol: TCP
+{{- end -}}
+{{- if ne (int .Values.sentinel.tlsPort) 0 }}
+- port: {{ .Values.sentinel.tlsPort }}
+  protocol: TCP
+{{- end -}}
+{{- end -}}

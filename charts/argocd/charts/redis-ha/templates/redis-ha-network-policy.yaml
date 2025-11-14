@@ -31,10 +31,7 @@ spec:
             release: {{ .Release.Name }}
             app: {{ template "redis-ha.name" . }}
       ports:
-        - port: {{ .Values.redis.port }}
-          protocol: TCP
-        - port: {{ .Values.sentinel.port }}
-          protocol: TCP
+      {{- include "redis-ports" . | nindent 6 }}
 {{-  range $rule := .Values.networkPolicy.egressRules }}
     - to:
 {{ (tpl (toYaml $rule.selectors) $) | indent 7 }}
@@ -48,10 +45,7 @@ spec:
             release: {{ .Release.Name }}
             app: {{ template "redis-ha.name" . }}
       ports: 
-        - port: {{ .Values.redis.port }}
-          protocol: TCP
-        - port: {{ .Values.sentinel.port }}
-          protocol: TCP
+      {{- include "redis-ports" . | nindent 6 }}
 {{- if .Values.haproxy.enabled }}
     - from:
         - podSelector:
@@ -59,10 +53,7 @@ spec:
               release: {{ .Release.Name }}
               app: {{ template "redis-ha.name" . }}-haproxy
       ports:
-        - port: {{ .Values.redis.port }}
-          protocol: TCP
-        - port: {{ .Values.sentinel.port }}
-          protocol: TCP
+      {{- include "redis-ports" . | nindent 6 }}
 {{- end }}
 {{-  range $rule := .Values.networkPolicy.ingressRules }}
     - from:
@@ -71,10 +62,7 @@ spec:
 {{- if $rule.ports }}
 {{ toYaml $rule.ports | indent 7 }}
 {{- else }}
-        - port: {{ $root.Values.redis.port }}
-          protocol: TCP
-        - port: {{ $root.Values.sentinel.port }}
-          protocol: TCP
+      {{- include "redis-ports" . | nindent 6 }}
 {{- end }}
 {{- end }}
 {{- end }}

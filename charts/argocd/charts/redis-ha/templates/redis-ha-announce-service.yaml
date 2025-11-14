@@ -8,21 +8,21 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ $fullName }}-announce-{{ $i }}
-  namespace: {{ $namespace | quote}}
+  namespace: {{ $namespace | quote }}
   labels:
 {{ include "labels.standard" $root | indent 4 }}
     {{- range $key, $value := $root.Values.extraLabels }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
   annotations:
-{{- if (semverCompare "<=1.10-0" $.Capabilities.KubeVersion.GitVersion) }}
+{{- if (semverCompare "<=1.10-0" $.Capabilities.KubeVersion.Version) }}
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
 {{- end }}
   {{- if $root.Values.serviceAnnotations }}
 {{ toYaml $root.Values.serviceAnnotations | indent 4 }}
   {{- end }}
 spec:
-{{- if (semverCompare ">=1.11-0" $.Capabilities.KubeVersion.GitVersion) }}
+{{- if (semverCompare ">=1.11-0" $.Capabilities.KubeVersion.Version) }}
   publishNotReadyAddresses: true
 {{- end }}
   type: ClusterIP

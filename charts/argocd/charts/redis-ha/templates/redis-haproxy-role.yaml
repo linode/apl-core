@@ -7,7 +7,7 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "labels.standard" . | indent 4 }}
-    component: {{ template "redis-ha.fullname" . }}-haproxy
+    component: haproxy
     {{- range $key, $value := .Values.extraLabels }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}

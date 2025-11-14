@@ -475,12 +475,28 @@
         if [ "$MASTER" = "$ANNOUNCE_IP" ]; then
             redis_role
             if [ "$ROLE" != "master" ]; then
-                reinit
+                echo "waiting for redis to become master"
+                sleep {{ .Values.splitBrainDetection.retryInterval }}
+                identify_master
+                redis_role
+                echo "Redis role is $ROLE, expected role is master. No need to reinitialize."
+                if [ "$ROLE" != "master" ]; then
+                    echo "Redis role is $ROLE, expected role is master, reinitializing"
+                    reinit
+                fi
             fi
         elif [ "${MASTER}" ]; then
             identify_redis_master
             if [ "$REDIS_MASTER" != "$MASTER" ]; then
-                reinit
+                echo "Redis master and local master are not the same. waiting."
+                sleep {{ .Values.splitBrainDetection.retryInterval }}
+                identify_master
+                identify_redis_master
+                echo "Redis master is ${MASTER}, expected master is ${REDIS_MASTER}. No need to reinitialize."
+                if [ "${REDIS_MASTER}" != "${MASTER}" ]; then
+                    echo "Redis master is ${MASTER}, expected master is ${REDIS_MASTER}, reinitializing"
+                    reinit
+                fi
             fi
         fi
     done
@@ -727,4 +743,3 @@
     fi
     echo "response=$response"
 {{- end }}
-
