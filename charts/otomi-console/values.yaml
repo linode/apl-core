@@ -5,9 +5,8 @@
 replicaCount: 1
 
 image:
-  registry: docker.io
-  repository: linode/apl-console
-  tag: latest
+  repository: docker.io/linode/apl-console
+  tag: main
   pullPolicy: IfNotPresent
 
 nameOverride: ""
