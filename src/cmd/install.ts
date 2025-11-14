@@ -103,9 +103,7 @@ export const installAll = async () => {
     await cloneOtomiChartsInGitea()
     const initialData = await initialSetupData()
     await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)
-    // FIXME: Migrate to use native Git client and stop cd-ing around
-    cd(rootDir)
-    await createWelcomeConfigMap(initialData.secretName, initialData.domainSuffix)
+    await retryInstallStep(createWelcomeConfigMap, initialData.secretName, initialData.domainSuffix)
   }
   await setDeploymentState({ status: 'deployed', version })
   d.info('Installation completed')
