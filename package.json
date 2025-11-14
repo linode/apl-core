@@ -47,7 +47,7 @@
     "@commitlint/cli": "20.1.0",
     "@commitlint/config-conventional": "20.0.0",
     "@eslint/compat": "^1.4.1",
-    "@jest/types": "29.6.3",
+    "@jest/types": "30.2.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@types/async-retry": "1.4.9",
