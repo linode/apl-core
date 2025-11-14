@@ -19,12 +19,12 @@ releases:
       pkg: argocd
       app: core
     <<: *raw
-  - name: argocd-image-updater-artifacts
+  - name: argocd-image-updater
     installed: {{ $a | get "argocd.enabled" }}
     namespace: argocd
     labels:
       pkg: argocd-image-updater
-    <<: *raw
+    <<: *default
   - name: keycloak-artifacts
     installed: true
     namespace: keycloak
