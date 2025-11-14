@@ -383,3 +383,4 @@ changes:
       - 'apps.kured'
       - 'apps.kiali'
       - 'apps.falco'
+      - 'apps.httpbin'

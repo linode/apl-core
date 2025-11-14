@@ -5,7 +5,8 @@ import { getParsedArgs } from '../yargs'
 import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
-import { executePSQLOnPrimary, updateDbCollation } from './cloudnative-pg'
+import { updateDbCollation } from './cloudnative-pg'
+import { removeHttpBinApplication } from './remove-httpbin-application'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -137,6 +138,12 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
+    },
+  },
+  {
+    version: 'v4.13.0',
+    post: async () => {
+      await removeHttpBinApplication()
     },
   },
 ]
