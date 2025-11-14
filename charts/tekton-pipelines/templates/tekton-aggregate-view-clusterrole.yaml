@@ -1,3 +1,4 @@
+{{- if and .Values.createAggregateRoles .Values.createClusterRoles }}
 # Copyright 2019-2022 The Tekton Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,3 +36,4 @@ rules:
       - get
       - list
       - watch
+{{- end }}
