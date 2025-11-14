@@ -44,8 +44,5 @@ dependencies:
 - name: tekton-pipeline
   repository: https://cdfoundation.github.io/tekton-helm-chart/
   version: 1.0.2
-- name: velero
-  repository: https://vmware-tanzu.github.io/helm-charts/
-  version: 5.4.1
 digest: sha256:9c7e5d75c1f8d3befa942e74b4b0896e36db7f040e100ff642a24c7199cdbdca
 generated: "2024-10-14T11:21:37.891213+02:00"

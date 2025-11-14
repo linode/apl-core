@@ -2788,30 +2788,6 @@ properties:
                 $ref: '#/definitions/resources'
               kubeRBACProxy:
                 $ref: '#/definitions/resources'
-      velero:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          restic:
-            enabled:
-              type: boolean
-              default: false
-          logLevel:
-            description: Set log-level for the Velero pod.
-            default: info
-            enum:
-              - debug
-              - info
-              - warning
-              - error
-              - fatal
-              - panic
-          resources:
-            $ref: '#/definitions/resources'
     patternProperties:
       '^ingress-nginx-[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
         $ref: '#/definitions/ingressNginx'
@@ -3322,10 +3298,6 @@ properties:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
                     default: cnpg
-                  velero:
-                    type: string
-                    $ref: '#/definitions/wordCharacterPattern'
-                    default: velero
                   harbor:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
