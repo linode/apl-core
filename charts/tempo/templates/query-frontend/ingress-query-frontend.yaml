@@ -7,6 +7,7 @@ apiVersion: {{ include "tempo.ingress.apiVersion" . }}
 kind: Ingress
 metadata:
   name: {{ include "tempo.resourceName" $dict }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "tempo.labels" $dict | nindent 4 }}
   {{- with .Values.queryFrontend.ingress.annotations }}
