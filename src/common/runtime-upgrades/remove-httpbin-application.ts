@@ -16,7 +16,7 @@ export async function removeHttpBinApplication() {
     d.info(`Deleted ${httpbinAppName} ArgoCD application.`)
   } catch (err: any) {
     if (err?.statusCode === 404 || err?.response?.statusCode === 404) {
-      d.info(`${httpbinAppName} application not found in ${ARGOCD_APP_PARAMS.namespace} namespace, skipping deletion.`)
+      d.debug(`${httpbinAppName} application not found in ${ARGOCD_APP_PARAMS.namespace} namespace, skipping deletion.`)
     } else {
       d.error('Error deleting httpbin application:', err)
     }
