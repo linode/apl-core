@@ -115,11 +115,32 @@ export const isResourcePresent = async (type: string, name: string, namespace: s
 }
 
 export const getK8sSecret = async (name: string, namespace: string): Promise<Record<string, any> | undefined> => {
-  const result = await $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${name}}' | base64 --decode`
-    .nothrow()
-    .quiet()
-  if (result.exitCode === 0) return parse(result.stdout) as Record<string, any>
-  return undefined
+  try {
+    const secret = await k8s.core().readNamespacedSecret({ name, namespace })
+
+    if (!secret?.data) {
+      return undefined
+    }
+
+    // Decode all base64-encoded values and combine into a single object
+    const decodedData: Record<string, any> = {}
+    for (const [key, value] of Object.entries(secret.data)) {
+      const decoded = Buffer.from(value, 'base64').toString('utf-8')
+      // Try to parse as YAML/JSON, otherwise use as string
+      try {
+        decodedData[key] = parse(decoded)
+      } catch {
+        decodedData[key] = decoded
+      }
+    }
+
+    return decodedData
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      return undefined
+    }
+    throw error
+  }
 }
 
 export interface DeploymentState {

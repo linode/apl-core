@@ -16,8 +16,8 @@ const d = terminal('operator:main')
 
 function loadConfig(aplOps: AplOperations, gitCredentials: GitCredentials): AplOperatorConfig {
   // Get credentials from process.env directly since they may have been set after operatorEnv was parsed
-  const username = operatorEnv.GIT_USERNAME || gitCredentials.username
-  const password = operatorEnv.GIT_PASSWORD || gitCredentials.password
+  const { username } = gitCredentials
+  const { password } = gitCredentials
   const gitHost = env.GIT_URL
   const gitPort = env.GIT_PORT
   const gitProtocol = env.GIT_PROTOCOL

@@ -1,5 +1,5 @@
 import { terminal } from '../common/debug'
-import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, k8s } from '../common/k8s'
+import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
 import { hfValues } from '../common/hf'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
@@ -81,10 +81,22 @@ export class Installer {
   }
 
   public async setEnvAndCreateSecrets(): Promise<GitCredentials> {
-    this.d.info('Extracting credentials from installation values')
+    this.d.debug('Retrieving or creating git credentials')
+    process.env.CI = 'true'
 
     try {
-      // Extract credentials from Helmfile values after installation
+      const existingSecretData = await getK8sSecret('gitea-credentials', 'apl-operator')
+
+      if (existingSecretData?.GIT_USERNAME && existingSecretData?.GIT_PASSWORD) {
+        const gitUsername = existingSecretData.GIT_USERNAME
+        const gitPassword = existingSecretData.GIT_PASSWORD
+
+        this.d.debug('Using existing git credentials from secret')
+        return { username: gitUsername, password: gitPassword }
+      }
+
+      // Step 2: Create new secret (only runs if secret doesn't exist or is invalid)
+      this.d.debug('Extracting credentials from installation values')
       const values = (await hfValues()) as Record<string, any>
 
       // Extract git credentials from values
@@ -92,31 +104,18 @@ export class Installer {
       const gitPassword: string = values.apps.gitea?.adminPassword
 
       if (!gitUsername || !gitPassword) {
-        // TODO do we want to throw here or generate random credentials?
         throw new Error('Git credentials not found in values')
-      } else {
-        await createUpdateGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {
-          GIT_USERNAME: gitUsername,
-          GIT_PASSWORD: gitPassword,
-        })
-
-        process.env.GIT_USERNAME = gitUsername
-        process.env.GIT_PASSWORD = gitPassword
-        this.d.info('Set git credentials in environment variables')
       }
 
-      // Extract SOPS Age key from values
-      const sopsAgePrivateKey = values.kms?.sops?.age?.privateKey
-      if (sopsAgePrivateKey && !sopsAgePrivateKey.startsWith('ENC')) {
-        process.env.SOPS_AGE_KEY = sopsAgePrivateKey
-        this.d.info('Set SOPS_AGE_KEY in environment variables')
-      } else {
-        this.d.debug('SOPS Age private key not found or encrypted, skipping')
-      }
-      process.env.CI = 'true'
+      await createUpdateGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {
+        GIT_USERNAME: gitUsername,
+        GIT_PASSWORD: gitPassword,
+      })
+
+      this.d.debug('Created git credentials secret')
       return { username: gitUsername, password: gitPassword }
     } catch (error) {
-      this.d.error('Failed to extract credentials:', getErrorMessage(error))
+      this.d.error('Failed to retrieve or create credentials:', getErrorMessage(error))
       throw error
     }
   }
