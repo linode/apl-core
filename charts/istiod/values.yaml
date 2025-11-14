@@ -254,7 +254,7 @@ _internal_defaults_do_not_set:
     # Dev builds from prow are on gcr.io
     hub: docker.io/istio
     # Default tag for Istio images.
-    tag: 1.27.3
+    tag: 1.28.0
     # Variant of the image to use.
     # Currently supported are: [debug, distroless]
     variant: ""
@@ -287,7 +287,19 @@ _internal_defaults_do_not_set:
     logging:
       level: "default:info"
 
+    # When enabled, default NetworkPolicy resources will be created
+    networkPolicy:
+      enabled: false
+
     omitSidecarInjectorConfigMap: false
+
+    # resourceScope controls what resources will be processed by helm.
+    # This is useful when installing Istio on a cluster where some resources need to be owned by a cluster administrator and some can be owned by the mesh administrator.
+    # It can be one of:
+    # - all: all resources are processed
+    # - cluster: only cluster-scoped resources are processed
+    # - namespace: only namespace-scoped resources are processed
+    resourceScope: all
 
     # Configure whether Operator manages webhook configurations. The current behavior
     # of Istiod is to manage its own webhook configurations.
@@ -355,6 +367,8 @@ _internal_defaults_do_not_set:
 
       #If set to true, istio-proxy container will have privileged securityContext
       privileged: false
+      
+      seccompProfile: {}
 
       # The number of successive failed probes before indicating readiness failure.
       readinessFailureThreshold: 4
