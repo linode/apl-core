@@ -40,8 +40,8 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "apl-operator.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "apl-operator.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/name: apl-operator
+app.kubernetes.io/instance: apl-operator
 {{- end }}
 
 {{/*
