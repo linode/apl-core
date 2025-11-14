@@ -379,6 +379,8 @@ changes:
     additions:
       - cluster.defaultStorageClass: ''
   - version: 45
+    customFunctions:
+      - workloadValuesMigration
     deletions:
       - 'apps.kured'
       - 'apps.kiali'
