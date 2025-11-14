@@ -34,7 +34,7 @@
     "simple-git": "3.30.0",
     "tar": "7.5.2",
     "uuid": "13.0.0",
-    "validator": "13.15.20",
+    "validator": "13.15.22",
     "yaml": "2.8.1",
     "yargs": "18.0.0",
     "zx": "8.8.5"
@@ -71,7 +71,7 @@
     "@vercel/ncc": "0.38.4",
     "adr-log": "2.2.0",
     "commitizen": "4.3.1",
-    "cspell": "9.2.2",
+    "cspell": "9.3.0",
     "cz-conventional-changelog": "3.3.0",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "10.1.8",
