@@ -33,7 +33,7 @@ spec:
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - secretRef:
@@ -68,7 +68,7 @@ spec:
               mountPath: /etc/otomi/core.yaml
               subPath: core.yaml
         - name: {{ .Chart.Name }}-tools
-          image: "{{ .Values.tools.image.registry }}/{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
+          image: "{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
           imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
           command: ['sh']
           args: ['-c', 'binzx/otomi server -vv']
