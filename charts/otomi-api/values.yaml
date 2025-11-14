@@ -6,10 +6,9 @@ priorityClassName: "otomi-critical"
 
 replicaCount: 1
 image:
-  registry: docker.io
-  repository: linode/apl-api
-  tag: 0.1.1
+  repository: docker.io/linode/apl-api
   pullPolicy: IfNotPresent
+  tag: main
 
 nameOverride: ""
 fullnameOverride: ""
@@ -86,7 +85,7 @@ affinity: {}
   #       topologyKey: kubernetes.io/hostname
 
 secrets:
-  GIT_USER: 
+  GIT_USER:
   GIT_EMAIL:
   GIT_PASSWORD:
 
@@ -101,9 +100,8 @@ core: {}
 
 tools:
   image:
-    registry: docker.io
-    repository: linode/apl-core
-    tag: latest
+    repository: docker.io/linode/apl-core
+    tag: main
     pullPolicy: IfNotPresent
 
   resources: {}
