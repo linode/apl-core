@@ -1,6 +1,8 @@
 #!/usr/bin/env node --nolazy --import tsx
 
-import { glob } from 'glob'
+import { terminal } from './common/debug'
+import { RuntimeUpgradeContext } from './common/runtime-upgrades/runtime-upgrades'
+import { detachApplicationFromApplicationSet, pruneArgoCDImageUpdater } from './common/runtime-upgrades/v4.13.0'
 
 async function play() {
   // const version = await getCurrentVersion()
@@ -14,16 +16,17 @@ async function play() {
   // )
   // await writeValuesToFile(`/tmp/status.yaml`, { status: { otomi: state, helm: releases } }, true)
   // '/tmp/otomi-bootstrap-dev/**/teams/*/builds/*.yaml'
-
-  const match = 'apps.app1.aaa'.match(/^apps\.([^.]+)\./)
-  console.log(match)
-  const globOptions = {
-    nodir: true, // Exclude directories
-    dot: false,
-    ignore: ['**/.*/**'],
+  const d = terminal('cmd:upgrade:runtimeUpgrade')
+  const context: RuntimeUpgradeContext = {
+    debug: d,
   }
-  const files = await glob('/tmp/otomi-bootstrap-dev/env/teams/*/*settings{.yaml,.yaml.dec}', globOptions)
-  console.log(files)
+  try {
+    await detachApplicationFromApplicationSet(context)
+    await pruneArgoCDImageUpdater(context)
+  } catch (error) {
+    d.error('Error during playground execution', error)
+  }
+
   // const spec = await load('/tmp/otomi-bootstrap-dev')
   // console.log(JSON.stringify(spec))
 }
