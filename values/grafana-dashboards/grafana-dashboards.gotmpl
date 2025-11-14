@@ -7,9 +7,6 @@ folders:
   {{- if (and $v.apps.kyverno.enabled $pr.enabled)}}
   - policy-reporter
   {{- end }}
-  {{- if $v.apps.falco.enabled }}
-  - falco
-  {{- end }}
   {{- if $v.apps.loki.enabled }}
   - loki
   {{- end }}

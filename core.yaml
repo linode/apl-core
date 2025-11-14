@@ -15,9 +15,6 @@ k8s:
       disablePolicyChecks: true
     - name: external-dns
       disableIstioInjection: true
-    - name: falco
-      disableIstioInjection: true
-      disablePolicyChecks: true
     - name: harbor
       app: harbor
     - name: apl-harbor-operator
@@ -152,9 +149,6 @@ adminApps:
         auth: true
   - name: external-dns
     tags: [ingress, security, tls]
-  - name: falco
-    tags: [security]
-    deps: [prometheus, grafana]
   - name: gitea
     tags: [git]
     isShared: true

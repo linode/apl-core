@@ -1699,34 +1699,6 @@ properties:
             default: 'info'
           resources:
             $ref: '#/definitions/resources'
-      falco:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          driver:
-            type: string
-            default: ebpf
-            enum:
-              - module
-              - ebpf
-              - modern-bpf
-          resources:
-            additionalProperties: false
-            properties:
-              falco:
-                $ref: '#/definitions/resources'
-              falcoCtlInstall:
-                $ref: '#/definitions/resources'
-              falcoCtlFollow:
-                $ref: '#/definitions/resources'
-              falcoDriverLoader:
-                $ref: '#/definitions/resources'
-              falcoExporter:
-                $ref: '#/definitions/resources'
       gitea:
         properties:
           _rawValues:

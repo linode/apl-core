@@ -384,3 +384,4 @@ changes:
       - 'apps.kiali'
       - 'apps.drone'
       - 'e2e'
+      - 'apps.falco'
