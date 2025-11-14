@@ -2,11 +2,10 @@
 {{- $o := $v.apps | get "apl-harbor-operator" }}
 {{- $version := $v.versions.tasks }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
-
 image:
-  {{ if .Values.otomi.linodeLkeImageRepository }}
-  repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/linode/apl-tasks"
-  {{ end }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-tasks"
+  {{- end }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
 
