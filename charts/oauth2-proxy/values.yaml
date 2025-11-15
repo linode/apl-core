@@ -176,6 +176,9 @@ serviceAccount:
   name:
   automountServiceAccountToken: true
   annotations: {}
+  ## imagePullSecrets for the service account
+  imagePullSecrets: []
+    # - name: myRegistryKeySecretName
 
 # Network policy settings.
 networkPolicy:
