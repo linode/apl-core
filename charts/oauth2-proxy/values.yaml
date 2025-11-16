@@ -31,8 +31,7 @@ config:
   # The name of the cookie that oauth2-proxy will create
   # If left empty, it will default to the release name
   cookieName: ""
-  google:
-    {}
+  google: {}
     # adminEmail: xxxx
     # useApplicationDefaultCredentials: true
     # targetPrincipal: xxxx
@@ -84,8 +83,7 @@ image:
 # Optionally specify an array of imagePullSecrets.
 # Secrets must be manually created in the namespace.
 # ref: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
-imagePullSecrets:
-  []
+imagePullSecrets: []
   # - name: myRegistryKeySecretName
 
 # Set a custom containerPort if required.
@@ -176,6 +174,9 @@ serviceAccount:
   name:
   automountServiceAccountToken: true
   annotations: {}
+  ## imagePullSecrets for the service account
+  imagePullSecrets: []
+    # - name: myRegistryKeySecretName
 
 # Network policy settings.
 networkPolicy:
@@ -212,8 +213,35 @@ ingress:
   #   hosts:
   #     - chart-example.local
 
-resources:
-  {}
+# Gateway API HTTPRoute configuration
+# Ref: https://gateway-api.sigs.k8s.io/api-types/httproute/
+gatewayApi:
+  enabled: false
+  # The name of the Gateway resource to attach the HTTPRoute to
+  # Example:
+  # gatewayRef:
+  #   name: gateway
+  #   namespace: gateway-system
+  gatewayRef:
+    name: ""
+    namespace: ""
+  # HTTPRoute rule configuration
+  # rules:
+  # - matches:
+  #   - path:
+  #       type: PathPrefix
+  #       value: /
+  rules: []
+  # Hostnames to match in the HTTPRoute
+  # hostnames:
+  # - chart-example.local
+  hostnames: []
+  # Additional labels to add to the HTTPRoute
+  labels: {}
+  # Additional annotations to add to the HTTPRoute
+  annotations: {}
+
+resources: {}
   # limits:
   #   cpu: 100m
   #   memory: 300Mi
@@ -229,26 +257,22 @@ resizePolicy: []
   # - resourceName: memory
   #   restartPolicy: RestartContainer
 
-extraVolumes:
-  []
+extraVolumes: []
   # - name: ca-bundle-cert
   #   secret:
   #     secretName: <secret-name>
 
-extraVolumeMounts:
-  []
+extraVolumeMounts: []
   # - mountPath: /etc/ssl/certs/
   #   name: ca-bundle-cert
 
 # Additional containers to be added to the pod.
-extraContainers:
-  []
+extraContainers: []
   #  - name: my-sidecar
   #    image: nginx:latest
 
 # Additional Init containers to be added to the pod.
-extraInitContainers:
-  []
+extraInitContainers: []
   #  - name: wait-for-idp
   #    image: my-idp-wait:latest
   #    command:
@@ -348,8 +372,7 @@ autoscaling:
   annotations: {}
   # Configure HPA behavior policies for scaling if needed
   # Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configuring-scaling-behavior
-  behavior:
-    {}
+  behavior: {}
     # scaleDown:
     #   stabilizationWindowSeconds: 300
     #   policies:
@@ -402,8 +425,7 @@ initContainers:
       seccompProfile:
         type: RuntimeDefault
     timeout: 180
-    resources:
-      {}
+    resources: {}
       # limits:
       #   cpu: 100m
       #   memory: 300Mi
@@ -544,8 +566,7 @@ metrics:
     #   action: replace
 
 # Extra K8s manifests to deploy
-extraObjects:
-  []
+extraObjects: []
   # - apiVersion: secrets-store.csi.x-k8s.io/v1
   #   kind: SecretProviderClass
   #   metadata:

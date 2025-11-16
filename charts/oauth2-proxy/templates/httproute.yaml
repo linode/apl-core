@@ -1,0 +1,65 @@
+{{- if .Values.gatewayApi.enabled -}}
+{{- $serviceName := include "oauth2-proxy.fullname" . -}}
+{{- $servicePort := .Values.service.portNumber -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  labels:
+    app: {{ template "oauth2-proxy.name" . }}
+    {{- include "oauth2-proxy.labels" . | indent 4 }}
+{{- if .Values.gatewayApi.labels }}
+{{ toYaml .Values.gatewayApi.labels | indent 4 }}
+{{- end }}
+  name: {{ template "oauth2-proxy.fullname" . }}
+  namespace: {{ template "oauth2-proxy.namespace" $ }}
+{{- with .Values.gatewayApi.annotations }}
+  annotations:
+{{ tpl ( toYaml . ) $ | indent 4 }}
+{{- end }}
+spec:
+  {{- if .Values.gatewayApi.gatewayRef.name }}
+  parentRefs:
+  - name: {{ .Values.gatewayApi.gatewayRef.name }}
+    {{- if .Values.gatewayApi.gatewayRef.namespace }}
+    namespace: {{ .Values.gatewayApi.gatewayRef.namespace }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.gatewayApi.hostnames }}
+  hostnames:
+  {{- range .Values.gatewayApi.hostnames }}
+  - {{ tpl . $ | quote }}
+  {{- end }}
+  {{- end }}
+  rules:
+  {{- if .Values.gatewayApi.rules }}
+  {{- range .Values.gatewayApi.rules }}
+  - matches:
+    {{- if .matches }}
+    {{- toYaml .matches | nindent 4 }}
+    {{- else }}
+    - path:
+        type: PathPrefix
+        value: /
+    {{- end }}
+    backendRefs:
+    {{- if .backendRefs }}
+    {{- toYaml .backendRefs | nindent 4 }}
+    {{- else }}
+    - name: {{ $serviceName }}
+      port: {{ $servicePort }}
+    {{- end }}
+    {{- if .filters }}
+    filters:
+    {{- toYaml .filters | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  {{- else }}
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: {{ $serviceName }}
+      port: {{ $servicePort }}
+  {{- end }}
+{{- end -}}

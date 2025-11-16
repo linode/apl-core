@@ -1,0 +1,17 @@
+# Test values for Gateway API HTTPRoute configuration
+gatewayApi:
+  enabled: true
+  gatewayRef:
+    name: example-gateway
+    namespace: gateway-system
+  hostnames:
+  - oauth.example.com
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /oauth2
+  annotations:
+    example.com/annotation: "value"
+  labels:
+    example.com/label: "value"
