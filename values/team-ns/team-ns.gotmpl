@@ -48,7 +48,6 @@ ingress: {{- $v.ingress | toYaml | nindent 2 }}
 dns: {{- $v.dns | toYaml | nindent 2 }}
 secrets: {{- $team  | get "secrets" list | toYaml | nindent 2 }}
 workloads: {{- $team | get "workloads" list | toYaml | nindent 2 }}
-backups: {{- $team | get "backups" list | toYaml | nindent 2 }}
 builds: {{- $team | get "builds" list | toYaml | nindent 2 }}
 policies: {{- $team | get "policies" list | toYaml | nindent 2 }}
 sealedsecrets: {{- $team | get "sealedsecrets" list | toYaml | nindent 2 }}

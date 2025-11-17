@@ -305,22 +305,6 @@ definitions:
       - 200m
     pattern: ^([1-9][0-9]*|([0]|[1-9]+)\\.[0-9]{1,3}|[1-9][0-9]*m)$
     type: string
-  backup:
-    type: object
-    description: PV backups
-    properties:
-      name:
-        $ref: '#/definitions/idName'
-      ttl:
-        $ref: '#/definitions/backupTtl'
-      schedule:
-        $ref: '#/definitions/backupSchedule'
-      snapshotVolumes:
-        type: boolean
-        default: false
-      labelSelector:
-        $ref: '#/definitions/labels'
-        description: Individual objects must match this label selector to be included in the backup.
   domain:
     pattern: ^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))|([a-f0-9:]+:+)+[a-f0-9]+$
     type: string
@@ -1175,10 +1159,6 @@ definitions:
                   $ref: '#/definitions/resources'
                 kanikoTask:
                   $ref: '#/definitions/resources'
-      backups:
-        type: array
-        items:
-          $ref: '#/definitions/backup'
       services:
         items:
           $ref: '#/definitions/service'
@@ -1245,11 +1225,6 @@ definitions:
     platformAdmin: [read-any, update-any]
     teamAdmin: [read]
     teamMember: [read]
-  backupTtl:
-    default: 168h
-    description: Expiration of the backup. Defaults to 7 days.
-    title: TTL after finished
-    type: string
   backupRetentionPolicy:
     default: 7d
     description: Delete backups according to retention policy. In DAYS|WEEKS|MONTHS
@@ -3240,16 +3215,6 @@ properties:
                 type: string
                 pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
                 default: keycloak
-      persistentVolumes:
-        type: object
-        description: Create backups of persistent volumes
-        additionalProperties: false
-        properties:
-          linodeApiToken:
-            type: string
-            description: Linode API Token
-            $ref: '#/definitions/wordCharacterPattern'
-            x-secret: ''
       gitea:
         type: object
         title: Gitea

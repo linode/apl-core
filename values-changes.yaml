@@ -385,7 +385,7 @@ changes:
       - 'apps.kured'
       - 'apps.kiali'
       - 'apps.falco'
-  - version: 46
-    deletions:
       - 'apps.velero'
       - 'obj.provider.linode.buckets.velero'
+      - 'platformBackups.persistentVolumes'
+      - 'teamConfig.{team}.backups'
