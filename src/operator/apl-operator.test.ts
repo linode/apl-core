@@ -11,7 +11,6 @@ const mockDebugFn = jest.fn()
 
 const mockGitRepo = {
   clone: jest.fn().mockResolvedValue(undefined),
-  waitForCommits: jest.fn().mockResolvedValue(undefined),
   syncAndAnalyzeChanges: jest.fn().mockResolvedValue({ hasChangesToApply: false, applyTeamsOnly: false }),
   repoUrl: 'https://username:password@example.com:443/org/repo.git',
   lastRevision: 'abc123',
@@ -108,7 +107,6 @@ describe('AplOperator', () => {
 
       expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.repoUrl)
       expect(mockGitRepo.clone).toHaveBeenCalled()
-      expect(mockGitRepo.waitForCommits).toHaveBeenCalled()
 
       expect(mockInfoFn).toHaveBeenCalledWith('APL operator started successfully')
     })
@@ -134,7 +132,6 @@ describe('AplOperator', () => {
 
       // Mock all setup methods to resolve
       mockGitRepo.clone.mockResolvedValue(undefined)
-      mockGitRepo.waitForCommits.mockResolvedValue(undefined)
       mockGitRepo.syncAndAnalyzeChanges.mockResolvedValue(undefined)
       aplOperator['aplOps'].bootstrap = jest.fn().mockResolvedValue(undefined)
       aplOperator['aplOps'].validateValues = jest.fn().mockResolvedValue(undefined)

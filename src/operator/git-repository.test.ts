@@ -104,19 +104,6 @@ describe('GitRepository', () => {
     })
   })
 
-  describe('waitForCommits', () => {
-    test('should retry until hasCommits returns true', async () => {
-      const setLastRevisionSpy = jest.spyOn(gitRepository, 'setLastRevision')
-      mockGit.pull.mockResolvedValue({})
-      setLastRevisionSpy.mockRejectedValueOnce(new Error('No commits yet')).mockResolvedValueOnce()
-
-      await gitRepository.waitForCommits(2, 100)
-
-      expect(mockGit.pull).toHaveBeenCalledTimes(2)
-      expect(setLastRevisionSpy).toHaveBeenCalledTimes(2)
-    })
-  })
-
   describe('clone', () => {
     const fs = require('fs')
 

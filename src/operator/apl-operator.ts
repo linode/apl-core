@@ -181,8 +181,6 @@ export class AplOperator {
     try {
       await waitTillGitRepoAvailable(this.repoUrl)
       await this.gitRepo.clone()
-      // Initial sync combines waitForCommits and syncAndAnalyzeChanges to avoid duplicate pulls
-      await this.gitRepo.waitForCommits()
       this.d.info('APL operator started successfully')
     } catch (error) {
       this.isRunning = false

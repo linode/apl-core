@@ -1,9 +1,7 @@
 import simpleGit, { SimpleGit } from 'simple-git'
 import { OtomiDebugger, terminal } from '../common/debug'
-import retry from 'async-retry'
 import { OperatorError } from './errors'
 import { getErrorMessage } from './utils'
-import { env } from '../common/envalid'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -45,25 +43,6 @@ export class GitRepository {
       this.d.warn('Gitea has no commits yet:', getErrorMessage(error))
       throw error
     }
-  }
-
-  async waitForCommits(maxRetries = env.RETRIES, interval = env.MIN_TIMEOUT): Promise<void> {
-    this.d.info(`Waiting for repository to have commits (max ${maxRetries} retries, ${interval}ms interval)`)
-
-    const d = terminal('common:k8s:waitTillGitRepoAvailable')
-    await retry(
-      async () => {
-        try {
-          await this.git.pull('origin', 'main')
-          await this.setLastRevision()
-        } catch (e) {
-          d.warn(`The values repository has no commits yet. Retrying in ${interval} ms`)
-          d.error(e)
-          throw e
-        }
-      },
-      { retries: maxRetries, randomize: env.RANDOM, minTimeout: interval, factor: env.FACTOR },
-    )
   }
 
   async clone(): Promise<void> {

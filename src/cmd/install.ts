@@ -74,6 +74,8 @@ export const installAll = async () => {
 
   d.info('Deploying CRDs')
   await applyServerSide('charts/kube-prometheus-stack/charts/crds/crds')
+  // nginx install would fail due to missing ServiceMonitor CRD
+  await applyServerSide('charts/kube-prometheus-stack/charts/crds/crds/crd-servicemonitors.yaml')
   await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
 
   d.info('Deploying charts containing label stage=prep')
