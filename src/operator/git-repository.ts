@@ -58,6 +58,7 @@ export class GitRepository {
           await this.setLastRevision()
         } catch (e) {
           d.warn(`The values repository has no commits yet. Retrying in ${interval} ms`)
+          d.error(e)
           throw e
         }
       },

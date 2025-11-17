@@ -371,7 +371,6 @@ export const waitTillGitRepoAvailable = async (repoUrl: string): Promise<void> =
         await $`git ls-remote ${repoUrl}`
       } catch (e) {
         d.warn(`The values repository is not yet reachable. Retrying in ${env.MIN_TIMEOUT} ms`)
-        d.error(e)
         throw e
       }
     },
