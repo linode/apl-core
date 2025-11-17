@@ -9,6 +9,8 @@ import path from 'path'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 import { GitRepository } from './git-repository'
+import { getK8sSecret } from '../common/k8s'
+import process from 'node:process'
 
 dotenv.config()
 
@@ -70,12 +72,22 @@ async function main(): Promise<void> {
     }
     const aplOps = new AplOperations()
 
+    try {
+      const aplSopsSecret = await getK8sSecret('apl-sops-secrets', 'apl-operator')
+      if (aplSopsSecret?.SOPS_AGE_KEY) {
+        process.env.SOPS_AGE_KEY = aplSopsSecret.SOPS_AGE_KEY
+        this.d.debug('Using existing sops credentials from secret')
+      }
+    } catch {
+      d.info('SOPS AGE Key secret not found, running bootstrap process')
+    }
+
     // Phase 1: Run installation with retry until success
     const installer = new Installer(aplOps)
     d.info('=== Starting APL Installation Process ===')
     await installer.reconcileInstall()
-    const gitCredentials = await installer.setEnvAndCreateSecrets()
     d.info('APL installation completed successfully')
+    const gitCredentials = await installer.setEnvAndCreateSecrets()
 
     // Phase 2: Start operator for GitOps operations
     const config = loadConfig(aplOps, gitCredentials)

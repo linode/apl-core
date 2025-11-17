@@ -68,7 +68,7 @@ export const bootstrapSops = async (
   if (provider === 'age') {
     const { publicKey } = values?.kms?.sops?.age ?? {}
     let privateKey = values.kms?.sops?.age?.privateKey
-    if (privateKey.startsWith('ENC')) {
+    if (privateKey?.startsWith('ENC')) {
       privateKey = ''
     }
     obj.keys = publicKey
