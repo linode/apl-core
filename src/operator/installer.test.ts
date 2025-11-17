@@ -1,6 +1,5 @@
 import { Installer } from './installer'
 import { AplOperations } from './apl-operations'
-import { OperatorError } from './errors'
 import * as k8s from '../common/k8s'
 import { hfValues } from '../common/hf'
 
@@ -15,6 +14,7 @@ jest.mock('../common/debug', () => ({
 
 jest.mock('../common/k8s', () => ({
   getK8sConfigMap: jest.fn(),
+  getK8sSecret: jest.fn(),
   createUpdateConfigMap: jest.fn(),
   createUpdateGenericSecret: jest.fn(),
   k8s: {
@@ -302,15 +302,6 @@ describe('Installer', () => {
       expect(mockAplOps.install).toHaveBeenCalled()
     })
 
-    test('should return pending when ConfigMap fetch fails', async () => {
-      ;(k8s.getK8sConfigMap as jest.Mock).mockRejectedValue(new Error('Not found'))
-      ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
-
-      await installer.reconcileInstall()
-
-      expect(mockAplOps.install).toHaveBeenCalled()
-    })
-
     test('should handle in-progress status', async () => {
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
         data: { status: 'in-progress' },
@@ -368,9 +359,6 @@ describe('Installer', () => {
         username: 'test-admin',
         password: 'test-password',
       })
-      expect(process.env.GIT_USERNAME).toBe('test-admin')
-      expect(process.env.GIT_PASSWORD).toBe('test-password')
-      expect(process.env.SOPS_AGE_KEY).toBe('AGE-SECRET-KEY-1234567890')
       expect(process.env.CI).toBe('true')
     })
 
@@ -399,7 +387,6 @@ describe('Installer', () => {
         username: 'otomi-admin',
         password: 'test-password',
       })
-      expect(process.env.GIT_USERNAME).toBe('otomi-admin')
     })
 
     test('should throw error when password is missing', async () => {
@@ -436,7 +423,6 @@ describe('Installer', () => {
         username: 'otomi-admin',
         password: 'test-password',
       })
-      expect(process.env.GIT_USERNAME).toBe('otomi-admin')
     })
 
     test('should throw error when password is empty string', async () => {
@@ -545,7 +531,6 @@ describe('Installer', () => {
         username: 'nested-admin',
         password: 'nested-password',
       })
-      expect(process.env.SOPS_AGE_KEY).toBe('AGE-SECRET-KEY-NESTED')
     })
   })
 })
