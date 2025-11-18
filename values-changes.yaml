@@ -387,3 +387,4 @@ changes:
       - 'apps.drone'
       - 'e2e'
       - 'apps.falco'
+      - 'apps.httpbin'
