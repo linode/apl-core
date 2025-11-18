@@ -32,7 +32,6 @@ type AplKind =
   | 'AplTeamSettingSet'
   | 'AplTeamNetworkControl'
   | 'AplTeamProject'
-  | 'AplTeamBackup'
   | 'AplTeamSecret'
   | 'AplTeamService'
   | 'AplTeamWorkload'
@@ -337,16 +336,6 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       resourceGroup: 'team',
       resourceDir: 'agents',
       loadToSpec: false,
-    },
-    {
-      kind: 'AplTeamBackup',
-      envDir,
-      jsonPathExpression: '$.teamConfig.*.backups[*]',
-      pathGlob: `${envDir}/env/teams/*/backups/*.yaml`,
-      processAs: 'arrayItem',
-      resourceGroup: 'team',
-      resourceDir: 'backups',
-      loadToSpec: true,
     },
     {
       kind: 'AplTeamProject',

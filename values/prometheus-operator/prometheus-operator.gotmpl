@@ -184,15 +184,15 @@ additionalPrometheusRules:
     {{- readFile "rules/blackbox.yaml" | nindent 4 }}
   - name: cloudnative-pg
     {{- readFile "rules/cloudnative-pg.yaml" | nindent 4 }}
-  {{ if $v.platformBackups.database.gitea.enabled }}
+  {{- if $v.platformBackups.database.gitea.enabled }}
   - name: gitea-db-backup
     {{- readFile "rules/gitea-db-backup.yaml" | nindent 4 }}
   {{- end }}
-  {{ if $v.platformBackups.database.harbor.enabled }}
+  {{- if $v.platformBackups.database.harbor.enabled }}
   - name: harbor-db-backup
     {{- readFile "rules/harbor-db-backup.yaml" | nindent 4 }}
   {{- end }}
-  {{ if $v.platformBackups.database.keycloak.enabled }}
+  {{- if $v.platformBackups.database.keycloak.enabled }}
   - name: keycloak-db-backup
     {{- readFile "rules/keycloak-db-backup.yaml" | nindent 4 }}
   {{- end }}
