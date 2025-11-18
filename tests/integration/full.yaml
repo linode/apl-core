@@ -7,6 +7,45 @@ otomi:
   version: 'OTOMI_VERSION_PLACEHOLDER'
   adminPassword: welcomeotomi
 apps:
+  otomi-api:
+    _rawValues:
+      image:
+        repository: docker.io/linode/apl-api
+        imagePullPolicy: Always
+      tools:
+        image:
+          repository: docker.io/linode/apl-core
+          imagePullPolicy: Always
+  otomi-console:
+    _rawValues:
+      image:
+        repository: docker.io/linode/apl-console
+        imagePullPolicy: Always
+  otomi-operator:
+    _rawValues:
+      image:
+        repository: docker.io/linode/apl-tasks
+        imagePullPolicy: Always
+  apl-harbor-operator:
+    _rawValues:
+      image:
+        repository: docker.io/linode/apl-tasks
+        imagePullPolicy: Always
+  apl-gitea-operator:
+    _rawValues:
+      image:
+        repository: docker.io/linode/apl-tasks
+        imagePullPolicy: Always
+  apl-keycloak-operator:
+    _rawValues:
+      image:
+        repository: docker.io/linode/apl-tasks
+        imagePullPolicy: Always
+  apl-operator:
+    _rawValues:
+      image:
+        repository: docker.io/linode/apl-core
+        imagePullPolicy: Always
   alertmanager:
     enabled: true
   cert-manager:

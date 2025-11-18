@@ -1,0 +1,103 @@
+{{- $v := .Values }}
+
+{{- range $v.workloads }}
+{{- $a := .imageUpdateStrategy }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: 'team-{{ $v.teamId }}-{{ .name }}'
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  {{- if or (eq $a.type "digest") (eq $a.type "semver") }}
+    argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.force-update: 'true'
+    argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.pull-secret: 'pullsecret:argocd/copy-team-{{ $v.teamId }}-harbor-pullsecret'
+    argocd-image-updater.argoproj.io/git-branch: main
+    argocd-image-updater.argoproj.io/git-repository: {{ $v.gitOps.workloadValuesRepoUrl | quote }}
+    argocd-image-updater.argoproj.io/write-back-method: 'git'
+    argocd-image-updater.argoproj.io/write-back-target: 'helmvalues:/env/teams/{{ $v.teamId }}/workloadValues/{{ .name }}.managed.yaml'
+    {{- if eq $a.type "semver" }}
+    argocd-image-updater.argoproj.io/image-list: 'team-{{ $v.teamId }}-{{ .name }}={{ $a.semver.imageRepository }}:{{ $a.semver.versionConstraint }}'
+    argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.update-strategy: 'semver'
+    argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.helm.image-name: '{{ $a.semver.imageParameter }}'
+    argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.helm.image-tag: '{{ $a.semver.tagParameter }}'
+    {{- end }}
+    {{- if eq $a.type "digest" }}
+    argocd-image-updater.argoproj.io/image-list: 'team-{{ $v.teamId }}-{{ .name }}={{ $a.digest.imageRepository }}:{{ $a.digest.tag }}'
+    argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.update-strategy: 'digest'
+    argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.helm.image-name: '{{ $a.digest.imageParameter }}'
+    argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.helm.image-tag: '{{ $a.digest.tagParameter }}'
+    {{- end }}
+  {{- end }}
+spec:
+  {{- if and ( eq $v.teamId "admin" ) .namespace }}
+  project: 'default' # project is not restricted
+  {{- else }}
+  project: 'team-{{ $v.teamId }}' # project is restricted
+  {{- end }}
+  sources:
+  - repoURL: '{{ .url }}'
+    targetRevision: '{{ .revision }}'
+    path: '{{ .path }}'
+    chart: '{{ .chart }}'
+    helm:
+      releaseName: '{{ .name }}'
+      {{- if and (.sidecarInject) (.createNamespace) }}
+      parameters:
+        - name: sidecar.istio.io/inject
+          value: 'true'
+        {{- if $v.apps.istio.defaultRevision }}
+        - name: istio.io/rev
+          value: {{ $v.apps.istio.defaultRevision | quote }}
+        {{- end }}
+      {{- end }}
+      valueFiles:
+      - $values/env/teams/{{ $v.teamId }}/workloadValues/{{ .name }}.yaml
+      - $values/env/teams/{{ $v.teamId }}/workloadValues/{{ .name }}.managed.yaml
+  - repoURL: {{ $v.gitOps.workloadValuesRepoUrl | quote }}
+    targetRevision: '{{ .revision }}'
+    ref: values
+  syncPolicy:
+    automated:
+      allowEmpty: false
+      prune: false
+      selfHeal: true
+    retry:
+      backoff:
+        duration: 10s
+        factor: 3
+      limit: 3
+    {{- if eq $v.teamId "admin" }}
+    syncOptions:
+      - RespectIgnoreDifferences=true
+      - ServerSideApply=true
+      {{- if .createNamespace }}
+      - CreateNamespace=true
+      {{- end }}
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      jqPathExpressions:
+      - '.webhooks[]?.clientConfig.caBundle'
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      jqPathExpressions:
+      - '.webhooks[]?.clientConfig.caBundle'
+    - group: "apps"
+      kind: "StatefulSet"
+      jqPathExpressions:
+        - ".spec.volumeClaimTemplates[].apiVersion"
+        - ".spec.volumeClaimTemplates[].kind"
+        - ".spec.volumeClaimTemplates[].spec"
+    {{- end }}
+  destination:
+    server: 'https://kubernetes.default.svc'
+    {{- if and ( eq $v.teamId "admin" ) .namespace }}
+    namespace: '{{- .namespace }}'
+    {{- else }}
+    namespace: 'team-{{ $v.teamId }}'
+    {{- end }}
+    # helm-specific config
+{{- end }}
+

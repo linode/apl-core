@@ -13,14 +13,13 @@ import { getRepo } from 'src/common/values'
 import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
 
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 
-interface Arguments extends HelmArguments, DroneArgs {
+interface Arguments extends HelmArguments {
   m?: string
   message?: string
 }
@@ -308,7 +307,7 @@ For documentation and support, visit: https://techdocs.akamai.com/app-platform/d
 
 export const module = {
   command: cmdName,
-  describe: 'Wrapper that validates values, generates the Drone pipeline and then commits and pushes changed files',
+  describe: 'Wrapper that validates values, and then commits and pushes changed files',
   builder: (parser: Argv): Argv =>
     parser.options({
       message: {
