@@ -57,18 +57,22 @@ function handleTerminationSignals(operator: AplOperator): void {
   process.on('SIGINT', () => exitHandler('SIGINT'))
 }
 
+function ensureDirectoryStructure() {
+  const repoPath = env.ENV_DIR
+  const parentDir = path.dirname(repoPath)
+  if (!fs.existsSync(parentDir)) {
+    fs.mkdirSync(parentDir, { recursive: true })
+  }
+
+  if (!fs.existsSync(repoPath)) {
+    fs.mkdirSync(repoPath, { recursive: true })
+  }
+}
+
 async function main(): Promise<void> {
   try {
     d.info('Starting APL Operator')
-    const repoPath = env.ENV_DIR
-    const parentDir = path.dirname(repoPath)
-    if (!fs.existsSync(parentDir)) {
-      fs.mkdirSync(parentDir, { recursive: true })
-    }
-
-    if (!fs.existsSync(repoPath)) {
-      fs.mkdirSync(repoPath, { recursive: true })
-    }
+    ensureDirectoryStructure()
     const aplOps = new AplOperations()
 
     // Phase 1: Run installation with retry until success
