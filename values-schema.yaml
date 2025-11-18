@@ -1729,12 +1729,6 @@ properties:
                 $ref: '#/definitions/resources'
               init:
                 $ref: '#/definitions/resources'
-              postgresql:
-                $ref: '#/definitions/resources'
-              memcached:
-                $ref: '#/definitions/resources'
-              memcachedMetrics:
-                $ref: '#/definitions/resources'
           networkPolicies:
             $ref: '#/definitions/appNetworkPolicyConfig'
       grafana:
