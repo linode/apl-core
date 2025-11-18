@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.12.2](https://github.com/linode/apl-core/compare/v4.12.1...v4.12.2) (2025-11-18)
+
+
+### Bug Fixes
+
+* kfp workflow image ([#2719](https://github.com/linode/apl-core/issues/2719)) ([18082cf](https://github.com/linode/apl-core/commit/18082cfe518eb67c54e6a816b81a8bc7b3c43304))
+
 ### [4.12.1](https://github.com/linode/apl-core/compare/v4.12.0...v4.12.1) (2025-11-03)
 
 
