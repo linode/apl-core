@@ -6,7 +6,9 @@ metadata:
   {{- if .Values.prometheusRule.namespace }}
   namespace: {{ .Values.prometheusRule.namespace }}
   {{- end }}
+  {{- if .Values.prometheusRule.additionalLabels }}
   labels: {{- toYaml .Values.prometheusRule.additionalLabels | nindent 4 }}
+  {{- end }}
 spec:
   groups:
     - name: {{ template "redis-ha.fullname" . }}
