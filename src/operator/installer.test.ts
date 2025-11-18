@@ -125,7 +125,7 @@ describe('Installer', () => {
         'apl-operator',
         expect.objectContaining({
           status: 'failed',
-          attempt: '1',
+          attempt: '0',
           error: 'Bootstrap failed',
         }),
       )
@@ -249,7 +249,7 @@ describe('Installer', () => {
         'apl-operator',
         expect.objectContaining({
           status: 'failed',
-          attempt: '1',
+          attempt: '0',
           error: 'Cluster validation failed',
         }),
       )
