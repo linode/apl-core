@@ -291,18 +291,6 @@ appsInfo:
     about: The OpenTelemetry Collector offers a vendor-agnostic implementation on how to receive, process and export telemetry data. In addition, it removes the need to run, operate and maintain multiple agents/collectors in order to support open-source telemetry data formats (e.g. Jaeger, Prometheus, etc.) to multiple open-source or commercial back-ends.
     integration: OpenTelemetry Collector is used to receive telementry data from Istio Envoy access logs and export this data to Tempo.
     chartName: otel-operator
-  velero:
-    title: Velero
-    appVersion: 1.9.0
-    repo: https://github.com/vmware-tanzu/velero
-    maintainers: VMware Tanzu
-    relatedLinks:
-      - https://velero.io/docs/v1.9/
-      - https://velero.io/docs/main/restic/
-    license: Apache 2.0
-    dependencies: None
-    about: Velero is a tool to back up and restore Kubernetes cluster resources and persistent volumes.
-    integration: When enabled, Velero can be used to automatically create backups of APL platform services. Based on the selected provider, APL installs required plug-ins. APL also installs the Restic integration for Velero to back up and restore almost any type of Kubernetes volume.
   policy-reporter:
     title: policy-reporter
     appVersion: 3.5.0
