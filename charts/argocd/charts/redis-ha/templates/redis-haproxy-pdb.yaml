@@ -14,5 +14,6 @@ spec:
     matchLabels:
       release: {{ .Release.Name }}
       app: {{ template "redis-ha.name" . }}-haproxy
+      component: haproxy
 {{ toYaml .Values.haproxy.podDisruptionBudget | indent 2 }}
 {{- end -}}
