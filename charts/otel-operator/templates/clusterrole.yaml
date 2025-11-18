@@ -352,6 +352,14 @@ rules:
     - patch
     - update
   - apiGroups:
+    - opentelemetry.io
+    resources:
+    - targetallocators/finalizers
+    verbs:
+    - get
+    - patch
+    - update
+  - apiGroups:
       - cert-manager.io
     resources:
       - issuers
