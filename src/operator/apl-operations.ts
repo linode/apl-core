@@ -123,11 +123,8 @@ export class AplOperations {
   }
 
   async install(): Promise<void> {
-    this.d.info('Executing install process')
-
     try {
       await installModule.handler({} as HelmArguments)
-      this.d.info('Install completed successfully')
     } catch (error) {
       this.d.error('Install failed:', getErrorMessage(error))
       throw new OperatorError('Install process failed', error as Error)

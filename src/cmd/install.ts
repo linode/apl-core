@@ -66,19 +66,16 @@ export const installAll = async () => {
   const releases = await getHelmReleases()
   await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, { status: { otomi: state, helm: releases } }, true)
 
-  d.info('Deploying essential manifests')
   const essentialDeployResult = await deployEssential()
   if (!essentialDeployResult) {
     throw new Error('Failed to deploy essential manifests')
   }
 
   d.info('Deploying CRDs')
-  await applyServerSide('charts/kube-prometheus-stack/charts/crds/crds')
-  // nginx install would fail due to missing ServiceMonitor CRD
-  await applyServerSide('charts/kube-prometheus-stack/charts/crds/crds/crd-servicemonitors.yaml')
+  await retryInstallStep(applyServerSide, 'charts/kube-prometheus-stack/charts/crds/crds')
   // Wait for ServiceMonitor CRD to be established before deploying nginx
-  await waitForCRD('servicemonitors.monitoring.coreos.com')
-  await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
+  await retryInstallStep(waitForCRD, 'servicemonitors.monitoring.coreos.com')
+  await retryInstallStep(async () => $`kubectl apply -f charts/tekton-triggers/crds --server-side`)
 
   d.info('Deploying charts containing label stage=prep')
   await hf(
@@ -92,7 +89,7 @@ export const installAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 
-  // Only install the core apps
+  d.info('Deploying charts containing label app=core')
   await hf(
     {
       labelOpts: ['app=core'],

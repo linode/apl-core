@@ -77,15 +77,15 @@ async function main(): Promise<void> {
 
     // Phase 1: Run installation with retry until success
     const installer = new Installer(aplOps)
-    d.info('=== Starting APL Installation Process ===')
+    d.info('=== Starting Installation Process ===')
     await installer.reconcileInstall()
-    d.info('APL installation completed successfully')
     const gitCredentials = await installer.setEnvAndCreateSecrets()
 
     // Phase 2: Start operator for GitOps operations
     const config = loadConfig(aplOps, gitCredentials)
     const operator = new AplOperator(config)
     handleTerminationSignals(operator)
+    d.info('=== Starting Operator Process ===')
     await operator.start()
   } catch (error) {
     d.error('Failed to start APL Operator:', getErrorMessage(error))

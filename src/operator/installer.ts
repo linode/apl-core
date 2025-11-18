@@ -42,7 +42,6 @@ export class Installer {
         await this.aplOps.install()
 
         await this.updateInstallationStatus('completed', attemptNumber)
-        this.d.info('Installation completed successfully')
         return
       } catch (error) {
         const errorMessage = getErrorMessage(error)
