@@ -391,3 +391,4 @@ changes:
       - 'obj.provider.linode.buckets.velero'
       - 'platformBackups.persistentVolumes'
       - 'teamConfig.{team}.backups'
+      - 'apps.httpbin'
