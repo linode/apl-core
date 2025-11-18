@@ -151,7 +151,7 @@ export const getStoredClusterSecrets = async (
     const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi')
     if (kubeSecretObject) {
       d.info(`Found ${secretId} secrets on cluster, recovering`)
-      return kubeSecretObject
+      return kubeSecretObject[DEPLOYMENT_PASSWORDS_SECRET]
     }
   } catch {
     d.info(`No existing ${secretId} secrets found on cluster`)
