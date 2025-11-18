@@ -13,10 +13,6 @@ k8s:
     - name: default
       disableIstioInjection: true
       disablePolicyChecks: true
-    - name: drone
-    - name: drone-pipelines
-      disableIstioInjection: true
-      disablePolicyChecks: true
     - name: external-dns
       disableIstioInjection: true
     - name: harbor
@@ -137,24 +133,6 @@ adminApps:
     tags: [ingress, security, tls]
   - name: cnpg
     tags: [database]
-  - name: drone
-    tags: [cicd, deployment, pipeline]
-    isShared: true
-    ownHost: true
-    ingress:
-      - svc: drone
-        namespace: drone
-        type: public
-        auth: true
-        removeRequestHeaders:
-          - authorization
-      - svc: drone
-        namespace: drone
-        type: public
-        paths: [/hook, /api/user, /api/repo]
-        forwardPath: true
-        removeRequestHeaders:
-          - authorization
   - name: tty
     tags: [tty]
     isShared: true

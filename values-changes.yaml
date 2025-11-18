@@ -384,6 +384,8 @@ changes:
     deletions:
       - 'apps.kured'
       - 'apps.kiali'
+      - 'apps.drone'
+      - 'e2e'
       - 'apps.falco'
       - 'apps.velero'
       - 'obj.provider.linode.buckets.velero'

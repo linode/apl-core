@@ -1,7 +1,6 @@
 import { CommandModule } from 'yargs'
 import { module as applyModule } from './apply'
 import { module as applyAsAppsModule } from './apply-as-apps'
-import { module as applyE2eModule } from './apply-e2e'
 import { module as applyTeamsModule } from './apply-teams'
 import { module as bashModule } from './bash'
 import { module as bootstrapModule } from './bootstrap'
@@ -11,7 +10,6 @@ import { module as destroyModule } from './destroy'
 import { module as diffModule } from './diff'
 import { module as encryptModule } from './encrypt'
 import { module as filesModule } from './files'
-import { module as genDroneModule } from './gen-drone'
 import { module as hfModule } from './hf'
 import { module as installModule } from './install'
 import { module as lintModule } from './lint'
@@ -35,7 +33,6 @@ import { module as xModule } from './x'
 
 export { module as apply } from './apply'
 export { module as applyAsAppsModule } from './apply-as-apps'
-export { module as applyE2e } from './apply-e2e'
 export { module as applyTeams } from './apply-teams'
 export { module as bash } from './bash'
 export { module as bootstrap } from './bootstrap'
@@ -45,7 +42,6 @@ export { module as destroy } from './destroy'
 export { module as diff } from './diff'
 export { module as encrypt } from './encrypt'
 export { module as files } from './files'
-export { module as genDrone } from './gen-drone'
 export { module as hf } from './hf'
 export { module as install } from './install'
 export { module as lint } from './lint'
@@ -69,7 +65,6 @@ export const commands: CommandModule[] = [
   applyModule,
   applyAsAppsModule,
   applyTeamsModule,
-  applyE2eModule,
   bashModule,
   bootstrapModule,
   commitModule,
@@ -78,7 +73,6 @@ export const commands: CommandModule[] = [
   diffModule,
   encryptModule,
   filesModule,
-  genDroneModule,
   hfModule,
   installModule,
   lintModule,
