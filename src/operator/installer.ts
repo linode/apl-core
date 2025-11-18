@@ -23,9 +23,6 @@ export class Installer {
     let attemptNumber = 0
 
     while (true) {
-      attemptNumber += 1
-      this.d.info(`Starting installation attempt ${attemptNumber}`)
-
       try {
         // Always run bootstrap to ensure the environment is ready (even on restarts)
         await this.aplOps.validateCluster()
@@ -37,6 +34,8 @@ export class Installer {
           this.d.info('Installation already completed, skipping install steps')
           return
         }
+        attemptNumber += 1
+        this.d.info(`Starting installation attempt ${attemptNumber}`)
 
         // Run the installation sequence
         await this.updateInstallationStatus('in-progress', attemptNumber)
