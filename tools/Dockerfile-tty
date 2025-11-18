@@ -21,10 +21,6 @@ ARG K9S_CHECKSUM=sha256:bda09dc030a08987fe2b3bed678b15b52f23d6705e872d561932d4ca
 ARG HELM_VERSION=3.19.0
 ARG HELM_CHECKSUM=sha256:a7f81ce08007091b86d8bd696eb4d86b8d0f2e1b9f6c714be62f82f96a594496
 
-# https://github.com/vmware-tanzu/velero/releases
-ARG VELERO_VERSION=1.14.1
-ARG VELERO_CHECKSUM=sha256:1e123f9deb9479f1cd41ba53b799d73b962cd6ff16acebfca233725638c73db2
-
 # https://github.com/tektoncd/cli/releases
 ARG TKN_VERSION=0.42.0
 ARG TKN_CHECKSUM=sha256:e21a96c454502457f1970d720da15153b8b0623b2de2c13598ff96fc98e69c44
@@ -51,10 +47,6 @@ RUN tar zxf /tmp/k9s_Linux_amd64.tar.gz -C /usr/local/bin/ k9s && rm /tmp/k9s_Li
 # Installing helm
 ADD --checksum=${HELM_CHECKSUM} https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz /tmp/
 RUN tar zxvf /tmp/helm-v${HELM_VERSION}-linux-amd64.tar.gz linux-amd64/helm -O > /usr/local/bin/helm && chmod +x /usr/local/bin/helm && rm /tmp/helm-v${HELM_VERSION}-linux-amd64.tar.gz
-
-# Installing velero cli
-ADD --checksum=${VELERO_CHECKSUM} https://github.com/vmware-tanzu/velero/releases/download/v${VELERO_VERSION}/velero-v${VELERO_VERSION}-linux-amd64.tar.gz /tmp/
-RUN tar zxvf /tmp/velero-v${VELERO_VERSION}-linux-amd64.tar.gz velero-v${VELERO_VERSION}-linux-amd64/velero -O > /usr/local/bin/velero && chmod +x /usr/local/bin/velero && rm /tmp/velero-v${VELERO_VERSION}-linux-amd64.tar.gz
 
 # Installing tekton cli
 ADD --checksum=${TKN_CHECKSUM} https://github.com/tektoncd/cli/releases/download/v${TKN_VERSION}/tkn_${TKN_VERSION}_Linux_x86_64.tar.gz /tmp/
