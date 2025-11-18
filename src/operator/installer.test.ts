@@ -261,7 +261,7 @@ describe('Installer', () => {
         'apl-operator',
         expect.objectContaining({
           status: 'completed',
-          attempt: '2',
+          attempt: '1',
         }),
       )
     }, 10000)
