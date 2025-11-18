@@ -26,7 +26,7 @@ export class GitRepository {
 
   constructor(config: GitRepositoryConfig) {
     const { username, password, gitHost, gitPort, gitProtocol, repoPath, gitOrg, gitRepo } = config
-    this.d = terminal('GitRepository')
+    this.d = terminal('operator:git-repository')
     this.repoUrl = `${gitProtocol}://${username}:${encodeURIComponent(password)}@${gitHost}:${gitPort}/${gitOrg}/${gitRepo}.git`
     this.repoPath = repoPath
     this.git = simpleGit(this.repoPath)

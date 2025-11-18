@@ -4,7 +4,7 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
-import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState } from 'src/common/k8s'
+import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState, waitForCRD } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -76,6 +76,8 @@ export const installAll = async () => {
   await applyServerSide('charts/kube-prometheus-stack/charts/crds/crds')
   // nginx install would fail due to missing ServiceMonitor CRD
   await applyServerSide('charts/kube-prometheus-stack/charts/crds/crds/crd-servicemonitors.yaml')
+  // Wait for ServiceMonitor CRD to be established before deploying nginx
+  await waitForCRD('servicemonitors.monitoring.coreos.com')
   await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
 
   d.info('Deploying charts containing label stage=prep')

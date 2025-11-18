@@ -11,7 +11,7 @@ export interface GitCredentials {
 }
 
 export class Installer {
-  private d = terminal('operator:apl-installer')
+  private d = terminal('operator:installer')
   private aplOps: AplOperations
 
   constructor(aplOps: AplOperations) {

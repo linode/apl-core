@@ -29,7 +29,7 @@ function maskRepoUrl(url: string): string {
 }
 
 export class AplOperator {
-  private d = terminal('operator:apl')
+  private d = terminal('operator:apl-operator')
   private isRunning = false
   private isApplying = false
   private gitRepo: GitRepository

@@ -794,3 +794,15 @@ export async function applyServerSide(
   }
   await $`kubectl apply ${kubectlArgs}`
 }
+
+export async function waitForCRD(crdName: string, timeoutSeconds: number = 60): Promise<void> {
+  const d = terminal('common:k8s:waitForCRD')
+  d.debug(`Waiting for CRD ${crdName} to be established (timeout: ${timeoutSeconds}s)`)
+  try {
+    await $`kubectl wait --for condition=established --timeout=${timeoutSeconds}s crd/${crdName}`
+    d.debug(`CRD ${crdName} is ready`)
+  } catch (error) {
+    d.error(`Failed to wait for CRD ${crdName}:`, error)
+    throw error
+  }
+}

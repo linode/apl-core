@@ -15,7 +15,7 @@ export class AplOperations {
   private d: OtomiDebugger
 
   constructor() {
-    this.d = terminal('AplOperations')
+    this.d = terminal('operator:operations')
   }
 
   async migrate(): Promise<void> {
