@@ -3,7 +3,6 @@
 {{- $o := $v.apps | get "otomi-api" }}
 {{- $g := $v.apps.gitea }}
 {{- $cm := $v.apps | get "cert-manager" }}
-{{- $d := $v.apps.drone }}
 {{- $sops := $v | get "kms.sops" dict }}
 {{- $giteaValuesUrl := "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values" }}
 {{- $giteaValuesPublilcUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
@@ -62,7 +61,6 @@ env:
     {{- $v._derived.caCert | nindent 4 }}
   {{- end }}
   EDITOR_INACTIVITY_TIMEOUT: {{ $o.editorInactivityTimeout }}
-  DRONE_WEBHOOK_SECRET: {{ $d | get "sharedSecret" | quote }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
