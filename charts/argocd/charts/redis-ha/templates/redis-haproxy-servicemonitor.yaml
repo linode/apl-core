@@ -35,5 +35,5 @@ spec:
     matchLabels:
       app: {{ template "redis-ha.name" . }}
       release: {{ .Release.Name }}
-      component: {{ template "redis-ha.fullname" . }}-haproxy
+      component: haproxy
 {{- end }}
