@@ -1,4 +1,4 @@
-import { ApiException } from '@kubernetes/client-node'
+import { ApiException, CoreV1Event, V1ContainerStatus, V1Pod } from '@kubernetes/client-node'
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { createUpdateConfigMap, k8s } from 'src/common/k8s'
@@ -25,6 +25,67 @@ interface TraceReport {
   errors?: string[]
 }
 
+export function findRelevantPodEvent(events: CoreV1Event[], podName: string): CoreV1Event | undefined {
+  const relevantReasons = ['FailedScheduling', 'FailedMount', 'FailedAttachVolume', 'FailedCreatePodSandBox']
+  return events.find((event) => event.involvedObject?.name === podName && relevantReasons.includes(event.reason || ''))
+}
+
+export function checkPodPhaseIssues(pod: V1Pod, relevantEvent?: CoreV1Event): string[] {
+  const issues: string[] = []
+  const phase = pod.status?.phase
+
+  // Check for problematic states
+  if (['CrashLoopBackOff', 'Failed', 'Unknown'].includes(phase || '')) {
+    issues.push(`Pod status: ${phase}. ${pod.status?.message || ''}`)
+  }
+
+  // Check for pending state
+  if (phase === 'Pending') {
+    if (relevantEvent?.message) {
+      issues.push(`Pod pending: ${relevantEvent.message}`)
+    } else if (!pod.spec?.nodeName) {
+      issues.push('Pod is pending without node assignment')
+    } else {
+      issues.push('Pod is pending')
+    }
+  }
+
+  return issues
+}
+
+export function checkContainerStatusIssues(containerStatuses?: V1ContainerStatus[]): string[] {
+  const issues: string[] = []
+
+  if (!containerStatuses) {
+    return issues
+  }
+
+  containerStatuses.forEach((containerStatus) => {
+    const containerName = containerStatus.name || 'unknown'
+
+    // Check for OOMKilled
+    if (containerStatus.lastState?.terminated?.reason === 'OOMKilled') {
+      issues.push(`Container ${containerName} terminated (${containerStatus.lastState.terminated.reason}).`)
+    }
+
+    // Check for terminated state
+    if (containerStatus.state?.terminated) {
+      const reason = containerStatus.state.terminated.reason || 'Unknown'
+      const message = containerStatus.state.terminated.message || ''
+      issues.push(`Container ${containerName} terminated (${reason}). ${message}`)
+    }
+
+    // Check for waiting state
+    if (containerStatus.state?.waiting?.reason) {
+      const { reason } = containerStatus.state.waiting
+      const message = containerStatus.state.waiting.message || ''
+      issues.push(`Container ${containerName} waiting (${reason}). ${message}`)
+    }
+  })
+
+  return issues
+}
+
 /**
  * Get pods with issues across all namespaces
  */
@@ -39,43 +100,18 @@ async function getPodsWithIssues(): Promise<ResourceReport[]> {
       const podName = pod.metadata?.name || 'unknown'
       const issues: string[] = []
 
-      // Check for CrashLoopBackOff and other problematic states
-      if (['CrashLoopBackOff', 'Failed', 'Unknown'].includes(pod.status?.phase || '')) {
-        issues.push(`Pod status: ${pod.status?.phase}. ${pod.status?.message || ''}`)
-      }
-
-      // Check for pending pods without node assignment
-      if (pod.status?.phase === 'Pending' && !pod.spec?.nodeName) {
+      // Check for pending pods and fetch events if needed
+      let relevantEvent: CoreV1Event | undefined
+      if (pod.status?.phase === 'Pending') {
         const events = await coreApi.listNamespacedEvent({ namespace })
-        const schedulingEvent = events.items.find(
-          (event) => event.involvedObject.name === podName && event.reason === 'FailedScheduling',
-        )
-        if (schedulingEvent?.message) {
-          issues.push(schedulingEvent.message)
-        } else {
-          issues.push('Pod is pending without node assignment')
-        }
+        relevantEvent = findRelevantPodEvent(events.items, podName)
       }
 
-      // Check container statuses
-      pod.status?.containerStatuses?.forEach((containerStatus) => {
-        if (containerStatus.lastState?.terminated?.reason === 'OOMKilled') {
-          issues.push(
-            `Container ${containerStatus.name} terminated (${containerStatus.lastState?.terminated?.reason}).`,
-          )
-        }
-        if (containerStatus.state?.terminated) {
-          issues.push(
-            `Container ${containerStatus.name} terminated (${containerStatus.state?.terminated.reason}). ${containerStatus.state?.terminated.message || ''}`,
-          )
-        }
-        if (containerStatus.state?.waiting?.reason) {
-          issues.push(
-            `Container ${containerStatus.name} waiting (${containerStatus.state?.waiting?.reason}). ${containerStatus.state?.waiting?.message || ''}`,
-          )
-        }
-      })
+      // Collect all issues using helper functions
+      issues.push(...checkPodPhaseIssues(pod, relevantEvent))
+      issues.push(...checkContainerStatusIssues(pod.status?.containerStatuses))
 
+      // Add each issue as a separate resource report
       issues.forEach((issue) => {
         pods.push({
           kind: 'Pod',

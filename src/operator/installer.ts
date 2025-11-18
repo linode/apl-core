@@ -16,7 +16,7 @@ export class Installer {
 
   constructor(aplOps: AplOperations) {
     this.aplOps = aplOps
-    this.d.info('Initializing APL Installer')
+    this.d.info('Initializing Installer')
   }
 
   public async reconcileInstall(): Promise<void> {
