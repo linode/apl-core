@@ -387,4 +387,8 @@ changes:
       - 'apps.drone'
       - 'e2e'
       - 'apps.falco'
+      - 'apps.velero'
+      - 'obj.provider.linode.buckets.velero'
+      - 'platformBackups.persistentVolumes'
+      - 'teamConfig.{team}.backups'
       - 'apps.httpbin'
