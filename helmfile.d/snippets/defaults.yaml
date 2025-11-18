@@ -150,6 +150,9 @@ environments:
             _rawValues: {}
             networkPolicies:
               enabled: true
+            database:
+              maxConnections: 28
+              maxIdleConnections: 6
             resources:
               gitea:
                 limits:
@@ -158,20 +161,6 @@ environments:
                 requests:
                   cpu: 100m
                   memory: 256Mi
-              memcached:
-                limits:
-                  cpu: 250m
-                  memory: 256Mi
-                requests:
-                  cpu: 10m
-                  memory: 128Mi
-              memcachedMetrics:
-                limits:
-                  cpu: 200m
-                  memory: 128M
-                requests:
-                  cpu: 10m
-                  memory: 16M
               init:
                 limits:
                   cpu: 400m

@@ -388,3 +388,7 @@ changes:
       - 'e2e'
       - 'apps.falco'
       - 'apps.httpbin'
+      - 'apps.gitea.images'
+      - 'apps.gitea.resources.postgresql'
+      - 'apps.gitea.resources.memcached'
+      - 'apps.gitea.resources.memcachedMetrics'
