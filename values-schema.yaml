@@ -1929,6 +1929,18 @@ properties:
                 $ref: '#/definitions/imageSimple'
               postgresql:
                 $ref: '#/definitions/imageSimple'
+          database:
+            additionalProperties: false
+            properties:
+              maxConnections:
+                type: number
+                description: Maximum amount of total connections of the application to the database server
+              minConnections:
+                type: number
+                description: Minimum amount of connections of the application to the database server
+              initialConnections:
+                type: number
+                description: Initial amount of connections of the application to the database server on startup
           resources:
             additionalProperties: false
             properties:
