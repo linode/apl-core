@@ -90,6 +90,12 @@ app.kubernetes.io/part-of: memberlist
 app.kubernetes.io/version: {{ .ctx.Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .ctx.Release.Service }}
+{{- if .ctx.Values.global.commonLabels }}
+{{ toYaml .ctx.Values.global.commonLabels | indent 0 }}
+{{- end }}
+{{- if .ctx.Values.global.labels }}
+{{ toYaml .ctx.Values.global.labels | indent 0 }}
+{{- end }}
 {{- end -}}
 
 {{/*
@@ -189,7 +195,7 @@ Renders the overrides config
 */}}
 {{- define "tempo.overridesConfig" -}}
 overrides:
-{{ toYaml .Values.overrides | indent 2 }}
+{{ toYaml .Values.per_tenant_overrides | indent 2 }}
 {{- end -}}
 
 {{/*
@@ -227,7 +233,7 @@ configMap:
 Internal servers http listen port - derived from Loki default
 */}}
 {{- define "tempo.serverHttpListenPort" -}}
-{{ (((.Values.tempo).structuredConfig).server).http_listen_port | default "3100" }}
+{{ (((.Values.tempo).structuredConfig).server).http_listen_port | default "3200" }}
 {{- end -}}
 
 {{/*
@@ -267,6 +273,12 @@ app.kubernetes.io/component: {{ .component }}
 {{- if .memberlist }}
 app.kubernetes.io/part-of: memberlist
 {{- end -}}
+{{- if .ctx.Values.global.commonLabels }}
+{{ toYaml .ctx.Values.global.commonLabels | indent 0 }}
+{{- end }}
+{{- if .ctx.Values.global.podLabels }}
+{{ toYaml .ctx.Values.global.podLabels | indent 0 }}
+{{- end }}
 {{- end -}}
 
 {{/*

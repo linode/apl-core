@@ -1,4 +1,5 @@
 {{- if .Values.podDisruptionBudget -}}
+{{- if gt (int .Values.ingester.replicas) 1 }}
 apiVersion: {{ include "tempo.pdb.apiVersion" . }}
 kind: PodDisruptionBudget
 metadata:
@@ -11,4 +12,5 @@ spec:
     matchLabels:
       app: {{ include "tempo.resourceName" (dict "ctx" . "component" "ingester") }}
 {{ toYaml .Values.podDisruptionBudget | indent 2 }}
+{{- end }}
 {{- end }}
