@@ -8,7 +8,6 @@ folders:
   - thanos
   - trivy
   - trivy-teams
-  - velero
 
 sidecar:
   dashboards:

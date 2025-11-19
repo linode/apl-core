@@ -1166,19 +1166,6 @@ environments:
                   cpu: "1"
                   memory: 1G
             _rawValues: {}
-          velero:
-            enabled: false
-            restic:
-              enabled: false
-            logLevel: info
-            resources:
-              requests:
-                cpu: 20m
-                memory: 184Mi
-              limits:
-                cpu: "1"
-                memory: 512Mi
-            _rawValues: {}
         databases:
           keycloak:
             imageName: null
