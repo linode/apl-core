@@ -3073,10 +3073,6 @@ properties:
               enabled:
                 type: boolean
                 default: false
-              resources:
-                $ref: '#/definitions/resources'
-              backupSidecarResources:
-                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3091,10 +3087,6 @@ properties:
               enabled:
                 type: boolean
                 default: false
-              resources:
-                $ref: '#/definitions/resources'
-              backupSidecarResources:
-                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3109,10 +3101,6 @@ properties:
               enabled:
                 type: boolean
                 default: false
-              resources:
-                $ref: '#/definitions/resources'
-              backupSidecarResources:
-                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3225,6 +3213,8 @@ properties:
             type: string
           resources:
             $ref: '#/definitions/resources'
+          backupSidecarResources:
+            $ref: '#/definitions/resources'
           replicas:
             type: integer
             default: 2
@@ -3247,6 +3237,8 @@ properties:
             type: string
           resources:
             $ref: '#/definitions/resources'
+          backupSidecarResources:
+            $ref: '#/definitions/resources'
           replicas:
             type: integer
             default: 2
@@ -3268,6 +3260,8 @@ properties:
           walStorageSize:
             type: string
           resources:
+            $ref: '#/definitions/resources'
+          backupSidecarResources:
             $ref: '#/definitions/resources'
           replicas:
             type: integer
