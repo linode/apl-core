@@ -27,12 +27,8 @@ imageName: {{ $v.otomi.linodeLkeImageRepository }}/ghcr/{{ $cnpg.pgDefaultPlatfo
 imageName: ghcr.io/{{ $cnpg.pgDefaultPlatformImage }}
 {{- end }}
 
-
 postgresql:
-  parameters:
-    max_connections: "32"
-    shared_buffers: 64MB
-    work_mem: 2MB
+  parameters: {{ toYaml $kdb.postgresqlParameters | nindent 4 }}
 
 {{- if and $b.enabled (eq $obj.type "minioLocal" "linode") }}
 backup:

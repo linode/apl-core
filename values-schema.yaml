@@ -3215,6 +3215,11 @@ properties:
             $ref: '#/definitions/resources'
           backupSidecarResources:
             $ref: '#/definitions/resources'
+          postgresqlParameters:
+            type: object
+            additionalProperties:
+              type: string
+            default: {}
           replicas:
             type: integer
             default: 2
@@ -3239,6 +3244,11 @@ properties:
             $ref: '#/definitions/resources'
           backupSidecarResources:
             $ref: '#/definitions/resources'
+          postgresqlParameters:
+            type: object
+            additionalProperties:
+              type: string
+            default: {}
           replicas:
             type: integer
             default: 2
@@ -3263,6 +3273,11 @@ properties:
             $ref: '#/definitions/resources'
           backupSidecarResources:
             $ref: '#/definitions/resources'
+          postgresqlParameters:
+            type: object
+            additionalProperties:
+              type: string
+            default: {}
           replicas:
             type: integer
             default: 2

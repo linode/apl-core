@@ -1197,6 +1197,10 @@ environments:
               requests:
                 cpu: "50m"
                 memory: 48Mi
+            postgresqlParameters:
+              max_connections: "32"
+              shared_buffers: 64MB
+              work_mem: 2MB
           harbor:
             imageName: null
             size: 5Gi
@@ -1222,6 +1226,10 @@ environments:
               requests:
                 cpu: "50m"
                 memory: 48Mi
+            postgresqlParameters:
+              max_connections: "32"
+              shared_buffers: 64MB
+              work_mem: 2MB
           gitea:
             imageName: null
             size: 5Gi
@@ -1246,6 +1254,10 @@ environments:
               requests:
                 cpu: "50m"
                 memory: 48Mi
+            postgresqlParameters:
+              max_connections: "32"
+              shared_buffers: 64MB
+              work_mem: 2MB
         obj:
           provider:
             type: disabled
