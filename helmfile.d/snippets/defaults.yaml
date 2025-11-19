@@ -193,6 +193,9 @@ environments:
             registry:
               credentials:
                 username: otomi-admin
+            database:
+              maxConnections: 28
+              maxIdleConnections: 6
             resources:
               core:
                 requests:

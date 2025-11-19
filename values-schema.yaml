@@ -1716,11 +1716,9 @@ properties:
             properties:
               maxConnections:
                 type: number
-                default: 28
                 description: Maximum amount of total connections of the application to the database server
               maxIdleConnections:
                 type: number
-                default: 6
                 description: Maximum amount of idle connections of the application to the database server
           resources:
             additionalProperties: false
@@ -1802,6 +1800,15 @@ properties:
               - credentials
           image:
             $ref: '#/definitions/imageSimple'
+          database:
+            additionalProperties: false
+            properties:
+              maxConnections:
+                type: number
+                description: Maximum amount of total connections of the application to the database server
+              maxIdleConnections:
+                type: number
+                description: Maximum amount of idle connections of the application to the database server
           resources:
             additionalProperties: false
             properties:
