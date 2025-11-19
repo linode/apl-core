@@ -1798,8 +1798,6 @@ properties:
             required:
               - secret
               - credentials
-          image:
-            $ref: '#/definitions/imageSimple'
           database:
             additionalProperties: false
             properties:
