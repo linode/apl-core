@@ -66,4 +66,5 @@ clusterSpec:
   externalClusters: {{ toYaml . | nindent 4 }}
 {{- end }}
 
-resources: {{- toYaml $kdb.resources | nindent 2 }}
+resources: {{ toYaml $kdb.resources | nindent 2 }}
+backupSidecarResources: {{ toYaml $kdb.backupSidecarResources | nindent 2 }}

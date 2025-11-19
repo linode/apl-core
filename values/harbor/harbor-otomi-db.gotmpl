@@ -63,4 +63,5 @@ clusterSpec:
   externalClusters: {{ toYaml . | nindent 4 }}
 {{- end }}
 
-resources: {{- toYaml $hdb.resources | nindent 2 }}
+resources: {{ toYaml $hdb.resources | nindent 2 }}
+backupSidecarResources: {{ toYaml $hdb.backupSidecarResources | nindent 2 }}
