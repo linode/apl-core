@@ -1,11 +1,5 @@
-import { AppsV1Api, KubeConfig } from '@kubernetes/client-node'
 import { terminal } from '../debug'
 import { k8s, setArgoCdAppSync } from '../k8s'
-
-const kubeConfig = new KubeConfig()
-kubeConfig.loadFromDefault()
-
-const appsApi = kubeConfig.makeApiClient(AppsV1Api)
 
 const namespace = 'minio'
 const minioDeploymentName = 'minio'
@@ -14,7 +8,7 @@ const minioAppName = 'minio-minio'
 export async function removeOldMinioResources() {
   const d = terminal('removeOldMinioResources')
   try {
-    const minioDeployment = await appsApi.readNamespacedDeployment({ name: minioDeploymentName, namespace })
+    const minioDeployment = await k8s.app().readNamespacedDeployment({ name: minioDeploymentName, namespace })
     if (minioDeployment.metadata?.labels?.chart === 'minio-5.4.0') {
       d.info('Minio deployment is up-to-date, no need to remove old resources.')
       return
@@ -27,7 +21,7 @@ export async function removeOldMinioResources() {
   }
   try {
     // Delete Minio Deployment
-    await appsApi.deleteNamespacedDeployment({
+    await k8s.app().deleteNamespacedDeployment({
       name: minioDeploymentName,
       namespace,
     })
