@@ -67,7 +67,7 @@ describe('Bootstrapping values', () => {
     expect(deps.hfValues).toHaveBeenCalledTimes(0)
   })
   it('should get stored cluster secrets if those exist', async () => {
-    deps.getK8sSecret.mockReturnValue(secrets)
+    deps.getK8sSecret.mockReturnValue({ 'otomi-generated-passwords': secrets })
     const res = await getStoredClusterSecrets(deps)
     expect(res).toEqual(secrets)
   })
