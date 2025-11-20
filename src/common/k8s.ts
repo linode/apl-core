@@ -10,6 +10,7 @@ import {
   NetworkingV1Api,
   PatchStrategy,
   setHeaderOptions,
+  V1ConfigMap,
   V1ResourceRequirements,
   V1Secret,
   V1Status,
@@ -119,11 +120,32 @@ export const isResourcePresent = async (type: string, name: string, namespace: s
 }
 
 export const getK8sSecret = async (name: string, namespace: string): Promise<Record<string, any> | undefined> => {
-  const result = await $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${name}}' | base64 --decode`
-    .nothrow()
-    .quiet()
-  if (result.exitCode === 0) return parse(result.stdout) as Record<string, any>
-  return undefined
+  try {
+    const secret = await k8s.core().readNamespacedSecret({ name, namespace })
+
+    if (!secret?.data) {
+      return undefined
+    }
+
+    // Decode all base64-encoded values and combine into a single object
+    const decodedData: Record<string, any> = {}
+    for (const [key, value] of Object.entries(secret.data)) {
+      const decoded = Buffer.from(value, 'base64').toString('utf-8')
+      // Try to parse as YAML/JSON, otherwise use as string
+      try {
+        decodedData[key] = parse(decoded)
+      } catch {
+        decodedData[key] = decoded
+      }
+    }
+
+    return decodedData
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      return undefined
+    }
+    throw error
+  }
 }
 
 export interface DeploymentState {
@@ -433,6 +455,81 @@ export async function createUpdateGenericSecret(
 
 export function b64enc(value: string): string {
   return Buffer.from(value).toString('base64')
+}
+
+export async function getK8sConfigMap(
+  namespace: string,
+  name: string,
+  coreV1Api: CoreV1Api,
+): Promise<V1ConfigMap | undefined> {
+  try {
+    return await coreV1Api.readNamespacedConfigMap({ name, namespace })
+  } catch (error: any) {
+    if (error.code === 404) {
+      return undefined
+    }
+    throw error
+  }
+}
+
+export async function createK8sConfigMap(
+  namespace: string,
+  name: string,
+  data: Record<string, string>,
+  coreV1Api: CoreV1Api,
+): Promise<V1ConfigMap> {
+  const configMap: V1ConfigMap = {
+    metadata: {
+      name,
+      namespace,
+    },
+    data,
+  }
+  return await coreV1Api.createNamespacedConfigMap({ namespace, body: configMap })
+}
+
+export async function updateK8sConfigMap(
+  namespace: string,
+  name: string,
+  data: Record<string, string>,
+  coreV1Api: CoreV1Api,
+): Promise<V1ConfigMap> {
+  const configMap: V1ConfigMap = {
+    metadata: {
+      name,
+      namespace,
+    },
+    data,
+  }
+  return await coreV1Api.replaceNamespacedConfigMap({ name, namespace, body: configMap })
+}
+
+export async function createUpdateConfigMap(
+  coreV1Api: CoreV1Api,
+  name: string,
+  namespace: string,
+  data: Record<string, string>,
+): Promise<V1ConfigMap> {
+  const configMap: V1ConfigMap = {
+    metadata: {
+      name,
+      namespace,
+    },
+    data,
+  }
+
+  try {
+    return await coreV1Api.createNamespacedConfigMap({ namespace, body: configMap })
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 409) {
+      return await coreV1Api.patchNamespacedConfigMap(
+        { name, namespace, body: configMap },
+        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+      )
+    } else {
+      throw error
+    }
+  }
 }
 
 export async function getPodsOfStatefulSet(
@@ -746,4 +843,16 @@ export async function applyServerSide(
     }
   }
   await $`kubectl apply ${kubectlArgs}`
+}
+
+export async function waitForCRD(crdName: string, timeoutSeconds: number = 60): Promise<void> {
+  const d = terminal('common:k8s:waitForCRD')
+  d.debug(`Waiting for CRD ${crdName} to be established (timeout: ${timeoutSeconds}s)`)
+  try {
+    await $`kubectl wait --for condition=established --timeout=${timeoutSeconds}s crd/${crdName}`
+    d.debug(`CRD ${crdName} is ready`)
+  } catch (error) {
+    d.error(`Failed to wait for CRD ${crdName}:`, error)
+    throw error
+  }
 }
