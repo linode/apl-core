@@ -30,6 +30,10 @@ on:
         description: Fake if Otomi is pre-installed by Installer
         type: string
         default: 'false'
+      cluster_tier:
+        description: 'LKE cluster tier (LKE or LKE-E)'
+        type: string
+        default: 'standard'
   workflow_dispatch:
     inputs:
       linode_types:
@@ -95,6 +99,13 @@ on:
         description: 'Check the box if you dont want to pull from ORCS'
         type: boolean
         default: false
+      cluster_tier:
+        description: 'LKE cluster tier'
+        type: choice
+        options:
+          - standard
+          - enterprise
+        default: standard
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -123,6 +134,7 @@ jobs:
           echo 'certificate: ${{ inputs.certificate }}'
           echo 'is_pre_installed: ${{ inputs.is_pre_installed }}'
           echo 'disableORCS: ${{ inputs.disableORCS }}'
+          echo 'cluster_tier: ${{ inputs.cluster_tier }}'
 
   preprocess-linode-input:
     needs: preprocess-input
@@ -214,6 +226,9 @@ jobs:
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
+          tier_arg=""
+          [[ '${{ inputs.cluster_tier }}' == 'enterprise' ]] && tier_arg="--tier=enterprise"
+
           linode-cli lke cluster-create \
             --label ${{ env.LINODE_CLUSTER_NAME }} \
             --region nl-ams \
@@ -224,6 +239,7 @@ jobs:
             --node_pools.autoscaler.max 3 \
             --node_pools.autoscaler.min 3 \
             --tags testing \
+            $tier_arg \
             --no-defaults
       - name: Retrieve cluster id
         run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
@@ -318,6 +334,7 @@ jobs:
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
           [[ '${{ inputs.kms }}' == 'age' ]] && additional_args+=" --set kms.sops.provider=age"
           [[ '${{ inputs.is_pre_installed }}' == 'true' ]] && additional_args+=" --set otomi.isPreInstalled=true"
+          [[ '${{ inputs.cluster_tier }}' == 'enterprise' ]] && additional_args+=" --set cluster.linode.tier=enterprise"
           if [[ '${{ inputs.disableORCS }}' == 'true' ]]; then
             additional_args+=" --set otomi.useORCS=false"
             if [[ ! ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]]; then
