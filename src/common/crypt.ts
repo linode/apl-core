@@ -62,7 +62,6 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
     if (!crypt.condition || (await crypt.condition(file))) {
       d.debug(`${crypt.cmd} ${file}`)
       try {
-        d.info(`${crypt.cmd} ${file}`)
         const result = await $`${[...crypt.cmd.split(' '), file]}`.quiet()
 
         if (crypt.cmd === CryptType.DECRYPT) {
@@ -183,7 +182,7 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
         try {
           // Same logic is used in helm-secrets: https://github.com/jkroepke/helm-secrets/blob/18a061430899c8cd66be68d8495f4b8489dbf3c3/scripts/lib/backends/sops.sh#L16
           await $`grep -q 'mac.*,type:str]' ${file}`
-          d.info(`Skipping encryption for ${file} (already encrypted)`)
+          d.debug(`Skipping encryption for ${file} (already encrypted)`)
           return false
         } catch {
           d.debug(`${file} is not yet encrypted or grep did not match`)

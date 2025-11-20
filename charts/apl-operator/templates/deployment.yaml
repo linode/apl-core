@@ -38,11 +38,6 @@ spec:
           env:
             - name: CI
               value: "true"
-          envFrom:
-            - secretRef:
-                name: gitea-credentials
-            - secretRef:
-                name: apl-sops-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
