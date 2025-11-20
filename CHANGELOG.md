@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.12.3](https://github.com/linode/apl-core/compare/v4.12.2...v4.12.3) (2025-11-20)
+
+
+### Bug Fixes
+
+* consider reserved db connections for platform apps ([#2731](https://github.com/linode/apl-core/issues/2731)) ([eeb37ae](https://github.com/linode/apl-core/commit/eeb37ae2dc95218da2274f25382658a393e4c1b7))
+
+
+### Others
+
+* console version 4.10.1 ([d5134c7](https://github.com/linode/apl-core/commit/d5134c790ce8c97647511572cbfd2b2974976aaf))
+
 ### [4.12.2](https://github.com/linode/apl-core/compare/v4.12.1...v4.12.2) (2025-11-18)
 
 
