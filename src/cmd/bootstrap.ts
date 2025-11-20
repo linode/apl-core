@@ -68,7 +68,7 @@ export const bootstrapSops = async (
   if (provider === 'age') {
     const { publicKey } = values?.kms?.sops?.age ?? {}
     let privateKey = values.kms?.sops?.age?.privateKey
-    if (privateKey.startsWith('ENC')) {
+    if (privateKey?.startsWith('ENC')) {
       privateKey = ''
     }
     obj.keys = publicKey
@@ -147,10 +147,15 @@ export const getStoredClusterSecrets = async (
   if (env.isDev && env.DISABLE_SYNC) return undefined
   // we might need to create the 'otomi' namespace if we are in CLI mode
   if (isCli) await deps.$`kubectl create ns otomi &> /dev/null`.nothrow().quiet()
-  const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi')
-  if (kubeSecretObject) {
-    d.info(`Found ${secretId} secrets on cluster, recovering`)
-    return kubeSecretObject
+  try {
+    const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi')
+    if (kubeSecretObject) {
+      d.info(`Found ${secretId} secrets on cluster, recovering`)
+      return kubeSecretObject[DEPLOYMENT_PASSWORDS_SECRET]
+    }
+  } catch {
+    d.info(`No existing ${secretId} secrets found on cluster`)
+    return undefined
   }
   return undefined
 }
