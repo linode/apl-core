@@ -351,6 +351,7 @@ describe('Collect Traces Command', () => {
   let mockCoreApi: any
   let mockAppsApi: any
   let mockCustomApi: any
+  let mockCreateUpdateConfigMap: any
 
   beforeEach(() => {
     mockCoreApi = {
@@ -361,9 +362,6 @@ describe('Collect Traces Command', () => {
       listNamespacedPersistentVolumeClaim: jest.fn(),
       listPersistentVolume: jest.fn(),
       listNode: jest.fn(),
-      readNamespacedConfigMap: jest.fn(),
-      createNamespacedConfigMap: jest.fn(),
-      replaceNamespacedConfigMap: jest.fn(),
     }
 
     mockAppsApi = {
@@ -374,11 +372,14 @@ describe('Collect Traces Command', () => {
     mockCustomApi = {
       listClusterCustomObject: jest.fn(),
     }
+
+    mockCreateUpdateConfigMap = jest.fn()
     ;(k8sModule.k8s as any) = {
       core: jest.fn(() => mockCoreApi),
       app: jest.fn(() => mockAppsApi),
       custom: jest.fn(() => mockCustomApi),
     }
+    ;(k8sModule as any).createUpdateConfigMap = mockCreateUpdateConfigMap
   })
 
   afterEach(() => {
@@ -475,22 +476,16 @@ describe('Collect Traces Command', () => {
       ],
     })
 
-    mockCoreApi.readNamespacedConfigMap.mockRejectedValue(new MockApiException(404, 'Not Found'))
-    mockCoreApi.createNamespacedConfigMap.mockResolvedValue({})
+    mockCreateUpdateConfigMap.mockResolvedValue({})
 
     await collectTraces()
 
-    expect(mockCoreApi.createNamespacedConfigMap).toHaveBeenCalledWith({
-      namespace: 'apl-operator',
-      body: {
-        metadata: { name: 'apl-traces-report' },
-        data: { report: expect.any(String) },
-      },
+    expect(mockCreateUpdateConfigMap).toHaveBeenCalledWith(mockCoreApi, 'apl-traces-report', 'apl-operator', {
+      report: expect.any(String),
     })
 
-    // eslint-disable-next-line prefer-destructuring
-    const configMapCall = mockCoreApi.createNamespacedConfigMap.mock.calls[0][0]
-    const reportData = JSON.parse(configMapCall.body.data.report)
+    const configMapCall = mockCreateUpdateConfigMap.mock.calls[0]
+    const reportData = JSON.parse(configMapCall[3].report)
 
     // Should have all resource types
     expect(reportData.failedResources.length).toBeGreaterThan(0)
@@ -522,16 +517,10 @@ describe('Collect Traces Command', () => {
     await collectTraces()
 
     // Should not create ConfigMap for healthy cluster
-    expect(mockCoreApi.createNamespacedConfigMap).not.toHaveBeenCalled()
-    expect(mockCoreApi.replaceNamespacedConfigMap).not.toHaveBeenCalled()
+    expect(mockCreateUpdateConfigMap).not.toHaveBeenCalled()
   })
 
-  it('should update existing ConfigMap instead of creating new one', async () => {
-    const existingConfigMap = {
-      metadata: { name: 'apl-traces-report' },
-      data: { report: '{"old": "data"}' },
-    }
-
+  it('should call createUpdateConfigMap when there are issues', async () => {
     mockCoreApi.listPodForAllNamespaces.mockResolvedValue({
       items: [
         {
@@ -548,13 +537,11 @@ describe('Collect Traces Command', () => {
     mockCoreApi.listPersistentVolume.mockResolvedValue({ items: [] })
     mockCustomApi.listClusterCustomObject.mockResolvedValue({ items: [] })
 
-    mockCoreApi.readNamespacedConfigMap.mockResolvedValue(existingConfigMap)
-    mockCoreApi.replaceNamespacedConfigMap.mockResolvedValue({})
+    mockCreateUpdateConfigMap.mockResolvedValue({})
 
     await collectTraces()
 
-    expect(mockCoreApi.replaceNamespacedConfigMap).toHaveBeenCalled()
-    expect(mockCoreApi.createNamespacedConfigMap).not.toHaveBeenCalled()
+    expect(mockCreateUpdateConfigMap).toHaveBeenCalled()
   })
 
   it('should gracefully handle ArgoCD not installed', async () => {
@@ -592,17 +579,15 @@ describe('Collect Traces Command', () => {
     mockCoreApi.listPersistentVolume.mockResolvedValue({ items: [] })
     mockCustomApi.listClusterCustomObject.mockResolvedValue({ items: [] })
 
-    mockCoreApi.readNamespacedConfigMap.mockRejectedValue(new MockApiException(404, 'Not Found'))
-    mockCoreApi.createNamespacedConfigMap.mockResolvedValue({})
+    mockCreateUpdateConfigMap.mockResolvedValue({})
 
     await collectTraces()
 
     // Should create ConfigMap with deployment issues
-    expect(mockCoreApi.createNamespacedConfigMap).toHaveBeenCalled()
+    expect(mockCreateUpdateConfigMap).toHaveBeenCalled()
 
-    // eslint-disable-next-line prefer-destructuring
-    const configMapCall = mockCoreApi.createNamespacedConfigMap.mock.calls[0][0]
-    const reportData = JSON.parse(configMapCall.body.data.report)
+    const configMapCall = mockCreateUpdateConfigMap.mock.calls[0]
+    const reportData = JSON.parse(configMapCall[3].report)
 
     // Should have deployment in failed resources
     expect(reportData.failedResources).toEqual(
@@ -649,14 +634,12 @@ describe('Collect Traces Command', () => {
     mockCoreApi.listPersistentVolume.mockResolvedValue({ items: [] })
     mockCustomApi.listClusterCustomObject.mockResolvedValue({ items: [] })
 
-    mockCoreApi.readNamespacedConfigMap.mockRejectedValue(new MockApiException(404, 'Not Found'))
-    mockCoreApi.createNamespacedConfigMap.mockResolvedValue({})
+    mockCreateUpdateConfigMap.mockResolvedValue({})
 
     await collectTraces()
 
-    // eslint-disable-next-line prefer-destructuring
-    const configMapCall = mockCoreApi.createNamespacedConfigMap.mock.calls[0][0]
-    const reportData = JSON.parse(configMapCall.body.data.report)
+    const configMapCall = mockCreateUpdateConfigMap.mock.calls[0]
+    const reportData = JSON.parse(configMapCall[3].report)
 
     // Should not have errors field when all collections succeed
     expect(reportData.errors).toBeUndefined()
@@ -677,6 +660,6 @@ describe('Collect Traces Command', () => {
     // Should complete without throwing despite all failures
     expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalled()
     // Should not create ConfigMap when no issues found and all failed
-    expect(mockCoreApi.createNamespacedConfigMap).not.toHaveBeenCalled()
+    expect(mockCreateUpdateConfigMap).not.toHaveBeenCalled()
   })
 })

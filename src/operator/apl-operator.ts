@@ -29,7 +29,7 @@ function maskRepoUrl(url: string): string {
 }
 
 export class AplOperator {
-  private d = terminal('operator:apl')
+  private d = terminal('operator:apl-operator')
   private isRunning = false
   private isApplying = false
   private gitRepo: GitRepository
@@ -49,6 +49,7 @@ export class AplOperator {
     this.repoUrl = gitRepo.repoUrl
 
     this.d.info(`Initializing APL Operator with repo URL: ${maskRepoUrl(gitRepo.repoUrl)}`)
+    this.d.debug(`Initializing APL Operator with repo URL: ${gitRepo.repoUrl}`)
   }
 
   // public for testing
@@ -180,12 +181,6 @@ export class AplOperator {
     try {
       await waitTillGitRepoAvailable(this.repoUrl)
       await this.gitRepo.clone()
-      await this.gitRepo.waitForCommits()
-      await this.gitRepo.syncAndAnalyzeChanges()
-
-      await this.aplOps.bootstrap()
-      await this.aplOps.validateValues()
-
       this.d.info('APL operator started successfully')
     } catch (error) {
       this.isRunning = false
