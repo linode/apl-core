@@ -18,7 +18,19 @@ jest.mock('../cmd/validate-values', () => ({
   },
 }))
 
+jest.mock('../cmd/validate-cluster', () => ({
+  module: {
+    handler: jest.fn(),
+  },
+}))
+
 jest.mock('../cmd/apply', () => ({
+  module: {
+    handler: jest.fn(),
+  },
+}))
+
+jest.mock('../cmd/install', () => ({
   module: {
     handler: jest.fn(),
   },

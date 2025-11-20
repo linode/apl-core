@@ -33,7 +33,7 @@ export async function updateApplyState(
   namespace: string = 'apl-operator',
   configMapName: string = 'apl-operator-state',
 ): Promise<void> {
-  const d = terminal('updateApplyState')
+  const d = terminal('operator:k8s:updateApplyState')
 
   try {
     d.info(`Updating Apply status: ${state.status} for commit ${state.commitHash}`)
