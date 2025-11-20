@@ -146,7 +146,7 @@ appsInfo:
     chartName: knative-operator
   kserve:
     title: Kserve
-    appVersion: 0.15.2
+    appVersion: 0.16.0
     repo: http://github.com/kserve/kserve
     maintainers: Kserve
     relatedLinks:
