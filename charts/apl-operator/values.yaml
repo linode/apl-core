@@ -57,3 +57,12 @@ tolerations: []
 affinity: {}
 
 env: {}
+
+kms: {}
+# example:
+#  sops:
+#    age:
+#      privateKey: "AGE-SECRET-KEY-EXAMPLExxxxxxxxxxxxxxxxxxxxxxxx"
+
+gitPassword: ""
+gitUsername: "otomi-admin"
