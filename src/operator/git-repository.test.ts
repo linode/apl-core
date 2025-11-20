@@ -8,6 +8,8 @@ jest.mock('simple-git', () => {
     pull: jest.fn(),
     diff: jest.fn(),
     clean: jest.fn(),
+    getRemotes: jest.fn(),
+    remote: jest.fn(),
   }
   return jest.fn().mockImplementation(() => mockGit)
 })
@@ -17,7 +19,12 @@ jest.mock('../common/debug', () => ({
     info: jest.fn(),
     warn: jest.fn(),
     error: jest.fn(),
+    debug: jest.fn(),
   })),
+}))
+
+jest.mock('fs', () => ({
+  existsSync: jest.fn(),
 }))
 
 describe('GitRepository', () => {
@@ -49,6 +56,15 @@ describe('GitRepository', () => {
   describe('constructor', () => {
     test('should create repository URL correctly', () => {
       expect(gitRepository.repoUrl).toBe('https://testuser:testpass@github.com:443/testorg/testrepo.git')
+    })
+
+    test('should URL encode password with special characters', () => {
+      const configWithSpecialChars = {
+        ...defaultConfig,
+        password: 'test@pass#123',
+      }
+      const repo = new GitRepository(configWithSpecialChars)
+      expect(repo.repoUrl).toBe('https://testuser:test%40pass%23123@github.com:443/testorg/testrepo.git')
     })
   })
 
@@ -88,21 +104,14 @@ describe('GitRepository', () => {
     })
   })
 
-  describe('waitForCommits', () => {
-    test('should retry until hasCommits returns true', async () => {
-      const setLastRevisionSpy = jest.spyOn(gitRepository, 'setLastRevision')
-      mockGit.pull.mockResolvedValue({})
-      setLastRevisionSpy.mockRejectedValueOnce(new Error('No commits yet')).mockResolvedValueOnce()
-
-      await gitRepository.waitForCommits(2, 100)
-
-      expect(mockGit.pull).toHaveBeenCalledTimes(2)
-      expect(setLastRevisionSpy).toHaveBeenCalledTimes(2)
-    })
-  })
-
   describe('clone', () => {
-    test('should clone repository successfully', async () => {
+    const fs = require('fs')
+
+    beforeEach(() => {
+      fs.existsSync.mockReturnValue(false)
+    })
+
+    test('should clone repository successfully when repo does not exist', async () => {
       mockGit.clone.mockResolvedValue(undefined)
 
       mockGit.log.mockResolvedValue({
@@ -117,6 +126,7 @@ describe('GitRepository', () => {
         'https://testuser:testpass@github.com:443/testorg/testrepo.git',
         '/tmp/repo',
       )
+      expect(fs.existsSync).toHaveBeenCalledWith('/tmp/repo/.git')
     })
 
     test('should handle clone failure', async () => {
@@ -125,6 +135,75 @@ describe('GitRepository', () => {
 
       await expect(gitRepository.clone()).rejects.toBeInstanceOf(OperatorError)
       expect(mockGit.clone).toHaveBeenCalled()
+    })
+
+    test('should skip clone and verify origin when repo already exists with correct origin', async () => {
+      fs.existsSync.mockReturnValue(true)
+      mockGit.getRemotes.mockResolvedValue([
+        {
+          name: 'origin',
+          refs: {
+            fetch: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
+            push: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
+          },
+        },
+      ])
+
+      await gitRepository.clone()
+
+      expect(fs.existsSync).toHaveBeenCalledWith('/tmp/repo/.git')
+      expect(mockGit.clone).not.toHaveBeenCalled()
+      expect(mockGit.getRemotes).toHaveBeenCalledWith(true)
+      expect(mockGit.remote).not.toHaveBeenCalled()
+    })
+
+    test('should reset origin when repo exists with incorrect origin URL', async () => {
+      fs.existsSync.mockReturnValue(true)
+      mockGit.getRemotes.mockResolvedValue([
+        {
+          name: 'origin',
+          refs: {
+            fetch: 'https://testuser:wrongpass@github.com:443/testorg/testrepo.git',
+            push: 'https://testuser:wrongpass@github.com:443/testorg/testrepo.git',
+          },
+        },
+      ])
+      mockGit.remote.mockResolvedValue(undefined)
+
+      await gitRepository.clone()
+
+      expect(mockGit.getRemotes).toHaveBeenCalledWith(true)
+      expect(mockGit.remote).toHaveBeenCalledWith([
+        'set-url',
+        'origin',
+        'https://testuser:testpass@github.com:443/testorg/testrepo.git',
+      ])
+      expect(mockGit.clone).not.toHaveBeenCalled()
+    })
+
+    test('should add origin when repo exists but origin is missing', async () => {
+      fs.existsSync.mockReturnValue(true)
+      mockGit.getRemotes.mockResolvedValue([])
+      mockGit.remote.mockResolvedValue(undefined)
+
+      await gitRepository.clone()
+
+      expect(mockGit.getRemotes).toHaveBeenCalledWith(true)
+      expect(mockGit.remote).toHaveBeenCalledWith([
+        'add',
+        'origin',
+        'https://testuser:testpass@github.com:443/testorg/testrepo.git',
+      ])
+      expect(mockGit.clone).not.toHaveBeenCalled()
+    })
+
+    test('should throw error when origin verification fails', async () => {
+      fs.existsSync.mockReturnValue(true)
+      const error = new Error('Git command failed')
+      mockGit.getRemotes.mockRejectedValue(error)
+
+      await expect(gitRepository.clone()).rejects.toBeInstanceOf(OperatorError)
+      expect(mockGit.getRemotes).toHaveBeenCalled()
     })
   })
 

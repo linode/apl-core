@@ -3,6 +3,7 @@ kind: ServiceAccount
 metadata:
   name: apl-operator
   namespace: {{ .Release.Namespace }}
+  labels: {{- include "apl-operator.labels" . | nindent 4 }}
 ---
 # Unfortunately, we need to use a cluster-admin role for apl-operator.
 # This is because when migrations are applied via Helm, the apl-operator needs to be able to create and update all resources in the cluster.
