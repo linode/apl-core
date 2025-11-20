@@ -59,10 +59,10 @@ dependencies:
     version: v1.20.0
     repository: https://knative.github.io/operator
   - name: kserve-crd
-    version: v0.15.2
+    version: v0.16.0
     repository: oci://ghcr.io/kserve/charts/kserve-crd
   - name: kserve
-    version: v0.15.2
+    version: v0.16.0
     repository: oci://ghcr.io/kserve/charts/kserve
   - name: kube-prometheus-stack
     version: 79.5.0
