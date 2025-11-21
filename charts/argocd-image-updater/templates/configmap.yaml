@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    {{- include "argocd-image-updater.labels" . | nindent 4 }}
+  name: {{ .Values.config.name }}
+  namespace: {{ include "argocd-image-updater.namespace" . | quote }}
+data:
+  {{- with .Values.config.registries }}
+  registries.conf: |
+    registries:
+      {{- toYaml . | nindent 6 }}
+  {{- end }}
+  {{- range $key, $value := (omit .Values.config "name" "registries" "sshConfig") }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
