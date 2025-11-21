@@ -276,7 +276,7 @@ export async function createCredentialsSecret(secretName: string, username: stri
 }
 
 export const createWelcomeConfigMap = async (secretName: string, domainSuffix: string): Promise<void> => {
-  const welcomeMessage = `Welcome to Akamai App Platform!
+  const welcomeMessage = `Welcome to App Platform!
 
 Your installation has completed successfully.
 

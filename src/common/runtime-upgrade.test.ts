@@ -79,7 +79,7 @@ describe('runtimeUpgrade', () => {
 
       await runtimeUpgrade({ when: 'pre' })
 
-      expect(mockDebugger.info).toHaveBeenCalledWith('The current version of the Akamai App Platform: 2.0.0')
+      expect(mockDebugger.info).toHaveBeenCalledWith('The current version of the App Platform: 2.0.0')
       expect(mockDebugger.info).toHaveBeenCalledWith('Deploying essential manifests')
       expect(mockDebugger.info).toHaveBeenCalledWith('No runtime upgrade operations detected, skipping')
     })
@@ -89,7 +89,7 @@ describe('runtimeUpgrade', () => {
 
       await runtimeUpgrade({ when: 'pre' })
 
-      expect(mockDebugger.info).toHaveBeenCalledWith('The current version of the Akamai App Platform: 1.0.0')
+      expect(mockDebugger.info).toHaveBeenCalledWith('The current version of the App Platform: 1.0.0')
     })
   })
 
