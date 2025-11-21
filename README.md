@@ -20,7 +20,7 @@
 
 ## Getting started
 
-### Step 1: Install the Akamai App Platform
+### Step 1: Install the App Platform
 
 Install the App Platform on Linode Kubernetes Engine (LKE) or any other conformant Kubernetes cluster.
 The App Platform can be installed automatically when creating a new Linode Kubernetes Engine (LKE) cluster on Akamai Cloud. It can also be installed manually on LKE or any other conformant Kubernetes cluster.
@@ -103,7 +103,7 @@ One-click activation of the following Kubernetes Apps:
 
 ## Documentation
 
-Check out the [Akamai App Platform documentation](https://techdocs.akamai.com/app-platform/docs/getting-started) on Akamai Techdocs.
+Check out the [App Platform documentation](https://techdocs.akamai.com/app-platform/docs/getting-started) on Akamai Techdocs.
 
 ## License
 
