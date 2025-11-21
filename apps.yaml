@@ -266,7 +266,14 @@ appsInfo:
     license: Apache 2.0
     dependencies: Prometheus, Grafana
     about: Thanos is a tool to set up a Highly Available Prometheus with long-term storage capabilities.
-    integration: APL installs and configures Thanos using sidecars ans leverages the central object storage configuration.
+    integration: APL installs and configures Thanos using sidecars and leverages the central object storage configuration.
+    isDeprecated: true
+    deprecationInfo:
+      message: Thanos is being deprecated.
+      reasons:
+        - This tool serves a diagnostic purpose and is not considered as essential to run the platform.
+      options:
+        - Click 'I understand' to continue using Thanos
   trivy:
     title: Trivy Operator
     appVersion: 0.29.0
