@@ -107,4 +107,4 @@ Check out the [App Platform documentation](https://techdocs.akamai.com/app-platf
 
 ## License
 
-APL is licensed under the [Apache 2.0 License](https://github.com/linode/apl-core/blob/main/LICENSE).
+App Platform is licensed under the [Apache 2.0 License](https://github.com/linode/apl-core/blob/main/LICENSE).
