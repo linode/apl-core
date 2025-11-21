@@ -1,3 +1,4 @@
+{{- if .Values.createClusterRoles }}
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -10,3 +11,4 @@ rules:
   - apiGroups: ["tekton.dev"]
     resources: ["tasks", "taskruns", "pipelines", "pipelineruns", "customruns"]
     verbs: ["get", "list", "watch"]
+{{- end }}
