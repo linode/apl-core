@@ -20,8 +20,7 @@ jest.mock('src/common/k8s', () => ({
 }))
 
 jest.mock('src/common/values', () => ({
-  getCurrentVersion: jest.fn(),
-  getImageTag: jest.fn(),
+  getImageTagFromValues: jest.fn(),
 }))
 
 jest.mock('zx', () => ({
@@ -92,8 +91,7 @@ describe('Apply command', () => {
     mockDeps = {
       getDeploymentState: require('src/common/k8s').getDeploymentState,
       setDeploymentState: require('src/common/k8s').setDeploymentState,
-      getCurrentVersion: require('src/common/values').getCurrentVersion,
-      getImageTag: require('src/common/values').getImageTag,
+      getImageTagFromValues: require('src/common/values').getImageTagFromValues,
       applyAsApps: require('./apply-as-apps').applyAsApps,
       commit: require('./commit').commit,
       upgrade: require('./upgrade').upgrade,
@@ -104,8 +102,7 @@ describe('Apply command', () => {
 
     // Set up default mock return values
     mockDeps.getDeploymentState.mockResolvedValue({ status: 'deployed' })
-    mockDeps.getCurrentVersion.mockResolvedValue('1.0.0')
-    mockDeps.getImageTag.mockResolvedValue('v1.0.0')
+    mockDeps.getImageTagFromValues.mockResolvedValue('v1.0.0')
     mockDeps.applyAsApps.mockResolvedValue(true)
     mockDeps.commit.mockResolvedValue(undefined)
     mockDeps.upgrade.mockResolvedValue(undefined)
@@ -156,8 +153,7 @@ describe('Apply command', () => {
 
       // Verify deployment state management
       expect(mockDeps.getDeploymentState).toHaveBeenCalled()
-      expect(mockDeps.getImageTag).toHaveBeenCalled()
-      expect(mockDeps.getCurrentVersion).toHaveBeenCalled()
+      expect(mockDeps.getImageTagFromValues).toHaveBeenCalled()
       expect(mockDeps.setDeploymentState).toHaveBeenCalledWith({
         status: 'deploying',
         deployingTag: 'v1.0.0',
@@ -310,7 +306,7 @@ describe('Apply command', () => {
 
     test('should handle image tag retrieval errors', async () => {
       const error = new Error('Failed to get image tag')
-      mockDeps.getImageTag.mockRejectedValueOnce(error)
+      mockDeps.getImageTagFromValues.mockRejectedValueOnce(error)
 
       await expect(applyAll()).rejects.toThrow('Failed to get image tag')
     })

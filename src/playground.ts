@@ -5,7 +5,7 @@ import { RuntimeUpgradeContext } from './common/runtime-upgrades/runtime-upgrade
 import { detachApplicationFromApplicationSet, pruneArgoCDImageUpdater } from './common/runtime-upgrades/v4.13.0'
 
 async function play() {
-  // const version = await getCurrentVersion()
+  // const version = await getPackageVersion()
   // const prevVersion: string = (await getDeploymentState()).version ?? version
   // console.log(version)
   // const state = await getDeploymentState()

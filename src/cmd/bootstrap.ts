@@ -15,7 +15,7 @@ import { hfValues } from 'src/common/hf'
 import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from 'src/common/k8s'
 import { getKmsSettings } from 'src/common/repo'
 import { ensureTeamGitOpsDirectories, getFilename, gucci, isCore, loadYaml, rootDir } from 'src/common/utils'
-import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from 'src/common/values'
+import { generateSecrets, getImageTagFromValues, writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
@@ -292,7 +292,7 @@ export const processValues = async (
     addInitialPasswords,
     addPlatformAdmin,
   },
-): Promise<Record<string, any> | undefined> => {
+): Promise<Record<string, any>> => {
   const d = deps.terminal(`cmd:${cmdName}:processValues`)
   const { ENV_DIR, VALUES_INPUT } = env
   let originalInput: Record<string, any> = {}
@@ -436,8 +436,7 @@ export const bootstrap = async (
   deps = {
     pathExists: existsSync,
     getDeploymentState,
-    getImageTag,
-    getCurrentVersion,
+    getImageTagFromValues,
     terminal,
     copyBasicFiles,
     processValues,
@@ -458,13 +457,6 @@ export const bootstrap = async (
   await deps.copyBasicFiles()
   await deps.migrate()
   const originalValues = await deps.processValues()
-
-  // if (!originalValues) {
-  //   // FIXME what is the use case to enter this
-  //   d.log('A new values repo has been created. For next steps follow documentation at https://apl-docs.net')
-  //   return
-  // }
-
   await deps.handleFileEntry()
   await deps.bootstrapSops()
   await ensureTeamGitOpsDirectories(ENV_DIR, originalValues)

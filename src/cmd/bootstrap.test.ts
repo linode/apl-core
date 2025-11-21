@@ -1,4 +1,5 @@
 import { cloneDeep, merge } from 'lodash'
+import { pki } from 'node-forge'
 import { env } from 'process'
 import stubs from 'src/test-stubs'
 import {
@@ -11,7 +12,6 @@ import {
   handleFileEntry,
   processValues,
 } from './bootstrap'
-import { pki } from 'node-forge'
 
 const { terminal } = stubs
 
@@ -39,9 +39,8 @@ describe('Bootstrapping values', () => {
       encrypt: jest.fn(),
       existsSync: jest.fn(),
       genSops: jest.fn(),
-      getCurrentVersion: jest.fn(),
       getDeploymentState: jest.fn().mockReturnValue({}),
-      getImageTag: jest.fn(),
+      getImageTagFromValues: jest.fn(),
       getK8sSecret: jest.fn(),
       hfValues: jest.fn(),
       isCli: true,
@@ -59,7 +58,7 @@ describe('Bootstrapping values', () => {
     await bootstrap(deps)
     expect(deps.copyBasicFiles).toHaveBeenCalled()
     expect(deps.bootstrapSops).toHaveBeenCalled()
-    expect(deps.getImageTag).toHaveBeenCalled()
+    expect(deps.getImageTagFromValues).toHaveBeenCalled()
   })
   it('should copy only skeleton files to env dir if it is empty or nonexisting', async () => {
     deps.processValues.mockReturnValue(undefined)
