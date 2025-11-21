@@ -1,7 +1,7 @@
-import { Installer } from './installer'
-import { AplOperations } from './apl-operations'
-import * as k8s from '../common/k8s'
 import { hfValues } from '../common/hf'
+import * as k8s from '../common/k8s'
+import { AplOperations } from './apl-operations'
+import { Installer } from './installer'
 
 jest.mock('../common/debug', () => ({
   terminal: jest.fn().mockImplementation(() => ({
@@ -13,6 +13,7 @@ jest.mock('../common/debug', () => ({
 }))
 
 jest.mock('../common/k8s', () => ({
+  checkOperationsInProgress: jest.fn(),
   getK8sConfigMap: jest.fn(),
   getK8sSecret: jest.fn(),
   createUpdateConfigMap: jest.fn(),
