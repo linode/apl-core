@@ -891,7 +891,6 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
 
   const mockDeps = {
     getDeploymentState: jest.fn(),
-    getCurrentVersion: jest.fn(),
     getWorkloadKeyFromPod: jest.fn(),
     restartPodOwner: jest.fn(),
     getIstioVersionFromDeployment: jest.fn(),

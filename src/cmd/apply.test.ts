@@ -20,8 +20,8 @@ jest.mock('src/common/k8s', () => ({
 }))
 
 jest.mock('src/common/values', () => ({
-  getCurrentVersion: jest.fn(),
-  getImageTag: jest.fn(),
+  getImageTagFromValues: jest.fn(),
+  getPackageVersion: jest.fn(),
 }))
 
 jest.mock('zx', () => ({
@@ -38,10 +38,6 @@ jest.mock('./apply-teams', () => ({
 
 jest.mock('./commit', () => ({
   commit: jest.fn(),
-}))
-
-jest.mock('./upgrade', () => ({
-  upgrade: jest.fn(),
 }))
 
 jest.mock('src/common/runtime-upgrade', () => ({
@@ -92,11 +88,10 @@ describe('Apply command', () => {
     mockDeps = {
       getDeploymentState: require('src/common/k8s').getDeploymentState,
       setDeploymentState: require('src/common/k8s').setDeploymentState,
-      getCurrentVersion: require('src/common/values').getCurrentVersion,
-      getImageTag: require('src/common/values').getImageTag,
+      getImageTagFromValues: require('src/common/values').getImageTagFromValues,
+      getPackageVersion: require('src/common/values').getPackageVersion,
       applyAsApps: require('./apply-as-apps').applyAsApps,
       commit: require('./commit').commit,
-      upgrade: require('./upgrade').upgrade,
       runtimeUpgrade: require('src/common/runtime-upgrade').runtimeUpgrade,
       cd: require('zx').cd,
       getParsedArgs: require('src/common/yargs').getParsedArgs,
@@ -104,11 +99,10 @@ describe('Apply command', () => {
 
     // Set up default mock return values
     mockDeps.getDeploymentState.mockResolvedValue({ status: 'deployed' })
-    mockDeps.getCurrentVersion.mockResolvedValue('1.0.0')
-    mockDeps.getImageTag.mockResolvedValue('v1.0.0')
+    mockDeps.getImageTagFromValues.mockResolvedValue('v1.0.0')
+    mockDeps.getPackageVersion.mockReturnValue('1.0.0')
     mockDeps.applyAsApps.mockResolvedValue(true)
     mockDeps.commit.mockResolvedValue(undefined)
-    mockDeps.upgrade.mockResolvedValue(undefined)
     mockDeps.runtimeUpgrade.mockResolvedValue(undefined)
     mockDeps.getParsedArgs.mockReturnValue({})
   })
@@ -151,13 +145,11 @@ describe('Apply command', () => {
       await applyAll()
 
       // Verify pre-upgrade steps
-      expect(mockDeps.upgrade).toHaveBeenCalledWith({ when: 'pre' })
       expect(mockDeps.runtimeUpgrade).toHaveBeenCalledWith({ when: 'pre' })
 
       // Verify deployment state management
       expect(mockDeps.getDeploymentState).toHaveBeenCalled()
-      expect(mockDeps.getImageTag).toHaveBeenCalled()
-      expect(mockDeps.getCurrentVersion).toHaveBeenCalled()
+      expect(mockDeps.getImageTagFromValues).toHaveBeenCalled()
       expect(mockDeps.setDeploymentState).toHaveBeenCalledWith({
         status: 'deploying',
         deployingTag: 'v1.0.0',
@@ -168,7 +160,6 @@ describe('Apply command', () => {
       expect(mockDeps.applyAsApps).toHaveBeenCalled()
 
       // Verify post-upgrade steps
-      expect(mockDeps.upgrade).toHaveBeenCalledWith({ when: 'post' })
       expect(mockDeps.runtimeUpgrade).toHaveBeenCalledWith({ when: 'post' })
 
       // Verify final state
@@ -260,7 +251,6 @@ describe('Apply command', () => {
 
       expect(mockDeps.applyAsApps).toHaveBeenCalledWith(testArgs)
       // Should not go through the full applyAll flow
-      expect(mockDeps.upgrade).not.toHaveBeenCalled()
     })
 
     test('should call applyAsApps directly when file specified', async () => {
@@ -271,7 +261,6 @@ describe('Apply command', () => {
 
       expect(mockDeps.applyAsApps).toHaveBeenCalledWith(testArgs)
       // Should not go through the full applyAll flow
-      expect(mockDeps.upgrade).not.toHaveBeenCalled()
     })
 
     test('should call applyAsApps directly when both label and file specified', async () => {
@@ -282,7 +271,6 @@ describe('Apply command', () => {
 
       expect(mockDeps.applyAsApps).toHaveBeenCalledWith(testArgs)
       // Should not go through the full applyAll flow
-      expect(mockDeps.upgrade).not.toHaveBeenCalled()
     })
 
     test('should handle retry logic when applyAll fails', async () => {
@@ -310,7 +298,7 @@ describe('Apply command', () => {
 
     test('should handle image tag retrieval errors', async () => {
       const error = new Error('Failed to get image tag')
-      mockDeps.getImageTag.mockRejectedValueOnce(error)
+      mockDeps.getImageTagFromValues.mockRejectedValueOnce(error)
 
       await expect(applyAll()).rejects.toThrow('Failed to get image tag')
     })
@@ -320,13 +308,6 @@ describe('Apply command', () => {
       mockDeps.applyAsApps.mockRejectedValueOnce(error)
 
       await expect(applyAll()).rejects.toThrow('ApplyAsApps failed')
-    })
-
-    test('should handle upgrade errors', async () => {
-      const error = new Error('Pre-upgrade failed')
-      mockDeps.upgrade.mockRejectedValueOnce(error)
-
-      await expect(applyAll()).rejects.toThrow('Pre-upgrade failed')
     })
 
     test('should handle runtime upgrade errors', async () => {
