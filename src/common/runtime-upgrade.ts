@@ -13,8 +13,8 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
   const d = terminal('cmd:upgrade:runtimeUpgrade')
   const deploymentState = await getDeploymentState()
 
-  if (!deploymentState?.version) {
-    d.info('Skipping the runtime upgrade procedure as this is the very first installation')
+  if (!deploymentState?.version || deploymentState?.version === deploymentState?.deployingVersion) {
+    d.info('Skipping the runtime upgrade procedure as version is equal to deploying version')
     return
   }
   const deployedVersion: string = deploymentState.version
