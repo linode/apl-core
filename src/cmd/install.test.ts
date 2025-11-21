@@ -24,6 +24,7 @@ jest.mock('src/common/k8s', () => ({
 
 jest.mock('src/common/values', () => ({
   getImageTagFromValues: jest.fn(),
+  getPackageVersion: jest.fn(),
   writeValuesToFile: jest.fn(),
 }))
 
@@ -84,6 +85,7 @@ describe('Install command', () => {
       setDeploymentState: require('src/common/k8s').setDeploymentState,
       getHelmReleases: require('src/common/k8s').getHelmReleases,
       getImageTagFromValues: require('src/common/values').getImageTagFromValues,
+      getPackageVersion: require('src/common/values').getPackageVersion,
       writeValuesToFile: require('src/common/values').writeValuesToFile,
       applyServerSide: require('src/common/k8s').applyServerSide,
       hf: require('src/common/hf').hf,
@@ -95,6 +97,7 @@ describe('Install command', () => {
     // Set up default mock return values
     mockDeps.getDeploymentState.mockResolvedValue({ status: 'initial' })
     mockDeps.getImageTagFromValues.mockResolvedValue('v1.0.0')
+    mockDeps.getPackageVersion.mockReturnValue('1.0.0')
     mockDeps.getHelmReleases.mockResolvedValue([])
     mockDeps.hf.mockResolvedValue({
       exitCode: 0,

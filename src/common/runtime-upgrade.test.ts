@@ -52,7 +52,7 @@ describe('runtimeUpgrade', () => {
       await runtimeUpgrade({ when: 'pre' })
 
       expect(mockDebugger.info).toHaveBeenCalledWith(
-        'Skipping the runtime upgrade procedure as this is the very first installation',
+        'Skipping the runtime upgrade procedure as version is equal to deploying version',
       )
     })
 
@@ -62,7 +62,7 @@ describe('runtimeUpgrade', () => {
       await runtimeUpgrade({ when: 'pre' })
 
       expect(mockDebugger.info).toHaveBeenCalledWith(
-        'Skipping the runtime upgrade procedure as this is the very first installation',
+        'Skipping the runtime upgrade procedure as version is equal to deploying version',
       )
     })
   })

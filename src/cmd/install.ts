@@ -59,7 +59,7 @@ export const installAll = async () => {
   d.info('Start install all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTagFromValues()
-  const version = await getPackageVersion()
+  const version = getPackageVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
 
   const state = await getDeploymentState()

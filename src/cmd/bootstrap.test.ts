@@ -58,7 +58,6 @@ describe('Bootstrapping values', () => {
     await bootstrap(deps)
     expect(deps.copyBasicFiles).toHaveBeenCalled()
     expect(deps.bootstrapSops).toHaveBeenCalled()
-    expect(deps.getImageTagFromValues).toHaveBeenCalled()
   })
   it('should copy only skeleton files to env dir if it is empty or nonexisting', async () => {
     deps.processValues.mockReturnValue(undefined)

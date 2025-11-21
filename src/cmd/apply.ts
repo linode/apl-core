@@ -40,7 +40,7 @@ export const applyAll = async () => {
   d.info('Start apply all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTagFromValues()
-  const version = await getPackageVersion()
+  const version = getPackageVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
 
   // We still need to deploy all teams because some settings depend on platform apps.
