@@ -10,12 +10,12 @@ import { prepareEnvironment } from 'src/common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
-import { env, isChart, isCi, isCli } from 'src/common/envalid'
+import { env, isChart, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from 'src/common/k8s'
 import { getKmsSettings } from 'src/common/repo'
 import { ensureTeamGitOpsDirectories, getFilename, gucci, isCore, loadYaml, rootDir } from 'src/common/utils'
-import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from 'src/common/values'
+import { generateSecrets, writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
@@ -292,7 +292,7 @@ export const processValues = async (
     addInitialPasswords,
     addPlatformAdmin,
   },
-): Promise<Record<string, any> | undefined> => {
+): Promise<Record<string, any>> => {
   const d = deps.terminal(`cmd:${cmdName}:processValues`)
   const { ENV_DIR, VALUES_INPUT } = env
   let originalInput: Record<string, any> = {}
@@ -436,8 +436,6 @@ export const bootstrap = async (
   deps = {
     pathExists: existsSync,
     getDeploymentState,
-    getImageTag,
-    getCurrentVersion,
     terminal,
     copyBasicFiles,
     processValues,
@@ -453,37 +451,14 @@ export const bootstrap = async (
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:bootstrap`)
-
-  // if CI: we are called from pipeline on each deployment, which is costly
-  // so run bootstrap only when no previous deployment was done or version or tag of otomi changed
-  const tag = await deps.getImageTag()
-  const version = await deps.getCurrentVersion()
-  if (isCi) {
-    const { version: prevVersion, tag: prevTag } = await deps.getDeploymentState()
-    if (prevVersion && prevTag && version === prevVersion && tag === prevTag) return
-  }
   const { ENV_DIR } = env
-  const hasOtomi = deps.pathExists(`${ENV_DIR}/bin/otomi`)
 
-  const otomiImage = `linode/apl-core:${tag}`
-  d.log(`Installing artifacts from ${otomiImage}`)
   await deps.copyBasicFiles()
   await deps.migrate()
   const originalValues = await deps.processValues()
-  // exit early if `isCli` and `ENV_DIR` were empty, and let the user provide valid values first:
-
-  if (!originalValues) {
-    // FIXME what is the use case to enter this
-    d.log('A new values repo has been created. For next steps follow documentation at https://apl-docs.net')
-    return
-  }
-
   await deps.handleFileEntry()
   await deps.bootstrapSops()
   await ensureTeamGitOpsDirectories(ENV_DIR, originalValues)
-  if (!hasOtomi) {
-    d.log('You can now use the otomi CLI')
-  }
   d.log(`Done bootstrapping values`)
 }
 

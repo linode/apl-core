@@ -13,12 +13,18 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
   const d = terminal('cmd:upgrade:runtimeUpgrade')
   const deploymentState = await getDeploymentState()
 
-  if (!deploymentState?.version) {
-    d.info('Skipping the runtime upgrade procedure as this is the very first installation')
+  if (!deploymentState?.version || !deploymentState?.deployingVersion) {
+    d.info('Skipping the runtime upgrade procedure because this is initial installation')
     return
   }
   const deployedVersion: string = deploymentState.version
   d.info(`The current version of the App Platform: ${deployedVersion}`)
+  d.info(`The deploying version of the App Platform: ${deploymentState.deployingVersion}`)
+
+  if (semver.lte(deploymentState?.deployingVersion, deploymentState?.version)) {
+    d.info('Skipping the runtime upgrade procedure as deploying version is not greater than the current version')
+    return
+  }
 
   d.info('Deploying essential manifests')
   const essentialDeployResult = await deployEssential(['upgrade=true'], true)
