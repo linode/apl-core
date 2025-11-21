@@ -2,7 +2,7 @@
   <img src="https://github.com/linode/manager/blob/develop/packages/manager/src/assets/logo/akamai-logo-color.svg" width="200" />
   <br />
   <br />
-  Akamai Application Platform (for LKE)
+  App Platform
 </h3>
 
 <p align="center">
@@ -37,7 +37,7 @@ After installing the App Platform on your Kubernetes cluster, review the [Post i
 
 To learn how to use the App Platform, follow along with the [hands-on labs](https://techdocs.akamai.com/app-platform/docs/labs-overview). These tutorials are designed as walk-throughs for new users, instructing them on creating container images, code repositories, and workloads. In addition, learn how to monitor these items and implement basic security checks.
 
-## Akamai Application Platform supports
+## App Platform supports
 
 **Developers** - With easy self-service.
 

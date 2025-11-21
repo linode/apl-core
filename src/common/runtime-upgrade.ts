@@ -18,7 +18,7 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
     return
   }
   const deployedVersion: string = deploymentState.version
-  d.info(`The current version of the Akamai App Platform: ${deployedVersion}`)
+  d.info(`The current version of the App Platform: ${deployedVersion}`)
 
   d.info('Deploying essential manifests')
   const essentialDeployResult = await deployEssential(['upgrade=true'], true)
