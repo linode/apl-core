@@ -7,12 +7,12 @@ import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
 import { appRevisionMatches, k8s, patchArgoCdApp, patchContainerResourcesOfSts } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
-import { getImageTag, objectToYaml } from 'src/common/values'
+import { getImageTagFromValues, objectToYaml } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { env } from '../common/envalid'
 import { ARGOCD_APP_DEFAULT_SYNC_POLICY } from '../common/constants'
+import { env } from '../common/envalid'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -171,7 +171,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
   setup()
-  const otomiVersion = await getImageTag()
+  const otomiVersion = await getImageTagFromValues()
   try {
     const expectedRevision = env.APPS_REVISION || otomiVersion
     d.info('Checking running revision of apl-operator...')

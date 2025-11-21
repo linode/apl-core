@@ -6,7 +6,7 @@ import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { getDeploymentState, setDeploymentState } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
-import { getCurrentVersion, getImageTag } from 'src/common/values'
+import { getImageTagFromValues, getPackageVersion } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { cd } from 'zx'
@@ -15,7 +15,6 @@ import { applyAsApps } from './apply-as-apps'
 import { applyTeams } from './apply-teams'
 import { commit } from './commit'
 import { collectTraces } from './traces'
-import { upgrade } from './upgrade'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -36,14 +35,13 @@ export const applyAll = async () => {
   const prevState = await getDeploymentState()
   const argv: HelmArguments = getParsedArgs()
 
-  await upgrade({ when: 'pre' })
   await runtimeUpgrade({ when: 'pre' })
 
   d.info('Start apply all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
-  const tag = await getImageTag()
-  const version = await getCurrentVersion()
-  await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
+  const tag = await getImageTagFromValues()
+  const deployingVersion = getPackageVersion()
+  await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion })
 
   // We still need to deploy all teams because some settings depend on platform apps.
   const teamsApplyCompleted = await applyTeams()
@@ -55,7 +53,6 @@ export const applyAll = async () => {
   const appsApplyCompleted = await applyAsApps(params)
 
   if (appsApplyCompleted) {
-    await upgrade({ when: 'post' })
     await runtimeUpgrade({ when: 'post' })
   } else {
     d.info('Apps apply step not completed, skipping upgrade checks')
@@ -65,7 +62,7 @@ export const applyAll = async () => {
     await commit(false)
   }
   if (appsApplyCompleted) {
-    await setDeploymentState({ status: 'deployed', version })
+    await setDeploymentState({ status: 'deployed', version: deployingVersion })
     d.info('Deployment completed')
   } else {
     d.info('Deployment finished with actions pending')
