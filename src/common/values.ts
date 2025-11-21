@@ -46,11 +46,15 @@ export const getK8sVersion = (argv?: HelmArguments): string => {
  * @returns string
  */
 export const getImageTag = async (envDir = env.ENV_DIR): Promise<string> => {
-  if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
   if (existsSync(`${envDir}/env/settings/cluster.yaml`)) {
     const values = await hfValues(undefined, envDir)
     return values!.otomi!.version
   }
+  // This is a fallback for bootstrap scenarios where cluster.yaml does not exist yet
+  return getPackageVersion()
+}
+
+export const getPackageVersion = (): string => {
   return `v${pkg.version}`
 }
 
