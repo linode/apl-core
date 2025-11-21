@@ -1,6 +1,5 @@
 import { CoreV1Api, PatchStrategy, setHeaderOptions, V1OwnerReference, V1Pod } from '@kubernetes/client-node'
 import { getDeploymentState, k8s } from '../k8s'
-import { getCurrentVersion } from '../values'
 import { OtomiDebugger, terminal } from '../debug'
 import { getParsedArgs } from '../yargs'
 import { $ } from 'zx'
@@ -67,7 +66,6 @@ export async function detectAndRestartOutdatedIstioSidecars(
   coreV1Api: CoreV1Api,
   deps = {
     getDeploymentState,
-    getCurrentVersion,
     getWorkloadKeyFromPod,
     restartPodOwner,
     getIstioVersionFromDeployment,
