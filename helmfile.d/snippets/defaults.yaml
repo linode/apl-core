@@ -150,6 +150,9 @@ environments:
             _rawValues: {}
             networkPolicies:
               enabled: true
+            database:
+              maxConnections: 28
+              maxIdleConnections: 6
             resources:
               gitea:
                 limits:
@@ -158,20 +161,6 @@ environments:
                 requests:
                   cpu: 100m
                   memory: 256Mi
-              memcached:
-                limits:
-                  cpu: 250m
-                  memory: 256Mi
-                requests:
-                  cpu: 10m
-                  memory: 128Mi
-              memcachedMetrics:
-                limits:
-                  cpu: 200m
-                  memory: 128M
-                requests:
-                  cpu: 10m
-                  memory: 16M
               init:
                 limits:
                   cpu: 400m
@@ -204,6 +193,9 @@ environments:
             registry:
               credentials:
                 username: otomi-admin
+            database:
+              maxConnections: 28
+              maxIdleConnections: 6
             resources:
               core:
                 requests:
@@ -336,6 +328,10 @@ environments:
           keycloak:
             adminUsername: otomi-admin
             theme: otomi
+            database:
+              maxConnections: 28
+              minConnections: 5
+              initialConnections: 5
             resources:
               keycloak:
                 requests:
@@ -1195,6 +1191,10 @@ environments:
               requests:
                 cpu: "50m"
                 memory: 48Mi
+            postgresqlParameters:
+              max_connections: "32"
+              shared_buffers: 64MB
+              work_mem: 2MB
           harbor:
             imageName: null
             size: 5Gi
@@ -1220,6 +1220,10 @@ environments:
               requests:
                 cpu: "50m"
                 memory: 48Mi
+            postgresqlParameters:
+              max_connections: "32"
+              shared_buffers: 64MB
+              work_mem: 2MB
           gitea:
             imageName: null
             size: 5Gi
@@ -1244,6 +1248,10 @@ environments:
               requests:
                 cpu: "50m"
                 memory: 48Mi
+            postgresqlParameters:
+              max_connections: "32"
+              shared_buffers: 64MB
+              work_mem: 2MB
         obj:
           provider:
             type: disabled

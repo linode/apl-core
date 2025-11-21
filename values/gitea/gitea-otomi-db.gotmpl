@@ -27,10 +27,7 @@ imageName: ghcr.io/{{ $cnpg.pgDefaultPlatformImage }}
 {{- end }}
 
 postgresql:
-  parameters:
-    max_connections: "32"
-    shared_buffers: 64MB
-    work_mem: 2MB
+  parameters: {{ toYaml $gdb.postgresqlParameters | nindent 4 }}
 
 {{- if and $b.enabled (eq $obj.type "minioLocal" "linode") }}
 backup:
@@ -66,4 +63,5 @@ clusterSpec:
   externalClusters: {{ toYaml $gdb.externalClusters | nindent 4 }}
 {{- end }}
 
-resources: {{- toYaml $gdb.resources | nindent 2 }}
+resources: {{ toYaml $gdb.resources | nindent 2 }}
+backupSidecarResources: {{ toYaml $gdb.backupSidecarResources | nindent 2 }}

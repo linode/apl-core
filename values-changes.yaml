@@ -392,3 +392,7 @@ changes:
       - 'platformBackups.persistentVolumes'
       - 'teamConfig.{team}.backups'
       - 'apps.httpbin'
+      - 'apps.gitea.images'
+      - 'apps.gitea.resources.postgresql'
+      - 'apps.gitea.resources.memcached'
+      - 'apps.gitea.resources.memcachedMetrics'
