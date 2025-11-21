@@ -6,7 +6,7 @@ import { env } from 'src/common/envalid'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
 import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState, waitForCRD } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
-import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
+import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
@@ -58,8 +58,8 @@ export const installAll = async () => {
 
   d.info('Start install all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
-  const tag = await getImageTag()
-  const version = await getCurrentVersion()
+  const tag = await getImageTagFromValues()
+  const version = getPackageVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
 
   const state = await getDeploymentState()

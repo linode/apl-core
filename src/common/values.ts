@@ -43,25 +43,16 @@ export const getK8sVersion = (argv?: HelmArguments): string => {
 
 /**
  * Find what image tag is defined in configuration for otomi
+ * Do not call this function in bootstrap()
  * @returns string
  */
-export const getImageTag = async (envDir = env.ENV_DIR): Promise<string> => {
-  if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
-  if (existsSync(`${envDir}/env/settings/cluster.yaml`)) {
-    const values = await hfValues(undefined, envDir)
-    return values!.otomi!.version
-  }
-  return `v${pkg.version}`
+export const getImageTagFromValues = async (envDir = env.ENV_DIR): Promise<string> => {
+  const values = await hfValues(undefined, envDir)
+  return values!.otomi!.version
 }
 
-/**
- * Find the current version of otomi that is running.
- * @returns string
- */
-export const getCurrentVersion = async (): Promise<string> => {
-  const tag = await getImageTag()
-  const potentialVersion = tag.replace(/^v/, '')
-  return /^[0-9.]+/.exec(potentialVersion) ? potentialVersion : pkg.version
+export const getPackageVersion = (): string => {
+  return pkg.version
 }
 
 export interface Repo {
