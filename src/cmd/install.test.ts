@@ -1,5 +1,6 @@
 import stubs from 'src/test-stubs'
-import { module } from './install'
+// Import the actual function to test (after mocks are set up)
+import { installAll, module } from './install'
 
 const { terminal } = stubs
 
@@ -16,6 +17,7 @@ jest.mock('src/common/k8s', () => ({
   getHelmReleases: jest.fn(),
   applyServerSide: jest.fn(),
   restartOtomiApiDeployment: jest.fn(),
+  waitForCRD: jest.fn(),
   k8s: {
     app: jest.fn(),
   },
@@ -50,6 +52,7 @@ jest.mock('./commit', () => ({
   createCredentialsSecret: jest.fn(),
   retryIsOAuth2ProxyRunning: jest.fn(),
   printWelcomeMessage: jest.fn(),
+  createWelcomeConfigMap: jest.fn(),
 }))
 
 jest.mock('src/common/cli', () => ({
@@ -67,9 +70,6 @@ jest.mock('src/common/yargs', () => ({
   setParsedArgs: jest.fn(),
   helmOptions: jest.fn().mockReturnValue({}),
 }))
-
-// Import the actual function to test (after mocks are set up)
-import { installAll } from './install'
 
 describe('Install command', () => {
   let mockDeps: any

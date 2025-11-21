@@ -22,7 +22,6 @@ import {
 
 import { saveValues } from './repo'
 import { HelmArguments } from './yargs'
-import { gitP } from 'simple-git'
 
 export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 200): string => {
   return isEmpty(obj) ? '' : stringify(obj, { indent, lineWidth })
@@ -154,12 +153,12 @@ export const writeValuesToFile = async (
   }
 
   if (isEqual(originalValues, useValues)) {
-    d.info(`No changes for ${targetPath}${suffix}, skipping...`)
+    d.debug(`No changes for ${targetPath}${suffix}, skipping...`)
     return
   }
   d.debug('mergeResult: ', JSON.stringify(useValues, null, 2))
   await writeFile(targetPath + suffix, objectToYaml(useValues))
-  d.info(`Values were written to ${targetPath}${suffix}`)
+  d.debug(`Values were written to ${targetPath}${suffix}`)
 }
 
 /**

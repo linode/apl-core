@@ -1,9 +1,9 @@
 import simpleGit, { SimpleGit } from 'simple-git'
 import { OtomiDebugger, terminal } from '../common/debug'
-import retry from 'async-retry'
 import { OperatorError } from './errors'
 import { getErrorMessage } from './utils'
-import { env } from '../common/envalid'
+import * as fs from 'fs'
+import * as path from 'path'
 
 export interface GitRepositoryConfig {
   username: string
@@ -26,8 +26,8 @@ export class GitRepository {
 
   constructor(config: GitRepositoryConfig) {
     const { username, password, gitHost, gitPort, gitProtocol, repoPath, gitOrg, gitRepo } = config
-    this.d = terminal('GitRepository')
-    this.repoUrl = `${gitProtocol}://${username}:${password}@${gitHost}:${gitPort}/${gitOrg}/${gitRepo}.git`
+    this.d = terminal('operator:git-repository')
+    this.repoUrl = `${gitProtocol}://${username}:${encodeURIComponent(password)}@${gitHost}:${gitPort}/${gitOrg}/${gitRepo}.git`
     this.repoPath = repoPath
     this.git = simpleGit(this.repoPath)
   }
@@ -45,25 +45,15 @@ export class GitRepository {
     }
   }
 
-  async waitForCommits(maxRetries = env.RETRIES, interval = env.MIN_TIMEOUT): Promise<void> {
-    this.d.info(`Waiting for repository to have commits (max ${maxRetries} retries, ${interval}ms interval)`)
-
-    const d = terminal('common:k8s:waitTillGitRepoAvailable')
-    await retry(
-      async () => {
-        try {
-          await this.git.pull('origin', 'main')
-          await this.setLastRevision()
-        } catch (e) {
-          d.warn(`The values repository has no commits yet. Retrying in ${interval} ms`)
-          throw e
-        }
-      },
-      { retries: maxRetries, randomize: env.RANDOM, minTimeout: interval, factor: env.FACTOR },
-    )
-  }
-
   async clone(): Promise<void> {
+    // Check if the repository already exists locally
+    const gitPath = path.join(this.repoPath, '.git')
+    if (fs.existsSync(gitPath)) {
+      this.d.info(`Repository already exists at ${this.repoPath}, skipping clone`)
+      await this.verifyAndFixOriginRemote()
+      return
+    }
+
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
     try {
@@ -72,6 +62,31 @@ export class GitRepository {
     } catch (error) {
       this.d.error('Failed to clone repository:', getErrorMessage(error))
       throw new OperatorError('Repository clone failed', error as Error)
+    }
+  }
+
+  private async verifyAndFixOriginRemote(): Promise<void> {
+    try {
+      const remotes = await this.git.getRemotes(true)
+      const origin = remotes.find((r) => r.name === 'origin')
+
+      if (!origin) {
+        this.d.warn('Origin remote not found, adding it')
+        await this.git.remote(['add', 'origin', this.repoUrl])
+        this.d.info('Origin remote added successfully')
+        return
+      }
+
+      if (origin.refs.fetch !== this.repoUrl) {
+        this.d.warn('Origin remote URL mismatch detected, resetting to correct URL')
+        await this.git.remote(['set-url', 'origin', this.repoUrl])
+        this.d.info('Origin remote URL reset successfully')
+      } else {
+        this.d.debug('Origin remote URL is correct')
+      }
+    } catch (error) {
+      this.d.error('Failed to verify/fix origin remote:', getErrorMessage(error))
+      throw new OperatorError('Origin remote verification failed', error as Error)
     }
   }
 
