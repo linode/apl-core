@@ -354,7 +354,6 @@ sequenceDiagram
                 AplOps-->>Operator: team apps created
             else applyTeamsOnly === false (Full Apply)
                 Operator->>AplOps: apply()
-                AplOps->>AplOps: upgrade({ when: 'pre' })
                 AplOps->>AplOps: runtimeUpgrade({ when: 'pre' })
 
                 AplOps->>AplOps: setDeploymentState('deploying')
@@ -367,7 +366,6 @@ sequenceDiagram
                 AplOps->>AplOps: applyAsApps({ tekton: true })
                 Note right of AplOps: Create ArgoCD Applications<br/>for all platform apps
 
-                AplOps->>AplOps: upgrade({ when: 'post' })
                 AplOps->>AplOps: runtimeUpgrade({ when: 'post' })
 
                 AplOps->>AplOps: commit(false)
@@ -415,6 +413,7 @@ The installation phase runs in a retry loop until successful:
 5. **setEnvAndCreateSecrets()** - Extracts and stores credentials
 
 **Retry Logic:**
+
 - On any error, updates status to 'failed' with error message
 - Waits 1 second
 - Retries from the beginning
@@ -425,6 +424,7 @@ The installation phase runs in a retry loop until successful:
 Two parallel infinite loops run concurrently:
 
 #### Poll Loop (Git Change Detection)
+
 - **Frequency:** Every `POLL_INTERVAL_MS` (e.g., 30 seconds)
 - **Purpose:** Detect and apply Git repository changes
 - **Smart Optimization:**
@@ -439,6 +439,7 @@ Two parallel infinite loops run concurrently:
   5. Trigger apply (teams-only or full) if needed
 
 #### Reconcile Loop (Scheduled Apply)
+
 - **Frequency:** Every `RECONCILE_INTERVAL_MS` (e.g., 5 minutes)
 - **Purpose:** Periodic reconciliation to ensure desired state
 - **Process:**
@@ -451,24 +452,25 @@ Two parallel infinite loops run concurrently:
 Shared by both loops with trigger-specific variations:
 
 **Common Steps:**
+
 1. Acquire lock (`isApplying = true`)
 2. Update apply state to 'in-progress'
 3. Write default values to Git repo
 
 **Poll-Specific:**
+
 - Migrate values
 - Validate values
 
 **Reconcile-Specific:**
+
 - Decrypt SOPS files
 
-**Continuation:**
-4. Ensure team GitOps directories
-5. Commit changes (with encryption)
-6. Push to Git with conflict resolution
-7. Apply changes:
-   - **Teams-Only:** Deploy team resources + ArgoCD apps
-   - **Full Apply:** Pre-upgrade hooks → Deploy teams → Deploy all apps → Post-upgrade hooks
+**Continuation:** 4. Ensure team GitOps directories 5. Commit changes (with encryption) 6. Push to Git with conflict resolution 7. Apply changes:
+
+- **Teams-Only:** Deploy team resources + ArgoCD apps
+- **Full Apply:** Pre-upgrade hooks → Deploy teams → Deploy all apps → Post-upgrade hooks
+
 8. Update apply state to 'succeeded' or 'failed'
 9. Release lock (`isApplying = false`)
 
@@ -476,48 +478,51 @@ Shared by both loops with trigger-specific variations:
 
 ### ConfigMaps
 
-| Name | Namespace | Purpose | Fields |
-|------|-----------|---------|--------|
-| `apl-installation-status` | apl-operator | Track installation progress | status, attempt, timestamp, error? |
-| `apl-operator-state` | apl-operator | Track apply operations | commitHash, status, timestamp, trigger, errorMessage? |
-| `welcome` | apl-operator | Welcome message with credentials | message, consoleUrl, secretName, secretNamespace |
-| `deployment-status` | otomi | Deployment state tracking | status, tag, version, deployingTag, deployingVersion |
+| Name                      | Namespace    | Purpose                          | Fields                                                |
+| ------------------------- | ------------ | -------------------------------- | ----------------------------------------------------- |
+| `apl-installation-status` | apl-operator | Track installation progress      | status, attempt, timestamp, error?                    |
+| `apl-operator-state`      | apl-operator | Track apply operations           | commitHash, status, timestamp, trigger, errorMessage? |
+| `welcome`                 | apl-operator | Welcome message with credentials | message, consoleUrl, secretName, secretNamespace      |
+| `deployment-status`       | otomi        | Deployment state tracking        | status, tag, version, deployingTag, deployingVersion  |
 
 ### Secrets
 
-| Name | Namespace | Purpose | Fields |
-|------|-----------|---------|--------|
-| `gitea-credentials` | apl-operator | Git repository access | GIT_USERNAME, GIT_PASSWORD |
-| `platform-admin-credentials` | keycloak | Platform admin access | username, password |
-| `deployment-passwords` | otomi | All generated secrets | (various) |
+| Name                         | Namespace    | Purpose               | Fields                     |
+| ---------------------------- | ------------ | --------------------- | -------------------------- |
+| `gitea-credentials`          | apl-operator | Git repository access | GIT_USERNAME, GIT_PASSWORD |
+| `platform-admin-credentials` | keycloak     | Platform admin access | username, password         |
+| `deployment-passwords`       | otomi        | All generated secrets | (various)                  |
 
 ## Apply Trigger Comparison
 
-| Aspect | Poll | Reconcile |
-|--------|------|-----------|
-| **Frequency** | Every ~30s | Every ~5m |
-| **Condition** | Git changes detected | Always (scheduled) |
-| **Skip Logic** | Yes (`[ci skip]`, no changes) | No |
-| **Concurrency** | Skips if applying | Waits if applying |
-| **Operations** | Migrate → Validate | Decrypt |
-| **Apply Type** | Teams-only or Full | Always Full |
-| **Optimization** | Smart (file-based) | None |
+| Aspect           | Poll                          | Reconcile          |
+| ---------------- | ----------------------------- | ------------------ |
+| **Frequency**    | Every ~30s                    | Every ~5m          |
+| **Condition**    | Git changes detected          | Always (scheduled) |
+| **Skip Logic**   | Yes (`[ci skip]`, no changes) | No                 |
+| **Concurrency**  | Skips if applying             | Waits if applying  |
+| **Operations**   | Migrate → Validate            | Decrypt            |
+| **Apply Type**   | Teams-only or Full            | Always Full        |
+| **Optimization** | Smart (file-based)            | None               |
 
 ## Error Handling
 
 ### Installation Phase
+
 - Catches all errors in reconcileInstall loop
 - Updates status to 'failed' with error message
 - Waits 1 second (fixed delay)
 - Retries indefinitely until success
 
 ### GitOps Phase
+
 - Poll loop logs errors and continues
 - Reconcile loop logs errors and continues
 - Apply process updates state to 'failed' with error message
 - Both loops continue running on error
 
 ### Git Conflict Resolution
+
 - Detects merge conflicts during push
 - Aborts merge/rebase operations
 - Resets to previous state
@@ -526,6 +531,7 @@ Shared by both loops with trigger-specific variations:
 ## Concurrency Control
 
 ### Apply Lock (`isApplying`)
+
 - Ensures only one apply runs at a time
 - Prevents race conditions between poll and reconcile
 - Poll loop skips iteration if locked
@@ -533,6 +539,7 @@ Shared by both loops with trigger-specific variations:
 - Released in finally block to guarantee cleanup
 
 ### Installation vs GitOps
+
 - Installation must complete before GitOps starts
 - No concurrency between phases
 - Sequential execution ensures clean startup
@@ -549,6 +556,7 @@ Shared by both loops with trigger-specific variations:
 ## State Transitions
 
 ### Installation State Machine
+
 ```
 pending → in-progress → completed
              ↓ (on error)
@@ -556,6 +564,7 @@ pending → in-progress → completed
 ```
 
 ### Apply State Machine
+
 ```
 idle → in-progress → succeeded → idle
           ↓ (on error)
@@ -563,6 +572,7 @@ idle → in-progress → succeeded → idle
 ```
 
 ### Deployment State Machine
+
 ```
 unknown → deploying → deployed
              ↓ (on error)
