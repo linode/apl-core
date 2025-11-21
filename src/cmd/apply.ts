@@ -40,8 +40,8 @@ export const applyAll = async () => {
   d.info('Start apply all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTagFromValues()
-  const version = getPackageVersion()
-  await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
+  const deployingVersion = getPackageVersion()
+  await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion })
 
   // We still need to deploy all teams because some settings depend on platform apps.
   const teamsApplyCompleted = await applyTeams()
@@ -62,7 +62,7 @@ export const applyAll = async () => {
     await commit(false)
   }
   if (appsApplyCompleted) {
-    await setDeploymentState({ status: 'deployed', version })
+    await setDeploymentState({ status: 'deployed', version: deployingVersion })
     d.info('Deployment completed')
   } else {
     d.info('Deployment finished with actions pending')
