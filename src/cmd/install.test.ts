@@ -11,7 +11,6 @@ jest.mock('fs', () => ({
 }))
 
 jest.mock('src/common/k8s', () => ({
-  checkOperationsInProgress: jest.fn(),
   getDeploymentState: jest.fn(),
   setDeploymentState: jest.fn(),
   getHelmReleases: jest.fn(),
@@ -89,7 +88,6 @@ describe('Install command', () => {
       getCurrentVersion: require('src/common/values').getCurrentVersion,
       writeValuesToFile: require('src/common/values').writeValuesToFile,
       applyServerSide: require('src/common/k8s').applyServerSide,
-      checkOperationsInProgress: require('src/common/k8s').checkOperationsInProgress,
       hf: require('src/common/hf').hf,
       deployEssential: require('src/common/hf').deployEssential,
       writeFileSync: require('fs').writeFileSync,
@@ -107,7 +105,6 @@ describe('Install command', () => {
       stderr: '',
     })
     mockDeps.deployEssential.mockResolvedValue(true)
-    mockDeps.checkOperationsInProgress.mockResolvedValue(undefined)
     mockDeps.$.mockResolvedValue(undefined)
   })
 
