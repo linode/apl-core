@@ -1859,19 +1859,6 @@ properties:
                 $ref: '#/definitions/resources'
               operator:
                 $ref: '#/definitions/resources'
-      jaeger:
-        additionalProperties: false
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          resources:
-            operator:
-              $ref: '#/definitions/resources'
-            jaeger:
-              $ref: '#/definitions/resources'
-          _rawValues:
-            $ref: '#/definitions/rawValues'
       keycloak:
         additionalProperties: false
         properties:

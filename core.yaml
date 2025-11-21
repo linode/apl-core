@@ -36,11 +36,6 @@ k8s:
       disableIstioInjection: true
       labels:
         'apl.io/ingress-controller-scope': 'true'
-    - name: jaeger
-      app: jaeger
-    - name: jaeger-operator
-      app: jaeger
-      disableIstioInjection: true
     - name: keycloak
     - name: apl-keycloak-operator
       disableIstioInjection: true
@@ -195,16 +190,6 @@ adminApps:
     tags: [ingress, auth]
   - name: istio
     tags: [ingress, egress, routing, security, tls, observability, policies]
-  - name: jaeger
-    tags: [ingress, telemetry, observability]
-    deps: [istio]
-    ingress:
-      - svc: jaeger-operator-jaeger-query
-        port: 16686
-        forwardPath: true
-        namespace: jaeger
-        type: public
-        auth: true
   - name: keycloak
     tags: [auth, sso]
     # isShared: true

@@ -392,3 +392,4 @@ changes:
       - 'platformBackups.persistentVolumes'
       - 'teamConfig.{team}.backups'
       - 'apps.httpbin'
+      - 'apps.jaeger'

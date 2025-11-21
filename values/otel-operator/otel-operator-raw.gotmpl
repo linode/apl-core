@@ -43,12 +43,6 @@ resources:
             tls:
               insecure: true
           {{- end }}
-          {{- if $v.apps.jaeger.enabled }}
-          jaeger:
-            endpoint: jaeger-operator-jaeger-collector.jaeger.svc:14250
-            tls:
-              insecure: true
-          {{- end }}
         service:
           pipelines:
             logs:
@@ -69,9 +63,6 @@ resources:
               - debug
               {{- if $v.apps.tempo.enabled }}
               - otlp
-              {{- end }}
-              {{- if $v.apps.jaeger.enabled }}
-              - jaeger
               {{- end }}
       mode: {{ $o.collector.mode }}
       autoscaler:
