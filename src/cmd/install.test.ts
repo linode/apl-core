@@ -23,8 +23,8 @@ jest.mock('src/common/k8s', () => ({
 }))
 
 jest.mock('src/common/values', () => ({
-  getImageTag: jest.fn(),
-  getCurrentVersion: jest.fn(),
+  getImageTagFromValues: jest.fn(),
+  getPackageVersion: jest.fn(),
   writeValuesToFile: jest.fn(),
 }))
 
@@ -84,8 +84,8 @@ describe('Install command', () => {
       getDeploymentState: require('src/common/k8s').getDeploymentState,
       setDeploymentState: require('src/common/k8s').setDeploymentState,
       getHelmReleases: require('src/common/k8s').getHelmReleases,
-      getImageTag: require('src/common/values').getImageTag,
-      getCurrentVersion: require('src/common/values').getCurrentVersion,
+      getImageTagFromValues: require('src/common/values').getImageTagFromValues,
+      getPackageVersion: require('src/common/values').getPackageVersion,
       writeValuesToFile: require('src/common/values').writeValuesToFile,
       applyServerSide: require('src/common/k8s').applyServerSide,
       hf: require('src/common/hf').hf,
@@ -96,8 +96,8 @@ describe('Install command', () => {
 
     // Set up default mock return values
     mockDeps.getDeploymentState.mockResolvedValue({ status: 'initial' })
-    mockDeps.getImageTag.mockResolvedValue('v1.0.0')
-    mockDeps.getCurrentVersion.mockResolvedValue('1.0.0')
+    mockDeps.getImageTagFromValues.mockResolvedValue('v1.0.0')
+    mockDeps.getPackageVersion.mockReturnValue('1.0.0')
     mockDeps.getHelmReleases.mockResolvedValue([])
     mockDeps.hf.mockResolvedValue({
       exitCode: 0,
@@ -136,8 +136,7 @@ describe('Install command', () => {
 
       // Verify the key steps were called
       expect(mockDeps.getDeploymentState).toHaveBeenCalled()
-      expect(mockDeps.getImageTag).toHaveBeenCalled()
-      expect(mockDeps.getCurrentVersion).toHaveBeenCalled()
+      expect(mockDeps.getImageTagFromValues).toHaveBeenCalled()
       expect(mockDeps.setDeploymentState).toHaveBeenCalledWith({
         status: 'deploying',
         deployingTag: 'v1.0.0',
@@ -251,9 +250,9 @@ describe('Install command', () => {
 
     test('should handle image tag retrieval errors', async () => {
       const error = new Error('Failed to get image tag')
-      mockDeps.getImageTag.mockRejectedValueOnce(error)
+      mockDeps.getImageTagFromValues.mockRejectedValueOnce(error)
 
-      expect(mockDeps.getImageTag).toBeDefined()
+      expect(mockDeps.getImageTagFromValues).toBeDefined()
     })
 
     test('should handle helmfile errors', async () => {

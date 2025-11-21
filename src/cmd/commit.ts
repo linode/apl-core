@@ -1,16 +1,14 @@
 import retry from 'async-retry'
-import { existsSync } from 'fs'
-import { rm } from 'fs/promises'
 import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
-import { env, isCi } from 'src/common/envalid'
+import { env } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { createUpdateConfigMap, createUpdateGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
-import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
+import { HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { validateValues } from './validate-values'
@@ -55,12 +53,10 @@ const cleanupGitState = async (d: any): Promise<void> => {
   }
 }
 
-const commitAndPush = async (values: Record<string, any>, branch: string): Promise<void> => {
+const commitAndPush = async (values: Record<string, any>, branch: string, initialInstall = false): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
-  const argv = getParsedArgs()
-  const rerunRequested = existsSync(`${env.ENV_DIR}/.rerun`)
-  const message = isCi ? 'updated values [ci skip]' : argv.message || 'otomi commit'
+  const message = initialInstall ? 'otomi commit' : 'updated values [ci skip]'
   const { password } = getRepo(values)
   cd(env.ENV_DIR)
   try {
@@ -73,18 +69,14 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
       await $`git commit -m ${message} --no-verify`.quiet()
     }
     await $`git add -A`
-    if (isCi && rerunRequested) {
-      d.log('Committing changes and triggering pipeline run')
-      await $`git commit -m "[apl-trigger]" --no-verify --allow-empty`.quiet()
-    } else {
-      // The below 'git status' command will always return at least single new line
-      const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length - 1
-      if (filesChangedCount === 0) {
-        d.log('Nothing to commit')
-        return
-      }
-      await $`git commit -m ${message} --no-verify`.quiet()
+
+    // The below 'git status' command will always return at least single new line
+    const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length - 1
+    if (filesChangedCount === 0) {
+      d.log('Nothing to commit')
+      return
     }
+    await $`git commit -m ${message} --no-verify`.quiet()
   } catch (e) {
     d.log('commitAndPush error ', e?.message?.replace(password, '****'))
     return
@@ -132,9 +124,6 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
       maxTimeout: 30000,
     },
   )
-  if (rerunRequested) {
-    await rm(`${env.ENV_DIR}/.rerun`, { force: true })
-  }
   d.log('Successfully pushed the updated values')
 }
 
@@ -159,7 +148,7 @@ export const commit = async (initialInstall: boolean, overrideArgs?: HelmArgumen
   }
   // continue
   await encrypt()
-  await commitAndPush(values, branch)
+  await commitAndPush(values, branch, initialInstall)
 }
 
 export const cloneOtomiChartsInGitea = async (): Promise<void> => {
