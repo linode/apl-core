@@ -1,5 +1,7 @@
 {{- $dict := dict "ctx" . "component" "ingester" "memberlist" true -}}
 {{- $zonesMap := include "ingester.zoneAwareReplicationMap" $dict | fromYaml -}}
+{{- $storageClass := .Values.ingester.persistence.storageClass | default .Values.global.storageClass }}
+{{- if eq $storageClass "-" }}{{- $storageClass = "" }}{{- end }}
 {{- range $zoneName, $rolloutZone := $zonesMap -}}
 {{- with $ -}}
 {{- $_ := set $dict "rolloutZoneName" $zoneName -}}
@@ -13,6 +15,9 @@ metadata:
   {{- if .Values.ingester.zoneAwareReplication.enabled }}
   annotations:
     {{- include "ingester.Annotations" $dict | nindent 4}}
+    {{- with $rolloutZone.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- else }}
   {{- with .Values.ingester.annotations }}
   annotations:
@@ -23,6 +28,7 @@ spec:
   {{- if not .Values.ingester.autoscaling.enabled }}
   replicas: {{ $rolloutZone.replicas }}
   {{- end }}
+  revisionHistoryLimit: {{ .Values.tempo.revisionHistoryLimit }}
   selector:
     matchLabels:
       {{- include "ingester.selectorLabels" $dict | nindent 6}}
@@ -32,8 +38,7 @@ spec:
     {{- if .Values.ingester.zoneAwareReplication.enabled }}
     type: OnDelete
     {{- else }}
-    rollingUpdate:
-      partition: 0
+    {{- toYaml .Values.ingester.statefulStrategy | nindent 4 }}
     {{- end }}
   template:
     metadata:
@@ -42,15 +47,15 @@ spec:
         {{- with .Values.tempo.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-        {{- with .Values.ingester.podLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap-tempo.yaml") . | sha256sum }}
         {{- with .Values.tempo.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
         {{- with .Values.ingester.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with $rolloutZone.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
@@ -74,8 +79,13 @@ spec:
         - args:
             - -target=ingester
             - -config.file=/conf/tempo.yaml
-            - -mem-ballast-size-mbs=1024
+            {{- if ne $zoneName ""}}
+            - -ingester.availability-zone={{ $zoneName }}
+            {{- end }}
             {{- with .Values.ingester.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.global.extraArgs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           image: {{ include "tempo.imageReference" $dict }}
@@ -87,7 +97,7 @@ spec:
             - name: http-memberlist
               containerPort: {{ include "tempo.memberlistBindPort" . }}
             - name: http-metrics
-              containerPort: 3100
+              containerPort: 3200
           {{- if or .Values.global.extraEnv .Values.ingester.extraEnv }}
           env:
             {{- with .Values.global.extraEnv }}
@@ -97,10 +107,17 @@ spec:
               {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
-          {{- with .Values.ingester.extraEnvFrom }}
+          {{- if or .Values.global.extraEnvFrom .Values.ingester.extraEnvFrom }}
           envFrom:
-            {{- toYaml . | nindent 12 }}
+            {{- with .Values.global.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.ingester.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
+          livenessProbe:
+            {{- toYaml .Values.tempo.livenessProbe | nindent 12 }}
           readinessProbe:
             {{- toYaml .Values.tempo.readinessProbe | nindent 12 }}
           resources:
@@ -176,6 +193,11 @@ spec:
             sizeLimit: {{ .Values.ingester.persistence.size }}
         {{- end }}
   {{- else }}
+  {{- if .Values.ingester.persistentVolumeClaimRetentionPolicy.enabled }}
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: {{ .Values.ingester.persistentVolumeClaimRetentionPolicy.whenDeleted }}
+    whenScaled: {{ .Values.ingester.persistentVolumeClaimRetentionPolicy.whenScaled }}
+  {{- end }}
   volumeClaimTemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -184,13 +206,15 @@ spec:
         annotations:
           {{- toYaml . | nindent 10 }}
         {{- end }}
+        {{- with .Values.ingester.persistence.labels }}
+        labels:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         name: data
       spec:
         accessModes:
           - ReadWriteOnce
-        {{- with .Values.ingester.persistence.storageClass }}
-        storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
-        {{- end }}
+        storageClassName: {{ if $storageClass }}{{ $storageClass }}{{ else }}{{- "" }}{{ end }}
         resources:
           requests:
             storage: {{ .Values.ingester.persistence.size | quote }}
