@@ -2,7 +2,7 @@
   <img src="https://github.com/linode/manager/blob/develop/packages/manager/src/assets/logo/akamai-logo-color.svg" width="200" />
   <br />
   <br />
-  Akamai Application Platform (for LKE)
+  App Platform
 </h3>
 
 <p align="center">
@@ -32,7 +32,7 @@ Configure the App Platform for your use case.
 
 Explore the App Platform with a comprehensive set of hands-on labs.
 
-## Akamai Application Platform supports
+## App Platform supports
 
 **Developers** - With easy self-service.
 
