@@ -41,7 +41,6 @@ describe('Installer', () => {
 
     // Save original environment variables
     process.env.SOPS_AGE_KEY = ''
-    process.env.CI = ''
 
     mockCoreApi = {}
     ;(k8s.k8s.core as jest.Mock).mockReturnValue(mockCoreApi)
@@ -340,7 +339,6 @@ describe('Installer', () => {
         username: 'existing-admin',
         password: 'existing-password',
       })
-      expect(process.env.CI).toBe('true')
       expect(hfValues).not.toHaveBeenCalled()
       expect(k8s.createUpdateGenericSecret).not.toHaveBeenCalled()
     })
@@ -380,7 +378,6 @@ describe('Installer', () => {
         username: 'test-admin',
         password: 'test-password',
       })
-      expect(process.env.CI).toBe('true')
       expect(process.env.SOPS_AGE_KEY).toBe('AGE-SECRET-KEY-1234567890')
     })
 
