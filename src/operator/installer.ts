@@ -80,7 +80,6 @@ export class Installer {
 
   public async setEnvAndCreateSecrets(): Promise<GitCredentials> {
     this.d.debug('Retrieving or creating git credentials')
-    process.env.CI = 'true'
     await this.setupSopsEnvironment()
     return await this.setupGiteaCredentials()
   }
