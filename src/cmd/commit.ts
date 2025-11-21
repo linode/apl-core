@@ -1,5 +1,4 @@
 import retry from 'async-retry'
-import { rm } from 'fs/promises'
 import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
 import { encrypt } from 'src/common/crypt'
@@ -54,7 +53,7 @@ const cleanupGitState = async (d: any): Promise<void> => {
   }
 }
 
-const commitAndPush = async (values: Record<string, any>, branch: string, initialInstall: false): Promise<void> => {
+const commitAndPush = async (values: Record<string, any>, branch: string, initialInstall = false): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const message = initialInstall ? 'otomi commit' : 'updated values [ci skip]'
@@ -125,9 +124,6 @@ const commitAndPush = async (values: Record<string, any>, branch: string, initia
       maxTimeout: 30000,
     },
   )
-  if (rerunRequested) {
-    await rm(`${env.ENV_DIR}/.rerun`, { force: true })
-  }
   d.log('Successfully pushed the updated values')
 }
 
@@ -152,7 +148,7 @@ export const commit = async (initialInstall: boolean, overrideArgs?: HelmArgumen
   }
   // continue
   await encrypt()
-  await commitAndPush(values, branch)
+  await commitAndPush(values, branch, initialInstall)
 }
 
 export const cloneOtomiChartsInGitea = async (): Promise<void> => {

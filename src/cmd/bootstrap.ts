@@ -15,7 +15,7 @@ import { hfValues } from 'src/common/hf'
 import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from 'src/common/k8s'
 import { getKmsSettings } from 'src/common/repo'
 import { ensureTeamGitOpsDirectories, getFilename, gucci, isCore, loadYaml, rootDir } from 'src/common/utils'
-import { generateSecrets, getImageTagFromValues, writeValues } from 'src/common/values'
+import { generateSecrets, writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
@@ -436,7 +436,6 @@ export const bootstrap = async (
   deps = {
     pathExists: existsSync,
     getDeploymentState,
-    getImageTagFromValues,
     terminal,
     copyBasicFiles,
     processValues,
