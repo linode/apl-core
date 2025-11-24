@@ -222,7 +222,7 @@ jobs:
             tier_arg="--tier enterprise"
             export LINODE_CLI_API_VERSION=v4beta
             ha=""
-            cp_acl="--control_plane.acl.addresses.ipv4 $CP_ACL_IPV4"
+            cp_acl="--control_plane.acl.enabled true --control_plane.acl.addresses.ipv4 $CP_ACL_IPV4"
           else
             tier_arg=""
             ha="--control_plane.high_availability true"
