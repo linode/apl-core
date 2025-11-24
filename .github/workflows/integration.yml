@@ -44,14 +44,13 @@ on:
           - standard
           - enterprise
       kubernetes_version:
-        description: 'Kubernetes version'
+        description: 'Kubernetes version (select version compatible with lke_tier)'
         type: choice
         options:
           - 'v1.31.9+lke7'
           - '1.32'
           - '1.33'
           - '1.34'
-        default: '1.34'
       linode_types:
         description: 'Linode instance types'
         type: choice
