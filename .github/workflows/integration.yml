@@ -130,6 +130,7 @@ jobs:
         run: |
           echo "ref: $COMMIT_REF"
           echo 'install_profile: ${{ inputs.install_profile }}'
+          echo 'lke_tier: ${{ inputs.lke_tier }}'
           echo 'kubernetes_version: ${{ inputs.kubernetes_version }}'
           echo 'kms: ${{ inputs.kms }}'
           echo 'domain_zone: ${{ inputs.domain_zone }}'
