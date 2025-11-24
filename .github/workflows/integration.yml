@@ -2,18 +2,18 @@ name: Deploy APL
 on:
   workflow_call:
     inputs:
-      linode_types:
-        description: 'Linode instance types'
-        type: string
-        default: g6-dedicated-8
-      kubernetes_version:
-        description: 'Kubernetes version'
-        type: string
-        default: '1.34'
       lke_tier:
         description: 'Linode Kubernetes Engine Tier'
         type: string
         default: standard
+      kubernetes_version:
+        description: 'Kubernetes version'
+        type: string
+        default: '1.34'
+      linode_types:
+        description: 'Linode instance types'
+        type: string
+        default: g6-dedicated-8
       install_profile:
         description: 'APL installation profile'
         type: string
@@ -36,6 +36,22 @@ on:
         default: 'false'
   workflow_dispatch:
     inputs:
+      lke_tier:
+        description: 'Linode Kubernetes Engine Tier'
+        type: choice
+        default: standard
+        options:
+          - standard
+          - enterprise
+      kubernetes_version:
+        description: 'Kubernetes version'
+        type: choice
+        options:
+          - 'v1.31.9+lke7'
+          - '1.32'
+          - '1.33'
+          - '1.34'
+        default: '1.34'
       linode_types:
         description: 'Linode instance types'
         type: choice
@@ -48,22 +64,6 @@ on:
           - g6-dedicated-50
           - g6-dedicated-56
         default: g6-dedicated-4
-      kubernetes_version:
-        description: 'Kubernetes version'
-        type: choice
-        options:
-          - 'v1.31.9+lke7'
-          - '1.32'
-          - '1.33'
-          - '1.34'
-        default: '1.34'
-      lke_tier:
-        description: 'Linode Kubernetes Engine Tier'
-        type: choice
-        default: standard
-        options:
-          - standard
-          - enterprise
       install_profile:
         description: APL installation profile
         default: minimal-with-team
