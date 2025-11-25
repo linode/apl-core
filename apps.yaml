@@ -105,24 +105,6 @@ appsInfo:
     license: Apache 2.0
     about: Istio is an open platform for providing a uniform way to integrate microservices, manage traffic flow across microservices, enforce policies and aggregate telemetry data. Istio's control plane provides an abstraction layer over the underlying cluster management platform.
     integration: APL has security best practices built in, and is designed for intrusion. Istio is used by APL as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of APL and can not be disabled.
-  jaeger:
-    title: Jaeger Operator
-    dependencies: Open Telemetry (otel)
-    appVersion: 1.46.0
-    repo: https://github.com/jaegertracing/jaeger
-    maintainers: CNCF
-    relatedLinks:
-      - https://www.jaegertracing.io/docs/1.37/
-    license: Apache 2.0
-    about: Jaeger is a distributed tracing platform. It can be used for monitoring microservices-based distributed systems. As on-the-ground microservice practitioners are quickly realizing, the majority of operational problems that arise when moving to a distributed architecture are ultimately grounded in networking and observability. It is simply an orders of magnitude larger problem to network and debug a set of intertwined distributed services versus a single monolithic application.
-    integration: Jaeger can be activated to gain tracing insights on its network traffic. It runs in anonymous mode and each authenticated user is given the same authorization, allowing them to see everything.
-    isDeprecated: true
-    deprecationInfo:
-      message: Jaeger distributed tracing is being deprecated.
-      reasons:
-        - This tracing tool duplicates functionality provided by Tempo.
-      options:
-        - Click 'I understand' to continue using Jaeger dashboard
   keycloak:
     title: Keycloak
     appVersion: 26.4.2
@@ -295,7 +277,7 @@ appsInfo:
       - https://opentelemetry.io/docs/collector/
     license: AGPL-3.0
     dependencies: Prometheus, Grafana, Loki, Tempo
-    about: The OpenTelemetry Collector offers a vendor-agnostic implementation on how to receive, process and export telemetry data. In addition, it removes the need to run, operate and maintain multiple agents/collectors in order to support open-source telemetry data formats (e.g. Jaeger, Prometheus, etc.) to multiple open-source or commercial back-ends.
+    about: The OpenTelemetry Collector offers a vendor-agnostic implementation on how to receive, process and export telemetry data. In addition, it removes the need to run, operate and maintain multiple agents/collectors in order to support open-source telemetry data formats (e.g. Prometheus, etc.) to multiple open-source or commercial back-ends.
     integration: OpenTelemetry Collector is used to receive telementry data from Istio Envoy access logs and export this data to Tempo.
     chartName: otel-operator
   policy-reporter:
