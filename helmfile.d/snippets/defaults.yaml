@@ -328,10 +328,9 @@ environments:
           keycloak:
             adminUsername: otomi-admin
             theme: otomi
-            database:
-              maxConnections: 28
-              minConnections: 5
-              initialConnections: 5
+            databaseMaxConnections: 28
+            databaseMinConnections: 5
+            databaseInitialConnections: 5
             resources:
               keycloak:
                 requests:

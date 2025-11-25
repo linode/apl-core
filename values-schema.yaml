@@ -1686,15 +1686,12 @@ properties:
             description: This password was generated and cannot be changed without manual intervention.
             x-secret: '{{ randAlphaNum 20 }}'
             readOnly: true
-          database:
-            additionalProperties: false
-            properties:
-              maxConnections:
-                type: number
-                description: Maximum amount of total connections of the application to the database server
-              maxIdleConnections:
-                type: number
-                description: Maximum amount of idle connections of the application to the database server
+          databaseMaxConnections:
+            type: number
+            description: Maximum amount of total connections of the application to the database server
+          databaseMaxIdleConnections:
+            type: number
+            description: Maximum amount of idle connections of the application to the database server
           resources:
             additionalProperties: false
             properties:
@@ -1773,15 +1770,12 @@ properties:
             required:
               - secret
               - credentials
-          database:
-            additionalProperties: false
-            properties:
-              maxConnections:
-                type: number
-                description: Maximum amount of total connections of the application to the database server
-              maxIdleConnections:
-                type: number
-                description: Maximum amount of idle connections of the application to the database server
+          databaseMaxConnections:
+            type: number
+            description: Maximum amount of total connections of the application to the database server
+          databaseMaxIdleConnections:
+            type: number
+            description: Maximum amount of idle connections of the application to the database server
           resources:
             additionalProperties: false
             properties:
@@ -1904,18 +1898,15 @@ properties:
                 $ref: '#/definitions/imageSimple'
               postgresql:
                 $ref: '#/definitions/imageSimple'
-          database:
-            additionalProperties: false
-            properties:
-              maxConnections:
-                type: number
-                description: Maximum amount of total connections of the application to the database server
-              minConnections:
-                type: number
-                description: Minimum amount of connections of the application to the database server
-              initialConnections:
-                type: number
-                description: Initial amount of connections of the application to the database server on startup
+          databaseMaxConnections:
+            type: number
+            description: Maximum amount of total connections of the application to the database server
+          databaseMinConnections:
+            type: number
+            description: Minimum amount of connections of the application to the database server
+          databaseInitialConnections:
+            type: number
+            description: Initial amount of connections of the application to the database server on startup
           resources:
             additionalProperties: false
             properties:

@@ -128,9 +128,9 @@ gitea:
           name: gitea-db-secret
           key: password
     - name: GITEA__DATABASE__MAX_OPEN_CONNS
-      value: {{ $g.database.maxConnections | quote }}
+      value: {{ $g.databaseMaxConnections | quote }}
     - name: GITEA__DATABASE__MAX_IDLE_CONNS
-      value: {{ $g.database.maxIdleConnections | quote }}
+      value: {{ $g.databaseMaxIdleConnections | quote }}
 
     - name: GITEA__CACHE__ADAPTER
       value: "redis"
