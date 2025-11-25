@@ -38,6 +38,10 @@ on:
         description: Fake if Otomi is pre-installed by Installer
         type: string
         default: 'false'
+      enableWiz:
+        description: 'Check the box to enable Wiz integration'
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       lke_tier:
@@ -115,6 +119,10 @@ on:
         description: 'Check the box if you dont want to pull from ORCS'
         type: boolean
         default: false
+      enableWiz:
+        description: 'Check the box to enable Wiz integration'
+        type: boolean
+        default: true
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -273,7 +281,7 @@ jobs:
         if: ${{ inputs.install_profile != 'no-apl' }}
         uses: actions/checkout@v5
       - name: Set up Wiz
-        if: ${{ inputs.install_profile != 'no-apl' }}
+        if: ${{ inputs.enableWiz }}
         run: |
 
           # Use cluster information from environment variables
@@ -350,16 +358,17 @@ jobs:
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values.yaml \
             --set cluster.provider=linode \
+            --set cluster.linode.tier=${{ env.LKE_TIER }} \
+            --set cluster.name=aplinstall${{ env.LINODE_CLUSTER_ID }} \
+            --set cluster.k8sContext=${{ env.LINODE_CLUSTER_CONTEXT }} \
+            --set cluster.domainSuffix=${{ env.DOMAIN }} \
             --set dns.domainFilters[0]=${{ env.DOMAIN }} \
             --set dns.provider.akamai.clientSecret=${EDGEDNS_CLIENT_SECRET} \
             --set dns.provider.akamai.host=${EDGEDNS_HOST} \
             --set dns.provider.akamai.accessToken=${EDGEDNS_ACCESS_TOKEN} \
             --set dns.provider.akamai.clientToken=${EDGEDNS_CLIENT_TOKEN} \
             --set otomi.hasExternalDNS=true \
-            --set cluster.domainSuffix=${{ env.DOMAIN }} \
             --set otomi.adminPassword=$adminPassword \
-            --set cluster.name=aplinstall${{ env.LINODE_CLUSTER_ID }} \
-            --set cluster.k8sContext=${{ env.LINODE_CLUSTER_CONTEXT }} \
             --set otomi.version=${GITHUB_REF##*/} \
             --set apps.linode-cfw.enabled=true \
             $additional_args"
