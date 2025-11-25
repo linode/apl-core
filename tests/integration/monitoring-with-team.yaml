@@ -51,8 +51,6 @@ apps:
     issuer: custom-ca
   grafana:
     enabled: true
-  jaeger:
-    enabled: true
   loki:
     enabled: true
     adminPassword: blablabla
