@@ -99,7 +99,6 @@ const destroyAll = async () => {
     'cert-manager.io',
     'externalsecrets.kubernetes-client.io',
     'istio.io',
-    'jaegers.jaegertracing.io',
     'knative.dev',
     'monitoring.coreos.com',
   ]
