@@ -48,9 +48,6 @@ dependencies:
   - name: istiod
     version: 1.27.3
     repository: https://istio-release.storage.googleapis.com/charts
-  - name: jaeger-operator
-    version: 2.46.0
-    repository: https://jaegertracing.github.io/helm-charts
   - name: keycloakx
     alias: keycloak
     version: 7.1.4
