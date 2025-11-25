@@ -2,6 +2,14 @@ name: Deploy APL
 on:
   workflow_call:
     inputs:
+      lke_tier:
+        description: 'Linode Kubernetes Engine Tier'
+        type: string
+        default: standard
+      kubernetes_version:
+        description: 'Kubernetes version'
+        type: string
+        default: '1.34'
       linode_types:
         description: 'Linode instance types'
         type: string
@@ -9,7 +17,7 @@ on:
       kubernetes_versions:
         description: 'Kubernetes version'
         type: string
-        default: "['1.33']"
+        default: "['1.34']"
       install_profile:
         description: 'APL installation profile'
         type: string
@@ -30,8 +38,28 @@ on:
         description: Fake if Otomi is pre-installed by Installer
         type: string
         default: 'false'
+      enableWiz:
+        description: 'Check the box to enable Wiz integration'
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
+      lke_tier:
+        description: 'Linode Kubernetes Engine Tier'
+        type: choice
+        default: standard
+        options:
+          - standard
+          - enterprise
+      kubernetes_version:
+        description: 'Kubernetes version (select version compatible with lke_tier)'
+        type: choice
+        options:
+          - 'v1.31.9+lke7'
+          - '1.32'
+          - '1.33'
+          - '1.34'
+        default: '1.34'
       linode_types:
         description: 'Linode instance types'
         type: choice
@@ -48,10 +76,10 @@ on:
         description: 'Kubernetes version'
         type: choice
         options:
-          - "['1.31']"
           - "['1.32']"
           - "['1.33']"
-        default: "['1.33']"
+          - "['1.34']"
+        default: "['1.34']"
       install_profile:
         description: APL installation profile
         default: minimal-with-team
@@ -96,6 +124,10 @@ on:
         description: 'Check the box if you dont want to pull from ORCS'
         type: boolean
         default: false
+      enableWiz:
+        description: 'Check the box to enable Wiz integration'
+        type: boolean
+        default: true
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -107,6 +139,9 @@ env:
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
   DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
+  LKE_TIER: ${{ inputs.lke_tier }}
+  LKE_VERSION: ${{ inputs.kubernetes_version }}
+  LKE_CP_ACL_IPV4: '0.0.0.0/0'
 
 jobs:
   preprocess-input:
@@ -117,7 +152,8 @@ jobs:
         run: |
           echo 'ref: ${{ github.event.pull_request.head.ref || github.ref }}'
           echo 'install_profile: ${{ inputs.install_profile }}'
-          echo 'kubernetes_versions: ${{ inputs.kubernetes_versions }}'
+          echo 'lke_tier: ${{ inputs.lke_tier }}'
+          echo 'kubernetes_version: ${{ inputs.kubernetes_version }}'
           echo 'kms: ${{ inputs.kms }}'
           echo 'domain_zone: ${{ inputs.domain_zone }}'
           echo 'certificate: ${{ inputs.certificate }}'
@@ -127,8 +163,6 @@ jobs:
     needs: preprocess-input
     name: Preprocess input variables for linode
     runs-on: ubuntu-latest
-    outputs:
-      kubernetes_versions: ${{ steps.k8s-versions.outputs.versions }}
     steps:
       - name: Install the Linode CLI
         uses: linode/action-linode-cli@v1
@@ -149,27 +183,11 @@ jobs:
             echo "Exiting workflow..."
             exit 1
           fi
-      - id: k8s-versions
-        name: Process k8s version input
-        run: |
-          if [ -z '${{ inputs.kubernetes_versions }}' ]; then
-            echo "Kubernetes versions not specified, determine Linode supported versions"
-            versions=`linode-cli lke versions-list --json | jq -ce '.[] | .id'`
-          else
-            versions='${{ inputs.kubernetes_versions }}'
-          fi
-          echo $versions
-          echo "versions=$versions" >> $GITHUB_OUTPUT
 
   run-integration-test-linode:
     name: Run integration test on linode cluster
     needs: preprocess-linode-input
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        kubernetes_versions: ${{ fromJSON(needs.preprocess-linode-input.outputs.kubernetes_versions) }}
-      max-parallel: 5
     steps:
       - name: Install the Linode CLI
         uses: linode/action-linode-cli@v1
@@ -185,9 +203,6 @@ jobs:
           esac
           [[ ${{ inputs.install_profile }} == 'no-apl' ]] && LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME-no-apl
           echo LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME >> $GITHUB_ENV
-      - name: Determine exact k8s version
-        run: |
-          echo LINODE_K8S_VERSION=$(linode-cli lke versions-list --json | jq -ce --arg version "$(echo ${{ matrix.kubernetes_versions }} | sed -E 's/^([0-9]+\.[0-9])$/\10/')" '.[] | select(.id | tostring | startswith($version)) | .id') >> $GITHUB_ENV
       - name: Determine domain name to use for scheduled integration test
         env:
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
@@ -213,17 +228,28 @@ jobs:
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
+          if [[ '${{ env.LKE_TIER }}' == 'enterprise' ]]; then
+            tier_arg="--tier enterprise"
+            export LINODE_CLI_API_VERSION=v4beta
+            ha=""
+          else
+            tier_arg=""
+            ha="--control_plane.high_availability true"
+          fi
+
+          cp_acl="--control_plane.acl.enabled true --control_plane.acl.addresses.ipv4 $LKE_CP_ACL_IPV4"
           linode-cli lke cluster-create \
             --label ${{ env.LINODE_CLUSTER_NAME }} \
             --region nl-ams \
-            --k8s_version ${{ env.LINODE_K8S_VERSION }} \
-            --control_plane.high_availability true \
-            --node_pools.type ${{ inputs.linode_types }} --node_pools.count 3 \
+            --k8s_version ${{ env.LKE_VERSION }} \
+            --node_pools.type ${{ inputs.linode_types }} \
+            --node_pools.count 3 \
             --node_pools.autoscaler.enabled true \
             --node_pools.autoscaler.max 3 \
             --node_pools.autoscaler.min 3 \
             --tags testing \
-            --no-defaults
+            --no-defaults \
+            $ha $tier_arg $cp_acl
       - name: Retrieve cluster id
         run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
       - name: Wait for cluster to be ready
@@ -262,8 +288,8 @@ jobs:
             --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
       - name: Checkout
         if: ${{ inputs.install_profile != 'no-apl' }}
-        uses: actions/checkout@v4
-      - name: Prepare APL chart
+        uses: actions/checkout@v5
+      - name: Set up Wiz
         if: ${{ inputs.install_profile != 'no-apl' }}
         run: |
           ref=${{ github.event.pull_request.head.ref || github.ref }}
@@ -334,15 +360,22 @@ jobs:
             --values values-container-registry.yaml \
             --values values.yaml \
             --set cluster.provider=linode \
+            --set cluster.linode.tier=${{ env.LKE_TIER }} \
+            --set cluster.name=aplinstall${{ env.LINODE_CLUSTER_ID }} \
+            --set cluster.k8sContext=${{ env.LINODE_CLUSTER_CONTEXT }} \
+            --set cluster.domainSuffix=${{ env.DOMAIN }} \
             --set dns.domainFilters[0]=${{ env.DOMAIN }} \
             --set dns.provider.akamai.clientSecret=${EDGEDNS_CLIENT_SECRET} \
             --set dns.provider.akamai.host=${EDGEDNS_HOST} \
             --set dns.provider.akamai.accessToken=${EDGEDNS_ACCESS_TOKEN} \
             --set dns.provider.akamai.clientToken=${EDGEDNS_CLIENT_TOKEN} \
             --set otomi.hasExternalDNS=true \
-            --set cluster.domainSuffix=${{ env.DOMAIN }} \
             --set otomi.adminPassword=$adminPassword \
-            $disableORCS $kms"
+            --set cluster.name=aplinstall${{ env.LINODE_CLUSTER_ID }} \
+            --set cluster.k8sContext=${{ env.LINODE_CLUSTER_CONTEXT }} \
+            --set otomi.version=${GITHUB_REF##*/} \
+            --set apps.linode-cfw.enabled=true \
+            $additional_args"
 
           helm install $install_args &
           HELM_PID=$!
