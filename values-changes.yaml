@@ -394,6 +394,7 @@ changes:
       - 'apps.httpbin'
   - version: 46
     deletions:
+      - 'apps.jaeger'
       - 'apps.gitea.images'
       - 'apps.gitea.resources.postgresql'
       - 'apps.gitea.resources.memcached'
