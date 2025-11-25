@@ -164,7 +164,6 @@ describe('Bootstrapping values', () => {
         },
       }
       const deps = {
-        isChart: true,
         loadYaml: jest.fn().mockReturnValue(workload),
         mkdir: jest.fn(),
         terminal,
@@ -289,7 +288,6 @@ describe('Bootstrapping values', () => {
           getStoredClusterSecrets: jest.fn().mockReturnValue(secrets),
           getKmsValues: jest.fn().mockReturnValue({}),
           hfValues: jest.fn().mockReturnValue(values),
-          isChart: true,
           loadYaml: jest.fn(),
           terminal,
           validateValues: jest.fn().mockReturnValue(true),
@@ -398,38 +396,6 @@ describe('Bootstrapping values', () => {
           deps.getUsers.mockReturnValue(usersWithPasswords)
           await processValues(deps)
           expect(deps.writeValues).toHaveBeenNthCalledWith(1, writtenValues)
-        })
-      })
-
-      describe('processing env dir values', () => {
-        beforeEach(() => {
-          deps.isChart = false
-        })
-        it('should retrieve previous user input when cluster provider is set', async () => {
-          deps.loadYaml.mockReturnValue({ spec: { provider: 'set' } })
-          await processValues(deps)
-          expect(deps.hfValues).toHaveBeenCalledWith({ defaultValues: true })
-        })
-        it('should not validate values when starting empty', async () => {
-          deps.pathExists.mockReturnValue(false)
-          const values = await processValues(deps)
-          expect(deps.hfValues).toHaveBeenCalledTimes(0)
-          expect(deps.validateValues).toHaveBeenCalledTimes(0)
-        })
-        it('should validate values when values were found', async () => {
-          deps.existsSync.mockReturnValue(true)
-          deps.loadYaml.mockReturnValue({ cluster: { provider: 'chek' } })
-          deps.hfValues.mockReturnValue({ test: 1 })
-          await processValues(deps)
-          expect(deps.hfValues).toHaveBeenCalledTimes(1)
-          expect(deps.validateValues).toHaveBeenCalledTimes(1)
-        })
-        it('should generate secrets by taking previous values as input', async () => {
-          deps.hfValues.mockReturnValue({ someKey: 'someValue' })
-          deps.loadYaml.mockReturnValue({ someKey: 'someValue' })
-          deps.generateSecrets.mockReturnValue({ gen: 'x' })
-          await processValues(deps)
-          expect(deps.generateSecrets).toHaveBeenCalledWith({ someKey: 'someValue' })
         })
       })
     })
