@@ -315,24 +315,6 @@ environments:
                   cpu: "2"
                   memory: 2Gi
             _rawValues: {}
-          jaeger:
-            enabled: false
-            resources:
-              operator:
-                limits:
-                  cpu: 500m
-                  memory: 1Gi
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-              jaeger:
-                limits:
-                  cpu: "1"
-                  memory: 2Gi
-                requests:
-                  cpu: 200m
-                  memory: 384Mi
-            _rawValues: {}
           keycloak:
             adminUsername: otomi-admin
             theme: otomi

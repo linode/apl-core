@@ -46,23 +46,6 @@ additionalServiceMonitors:
     endpoints:
       - port: http-monitoring
         interval: 15s
-  {{- if .apps | get "jaeger.enabled" }}
-  - name: jaeger-operator-metrics
-    namespace: jaeger-operator
-    selector:
-      matchLabels:
-        name: jaeger-operator
-    namespaceSelector:
-      matchNames:
-        - jaeger-operator
-    endpoints:
-      - bearerTokenSecret:
-          key: ''
-        port: http-metrics
-      - bearerTokenSecret:
-          key: ''
-        port: cr-metrics
-  {{- end }}
   {{- if .apps | get "argocd.enabled" }}
   - name: argocd-metrics
     namespace: argocd
