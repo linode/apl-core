@@ -1,6 +1,5 @@
 import { cloneDeep, merge } from 'lodash'
 import { pki } from 'node-forge'
-import { env } from 'process'
 import stubs from 'src/test-stubs'
 import {
   bootstrap,
@@ -14,6 +13,13 @@ import {
 } from './bootstrap'
 
 const { terminal } = stubs
+
+jest.mock('src/common/envalid', () => ({
+  env: {
+    VALUES_INPUT: 'testValues.yaml',
+    ENV_DIR: '/test',
+  },
+}))
 
 describe('Bootstrapping values', () => {
   const values = {
@@ -171,9 +177,9 @@ describe('Bootstrapping values', () => {
       }
       it('should create folders and files based on file entry in yaml', async () => {
         await handleFileEntry(deps)
-        expect(deps.mkdir).toHaveBeenCalledWith(`${env.ENV_DIR}/env/teams/workloads/demo`, { recursive: true })
+        expect(deps.mkdir).toHaveBeenCalledWith('/test/env/teams/workloads/demo', { recursive: true })
         expect(deps.writeFile).toHaveBeenCalledWith(
-          `${env.ENV_DIR}/env/teams/workloads/demo/values.yaml`,
+          '/test/env/teams/workloads/demo/values.yaml',
           JSON.stringify(values),
         )
       })

@@ -426,8 +426,12 @@ export const bootstrap = async (
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:bootstrap`)
-  const { ENV_DIR } = env
+  const { ENV_DIR, VALUES_INPUT } = env
 
+  if (!VALUES_INPUT) {
+    d.error('VALUES_INPUT is required for bootstrap')
+    process.exit(1)
+  }
   await deps.copyBasicFiles()
   await deps.migrate()
   const originalValues = await deps.processValues()
