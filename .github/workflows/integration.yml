@@ -10,10 +10,6 @@ on:
         description: 'Kubernetes version'
         type: string
         default: '1.34'
-      cp_acl_ipv4:
-        description: 'Control Plane IPv4 ACL (comma separated list of IPs or CIDRs)'
-        type: string
-        default: '0.0.0.0/0'
       linode_types:
         description: 'Linode instance types'
         type: string
@@ -60,10 +56,6 @@ on:
           - '1.33'
           - '1.34'
         default: '1.34'
-      cp_acl_ipv4:
-        description: 'Control Plane IPv4 ACL (comma separated list of IPs or CIDRs)'
-        type: string
-        default: '0.0.0.0/0'
       linode_types:
         description: 'Linode instance types'
         type: choice
@@ -137,6 +129,7 @@ env:
   DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
   LKE_TIER: ${{ inputs.lke_tier }}
   LKE_VERSION: ${{ inputs.kubernetes_version }}
+  LKE_CP_ACL_IPV4: '0.0.0.0/0'
 
 jobs:
   preprocess-input:
@@ -223,19 +216,17 @@ jobs:
           echo "::add-mask::$DOMAIN"
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Create k8s cluster for testing
-        env:
-          CP_ACL_IPV4: ${{ inputs.cp_acl_ipv4 }}
         run: |
           if [[ '${{ env.LKE_TIER }}' == 'enterprise' ]]; then
             tier_arg="--tier enterprise"
             export LINODE_CLI_API_VERSION=v4beta
             ha=""
-            cp_acl="--control_plane.acl.enabled true --control_plane.acl.addresses.ipv4 $CP_ACL_IPV4"
           else
             tier_arg=""
             ha="--control_plane.high_availability true"
           fi
 
+          cp_acl="--control_plane.acl.enabled true --control_plane.acl.addresses.ipv4 $LKE_CP_ACL_IPV4"
           linode-cli lke cluster-create \
             --label ${{ env.LINODE_CLUSTER_NAME }} \
             --region nl-ams \
