@@ -392,6 +392,8 @@ changes:
       - 'platformBackups.persistentVolumes'
       - 'teamConfig.{team}.backups'
       - 'apps.httpbin'
+  - version: 46
+    deletions:
       - 'apps.gitea.images'
       - 'apps.gitea.resources.postgresql'
       - 'apps.gitea.resources.memcached'
