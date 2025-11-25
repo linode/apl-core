@@ -150,9 +150,8 @@ environments:
             _rawValues: {}
             networkPolicies:
               enabled: true
-            database:
-              maxConnections: 28
-              maxIdleConnections: 6
+            databaseMaxConnections: 28
+            databaseMaxIdleConnections: 6
             resources:
               gitea:
                 limits:
@@ -193,9 +192,8 @@ environments:
             registry:
               credentials:
                 username: otomi-admin
-            database:
-              maxConnections: 28
-              maxIdleConnections: 6
+            databaseMaxConnections: 28
+            databaseMaxIdleConnections: 6
             resources:
               core:
                 requests:
