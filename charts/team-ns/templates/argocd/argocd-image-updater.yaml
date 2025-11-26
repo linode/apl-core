@@ -18,11 +18,6 @@ spec:
   commonUpdateSettings:
     forceUpdate: true
     pullSecret: pullsecret:argocd/copy-team-{{ $v.teamId }}-harbor-pullsecret
-  writeBackConfig:
-    method: git
-    gitConfig:
-      branch: main
-      repository: {{ $v.gitOps.workloadValuesRepoUrl | quote }}
   applicationRefs:
     {{- range $autoUpdaterApps }}
     {{- $a := .imageUpdateStrategy }}
@@ -45,7 +40,10 @@ spec:
               tag: {{ $a.digest.tagParameter | quote }}
           {{- end }}
       writeBackConfig:
+        method: git
         gitConfig:
+          branch: main
+          repository: {{ $v.gitOps.workloadValuesRepoUrl | quote }}
           writeBackTarget: "helmvalues:/env/teams/{{ $v.teamId }}/workloadValues/{{ .name }}.managed.yaml"
     {{- end }}
 {{- end }}
