@@ -4,7 +4,7 @@
 {{- range $v.workloads }}
   {{- $a := .imageUpdateStrategy }}
   {{- if and $a (ne $a.type "disabled") }}
-  {{ $autoUpdaterApps := append $autoUpdaterApps . }}
+  {{ $autoUpdaterApps = append $autoUpdaterApps . }}
   {{- end }}
 {{- end }}
 {{ if $autoUpdaterApps }}
