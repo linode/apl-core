@@ -1,19 +1,11 @@
-{{- if .Values.crds.install }}
+---
+# Source: argocd-image-updater/templates/crd-imageupdaters.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.1
-    {{- if .Values.crds.keep }}
     "helm.sh/resource-policy": keep
-    {{- end }}
-    {{- with .Values.crds.annotations }}
-      {{- toYaml . | nindent 4 }}
-    {{- end }}
-  {{- with .Values.crds.additionalLabels }}
-  labels:
-    {{- toYaml . | nindent 4}}
-  {{- end }}
   name: imageupdaters.argocd-image-updater.argoproj.io
 spec:
   group: argocd-image-updater.argoproj.io
@@ -316,7 +308,7 @@ spec:
                               description: |-
                                 WriteBackTarget defines the path and type of file to update in the Git repository.
                                 Examples: "helmvalues:./helm/values.yaml", "kustomization:./kustomize/overlays/production".
-                                For ApplicationSet usage, `{{ quote "{{ .app.path.path }}" }}` should be resolved by ApplicationSet
+                                For ApplicationSet usage, `"{{ .app.path.path }}"` should be resolved by ApplicationSet
                                 before this CR is generated, resulting in a concrete path here.
                                 Required if write-back method is Git and this is not specified at the spec level.
                               type: string
@@ -417,7 +409,7 @@ spec:
                         description: |-
                           WriteBackTarget defines the path and type of file to update in the Git repository.
                           Examples: "helmvalues:./helm/values.yaml", "kustomization:./kustomize/overlays/production".
-                          For ApplicationSet usage, `{{ quote "{{ .app.path.path }}" }}` should be resolved by ApplicationSet
+                          For ApplicationSet usage, `"{{ .app.path.path }}"` should be resolved by ApplicationSet
                           before this CR is generated, resulting in a concrete path here.
                           Required if write-back method is Git and this is not specified at the spec level.
                         type: string
@@ -543,4 +535,3 @@ spec:
     storage: true
     subresources:
       status: {}
-{{- end }}
