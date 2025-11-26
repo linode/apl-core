@@ -30,14 +30,14 @@ spec:
           imageName: "{{ $a.semver.imageRepository }}:{{ $a.semver.versionConstraint }}"
           manifestTargets:
             helm:
-              name: {{ $a.semver.imageParameter | quote }}
-              tag: {{ $a.semver.tagParameter | quote }}
+              name: {{ $a.semver.imageParameter | default "image.name" | quote }}
+              tag: {{ $a.semver.tagParameter | default "image.tag" | quote }}
           {{- else if eq $a.type "digest" }}
           imageName: "{{ $a.digest.imageRepository }}:{{ $a.digest.tag }}"
           manifestTargets:
             helm:
-              name: {{ $a.digest.imageParameter | quote }}
-              tag: {{ $a.digest.tagParameter | quote }}
+              name: {{ $a.digest.imageParameter | default "image.name" | quote }}
+              tag: {{ $a.digest.tagParameter | default "image.tag" | quote }}
           {{- end }}
       writeBackConfig:
         method: git
