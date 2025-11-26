@@ -71,16 +71,21 @@ describe('Installer', () => {
     })
   })
 
+  describe('initialize', () => {
+    test('should run validation and bootstrap', async () => {
+      await installer.initialize()
+
+      expect(mockAplOps.validateCluster).toHaveBeenCalledTimes(1)
+      expect(mockAplOps.bootstrap).toHaveBeenCalledTimes(1)
+    })
+  })
+
   describe('reconcileInstall', () => {
     test('should complete fresh installation successfully', async () => {
-      ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue(null)
       ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
 
       await installer.reconcileInstall()
 
-      expect(mockAplOps.validateCluster).toHaveBeenCalledTimes(1)
-      expect(mockAplOps.bootstrap).toHaveBeenCalledTimes(1)
-      expect(k8s.getK8sConfigMap).toHaveBeenCalledWith('apl-operator', 'apl-installation-status', mockCoreApi)
       expect(mockAplOps.install).toHaveBeenCalledTimes(1)
       expect(k8s.createUpdateConfigMap).toHaveBeenCalledWith(
         mockCoreApi,
@@ -91,18 +96,6 @@ describe('Installer', () => {
           attempt: '1',
         }),
       )
-    })
-
-    test('should skip install when already completed', async () => {
-      ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
-        data: { status: 'completed' },
-      })
-
-      await installer.reconcileInstall()
-
-      expect(mockAplOps.validateCluster).toHaveBeenCalledTimes(1)
-      expect(mockAplOps.bootstrap).toHaveBeenCalledTimes(1)
-      expect(mockAplOps.install).not.toHaveBeenCalled()
     })
 
     test('should retry on bootstrap failure', async () => {
@@ -112,34 +105,14 @@ describe('Installer', () => {
 
       mockAplOps.bootstrap.mockRejectedValueOnce(new Error('Bootstrap failed')).mockResolvedValue(undefined)
 
-      await installer.reconcileInstall()
+      await installer.initialize()
 
       // Verify both attempts occurred
       expect(mockAplOps.bootstrap).toHaveBeenCalledTimes(2)
-      expect(mockAplOps.install).toHaveBeenCalledTimes(1)
+      expect(mockAplOps.install).toHaveBeenCalledTimes(0)
 
-      // Verify failed status was recorded
-      expect(k8s.createUpdateConfigMap).toHaveBeenCalledWith(
-        mockCoreApi,
-        'apl-installation-status',
-        'apl-operator',
-        expect.objectContaining({
-          status: 'failed',
-          attempt: '0',
-          error: 'Bootstrap failed',
-        }),
-      )
-
-      // Verify completion status was recorded
-      expect(k8s.createUpdateConfigMap).toHaveBeenCalledWith(
-        mockCoreApi,
-        'apl-installation-status',
-        'apl-operator',
-        expect.objectContaining({
-          status: 'completed',
-          attempt: '1',
-        }),
-      )
+      // Verify failed status was not set
+      expect(k8s.createUpdateConfigMap).toHaveBeenCalledTimes(0)
     }, 10000)
 
     test('should retry on install failure', async () => {
@@ -237,33 +210,10 @@ describe('Installer', () => {
         .mockRejectedValueOnce(new Error('Cluster validation failed'))
         .mockResolvedValue(undefined)
 
-      await installer.reconcileInstall()
+      await installer.initialize()
 
       // Verify both attempts occurred
       expect(mockAplOps.validateCluster).toHaveBeenCalledTimes(2)
-
-      // Verify failed status was recorded
-      expect(k8s.createUpdateConfigMap).toHaveBeenCalledWith(
-        mockCoreApi,
-        'apl-installation-status',
-        'apl-operator',
-        expect.objectContaining({
-          status: 'failed',
-          attempt: '0',
-          error: 'Cluster validation failed',
-        }),
-      )
-
-      // Verify completion status was recorded
-      expect(k8s.createUpdateConfigMap).toHaveBeenCalledWith(
-        mockCoreApi,
-        'apl-installation-status',
-        'apl-operator',
-        expect.objectContaining({
-          status: 'completed',
-          attempt: '1',
-        }),
-      )
     }, 10000)
 
     test('should handle ConfigMap update failure gracefully', async () => {
@@ -274,30 +224,29 @@ describe('Installer', () => {
 
       // Installation should still complete despite ConfigMap update failure
       expect(mockAplOps.install).toHaveBeenCalledTimes(1)
-      expect(mockAplOps.validateCluster).toHaveBeenCalledTimes(1)
-      expect(mockAplOps.bootstrap).toHaveBeenCalledTimes(1)
     })
   })
 
-  describe('getInstallationStatus (tested indirectly)', () => {
+  describe('isInstalled', () => {
     test('should return completed status when ConfigMap exists', async () => {
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
         data: { status: 'completed' },
       })
 
-      await installer.reconcileInstall()
+      const isInstalled = await installer.isInstalled()
 
       expect(k8s.getK8sConfigMap).toHaveBeenCalledWith('apl-operator', 'apl-installation-status', mockCoreApi)
+      expect(isInstalled).toBe(true)
       expect(mockAplOps.install).not.toHaveBeenCalled()
     })
 
     test('should return pending when ConfigMap does not exist', async () => {
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue(null)
-      ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
 
-      await installer.reconcileInstall()
+      const isInstalled = await installer.isInstalled()
 
-      expect(mockAplOps.install).toHaveBeenCalled()
+      expect(k8s.getK8sConfigMap).toHaveBeenCalledWith('apl-operator', 'apl-installation-status', mockCoreApi)
+      expect(isInstalled).toBe(false)
     })
 
     test('should handle in-progress status', async () => {
@@ -306,10 +255,10 @@ describe('Installer', () => {
       })
       ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
 
-      await installer.reconcileInstall()
+      const isInstalled = await installer.isInstalled()
 
-      // Should proceed with installation when status is in-progress
-      expect(mockAplOps.install).toHaveBeenCalled()
+      expect(k8s.getK8sConfigMap).toHaveBeenCalledWith('apl-operator', 'apl-installation-status', mockCoreApi)
+      expect(isInstalled).toBe(false)
     })
 
     test('should handle failed status', async () => {
@@ -318,10 +267,10 @@ describe('Installer', () => {
       })
       ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
 
-      await installer.reconcileInstall()
+      const isInstalled = await installer.isInstalled()
 
-      // Should proceed with installation when status is failed
-      expect(mockAplOps.install).toHaveBeenCalled()
+      expect(k8s.getK8sConfigMap).toHaveBeenCalledWith('apl-operator', 'apl-installation-status', mockCoreApi)
+      expect(isInstalled).toBe(false)
     })
   })
 
