@@ -13,7 +13,7 @@ jest.mock('../common/debug', () => ({
 }))
 
 jest.mock('../common/k8s', () => ({
-  checkOperationsInProgress: jest.fn(),
+  deletePendingHelmReleases: jest.fn(),
   getK8sConfigMap: jest.fn(),
   getK8sSecret: jest.fn(),
   createUpdateConfigMap: jest.fn(),

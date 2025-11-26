@@ -179,17 +179,18 @@ export const getDeploymentState = async (): Promise<DeploymentState> => {
 }
 interface HelmRelease {
   name: string
+  labelName: string
   namespace: string
   status: string
   app_version: string
   revision: number
-  first_deployed?: string
-  last_deployed?: string
+  first_deployed: Date | undefined | string
+  last_deployed: Date | undefined | string
   chart?: string
 }
 
-export const checkOperationsInProgress = async (): Promise<void> => {
-  const d = terminal(`common:k8s:checkOperationsInProgress`)
+export const deletePendingHelmReleases = async (): Promise<void> => {
+  const d = terminal(`common:k8s:deletePendingHelmReleases`)
   const pendingHelmReleases = await getPendingHelmReleases()
   if (pendingHelmReleases.length > 0) {
     d.info(`Pending Helm operations detected for releases: ${pendingHelmReleases.join(', ')}. removing secrets...`)
@@ -294,7 +295,7 @@ export const getHelmReleases = async (): Promise<Record<string, any>> => {
   return status
 }
 
-export const getK8sHelmReleases = async (): Promise<Record<string, any>> => {
+export const getK8sHelmReleases = async (): Promise<Record<string, HelmRelease>> => {
   const coreApi = k8s.core()
 
   try {
@@ -302,7 +303,7 @@ export const getK8sHelmReleases = async (): Promise<Record<string, any>> => {
       labelSelector: 'owner=helm,status',
     })
 
-    const releases: Record<string, any> = {}
+    const releases: Record<string, HelmRelease> = {}
 
     for (const secret of secretsResponse.items) {
       if (!secret.metadata?.name || !secret.metadata?.namespace || !secret.metadata?.labels) continue
@@ -313,7 +314,7 @@ export const getK8sHelmReleases = async (): Promise<Record<string, any>> => {
       const [, releaseName, revision] = match
       const releaseKey = `${secret.metadata.namespace}/${releaseName}`
 
-      const release = {
+      const release: HelmRelease = {
         name: releaseName,
         labelName: secret.metadata.labels.name,
         namespace: secret.metadata.namespace,
@@ -322,7 +323,7 @@ export const getK8sHelmReleases = async (): Promise<Record<string, any>> => {
         app_version: secret.metadata.labels.version || secret.metadata.labels.app_version,
         chart: secret.metadata.labels.chart,
         first_deployed: secret.metadata?.creationTimestamp,
-        last_deployed: secret.metadata.labels.modifiedAt,
+        last_deployed: secret.metadata?.labels.modifiedAt,
       }
 
       // Keep only the latest revision for each release

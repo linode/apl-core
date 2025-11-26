@@ -616,13 +616,42 @@ describe('patchArgoCdApp', () => {
 describe('helm operations in progress check', () => {
   it('should get pending helm releases', async () => {
     const mockGetK8sHelmReleases = jest.spyOn(k8s, 'getK8sHelmReleases').mockResolvedValue({
-      'release-1:ns-1': { name: 'release-1', namespace: 'ns-1', revision: 2, status: 'pending-upgrade' },
-      'release-2:ns-2': { name: 'release-2', namespace: 'ns-2', revision: 1, status: 'deployed' },
+      'release-1:ns-1': {
+        name: 'release-1',
+        namespace: 'ns-1',
+        revision: 2,
+        status: 'pending-upgrade',
+        labelName: 'test-label',
+        app_version: '',
+        first_deployed: '',
+        last_deployed: '',
+      },
+      'release-2:ns-2': {
+        name: 'release-2',
+        namespace: 'ns-2',
+        revision: 1,
+        status: 'deployed',
+        labelName: 'test-label',
+        app_version: '',
+        first_deployed: '',
+        last_deployed: '',
+      },
     })
 
     const pendingReleases = await k8s.getPendingHelmReleases()
     expect(mockGetK8sHelmReleases).toHaveBeenCalled()
-    expect(pendingReleases).toEqual([{ name: 'release-1', namespace: 'ns-1', revision: 2, status: 'pending-upgrade' }])
+    expect(pendingReleases).toEqual([
+      {
+        name: 'release-1',
+        namespace: 'ns-1',
+        revision: 2,
+        status: 'pending-upgrade',
+        labelName: 'test-label',
+        app_version: '',
+        first_deployed: '',
+        last_deployed: '',
+      },
+    ])
   })
 
   it('should delete secrets for helm releases', async () => {
@@ -640,11 +669,23 @@ describe('helm operations in progress check', () => {
         revision: 2,
         status: 'pending-upgrade',
         app_version: '',
+        labelName: 'test-label',
+        first_deployed: '',
+        last_deployed: '',
       },
-      { name: 'release-2', namespace: 'ns-2', revision: 1, status: 'pending-install', app_version: '' },
+      {
+        name: 'release-2',
+        namespace: 'ns-2',
+        revision: 1,
+        status: 'pending-install',
+        app_version: '',
+        labelName: 'test-label',
+        first_deployed: '',
+        last_deployed: '',
+      },
     ])
 
-    await k8s.checkOperationsInProgress()
+    await k8s.deletePendingHelmReleases()
     expect(mockGetPendingHelmReleases).toHaveBeenCalled()
     expect(mockDeleteSecretForHelmRelease).toHaveBeenNthCalledWith(1, 'release-1', 'ns-1')
     expect(mockDeleteSecretForHelmRelease).toHaveBeenNthCalledWith(3, 'release-2', 'ns-2')

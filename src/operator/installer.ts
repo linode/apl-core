@@ -2,9 +2,9 @@ import * as process from 'node:process'
 import { terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
 import {
-  checkOperationsInProgress,
   createUpdateConfigMap,
   createUpdateGenericSecret,
+  deletePendingHelmReleases,
   getK8sConfigMap,
   getK8sSecret,
   k8s,
@@ -66,7 +66,7 @@ export class Installer {
         this.d.error(`Installation attempt ${attemptNumber} failed:`, errorMessage)
         await this.updateInstallationStatus('failed', attemptNumber, errorMessage)
         this.d.warn(`Installation attempt ${attemptNumber} failed, retrying in 1 second...`, getErrorMessage(error))
-        await checkOperationsInProgress()
+        await deletePendingHelmReleases()
 
         // Wait 1 second before retrying
         await new Promise((resolve) => setTimeout(resolve, 1000))
