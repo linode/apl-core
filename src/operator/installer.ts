@@ -19,21 +19,32 @@ export class Installer {
     this.d.info('Initializing Installer')
   }
 
+  public async isInstalled(): Promise<boolean> {
+    const installStatus = await this.getInstallationStatus()
+    return installStatus === 'completed'
+  }
+
+  public async initialize() {
+    while (true) {
+      try {
+        await this.aplOps.validateCluster()
+        await this.aplOps.bootstrap()
+        return
+      } catch (error) {
+        const errorMessage = getErrorMessage(error)
+        this.d.error(`Bootstrap attempt failed:`, errorMessage)
+
+        // Wait 1 second before retrying
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+    }
+  }
+
   public async reconcileInstall(): Promise<void> {
     let attemptNumber = 0
 
     while (true) {
       try {
-        // Always run bootstrap to ensure the environment is ready (even on restarts)
-        await this.aplOps.validateCluster()
-        await this.aplOps.bootstrap()
-
-        // Check if installation already completed
-        const installStatus = await this.getInstallationStatus()
-        if (installStatus === 'completed') {
-          this.d.info('Installation already completed, skipping install steps')
-          return
-        }
         attemptNumber += 1
         this.d.info(`Starting installation attempt ${attemptNumber}`)
 
