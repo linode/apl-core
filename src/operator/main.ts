@@ -77,8 +77,14 @@ async function main(): Promise<void> {
 
     // Phase 1: Run installation with retry until success
     const installer = new Installer(aplOps)
-    d.info('=== Starting Installation Process ===')
-    await installer.reconcileInstall()
+    const isInstalled = await installer.isInstalled()
+    if (isInstalled) {
+      d.info('Installation already completed, skipping install steps')
+    } else {
+      d.info('=== Starting Installation Process ===')
+      await installer.initialize()
+      await installer.reconcileInstall()
+    }
     const gitCredentials = await installer.setEnvAndCreateSecrets()
 
     // Phase 2: Start operator for GitOps operations
