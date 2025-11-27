@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $c := $v.cluster }}
 {{- $o := $v.apps | get "otomi-console" }}
-{{- $version := $v.versions | get "api" }}
+{{- $version := $v.versions | get "console" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 replicaCount: 1
 resources: {{- $o.resources | toYaml | nindent 2 }}
