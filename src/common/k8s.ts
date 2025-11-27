@@ -148,6 +148,19 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
   }
 }
 
+export const deleteSecretForHelmRelease = async (releaseName: string, namespace: string) => {
+  const d = terminal('common:k8s:deleteSecretForHelmRelease')
+  d.info(`Deleting secret for Helm release ${releaseName} in namespace ${namespace}`)
+  try {
+    await coreClient.deleteNamespacedSecret({ name: `sh.helm.release.v1.${releaseName}.v1`, namespace })
+    d.debug(`Deleted secret for Helm release ${releaseName} in namespace ${namespace}`)
+  } catch (error) {
+    if (error?.response?.statusCode !== 404) {
+      throw error
+    }
+  }
+}
+
 export interface DeploymentState {
   status?: 'deploying' | 'deployed'
   tag?: string
@@ -163,6 +176,47 @@ export const getDeploymentState = async (): Promise<DeploymentState> => {
   if (env.isDev && env.DISABLE_SYNC) return {}
   const result = await $`kubectl get cm -n otomi ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`.nothrow().quiet()
   return JSON.parse(result.stdout || '{}')
+}
+interface HelmRelease {
+  name: string
+  labelName: string
+  namespace: string
+  status: string
+  app_version: string
+  revision: number
+  first_deployed: Date | undefined | string
+  last_deployed: Date | undefined | string
+  chart?: string
+}
+
+export const deletePendingHelmReleases = async (): Promise<void> => {
+  const d = terminal(`common:k8s:deletePendingHelmReleases`)
+  const pendingHelmReleases = await getPendingHelmReleases()
+  if (pendingHelmReleases.length > 0) {
+    d.info(`Pending Helm operations detected for releases: ${pendingHelmReleases.join(', ')}. removing secrets...`)
+    for (const release of pendingHelmReleases) {
+      await deleteSecretForHelmRelease(release.name, release.namespace)
+    }
+  }
+}
+
+export const getPendingHelmReleases = async (): Promise<HelmRelease[]> => {
+  const d = terminal('common:k8s:getPendingHelmReleases')
+  d.info('Checking for pending Helm operations')
+  const releases = await getK8sHelmReleases()
+  const pendingReleases: HelmRelease[] = []
+  Object.keys(releases).forEach((key) => {
+    const release = releases[key]
+    if (release.labelName === 'apl' || release.labelName === 'otomi') return
+    if (
+      release.status === 'pending-upgrade' ||
+      release.status === 'pending-install' ||
+      release.status === 'pending-rollback'
+    ) {
+      pendingReleases.push(release)
+    }
+  })
+  return pendingReleases
 }
 
 /**
@@ -239,6 +293,49 @@ export const getHelmReleases = async (): Promise<Record<string, any>> => {
     return acc
   }, {})
   return status
+}
+
+export const getK8sHelmReleases = async (): Promise<Record<string, HelmRelease>> => {
+  const coreApi = k8s.core()
+
+  try {
+    const secretsResponse = await coreApi.listSecretForAllNamespaces({
+      labelSelector: 'owner=helm,status',
+    })
+
+    const releases: Record<string, HelmRelease> = {}
+
+    for (const secret of secretsResponse.items) {
+      if (!secret.metadata?.name || !secret.metadata?.namespace || !secret.metadata?.labels) continue
+
+      const match = secret.metadata.name.match(/^sh\.helm\.release\.v1\.(.+)\.v(\d+)$/)
+      if (!match) continue
+
+      const [, releaseName, revision] = match
+      const releaseKey = `${secret.metadata.namespace}/${releaseName}`
+
+      const release: HelmRelease = {
+        name: releaseName,
+        labelName: secret.metadata.labels.name,
+        namespace: secret.metadata.namespace,
+        revision: parseInt(revision),
+        status: secret.metadata.labels.status,
+        app_version: secret.metadata.labels.version || secret.metadata.labels.app_version,
+        chart: secret.metadata.labels.chart,
+        first_deployed: secret.metadata?.creationTimestamp,
+        last_deployed: secret.metadata?.labels.modifiedAt,
+      }
+
+      // Keep only the latest revision for each release
+      if (!releases[releaseKey] || releases[releaseKey].revision < release.revision) {
+        releases[releaseKey] = release
+      }
+    }
+
+    return releases
+  } catch (error) {
+    throw new Error(`Failed to get Helm releases from Kubernetes: ${error.message}`)
+  }
 }
 
 export const setDeploymentState = async (state: Record<string, any>): Promise<void> => {

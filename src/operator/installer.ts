@@ -1,9 +1,9 @@
+import * as process from 'node:process'
 import { terminal } from '../common/debug'
-import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
 import { hfValues } from '../common/hf'
+import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
-import * as process from 'node:process'
 
 export interface GitCredentials {
   username: string
