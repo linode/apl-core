@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apl-installation-status
+  namespace: apl-operator
+data:
+  status: "pending"
