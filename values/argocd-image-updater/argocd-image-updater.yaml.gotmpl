@@ -8,3 +8,6 @@ image:
   pullPolicy: IfNotPresent
 
 resources: {{ $a.resources.imageUpdater | toYaml | nindent 2 }}
+
+config:
+  git.commit-message-template: "build: automatic update of {{ .AppName }} [ci skip]"
