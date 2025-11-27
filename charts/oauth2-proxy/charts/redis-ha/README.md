@@ -216,6 +216,8 @@ The following table lists the configurable parameters of the Redis chart and the
 | `sentinel.livenessProbe.successThreshold` | Success threshold for liveness probe | int | `1` |
 | `sentinel.livenessProbe.timeoutSeconds` | Timeout seconds for liveness probe | int | `15` |
 | `sentinel.password` | A password that configures a `requirepass` in the conf parameters (Requires `sentinel.auth: enabled`) | string | `nil` |
+| `sentinel.resolveHostnames` | Configures sentinel with resolve-hostnames parameter, if true sets "resolve-hostnames yes" in sentinel.conf | bool | `nil` |
+| `sentinel.announceHostnames` | Configures sentinel with announce-hostnames parameter, if true sets "announce-hostnames yes" in sentinel.conf | bool | `nil` |
 | `sentinel.port` | Port to access the sentinel service | int | `26379` |
 | `sentinel.quorum` | Minimum number of nodes expected to be live. | int | `2` |
 | `sentinel.readinessProbe.enabled` |  | bool | `true` |
