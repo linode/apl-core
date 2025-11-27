@@ -270,7 +270,7 @@ jobs:
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Checkout
         if: ${{ inputs.install_profile != 'no-apl' }}
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Set up Wiz
         if: ${{ inputs.enableWiz }}
         run: |
