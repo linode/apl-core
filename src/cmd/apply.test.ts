@@ -11,6 +11,7 @@ jest.mock('fs', () => ({
 }))
 
 jest.mock('src/common/k8s', () => ({
+  deletePendingHelmReleases: jest.fn(),
   getDeploymentState: jest.fn(),
   setDeploymentState: jest.fn(),
   restartOtomiApiDeployment: jest.fn(),
@@ -93,6 +94,7 @@ describe('Apply command', () => {
       applyAsApps: require('./apply-as-apps').applyAsApps,
       commit: require('./commit').commit,
       runtimeUpgrade: require('src/common/runtime-upgrade').runtimeUpgrade,
+      deletePendingHelmReleases: require('src/common/k8s').deletePendingHelmReleases,
       cd: require('zx').cd,
       getParsedArgs: require('src/common/yargs').getParsedArgs,
     }
@@ -104,6 +106,7 @@ describe('Apply command', () => {
     mockDeps.applyAsApps.mockResolvedValue(true)
     mockDeps.commit.mockResolvedValue(undefined)
     mockDeps.runtimeUpgrade.mockResolvedValue(undefined)
+    mockDeps.deletePendingHelmReleases.mockResolvedValue(undefined)
     mockDeps.getParsedArgs.mockReturnValue({})
   })
 
