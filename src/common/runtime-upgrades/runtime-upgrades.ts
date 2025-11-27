@@ -6,7 +6,7 @@ import { updateDbCollation } from './cloudnative-pg'
 import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
-import { detachApplicationFromApplicationSet, pruneArgoCDImageUpdater } from './v4.13.0'
+import { detachApplicationFromApplicationSet, pruneArgoCDImageUpdater, resetGiteaPasswordValidity } from './v4.13.0'
 import { removeHttpBinApplication } from './remove-httpbin-application'
 
 export interface RuntimeUpgradeContext {
@@ -149,6 +149,13 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     },
     post: async () => {
       await removeHttpBinApplication()
+    },
+    applications: {
+      'gitea-gitea': {
+        post: async (context: RuntimeUpgradeContext) => {
+          await resetGiteaPasswordValidity(context)
+        },
+      },
     },
   },
 ]
