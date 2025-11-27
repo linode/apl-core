@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { getDeploymentState, setDeploymentState } from 'src/common/k8s'
+import { deletePendingHelmReleases, getDeploymentState, setDeploymentState } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -91,6 +91,7 @@ export const apply = async (): Promise<void> => {
           d.error('Failed to collect traces:', traceError)
         }
         d.info(`Retrying in ${retryOptions.maxTimeout} ms`)
+        await deletePendingHelmReleases()
         throw e
       }
     }, retryOptions)
