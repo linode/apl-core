@@ -154,20 +154,34 @@ configs:
           - "tekton.dev"
           kinds:
           - "TaskRun"
-
-
     resource.customizations.knownTypeFields.cert-manager.io_Certificate: |
         - field: spec.duration
           type: meta/v1/Duration
+    ### Drift on creationTimestamp - https://github.com/argoproj/argo-cd/issues/25033
+    resource.customizations.ignoreDifferences.apps_DaemonSet: |
+        jqPathExpressions:
+          - '.spec.template.metadata.creationTimestamp'
+    resource.customizations.ignoreDifferences.apps_Deployment: |
+        jqPathExpressions:
+          - '.spec.template.metadata.creationTimestamp'
+    resource.customizations.ignoreDifferences.apps_StatefulSet: |
+        jqPathExpressions:
+          - '.spec.template.metadata.creationTimestamp'
+          - '.spec.volumeClaimTemplates[].metadata.creationTimestamp'
+    resource.customizations.ignoreDifferences.batch_CronJob: |
+        jqPathExpressions:
+          - '.spec.jobTemplate.metadata.creationTimestamp'
+          - '.spec.jobTemplate.spec.template.metadata.creationTimestamp'
+    ###
     resource.customizations.ignoreDifferences.cert-manager.io_Certificate: |
-      jqPathExpressions:
-        - '.metadata.generation'
+        jqPathExpressions:
+          - '.metadata.generation'
     resource.customizations.ignoreDifferences.apiextensions.k8s.io_CustomResourceDefinition: |
         jqPathExpressions:
           - '.metadata.annotations'
     resource.customizations.ignoreDifferences.admissionregistration.k8s.io_ValidatingWebhookConfiguration: |
         jqPathExpressions:
-          - '.metadata.generation'
+            - '.metadata.generation'
     oidc.config: |
       name: Otomi
       issuer: {{ $v._derived.oidcBaseUrl }}
