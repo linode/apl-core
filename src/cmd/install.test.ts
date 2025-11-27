@@ -42,6 +42,7 @@ jest.mock('zx', () => ({
 jest.mock('./commit', () => ({
   commit: jest.fn(),
   cloneOtomiChartsInGitea: jest.fn(),
+  deletePendingHelmReleases: jest.fn(),
   initialSetupData: jest.fn().mockResolvedValue({
     secretName: 'test-secret',
     username: 'admin',
@@ -81,6 +82,7 @@ describe('Install command', () => {
     process.env.DISABLE_SYNC = 'false'
 
     mockDeps = {
+      deletePendingHelmReleases: require('src/common/k8s').deletePendingHelmReleases,
       getDeploymentState: require('src/common/k8s').getDeploymentState,
       setDeploymentState: require('src/common/k8s').setDeploymentState,
       getHelmReleases: require('src/common/k8s').getHelmReleases,
