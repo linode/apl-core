@@ -85,11 +85,11 @@ extraEnv: |
   - name: KC_HOSTNAME
     value: keycloak.{{ $v.cluster.domainSuffix }}
   - name: KC_DB_POOL_INITIAL_SIZE
-    value: "5"
+    value: {{ $k.databaseInitialConnections | quote }}
   - name: KC_DB_POOL_MIN_SIZE
-    value: "5"
+    value: {{ $k.databaseMinConnections | quote }}
   - name: KC_DB_POOL_MAX_SIZE
-    value: "32"
+    value: {{ $k.databaseMaxConnections | quote }}
   - name: KC_BOOTSTRAP_ADMIN_USERNAME
     valueFrom:
       secretKeyRef:

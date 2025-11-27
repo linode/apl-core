@@ -1686,27 +1686,18 @@ properties:
             description: This password was generated and cannot be changed without manual intervention.
             x-secret: '{{ randAlphaNum 20 }}'
             readOnly: true
-          image:
-            additionalProperties: false
-            properties:
-              gitea:
-                $ref: '#/definitions/imageSimple'
-              postgresql:
-                $ref: '#/definitions/imageSimple'
-              memcached:
-                $ref: '#/definitions/imageSimple'
+          databaseMaxConnections:
+            type: number
+            description: Maximum amount of total connections of the application to the database server
+          databaseMaxIdleConnections:
+            type: number
+            description: Maximum amount of idle connections of the application to the database server
           resources:
             additionalProperties: false
             properties:
               gitea:
                 $ref: '#/definitions/resources'
               init:
-                $ref: '#/definitions/resources'
-              postgresql:
-                $ref: '#/definitions/resources'
-              memcached:
-                $ref: '#/definitions/resources'
-              memcachedMetrics:
                 $ref: '#/definitions/resources'
           networkPolicies:
             $ref: '#/definitions/appNetworkPolicyConfig'
@@ -1779,8 +1770,12 @@ properties:
             required:
               - secret
               - credentials
-          image:
-            $ref: '#/definitions/imageSimple'
+          databaseMaxConnections:
+            type: number
+            description: Maximum amount of total connections of the application to the database server
+          databaseMaxIdleConnections:
+            type: number
+            description: Maximum amount of idle connections of the application to the database server
           resources:
             additionalProperties: false
             properties:
@@ -1890,6 +1885,15 @@ properties:
                 $ref: '#/definitions/imageSimple'
               postgresql:
                 $ref: '#/definitions/imageSimple'
+          databaseMaxConnections:
+            type: number
+            description: Maximum amount of total connections of the application to the database server
+          databaseMinConnections:
+            type: number
+            description: Minimum amount of connections of the application to the database server
+          databaseInitialConnections:
+            type: number
+            description: Initial amount of connections of the application to the database server on startup
           resources:
             additionalProperties: false
             properties:
@@ -3015,10 +3019,6 @@ properties:
               enabled:
                 type: boolean
                 default: false
-              resources:
-                $ref: '#/definitions/resources'
-              backupSidecarResources:
-                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3033,10 +3033,6 @@ properties:
               enabled:
                 type: boolean
                 default: false
-              resources:
-                $ref: '#/definitions/resources'
-              backupSidecarResources:
-                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3051,10 +3047,6 @@ properties:
               enabled:
                 type: boolean
                 default: false
-              resources:
-                $ref: '#/definitions/resources'
-              backupSidecarResources:
-                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3153,6 +3145,13 @@ properties:
             type: string
           resources:
             $ref: '#/definitions/resources'
+          backupSidecarResources:
+            $ref: '#/definitions/resources'
+          postgresqlParameters:
+            type: object
+            additionalProperties:
+              type: string
+            default: {}
           replicas:
             type: integer
             default: 2
@@ -3175,6 +3174,13 @@ properties:
             type: string
           resources:
             $ref: '#/definitions/resources'
+          backupSidecarResources:
+            $ref: '#/definitions/resources'
+          postgresqlParameters:
+            type: object
+            additionalProperties:
+              type: string
+            default: {}
           replicas:
             type: integer
             default: 2
@@ -3197,6 +3203,13 @@ properties:
             type: string
           resources:
             $ref: '#/definitions/resources'
+          backupSidecarResources:
+            $ref: '#/definitions/resources'
+          postgresqlParameters:
+            type: object
+            additionalProperties:
+              type: string
+            default: {}
           replicas:
             type: integer
             default: 2

@@ -9,7 +9,7 @@ spec:
     resources:
         gitea:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 100m
@@ -21,17 +21,3 @@ spec:
             requests:
                 cpu: 100m
                 memory: 128Mi
-        memcached:
-            limits:
-                cpu: 250m
-                memory: 256Mi
-            requests:
-                cpu: 10m
-                memory: 128Mi
-        memcachedMetrics:
-            limits:
-                cpu: 200m
-                memory: 128M
-            requests:
-                cpu: 10m
-                memory: 16M
