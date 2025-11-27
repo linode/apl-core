@@ -145,6 +145,12 @@ export async function resetGiteaPasswordValidity(context: RuntimeUpgradeContext)
     const giteaCredentialsSecret = await getK8sSecret('gitea-credentials', 'apl-operator')
     const userName = giteaCredentialsSecret?.GITEA_USERNAME ?? 'otomi-admin'
     const resetCmd = ['gitea', 'admin', 'user', 'must-change-password', '--unset', userName as string]
-    await exec(firstPod.metadata!.namespace as string, firstPod.metadata!.name as string, 'gitea', resetCmd)
+    const { stdout, stderr } = await exec(
+      firstPod.metadata!.namespace as string,
+      firstPod.metadata!.name as string,
+      'gitea',
+      resetCmd,
+    )
+    context.debug.info(stderr, stdout)
   }
 }
