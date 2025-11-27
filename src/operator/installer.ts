@@ -75,6 +75,7 @@ export class Installer {
     const configMap = await getK8sConfigMap('apl-operator', 'apl-installation-status', k8s.core())
     const status = configMap?.data?.status
     this.d.info(`Current installation status: ${status}`)
+    this.d.debug(`ConfigMap data: ${configMap?.data}`)
     return status
   }
 
