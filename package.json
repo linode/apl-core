@@ -24,7 +24,7 @@
     "express": "5.1.0",
     "fs-extra": "11.3.2",
     "generate-password": "1.7.1",
-    "glob": "11.0.3",
+    "glob": "13.0.0",
     "ignore-walk": "8.0.0",
     "jsonpath": "1.1.1",
     "lodash": "4.17.21",
