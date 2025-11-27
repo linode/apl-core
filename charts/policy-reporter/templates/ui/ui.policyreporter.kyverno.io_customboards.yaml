@@ -1,0 +1,176 @@
+{{- if and .Values.ui.enabled .Values.ui.crds.customBoard -}}
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  {{- if .Values.annotations }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+  {{- end }}
+  name: customboards.ui.policyreporter.kyverno.io
+spec:
+  group: ui.policyreporter.kyverno.io
+  names:
+    kind: CustomBoard
+    listKind: CustomBoardList
+    plural: customboards
+    shortNames:
+    - cb
+    singular: customboard
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.name
+      name: Name
+      priority: 1
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: CustomBoard is the Schema for the customboards API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              accessControl:
+                description: AccessControl is an optional reference to the custom
+                  boards access control
+                oneOf:
+                - required:
+                  - emails
+                - required:
+                  - groups
+                properties:
+                  emails:
+                    description: Source is an identifier for the policy engine that
+                      manages this report
+                    items:
+                      type: string
+                    type: array
+                  groups:
+                    description: Rule is the name or identifier of the rule within
+                      the policy
+                    items:
+                      type: string
+                    type: array
+                type: object
+              clusterScope:
+                properties:
+                  enabled:
+                    type: boolean
+                required:
+                - enabled
+                type: object
+              display:
+                description: Allowed values are "resources" or "results".
+                type: string
+              filter:
+                properties:
+                  clusterKinds:
+                    properties:
+                      exclude:
+                        items:
+                          type: string
+                        type: array
+                      include:
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                  namespaceKinds:
+                    properties:
+                      exclude:
+                        items:
+                          type: string
+                        type: array
+                      include:
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                  results:
+                    properties:
+                      exclude:
+                        items:
+                          type: string
+                        type: array
+                      include:
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                  severities:
+                    properties:
+                      exclude:
+                        items:
+                          type: string
+                        type: array
+                      include:
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                type: object
+              namespaces:
+                description: NamespaceSelector allows to select visualized namespaces
+                oneOf:
+                - required:
+                  - labelSelector
+                - required:
+                  - list
+                properties:
+                  labelSelector:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  list:
+                    items:
+                      type: string
+                    type: array
+                type: object
+              policyReports:
+                description: PolicyReportSelector allows to select visualized reports
+                properties:
+                  labelSelector:
+                    additionalProperties:
+                      type: string
+                    type: object
+                type: object
+              sources:
+                description: SourceSelector allows to select visualized sources
+                properties:
+                  list:
+                    items:
+                      type: string
+                    type: array
+                type: object
+              title:
+                type: string
+            required:
+            - namespaces
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources: {}
+{{- end -}}
