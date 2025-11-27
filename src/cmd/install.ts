@@ -4,7 +4,14 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
-import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState, waitForCRD } from 'src/common/k8s'
+import {
+  applyServerSide,
+  deletePendingHelmReleases,
+  getDeploymentState,
+  getHelmReleases,
+  setDeploymentState,
+  waitForCRD,
+} from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -122,6 +129,7 @@ const install = async (): Promise<void> => {
       // Collect traces on installation failure
       try {
         await collectTraces()
+        await deletePendingHelmReleases()
       } catch (traceError) {
         d.error('Failed to collect traces:', traceError)
       }
