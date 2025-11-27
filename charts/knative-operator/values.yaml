@@ -1,7 +1,7 @@
 knative_operator:
   knative_operator:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
-    tag: v1.18.1
+    tag: v1.20.0
     affinity: {}
     tolerations: []
     containerSecurityContext:
@@ -17,7 +17,7 @@ knative_operator:
         memory: 1000Mi
   operator_webhook:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
-    tag: v1.18.1
+    tag: v1.20.0
     affinity:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       podAntiAffinity:

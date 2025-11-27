@@ -53,7 +53,7 @@ dependencies:
     version: 7.1.4
     repository: https://codecentric.github.io/helm-charts
   - name: knative-operator
-    version: v1.18.1
+    version: v1.20.0
     repository: https://knative.github.io/operator
   - name: kserve-crd
     version: v0.16.0
