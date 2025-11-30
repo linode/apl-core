@@ -63,7 +63,7 @@ See [Helm Configuration](#helm-configuration) and [App Configuration](https://gi
 
 ```bash
 helm upgrade --install prometheus-msteams \
-  --namespace default -f config.yaml
+  --namespace default -f config.yaml \
   prometheus-msteams/prometheus-msteams
 ```
 
@@ -89,7 +89,7 @@ Otherwise you can also set the value by specifying the template data directly vi
 
 ### Customise Messages per MS Teams Channel
 
-This application uses a [Default Teams Message Card Template](./prometheus-msteams/card.tmpl) to convert incoming Prometheus alerts to teams message cards.
+This application uses a [Default Teams Message Card Template](./card.tmpl) to convert incoming Prometheus alerts to teams message cards.
 To define a custom message template per MS Teams channel you can use the following configuration:
 
 ```yaml

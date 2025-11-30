@@ -41,3 +41,14 @@ Return the appropriate apiVersion for deployment.
 {{- print "apps/v1beta2" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "app.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "app.fullname" .) .Values.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.name }}
+{{- end }}
+{{- end }}

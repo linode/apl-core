@@ -3,7 +3,7 @@ replicaCount: 1
 
 image:
   repository: quay.io/prometheusmsteams/prometheus-msteams
-  tag: v1.5.2
+  tag: v1.5.3
   pullPolicy: Always
 
 imagePullSecrets: []
@@ -25,6 +25,15 @@ resources: {}
 service:
   type: ClusterIP
   port: 2000
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
 
 nodeSelector: {}
 
@@ -89,3 +98,6 @@ envFrom: {}
 #       name: my-prometheus-msteams-env-secret
 #   - configMapRef:
 #       name: my-prometheus-msteams-env-cm
+
+# Whether to use the new Microsoft Workflow webhooks
+workflowWebhook: false

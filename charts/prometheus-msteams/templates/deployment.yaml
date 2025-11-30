@@ -28,10 +28,11 @@ spec:
 {{ toYaml .Values.podAnnotations | indent 8 }}
 {{- end }}
     spec:
+      serviceAccountName: {{ include "app.serviceAccountName" . }}
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .Values.imagePullSecrets | indent 8 }}
-      {{- end}}
+      {{- end }}
       volumes:
         - name: config-volume
           configMap:
@@ -70,6 +71,9 @@ spec:
           args:
             - -config-file=/etc/config/connectors.yaml
             - -template-file={{ .Values.templateFile }}
+{{- if .Values.workflowWebhook }}
+            - -workflow-webhook={{ .Values.workflowWebhook }}
+{{- end }}
           {{- with .Values.container.additionalArgs }}
 {{ toYaml . | indent 12 }}
           {{- end}}
