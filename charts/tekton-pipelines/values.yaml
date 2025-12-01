@@ -1,3 +1,9 @@
+# Set to false to skip ClusterRole and ClusterRoleBinding installation
+# Useful when RBAC is managed separately by cluster admins
+createClusterRoles: true
+# Create aggregated roles that extend existing cluster roles
+# Ref: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#aggregated-clusterroles
+createAggregateRoles: true
 namespace:
   name: tekton-pipelines
   create: true
@@ -19,7 +25,7 @@ serviceaccount:
 # Values for tekton-pipelines-controller
 controller:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.3.1@sha256:702fca76e77ef1dc991d72b41fe7af4be00f0e0c84160060a7bdf11cd6a3429f
+    image: ghcr.io/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.6.0@sha256:84efabe03a5e5441379171d5c071bc28612aa7656ec4f508b01d89ee431e4141
     labels: {}
   pod:
     labels: {}
@@ -209,6 +215,14 @@ configDefaults:
     # This value is used by the sidecar-tekton-log-results container and can be tuned for performance or test scenarios.
     # Example values: "100ms", "500ms", "1s"
     default-sidecar-log-polling-interval: "100ms"
+
+    # default-step-ref-concurrency-limit specifies the concurrency limit for resolving step references.
+    # This setting controls the maximum number of concurrent goroutines used to resolve
+    # step references (`step.ref` fields) simultaneously. This limit acts as a throttle
+    # to prevent overwhelming remote servers (e.g., git providers, OCI registries) or
+    # the Kubernetes API server, especially when a TaskRun contains many steps that
+    # reference StepActions.
+    default-step-ref-concurrency-limit: "5"
 gitResolverConfig:
   # The maximum amount of time a single anonymous cloning resolution may take.
   fetch-timeout: "1m"
@@ -229,6 +243,11 @@ gitResolverConfig:
   # The default organization to look for repositories under when using the authenticated API,
   # if not specified in the resolver parameters. Optional.
   default-org: ""
+  # Optional: Default cache mode for this resolver. Valid values: "always", "never", "auto" (default: "auto")
+  # "always" - Always cache resolved resources
+  # "never"  - Never cache resolved resources
+  # "auto"   - Only cache when revision is a commit hash
+  # default-cache-mode: "auto"
 # feature flags to put in feature-flags ConfigMap
 featureFlags:
   # Setting this flag will determine how PipelineRun Pods are scheduled with Affinity Assistant.
