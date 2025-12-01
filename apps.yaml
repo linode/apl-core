@@ -9,7 +9,7 @@ appsInfo:
     license: Apache 2.0
     dependencies: Prometheus
     about: Alertmanager handles alerts sent by client applications such as the Prometheus server. It takes care of de-duplicating, grouping, and routing them to the correct receiver integration such as email, PagerDuty, or OpsGenie. Alertmanager also takes care of silencing and inhibition of alerts.
-    integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by APL to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
+    integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by App Platform to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: Argo CD
     appVersion: 3.2.1
@@ -20,7 +20,7 @@ appsInfo:
     license: Apache 2.0
     dependencies: None
     about: Argo CD is a declarative, GitOps continuous delivery tool for Kubernetes.
-    integration: Argo CD is configured by APL to use the SSO provided by keycloak, and maps APL groups to Argo CD roles. The otomi-admin role is made super admin within Argo CD. The team-admin role has access to Argo CD and is admin of all team projects. Members of team roles are only allowed to administer their own projects. All Teams will automatically get access to a Git repo, and Argo CD is configured to listen to this repo. All a team has to do is to fill their repo with intended state, commit, and automation takes care of the rest.
+    integration: Argo CD is configured by App Platform to use the SSO provided by keycloak, and maps App Platform groups to Argo CD roles. The otomi-admin role is made super admin within Argo CD. The team-admin role has access to Argo CD and is admin of all team projects. Members of team roles are only allowed to administer their own projects. All Teams will automatically get access to a Git repo, and Argo CD is configured to listen to this repo. All a team has to do is to fill their repo with intended state, commit, and automation takes care of the rest.
   cert-manager:
     title: Cert-manager
     appVersion: 1.19.1
@@ -30,7 +30,7 @@ appsInfo:
       - https://cert-manager.io/
     license: Apache 2.0
     about: Cert-manager adds certificates and certificate issuers as resource types in Kubernetes clusters, and simplifies the process of obtaining, renewing and using those certificates. It can issue certificates from a variety of supported sources, including Let's Encrypt, HashiCorp Vault, and Venafi as well as private PKI, and it ensures certificates remain valid and up to date, attempting to renew certificates at an appropriate time before expiry.
-    integration: Cert-manager is used by APL to automatically create and rotate TLS certificates for service endpoints. You may bring your own CA, or let APL create one for you (default). It is recommended to use Let's Encrypt for production certificates. Setting cert-manager to use Let's Encrypt requires DNS availability of the requesting domains, and forces APL to install external-dns. Because a lot of DNS settings are used by other APL contexts, most DNS configuration is found under settings/dns.
+    integration: Cert-manager is used by App Platform to automatically create and rotate TLS certificates for service endpoints. You may bring your own CA, or let App Platform create one for you (default). It is recommended to use Let's Encrypt for production certificates. Setting cert-manager to use Let's Encrypt requires DNS availability of the requesting domains, and forces App Platform to install external-dns. Because a lot of DNS settings are used by other App Platform contexts, most DNS configuration is found under settings/dns.
   cnpg:
     title: CloudNative PostgreSQL Operator
     appVersion: 1.27.1
@@ -41,7 +41,7 @@ appsInfo:
       - https://cloudnative-pg.io/documentation/1.20/
     license: Apache 2.0
     about: CloudNative PostgreSQL is an open source operator designed to manage PostgreSQL workloads on any supported Kubernetes cluster running in private, public, hybrid, or multi-cloud environments.
-    integration: CloudNativePG is used by APL to provide Postgresql database for various applications. In the values you can configure a storageprovider for backups. The backups can be enabled in settings.
+    integration: CloudNativePG is used by App Platform to provide Postgresql database for various applications. In the values you can configure a storageprovider for backups. The backups can be enabled in settings.
     chartName: cloudnative-pg
   external-dns:
     title: External DNS
@@ -52,7 +52,7 @@ appsInfo:
       - https://kubernetes-sigs.github.io/external-dns/v0.12.2/
     license: Apache 2.0
     about: ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with DNS providers.
-    integration: ExternalDNS is used by APL to make public service domains accessible by registering them with APL's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then APL will rely on nip.io to create host names for all services.
+    integration: ExternalDNS is used by App Platform to make public service domains accessible by registering them with App Platform's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then App Platform will rely on nip.io to create host names for all services.
   gitea:
     title: Gitea Self-hosted GIT
     appVersion: 1.24.7
@@ -62,7 +62,7 @@ appsInfo:
       - https://docs.gitea.io/en-us/
     license: MIT
     about: Gitea is a painless self-hosted Git service. It is similar to GitHub, Bitbucket, and GitLab. Gitea is a fork of Gogs. See the Gitea Announcement blog post to read about the justification for a fork.
-    integration: APL uses Gitea as its default repository for APL configuration (values). Gitea can also be used by Teams to provide application code repositories. Access to Gitea is provided by the OIDC integration in APL. Members of the otomi-admin and team-admin group can seamlessly sign in to Gitea. When Argo CD is enabled, APL will automatically create a Gitops repository for each Team in Gitea.
+    integration: App Platform uses Gitea as its default repository for App Platform configuration (values). Gitea can also be used by Teams to provide application code repositories. Access to Gitea is provided by the OIDC integration in App Platform. Members of the otomi-admin and team-admin group can seamlessly sign in to Gitea. When Argo CD is enabled, App Platform will automatically create a Gitops repository for each Team in Gitea.
   grafana:
     title: Grafana
     appVersion: 12.2.1
@@ -73,7 +73,7 @@ appsInfo:
     license: AGPL-3.0
     dependencies: Prometheus
     about: Grafana allows you to query, visualize, alert on and understand your metrics no matter where they are stored. Create, explore, and share dashboards with your team and foster a data-driven culture.
-    integration: APL uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
+    integration: App Platform uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
     appVersion: 2.14.0
@@ -84,7 +84,7 @@ appsInfo:
     license: Apache 2.0
     dependencies: None
     about: Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.
-    integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. APL runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
+    integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. App Platform runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
   ingress-nginx:
     title: Ingress-NGINX
     appVersion: 1.14.0
@@ -94,7 +94,7 @@ appsInfo:
       - https://docs.nginx.com/nginx-ingress-controller
     license: Apache 2.0
     about: ingress-nginx is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer.
-    integration: APL integrated ingress-nginx into an advanced ingress architecture.
+    integration: App Platform integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
     appVersion: 1.27.3
@@ -104,7 +104,7 @@ appsInfo:
       - https://istio.io/
     license: Apache 2.0
     about: Istio is an open platform for providing a uniform way to integrate microservices, manage traffic flow across microservices, enforce policies and aggregate telemetry data. Istio's control plane provides an abstraction layer over the underlying cluster management platform.
-    integration: APL has security best practices built in, and is designed for intrusion. Istio is used by APL as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of APL and can not be disabled.
+    integration: App Platform has security best practices built in, and is designed for intrusion. Istio is used by App Platform as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of App Platform and can not be disabled.
   keycloak:
     title: Keycloak
     appVersion: 26.4.2
@@ -114,7 +114,7 @@ appsInfo:
       - https://www.keycloak.org/documentation.html
     license: Apache 2.0
     about: Keycloak is an Open Source Identity and Access Management solution for modern Applications and Services.
-    integration: The SSO login page for APL is served by Keycloak. Keycloak is used as an identity broker or provider for all APL integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of APL and is always enabled.
+    integration: The SSO login page for App Platform is served by Keycloak. Keycloak is used as an identity broker or provider for all App Platform integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of App Platform and is always enabled.
   knative:
     title: Knative Operator
     appVersion: 1.18.1
@@ -124,7 +124,7 @@ appsInfo:
       - https://knative.dev/docs/serving/
     license: Apache 2.0
     about: Knative Serving builds on Kubernetes to support deploying and serving of applications and functions as serverless containers. Serving is easy to get started with and scales to support advanced scenarios.
-    integration: Knative serving can be activated to deliver Container-as-a-Service (CaaS) functionality with a scale-to-zero option. It can be compared to Functions-as-a-service (FaaS) but is container oriented, and takes only one manifest to configure an auto scaling service based on a container image of choice. APL offers an on-the-fly Knative service deployment, making it very easy to deploy containerized services without the hassle of providing all the supporting resources involved with Helm charts. Istio Virtual Services are used to route traffic coming in for a public domain to its backing Knative Service, allowing it to set a custom domain.
+    integration: Knative serving can be activated to deliver Container-as-a-Service (CaaS) functionality with a scale-to-zero option. It can be compared to Functions-as-a-service (FaaS) but is container oriented, and takes only one manifest to configure an auto scaling service based on a container image of choice. App Platform offers an on-the-fly Knative service deployment, making it very easy to deploy containerized services without the hassle of providing all the supporting resources involved with Helm charts. Istio Virtual Services are used to route traffic coming in for a public domain to its backing Knative Service, allowing it to set a custom domain.
     chartName: knative-operator
   kserve:
     title: Kserve
@@ -170,7 +170,7 @@ appsInfo:
     license: Apache 2.0
     dependencies: Harbor
     about: Tekton Pipelines provides Kubernetes custom resources for declaring CI/CD-style pipelines.
-    integration: APL uses Tekton to proivide pre-build pipelines using the git-clone, buildpacks and kaniko tasks to build images from source code and push the created images to Harbor.
+    integration: App Platform uses Tekton to proivide pre-build pipelines using the git-clone, buildpacks and kaniko tasks to build images from source code and push the created images to Harbor.
     chartName: tekton-pipelines
   loki:
     title: Loki
@@ -182,7 +182,7 @@ appsInfo:
     license: AGPL-3.0
     dependencies: Prometheus, Grafana
     about: Loki is a horizontally-scalable, highly-available, multi-tenant log aggregation system inspired by Prometheus. It is designed to be very cost effective and easy to operate. It does not index the contents of the logs, but rather a set of labels for each log stream.
-    integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When APL is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. APL shortcuts can be used to provide selections of logs based on interest.
+    integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When App Platform is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. App Platform shortcuts can be used to provide selections of logs based on interest.
   minio:
     title: Minio
     appVersion: RELEASE.2025-09-07T16-13-09Z
@@ -193,7 +193,7 @@ appsInfo:
     license: Apache 2.0
     dependencies: None
     about: MinIO is a High Performance Object Storage and its API is compatible with the Amazon Web Services S3 cloud storage service.
-    integration: APL installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in APL capable of using object storage for data persistence.
+    integration: App Platform installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in App Platform capable of using object storage for data persistence.
   prometheus:
     title: Prometheus
     appVersion: 3.7.3
@@ -203,7 +203,7 @@ appsInfo:
       - https://prometheus.io/
     license: Apache 2.0
     about: Prometheus is a systems and service monitoring system. It collects metrics from configured targets at given intervals, evaluates rule expressions, displays the results, and can trigger alerts when specified conditions are observed.
-    integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When APL is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
+    integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When App Platform is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
   rabbitmq:
     title: RabbitMQ
     appVersion: 2.16.1
@@ -215,7 +215,7 @@ appsInfo:
     license: MPL-2.0 license
     dependencies: None
     about: RabbitMQ is the most widely deployed open source message broker.
-    integration: APL install the RabbitMQ-Cluster-Kubernetes-Operator, afterwards users can use the RabbitMQ Catalog item to create RabbitMQ-cluster with queues and policies.
+    integration: App Platform install the RabbitMQ-Cluster-Kubernetes-Operator, afterwards users can use the RabbitMQ Catalog item to create RabbitMQ-cluster with queues and policies.
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
@@ -226,7 +226,7 @@ appsInfo:
       - https://github.com/bitnami-labs/sealed-secrets/tree/main/docs
     license: Apache 2.0
     about: Sealed Secrets is a Kubernetes Custom Resource Definition Controller which allows you to store even sensitive information in Git repositories.
-    integration: APL uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
+    integration: App Platform uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
   tempo:
     title: Tempo
     appVersion: 2.6.0
@@ -237,7 +237,7 @@ appsInfo:
     license: AGPL-3.0
     dependencies: Prometheus, Grafana, Otel
     about: Grafana Tempo is an open source, easy-to-use and high-scale distributed tracing backend. Tempo is cost-efficient, requiring only object storage to operate, and is deeply integrated with Grafana, Prometheus, and Loki.
-    integration: APL installs and configures Tempo based on best-practices defaults. By default storage is configured to use the tempo bucket of the local Minio instance. For each team a Grafana agent is installed and configured to enable writes to the Tempo cluster.
+    integration: App Platform installs and configures Tempo based on best-practices defaults. By default storage is configured to use the tempo bucket of the local Minio instance. For each team a Grafana agent is installed and configured to enable writes to the Tempo cluster.
     isDeprecated: true
     deprecationInfo:
       message: Grafana Tempo is being deprecated.
@@ -255,7 +255,7 @@ appsInfo:
     license: Apache 2.0
     dependencies: Prometheus, Grafana
     about: Thanos is a tool to set up a Highly Available Prometheus with long-term storage capabilities.
-    integration: APL installs and configures Thanos using sidecars ans leverages the central object storage configuration.
+    integration: App Platform installs and configures Thanos using sidecars ans leverages the central object storage configuration.
   trivy:
     title: Trivy Operator
     appVersion: 0.29.0
@@ -266,7 +266,7 @@ appsInfo:
     license: Apache 2.0
     dependencies: Prometheus, Grafana
     about: Trivy Operator continuously scans your Kubernetes cluster for security issues, and generates security reports as Kubernetes Custom Resources. It does it by watching Kubernetes for state changes and automatically triggering scans in response to changes.
-    integration: APL installs and configures Trivy Operator to scan all resources deployed by a team and makes results visible in a Grafana dashboard.
+    integration: App Platform installs and configures Trivy Operator to scan all resources deployed by a team and makes results visible in a Grafana dashboard.
     chartName: trivy-operator
   otel:
     title: Open Telemetry Operator
