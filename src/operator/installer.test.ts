@@ -240,13 +240,13 @@ describe('Installer', () => {
       expect(mockAplOps.install).not.toHaveBeenCalled()
     })
 
-    test('should return pending when ConfigMap does not exist', async () => {
+    test('should return true when ConfigMap does not exist', async () => {
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue(null)
 
       const isInstalled = await installer.isInstalled()
 
       expect(k8s.getK8sConfigMap).toHaveBeenCalledWith('apl-operator', 'apl-installation-status', mockCoreApi)
-      expect(isInstalled).toBe(false)
+      expect(isInstalled).toBe(true)
     })
 
     test('should handle in-progress status', async () => {
