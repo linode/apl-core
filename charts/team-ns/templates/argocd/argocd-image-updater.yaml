@@ -1,0 +1,49 @@
+{{- $v := .Values }}
+
+{{- $autoUpdaterApps := list }}
+{{- range $v.workloads }}
+  {{- $a := .imageUpdateStrategy }}
+  {{- if and $a (ne $a.type "disabled") }}
+  {{ $autoUpdaterApps = append $autoUpdaterApps . }}
+  {{- end }}
+{{- end }}
+{{ if $autoUpdaterApps }}
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: team-{{ $v.teamId }}
+  namespace: argocd
+spec:
+  namespace: argocd
+  commonUpdateSettings:
+    forceUpdate: true
+    pullSecret: pullsecret:argocd/copy-team-{{ $v.teamId }}-harbor-pullsecret
+  applicationRefs:
+    {{- range $autoUpdaterApps }}
+    {{- $a := .imageUpdateStrategy }}
+    - namePattern: "team-{{ $v.teamId }}-{{ .name }}"
+      images:
+        - alias: "team-{{ $v.teamId }}-{{ .name }}"
+          commonUpdateSettings:
+            updateStrategy: {{ $a.type | quote }}
+          {{- if eq $a.type "semver" }}
+          imageName: "{{ $a.semver.imageRepository }}:{{ $a.semver.versionConstraint }}"
+          manifestTargets:
+            helm:
+              name: {{ $a.semver.imageParameter | default "image.name" | quote }}
+              tag: {{ $a.semver.tagParameter | default "image.tag" | quote }}
+          {{- else if eq $a.type "digest" }}
+          imageName: "{{ $a.digest.imageRepository }}:{{ $a.digest.tag }}"
+          manifestTargets:
+            helm:
+              name: {{ $a.digest.imageParameter | default "image.name" | quote }}
+              tag: {{ $a.digest.tagParameter | default "image.tag" | quote }}
+          {{- end }}
+      writeBackConfig:
+        method: git
+        gitConfig:
+          branch: main
+          repository: {{ $v.gitOps.workloadValuesRepoUrl | quote }}
+          writeBackTarget: "helmvalues:/env/teams/{{ $v.teamId }}/workloadValues/{{ .name }}.managed.yaml"
+    {{- end }}
+{{- end }}
