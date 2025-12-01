@@ -1,3 +1,4 @@
+# Initializes the installation status. If missing, apl-operator assumes the installation to be completed.
 apiVersion: v1
 kind: ConfigMap
 metadata:
