@@ -21,6 +21,11 @@ export class Installer {
 
   public async isInstalled(): Promise<boolean> {
     const installStatus = await this.getInstallationStatus()
+    if (installStatus === undefined) {
+      // Indicate migrated state by setting negative value
+      await this.updateInstallationStatus('completed', -1)
+      return true
+    }
     return installStatus === 'completed'
   }
 
@@ -66,9 +71,9 @@ export class Installer {
     }
   }
 
-  private async getInstallationStatus(): Promise<string> {
+  private async getInstallationStatus(): Promise<string | undefined> {
     const configMap = await getK8sConfigMap('apl-operator', 'apl-installation-status', k8s.core())
-    const status = configMap?.data?.status || 'pending'
+    const status = configMap?.data?.status
     this.d.info(`Current installation status: ${status}`)
     this.d.debug(`ConfigMap data: ${configMap?.data}`)
     return status
