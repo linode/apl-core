@@ -260,7 +260,7 @@ appsInfo:
     deprecationInfo:
       message: Thanos is being deprecated.
       reasons:
-        - Users prefer to store metrics outside the cluster, thus there was a low adoption for thanos usage.
+        - Since most users opt to store metrics externally, thanos saw limited adoption.
       options:
         - Click 'I understand' to continue using Thanos
   trivy:
