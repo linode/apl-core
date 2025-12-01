@@ -130,6 +130,7 @@ spec:
       - name: hostpath-chown
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
+        resources: {{ toYaml .Values.init.resources | nindent 10 }}
         command:
         - chown
         - "{{ .Values.containerSecurityContext.runAsUser }}"
@@ -141,8 +142,7 @@ spec:
       - name: config-init
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        resources:
-{{ toYaml .Values.init.resources | indent 10 }}
+        resources: {{ toYaml .Values.init.resources | nindent 10 }}
         command:
         - sh
         args:
@@ -190,8 +190,7 @@ spec:
       - name: restore-s3
         image: s3cmd/s3cmd:latest
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        resources:
-{{ toYaml .Values.init.resources | indent 10 }}
+        resources: {{ toYaml .Values.init.resources | nindent 10 }}
         command:
         - sh
         args:
@@ -217,8 +216,7 @@ spec:
       - name: restore-ssh
         image: lgatica/openssh-client:latest
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        resources:
-{{ toYaml .Values.init.resources | indent 10 }}
+        resources: {{ toYaml .Values.init.resources | nindent 10 }}
         command:
         - sh
         args:
@@ -251,8 +249,7 @@ spec:
       - name: restore-redis
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        resources:
-{{ toYaml .Values.init.resources | indent 10 }}
+        resources: {{ toYaml .Values.init.resources | nindent 10 }}
         command:
         - sh
         args:
@@ -487,6 +484,7 @@ spec:
       - name: split-brain-fix
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources: {{ toYaml .Values.splitBrainDetection.resources | nindent 10 }}
         command:
           - sh
         args:
@@ -520,8 +518,6 @@ spec:
             {{- end }}
               key: {{ .Values.sentinel.authKey }}
 {{- end }}
-        resources: 
-          {{- toYaml .Values.splitBrainDetection.resources | nindent 10 }}
         volumeMounts:
         - name: config
           mountPath: /readonly-config
