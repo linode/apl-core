@@ -1136,6 +1136,9 @@ sidecar:
     # Otherwise, it's executed as is. Shebangs known to work are #!/bin/sh and #!/usr/bin/env python
     script: null
     skipReload: false
+    # This is needed if skipReload is true, to load any dashboards defined at startup time.
+    # Deploy the dashboard sidecar as an initContainer.
+    initDashboards: false
     # watchServerTimeout: request to the server, asking it to cleanly close the connection after that.
     # defaults to 60sec; much higher values like 3600 seconds (1h) are feasible for non-Azure K8S
     # watchServerTimeout: 3600
