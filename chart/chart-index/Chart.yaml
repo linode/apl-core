@@ -8,6 +8,9 @@ dependencies:
     alias: argocd
     version: 9.1.5
     repository: https://argoproj.github.io/argo-helm
+  - name: argocd-image-updater
+    version: 1.0.1
+    repository: oci://ghcr.io/argoproj/argo-helm/argocd-image-updater
   - name: cert-manager
     version: v1.19.1
     repository: https://charts.jetstack.io
