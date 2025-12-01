@@ -509,6 +509,7 @@ sentinel:
   port: 26379
 
   ## Configure the 'bind' directive to bind to a list of network interfaces
+  bind: ~
   # bind: 0.0.0.0
 
   ## Configures sentinel with tls-port parameter
@@ -531,6 +532,14 @@ sentinel:
   # -- (string) A password that configures a `requirepass` in the conf parameters (Requires `sentinel.auth: enabled`)
   password: ~
   # password: password
+
+  # -- (bool) Configures sentinel with resolve-hostnames parameter, if true sets "resolve-hostnames yes" in sentinel.conf
+  resolveHostnames: ~
+  # resolveHostnames: true
+
+  # -- (bool) Configures sentinel with announce-hostnames parameter, if true sets "announce-hostnames yes" in sentinel.conf
+  announceHostnames: ~
+  # announceHostnames: true
 
   # -- An existing secret containing a key defined by `sentinel.authKey` that configures `requirepass`
   # in the conf parameters (Requires `sentinel.auth: enabled`, cannot be used in conjunction with `.Values.sentinel.password`)
