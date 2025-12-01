@@ -1,0 +1,13 @@
+{{- $v := .Values }}
+{{- $a := $v.apps.argocd }}
+
+image:
+  {{- with $v.otomi.linodeLkeImageRepository }}
+  repository: {{ . }}/quay/argoprojlabs/argocd-image-updater
+  {{- end }}
+  pullPolicy: IfNotPresent
+
+resources: {{ $a.resources.imageUpdater | toYaml | nindent 2 }}
+
+config:
+  git.commit-message-template: "build: automatic update of {{`{{ .AppName }}`}} [ci skip]"
