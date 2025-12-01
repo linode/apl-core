@@ -25,4 +25,4 @@ sources:
 - https://github.com/prometheus/blackbox_exporter
 - https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-blackbox-exporter
 type: application
-version: 11.4.2
+version: 11.5.0
