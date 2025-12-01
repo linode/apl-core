@@ -253,7 +253,7 @@ appsInfo:
     deprecationInfo:
       message: Thanos is being deprecated.
       reasons:
-        - This tool serves a diagnostic purpose and is not considered as essential to run the platform.
+        - Users prefer to store metrics outside the cluster, thus there was a low adoption for thanos usage.
       options:
         - Click 'I understand' to continue using Thanos
   trivy:
