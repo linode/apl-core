@@ -5,13 +5,13 @@ metadata:
     app.kubernetes.io/name: events
     app.kubernetes.io/component: events
     app.kubernetes.io/instance: default
-    app.kubernetes.io/version: "v1.3.1"
+    app.kubernetes.io/version: "v1.6.0"
     app.kubernetes.io/part-of: tekton-pipelines
     # tekton.dev/release value replaced with inputs.params.versionTag in pipeline/tekton/publish.yaml
-    pipeline.tekton.dev/release: "v1.3.1"
+    pipeline.tekton.dev/release: "v1.6.0"
     # labels below are related to istio and should not be used for resource lookup
     app: tekton-events-controller
-    version: "v1.3.1"
+    version: "v1.6.0"
   name: tekton-events-controller
 spec:
   ports:
