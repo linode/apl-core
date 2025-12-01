@@ -1,3 +1,4 @@
+{{/* vim: set filetype=mustache: */}}
 {{/*
 Expand the name of the chart.
 */}}
@@ -24,6 +25,13 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{/*
+Override .Release.Namespace
+*/}}
+{{- define "argocd-image-updater.namespace" -}}
+{{- default .Release.Namespace .Values.namespaceOverride }}
+{{- end }}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "argocd-image-updater.chart" -}}
@@ -37,9 +45,10 @@ Common labels
 helm.sh/chart: {{ include "argocd-image-updater.chart" . }}
 {{ include "argocd-image-updater.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | trunc 63 | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+control-plane: argocd-image-updater-controller
 {{- end }}
 
 {{/*
@@ -58,5 +67,17 @@ Create the name of the service account to use
 {{- default (include "argocd-image-updater.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Dual stack definition
+*/}}
+{{- define "argocd-image-updater.dualStack" -}}
+{{- with .Values.dualStack.ipFamilyPolicy }}
+ipFamilyPolicy: {{ . }}
+{{- end }}
+{{- with .Values.dualStack.ipFamilies }}
+ipFamilies: {{ toYaml . | nindent 4 }}
 {{- end }}
 {{- end }}
