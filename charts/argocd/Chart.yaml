@@ -1,12 +1,12 @@
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: Bump redis_exporter to v1.80.1
+      description: Bump argo-cd to v3.2.1
   artifacthub.io/signKey: |
     fingerprint: 2B8F22F57260EFA67BE1C5824B11F800CD9D2252
     url: https://argoproj.github.io/argo-helm/pgp_keys.asc
 apiVersion: v2
-appVersion: v3.2.0
+appVersion: v3.2.1
 dependencies:
 - condition: redis-ha.enabled
   name: redis-ha
@@ -28,4 +28,4 @@ name: argo-cd
 sources:
 - https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd
 - https://github.com/argoproj/argo-cd
-version: 9.1.4
+version: 9.1.5
