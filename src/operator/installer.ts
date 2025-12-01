@@ -1,9 +1,9 @@
+import * as process from 'node:process'
 import { terminal } from '../common/debug'
-import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
 import { hfValues } from '../common/hf'
+import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
-import * as process from 'node:process'
 
 export interface GitCredentials {
   username: string
@@ -19,21 +19,37 @@ export class Installer {
     this.d.info('Initializing Installer')
   }
 
+  public async isInstalled(): Promise<boolean> {
+    const installStatus = await this.getInstallationStatus()
+    if (installStatus === undefined) {
+      // Indicate migrated state by setting negative value
+      await this.updateInstallationStatus('completed', -1)
+      return true
+    }
+    return installStatus === 'completed'
+  }
+
+  public async initialize() {
+    while (true) {
+      try {
+        await this.aplOps.validateCluster()
+        await this.aplOps.bootstrap()
+        return
+      } catch (error) {
+        const errorMessage = getErrorMessage(error)
+        this.d.error(`Bootstrap attempt failed:`, errorMessage)
+
+        // Wait 1 second before retrying
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+    }
+  }
+
   public async reconcileInstall(): Promise<void> {
     let attemptNumber = 0
 
     while (true) {
       try {
-        // Always run bootstrap to ensure the environment is ready (even on restarts)
-        await this.aplOps.validateCluster()
-        await this.aplOps.bootstrap()
-
-        // Check if installation already completed
-        const installStatus = await this.getInstallationStatus()
-        if (installStatus === 'completed') {
-          this.d.info('Installation already completed, skipping install steps')
-          return
-        }
         attemptNumber += 1
         this.d.info(`Starting installation attempt ${attemptNumber}`)
 
@@ -55,9 +71,9 @@ export class Installer {
     }
   }
 
-  private async getInstallationStatus(): Promise<string> {
+  private async getInstallationStatus(): Promise<string | undefined> {
     const configMap = await getK8sConfigMap('apl-operator', 'apl-installation-status', k8s.core())
-    const status = configMap?.data?.status || 'pending'
+    const status = configMap?.data?.status
     this.d.info(`Current installation status: ${status}`)
     this.d.debug(`ConfigMap data: ${configMap?.data}`)
     return status

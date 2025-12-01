@@ -1,29 +1,397 @@
-argocdImageUpdater:
-  argocdImageUpdater:
-    args:
-      - run
-    containerSecurityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-          - ALL
-      readOnlyRootFilesystem: true
-      runAsNonRoot: true
-      seccompProfile:
-        type: RuntimeDefault
-    image:
-      repository: quay.io/argoprojlabs/argocd-image-updater
-      tag: null
-    imagePullPolicy: IfNotPresent
-    resources:
-      limits:
-        cpu: '1'
-        memory: 1Gi
-      requests:
-        cpu: 50m
-        memory: 160Mi
-  serviceAccount:
+## Custom resource configuration
+crds:
+  # -- Install and upgrade CRDs
+  install: true
+  # -- Keep CRDs on chart uninstall
+  keep: true
+  # -- Annotations to be added to all CRDs
+  annotations: {}
+  # -- Additional labels to be added to all CRDs
+  additionalLabels: {}
+
+# -- Replica count for the deployment. It is not advised to run more than one replica.
+replicaCount: 1
+image:
+  # -- Default image repository
+  repository: quay.io/argoprojlabs/argocd-image-updater
+  # -- Default image pull policy
+  pullPolicy: Always
+  # -- Overrides the image tag whose default is the chart appVersion
+  tag: ""
+
+# -- The deployment strategy to use to replace existing pods with new ones
+updateStrategy:
+  type: Recreate
+# -- ImagePullSecrets for the image updater deployment
+imagePullSecrets: []
+# -- Global name (argocd-image-updater.name in _helpers.tpl) override
+nameOverride: ""
+# -- Global fullname (argocd-image-updater.fullname in _helpers.tpl) override
+fullnameOverride: ""
+# -- Global namespace (argocd-image-updater.namespace in _helpers.tpl) override
+namespaceOverride: ""
+
+# -- Create cluster roles for cluster-wide installation.
+## Used when you manage applications in the same cluster where Argo CD Image Updater runs.
+## If you want to use this, please set `.Values.rbac.enabled` true as well.
+createClusterRoles: true
+
+# -- Extra arguments for argocd-image-updater not defined in `config.argocd`.
+# If a flag contains both key and value, they need to be split to a new entry.
+extraArgs: []
+  # - --disable-kubernetes
+  # - --dry-run
+  # - --health-port
+  # - 8080
+  # - --interval
+  # - 2m
+  # - --kubeconfig
+  # - ~/.kube/config
+  # - --match-application-name
+  # - staging-*
+  # - --max-concurrency
+  # - 5
+  # - --once
+  # - --registries-conf-path
+  # - /app/config/registries.conf
+
+# -- Extra environment variables for argocd-image-updater.
+## These variables are also available to the authentication scripts mounted under /scripts, provided 'authScripts.enabled' is set to 'true'.
+extraEnv: []
+  # - name: AWS_REGION
+  #   value: "us-west-1"
+  # - name: ACR1_NAME
+  #   value: "acr1.azurecr.io"
+  # - name: ACR1_CLIENT_ID
+  #   value: "00000000-0000-0000-0000-000000000000"
+
+# -- Extra envFrom to pass to argocd-image-updater
+extraEnvFrom: []
+  # - configMapRef:
+  #     name: config-map-name
+  # - secretRef:
+  #     name: secret-name
+
+# -- Extra K8s manifests to deploy for argocd-image-updater.
+## Note: Supports use of custom Helm templates.
+extraObjects: []
+  # - apiVersion: secrets-store.csi.x-k8s.io/v1
+  #   kind: SecretProviderClass
+  #   metadata:
+  #     name: argocd-image-updater-secrets-store
+  #   spec:
+  #     provider: aws
+  #     parameters:
+  #       objects: |
+  #         - objectName: "argocd-image-updater"
+  #           objectType: "secretsmanager"
+  #           jmesPath:
+  #               - path: "client_id"
+  #                 objectAlias: "client_id"
+  #               - path: "client_secret"
+  #                 objectAlias: "client_secret"
+  #     secretObjects:
+  #     - data:
+  #       - key: client_id
+  #         objectName: client_id
+  #       - key: client_secret
+  #         objectName: client_secret
+  #       secretName: argocd-image-updater-secrets-store
+  #       type: Opaque
+  #       labels:
+  #         app.kubernetes.io/part-of: argocd
+
+# -- Init containers to add to the image updater pod
+initContainers: []
+  #  - name: download-tools
+  #    image: alpine:3.8
+  #    command: [sh, -c]
+  #    args:
+  #      - wget -qO- https://get.helm.sh/helm-v2.16.1-linux-amd64.tar.gz | tar -xvzf - &&
+  #        mv linux-amd64/helm /custom-tools/
+  #    volumeMounts:
+  #      - mountPath: /custom-tools
+  #        name: custom-tools
+
+# -- Priority class for the deployment
+# @default -- `""`
+priorityClassName: ""
+
+# -- Additional volumeMounts to the image updater main container
+volumeMounts: []
+
+# -- Additional volumes to the image updater pod
+volumes: []
+  ## Use init containers to configure custom tooling
+  ## https://argo-cd.readthedocs.io/en/stable/operator-manual/custom_tools/
+  ## When using the volumes & volumeMounts section bellow, please comment out those above.
+  #  - name: custom-tools
+  #    emptyDir: {}
+
+config:
+  # -- Name of the ConfigMap
+  name: argocd-image-updater-config
+
+  # -- Disable kubernetes events
+  kube.events: false
+
+  # -- Username to use for Git commits
+  git.user: ""
+
+  # -- E-Mail address to use for Git commits
+  git.email: ""
+
+  # -- Changing the Git commit message
+  git.commit-message-template: ""
+
+  # -- Path to public SSH key mounted in container, or GPG key ID used to sign commits
+  git.commit-signing-key: ""
+
+  # -- Enables sign off on commits
+  git.commit-sign-off: false
+
+  # -- Method used to sign Git commits. `openpgp` or `ssh`
+  git.commit-signing-method: ""
+
+  # -- Argo CD Image Update log level
+  log.level: "info"
+
+  # -- Argo CD Image Updater registries list configuration. More information [here](https://argocd-image-updater.readthedocs.io/en/stable/configuration/registries/).
+  registries: []
+    # - name: Docker Hub
+    #   api_url: https://registry-1.docker.io
+    #   ping: yes
+    #   credentials: secret:foo/bar#creds
+    #   defaultns: library
+    # - name: Google Container Registry
+    #   api_url: https://gcr.io
+    #   prefix: gcr.io
+    #   ping: no
+    #   credentials: pullsecret:foo/bar
+    # - name: RedHat Quay
+    #   api_url: https://quay.io
+    #   ping: no
+    #   prefix: quay.io
+    #   credentials: env:REGISTRY_SECRET
+    # - name: ECR
+    #   api_url: https://123456789.dkr.ecr.eu-west-1.amazonaws.com
+    #   prefix: 123456789.dkr.ecr.eu-west-1.amazonaws.com
+    #   ping: yes
+    #   insecure: no
+    #   credentials: ext:/scripts/auth1.sh
+    #   credsexpire: 10h
+    # - name: Azure Container Registry
+    #   api_url: https://acr1.azurecr.io
+    #   prefix: acr1.azurecr.io
+    #   ping: yes
+    #   credentials: ext:/scripts/azure-workload-identity.sh
+    #   credsexpire: 1h
+
+  sshConfig:
+    # -- Name of the sshConfig ConfigMap
+    name: argocd-image-updater-ssh-config
+    # -- Argo CD Image Updater ssh client parameter configuration
+    config: ""
+    #  config: |
+    #    Host *
+    #          PubkeyAcceptedAlgorithms +ssh-rsa
+    #          HostkeyAlgorithms +ssh-rsa
+
+# whether to mount authentication scripts, if enabled, the authentication scripts will be mounted on /scripts that can be used to authenticate with registries (Azure, ECR)
+# refer to https://argocd-image-updater.readthedocs.io/en/stable/configuration/registries/#specifying-credentials-for-accessing-container-registries for more info
+authScripts:
+  # -- Whether to mount the defined scripts that can be used to authenticate with a registry, the scripts will be mounted at `/scripts`
+  enabled: false
+  # -- Name of the authentication scripts ConfigMap
+  name: argocd-image-updater-authscripts
+  # -- Map of key-value pairs where the key consists of the name of the script and the value the contents.
+  ## Expect the script to output Docker credentials in the form: <username>:<password>
+  ## Authentication scripts can be used for various cloud providers like ECR or Azure Workload Identity.
+  ## For Azure Workload Identity, you can place your authentication script here to handle token acquisition.
+  scripts: {}
+    # auth1.sh: |
+    #   #!/bin/sh
+    #   echo "auth script 1 here"
+    # auth2.sh: |
+    #   #!/bin/sh
+    #   echo "auth script 2 here"
+    # azure-workload-identity.sh: |
+    #   #!/bin:sh
+    #   # Example script for Azure Workload Identity.
+    #   # This script would typically use environment variables set by the workload identity
+    #   # to acquire an Azure AD token and authenticate with Azure Container Registry (ACR).
+    #   # It should output the Docker username and password on stdout, e.g., '00000000-0000-0000-0000-000000000000:<token>'
+
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # Example for Azure Workload Identity:
+    # azure.workload.identity/client-id: "xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  # -- Labels to add to the service account
+  labels: {}
+  # Example for Azure Workload Identity:
+  #  azure.workload.identity/use: "true"
+  # -- The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template.
+  name: ""
+
+# -- Pod Annotations for the deployment
+podAnnotations: {}
+
+# -- Pod Labels for the deployment
+podLabels: {}
+  # azure.workload.identity/use: "true"
+
+# -- Pod security context settings for the deployment
+# @default -- See [values.yaml]
+podSecurityContext:
+  runAsNonRoot: true
+
+# -- Security context settings for the deployment
+# @default -- See [values.yaml]
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+rbac:
+  # -- Enable RBAC creation
+  enabled: true
+
+# -- Pod memory and cpu resource settings for the deployment
+resources: {}
+
+# -- Kubernetes nodeSelector settings for the deployment
+nodeSelector: {}
+
+# -- Kubernetes toleration settings for the deployment
+tolerations: []
+
+# -- Kubernetes affinity settings for the deployment
+affinity: {}
+
+# Metrics configuration
+metrics:
+  # -- Deploy metrics service
+  enabled: false
+  service:
+    # -- Metrics service annotations
     annotations: {}
-  strategy:
-    type: Recreate
-kubernetesClusterDomain: cluster.local
+    # -- Metrics service labels
+    labels: {}
+    # -- Metrics service port
+    servicePort: 8443
+  serviceMonitor:
+    # -- Enable a prometheus ServiceMonitor
+    enabled: false
+    # -- Prometheus ServiceMonitor interval
+    interval: 30s
+    # -- Prometheus [RelabelConfigs] to apply to samples before scraping
+    relabelings: []
+    # -- Prometheus [MetricRelabelConfigs] to apply to samples before ingestion
+    metricRelabelings: []
+    # -- Prometheus ServiceMonitor selector
+    selector: {}
+      # promtheus: kube-prometheus
+
+    # -- Prometheus ServiceMonitor namespace
+    namespace: ""
+    # -- Prometheus ServiceMonitor labels
+    additionalLabels: {}
+
+containerPorts:
+  # -- Port for the webhook events
+  webhook: 8082
+  # -- Port for the probe endpoint
+  health: 8081
+  # -- Port for the metrics
+  metrics: 8443
+
+## Service configuration
+service:
+  # -- Service annotations
+  annotations: {}
+  # -- Service labels
+  labels: {}
+  # -- Service type
+  type: ClusterIP
+  # -- Service http port for NodePort service type (only if `service.type` is set to "NodePort")
+  nodePortHttp: 30080
+  # -- Service https port for NodePort service type (only if `service.type` is set to "NodePort")
+  nodePortHttps: 30443
+  # -- Service http port
+  port: 8080
+  # -- Service http port name, can be used to route traffic via istio
+  servicePortHttpName: server-port
+  # -- The class of the load balancer implementation
+  loadBalancerClass: ""
+  # -- LoadBalancer will get created with the IP specified in this field
+  loadBalancerIP: ""
+  # -- Source IP ranges to allow access to service from
+  ## EKS Ref: https://repost.aws/knowledge-center/eks-cidr-ip-address-loadbalancer
+  ## GKE Ref: https://cloud.google.com/kubernetes-engine/docs/concepts/network-overview#limit-connectivity-ext-lb
+  loadBalancerSourceRanges: []
+  # -- Service external IPs
+  externalIPs: []
+  # -- Denotes if this Service desires to route external traffic to node-local or cluster-wide endpoints
+  ## Ref: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+  externalTrafficPolicy: Cluster
+  # -- Used to maintain session affinity. Supports `ClientIP` and `None`
+  ## Ref: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
+  sessionAffinity: None
+
+# Ingress for the deployment
+ingress:
+  # -- Enable an ingress resource for the deployment
+  enabled: false
+  # -- Additional ingress labels
+  labels: {}
+  # -- Additional ingress annotations
+  annotations: {}
+  # -- Defines which ingress controller will implement the resource
+  ingressClassName: ""
+  # -- deployment hostname
+  # @default -- `""` (defaults to global.domain)
+  hostname: ""
+  # -- The path to deployment
+  path: /webhook
+  # -- Ingress path type. One of `Exact`, `Prefix` or `ImplementationSpecific`
+  pathType: Prefix
+
+  # -- The list of additional hostnames to be covered by ingress record
+  # @default -- `[]` (See [values.yaml])
+  extraHosts: []
+    # - name: argocd.example.com
+    #   path: /
+
+  # -- Additional ingress paths
+  # @default -- `[]` (See [values.yaml])
+  ## Note: Supports use of custom Helm templates
+  extraPaths: []
+    # - path: /*
+    #   pathType: Prefix
+    #   backend:
+    #     service:
+    #       name: ssl-redirect
+    #       port:
+    #         name: use-annotation
+
+  # -- Ingress TLS configuration
+  tls: []
+    # - secretName: argoworkflows-example-tls
+    #   hosts:
+    #     - argoworkflows.example.com
+
+# Configure dual-stack
+dualStack:
+  # -- IP family policy to configure dual-stack see [Configure dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services)
+  ipFamilyPolicy: ""
+  # -- IP families that should be supported and the order in which they should be applied to ClusterIP as well. Can be IPv4 and/or IPv6.
+  ipFamilies: []
