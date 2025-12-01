@@ -88,7 +88,7 @@ dependencies:
     version: 0.99.1
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   - name: policy-reporter
-    version: 3.5.0
+    version: 3.7.0
     repository: https://kyverno.github.io/policy-reporter
   - name: prometheus-blackbox-exporter
     version: 11.5.0
