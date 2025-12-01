@@ -150,6 +150,9 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     post: async () => {
       await removeHttpBinApplication()
     },
+  },
+  {
+    version: '4.14.0',
     applications: {
       'gitea-gitea': {
         post: async (context: RuntimeUpgradeContext) => {
