@@ -35,8 +35,8 @@ core:
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
 
 database:
-  maxOpenConns: 32
-  maxIdleConns: 6
+  maxOpenConns: {{ $h.databaseMaxConnections }}
+  maxIdleConns: {{ $h.databaseMaxIdleConnections }}
   type: external
   external:
     # erase default password value from the Harbor Helm chart
