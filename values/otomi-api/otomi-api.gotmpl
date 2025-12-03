@@ -11,8 +11,8 @@
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 {{- $version := $v.versions | get "api" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
-{{- $toolsVersion := $v.versions | get "tools" }}
-{{- $toolsIsSemver := regexMatch "^[0-9.]+" $toolsVersion }}
+{{- $coreVersion := $v.otomi.version }}
+{{- $coreIsSemver := regexMatch "^[0-9.]+" $coreVersion }}
 
 
 replicaCount: 1
@@ -31,8 +31,8 @@ tools:
     {{- if $v.otomi.linodeLkeImageRepository }}
     repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
     {{- end }}
-    tag: {{ printf "%s%s" ($toolsIsSemver | ternary "v" "") $toolsVersion }}
-    pullPolicy: {{ $toolsIsSemver | ternary "IfNotPresent" "Always" }}
+    tag: {{ $coreVersion | quote }}
+    pullPolicy: {{ $coreIsSemver | ternary "IfNotPresent" "Always" }}
   resources: {{- $o.resources.tools | toYaml | nindent 4 }}
   env:
     DEBUG: '*'
