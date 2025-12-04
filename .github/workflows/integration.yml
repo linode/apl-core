@@ -400,7 +400,7 @@ jobs:
       - name: Gather APL logs on failure
         if: failure()
         run: |
-          kubectl logs jobs/otomi-apl --tail 150
+          kubectl logs -l app.kubernetes.io/name=apl-operator -n apl-operator --tail=150
       - name: Remove the test cluster
         if: ${{ always() && inputs.domain_zone == 'DNS-Integration' }}
         run: |
