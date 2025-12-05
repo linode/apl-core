@@ -1,7 +1,7 @@
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: Bump argo-cd to v3.2.1
+      description: Bump argocd-extension-installer to v0.0.9
   artifacthub.io/signKey: |
     fingerprint: 2B8F22F57260EFA67BE1C5824B11F800CD9D2252
     url: https://argoproj.github.io/argo-helm/pgp_keys.asc
@@ -28,4 +28,4 @@ name: argo-cd
 sources:
 - https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd
 - https://github.com/argoproj/argo-cd
-version: 9.1.5
+version: 9.1.6
