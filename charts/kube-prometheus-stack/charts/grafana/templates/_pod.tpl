@@ -121,6 +121,13 @@ initContainers:
     image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
     {{- end }}
     imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+    {{- if .Values.sidecar.alerts.restartPolicy }}
+    restartPolicy: {{ .Values.sidecar.alerts.restartPolicy }}
+    {{- with .Values.sidecar.alerts.startupProbe }}
+    startupProbe:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
     env:
       {{- range $key, $value := .Values.sidecar.alerts.env }}
       - name: "{{ $key }}"
@@ -130,6 +137,10 @@ initContainers:
       - name: {{ $key | quote }}
         valueFrom:
           {{- tpl (toYaml $value) $ | nindent 10 }}
+      {{- end }}
+      {{- if .Values.sidecar.alerts.startupProbe }}
+      - name: HEALTH_PORT
+        value: "{{ .Values.sidecar.alerts.startupProbe.httpGet.port | default "8080" }}"
       {{- end }}
       {{- if .Values.sidecar.alerts.ignoreAlreadyProcessed }}
       - name: IGNORE_ALREADY_PROCESSED
@@ -199,6 +210,13 @@ initContainers:
     image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
     {{- end }}
     imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+    {{- if .Values.sidecar.datasources.restartPolicy }}
+    restartPolicy: {{ .Values.sidecar.datasources.restartPolicy }}
+    {{- with .Values.sidecar.datasources.startupProbe }}
+    startupProbe:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
     env:
       {{- range $key, $value := .Values.sidecar.datasources.env }}
       - name: "{{ $key }}"
@@ -208,6 +226,10 @@ initContainers:
       - name: {{ $key | quote }}
         valueFrom:
           {{- tpl (toYaml $value) $ | nindent 10 }}
+      {{- end }}
+      {{- if .Values.sidecar.datasources.startupProbe }}
+      - name: HEALTH_PORT
+        value: "{{ .Values.sidecar.datasources.startupProbe.httpGet.port | default "8080" }}"
       {{- end }}
       {{- if .Values.sidecar.datasources.ignoreAlreadyProcessed }}
       - name: IGNORE_ALREADY_PROCESSED
@@ -268,6 +290,10 @@ initContainers:
         value: {{ .Values.sidecar.datasources.reloadURL }}
       - name: REQ_METHOD
         value: POST
+      {{- if eq .Values.sidecar.datasources.watchMethod "WATCH" }}
+      - name: REQ_SKIP_INIT
+        value: "true"
+      {{- end }}
       {{- end }}
       {{- if .Values.sidecar.datasources.watchServerTimeout }}
       {{- if ne .Values.sidecar.datasources.watchMethod "WATCH" }}
@@ -327,10 +353,21 @@ initContainers:
     image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
     {{- end }}
     imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+    {{- if .Values.sidecar.notifiers.restartPolicy }}
+    restartPolicy: {{ .Values.sidecar.notifiers.restartPolicy }}
+    {{- with .Values.sidecar.notifiers.startupProbe }}
+    startupProbe:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
     env:
       {{- range $key, $value := .Values.sidecar.notifiers.env }}
       - name: "{{ $key }}"
         value: "{{ $value }}"
+      {{- end }}
+      {{- if .Values.sidecar.notifiers.startupProbe }}
+      - name: HEALTH_PORT
+        value: "{{ .Values.sidecar.notifiers.startupProbe.httpGet.port | default "8080" }}"
       {{- end }}
       {{- if .Values.sidecar.notifiers.ignoreAlreadyProcessed }}
       - name: IGNORE_ALREADY_PROCESSED
@@ -400,6 +437,13 @@ initContainers:
     image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
     {{- end }}
     imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+    {{- if .Values.sidecar.dashboards.restartPolicy }}
+    restartPolicy: {{ .Values.sidecar.dashboards.restartPolicy }}
+    {{- with .Values.sidecar.dashboards.startupProbe }}
+    startupProbe:
+      {{- toYaml . | nindent 6 }}u
+    {{- end }}
+    {{- end }}
     env:
       {{- range $key, $value := .Values.sidecar.dashboards.env }}
       - name: "{{ $key }}"
@@ -409,6 +453,10 @@ initContainers:
       - name: {{ $key | quote }}
         valueFrom:
           {{- tpl (toYaml $value) $ | nindent 10 }}
+      {{- end }}
+      {{- if .Values.sidecar.dashboards.startupProbe }}
+      - name: HEALTH_PORT
+        value: "{{ .Values.sidecar.dashboards.startupProbe.httpGet.port | default "8080" }}"
       {{- end }}
       {{- if .Values.sidecar.dashboards.ignoreAlreadyProcessed }}
       - name: IGNORE_ALREADY_PROCESSED
@@ -473,6 +521,10 @@ initContainers:
         value: {{ .Values.sidecar.dashboards.reloadURL }}
       - name: REQ_METHOD
         value: POST
+      {{- if eq .Values.sidecar.dashboards.watchMethod "WATCH" }}
+      - name: REQ_SKIP_INIT
+        value: "true"
+      {{- end }}
       {{- end }}
       {{- if .Values.sidecar.dashboards.watchServerTimeout }}
       {{- if ne .Values.sidecar.dashboards.watchMethod "WATCH" }}
@@ -612,6 +664,10 @@ containers:
         value: {{ .Values.sidecar.alerts.reloadURL }}
       - name: REQ_METHOD
         value: POST
+      {{- if eq .Values.sidecar.alerts.watchMethod "WATCH" }}
+      - name: REQ_SKIP_INIT
+        value: "true"
+      {{- end }}
       {{- end }}
       {{- if .Values.sidecar.alerts.watchServerTimeout }}
       {{- if ne .Values.sidecar.alerts.watchMethod "WATCH" }}
@@ -744,6 +800,10 @@ containers:
         value: {{ .Values.sidecar.dashboards.reloadURL }}
       - name: REQ_METHOD
         value: POST
+      {{- if eq .Values.sidecar.dashboards.watchMethod "WATCH" }}
+      - name: REQ_SKIP_INIT
+        value: "true"
+      {{- end }}
       {{- end }}
       {{- if .Values.sidecar.dashboards.watchServerTimeout }}
       {{- if ne .Values.sidecar.dashboards.watchMethod "WATCH" }}
@@ -872,6 +932,10 @@ containers:
         value: {{ .Values.sidecar.datasources.reloadURL }}
       - name: REQ_METHOD
         value: POST
+      {{- if eq .Values.sidecar.datasources.watchMethod "WATCH" }}
+      - name: REQ_SKIP_INIT
+        value: "true"
+      {{- end }}
       {{- end }}
       {{- if .Values.sidecar.datasources.watchServerTimeout }}
       {{- if ne .Values.sidecar.datasources.watchMethod "WATCH" }}
@@ -995,6 +1059,10 @@ containers:
         value: {{ .Values.sidecar.notifiers.reloadURL }}
       - name: REQ_METHOD
         value: POST
+      {{- if eq .Values.sidecar.notifiers.watchMethod "WATCH" }}
+      - name: REQ_SKIP_INIT
+        value: "true"
+      {{- end }}
       {{- end }}
       {{- if .Values.sidecar.notifiers.watchServerTimeout }}
       {{- if ne .Values.sidecar.notifiers.watchMethod "WATCH" }}
@@ -1118,6 +1186,10 @@ containers:
         value: {{ .Values.sidecar.plugins.reloadURL }}
       - name: REQ_METHOD
         value: POST
+      {{- if eq .Values.sidecar.plugins.watchMethod "WATCH" }}
+      - name: REQ_SKIP_INIT
+        value: "true"
+      {{- end }}
       {{- end }}
       {{- if .Values.sidecar.plugins.watchServerTimeout }}
       {{- if ne .Values.sidecar.plugins.watchMethod "WATCH" }}
