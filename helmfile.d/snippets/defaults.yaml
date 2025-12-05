@@ -164,13 +164,6 @@ environments:
                 memory: 200Mi
             useBackupPlugin: false
             _rawValues: {}
-          drone:
-            enabled: false
-            debug: false
-            trace: false
-            sourceControl:
-              provider: gitea
-              username: otomi-admin
           external-dns:
             logLevel: info
             resources:
@@ -185,6 +178,8 @@ environments:
             _rawValues: {}
             networkPolicies:
               enabled: true
+            databaseMaxConnections: 28
+            databaseMaxIdleConnections: 6
             resources:
               gitea:
                 limits:
@@ -193,20 +188,6 @@ environments:
                 requests:
                   cpu: 100m
                   memory: 256Mi
-              memcached:
-                limits:
-                  cpu: 250m
-                  memory: 256Mi
-                requests:
-                  cpu: 10m
-                  memory: 128Mi
-              memcachedMetrics:
-                limits:
-                  cpu: 200m
-                  memory: 128M
-                requests:
-                  cpu: 10m
-                  memory: 16M
               init:
                 limits:
                   cpu: 400m
@@ -239,6 +220,8 @@ environments:
             registry:
               credentials:
                 username: otomi-admin
+            databaseMaxConnections: 28
+            databaseMaxIdleConnections: 6
             resources:
               core:
                 requests:
@@ -350,27 +333,12 @@ environments:
                   cpu: "2"
                   memory: 2Gi
             _rawValues: {}
-          jaeger:
-            enabled: false
-            resources:
-              operator:
-                limits:
-                  cpu: 500m
-                  memory: 1Gi
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-              jaeger:
-                limits:
-                  cpu: "1"
-                  memory: 2Gi
-                requests:
-                  cpu: 200m
-                  memory: 384Mi
-            _rawValues: {}
           keycloak:
             adminUsername: otomi-admin
             theme: otomi
+            databaseMaxConnections: 28
+            databaseMinConnections: 5
+            databaseInitialConnections: 5
             resources:
               keycloak:
                 requests:
@@ -1205,19 +1173,6 @@ environments:
                   cpu: "1"
                   memory: 1G
             _rawValues: {}
-          velero:
-            enabled: false
-            restic:
-              enabled: false
-            logLevel: info
-            resources:
-              requests:
-                cpu: 20m
-                memory: 184Mi
-              limits:
-                cpu: "1"
-                memory: 512Mi
-            _rawValues: {}
         databases:
           keycloak:
             imageName: null
@@ -1243,6 +1198,10 @@ environments:
               requests:
                 cpu: "50m"
                 memory: 48Mi
+            postgresqlParameters:
+              max_connections: "32"
+              shared_buffers: 64MB
+              work_mem: 2MB
           harbor:
             imageName: null
             size: 5Gi
@@ -1268,6 +1227,10 @@ environments:
               requests:
                 cpu: "50m"
                 memory: 48Mi
+            postgresqlParameters:
+              max_connections: "32"
+              shared_buffers: 64MB
+              work_mem: 2MB
           gitea:
             imageName: null
             size: 5Gi
@@ -1292,6 +1255,10 @@ environments:
               requests:
                 cpu: "50m"
                 memory: 48Mi
+            postgresqlParameters:
+              max_connections: "32"
+              shared_buffers: 64MB
+              work_mem: 2MB
         obj:
           provider:
             type: disabled
@@ -1342,10 +1309,6 @@ environments:
           useORCS: true
           aiEnabled: false
         users: []
-        e2e:
-          enabled: false
-          upgrade:
-            version: main
         # TODO: update this when schema version changes
         versions:
-          specVersion: 45
+          specVersion: 46

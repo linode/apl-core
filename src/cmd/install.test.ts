@@ -1,5 +1,6 @@
 import stubs from 'src/test-stubs'
-import { module } from './install'
+// Import the actual function to test (after mocks are set up)
+import { installAll, module } from './install'
 
 const { terminal } = stubs
 
@@ -15,14 +16,15 @@ jest.mock('src/common/k8s', () => ({
   getHelmReleases: jest.fn(),
   applyServerSide: jest.fn(),
   restartOtomiApiDeployment: jest.fn(),
+  waitForCRD: jest.fn(),
   k8s: {
     app: jest.fn(),
   },
 }))
 
 jest.mock('src/common/values', () => ({
-  getImageTag: jest.fn(),
-  getCurrentVersion: jest.fn(),
+  getImageTagFromValues: jest.fn(),
+  getPackageVersion: jest.fn(),
   writeValuesToFile: jest.fn(),
 }))
 
@@ -40,6 +42,7 @@ jest.mock('zx', () => ({
 jest.mock('./commit', () => ({
   commit: jest.fn(),
   cloneOtomiChartsInGitea: jest.fn(),
+  deletePendingHelmReleases: jest.fn(),
   initialSetupData: jest.fn().mockResolvedValue({
     secretName: 'test-secret',
     username: 'admin',
@@ -49,6 +52,7 @@ jest.mock('./commit', () => ({
   createCredentialsSecret: jest.fn(),
   retryIsOAuth2ProxyRunning: jest.fn(),
   printWelcomeMessage: jest.fn(),
+  createWelcomeConfigMap: jest.fn(),
 }))
 
 jest.mock('src/common/cli', () => ({
@@ -67,9 +71,6 @@ jest.mock('src/common/yargs', () => ({
   helmOptions: jest.fn().mockReturnValue({}),
 }))
 
-// Import the actual function to test (after mocks are set up)
-import { installAll } from './install'
-
 describe('Install command', () => {
   let mockDeps: any
 
@@ -81,11 +82,12 @@ describe('Install command', () => {
     process.env.DISABLE_SYNC = 'false'
 
     mockDeps = {
+      deletePendingHelmReleases: require('src/common/k8s').deletePendingHelmReleases,
       getDeploymentState: require('src/common/k8s').getDeploymentState,
       setDeploymentState: require('src/common/k8s').setDeploymentState,
       getHelmReleases: require('src/common/k8s').getHelmReleases,
-      getImageTag: require('src/common/values').getImageTag,
-      getCurrentVersion: require('src/common/values').getCurrentVersion,
+      getImageTagFromValues: require('src/common/values').getImageTagFromValues,
+      getPackageVersion: require('src/common/values').getPackageVersion,
       writeValuesToFile: require('src/common/values').writeValuesToFile,
       applyServerSide: require('src/common/k8s').applyServerSide,
       hf: require('src/common/hf').hf,
@@ -96,8 +98,8 @@ describe('Install command', () => {
 
     // Set up default mock return values
     mockDeps.getDeploymentState.mockResolvedValue({ status: 'initial' })
-    mockDeps.getImageTag.mockResolvedValue('v1.0.0')
-    mockDeps.getCurrentVersion.mockResolvedValue('1.0.0')
+    mockDeps.getImageTagFromValues.mockResolvedValue('v1.0.0')
+    mockDeps.getPackageVersion.mockReturnValue('1.0.0')
     mockDeps.getHelmReleases.mockResolvedValue([])
     mockDeps.hf.mockResolvedValue({
       exitCode: 0,
@@ -136,8 +138,7 @@ describe('Install command', () => {
 
       // Verify the key steps were called
       expect(mockDeps.getDeploymentState).toHaveBeenCalled()
-      expect(mockDeps.getImageTag).toHaveBeenCalled()
-      expect(mockDeps.getCurrentVersion).toHaveBeenCalled()
+      expect(mockDeps.getImageTagFromValues).toHaveBeenCalled()
       expect(mockDeps.setDeploymentState).toHaveBeenCalledWith({
         status: 'deploying',
         deployingTag: 'v1.0.0',
@@ -251,9 +252,9 @@ describe('Install command', () => {
 
     test('should handle image tag retrieval errors', async () => {
       const error = new Error('Failed to get image tag')
-      mockDeps.getImageTag.mockRejectedValueOnce(error)
+      mockDeps.getImageTagFromValues.mockRejectedValueOnce(error)
 
-      expect(mockDeps.getImageTag).toBeDefined()
+      expect(mockDeps.getImageTagFromValues).toBeDefined()
     })
 
     test('should handle helmfile errors', async () => {

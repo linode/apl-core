@@ -56,8 +56,6 @@ apps:
     enabled: true
   hello:
     enabled: true
-  jaeger:
-    enabled: true
   knative:
     enabled: true
   loki:
@@ -78,8 +76,6 @@ apps:
     enabled: true
   trivy:
     enabled: true
-  velero:
-    enabled: false
   kyverno:
     enabled: true
   fabric8:

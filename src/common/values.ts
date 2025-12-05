@@ -22,7 +22,6 @@ import {
 
 import { saveValues } from './repo'
 import { HelmArguments } from './yargs'
-import { gitP } from 'simple-git'
 
 export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 200): string => {
   return isEmpty(obj) ? '' : stringify(obj, { indent, lineWidth })
@@ -44,25 +43,16 @@ export const getK8sVersion = (argv?: HelmArguments): string => {
 
 /**
  * Find what image tag is defined in configuration for otomi
+ * Do not call this function in bootstrap()
  * @returns string
  */
-export const getImageTag = async (envDir = env.ENV_DIR): Promise<string> => {
-  if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
-  if (existsSync(`${envDir}/env/settings/cluster.yaml`)) {
-    const values = await hfValues(undefined, envDir)
-    return values!.otomi!.version
-  }
-  return `v${pkg.version}`
+export const getImageTagFromValues = async (envDir = env.ENV_DIR): Promise<string> => {
+  const values = await hfValues(undefined, envDir)
+  return values!.otomi!.version
 }
 
-/**
- * Find the current version of otomi that is running.
- * @returns string
- */
-export const getCurrentVersion = async (): Promise<string> => {
-  const tag = await getImageTag()
-  const potentialVersion = tag.replace(/^v/, '')
-  return /^[0-9.]+/.exec(potentialVersion) ? potentialVersion : pkg.version
+export const getPackageVersion = (): string => {
+  return pkg.version
 }
 
 export interface Repo {
@@ -154,12 +144,12 @@ export const writeValuesToFile = async (
   }
 
   if (isEqual(originalValues, useValues)) {
-    d.info(`No changes for ${targetPath}${suffix}, skipping...`)
+    d.debug(`No changes for ${targetPath}${suffix}, skipping...`)
     return
   }
   d.debug('mergeResult: ', JSON.stringify(useValues, null, 2))
   await writeFile(targetPath + suffix, objectToYaml(useValues))
-  d.info(`Values were written to ${targetPath}${suffix}`)
+  d.debug(`Values were written to ${targetPath}${suffix}`)
 }
 
 /**

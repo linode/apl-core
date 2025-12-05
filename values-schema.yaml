@@ -305,32 +305,9 @@ definitions:
       - 200m
     pattern: ^([1-9][0-9]*|([0]|[1-9]+)\\.[0-9]{1,3}|[1-9][0-9]*m)$
     type: string
-  backup:
-    type: object
-    description: PV backups
-    properties:
-      name:
-        $ref: '#/definitions/idName'
-      ttl:
-        $ref: '#/definitions/backupTtl'
-      schedule:
-        $ref: '#/definitions/backupSchedule'
-      snapshotVolumes:
-        type: boolean
-        default: false
-      labelSelector:
-        $ref: '#/definitions/labels'
-        description: Individual objects must match this label selector to be included in the backup.
   domain:
     pattern: ^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))|([a-f0-9:]+:+)+[a-f0-9]+$
     type: string
-  droneGit:
-    properties:
-      clientID:
-        $ref: '#/definitions/wordCharacterPattern'
-      clientSecretValue:
-        type: string
-        x-secret: ''
   duration:
     description: 'Prometheus duration (See: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#configuration-file)'
     pattern: '((([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?|0)'
@@ -1175,10 +1152,6 @@ definitions:
                   $ref: '#/definitions/resources'
                 kanikoTask:
                   $ref: '#/definitions/resources'
-      backups:
-        type: array
-        items:
-          $ref: '#/definitions/backup'
       services:
         items:
           $ref: '#/definitions/service'
@@ -1245,11 +1218,6 @@ definitions:
     platformAdmin: [read-any, update-any]
     teamAdmin: [read]
     teamMember: [read]
-  backupTtl:
-    default: 168h
-    description: Expiration of the backup. Defaults to 7 days.
-    title: TTL after finished
-    type: string
   backupRetentionPolicy:
     default: 7d
     description: Delete backups according to retention policy. In DAYS|WEEKS|MONTHS
@@ -1696,138 +1664,6 @@ properties:
             type: boolean
             default: false
             description: Use CNPG plugin for platform database backups
-      drone:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          adminIsMachine:
-            type: boolean
-            default: false
-          adminUser:
-            $ref: '#/definitions/wordCharacterPattern'
-          adminToken:
-            $ref: '#/definitions/wordCharacterPattern'
-            x-secret: ''
-          debug:
-            type: boolean
-            default: false
-          githubAdmins:
-            additionalProperties: false
-            properties:
-              org:
-                $ref: '#/definitions/wordCharacterPattern'
-              team:
-                $ref: '#/definitions/wordCharacterPattern'
-              token:
-                $ref: '#/definitions/wordCharacterPattern'
-          orgsFilter:
-            $ref: '#/definitions/wordCharacterPattern'
-          owner:
-            $ref: '#/definitions/wordCharacterPattern'
-          repo:
-            $ref: '#/definitions/idName'
-          repoFilter:
-            $ref: '#/definitions/wordCharacterPattern'
-          image:
-            additionalProperties: false
-            properties:
-              agent:
-                $ref: '#/definitions/imageSimple'
-              server:
-                $ref: '#/definitions/imageSimple'
-          resources:
-            additionalProperties: false
-            properties:
-              runner:
-                properties:
-                  requests:
-                    properties:
-                      cpu:
-                        description: Requested compute resources for all the containers started by the runner (guaranteed), expressed in millicores.
-                        type: integer
-                        default: 1000
-                      memory:
-                        $ref: '#/definitions/memoryQuantity'
-                        description: Requested memory resources for all the containers started by the runner (guaranteed).
-                        default: 1Gi
-              agent:
-                $ref: '#/definitions/resources'
-              server:
-                $ref: '#/definitions/resources'
-          sharedSecret:
-            description: A secret used by drone-admit-members plugin. https://docs.drone.io/runner/kubernetes/configuration/reference/drone-secret-plugin-token/
-            type: string
-            x-secret: '{{ randAlphaNum 32 }}'
-          sourceControl:
-            additionalProperties: false
-            properties:
-              bitbucketCloud:
-                $ref: '#/definitions/droneGit'
-              bitbucketServer:
-                properties:
-                  consumerKey:
-                    default: consumerKey
-                    type: string
-                    x-secret: ''
-                  passwordKey:
-                    default: password
-                    type: string
-                    x-secret: ''
-                  privateKey:
-                    default: privateKey
-                    type: string
-                    x-secret: ''
-                  server:
-                    type: string
-                  username:
-                    type: string
-                    x-secret: ''
-              gitea:
-                allOf:
-                  - $ref: '#/definitions/droneGit'
-                  - properties:
-                      server:
-                        type: string
-              github:
-                allOf:
-                  - $ref: '#/definitions/droneGit'
-                  - properties:
-                      server:
-                        default: 'https://github.com'
-                        type: string
-              gitlab:
-                allOf:
-                  - $ref: '#/definitions/droneGit'
-                  - properties:
-                      server:
-                        type: string
-              gogs:
-                properties:
-                  server:
-                    type: string
-              password:
-                type: string
-              provider:
-                default: github
-                enum:
-                  - github
-                  - gitlab
-                  - gitea
-                  - gogs
-                  - bitbucketCloud
-                  - bitbucketServer
-                type: string
-              secret:
-                type: string
-              username:
-                type: string
-          trace:
-            default: false
-            type: boolean
       external-dns:
         additionalProperties: false
         properties:
@@ -1850,27 +1686,18 @@ properties:
             description: This password was generated and cannot be changed without manual intervention.
             x-secret: '{{ randAlphaNum 20 }}'
             readOnly: true
-          image:
-            additionalProperties: false
-            properties:
-              gitea:
-                $ref: '#/definitions/imageSimple'
-              postgresql:
-                $ref: '#/definitions/imageSimple'
-              memcached:
-                $ref: '#/definitions/imageSimple'
+          databaseMaxConnections:
+            type: number
+            description: Maximum amount of total connections of the application to the database server
+          databaseMaxIdleConnections:
+            type: number
+            description: Maximum amount of idle connections of the application to the database server
           resources:
             additionalProperties: false
             properties:
               gitea:
                 $ref: '#/definitions/resources'
               init:
-                $ref: '#/definitions/resources'
-              postgresql:
-                $ref: '#/definitions/resources'
-              memcached:
-                $ref: '#/definitions/resources'
-              memcachedMetrics:
                 $ref: '#/definitions/resources'
           networkPolicies:
             $ref: '#/definitions/appNetworkPolicyConfig'
@@ -1943,8 +1770,12 @@ properties:
             required:
               - secret
               - credentials
-          image:
-            $ref: '#/definitions/imageSimple'
+          databaseMaxConnections:
+            type: number
+            description: Maximum amount of total connections of the application to the database server
+          databaseMaxIdleConnections:
+            type: number
+            description: Maximum amount of idle connections of the application to the database server
           resources:
             additionalProperties: false
             properties:
@@ -2023,19 +1854,6 @@ properties:
                 $ref: '#/definitions/resources'
               operator:
                 $ref: '#/definitions/resources'
-      jaeger:
-        additionalProperties: false
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          resources:
-            operator:
-              $ref: '#/definitions/resources'
-            jaeger:
-              $ref: '#/definitions/resources'
-          _rawValues:
-            $ref: '#/definitions/rawValues'
       keycloak:
         additionalProperties: false
         properties:
@@ -2067,6 +1885,15 @@ properties:
                 $ref: '#/definitions/imageSimple'
               postgresql:
                 $ref: '#/definitions/imageSimple'
+          databaseMaxConnections:
+            type: number
+            description: Maximum amount of total connections of the application to the database server
+          databaseMinConnections:
+            type: number
+            description: Minimum amount of connections of the application to the database server
+          databaseInitialConnections:
+            type: number
+            description: Initial amount of connections of the application to the database server on startup
           resources:
             additionalProperties: false
             properties:
@@ -2825,30 +2652,6 @@ properties:
                 $ref: '#/definitions/resources'
               kubeRBACProxy:
                 $ref: '#/definitions/resources'
-      velero:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          restic:
-            enabled:
-              type: boolean
-              default: false
-          logLevel:
-            description: Set log-level for the Velero pod.
-            default: info
-            enum:
-              - debug
-              - info
-              - warning
-              - error
-              - fatal
-              - panic
-          resources:
-            $ref: '#/definitions/resources'
     patternProperties:
       '^ingress-nginx-[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
         $ref: '#/definitions/ingressNginx'
@@ -3253,10 +3056,6 @@ properties:
               enabled:
                 type: boolean
                 default: false
-              resources:
-                $ref: '#/definitions/resources'
-              backupSidecarResources:
-                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3271,10 +3070,6 @@ properties:
               enabled:
                 type: boolean
                 default: false
-              resources:
-                $ref: '#/definitions/resources'
-              backupSidecarResources:
-                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3289,10 +3084,6 @@ properties:
               enabled:
                 type: boolean
                 default: false
-              resources:
-                $ref: '#/definitions/resources'
-              backupSidecarResources:
-                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3301,16 +3092,6 @@ properties:
                 type: string
                 pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
                 default: keycloak
-      persistentVolumes:
-        type: object
-        description: Create backups of persistent volumes
-        additionalProperties: false
-        properties:
-          linodeApiToken:
-            type: string
-            description: Linode API Token
-            $ref: '#/definitions/wordCharacterPattern'
-            x-secret: ''
       gitea:
         type: object
         title: Gitea
@@ -3359,10 +3140,6 @@ properties:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
                     default: cnpg
-                  velero:
-                    type: string
-                    $ref: '#/definitions/wordCharacterPattern'
-                    default: velero
                   harbor:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
@@ -3405,6 +3182,13 @@ properties:
             type: string
           resources:
             $ref: '#/definitions/resources'
+          backupSidecarResources:
+            $ref: '#/definitions/resources'
+          postgresqlParameters:
+            type: object
+            additionalProperties:
+              type: string
+            default: {}
           replicas:
             type: integer
             default: 2
@@ -3427,6 +3211,13 @@ properties:
             type: string
           resources:
             $ref: '#/definitions/resources'
+          backupSidecarResources:
+            $ref: '#/definitions/resources'
+          postgresqlParameters:
+            type: object
+            additionalProperties:
+              type: string
+            default: {}
           replicas:
             type: integer
             default: 2
@@ -3449,6 +3240,13 @@ properties:
             type: string
           resources:
             $ref: '#/definitions/resources'
+          backupSidecarResources:
+            $ref: '#/definitions/resources'
+          postgresqlParameters:
+            type: object
+            additionalProperties:
+              type: string
+            default: {}
           replicas:
             type: integer
             default: 2

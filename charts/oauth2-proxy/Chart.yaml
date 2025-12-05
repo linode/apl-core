@@ -1,10 +1,10 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: changed
-      description: Updated OAuth2-Proxy image to v7.13.0
+    - kind: added
+      description: Add HTTPRoutes for Gateway API support
       links:
         - name: Github PR
-          url: https://github.com/oauth2-proxy/manifests/pull/366
+          url: https://github.com/oauth2-proxy/manifests/pull/369
 apiVersion: v2
 appVersion: 7.13.0
 dependencies:
@@ -12,7 +12,7 @@ dependencies:
   condition: redis.enabled
   name: redis-ha
   repository: https://dandydeveloper.github.io/charts
-  version: 4.35.0
+  version: 4.35.3
 description: A reverse proxy that provides authentication with Google, Github or other
   providers
 home: https://oauth2-proxy.github.io/oauth2-proxy/
@@ -36,4 +36,4 @@ name: oauth2-proxy
 sources:
 - https://github.com/oauth2-proxy/oauth2-proxy
 - https://github.com/oauth2-proxy/manifests
-version: 8.3.3
+version: 8.5.1

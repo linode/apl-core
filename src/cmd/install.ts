@@ -1,4 +1,4 @@
-import retry, { Options } from 'async-retry'
+import retry from 'async-retry'
 import { mkdirSync, rmSync } from 'fs'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -6,14 +6,14 @@ import { env } from 'src/common/envalid'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
 import {
   applyServerSide,
+  deletePendingHelmReleases,
   getDeploymentState,
   getHelmReleases,
-  k8s,
-  restartOtomiApiDeployment,
   setDeploymentState,
+  waitForCRD,
 } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
-import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
+import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
@@ -21,9 +21,8 @@ import {
   cloneOtomiChartsInGitea,
   commit,
   createCredentialsSecret,
+  createWelcomeConfigMap,
   initialSetupData,
-  printWelcomeMessage,
-  retryIsOAuth2ProxyRunning,
 } from './commit'
 import { collectTraces } from './traces'
 
@@ -66,23 +65,24 @@ export const installAll = async () => {
 
   d.info('Start install all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
-  const tag = await getImageTag()
-  const version = await getCurrentVersion()
+  const tag = await getImageTagFromValues()
+  const version = getPackageVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
 
   const state = await getDeploymentState()
   const releases = await getHelmReleases()
   await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, { status: { otomi: state, helm: releases } }, true)
 
-  d.info('Deploying essential manifests')
   const essentialDeployResult = await deployEssential()
   if (!essentialDeployResult) {
     throw new Error('Failed to deploy essential manifests')
   }
 
   d.info('Deploying CRDs')
-  await applyServerSide('charts/kube-prometheus-stack/charts/crds/crds')
-  await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
+  await retryInstallStep(applyServerSide, 'charts/kube-prometheus-stack/charts/crds/crds')
+  // Wait for ServiceMonitor CRD to be established before deploying nginx
+  await retryInstallStep(waitForCRD, 'servicemonitors.monitoring.coreos.com')
+  await retryInstallStep(async () => $`kubectl apply -f charts/tekton-triggers/crds --server-side`)
 
   d.info('Deploying charts containing label stage=prep')
   await hf(
@@ -96,7 +96,7 @@ export const installAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 
-  // Only install the core apps
+  d.info('Deploying charts containing label app=core')
   await hf(
     {
       labelOpts: ['app=core'],
@@ -111,20 +111,7 @@ export const installAll = async () => {
     await cloneOtomiChartsInGitea()
     const initialData = await initialSetupData()
     await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)
-    // FIXME: Migrate to use native Git client and stop cd-ing around
-    cd(rootDir)
-    await retryInstallStep(
-      hf,
-      {
-        labelOpts: ['pkg=apl-operator'],
-        logLevel: logLevelString(),
-        args: hfArgs,
-      },
-      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-    )
-    await retryIsOAuth2ProxyRunning()
-    await retryInstallStep(restartOtomiApiDeployment, k8s.app())
-    await printWelcomeMessage(initialData.secretName, initialData.domainSuffix)
+    await retryInstallStep(createWelcomeConfigMap, initialData.secretName, initialData.domainSuffix)
   }
   await setDeploymentState({ status: 'deployed', version })
   d.info('Installation completed')
@@ -133,30 +120,21 @@ export const installAll = async () => {
 const install = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:install`)
   const argv: HelmArguments = getParsedArgs()
-  const retryOptions: Options = {
-    factor: 1,
-    retries: env.INSTALL_RETRIES,
-    minTimeout: env.INSTALL_RETRY_TIMEOUT,
-    maxTimeout: env.INSTALL_RETRY_TIMEOUT,
-  }
   if (!argv.label && !argv.file) {
-    await retry(async () => {
+    try {
+      cd(rootDir)
+      await installAll()
+    } catch (e) {
+      d.error(e)
+      // Collect traces on installation failure
       try {
-        cd(rootDir)
-        await installAll()
-      } catch (e) {
-        d.error(e)
-        // Collect traces on installation failure
-        try {
-          await collectTraces()
-        } catch (traceError) {
-          d.error('Failed to collect traces:', traceError)
-        }
-        d.info(`Retrying in ${retryOptions.maxTimeout} ms`)
-        throw e
+        await collectTraces()
+        await deletePendingHelmReleases()
+      } catch (traceError) {
+        d.error('Failed to collect traces:', traceError)
       }
-    }, retryOptions)
-
+      throw e
+    }
     return
   }
   d.info('Start install')

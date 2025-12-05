@@ -10,6 +10,7 @@ import {
   NetworkingV1Api,
   PatchStrategy,
   setHeaderOptions,
+  V1ConfigMap,
   V1ResourceRequirements,
   V1Secret,
   V1Status,
@@ -119,11 +120,45 @@ export const isResourcePresent = async (type: string, name: string, namespace: s
 }
 
 export const getK8sSecret = async (name: string, namespace: string): Promise<Record<string, any> | undefined> => {
-  const result = await $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${name}}' | base64 --decode`
-    .nothrow()
-    .quiet()
-  if (result.exitCode === 0) return parse(result.stdout) as Record<string, any>
-  return undefined
+  try {
+    const secret = await k8s.core().readNamespacedSecret({ name, namespace })
+
+    if (!secret?.data) {
+      return undefined
+    }
+
+    // Decode all base64-encoded values and combine into a single object
+    const decodedData: Record<string, any> = {}
+    for (const [key, value] of Object.entries(secret.data)) {
+      const decoded = Buffer.from(value, 'base64').toString('utf-8')
+      // Try to parse as YAML/JSON, otherwise use as string
+      try {
+        decodedData[key] = parse(decoded)
+      } catch {
+        decodedData[key] = decoded
+      }
+    }
+
+    return decodedData
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      return undefined
+    }
+    throw error
+  }
+}
+
+export const deleteSecretForHelmRelease = async (releaseName: string, namespace: string) => {
+  const d = terminal('common:k8s:deleteSecretForHelmRelease')
+  d.info(`Deleting secret for Helm release ${releaseName} in namespace ${namespace}`)
+  try {
+    await coreClient.deleteNamespacedSecret({ name: `sh.helm.release.v1.${releaseName}.v1`, namespace })
+    d.debug(`Deleted secret for Helm release ${releaseName} in namespace ${namespace}`)
+  } catch (error) {
+    if (error?.response?.statusCode !== 404) {
+      throw error
+    }
+  }
 }
 
 export interface DeploymentState {
@@ -141,6 +176,47 @@ export const getDeploymentState = async (): Promise<DeploymentState> => {
   if (env.isDev && env.DISABLE_SYNC) return {}
   const result = await $`kubectl get cm -n otomi ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`.nothrow().quiet()
   return JSON.parse(result.stdout || '{}')
+}
+interface HelmRelease {
+  name: string
+  labelName: string
+  namespace: string
+  status: string
+  app_version: string
+  revision: number
+  first_deployed: Date | undefined | string
+  last_deployed: Date | undefined | string
+  chart?: string
+}
+
+export const deletePendingHelmReleases = async (): Promise<void> => {
+  const d = terminal(`common:k8s:deletePendingHelmReleases`)
+  const pendingHelmReleases = await getPendingHelmReleases()
+  if (pendingHelmReleases.length > 0) {
+    d.info(`Pending Helm operations detected for releases: ${pendingHelmReleases.join(', ')}. removing secrets...`)
+    for (const release of pendingHelmReleases) {
+      await deleteSecretForHelmRelease(release.name, release.namespace)
+    }
+  }
+}
+
+export const getPendingHelmReleases = async (): Promise<HelmRelease[]> => {
+  const d = terminal('common:k8s:getPendingHelmReleases')
+  d.info('Checking for pending Helm operations')
+  const releases = await getK8sHelmReleases()
+  const pendingReleases: HelmRelease[] = []
+  Object.keys(releases).forEach((key) => {
+    const release = releases[key]
+    if (release.labelName === 'apl' || release.labelName === 'otomi') return
+    if (
+      release.status === 'pending-upgrade' ||
+      release.status === 'pending-install' ||
+      release.status === 'pending-rollback'
+    ) {
+      pendingReleases.push(release)
+    }
+  })
+  return pendingReleases
 }
 
 /**
@@ -217,6 +293,49 @@ export const getHelmReleases = async (): Promise<Record<string, any>> => {
     return acc
   }, {})
   return status
+}
+
+export const getK8sHelmReleases = async (): Promise<Record<string, HelmRelease>> => {
+  const coreApi = k8s.core()
+
+  try {
+    const secretsResponse = await coreApi.listSecretForAllNamespaces({
+      labelSelector: 'owner=helm,status',
+    })
+
+    const releases: Record<string, HelmRelease> = {}
+
+    for (const secret of secretsResponse.items) {
+      if (!secret.metadata?.name || !secret.metadata?.namespace || !secret.metadata?.labels) continue
+
+      const match = secret.metadata.name.match(/^sh\.helm\.release\.v1\.(.+)\.v(\d+)$/)
+      if (!match) continue
+
+      const [, releaseName, revision] = match
+      const releaseKey = `${secret.metadata.namespace}/${releaseName}`
+
+      const release: HelmRelease = {
+        name: releaseName,
+        labelName: secret.metadata.labels.name,
+        namespace: secret.metadata.namespace,
+        revision: parseInt(revision),
+        status: secret.metadata.labels.status,
+        app_version: secret.metadata.labels.version || secret.metadata.labels.app_version,
+        chart: secret.metadata.labels.chart,
+        first_deployed: secret.metadata?.creationTimestamp,
+        last_deployed: secret.metadata?.labels.modifiedAt,
+      }
+
+      // Keep only the latest revision for each release
+      if (!releases[releaseKey] || releases[releaseKey].revision < release.revision) {
+        releases[releaseKey] = release
+      }
+    }
+
+    return releases
+  } catch (error) {
+    throw new Error(`Failed to get Helm releases from Kubernetes: ${error.message}`)
+  }
 }
 
 export const setDeploymentState = async (state: Record<string, any>): Promise<void> => {
@@ -433,6 +552,81 @@ export async function createUpdateGenericSecret(
 
 export function b64enc(value: string): string {
   return Buffer.from(value).toString('base64')
+}
+
+export async function getK8sConfigMap(
+  namespace: string,
+  name: string,
+  coreV1Api: CoreV1Api,
+): Promise<V1ConfigMap | undefined> {
+  try {
+    return await coreV1Api.readNamespacedConfigMap({ name, namespace })
+  } catch (error: any) {
+    if (error.code === 404) {
+      return undefined
+    }
+    throw error
+  }
+}
+
+export async function createK8sConfigMap(
+  namespace: string,
+  name: string,
+  data: Record<string, string>,
+  coreV1Api: CoreV1Api,
+): Promise<V1ConfigMap> {
+  const configMap: V1ConfigMap = {
+    metadata: {
+      name,
+      namespace,
+    },
+    data,
+  }
+  return await coreV1Api.createNamespacedConfigMap({ namespace, body: configMap })
+}
+
+export async function updateK8sConfigMap(
+  namespace: string,
+  name: string,
+  data: Record<string, string>,
+  coreV1Api: CoreV1Api,
+): Promise<V1ConfigMap> {
+  const configMap: V1ConfigMap = {
+    metadata: {
+      name,
+      namespace,
+    },
+    data,
+  }
+  return await coreV1Api.replaceNamespacedConfigMap({ name, namespace, body: configMap })
+}
+
+export async function createUpdateConfigMap(
+  coreV1Api: CoreV1Api,
+  name: string,
+  namespace: string,
+  data: Record<string, string>,
+): Promise<V1ConfigMap> {
+  const configMap: V1ConfigMap = {
+    metadata: {
+      name,
+      namespace,
+    },
+    data,
+  }
+
+  try {
+    return await coreV1Api.createNamespacedConfigMap({ namespace, body: configMap })
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 409) {
+      return await coreV1Api.patchNamespacedConfigMap(
+        { name, namespace, body: configMap },
+        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+      )
+    } else {
+      throw error
+    }
+  }
 }
 
 export async function getPodsOfStatefulSet(
@@ -746,4 +940,16 @@ export async function applyServerSide(
     }
   }
   await $`kubectl apply ${kubectlArgs}`
+}
+
+export async function waitForCRD(crdName: string, timeoutSeconds: number = 60): Promise<void> {
+  const d = terminal('common:k8s:waitForCRD')
+  d.debug(`Waiting for CRD ${crdName} to be established (timeout: ${timeoutSeconds}s)`)
+  try {
+    await $`kubectl wait --for condition=established --timeout=${timeoutSeconds}s crd/${crdName}`
+    d.debug(`CRD ${crdName} is ready`)
+  } catch (error) {
+    d.error(`Failed to wait for CRD ${crdName}:`, error)
+    throw error
+  }
 }

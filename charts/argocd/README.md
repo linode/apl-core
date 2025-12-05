@@ -396,6 +396,32 @@ For full list of changes please check ArtifactHub [changelog].
 
 Highlighted versions provide information about additional steps that should be performed by user when upgrading to newer version.
 
+### 9.1.0
+This chart contains a breaking change (if using `redis-ha`), which was introduced by the dependency `redis-ha` (as seen [here](https://github.com/DandyDeveloper/charts/blob/a03b6a6f4d72b6606ce9a218c7d0026350b48ad0/charts/redis-ha/README.md#4341---upgrade-may-complain-about-selector-label-changes-being-immutable)). The upgrade will complain about selector label changes being immutable, which requires a replacement of the `argocd-redis-ha-haproxy` deployment. To overcome this, you will need to delete (orphaning children) this deployment, updated ArgoCD to disable server-side diffing, then allow the new deployment of `argocd-redis-ha-haproxy` to rollout with the updated label selectors.
+
+> Note: If server-side diffing is enabled, you will need to revert this to use client-side diffing, otherwise ArgoCD will be in an Unknown status. More information [here](https://github.com/argoproj/argo-cd/issues/25184). If you happened to upgrade this helm chart before configuring client-side diffing, you will need to delete (orphaning children) the `argocd-redis-ha-haproxy` deployment; once the newest deployment has rolled out, its suggested to cleanup the orphaned ReplicaSets
+
+This issue was reported [here](https://github.com/argoproj/argo-helm/issues/3571)
+
+### 9.0.0
+We have removed all parameters under `.Values.configs.params` in this release, with the exception of `create` and `annotations`.
+This is to ensure better alignment with the upstream project, as tracking changes to their default values within the Helm chart has become challenging.
+
+**Though we removed the parameters from values.yaml in argo-helm, we keep providing the interface to override `.Values.configs.params` as the same way. **
+
+**Breaking change**
+
+Please be aware that the default value for `applicationsetcontroller.policy` has been updated to match the upstream default. The chart's default was previously `'sync'`, while the upstream default is `""` (an empty string).
+If you rely on the previous behavior, you will need to update your values.yaml.
+
+To restore the previous setting, you can override the argocd-cmd-params-cm ConfigMap as you could in older versions.
+
+```yaml
+configs:
+  params:
+    applicationsetcontroller.policy: 'sync'
+```
+
 ### 8.0.0
 
 In this release we upgrade the Helm chart to deploy the next major version of Argo CD (v3.0.0).
@@ -895,7 +921,6 @@ NAME: my-release
 | configs.cm."resource.customizations.ignoreResourceUpdates.autoscaling_HorizontalPodAutoscaler" | string | See [values.yaml] | Legacy annotations used on HPA autoscaling/v1 |
 | configs.cm."resource.customizations.ignoreResourceUpdates.discovery.k8s.io_EndpointSlice" | string | See [values.yaml] | Ignores update if EndpointSlice is not excluded globally |
 | configs.cm."resource.exclusions" | string | See [values.yaml] | Resource Exclusion/Inclusion |
-| configs.cm."server.rbac.log.enforce.enable" | bool | `false` | Enable logs RBAC enforcement |
 | configs.cm."statusbadge.enabled" | bool | `false` | Enable Status Badge |
 | configs.cm."timeout.hard.reconciliation" | string | `"0s"` | Timeout to refresh application data as well as target manifests cache |
 | configs.cm."timeout.reconciliation" | string | `"180s"` | Timeout to discover if a new manifests version got published to the repository |
@@ -908,27 +933,6 @@ NAME: my-release
 | configs.credentialTemplatesAnnotations | object | `{}` | Annotations to be added to `configs.credentialTemplates` Secret |
 | configs.gpg.annotations | object | `{}` | Annotations to be added to argocd-gpg-keys-cm configmap |
 | configs.gpg.keys | object | `{}` (See [values.yaml]) | [GnuPG] public keys to add to the keyring |
-| configs.params."application.namespaces" | string | `""` | Enables [Applications in any namespace] |
-| configs.params."applicationsetcontroller.enable.progressive.syncs" | bool | `false` | Enables use of the Progressive Syncs capability |
-| configs.params."applicationsetcontroller.namespaces" | string | `""` (default is only the ns where the controller is installed) | A list of glob patterns specifying where to look for ApplicationSet resources. (e.g. `"argocd,argocd-appsets-*"`) |
-| configs.params."applicationsetcontroller.policy" | string | `"sync"` | Modify how application is synced between the generator and the cluster. One of: `sync`, `create-only`, `create-update`, `create-delete` |
-| configs.params."controller.ignore.normalizer.jq.timeout" | string | `"1s"` | JQ Path expression timeout |
-| configs.params."controller.operation.processors" | int | `10` | Number of application operation processors |
-| configs.params."controller.repo.server.timeout.seconds" | int | `60` | Repo server RPC call timeout seconds. |
-| configs.params."controller.self.heal.timeout.seconds" | int | `5` | Specifies timeout between application self heal attempts |
-| configs.params."controller.status.processors" | int | `20` | Number of application status processors |
-| configs.params."controller.sync.timeout.seconds" | int | `0` | Specifies the timeout after which a sync would be terminated. 0 means no timeout |
-| configs.params."hydrator.enabled" | bool | `false` | Enable the hydrator feature (hydrator is in Alpha phase) |
-| configs.params."otlp.address" | string | `""` | Open-Telemetry collector address: (e.g. "otel-collector:4317") |
-| configs.params."reposerver.parallelism.limit" | int | `0` | Limit on number of concurrent manifests generate requests. Any value less the 1 means no limit. |
-| configs.params."server.basehref" | string | `"/"` | Value for base href in index.html. Used if Argo CD is running behind reverse proxy under subpath different from / |
-| configs.params."server.disable.auth" | bool | `false` | Disable Argo CD RBAC for user authentication |
-| configs.params."server.enable.gzip" | bool | `true` | Enable GZIP compression |
-| configs.params."server.enable.proxy.extension" | bool | `false` | Enable proxy extension feature. (proxy extension is in Alpha phase) |
-| configs.params."server.insecure" | bool | `false` | Run server without TLS |
-| configs.params."server.rootpath" | string | `""` | Used if Argo CD is running behind reverse proxy under subpath different from / |
-| configs.params."server.staticassets" | string | `"/shared/app"` | Directory path that contains additional static assets |
-| configs.params."server.x.frame.options" | string | `"sameorigin"` | Set X-Frame-Options header in HTTP responses to value. To disable, set to "". |
 | configs.params.annotations | object | `{}` | Annotations to be added to the argocd-cmd-params-cm ConfigMap |
 | configs.params.create | bool | `true` | Create the argocd-cmd-params-cm configmap If false, it is expected the configmap will be created by something else. |
 | configs.rbac."policy.csv" | string | `''` (See [values.yaml]) | File containing user-defined policies and role definitions. |
@@ -1236,6 +1240,7 @@ NAME: my-release
 | server.imagePullSecrets | list | `[]` (defaults to global.imagePullSecrets) | Secrets with credentials to pull images from a private registry |
 | server.ingress.annotations | object | `{}` | Additional ingress annotations |
 | server.ingress.aws.backendProtocolVersion | string | `"GRPC"` | Backend protocol version for the AWS ALB gRPC service |
+| server.ingress.aws.serviceAnnotations | object | `{}` | Annotations for the AWS ALB gRPC service |
 | server.ingress.aws.serviceType | string | `"NodePort"` | Service type for the AWS ALB gRPC service |
 | server.ingress.controller | string | `"generic"` | Specific implementation for ingress controller. One of `generic`, `aws` or `gke` |
 | server.ingress.enabled | bool | `false` | Enable an ingress resource for the Argo CD server |
@@ -1462,7 +1467,7 @@ NAME: my-release
 | redis.exporter.env | list | `[]` | Environment variables to pass to the Redis exporter |
 | redis.exporter.image.imagePullPolicy | string | `""` (defaults to global.image.imagePullPolicy) | Image pull policy for the redis-exporter |
 | redis.exporter.image.repository | string | `"ghcr.io/oliver006/redis_exporter"` | Repository to use for the redis-exporter |
-| redis.exporter.image.tag | string | `"v1.79.0"` | Tag to use for the redis-exporter |
+| redis.exporter.image.tag | string | `"v1.80.1"` | Tag to use for the redis-exporter |
 | redis.exporter.livenessProbe.enabled | bool | `false` | Enable Kubernetes liveness probe for Redis exporter |
 | redis.exporter.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the [probe] to be considered failed after having succeeded |
 | redis.exporter.livenessProbe.initialDelaySeconds | int | `30` | Number of seconds after the container has started before [probe] is initiated |
@@ -1480,7 +1485,7 @@ NAME: my-release
 | redis.extraContainers | list | `[]` | Additional containers to be added to the redis pod |
 | redis.image.imagePullPolicy | string | `""` (defaults to global.image.imagePullPolicy) | Redis image pull policy |
 | redis.image.repository | string | `"ecr-public.aws.com/docker/library/redis"` | Redis repository |
-| redis.image.tag | string | `"7.2.11-alpine"` | Redis tag |
+| redis.image.tag | string | `"8.2.2-alpine"` | Redis tag |
 | redis.imagePullSecrets | list | `[]` (defaults to global.imagePullSecrets) | Secrets with credentials to pull images from a private registry |
 | redis.initContainers | list | `[]` | Init containers to add to the redis pod |
 | redis.livenessProbe.enabled | bool | `false` | Enable Kubernetes liveness probe for Redis server |
@@ -1568,7 +1573,7 @@ The main options are listed here:
 | redis-ha.haproxy.tolerations | list | `[]` | [Tolerations] for use with node taints for haproxy pods. |
 | redis-ha.hardAntiAffinity | bool | `true` | Whether the Redis server pods should be forced to run on separate nodes. |
 | redis-ha.image.repository | string | `"ecr-public.aws.com/docker/library/redis"` | Redis repository |
-| redis-ha.image.tag | string | `"7.2.11-alpine"` | Redis tag |
+| redis-ha.image.tag | string | `"8.2.2-alpine"` | Redis tag |
 | redis-ha.persistentVolume.enabled | bool | `false` | Configures persistence on Redis nodes |
 | redis-ha.redis.config | object | See [values.yaml] | Any valid redis config options in this section will be applied to each server (see `redis-ha` chart) |
 | redis-ha.redis.config.save | string | `'""'` | Will save the DB if both the given number of seconds and the given number of write operations against the DB occurred. `""`  is disabled |

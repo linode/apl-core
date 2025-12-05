@@ -72,6 +72,4 @@ export function cleanEnv<T>(spec: { [K in keyof T]: ValidatorSpec<T[K]> }, optio
 
 export const env = cleanEnv(cliEnvSpec, {})
 
-export const isChart = !!env.VALUES_INPUT
-export const isCi = env.CI
-export const isCli = env.OTOMI_DEV || (!env.CI && !isChart)
+export const isCli = env.OTOMI_DEV || !env.VALUES_INPUT

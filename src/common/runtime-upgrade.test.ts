@@ -4,7 +4,6 @@ import { deployEssential } from './hf'
 import { getDeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
 import { filterRuntimeUpgrades, runtimeUpgrade } from './runtime-upgrade'
 import { RuntimeUpgrades } from './runtime-upgrades/runtime-upgrades'
-import { getCurrentVersion } from './values'
 
 jest.mock('./k8s')
 jest.mock('./hf')
@@ -21,7 +20,6 @@ jest.mock('./runtime-upgrades/runtime-upgrades', () => ({
 }))
 
 const mockGetDeploymentState = getDeploymentState as jest.MockedFunction<typeof getDeploymentState>
-const mockGetCurrentVersion = getCurrentVersion as jest.MockedFunction<typeof getCurrentVersion>
 const mockWaitForArgoCDAppSync = waitForArgoCDAppSync as jest.MockedFunction<typeof waitForArgoCDAppSync>
 const mockWaitForArgoCDAppHealthy = waitForArgoCDAppHealthy as jest.MockedFunction<typeof waitForArgoCDAppHealthy>
 const mockGetApplications = getApplications as jest.MockedFunction<typeof getApplications>
@@ -50,46 +48,44 @@ describe('runtimeUpgrade', () => {
   describe('first installation scenarios', () => {
     it('should skip runtime upgrade for first installation (empty deployment state)', async () => {
       mockGetDeploymentState.mockResolvedValue({})
-      mockGetCurrentVersion.mockResolvedValue('1.0.0')
 
       await runtimeUpgrade({ when: 'pre' })
 
       expect(mockDebugger.info).toHaveBeenCalledWith(
-        'Skipping the runtime upgrade procedure as this is the very first installation',
+        'Skipping the runtime upgrade procedure because this is initial installation',
       )
-      expect(mockGetCurrentVersion).not.toHaveBeenCalled()
     })
 
     it('should skip runtime upgrade for null deployment state', async () => {
       mockGetDeploymentState.mockResolvedValue(null as any)
-      mockGetCurrentVersion.mockResolvedValue('1.0.0')
 
       await runtimeUpgrade({ when: 'pre' })
 
       expect(mockDebugger.info).toHaveBeenCalledWith(
-        'Skipping the runtime upgrade procedure as this is the very first installation',
+        'Skipping the runtime upgrade procedure because this is initial installation',
       )
     })
   })
 
   describe('version handling and filtering', () => {
     it('should skip when no applicable upgrades found', async () => {
-      mockGetDeploymentState.mockResolvedValue({ version: '2.0.0' })
-      mockGetCurrentVersion.mockResolvedValue('2.0.0')
+      mockGetDeploymentState.mockResolvedValue({ version: '2.0.0', deployingVersion: '2.0.1' })
 
       await runtimeUpgrade({ when: 'pre' })
 
-      expect(mockDebugger.info).toHaveBeenCalledWith('The current version of the Akamai App Platform: 2.0.0')
+      expect(mockDebugger.info).toHaveBeenCalledWith('The current version of the App Platform: 2.0.0')
       expect(mockDebugger.info).toHaveBeenCalledWith('Deploying essential manifests')
       expect(mockDebugger.info).toHaveBeenCalledWith('No runtime upgrade operations detected, skipping')
     })
 
     it('should use current version when deployment state has no version', async () => {
-      mockGetDeploymentState.mockResolvedValue({ status: 'deployed', version: '1.0.0' })
+      mockGetDeploymentState.mockResolvedValue({ status: 'deployed', deployingVersion: '1.0.1' })
 
       await runtimeUpgrade({ when: 'pre' })
 
-      expect(mockDebugger.info).toHaveBeenCalledWith('The current version of the Akamai App Platform: 1.0.0')
+      expect(mockDebugger.info).toHaveBeenCalledWith(
+        'Skipping the runtime upgrade procedure because this is initial installation',
+      )
     })
   })
 
@@ -107,8 +103,7 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should execute global pre operations', async () => {
-      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0' })
-      mockGetCurrentVersion.mockResolvedValue('1.0.0')
+      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0', deployingVersion: '1.0.1' })
 
       await runtimeUpgrade({ when: 'pre' })
 
@@ -119,8 +114,7 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should execute global post operations', async () => {
-      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0' })
-      mockGetCurrentVersion.mockResolvedValue('1.0.0')
+      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0', deployingVersion: '1.0.1' })
 
       await runtimeUpgrade({ when: 'post' })
 
@@ -138,7 +132,6 @@ describe('runtimeUpgrade', () => {
       })
 
       mockGetDeploymentState.mockResolvedValue({ version: '1.0.0' })
-      mockGetCurrentVersion.mockResolvedValue('1.0.0')
 
       await runtimeUpgrade({ when: 'post' })
 
@@ -168,8 +161,7 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should execute application-specific operations with ArgoCD waits', async () => {
-      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0' })
-      mockGetCurrentVersion.mockResolvedValue('1.0.0')
+      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0', deployingVersion: '1.0.1' })
       mockGetApplications.mockResolvedValue(['istio-operator'])
       await runtimeUpgrade({ when: 'post' })
 
@@ -184,8 +176,7 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should not execute application operations for wrong phase', async () => {
-      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0' })
-      mockGetCurrentVersion.mockResolvedValue('1.0.0')
+      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0', deployingVersion: '1.0.1' })
       mockGetApplications.mockResolvedValue(['argocd'])
 
       await runtimeUpgrade({ when: 'pre' })
@@ -216,8 +207,7 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should execute both global and application operations in correct order', async () => {
-      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0' })
-      mockGetCurrentVersion.mockResolvedValue('1.0.0')
+      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0', deployingVersion: '1.0.1' })
 
       await runtimeUpgrade({ when: 'pre' })
 

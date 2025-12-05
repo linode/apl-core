@@ -1,7 +1,7 @@
 import { ApiException, CoreV1Event, V1ContainerStatus, V1Pod } from '@kubernetes/client-node'
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
-import { k8s } from 'src/common/k8s'
+import { createUpdateConfigMap, k8s } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -329,28 +329,7 @@ async function writeReportToConfigMap(name: string, namespace: string, report: T
   const coreApi = k8s.core()
   const reportJson = JSON.stringify(report, null, 2)
 
-  try {
-    const existingConfigMap = await coreApi.readNamespacedConfigMap({ name, namespace })
-
-    if (!existingConfigMap.data) {
-      existingConfigMap.data = {}
-    }
-    existingConfigMap.data.report = reportJson
-
-    await coreApi.replaceNamespacedConfigMap({ name, namespace, body: existingConfigMap })
-  } catch (error) {
-    if (error instanceof ApiException && error.code === 404) {
-      await coreApi.createNamespacedConfigMap({
-        namespace,
-        body: {
-          metadata: { name },
-          data: { report: reportJson },
-        },
-      })
-    } else {
-      throw error
-    }
-  }
+  await createUpdateConfigMap(coreApi, name, namespace, { report: reportJson })
 }
 
 /**

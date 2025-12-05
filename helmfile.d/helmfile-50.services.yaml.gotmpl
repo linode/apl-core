@@ -12,12 +12,6 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: velero
-    installed: {{ $a | get "velero.enabled" }}
-    namespace: velero
-    labels:
-      pkg: velero
-    <<: *default
   - name: trivy-operator
     installed: {{ $a | get "trivy.enabled" }}
     namespace: trivy-operator

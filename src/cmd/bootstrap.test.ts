@@ -1,5 +1,5 @@
 import { cloneDeep, merge } from 'lodash'
-import { env } from 'process'
+import { pki } from 'node-forge'
 import stubs from 'src/test-stubs'
 import {
   bootstrap,
@@ -11,9 +11,15 @@ import {
   handleFileEntry,
   processValues,
 } from './bootstrap'
-import { pki } from 'node-forge'
 
 const { terminal } = stubs
+
+jest.mock('src/common/envalid', () => ({
+  env: {
+    VALUES_INPUT: 'testValues.yaml',
+    ENV_DIR: '/test',
+  },
+}))
 
 describe('Bootstrapping values', () => {
   const values = {
@@ -39,9 +45,8 @@ describe('Bootstrapping values', () => {
       encrypt: jest.fn(),
       existsSync: jest.fn(),
       genSops: jest.fn(),
-      getCurrentVersion: jest.fn(),
       getDeploymentState: jest.fn().mockReturnValue({}),
-      getImageTag: jest.fn(),
+      getImageTagFromValues: jest.fn(),
       getK8sSecret: jest.fn(),
       hfValues: jest.fn(),
       isCli: true,
@@ -59,7 +64,6 @@ describe('Bootstrapping values', () => {
     await bootstrap(deps)
     expect(deps.copyBasicFiles).toHaveBeenCalled()
     expect(deps.bootstrapSops).toHaveBeenCalled()
-    expect(deps.getImageTag).toHaveBeenCalled()
   })
   it('should copy only skeleton files to env dir if it is empty or nonexisting', async () => {
     deps.processValues.mockReturnValue(undefined)
@@ -67,7 +71,7 @@ describe('Bootstrapping values', () => {
     expect(deps.hfValues).toHaveBeenCalledTimes(0)
   })
   it('should get stored cluster secrets if those exist', async () => {
-    deps.getK8sSecret.mockReturnValue(secrets)
+    deps.getK8sSecret.mockReturnValue({ 'otomi-generated-passwords': secrets })
     const res = await getStoredClusterSecrets(deps)
     expect(res).toEqual(secrets)
   })
@@ -166,7 +170,6 @@ describe('Bootstrapping values', () => {
         },
       }
       const deps = {
-        isChart: true,
         loadYaml: jest.fn().mockReturnValue(workload),
         mkdir: jest.fn(),
         terminal,
@@ -174,9 +177,9 @@ describe('Bootstrapping values', () => {
       }
       it('should create folders and files based on file entry in yaml', async () => {
         await handleFileEntry(deps)
-        expect(deps.mkdir).toHaveBeenCalledWith(`${env.ENV_DIR}/env/teams/workloads/demo`, { recursive: true })
+        expect(deps.mkdir).toHaveBeenCalledWith('/test/env/teams/workloads/demo', { recursive: true })
         expect(deps.writeFile).toHaveBeenCalledWith(
-          `${env.ENV_DIR}/env/teams/workloads/demo/values.yaml`,
+          '/test/env/teams/workloads/demo/values.yaml',
           JSON.stringify(values),
         )
       })
@@ -291,7 +294,6 @@ describe('Bootstrapping values', () => {
           getStoredClusterSecrets: jest.fn().mockReturnValue(secrets),
           getKmsValues: jest.fn().mockReturnValue({}),
           hfValues: jest.fn().mockReturnValue(values),
-          isChart: true,
           loadYaml: jest.fn(),
           terminal,
           validateValues: jest.fn().mockReturnValue(true),
@@ -400,38 +402,6 @@ describe('Bootstrapping values', () => {
           deps.getUsers.mockReturnValue(usersWithPasswords)
           await processValues(deps)
           expect(deps.writeValues).toHaveBeenNthCalledWith(1, writtenValues)
-        })
-      })
-
-      describe('processing env dir values', () => {
-        beforeEach(() => {
-          deps.isChart = false
-        })
-        it('should retrieve previous user input when cluster provider is set', async () => {
-          deps.loadYaml.mockReturnValue({ spec: { provider: 'set' } })
-          await processValues(deps)
-          expect(deps.hfValues).toHaveBeenCalledWith({ defaultValues: true })
-        })
-        it('should not validate values when starting empty', async () => {
-          deps.pathExists.mockReturnValue(false)
-          const values = await processValues(deps)
-          expect(deps.hfValues).toHaveBeenCalledTimes(0)
-          expect(deps.validateValues).toHaveBeenCalledTimes(0)
-        })
-        it('should validate values when values were found', async () => {
-          deps.existsSync.mockReturnValue(true)
-          deps.loadYaml.mockReturnValue({ cluster: { provider: 'chek' } })
-          deps.hfValues.mockReturnValue({ test: 1 })
-          await processValues(deps)
-          expect(deps.hfValues).toHaveBeenCalledTimes(1)
-          expect(deps.validateValues).toHaveBeenCalledTimes(1)
-        })
-        it('should generate secrets by taking previous values as input', async () => {
-          deps.hfValues.mockReturnValue({ someKey: 'someValue' })
-          deps.loadYaml.mockReturnValue({ someKey: 'someValue' })
-          deps.generateSecrets.mockReturnValue({ gen: 'x' })
-          await processValues(deps)
-          expect(deps.generateSecrets).toHaveBeenCalledWith({ someKey: 'someValue' })
         })
       })
     })

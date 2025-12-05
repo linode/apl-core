@@ -20,7 +20,6 @@
 # Domain suffix may not be present during initial deployment stage
 {{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
 {{- $provider := $v.cluster.provider }}
-{{- $droneProvider := $a.drone.sourceControl.provider }}
 {{- $issuer := $cm | get "issuer" "" }}
 {{- $untrustedCA := or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
 {{- $giteaUrl := printf "https://gitea.%s" $domainSuffix }}
@@ -219,17 +218,6 @@ environments:
             {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
             stage: production
             {{- end }}
-          {{- if eq $droneProvider "gitea" }}
-          drone:
-            sourceControl:
-              gitea:
-                server: {{ $a | get "drone.sourceControl.gitea.server" $giteaUrl }}
-              {{- if or ($a | get "drone.sourceControl.secret" nil) (and (eq $droneProvider "gitea") (not ($a | get "drone.sourceControl.gitea.server" nil))) }}
-              secret: {{ $a | get "drone.sourceControl.secret" "drone-source-control" }}
-              {{- end }}
-          {{- end }}
-          drone-admit-members:
-            enabled: {{ eq $droneProvider "github" }}
           external-dns:
             enabled: {{ $v.otomi.hasExternalDNS }}
           harbor:

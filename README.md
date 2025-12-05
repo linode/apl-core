@@ -2,7 +2,7 @@
   <img src="https://github.com/linode/manager/blob/develop/packages/manager/src/assets/logo/akamai-logo-color.svg" width="200" />
   <br />
   <br />
-  Akamai Application Platform (for LKE)
+  App Platform
 </h3>
 
 <p align="center">
@@ -13,26 +13,31 @@
 </p>
 <p align="center">
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
-  <a href="https://apl-docs.net/"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website apl-docs.net"></a>
+  <a href="https://techdocs.akamai.com/app-platform/docs/welcome"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website apl-docs.net"></a>
 </p>
 
 <p align="center"><img src="https://github.com/linode/apl-core/blob/main/docs/img/apl-console.png/?raw=true" width="100%" align="center" alt="APL Console"></p>
 
 ## Getting started
 
-### Step 1: [Install the App Platform](https://apl-docs.net/docs/get-started/installation/overview)
+### Step 1: Install the App Platform
 
 Install the App Platform on Linode Kubernetes Engine (LKE) or any other conformant Kubernetes cluster.
+The App Platform can be installed automatically when creating a new Linode Kubernetes Engine (LKE) cluster on Akamai Cloud. It can also be installed manually on LKE or any other conformant Kubernetes cluster.
 
-### Step 2: [Follow the post installation steps ](https://apl-docs.net/docs/get-started/installation/post-installation-steps)
+- [Automatic installation on LKE](https://techdocs.akamai.com/app-platform/docs/lke-automatic-install)
+- [Manual installation on LKE](https://techdocs.akamai.com/app-platform/docs/lke-manual-install)
+- [Custom installation on other Kubernetes services](https://techdocs.akamai.com/app-platform/docs/custom)
 
-Configure the App Platform for your use case.
+### Step 2: Post-installation steps
 
-### Step 3: [Explore the App Platform using the Labs](https://apl-docs.net/docs/get-started/labs/overview)
+After installing the App Platform on your Kubernetes cluster, review the [Post installation steps](https://techdocs.akamai.com/app-platform/docs/post-installation-steps) guide. There may be additional setup or initial configuration steps, such as locating your username and password.
 
-Explore the App Platform with a comprehensive set of hands-on labs.
+### Step 3: Explore the App Platform with hands-on labs
 
-## Akamai Application Platform supports
+To learn how to use the App Platform, follow along with the [hands-on labs](https://techdocs.akamai.com/app-platform/docs/labs-overview). These tutorials are designed as walk-throughs for new users, instructing them on creating container images, code repositories, and workloads. In addition, learn how to monitor these items and implement basic security checks.
+
+## App Platform supports
 
 **Developers** - With easy self-service.
 
@@ -83,7 +88,6 @@ Get instant access to the following pre-configured Kubernetes Apps:
 
 One-click activation of the following Kubernetes Apps:
 
-- [Velero](https://github.com/vmware-tanzu/velero): Back up and restore your Kubernetes cluster resources and persistent volumes.
 - [Knative](https://github.com/knative/serving): Deploy and manage serverless workloads.
 - [Prometheus](https://github.com/prometheus/prometheus): Collecting container application metrics.
 - [Alertmanager](https://github.com/prometheus/alertmanager): Handle alerts send by Prometheus.
@@ -91,7 +95,6 @@ One-click activation of the following Kubernetes Apps:
 - [Grafana Loki](https://github.com/grafana/loki): Collecting container logs.
 - [Harbor](https://github.com/goharbor/harbor): Container image registry with role-based access control and image scanning.
 - [Kyverno](https://github.com/kyverno/kyverno): Kubernetes native policy management.
-- [Jaeger](https://github.com/jaegertracing/jaeger): End-to-end distributed tracing and monitor for complex distributed systems.
 - [Minio](https://github.com/minio/minio): High performance Object Storage compatible with Amazon S3 cloud storage service.
 - [Trivy Operator](https://github.com/aquasecurity/trivy-operator): Kubernetes-native security toolkit.
 - [Grafana Tempo](https://github.com/grafana/tempo): High-scale distributed tracing backend.
@@ -99,8 +102,8 @@ One-click activation of the following Kubernetes Apps:
 
 ## Documentation
 
-Check out [apl-docs.net](https://apl-docs.net) for more detailed documentation.
+Check out the [App Platform documentation](https://techdocs.akamai.com/app-platform/docs/getting-started) on Akamai Techdocs.
 
 ## License
 
-APL is licensed under the [Apache 2.0 License](https://github.com/linode/apl-core/blob/main/LICENSE).
+App Platform is licensed under the [Apache 2.0 License](https://github.com/linode/apl-core/blob/main/LICENSE).

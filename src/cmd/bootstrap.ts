@@ -10,12 +10,12 @@ import { prepareEnvironment } from 'src/common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
-import { env, isChart, isCi, isCli } from 'src/common/envalid'
+import { env, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from 'src/common/k8s'
 import { getKmsSettings } from 'src/common/repo'
 import { ensureTeamGitOpsDirectories, getFilename, gucci, isCore, loadYaml, rootDir } from 'src/common/utils'
-import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from 'src/common/values'
+import { generateSecrets, writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
@@ -68,7 +68,7 @@ export const bootstrapSops = async (
   if (provider === 'age') {
     const { publicKey } = values?.kms?.sops?.age ?? {}
     let privateKey = values.kms?.sops?.age?.privateKey
-    if (privateKey.startsWith('ENC')) {
+    if (privateKey?.startsWith('ENC')) {
       privateKey = ''
     }
     obj.keys = publicKey
@@ -147,10 +147,15 @@ export const getStoredClusterSecrets = async (
   if (env.isDev && env.DISABLE_SYNC) return undefined
   // we might need to create the 'otomi' namespace if we are in CLI mode
   if (isCli) await deps.$`kubectl create ns otomi &> /dev/null`.nothrow().quiet()
-  const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi')
-  if (kubeSecretObject) {
-    d.info(`Found ${secretId} secrets on cluster, recovering`)
-    return kubeSecretObject
+  try {
+    const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi')
+    if (kubeSecretObject) {
+      d.info(`Found ${secretId} secrets on cluster, recovering`)
+      return kubeSecretObject[DEPLOYMENT_PASSWORDS_SECRET]
+    }
+  } catch {
+    d.info(`No existing ${secretId} secrets found on cluster`)
+    return undefined
   }
   return undefined
 }
@@ -270,7 +275,6 @@ export const copyBasicFiles = async (
 export const processValues = async (
   deps = {
     terminal,
-    isChart,
     loadYaml,
     decrypt,
     getStoredClusterSecrets,
@@ -287,25 +291,13 @@ export const processValues = async (
     addInitialPasswords,
     addPlatformAdmin,
   },
-): Promise<Record<string, any> | undefined> => {
+): Promise<Record<string, any>> => {
   const d = deps.terminal(`cmd:${cmdName}:processValues`)
-  const { ENV_DIR, VALUES_INPUT } = env
-  let originalInput: Record<string, any> = {}
-  let storedSecrets: Record<string, any> | undefined
-  if (deps.isChart) {
-    d.log(`Loading app values from ${VALUES_INPUT}`)
-    const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
-    storedSecrets = (await deps.getStoredClusterSecrets()) || {}
-    originalInput = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues))
-  } else {
-    d.log(`Loading repo values from ${ENV_DIR}`)
-    // we can only read values from ENV_DIR if we can determine cluster.providers
-    storedSecrets = {}
-    if (deps.pathExists(`${ENV_DIR}/env/settings/cluster.yaml`)) {
-      await deps.decrypt()
-      originalInput = (await deps.hfValues({ defaultValues: true })) || {}
-    }
-  }
+  const { VALUES_INPUT } = env
+  d.log(`Loading app values from ${VALUES_INPUT}`)
+  const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
+  const storedSecrets: Record<string, any> = (await deps.getStoredClusterSecrets()) || {}
+  const originalInput: Record<string, any> = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues))
   // generate all secrets (does not diff against previous so generates all new secrets every time)
   const generatedSecrets = await deps.generateSecrets(originalInput)
   // do we need to create a custom CA? if so add it to the secrets
@@ -330,22 +322,14 @@ export const processValues = async (
   // we have generated all we need, now store everything by merging the original values over all the secrets
   await deps.writeValues(merge(cloneDeep(allSecrets), cloneDeep(originalInput), cloneDeep({ users })))
   // and do some context dependent post processing:
-  if (deps.isChart) {
-    // to support potential failing chart install we store secrets on cluster
-    if (!(env.isDev && env.DISABLE_SYNC)) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
-  } else if (!isEmpty(originalInput)) {
-    // cli: when we are bootstrapping from a non empty values repo, validate the input
-    await deps.validateValues()
-    // Ensure newly generated secrets stored in .dec file are encrypted
-    await encrypt()
-  }
+  // to support potential failing chart install we store secrets on cluster
+  if (!(env.isDev && env.DISABLE_SYNC)) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
   return originalInput
 }
 
 // create file structure based on file entry
 export const handleFileEntry = async (
   deps = {
-    isChart,
     loadYaml,
     mkdir,
     terminal,
@@ -353,21 +337,19 @@ export const handleFileEntry = async (
   },
 ) => {
   const { ENV_DIR, VALUES_INPUT } = env
-  if (deps.isChart) {
-    // write Values from File
-    const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
-    if (originalValues && originalValues.files) {
-      for (const [key, value] of Object.entries(originalValues.files as string)) {
-        // extract folder name
-        const filePath = path.dirname(key)
-        // evaluate absolute file name and path
-        const absPath = `${ENV_DIR}/${filePath}`
-        const absFileName = `${ENV_DIR}/${key}`
-        // create Folder
-        await deps.mkdir(absPath, { recursive: true })
-        // write File
-        await deps.writeFile(absFileName, value.toString())
-      }
+  // write Values from File
+  const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
+  if (originalValues && originalValues.files) {
+    for (const [key, value] of Object.entries(originalValues.files as string)) {
+      // extract folder name
+      const filePath = path.dirname(key)
+      // evaluate absolute file name and path
+      const absPath = `${ENV_DIR}/${filePath}`
+      const absFileName = `${ENV_DIR}/${key}`
+      // create Folder
+      await deps.mkdir(absPath, { recursive: true })
+      // write File
+      await deps.writeFile(absFileName, value.toString())
     }
   }
 }
@@ -431,16 +413,12 @@ export const bootstrap = async (
   deps = {
     pathExists: existsSync,
     getDeploymentState,
-    getImageTag,
-    getCurrentVersion,
     terminal,
     copyBasicFiles,
     processValues,
     hfValues,
-    isCli,
     writeValues,
     bootstrapSops,
-    copyFile,
     migrate,
     encrypt,
     decrypt,
@@ -448,37 +426,18 @@ export const bootstrap = async (
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:bootstrap`)
+  const { ENV_DIR, VALUES_INPUT } = env
 
-  // if CI: we are called from pipeline on each deployment, which is costly
-  // so run bootstrap only when no previous deployment was done or version or tag of otomi changed
-  const tag = await deps.getImageTag()
-  const version = await deps.getCurrentVersion()
-  if (isCi) {
-    const { version: prevVersion, tag: prevTag } = await deps.getDeploymentState()
-    if (prevVersion && prevTag && version === prevVersion && tag === prevTag) return
+  if (!VALUES_INPUT) {
+    d.error('VALUES_INPUT is required for bootstrap')
+    process.exit(1)
   }
-  const { ENV_DIR } = env
-  const hasOtomi = deps.pathExists(`${ENV_DIR}/bin/otomi`)
-
-  const otomiImage = `linode/apl-core:${tag}`
-  d.log(`Installing artifacts from ${otomiImage}`)
   await deps.copyBasicFiles()
   await deps.migrate()
   const originalValues = await deps.processValues()
-  // exit early if `isCli` and `ENV_DIR` were empty, and let the user provide valid values first:
-
-  if (!originalValues) {
-    // FIXME what is the use case to enter this
-    d.log('A new values repo has been created. For next steps follow documentation at https://apl-docs.net')
-    return
-  }
-
   await deps.handleFileEntry()
   await deps.bootstrapSops()
   await ensureTeamGitOpsDirectories(ENV_DIR, originalValues)
-  if (!hasOtomi) {
-    d.log('You can now use the otomi CLI')
-  }
   d.log(`Done bootstrapping values`)
 }
 

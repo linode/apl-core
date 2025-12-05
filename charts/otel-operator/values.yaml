@@ -50,7 +50,7 @@ manager:
     imagePullPolicy: IfNotPresent
   collectorImage:
     repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
-    tag: 0.137.0
+    tag: 0.138.0
   opampBridgeImage:
     repository: ""
     tag: ""

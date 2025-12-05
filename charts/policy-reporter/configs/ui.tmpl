@@ -20,6 +20,9 @@ ui:
     path: {{ .Values.ui.logo.path }}
     disabled: {{ .Values.ui.logo.disabled }}
 
+crds:
+  customBoard: {{ .Values.ui.crds.customBoard }}
+
 {{- $default := false -}}
 {{- range .Values.ui.clusters }}
     {{- if eq .name $.Values.ui.name -}}

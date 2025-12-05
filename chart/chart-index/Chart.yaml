@@ -6,8 +6,11 @@ version: 0.1.0
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 8.6.4
+    version: 9.1.5
     repository: https://argoproj.github.io/argo-helm
+  - name: argocd-image-updater
+    version: 1.0.1
+    repository: oci://ghcr.io/argoproj/argo-helm/argocd-image-updater
   - name: cert-manager
     version: v1.19.1
     repository: https://charts.jetstack.io
@@ -48,9 +51,6 @@ dependencies:
   - name: istiod
     version: 1.27.3
     repository: https://istio-release.storage.googleapis.com/charts
-  - name: jaeger-operator
-    version: 2.46.0
-    repository: https://jaegertracing.github.io/helm-charts
   - name: keycloakx
     alias: keycloak
     version: 7.1.4
@@ -59,13 +59,13 @@ dependencies:
     version: v1.18.1
     repository: https://knative.github.io/operator
   - name: kserve-crd
-    version: v0.15.2
+    version: v0.16.0
     repository: oci://ghcr.io/kserve/charts/kserve-crd
   - name: kserve
-    version: v0.15.2
+    version: v0.16.0
     repository: oci://ghcr.io/kserve/charts/kserve
   - name: kube-prometheus-stack
-    version: 79.5.0
+    version: 79.9.0
     repository: https://prometheus-community.github.io/helm-charts
   - name: kyverno
     version: 3.5.2
@@ -81,20 +81,20 @@ dependencies:
     version: 5.4.0
     repository: https://charts.min.io/
   - name: oauth2-proxy
-    version: 8.3.3
+    version: 8.5.1
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
-    version: 0.98.0
+    version: 0.99.1
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   - name: policy-reporter
-    version: 3.5.0
+    version: 3.7.0
     repository: https://kyverno.github.io/policy-reporter
   - name: prometheus-blackbox-exporter
-    version: 11.4.2
+    version: 11.5.0
     repository: https://prometheus-community.github.io/helm-charts
   - name: prometheus-msteams
-    version: 1.3.4
+    version: 1.3.5
     repository: https://prometheus-msteams.github.io/prometheus-msteams/
   - name: promtail
     version: 6.17.1
@@ -108,7 +108,7 @@ dependencies:
     repository: https://bitnami-labs.github.io/sealed-secrets/
   - name: tekton-pipeline
     alias: tekton-pipelines
-    version: 1.3.1
+    version: 1.6.1
     repository: https://cdfoundation.github.io/tekton-helm-chart/
   - name: tempo-distributed
     alias: tempo
@@ -120,6 +120,3 @@ dependencies:
   - name: trivy-operator
     version: 0.31.0
     repository: https://aquasecurity.github.io/helm-charts/
-  - name: velero
-    version: 5.4.1
-    repository: https://vmware-tanzu.github.io/helm-charts/

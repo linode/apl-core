@@ -1,27 +1,23 @@
-import { DiscoveryV1Api } from '@kubernetes/client-node'
 import retry from 'async-retry'
-import { existsSync } from 'fs'
-import { rm } from 'fs/promises'
 import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
-import { env, isCi } from 'src/common/envalid'
+import { env } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { createUpdateGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
+import { createUpdateConfigMap, createUpdateGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
-import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
+import { HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
 
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 
-interface Arguments extends HelmArguments, DroneArgs {
+interface Arguments extends HelmArguments {
   m?: string
   message?: string
 }
@@ -57,12 +53,10 @@ const cleanupGitState = async (d: any): Promise<void> => {
   }
 }
 
-const commitAndPush = async (values: Record<string, any>, branch: string): Promise<void> => {
+const commitAndPush = async (values: Record<string, any>, branch: string, initialInstall = false): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
-  const argv = getParsedArgs()
-  const rerunRequested = existsSync(`${env.ENV_DIR}/.rerun`)
-  const message = isCi ? 'updated values [ci skip]' : argv.message || 'otomi commit'
+  const message = initialInstall ? 'otomi commit' : 'updated values [ci skip]'
   const { password } = getRepo(values)
   cd(env.ENV_DIR)
   try {
@@ -75,18 +69,14 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
       await $`git commit -m ${message} --no-verify`.quiet()
     }
     await $`git add -A`
-    if (isCi && rerunRequested) {
-      d.log('Committing changes and triggering pipeline run')
-      await $`git commit -m "[apl-trigger]" --no-verify --allow-empty`.quiet()
-    } else {
-      // The below 'git status' command will always return at least single new line
-      const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length - 1
-      if (filesChangedCount === 0) {
-        d.log('Nothing to commit')
-        return
-      }
-      await $`git commit -m ${message} --no-verify`.quiet()
+
+    // The below 'git status' command will always return at least single new line
+    const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length - 1
+    if (filesChangedCount === 0) {
+      d.log('Nothing to commit')
+      return
     }
+    await $`git commit -m ${message} --no-verify`.quiet()
   } catch (e) {
     d.log('commitAndPush error ', e?.message?.replace(password, '****'))
     return
@@ -134,9 +124,6 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
       maxTimeout: 30000,
     },
   )
-  if (rerunRequested) {
-    await rm(`${env.ENV_DIR}/.rerun`, { force: true })
-  }
   d.log('Successfully pushed the updated values')
 }
 
@@ -161,7 +148,7 @@ export const commit = async (initialInstall: boolean, overrideArgs?: HelmArgumen
   }
   // continue
   await encrypt()
-  await commitAndPush(values, branch)
+  await commitAndPush(values, branch, initialInstall)
 }
 
 export const cloneOtomiChartsInGitea = async (): Promise<void> => {
@@ -246,47 +233,6 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   d.info(`Cloned apl-charts at tag '${tag}' in Gitea`)
 }
 
-export async function retryIsOAuth2ProxyRunning() {
-  const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
-  await retry(
-    async () => {
-      await isOAuth2ProxyAvailable(k8s.discovery())
-    },
-    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
-  ).catch((e) => {
-    d.error('Error checking if OAuth2Proxy is ready:', e)
-    throw e
-  })
-}
-
-export async function isOAuth2ProxyAvailable(discoveryV1Api: DiscoveryV1Api): Promise<void> {
-  const endpointSlices = await discoveryV1Api.listNamespacedEndpointSlice({
-    namespace: 'istio-system',
-    labelSelector: 'kubernetes.io/service-name=oauth2-proxy',
-  })
-
-  if (!endpointSlices || !endpointSlices.items || endpointSlices.items.length === 0) {
-    throw new Error('OAuth2Proxy EndpointSlice not found, waiting...')
-  }
-
-  const hasReadyEndpoint = endpointSlices.items.some((slice) => {
-    const endpoints = slice.endpoints
-    if (!endpoints || endpoints.length === 0) {
-      return false
-    }
-
-    return endpoints.some((endpoint) => {
-      const isReady = endpoint.conditions?.ready === true
-      const hasAddresses = endpoint.addresses && endpoint.addresses.length > 0
-      return isReady && hasAddresses
-    })
-  })
-
-  if (!hasReadyEndpoint) {
-    throw new Error('OAuth2Proxy has no ready endpoints with addresses, waiting...')
-  }
-}
-
 export async function initialSetupData(): Promise<InitialData> {
   const values = (await hfValues()) as Record<string, any>
   const { domainSuffix } = values.cluster
@@ -318,24 +264,39 @@ export async function createCredentialsSecret(secretName: string, username: stri
   await createUpdateGenericSecret(k8s.core(), secretName, 'keycloak', secretData)
 }
 
-export const printWelcomeMessage = async (secretName: string, domainSuffix: string): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:commit`)
-  const message = `
-  ########################################################################################################################################
-  #
-  #  The App Platform console is available at https://console.${domainSuffix}
-  #
-  #  Obtain login credentials by using the below commands:
-  #      kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.username}' | base64 -d
-  #      kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.password}' | base64 -d
-  #
-  ########################################################################################################################################`
-  d.info(message)
+export const createWelcomeConfigMap = async (secretName: string, domainSuffix: string): Promise<void> => {
+  const welcomeMessage = `Welcome to App Platform!
+
+Your installation has completed successfully.
+
+CONSOLE ACCESS:
+  The App Platform console is available at: https://console.${domainSuffix}
+
+LOGIN CREDENTIALS:
+  To obtain your login credentials, run the following commands:
+
+  Username: kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.username}' | base64 -d
+  Password: kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.password}' | base64 -d
+
+NEXT STEPS:
+  1. Visit the console URL above
+  2. Log in using the credentials obtained from the commands above
+  3. Explore the platform features and start deploying your applications
+
+For documentation and support, visit: https://techdocs.akamai.com/app-platform/docs/welcome
+`
+
+  await createUpdateConfigMap(k8s.core(), 'welcome', 'apl-operator', {
+    message: welcomeMessage,
+    consoleUrl: `https://console.${domainSuffix}`,
+    secretName,
+    secretNamespace: 'keycloak',
+  })
 }
 
 export const module = {
   command: cmdName,
-  describe: 'Wrapper that validates values, generates the Drone pipeline and then commits and pushes changed files',
+  describe: 'Wrapper that validates values, and then commits and pushes changed files',
   builder: (parser: Argv): Argv =>
     parser.options({
       message: {

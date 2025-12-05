@@ -384,4 +384,18 @@ changes:
     deletions:
       - 'apps.kured'
       - 'apps.kiali'
+      - 'apps.drone'
+      - 'e2e'
       - 'apps.falco'
+      - 'apps.velero'
+      - 'obj.provider.linode.buckets.velero'
+      - 'platformBackups.persistentVolumes'
+      - 'teamConfig.{team}.backups'
+      - 'apps.httpbin'
+  - version: 46
+    deletions:
+      - 'apps.jaeger'
+      - 'apps.gitea.images'
+      - 'apps.gitea.resources.postgresql'
+      - 'apps.gitea.resources.memcached'
+      - 'apps.gitea.resources.memcachedMetrics'
