@@ -240,7 +240,7 @@ kubeRBACProxy:
   enabled: true
   image:
     repository: quay.io/brancz/kube-rbac-proxy
-    tag: v0.19.1
+    tag: v0.20.0
   ports:
     proxyPort: 8443
   resources: {}
