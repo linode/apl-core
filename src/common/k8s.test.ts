@@ -7,6 +7,7 @@ import {
   KubeConfig,
   PatchStrategy,
   setHeaderOptions,
+  V1Deployment,
   V1Pod,
   V1PodList,
   V1ResourceRequirements,
@@ -167,6 +168,45 @@ describe('StatefulSet tests', () => {
 
   afterEach(() => {
     jest.clearAllMocks()
+  })
+
+  describe('getPodsOfDeployment', () => {
+    it('should return pods matching the Deployment label selector', async () => {
+      const mockDeployment = {
+        spec: {
+          selector: {
+            matchLabels: { app: 'my-app' },
+          },
+        },
+      }
+
+      const mockPodList: V1PodList = {
+        items: [{ metadata: { name: 'pod-1' } }, { metadata: { name: 'pod-2' } }],
+      } as V1PodList
+
+      mockAppsApi.readNamespacedDeployment.mockResolvedValue(mockDeployment as any)
+      mockCoreApi.listNamespacedPod.mockResolvedValue(mockPodList as any)
+
+      const pods = await k8s.getPodsOfDeployment(mockAppsApi, mockCoreApi, 'my-deploy', 'my-namespace')
+      expect(mockAppsApi.readNamespacedDeployment).toHaveBeenCalledWith({
+        name: 'my-deploy',
+        namespace: 'my-namespace',
+      })
+      expect(mockCoreApi.listNamespacedPod).toHaveBeenCalledWith({
+        labelSelector: 'app=my-app',
+        namespace: 'my-namespace',
+      })
+      expect(pods).toEqual(mockPodList)
+    })
+
+    it('should throw an error if matchLabels is missing', async () => {
+      const mockDeployment: V1Deployment = {} as V1Deployment
+      mockAppsApi.readNamespacedDeployment.mockResolvedValue(mockDeployment as any)
+
+      await expect(k8s.getPodsOfDeployment(mockAppsApi, mockCoreApi, 'my-deploy', 'my-namespace')).rejects.toThrow(
+        'Deployment my-deploy does not have matchLabels',
+      )
+    })
   })
 
   describe('getPodsOfStatefulSet', () => {

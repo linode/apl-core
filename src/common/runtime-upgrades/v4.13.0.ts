@@ -1,6 +1,6 @@
 import { ApiException } from '@kubernetes/client-node'
 import { ARGOCD_APP_PARAMS, ObjectMetadataCollection } from '../constants'
-import { getArgoCdApp, k8s, setArgoCdAppSync } from '../k8s'
+import { exec, getArgoCdApp, getK8sSecret, getPodsOfDeployment, k8s, setArgoCdAppSync } from '../k8s'
 import { RuntimeUpgradeContext } from './runtime-upgrades'
 
 async function scaleDeployment(context: RuntimeUpgradeContext, namespace: string, name: string, replicas: number) {
@@ -134,4 +134,23 @@ export async function detachApplicationFromApplicationSet(context: RuntimeUpgrad
 
   await setArgoCdAppSync('argocd-argocd', true, customApi)
   d.log('Cleanup complete: ApplicationSets removed, Applications retained.')
+}
+
+export async function resetGiteaPasswordValidity(context: RuntimeUpgradeContext) {
+  context.debug.info('Resetting status of Gitea admin credentials')
+  const giteaPods = await getPodsOfDeployment(k8s.app(), k8s.core(), 'gitea', 'gitea')
+  const [firstPod] = giteaPods.items
+  // In case Gitea pods happened to be restarting in the meantime, it will likely fix the issue by itself
+  if (firstPod) {
+    const giteaCredentialsSecret = await getK8sSecret('gitea-credentials', 'apl-operator')
+    const userName = giteaCredentialsSecret?.GITEA_USERNAME ?? 'otomi-admin'
+    const resetCmd = ['gitea', 'admin', 'user', 'must-change-password', '--unset', userName as string]
+    const { stdout, stderr } = await exec(
+      firstPod.metadata!.namespace as string,
+      firstPod.metadata!.name as string,
+      'gitea',
+      resetCmd,
+    )
+    context.debug.info(stderr, stdout)
+  }
 }
