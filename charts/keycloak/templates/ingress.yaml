@@ -66,6 +66,9 @@ metadata:
     {{- range $key, $value := $ingress.labels }}
     {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
+    {{- range $key, $value := $ingress.console.labels }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
 spec:
 {{- if $ingress.console.ingressClassName }}
   ingressClassName: {{ $ingress.console.ingressClassName }}

@@ -11,7 +11,7 @@ image:
   # The Keycloak image repository
   repository: quay.io/keycloak/keycloak
   # Overrides the Keycloak image tag whose default is the chart appVersion
-  tag: "26.4.2"
+  tag: "26.4.5"
   # Overrides the Keycloak image tag with a specific digest
   digest: ""
   # The Keycloak image pull policy
@@ -305,10 +305,10 @@ ingress:
         - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
           pathType: Prefix
   # TLS configuration
-  tls:
-    - hosts:
-        - keycloak.example.com
-      secretName: ""
+  tls: []
+  #  - hosts:
+  #      - keycloak.example.com
+  #    secretName: ""
 
   # ingress for console only (/auth/admin)
   console:
@@ -319,6 +319,8 @@ ingress:
     # Ingress annotations for console ingress only
     # Useful to set nginx.ingress.kubernetes.io/whitelist-source-range particularly
     annotations: {}
+    # Additional Ingress labels for console path only
+    labels: {}
     rules:
       -
         # Ingress host
@@ -330,9 +332,9 @@ ingress:
 
     # Console TLS configuration
     tls: []
-#      - hosts:
-#          - console.keycloak.example.com
-#        secretName: ""
+    # - hosts:
+    #     - console.keycloak.example.com
+    #   secretName: ""
 
 ## Network policy configuration
 # https://kubernetes.io/docs/concepts/services-networking/network-policies/
