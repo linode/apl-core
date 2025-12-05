@@ -13,7 +13,7 @@ wiz-kubernetes-connector:
     enabled: true
 
 wiz-sensor:
-  enabled: true
+  enabled: false
   imagePullSecret:
     create: false
     name: "sensor-image-pull"
