@@ -2,10 +2,6 @@ name: Deploy APL
 on:
   workflow_call:
     inputs:
-      lke_tier:
-        description: 'Linode Kubernetes Engine Tier'
-        type: string
-        default: standard
       kubernetes_version:
         description: 'Kubernetes version'
         type: string
@@ -44,18 +40,10 @@ on:
         default: true
   workflow_dispatch:
     inputs:
-      lke_tier:
-        description: 'Linode Kubernetes Engine Tier'
-        type: choice
-        default: standard
-        options:
-          - standard
-          - enterprise
       kubernetes_version:
-        description: 'Kubernetes version (select version compatible with lke_tier)'
+        description: 'Kubernetes version'
         type: choice
         options:
-          - 'v1.31.9+lke7'
           - '1.32'
           - '1.33'
           - '1.34'
@@ -139,9 +127,7 @@ env:
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
   DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
-  LKE_TIER: ${{ inputs.lke_tier }}
   LKE_VERSION: ${{ inputs.kubernetes_version }}
-  LKE_CP_ACL_IPV4: '0.0.0.0/0'
 
 jobs:
   preprocess-input:
@@ -152,7 +138,6 @@ jobs:
         run: |
           echo 'ref: ${{ github.event.pull_request.head.ref || github.ref }}'
           echo 'install_profile: ${{ inputs.install_profile }}'
-          echo 'lke_tier: ${{ inputs.lke_tier }}'
           echo 'kubernetes_version: ${{ inputs.kubernetes_version }}'
           echo 'kms: ${{ inputs.kms }}'
           echo 'domain_zone: ${{ inputs.domain_zone }}'
@@ -228,16 +213,6 @@ jobs:
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
-          if [[ '${{ env.LKE_TIER }}' == 'enterprise' ]]; then
-            tier_arg="--tier enterprise"
-            export LINODE_CLI_API_VERSION=v4beta
-            ha=""
-          else
-            tier_arg=""
-            ha="--control_plane.high_availability true"
-          fi
-
-          cp_acl="--control_plane.acl.enabled true --control_plane.acl.addresses.ipv4 $LKE_CP_ACL_IPV4"
           linode-cli lke cluster-create \
             --label ${{ env.LINODE_CLUSTER_NAME }} \
             --region nl-ams \
@@ -249,7 +224,6 @@ jobs:
             --node_pools.autoscaler.min 3 \
             --tags testing \
             --no-defaults \
-            $ha $tier_arg $cp_acl
       - name: Retrieve cluster id
         run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
       - name: Wait for cluster to be ready
@@ -360,7 +334,6 @@ jobs:
             --values values-container-registry.yaml \
             --values values.yaml \
             --set cluster.provider=linode \
-            --set cluster.linode.tier=${{ env.LKE_TIER }} \
             --set cluster.name=aplinstall${{ env.LINODE_CLUSTER_ID }} \
             --set cluster.k8sContext=${{ env.LINODE_CLUSTER_CONTEXT }} \
             --set cluster.domainSuffix=${{ env.DOMAIN }} \
