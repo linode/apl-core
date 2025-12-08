@@ -11,7 +11,7 @@ annotations:
     - kind: changed
       description: update alpine/helm docker tag to v3.19.0 (#954)
 apiVersion: v2
-appVersion: 1.24.7
+appVersion: 1.25.2
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
