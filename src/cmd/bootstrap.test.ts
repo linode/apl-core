@@ -159,8 +159,8 @@ describe('Bootstrapping values', () => {
       const values = {
         values: {
           image: {
-            repository: 'otomi/nodejs-helloworld',
-            tag: 'v1.2.13',
+            repository: 'linode/apl-nodejs-helloworld',
+            tag: 'v1.3.0',
           },
         },
       }

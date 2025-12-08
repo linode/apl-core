@@ -12,6 +12,6 @@ spec:
         - env:
             - name: TARGET
               value: Knative World
-          image: otomi/nodejs-helloworld:v1.2.12
+          image: linode/apl-nodejs-helloworld:v1.3.0
           securityContext:
             runAsUser: 1001
