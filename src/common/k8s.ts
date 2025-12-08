@@ -629,6 +629,28 @@ export async function createUpdateConfigMap(
   }
 }
 
+export async function getPodsOfDeployment(
+  appsApi: AppsV1Api,
+  coreApi: CoreV1Api,
+  deploymentName: string,
+  namespace: string,
+) {
+  const deployment = await appsApi.readNamespacedDeployment({ name: deploymentName, namespace })
+
+  if (!deployment.spec?.selector?.matchLabels) {
+    throw new Error(`Deployment ${deploymentName} does not have matchLabels`)
+  }
+
+  const labelSelector = Object.entries(deployment.spec.selector.matchLabels)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(',')
+
+  return await coreApi.listNamespacedPod({
+    namespace,
+    labelSelector,
+  })
+}
+
 export async function getPodsOfStatefulSet(
   appsApi: AppsV1Api,
   statefulSetName: string,
