@@ -43,6 +43,18 @@ loki:
       index:
         prefix: loki_index_
         period: 24h
+    # TODO: Replace with variable from values
+    - from: "2023-07-20"
+      store: tsdb
+      {{- if $useObjectStorage }}
+      object_store: s3
+      {{- else }}
+      object_store: filesystem
+      {{- end }}
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
   storageConfig:
     boltdb_shipper:
       active_index_directory: /var/loki/index
@@ -53,6 +65,10 @@ loki:
       {{- else }}
       shared_store: filesystem
       {{- end }}
+    tsdb_shipper:
+      active_index_directory: /loki/index
+      cache_location: /loki/index_cache
+      cache_ttl: 24h
     {{- if $useObjectStorage }}
     aws:
       {{- if eq $obj.type "minioLocal" }}
@@ -81,6 +97,8 @@ loki:
     compactor:
       shared_store: s3
     {{- end }}
+    limits_config:
+      allow_structured_metadata: true
 
 ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}

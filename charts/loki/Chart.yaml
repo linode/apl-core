@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 2.9.15
+appVersion: 2.9.17
 deprecated: true
 description: Helm chart for Grafana Loki in microservices mode
 home: https://grafana.github.io/helm-charts
