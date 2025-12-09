@@ -160,7 +160,7 @@ describe('Bootstrapping values', () => {
         values: {
           image: {
             repository: 'linode/apl-nodejs-helloworld',
-            tag: 'v1.3.0',
+            tag: 'v1.4.0',
           },
         },
       }

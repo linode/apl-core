@@ -98,7 +98,7 @@ teamConfig:
         ksvc:
           image:
             repository: linode/apl-nodejs-helloworld
-            tag: v1.3.0
+            tag: v1.4.0
           resources:
             limits:
               cpu: 50m
