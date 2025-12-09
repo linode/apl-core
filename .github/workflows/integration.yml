@@ -334,7 +334,6 @@ jobs:
             --set otomi.hasExternalDNS=true \
             --set otomi.adminPassword=$adminPassword \
             --set otomi.version=${GITHUB_REF##*/} \
-            --set apps.linode-cfw.enabled=true \
             $additional_args"
 
           helm install $install_args &
