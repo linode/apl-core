@@ -1,18 +1,18 @@
 {{- $v := .Values }}
 {{- $o := $v.apps.otel }}
 resources:
-  - apiVersion: opentelemetry.io/v1alpha1
+  - apiVersion: opentelemetry.io/v1beta1
     kind: OpenTelemetryCollector
     metadata:
-      name: otel-collector
+      name: platform-oltp
     spec:
-      managementState: "managed"
-      config: |
+      managementState: managed
+      config:
         receivers:
           otlp:
             protocols:
-              grpc:
-              http:
+              grpc: {}
+              http: {}
         processors:
           memory_limiter:
             check_interval: 1s
@@ -22,7 +22,7 @@ resources:
             send_batch_size: 10000
             timeout: 10s
           k8sattributes:
-            auth_type: "serviceAccount"
+            auth_type: serviceAccount
             passthrough: false
             extract:
               {{- with $o.collector.attributes }}
@@ -47,22 +47,23 @@ resources:
           pipelines:
             logs:
               receivers:
-              - otlp
+                - otlp
               processors:
-              - batch
+                - batch
               exporters:
-              - debug
+                - debug
             traces:
               receivers:
-              - otlp
+                - otlp
               processors:
-              - memory_limiter
-              - batch
-              - k8sattributes
+                - memory_limiter
+                - batch
+                - k8sattributes
               exporters:
-              - debug
               {{- if $v.apps.tempo.enabled }}
-              - otlp
+                - otlp
+              {{- else }}
+                - debug
               {{- end }}
       mode: {{ $o.collector.mode }}
       autoscaler:
@@ -79,35 +80,39 @@ resources:
       - apiGroups:
           - ''
         resources:
-          - 'pods'
-          - 'namespaces'
+          - pods
+          - namespaces
+          - nodes
         verbs:
-          - 'get'
-          - 'watch'
-          - 'list'
+          - get
+          - watch
+          - list
       - apiGroups:
-          - 'apps'
+          - apps
         resources:
-          - 'replicasets'
+          - replicasets
+          - deployments
+          - statefulsets
+          - daemonsets
         verbs:
-          - 'get'
-          - 'list'
-          - 'watch'
+          - get
+          - list
+          - watch
       - apiGroups:
-          - 'extensions'
+          - extensions
         resources:
-          - 'replicasets'
+          - replicasets
         verbs:
-          - 'get'
-          - 'list'
-          - 'watch'
+          - get
+          - list
+          - watch
   - apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding
     metadata:
       name: otel-collector
     subjects:
       - kind: ServiceAccount
-        name: otel-collector-collector
+        name: platform-oltp-collector
         namespace: otel
     roleRef:
       kind: ClusterRole
