@@ -1,6 +1,9 @@
 {{- $v := .Values }}
 {{- $t := $v.apps.tekton }}
 
+namespace:
+  create: false
+
 controller:
   resources: {{- $t.resources.pipelinesController | toYaml | nindent 4 }}
   deployment:
