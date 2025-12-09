@@ -172,6 +172,6 @@ files:
   env/teams/admin/workloadValues/nodejs-helloworld.yaml: |
     image:
       repository: linode/apl-nodejs-helloworld
-      tag: master
+      tag: v1.4.0
   env/teams/admin/workloadValues/nodejs-helloworld.managed.yaml: |
     {}
