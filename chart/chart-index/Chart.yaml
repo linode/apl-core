@@ -74,6 +74,10 @@ dependencies:
     alias: loki
     version: 0.80.6
     repository: https://grafana.github.io/helm-charts
+  - name: loki
+    alias: loki-v3
+    version: 6.46.0
+    repository: https://grafana.github.io/helm-charts
   - name: metrics-server
     version: 3.13.0
     repository: https://kubernetes-sigs.github.io/metrics-server
