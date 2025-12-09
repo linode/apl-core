@@ -66,8 +66,8 @@ loki:
       shared_store: filesystem
       {{- end }}
     tsdb_shipper:
-      active_index_directory: /loki/index
-      cache_location: /loki/index_cache
+      active_index_directory: /var/loki/tsdb_index
+      cache_location: /var/loki/tsdb_index_cache
       cache_ttl: 24h
     {{- if $useObjectStorage }}
     aws:
