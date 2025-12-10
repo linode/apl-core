@@ -122,11 +122,10 @@ ingester:
     targetCPUUtilizationPercentage: {{ $l.autoscaling.ingester.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.ingester.targetMemoryUtilizationPercentage }}
 
-indexGateway:
-  {{- with $v.otomi.linodeLkeImageRepository }}
-  image:
-    registry: "{{ . }}/docker"
-  {{- end }}
+  zoneAwareReplication:
+    enabled: false
+
+gateway:
   resources: {{- $l.resources.gateway | toYaml | nindent 4 }}
   autoscaling:
     enabled: {{ $l.autoscaling.gateway.enabled }}
@@ -203,8 +202,10 @@ queryFrontend:
 # TODO: Add values
 queryScheduler: {}
 
+# TODO: Add values
+indexGateway: {}
+
 compactor:
-  enabled: true
   resources: {{- $l.resources.compactor | toYaml | nindent 4 }}
 
   {{- if not $useObjectStorage }}
@@ -213,3 +214,10 @@ compactor:
     size: {{ $l | get "persistence.compactor.size" "10Gi" }}
     storageClass: {{ $v.cluster.defaultStorageClass }}
   {{- end }}
+
+test:
+  enabled: false
+lokiCanary:
+  enabled: false
+memcachedExporter:
+  enabled: false
