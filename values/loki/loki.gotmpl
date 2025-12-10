@@ -95,7 +95,8 @@ loki:
 deploymentMode: Distributed
 
 ingester:
-  replicas: 1
+  replicas: 3
+  maxUnavailable: 1
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}
 
   autoscaling:
@@ -109,6 +110,7 @@ ingester:
     enabled: false
 
 gateway:
+  replicas: 1
   resources: {{- $l.resources.gateway | toYaml | nindent 4 }}
   autoscaling:
     enabled: {{ $l.autoscaling.gateway.enabled }}
