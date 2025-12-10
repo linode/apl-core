@@ -206,6 +206,9 @@ compactor:
     storageClass: {{ $v.cluster.defaultStorageClass }}
   {{- end }}
 
+ruler:
+  enabled: false
+
 # Zero out replica counts of other deployment modes
 backend:
   replicas: 0
@@ -219,6 +222,7 @@ singleBinary:
 
 # TODO: Add values
 resultsCache:
+  enabled: true
   allocatedMemory: 512
 chunksCache:
   enabled: false
