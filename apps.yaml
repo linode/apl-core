@@ -107,7 +107,7 @@ appsInfo:
     integration: App Platform has security best practices built in, and is designed for intrusion. Istio is used by App Platform as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of App Platform and can not be disabled.
   keycloak:
     title: Keycloak
-    appVersion: 26.4.5
+    appVersion: 26.4.7
     repo: https://github.com/keycloak/keycloak
     maintainers: Keycloak
     relatedLinks:
