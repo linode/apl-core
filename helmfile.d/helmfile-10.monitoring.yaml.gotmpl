@@ -20,10 +20,6 @@ releases:
     installed: {{ $a | get "loki.enabled" }}
     namespace: monitoring
     <<: *default
-  - name: loki-v3
-    installed: {{ $a | get "loki.enabled" }}
-    namespace: monitoring
-    <<: *default
   - name: otel-operator
     installed: {{ $a | get "otel.enabled" }}
     namespace: otel

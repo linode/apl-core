@@ -1,8 +1,10 @@
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if $isDistributed -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "loki.queryFrontendFullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.queryFrontendLabels" . | nindent 4 }}
   {{- with .Values.loki.annotations }}
@@ -32,15 +34,18 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "loki.queryFrontendSelectorLabels" . | nindent 8 }}
+        {{- include "loki.queryFrontendLabels" . | nindent 8 }}
         app.kubernetes.io/part-of: memberlist
-        {{- with .Values.loki.podLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-        {{- with .Values.queryFrontend.podLabels }}
+        {{- with merge (dict) .Values.loki.podLabels .Values.queryFrontend.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- if semverCompare ">=1.19-0" (include "loki.kubeVersion" .) }}
+      {{- with .Values.queryFrontend.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- tpl ( . | toYaml) $ | nindent 8 }}
+      {{- end }}
+      {{- end }}
       serviceAccountName: {{ include "loki.serviceAccountName" . }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -50,13 +55,20 @@ spec:
       hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if and (semverCompare ">=1.33-0" (include "loki.kubeVersion" .)) (kindIs "bool" .Values.queryFrontend.hostUsers) }}
+      hostUsers: {{ .Values.queryFrontend.hostUsers }}
+      {{- end }}
       {{- include "loki.queryFrontendPriorityClassName" . | nindent 6 }}
       securityContext:
         {{- toYaml .Values.loki.podSecurityContext | nindent 8 }}
       terminationGracePeriodSeconds: {{ .Values.queryFrontend.terminationGracePeriodSeconds }}
+      {{- with .Values.queryFrontend.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: query-frontend
-          image: {{ include "loki.queryFrontendImage" . }}
+          image: {{ include "loki.image" . }}
           imagePullPolicy: {{ .Values.loki.image.pullPolicy }}
           {{- if or .Values.loki.command .Values.queryFrontend.command }}
           command:
@@ -65,11 +77,11 @@ spec:
           args:
             - -config.file=/etc/loki/config/config.yaml
             - -target=query-frontend
-            {{- with .Values.queryFrontend.extraArgs }}
+            {{- with (concat .Values.global.extraArgs .Values.queryFrontend.extraArgs) | uniq }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           ports:
-            - name: http
+            - name: http-metrics
               containerPort: 3100
               protocol: TCP
             - name: grpc
@@ -78,26 +90,30 @@ spec:
             - name: http-memberlist
               containerPort: 7946
               protocol: TCP
-          {{- with .Values.queryFrontend.extraEnv }}
+          {{- with (concat .Values.global.extraEnv .Values.queryFrontend.extraEnv) | uniq }}
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.queryFrontend.extraEnvFrom }}
+          {{- with (concat .Values.global.extraEnvFrom .Values.queryFrontend.extraEnvFrom) | uniq }}
           envFrom:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           securityContext:
             {{- toYaml .Values.loki.containerSecurityContext | nindent 12 }}
+          {{- with .Values.loki.readinessProbe }}
           readinessProbe:
-            {{- toYaml .Values.loki.readinessProbe | nindent 12 }}
-          livenessProbe:
-            {{- toYaml .Values.loki.livenessProbe | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: config
               mountPath: /etc/loki/config
             - name: runtime-config
-              mountPath: /var/{{ include "loki.name" . }}-runtime
-            {{- with .Values.queryFrontend.extraVolumeMounts }}
+              mountPath: /etc/loki/runtime-config
+            {{- if .Values.enterprise.enabled }}
+            - name: license
+              mountPath: /etc/loki/license
+            {{- end }}
+            {{- with (concat .Values.global.extraVolumeMounts .Values.queryFrontend.extraVolumeMounts) | uniq }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           resources:
@@ -107,7 +123,7 @@ spec:
         {{- end }}
       {{- with .Values.queryFrontend.affinity }}
       affinity:
-        {{- tpl . $ | nindent 8 }}
+        {{- tpl ( . | toYaml) $ | nindent 8 }}
       {{- end }}
       {{- with .Values.queryFrontend.nodeSelector }}
       nodeSelector:
@@ -119,19 +135,20 @@ spec:
       {{- end }}
       volumes:
         - name: config
-          {{- if .Values.loki.existingSecretForConfig }}
-          secret:
-            secretName: {{ .Values.loki.existingSecretForConfig }}
-          {{- else if .Values.loki.configAsSecret }}
-          secret:
-            secretName: {{ include "loki.fullname" . }}-config
-          {{- else }}
-          configMap:
-            name: {{ include "loki.fullname" . }}
-          {{- end }}
+          {{- include "loki.configVolume" . | nindent 10 }}
         - name: runtime-config
           configMap:
-            name: {{ template "loki.fullname" . }}-runtime
-        {{- with .Values.queryFrontend.extraVolumes }}
+            name: {{ template "loki.name" . }}-runtime
+        {{- if .Values.enterprise.enabled }}
+        - name: license
+          secret:
+          {{- if .Values.enterprise.useExternalLicense }}
+            secretName: {{ .Values.enterprise.externalLicenseName }}
+          {{- else }}
+            secretName: enterprise-logs-license
+          {{- end }}
+        {{- end }}
+        {{- with (concat .Values.global.extraVolumes .Values.queryFrontend.extraVolumes) | uniq }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+{{- end -}}

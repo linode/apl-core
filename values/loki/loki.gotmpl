@@ -3,17 +3,15 @@
 {{- $obj := $v.obj.provider }}
 {{- $useObjectStorage := eq $obj.type "minioLocal" "linode" }}
 
-nameOverride: loki
-
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
 - name: otomi-pullsecret-global
 {{- end }}
 
 global:
-  {{- if $v.otomi.linodeLkeImageRepository }}
+  {{- with $v.otomi.linodeLkeImageRepository }}
   image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+    registry: {{ . }}/docker
   {{- end }}
   priorityClassName: otomi-critical
   {{- if eq $v.cluster.linode.tier "enterprise" }}
@@ -21,6 +19,8 @@ global:
   {{- else }}
   dnsService: "kube-dns"
   {{- end }}
+  commonConfig:
+    replication_factor: 1
 serviceMonitor:
   enabled: true
   labels:
@@ -29,7 +29,6 @@ serviceMonitor:
 loki:
   podAnnotations:
     sidecar.istio.io/inject: "false"
-  auth_enabled: true
   schemaConfig:
     configs:
     - from: "2020-09-07"
@@ -55,50 +54,63 @@ loki:
       index:
         prefix: index_
         period: 24h
-  storageConfig:
+  storage_config:
     boltdb_shipper:
       active_index_directory: /var/loki/index
       cache_location: /var/loki/index_cache
       resync_interval: 5s
-      {{- if $useObjectStorage }}
-      shared_store: s3
-      {{- else }}
-      shared_store: filesystem
-      {{- end }}
     tsdb_shipper:
       active_index_directory: /var/loki/tsdb_index
       cache_location: /var/loki/tsdb_index_cache
       cache_ttl: 24h
-    {{- if $useObjectStorage }}
-    aws:
+  {{- if $useObjectStorage }}
+  storage:
+    bucketNames:
+      chunks: chunks
+      ruler: ruler
+      admin: admin
+    s3:
       {{- if eq $obj.type "minioLocal" }}
       s3: http://otomi-admin:{{ $v.otomi.adminPassword }}@minio.minio.svc.cluster.local.:9000/loki
-      s3forcepathstyle: true
-      {{- end }}
-      {{- if eq $obj.type "linode" }}
+      insecure: true
+      {{- else if eq $obj.type "linode" }}
       s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $obj.linode.buckets.loki }}
-      s3forcepathstyle: true
       sse_encryption: false
       http_config:
-          idle_conn_timeout: 90s
-          insecure_skip_verify: true
+        idle_conn_timeout: 90s
+        insecure_skip_verify: true
       backoff_config:
         min_period: 2s
         max_period: 5s
       {{- end }}
-    {{- else }}
-    filesystem:
-      directory: "/var/loki/chunks"
-    {{- end }}
+      s3ForcePathStyle: true
+    object_store:
+      endpoint:
+        {{- if eq $obj.type "minioLocal" }}
+        s3: http://otomi-admin:{{ $v.otomi.adminPassword }}@minio.minio.svc.cluster.local.:9000/loki
+        insecure: true
+        {{- else if eq $obj.type "linode" }}
+        s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $obj.linode.buckets.loki }}
+        http:
+          idle_conn_timeout: 90s
+          insecure_skip_verify: true
+        {{- end }}
+  {{- else }}
+  storage:
+    type: filesystem
+  {{- end }}
 
-  structuredConfig:
-    auth_enabled: true
-    {{- if $useObjectStorage }}
-    compactor:
-      shared_store: s3
-    {{- end }}
-    limits_config:
-      allow_structured_metadata: true
+deploymentMode: Distributed
+
+# TODO: Provide transition
+migrate:
+  # -- When migrating from a distributed chart like loki-distributed or enterprise-logs
+  fromDistributed:
+    # -- Set to true if migrating from a distributed helm chart
+    enabled: true
+    # -- If migrating from a distributed service, provide the distributed deployment's
+    # memberlist service DNS so the new deployment can join its ring.
+    memberlistService: "loki-memberlist"
 
 ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}
@@ -110,11 +122,10 @@ ingester:
     targetCPUUtilizationPercentage: {{ $l.autoscaling.ingester.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.ingester.targetMemoryUtilizationPercentage }}
 
+  zoneAwareReplication:
+    enabled: false
+
 gateway:
-  {{- if $v.otomi.linodeLkeImageRepository }}
-  image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-  {{- end }}
   resources: {{- $l.resources.gateway | toYaml | nindent 4 }}
   autoscaling:
     enabled: {{ $l.autoscaling.gateway.enabled }}
@@ -160,11 +171,11 @@ queryFrontend:
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.queryFrontend.targetMemoryUtilizationPercentage }}
   extraContainers:
   - name: reverse-proxy
-  {{- if $v.otomi.linodeLkeImageRepository }}
-    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/k8spin/loki-multi-tenant-proxy:v1.0.0"
-  {{- else }}
+    {{- with $v.otomi.linodeLkeImageRepository }}
+    image: {{ . }}/docker/k8spin/loki-multi-tenant-proxy:v1.0.0
+    {{- else }}
     image: k8spin/loki-multi-tenant-proxy:v1.0.0
-  {{- end }}
+    {{- end }}
     args:
       - "run"
       - "--port=3101"
@@ -188,8 +199,13 @@ queryFrontend:
     name: http
     targetPort: http
 
+# TODO: Add values
+queryScheduler: {}
+
+# TODO: Add values
+indexGateway: {}
+
 compactor:
-  enabled: true
   resources: {{- $l.resources.compactor | toYaml | nindent 4 }}
 
   {{- if not $useObjectStorage }}
@@ -198,3 +214,16 @@ compactor:
     size: {{ $l | get "persistence.compactor.size" "10Gi" }}
     storageClass: {{ $v.cluster.defaultStorageClass }}
   {{- end }}
+
+# TODO: Add values
+resultsCache:
+  allocatedMemory: 512
+chunksCache:
+  enabled: false
+
+test:
+  enabled: false
+lokiCanary:
+  enabled: false
+memcachedExporter:
+  enabled: false

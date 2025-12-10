@@ -125,29 +125,12 @@ releases:
                 prometheusType: Thanos
                 timeInterval: "60s"
             {{- end }}
-            - name: Loki (legacy)
-              editable: false
-              uid: loki
-              type: loki
-              access: proxy
-              url: http://loki-query-frontend-headless.monitoring:3101
-              basicAuth: true
-              basicAuthUser: {{ $teamId }}
-              secureJsonData:
-                basicAuthPassword: {{ $teamSettings.password | quote }}
-              jsonData:
-                derivedFields:
-                  - datasourceName: Tempo
-                    matcherRegex: "traceID=00-([^\\-]+)-"
-                    name: traceID
-                    url: "$${__value.raw}"
-                    datasourceUid: tempo
             - name: Loki
               editable: false
               uid: loki-v3
               type: loki
               access: proxy
-              url: http://loki-v3-query-frontend-headless.monitoring:3101
+              url: http://loki-query-frontend-headless.monitoring:3101
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               secureJsonData:
@@ -196,7 +179,7 @@ releases:
                   type: 'Tag'
                   tag: 'http.path'
                 lokiSearch:
-                  datasourceUid: loki-v3
+                  datasourceUid: loki
     {{- if has "msteams" ($teamSettings | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
     installed: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}
