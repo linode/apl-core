@@ -57,7 +57,6 @@ loki:
   ingester:
     chunk_encoding: snappy
   querier:
-    # Default is 4, if you have enough memory and CPU you can increase, reduce if OOMing
     max_concurrent: 4
   storage_config:
     boltdb_shipper:
@@ -71,15 +70,15 @@ loki:
   {{- if $useObjectStorage }}
   storage:
     bucketNames:
-      chunks: chunks
-      ruler: ruler
-      admin: admin
+      chunks: {{ $obj.linode.buckets.loki | quote }}
+      ruler: {{ $obj.linode.buckets.loki | quote }}
+      admin: {{ $obj.linode.buckets.loki | quote }}
     s3:
       {{- if eq $obj.type "minioLocal" }}
       s3: http://otomi-admin:{{ $v.otomi.adminPassword }}@minio.minio.svc.cluster.local.:9000/loki
       insecure: true
       {{- else if eq $obj.type "linode" }}
-      s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $obj.linode.buckets.loki }}
+      s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com
       http_config:
         idle_conn_timeout: 90s
         insecure_skip_verify: true
@@ -88,17 +87,6 @@ loki:
         max_period: 5s
       {{- end }}
       s3ForcePathStyle: true
-    object_store:
-      endpoint:
-        {{- if eq $obj.type "minioLocal" }}
-        s3: http://otomi-admin:{{ $v.otomi.adminPassword }}@minio.minio.svc.cluster.local.:9000/loki
-        insecure: true
-        {{- else if eq $obj.type "linode" }}
-        s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $obj.linode.buckets.loki }}
-        http:
-          idle_conn_timeout: 90s
-          insecure_skip_verify: true
-        {{- end }}
   {{- else }}
   storage:
     type: filesystem
