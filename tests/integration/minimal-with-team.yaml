@@ -125,8 +125,8 @@ teamConfig:
 files:
   env/teams/demo/workloadValues/nodejs-helloworld.yaml: |
     image:
-      repository: otomi/nodejs-helloworld
-      tag: v1.2.13
+      repository: linode/apl-nodejs-helloworld
+      tag: v1.4.0
   env/teams/demo/workloadValues/nodejs-helloworld.managed.yaml: |
     {}
   env/teams/demo/workloadValues/nginx-deployment.yaml: |
@@ -171,7 +171,7 @@ files:
     {}
   env/teams/admin/workloadValues/nodejs-helloworld.yaml: |
     image:
-      repository: otomi/nodejs-helloworld
-      tag: v1.2.13
+      repository: linode/apl-nodejs-helloworld
+      tag: v1.4.0
   env/teams/admin/workloadValues/nodejs-helloworld.managed.yaml: |
     {}
