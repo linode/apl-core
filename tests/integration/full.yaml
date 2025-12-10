@@ -97,8 +97,8 @@ teamConfig:
       - id: cb5149c4-8ea5-4c5a-be04-a37258658bd3
         ksvc:
           image:
-            repository: otomi/nodejs-helloworld
-            tag: v1.2.12
+            repository: linode/apl-nodejs-helloworld
+            tag: v1.4.0
           resources:
             limits:
               cpu: 50m
