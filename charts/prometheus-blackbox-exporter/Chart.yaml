@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: v0.27.0
+appVersion: v0.28.0
 description: Prometheus Blackbox Exporter
 home: https://github.com/prometheus/blackbox_exporter
 keywords:
@@ -25,4 +25,4 @@ sources:
 - https://github.com/prometheus/blackbox_exporter
 - https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-blackbox-exporter
 type: application
-version: 11.5.0
+version: 11.6.1
