@@ -2392,15 +2392,6 @@ properties:
             properties:
               operator:
                 $ref: '#/definitions/resources'
-
-      oltp:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
       prometheus:
         additionalProperties: false
         properties:

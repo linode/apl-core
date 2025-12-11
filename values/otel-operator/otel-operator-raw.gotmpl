@@ -4,7 +4,7 @@ resources:
   - apiVersion: opentelemetry.io/v1beta1
     kind: OpenTelemetryCollector
     metadata:
-      name: platform-oltp
+      name: platform-otlp
     spec:
       managementState: managed
       config:
@@ -112,7 +112,7 @@ resources:
       name: otel-collector
     subjects:
       - kind: ServiceAccount
-        name: platform-oltp-collector
+        name: platform-otlp-collector
         namespace: otel
     roleRef:
       kind: ClusterRole
