@@ -195,6 +195,8 @@ This ensures the expressions are preserved for Alertmanager instead of being ren
 | `sidecar.alerts.reloadURL`           | Full url of datasource configuration reload API endpoint, to invoke after a config-map change | `"http://localhost:3000/api/admin/provisioning/alerting/reload"` |
 | `sidecar.alerts.skipReload`          | Enabling this omits defining the REQ_URL and REQ_METHOD environment variables | `false` |
 | `sidecar.alerts.initAlerts`          | Set to true to deploy the alerts sidecar as an initContainer. This is needed if skipReload is true, to load any alerts defined at startup time. | `false` |
+| `sidecar.alerts.restartPolicy`        |  Set to `Always` to enable native sidecars. `sidecar.alerts.initAlerts` must be `true` | `""`|
+| `sidecar.alerts.startupProbe`         |  Startup probe for the native sidecar | `{}` |
 | `sidecar.alerts.extraMounts`         | Additional alerts sidecar volume mounts. | `[]`                               |
 | `sidecar.dashboards.enabled`              | Enables the cluster wide search for dashboards and adds/updates/deletes them in grafana | `false`       |
 | `sidecar.dashboards.env`                  | Extra environment variables passed to pods    | `{}`                                                    |
@@ -219,6 +221,9 @@ This ensures the expressions are preserved for Alertmanager instead of being ren
 | `sidecar.dashboards.script`               | Absolute path to shell script to execute after a configmap got reloaded. | `nil`                                |
 | `sidecar.dashboards.reloadURL`            | Full url of dashboards configuration reload API endpoint, to invoke after a config-map change | `"http://localhost:3000/api/admin/provisioning/dashboards/reload"` |
 | `sidecar.dashboards.skipReload`           | Enabling this omits defining the REQ_USERNAME, REQ_PASSWORD, REQ_URL and REQ_METHOD environment variables | `false` |
+| `sidecar.dashboards.initDashboards`     | Set to true to deploy the dashboards sidecar as an initContainer in addition to a container. This is needed if skipReload is true, to load any dashboards defined at startup time. | `false` |
+| `sidecar.dashboards.restartPolicy`        |  Set to `Always` to enable native sidecars. `sidecar.dashboards.initAlerts` must be `true` | `""`|
+| `sidecar.dashboards.startupProbe`         |  Startup probe for the native sidecar | `{}` |
 | `sidecar.dashboards.resource`             | Should the sidecar looks into secrets, configmaps or both. | `both`                               |
 | `sidecar.dashboards.extraMounts`          | Additional dashboard sidecar volume mounts. | `[]`                               |
 | `sidecar.datasources.enabled`             | Enables the cluster wide search for datasources and adds/updates/deletes them in grafana |`false`       |
@@ -230,6 +235,8 @@ This ensures the expressions are preserved for Alertmanager instead of being ren
 | `sidecar.datasources.reloadURL`           | Full url of datasource configuration reload API endpoint, to invoke after a config-map change | `"http://localhost:3000/api/admin/provisioning/datasources/reload"` |
 | `sidecar.datasources.skipReload`          | Enabling this omits defining the REQ_URL and REQ_METHOD environment variables | `false` |
 | `sidecar.datasources.initDatasources`     | Set to true to deploy the datasource sidecar as an initContainer in addition to a container. This is needed if skipReload is true, to load any datasources defined at startup time. | `false` |
+| `sidecar.datasources.restartPolicy`        |  Set to `Always` to enable native sidecars. `sidecar.datasources.initAlerts` must be `true` | `""`|
+| `sidecar.datasources.startupProbe`         |  Startup probe for the native sidecar | `{}` |
 | `sidecar.notifiers.enabled`               | Enables the cluster wide search for notifiers and adds/updates/deletes them in grafana | `false`        |
 | `sidecar.notifiers.label`                 | Label that config maps with notifiers should have to be added (can be templated) | `grafana_notifier`                               |
 | `sidecar.notifiers.labelValue`            | Label value that config maps with notifiers should have to be added (can be templated) | `""`                                |
@@ -239,6 +246,8 @@ This ensures the expressions are preserved for Alertmanager instead of being ren
 | `sidecar.notifiers.reloadURL`             | Full url of notifier configuration reload API endpoint, to invoke after a config-map change | `"http://localhost:3000/api/admin/provisioning/notifications/reload"` |
 | `sidecar.notifiers.skipReload`            | Enabling this omits defining the REQ_URL and REQ_METHOD environment variables | `false` |
 | `sidecar.notifiers.initNotifiers`         | Set to true to deploy the notifier sidecar as an initContainer in addition to a container. This is needed if skipReload is true, to load any notifiers defined at startup time. | `false` |
+| `sidecar.notifiers.restartPolicy`        |  Set to `Always` to enable native sidecars. `sidecar.notifiers.initAlerts` must be `true` | `""`|
+| `sidecar.notifiers.startupProbe`         |  Startup probe for the native sidecar | `{}` |
 | `smtp.existingSecret`                     | The name of an existing secret containing the SMTP credentials. | `""`                                  |
 | `smtp.userKey`                            | The key in the existing SMTP secret containing the username. | `"user"`                                 |
 | `smtp.passwordKey`                        | The key in the existing SMTP secret containing the password. | `"password"`                             |
