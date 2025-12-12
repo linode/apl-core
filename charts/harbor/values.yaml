@@ -499,7 +499,7 @@ containerSecurityContext:
 nginx:
   image:
     repository: goharbor/nginx-photon
-    tag: v2.14.0
+    tag: v2.14.1
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -530,7 +530,7 @@ nginx:
 portal:
   image:
     repository: goharbor/harbor-portal
-    tag: v2.14.0
+    tag: v2.14.1
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -570,7 +570,7 @@ portal:
 core:
   image:
     repository: goharbor/harbor-core
-    tag: v2.14.0
+    tag: v2.14.1
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -659,7 +659,7 @@ core:
 jobservice:
   image:
     repository: goharbor/harbor-jobservice
-    tag: v2.14.0
+    tag: v2.14.1
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -722,7 +722,7 @@ registry:
   registry:
     image:
       repository: goharbor/registry-photon
-      tag: v2.14.0
+      tag: v2.14.1
     # resources:
     #  requests:
     #    memory: 256Mi
@@ -731,7 +731,7 @@ registry:
   controller:
     image:
       repository: goharbor/harbor-registryctl
-      tag: v2.14.0
+      tag: v2.14.1
     # resources:
     #  requests:
     #    memory: 256Mi
@@ -812,7 +812,7 @@ trivy:
     # repository the repository for Trivy adapter image
     repository: goharbor/trivy-adapter-photon
     # tag the tag for Trivy adapter image
-    tag: v2.14.0
+    tag: v2.14.1
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -870,7 +870,7 @@ trivy:
   # Anonymous downloads from GitHub are subject to the limit of 60 requests per hour. Normally such rate limit is enough
   # for production operations. If, for any reason, it's not enough, you could increase the rate limit to 5000
   # requests per hour by specifying the GitHub access token. For more details on GitHub rate limiting please consult
-  # https://v2.14.0eloper.github.com/v3/#rate-limiting
+  # https://developer.github.com/v3/#rate-limiting
   #
   # You can create a GitHub token by following the instructions in
   # https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line
@@ -916,7 +916,7 @@ database:
   internal:
     image:
       repository: goharbor/harbor-db
-      tag: v2.14.0
+      tag: v2.14.1
     # set the service account to be used, default if left empty
     serviceAccountName: ""
     # mount the service account token
@@ -996,7 +996,7 @@ redis:
   internal:
     image:
       repository: goharbor/redis-photon
-      tag: v2.14.0
+      tag: v2.14.1
     # set the service account to be used, default if left empty
     serviceAccountName: ""
     # mount the service account token
@@ -1066,7 +1066,7 @@ redis:
 exporter:
   image:
     repository: goharbor/harbor-exporter
-    tag: v2.14.0
+    tag: v2.14.1
   serviceAccountName: ""
   # mount the service account token
   automountServiceAccountToken: false
