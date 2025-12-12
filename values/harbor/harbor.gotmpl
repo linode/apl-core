@@ -190,8 +190,6 @@ registry:
   credentials:
     username: {{ $h.registry.credentials.username }}
     existingSecret: harbor-registry-credentials
-    password: {{ $h.registry.credentials.password | quote }}
-    htpasswdString: {{ $h.registry.credentials.htpasswd }}
 
 trivy:
   priorityClassName: otomi-critical
