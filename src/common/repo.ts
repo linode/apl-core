@@ -52,6 +52,15 @@ export interface FileMap {
   loadToSpec: boolean
 }
 
+export interface AplManifest {
+  kind: AplKind
+  metadata: {
+    name: string
+    labels?: Record<string, string>
+  }
+  spec: Record<string, any>
+}
+
 export function getResourceFileName(fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) {
   let fileName = 'unknown'
   if (fileMap.resourceGroup === 'team') {
@@ -409,22 +418,27 @@ export async function saveValues(
   )
 }
 
-export function renderManifest(fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) {
+export function renderManifest(
+  fileMap: FileMap,
+  jsonPath: jsonpath.PathComponent[],
+  data: Record<string, any>,
+): AplManifest {
   //TODO remove this custom workaround for workloadValues
   let spec = data
   if (fileMap.resourceGroup === 'team') {
     spec = omit(data, ['id', 'name', 'teamId'])
   }
-  const manifest = {
+  const manifest: AplManifest = {
     kind: fileMap.kind,
     metadata: {
       name: getResourceName(fileMap, jsonPath, data),
-      labels: {},
     },
     spec,
   }
   if (fileMap.resourceGroup === 'team') {
-    manifest.metadata.labels['apl.io/teamId'] = getTeamNameFromJsonPath(jsonPath)
+    manifest.metadata.labels = {
+      'apl.io/teamId': getTeamNameFromJsonPath(jsonPath),
+    }
   }
 
   return manifest
