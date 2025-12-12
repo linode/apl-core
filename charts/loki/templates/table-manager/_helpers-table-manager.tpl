@@ -22,14 +22,6 @@ app.kubernetes.io/component: table-manager
 {{- end }}
 
 {{/*
-table-manager image
-*/}}
-{{- define "loki.tableManagerImage" -}}
-{{- $dict := dict "loki" .Values.loki.image "service" .Values.tableManager.image "global" .Values.global.image "defaultVersion" .Chart.AppVersion -}}
-{{- include "loki.lokiImage" $dict -}}
-{{- end }}
-
-{{/*
 table-manager priority class name
 */}}
 {{- define "loki.tableManagerPriorityClassName" -}}

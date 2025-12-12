@@ -1,18 +1,27 @@
-{{- if .Values.indexGateway.enabled }}
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if $isDistributed }}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "loki.indexGatewayFullname" . }}-headless
+  namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.indexGatewaySelectorLabels" . | nindent 4 }}
     prometheus.io/service-monitor: "false"
+  annotations:
+    {{- with .Values.loki.serviceAnnotations }}
+    {{- toYaml . | nindent 4}}
+    {{- end }}
+    {{- with .Values.indexGateway.serviceAnnotations }}
+    {{- toYaml . | nindent 4}}
+    {{- end }}
 spec:
   type: ClusterIP
   clusterIP: None
   ports:
-    - name: http
+    - name: http-metrics
       port: 3100
-      targetPort: http
+      targetPort: http-metrics
       protocol: TCP
     - name: grpc
       port: 9095

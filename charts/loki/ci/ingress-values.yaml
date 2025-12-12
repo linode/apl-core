@@ -1,9 +1,0 @@
-gateway:
-  ingress:
-    enabled: true
-    annotations: {}
-    hosts:
-      - host: gateway.loki.example.com
-        paths:
-          - path: /
-            pathType: Prefix

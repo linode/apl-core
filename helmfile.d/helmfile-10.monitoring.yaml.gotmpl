@@ -33,7 +33,7 @@ releases:
     namespace: monitoring
     <<: *default
   - name: promtail
-    installed: {{ $a | get "loki.enabled" }}
+    installed: {{ $a | get "promtail.enabled" }}
     namespace: monitoring
     <<: *default
   - name: prometheus-msteams

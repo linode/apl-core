@@ -1,9 +1,10 @@
-{{- if .Values.queryScheduler.enabled }}
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if $isDistributed }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "loki.querySchedulerFullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.querySchedulerLabels" . | nindent 4 }}
   {{- with .Values.loki.annotations }}
@@ -31,40 +32,54 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "loki.querySchedulerSelectorLabels" . | nindent 8 }}
-        {{- with .Values.loki.podLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-        {{- with .Values.queryScheduler.podLabels }}
+        {{- include "loki.querySchedulerLabels" . | nindent 8 }}
+        {{- with merge (dict) .Values.loki.podLabels .Values.queryScheduler.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
         app.kubernetes.io/part-of: memberlist
     spec:
+      {{- if semverCompare ">=1.19-0" (include "loki.kubeVersion" .) }}
+      {{- with .Values.queryScheduler.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- tpl ( . | toYaml) $ | nindent 8 }}
+      {{- end }}
+      {{- end }}
       serviceAccountName: {{ include "loki.serviceAccountName" . }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.queryScheduler.dnsConfig | default .Values.loki.dnsConfig }}
+      dnsConfig:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.queryScheduler.hostAliases }}
       hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if and (semverCompare ">=1.33-0" (include "loki.kubeVersion" .)) (kindIs "bool" .Values.queryScheduler.hostUsers) }}
+      hostUsers: {{ .Values.queryScheduler.hostUsers }}
+      {{- end }}
       {{- include "loki.querySchedulerPriorityClassName" . | nindent 6 }}
       securityContext:
         {{- toYaml .Values.loki.podSecurityContext | nindent 8 }}
       terminationGracePeriodSeconds: {{ .Values.queryScheduler.terminationGracePeriodSeconds }}
+      {{- with .Values.queryScheduler.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: query-scheduler
-          image: {{ include "loki.querySchedulerImage" . }}
+          image: {{ include "loki.image" . }}
           imagePullPolicy: {{ .Values.loki.image.pullPolicy }}
           args:
             - -config.file=/etc/loki/config/config.yaml
             - -target=query-scheduler
-            {{- with .Values.queryScheduler.extraArgs }}
+            {{- with (concat .Values.global.extraArgs .Values.queryScheduler.extraArgs) | uniq }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           ports:
-            - name: http
+            - name: http-metrics
               containerPort: 3100
               protocol: TCP
             - name: grpc
@@ -73,26 +88,34 @@ spec:
             - name: http-memberlist
               containerPort: 7946
               protocol: TCP
-          {{- with .Values.queryScheduler.extraEnv }}
+          {{- with (concat .Values.global.extraEnv .Values.queryScheduler.extraEnv) | uniq }}
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.queryScheduler.extraEnvFrom }}
+          {{- with (concat .Values.global.extraEnvFrom .Values.queryScheduler.extraEnvFrom) | uniq }}
           envFrom:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           securityContext:
             {{- toYaml .Values.loki.containerSecurityContext | nindent 12 }}
-          readinessProbe:
-            {{- toYaml .Values.loki.readinessProbe | nindent 12 }}
+          {{- with .Values.loki.livenessProbe }}
           livenessProbe:
-            {{- toYaml .Values.loki.livenessProbe | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.loki.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: config
               mountPath: /etc/loki/config
             - name: runtime-config
-              mountPath: /var/{{ include "loki.name" . }}-runtime
-            {{- with .Values.queryScheduler.extraVolumeMounts }}
+              mountPath: /etc/loki/runtime-config
+            {{- if .Values.enterprise.enabled }}
+            - name: license
+              mountPath: /etc/loki/license
+            {{- end }}
+            {{- with (concat .Values.global.extraVolumeMounts .Values.queryScheduler.extraVolumeMounts) | uniq }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- with .Values.queryScheduler.resources }}
@@ -104,7 +127,7 @@ spec:
         {{- end }}
       {{- with .Values.queryScheduler.affinity }}
       affinity:
-        {{- tpl . $ | nindent 8 }}
+        {{- tpl ( . | toYaml) $ | nindent 8 }}
       {{- end }}
       {{- with .Values.queryScheduler.nodeSelector }}
       nodeSelector:
@@ -116,20 +139,20 @@ spec:
       {{- end }}
       volumes:
         - name: config
-          {{- if .Values.loki.existingSecretForConfig }}
-          secret:
-            secretName: {{ .Values.loki.existingSecretForConfig }}
-          {{- else if .Values.loki.configAsSecret }}
-          secret:
-            secretName: {{ include "loki.fullname" . }}-config
-          {{- else }}
-          configMap:
-            name: {{ include "loki.fullname" . }}
-          {{- end }}
+          {{- include "loki.configVolume" . | nindent 10 }}
         - name: runtime-config
           configMap:
-            name: {{ template "loki.fullname" . }}-runtime
-        {{- with .Values.queryScheduler.extraVolumes }}
+            name: {{ template "loki.name" . }}-runtime
+        {{- if .Values.enterprise.enabled }}
+        - name: license
+          secret:
+          {{- if .Values.enterprise.useExternalLicense }}
+            secretName: {{ .Values.enterprise.externalLicenseName }}
+          {{- else }}
+            secretName: enterprise-logs-license
+          {{- end }}
+        {{- end }}
+        {{- with (concat .Values.global.extraVolumes .Values.queryScheduler.extraVolumes) | uniq }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
 {{- end }}
