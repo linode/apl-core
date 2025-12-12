@@ -14,10 +14,13 @@ metadata:
     {{- tpl (toYaml . | nindent 4) $ }}
   {{- end }}
 spec:
+  internalTrafficPolicy: {{ .Values.distributor.service.internalTrafficPolicy }}
   type: {{ .Values.distributor.service.type }}
+  ipFamilies: {{ .Values.tempo.service.ipFamilies }}
+  ipFamilyPolicy: {{ .Values.tempo.service.ipFamilyPolicy }}
   ports:
     - name: http-metrics
-      port: 3100
+      port: 3200
       targetPort: http-metrics
     - name: grpc
       port: 9095

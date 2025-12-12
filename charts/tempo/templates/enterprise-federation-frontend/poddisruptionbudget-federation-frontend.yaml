@@ -7,6 +7,7 @@ metadata:
   name: {{ include "tempo.resourceName" $dict }}
   labels:
     {{- include "tempo.labels" $dict | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
