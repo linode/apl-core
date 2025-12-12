@@ -26,7 +26,7 @@ helm install \
   cert-manager jetstack/cert-manager \
   --namespace cert-manager \
   --create-namespace \
-  --version v1.19.1 \
+  --version v1.19.2 \
   --set crds.enabled=true
 ```
 
@@ -103,7 +103,7 @@ Global node selector
   
 The nodeSelector on Pods tells Kubernetes to schedule Pods on the nodes with matching labels. For more information, see [Assigning Pods to Nodes](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/).  
   
-If a component-specific nodeSelector is also set, it will take precedence.
+If a component-specific nodeSelector is also set, it will be merged and take precedence.
 
 #### **global.commonLabels** ~ `object`
 > Default value:
