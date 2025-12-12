@@ -1,4 +1,10 @@
-import { ApiException, V1ResourceRequirements } from '@kubernetes/client-node'
+import {
+  ApiException,
+  KubernetesObject,
+  PatchStrategy,
+  setHeaderOptions,
+  V1ResourceRequirements,
+} from '@kubernetes/client-node'
 import { existsSync, mkdirSync, rmSync } from 'fs'
 import { readFile, writeFile } from 'fs/promises'
 import { appPatches, genericPatch } from 'src/applicationPatches.json'
@@ -11,7 +17,7 @@ import { getImageTagFromValues, objectToYaml } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { ARGOCD_APP_DEFAULT_SYNC_POLICY } from '../common/constants'
+import { ARGOCD_APP_DEFAULT_SYNC_POLICY, ARGOCD_APP_PARAMS } from '../common/constants'
 import { env } from '../common/envalid'
 
 const cmdName = getFilename(__filename)
@@ -42,6 +48,8 @@ interface HelmRelease {
   chart: string
   version: string
 }
+const customApi = k8s.custom()
+
 const getAppName = (release: HelmRelease): string => {
   return `${release.namespace}-${release.name}`
 }
@@ -84,17 +92,41 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
 }
 
 const setFinalizers = async (name: string) => {
-  d.info(`Setting finalizers for ${name}`)
-  const resPatch =
-    await $`kubectl -n argocd patch applications.argoproj.io ${name} -p '{"metadata": {"finalizers": ["resources-finalizer.argocd.argoproj.io"]}}' --type merge`
-  if (resPatch.exitCode !== 0) {
-    throw new Error(`Failed to set finalizers for ${name}: ${resPatch.stderr}`)
+  try {
+    d.info(`Setting finalizers for ${name}`)
+    await customApi.patchNamespacedCustomObject(
+      {
+        ...ARGOCD_APP_PARAMS,
+        name,
+        body: [
+          {
+            op: 'replace',
+            path: '/metadata/finalizers',
+            value: ['resources-finalizer.argocd.argoproj.io'],
+          },
+        ],
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.JsonPatch),
+    )
+    d.info(`Set finalizers for ${name}`)
+  } catch (error) {
+    d.error(`Failed to set finalizers for ${name}: ${error}`)
+    throw error
   }
 }
 
 const getFinalizers = async (name: string): Promise<string[]> => {
-  const res = await $`kubectl -n argocd get applications.argoproj.io ${name} -o jsonpath='{.metadata.finalizers}'`
-  return res.stdout ? JSON.parse(res.stdout) : []
+  try {
+    const response = await customApi.getNamespacedCustomObject({
+      ...ARGOCD_APP_PARAMS,
+      name,
+    })
+    const app = response.body as any
+    return Array.isArray(app.metadata?.finalizers) ? app.metadata.finalizers : []
+  } catch (error) {
+    d.warn(`Failed to get finalizers for ${name}: ${error}`)
+    return []
+  }
 }
 
 const removeApplication = async (name: string): Promise<void> => {
@@ -103,8 +135,11 @@ const removeApplication = async (name: string): Promise<void> => {
     if (!finalizers.includes('resources-finalizer.argocd.argoproj.io')) {
       await setFinalizers(name)
     }
-    const resDelete = await $`kubectl -n argocd delete applications.argoproj.io ${name}`
-    d.info(resDelete.stdout.toString().trim())
+    await customApi.deleteNamespacedCustomObject({
+      ...ARGOCD_APP_PARAMS,
+      name,
+    })
+    d.info(`Deleted application ${name}`)
   } catch (e) {
     d.error(`Failed to delete application ${name}: ${e.message}`)
   }
@@ -141,8 +176,18 @@ async function patchArgocdResources(release: HelmRelease, values: Record<string,
 }
 
 export const getApplications = async (): Promise<string[]> => {
-  const res = await $`kubectl get application.argoproj.io -n argocd -oname`
-  return res.stdout.split('\n')
+  try {
+    const response = await customApi.listNamespacedCustomObject({
+      ...ARGOCD_APP_PARAMS,
+    })
+    const apps = response.items || []
+    return apps
+      .filter((app: KubernetesObject) => app.metadata?.name && app.metadata.name !== '')
+      .map((app: KubernetesObject) => app.metadata!.name!)
+  } catch (error) {
+    d.error(`Failed to list applications: ${error}`)
+    return []
+  }
 }
 
 const writeApplicationManifest = async (release: HelmRelease, otomiVersion: string): Promise<void> => {
@@ -227,8 +272,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
         if (release.installed) await writeApplicationManifest(release, otomiVersion)
         else {
           const appName = getAppName(release)
-          const resourceName = `application.argoproj.io/${appName}`
-          if (currentApplications.includes(resourceName)) {
+          if (currentApplications.includes(appName)) {
             await removeApplication(appName)
           }
         }
