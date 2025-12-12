@@ -2423,7 +2423,7 @@ spec:
                       anyOf:
                         - type: integer
                         - type: string
-                      description: 	An eviction is allowed if at most "maxUnavailable" pods selected by "selector" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with "minAvailable".
+                      description: An eviction is allowed if at most "maxUnavailable" pods selected by "selector" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with "minAvailable".
                       x-kubernetes-int-or-string: true
               source:
                 description: The source configuration for Knative Eventing
@@ -4821,7 +4821,7 @@ spec:
                       anyOf:
                         - type: integer
                         - type: string
-                      description: 	An eviction is allowed if at most "maxUnavailable" pods selected by "selector" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with "minAvailable".
+                      description: An eviction is allowed if at most "maxUnavailable" pods selected by "selector" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with "minAvailable".
                       x-kubernetes-int-or-string: true
               ingress:
                 description: The ingress configuration for Knative Serving
