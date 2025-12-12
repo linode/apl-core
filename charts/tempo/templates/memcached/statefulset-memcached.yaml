@@ -13,6 +13,7 @@ metadata:
   {{- end }}
 spec:
   replicas: {{ .Values.memcached.replicas }}
+  revisionHistoryLimit: {{ .Values.tempo.revisionHistoryLimit }}
   selector:
     matchLabels:
       {{- include "tempo.selectorLabels" $dict | nindent 6 }}
@@ -51,13 +52,20 @@ spec:
       hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      initContainers:
+        {{- toYaml .Values.memcached.initContainers | nindent 8 }}
       containers:
         - image: {{ include "tempo.imageReference" $dict }}
           imagePullPolicy: {{ .Values.memcached.image.pullPolicy }}
           name: memcached
-          {{- with .Values.memcached.extraArgs }}
+          {{- if or .Values.global.extraArgs .Values.memcached.extraArgs }}
           args:
+            {{- with .Values.memcached.extraArgs }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.global.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
           ports:
             - containerPort: 11211
@@ -71,8 +79,25 @@ spec:
               {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
-          {{- with .Values.memcached.extraEnvFrom }}
+          {{- if or .Values.global.extraEnvFrom .Values.memcached.extraEnvFrom }}
           envFrom:
+            {{- with .Values.global.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.memcached.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- with .Values.memcached.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.memcached.livenessProbe }}
+          livenessProbe:
+            exec:
+              command:
+                - pgrep
+                - memcached
             {{- toYaml . | nindent 12 }}
           {{- end }}
           resources:
@@ -81,10 +106,17 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.memcached.extraVolumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
         {{- if .Values.memcachedExporter.enabled }}
         - args:
             - --memcached.address=localhost:11211
             - --web.listen-address=0.0.0.0:9150
+          {{- with .Values.memcachedExporter.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           image: {{ include "tempo.imageReference" (dict "ctx" . "component" "memcached-exporter") }}
           imagePullPolicy: {{ .Values.memcachedExporter.image.pullPolicy }}
           name: exporter
@@ -95,6 +127,10 @@ spec:
             {{- toYaml .Values.memcachedExporter.resources | nindent 12 }}
           {{- with .Values.tempo.securityContext }}
           securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.memcached.extraVolumeMounts }}
+          volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
         {{- end }}
@@ -114,6 +150,10 @@ spec:
       {{- end }}
       {{- with .Values.memcached.tolerations }}
       tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.memcached.extraVolumes }}
+      volumes:
         {{- toYaml . | nindent 8 }}
       {{- end }}
   updateStrategy:
