@@ -66,9 +66,6 @@ defaultIngressGatewayLabel: {{ $v._derived.defaultIngressGatewayLabel }}
 canaryIngressGatewayLabel: {{ $v._derived.canaryIngressGatewayLabel | quote }}
 
 gitOps:
-  adminPassword: {{ $a.gitea.adminPassword | quote }}
-  adminUsername: {{ $a.gitea.adminUsername }}
-  globalUrl: "https://{{ $v._derived.giteaDomain }}"
   teamRepoUrl:  "https://{{ $v._derived.giteaDomain }}/otomi/team-{{ $teamId }}-argocd.git"
   valuesRepoUrl: "https://{{ $v._derived.giteaDomain }}/otomi/values.git"
   workloadValuesRepoUrl: "https://{{ $v._derived.giteaDomain }}/otomi/values.git"

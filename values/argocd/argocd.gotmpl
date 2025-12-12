@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $a := $v.apps.argocd }}
 {{- $k := $v.apps.keycloak }}
+{{- $g := $v.apps.gitea }}
 global:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
@@ -203,6 +204,13 @@ configs:
       gitea.{{ $v.cluster.domainSuffix }}: |
         {{- $v._derived.caCert | nindent 8 }}
   {{- end }}
+
+  # Credential templates for repository access
+  credentialTemplates:
+    gitea:
+      url: https://{{ $v._derived.giteaDomain }}
+      username: {{ $g.adminUsername }}
+      password: {{ $g.adminPassword }}
 
   secret:
     extra:
