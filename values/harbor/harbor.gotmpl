@@ -68,7 +68,7 @@ jobservice:
   jobLoggers:
     - stdout
   resources: {{- $h.resources.jobservice | toYaml | nindent 4 }}
-  existingSecret: harbor-jobservice
+  existingSecret: harbor-jobservice-secret
 
 metrics:
   serviceMonitor:

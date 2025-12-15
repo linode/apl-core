@@ -61,14 +61,12 @@ resources:
     tls.crt: {{ $cm.customRootCA | b64enc }}
     tls.key: {{ $cm.customRootCAKey | b64enc}}
 {{- end }}
-{{- if ne $h.jobservice.secret nil }}
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: harbor-jobservice
+    name: harbor-jobservice-secret
   data:
-    JOBSERVICE_SECRET: "{{ $h.jobservice.secret | b64enc }}"
-{{- end }}
+    JOBSERVICE_SECRET: "{{ $h.jobservice.secret | default "" | b64enc }}"
 - apiVersion: v1
   kind: Secret
   metadata:
