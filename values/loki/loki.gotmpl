@@ -110,6 +110,18 @@ loki:
         # Added
         - app
         - deployment
+      otlp_config:
+        resource_attributes:
+          ignore_defaults: true
+          attributes_config:
+            - action: index_label
+              attributes:
+                - app
+                - component
+                - container
+                - deployment
+                - namespace
+                - node_name
 
 deploymentMode: Distributed
 
