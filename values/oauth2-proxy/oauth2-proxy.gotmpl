@@ -21,9 +21,9 @@
 {{- $domains = append $domains (print "." $v.cluster.domainSuffix) }}
 
 config:
-  clientID: {{ $k.idp.clientID | quote }}
-  clientSecret: {{ $k.idp.clientSecret | quote }}
-  cookieSecret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 16) }}
+  clientID: ""
+  clientSecret: ""
+  cookieSecret: ""
   configFile: |-
     # Defaults
     email_domains = [ "*" ]

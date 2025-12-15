@@ -1,10 +1,23 @@
 {{- $v := .Values }}
+{{- $k := $v.apps.keycloak }}
+{{- $oauth2 := $v.apps | get "oauth2-proxy" }}
 {{- $escapedDomain := $v.cluster.domainSuffix | replace "." "\\." }}
 {{- $consoleUrl := printf "https://console.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $ingress :=  $v.ingress.platformClass }}
 
 resources:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: oauth2-proxy
+      namespace: oauth2-proxy
+    type: Opaque
+    stringData:
+      client-id: {{ $k.idp.clientID | b64enc }}
+      client-secret: {{ $k.idp.clientSecret | b64enc }}
+      cookie-secret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 16) | b64enc }}
+
   - apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
