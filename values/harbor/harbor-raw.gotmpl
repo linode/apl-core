@@ -44,7 +44,8 @@ resources:
   metadata:
     name: harbor-registry-credentials
   data:
-    HARBOR_ADMIN_PASSWORD: "{{ $h.registry.credentials.htpasswd | b64enc }}"
+    REGISTRY_PASSWD: "{{ $h.registry.credentials.password | b64enc }}"
+    REGISTRY_HTPASSWD: "{{ $h.registry.credentials.htpasswd | b64enc }}"
 {{- if ne $h.secretKey nil }}
 - apiVersion: v1
   kind: Secret
