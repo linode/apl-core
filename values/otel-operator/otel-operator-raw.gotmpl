@@ -6,6 +6,9 @@ resources:
     metadata:
       name: platform-otlp
     spec:
+      mode: deployment
+      resources: {{ $o.resources.otlpCollector | toYaml | nindent 8 }}
+      autoscaler: {{ $o.otlpCollector.autoscaler | toYaml | nindent 8 }}
       managementState: managed
       config:
         receivers:
@@ -25,7 +28,7 @@ resources:
             auth_type: serviceAccount
             passthrough: false
             extract:
-              {{- with $o.collector.attributes }}
+              {{- with $o.otlpCollector.attributes }}
               metadata:
               {{ . | toYaml | nindent 16 }}
               {{- end }}
@@ -65,13 +68,6 @@ resources:
               {{- else }}
                 - debug
               {{- end }}
-      mode: {{ $o.collector.mode }}
-      autoscaler:
-        minReplicas: {{ $o.collector.autoscaler.minReplicas }}
-        maxReplicas: {{ $o.collector.autoscaler.maxReplicas }}
-        targetCPUUtilization: {{ $o.collector.autoscaler.targetCPUUtilizationPercentage }}
-        targetMemoryUtilization: {{ $o.collector.autoscaler.targetMemoryUtilizationPercentage }}
-      resources: {{- $o.resources.collector | toYaml | nindent 8 }}
   {{- if $v.apps.loki.enabled }}
   - apiVersion: opentelemetry.io/v1beta1
     kind: OpenTelemetryCollector
@@ -83,6 +79,8 @@ resources:
       priorityClassName: otomi-critical
       podAnnotations:
         sidecar.istio.io/inject: "false"
+      resources: {{ $o.resources.logsCollector | toYaml | nindent 8 }}
+      managementState: managed
       env:
         - name: KUBE_NODE_NAME
           valueFrom:

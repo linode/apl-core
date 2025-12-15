@@ -941,8 +941,7 @@ environments:
             _rawValues: {}
           otel:
             enabled: false
-            collector:
-              mode: deployment
+            otlpCollector:
               autoscaler:
                 minReplicas: 2
                 maxReplicas: 5
@@ -958,13 +957,20 @@ environments:
             operator:
               replicaCount: 1
             resources:
-              collector:
+              otlpCollector:
                 requests:
                   cpu: 50m
                   memory: 256Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
+              logsCollector:
+                requests:
+                  cpu: 50m
+                  memory: 256Mi
+                limits:
+                  cpu: "1"
+                  memory: 512Mi
               manager:
                 requests:
                   cpu: 50m

@@ -2561,17 +2561,8 @@ properties:
           enabled:
             type: boolean
             default: false
-          collector:
+          otlpCollector:
             properties:
-              mode:
-                title: Collector mode
-                description: Mode to run collector in.
-                type: string
-                default: deployment
-                enum:
-                  - deployment
-                  - daemonset
-                  - statefulset
               autoscaler:
                 properties:
                   maxReplicas:
@@ -2600,7 +2591,9 @@ properties:
           resources:
             additionalProperties: false
             properties:
-              collector:
+              otlpCollector:
+                $ref: '#/definitions/resources'
+              logsCollector:
                 $ref: '#/definitions/resources'
               manager:
                 $ref: '#/definitions/resources'
