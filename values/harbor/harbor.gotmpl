@@ -16,7 +16,7 @@ logLevel: warning
 
 existingSecretAdminPassword: harbor-admin-password
 nameOverride: harbor
-existingSecretKey: harbor-secret-key
+existingSecretSecretKey: harbor-secret-key
 
 updateStrategy:
     type: Recreate
@@ -68,7 +68,7 @@ jobservice:
   jobLoggers:
     - stdout
   resources: {{- $h.resources.jobservice | toYaml | nindent 4 }}
-  existingSecret: harbor-jobservice-secret-key
+  existingSecret: harbor-jobservice
 
 metrics:
   serviceMonitor:
