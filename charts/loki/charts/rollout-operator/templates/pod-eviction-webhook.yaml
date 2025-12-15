@@ -30,6 +30,10 @@ webhooks:
     namespaceSelector:
       matchLabels:
         kubernetes.io/metadata.name: {{ .Release.Namespace | quote }}
+    {{- with .Values.webhooks.objectSelector }}
+    objectSelector:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
     sideEffects: None
     failurePolicy: {{.Values.webhooks.failurePolicy}}
 {{- end -}}

@@ -12,6 +12,7 @@ revisionHistoryLimit: 10
 
 image:
   repository: grafana/rollout-operator
+  registry: docker.io
   pullPolicy: IfNotPresent
   # -- Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -107,3 +108,15 @@ webhooks:
   failurePolicy: "Fail"
   # -- Secret resource name for the TLS certificate to be used with the webhooks
   selfSignedCertSecretName: "certificate"
+  # -- objectSelector to filter which objects the webhooks apply to.
+  objectSelector: {}
+  # See https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-objectselector
+  # Example:
+  #   objectSelector:
+  #     matchLabels:
+  #       app: loki
+  #     matchExpressions:
+  #       - key: environment
+  #         operator: In
+  #         values:
+  #           - production

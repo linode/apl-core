@@ -30,7 +30,6 @@ rules:
   - statefulsets/status
   verbs:
   - update
-{{- if .Values.webhooks.enabled }}
 - apiGroups:
   - rollout-operator.grafana.com
   resources:
@@ -39,6 +38,7 @@ rules:
   - get
   - list
   - watch
+{{- if .Values.webhooks.enabled }}
 - apiGroups:
     - rollout-operator.grafana.com
   resources:

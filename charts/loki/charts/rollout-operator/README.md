@@ -4,7 +4,7 @@ Helm chart for deploying [Grafana rollout-operator](https://github.com/grafana/r
 
 # rollout-operator
 
-![Version: 0.33.2](https://img.shields.io/badge/Version-0.33.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.29.0](https://img.shields.io/badge/AppVersion-v0.29.0-informational?style=flat-square)
+![Version: 0.38.2](https://img.shields.io/badge/Version-0.38.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.32.0](https://img.shields.io/badge/AppVersion-v0.32.0-informational?style=flat-square)
 
 Grafana rollout-operator
 
@@ -55,6 +55,7 @@ Manually applying these CRDs is only required if upgrading from a chart <= v0.32
 | global.commonLabels | object | `{}` | Common labels for all object directly managed by this chart. |
 | hostAliases | list | `[]` | hostAliases to add |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
+| image.registry | string | `"docker.io"` |  |
 | image.repository | string | `"grafana/rollout-operator"` |  |
 | image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` |  |
@@ -84,4 +85,5 @@ Manually applying these CRDs is only required if upgrading from a chart <= v0.32
 | tolerations | list | `[]` |  |
 | webhooks.enabled | bool | `true` | Enable the rollout-operator webhooks. See https://github.com/grafana/rollout-operator/#webhooks. Note that the webhooks require custom resource definitions. If upgrading, manually apply the files in the `crds` directory. |
 | webhooks.failurePolicy | string | `"Fail"` | Validating and mutating webhook failure policy. `Ignore` or `Fail`. |
+| webhooks.objectSelector | object | `{}` | objectSelector to filter which objects the webhooks apply to. |
 | webhooks.selfSignedCertSecretName | string | `"certificate"` | Secret resource name for the TLS certificate to be used with the webhooks |

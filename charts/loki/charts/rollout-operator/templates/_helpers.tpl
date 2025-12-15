@@ -80,3 +80,15 @@ Create the name of the service account to use
 {{- end -}}
 {{ join "," $list }}
 {{- end -}}
+
+{{/*
+Create the image name
+*/}}
+{{- define "rollout-operator.imageName" -}}
+{{- $imageTag := (.Values.image.tag | default .Chart.AppVersion) }}
+{{- if .Values.image.registry }}
+{{- (printf "%s/%s:%s" .Values.image.registry .Values.image.repository $imageTag) }}
+{{- else }}
+{{- (printf "%s:%s" .Values.image.repository $imageTag) }}
+{{- end -}}
+{{- end -}}
