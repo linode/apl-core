@@ -2142,6 +2142,10 @@ properties:
                 $ref: '#/definitions/resources'
               reverseProxy:
                 $ref: '#/definitions/resources'
+              queryScheduler:
+                $ref: '#/definitions/resources'
+              indexGateway:
+                $ref: '#/definitions/resources'
           autoscaling:
             properties:
               ingester:
@@ -2153,6 +2157,8 @@ properties:
               distributor:
                 $ref: '#/definitions/autoscalingEnabled'
               queryFrontend:
+                $ref: '#/definitions/autoscalingEnabled'
+              queryScheduler:
                 $ref: '#/definitions/autoscalingEnabled'
           adminPassword:
             type: string

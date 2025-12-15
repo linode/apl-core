@@ -664,12 +664,26 @@ environments:
                   cpu: 200m
                   memory: 256Mi
               reverseProxy:
-                limits:
-                  cpu: 100m
-                  memory: 32Mi
                 requests:
                   cpu: 50m
                   memory: 16Mi
+                limits:
+                  cpu: 100m
+                  memory: 32Mi
+              queryScheduler:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              indexGateway:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
             persistence:
               ingester:
                 size: 20Gi
@@ -703,6 +717,12 @@ environments:
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
               queryFrontend:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+              queryScheduler:
                 enabled: false
                 minReplicas: 1
                 maxReplicas: 3
