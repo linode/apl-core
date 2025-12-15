@@ -172,7 +172,7 @@ redis:
 
 registry:
   priorityClassName: otomi-critical
-  existingSecret: harbor-registry
+  existingSecret: harbor-registry-http
 
   registry:
       {{- if $v.otomi.linodeLkeImageRepository }}

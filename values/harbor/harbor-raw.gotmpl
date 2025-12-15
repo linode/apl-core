@@ -69,14 +69,12 @@ resources:
   data:
     JOBSERVICE_SECRET: "{{ $h.jobservice.secret | b64enc }}"
 {{- end }}
-{{- if ne $h.registry.secret nil }}
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: harbor-registry
+    name: harbor-registry-http
   data:
-    REGISTRY_HTTP_SECRET: "{{ $h.registry.secret | b64enc }}"
-{{- end }}
+  REGISTRY_HTTP_SECRET: "{{ $h.registry.secret | default "" | b64enc }}"
 {{- if eq $obj.type "minioLocal" }}
 - apiVersion: v1
   kind: Secret
