@@ -1,4 +1,4 @@
 helmfiles:
-  - path: helmfile.d/*.gotmpl
+  - path: ../helmfile.d/*.gotmpl
     selectors:
       - app=core
