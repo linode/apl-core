@@ -72,6 +72,177 @@ resources:
         targetCPUUtilization: {{ $o.collector.autoscaler.targetCPUUtilizationPercentage }}
         targetMemoryUtilization: {{ $o.collector.autoscaler.targetMemoryUtilizationPercentage }}
       resources: {{- $o.resources.collector | toYaml | nindent 8 }}
+  {{- if $v.apps.loki.enabled }}
+  - apiVersion: opentelemetry.io/v1beta1
+    kind: OpenTelemetryCollector
+    metadata:
+      name: platform-logs
+      namespace: otel
+    spec:
+      mode: daemonset
+      priorityClassName: otomi-critical
+      podAnnotations:
+        sidecar.istio.io/inject: "false"
+      env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+      volumeMounts:
+        - name: varlogpods
+          mountPath: /var/log/pods
+          readOnly: true
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+      volumes:
+        - name: varlogpods
+          hostPath:
+            path: /var/log/pods
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+      config:
+        receivers:
+          filelog:
+            include:
+              - /var/log/pods/*/*/*.log
+            exclude:
+              - /var/log/pods/otel_platform-logs-collector-*/*/*.log
+              - /var/log/pods/monitoring_loki-gateway-*/*/*.log
+            start_at: end
+            include_file_path: true
+            include_file_name: false
+            operators:
+              - type: container
+                id: container-parser
+        processors:
+          memory_limiter:
+            check_interval: 1s
+            limit_percentage: 75
+            spike_limit_percentage: 15
+          batch:
+            send_batch_size: 10000
+            timeout: 10s
+          k8sattributes:
+            auth_type: serviceAccount
+            passthrough: false
+            filter:
+              # only retrieve pods running on the same node as the collector
+              node_from_env_var: KUBE_NODE_NAME
+            extract:
+              metadata:
+                - k8s.pod.name
+                - k8s.pod.uid
+                - k8s.container.name
+                - k8s.deployment.name
+                - k8s.namespace.name
+                - k8s.node.name
+                - k8s.pod.start_time
+              labels:
+                - tag_name: app
+                  key: app.kubernetes.io/name
+                  from: pod
+              otel_annotations: true
+            pod_association:
+              - sources:
+                  # This rule associates all resources containing the 'k8s.pod.ip' attribute with the matching pods. If this attribute is not present in the resource, this rule will not be able to find the matching pod.
+                  - from: resource_attribute
+                    name: k8s.pod.ip
+              - sources:
+                  # This rule associates all resources containing the 'k8s.pod.uid' attribute with the matching pods. If this attribute is not present in the resource, this rule will not be able to find the matching pod.
+                  - from: resource_attribute
+                    name: k8s.pod.uid
+              - sources:
+                  # This rule will use the IP from the incoming connection from which the resource is received, and find the matching pod, based on the 'pod.status.podIP' of the observed pods
+                  - from: connection
+          resource:
+            attributes:
+              # Attributes as previously delivered by Promtail
+              - key: container
+                action: insert
+                from_attribute: k8s.container.name
+              - key: pod_uid
+                action: insert
+                from_attribute: k8s.pod.uid
+              - key: deployment
+                action: insert
+                from_attribute: k8s.deployment.name
+              - key: namespace
+                action: insert
+                from_attribute: k8s.namespace.name
+              - key: node_name
+                action: insert
+                from_attribute: k8s.node.name
+              - key: pod_start_time
+                action: insert
+                from_attribute: k8s.pod.start_time
+              - key: k8s-attributes
+                action: delete
+                pattern: 'k8s\..*'
+          attributes:
+            actions:
+              - key: filename
+                action: insert
+                from_attribute: log.file.path
+              - key: stream
+                action: insert
+                from_attribute: log.iostream
+              - key: log.file.path
+                action: delete
+              - key: log.iostream
+                action: delete
+        connectors:
+          routing:
+            default_pipelines:
+              - logs/otlphttp-default
+            table:
+              {{- range $id, $team := $v.teamConfig }}
+              - context: resource
+                condition: attributes["k8s.namespace.name"] == "team-{{ $id }}"
+                pipelines:
+                  - logs/otlphttp-team-{{ $id }}
+              {{- end }}
+        exporters:
+          debug:
+            verbosity: detailed
+          otlphttp/default:
+            endpoint: http://loki-gateway.monitoring/otlp
+            headers:
+              X-Scope-OrgID: admins
+          {{- range $id, $team := $v.teamConfig }}
+          otlphttp/team-{{ $id }}:
+            endpoint: http://loki-gateway.monitoring/otlp
+            headers:
+              X-Scope-OrgID: {{ $id }}
+          {{- end }}
+        service:
+          pipelines:
+            logs/input:
+              receivers:
+                - filelog
+              processors:
+                - memory_limiter
+                - k8sattributes
+                - resource
+                - attributes
+                - batch
+              exporters:
+                - routing
+            logs/otlphttp-default:
+              receivers:
+                - routing
+              exporters:
+                - otlphttp/default
+            {{- range $id, $team := $v.teamConfig }}
+            logs/otlphttp-team-{{ $id }}:
+              receivers:
+                - routing
+              exporters:
+                - otlphttp/team-{{ $id }}
+            {{- end }}
+  {{- end }}
   - apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRole
     metadata:
@@ -109,7 +280,7 @@ resources:
   - apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding
     metadata:
-      name: otel-collector
+      name: platform-otlp-collector
     subjects:
       - kind: ServiceAccount
         name: platform-otlp-collector
@@ -118,3 +289,17 @@ resources:
       kind: ClusterRole
       name: otel-collector
       apiGroup: rbac.authorization.k8s.io
+  {{- if $v.apps.loki.enabled }}
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: platform-logs-collector
+    subjects:
+      - kind: ServiceAccount
+        name: platform-logs-collector
+        namespace: otel
+    roleRef:
+      kind: ClusterRole
+      name: otel-collector
+      apiGroup: rbac.authorization.k8s.io
+  {{- end }}
