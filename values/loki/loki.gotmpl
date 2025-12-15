@@ -91,6 +91,25 @@ loki:
   storage:
     type: filesystem
   {{- end }}
+  structuredConfig:
+    limits_config:
+      discover_service_name:
+        # Defaults
+        - service
+        - application
+        - app_name
+        - name
+        - app_kubernetes_io_name
+        - container
+        - container_name
+        - k8s_container_name
+        - component
+        - workload
+        - job
+        - k8s_job_name
+        # Added
+        - app
+        - deployment
 
 deploymentMode: Distributed
 
