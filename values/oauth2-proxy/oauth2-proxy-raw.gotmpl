@@ -11,7 +11,6 @@ resources:
     kind: Secret
     metadata:
       name: oauth2-proxy
-      namespace: oauth2-proxy
     type: Opaque
     stringData:
       client-id: {{ $k.idp.clientID | b64enc }}
