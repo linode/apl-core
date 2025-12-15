@@ -94,6 +94,9 @@ loki:
   structuredConfig:
     limits_config:
       discover_service_name:
+        # Added
+        - app
+        - deployment
         # Defaults
         - service
         - application
@@ -107,9 +110,6 @@ loki:
         - workload
         - job
         - k8s_job_name
-        # Added
-        - app
-        - deployment
       otlp_config:
         resource_attributes:
           ignore_defaults: true
