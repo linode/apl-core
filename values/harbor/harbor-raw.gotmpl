@@ -51,7 +51,7 @@ resources:
   metadata:
     name: harbor-secret-key
   data:
-    existingSecretKey: "{{ $h.secretKey | b64enc }}"
+    secretKey: "{{ $h.secretKey | b64enc }}"
 - apiVersion: v1
   kind: Secret
   metadata:
@@ -64,7 +64,7 @@ resources:
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: harbor-jobservice-secret-key
+    name: harbor-jobservice
   data:
     JOBSERVICE_SECRET: "{{ $h.jobservice.secret | b64enc }}"
 {{- end }}
@@ -72,7 +72,7 @@ resources:
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: harbor-registry-secret-key
+    name: harbor-registry
   data:
     REGISTRY_HTTP_SECRET: "{{ $h.registry.secret | b64enc }}"
 {{- end }}
