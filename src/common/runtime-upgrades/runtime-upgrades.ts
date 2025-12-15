@@ -8,6 +8,7 @@ import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
 import { detachApplicationFromApplicationSet, pruneArgoCDImageUpdater, resetGiteaPasswordValidity } from './v4.13.0'
 import { removeHttpBinApplication } from './remove-httpbin-application'
+import { upgradeKnativeServing20 } from './upgrade-knative-serving-cr-1.20'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -153,6 +154,9 @@ export const runtimeUpgrades: RuntimeUpgrades = [
   },
   {
     version: '4.14.0',
+    pre: async (context: RuntimeUpgradeContext) => {
+      await upgradeKnativeServing20(context)
+    },
     applications: {
       'gitea-gitea': {
         post: async (context: RuntimeUpgradeContext) => {
