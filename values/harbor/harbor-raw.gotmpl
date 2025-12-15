@@ -74,7 +74,7 @@ resources:
   metadata:
     name: harbor-registry-http
   data:
-  REGISTRY_HTTP_SECRET: "{{ $h.registry.secret | default "" | b64enc }}"
+    REGISTRY_HTTP_SECRET: "{{ $h.registry.secret | default "" | b64enc }}"
 {{- if eq $obj.type "minioLocal" }}
 - apiVersion: v1
   kind: Secret
