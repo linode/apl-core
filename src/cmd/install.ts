@@ -99,7 +99,10 @@ export const installAll = async () => {
   d.info('Deploying charts containing label app=core')
   await hf(
     {
-      labelOpts: ['app=core'],
+      // Includes a selector on labels app=core.
+      // Using file to circumvent parallel processing, which
+      // cannot handle dependencies across multiple files.
+      fileOpts: 'helmfile.tpl/helmfile-core.yaml',
       logLevel: logLevelString(),
       args: hfArgs,
     },
