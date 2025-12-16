@@ -21,6 +21,7 @@
 {{- $domains = append $domains (print "." $v.cluster.domainSuffix) }}
 
 config:
+  existingSecret: oauth2-proxy
   clientID: ""
   clientSecret: ""
   cookieSecret: ""
