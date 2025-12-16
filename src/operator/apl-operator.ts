@@ -71,13 +71,12 @@ export class AplOperator {
     })
 
     try {
+      await this.aplOps.migrate()
       const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
       this.d.info('Write default values to env repo')
       await writeValues(defaultValues)
 
       if (trigger === ApplyTrigger.Poll) {
-        await this.aplOps.migrate()
-
         this.d.info(`[${trigger}] Starting validation process`)
         await this.aplOps.validateValues()
         this.d.info(`[${trigger}] Validation process completed`)
