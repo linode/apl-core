@@ -16,7 +16,7 @@ const config: Config.InitialOptions = {
     '^.+\\.(js|jsx|mjs|cjs)$': 'babel-jest',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(@kubernetes/client-node|node-fetch|zx|yaml|glob|minimatch|fetch-blob|formdata-polyfill|data-uri-to-buffer|web-streams-polyfill|openid-client|oauth4webapi|jose)/)',
+    'node_modules/(?!(@kubernetes/client-node|@apidevtools/json-schema-ref-parser|node-fetch|zx|yaml|glob|minimatch|fetch-blob|formdata-polyfill|data-uri-to-buffer|web-streams-polyfill|openid-client|oauth4webapi|jose)/)',
   ],
   silent: false,
   testMatch: ['**/*.test.ts'],
