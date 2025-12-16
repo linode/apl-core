@@ -13,9 +13,9 @@ resources:
       name: oauth2-proxy-client-access
     type: Opaque
     stringData:
-      client-id: {{ $k.idp.clientID | b64enc }}
-      client-secret: {{ $k.idp.clientSecret | b64enc }}
-      cookie-secret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 16) | b64enc }}
+      client-id: {{ $k.idp.clientID }}
+      client-secret: {{ $k.idp.clientSecret }}
+      cookie-secret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 32) }}
   - apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
