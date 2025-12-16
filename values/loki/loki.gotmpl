@@ -31,10 +31,6 @@ loki:
     sidecar.istio.io/inject: "false"
   auth_enabled: true
 
-  {{- if $useObjectStorage }}
-  existingSecretForConfig: "loki-storage-config"
-  {{- end }}
-
   schemaConfig:
     configs:
     - from: "2020-09-07"
@@ -48,6 +44,7 @@ loki:
       index:
         prefix: loki_index_
         period: 24h
+
   storageConfig:
     boltdb_shipper:
       active_index_directory: /var/loki/index
@@ -58,7 +55,20 @@ loki:
       {{- else }}
       shared_store: filesystem
       {{- end }}
-    {{- if not $useObjectStorage }}
+    {{- if $useObjectStorage }}
+    aws:
+      s3: ${S3_URL}
+      s3forcepathstyle: true
+      {{- if eq $obj.type "linode" }}
+      sse_encryption: false
+      http_config:
+          idle_conn_timeout: 90s
+          insecure_skip_verify: true
+      backoff_config:
+        min_period: 2s
+        max_period: 5s
+      {{- end }}
+    {{- else }}
     filesystem:
       directory: "/var/loki/chunks"
     {{- end }}
@@ -72,6 +82,13 @@ loki:
 
 ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}
+
+  {{- if $useObjectStorage }}
+  # Add environment variables from secret
+  extraEnvFrom:
+  - secretRef:
+      name: loki-s3-credentials
+  {{- end }}
 
   autoscaling:
     enabled: {{ $l.autoscaling.ingester.enabled }}
@@ -95,6 +112,14 @@ gateway:
 
 querier:
   resources: {{- $l.resources.querier | toYaml | nindent 4 }}
+
+  {{- if $useObjectStorage }}
+  # Add environment variables from secret
+  extraEnvFrom:
+  - secretRef:
+      name: loki-s3-credentials
+  {{- end }}
+
   autoscaling:
     enabled: {{ $l.autoscaling.querier.enabled }}
     minReplicas: {{ $l.autoscaling.querier.minReplicas }}
@@ -111,6 +136,14 @@ querier:
 
 distributor:
   resources: {{- $l.resources.distributor | toYaml | nindent 4 }}
+
+  {{- if $useObjectStorage }}
+  # Add environment variables from secret
+  extraEnvFrom:
+  - secretRef:
+      name: loki-s3-credentials
+  {{- end }}
+
   autoscaling:
     enabled: {{ $l.autoscaling.distributor.enabled }}
     minReplicas: {{ $l.autoscaling.distributor.minReplicas }}
@@ -122,6 +155,14 @@ queryFrontend:
   resources: {{- $l.resources.queryFrontend | toYaml | nindent 4 }}
   podAnnotations:
     checksum/team-config: {{ ( toString (keys $v.teamConfig | sortAlpha ) ) | sha256sum }}
+
+  {{- if $useObjectStorage }}
+  # Add environment variables from secret
+  extraEnvFrom:
+  - secretRef:
+      name: loki-s3-credentials
+  {{- end }}
+
   autoscaling:
     enabled: {{ $l.autoscaling.queryFrontend.enabled }}
     minReplicas: {{ $l.autoscaling.queryFrontend.minReplicas }}
@@ -148,10 +189,12 @@ queryFrontend:
     volumeMounts:
       - name: reverse-proxy-auth-config
         mountPath: /etc/reverse-proxy-conf
+
   extraVolumes:
   - name: reverse-proxy-auth-config
     secret:
       secretName: reverse-proxy-auth-config
+
   extraPorts:
   - port: 3101
     protocol: TCP
@@ -161,6 +204,13 @@ queryFrontend:
 compactor:
   enabled: true
   resources: {{- $l.resources.compactor | toYaml | nindent 4 }}
+
+  {{- if $useObjectStorage }}
+  # Add environment variables from secret
+  extraEnvFrom:
+  - secretRef:
+      name: loki-s3-credentials
+  {{- end }}
 
   {{- if not $useObjectStorage }}
   persistence:
