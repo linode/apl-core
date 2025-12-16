@@ -65,8 +65,6 @@ k8s:
     - name: tekton-pipelines
       disableIstioInjection: true
       disablePolicyChecks: true
-      labels:
-        'app.kubernetes.io/instance: k8s'
     - name: tekton-triggers
       disableIstioInjection: true
       disablePolicyChecks: true
