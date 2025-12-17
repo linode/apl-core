@@ -4,8 +4,6 @@ metadata:
     labels:
         apl.io/teamId: demo
 spec:
-    imageUpdateStrategy:
-        type: disabled
     path: ./
     revision: main
     url: https://myrepo.local/mychart.git
