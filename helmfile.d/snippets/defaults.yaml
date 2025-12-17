@@ -729,6 +729,7 @@ environments:
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
             v13SchemaStartDate: ""
+            enableOpenTelemetry: true
             _rawValues: {}
           metrics-server:
             apiServer:

@@ -2184,6 +2184,10 @@ properties:
             description: Automatically set to a date in the future in case of an upgrade
             title: Schema v13 start date
             type: string
+          enableOpenTelemetry:
+            description: Use OpenTelemetry for logs instead of Promtail. True by default, but must be manually set after v13SchemaStartDate in case of an upgrade
+            title: Enable OpenTelemetry for logs
+            type: boolean
         required:
           - adminPassword
       metrics-server:

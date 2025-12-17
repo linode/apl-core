@@ -662,6 +662,7 @@ const setLokiStorageSchemaMigration = async (values: Record<string, any>): Promi
     const migrationDate = migrationTimestamp.toISOString().slice(0, 10)
     d.info(`Setting migration date to ${migrationDate}`)
     set(values, 'apps.loki.v13SchemaStartDate', migrationDate)
+    set(values, 'apps.loki.enableOpenTelemetry', false)
   }
 }
 

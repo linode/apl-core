@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $o := $v.apps.otel }}
+{{- $lokiEnabled := and $v.apps.loki.enabled $v.apps.loki.enableOpenTelemetry }}
 resources:
   - apiVersion: opentelemetry.io/v1beta1
     kind: OpenTelemetryCollector
@@ -72,7 +73,7 @@ resources:
               {{- else }}
                 - debug
               {{- end }}
-  {{- if $v.apps.loki.enabled }}
+  {{- if $lokiEnabled }}
   - apiVersion: opentelemetry.io/v1beta1
     kind: OpenTelemetryCollector
     metadata:
@@ -295,7 +296,7 @@ resources:
       kind: ClusterRole
       name: otel-collector
       apiGroup: rbac.authorization.k8s.io
-  {{- if $v.apps.loki.enabled }}
+  {{- if $lokiEnabled }}
   - apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding
     metadata:
