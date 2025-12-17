@@ -408,3 +408,4 @@ changes:
     deletions:
       - apps.otel.otlpCollector.mode
       - apps.loki.retention
+      - apps.loki.v11StartDate
