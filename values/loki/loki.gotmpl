@@ -43,7 +43,7 @@ loki:
         index:
           prefix: loki_index_
           period: 24h
-      - from: {{ $l.v13SchemaStartDate | toString | trunc 10 }}
+      - from: {{ $l.v13SchemaStartDate | toString | trunc 10 | quote }}
       {{- end }}
         store: tsdb
         {{- if $useObjectStorage }}
