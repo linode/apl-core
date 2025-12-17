@@ -1,9 +1,8 @@
 {{- $v := .Values }}
-
 {{- range $v.workloads }}
 {{- $workload := . }}
 {{- $imageUpdateStrategyType :=  $workload | get "imageUpdateStrategy.type"  "disabled" }}
-{{- $includeManagedValuesFile :=  not (eq ( $imageUpdateStrategyType  "disabled ")) }}
+{{- $includeManagedValuesFile :=  not (eq  $imageUpdateStrategyType  "disabled") }}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
