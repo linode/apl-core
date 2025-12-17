@@ -8,7 +8,11 @@ resources:
     spec:
       mode: deployment
       resources: {{ $o.resources.otlpCollector | toYaml | nindent 8 }}
-      autoscaler: {{ $o.otlpCollector.autoscaler | toYaml | nindent 8 }}
+      autoscaler:
+        minReplicas: {{ $o.otlpCollector.autoscaler.minReplicas }}
+        maxReplicas: {{ $o.otlpCollector.autoscaler.maxReplicas }}
+        targetCPUUtilization: {{ $o.otlpCollector.autoscaler.targetCPUUtilizationPercentage }}
+        targetMemoryUtilization: {{ $o.otlpCollector.autoscaler.targetMemoryUtilizationPercentage }}
       managementState: managed
       config:
         receivers:
