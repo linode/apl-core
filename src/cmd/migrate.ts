@@ -651,6 +651,20 @@ export async function installIstioHelmCharts(): Promise<void> {
   }
 }
 
+const setLokiStorageSchemaMigration = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('setLokiStorageSchemaMigration')
+  if (values?.apps?.loki?.enabled) {
+    // If Loki is enabled, migration should be set to a date far enough in the
+    // future to avoid issues with drift; if Loki is not enabled, no migration
+    // is necessary as it can start with the new schema.
+    const migrationTimestamp = new Date(Date.now() + 26 * 60 * 60 * 1000)
+    // Must be a date only
+    const migrationDate = migrationTimestamp.toISOString().slice(0, 10)
+    d.info(`Setting migration date to ${migrationDate}`)
+    set(values, 'apps.loki.v13StartDate', migrationDate)
+  }
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   networkPoliciesMigration,
   teamSettingsMigration,
@@ -660,6 +674,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   addAplOperator,
   installIstioHelmCharts,
   workloadValuesMigration,
+  setLokiStorageSchemaMigration,
 }
 
 /**

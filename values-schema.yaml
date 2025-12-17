@@ -2180,21 +2180,9 @@ properties:
                   size:
                     default: 10Gi
                     $ref: '#/definitions/size'
-          retention:
-            additionalProperties: false
-            properties:
-              duration:
-                default: 24h
-                type: string
-              period:
-                default: 24h
-                description: Should be a multiple of 24h. See https://grafana.com/docs/loki/latest/operations/storage/boltdb-shipper/.
-                type: string
-            required:
-              - duration
-          v11StartDate:
-            description: Set this to a date just after deployment in case of an upgrade. (Otomi started at v9 with filesystem.)
-            title: Schema v11 start date
+          v13SchemaStartDate:
+            description: Automatically set to a date in the future in case of an upgrade
+            title: Schema v13 start date
             type: string
         required:
           - adminPassword

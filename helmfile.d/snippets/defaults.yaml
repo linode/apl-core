@@ -728,6 +728,7 @@ environments:
                 maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
+            v13SchemaStartDate: ""
             _rawValues: {}
           metrics-server:
             apiServer:
@@ -1309,4 +1310,4 @@ environments:
         users: []
         # TODO: update this when schema version changes
         versions:
-          specVersion: 46
+          specVersion: 47

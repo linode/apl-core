@@ -400,8 +400,11 @@ changes:
       - 'apps.gitea.resources.memcached'
       - 'apps.gitea.resources.memcachedMetrics'
   - version: 47
+    customFunctions:
+      - setLokiStorageSchemaMigration
     relocations:
       - apps.otel.collector: apps.otel.otlpCollector
       - apps.otel.resources.collector: apps.otel.resources.otlpCollector
     deletions:
       - apps.otel.otlpCollector.mode
+      - apps.loki.retention

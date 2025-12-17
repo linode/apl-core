@@ -1,5 +1,5 @@
 {{- $v := .Values -}}
-{{- $l:= $v.apps.loki }}
+{{- $l := $v.apps.loki }}
 {{- $obj := $v.obj.provider }}
 {{- $useObjectStorage := eq $obj.type "minioLocal" "linode" }}
 
@@ -31,38 +31,41 @@ loki:
     sidecar.istio.io/inject: "false"
   schemaConfig:
     configs:
-    - from: "2020-09-07"
-      store: boltdb-shipper
-      {{- if $useObjectStorage }}
-      object_store: s3
-      {{- else }}
-      object_store: filesystem
+      - from: "2020-09-07"
+      {{- if $l.v13SchemaStartDate }}
+        store: boltdb-shipper
+        {{- if $useObjectStorage }}
+        object_store: s3
+        {{- else }}
+        object_store: filesystem
+        {{- end }}
+        schema: v11
+        index:
+          prefix: loki_index_
+          period: 24h
+      - from: {{ $l.v13SchemaStartDate | quote }}
       {{- end }}
-      schema: v11
-      index:
-        prefix: loki_index_
-        period: 24h
-    # TODO: Replace with variable from values
-    - from: "2023-07-20"
-      store: tsdb
-      {{- if $useObjectStorage }}
-      object_store: s3
-      {{- else }}
-      object_store: filesystem
-      {{- end }}
-      schema: v13
-      index:
-        prefix: index_
-        period: 24h
+        store: tsdb
+        {{- if $useObjectStorage }}
+        object_store: s3
+        {{- else }}
+        object_store: filesystem
+        {{- end }}
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
   ingester:
     chunk_encoding: snappy
   querier:
     max_concurrent: 4
   storage_config:
+    {{- if $l.v13SchemaStartDate }}
     boltdb_shipper:
       active_index_directory: /var/loki/index
       cache_location: /var/loki/index_cache
       resync_interval: 5s
+    {{- end }}
     tsdb_shipper:
       active_index_directory: /var/loki/tsdb_index
       cache_location: /var/loki/tsdb_index_cache
