@@ -2,11 +2,9 @@
 {{- range $v.workloads }}
 {{- $workload := . }}
 {{- $includeManagedValuesFile := false }}
-{{- if $workload.imageUpdateStrategy and $workload.imageUpdateStrategy.type  }}
+{{- if and $workload.imageUpdateStrategy $workload.imageUpdateStrategy.type  }}
 {{- $includeManagedValuesFile = not (eq  $workload.imageUpdateStrategy.type  "disabled") }}
 {{- end }}
-
-
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
