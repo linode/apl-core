@@ -2,7 +2,8 @@
 {{- $t := $v.apps.tekton }}
 
 namespace:
-  create: false
+  labels:
+    app.kubernetes.io/part-of: otomi
 
 controller:
   resources: {{- $t.resources.pipelinesController | toYaml | nindent 4 }}

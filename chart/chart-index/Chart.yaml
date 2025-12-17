@@ -12,7 +12,7 @@ dependencies:
     version: 1.0.1
     repository: oci://ghcr.io/argoproj/argo-helm/argocd-image-updater
   - name: cert-manager
-    version: v1.19.1
+    version: v1.19.2
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
     version: 0.26.1
@@ -38,7 +38,7 @@ dependencies:
     version: 1.18.0
     repository: https://helm.goharbor.io
   - name: ingress-nginx
-    version: 4.14.0
+    version: 4.14.1
     repository: https://kubernetes.github.io/ingress-nginx
   - name: base
     alias: istio-base
@@ -53,7 +53,7 @@ dependencies:
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
-    version: 7.1.4
+    version: 7.1.5
     repository: https://codecentric.github.io/helm-charts
   - name: knative-operator
     version: v1.18.1
