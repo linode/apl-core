@@ -1,6 +1,10 @@
 {{- $v := .Values }}
-
 {{- range $v.workloads }}
+{{- $workload := . }}
+{{- $includeManagedValuesFile := false }}
+{{- if and $workload.imageUpdateStrategy $workload.imageUpdateStrategy.type  }}
+{{- $includeManagedValuesFile = not (eq  $workload.imageUpdateStrategy.type  "disabled") }}
+{{- end }}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -32,8 +36,10 @@ spec:
         {{- end }}
       {{- end }}
       valueFiles:
-      - $values/env/teams/{{ $v.teamId }}/workloadValues/{{ .name }}.yaml
-      - $values/env/teams/{{ $v.teamId }}/workloadValues/{{ .name }}.managed.yaml
+      - $values/env/teams/{{ $v.teamId }}/workloadValues/{{ $workload.name }}.yaml
+      {{- if $includeManagedValuesFile }}
+      - $values/env/teams/{{ $v.teamId }}/workloadValues/{{ $workload.name }}.managed.yaml
+      {{- end }}
   - repoURL: {{ $v.gitOps.workloadValuesRepoUrl | quote }}
     targetRevision: '{{ .revision }}'
     ref: values
