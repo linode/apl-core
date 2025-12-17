@@ -75,9 +75,8 @@ export class AplOperator {
       this.d.info('Write default values to env repo')
       await writeValues(defaultValues)
 
+      await this.aplOps.migrate()
       if (trigger === ApplyTrigger.Poll) {
-        await this.aplOps.migrate()
-
         this.d.info(`[${trigger}] Starting validation process`)
         await this.aplOps.validateValues()
         this.d.info(`[${trigger}] Validation process completed`)
