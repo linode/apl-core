@@ -285,7 +285,7 @@ appsInfo:
     license: AGPL-3.0
     dependencies: Prometheus, Grafana, Loki, Tempo
     about: The OpenTelemetry Collector offers a vendor-agnostic implementation on how to receive, process and export telemetry data. In addition, it removes the need to run, operate and maintain multiple agents/collectors in order to support open-source telemetry data formats (e.g. Prometheus, etc.) to multiple open-source or commercial back-ends.
-    integration: OpenTelemetry Collector is used to receive telementry data from Istio Envoy access logs and export this data to Tempo.
+    integration: OpenTelemetry Collector is used to receive telemetry data and export this data to Loki and Tempo.
     chartName: otel-operator
   policy-reporter:
     title: policy-reporter
