@@ -71,7 +71,6 @@ export class AplOperator {
     })
 
     try {
-      await this.aplOps.migrate()
       const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
       this.d.info('Write default values to env repo')
       await writeValues(defaultValues)
