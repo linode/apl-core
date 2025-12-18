@@ -1,5 +1,7 @@
 {{- if and (.Values.metricsGenerator.enabled) (eq .Values.metricsGenerator.kind "StatefulSet") }}
 {{ $dict := dict "ctx" . "component" "metrics-generator" "memberlist" true }}
+{{- $storageClass := .Values.metricsGenerator.persistence.storageClass | default .Values.global.storageClass }}
+{{- if eq $storageClass "-" }}{{- $storageClass = "" }}{{- end }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -12,9 +14,8 @@ metadata:
   {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  minReadySeconds: 10
+  minReadySeconds: {{ .Values.metricsGenerator.minReadySeconds }}
   replicas: {{ .Values.metricsGenerator.replicas }}
-  revisionHistoryLimit: 10
   podManagementPolicy: Parallel
   updateStrategy:
     rollingUpdate:
@@ -22,6 +23,7 @@ spec:
   selector:
     matchLabels:
       {{- include "tempo.selectorLabels" $dict | nindent 6 }}
+  serviceName: metrics-generator
   template:
     metadata:
       labels:
@@ -34,6 +36,9 @@ spec:
         {{- end }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap-tempo.yaml") . | sha256sum }}
+        {{- if .Values.metricsGenerator.persistence.enabled }}
+        storage/size: {{ .Values.metricsGenerator.persistence.size | quote }}
+        {{- end }}
         {{- with .Values.tempo.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -61,8 +66,10 @@ spec:
         - args:
             - -target=metrics-generator
             - -config.file=/conf/tempo.yaml
-            - -mem-ballast-size-mbs=1024
             {{- with .Values.metricsGenerator.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.global.extraArgs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           image: {{ include "tempo.imageReference" $dict }}
@@ -82,9 +89,14 @@ spec:
               {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
-          {{- with .Values.metricsGenerator.extraEnvFrom }}
+          {{- if or .Values.global.extraEnvFrom .Values.metricsGenerator.extraEnvFrom }}
           envFrom:
-            {{- toYaml . | nindent 12 }}
+            {{- with .Values.global.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.metricsGenerator.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
           readinessProbe:
             {{- toYaml .Values.tempo.readinessProbe | nindent 12 }}
@@ -144,6 +156,11 @@ spec:
         - name: wal
           emptyDir: {{- toYaml .Values.metricsGenerator.walEmptyDir | nindent 12 }}
   {{- else }}
+  {{- if .Values.metricsGenerator.persistentVolumeClaimRetentionPolicy.enabled }}
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: {{ .Values.metricsGenerator.persistentVolumeClaimRetentionPolicy.whenDeleted }}
+    whenScaled: {{ .Values.metricsGenerator.persistentVolumeClaimRetentionPolicy.whenScaled }}
+  {{- end }}
   volumeClaimTemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -152,13 +169,15 @@ spec:
         annotations:
           {{- toYaml . | nindent 10 }}
         {{- end }}
+        {{- with .Values.ingester.persistence.labels }}
+        labels:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         name: wal
       spec:
         accessModes:
           - ReadWriteOnce
-        {{- with .Values.metricsGenerator.persistence.storageClass }}
-        storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
-        {{- end }}
+        storageClassName: {{ if $storageClass }}{{ $storageClass }}{{ else }}{{- "" }}{{ end }}
         resources:
           requests:
             storage: {{ .Values.metricsGenerator.persistence.size | quote }}

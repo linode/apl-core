@@ -6,6 +6,7 @@ metadata:
   name: {{ include "tempo.resourceName" (dict "ctx" . "component" "enterprise-federation-frontend") }}
   labels:
     {{- include "tempo.labels" (dict "ctx" . "component" "enterprise-federation-frontend") | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

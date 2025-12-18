@@ -21,5 +21,8 @@ spec:
       threshold: {{ .metadata.threshold | quote }}
       query: |
         {{- .metadata.query | nindent 8 }}
+      {{- if .metadata.customHeaders }}
+      customHeaders: {{ .metadata.customHeaders }}
+      {{- end }}
   {{- end }}
 {{- end }}

@@ -1,0 +1,57 @@
+{{- if .Values.ingress.enabled }}
+{{- $ingressApiIsStable := eq (include "tempo.ingress.isStable" .) "true" -}}
+{{- $ingressSupportsIngressClassName := eq (include "tempo.ingress.supportsIngressClassName" .) "true" -}}
+{{- $ingressSupportsPathType := eq (include "tempo.ingress.supportsPathType" .) "true" -}}
+apiVersion: {{ include "tempo.ingress.apiVersion" . }}
+kind: Ingress
+metadata:
+  name: {{ include "tempo.fullname" . }}
+  labels:
+    {{- include "tempo.labels" (dict "ctx" . "component" "gateway") | nindent 4 }}
+    {{- with .Values.ingress.labels }}
+    {{- toYaml . | nindent 4}}
+    {{- end}}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  {{- with .Values.ingress.ingressClassName }}
+  ingressClassName: {{ . }}
+  {{- end -}}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- range . }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      {{- with .secretName }}
+      secretName: {{ . }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range $.Values.ingress.hosts }}
+    - host: {{ . | quote }}
+      http:
+        paths:
+          {{- range $svcName, $paths := $.Values.ingress.paths }}
+            {{- range $paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType | default "Prefix" }}
+            backend:
+              {{- if $ingressApiIsStable }}
+              service:
+                name: {{ include "tempo.fullname" $ }}-{{ $svcName }}
+                port:
+                  number: {{ .port | default (printf "%s" (include "tempo.serverHttpListenPort" $ )) }}
+              {{- else }}
+              serviceName: {{ include "tempo.fullname" $ }}-{{ $svcName }}
+              servicePort: {{ .port | default (printf "%s" (include "tempo.serverHttpListenPort" $ )) }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+    {{- end }}
+{{- end }}
