@@ -4,6 +4,7 @@
 namespace:
   labels:
     app.kubernetes.io/part-of: otomi
+    app.kubernetes.io/instance: k8s
 
 controller:
   resources: {{- $t.resources.pipelinesController | toYaml | nindent 4 }}
