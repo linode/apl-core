@@ -23,7 +23,7 @@ appsInfo:
     integration: Argo CD is configured by App Platform to use the SSO provided by keycloak, and maps App Platform groups to Argo CD roles. The otomi-admin role is made super admin within Argo CD. The team-admin role has access to Argo CD and is admin of all team projects. Members of team roles are only allowed to administer their own projects. All Teams will automatically get access to a Git repo, and Argo CD is configured to listen to this repo. All a team has to do is to fill their repo with intended state, commit, and automation takes care of the rest.
   cert-manager:
     title: Cert-manager
-    appVersion: 1.19.1
+    appVersion: 1.19.2
     repo: https://github.com/cert-manager/cert-manager
     maintainers: The Linux Foundation
     relatedLinks:
@@ -76,7 +76,7 @@ appsInfo:
     integration: App Platform uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
-    appVersion: 2.14.0
+    appVersion: 2.14.1
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
@@ -87,7 +87,7 @@ appsInfo:
     integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. App Platform runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
   ingress-nginx:
     title: Ingress-NGINX
-    appVersion: 1.14.0
+    appVersion: 1.14.1
     repo: https://github.com/kubernetes/ingress-nginx
     maintainers: NGINX
     relatedLinks:
@@ -107,7 +107,7 @@ appsInfo:
     integration: App Platform has security best practices built in, and is designed for intrusion. Istio is used by App Platform as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of App Platform and can not be disabled.
   keycloak:
     title: Keycloak
-    appVersion: 26.4.2
+    appVersion: 26.4.7
     repo: https://github.com/keycloak/keycloak
     maintainers: Keycloak
     relatedLinks:
