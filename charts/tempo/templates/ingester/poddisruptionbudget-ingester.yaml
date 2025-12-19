@@ -1,9 +1,10 @@
-{{- if gt (int .Values.ingester.replicas) 1 }}
+{{- if and (gt (int .Values.ingester.replicas) 1) .Values.ingester.podDisruptionBudget.enabled }}
 {{ $dict := dict "ctx" . "component" "ingester" "memberlist" true }}
 apiVersion: {{ include "tempo.pdb.apiVersion" . }}
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "tempo.resourceName" $dict }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "tempo.labels" $dict | nindent 4 }}
 spec:
