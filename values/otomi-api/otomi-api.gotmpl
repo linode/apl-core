@@ -61,6 +61,8 @@ env:
     {{- $v._derived.caCert | nindent 4 }}
   {{- end }}
   EDITOR_INACTIVITY_TIMEOUT: {{ $o.editorInactivityTimeout }}
+  SSO_ISSUER: {{ $v._derived.oidcBaseUrl }}
+  SSO_JWKS_URI: {{ $v._derived.oidcBaseUrl }}/protocol/openid-connect/certs
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
@@ -77,7 +79,3 @@ podSecurityContext:
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
-
-sso:
-  issuer: {{ $v._derived.oidcBaseUrl }}
-  jwksUri: {{ $v._derived.oidcBaseUrl }}/protocol/openid-connect/certs
