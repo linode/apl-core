@@ -1681,9 +1681,6 @@ properties:
           adminPassword:
             type: string
             x-secret: '{{ randAlphaNum 20 }}'
-          adminUsername:
-            type: string
-            x-secret: ''
           postgresqlPassword:
             type: string
             description: This password was generated and cannot be changed without manual intervention.
@@ -1879,7 +1876,6 @@ properties:
             x-secret: ''
           adminUsername:
             type: string
-            x-secret: ''
           theme:
             type: string
             default: otomi
