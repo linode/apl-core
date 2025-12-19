@@ -2,7 +2,7 @@
 
 import { terminal } from './common/debug'
 import { RuntimeUpgradeContext } from './common/runtime-upgrades/runtime-upgrades'
-import { detachApplicationFromApplicationSet, pruneArgoCDImageUpdater } from './common/runtime-upgrades/v4.13.0'
+import { scaleDeployment } from './common/runtime-upgrades/v4.13.0'
 
 async function play() {
   // const version = getPackageVersion()
@@ -21,8 +21,7 @@ async function play() {
     debug: d,
   }
   try {
-    await detachApplicationFromApplicationSet(context)
-    await pruneArgoCDImageUpdater(context)
+    await scaleDeployment(context, 'argocd', 'argocd-applicationset-controller', 0)
   } catch (error) {
     d.error('Error during playground execution', error)
   }
