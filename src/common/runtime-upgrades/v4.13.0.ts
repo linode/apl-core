@@ -1,17 +1,26 @@
-import { ApiException } from '@kubernetes/client-node'
+import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { ARGOCD_APP_PARAMS, ObjectMetadataCollection } from '../constants'
 import { exec, getArgoCdApp, getK8sSecret, getPodsOfDeployment, k8s, setArgoCdAppSync } from '../k8s'
 import { RuntimeUpgradeContext } from './runtime-upgrades'
 
-async function scaleDeployment(context: RuntimeUpgradeContext, namespace: string, name: string, replicas: number) {
+export async function scaleDeployment(
+  context: RuntimeUpgradeContext,
+  namespace: string,
+  name: string,
+  replicas: number,
+) {
   const d = context.debug
   d.log(`Scaling ${name} to ${replicas} replicas...`)
   try {
-    await k8s.app().patchNamespacedDeploymentScale({
-      name,
-      namespace,
-      body: { spec: { replicas } },
-    })
+    await k8s.app().patchNamespacedDeployment(
+      {
+        name,
+        namespace,
+        body: { spec: { replicas } },
+        pretty: 'true',
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+    )
     d.log(`Scaled ${namespace}/${name} to ${replicas} replicas.`)
   } catch (err) {
     d.error(`Failed to scale ${name}:`, (err as any).body || err)
