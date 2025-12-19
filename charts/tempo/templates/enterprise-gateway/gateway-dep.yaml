@@ -11,6 +11,7 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
 spec:
   replicas: {{ .Values.enterpriseGateway.replicas }}
+  revisionHistoryLimit: {{ .Values.tempo.revisionHistoryLimit }}
   selector:
     matchLabels:
       {{- include "tempo.selectorLabels" $dict | nindent 6 }}
@@ -49,6 +50,9 @@ spec:
             - "-config.expand-env=true"
             - "-config.file=/conf/tempo.yaml"
             {{- range $key, $value := .Values.enterpriseGateway.extraArgs }}
+            - "-{{ $key }}={{ $value }}"
+            {{- end }}
+            {{- range $key, $value := .Values.global.extraArgs }}
             - "-{{ $key }}={{ $value }}"
             {{- end }}
           volumeMounts:

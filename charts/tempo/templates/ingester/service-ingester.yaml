@@ -1,8 +1,12 @@
 {{- $dict := dict "ctx" . "component" "ingester" true }}
+{{- $zonesMap := include "ingester.zoneAwareReplicationMap" $dict | fromYaml -}}
+{{- range $zoneName, $rolloutZone := $zonesMap -}}
+{{- with $ -}}
+{{- $_ := set $dict "rolloutZoneName" $zoneName -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "tempo.resourceName" $dict }}
+  name: {{ template "ingester.resourceName" $dict }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "tempo.labels" $dict | nindent 4 }}
@@ -11,17 +15,24 @@ metadata:
     {{- tpl (toYaml . | nindent 4) $ }}
   {{- end }}
 spec:
+  type: {{ .Values.ingester.service.type }}
+  internalTrafficPolicy: {{ .Values.ingester.service.internalTrafficPolicy }}
+  ipFamilies: {{ .Values.tempo.service.ipFamilies }}
+  ipFamilyPolicy: {{ .Values.tempo.service.ipFamilyPolicy }}
   ports:
     - name: http-metrics
-      port: 3100
+      port: 3200
       protocol: TCP
-      targetPort: 3100
+      targetPort: http-metrics
     - name: grpc
       port: 9095
       protocol: TCP
-      targetPort: 9095
+      targetPort: grpc
       {{- if .Values.ingester.appProtocol.grpc }}
       appProtocol: {{ .Values.ingester.appProtocol.grpc }}
       {{- end }}
   selector:
-    {{- include "tempo.selectorLabels" $dict | nindent 4 }}
+    {{- include "ingester.selectorLabels" $dict | nindent 4 }}
+---
+{{ end }}
+{{ end }}

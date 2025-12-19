@@ -1,0 +1,3 @@
+{{- if and .Values.ingester.persistence.enabled .Values.ingester.persistence.enableStatefulSetRecreationForSizeChange -}}
+  {{- include "tempo.statefulset.recreateOnSizeChangeHook" (dict "context" . "pathToStatefulsetTemplate" "/ingester/statefulset-ingester.yaml") -}}
+{{- end -}}
