@@ -50,7 +50,7 @@ manager:
     imagePullPolicy: IfNotPresent
   collectorImage:
     repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
-    tag: 0.138.0
+    tag: 0.140.1
   opampBridgeImage:
     repository: ""
     tag: ""
@@ -98,7 +98,6 @@ manager:
   # operator.targetallocator.mtls: false
   # operator.targetallocator.fallbackstrategy: false
   # operator.collector.targetallocatorcr: false
-  # operator.sidecarcontainers.native: false
   # operator.golang.flags: false
   # operator.collector.default.config: false
   ports:
@@ -240,7 +239,7 @@ kubeRBACProxy:
   enabled: true
   image:
     repository: quay.io/brancz/kube-rbac-proxy
-    tag: v0.19.1
+    tag: v0.20.0
   ports:
     proxyPort: 8443
   resources: {}
