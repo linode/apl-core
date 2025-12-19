@@ -17,7 +17,6 @@ export async function scaleDeployment(
         name,
         namespace,
         body: { spec: { replicas } },
-        pretty: 'true',
       },
       setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
     )
