@@ -52,6 +52,39 @@ spec:
           replacement: "{{ $.ctx.Release.Namespace }}/{{ $.component }}"
           targetLabel: job
         {{- if kindIs "string" .clusterLabel }}
+        - action: replace
+          replacement: "{{ .clusterLabel | default (include "tempo.clusterName" $.ctx) }}"
+          targetLabel: cluster
+        {{- end }}
+        {{- with .relabelings }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .metricRelabelings }}
+      metricRelabelings:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .scheme }}
+      scheme: {{ . }}
+      {{- end }}
+      {{- with .tlsConfig }}
+      tlsConfig:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- if and (eq $.component "distributor") (eq $.ctx.Values.distributor.config.cost_attribution.enabled true) }}
+    - port: http-metrics
+      path: /usage_metrics
+      {{- with .interval }}
+      interval: {{ . }}
+      {{- end }}
+      {{- with .scrapeTimeout }}
+      scrapeTimeout: {{ . }}
+      {{- end }}
+      relabelings:
+        - action: replace
+          sourceLabels: [job]
+          replacement: "{{ $.ctx.Release.Namespace }}/{{ $.component }}-usage"
+          targetLabel: job
+        {{- if kindIs "string" .clusterLabel }}
         - replacement: "{{ .clusterLabel | default (include "tempo.clusterName" $.ctx) }}"
           targetLabel: cluster
         {{- end }}
@@ -69,6 +102,7 @@ spec:
       tlsConfig:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+    {{- end }}
 {{- end -}}
 {{- end -}}
 {{- end -}}

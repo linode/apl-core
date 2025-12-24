@@ -1,4 +1,4 @@
-{{- if gt (int .Values.gateway.replicas) 1 }}
+{{- if and (gt (int .Values.gateway.replicas) 1) .Values.gateway.podDisruptionBudget.enabled }}
 {{ $dict := dict "ctx" . "component" "gateway" }}
 apiVersion: {{ include "tempo.pdb.apiVersion" . }}
 kind: PodDisruptionBudget
