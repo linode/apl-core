@@ -90,6 +90,12 @@ app.kubernetes.io/part-of: memberlist
 app.kubernetes.io/version: {{ .ctx.Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .ctx.Release.Service }}
+{{- if .ctx.Values.global.commonLabels }}
+{{ toYaml .ctx.Values.global.commonLabels | indent 0 }}
+{{- end }}
+{{- if .ctx.Values.global.labels }}
+{{ toYaml .ctx.Values.global.labels | indent 0 }}
+{{- end }}
 {{- end -}}
 
 {{/*
@@ -189,7 +195,7 @@ Renders the overrides config
 */}}
 {{- define "tempo.overridesConfig" -}}
 overrides:
-{{ toYaml .Values.overrides | indent 2 }}
+{{ toYaml .Values.per_tenant_overrides | indent 2 }}
 {{- end -}}
 
 {{/*
@@ -227,7 +233,7 @@ configMap:
 Internal servers http listen port - derived from Loki default
 */}}
 {{- define "tempo.serverHttpListenPort" -}}
-{{ (((.Values.tempo).structuredConfig).server).http_listen_port | default "3100" }}
+{{ (((.Values.tempo).structuredConfig).server).http_listen_port | default "3200" }}
 {{- end -}}
 
 {{/*
@@ -267,6 +273,12 @@ app.kubernetes.io/component: {{ .component }}
 {{- if .memberlist }}
 app.kubernetes.io/part-of: memberlist
 {{- end -}}
+{{- if .ctx.Values.global.commonLabels }}
+{{ toYaml .ctx.Values.global.commonLabels | indent 0 }}
+{{- end }}
+{{- if .ctx.Values.global.podLabels }}
+{{ toYaml .ctx.Values.global.podLabels | indent 0 }}
+{{- end }}
 {{- end -}}
 
 {{/*
@@ -297,4 +309,163 @@ Cluster name that shows up in dashboard metrics
 */}}
 {{- define "tempo.clusterName" -}}
 {{ (include "tempo.calculatedConfig" . | fromYaml).cluster_name | default .Release.Name }}
+{{- end -}}
+
+{{- define "tempo.statefulset.recreateOnSizeChangeHook" -}}
+  {{- $renderedStatefulSets := list -}}
+  {{- range $renderedStatefulSet := include (print .context.Template.BasePath .pathToStatefulsetTemplate) .context | splitList "---" -}}
+    {{- with $renderedStatefulSet | fromYaml -}}
+      {{- $renderedStatefulSets = append $renderedStatefulSets . -}}
+    {{- end }}
+  {{- end -}}
+  {{- if $renderedStatefulSets }}
+    {{- range $newStatefulSet := $renderedStatefulSets -}}
+      {{- $currentStatefulset := dict -}}
+      {{- if $newStatefulSet.spec.volumeClaimTemplates }}
+        {{- $currentStatefulset = lookup $newStatefulSet.apiVersion $newStatefulSet.kind $newStatefulSet.metadata.namespace $newStatefulSet.metadata.name -}}
+        {{- $needsRecreation := false -}}
+        {{- $templates := dict -}}
+        {{- if $currentStatefulset -}}
+          {{- if ne (len $newStatefulSet.spec.volumeClaimTemplates) (len $currentStatefulset.spec.volumeClaimTemplates) -}}
+            {{- $needsRecreation = true -}}
+          {{- end -}}
+          {{- range $index, $newVolumeClaimTemplate := $newStatefulSet.spec.volumeClaimTemplates -}}
+            {{- $currentVolumeClaimTemplateSpec := dict -}}
+              {{- range $oldVolumeClaimTemplate := $currentStatefulset.spec.volumeClaimTemplates -}}
+                {{- if eq $oldVolumeClaimTemplate.metadata.name $newVolumeClaimTemplate.metadata.name -}}
+                  {{- $currentVolumeClaimTemplateSpec = $oldVolumeClaimTemplate.spec -}}
+                {{- end -}}
+              {{- end }}
+              {{- $newVolumeClaimTemplateStorageSize := $newVolumeClaimTemplate.spec.resources.requests.storage -}}
+              {{- if not $currentVolumeClaimTemplateSpec -}}
+                {{- $needsRecreation = true -}}
+              {{- else -}}
+                {{- if ne $newVolumeClaimTemplateStorageSize $currentVolumeClaimTemplateSpec.resources.requests.storage -}}
+                  {{- $needsRecreation = true -}}
+                  {{- $templates = set $templates $newVolumeClaimTemplate.metadata.name $newVolumeClaimTemplateStorageSize -}}
+              {{- end -}}
+            {{- end -}}
+          {{- end -}}
+        {{- end -}}
+        {{- if $needsRecreation }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $newStatefulSet.metadata.name }}-recreate
+  namespace: {{ $newStatefulSet.metadata.namespace }}
+  labels:
+    {{- $newStatefulSet.metadata.labels | toYaml | nindent 4 }}
+    app.kubernetes.io/component: statefulset-recreate-job
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      name: {{ $newStatefulSet.metadata.name }}-recreate
+      labels:
+        {{- $newStatefulSet.metadata.labels | toYaml | nindent 8 }}
+    spec:
+      serviceAccountName: {{ $newStatefulSet.metadata.name }}-recreate
+      restartPolicy: OnFailure
+      containers:
+        - name: recreate
+          image: {{ printf "%s/kubectl:%s" (coalesce $.context.Values.global.image.registry "registry.k8s.io") $.context.Capabilities.KubeVersion.Version }}
+          command:
+            - kubectl
+            - delete
+            - statefulset
+            - {{ $newStatefulSet.metadata.name }}
+            - --cascade=orphan
+        {{- range $index := until (int $currentStatefulset.spec.replicas) }}
+          {{- range $template, $size := $templates }}
+        - name: patch-pvc-{{ $template }}-{{ $index }}
+          image: {{ printf "%s/kubectl:%s" (coalesce $.context.Values.global.image.registry "registry.k8s.io") $.context.Capabilities.KubeVersion.Version }}
+          command:
+            - kubectl
+            - patch
+            - pvc
+            - --namespace={{ $newStatefulSet.metadata.namespace }}
+            - {{ printf "%s-%s-%d" $template $newStatefulSet.metadata.name $index }}
+            - --type='json'
+            - '-p=[{"op": "replace", "path": "/spec/resources/requests/storage", "value": "{{ $size }}"}]'
+          {{- end }}
+        {{- end }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $newStatefulSet.metadata.name }}-recreate
+  namespace: {{ $newStatefulSet.metadata.namespace }}
+  labels:
+    {{- $newStatefulSet.metadata.labels | toYaml | nindent 4 }}
+    app.kubernetes.io/component: statefulset-recreate-job
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $newStatefulSet.metadata.name }}-recreate
+  namespace: {{ $newStatefulSet.metadata.namespace }}
+  labels:
+    {{- $newStatefulSet.metadata.labels | toYaml | nindent 4 }}
+    app.kubernetes.io/component: statefulset-recreate-job
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+rules:
+  - apiGroups:
+      - apps
+    resources:
+      - statefulsets
+    resourceNames:
+      - {{ $newStatefulSet.metadata.name }}
+    verbs:
+      - delete
+  {{- if $templates }}
+  - apiGroups:
+      - v1
+    resources:
+      - persistentvolumeclaims
+    resourceNames:
+    {{- range $index := until (int $currentStatefulset.spec.replicas) }}
+      {{- range $template := $templates | keys }}
+      - {{ printf "%s-%s-%d" $template $newStatefulSet.metadata.name $index }}
+      {{- end }}
+    {{- end }}
+    verbs:
+      - patch
+  {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $newStatefulSet.metadata.name }}-recreate
+  namespace: {{ $newStatefulSet.metadata.namespace }}
+  labels:
+    {{- $newStatefulSet.metadata.labels | toYaml | nindent 4 }}
+    app.kubernetes.io/component: statefulset-recreate-job
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+subjects:
+  - kind: ServiceAccount
+    name: {{ $newStatefulSet.metadata.name }}-recreate
+    namespace: {{ $newStatefulSet.metadata.namespace }}
+roleRef:
+  kind: Role
+  name: {{ $newStatefulSet.metadata.name }}-recreate
+  apiGroup: rbac.authorization.k8s.io
+---
+        {{- end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
 {{- end -}}
