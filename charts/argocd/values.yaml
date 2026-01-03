@@ -2023,7 +2023,7 @@ server:
       # -- Repository to use for extension installer image
       repository: "quay.io/argoprojlabs/argocd-extension-installer"
       # -- Tag to use for extension installer image
-      tag: "v0.0.8"
+      tag: "v0.0.9"
       # -- Image pull policy for extensions
       # @default -- `""` (defaults to global.image.imagePullPolicy)
       imagePullPolicy: ""
@@ -2170,6 +2170,8 @@ server:
   ## Readiness and liveness probes for default backend
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   readinessProbe:
+    # -- Enable Kubernetes readiness probe for default backend
+    enabled: true
     # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
     failureThreshold: 3
     # -- Number of seconds after the container has started before [probe] is initiated
@@ -2182,6 +2184,8 @@ server:
     timeoutSeconds: 1
 
   livenessProbe:
+    # -- Enable Kubernetes liveness probe for default backend
+    enabled: true
     # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
     failureThreshold: 3
     # -- Number of seconds after the container has started before [probe] is initiated
@@ -2660,7 +2664,7 @@ server:
         #           value: custom-value
 
   # Gateway API BackendTLSPolicy configuration
-  # NOTE: BackendTLSPolicy is in EXPERIMENTAL status (v1alpha3)
+  # NOTE: BackendTLSPolicy support is in EXPERIMENTAL status
   # Required for HTTPS backends when using Gateway API
   # Not all Gateway controllers support this resource (e.g., Cilium does not support it yet)
   backendTLSPolicy:
@@ -2937,9 +2941,11 @@ repoServer:
       drop:
       - ALL
 
-  ## Readiness and liveness probes for default backend
+  ## Readiness and liveness probes for Repo Server
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   readinessProbe:
+    # -- Enable Kubernetes readiness probe for Repo Server
+    enabled: true
     # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
     failureThreshold: 3
     # -- Number of seconds after the container has started before [probe] is initiated
@@ -2952,6 +2958,8 @@ repoServer:
     timeoutSeconds: 1
 
   livenessProbe:
+    # -- Enable Kubernetes liveness probe for Repo Server
+    enabled: true
     # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
     failureThreshold: 3
     # -- Number of seconds after the container has started before [probe] is initiated
