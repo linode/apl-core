@@ -56,10 +56,9 @@ resources:
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: harbor-core-secret-key
+    name: harbor-core-secret
   data:
-    tls.crt: {{ $cm.customRootCA | b64enc }}
-    tls.key: {{ $cm.customRootCAKey | b64enc}}
+    secret: "{{ randAlphaNum 16 | b64enc }}"
 {{- end }}
 - apiVersion: v1
   kind: Secret

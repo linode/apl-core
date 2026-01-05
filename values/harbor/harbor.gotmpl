@@ -30,8 +30,7 @@ core:
     {{- end }}
 
   resources: {{- $h.resources.core | toYaml | nindent 4 }}
-  existingSecretKey: harbor-core-secret-key
-  # secretName: {{ $harborSecretName }}
+  existingSecret: harbor-core-secret
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
 
 database:
