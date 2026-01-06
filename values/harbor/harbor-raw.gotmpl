@@ -58,7 +58,7 @@ resources:
   metadata:
     name: harbor-core-secret
   data:
-    secret: "{{ randAlphaNum 16 | b64enc }}"
+    secret: "{{ $h.core.secret | b64enc }}"
 {{- end }}
 - apiVersion: v1
   kind: Secret
