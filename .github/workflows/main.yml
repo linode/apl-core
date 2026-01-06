@@ -5,9 +5,7 @@ on:
       - '**'
     tags-ignore:
       - '*'
-    repository_dispatch:
-      types:
-        - build_image
+  workflow_dispatch: ~
 env:
   CACHE_REGISTRY: ghcr.io
   CACHE_REPO: linode/apl-core
