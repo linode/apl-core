@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- $cm := $v.apps | get "cert-manager" }}
 {{- $h := $v.apps.harbor }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $otomiAdmin := "otomi-admin" }}
@@ -32,14 +33,53 @@ resources:
     issuerRef:
       name: custom-ca
       kind: ClusterIssuer
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: harbor-admin-password
+  data:
+    HARBOR_ADMIN_PASSWORD: "{{ $h.adminPassword | b64enc }}"
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: harbor-registry-credentials
+  data:
+    REGISTRY_PASSWD: "{{ $h.registry.credentials.password | b64enc }}"
+    REGISTRY_HTPASSWD: "{{ $h.registry.credentials.htpasswd | b64enc }}"
+{{- if ne $h.secretKey nil }}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: harbor-secret-key
+  data:
+    secretKey: "{{ $h.secretKey | b64enc }}"
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: harbor-core-secret
+  data:
+    secret: "{{ $h.core.secret | b64enc }}"
+{{- end }}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: harbor-jobservice-secret
+  data:
+    JOBSERVICE_SECRET: "{{ $h.jobservice.secret | default "" | b64enc }}"
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: harbor-registry-http
+  data:
+    REGISTRY_HTTP_SECRET: "{{ $h.registry.secret | default "" | b64enc }}"
 {{- if eq $obj.type "minioLocal" }}
 - apiVersion: v1
   kind: Secret
   metadata:
     name: minio-creds
   data:
-    MINIO_ACCESS_KEY: "{{ $otomiAdmin | b64enc }}"
-    MINIO_SECRET_KEY: "{{ $v.otomi.adminPassword | b64enc }}"
+    REGISTRY_STORAGE_S3_ACCESSKEY: "{{ $otomiAdmin | b64enc }}"
+    REGISTRY_STORAGE_S3_SECRETKEY: "{{ $v.otomi.adminPassword | b64enc }}"
 {{- end }}
 {{- if eq $obj.type "linode" }}
 - apiVersion: v1
@@ -47,6 +87,6 @@ resources:
   metadata:
     name: linode-creds
   data:
-    S3_STORAGE_ACCOUNT: "{{ $obj.linode.accessKeyId | b64enc }}"
-    S3_STORAGE_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
+    REGISTRY_STORAGE_S3_ACCESSKEY: "{{ $obj.linode.accessKeyId | b64enc }}"
+    REGISTRY_STORAGE_S3_SECRETKEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
 {{- end }}
