@@ -1,5 +1,7 @@
 {{- $v := .Values }}
 {{- $l := $v.apps | get "loki" }}
+{{- $otomiAdmin := "otomi-admin" }}
+{{- $obj := $v.obj.provider }}
 {{- if $v.otomi.isMultitenant }}
 resources:
   - apiVersion: v1
@@ -10,4 +12,28 @@ resources:
       name: reverse-proxy-auth-config
     data:
       authn.yaml: {{ tpl (readFile "auth-config.gotmpl") (dict "adminPassword" $l.adminPassword "teams" $v.teamConfig) | b64enc }}
-{{- end }}
+  {{- if eq $obj.type "linode" }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      labels:
+        app: loki
+      name: loki-s3-linode-credentials
+    type: Opaque
+    data:
+      AWS_ACCESS_KEY_ID: "{{ $obj.linode.accessKeyId | b64enc }}"
+      AWS_SECRET_ACCESS_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
+  {{- end }}
+  {{- if eq $obj.type "minioLocal" }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      labels:
+        app: loki
+      name: loki-s3-minio-credentials
+    type: Opaque
+    data:
+      AWS_ACCESS_KEY_ID: "{{ $otomiAdmin | b64enc }}"
+      AWS_SECRET_ACCESS_KEY: "{{ $v.otomi.adminPassword | b64enc }}"
+  {{- end }}
+  {{- end }}
