@@ -14,9 +14,9 @@ fullnameOverride: harbor
 # logLevel - debug, info, warning, error or fatal
 logLevel: warning
 
-harborAdminPassword: {{ $h.adminPassword | quote }}
+existingSecretAdminPassword: harbor-admin-password
 nameOverride: harbor
-secretKey: {{ $h | get "secretKey" nil }}
+existingSecretSecretKey: harbor-secret-key
 
 updateStrategy:
     type: Recreate
@@ -30,8 +30,7 @@ core:
     {{- end }}
 
   resources: {{- $h.resources.core | toYaml | nindent 4 }}
-  secret: {{ $h | get "core.secret" nil | quote }}
-  # secretName: {{ $harborSecretName }}
+  existingSecret: harbor-core-secret
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
 
 database:
@@ -68,7 +67,7 @@ jobservice:
   jobLoggers:
     - stdout
   resources: {{- $h.resources.jobservice | toYaml | nindent 4 }}
-  secret: {{ $h | get "jobservice.secret" nil | quote }}
+  existingSecret: harbor-jobservice-secret
 
 metrics:
   serviceMonitor:
@@ -131,16 +130,14 @@ persistence:
       bucket: harbor
       region: us-east-1
       regionendpoint: http://minio.minio.svc.cluster.local:9000
-      accesskey: otomi-admin
-      secretkey: {{ $v.otomi.adminPassword | quote }}
+      existingSecret: minio-creds
       secure: false
       v4auth: true
       {{- end }}
       {{- if eq $obj.type "linode" }}
       bucket: {{ $obj.linode.buckets.harbor }}
       regionendpoint: https://{{ $obj.linode.region }}.linodeobjects.com
-      accesskey: {{ $obj.linode.accessKeyId }}
-      secretkey: {{ $obj.linode.secretAccessKey | quote }}
+      existingSecret: linode-creds
       region: {{ $obj.linode.region }}
       encrypt: false
       secure: true
@@ -174,7 +171,7 @@ redis:
 
 registry:
   priorityClassName: otomi-critical
-  secret: {{ $h | get "registry.secret" nil | quote }}
+  existingSecret: harbor-registry-http
 
   registry:
       {{- if $v.otomi.linodeLkeImageRepository }}
@@ -191,8 +188,7 @@ registry:
   relativeurls: false
   credentials:
     username: {{ $h.registry.credentials.username }}
-    password: {{ $h.registry.credentials.password | quote }}
-    htpasswdString: {{ $h.registry.credentials.htpasswd }}
+    existingSecret: harbor-registry-credentials
 
 trivy:
   priorityClassName: otomi-critical
