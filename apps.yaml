@@ -196,7 +196,7 @@ appsInfo:
     integration: App Platform installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in App Platform capable of using object storage for data persistence.
   prometheus:
     title: Prometheus
-    appVersion: 3.7.3
+    appVersion: 3.8.0
     repo: https://github.com/prometheus/prometheus
     maintainers: Prometheus
     relatedLinks:
