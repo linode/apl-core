@@ -7,7 +7,7 @@
 {{- end }}
 {{- $urls = append $urls $v.gitOps.teamRepoUrl }}
 {{- $urls = append $urls $v.gitOps.valuesRepoUrl }}
-{{- $urls = uniq $urls }}
+{{- $urls = sortAlpha (uniq $urls) }}
 
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
@@ -21,9 +21,8 @@ spec:
   description: ArgoCD project for team {{ $v.teamId }}
   # Allow manifests to deploy from any Git repos
   sourceRepos:
-  {{- range $i, $url := $urls }}
-  - {{ $url }}
-  {{- end }}
+  {{- $urls | toYaml | nindent 4 }}
+
   # Only permit applications to deploy to the guestbook namespace in the same cluster
   destinations:
   - namespace: team-{{ $v.teamId }}
