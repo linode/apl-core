@@ -3,7 +3,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.18.0
+    controller-gen.kubebuilder.io/version: v0.19.0
+    helm.sh/resource-policy: keep
   name: objectstores.barmancloud.cnpg.io
 spec:
   group: barmancloud.cnpg.io
@@ -391,6 +392,19 @@ spec:
                 description: The configuration for the sidecar that runs in the instance
                   pods
                 properties:
+                  additionalContainerArgs:
+                    description: |-
+                      AdditionalContainerArgs is an optional list of command-line arguments
+                      to be passed to the sidecar container when it starts.
+                      The provided arguments are appended to the container’s default arguments.
+                    items:
+                      type: string
+                    type: array
+                    x-kubernetes-validations:
+                    - message: do not set --log-level in additionalContainerArgs;
+                        use spec.instanceSidecarConfiguration.logLevel
+                      reason: FieldValueForbidden
+                      rule: '!self.exists(a, a.startsWith(''--log-level''))'
                   env:
                     description: The environment to be explicitly passed to the sidecar
                     items:
@@ -398,8 +412,9 @@ spec:
                         in a Container.
                       properties:
                         name:
-                          description: Name of the environment variable. Must be a
-                            C_IDENTIFIER.
+                          description: |-
+                            Name of the environment variable.
+                            May consist of any printable ASCII characters except '='.
                           type: string
                         value:
                           description: |-
@@ -457,6 +472,43 @@ spec:
                               - fieldPath
                               type: object
                               x-kubernetes-map-type: atomic
+                            fileKeyRef:
+                              description: |-
+                                FileKeyRef selects a key of the env file.
+                                Requires the EnvFiles feature gate to be enabled.
+                              properties:
+                                key:
+                                  description: |-
+                                    The key within the env file. An invalid key will prevent the pod from starting.
+                                    The keys defined within a source may consist of any printable ASCII characters except '='.
+                                    During Alpha stage of the EnvFiles feature gate, the key size is limited to 128 characters.
+                                  type: string
+                                optional:
+                                  default: false
+                                  description: |-
+                                    Specify whether the file or its key must be defined. If the file or key
+                                    does not exist, then the env var is not published.
+                                    If optional is set to true and the specified key does not exist,
+                                    the environment variable will not be set in the Pod's containers.
+
+                                    If optional is set to false and the specified key does not exist,
+                                    an error will be returned during Pod creation.
+                                  type: boolean
+                                path:
+                                  description: |-
+                                    The path within the volume from which to select the file.
+                                    Must be relative and may not contain the '..' path or start with '..'.
+                                  type: string
+                                volumeName:
+                                  description: The name of the volume mount containing
+                                    the env file.
+                                  type: string
+                              required:
+                              - key
+                              - path
+                              - volumeName
+                              type: object
+                              x-kubernetes-map-type: atomic
                             resourceFieldRef:
                               description: |-
                                 Selects a resource of the container: only resources limits and requests
@@ -511,6 +563,17 @@ spec:
                       - name
                       type: object
                     type: array
+                  logLevel:
+                    default: info
+                    description: 'The log level for PostgreSQL instances. Valid values
+                      are: `error`, `warning`, `info` (default), `debug`, `trace`'
+                    enum:
+                    - error
+                    - warning
+                    - info
+                    - debug
+                    - trace
+                    type: string
                   resources:
                     description: Resources define cpu/memory requests and limits for
                       the sidecar that runs in the instance pods.
@@ -520,7 +583,7 @@ spec:
                           Claims lists the names of resources, defined in spec.resourceClaims,
                           that are used by this container.
 
-                          This is an alpha field and requires enabling the
+                          This field depends on the
                           DynamicResourceAllocation feature gate.
 
                           This field is immutable. It can only be set for containers.
@@ -609,7 +672,11 @@ spec:
                         restored.
                       format: date-time
                       type: string
-                    lastSuccussfulBackupTime:
+                    lastFailedBackupTime:
+                      description: The last failed backup time
+                      format: date-time
+                      type: string
+                    lastSuccessfulBackupTime:
                       description: The last successful backup time
                       format: date-time
                       type: string
@@ -626,4 +693,4 @@ spec:
     storage: true
     subresources:
       status: {}
-{{ end }}
+{{- end }}
