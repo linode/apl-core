@@ -1,6 +1,6 @@
 # cloudnative-pg
 
-![Version: 0.26.1](https://img.shields.io/badge/Version-0.26.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.27.1](https://img.shields.io/badge/AppVersion-1.27.1-informational?style=flat-square)
+![Version: 0.27.0](https://img.shields.io/badge/Version-0.27.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.28.0](https://img.shields.io/badge/AppVersion-1.28.0-informational?style=flat-square)
 
 CloudNativePG Operator Helm Chart
 
@@ -80,4 +80,3 @@ CloudNativePG Operator Helm Chart
 | topologySpreadConstraints | list | `[]` | Topology Spread Constraints for the operator to be installed. |
 | updateStrategy | object | `{}` | Update strategy for the operator. ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy For example:  type: RollingUpdate  rollingUpdate:    maxSurge: 25%    maxUnavailable: 25% |
 | webhook | object | `{"livenessProbe":{"initialDelaySeconds":3},"mutating":{"create":true,"failurePolicy":"Fail"},"port":9443,"readinessProbe":{"initialDelaySeconds":3},"startupProbe":{"failureThreshold":6,"periodSeconds":5},"validating":{"create":true,"failurePolicy":"Fail"}}` | The webhook configuration. |
-
