@@ -33,7 +33,7 @@ appsInfo:
     integration: Cert-manager is used by App Platform to automatically create and rotate TLS certificates for service endpoints. You may bring your own CA, or let App Platform create one for you (default). It is recommended to use Let's Encrypt for production certificates. Setting cert-manager to use Let's Encrypt requires DNS availability of the requesting domains, and forces App Platform to install external-dns. Because a lot of DNS settings are used by other App Platform contexts, most DNS configuration is found under settings/dns.
   cnpg:
     title: CloudNative PostgreSQL Operator
-    appVersion: 1.27.1
+    appVersion: 1.28.0
     repo: https://github.com/cloudnative-pg/cloudnative-pg
     maintainers: EDB
     relatedLinks:
@@ -97,7 +97,7 @@ appsInfo:
     integration: App Platform integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
-    appVersion: 1.27.3
+    appVersion: 1.28.2
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
