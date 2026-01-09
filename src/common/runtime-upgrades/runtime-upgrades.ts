@@ -135,11 +135,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           await updateDbCollation('harbor', 'harbor-otomi-db', 'registry', context.debug)
         },
       },
-      'istio-system-istiod': {
-        post: async () => {
-          await detectAndRestartOutdatedIstioSidecars(k8s.core())
-        },
-      },
     },
   },
   {
@@ -161,6 +156,11 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       'gitea-gitea': {
         post: async (context: RuntimeUpgradeContext) => {
           await resetGiteaPasswordValidity(context)
+        },
+      },
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
     },
