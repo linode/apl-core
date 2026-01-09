@@ -212,7 +212,7 @@ describe('AplOperator', () => {
       expect(mockAplOps.applyAsAppsTeams).toHaveBeenCalled()
       expect(mockAplOps.apply).not.toHaveBeenCalled()
     })
-    test('should run migrate and but not validate when run is reconcile', async () => {
+    test('should run migrate but not validate when run is reconcile', async () => {
       Object.defineProperty(aplOperator, 'isApplying', { value: false, configurable: true })
 
       await aplOperator.runApplyIfNotBusy(ApplyTrigger.Reconcile, false)

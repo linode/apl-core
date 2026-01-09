@@ -63,7 +63,7 @@ controller:
     enable-opentelemetry: {{ $app.tracing.enabled }}
     otel-sampler: AlwaysOn
     otel-sampler-ratio: {{ $app.tracing.samplingRatio }}
-    otlp-collector-host: otel-collector-collector.otel.svc
+    otlp-collector-host: platform-otlp-collector.otel.svc
     otlp-collector-port: 4317
     opentelemetry-config: "/etc/nginx/opentelemetry.toml"
     opentelemetry-operation-name: "HTTP $request_method $service_name $uri"

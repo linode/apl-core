@@ -1,9 +1,14 @@
+{{- $autoscalingv2 := .Capabilities.APIVersions.Has "autoscaling/v2" -}}
 {{- if .Values.gateway.autoscaling.enabled }}
-{{- $apiVersion := include "loki.hpa.apiVersion" . -}}
-apiVersion: {{ $apiVersion }}
+{{- if $autoscalingv2 }}
+apiVersion: autoscaling/v2
+{{- else }}
+apiVersion: autoscaling/v2beta1
+{{- end }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "loki.gatewayFullname" . }}
+  namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.gatewayLabels" . | nindent 4 }}
 spec:
@@ -13,12 +18,16 @@ spec:
     name: {{ include "loki.gatewayFullname" . }}
   minReplicas: {{ .Values.gateway.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.gateway.autoscaling.maxReplicas }}
+  {{- with .Values.gateway.autoscaling.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   metrics:
   {{- with .Values.gateway.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
-        {{- if (eq $apiVersion "autoscaling/v2") }}
+        {{- if $autoscalingv2 }}
         target:
           type: Utilization
           averageUtilization: {{ . }}
@@ -30,24 +39,12 @@ spec:
     - type: Resource
       resource:
         name: cpu
-        {{- if (eq $apiVersion "autoscaling/v2") }}
+        {{- if $autoscalingv2 }}
         target:
           type: Utilization
           averageUtilization: {{ . }}
         {{- else }}
         targetAverageUtilization: {{ . }}
         {{- end }}
-  {{- end }}
-  {{- with .Values.gateway.autoscaling.customMetrics }}
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-  {{- if .Values.gateway.autoscaling.behavior.enabled }}
-  behavior:
-    {{- with .Values.gateway.autoscaling.behavior.scaleDown }}
-    scaleDown: {{ toYaml . | nindent 6 }}
-    {{- end }}
-    {{- with .Values.gateway.autoscaling.behavior.scaleUp }}
-    scaleUp: {{ toYaml . | nindent 6 }}
-    {{- end }}
   {{- end }}
 {{- end }}

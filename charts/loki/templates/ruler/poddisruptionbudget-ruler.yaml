@@ -1,4 +1,5 @@
-{{- if and .Values.ruler.enabled (gt (int .Values.ruler.replicas) 1) }}
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if and $isDistributed (gt (int .Values.ruler.replicas) 1) }}
 {{- if kindIs "invalid" .Values.ruler.maxUnavailable }}
 {{- fail "`.Values.ruler.maxUnavailable` must be set when `.Values.ruler.replicas` is greater than 1." }}
 {{- else }}
@@ -6,6 +7,7 @@ apiVersion: {{ include "loki.pdb.apiVersion" . }}
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "loki.rulerFullname" . }}
+  namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.rulerLabels" . | nindent 4 }}
 spec:
@@ -14,9 +16,6 @@ spec:
       {{- include "loki.rulerSelectorLabels" . | nindent 6 }}
   {{- with .Values.ruler.maxUnavailable }}
   maxUnavailable: {{ . }}
-  {{- end }}
-  {{- with .Values.ruler.minAvailable }}
-  minAvailable: {{ . }}
   {{- end }}
 {{- end }}
 {{- end }}

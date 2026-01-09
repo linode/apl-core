@@ -46,7 +46,7 @@ meshConfig:
     {{- if $i.tracing.enabled }}
     - opentelemetry:
         port: 4317
-        service: otel-collector-collector.otel.svc.cluster.local
+        service: platform-otlp-collector.otel.svc.cluster.local
       name: otel-tracing
     {{- end }}
     {{- with $i | get "extensionProviders" nil }}
