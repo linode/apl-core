@@ -605,14 +605,6 @@
                 false
               ]
             },
-            "operator.sidecarcontainers.native": {
-              "type": "boolean",
-              "default": false,
-              "title": "Inject sidecar containers using native K8s API",
-              "examples": [
-                false
-              ]
-            },
             "operator.golang.flags": {
               "type": "boolean",
               "default": false,
