@@ -8,10 +8,10 @@ metadata:
     app.kubernetes.io/instance: release-name
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: release-name-crds
-    app.kubernetes.io/version: 3.5.2
-    helm.sh/chart: crds-3.5.2
+    app.kubernetes.io/version: 3.6.2
+    helm.sh/chart: crds-3.6.2
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: updaterequests.kyverno.io
 spec:
   group: kyverno.io
@@ -404,7 +404,7 @@ spec:
             - state
             type: object
         type: object
-    served: true
+    served: false
     storage: false
     subresources:
       status: {}
