@@ -80,12 +80,12 @@ deploymentStrategy:
 readinessProbe:
   httpGet:
     path: /api/health
-    port: 3000
+    port: grafana
 
 livenessProbe:
   httpGet:
     path: /api/health
-    port: 3000
+    port: grafana
   initialDelaySeconds: 60
   timeoutSeconds: 30
   failureThreshold: 10
@@ -350,6 +350,12 @@ route:
 
     ## Additional custom rules that can be added to the route
     additionalRules: []
+
+    ## httpsRedirect adds a filter for redirecting to https (HTTP 301 Moved Permanently).
+    ## To redirect HTTP traffic to HTTPS, you need to have a Gateway with both HTTP and HTTPS listeners.
+    ## Matches and filters do not take effect if enabled.
+    ## Ref. https://gateway-api.sigs.k8s.io/guides/http-redirect-rewrite/
+    httpsRedirect: false
 
 resources: {}
 #  limits:
@@ -886,7 +892,9 @@ grafana.ini:
   grafana_net:
     url: https://grafana.net
   server:
-    domain: "{{ if (and .Values.ingress.enabled .Values.ingress.hosts) }}{{ tpl (.Values.ingress.hosts | first) . }}{{ else }}''{{ end }}"
+    domain: "{{ if (and .Values.ingress.enabled .Values.ingress.hosts) }}{{ tpl (.Values.ingress.hosts | first) . }}{{ else if (and .Values.route.main.enabled .Values.route.main.hostnames) }}{{ tpl (.Values.route.main.hostnames | first) . }}{{ else }}''{{ end }}"
+  unified_storage:
+    index_path: /var/lib/grafana-search/bleve
 ## grafana Authentication can be enabled with the following values on grafana.ini
  # server:
       # The full public facing url you use in browser, used for redirects and emails
@@ -959,7 +967,7 @@ sidecar:
     # -- The Docker registry
     registry: quay.io
     repository: kiwigrid/k8s-sidecar
-    tag: 1.30.10
+    tag: 2.2.1
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}
@@ -1060,6 +1068,16 @@ sidecar:
     # This is needed if skipReload is true, to load any alerts defined at startup time.
     # Deploy the alert sidecar as an initContainer.
     initAlerts: false
+    # Use native sidecar https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/
+    # restartPolicy: Always
+    # # only applies to native sidecars
+    # startupProbe:
+    #   httpGet:
+    #     path: /healthz
+    #     port: 8080
+    #   initialDelaySeconds: 5
+    #   periodSeconds: 5
+    #   failureThreshold: 60 # 5 minutes
     # Additional alerts sidecar volume mounts
     extraMounts: []
     # Sets the size limit of the alert sidecar emptyDir volume
@@ -1139,6 +1157,16 @@ sidecar:
     # This is needed if skipReload is true, to load any dashboards defined at startup time.
     # Deploy the dashboard sidecar as an initContainer.
     initDashboards: false
+    # Use native sidecar https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/
+    # restartPolicy: Always
+    # # only applies to native sidecars
+    # startupProbe:
+    #   httpGet:
+    #     path: /healthz
+    #     port: 8083
+    #   initialDelaySeconds: 5
+    #   periodSeconds: 5
+    #   failureThreshold: 60 # 5 minutes
     # watchServerTimeout: request to the server, asking it to cleanly close the connection after that.
     # defaults to 60sec; much higher values like 3600 seconds (1h) are feasible for non-Azure K8S
     # watchServerTimeout: 3600
@@ -1248,6 +1276,16 @@ sidecar:
     # This is needed if skipReload is true, to load any datasources defined at startup time.
     # Deploy the datasources sidecar as an initContainer.
     initDatasources: false
+    # Use native sidecar https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/
+    # restartPolicy: Always
+    # # only applies to native sidecars
+    # startupProbe:
+    #   httpGet:
+    #     path: /healthz
+    #     port: 8081
+    #   initialDelaySeconds: 5
+    #   periodSeconds: 5
+    #   failureThreshold: 60 # 5 minutes
     # Additional datasources sidecar volume mounts
     extraMounts: []
     # Sets the size limit of the datasource sidecar emptyDir volume
@@ -1384,6 +1422,16 @@ sidecar:
     # Deploy the notifier sidecar as an initContainer in addition to a container.
     # This is needed if skipReload is true, to load any notifiers defined at startup time.
     initNotifiers: false
+    # Use native sidecar https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/
+    # restartPolicy: Always
+    # # only applies to native sidecars
+    # startupProbe:
+    #   httpGet:
+    #     path: /healthz
+    #     port: 8082
+    #   initialDelaySeconds: 5
+    #   periodSeconds: 5
+    #   failureThreshold: 60 # 5 minutes
     # Additional notifiers sidecar volume mounts
     extraMounts: []
     # Sets the size limit of the notifier sidecar emptyDir volume
