@@ -143,11 +143,11 @@ Return the appropriate apiVersion for ingress.
 Return the appropriate apiVersion for Horizontal Pod Autoscaler.
 */}}
 {{- define "grafana.hpa.apiVersion" -}}
-{{- if .Capabilities.APIVersions.Has "autoscaling/v2" }}  
-{{- print "autoscaling/v2" }}  
-{{- else }}  
-{{- print "autoscaling/v2beta2" }}  
-{{- end }} 
+{{- if .Capabilities.APIVersions.Has "autoscaling/v2" }}
+{{- print "autoscaling/v2" }}
+{{- else }}
+{{- print "autoscaling/v2beta2" }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -271,4 +271,68 @@ sensitiveKeys:
         {{- end -}}
       {{- end -}}
   {{- end -}}
+{{- end -}}
+
+{{/*
+ Sidecars health port
+ */}}
+
+{{/*
+ Give health port for alerts sidecar
+ */}}
+{{- define "grafana.sidecar.alerts.healthPort" -}}
+{{- $healthPort := 8081 -}}
+{{- if hasKey .Values.sidecar.alerts "startupProbe" -}}
+  {{- if hasKey .Values.sidecar.alerts.startupProbe "httpGet" -}}
+    {{- if hasKey .Values.sidecar.alerts.startupProbe.httpGet "port" -}}
+      {{- $healthPort = .Values.sidecar.alerts.startupProbe.httpGet.port -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $healthPort | quote -}}
+{{- end -}}
+
+{{/*
+ Give health port for datasources sidecar
+ */}}
+{{- define "grafana.sidecar.datasources.healthPort" -}}
+{{- $healthPort := 8082 -}}
+{{- if hasKey .Values.sidecar.datasources "startupProbe" -}}
+  {{- if hasKey .Values.sidecar.datasources.startupProbe "httpGet" -}}
+    {{- if hasKey .Values.sidecar.datasources.startupProbe.httpGet "port" -}}
+      {{- $healthPort = .Values.sidecar.datasources.startupProbe.httpGet.port -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $healthPort | quote -}}
+{{- end -}}
+
+{{/*
+ Give health port for notifiers sidecar
+ */}}
+{{- define "grafana.sidecar.notifiers.healthPort" -}}
+{{- $healthPort := 8083 -}}
+{{- if hasKey .Values.sidecar.notifiers "startupProbe" -}}
+  {{- if hasKey .Values.sidecar.notifiers.startupProbe "httpGet" -}}
+    {{- if hasKey .Values.sidecar.notifiers.startupProbe.httpGet "port" -}}
+      {{- $healthPort = .Values.sidecar.notifiers.startupProbe.httpGet.port -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $healthPort | quote -}}
+{{- end -}}
+
+{{/*
+ Give health port for dashboards sidecar
+ */}}
+{{- define "grafana.sidecar.dashboards.healthPort" -}}
+{{- $healthPort := 8084 -}}
+{{- if hasKey .Values.sidecar.dashboards "startupProbe" -}}
+  {{- if hasKey .Values.sidecar.dashboards.startupProbe "httpGet" -}}
+    {{- if hasKey .Values.sidecar.dashboards.startupProbe.httpGet "port" -}}
+      {{- $healthPort = .Values.sidecar.dashboards.startupProbe.httpGet.port -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $healthPort | quote -}}
 {{- end -}}
