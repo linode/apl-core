@@ -283,33 +283,17 @@ jobs:
 
           # Create YAML configuration files from templates
           KUB_INTEGRATION_PATH="./${CLUSTER_NAME}_kub_integration.yaml"
-          ADMISSION_PATH="./${CLUSTER_NAME}_admission_control.yaml"
-
           sed "s/__WIZ_CLIENT_ID__/${{ secrets.WIZ_CLIENT_ID }}/g; s/__WIZ_CLIENT_TOKEN__/${{ secrets.WIZ_CLIENT_TOKEN }}/g; s/<connectorName>/${CLUSTER_NAME}/g; s/<clusterExternalId>/${CLUSTER_ID}/g" .github/templates/wiz-kubernetes-integration.yaml > "$KUB_INTEGRATION_PATH"
-          sed "s/__WIZ_CLIENT_ID__/${{ secrets.WIZ_CLIENT_ID }}/g; s/__WIZ_CLIENT_TOKEN__/${{ secrets.WIZ_CLIENT_TOKEN }}/g; s/<connectorName>/${CLUSTER_NAME}/g; s/<clusterExternalId>/${CLUSTER_ID}/g" .github/templates/wiz-admission-control.yaml > "$ADMISSION_PATH"
 
-          # Verify cluster connectivity
-          echo "Verifying cluster connectivity..."
-          kubectl get nodes
-
+          NAMESPACE="wiz"
           # Add Helm repo for Wiz
           helm repo add wiz-sec https://charts.wiz.io/
           helm repo update
 
-          # Create namespace if not exists
-          kubectl create namespace wiz --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create namespace $NAMESPACE || echo "Namespace '$NAMESPACE' already exists."
 
-          # Set release name
-          RELEASE_NAME="wiz-${CLUSTER_NAME//_/-}"
-          RELEASE_NAME="${RELEASE_NAME,,}"  # Convert to lowercase
-          NAMESPACE="wiz"
-
-          # Install Wiz components
           echo "🚀 Installing Wiz Kubernetes Integration..."
-          helm install "$RELEASE_NAME" wiz-sec/wiz-kubernetes-integration --values "$KUB_INTEGRATION_PATH" -n "$NAMESPACE"
-
-          echo "🚀 Installing Wiz Admission Controller..."
-          helm install wiz-lke-ac wiz-sec/wiz-admission-controller --values "$ADMISSION_PATH" -n "$NAMESPACE" --wait
+          helm install wiz-lke-ac wiz-sec/wiz-kubernetes-integration --values "$KUB_INTEGRATION_PATH" -n "$NAMESPACE"
 
           echo "✅ Wiz deployment for cluster $CLUSTER_NAME completed."
       - name: APL install
