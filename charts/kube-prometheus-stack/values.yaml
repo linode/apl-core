@@ -913,7 +913,7 @@ alertmanager:
     image:
       registry: quay.io
       repository: prometheus/alertmanager
-      tag: v0.29.0
+      tag: v0.30.0
       sha: ""
       pullPolicy: IfNotPresent
 
@@ -1280,9 +1280,23 @@ grafana:
     ##
     resyncPeriod: 10m
 
-    ## Which folder all ddashboard in Grafana General means on Root level
+    ## Which folder contains all dashboards in Grafana
+    ## This folder will be created on the Root level
+    ## Only one of 'folder', 'folderUID' or 'folderRef' can be set
     ##
     folder: General
+
+    ## Which UID of the target folder contains all dashboards in Grafana
+    ## This allows you to use subfolder hierarchy
+    ## Only one of 'folder', 'folderUID' or 'folderRef' can be set
+    ##
+    folderUID: null
+
+    ## Which GrafanaFolder reference contains all dashboards in Grafana
+    ## This allows you to use subfolder hierarchy.
+    ## Only one of 'folder', 'folderUID' or 'folderRef' can be set
+    ##
+    folderRef: null
 
   ## Timezone for the default dashboards
   ## Other options are: browser or a specific timezone, i.e. Europe/Luxembourg
@@ -2894,9 +2908,9 @@ prometheusOperator:
     patch:
       enabled: true
       image:
-        registry: registry.k8s.io
-        repository: ingress-nginx/kube-webhook-certgen
-        tag: v1.6.5  # latest tag: https://github.com/kubernetes/ingress-nginx/blob/main/images/kube-webhook-certgen/TAG
+        registry: ghcr.io
+        repository: jkroepke/kube-webhook-certgen
+        tag: 1.7.4
         sha: ""
         pullPolicy: IfNotPresent
       resources: {}
@@ -3988,7 +4002,7 @@ prometheus:
     image:
       registry: quay.io
       repository: prometheus/prometheus
-      tag: v3.7.3
+      tag: v3.9.1
       sha: ""
       pullPolicy: IfNotPresent
 
