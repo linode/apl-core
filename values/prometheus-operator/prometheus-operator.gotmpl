@@ -247,10 +247,12 @@ grafana:
       enabled: true
       label: release
       labelValue: grafana-dashboards
-    {{- if $apps.thanos.enabled }}
     datasources:
+      # https://github.com/grafana/helm-charts/issues/4023
+      watchMethod: "SLEEP"
+      {{- if $apps.thanos.enabled }}
       isDefaultDatasource: false
-    {{- end }}
+      {{- end }}
   serviceMonitor:
     enabled: {{ $p.enabled }}
     labels:
