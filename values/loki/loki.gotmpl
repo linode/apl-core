@@ -197,12 +197,6 @@ queryFrontend:
   podAnnotations:
     checksum/team-config: {{ ( toString (keys $v.teamConfig | sortAlpha ) ) | sha256sum }}
 
-  {{- if $s3SecretName }}
-  extraEnvFrom:
-    - secretRef:
-        name: {{ $s3SecretName }}
-  {{- end }}
-
   extraContainers:
   - name: reverse-proxy
     {{- with $v.otomi.linodeLkeImageRepository }}
@@ -240,9 +234,21 @@ queryScheduler:
   resources: {{ $l.resources.queryScheduler | toYaml | nindent 4 }}
   autoscaling: {{ $l.autoscaling.queryScheduler | toYaml | nindent 4 }}
 
+  {{- if $s3SecretName }}
+  extraEnvFrom:
+    - secretRef:
+        name: {{ $s3SecretName }}
+  {{- end }}
+
 indexGateway:
   replicas: 1
   resources: {{ $l.resources.indexGateway | toYaml | nindent 4 }}
+
+  {{- if $s3SecretName }}
+  extraEnvFrom:
+    - secretRef:
+        name: {{ $s3SecretName }}
+  {{- end }}
 
 compactor:
   replicas: 1
