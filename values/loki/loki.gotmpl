@@ -197,6 +197,12 @@ queryFrontend:
   podAnnotations:
     checksum/team-config: {{ ( toString (keys $v.teamConfig | sortAlpha ) ) | sha256sum }}
 
+  {{- if $s3SecretName }}
+  extraEnvFrom:
+    - secretRef:
+        name: {{ $s3SecretName }}
+  {{- end }}
+  
   extraContainers:
   - name: reverse-proxy
     {{- with $v.otomi.linodeLkeImageRepository }}
