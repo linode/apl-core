@@ -11,7 +11,7 @@ image:
   # The Keycloak image repository
   repository: quay.io/keycloak/keycloak
   # Overrides the Keycloak image tag whose default is the chart appVersion
-  tag: "26.4.7"
+  tag: "26.5.0"
   # Overrides the Keycloak image tag with a specific digest
   digest: ""
   # The Keycloak image pull policy
@@ -463,6 +463,8 @@ serviceMonitor:
   path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/metrics'
   # The Service port at which metrics are served
   port: '{{ .Values.http.internalPort }}'
+  # The scheme to use for scraping metrics ("http" or "https"); if not set, the `http.internalScheme` value is used
+  scheme: ""
 
 extraServiceMonitor:
   # If `true`, a ServiceMonitor resource for the prometheus-operator is created
@@ -487,6 +489,8 @@ extraServiceMonitor:
   path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/metrics'
   # The Service port at which metrics are served
   port: '{{ .Values.http.internalPort }}'
+  # The scheme to use for scraping metrics ("http" or "https"); if not set, the `http.internalScheme` value is used
+  scheme: ""
 
 prometheusRule:
   # If `true`, a PrometheusRule resource for the prometheus-operator is created
