@@ -65,7 +65,7 @@ dependencies:
     version: v0.16.0
     repository: oci://ghcr.io/kserve/charts/kserve
   - name: kube-prometheus-stack
-    version: 79.9.0
+    version: 80.13.3
     repository: https://prometheus-community.github.io/helm-charts
   - name: kyverno
     version: 3.6.2
