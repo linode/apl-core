@@ -10,6 +10,7 @@ metadata:
   namespace: {{ include "grafana.namespace" . }}
   {{- end }}
   labels:
+    release: {{ $.Release.Name | quote }}
     {{- include "grafana.labels" . | nindent 4 }}
     {{- with .Values.serviceMonitor.labels }}
     {{- tpl (toYaml . | nindent 4) $ }}
