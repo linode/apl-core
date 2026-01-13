@@ -207,7 +207,7 @@ resources:
             table:
               {{- range $id, $team := $v.teamConfig }}
               - context: resource
-                condition: attributes["k8s.namespace.name"] == "team-{{ $id }}"
+                condition: attributes["namespace"] == "team-{{ $id }}"
                 pipelines:
                   - logs/otlphttp-team-{{ $id }}
               {{- end }}
