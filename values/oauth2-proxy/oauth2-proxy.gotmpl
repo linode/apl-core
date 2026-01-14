@@ -156,7 +156,8 @@ redis-ha:
     - name: otomi-pullsecret-global
   {{- end }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
+{{- with $v.otomi.linodeLkeImageRepository }}
 image:
-  repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/oauth2-proxy/oauth2-proxy"
+  registry: {{ . }}
+  repository: quay/oauth2-proxy/oauth2-proxy
 {{- end }}
