@@ -6,19 +6,19 @@
 {{- $o := $v | get "oidc" dict }}
 
 # get all public domains that don't have the cluster domain as root
-{{ $domains := list }}
+{{ $domains := list (print "." $v.cluster.domainSuffix) "oauth2-proxy.istio-system.svc.cluster.local" }}
 {{- range $teamId, $team := $v.teamConfig }}
   {{- if hasKey $team "services" }}
     {{- range $s := $team.services }}
       {{- if (hasKey $s "domain")}}
-        {{- if and (not (has $s.domain $domains)) (not (contains $v.cluster.domainSuffix $s.domain)) }}
+        {{- if not (contains $v.cluster.domainSuffix $s.domain) }}
           {{- $domains = append $domains $s.domain }}
         {{- end }}
       {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}
-{{- $domains = append $domains (print "." $v.cluster.domainSuffix) }}
+{{- $domains = sortAlpha (uniq $domains) }}
 
 config:
   existingSecret: oauth2-proxy-client-access
