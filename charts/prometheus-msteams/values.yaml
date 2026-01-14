@@ -101,3 +101,9 @@ envFrom: {}
 
 # Whether to use the new Microsoft Workflow webhooks
 workflowWebhook: false
+
+# Allow PodDisruptionBudget to be configured
+podDisruptionBudget:
+  enabled: false
+  # maxUnavailable: 1
+  # minAvailable: 1
