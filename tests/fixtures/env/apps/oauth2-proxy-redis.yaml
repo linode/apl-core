@@ -19,4 +19,5 @@ spec:
             requests:
                 cpu: 200m
                 memory: 64Mi
+    replicas: 1
     persistentVolumeSize: 1Gi
