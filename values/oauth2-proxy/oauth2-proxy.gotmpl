@@ -114,6 +114,8 @@ global:
 {{- end }}
 
 redis-ha:
+  global:
+    priorityClassName: otomi-critical
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/redis"
@@ -146,7 +148,6 @@ redis-ha:
     {{- else }}
     enabled: false
     {{- end }}
-  priorityClassName: otomi-critical
 
   sentinel:
     resources: {{- $r.resources.sentinel | toYaml | nindent 6 }}
