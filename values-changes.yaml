@@ -399,3 +399,11 @@ changes:
       - 'apps.gitea.resources.postgresql'
       - 'apps.gitea.resources.memcached'
       - 'apps.gitea.resources.memcachedMetrics'
+  - version: 47
+    relocations:
+      - 'apps.oauth2-proxy-redis.persistence.master.size': apps.oauth2-proxy-redis.persistentVolumeSize
+    deletions:
+      - 'apps.oauth2-proxy-redis.architecture'
+      - 'apps.oauth2-proxy-redis.resources.replica'
+      - 'apps.oauth2-proxy-redis.resources.metrics'
+      - 'apps.oauth2-proxy-redis.persistence'

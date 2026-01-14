@@ -100,7 +100,10 @@ sessionStorage:
   # Can be one of the supported session storage cookie|redis
   type: redis
   redis:
-    clientType: {{ $r | get "architecture" }}
+    {{- if gt $r.replicas 1 }}
+    standalone:
+      connectionUrl: oauth2-proxy-redis-haproxy
+    {{- end }}
     password: {{ $r | get "password" | quote }}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
@@ -110,50 +113,43 @@ global:
     allowInsecureImages: true
 {{- end }}
 
-redis:
+redis-ha:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/redis"
   {{- end }}
   enabled: true
-  architecture: {{ $r | get "architecture" }}
   redisPassword: {{ $r | get "password" | quote }}
-  replicas: 1
+  replicas: {{ $r.replicas }}
   redis:
+    resources: {{- $r.resources.master | toYaml | nindent 6 }}
+    podAnnotations:
+      sidecar.istio.io/inject: "false"
     config:
       # See http://download.redis.io/redis-stable/redis.conf
       min-replicas-to-write: 0
+
+  {{- if gt $r.replicas 1 }}
+  networkPolicy:
+    enabled: true
+
+  haproxy:
+    enabled: true
+    networkPolicy:
+      enabled: true
+  {{- end }}
+
+  persistentVolume:
+    {{- if $r.persistentVolumeSize }}
+    size: {{ $r.persistentVolumeSize }}
+    storageClass: {{ $v.cluster.defaultStorageClass }}
+    {{- else }}
+    enabled: false
+    {{- end }}
+  priorityClassName: otomi-critical
+
   sentinel:
-    persistence:
-      size: {{ $r.persistence.sentinel.size }}
-      storageClass: {{ $v.cluster.defaultStorageClass }}
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
     resources: {{- $r.resources.sentinel | toYaml | nindent 6 }}
-
-  master:
-    persistence:
-      size: {{ $r.persistence.master.size }}
-      storageClass: {{ $v.cluster.defaultStorageClass }}
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
-    priorityClassName: otomi-critical
-    resources: {{- $r.resources.master | toYaml | nindent 6 }}
-
-  replica:
-    persistence:
-      size: {{ $r.persistence.replica.size }}
-      storageClass: {{ $v.cluster.defaultStorageClass }}
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
-    priorityClassName: otomi-critical
-    resources: {{- $r.resources.replica | toYaml | nindent 6 }}
-
-  metrics:
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
-    priorityClassName: otomi-critical
-    resources: {{- $r.resources.metrics | toYaml | nindent 6 }}
 
   {{- with .Values.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
