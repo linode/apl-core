@@ -29,7 +29,7 @@ dependencies:
     version: 0.2.0
     repository: https://linode.github.io/cloud-firewall-controller
   - name: external-dns
-    version: 1.19.0
+    version: 1.20.0
     repository: https://kubernetes-sigs.github.io/external-dns
   - name: gitea
     version: 12.4.0
