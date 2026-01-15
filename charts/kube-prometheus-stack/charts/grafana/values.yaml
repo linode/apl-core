@@ -145,6 +145,7 @@ dnsConfig: {}
   #     value: "2"
   #   - name: edns0
 
+hostUsers: ~
 securityContext:
   runAsNonRoot: true
   runAsUser: 472
@@ -1502,6 +1503,8 @@ imageRenderer:
   # image-renderer deployment serviceAccount
   serviceAccountName: ""
   automountServiceAccountToken: false
+  # image-renderer deployment hostUsers
+  hostUsers: ~
   # image-renderer deployment securityContext
   securityContext: {}
   # image-renderer deployment container securityContext
