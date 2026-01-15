@@ -124,14 +124,30 @@ redis-ha:
       # See http://download.redis.io/redis-stable/redis.conf
       min-replicas-to-write: 0
 
-  {{- if gt $r.replicas 1 }}
   networkPolicy:
     enabled: true
-
+  {{- if eq $r.replicas 1 }}
+    ingressRules:
+      - selectors:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: istio-system
+            podSelector:
+              matchLabels:
+                app.kubernetes.io/name: oauth2-proxy
+  {{- else }}
   haproxy:
     enabled: true
     networkPolicy:
       enabled: true
+      ingressRules:
+        - selectors:
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: istio-system
+              podSelector:
+                matchLabels:
+                  app.kubernetes.io/name: oauth2-proxy
   {{- end }}
 
   persistentVolume:
