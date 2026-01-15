@@ -22,14 +22,6 @@ app.kubernetes.io/component: querier
 {{- end }}
 
 {{/*
-querier image
-*/}}
-{{- define "loki.querierImage" -}}
-{{- $dict := dict "loki" .Values.loki.image "service" .Values.querier.image "global" .Values.global.image "defaultVersion" .Chart.AppVersion -}}
-{{- include "loki.lokiImage" $dict -}}
-{{- end }}
-
-{{/*
 querier priority class name
 */}}
 {{- define "loki.querierPriorityClassName" -}}
@@ -38,3 +30,10 @@ querier priority class name
 priorityClassName: {{ $pcn }}
 {{- end }}
 {{- end }}
+
+{{/*
+querier target
+*/}}
+{{- define "loki.querierTarget" -}}
+querier{{- if .Values.loki.ui.enabled -}},ui{{- end -}}
+{{- end -}}

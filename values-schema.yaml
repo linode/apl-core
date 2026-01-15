@@ -2142,6 +2142,10 @@ properties:
                 $ref: '#/definitions/resources'
               reverseProxy:
                 $ref: '#/definitions/resources'
+              queryScheduler:
+                $ref: '#/definitions/resources'
+              indexGateway:
+                $ref: '#/definitions/resources'
           autoscaling:
             properties:
               ingester:
@@ -2153,6 +2157,8 @@ properties:
               distributor:
                 $ref: '#/definitions/autoscalingEnabled'
               queryFrontend:
+                $ref: '#/definitions/autoscalingEnabled'
+              queryScheduler:
                 $ref: '#/definitions/autoscalingEnabled'
           adminPassword:
             type: string
@@ -2174,22 +2180,14 @@ properties:
                   size:
                     default: 10Gi
                     $ref: '#/definitions/size'
-          retention:
-            additionalProperties: false
-            properties:
-              duration:
-                default: 24h
-                type: string
-              period:
-                default: 24h
-                description: Should be a multiple of 24h. See https://grafana.com/docs/loki/latest/operations/storage/boltdb-shipper/.
-                type: string
-            required:
-              - duration
-          v11StartDate:
-            description: Set this to a date just after deployment in case of an upgrade. (Otomi started at v9 with filesystem.)
-            title: Schema v11 start date
+          v13SchemaStartDate:
+            description: Automatically set to a date in the future in case of an upgrade
+            title: Schema v13 start date
             type: string
+          enableOpenTelemetry:
+            description: Use OpenTelemetry for logs instead of Promtail. True by default, but must be manually set after v13SchemaStartDate in case of an upgrade
+            title: Enable OpenTelemetry for logs
+            type: boolean
         required:
           - adminPassword
       metrics-server:
@@ -2369,15 +2367,6 @@ properties:
             properties:
               operator:
                 $ref: '#/definitions/resources'
-
-      oltp:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
       prometheus:
         additionalProperties: false
         properties:
@@ -2547,17 +2536,8 @@ properties:
           enabled:
             type: boolean
             default: false
-          collector:
+          otlpCollector:
             properties:
-              mode:
-                title: Collector mode
-                description: Mode to run collector in.
-                type: string
-                default: deployment
-                enum:
-                  - deployment
-                  - daemonset
-                  - statefulset
               autoscaler:
                 properties:
                   maxReplicas:
@@ -2586,7 +2566,9 @@ properties:
           resources:
             additionalProperties: false
             properties:
-              collector:
+              otlpCollector:
+                $ref: '#/definitions/resources'
+              logsCollector:
                 $ref: '#/definitions/resources'
               manager:
                 $ref: '#/definitions/resources'
