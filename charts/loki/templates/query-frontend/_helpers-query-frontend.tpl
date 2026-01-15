@@ -22,14 +22,6 @@ app.kubernetes.io/component: query-frontend
 {{- end }}
 
 {{/*
-query-frontend image
-*/}}
-{{- define "loki.queryFrontendImage" -}}
-{{- $dict := dict "loki" .Values.loki.image "service" .Values.queryFrontend.image "global" .Values.global.image "defaultVersion" .Chart.AppVersion -}}
-{{- include "loki.lokiImage" $dict -}}
-{{- end }}
-
-{{/*
 query-frontend priority class name
 */}}
 {{- define "loki.queryFrontendPriorityClassName" -}}

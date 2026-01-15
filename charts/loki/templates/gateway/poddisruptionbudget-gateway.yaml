@@ -1,22 +1,19 @@
-{{- if and .Values.gateway.enabled (gt (int .Values.gateway.replicas) 1) }}
-{{- if kindIs "invalid" .Values.gateway.maxUnavailable }}
-{{- fail "`.Values.gateway.maxUnavailable` must be set when `.Values.gateway.replicas` is greater than 1." }}
-{{- else }}
-apiVersion: {{ include "loki.pdb.apiVersion" . }}
+{{- if and .Values.gateway.enabled }}
+{{- if or 
+  (and (not .Values.gateway.autoscaling.enabled) (gt (int .Values.gateway.replicas) 1)) 
+  (and .Values.gateway.autoscaling.enabled (gt (int .Values.gateway.autoscaling.minReplicas) 1))
+}}
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "loki.gatewayFullname" . }}
+  namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.gatewayLabels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
       {{- include "loki.gatewaySelectorLabels" . | nindent 6 }}
-  {{- with .Values.gateway.maxUnavailable }}
-  maxUnavailable: {{ . }}
-  {{- end }}
-  {{- with .Values.gateway.minAvailable }}
-  minAvailable: {{ . }}
-  {{- end }}
+  maxUnavailable: 1
 {{- end }}
 {{- end }}
