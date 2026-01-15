@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 26.5.0
+appVersion: 26.5.1
 description: Keycloak.X - Open Source Identity and Access Management for Modern Applications
   and Services
 home: https://www.keycloak.org/
