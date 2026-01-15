@@ -1,9 +1,11 @@
-{{- if .Values.distributor.autoscaling.enabled }}
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if and $isDistributed .Values.distributor.autoscaling.enabled }}
 {{- $apiVersion := include "loki.hpa.apiVersion" . -}}
 apiVersion: {{ $apiVersion }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "loki.distributorFullname" . }}
+  namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.distributorLabels" . | nindent 4 }}
 spec:
