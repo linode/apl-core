@@ -246,6 +246,8 @@ environments:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "linode")) }}
           minio:
             enabled: {{ $a.minio.enabled }}
+          otel:
+            enabled: {{ or $a.otel.enabled $a.loki.enabled }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           sealed-secrets:
