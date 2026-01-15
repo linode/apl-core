@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "minio.fullname" . }}
+  labels:
+    app: {{ template "minio.name" . }}
+    chart: {{ template "minio.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  initialize: |-
+    {{- include (print $.Template.BasePath "/_helper_create_bucket.txt") . | nindent 4 }}
+  add-user: |-
+    {{- include (print $.Template.BasePath "/_helper_create_user.txt") . | nindent 4 }}
+  add-policy: |-
+    {{- include (print $.Template.BasePath "/_helper_create_policy.txt") . | nindent 4 }}
+  {{- range $idx, $policy := .Values.policies }}
+  # Policy: {{ $policy.name }}
+  policy_{{ $idx }}.json: |-
+    {{- include (print $.Template.BasePath "/_helper_policy.tpl") . | nindent 4 }}
+  {{ end }}
+  {{- range $idx, $svc := .Values.svcaccts }}
+  {{- if $svc.policy }}
+  # SVC: {{ $svc.accessKey }}
+  svc_policy_{{ $idx }}.json: |-
+    {{- include (print $.Template.BasePath "/_helper_policy.tpl") .policy | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  add-svcacct: |-
+    {{- include (print $.Template.BasePath "/_helper_create_svcacct.txt") . | nindent 4 }}
+  custom-command: |-
+    {{- include (print $.Template.BasePath "/_helper_custom_command.txt") . | nindent 4 }}
