@@ -26,4 +26,4 @@ name: kube-state-metrics
 sources:
 - https://github.com/kubernetes/kube-state-metrics/
 type: application
-version: 7.0.0
+version: 7.0.1
