@@ -179,7 +179,7 @@ releases:
                   type: 'Tag'
                   tag: 'http.path'
                 lokiSearch:
-                  datasourceUid: 'loki'
+                  datasourceUid: loki
     {{- if has "msteams" ($teamSettings | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
     installed: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}

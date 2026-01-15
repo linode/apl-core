@@ -3,12 +3,16 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "loki.tableManagerFullname" . }}
+  namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.tableManagerLabels" . | nindent 4 }}
-  {{- with .Values.loki.annotations }}
   annotations:
+    {{- with .Values.loki.annotations }}
     {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- end }}
+    {{- with .Values.tableManager.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   replicas: 1
   revisionHistoryLimit: {{ .Values.loki.revisionHistoryLimit }}
@@ -18,7 +22,7 @@ spec:
   template:
     metadata:
       annotations:
-        {{- include "loki.config.checksum" . | nindent 8 }}
+        checksum/config: {{ include "loki.configMapOrSecretContentHash" (dict "ctx" . "name" "/config.yaml") }}
         {{- with .Values.loki.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -39,34 +43,29 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tableManager.hostAliases }}
-      hostAliases:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       {{- include "loki.tableManagerPriorityClassName" . | nindent 6 }}
       securityContext:
-        {{- toYaml .Values.loki.podSecurityContext | nindent 8 }}
+        {{- include "loki.podSecurityContext" . | nindent 8 }}
       terminationGracePeriodSeconds: {{ .Values.tableManager.terminationGracePeriodSeconds }}
+      {{- if and (semverCompare ">=1.33-0" (include "loki.kubeVersion" .)) (kindIs "bool" .Values.tableManager.hostUsers) }}
+      hostUsers: {{ .Values.tableManager.hostUsers }}
+      {{- end }}
       containers:
         - name: table-manager
-          image: {{ include "loki.tableManagerImage" . }}
+          image: {{ include "loki.image" . }}
           imagePullPolicy: {{ .Values.loki.image.pullPolicy }}
-          {{- if or .Values.loki.command .Values.tableManager.command }}
-          command:
-            - {{ coalesce .Values.tableManager.command .Values.loki.command | quote }}
-          {{- end }}
           args:
             - -config.file=/etc/loki/config/config.yaml
             - -target=table-manager
-            {{- with .Values.tableManager.extraArgs }}
+            {{- with (concat .Values.global.extraArgs .Values.tableManager.extraArgs) | uniq }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           ports:
-            - name: http
-              containerPort: 3100
+            - name: http-metrics
+              containerPort: {{ .Values.loki.server.http_listen_port }}
               protocol: TCP
             - name: grpc
-              containerPort: 9095
+              containerPort: {{ .Values.loki.server.grpc_listen_port }}
               protocol: TCP
           {{- with .Values.tableManager.extraEnv }}
           env:
@@ -78,18 +77,22 @@ spec:
           {{- end }}
           securityContext:
             {{- toYaml .Values.loki.containerSecurityContext | nindent 12 }}
-          readinessProbe:
-            {{- toYaml .Values.loki.readinessProbe | nindent 12 }}
+          {{- with .Values.loki.livenessProbe }}
           livenessProbe:
-            {{- toYaml .Values.loki.livenessProbe | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.loki.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: config
               mountPath: /etc/loki/config
-            - name: runtime-config
-              mountPath: /var/{{ include "loki.name" . }}-runtime
-            - name: data
-              mountPath: /var/loki
-            {{- with .Values.tableManager.extraVolumeMounts }}
+            {{- if .Values.enterprise.enabled }}
+            - name: license
+              mountPath: /etc/loki/license
+            {{- end }}
+            {{- with (concat .Values.global.extraVolumeMounts .Values.tableManager.extraVolumeMounts) | uniq }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           resources:
@@ -99,6 +102,10 @@ spec:
         {{- end }}
       {{- with .Values.tableManager.affinity }}
       affinity:
+        {{- tpl ( . | toYaml) $ | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tableManager.dnsConfig | default .Values.loki.dnsConfig }}
+      dnsConfig:
         {{- tpl . $ | nindent 8 }}
       {{- end }}
       {{- with .Values.tableManager.nodeSelector }}
@@ -111,22 +118,17 @@ spec:
       {{- end }}
       volumes:
         - name: config
-          {{- if .Values.loki.existingSecretForConfig }}
+          {{- include "loki.configVolume" . | nindent 10 }}
+        {{- if .Values.enterprise.enabled }}
+        - name: license
           secret:
-            secretName: {{ .Values.loki.existingSecretForConfig }}
-          {{- else if .Values.loki.configAsSecret }}
-          secret:
-            secretName: {{ include "loki.fullname" . }}-config
+          {{- if .Values.enterprise.useExternalLicense }}
+            secretName: {{ .Values.enterprise.externalLicenseName }}
           {{- else }}
-          configMap:
-            name: {{ include "loki.fullname" . }}
+            secretName: enterprise-logs-license
           {{- end }}
-        - name: runtime-config
-          configMap:
-            name: {{ template "loki.fullname" . }}-runtime
-        - name: data
-          emptyDir: {}
-        {{- with .Values.tableManager.extraVolumes }}
+        {{- end }}
+        {{- with (concat .Values.global.extraVolumes .Values.tableManager.extraVolumes) | uniq }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
 {{- end }}

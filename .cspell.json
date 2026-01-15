@@ -149,7 +149,7 @@
     "multitenant",
     "nocheck",
     "oidc",
-    "oltp",
+    "otlp",
     "onprem",
     "oomkilled",
     "orgs",

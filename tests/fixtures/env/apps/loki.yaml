@@ -93,7 +93,4 @@ spec:
             requests:
                 cpu: 50m
                 memory: 16Mi
-    retention:
-        duration: 24h
-        period: 24h
-    v11StartDate: 2021-05-13T00:00:00.000Z
+    v13SchemaStartDate: 2025-12-18

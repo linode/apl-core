@@ -10,6 +10,11 @@ serviceMonitor:
   enabled: true
   labels:
     prometheus: system
+  relabelings:
+    - source_labels:
+        - "__meta_kubernetes_pod_label_app_kubernetes_io_component"
+      regex: "(canary|read|write)"
+      action: "drop"
 
 podSecurityContext:
   runAsGroup: 0
@@ -44,7 +49,7 @@ config:
             - tenant:
                 value: {{ $id }}
       {{- end }}
-      - output: 
+      - output:
           source: message
 
 priorityClassName: otomi-critical
