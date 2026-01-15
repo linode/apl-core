@@ -124,6 +124,7 @@ This ensures the expressions are preserved for Alertmanager instead of being ren
 | `persistence.type`                        | Type of persistence (`pvc` or `statefulset`)  | `pvc`                                                   |
 | `persistence.size`                        | Size of persistent volume claim               | `10Gi`                                                  |
 | `persistence.existingClaim`               | Use an existing PVC to persist data (can be templated) | `nil`                                          |
+| `persistence.volumeName`                  | If using a PVC, then use a specific PV name   | `nil`                                                   |
 | `persistence.storageClassName`            | Type of persistent volume claim               | `nil`                                                   |
 | `persistence.accessModes`                 | Persistence access modes                      | `[ReadWriteOnce]`                                       |
 | `persistence.annotations`                 | PersistentVolumeClaim annotations             | `{}`                                                    |
