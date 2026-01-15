@@ -1,10 +1,10 @@
-{{- if .Values.compactor.enabled }}
-{{- if eq .Values.compactor.kind "StatefulSet"}}
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if $isDistributed }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ include "loki.compactorFullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.compactorLabels" . | nindent 4 }}
     app.kubernetes.io/part-of: memberlist
@@ -20,7 +20,7 @@ spec:
       partition: 0
   serviceName: {{ include "loki.compactorFullname" . }}-headless
   revisionHistoryLimit: {{ .Values.loki.revisionHistoryLimit }}
-  {{- if and (semverCompare ">= 1.23-0" .Capabilities.KubeVersion.Version) (.Values.compactor.persistence.enableStatefulSetAutoDeletePVC)  }}
+  {{- if and (semverCompare ">= 1.23-0" (include "loki.kubeVersion" .)) (.Values.compactor.persistence.enableStatefulSetAutoDeletePVC)  }}
   persistentVolumeClaimRetentionPolicy:
     whenDeleted: {{ .Values.compactor.persistence.whenDeleted }}
     whenScaled: {{ .Values.compactor.persistence.whenScaled }}
@@ -39,19 +39,20 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "loki.compactorSelectorLabels" . | nindent 8 }}
+        {{- include "loki.compactorLabels" . | nindent 8 }}
         app.kubernetes.io/part-of: memberlist
-        {{- with .Values.loki.podLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-        {{- with .Values.compactor.podLabels }}
+        {{- with merge (dict) .Values.loki.podLabels .Values.compactor.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion }}
+      {{- if semverCompare ">=1.19-0" (include "loki.kubeVersion" .) }}
       {{- with .Values.compactor.topologySpreadConstraints }}
       topologySpreadConstraints:
-        {{- tpl . $ | nindent 8 }}
+        {{- tpl ( . | toYaml) $ | nindent 8 }}
+      {{- end }}
+      {{- with .Values.compactor.dnsConfig | default .Values.loki.dnsConfig }}
+      dnsConfig:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- end }}
       serviceAccountName: {{ include "loki.serviceAccountName" . }}
@@ -63,9 +64,12 @@ spec:
       hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if and (semverCompare ">=1.33-0" (include "loki.kubeVersion" .)) (kindIs "bool" .Values.compactor.hostUsers) }}
+      hostUsers: {{ .Values.compactor.hostUsers }}
+      {{- end }}
       {{- include "loki.compactorPriorityClassName" . | nindent 6 }}
       securityContext:
-        {{- toYaml .Values.loki.podSecurityContext | nindent 8 }}
+        {{- include "loki.podSecurityContext" . | nindent 8 }}
       terminationGracePeriodSeconds: {{ .Values.compactor.terminationGracePeriodSeconds }}
       {{- with .Values.compactor.initContainers }}
       initContainers:
@@ -73,7 +77,7 @@ spec:
       {{- end }}
       containers:
         - name: compactor
-          image: {{ include "loki.compactorImage" . }}
+          image: {{ include "loki.image" . }}
           imagePullPolicy: {{ .Values.loki.image.pullPolicy }}
           {{- if or .Values.loki.command .Values.compactor.command }}
           command:
@@ -82,11 +86,11 @@ spec:
           args:
             - -config.file=/etc/loki/config/config.yaml
             - -target=compactor
-            {{- with .Values.compactor.extraArgs }}
+            {{- with (concat .Values.global.extraArgs .Values.compactor.extraArgs) | uniq }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           ports:
-            - name: http
+            - name: http-metrics
               containerPort: 3100
               protocol: TCP
             - name: grpc
@@ -95,11 +99,11 @@ spec:
             - name: http-memberlist
               containerPort: 7946
               protocol: TCP
-          {{- with .Values.compactor.extraEnv }}
+          {{- with (concat .Values.global.extraEnv .Values.compactor.extraEnv) | uniq }}
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.compactor.extraEnvFrom }}
+          {{- with (concat .Values.global.extraEnvFrom .Values.compactor.extraEnvFrom) | uniq }}
           envFrom:
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -113,10 +117,14 @@ spec:
             - name: config
               mountPath: /etc/loki/config
             - name: runtime-config
-              mountPath: /var/{{ include "loki.name" . }}-runtime
+              mountPath: /etc/loki/runtime-config
             - name: data
               mountPath: /var/loki
-            {{- with .Values.compactor.extraVolumeMounts }}
+            {{- if .Values.enterprise.enabled }}
+            - name: license
+              mountPath: /etc/loki/license
+            {{- end }}
+            {{- with (concat .Values.global.extraVolumeMounts .Values.compactor.extraVolumeMounts) | uniq }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- with .Values.compactor.resources }}
@@ -132,7 +140,7 @@ spec:
         {{- end }}
       {{- with .Values.compactor.affinity }}
       affinity:
-        {{- tpl . $ | nindent 8 }}
+        {{- tpl ( . | toYaml) $ | nindent 8 }}
       {{- end }}
       {{- with .Values.compactor.nodeSelector }}
       nodeSelector:
@@ -146,45 +154,53 @@ spec:
         - name: temp
           emptyDir: {}
         - name: config
-          {{- if .Values.loki.existingSecretForConfig }}
-          secret:
-            secretName: {{ .Values.loki.existingSecretForConfig }}
-          {{- else if .Values.loki.configAsSecret }}
-          secret:
-            secretName: {{ include "loki.fullname" . }}-config
-          {{- else }}
-          configMap:
-            name: {{ include "loki.fullname" . }}
-          {{- end }}
+          {{- include "loki.configVolume" . | nindent 10 }}
         - name: runtime-config
           configMap:
-            name: {{ template "loki.fullname" . }}-runtime
+            name: {{ template "loki.name" . }}-runtime
+        {{- if .Values.enterprise.enabled }}
+        - name: license
+          secret:
+          {{- if .Values.enterprise.useExternalLicense }}
+            secretName: {{ .Values.enterprise.externalLicenseName }}
+          {{- else }}
+            secretName: enterprise-logs-license
+          {{- end }}
+        {{- end }}
         {{- if not .Values.compactor.persistence.enabled }}
         - name: data
           emptyDir: {}
         {{- end }}
-        {{- with .Values.compactor.extraVolumes }}
+        {{- with (concat .Values.global.extraVolumes .Values.compactor.extraVolumes) | uniq }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
   {{- if .Values.compactor.persistence.enabled }}
   volumeClaimTemplates:
   {{- range .Values.compactor.persistence.claims }}
-    - metadata:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
         name: {{ .name }}
         {{- with .annotations }}
         annotations:
           {{- . | toYaml | nindent 10 }}
         {{- end }}
+        {{- with .labels }}
+        labels:
+          {{- . | toYaml | nindent 10 }}
+        {{- end }}
       spec:
         accessModes:
-          - ReadWriteOnce
+          {{- toYaml .accessModes | nindent 10 }}
         {{- with .storageClass }}
         storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+        {{- end }}
+        {{- with .volumeAttributesClassName }}
+        volumeAttributesClassName: {{ . }}
         {{- end }}
         resources:
           requests:
             storage: {{ .size | quote }}
   {{- end }}
   {{- end }}
-{{- end }}
 {{- end }}
