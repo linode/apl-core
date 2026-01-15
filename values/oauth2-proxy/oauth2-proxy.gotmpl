@@ -102,7 +102,7 @@ sessionStorage:
   redis:
     {{- if gt $r.replicas 1 }}
     standalone:
-      connectionUrl: oauth2-proxy-redis-haproxy
+      connectionUrl: "redis://oauth2-proxy-redis-ha-haproxy.istio-system.svc.cluster.local:6379"
     {{- end }}
     password: {{ $r | get "password" | quote }}
 
