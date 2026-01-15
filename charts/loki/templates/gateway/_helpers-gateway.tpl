@@ -33,7 +33,7 @@ gateway Docker image
 */}}
 {{- define "loki.gatewayImage" -}}
 {{- $dict := dict "service" .Values.gateway.image "global" .Values.global.image -}}
-{{- include "loki.image" $dict -}}
+{{- include "loki.baseImage" $dict -}}
 {{- end }}
 
 {{/*
@@ -44,8 +44,4 @@ gateway priority class name
 {{- if $pcn }}
 priorityClassName: {{ $pcn }}
 {{- end }}
-{{- end }}
-
-{{- define "loki.gatewayConfigChecksum" -}}
-checksum/config: {{ tpl .Values.gateway.nginxConfig.file . | sha256sum }}
 {{- end }}
