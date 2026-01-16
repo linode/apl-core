@@ -34,7 +34,7 @@ spec:
   endpoints:
     - port: {{ tpl .port $ | quote }}
       path: {{ tpl .path $ | quote }}
-      scheme: {{ $.Values.http.internalScheme | lower }}
+      scheme: {{ coalesce .scheme $.Values.http.internalScheme | lower }}
       interval: {{ .interval }}
       scrapeTimeout: {{ .scrapeTimeout }}
       {{- with .relabelings }}
