@@ -109,13 +109,22 @@ haproxy:
     keyName:
     # -- Path to mount the secret that contains the certificates. haproxy
     certMountPath: /tmp/
-
   # -- Enable read-only redis-slaves
   readOnly:
     # -- Enable if you want a dedicated port in haproxy for redis-slaves
     enabled: false
     # -- Port for the read-only redis-slaves
     port: 6380
+  # -- Additional ports to expose on HAProxy service and deployment
+  # Each port should have a name, containerPort, and optionally servicePort (defaults to containerPort)
+  additionalPorts: []
+  # Example:
+  # additionalPorts:
+  #   - name: custom-port
+  #     containerPort: 8080
+  #     servicePort: 8080
+  #   - name: another-port
+  #     containerPort: 9090
   # -- Number of HAProxy instances
   replicas: 3
   # -- Deployment strategy for the haproxy deployment
@@ -1062,3 +1071,37 @@ splitBrainDetection:
   retryInterval: 10
   # -- splitBrainDetection resources
   resources: {}
+  # liveness probe parameters for split brain container
+  livenessProbe:
+    # -- Initial delay in seconds for liveness probe
+    initialDelaySeconds: 30
+    # -- Period in seconds after which liveness probe will be repeated
+    periodSeconds: 15
+    # -- Timeout seconds for liveness probe
+    timeoutSeconds: 15
+    # -- Success threshold for liveness probe
+    successThreshold: 1
+    # -- Failure threshold for liveness probe
+    failureThreshold: 5
+    exec:
+      command:
+        - cat
+        - /readonly-config/redis.conf
+
+  # readiness probe parameters for split brain container
+  readinessProbe:
+    # -- Initial delay in seconds for readiness probe
+    initialDelaySeconds: 30
+    # -- Period in seconds after which readiness probe will be repeated
+    periodSeconds: 15
+    # -- Timeout seconds for readiness probe
+    timeoutSeconds: 15
+    # -- Success threshold for readiness probe
+    successThreshold: 1
+    # -- Failure threshold for readiness probe
+    failureThreshold: 5
+    exec:
+      command:
+        - pgrep
+        - -f
+        - fix-split-brain.sh

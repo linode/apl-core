@@ -6,19 +6,19 @@
 {{- $o := $v | get "oidc" dict }}
 
 # get all public domains that don't have the cluster domain as root
-{{ $domains := list }}
+{{ $domains := list (print "." $v.cluster.domainSuffix) "oauth2-proxy.istio-system.svc.cluster.local" }}
 {{- range $teamId, $team := $v.teamConfig }}
   {{- if hasKey $team "services" }}
     {{- range $s := $team.services }}
       {{- if (hasKey $s "domain")}}
-        {{- if and (not (has $s.domain $domains)) (not (contains $v.cluster.domainSuffix $s.domain)) }}
+        {{- if not (contains $v.cluster.domainSuffix $s.domain) }}
           {{- $domains = append $domains $s.domain }}
         {{- end }}
       {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}
-{{- $domains = append $domains (print "." $v.cluster.domainSuffix) }}
+{{- $domains = sortAlpha (uniq $domains) }}
 
 config:
   existingSecret: oauth2-proxy-client-access
@@ -100,67 +100,74 @@ sessionStorage:
   # Can be one of the supported session storage cookie|redis
   type: redis
   redis:
-    clientType: {{ $r | get "architecture" }}
+    {{- if gt $r.replicas 1 }}
+    standalone:
+      connectionUrl: "redis://oauth2-proxy-redis-ha-haproxy.istio-system.svc.cluster.local:6379"
+    {{- end }}
     password: {{ $r | get "password" | quote }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
-global:
-  security:
-    # Required for Redis
-    allowInsecureImages: true
-{{- end }}
-
-redis:
+redis-ha:
+  global:
+    priorityClassName: otomi-critical
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/redis"
   {{- end }}
   enabled: true
-  architecture: {{ $r | get "architecture" }}
   redisPassword: {{ $r | get "password" | quote }}
-  replicas: 1
+  replicas: {{ $r.replicas }}
   redis:
+    resources: {{- $r.resources.master | toYaml | nindent 6 }}
+    podAnnotations:
+      sidecar.istio.io/inject: "false"
     config:
       # See http://download.redis.io/redis-stable/redis.conf
       min-replicas-to-write: 0
+
+  networkPolicy:
+    enabled: true
+  {{- if eq $r.replicas 1 }}
+    ingressRules:
+      - selectors:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: istio-system
+            podSelector:
+              matchLabels:
+                app.kubernetes.io/name: oauth2-proxy
+  {{- else }}
+  haproxy:
+    enabled: true
+    networkPolicy:
+      enabled: true
+      ingressRules:
+        - selectors:
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: istio-system
+              podSelector:
+                matchLabels:
+                  app.kubernetes.io/name: oauth2-proxy
+  {{- end }}
+
+  persistentVolume:
+    {{- if $r.persistentVolumeSize }}
+    size: {{ $r.persistentVolumeSize }}
+    storageClass: {{ $v.cluster.defaultStorageClass }}
+    {{- else }}
+    enabled: false
+    {{- end }}
+
   sentinel:
-    persistence:
-      size: {{ $r.persistence.sentinel.size }}
-      storageClass: {{ $v.cluster.defaultStorageClass }}
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
     resources: {{- $r.resources.sentinel | toYaml | nindent 6 }}
-
-  master:
-    persistence:
-      size: {{ $r.persistence.master.size }}
-      storageClass: {{ $v.cluster.defaultStorageClass }}
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
-    priorityClassName: otomi-critical
-    resources: {{- $r.resources.master | toYaml | nindent 6 }}
-
-  replica:
-    persistence:
-      size: {{ $r.persistence.replica.size }}
-      storageClass: {{ $v.cluster.defaultStorageClass }}
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
-    priorityClassName: otomi-critical
-    resources: {{- $r.resources.replica | toYaml | nindent 6 }}
-
-  metrics:
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
-    priorityClassName: otomi-critical
-    resources: {{- $r.resources.metrics | toYaml | nindent 6 }}
 
   {{- with .Values.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
+{{- with $v.otomi.linodeLkeImageRepository }}
 image:
-  repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/oauth2-proxy/oauth2-proxy"
+  registry: {{ . }}
+  repository: quay/oauth2-proxy/oauth2-proxy
 {{- end }}

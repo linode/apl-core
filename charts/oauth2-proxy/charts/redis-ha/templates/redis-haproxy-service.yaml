@@ -54,6 +54,12 @@ spec:
     protocol: TCP
     targetPort: metrics-port
 {{- end }}
+{{- range .Values.haproxy.additionalPorts }}
+  - name: {{ .name }}
+    port: {{ .servicePort | default .containerPort }}
+    protocol: TCP
+    targetPort: {{ .name }}
+{{- end }}
   selector:
     release: {{ .Release.Name }}
     app: {{ template "redis-ha.name" . }}-haproxy

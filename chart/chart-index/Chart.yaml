@@ -80,7 +80,7 @@ dependencies:
     version: 5.4.0
     repository: https://charts.min.io/
   - name: oauth2-proxy
-    version: 8.5.1
+    version: 10.0.0
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator

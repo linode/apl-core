@@ -2250,12 +2250,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          architecture:
-            type: string
-            enum:
-              - standalone
-              - replication
-            default: standalone
           password:
             type: string
             x-secret: '{{ randAlpha 24 }}'
@@ -2264,29 +2258,12 @@ properties:
             properties:
               master:
                 $ref: '#/definitions/resources'
-              replica:
-                $ref: '#/definitions/resources'
               sentinel:
                 $ref: '#/definitions/resources'
-              metrics:
-                $ref: '#/definitions/resources'
-          persistence:
-            properties:
-              master:
-                properties:
-                  size:
-                    default: 1Gi
-                    $ref: '#/definitions/size'
-              replica:
-                properties:
-                  size:
-                    default: 1Gi
-                    $ref: '#/definitions/size'
-              sentinet:
-                properties:
-                  size:
-                    default: 1Gi
-                    $ref: '#/definitions/size'
+          replicas:
+            type: integer
+          persistentVolumeSize:
+            $ref: '#/definitions/size'
         type: object
       otomi-api:
         additionalProperties: false

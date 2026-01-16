@@ -243,6 +243,7 @@ The following table lists the configurable parameters of the Redis chart and the
 |-----|------|---------|-------------|
 | `haproxy.IPv6.enabled` | Enable HAProxy parameters to bind and consume IPv6 addresses. Enabled by default. | bool | `true` |
 | `haproxy.additionalAffinities` | Additional affinities to add to the haproxy pods. | object | `{}` |
+| `haproxy.additionalPorts` | Additional ports to expose on HAProxy service and deployment. Each port should have a name, containerPort, and optionally servicePort (defaults to containerPort) | list | `[]` |
 | `haproxy.affinity` | Override all other affinity settings for the haproxy pods with a string. | string | `""` |
 | `haproxy.annotations` | HAProxy template annotations | object | `{}` |
 | `haproxy.checkFall` | haproxy.cfg `check fall` setting | int | `1` |

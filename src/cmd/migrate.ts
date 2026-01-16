@@ -707,7 +707,6 @@ export const applyChanges = async (
   const prevValues = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
   const values = cloneDeep(prevValues)
   for (const c of changes) {
-    c.deletions?.forEach((entry) => unsetAtPath(entry, values))
     c.additions?.forEach((entry: any) => each(entry, (val, path) => setAtPath(path, values, val)))
     c.bulkAdditions?.forEach((entry) => each(entry, (filePath, path) => bulkAddition(path, values, filePath)))
     c.relocations?.forEach((entry) => each(entry, (newName, oldName) => moveGivenJsonPath(values, oldName, newName)))
@@ -726,13 +725,6 @@ export const applyChanges = async (
           await setDeep(values, path, tmplStr)
         }
       }
-    // Lastly we remove files
-    for (const change of changes) {
-      change.fileDeletions?.forEach((entry) => {
-        const paths = unparsePaths(entry, values)
-        paths.forEach((path) => deleteFile(path))
-      })
-    }
 
     for (const customFunctionName of c.customFunctions || []) {
       const customFunction = customMigrationFunctions[customFunctionName]
@@ -740,6 +732,15 @@ export const applyChanges = async (
         throw new Error(`Error in migration: Custom migration function ${customFunctionName} not found`)
       }
       await customFunction(values)
+    }
+
+    c.deletions?.forEach((entry) => unsetAtPath(entry, values))
+    // Lastly we remove files
+    for (const change of changes) {
+      change.fileDeletions?.forEach((entry) => {
+        const paths = unparsePaths(entry, values)
+        paths.forEach((path) => deleteFile(path))
+      })
     }
 
     Object.assign(values.versions, { specVersion: c.version })
