@@ -1,5 +1,5 @@
 {{- if and .Values.enterprise.enabled .Values.enterpriseFederationFrontend.enabled -}}
-{{- if gt (int .Values.enterpriseFederationFrontend.replicas) 1 }}
+{{- if and (gt (int .Values.enterpriseFederationFrontend.replicas) 1) .Values.enterpriseFederationFrontend.podDisruptionBudget.enabled }}
 {{ $dict := dict "ctx" . "component" "enterprise-federation-frontend" }}
 apiVersion: {{ include "tempo.pdb.apiVersion" . }}
 kind: PodDisruptionBudget
@@ -7,6 +7,7 @@ metadata:
   name: {{ include "tempo.resourceName" $dict }}
   labels:
     {{- include "tempo.labels" $dict | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
