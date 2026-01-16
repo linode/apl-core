@@ -86,7 +86,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
 | `image.registry`                                  | Sealed Secrets image registry                                                                                      | `docker.io`                         |
 | `image.repository`                                | Sealed Secrets image repository                                                                                    | `bitnami/sealed-secrets-controller` |
-| `image.tag`                                       | Sealed Secrets image tag (immutable tags are recommended)                                                          | `0.33.1`                            |
+| `image.tag`                                       | Sealed Secrets image tag (immutable tags are recommended)                                                          | `0.34.0`                            |
 | `image.pullPolicy`                                | Sealed Secrets image pull policy                                                                                   | `IfNotPresent`                      |
 | `image.pullSecrets`                               | Sealed Secrets image pull secrets                                                                                  | `[]`                                |
 | `revisionHistoryLimit`                            | Number of old history to retain to allow rollback (If not set, default Kubernetes value is set to 10)              | `""`                                |
@@ -107,6 +107,8 @@ The command removes all the Kubernetes components associated with the chart and 
 | `logFormat`                                       | Specifies log format (text,json)                                                                                   | `""`                                |
 | `maxRetries`                                      | Number of maximum retries                                                                                          | `""`                                |
 | `watchForSecrets`                                 | Specifies whether the Sealed Secrets controller will watch for new secrets                                         | `false`                             |
+| `kubeClientQPS`                                   | Kubeclient QPS (negative value disables ratelimiting)                                                              | `""`                                |
+| `kubeClientBurst`                                 | Kubeclient Burst                                                                                                   | `""`                                |
 | `command`                                         | Override default container command                                                                                 | `[]`                                |
 | `args`                                            | Override default container args                                                                                    | `[]`                                |
 | `livenessProbe.enabled`                           | Enable livenessProbe on Sealed Secret containers                                                                   | `true`                              |
@@ -184,25 +186,22 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Other Parameters
 
-| Name                           | Description                                                                                              | Value                                                                               |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `serviceAccount.annotations`   | Annotations for Sealed Secret service account                                                            | `{}`                                                                                |
-| `serviceAccount.create`        | Specifies whether a ServiceAccount should be created                                                     | `true`                                                                              |
-| `serviceAccount.labels`        | Extra labels to be added to the ServiceAccount                                                           | `{}`                                                                                |
-| `serviceAccount.name`          | The name of the ServiceAccount to use.                                                                   | `""`                                                                                |
-| `rbac.create`                  | Specifies whether RBAC resources should be created                                                       | `true`                                                                              |
-| `rbac.clusterRole`             | Specifies whether the Cluster Role resource should be created                                            | `true`                                                                              |
-| `rbac.clusterRoleName`         | Specifies the name for the Cluster Role resource                                                         | `secrets-unsealer`                                                                  |
-| `rbac.namespacedRoles`         | Specifies whether the namespaced Roles should be created (in each of the specified additionalNamespaces) | `false`                                                                             |
-| `rbac.namespacedRolesName`     | Specifies the name for the namespaced Role resource                                                      | `secrets-unsealer`                                                                  |
-| `rbac.labels`                  | Extra labels to be added to RBAC resources                                                               | `{}`                                                                                |
-| `rbac.pspEnabled`              | PodSecurityPolicy                                                                                        | `false`                                                                             |
-| `rbac.serviceProxier.create`   | Specifies whether to create the "proxier" role, to allow external users to access the SealedSecret API   | `true`                                                                              |
-| `rbac.serviceProxier.bind`     | Specifies whether to create a RoleBinding for the "proxier" role                                         | `true`                                                                              |
-| `rbac.serviceProxier.subjects` | Specifies the RBAC subjects to grant the "proxier" role to, in the created RoleBinding                   | `- apiGroup: rbac.authorization.k8s.io
-  kind: Group
-  name: system:authenticated
-` |
+| Name                           | Description                                                                                              | Value                                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `serviceAccount.annotations`   | Annotations for Sealed Secret service account                                                            | `{}`                                                                                     |
+| `serviceAccount.create`        | Specifies whether a ServiceAccount should be created                                                     | `true`                                                                                   |
+| `serviceAccount.labels`        | Extra labels to be added to the ServiceAccount                                                           | `{}`                                                                                     |
+| `serviceAccount.name`          | The name of the ServiceAccount to use.                                                                   | `""`                                                                                     |
+| `rbac.create`                  | Specifies whether RBAC resources should be created                                                       | `true`                                                                                   |
+| `rbac.clusterRole`             | Specifies whether the Cluster Role resource should be created                                            | `true`                                                                                   |
+| `rbac.clusterRoleName`         | Specifies the name for the Cluster Role resource                                                         | `secrets-unsealer`                                                                       |
+| `rbac.namespacedRoles`         | Specifies whether the namespaced Roles should be created (in each of the specified additionalNamespaces) | `false`                                                                                  |
+| `rbac.namespacedRolesName`     | Specifies the name for the namespaced Role resource                                                      | `secrets-unsealer`                                                                       |
+| `rbac.labels`                  | Extra labels to be added to RBAC resources                                                               | `{}`                                                                                     |
+| `rbac.pspEnabled`              | PodSecurityPolicy                                                                                        | `false`                                                                                  |
+| `rbac.serviceProxier.create`   | Specifies whether to create the "proxier" role, to allow external users to access the SealedSecret API   | `true`                                                                                   |
+| `rbac.serviceProxier.bind`     | Specifies whether to create a RoleBinding for the "proxier" role                                         | `true`                                                                                   |
+| `rbac.serviceProxier.subjects` | Specifies the RBAC subjects to grant the "proxier" role to, in the created RoleBinding                   | <pre><code>- apiGroup: rbac.authorization.k8s.io<br>  kind: Group<br>  name: system:authenticated</code></pre> |
 
 ### Metrics parameters
 
