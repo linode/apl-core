@@ -10,9 +10,9 @@ dependencies:
   version: 4.51.0
 - name: grafana
   repository: https://grafana.github.io/helm-charts
-  version: 10.5.7
+  version: 10.5.8
 - name: prometheus-windows-exporter
   repository: https://prometheus-community.github.io/helm-charts
   version: 0.12.2
-digest: sha256:0897bca487bd751e9066370b704ff999ba39e45aab21c99dc3d9bff9e3bfe1e3
-generated: "2026-01-14T14:42:07.961868739Z"
+digest: sha256:b07dca839ae15c7877ed7453967ad55770f96e86f40bd36f6e0fc2bdb3f9d46d
+generated: "2026-01-15T14:36:28.615276046Z"
