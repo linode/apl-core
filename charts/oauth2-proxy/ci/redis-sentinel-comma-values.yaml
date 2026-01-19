@@ -8,7 +8,7 @@ sessionStorage:
       connectionUrls: "redis://oauth2-proxy-redis-announce-0:26379,redis://oauth2-proxy-redis-announce-1:26379"
 
 # provision an instance of the redis-ha sub-chart
-redis:
+redis-ha:
   enabled: true
   fullnameOverride: oauth2-proxy-redis
 
