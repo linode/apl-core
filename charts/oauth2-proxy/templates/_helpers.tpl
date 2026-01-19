@@ -90,11 +90,19 @@ Allow the release namespace to be overridden for multi-namespace deployments in 
 {{- end -}}
 
 {{/*
+Redis subchart enabled check
+*/}}
+{{- define "oauth2-proxy.redis.enabled" -}}
+  {{- eq (index .Values "redis-ha" "enabled") true -}}
+{{- end -}}
+
+{{/*
 Redis subcharts fullname
 */}}
 {{- define "oauth2-proxy.redis.fullname" -}}
-{{- if .Values.redis.enabled -}}
-{{- include "redis-ha.fullname" (dict "Chart" (dict "Name" "redis") "Release" .Release "Values" .Values.redis) -}}
+{{- if eq (include "oauth2-proxy.redis.enabled" .) "true" -}}
+{{- $redisValues := index .Values "redis-ha" | default dict -}}
+{{- include "redis-ha.fullname" (dict "Chart" (dict "Name" "redis-ha") "Release" .Release "Values" $redisValues) -}}
 {{- else -}}
 {{ fail "attempting to use redis subcharts fullname, even though the subchart is not enabled. This will lead to misconfiguration" }}
 {{- end -}}
@@ -106,8 +114,9 @@ Compute the redis url if not set explicitly.
 {{- define "oauth2-proxy.redis.StandaloneUrl" -}}
 {{- if .Values.sessionStorage.redis.standalone.connectionUrl -}}
 {{ .Values.sessionStorage.redis.standalone.connectionUrl }}
-{{- else if .Values.redis.enabled -}}
-{{- printf "redis://%s:%.0f" (include "oauth2-proxy.redis.fullname" .) .Values.redis.redis.port -}}
+{{- else if eq (include "oauth2-proxy.redis.enabled" .) "true" -}}
+{{- $redisValues := index .Values "redis-ha" | default dict -}}
+{{- printf "redis://%s:%.0f" (include "oauth2-proxy.redis.fullname" .) $redisValues.redis.port -}}
 {{- else -}}
 {{ fail "please set sessionStorage.redis.standalone.connectionUrl or enable the redis subchart via redis.enabled" }}
 {{- end -}}
