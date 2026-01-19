@@ -5,7 +5,7 @@ sessionStorage:
     password: "foo"
 
 # provision an instance of the redis-ha sub-chart
-redis:
+redis-ha:
   enabled: true
 
   redisPassword: "foo"

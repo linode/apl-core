@@ -180,6 +180,10 @@ spec:
         - name: metrics-port
           containerPort: {{ default "9101" .Values.haproxy.metrics.port }}
         {{- end }}
+        {{- range .Values.haproxy.additionalPorts }}
+        - name: {{ .name }}
+          containerPort: {{ .containerPort }}
+        {{- end }}
         resources:
 {{ toYaml .Values.haproxy.resources | indent 10 }}
         volumeMounts:
