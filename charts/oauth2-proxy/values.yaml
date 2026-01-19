@@ -1,9 +1,10 @@
-global: {}
-# To help compatibility with other charts which use global.imagePullSecrets.
-# global:
-#   imagePullSecrets:
-#   - name: pullSecret1
-#   - name: pullSecret2
+global:
+  # Global registry to pull the images from
+  imageRegistry: ""
+  # To help compatibility with other charts which use global.imagePullSecrets.
+  imagePullSecrets: []
+  #   - name: pullSecret1
+  #   - name: pullSecret2
 
 ## Override the deployment namespace
 ##
@@ -74,7 +75,8 @@ alphaConfig:
   existingSecret: ~
 
 image:
-  repository: "quay.io/oauth2-proxy/oauth2-proxy"
+  registry: "quay.io"
+  repository: "oauth2-proxy/oauth2-proxy"
   # appVersion is used by default
   tag: ""
   pullPolicy: "IfNotPresent"
@@ -454,7 +456,7 @@ sessionStorage:
     # Redis password value. Applicable for all Redis configurations. Taken from redis subchart secret if not set. `sessionStorage.redis.existingSecret` takes precedence
     password: ""
     # Key of the Kubernetes secret data containing the redis password value. If you use the redis sub chart, make sure
-    # this password matches the one used in redis.global.redis.password (see below).
+    # this password matches the one used in redis-ha.redisPassword (see below).
     passwordKey: "redis-password"
     # Can be one of standalone|cluster|sentinel
     clientType: "standalone"
@@ -481,7 +483,7 @@ sessionStorage:
       # - "redis://127.0.0.1:8001"
 
 # Enables and configure the automatic deployment of the redis-ha subchart
-redis:
+redis-ha:
   # provision an instance of the redis-ha sub-chart
   enabled: false
   # Redis specific helm chart settings, please see:
