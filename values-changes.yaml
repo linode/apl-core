@@ -409,3 +409,11 @@ changes:
       - apps.otel.otlpCollector.mode
       - apps.loki.retention
       - apps.loki.v11StartDate
+  - version: 48
+    relocations:
+      - 'apps.oauth2-proxy-redis.persistence.master.size': apps.oauth2-proxy-redis.persistentVolumeSize
+    deletions:
+      - 'apps.oauth2-proxy-redis.architecture'
+      - 'apps.oauth2-proxy-redis.resources.replica'
+      - 'apps.oauth2-proxy-redis.resources.metrics'
+      - 'apps.oauth2-proxy-redis.persistence'
