@@ -953,29 +953,6 @@ entries:
     urls:
     - https://github.com/linode/apl-core/releases/download/apl-3.0.0/apl-3.0.0.tgz
     version: 3.0.0
-  apl-operator:
-  - apiVersion: v2
-    appVersion: main
-    created: "2026-01-19T14:20:31.662627266Z"
-    description: A Helm chart for installing APL in Kubernetes
-    digest: 71e157464050f51431de77b1cbf83b9476b9b62925ae334915c48721e9107d7c
-    home: https://techdocs.akamai.com/app-platform/docs/welcome
-    keywords:
-    - linode
-    - lke
-    - multi-tenancy
-    - continuous-delivery
-    - continuous-integration
-    - continuous-integration
-    - observability
-    - security
-    name: apl-operator
-    sources:
-    - https://github.com/linode/apl-core
-    type: application
-    urls:
-    - https://github.com/linode/apl-core/releases/download/apl-operator-4.13.0/apl-operator-4.13.0.tgz
-    version: 4.13.0
   otomi:
   - apiVersion: v2
     appVersion: v2.11.6
