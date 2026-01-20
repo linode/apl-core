@@ -23,6 +23,17 @@ config:
   clientID: "XXXXXXX"
   # OAuth client secret
   clientSecret: "XXXXXXXX"
+  # List of secret keys to include in the secret and expose as environment variables.
+  # By default, all three secrets are required. To exclude certain secrets
+  # (e.g., when using federated token authentication), remove them from this list.
+  # Example to exclude client-secret:
+  # requiredSecretKeys:
+  #   - client-id
+  #   - cookie-secret
+  requiredSecretKeys:
+    - client-id
+    - client-secret
+    - cookie-secret
   # Create a new secret with the following command
   # openssl rand -base64 32 | head -c 32 | base64
   # Use an existing secret for OAuth2 credentials (see secret.yaml for required fields)
@@ -75,7 +86,7 @@ alphaConfig:
   existingSecret: ~
 
 image:
-  registry: "quay.io"
+  registry: ""
   repository: "oauth2-proxy/oauth2-proxy"
   # appVersion is used by default
   tag: ""
