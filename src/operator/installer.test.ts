@@ -27,6 +27,13 @@ jest.mock('../common/hf', () => ({
   hfValues: jest.fn(),
 }))
 
+jest.mock('../common/git-config', () => ({
+  getGitConfig: jest.fn().mockResolvedValue({ useInternalGitea: true }),
+  getGitCredentials: jest.fn().mockResolvedValue(undefined),
+  GIT_CONFIG_SECRET_NAME: 'apl-git-credentials',
+  GIT_CONFIG_NAMESPACE: 'apl-operator',
+}))
+
 jest.mock('./utils', () => ({
   getErrorMessage: jest.fn((error) => (error instanceof Error ? error.message : String(error))),
 }))
@@ -295,10 +302,10 @@ describe('Installer', () => {
 
     test('should extract credentials and create secrets when secrets do not exist', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
-            adminPassword: 'test-password',
+        otomi: {
+          git: {
+            user: 'test-admin',
+            password: 'test-password',
           },
         },
         kms: {
@@ -331,11 +338,11 @@ describe('Installer', () => {
       expect(process.env.SOPS_AGE_KEY).toBe('AGE-SECRET-KEY-1234567890')
     })
 
-    test('should use default username when not provided', async () => {
+    test('should throw error when username is not provided', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminPassword: 'test-password',
+        otomi: {
+          git: {
+            password: 'test-password',
           },
         },
         kms: {
@@ -349,21 +356,17 @@ describe('Installer', () => {
 
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
-      ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
-      const result = await installer.setEnvAndCreateSecrets()
-
-      expect(result).toEqual({
-        username: 'otomi-admin',
-        password: 'test-password',
-      })
+      await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow(
+        'Gitea credentials not found in values (otomi.git.user/password)',
+      )
     })
 
     test('should throw error when password is missing', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
+        otomi: {
+          git: {
+            user: 'test-admin',
           },
         },
       }
@@ -371,38 +374,36 @@ describe('Installer', () => {
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
 
-      await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow('Git credentials not found in values')
+      await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow(
+        'Gitea credentials not found in values (otomi.git.user/password)',
+      )
     })
 
-    test('should use default username when username is empty string', async () => {
+    test('should throw error when username is empty string', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: '',
-            adminPassword: 'test-password',
+        otomi: {
+          git: {
+            user: '',
+            password: 'test-password',
           },
         },
       }
 
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
-      ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
-      const result = await installer.setEnvAndCreateSecrets()
-
-      // Empty string falls back to default due to || operator
-      expect(result).toEqual({
-        username: 'otomi-admin',
-        password: 'test-password',
-      })
+      // Empty string fails the !gitUsername check
+      await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow(
+        'Gitea credentials not found in values (otomi.git.user/password)',
+      )
     })
 
     test('should throw error when password is empty string', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
-            adminPassword: '',
+        otomi: {
+          git: {
+            user: 'test-admin',
+            password: '',
           },
         },
       }
@@ -410,15 +411,17 @@ describe('Installer', () => {
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
 
-      await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow('Git credentials not found in values')
+      await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow(
+        'Gitea credentials not found in values (otomi.git.user/password)',
+      )
     })
 
     test('should skip SOPS key when encrypted', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
-            adminPassword: 'test-password',
+        otomi: {
+          git: {
+            user: 'test-admin',
+            password: 'test-password',
           },
         },
         kms: {
@@ -441,10 +444,10 @@ describe('Installer', () => {
 
     test('should skip SOPS key when not provided', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
-            adminPassword: 'test-password',
+        otomi: {
+          git: {
+            user: 'test-admin',
+            password: 'test-password',
           },
         },
       }
@@ -467,10 +470,10 @@ describe('Installer', () => {
 
     test('should handle secret creation failure', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
-            adminPassword: 'test-password',
+        otomi: {
+          git: {
+            user: 'test-admin',
+            password: 'test-password',
           },
         },
       }
@@ -482,12 +485,12 @@ describe('Installer', () => {
       await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow('Secret creation failed')
     })
 
-    test('should handle nested gitea structure', async () => {
+    test('should handle nested otomi.git structure', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'nested-admin',
-            adminPassword: 'nested-password',
+        otomi: {
+          git: {
+            user: 'nested-admin',
+            password: 'nested-password',
           },
         },
         kms: {
@@ -513,10 +516,10 @@ describe('Installer', () => {
 
     test('should use only existing SOPS secret when gitea credentials need creation', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
-            adminPassword: 'test-password',
+        otomi: {
+          git: {
+            user: 'test-admin',
+            password: 'test-password',
           },
         },
       }
