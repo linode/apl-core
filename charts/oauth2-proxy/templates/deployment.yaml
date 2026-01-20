@@ -110,7 +110,7 @@ spec:
       {{- end }}
       containers:
       - name: {{ .Chart.Name }}
-        image: "{{ .Values.global.imageRegistry | default .Values.image.registry }}/{{ .Values.image.repository }}:{{ include "oauth2-proxy.version" . }}"
+        image: "{{ .Values.image.registry | default .Values.global.imageRegistry | default "quay.io" }}/{{ .Values.image.repository }}:{{ include "oauth2-proxy.version" . }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         {{- if .Values.image.command }}
         command:
@@ -182,21 +182,27 @@ spec:
 {{- end }}
         env:
         {{- if .Values.proxyVarsAsSecrets }}
+        {{- if has "client-id" .Values.config.requiredSecretKeys }}
         - name: OAUTH2_PROXY_CLIENT_ID
           valueFrom:
             secretKeyRef:
               name:  {{ template "oauth2-proxy.secretName" . }}
               key: client-id
+        {{- end }}
+        {{- if has "client-secret" .Values.config.requiredSecretKeys }}
         - name: OAUTH2_PROXY_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
               name:  {{ template "oauth2-proxy.secretName" . }}
               key: client-secret
+        {{- end }}
+        {{- if has "cookie-secret" .Values.config.requiredSecretKeys }}
         - name: OAUTH2_PROXY_COOKIE_SECRET
           valueFrom:
             secretKeyRef:
               name:  {{ template "oauth2-proxy.secretName" . }}
               key: cookie-secret
+        {{- end }}
         {{- end }}
         {{- if eq (default "cookie" .Values.sessionStorage.type) "redis" }}
         - name: OAUTH2_PROXY_SESSION_STORE_TYPE
