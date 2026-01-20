@@ -118,7 +118,7 @@ Compute the redis url if not set explicitly.
 {{- $redisValues := index .Values "redis-ha" | default dict -}}
 {{- printf "redis://%s:%.0f" (include "oauth2-proxy.redis.fullname" .) $redisValues.redis.port -}}
 {{- else -}}
-{{ fail "please set sessionStorage.redis.standalone.connectionUrl or enable the redis subchart via redis.enabled" }}
+{{ fail "please set sessionStorage.redis.standalone.connectionUrl or enable the redis subchart via redis-ha.enabled" }}
 {{- end -}}
 {{- end -}}
 
@@ -164,7 +164,13 @@ metricsServer:
 {{- end -}}
 
 {{- define "oauth2-proxy.secrets" -}}
+{{- if has "cookie-secret" .Values.config.requiredSecretKeys }}
 cookie-secret: {{ tpl .Values.config.cookieSecret $ | b64enc | quote }}
+{{- end }}
+{{- if has "client-secret" .Values.config.requiredSecretKeys }}
 client-secret: {{ tpl .Values.config.clientSecret $ | b64enc | quote }}
+{{- end }}
+{{- if has "client-id" .Values.config.requiredSecretKeys }}
 client-id: {{ tpl .Values.config.clientID $ | b64enc | quote }}
+{{- end }}
 {{- end -}}
