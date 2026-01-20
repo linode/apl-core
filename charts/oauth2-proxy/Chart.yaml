@@ -1,10 +1,12 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: changed
-      description: Breaking change: Removed alias for the Redis HA subchart dependency (use redis-ha path to configure redis)
+    - kind: added
+      description: Added config.requiredSecretKeys option to selectively include secrets (allows excluding client-secret for federated auth scenarios)
       links:
         - name: Github PR
-          url: https://github.com/oauth2-proxy/manifests/pull/378
+          url: https://github.com/oauth2-proxy/manifests/pull/384
+        - name: Github Issue
+          url: https://github.com/oauth2-proxy/manifests/issues/376
 apiVersion: v2
 appVersion: 7.13.0
 dependencies:
@@ -35,4 +37,4 @@ name: oauth2-proxy
 sources:
 - https://github.com/oauth2-proxy/oauth2-proxy
 - https://github.com/oauth2-proxy/manifests
-version: 10.0.0
+version: 10.1.0
