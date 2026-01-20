@@ -78,8 +78,8 @@ resources:
   metadata:
     name: minio-creds
   data:
-    REGISTRY_STORAGE_S3_ACCESSKEY: "{{ $otomiAdmin | b64enc }}"
-    REGISTRY_STORAGE_S3_SECRETKEY: "{{ $v.otomi.adminPassword | b64enc }}"
+    S3_STORAGE_ACCOUNT: "{{ $otomiAdmin | b64enc }}"
+    S3_STORAGE_KEY: "{{ $v.otomi.adminPassword | b64enc }}"
 {{- end }}
 {{- if eq $obj.type "linode" }}
 - apiVersion: v1
@@ -87,6 +87,6 @@ resources:
   metadata:
     name: linode-creds
   data:
-    REGISTRY_STORAGE_S3_ACCESSKEY: "{{ $obj.linode.accessKeyId | b64enc }}"
-    REGISTRY_STORAGE_S3_SECRETKEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
+    S3_STORAGE_ACCOUNT: "{{ $obj.linode.accessKeyId | b64enc }}"
+    S3_STORAGE_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
 {{- end }}
