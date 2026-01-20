@@ -64,34 +64,36 @@ export interface Repo {
 }
 
 export const getRepo = (values: Record<string, any>): Repo => {
-  const giteaEnabled = values?.apps?.gitea?.enabled ?? true
-  const byor = !!values?.apps?.['otomi-api']?.git
-  if (!giteaEnabled && !byor) {
-    throw new Error('Gitea is disabled but no apps.otomi-api.git config was given.')
+  const useInternalGitea = values?.otomi?.git?.useInternalGitea ?? true
+  const otomiGit = values?.otomi?.git
+
+  if (!useInternalGitea && !otomiGit?.repoUrl) {
+    throw new Error('External Git selected (useInternalGitea=false) but no otomi.git.repoUrl config was given.')
   }
-  let username = 'Otomi Admin'
-  let email: string
-  let password: string
-  let branch = 'main'
-  let remote
-  if (!giteaEnabled) {
-    const otomiApiGit = values?.apps?.['otomi-api']?.git
-    username = otomiApiGit?.user
-    password = otomiApiGit?.password
-    remote = otomiApiGit?.repoUrl
-    email = otomiApiGit?.email
-    branch = otomiApiGit?.branch ?? branch
-  } else {
-    username = 'otomi-admin'
-    password = values?.apps?.gitea?.adminPassword
-    email = `pipeline@cluster.local`
+
+  // All values are now derived in helmfile for internal Gitea, so we can read them directly
+  const username = otomiGit?.user
+  const password = otomiGit?.password
+  const email = otomiGit?.email
+  const branch = otomiGit?.branch ?? 'main'
+
+  let remote: string
+  if (useInternalGitea) {
+    // Internal Gitea - construct the remote URL with credentials
     const gitUrl = env.GIT_URL
     const gitPort = env.GIT_PORT
     const gitOrg = 'otomi'
     const gitRepo = 'values'
     const protocol = env.GIT_PROTOCOL
     remote = `${protocol}://${username}:${encodeURIComponent(password)}@${gitUrl}:${gitPort}/${gitOrg}/${gitRepo}.git`
+  } else {
+    // External Git - embed credentials into the provided repoUrl
+    const repoUrl = new URL(otomiGit?.repoUrl)
+    repoUrl.username = username
+    repoUrl.password = password
+    remote = repoUrl.toString()
   }
+
   return { remote, branch, email, username, password }
 }
 

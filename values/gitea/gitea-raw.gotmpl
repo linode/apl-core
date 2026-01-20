@@ -26,8 +26,8 @@ resources:
   metadata:
     name: gitea-admin-secret
   data:
-    username: "{{ $g.adminUsername | b64enc }}"
-    password: "{{ $g.adminPassword | b64enc }}"
+    username: "{{ $v.otomi.git.user | b64enc }}"
+    password: "{{ $v.otomi.git.password | b64enc }}"
 # DB / app backup resources
 {{- if eq $obj.type "minioLocal" }}
 - apiVersion: v1

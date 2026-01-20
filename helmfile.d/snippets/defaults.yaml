@@ -146,7 +146,6 @@ environments:
                 memory: 64Mi
                 cpu: 10m
           gitea:
-            adminUsername: otomi-admin
             _rawValues: {}
             networkPolicies:
               enabled: true
@@ -1301,6 +1300,12 @@ environments:
           receivers:
             - none
         otomi:
+          git:
+            useInternalGitea: true
+            branch: main
+            repoUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values
+            user: otomi-admin
+            email: pipeline@cluster.local
           hasExternalDNS: false
           hasExternalIDP: false
           isMultitenant: true

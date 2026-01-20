@@ -85,9 +85,9 @@ async function main(): Promise<void> {
       await installer.initialize()
       await installer.reconcileInstall()
     }
-    const gitCredentials = await installer.setEnvAndCreateSecrets()
 
-    // Phase 2: Start operator for GitOps operations
+    // Phase 2: Get credentials and start operator for GitOps operations
+    const gitCredentials = await installer.setEnvAndCreateSecrets()
     const config = loadConfig(aplOps, gitCredentials)
     const operator = new AplOperator(config)
     handleTerminationSignals(operator)

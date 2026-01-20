@@ -20,5 +20,5 @@ resources:
     data:
       type: {{ print "git" | b64enc | quote }}
       url: {{ printf "https://%s" $v._derived.giteaDomain | b64enc }}
-      username: {{ $g.adminUsername | b64enc }}
-      password: {{ $g.adminPassword | b64enc }}
+      username: {{ $v.otomi.git.password | b64enc }}
+      password: {{ $v.otomi.git.user| b64enc }}
