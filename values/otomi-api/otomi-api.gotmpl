@@ -3,8 +3,8 @@
 {{- $o := $v.apps | get "otomi-api" }}
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $sops := $v | get "kms.sops" dict }}
-{{- $otomiGit := $v.otomi.git }}
-{{- $useInternalGitea := $otomiGit | get "useInternalGitea" true }}
+{{- $git := $v.otomi.git }}
+{{- $useInternalGitea := $git.useInternalGitea }}
 {{- $giteaValuesPublicUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
 {{- $helmChartCatalog := printf "https://gitea.%s/otomi/charts.git" $v.cluster.domainSuffix }}
 {{- $defaultPlatformAdminEmail := printf "platform-admin@%s" $v.cluster.domainSuffix }}
@@ -39,9 +39,9 @@ tools:
     VERBOSITY: '1'
 
 secrets:
-  GIT_USER: {{ $otomiGit.user | quote }}
-  GIT_EMAIL: {{ $otomiGit.email | quote }}
-  GIT_PASSWORD: {{ $otomiGit.password | quote }}
+  GIT_USER: {{ $git.user | quote }}
+  GIT_EMAIL: {{ $git.email | quote }}
+  GIT_PASSWORD: {{ $git.password | quote }}
   {{- $sopsEnv | nindent 2 }}
 
 env:
@@ -50,9 +50,9 @@ env:
   DEFAULT_PLATFORM_ADMIN_EMAIL: {{ $defaultPlatformAdminEmail }}
   DEBUG: 'otomi:*,-otomi:authz,-otomi:repo'
   VERBOSITY: '1'
-  GIT_REPO_URL: {{ $otomiGit.repoUrl }}
-  GIT_REPO_PUBLIC_URL: {{ if $useInternalGitea }}{{ $giteaValuesPublicUrl }}{{ else }}{{ $otomiGit.repoUrl }}{{ end }}
-  GIT_BRANCH: {{ $otomiGit }}
+  GIT_REPO_URL: {{ $git.repoUrl }}
+  GIT_REPO_PUBLIC_URL: {{ if $useInternalGitea }}{{ $giteaValuesPublicUrl }}{{ else }}{{ $git.repoUrl }}{{ end }}
+  GIT_BRANCH: {{ $git.branch }}
   VERSIONS: |
     {{ $v.versions | toJson | nindent 4}}
   {{- if $v._derived.untrustedCA }}
