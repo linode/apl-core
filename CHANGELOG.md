@@ -1,7 +1,13 @@
-
 # Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [4.13.1](https://github.com/linode/apl-core/compare/v4.13.0...v4.13.1) (2026-01-20)
+
+
+### Reverts
+
+* helm chart name ([#2856](https://github.com/linode/apl-core/issues/2856)) ([edc8fb8](https://github.com/linode/apl-core/commit/edc8fb87413c0048f3263c5e67580531226b2102))
 
 ## [4.13.0](https://github.com/linode/apl-core/compare/v4.12.0...v4.13.0) (2026-01-19)
 
