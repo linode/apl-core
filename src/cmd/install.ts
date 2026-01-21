@@ -125,7 +125,7 @@ export const installAll = async () => {
       // Create ConfigMap to store Git configuration for operator
       await setGitConfig({
         useInternalGitea: false,
-        baseUrl: values?.otomi?.git?.baseUrl,
+        repoUrl: values?.otomi?.git?.repoUrl,
         branch: values?.otomi?.git?.branch ?? 'main',
         email: values?.otomi?.git?.email,
       })

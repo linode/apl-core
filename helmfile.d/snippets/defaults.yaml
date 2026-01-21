@@ -1303,7 +1303,7 @@ environments:
           git:
             useInternalGitea: true
             branch: main
-            baseUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values
+            repoUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values
             user: otomi-admin
             email: pipeline@cluster.local
           hasExternalDNS: false

@@ -48,7 +48,7 @@ otomi:
   ## Set useInternalGitea to false to use an external Git provider (GitHub, GitLab, Bitbucket).
   git:
     useInternalGitea: true
-    # baseUrl: ''      # Required when useInternalGitea is false (e.g., https://github.com/org/repo)
+    # repoUrl: ''      # Required when useInternalGitea is false (e.g., https://github.com/org/repo)
     # user: ''         # Git username (defaults to 'otomi-admin' for internal Gitea)
     # password: ''     # Git password or personal access token
     # email: ''        # Email for git commits (defaults to 'pipeline@cluster.local' for internal Gitea)

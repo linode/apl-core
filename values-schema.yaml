@@ -2303,7 +2303,7 @@ properties:
               password:
                 type: string
                 x-secret: ''
-              baseUrl:
+              repoUrl:
                 $ref: '#/definitions/repoUrl'
               user:
                 type: string
@@ -2932,10 +2932,10 @@ properties:
             type: boolean
             description: |
               Whether to use the built-in Gitea instance for the APL values repository.
-              - true: Use built-in Gitea (default) - baseUrl, user, and email will be auto-derived
+              - true: Use built-in Gitea (default) - repoUrl, user, and email will be auto-derived
               - false: Use an external Git provider (GitHub, GitLab, Bitbucket, etc.)
             default: true
-          baseUrl:
+          repoUrl:
             type: string
             description: |
               The base URL of the Git repository (without credentials). Auto-derived for internal Gitea.

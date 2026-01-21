@@ -17,7 +17,7 @@ export const GIT_CONFIG_NAMESPACE = 'apl-operator'
  * Contains both the base URL (without credentials) and the authenticated URL (with embedded credentials).
  */
 export interface GitRepoConfig {
-  baseUrl: string // URL without credentials (e.g., https://github.com/org/repo.git)
+  repoUrl: string // URL without credentials (e.g., https://github.com/org/repo.git)
   authenticatedUrl: string // URL with embedded credentials for git operations
   branch: string
   email: string
@@ -30,7 +30,7 @@ export interface GitRepoConfig {
  */
 export interface GitConfigData {
   useInternalGitea: boolean
-  baseUrl?: string
+  repoUrl?: string
   branch?: string
   email?: string
   lastUpdated?: string
@@ -71,7 +71,7 @@ export async function setGitConfig(config: Partial<GitConfigData>, coreV1Api?: C
   }
 
   if (config.useInternalGitea !== undefined) data.useInternalGitea = String(config.useInternalGitea)
-  if (config.baseUrl !== undefined) data.baseUrl = config.baseUrl
+  if (config.repoUrl !== undefined) data.repoUrl = config.repoUrl
   if (config.branch !== undefined) data.branch = config.branch
   if (config.email !== undefined) data.email = config.email
 
@@ -94,8 +94,8 @@ export const getRepo = (values: Record<string, any>): GitRepoConfig => {
   const useInternalGitea = values?.otomi?.git?.useInternalGitea ?? true
   const otomiGit = values?.otomi?.git
 
-  if (!useInternalGitea && !otomiGit?.baseUrl) {
-    throw new Error('External Git selected (useInternalGitea=false) but no otomi.git.baseUrl config was given.')
+  if (!useInternalGitea && !otomiGit?.repoUrl) {
+    throw new Error('External Git selected (useInternalGitea=false) but no otomi.git.repoUrl config was given.')
   }
 
   const username = otomiGit?.user
@@ -103,7 +103,7 @@ export const getRepo = (values: Record<string, any>): GitRepoConfig => {
   const email = otomiGit?.email
   const branch = otomiGit?.branch ?? 'main'
 
-  let baseUrl: string
+  let repoUrl: string
   let authenticatedUrl: string
 
   if (useInternalGitea) {
@@ -113,16 +113,16 @@ export const getRepo = (values: Record<string, any>): GitRepoConfig => {
     const gitOrg = 'otomi'
     const gitRepo = 'values'
     const protocol = env.GIT_PROTOCOL
-    baseUrl = `${protocol}://${gitUrl}:${gitPort}/${gitOrg}/${gitRepo}.git`
+    repoUrl = `${protocol}://${gitUrl}:${gitPort}/${gitOrg}/${gitRepo}.git`
     authenticatedUrl = `${protocol}://${username}:${encodeURIComponent(password as string)}@${gitUrl}:${gitPort}/${gitOrg}/${gitRepo}.git`
   } else {
-    // External Git - use provided baseUrl and embed credentials
-    baseUrl = otomiGit?.baseUrl
-    const url = new URL(baseUrl)
+    // External Git - use provided repoUrl and embed credentials
+    repoUrl = otomiGit?.repoUrl
+    const url = new URL(repoUrl)
     url.username = username
     url.password = password
     authenticatedUrl = url.toString()
   }
 
-  return { baseUrl, authenticatedUrl, branch, email, username, password }
+  return { repoUrl, authenticatedUrl, branch, email, username, password }
 }
