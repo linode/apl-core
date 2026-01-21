@@ -6,8 +6,8 @@ metadata:
   namespace: apl-operator
 data:
   useInternalGitea: {{ $git.useInternalGitea | default true | quote }}
-  {{- if $git.repoUrl }}
-  repoUrl: {{ $git.repoUrl | quote }}
+  {{- if $git.baseUrl }}
+  baseUrl: {{ $git.baseUrl | quote }}
   {{- end }}
   {{- if $git.branch }}
   branch: {{ $git.branch | quote }}

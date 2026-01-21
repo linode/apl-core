@@ -7,7 +7,7 @@ import { env } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { createUpdateConfigMap, createUpdateGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
-import { getRepo } from 'src/common/values'
+import { getRepo } from 'src/common/git-config'
 import { HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
@@ -132,7 +132,7 @@ export const commit = async (initialInstall: boolean, overrideArgs?: HelmArgumen
   await validateValues(overrideArgs)
   d.info('Preparing values')
   const values = (await hfValues()) as Record<string, any>
-  const { branch, remote, username, email } = getRepo(values)
+  const { branch, authenticatedUrl: remote, username, email } = getRepo(values)
   if (initialInstall) {
     // we call this here again, as we might not have completed (happens upon first install):
     await bootstrapGit(values)

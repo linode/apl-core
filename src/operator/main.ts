@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv'
 import { terminal } from '../common/debug'
 import { AplOperator, AplOperatorConfig } from './apl-operator'
-import { GitCredentials, Installer } from './installer'
+import { Installer } from './installer'
 import { operatorEnv } from './validators'
 import { env } from '../common/envalid'
 import fs from 'fs'
@@ -9,40 +9,28 @@ import path from 'path'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 import { GitRepository } from './git-repository'
+import { hfValues } from '../common/hf'
+import { getRepo } from '../common/git-config'
 import process from 'node:process'
 
 dotenv.config()
 
 const d = terminal('operator:main')
 
-function loadConfig(aplOps: AplOperations, gitCredentials: GitCredentials): AplOperatorConfig {
-  // Get credentials from process.env directly since they may have been set after operatorEnv was parsed
-  const { username } = gitCredentials
-  const { password } = gitCredentials
-  const gitHost = env.GIT_URL
-  const gitPort = env.GIT_PORT
-  const gitProtocol = env.GIT_PROTOCOL
-  const repoPath = env.ENV_DIR
-  const gitOrg = operatorEnv.GIT_ORG
-  const gitRepo = operatorEnv.GIT_REPO
-  const pollIntervalMs = operatorEnv.POLL_INTERVAL_MS
-  const reconcileIntervalMs = operatorEnv.RECONCILE_INTERVAL_MS
+async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
+  const values = (await hfValues()) as Record<string, any>
+  const { authenticatedUrl } = getRepo(values)
+
   const gitRepository = new GitRepository({
-    username,
-    password,
-    gitHost,
-    gitPort,
-    gitProtocol,
-    repoPath,
-    gitOrg,
-    gitRepo,
+    authenticatedUrl,
+    repoPath: env.ENV_DIR,
   })
 
   return {
     gitRepo: gitRepository,
     aplOps,
-    pollIntervalMs,
-    reconcileIntervalMs,
+    pollIntervalMs: operatorEnv.POLL_INTERVAL_MS,
+    reconcileIntervalMs: operatorEnv.RECONCILE_INTERVAL_MS,
   }
 }
 
@@ -86,9 +74,9 @@ async function main(): Promise<void> {
       await installer.reconcileInstall()
     }
 
-    // Phase 2: Get credentials and start operator for GitOps operations
-    const gitCredentials = await installer.setEnvAndCreateSecrets()
-    const config = loadConfig(aplOps, gitCredentials)
+    // Phase 2: Set environment variables and start operator for GitOps operations
+    await installer.setEnvAndCreateSecrets()
+    const config = await loadConfig(aplOps)
     const operator = new AplOperator(config)
     handleTerminationSignals(operator)
     d.info('=== Starting Operator Process ===')

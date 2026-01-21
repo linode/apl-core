@@ -55,48 +55,6 @@ export const getPackageVersion = (): string => {
   return pkg.version
 }
 
-export interface Repo {
-  email: string
-  username: string
-  password: string
-  remote: string
-  branch: string
-}
-
-export const getRepo = (values: Record<string, any>): Repo => {
-  const useInternalGitea = values?.otomi?.git?.useInternalGitea ?? true
-  const otomiGit = values?.otomi?.git
-
-  if (!useInternalGitea && !otomiGit?.repoUrl) {
-    throw new Error('External Git selected (useInternalGitea=false) but no otomi.git.repoUrl config was given.')
-  }
-
-  // All values are now derived in helmfile for internal Gitea, so we can read them directly
-  const username = otomiGit?.user
-  const password = otomiGit?.password
-  const email = otomiGit?.email
-  const branch = otomiGit?.branch ?? 'main'
-
-  let remote: string
-  if (useInternalGitea) {
-    // Internal Gitea - construct the remote URL with credentials
-    const gitUrl = env.GIT_URL
-    const gitPort = env.GIT_PORT
-    const gitOrg = 'otomi'
-    const gitRepo = 'values'
-    const protocol = env.GIT_PROTOCOL
-    remote = `${protocol}://${username}:${encodeURIComponent(password)}@${gitUrl}:${gitPort}/${gitOrg}/${gitRepo}.git`
-  } else {
-    // External Git - embed credentials into the provided repoUrl
-    const repoUrl = new URL(otomiGit?.repoUrl)
-    repoUrl.username = username
-    repoUrl.password = password
-    remote = repoUrl.toString()
-  }
-
-  return { remote, branch, email, username, password }
-}
-
 function mergeCustomizer(prev, next) {
   return next
 }

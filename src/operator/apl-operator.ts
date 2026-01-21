@@ -35,7 +35,7 @@ export class AplOperator {
   private gitRepo: GitRepository
   private aplOps: AplOperations
 
-  readonly repoUrl: string
+  readonly authenticatedUrl: string
   readonly pollInterval: number
   readonly reconcileInterval: number
 
@@ -46,10 +46,10 @@ export class AplOperator {
     this.reconcileInterval = reconcileIntervalMs
     this.gitRepo = gitRepo
     this.aplOps = aplOps
-    this.repoUrl = gitRepo.repoUrl
+    this.authenticatedUrl = gitRepo.authenticatedUrl
 
-    this.d.info(`Initializing APL Operator with repo URL: ${maskRepoUrl(gitRepo.repoUrl)}`)
-    this.d.debug(`Initializing APL Operator with repo URL: ${gitRepo.repoUrl}`)
+    this.d.info(`Initializing APL Operator with repo URL: ${maskRepoUrl(gitRepo.authenticatedUrl)}`)
+    this.d.debug(`Initializing APL Operator with repo URL: ${gitRepo.authenticatedUrl}`)
   }
 
   // public for testing
@@ -178,7 +178,7 @@ export class AplOperator {
     this.d.info('Starting APL operator')
 
     try {
-      await waitTillGitRepoAvailable(this.repoUrl)
+      await waitTillGitRepoAvailable(this.authenticatedUrl)
       await this.gitRepo.clone()
       this.d.info('APL operator started successfully')
     } catch (error) {

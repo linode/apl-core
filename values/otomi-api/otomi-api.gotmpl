@@ -50,8 +50,8 @@ env:
   DEFAULT_PLATFORM_ADMIN_EMAIL: {{ $defaultPlatformAdminEmail }}
   DEBUG: 'otomi:*,-otomi:authz,-otomi:repo'
   VERBOSITY: '1'
-  GIT_REPO_URL: {{ $git.repoUrl }}
-  GIT_REPO_PUBLIC_URL: {{ if $useInternalGitea }}{{ $giteaValuesPublicUrl }}{{ else }}{{ $git.repoUrl }}{{ end }}
+  GIT_REPO_URL: {{ $git.baseUrl }}
+  GIT_REPO_PUBLIC_URL: {{ if $useInternalGitea }}{{ $giteaValuesPublicUrl }}{{ else }}{{ $git.baseUrl }}{{ end }}
   GIT_BRANCH: {{ $git.branch }}
   VERSIONS: |
     {{ $v.versions | toJson | nindent 4}}

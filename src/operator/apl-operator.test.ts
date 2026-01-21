@@ -12,7 +12,7 @@ const mockDebugFn = jest.fn()
 const mockGitRepo = {
   clone: jest.fn().mockResolvedValue(undefined),
   syncAndAnalyzeChanges: jest.fn().mockResolvedValue({ hasChangesToApply: false, applyTeamsOnly: false }),
-  repoUrl: 'https://username:password@example.com:443/org/repo.git',
+  authenticatedUrl: 'https://username:password@example.com:443/org/repo.git',
   lastRevision: 'abc123',
 }
 
@@ -108,7 +108,7 @@ describe('AplOperator', () => {
 
       await startPromise
 
-      expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.repoUrl)
+      expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.authenticatedUrl)
       expect(mockGitRepo.clone).toHaveBeenCalled()
 
       expect(mockInfoFn).toHaveBeenCalledWith('APL operator started successfully')
@@ -120,7 +120,7 @@ describe('AplOperator', () => {
 
       await expect(aplOperator.start()).rejects.toThrow('Start failed')
 
-      expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.repoUrl)
+      expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.authenticatedUrl)
       expect(mockGitRepo.clone).toHaveBeenCalled()
 
       expect(mockErrorFn).toHaveBeenCalledWith('Failed to start APL operator:', 'Start failed')
