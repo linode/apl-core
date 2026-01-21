@@ -1,6 +1,6 @@
 import * as process from 'node:process'
 import { terminal } from '../common/debug'
-import { getGitConfig, getGitCredentials, GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE } from '../common/git-config'
+import { getGitCredentials, GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE } from '../common/git-config'
 import { hfValues } from '../common/hf'
 import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
 import { AplOperations } from './apl-operations'
@@ -103,84 +103,37 @@ export class Installer {
 
   private async setupGitCredentials(): Promise<GitCredentials> {
     try {
-      // Check the Git configuration to determine which credentials to use
-      const gitConfig = await getGitConfig()
-      const useInternalGitea = gitConfig?.useInternalGitea ?? true
+      // First, try to get credentials from the apl-git-credentials secret
+      const credentials = await getGitCredentials()
 
-      this.d.debug(`Setting up Git credentials (useInternalGitea: ${useInternalGitea})`)
-
-      if (!useInternalGitea) {
-        return await this.setupExternalGitCredentials()
+      if (credentials?.username && credentials?.password) {
+        this.d.debug('Using existing Git credentials from apl-git-credentials secret')
+        return credentials
       }
 
-      // Default to Gitea credentials
-      return await this.setupGiteaCredentials()
+      // Fallback: try to get from values (otomi.git)
+      this.d.debug('Extracting Git credentials from installation values')
+      const values = (await hfValues()) as Record<string, any>
+
+      const gitUsername: string = values.otomi?.git?.user
+      const gitPassword: string = values.otomi?.git?.password
+
+      if (!gitUsername || !gitPassword) {
+        throw new Error('Git credentials not found in values (otomi.git.user/password) or apl-git-credentials secret')
+      }
+
+      // Store credentials in the standard secret for future use
+      await createUpdateGenericSecret(k8s.core(), GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE, {
+        username: gitUsername,
+        password: gitPassword,
+      })
+
+      this.d.debug('Created Git credentials secret')
+      return { username: gitUsername, password: gitPassword }
     } catch (error) {
       this.d.error('Failed to setup git credentials:', getErrorMessage(error))
       throw error
     }
-  }
-
-  private async setupExternalGitCredentials(): Promise<GitCredentials> {
-    // First, try to get credentials from the apl-git-credentials secret
-    const externalCredentials = await getGitCredentials()
-
-    if (externalCredentials?.username && externalCredentials?.password) {
-      this.d.debug('Using external Git credentials from apl-git-credentials secret')
-      return externalCredentials
-    }
-
-    // Fallback: try to get from values (otomi.git)
-    this.d.debug('Extracting external Git credentials from values')
-    const values = (await hfValues()) as Record<string, any>
-
-    const gitUsername: string = values.otomi?.git?.user
-    const gitPassword: string = values.otomi?.git?.password
-
-    if (!gitUsername || !gitPassword) {
-      throw new Error('External Git credentials not found in values (otomi.git.user/password) or secrets')
-    }
-
-    // Store credentials in the standard secret for future use
-    await createUpdateGenericSecret(k8s.core(), GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE, {
-      username: gitUsername,
-      password: gitPassword,
-    })
-
-    this.d.debug('Created external Git credentials secret')
-    return { username: gitUsername, password: gitPassword }
-  }
-
-  private async setupGiteaCredentials(): Promise<GitCredentials> {
-    // First, try to get existing credentials from secret
-    const giteaCredentialsSecret = await getK8sSecret('gitea-credentials', 'apl-operator')
-
-    if (giteaCredentialsSecret?.GIT_USERNAME && giteaCredentialsSecret?.GIT_PASSWORD) {
-      const gitUsername = giteaCredentialsSecret.GIT_USERNAME
-      const gitPassword = giteaCredentialsSecret.GIT_PASSWORD
-
-      this.d.debug('Using existing Gitea credentials from secret')
-      return { username: gitUsername, password: gitPassword }
-    }
-
-    this.d.debug('Extracting Gitea credentials from installation values')
-    const values = (await hfValues()) as Record<string, any>
-
-    // Read from unified otomi.git.* values (derived for internal Gitea)
-    const gitUsername: string = values.otomi?.git?.user
-    const gitPassword: string = values.otomi?.git?.password
-
-    if (!gitUsername || !gitPassword) {
-      throw new Error('Gitea credentials not found in values (otomi.git.user/password)')
-    }
-
-    await createUpdateGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {
-      GIT_USERNAME: gitUsername,
-      GIT_PASSWORD: gitPassword,
-    })
-
-    this.d.debug('Created Gitea credentials secret')
-    return { username: gitUsername, password: gitPassword }
   }
 
   private async setupSopsEnvironment() {

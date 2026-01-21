@@ -1,5 +1,6 @@
 import { hfValues } from '../common/hf'
 import * as k8s from '../common/k8s'
+import * as gitConfig from '../common/git-config'
 import { AplOperations } from './apl-operations'
 import { Installer } from './installer'
 
@@ -28,7 +29,6 @@ jest.mock('../common/hf', () => ({
 }))
 
 jest.mock('../common/git-config', () => ({
-  getGitConfig: jest.fn().mockResolvedValue({ useInternalGitea: true }),
   getGitCredentials: jest.fn().mockResolvedValue(undefined),
   GIT_CONFIG_SECRET_NAME: 'apl-git-credentials',
   GIT_CONFIG_NAMESPACE: 'apl-operator',
@@ -282,15 +282,17 @@ describe('Installer', () => {
   })
 
   describe('setEnvAndCreateSecrets', () => {
-    test('should use existing credentials from secrets when available', async () => {
-      ;(k8s.getK8sSecret as jest.Mock)
-        .mockResolvedValueOnce({ SOPS_AGE_KEY: 'existing-sops-key' }) // apl-sops-secrets
-        .mockResolvedValueOnce({ GIT_USERNAME: 'existing-admin', GIT_PASSWORD: 'existing-password' }) // gitea-credentials
+    test('should use existing credentials from apl-git-credentials secret when available', async () => {
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValueOnce({ SOPS_AGE_KEY: 'existing-sops-key' }) // apl-sops-secrets
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValueOnce({
+        username: 'existing-admin',
+        password: 'existing-password',
+      })
 
       const result = await installer.setEnvAndCreateSecrets()
 
       expect(k8s.getK8sSecret).toHaveBeenCalledWith('apl-sops-secrets', 'apl-operator')
-      expect(k8s.getK8sSecret).toHaveBeenCalledWith('gitea-credentials', 'apl-operator')
+      expect(gitConfig.getGitCredentials).toHaveBeenCalled()
       expect(process.env.SOPS_AGE_KEY).toBe('existing-sops-key')
       expect(result).toEqual({
         username: 'existing-admin',
@@ -318,6 +320,7 @@ describe('Installer', () => {
       }
 
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue(undefined)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
@@ -327,9 +330,9 @@ describe('Installer', () => {
       expect(k8s.createUpdateGenericSecret).toHaveBeenCalledWith(mockCoreApi, 'apl-sops-secrets', 'apl-operator', {
         SOPS_AGE_KEY: 'AGE-SECRET-KEY-1234567890',
       })
-      expect(k8s.createUpdateGenericSecret).toHaveBeenCalledWith(mockCoreApi, 'gitea-credentials', 'apl-operator', {
-        GIT_USERNAME: 'test-admin',
-        GIT_PASSWORD: 'test-password',
+      expect(k8s.createUpdateGenericSecret).toHaveBeenCalledWith(mockCoreApi, 'apl-git-credentials', 'apl-operator', {
+        username: 'test-admin',
+        password: 'test-password',
       })
       expect(result).toEqual({
         username: 'test-admin',
@@ -355,10 +358,11 @@ describe('Installer', () => {
       }
 
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue(undefined)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
 
       await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow(
-        'Gitea credentials not found in values (otomi.git.user/password)',
+        'Git credentials not found in values (otomi.git.user/password) or apl-git-credentials secret',
       )
     })
 
@@ -372,10 +376,11 @@ describe('Installer', () => {
       }
 
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue(undefined)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
 
       await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow(
-        'Gitea credentials not found in values (otomi.git.user/password)',
+        'Git credentials not found in values (otomi.git.user/password) or apl-git-credentials secret',
       )
     })
 
@@ -390,11 +395,12 @@ describe('Installer', () => {
       }
 
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue(undefined)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
 
       // Empty string fails the !gitUsername check
       await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow(
-        'Gitea credentials not found in values (otomi.git.user/password)',
+        'Git credentials not found in values (otomi.git.user/password) or apl-git-credentials secret',
       )
     })
 
@@ -409,10 +415,11 @@ describe('Installer', () => {
       }
 
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue(undefined)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
 
       await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow(
-        'Gitea credentials not found in values (otomi.git.user/password)',
+        'Git credentials not found in values (otomi.git.user/password) or apl-git-credentials secret',
       )
     })
 
@@ -434,6 +441,7 @@ describe('Installer', () => {
       }
 
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue(undefined)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
@@ -453,6 +461,7 @@ describe('Installer', () => {
       }
 
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue(undefined)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
@@ -463,6 +472,7 @@ describe('Installer', () => {
 
     test('should handle hfValues failure when secrets do not exist', async () => {
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue(undefined)
       ;(hfValues as jest.Mock).mockRejectedValue(new Error('Failed to get values'))
 
       await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow('Failed to get values')
@@ -479,6 +489,7 @@ describe('Installer', () => {
       }
 
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue(undefined)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockRejectedValue(new Error('Secret creation failed'))
 
@@ -503,6 +514,7 @@ describe('Installer', () => {
       }
 
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue(undefined)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
@@ -514,7 +526,7 @@ describe('Installer', () => {
       })
     })
 
-    test('should use only existing SOPS secret when gitea credentials need creation', async () => {
+    test('should use only existing SOPS secret when git credentials need creation', async () => {
       const mockValues = {
         otomi: {
           git: {
@@ -524,9 +536,8 @@ describe('Installer', () => {
         },
       }
 
-      ;(k8s.getK8sSecret as jest.Mock)
-        .mockResolvedValueOnce({ SOPS_AGE_KEY: 'existing-sops-key' }) // apl-sops-secrets exists
-        .mockResolvedValueOnce(null) // gitea-credentials does not exist
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValueOnce({ SOPS_AGE_KEY: 'existing-sops-key' }) // apl-sops-secrets exists
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue(undefined) // apl-git-credentials does not exist
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
@@ -537,14 +548,14 @@ describe('Installer', () => {
         username: 'test-admin',
         password: 'test-password',
       })
-      expect(k8s.createUpdateGenericSecret).toHaveBeenCalledWith(mockCoreApi, 'gitea-credentials', 'apl-operator', {
-        GIT_USERNAME: 'test-admin',
-        GIT_PASSWORD: 'test-password',
+      expect(k8s.createUpdateGenericSecret).toHaveBeenCalledWith(mockCoreApi, 'apl-git-credentials', 'apl-operator', {
+        username: 'test-admin',
+        password: 'test-password',
       })
       expect(k8s.createUpdateGenericSecret).toHaveBeenCalledTimes(1)
     })
 
-    test('should use only existing gitea credentials when SOPS secret needs creation', async () => {
+    test('should use only existing git credentials when SOPS secret needs creation', async () => {
       const mockValues = {
         kms: {
           sops: {
@@ -555,9 +566,11 @@ describe('Installer', () => {
         },
       }
 
-      ;(k8s.getK8sSecret as jest.Mock)
-        .mockResolvedValueOnce(null) // apl-sops-secrets does not exist
-        .mockResolvedValueOnce({ GIT_USERNAME: 'existing-admin', GIT_PASSWORD: 'existing-password' }) // gitea-credentials exists
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValueOnce(null) // apl-sops-secrets does not exist
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue({
+        username: 'existing-admin',
+        password: 'existing-password',
+      }) // apl-git-credentials exists
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
