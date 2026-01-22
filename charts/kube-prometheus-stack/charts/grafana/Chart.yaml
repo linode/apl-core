@@ -34,4 +34,4 @@ sources:
 - https://github.com/grafana/grafana
 - https://github.com/grafana/helm-charts
 type: application
-version: 10.5.5
+version: 10.5.8

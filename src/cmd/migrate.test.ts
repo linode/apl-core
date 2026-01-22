@@ -36,7 +36,7 @@ describe('Upgrading values', () => {
     },
     {
       version: 2,
-      deletions: ['some.json.path'],
+      deletions: ['some.bla.path'],
       relocations: [{ 'some.json': 'some.bla' }],
     },
     {

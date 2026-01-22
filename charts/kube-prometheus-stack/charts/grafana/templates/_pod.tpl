@@ -7,6 +7,9 @@ schedulerName: "{{ . }}"
 serviceAccountName: {{ include "grafana.serviceAccountName" . }}
 automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
 shareProcessNamespace: {{ .Values.shareProcessNamespace }}
+{{- if kindIs "bool" .Values.hostUsers }}
+hostUsers: {{ .Values.hostUsers }}
+{{- end }}
 {{- with .Values.securityContext }}
 securityContext:
   {{- toYaml . | nindent 2 }}
@@ -674,10 +677,6 @@ containers:
         value: {{ .Values.sidecar.alerts.reloadURL }}
       - name: REQ_METHOD
         value: POST
-      {{- if eq .Values.sidecar.alerts.watchMethod "WATCH" }}
-      - name: REQ_SKIP_INIT
-        value: "true"
-      {{- end }}
       {{- end }}
       {{- if .Values.sidecar.alerts.watchServerTimeout }}
       {{- if ne .Values.sidecar.alerts.watchMethod "WATCH" }}
@@ -810,10 +809,6 @@ containers:
         value: {{ .Values.sidecar.dashboards.reloadURL }}
       - name: REQ_METHOD
         value: POST
-      {{- if eq .Values.sidecar.dashboards.watchMethod "WATCH" }}
-      - name: REQ_SKIP_INIT
-        value: "true"
-      {{- end }}
       {{- end }}
       {{- if .Values.sidecar.dashboards.watchServerTimeout }}
       {{- if ne .Values.sidecar.dashboards.watchMethod "WATCH" }}
@@ -942,10 +937,6 @@ containers:
         value: {{ .Values.sidecar.datasources.reloadURL }}
       - name: REQ_METHOD
         value: POST
-      {{- if eq .Values.sidecar.datasources.watchMethod "WATCH" }}
-      - name: REQ_SKIP_INIT
-        value: "true"
-      {{- end }}
       {{- end }}
       {{- if .Values.sidecar.datasources.watchServerTimeout }}
       {{- if ne .Values.sidecar.datasources.watchMethod "WATCH" }}
@@ -1069,10 +1060,6 @@ containers:
         value: {{ .Values.sidecar.notifiers.reloadURL }}
       - name: REQ_METHOD
         value: POST
-      {{- if eq .Values.sidecar.notifiers.watchMethod "WATCH" }}
-      - name: REQ_SKIP_INIT
-        value: "true"
-      {{- end }}
       {{- end }}
       {{- if .Values.sidecar.notifiers.watchServerTimeout }}
       {{- if ne .Values.sidecar.notifiers.watchMethod "WATCH" }}
@@ -1196,10 +1183,6 @@ containers:
         value: {{ .Values.sidecar.plugins.reloadURL }}
       - name: REQ_METHOD
         value: POST
-      {{- if eq .Values.sidecar.plugins.watchMethod "WATCH" }}
-      - name: REQ_SKIP_INIT
-        value: "true"
-      {{- end }}
       {{- end }}
       {{- if .Values.sidecar.plugins.watchServerTimeout }}
       {{- if ne .Values.sidecar.plugins.watchMethod "WATCH" }}

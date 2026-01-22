@@ -6,7 +6,7 @@ version: 0.1.0
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 9.2.4
+    version: 9.3.4
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
     version: 1.0.1
@@ -53,7 +53,7 @@ dependencies:
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
-    version: 7.1.5
+    version: 7.1.6
     repository: https://codecentric.github.io/helm-charts
   - name: knative-operator
     version: v1.18.1
@@ -65,14 +65,13 @@ dependencies:
     version: v0.16.0
     repository: oci://ghcr.io/kserve/charts/kserve
   - name: kube-prometheus-stack
-    version: 80.14.1
+    version: 80.14.4
     repository: https://prometheus-community.github.io/helm-charts
   - name: kyverno
     version: 3.5.2
     repository: https://kyverno.github.io/kyverno/
-  - name: loki-distributed
-    alias: loki
-    version: 0.80.6
+  - name: loki
+    version: 6.49.0
     repository: https://grafana.github.io/helm-charts
   - name: metrics-server
     version: 3.13.0
@@ -81,7 +80,7 @@ dependencies:
     version: 5.4.0
     repository: https://charts.min.io/
   - name: oauth2-proxy
-    version: 8.5.1
+    version: 10.1.0
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
@@ -104,7 +103,7 @@ dependencies:
     version: 4.4.34
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
-    version: 2.17.9
+    version: 2.18.0
     repository: https://bitnami-labs.github.io/sealed-secrets/
   - name: tekton-pipeline
     alias: tekton-pipelines

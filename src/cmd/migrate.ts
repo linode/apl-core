@@ -651,6 +651,22 @@ export async function installIstioHelmCharts(): Promise<void> {
   }
 }
 
+const setLokiStorageSchemaMigration = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('setLokiStorageSchemaMigration')
+  if (values?.apps?.loki?.enabled) {
+    // If Loki is enabled, migration should be set to a date far enough in the
+    // future to avoid issues with drift; if Loki is not enabled, no migration
+    // is necessary as it can start with the new schema.
+    const migrationTimestamp = new Date(Date.now() + 26 * 60 * 60 * 1000)
+    // Must be a date only
+    const migrationDate = migrationTimestamp.toISOString().slice(0, 10)
+    d.info(`Setting migration date to ${migrationDate}`)
+    set(values, 'apps.loki.v13SchemaStartDate', migrationDate)
+    set(values, 'apps.loki.enableOpenTelemetry', false)
+    set(values, 'apps.otel.enabled', true)
+  }
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   networkPoliciesMigration,
   teamSettingsMigration,
@@ -660,6 +676,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   addAplOperator,
   installIstioHelmCharts,
   workloadValuesMigration,
+  setLokiStorageSchemaMigration,
 }
 
 /**
@@ -690,7 +707,6 @@ export const applyChanges = async (
   const prevValues = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
   const values = cloneDeep(prevValues)
   for (const c of changes) {
-    c.deletions?.forEach((entry) => unsetAtPath(entry, values))
     c.additions?.forEach((entry: any) => each(entry, (val, path) => setAtPath(path, values, val)))
     c.bulkAdditions?.forEach((entry) => each(entry, (filePath, path) => bulkAddition(path, values, filePath)))
     c.relocations?.forEach((entry) => each(entry, (newName, oldName) => moveGivenJsonPath(values, oldName, newName)))
@@ -709,13 +725,6 @@ export const applyChanges = async (
           await setDeep(values, path, tmplStr)
         }
       }
-    // Lastly we remove files
-    for (const change of changes) {
-      change.fileDeletions?.forEach((entry) => {
-        const paths = unparsePaths(entry, values)
-        paths.forEach((path) => deleteFile(path))
-      })
-    }
 
     for (const customFunctionName of c.customFunctions || []) {
       const customFunction = customMigrationFunctions[customFunctionName]
@@ -723,6 +732,15 @@ export const applyChanges = async (
         throw new Error(`Error in migration: Custom migration function ${customFunctionName} not found`)
       }
       await customFunction(values)
+    }
+
+    c.deletions?.forEach((entry) => unsetAtPath(entry, values))
+    // Lastly we remove files
+    for (const change of changes) {
+      change.fileDeletions?.forEach((entry) => {
+        const paths = unparsePaths(entry, values)
+        paths.forEach((path) => deleteFile(path))
+      })
     }
 
     Object.assign(values.versions, { specVersion: c.version })

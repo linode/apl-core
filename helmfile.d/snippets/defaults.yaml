@@ -664,12 +664,26 @@ environments:
                   cpu: 200m
                   memory: 256Mi
               reverseProxy:
-                limits:
-                  cpu: 100m
-                  memory: 32Mi
                 requests:
                   cpu: 50m
                   memory: 16Mi
+                limits:
+                  cpu: 100m
+                  memory: 32Mi
+              queryScheduler:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              indexGateway:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
             persistence:
               ingester:
                 size: 20Gi
@@ -708,6 +722,14 @@ environments:
                 maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
+              queryScheduler:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+            v13SchemaStartDate: ""
+            enableOpenTelemetry: true
             _rawValues: {}
           metrics-server:
             apiServer:
@@ -738,7 +760,6 @@ environments:
                 memory: 32Mi
             _rawValues: {}
           oauth2-proxy-redis:
-            architecture: standalone
             resources:
               master:
                 requests:
@@ -747,13 +768,6 @@ environments:
                 limits:
                   cpu: 200m
                   memory: 128Mi
-              replica:
-                requests:
-                  cpu: 200m
-                  memory: 64Mi
-                limits:
-                  cpu: 500m
-                  memory: 256Mi
               sentinel:
                 requests:
                   cpu: 200m
@@ -761,20 +775,8 @@ environments:
                 limits:
                   cpu: 500m
                   memory: 256Mi
-              metrics:
-                requests:
-                  cpu: 50m
-                  memory: 64Mi
-                limits:
-                  cpu: 100m
-                  memory: 256Mi
-            persistence:
-                master:
-                  size: 1Gi
-                sentinel:
-                  size: 1Gi
-                replica:
-                  size: 1Gi
+            replicas: 1
+            persistentVolumeSize: 1Gi
             _rawValues: {}
           otomi-api:
             editorInactivityTimeout: 1
@@ -941,8 +943,7 @@ environments:
             _rawValues: {}
           otel:
             enabled: false
-            collector:
-              mode: deployment
+            otlpCollector:
               autoscaler:
                 minReplicas: 2
                 maxReplicas: 5
@@ -958,13 +959,20 @@ environments:
             operator:
               replicaCount: 1
             resources:
-              collector:
+              otlpCollector:
                 requests:
                   cpu: 50m
                   memory: 256Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
+              logsCollector:
+                requests:
+                  cpu: 50m
+                  memory: 256Mi
+                limits:
+                  cpu: "1"
+                  memory: 512Mi
               manager:
                 requests:
                   cpu: 50m
@@ -1283,4 +1291,4 @@ environments:
         users: []
         # TODO: update this when schema version changes
         versions:
-          specVersion: 46
+          specVersion: 48
