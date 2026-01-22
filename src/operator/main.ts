@@ -18,7 +18,8 @@ dotenv.config()
 const d = terminal('operator:main')
 
 async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
-  const values = (await hfValues()) as Record<string, any>
+  // Pass parent directory because helmfile templates expect ENV_DIR to be parent of env/
+  const values = (await hfValues({}, path.dirname(env.ENV_DIR))) as Record<string, any>
   const gitConfig = getRepo(values)
 
   const gitRepository = new GitRepository({
