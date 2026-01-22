@@ -19,15 +19,16 @@ const d = terminal('operator:main')
 
 async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
   const values = (await hfValues()) as Record<string, any>
-  const { authenticatedUrl } = getRepo(values)
+  const gitConfig = getRepo(values)
 
   const gitRepository = new GitRepository({
-    authenticatedUrl,
+    authenticatedUrl: gitConfig.authenticatedUrl,
     repoPath: env.ENV_DIR,
   })
 
   return {
     gitRepo: gitRepository,
+    gitConfig,
     aplOps,
     pollIntervalMs: operatorEnv.POLL_INTERVAL_MS,
     reconcileIntervalMs: operatorEnv.RECONCILE_INTERVAL_MS,

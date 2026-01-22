@@ -1,3 +1,4 @@
+import { GitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { AplOperator, AplOperatorConfig, ApplyTrigger } from './apl-operator'
@@ -74,6 +75,7 @@ describe('AplOperator', () => {
     jest.clearAllMocks()
 
     defaultConfig = {
+      gitConfig: {} as GitRepoConfig,
       gitRepo: mockGitRepo as unknown as GitRepository,
       aplOps: mockAplOps as unknown as AplOperations,
       pollIntervalMs: 1,
