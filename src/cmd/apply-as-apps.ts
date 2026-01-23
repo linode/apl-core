@@ -6,6 +6,7 @@ import {
   V1ResourceRequirements,
 } from '@kubernetes/client-node'
 import { existsSync, mkdirSync, rmSync } from 'fs'
+import { glob } from 'glob'
 import { readFile } from 'fs/promises'
 import { appPatches, genericPatch } from 'src/applicationPatches.json'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
@@ -19,7 +20,13 @@ import { Argv, CommandModule } from 'yargs'
 import { ARGOCD_APP_DEFAULT_SYNC_POLICY, ARGOCD_APP_PARAMS } from '../common/constants'
 import { env } from '../common/envalid'
 
+export const GITOPS_MANIFESTS_NS_PATH = 'env/manifests/ns'
+export const GITOPS_MANIFESTS_GLOBAL_PATH = 'env/manifests/global'
 export const ARGOCD_APP_DEFAULT_LABEL = 'managed'
+export const ARGOCD_APP_GITOPS_LABEL = 'generic-gitops'
+export const ARGOCD_APP_GITOPS_NS_PREFIX = 'gitops-ns'
+export const ARGOCD_APP_GITOPS_GLOBAL_NAME = 'gitops-global'
+
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
 const valuesDir = '/tmp/otomi/values'
@@ -118,6 +125,69 @@ const getArgocdAppManifest = (
       },
       ...patch,
     },
+  }
+}
+
+const getArgocdGitopsManifest = (name: string, targetNamespace?: string) => {
+  const syncPolicy = {
+    automated: {
+      selfHeal: true,
+    },
+    syncOptions: ['ServerSideApply=true', 'RespectIgnoreDifferences=true'],
+  }
+  if (targetNamespace) {
+    syncPolicy.automated.prune = true
+    syncPolicy.syncOptions.push('CreateNamespace=true')
+  }
+  const repoURL = `${env.GIT_PROTOCOL}://${env.GIT_URL}:${env.GIT_PORT}/otomi/values.git`
+  const path = targetNamespace ? `${GITOPS_MANIFESTS_NS_PATH}/${targetNamespace}` : GITOPS_MANIFESTS_GLOBAL_PATH
+  return {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'Application',
+    metadata: {
+      name,
+      labels: {
+        'otomi.io/app': ARGOCD_APP_GITOPS_LABEL,
+      },
+      annotations: {
+        'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
+      },
+    },
+    spec: {
+      project: 'default',
+      syncPolicy,
+      sources: [
+        {
+          path,
+          repoURL,
+          targetRevision: 'HEAD',
+        },
+      ],
+      destination: {
+        server: 'https://kubernetes.default.svc',
+        namespace: targetNamespace,
+      },
+    },
+  }
+}
+
+const createOrPatchArgoCdApp = async (manifest: Record<string, any>) => {
+  try {
+    await customApi.createNamespacedCustomObject({
+      ...ARGOCD_APP_PARAMS,
+      body: manifest,
+    })
+  } catch (error) {
+    if (error instanceof ApiException) {
+      d.debug(`ArgoCD application ${manifest.metadata.name} exists, patching.`)
+      await customApi.patchNamespacedCustomObject({
+        ...ARGOCD_APP_PARAMS,
+        name: manifest.metadata.name,
+        body: manifest,
+      })
+    } else {
+      throw error
+    }
   }
 }
 
@@ -345,6 +415,66 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
     d.error(`Not all applications have been deployed successfully`)
   }
   return true
+}
+
+export const applyGitOpsApps = async (): Promise<void> => {
+  d.info('Applying GitOps apps')
+  const envDir = env.ENV_DIR
+  const namespaceListing = await glob(`${envDir}/${GITOPS_MANIFESTS_NS_PATH}/*`, { withFileTypes: true })
+  const namespaceDirs = namespaceListing.filter((path) => path.isDirectory()).map((path) => path.name)
+  const existingGitOpsApps = new Set(await getApplications(`otomi.io/app=${ARGOCD_APP_GITOPS_LABEL}`))
+
+  // First create sets of Applications to be updated
+  const requiredGitOpsApps = new Set(namespaceDirs.map((dirName) => `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`))
+  if (existsSync(`${envDir}/${GITOPS_MANIFESTS_GLOBAL_PATH}`)) {
+    requiredGitOpsApps.add(ARGOCD_APP_GITOPS_GLOBAL_NAME)
+  }
+  const addGitOpsApps = requiredGitOpsApps.difference(existingGitOpsApps)
+  const removeGitOpsApps = existingGitOpsApps.difference(requiredGitOpsApps)
+  // Always create global resources app, but never remove it
+  const globalAppExists = removeGitOpsApps.delete(ARGOCD_APP_GITOPS_GLOBAL_NAME)
+  if (globalAppExists) {
+    d.warn(
+      `ArgoCD application "${ARGOCD_APP_GITOPS_GLOBAL_NAME}" exists, but points to a nonexistent directory. ` +
+        'Please consider removing it manually if not needed.',
+    )
+  }
+
+  if (addGitOpsApps.size > 0) {
+    d.info(`Adding GitOps apps: ${addGitOpsApps}`)
+    if (addGitOpsApps.has(ARGOCD_APP_GITOPS_GLOBAL_NAME)) {
+      d.debug('Creating GitOps apps for cluster resources')
+      const appManifest = getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME)
+      try {
+        await createOrPatchArgoCdApp(appManifest)
+      } catch (e) {
+        d.error('Failed to create GitOps app for cluster resources', e)
+      }
+    }
+    await Promise.allSettled(
+      namespaceDirs.map(async (dirName) => {
+        const appName = `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`
+        if (addGitOpsApps.has(appName)) {
+          d.debug(`Creating GitOps app for ${dirName}`)
+          const appManifest = getArgocdGitopsManifest(appName, dirName)
+          try {
+            await createOrPatchArgoCdApp(appManifest)
+          } catch (e) {
+            d.error(`Failed to create GitOps app for ${dirName}:`, e)
+          }
+        }
+      }),
+    )
+  }
+  if (removeGitOpsApps.size > 0) {
+    d.info(`Removing GitOps apps: ${removeGitOpsApps}`)
+    await Promise.allSettled(
+      removeGitOpsApps.values().map(async (appName) => {
+        d.debug(`Removing GitOps app ${appName}`)
+        await removeApplication(appName)
+      }),
+    )
+  }
 }
 
 export const module: CommandModule = {
