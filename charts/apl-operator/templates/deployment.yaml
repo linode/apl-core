@@ -38,6 +38,11 @@ spec:
           env:
             - name: CI
               value: "true"
+          envFrom:
+            - secretRef:
+                name: apl-sops-secrets
+            - secretRef:
+                name: apl-git-credentials
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:

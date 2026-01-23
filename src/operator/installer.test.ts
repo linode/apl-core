@@ -30,6 +30,8 @@ jest.mock('../common/hf', () => ({
 
 jest.mock('../common/git-config', () => ({
   getGitCredentials: jest.fn().mockResolvedValue(undefined),
+  getStoredGitRepoConfig: jest.fn().mockResolvedValue(undefined),
+  setGitConfig: jest.fn().mockResolvedValue(undefined),
   GIT_CONFIG_SECRET_NAME: 'apl-git-credentials',
   GIT_CONFIG_NAMESPACE: 'apl-operator',
 }))

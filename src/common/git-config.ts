@@ -1,6 +1,6 @@
 import { terminal } from './debug'
 import { env } from './envalid'
-import { createUpdateConfigMap, getK8sSecret, k8s } from './k8s'
+import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
 import type { CoreV1Api } from '@kubernetes/client-node'
 
 const d = terminal('common:git-config')
@@ -58,6 +58,63 @@ export async function getGitCredentials(): Promise<GitCredentials | undefined> {
     username: secretData.username,
     password: secretData.password,
   }
+}
+
+/**
+ * Reads the Git configuration from the ConfigMap
+ */
+export async function getGitConfigData(): Promise<GitConfigData | undefined> {
+  const configMap = await getK8sConfigMap(GIT_CONFIG_NAMESPACE, GIT_CONFIG_CONFIGMAP_NAME, k8s.core())
+  if (!configMap?.data) return undefined
+
+  const data = configMap.data
+  return {
+    useInternalGitea: data.useInternalGitea === 'true',
+    repoUrl: data.repoUrl,
+    branch: data.branch,
+    email: data.email,
+    lastUpdated: data.lastUpdated,
+  }
+}
+
+/**
+ * Reconstructs GitRepoConfig from stored ConfigMap + Secret.
+ * This avoids calling hfValues() in operator startup path.
+ */
+export async function getStoredGitRepoConfig(): Promise<GitRepoConfig | undefined> {
+  const [configData, credentials] = await Promise.all([getGitConfigData(), getGitCredentials()])
+
+  if (!configData || !credentials) {
+    return undefined
+  }
+
+  const { username, password } = credentials
+  const { useInternalGitea, branch = 'main', email = 'pipeline@cluster.local' } = configData
+
+  let repoUrl: string
+  let authenticatedUrl: string
+
+  if (useInternalGitea) {
+    // Internal Gitea - construct URLs from environment variables
+    const gitUrl = env.GIT_URL
+    const gitPort = env.GIT_PORT
+    const protocol = env.GIT_PROTOCOL
+    repoUrl = `${protocol}://${gitUrl}:${gitPort}/otomi/values.git`
+    authenticatedUrl = `${protocol}://${username}:${encodeURIComponent(password)}@${gitUrl}:${gitPort}/otomi/values.git`
+  } else {
+    // External Git - use stored repoUrl
+    if (!configData.repoUrl) {
+      d.warn('External Git selected but no repoUrl found in stored config')
+      return undefined
+    }
+    repoUrl = configData.repoUrl
+    const url = new URL(repoUrl)
+    url.username = username
+    url.password = password
+    authenticatedUrl = url.toString()
+  }
+
+  return { repoUrl, authenticatedUrl, branch, email, username, password }
 }
 
 /**

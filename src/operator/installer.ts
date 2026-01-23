@@ -1,6 +1,6 @@
 import * as process from 'node:process'
 import { terminal } from '../common/debug'
-import { getGitCredentials, GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE } from '../common/git-config'
+import { getGitCredentials, GIT_CONFIG_NAMESPACE, GIT_CONFIG_SECRET_NAME, setGitConfig } from '../common/git-config'
 import { hfValues } from '../common/hf'
 import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
 import { AplOperations } from './apl-operations'
@@ -103,20 +103,20 @@ export class Installer {
 
   private async setupGitCredentials(): Promise<GitCredentials> {
     try {
-      // First, try to get credentials from the apl-git-credentials secret
+      // Second, try to get just credentials from the secret
       const credentials = await getGitCredentials()
-
       if (credentials?.username && credentials?.password) {
         this.d.debug('Using existing Git credentials from apl-git-credentials secret')
         return credentials
       }
 
-      // Fallback: try to get from values (otomi.git)
+      // Fallback: try to get from values (otomi.git) - only during initial install
       this.d.debug('Extracting Git credentials from installation values')
       const values = (await hfValues()) as Record<string, any>
 
-      const gitUsername: string = values.otomi?.git?.user
-      const gitPassword: string = values.otomi?.git?.password
+      const otomiGit = values.otomi?.git
+      const gitUsername: string = otomiGit?.user
+      const gitPassword: string = otomiGit?.password
 
       if (!gitUsername || !gitPassword) {
         throw new Error('Git credentials not found in values (otomi.git.user/password) or apl-git-credentials secret')
@@ -128,7 +128,15 @@ export class Installer {
         password: gitPassword,
       })
 
-      this.d.debug('Created Git credentials secret')
+      // Also store git config in ConfigMap for future use (avoids hfValues() on startup)
+      await setGitConfig({
+        useInternalGitea: otomiGit?.useInternalGitea ?? true,
+        repoUrl: otomiGit?.repoUrl,
+        branch: otomiGit?.branch ?? 'main',
+        email: otomiGit?.email ?? 'pipeline@cluster.local',
+      })
+
+      this.d.debug('Created Git credentials secret and config')
       return { username: gitUsername, password: gitPassword }
     } catch (error) {
       this.d.error('Failed to setup git credentials:', getErrorMessage(error))

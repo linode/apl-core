@@ -9,8 +9,7 @@ import path from 'path'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 import { GitRepository } from './git-repository'
-import { hfValues } from '../common/hf'
-import { getRepo } from '../common/git-config'
+import { getStoredGitRepoConfig } from '../common/git-config'
 import process from 'node:process'
 
 dotenv.config()
@@ -18,9 +17,13 @@ dotenv.config()
 const d = terminal('operator:main')
 
 async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
-  // Pass parent directory because helmfile templates expect ENV_DIR to be parent of env/
-  const values = (await hfValues({}, path.dirname(env.ENV_DIR))) as Record<string, any>
-  const gitConfig = getRepo(values)
+  // Get git config from stored ConfigMap/Secret - NOT from hfValues()
+  // This avoids the path issues with helmfile templates expecting ENV_DIR to be parent of env/
+  const gitConfig = await getStoredGitRepoConfig()
+
+  if (!gitConfig) {
+    throw new Error('Git config not found in stored secrets/configmap. Run installation first.')
+  }
 
   const gitRepository = new GitRepository({
     authenticatedUrl: gitConfig.authenticatedUrl,
