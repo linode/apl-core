@@ -175,10 +175,13 @@ async function patchArgocdResources(release: HelmRelease, values: Record<string,
   }
 }
 
-export const getApplications = async (): Promise<string[]> => {
+export const getApplications = async (
+  labelSelector: string | undefined = 'otomi.io/app=managed',
+): Promise<string[]> => {
   try {
     const response = await customApi.listNamespacedCustomObject({
       ...ARGOCD_APP_PARAMS,
+      labelSelector,
     })
     const apps = response.items || []
     return apps
