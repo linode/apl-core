@@ -19,6 +19,7 @@ import { Argv, CommandModule } from 'yargs'
 import { ARGOCD_APP_DEFAULT_SYNC_POLICY, ARGOCD_APP_PARAMS } from '../common/constants'
 import { env } from '../common/envalid'
 
+export const ARGOCD_APP_DEFAULT_LABEL = 'managed'
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
 const valuesDir = '/tmp/otomi/values'
@@ -90,7 +91,7 @@ const getArgocdAppManifest = (
     metadata: {
       name,
       labels: {
-        'otomi.io/app': 'managed',
+        'otomi.io/app': ARGOCD_APP_DEFAULT_LABEL,
       },
       namespace: 'argocd',
       annotations: {
@@ -205,7 +206,7 @@ async function patchArgocdResources(release: HelmRelease, values: Record<string,
 }
 
 export const getApplications = async (
-  labelSelector: string | undefined = 'otomi.io/app=managed',
+  labelSelector: string | undefined = `otomi.io/app=${ARGOCD_APP_DEFAULT_LABEL}`,
 ): Promise<string[]> => {
   try {
     const response = await customApi.listNamespacedCustomObject({
