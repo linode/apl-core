@@ -73,6 +73,7 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
     spec: {
       syncPolicy: ARGOCD_APP_DEFAULT_SYNC_POLICY,
       project: 'default',
+      revisionHistoryLimit: 1,
       source: {
         path: release.chart.replace('../', ''),
         repoURL: env.APPS_REPO_URL,
