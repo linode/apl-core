@@ -4,6 +4,7 @@ apiVersion: {{ $apiVersion }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "tempo.resourceName" (dict "ctx" . "component" "querier") }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "tempo.labels" (dict "ctx" . "component" "querier") | nindent 4 }}
 spec:
