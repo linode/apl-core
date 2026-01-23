@@ -1,11 +1,11 @@
 {{- $v := .Values }}
-{{- $a := $v.apps.argocd }}
-{{- if $a.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: team-{{ $v.teamId }}-values-gitops
   namespace: argocd
+  labels:
+    otomi.io/app: team-gitops
 spec:
   project: team-{{ $v.teamId }}
   sources:
@@ -37,4 +37,3 @@ spec:
         # maxDuration - Max retry backoff duration. Input needs to be a duration (e.g. 2m, 1h) (default 3m0s)
         duration: 10s
         factor: 2
-{{- end }}
