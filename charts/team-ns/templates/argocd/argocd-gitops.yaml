@@ -30,6 +30,7 @@ spec:
     namespace: team-{{ $v.teamId }}
   syncPolicy:
     automated:
+      allowEmpty: true
       prune: true
       selfHeal: true
     retry:
