@@ -285,7 +285,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
 
   d.info(`Applying Argocd Application from ${appsDir} directory`)
   try {
-    const resApply = await $`kubectl apply --namespace argocd -f ${appsDir}`.quiet()
+    const resApply = await $`kubectl apply --server-side=true --namespace argocd -f ${appsDir}`.quiet()
     d.debug(resApply.stdout.toString())
   } catch (e) {
     d.error(e)
