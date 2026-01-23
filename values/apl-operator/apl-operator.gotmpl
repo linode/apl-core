@@ -23,3 +23,7 @@ kms: {{- $kms | toYaml | nindent 2 }}
 git:
   password: {{ $v.otomi.git.password | quote }}
   username: {{ $v.otomi.git.user | quote }}
+  email: {{ $v.otomi.git.email | quote }}
+  repoUrl: {{ $v.otomi.git.repoUrl | quote }}
+  branch: {{ $v.otomi.git.branch | quote }}
+
