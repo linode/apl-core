@@ -6,6 +6,8 @@ kind: Application
 metadata:
   name: team-{{ $v.teamId }}-values-gitops
   namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: team-{{ $v.teamId }}
   sources:
@@ -28,6 +30,7 @@ spec:
     namespace: team-{{ $v.teamId }}
   syncPolicy:
     automated:
+      allowEmpty: true
       prune: true
       selfHeal: true
     retry:
