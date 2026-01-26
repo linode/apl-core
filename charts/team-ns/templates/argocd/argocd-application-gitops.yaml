@@ -6,6 +6,8 @@ kind: Application
 metadata:
   name: team-{{ $v.teamId }}
   namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: team-{{ $v.teamId }}
   source:
