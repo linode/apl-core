@@ -11,6 +11,8 @@ kind: Application
 metadata:
   name: 'team-{{ $v.teamId }}-{{ .name }}'
   namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
