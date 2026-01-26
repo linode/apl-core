@@ -1,1 +1,0 @@
-{{- include "tempo.lib.serviceMonitor" (dict "ctx" $ "component" "query-frontend") }}

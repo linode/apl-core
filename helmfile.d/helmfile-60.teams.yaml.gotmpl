@@ -135,29 +135,6 @@ releases:
               basicAuthUser: {{ $teamId }}
               secureJsonData:
                 basicAuthPassword: {{ $teamSettings.password | quote }}
-              jsonData:
-                derivedFields:
-                  - datasourceName: Tempo
-                    matcherRegex: "traceID=00-([^\\-]+)-"
-                    name: traceID
-                    url: "$${__value.raw}"
-                    datasourceUid: tempo
-            - name: Tempo
-              type: tempo
-              uid: tempo
-              editable: false
-              access: proxy
-              url: http://tempo-query-frontend.tempo:3100
-              jsonData:
-                tracesToLogsV2:
-                  datasourceUid: 'loki'
-                  spanStartTimeShift: '1h'
-                  spanEndTimeShift: '-1h'
-                  tags: [{ key: 'k8s.namespace.name', value: 'namespace' }]
-                  filterByTraceID: false
-                  filterBySpanID: false
-                  customQuery: true
-                  query: '{namespace="team-{{ $teamId }}"} |= "$${__span.traceId}"'
                 nodeGraph:
                   enabled: true
                 search:
