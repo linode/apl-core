@@ -11,6 +11,8 @@
 {{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $teamSettings.oidc.groupMapping }}
 {{- end }}
 {{- end }}
+{{- $teamIds = sortAlpha $teamIds }}
+{{- $teamNames = sortAlpha $teamNames }}
 {{- $c := $v.apps }}
 {{- $cm := $c | get "cert-manager" }}
 {{- $o := $v.apps | get "apl-keycloak-operator" }}
