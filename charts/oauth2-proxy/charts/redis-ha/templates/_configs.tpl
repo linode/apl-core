@@ -549,6 +549,7 @@
       timeout server {{ .Values.haproxy.timeout.server }}
       timeout client {{ .Values.haproxy.timeout.client }}
       timeout check {{ .Values.haproxy.timeout.check }}
+      timeout tunnel {{ .Values.haproxy.timeout.tunnel }}
 
     listen health_check_http_url
       bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:8888  {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
