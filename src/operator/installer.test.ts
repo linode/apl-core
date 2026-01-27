@@ -3,6 +3,10 @@ import * as k8s from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { Installer } from './installer'
 
+jest.mock('../cmd/traces', () => ({
+  collectTraces: jest.fn().mockResolvedValue(undefined),
+}))
+
 jest.mock('../common/debug', () => ({
   terminal: jest.fn().mockImplementation(() => ({
     info: jest.fn(),

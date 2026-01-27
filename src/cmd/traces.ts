@@ -13,6 +13,7 @@ interface ResourceReport {
   name: string
   namespace: string
   value: string
+  timestamp: string // When this event was captured
 }
 
 interface TraceReport {
@@ -118,6 +119,7 @@ async function getPodsWithIssues(): Promise<ResourceReport[]> {
           name: podName,
           namespace,
           value: issue,
+          timestamp: new Date().toISOString(),
         })
       })
     }),
@@ -132,6 +134,7 @@ async function getPodsWithIssues(): Promise<ResourceReport[]> {
 async function getDeploymentsWithIssues(): Promise<ResourceReport[]> {
   const appsApi = k8s.app()
   const response = await appsApi.listDeploymentForAllNamespaces()
+  const timestamp = new Date().toISOString()
 
   return response.items
     .filter((deployment) => deployment.status?.replicas !== deployment.status?.availableReplicas)
@@ -140,6 +143,7 @@ async function getDeploymentsWithIssues(): Promise<ResourceReport[]> {
       name: deployment.metadata?.name || 'unknown',
       namespace: deployment.metadata?.namespace || 'default',
       value: `Desired ${deployment.status?.replicas}, Available ${deployment.status?.availableReplicas}`,
+      timestamp,
     }))
 }
 
@@ -158,6 +162,7 @@ async function getStatefulSetsWithIssues(): Promise<ResourceReport[]> {
       if (!namespace) return
 
       const response = await appsApi.listNamespacedStatefulSet({ namespace })
+      const timestamp = new Date().toISOString()
       response.items.forEach((sts) => {
         const replicas = sts.spec?.replicas || 0
         const readyReplicas = sts.status?.readyReplicas || 0
@@ -167,6 +172,7 @@ async function getStatefulSetsWithIssues(): Promise<ResourceReport[]> {
             name: sts.metadata?.name || 'unknown',
             namespace,
             value: `Desired ${replicas}, Ready ${readyReplicas}`,
+            timestamp,
           })
         }
       })
@@ -182,6 +188,7 @@ async function getStatefulSetsWithIssues(): Promise<ResourceReport[]> {
 async function getNodesWithIssues(): Promise<ResourceReport[]> {
   const coreApi = k8s.core()
   const response = await coreApi.listNode()
+  const timestamp = new Date().toISOString()
 
   return response.items
     .filter((node) => node.status?.conditions?.some((cond) => cond.type === 'Ready' && cond.status !== 'True'))
@@ -190,6 +197,7 @@ async function getNodesWithIssues(): Promise<ResourceReport[]> {
       name: node.metadata?.name || 'unknown',
       namespace: 'N/A',
       value: 'Node not Ready',
+      timestamp,
     }))
 }
 
@@ -199,6 +207,7 @@ async function getNodesWithIssues(): Promise<ResourceReport[]> {
 async function getServicesWithIssues(): Promise<ResourceReport[]> {
   const coreApi = k8s.core()
   const response = await coreApi.listServiceForAllNamespaces()
+  const timestamp = new Date().toISOString()
 
   return response.items
     .map((service) => {
@@ -217,6 +226,7 @@ async function getServicesWithIssues(): Promise<ResourceReport[]> {
           name,
           namespace,
           value: issue,
+          timestamp,
         }
       }
       return null
@@ -238,6 +248,7 @@ async function getPVCsWithIssues(): Promise<ResourceReport[]> {
       if (!namespace) return
 
       const response = await coreApi.listNamespacedPersistentVolumeClaim({ namespace })
+      const timestamp = new Date().toISOString()
       response.items.forEach((pvc) => {
         if (pvc.status?.phase !== 'Bound') {
           const conditions = pvc.status?.conditions?.map((c) => `${c.type}: ${c.message}`).join('; ') || ''
@@ -246,6 +257,7 @@ async function getPVCsWithIssues(): Promise<ResourceReport[]> {
             name: pvc.metadata?.name || 'unknown',
             namespace,
             value: `Phase: ${pvc.status?.phase}${conditions ? `. ${conditions}` : ''}`,
+            timestamp,
           })
         }
       })
@@ -261,6 +273,7 @@ async function getPVCsWithIssues(): Promise<ResourceReport[]> {
 async function getPVsWithIssues(): Promise<ResourceReport[]> {
   const coreApi = k8s.core()
   const response = await coreApi.listPersistentVolume()
+  const timestamp = new Date().toISOString()
 
   return response.items
     .filter((pv) => pv.status?.phase !== 'Available' && pv.status?.phase !== 'Bound')
@@ -269,6 +282,7 @@ async function getPVsWithIssues(): Promise<ResourceReport[]> {
       name: pv.metadata?.name || 'unknown',
       namespace: 'N/A',
       value: `Phase: ${pv.status?.phase}`,
+      timestamp,
     }))
 }
 
@@ -286,6 +300,7 @@ async function getArgoApplicationsWithIssues(): Promise<ResourceReport[]> {
   })
 
   const items = (response as any).items || []
+  const timestamp = new Date().toISOString()
 
   items.forEach((app: any) => {
     const name = app.metadata?.name || 'unknown'
@@ -315,6 +330,7 @@ async function getArgoApplicationsWithIssues(): Promise<ResourceReport[]> {
         name,
         namespace,
         value: issue,
+        timestamp,
       })
     })
   })
@@ -328,8 +344,10 @@ async function getArgoApplicationsWithIssues(): Promise<ResourceReport[]> {
 async function writeReportToConfigMap(name: string, namespace: string, report: TraceReport): Promise<void> {
   const coreApi = k8s.core()
   const reportJson = JSON.stringify(report, null, 2)
+  // ConfigMap keys must match [-._a-zA-Z0-9]+, so replace colons with dots
+  const reportKey = `report-${report.timestamp.replace(/:/g, '.')}`
 
-  await createUpdateConfigMap(coreApi, name, namespace, { report: reportJson })
+  await createUpdateConfigMap(coreApi, name, namespace, { [reportKey]: reportJson })
 }
 
 /**
@@ -398,12 +416,11 @@ export async function collectTraces(): Promise<void> {
 
     if (failedResources.length === 0) {
       d.info('No failing resources found. Your APL instance seems to be healthy.')
-    } else {
-      await writeReportToConfigMap(configMapName, targetNamespace, report)
-      d.info(
-        `Trace report stored in ConfigMap ${targetNamespace}/${configMapName} (${failedResources.length} failed resources)`,
-      )
     }
+
+    // Always write the report to ConfigMap (even when healthy, for timestamp visibility)
+    await writeReportToConfigMap(configMapName, targetNamespace, report)
+    d.info(`Trace report stored in ConfigMap ${targetNamespace}/${configMapName} (${failedResources.length} issues)`)
   } catch (error) {
     d.error('Failed to collect traces:', error)
     throw error
