@@ -8,7 +8,7 @@
 {{- range $teamId, $team := $v.teamConfig }}
 {{- $teamNamespaces = append $teamNamespaces $teamId }}
 {{- end }}
-{{- $teamNamespaces := $teamNamespaces | toJson }}
+{{- $teamNamespaces := $teamNamespaces | sortAlpha | toJson }}
 
 resources:
   - apiVersion: v1
