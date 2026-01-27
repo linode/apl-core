@@ -132,6 +132,7 @@ export const getArgocdGitopsManifest = (name: string, targetNamespace?: string) 
   const syncPolicy = {
     automated: {
       selfHeal: true,
+      prune: false,
     },
     syncOptions: ['ServerSideApply=true', 'RespectIgnoreDifferences=true'],
   }
