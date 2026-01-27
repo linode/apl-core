@@ -3,7 +3,7 @@
 {{- $k := $v.apps.keycloak }}
 {{- $minioDomain := printf "minio.%s" $v.cluster.domainSuffix }}
 {{- $rootCASecretName := "root-ca" }}
-{{- $bucketNames := list "cnpg" "gitea" "harbor" "loki" "tempo" "thanos" "kubeflow-pipelines" -}}
+{{- $bucketNames := list "cnpg" "gitea" "harbor" "loki" "thanos" "kubeflow-pipelines" -}}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 global:
@@ -53,7 +53,7 @@ extraEnvVars:
 */}}
 
 {{- if $v._derived.untrustedCA }}
-extraVolumes:       
+extraVolumes:
   - name: root-ca-1
     secret:
       secretName: root-ca
