@@ -417,3 +417,7 @@ changes:
       - 'apps.oauth2-proxy-redis.resources.replica'
       - 'apps.oauth2-proxy-redis.resources.metrics'
       - 'apps.oauth2-proxy-redis.persistence'
+  - version: 49
+    deletions:
+      - 'apps.tempo'
+      - 'obj.provider.linode.buckets.tempo'
