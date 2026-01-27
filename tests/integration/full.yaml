@@ -72,8 +72,6 @@ apps:
     enabled: false
   rabbitmq:
     enabled: true
-  tempo:
-    enabled: true
   trivy:
     enabled: true
   kyverno:
