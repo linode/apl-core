@@ -56,7 +56,7 @@ export const cliEnvSpec = {
     default: undefined,
   }),
   COLLECTION_DURATION_MS: num({ desc: 'Traces collection duration 30 min default in ms', default: 1800000 }),
-  COLLECTION_INTERVAL_MS: num({ desc: 'Traces collection interval 5 min default in ms', default: 30000 }),
+  COLLECTION_INTERVAL_MS: num({ desc: 'Traces collection interval 5 min default in ms', default: 300000 }),
 }
 
 export function cleanEnv<T>(spec: { [K in keyof T]: ValidatorSpec<T[K]> }, options?: CleanOptions<T>) {

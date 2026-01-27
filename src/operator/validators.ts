@@ -10,6 +10,4 @@ export const operatorEnv = cleanEnv(process.env, {
   RECONCILE_INTERVAL_MS: num({ desc: 'Interval in which the operator reconciles the cluster in', default: 300_000 }),
   INSTALL_RETRIES: num({ desc: 'Number of installation retry attempts', default: 1000 }),
   INSTALL_MAX_TIMEOUT_MS: num({ desc: 'Maximum timeout for installation retries in milliseconds', default: 10000 }),
-  COLLECTION_DURATION_MS: num({ desc: 'Traces collection duration 30 min default in ms', default: 1800000 }),
-  COLLECTION_INTERVAL_MS: num({ desc: 'Traces collection interval 5 min default in ms', default: 30000 }),
 })
