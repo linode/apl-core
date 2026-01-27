@@ -74,6 +74,7 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
     spec: {
       syncPolicy: ARGOCD_APP_DEFAULT_SYNC_POLICY,
       project: 'default',
+      revisionHistoryLimit: 2,
       source: {
         path: release.chart.replace('../', ''),
         repoURL: env.APPS_REPO_URL,
@@ -285,7 +286,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
 
   d.info(`Applying Argocd Application from ${appsDir} directory`)
   try {
-    const resApply = await $`kubectl apply --namespace argocd -f ${appsDir}`.quiet()
+    const resApply = await $`kubectl apply --server-side=true --namespace argocd -f ${appsDir}`.quiet()
     d.debug(resApply.stdout.toString())
   } catch (e) {
     d.error(e)
