@@ -99,7 +99,7 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
   }
 }
 
-const getArgocdGitopsManifest = (name: string, targetNamespace?: string) => {
+export const getArgocdGitopsManifest = (name: string, targetNamespace?: string) => {
   const syncPolicy = {
     automated: {
       selfHeal: true,
@@ -142,7 +142,7 @@ const getArgocdGitopsManifest = (name: string, targetNamespace?: string) => {
   }
 }
 
-const createOrPatchArgoCdApp = async (manifest: Record<string, any>) => {
+export const createOrPatchArgoCdApp = async (manifest: Record<string, any>) => {
   try {
     await customApi.createNamespacedCustomObject({
       ...ARGOCD_APP_PARAMS,
@@ -200,7 +200,7 @@ const getFinalizers = async (name: string): Promise<string[]> => {
   }
 }
 
-const removeApplication = async (name: string): Promise<void> => {
+export const removeApplication = async (name: string): Promise<void> => {
   try {
     const finalizers = await getFinalizers(name)
     if (!finalizers.includes('resources-finalizer.argocd.argoproj.io')) {
@@ -372,12 +372,14 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
   return true
 }
 
-export const applyGitOpsApps = async (): Promise<void> => {
+export const applyGitOpsApps = async (
+  deps = { getApplications, getArgocdGitopsManifest, createOrPatchArgoCdApp, removeApplication },
+): Promise<void> => {
   d.info('Applying GitOps apps')
   const envDir = env.ENV_DIR
   const namespaceListing = await glob(`${envDir}/${GITOPS_MANIFESTS_NS_PATH}/*`, { withFileTypes: true })
   const namespaceDirs = namespaceListing.filter((path) => path.isDirectory()).map((path) => path.name)
-  const existingGitOpsApps = new Set(await getApplications(`otomi.io/app=${ARGOCD_APP_GITOPS_LABEL}`))
+  const existingGitOpsApps = new Set(await deps.getApplications(`otomi.io/app=${ARGOCD_APP_GITOPS_LABEL}`))
 
   // First create sets of Applications to be updated
   const requiredGitOpsApps = new Set(namespaceDirs.map((dirName) => `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`))
@@ -399,9 +401,9 @@ export const applyGitOpsApps = async (): Promise<void> => {
     d.info(`Adding GitOps apps: ${addGitOpsApps}`)
     if (addGitOpsApps.has(ARGOCD_APP_GITOPS_GLOBAL_NAME)) {
       d.debug('Creating GitOps apps for cluster resources')
-      const appManifest = getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME)
+      const appManifest = deps.getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME)
       try {
-        await createOrPatchArgoCdApp(appManifest)
+        await deps.createOrPatchArgoCdApp(appManifest)
       } catch (e) {
         d.error('Failed to create GitOps app for cluster resources', e)
       }
@@ -411,9 +413,9 @@ export const applyGitOpsApps = async (): Promise<void> => {
         const appName = `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`
         if (addGitOpsApps.has(appName)) {
           d.debug(`Creating GitOps app for ${dirName}`)
-          const appManifest = getArgocdGitopsManifest(appName, dirName)
+          const appManifest = deps.getArgocdGitopsManifest(appName, dirName)
           try {
-            await createOrPatchArgoCdApp(appManifest)
+            await deps.createOrPatchArgoCdApp(appManifest)
           } catch (e) {
             d.error(`Failed to create GitOps app for ${dirName}:`, e)
           }
@@ -426,7 +428,7 @@ export const applyGitOpsApps = async (): Promise<void> => {
     await Promise.allSettled(
       removeGitOpsApps.values().map(async (appName) => {
         d.debug(`Removing GitOps app ${appName}`)
-        await removeApplication(appName)
+        await deps.removeApplication(appName)
       }),
     )
   }
