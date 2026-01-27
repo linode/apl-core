@@ -515,12 +515,9 @@ export function getUniqueIdentifierFromFilePath(filePath: string): string {
 }
 
 export function sortUserArraysByName(spec: Record<string, any>): Record<string, any> {
-  if (Array.isArray(spec.users) && spec.users.length > 0) {
-    const hasEmailProperty = spec.users[0] !== null && typeof spec.users[0] === 'object' && 'email' in spec.users[0]
-    if (hasEmailProperty) {
-      spec.users.sort((a, b) => String(a.email || '').localeCompare(String(b.email || '')))
-    }
-  }
+  if (!Array.isArray(spec.users)) return spec
+  if (spec.users.length === 0) return spec
+  spec.users.sort((a, b) => String(a?.email || '').localeCompare(String(b?.email || '')))
   return spec
 }
 
