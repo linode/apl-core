@@ -1,3 +1,0 @@
-{{- if .Values.enterprise.enabled -}}
-{{- include "tempo.lib.serviceMonitor" (dict "ctx" $ "component" "enterprise-gateway") }}
-{{- end -}}

@@ -107,7 +107,7 @@ appsInfo:
     integration: App Platform has security best practices built in, and is designed for intrusion. Istio is used by App Platform as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of App Platform and can not be disabled.
   keycloak:
     title: Keycloak
-    appVersion: 26.4.7
+    appVersion: 26.5.1
     repo: https://github.com/keycloak/keycloak
     maintainers: Keycloak
     relatedLinks:
@@ -227,24 +227,6 @@ appsInfo:
     license: Apache 2.0
     about: Sealed Secrets is a Kubernetes Custom Resource Definition Controller which allows you to store even sensitive information in Git repositories.
     integration: App Platform uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
-  tempo:
-    title: Tempo
-    appVersion: 2.6.0
-    repo: https://github.com/grafana/tempo
-    maintainers: Grafana labs
-    relatedLinks:
-      - https://grafana.com/docs/tempo/latest/
-    license: AGPL-3.0
-    dependencies: Prometheus, Grafana, Otel
-    about: Grafana Tempo is an open source, easy-to-use and high-scale distributed tracing backend. Tempo is cost-efficient, requiring only object storage to operate, and is deeply integrated with Grafana, Prometheus, and Loki.
-    integration: App Platform installs and configures Tempo based on best-practices defaults. By default storage is configured to use the tempo bucket of the local Minio instance. For each team a Grafana agent is installed and configured to enable writes to the Tempo cluster.
-    isDeprecated: true
-    deprecationInfo:
-      message: Grafana Tempo is being deprecated.
-      reasons:
-        - This tracing tool is not considered as essential to run the platform.
-      options:
-        - Click 'I understand' to continue using Grafana Tempo.
   thanos:
     title: Thanos
     appVersion: 0.36.1
@@ -283,9 +265,9 @@ appsInfo:
     relatedLinks:
       - https://opentelemetry.io/docs/collector/
     license: AGPL-3.0
-    dependencies: Prometheus, Grafana, Loki, Tempo
+    dependencies: Prometheus, Grafana, Loki
     about: The OpenTelemetry Collector offers a vendor-agnostic implementation on how to receive, process and export telemetry data. In addition, it removes the need to run, operate and maintain multiple agents/collectors in order to support open-source telemetry data formats (e.g. Prometheus, etc.) to multiple open-source or commercial back-ends.
-    integration: OpenTelemetry Collector is used to receive telemetry data and export this data to Loki and Tempo.
+    integration: OpenTelemetry Collector is used to receive telemetry data and export this data to Loki.
     chartName: otel-operator
   policy-reporter:
     title: policy-reporter
