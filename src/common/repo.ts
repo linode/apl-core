@@ -514,6 +514,33 @@ export function getUniqueIdentifierFromFilePath(filePath: string): string {
     .replace(/\.yaml$/, '')
 }
 
+export function sortTeamConfigArraysByName(spec: Record<string, any>): Record<string, any> {
+  if (!spec.teamConfig || typeof spec.teamConfig !== 'object') {
+    return spec
+  }
+
+  for (const teamName in spec.teamConfig) {
+    if (!Object.prototype.hasOwnProperty.call(spec.teamConfig, teamName)) continue
+
+    const team = spec.teamConfig[teamName]
+    if (!team || typeof team !== 'object') continue
+
+    for (const key in team) {
+      if (!Object.prototype.hasOwnProperty.call(team, key)) continue
+
+      const value = team[key]
+      if (Array.isArray(value) && value.length > 0) {
+        const hasNameProperty = value[0] !== null && typeof value[0] === 'object' && 'name' in value[0]
+        if (hasNameProperty) {
+          value.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
+        }
+      }
+    }
+  }
+
+  return spec
+}
+
 export async function setValuesFile(
   envDir: string,
   deps = { pathExists: existsSync, loadValues, writeFile },
@@ -546,7 +573,7 @@ export async function loadValues(envDir: string, deps = { loadToSpec }): Promise
       await deps.loadToSpec(spec, fileMap)
     }),
   )
-  return spec
+  return sortTeamConfigArraysByName(spec)
 }
 
 export function extractTeamDirectory(filePath: string): string {
