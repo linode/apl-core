@@ -308,6 +308,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.timeout.client` | haproxy.cfg `timeout client` setting | string | `"330s"` |
 | `haproxy.timeout.connect` | haproxy.cfg `timeout connect` setting | string | `"4s"` |
 | `haproxy.timeout.server` | haproxy.cfg `timeout server` setting | string | `"330s"` |
+| `haproxy.timeout.tunnel` | haproxy.cfg `timeout tunnel` setting | string | `"1h"` |
 | `haproxy.tls` | Enable TLS termination on HAproxy, This will create a volume mount | object | `{"certMountPath":"/tmp/","enabled":false,"keyName":null,"secretName":""}` |
 | `haproxy.tls.certMountPath` | Path to mount the secret that contains the certificates. haproxy | string | `"/tmp/"` |
 | `haproxy.tls.enabled` | If "true" this will enable TLS termination on haproxy | bool | `false` |
