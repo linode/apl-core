@@ -445,5 +445,6 @@ export const module: CommandModule = {
     setParsedArgs(argv)
     await prepareEnvironment()
     await applyAsApps(argv)
+    await applyGitOpsApps()
   },
 }
