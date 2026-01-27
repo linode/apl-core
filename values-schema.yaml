@@ -2467,48 +2467,6 @@ properties:
               msgTopologyOperator:
                 description: Controller which is used to create RabbitMQ queues and policies
                 $ref: '#/definitions/resources'
-      tempo:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          resources:
-            additionalProperties: false
-            properties:
-              compactor:
-                $ref: '#/definitions/resources'
-              ingester:
-                $ref: '#/definitions/resources'
-              querier:
-                $ref: '#/definitions/resources'
-              distributor:
-                $ref: '#/definitions/resources'
-              queryFrontend:
-                $ref: '#/definitions/resources'
-              memcached:
-                $ref: '#/definitions/resources'
-              metricsGenerator:
-                $ref: '#/definitions/resources'
-          autoscaling:
-            properties:
-              ingester:
-                $ref: '#/definitions/autoscalingEnabled'
-              querier:
-                $ref: '#/definitions/autoscalingEnabled'
-              distributor:
-                $ref: '#/definitions/autoscalingEnabled'
-              queryFrontend:
-                $ref: '#/definitions/autoscalingEnabled'
-          persistence:
-            properties:
-              ingester:
-                properties:
-                  size:
-                    default: 10Gi
-                    $ref: '#/definitions/size'
       trivy:
         properties:
           _rawValues:
@@ -3069,11 +3027,7 @@ properties:
                   thanos:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
-                    default: tempo
-                  tempo:
-                    type: string
-                    $ref: '#/definitions/wordCharacterPattern'
-                    default: tempo
+                    default: thanos
                   gitea:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'

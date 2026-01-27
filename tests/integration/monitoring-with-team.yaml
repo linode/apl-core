@@ -62,8 +62,6 @@ apps:
     enabled: true
   promtail:
     enabled: true
-  tempo:
-    enabled: true
   istio:
     tracing:
       enabled: true
