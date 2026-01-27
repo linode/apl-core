@@ -5,7 +5,7 @@ import {
   setHeaderOptions,
   V1ResourceRequirements,
 } from '@kubernetes/client-node'
-import { existsSync, mkdirSync, rmSync } from 'fs'
+import { existsSync, statSync, mkdirSync, rmSync } from 'fs'
 import { glob } from 'glob'
 import { readFile } from 'fs/promises'
 import { appPatches, genericPatch } from 'src/applicationPatches.json'
@@ -428,7 +428,8 @@ export const applyGitOpsApps = async (
 
   // First create sets of Applications to be updated
   const requiredGitOpsApps = new Set(namespaceDirs.map((dirName) => `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`))
-  if (existsSync(`${envDir}/${GITOPS_MANIFESTS_GLOBAL_PATH}`)) {
+  const globalPath = statSync(`${envDir}/${GITOPS_MANIFESTS_GLOBAL_PATH}`)
+  if (globalPath && globalPath.isDirectory()) {
     requiredGitOpsApps.add(ARGOCD_APP_GITOPS_GLOBAL_NAME)
   }
   const addGitOpsApps = requiredGitOpsApps.difference(existingGitOpsApps)
