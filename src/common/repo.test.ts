@@ -10,6 +10,7 @@ import {
   getUniqueIdentifierFromFilePath,
   hasCorrespondingDecryptedFile,
   sortTeamConfigArraysByName,
+  sortUserArraysByName,
 } from 'src/common/repo'
 import stubs from 'src/test-stubs'
 
@@ -447,3 +448,178 @@ describe('sortTeamConfigArraysByName', () => {
     expect(result.teamConfig['team-a'].services).toEqual([{ name: 'only-one', port: 80 }])
   })
 })
+
+describe('sortUserArraysByName', () => {
+  it('should sort users array by email alphabetically', () => {
+    const spec = {
+      users: [
+        { email: 'zoe@example.com', name: 'Zoe' },
+        { email: 'alice@example.com', name: 'Alice' },
+        { email: 'bob@example.com', name: 'Bob' },
+      ],
+    }
+
+    const result = sortUserArraysByName(spec)
+
+    expect(result.users[0].email).toBe('alice@example.com')
+    expect(result.users[1].email).toBe('bob@example.com')
+    expect(result.users[2].email).toBe('zoe@example.com')
+  })
+
+  it('should handle null or undefined email values', () => {
+    const spec = {
+      users: [
+        { email: 'zoe@example.com', name: 'Zoe' },
+        { email: null, name: 'No Email 1' },
+        { email: 'alice@example.com', name: 'Alice' },
+        { email: undefined, name: 'No Email 2' },
+      ],
+    }
+
+    const result = sortUserArraysByName(spec)
+
+    // Null and undefined are sorted first (empty string equivalents), then alphabetically
+    expect(result.users[0].email).toBeNull()
+    expect(result.users[1].email).toBeUndefined()
+    expect(result.users[2].email).toBe('alice@example.com')
+    expect(result.users[3].email).toBe('zoe@example.com')
+  })
+
+  it('should sort case-insensitively', () => {
+    const spec = {
+      users: [
+        { email: 'Zoe@example.com', name: 'Zoe' },
+        { email: 'alice@example.com', name: 'Alice' },
+        { email: 'Bob@example.com', name: 'Bob' },
+      ],
+    }
+
+    const result = sortUserArraysByName(spec)
+
+    expect(result.users[0].email).toBe('alice@example.com')
+    expect(result.users[1].email).toBe('Bob@example.com')
+    expect(result.users[2].email).toBe('Zoe@example.com')
+  })
+
+  it('should not sort if users array is empty', () => {
+    const spec = {
+      users: [],
+    }
+
+    const result = sortUserArraysByName(spec)
+
+    expect(result.users).toEqual([])
+  })
+
+  it('should not sort if users is not an array', () => {
+    const spec = {
+      users: 'not an array',
+    }
+
+    const result = sortUserArraysByName(spec)
+
+    expect(result.users).toBe('not an array')
+  })
+
+  it('should not sort if users is undefined', () => {
+    const spec = {
+      otherData: 'some data',
+    }
+
+    const result = sortUserArraysByName(spec)
+
+    expect(result).toEqual(spec)
+  })
+
+  it('should not sort if first user has no email property', () => {
+    const spec = {
+      users: [
+        { name: 'Zoe', id: 3 },
+        { name: 'Alice', id: 1 },
+        { name: 'Bob', id: 2 },
+      ],
+    }
+
+    const result = sortUserArraysByName(spec)
+
+    // Order should remain unchanged
+    expect(result.users[0].name).toBe('Zoe')
+    expect(result.users[1].name).toBe('Alice')
+    expect(result.users[2].name).toBe('Bob')
+  })
+
+  it('should handle single user array', () => {
+    const spec = {
+      users: [{ email: 'only@example.com', name: 'Only User' }],
+    }
+
+    const result = sortUserArraysByName(spec)
+
+    expect(result.users).toEqual([{ email: 'only@example.com', name: 'Only User' }])
+  })
+
+  it('should handle users with identical emails', () => {
+    const spec = {
+      users: [
+        { email: 'same@example.com', name: 'User 1' },
+        { email: 'same@example.com', name: 'User 2' },
+        { email: 'same@example.com', name: 'User 3' },
+      ],
+    }
+
+    const result = sortUserArraysByName(spec)
+
+    // All should have the same email, order may vary but should be stable
+    expect(result.users.length).toBe(3)
+    expect(result.users.every((u) => u.email === 'same@example.com')).toBe(true)
+  })
+
+  it('should not modify other properties in spec', () => {
+    const spec = {
+      users: [
+        { email: 'zoe@example.com', name: 'Zoe' },
+        { email: 'alice@example.com', name: 'Alice' },
+      ],
+      apps: {
+        app1: { enabled: true },
+      },
+      cluster: {
+        name: 'test-cluster',
+      },
+    }
+
+    const result = sortUserArraysByName(spec)
+
+    expect(result.apps).toEqual({ app1: { enabled: true } })
+    expect(result.cluster).toEqual({ name: 'test-cluster' })
+    expect(result.users[0].email).toBe('alice@example.com')
+  })
+
+  it('should handle users array with null first element', () => {
+    const spec = {
+      users: [null, { email: 'alice@example.com', name: 'Alice' }],
+    }
+
+    const result = sortUserArraysByName(spec)
+
+    // Should not sort if first element is null
+    expect(result.users[0]).toBeNull()
+    expect(result.users[1].email).toBe('alice@example.com')
+  })
+
+  it('should mutate the original spec object', () => {
+    const spec = {
+      users: [
+        { email: 'zoe@example.com', name: 'Zoe' },
+        { email: 'alice@example.com', name: 'Alice' },
+      ],
+    }
+
+    const result = sortUserArraysByName(spec)
+
+    // The function should return the same reference (mutates in place)
+    expect(result).toBe(spec)
+    expect(spec.users[0].email).toBe('alice@example.com')
+  })
+})
+

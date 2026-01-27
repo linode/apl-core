@@ -514,6 +514,16 @@ export function getUniqueIdentifierFromFilePath(filePath: string): string {
     .replace(/\.yaml$/, '')
 }
 
+export function sortUserArraysByName(spec: Record<string, any>): Record<string, any> {
+  if (Array.isArray(spec.users) && spec.users.length > 0) {
+    const hasEmailProperty = spec.users[0] !== null && typeof spec.users[0] === 'object' && 'email' in spec.users[0]
+    if (hasEmailProperty) {
+      spec.users.sort((a, b) => String(a.email || '').localeCompare(String(b.email || '')))
+    }
+  }
+  return spec
+}
+
 export function sortTeamConfigArraysByName(spec: Record<string, any>): Record<string, any> {
   if (!spec.teamConfig || typeof spec.teamConfig !== 'object') {
     return spec
@@ -573,7 +583,7 @@ export async function loadValues(envDir: string, deps = { loadToSpec }): Promise
       await deps.loadToSpec(spec, fileMap)
     }),
   )
-  return sortTeamConfigArraysByName(spec)
+  return sortUserArraysByName(sortTeamConfigArraysByName(spec))
 }
 
 export function extractTeamDirectory(filePath: string): string {
