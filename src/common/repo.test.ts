@@ -9,6 +9,7 @@ import {
   getTeamNameFromJsonPath,
   getUniqueIdentifierFromFilePath,
   hasCorrespondingDecryptedFile,
+  sortTeamConfigArraysByName,
 } from 'src/common/repo'
 import stubs from 'src/test-stubs'
 
@@ -280,5 +281,169 @@ describe('getFileMap', () => {
   it('should return filemap for sealedsecrets', () => {
     const map = getFileMap('AplTeamSecret', '/tmp')
     expect(map.kind).toBe('AplTeamSecret')
+  })
+})
+
+describe('sortTeamConfigArraysByName', () => {
+  it('should sort arrays with name property in teamConfig', () => {
+    const spec = {
+      teamConfig: {
+        'team-a': {
+          services: [
+            { name: 'zebra', port: 80 },
+            { name: 'alpha', port: 81 },
+            { name: 'beta', port: 82 },
+          ],
+          builds: [
+            { name: 'charlie', image: 'img1' },
+            { name: 'alpha', image: 'img2' },
+          ],
+        },
+        'team-b': {
+          workloads: [
+            { name: 'delta', replicas: 2 },
+            { name: 'bravo', replicas: 1 },
+          ],
+        },
+      },
+    }
+
+    const result = sortTeamConfigArraysByName(spec)
+
+    expect(result.teamConfig['team-a'].services[0].name).toBe('alpha')
+    expect(result.teamConfig['team-a'].services[1].name).toBe('beta')
+    expect(result.teamConfig['team-a'].services[2].name).toBe('zebra')
+
+    expect(result.teamConfig['team-a'].builds[0].name).toBe('alpha')
+    expect(result.teamConfig['team-a'].builds[1].name).toBe('charlie')
+
+    expect(result.teamConfig['team-b'].workloads[0].name).toBe('bravo')
+    expect(result.teamConfig['team-b'].workloads[1].name).toBe('delta')
+  })
+
+  it('should not sort arrays without name property', () => {
+    const spec = {
+      teamConfig: {
+        'team-a': {
+          items: [
+            { id: 'third', value: 3 },
+            { id: 'first', value: 1 },
+            { id: 'second', value: 2 },
+          ],
+        },
+      },
+    }
+
+    const result = sortTeamConfigArraysByName(spec)
+
+    expect(result.teamConfig['team-a'].items[0].id).toBe('third')
+    expect(result.teamConfig['team-a'].items[1].id).toBe('first')
+    expect(result.teamConfig['team-a'].items[2].id).toBe('second')
+  })
+
+  it('should handle empty arrays', () => {
+    const spec = {
+      teamConfig: {
+        'team-a': {
+          services: [],
+        },
+      },
+    }
+
+    const result = sortTeamConfigArraysByName(spec)
+
+    expect(result.teamConfig['team-a'].services).toEqual([])
+  })
+
+  it('should handle missing teamConfig', () => {
+    const spec = {
+      apps: {
+        app1: { enabled: true },
+      },
+    }
+
+    const result = sortTeamConfigArraysByName(spec)
+
+    expect(result).toEqual(spec)
+  })
+
+  it('should handle null or undefined name values', () => {
+    const spec = {
+      teamConfig: {
+        'team-a': {
+          services: [
+            { name: 'zebra', port: 80 },
+            { name: null, port: 81 },
+            { name: 'alpha', port: 82 },
+            { name: undefined, port: 83 },
+          ],
+        },
+      },
+    }
+
+    const result = sortTeamConfigArraysByName(spec)
+
+    // Null and undefined are sorted first (empty string equivalents), then alphabetically
+    expect(result.teamConfig['team-a'].services[0].name).toBeNull()
+    expect(result.teamConfig['team-a'].services[1].name).toBeUndefined()
+    expect(result.teamConfig['team-a'].services[2].name).toBe('alpha')
+    expect(result.teamConfig['team-a'].services[3].name).toBe('zebra')
+  })
+
+  it('should not modify non-array properties', () => {
+    const spec = {
+      teamConfig: {
+        'team-a': {
+          services: [
+            { name: 'zebra', port: 80 },
+            { name: 'alpha', port: 81 },
+          ],
+          settings: {
+            foo: 'bar',
+          },
+          description: 'team description',
+        },
+      },
+    }
+
+    const result = sortTeamConfigArraysByName(spec)
+
+    expect(result.teamConfig['team-a'].settings).toEqual({ foo: 'bar' })
+    expect(result.teamConfig['team-a'].description).toBe('team description')
+    expect(result.teamConfig['team-a'].services[0].name).toBe('alpha')
+  })
+
+  it('should sort case-insensitively', () => {
+    const spec = {
+      teamConfig: {
+        'team-a': {
+          services: [
+            { name: 'Zebra', port: 80 },
+            { name: 'alpha', port: 81 },
+            { name: 'Beta', port: 82 },
+          ],
+        },
+      },
+    }
+
+    const result = sortTeamConfigArraysByName(spec)
+
+    expect(result.teamConfig['team-a'].services[0].name).toBe('alpha')
+    expect(result.teamConfig['team-a'].services[1].name).toBe('Beta')
+    expect(result.teamConfig['team-a'].services[2].name).toBe('Zebra')
+  })
+
+  it('should handle single item arrays', () => {
+    const spec = {
+      teamConfig: {
+        'team-a': {
+          services: [{ name: 'only-one', port: 80 }],
+        },
+      },
+    }
+
+    const result = sortTeamConfigArraysByName(spec)
+
+    expect(result.teamConfig['team-a'].services).toEqual([{ name: 'only-one', port: 80 }])
   })
 })
