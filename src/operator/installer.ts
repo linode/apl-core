@@ -1,5 +1,4 @@
 import * as process from 'node:process'
-import { collectTraces } from '../cmd/traces'
 import { terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
 import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
@@ -14,8 +13,6 @@ export interface GitCredentials {
 export class Installer {
   private d = terminal('operator:installer')
   private aplOps: AplOperations
-  private readonly traceCollectionIntervalMs = 300_000 // 5 minutes
-  private readonly traceCollectionDurationMs = 1_800_000 // 30 minutes total
 
   constructor(aplOps: AplOperations) {
     this.aplOps = aplOps
@@ -51,11 +48,6 @@ export class Installer {
   public async reconcileInstall(): Promise<void> {
     let attemptNumber = 0
 
-    // Start trace collection in background (runs for 30 minutes independently)
-    this.collectTracesLoop().catch((error) => {
-      this.d.warn('Trace collection loop failed:', getErrorMessage(error))
-    })
-
     while (true) {
       try {
         attemptNumber += 1
@@ -77,30 +69,6 @@ export class Installer {
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     }
-  }
-
-  private async collectTracesLoop(): Promise<void> {
-    this.d.info('Starting trace collection loop (30 minutes, every 5 minutes)')
-    const startTime = Date.now()
-    const endTime = startTime + this.traceCollectionDurationMs
-
-    while (Date.now() < endTime) {
-      try {
-        this.d.info('Running periodic trace collection')
-        await collectTraces()
-      } catch (error) {
-        this.d.warn('Failed to collect traces:', getErrorMessage(error))
-      }
-
-      // Wait for next collection interval (but don't exceed 30 min total)
-      const remainingTime = endTime - Date.now()
-      if (remainingTime > 0) {
-        const waitTime = Math.min(this.traceCollectionIntervalMs, remainingTime)
-        await new Promise((resolve) => setTimeout(resolve, waitTime))
-      }
-    }
-
-    this.d.info('Trace collection loop completed (30 minutes elapsed)')
   }
 
   private async getInstallationStatus(): Promise<string | undefined> {

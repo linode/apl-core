@@ -5,9 +5,11 @@ import { createUpdateConfigMap, k8s } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
+import { getErrorMessage } from 'src/operator/utils'
+import { env } from 'src/common/envalid'
 
 const cmdName = getFilename(__filename)
-
+const { COLLECTION_INTERVAL_MS, COLLECTION_DURATION_MS } = env
 interface ResourceReport {
   kind: string
   name: string
@@ -425,6 +427,59 @@ export async function collectTraces(): Promise<void> {
     d.error('Failed to collect traces:', error)
     throw error
   }
+}
+
+async function getCollectionStartTime(name: string, namespace: string): Promise<number> {
+  const coreApi = k8s.core()
+
+  try {
+    const configMap = await coreApi.readNamespacedConfigMap({ name, namespace })
+    // Use ConfigMap's creation timestamp as the start time
+    if (configMap.metadata?.creationTimestamp) {
+      return new Date(configMap.metadata.creationTimestamp).getTime()
+    }
+  } catch {
+    // ConfigMap doesn't exist yet, will be created by first collectTraces() call
+  }
+
+  // No ConfigMap yet, use current time (ConfigMap will be created by collectTraces)
+  return Date.now()
+}
+
+export async function runTraceCollectionLoop(): Promise<void> {
+  const d = terminal('cmd:traces:runTraceCollectionLoop')
+  const configMapName = 'apl-traces-report'
+  const namespace = 'apl-operator'
+
+  // Get collection start time from ConfigMap creation timestamp
+  const startTime = await getCollectionStartTime(configMapName, namespace)
+  const endTime = startTime + COLLECTION_DURATION_MS
+  const now = Date.now()
+
+  if (now >= endTime) {
+    d.info('Trace collection window (30 minutes) already elapsed, skipping')
+    return
+  }
+
+  const remainingMs = endTime - now
+  d.info(`Starting trace collection loop (${Math.round(remainingMs / 60000)} minutes remaining)`)
+
+  while (Date.now() < endTime) {
+    try {
+      d.info('Running periodic trace collection')
+      await collectTraces()
+    } catch (error) {
+      d.warn('Failed to collect traces:', getErrorMessage(error))
+    }
+
+    const remainingTime = endTime - Date.now()
+    if (remainingTime > 0) {
+      const waitTime = Math.min(COLLECTION_INTERVAL_MS, remainingTime)
+      await new Promise((resolve) => setTimeout(resolve, waitTime))
+    }
+  }
+
+  d.info('Trace collection loop completed')
 }
 
 export const module = {
