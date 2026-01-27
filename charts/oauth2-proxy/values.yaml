@@ -504,6 +504,14 @@ redis-ha:
   #
   # redisPassword: xxxxx
   # replicas: 1
+  #
+  # IMPORTANT: When using a single replica (replicas: 1), you MUST also configure
+  # min-replicas-to-write to 0 to avoid "NOREPLICAS Not enough good replicas to write" errors.
+  # See: https://stackoverflow.com/a/59737862
+  # redis:
+  #   config:
+  #     min-replicas-to-write: 0
+  #
   # persistentVolume:
   #   enabled: false
   #
