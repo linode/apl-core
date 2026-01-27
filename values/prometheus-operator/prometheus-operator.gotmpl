@@ -138,9 +138,6 @@ prometheus:
               storage: {{ $p | get "storageSize" }}
     enableAdminAPI: true
     externalUrl: https://{{ $prometheusDomain }}
-    {{- if $apps.tempo.enabled }}
-    enableRemoteWriteReceiver: true
-    {{- end }}
     {{- if $hasServices }}
     additionalScrapeConfigs:
     {{- range $teamId, $team := $v.teamConfig }}
@@ -257,7 +254,7 @@ grafana:
       prometheus: system
   testFramework:
     enabled: false
-  {{- if or $apps.loki.enabled $apps.thanos.enabled $apps.tempo.enabled }}
+  {{- if or $apps.loki.enabled $apps.thanos.enabled }}
   additionalDataSources:
     {{- if $apps.loki.enabled }}
     - name: Loki
@@ -283,57 +280,8 @@ grafana:
       jsonData:
         prometheusType: Thanos
         timeInterval: "60s"
-      {{- if $apps.tempo.enabled }}
-        derivedFields:
-          - datasourceName: Tempo
-            matcherRegex: "traceID=00-([^\\-]+)-"
-            name: TraceID
-            url: "$${__value.raw}"
-            datasourceUid: tempo
-      {{- end }}
     {{- end }}
-    {{- if $apps.tempo.enabled }}
-    - name: Tempo
-      type: tempo
-      uid: tempo
-      access: proxy
-      editable: true
-      url: http://tempo-query-frontend.tempo:3100
-      jsonData:
-        tracesToLogsV2:
-          datasourceUid: 'loki'
-          spanStartTimeShift: '1h'
-          spanEndTimeShift: '-1h'
-          filterByTraceID: false
-          filterBySpanID: false
-          customQuery: true
-          query: '{namespace=~".+"} |= "$${__span.traceId}"'
-        tracesToMetrics:
-          datasourceUid: 'prometheus'
-          spanStartTimeShift: '1h'
-          spanEndTimeShift: '-1h'
-          tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
-          queries:
-            - name: 'Span duration (example)'
-              query: 'sum(rate(traces_spanmetrics_latency_bucket{$$__tags}[5m]))'
-        serviceMap:
-          datasourceUid: 'prometheus'
-        nodeGraph:
-          enabled: true
-        search:
-          hide: false
-        traceQuery:
-          timeShiftEnabled: true
-          spanStartTimeShift: '1h'
-          spanEndTimeShift: '-1h'
-        spanBar:
-          type: 'Tag'
-          tag: 'http.path'
-        httpMethod: GET
-        lokiSearch:
-          datasourceUid: 'loki'
-    {{- end }}
-    {{- end }}
+  {{- end }}
   adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword | quote }}
   grafana.ini: {{- $grafanaIni | nindent 4 }}
     server:

@@ -97,7 +97,7 @@ One-click activation of the following Kubernetes Apps:
 - [Kyverno](https://github.com/kyverno/kyverno): Kubernetes native policy management.
 - [Minio](https://github.com/minio/minio): High performance Object Storage compatible with Amazon S3 cloud storage service.
 - [Trivy Operator](https://github.com/aquasecurity/trivy-operator): Kubernetes-native security toolkit.
-- [Grafana Tempo](https://github.com/grafana/tempo): High-scale distributed tracing backend.
+
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-operator): Instrument, generate, collect, and export telemetry data to help you analyze your software’s performance and behavior.
 
 ## Documentation
