@@ -11,7 +11,6 @@ spec:
                 gitea: my-clusterid-gitea
                 harbor: my-clusterid-harbor
                 loki: my-clusterid-loki
-                tempo: my-clusterid-tempo
                 thanos: my-clusterid-thanos
                 kubeflow-pipelines: my-clusterid-kubeflow-pipelines
             region: nl-ams-1
