@@ -622,4 +622,3 @@ describe('sortUserArraysByName', () => {
     expect(spec.users[0].email).toBe('alice@example.com')
   })
 })
-
