@@ -39,18 +39,6 @@ resources:
               {{- end }}
         exporters:
           debug: {}
-          {{- if $v.apps.tempo.enabled }}
-          otlp:
-            endpoint: tempo-distributor.tempo.svc.cluster.local:4317
-            sending_queue:
-              enabled: true
-              num_consumers: 100
-              queue_size: 10000
-            retry_on_failure:
-              enabled: true
-            tls:
-              insecure: true
-          {{- end }}
         service:
           pipelines:
             logs:
@@ -68,11 +56,7 @@ resources:
                 - batch
                 - k8sattributes
               exporters:
-              {{- if $v.apps.tempo.enabled }}
-                - otlp
-              {{- else }}
                 - debug
-              {{- end }}
   {{- if $lokiEnabled }}
   - apiVersion: opentelemetry.io/v1beta1
     kind: OpenTelemetryCollector
