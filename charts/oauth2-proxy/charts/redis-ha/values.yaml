@@ -248,6 +248,8 @@ haproxy:
     client: 330s
     # -- haproxy.cfg `timeout check` setting
     check: 2s
+    # -- haproxy.cfg `timeout tunnel` setting
+    tunnel: 1h
   # -- haproxy.cfg `check inter` setting
   checkInterval: 1s
   # -- haproxy.cfg `check fall` setting
