@@ -13,6 +13,10 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'chart-deps') &&
       (github.event.action == 'labeled' || !startsWith(github.event.head_commit.message, 'Merge branch'))
     steps:
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
@@ -47,3 +51,11 @@ jobs:
         with:
           name: script-output
           path: tmp/diff-output.txt
+      - name: Update PR branches
+        env:
+          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          diff_text=$(cat tmp/diff-output.txt)
+          format_code='```'
+          comment_text="Output of comparison:\n$format_code\n$diff_text\n$format_code"
+          gh pr comment github.event.pull_request.number "$comment_text"
