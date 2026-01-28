@@ -4,11 +4,12 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+
 jobs:
   run-compare:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     if: github.actor == 'svcAPLBot'
     steps:
       - name: Checkout repository
