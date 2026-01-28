@@ -386,6 +386,13 @@ describe('Collect Traces Command', () => {
     jest.clearAllMocks()
   })
 
+  // Helper function to extract report from timestamped key
+  const extractReportFromConfigMap = (data: Record<string, string>): any => {
+    const reportKey = Object.keys(data).find((key) => key.startsWith('report-'))
+    if (!reportKey) throw new Error('No report key found in ConfigMap data')
+    return JSON.parse(data[reportKey])
+  }
+
   it('should detect all types of failed resources and store in ConfigMap', async () => {
     // Mock various failing resources
     mockCoreApi.listPodForAllNamespaces.mockResolvedValue({
@@ -480,12 +487,15 @@ describe('Collect Traces Command', () => {
 
     await collectTraces()
 
-    expect(mockCreateUpdateConfigMap).toHaveBeenCalledWith(mockCoreApi, 'apl-traces-report', 'apl-operator', {
-      report: expect.any(String),
-    })
+    expect(mockCreateUpdateConfigMap).toHaveBeenCalledWith(
+      mockCoreApi,
+      'apl-traces-report',
+      'apl-operator',
+      expect.objectContaining({}),
+    )
 
-    const configMapCall = mockCreateUpdateConfigMap.mock.calls[0]
-    const reportData = JSON.parse(configMapCall[3].report)
+    const [, , , configMapData] = mockCreateUpdateConfigMap.mock.calls[0]
+    const reportData = extractReportFromConfigMap(configMapData)
 
     // Should have all resource types
     expect(reportData.failedResources.length).toBeGreaterThan(0)
@@ -516,8 +526,12 @@ describe('Collect Traces Command', () => {
 
     await collectTraces()
 
-    // Should not create ConfigMap for healthy cluster
-    expect(mockCreateUpdateConfigMap).not.toHaveBeenCalled()
+    // Should always create ConfigMap (even when healthy, for timestamp visibility)
+    expect(mockCreateUpdateConfigMap).toHaveBeenCalled()
+
+    const [, , , configMapData] = mockCreateUpdateConfigMap.mock.calls[0]
+    const reportData = extractReportFromConfigMap(configMapData)
+    expect(reportData.failedResources).toEqual([])
   })
 
   it('should call createUpdateConfigMap when there are issues', async () => {
@@ -586,8 +600,8 @@ describe('Collect Traces Command', () => {
     // Should create ConfigMap with deployment issues
     expect(mockCreateUpdateConfigMap).toHaveBeenCalled()
 
-    const configMapCall = mockCreateUpdateConfigMap.mock.calls[0]
-    const reportData = JSON.parse(configMapCall[3].report)
+    const [, , , configMapData] = mockCreateUpdateConfigMap.mock.calls[0]
+    const reportData = extractReportFromConfigMap(configMapData)
 
     // Should have deployment in failed resources
     expect(reportData.failedResources).toEqual(
@@ -638,8 +652,8 @@ describe('Collect Traces Command', () => {
 
     await collectTraces()
 
-    const configMapCall = mockCreateUpdateConfigMap.mock.calls[0]
-    const reportData = JSON.parse(configMapCall[3].report)
+    const [, , , configMapData] = mockCreateUpdateConfigMap.mock.calls[0]
+    const reportData = extractReportFromConfigMap(configMapData)
 
     // Should not have errors field when all collections succeed
     expect(reportData.errors).toBeUndefined()
@@ -659,7 +673,12 @@ describe('Collect Traces Command', () => {
 
     // Should complete without throwing despite all failures
     expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalled()
-    // Should not create ConfigMap when no issues found and all failed
-    expect(mockCreateUpdateConfigMap).not.toHaveBeenCalled()
+    // Should always create ConfigMap (even when all fail, for timestamp visibility and error reporting)
+    expect(mockCreateUpdateConfigMap).toHaveBeenCalled()
+
+    const [, , , configMapData] = mockCreateUpdateConfigMap.mock.calls[0]
+    const reportData = extractReportFromConfigMap(configMapData)
+    expect(reportData.errors).toBeDefined()
+    expect(reportData.errors.length).toBeGreaterThan(0)
   })
 })
