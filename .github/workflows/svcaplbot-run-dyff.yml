@@ -24,6 +24,7 @@ jobs:
       - name: Install Helm and Helmfile
         uses: helmfile/helmfile-action@v2.1.1
         with:
+          helmfile-args: version
           helm-plugins: >
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
