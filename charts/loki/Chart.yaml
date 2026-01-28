@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 3.6.3
+appVersion: 3.6.4
 dependencies:
 - alias: minio
   condition: minio.enabled
@@ -15,7 +15,7 @@ dependencies:
   condition: rollout_operator.enabled
   name: rollout-operator
   repository: https://grafana.github.io/helm-charts
-  version: 0.38.2
+  version: 0.40.0
 description: Helm chart for Grafana Loki and Grafana Enterprise Logs supporting monolithic,
   simple scalable, and microservices modes.
 home: https://grafana.github.io/helm-charts
@@ -29,4 +29,4 @@ sources:
 - https://grafana.com/oss/loki/
 - https://grafana.com/docs/loki/latest/
 type: application
-version: 6.49.0
+version: 6.51.0

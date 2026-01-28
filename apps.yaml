@@ -174,7 +174,7 @@ appsInfo:
     chartName: tekton-pipelines
   loki:
     title: Loki
-    appVersion: 3.6.3
+    appVersion: 3.6.4
     repo: https://github.com/grafana/loki
     maintainers: Grafana Labs
     relatedLinks:
