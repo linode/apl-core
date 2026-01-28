@@ -580,9 +580,9 @@ export async function loadValues(envDir: string, deps = { loadToSpec }): Promise
       await deps.loadToSpec(spec, fileMap)
     }),
   )
-  sortTeamConfigArraysByName(spec)                                                                                                                                                                        
-  sortUserArraysByName(spec)                                                                                                                                                                              
-  return spec 
+  sortTeamConfigArraysByName(spec)
+  sortUserArraysByName(spec)
+  return spec
 }
 
 export function extractTeamDirectory(filePath: string): string {
