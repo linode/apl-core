@@ -66,6 +66,7 @@ const applyApplication = async (app: ApplicationManifest): Promise<void> => {
       name: app.metadata.name,
       body: app,
       fieldManager: 'node-fetch',
+      force: true,
     },
     setHeaderOptions('Content-Type', PatchStrategy.ServerSideApply),
   )
