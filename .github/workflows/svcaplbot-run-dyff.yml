@@ -22,7 +22,11 @@ jobs:
         with:
           node-version: 24
       - name: Install Helm and Helmfile
-        uses: helmfile/helmfile-action@v2.0.4
+        uses: helmfile/helmfile-action@v2.1.1
+        with:
+          helm-plugins: >
+            https://github.com/databus23/helm-diff,
+            https://github.com/jkroepke/helm-secrets
       - name: Run compare script
         id: run_script
         run: |
