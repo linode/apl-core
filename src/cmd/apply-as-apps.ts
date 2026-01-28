@@ -152,7 +152,7 @@ export const createOrPatchArgoCdApp = async (manifest: Record<string, any>) => {
       body: manifest,
     })
   } catch (error) {
-    if (error instanceof ApiException) {
+    if (error instanceof ApiException && error.code === 409) {
       d.debug(`ArgoCD application ${manifest.metadata.name} exists, patching.`)
       await customApi.patchNamespacedCustomObject({
         ...ARGOCD_APP_PARAMS,

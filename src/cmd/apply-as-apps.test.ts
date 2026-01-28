@@ -235,9 +235,7 @@ describe('createOrPatchArgoCdApp', () => {
       mockCreateNamespacedCustomObject.mockRejectedValue(apiError)
       mockPatchNamespacedCustomObject.mockResolvedValue({})
 
-      await createOrPatchArgoCdApp(mockManifest)
-
-      expect(mockPatchNamespacedCustomObject).toHaveBeenCalled()
+      await expect(createOrPatchArgoCdApp(mockManifest)).rejects.toThrow(apiError)
     })
   })
 })
