@@ -27,8 +27,6 @@ global:
   {{- else }}
   dnsService: "kube-dns"
   {{- end }}
-  commonConfig:
-    replication_factor: 1
 
 monitoring:
   serviceMonitor:
@@ -37,6 +35,8 @@ monitoring:
       prometheus: system
 
 loki:
+  commonConfig:
+    replication_factor: 1
   podAnnotations:
     sidecar.istio.io/inject: "false"
   schemaConfig:
