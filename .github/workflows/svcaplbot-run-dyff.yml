@@ -1,8 +1,8 @@
-name: svcAPLBot compare output to main
+name: chart-deps compare output to main
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled]
 
 permissions:
   contents: read
