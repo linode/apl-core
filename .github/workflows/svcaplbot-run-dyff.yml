@@ -1,0 +1,31 @@
+name: svcAPLBot compare output to main
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  run-compare:
+    runs-on: ubuntu-latest
+    if: github.actor == 'svcAPLBot'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Install Helm and Helmfile
+        uses: helmfile/helmfile-action@v2.0.4
+      - name: Run compare script
+        id: run_script
+        run: |
+          bin/compare.sh --diff-output tmp/diff-output.txt
+      - name: Upload output as artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: script-output
+          path: tmp/diff-output.txt
