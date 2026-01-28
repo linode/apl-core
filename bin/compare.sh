@@ -37,13 +37,13 @@ export NODE_ENV=test
 node --no-warnings --import tsx src/otomi.ts -- values
 helmfile template "${templateArgs[@]}" --output-dir-template="$targetDirB/{{.Release.Namespace}}-{{.Release.Name }}"
 mv tests/fixtures/values-repo.yaml "$targetDirB/values-repo.yaml"
-git checkout $branchA
+git -c core.hooksPath=/dev/null checkout $branchA
 # we remove previously rendered manifests so they are not mixed up with newly rendered
 rm -rf $targetDirA
 node --no-warnings --import tsx src/otomi.ts -- values
 helmfile template "${templateArgs[@]}" --output-dir-template="$targetDirA/{{.Release.Namespace}}-{{.Release.Name}}"
 mv tests/fixtures/values-repo.yaml "$targetDirA/values-repo.yaml"
-git checkout $branchB
+git -c core.hooksPath=/dev/null checkout $branchB
 
 # order of arguments matters so new changes are green color
 echo "Comparing $targetDirB with $targetDirA"
