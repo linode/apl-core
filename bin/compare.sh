@@ -34,13 +34,13 @@ targetDirA="tmp/${branchA}"
 targetDirB="tmp/${branchB}"
 
 export NODE_ENV=test
-otomi values
+binzx/otomi values
 helmfile template "${templateArgs[@]}" --output-dir-template="$targetDirB/{{.Release.Namespace}}-{{.Release.Name }}"
 mv tests/fixtures/values-repo.yaml "$targetDirB/values-repo.yaml"
 git checkout $branchA
 # we remove previously rendered manifests so they are not mixed up with newly rendered
 rm -rf $targetDirA
-otomi values
+binzx/otomi values
 helmfile template "${templateArgs[@]}" --output-dir-template="$targetDirA/{{.Release.Namespace}}-{{.Release.Name}}"
 mv tests/fixtures/values-repo.yaml "$targetDirA/values-repo.yaml"
 git checkout $branchB
