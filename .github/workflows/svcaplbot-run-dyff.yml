@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
@@ -48,7 +48,7 @@ jobs:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           bin/compare.sh --diff-output tmp/diff-output.txt
-          diff_text="$(cat tmp/diff-output.txt)"
+          diff_text=$(cat tmp/diff-output.txt)
           format_code='```'
           comment_text="Output of comparison:\n$format_code\n$diff_text\n$format_code"
           gh pr comment github.event.pull_request.number "$comment_text"
