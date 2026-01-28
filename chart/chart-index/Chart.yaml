@@ -6,7 +6,7 @@ version: 0.1.0
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 9.3.6
+    version: 9.3.7
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
     version: 1.0.1
@@ -53,7 +53,7 @@ dependencies:
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
-    version: 7.1.6
+    version: 7.1.7
     repository: https://codecentric.github.io/helm-charts
   - name: knative-operator
     version: v1.18.1
