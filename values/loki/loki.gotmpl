@@ -29,10 +29,12 @@ global:
   {{- end }}
   commonConfig:
     replication_factor: 1
-serviceMonitor:
-  enabled: true
-  labels:
-    prometheus: system
+
+monitoring:
+  serviceMonitor:
+    enabled: true
+    labels:
+      prometheus: system
 
 loki:
   podAnnotations:
