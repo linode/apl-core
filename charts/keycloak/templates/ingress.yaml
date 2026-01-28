@@ -1,10 +1,11 @@
 {{- $ingress := .Values.ingress -}}
 {{- if $ingress.enabled -}}
 {{- $apiVersion := "networking.k8s.io/v1" -}}
+{{- $fullName := ( include "keycloak.fullname" . ) -}}
 apiVersion: {{ $apiVersion }}
 kind: Ingress
 metadata:
-  name: {{ include "keycloak.fullname" . }}
+  name: {{ $fullName }}
   namespace: {{ .Release.Namespace }}
   {{- with $ingress.annotations }}
   annotations:
@@ -43,9 +44,9 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ include "keycloak.fullname" $ }}-http
+                name: {{ default (printf "%s-http" $fullName) (.serviceName) }}
                 port:
-                  name: {{ $ingress.servicePort }}
+                  name: {{ default ($ingress.servicePort) (.servicePort) }}
           {{- end }}
     {{- end }}
 {{- if $ingress.console.enabled }}
@@ -53,7 +54,7 @@ spec:
 apiVersion: {{ $apiVersion }}
 kind: Ingress
 metadata:
-  name: {{ include "keycloak.fullname" . }}-console
+  name: {{ $fullName }}-console
   namespace: {{ .Release.Namespace }}
   {{- with $ingress.console.annotations }}
   annotations:
@@ -106,9 +107,9 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ include "keycloak.fullname" $ }}-http
+                name: {{ default (printf "%s-http" $fullName) (.serviceName) }}
                 port:
-                  name: {{ $ingress.servicePort }}
+                  name: {{ default ($ingress.servicePort) (.servicePort) }}
           {{- end }}
     {{- end }}
 {{- end -}}
