@@ -21,4 +21,4 @@ name: keycloakx
 sources:
 - https://github.com/codecentric/helm-charts
 - https://github.com/keycloak/keycloak/tree/main/quarkus/container
-version: 7.1.6
+version: 7.1.7
