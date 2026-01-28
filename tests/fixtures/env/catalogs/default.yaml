@@ -3,6 +3,7 @@ metadata:
     name: default
     labels: {}
 spec:
-    url: https://github.com/linode/apl-charts.git
     branch: main
     enabled: true
+    name: default
+    url: https://github.com/linode/apl-charts.git
