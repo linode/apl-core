@@ -65,7 +65,7 @@ const applyApplication = async (app: ApplicationManifest): Promise<void> => {
       ...ARGOCD_APP_PARAMS,
       name: app.metadata.name,
       body: app,
-      fieldManager: 'node-fetch',
+      fieldManager: 'apl-operator',
       force: true,
     },
     setHeaderOptions('Content-Type', PatchStrategy.ServerSideApply),
