@@ -8,7 +8,24 @@ set -ue
 
 export ENV_DIR=$PWD/tests/fixtures
 
-readonly templateArgs="$@"
+diffOutput=
+templateArgs=
+# Process arguments
+while [ $# -ne 0 ]; do
+  case "$1" in
+    --diff-output)
+      diffOutput="$2"
+      shift
+      ;;
+    *)
+      # Forward everything else to the template command
+      templateArgs=("${templateArgs[@]}" "$1")
+      ;;
+  esac
+  shift
+done
+
+readonly script_dir=$(dirname "$0")
 readonly branchA='main'
 # branchB current branch
 readonly branchB=$(git rev-parse --abbrev-ref HEAD)
@@ -18,19 +35,24 @@ targetDirB="tmp/${branchB}"
 
 export NODE_ENV=test
 otomi values
-helmfile template $templateArgs --output-dir-template="../$targetDirB/{{.Release.Namespace}}-{{.Release.Name }}"
-mv tests/fixtures/values-repo.yaml $targetDirB/values-repo.yaml
+helmfile template "${templateArgs[@]}" --output-dir-template="$targetDirB/{{.Release.Namespace}}-{{.Release.Name }}"
+mv tests/fixtures/values-repo.yaml "$targetDirB/values-repo.yaml"
 git checkout $branchA
 # we remove previously rendered manifests so they are not mixed up with newly rendered
 rm -rf $targetDirA
 otomi values
-helmfile template $templateArgs --output-dir-template="../$targetDirA/{{.Release.Namespace}}-{{.Release.Name}}"
-mv tests/fixtures/values-repo.yaml $targetDirA/values-repo.yaml
+helmfile template "${templateArgs[@]}" --output-dir-template="$targetDirA/{{.Release.Namespace}}-{{.Release.Name}}"
+mv tests/fixtures/values-repo.yaml "$targetDirA/values-repo.yaml"
 git checkout $branchB
 
-# order of arguments matters so new chanages are green color
+# order of arguments matters so new changes are green color
 echo "Comparing $targetDirB with $targetDirA"
-bin/dyff.sh $targetDirB $targetDirA
+if [ -n "$diffOutput" ]; then
+  "${script_dir}/dyff.sh" "$targetDirB" "$targetDirA" > "$diffOutput"
+  cat "$diffOutput"
+else
+  "${script_dir}/dyff.sh" "$targetDirB" "$targetDirA"
+fi
 
 echo "#########################################################"
 echo "#"
