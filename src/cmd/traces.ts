@@ -9,7 +9,9 @@ import { getErrorMessage } from 'src/operator/utils'
 import { env } from 'src/common/envalid'
 
 const cmdName = getFilename(__filename)
-const { COLLECTION_INTERVAL_MS, COLLECTION_DURATION_MS } = env
+const { COLLECTION_INTERVAL_SECONDS, COLLECTION_DURATION_SECONDS } = env
+const COLLECTION_INTERVAL_MS = COLLECTION_INTERVAL_SECONDS * 1000
+const COLLECTION_DURATION_MS = COLLECTION_DURATION_SECONDS * 1000
 interface ResourceReport {
   kind: string
   name: string

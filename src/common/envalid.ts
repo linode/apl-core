@@ -55,8 +55,8 @@ export const cliEnvSpec = {
     desc: 'Target revision to set for ArgoCD applications. If not set, uses the current image tag.',
     default: undefined,
   }),
-  COLLECTION_DURATION_MS: num({ desc: 'Traces collection duration 30 min default in ms', default: 1800000 }),
-  COLLECTION_INTERVAL_MS: num({ desc: 'Traces collection interval 5 min default in ms', default: 300000 }),
+  COLLECTION_DURATION_SECONDS: num({ desc: 'Traces collection duration (default 30 min)', default: 1800 }),
+  COLLECTION_INTERVAL_SECONDS: num({ desc: 'Traces collection interval (default 5 min)', default: 300 }),
 }
 
 export function cleanEnv<T>(spec: { [K in keyof T]: ValidatorSpec<T[K]> }, options?: CleanOptions<T>) {
