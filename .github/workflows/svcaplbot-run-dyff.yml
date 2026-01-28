@@ -10,7 +10,7 @@ permissions:
 jobs:
   run-compare:
     runs-on: ubuntu-latest
-    if: github.actor == 'svcAPLBot'
+    if: contains(github.event.pull_request.labels.*.name, 'chart-deps')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
