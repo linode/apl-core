@@ -46,7 +46,7 @@ interface HelmRelease {
   version: string
 }
 
-interface ApplicationManifest {
+interface ArgocdAppManifest {
   apiVersion: string
   kind: string
   metadata: {
@@ -59,7 +59,7 @@ interface ApplicationManifest {
   spec: Record<string, any>
 }
 
-const applyApplication = async (app: ApplicationManifest): Promise<void> => {
+async function applyArgocdApp(app: ArgocdAppManifest): Promise<void> {
   await customApi.patchNamespacedCustomObject(
     {
       ...ARGOCD_APP_PARAMS,
@@ -81,7 +81,7 @@ const getArgocdAppManifest = (
   release: HelmRelease,
   values: Record<string, any>,
   otomiVersion: string,
-): ApplicationManifest => {
+): ArgocdAppManifest => {
   const name = getAppName(release)
   const patch = appPatches[name] || genericPatch
   return {
@@ -219,7 +219,7 @@ export const getApplications = async (): Promise<string[]> => {
   }
 }
 
-const createApplicationManifest = async (release: HelmRelease, otomiVersion: string): Promise<ApplicationManifest> => {
+const createArgocdAppManifest = async (release: HelmRelease, otomiVersion: string): Promise<ArgocdAppManifest> => {
   const appName = `${release.namespace}-${release.name}`
   const valuesPath = `${valuesDir}/${appName}.yaml`
   let values = {}
@@ -290,8 +290,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
   const releases: [] = JSON.parse(res.stdout.toString())
   const currentApplications = await getApplications()
 
-  // Collect manifests to apply and handle removals
-  const manifestsToApply: ApplicationManifest[] = []
+  const manifestsToApply: ArgocdAppManifest[] = []
 
   await Promise.allSettled(
     releases.map(async (release: HelmRelease) => {
@@ -303,7 +302,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
         }
 
         if (release.installed) {
-          const manifest = await createApplicationManifest(release, otomiVersion)
+          const manifest = await createArgocdAppManifest(release, otomiVersion)
           manifestsToApply.push(manifest)
         } else {
           const appName = getAppName(release)
@@ -317,12 +316,11 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
     }),
   )
 
-  // Apply all manifests using server-side apply
   d.info(`Applying ${manifestsToApply.length} ArgoCD applications`)
   const applyResults = await Promise.allSettled(
     manifestsToApply.map(async (manifest) => {
       try {
-        await applyApplication(manifest)
+        await applyArgocdApp(manifest)
         d.debug(`Applied application ${manifest.metadata.name}`)
       } catch (e) {
         d.error(`Failed to apply application ${manifest.metadata.name}: ${e}`)
@@ -331,7 +329,6 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
     }),
   )
 
-  // Collect apply errors
   applyResults.forEach((result) => {
     if (result.status === 'rejected') {
       errors.push(result.reason)
