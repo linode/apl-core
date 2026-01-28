@@ -3,7 +3,7 @@
 Policy Reporter watches for PolicyReport Resources.
 It creates Prometheus Metrics and can send rule validation events to different targets like Loki, Elasticsearch, Slack or Discord
 
-![Version: 3.7.0](https://img.shields.io/badge/Version-3.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.6.0](https://img.shields.io/badge/AppVersion-3.6.0-informational?style=flat-square)
+![Version: 3.7.1](https://img.shields.io/badge/Version-3.7.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.7.0](https://img.shields.io/badge/AppVersion-3.7.0-informational?style=flat-square)
 
 ## Documentation
 
@@ -77,6 +77,7 @@ Open `http://localhost:8082/` in your browser.
 | securityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
 | podAnnotations | object | `{}` | Additional annotations to add to each pod |
 | podLabels | object | `{}` | Additional labels to add to each pod |
+| selectorLabels | object | `{}` | Custom selector labels, overwrites the default set |
 | resources | object | `{}` | Resource constraints |
 | networkPolicy.enabled | bool | `false` | Create NetworkPolicy |
 | networkPolicy.egress | list | `[{"ports":[{"port":6443,"protocol":"TCP"}],"to":null}]` | Egress rule to allow Kubernetes API Server access |
@@ -389,7 +390,7 @@ Open `http://localhost:8082/` in your browser.
 | ui.image.registry | string | `"ghcr.io"` | Image registry |
 | ui.image.repository | string | `"kyverno/policy-reporter-ui"` | Image repository |
 | ui.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| ui.image.tag | string | `"2.5.0"` | Image tag |
+| ui.image.tag | string | `"2.5.1"` | Image tag |
 | ui.crds.customBoard | bool | `false` | Install UI CustomBoard CRDs |
 | ui.replicaCount | int | `1` | Deployment replica count |
 | ui.priorityClassName | string | `""` | Deployment priorityClassName |
@@ -485,7 +486,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.kyverno.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.kyverno.image.repository | string | `"kyverno/policy-reporter/kyverno-plugin"` | Image repository |
 | plugin.kyverno.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.kyverno.image.tag | string | `"0.5.2"` | Image tag |
+| plugin.kyverno.image.tag | string | `"0.5.3"` | Image tag |
 | plugin.kyverno.replicaCount | int | `1` | Deployment replica count |
 | plugin.kyverno.priorityClassName | string | `""` | Deployment priorityClassName |
 | plugin.kyverno.logging.api | bool | `false` | Enables external API request logging |
@@ -507,6 +508,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.kyverno.serviceAccount.name | string | `""` | The ServiceAccount name |
 | plugin.kyverno.podAnnotations | object | `{}` | Additional annotations to add to each pod |
 | plugin.kyverno.podLabels | object | `{}` | Additional labels to add to each pod |
+| plugin.kyverno.selectorLabels | object | `{}` | Custom selector labels, overwrites the default set |
 | plugin.kyverno.updateStrategy | object | `{}` | Deployment update strategy. Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy |
 | plugin.kyverno.revisionHistoryLimit | int | `10` | The number of revisions to keep |
 | plugin.kyverno.podSecurityContext | object | `{"runAsGroup":1234,"runAsUser":1234}` | Security context for the pod |
@@ -557,7 +559,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.trivy.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.trivy.image.repository | string | `"kyverno/policy-reporter/trivy-plugin"` | Image repository |
 | plugin.trivy.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.trivy.image.tag | string | `"0.4.11"` | Image tag Defaults to `Chart.AppVersion` if omitted |
+| plugin.trivy.image.tag | string | `"0.4.12"` | Image tag Defaults to `Chart.AppVersion` if omitted |
 | plugin.trivy.cli.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.trivy.cli.image.repository | string | `"aquasecurity/trivy"` | Image repository |
 | plugin.trivy.cli.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
@@ -585,6 +587,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.trivy.serviceAccount.name | string | `""` | The ServiceAccount name |
 | plugin.trivy.podAnnotations | object | `{}` | Additional annotations to add to each pod |
 | plugin.trivy.podLabels | object | `{}` | Additional labels to add to each pod |
+| plugin.trivy.selectorLabels | object | `{}` | Custom selector labels, overwrites the default set |
 | plugin.trivy.updateStrategy | object | `{}` | Deployment update strategy. Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy |
 | plugin.trivy.revisionHistoryLimit | int | `10` | The number of revisions to keep |
 | plugin.trivy.podSecurityContext | object | `{"runAsGroup":1234,"runAsUser":1234}` | Security context for the pod |

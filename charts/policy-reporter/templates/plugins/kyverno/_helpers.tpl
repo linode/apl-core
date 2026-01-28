@@ -42,8 +42,12 @@ helm.sh/chart: {{ include "kyverno-plugin.chart" . }}
 Selector labels
 */}}
 {{- define "kyverno-plugin.selectorLabels" -}}
+{{- if .Values.plugin.kyverno.selectorLabels }}
+{{- toYaml .Values.plugin.kyverno.selectorLabels }}
+{{- else -}}
 app.kubernetes.io/name: {{ include "kyverno-plugin.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
 {{- end }}
 
 {{/*

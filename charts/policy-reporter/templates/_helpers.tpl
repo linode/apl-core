@@ -59,8 +59,12 @@ helm.sh/chart: {{ include "policyreporter.chart" . }}
 Selector labels
 */}}
 {{- define "policyreporter.selectorLabels" -}}
+{{- if .Values.selectorLabels }}
+{{- toYaml .Values.selectorLabels }}
+{{- else -}}
 app.kubernetes.io/name: policy-reporter
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
 {{- end }}
 
 {{/*
