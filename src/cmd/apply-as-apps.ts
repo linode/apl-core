@@ -6,7 +6,7 @@ import {
   V1ResourceRequirements,
 } from '@kubernetes/client-node'
 import { existsSync, mkdirSync, rmSync } from 'fs'
-import { readFile, writeFile } from 'fs/promises'
+import { readFile } from 'fs/promises'
 import { appPatches, genericPatch } from 'src/applicationPatches.json'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -16,13 +16,11 @@ import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTagFromValues, objectToYaml } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
-import { $ } from 'zx'
 import { ARGOCD_APP_DEFAULT_SYNC_POLICY, ARGOCD_APP_PARAMS } from '../common/constants'
 import { env } from '../common/envalid'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
-const appsDir = '/tmp/otomi/apps'
 const valuesDir = '/tmp/otomi/values'
 const d = terminal(`cmd:${cmdName}:apply-as-apps`)
 const cleanup = (argv: HelmArguments): void => {
@@ -35,7 +33,6 @@ const setup = (): void => {
   cleanupHandler(() => cleanup(argv))
   cleanup(argv)
   mkdirSync(dir, { recursive: true })
-  mkdirSync(appsDir, { recursive: true })
   mkdirSync(valuesDir, { recursive: true })
 }
 
@@ -48,13 +45,41 @@ interface HelmRelease {
   chart: string
   version: string
 }
+
+interface ApplicationManifest {
+  apiVersion: string
+  kind: string
+  metadata: {
+    name: string
+    namespace: string
+    labels?: Record<string, string>
+    annotations?: Record<string, string>
+    finalizers?: string[]
+  }
+  spec: Record<string, any>
+}
+
+const applyApplication = async (app: ApplicationManifest): Promise<void> => {
+  await customApi.patchNamespacedCustomObject(
+    {
+      ...ARGOCD_APP_PARAMS,
+      name: app.metadata.name,
+      body: app,
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.ServerSideApply),
+  )
+}
 const customApi = k8s.custom()
 
 const getAppName = (release: HelmRelease): string => {
   return `${release.namespace}-${release.name}`
 }
 
-const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>, otomiVersion: string) => {
+const getArgocdAppManifest = (
+  release: HelmRelease,
+  values: Record<string, any>,
+  otomiVersion: string,
+): ApplicationManifest => {
   const name = getAppName(release)
   const patch = appPatches[name] || genericPatch
   return {
@@ -192,17 +217,17 @@ export const getApplications = async (): Promise<string[]> => {
   }
 }
 
-const writeApplicationManifest = async (release: HelmRelease, otomiVersion: string): Promise<void> => {
+const createApplicationManifest = async (release: HelmRelease, otomiVersion: string): Promise<ApplicationManifest> => {
   const appName = `${release.namespace}-${release.name}`
-  const applicationPath = `${appsDir}/${appName}.yaml`
   const valuesPath = `${valuesDir}/${appName}.yaml`
   let values = {}
 
   if (existsSync(valuesPath)) values = (await loadYaml(valuesPath)) || {}
   const manifest = getArgocdAppManifest(release, values, otomiVersion)
-  await writeFile(applicationPath, objectToYaml(manifest))
 
   await patchArgocdResources(release, values)
+
+  return manifest
 }
 
 const getAplOperatorValues = async (): Promise<string> => {
@@ -262,6 +287,10 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
   // Generate JSON object with all helmfile releases defined in helmfile.d
   const releases: [] = JSON.parse(res.stdout.toString())
   const currentApplications = await getApplications()
+
+  // Collect manifests to apply and handle removals
+  const manifestsToApply: ApplicationManifest[] = []
+
   await Promise.allSettled(
     releases.map(async (release: HelmRelease) => {
       try {
@@ -271,8 +300,10 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
           return
         }
 
-        if (release.installed) await writeApplicationManifest(release, otomiVersion)
-        else {
+        if (release.installed) {
+          const manifest = await createApplicationManifest(release, otomiVersion)
+          manifestsToApply.push(manifest)
+        } else {
           const appName = getAppName(release)
           if (currentApplications.includes(appName)) {
             await removeApplication(appName)
@@ -284,18 +315,31 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
     }),
   )
 
-  d.info(`Applying Argocd Application from ${appsDir} directory`)
-  try {
-    const resApply = await $`kubectl apply --server-side=true --namespace argocd -f ${appsDir}`.quiet()
-    d.debug(resApply.stdout.toString())
-  } catch (e) {
-    d.error(e)
-    errors.push(e)
-  }
-  if (errors.length === 0) d.info(`All applications has been deployed successfully`)
+  // Apply all manifests using server-side apply
+  d.info(`Applying ${manifestsToApply.length} ArgoCD applications`)
+  const applyResults = await Promise.allSettled(
+    manifestsToApply.map(async (manifest) => {
+      try {
+        await applyApplication(manifest)
+        d.debug(`Applied application ${manifest.metadata.name}`)
+      } catch (e) {
+        d.error(`Failed to apply application ${manifest.metadata.name}: ${e}`)
+        throw e
+      }
+    }),
+  )
+
+  // Collect apply errors
+  applyResults.forEach((result) => {
+    if (result.status === 'rejected') {
+      errors.push(result.reason)
+    }
+  })
+
+  if (errors.length === 0) d.info(`All applications have been deployed successfully`)
   else {
     errors.map((e) => d.error(e))
-    d.error(`Not all applications has been deployed successfully`)
+    d.error(`Not all applications have been deployed successfully`)
   }
   return true
 }
