@@ -10,7 +10,8 @@ permissions:
 jobs:
   run-compare:
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.labels.*.name, 'chart-deps')
+    if: contains(github.event.pull_request.labels.*.name, 'chart-deps') &&
+      (github.event.action == 'labeled' || !startsWith(github.event.head_commit.message, 'Merge branch'))
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
