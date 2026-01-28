@@ -31,6 +31,13 @@ jobs:
           helm-plugins: >
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
+      - name: Install dyff
+        run: |
+          DYFF_VERSION="1.10.3"
+          wget https://github.com/homeport/dyff/releases/download/v${DYFF_VERSION}/dyff_${DYFF_VERSION}_linux_amd64.tar.gz
+          tar -xzf dyff_${DYFF_VERSION}_linux_amd64.tar.gz
+          sudo mv dyff /usr/local/bin/
+          dyff version
       - name: Run compare script
         id: run_script
         run: |
