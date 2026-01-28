@@ -50,7 +50,10 @@ jobs:
           bin/compare.sh --diff-output tmp/diff-output.txt
           diff_text=$(cat tmp/diff-output.txt)
           format_code='```'
-          comment_text="Output of comparison:\n$format_code\n$diff_text\n$format_code"
+          comment_text="Output of comparison:
+          $format_code
+          $diff_text
+          $format_code"
           gh pr comment ${{ github.event.pull_request.number }} --body "$comment_text"
       - name: Upload output as artifact
         uses: actions/upload-artifact@v6
