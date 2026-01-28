@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 24
       - name: Install npm dependencies
-        run: npm install
+        run: npm install --no-save
       - name: Install Helm and Helmfile
         uses: helmfile/helmfile-action@v2.1.1
         with:
