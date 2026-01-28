@@ -138,6 +138,8 @@ The following table lists the configurable parameters of the Keycloak-X chart an
 | `ingress.rules[0].paths`                      | Paths for the Ingress rule                                                                                                                                                                                                                                                        | see below                                                                                                                                                                               |
 | `ingress.rules[0].paths[0].path`              | Path for the Ingress rule                                                                                                                                                                                                                                                         | `/`                                                                                                                                                                                     |
 | `ingress.rules[0].paths[0].pathType`          | Path Type for the Ingress rule                                                                                                                                                                                                                                                    | `Prefix`                                                                                                                                                                                |
+| `ingress.rules[0].paths[0].serviceName`       | Optional override for backend service name (useful for AWS ALB action annotations)                                                                                                                                                                                                | `""`                                                                                                                                                                                    |
+| `ingress.rules[0].paths[0].servicePort`       | Optional override for backend service port name                                                                                                                                                                                                                                   | `""`                                                                                                                                                                                    |
 | `ingress.servicePort`                         | The Service port targeted by the Ingress                                                                                                                                                                                                                                          | `http`                                                                                                                                                                                  |
 | `ingress.annotations`                         | Ingress annotations                                                                                                                                                                                                                                                               | `{}`                                                                                                                                                                                    |
 | `ingress.ingressClassName`                    | The name of the Ingress Class associated with the ingress                                                                                                                                                                                                                         | `""`                                                                                                                                                                                    |
@@ -151,6 +153,8 @@ The following table lists the configurable parameters of the Keycloak-X chart an
 | `ingress.console.rules[0].paths`              | Paths for the Ingress rule for the console                                                                                                                                                                                                                                        | see below                                                                                                                                                                               |
 | `ingress.console.rules[0].paths[0].path`      | Path for the Ingress rule for the console                                                                                                                                                                                                                                         | `[{{ tpl .Values.http.relativePath $ \| trimSuffix "/" }}/admin]`                                                                                                                       |
 | `ingress.console.rules[0].paths[0].pathType`  | Path Type for the Ingress rule for the console                                                                                                                                                                                                                                    | `Prefix`                                                                                                                                                                                |
+| `ingress.console.rules[0].paths[0].serviceName` | Optional override for backend service name (console ingress)                                                                                                                                                                                                                    | `""`                                                                                                                                                                                    |
+| `ingress.console.rules[0].paths[0].servicePort` | Optional override for backend service port name (console ingress)                                                                                                                                                                                                               | `""`                                                                                                                                                                                    |
 | `ingress.console.labels`                              | Additional labels for the console ingress only                                                                                                                                                                                                                                                   | `{}`                                                                                                                                                                                    |
 | `ingress.console.annotations`                 | Ingress annotations for the console                                                                                                                                                                                                                                               | `{}`                                                                                                                                                                                    |
 | `ingress.console.ingressClassName`            | The name of the Ingress Class associated with the console ingress                                                                                                                                                                                                                 | `""`                                                                                                                                                                                    |
@@ -591,6 +595,32 @@ annotations:
     location ~* /auth/realms/[^/]+/metrics {
         return 403;
     }
+```
+
+### Extra Kubernetes Manifests
+
+It is possible to deploy extra Kubernetes resources (such as ConfigMaps, Secrets, Jobs, or any other Kubernetes objects) alongside the Keycloak chart by using the `extraManifests` value.
+This feature supports Helm templating, allowing you to use chart helpers like `{{ include "keycloak.fullname" . }}` within your manifests.
+
+```yaml
+extraManifests:
+  - |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: {{ include "keycloak.fullname" . }}-extra-config
+      labels:
+        {{- include "keycloak.labels" . | nindent 8 }}
+    data:
+      custom-key: custom-value
+  - |
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: {{ include "keycloak.fullname" . }}-extra-secret
+    type: Opaque
+    stringData:
+      my-secret-key: my-secret-value
 ```
 
 ## Why StatefulSet?
