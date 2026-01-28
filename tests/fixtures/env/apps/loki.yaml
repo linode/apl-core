@@ -36,13 +36,6 @@ spec:
             targetCPUUtilizationPercentage: 60
             targetMemoryUtilizationPercentage: 80
     enabled: true
-    persistence:
-        compactor:
-            size: 10Gi
-        ingester:
-            size: 20Gi
-        querier:
-            size: 10Gi
     resources:
         compactor:
             limits:

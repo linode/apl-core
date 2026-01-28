@@ -421,3 +421,6 @@ changes:
     deletions:
       - 'apps.tempo'
       - 'obj.provider.linode.buckets.tempo'
+  - version: 50
+    deletions:
+      - apps.loki.persistence
