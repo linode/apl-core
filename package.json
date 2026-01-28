@@ -161,7 +161,7 @@
     "test:ts:ci": "ENV_DIR=$PWD/tests/fixtures NODE_ENV=test jest --forceExit --maxWorkers=2 --ci",
     "test:ts-cov": "jest --coverage",
     "validate-templates": "ENV_DIR=$PWD/tests/fixtures NODE_ENV=test binzx/otomi validate-templates",
-    "validate-templates:all": "set -e; i=31; while [ $i -le 34 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
+    "validate-templates:all": "set -e; i=32; while [ $i -le 35 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
     "validate-values": "ENV_DIR=$PWD/tests/fixtures NODE_ENV=test binzx/otomi validate-values",
     "bootstrap-dev": "rm -rf /tmp/otomi-bootstrap-dev; VALUES_INPUT=$PWD/tests/bootstrap/input-local-dev.yaml ENV_DIR=/tmp/otomi-bootstrap-dev binzx/otomi bootstrap"
   },
