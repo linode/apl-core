@@ -19,7 +19,7 @@ imagePullSecrets:
 global:
   {{- with $v.otomi.linodeLkeImageRepository }}
   image:
-    registry: {{ . }}/docker
+    registry: {{ . }}
   {{- end }}
   priorityClassName: otomi-critical
   {{- if eq $v.cluster.linode.tier "enterprise" }}
@@ -34,7 +34,17 @@ monitoring:
     labels:
       prometheus: system
 
+{{- if $v.otomi.linodeLkeImageRepository }}
+sidecar:
+  image:
+    repository: quay/kiwigrid/k8s-sidecar
+{{- end }}
+
 loki:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    repository: docker/grafana/loki
+  {{- end }}
   commonConfig:
     replication_factor: 1
   podAnnotations:
