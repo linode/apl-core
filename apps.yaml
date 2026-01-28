@@ -97,7 +97,7 @@ appsInfo:
     integration: App Platform integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
-    appVersion: 1.28.2
+    appVersion: 1.28.3
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
