@@ -31,7 +31,7 @@ jobs:
       - name: Install Helm and Helmfile
         uses: helmfile/helmfile-action@v2.1.1
         with:
-          helmfile-args: version
+          helmfile-args: version  # In this step, we only want these tools to be installed
           helm-plugins: >
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -42,7 +42,7 @@ jobs:
           tar -xzf dyff_${DYFF_VERSION}_linux_amd64.tar.gz
           sudo mv dyff /usr/local/bin/
           dyff version
-      - name: Run compare script
+      - name: Run compare script and add comment
         id: run_script
         env:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
