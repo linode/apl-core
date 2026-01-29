@@ -16,7 +16,7 @@ permissions:
 jobs:
   run-compare:
     runs-on: ubuntu-latest
-    if: !startsWith(github.event.head_commit.message, 'Merge branch')
+    if: ${{ !startsWith(github.event.head_commit.message, 'Merge branch') }}
     steps:
       - name: Install GitHub CLI
         run: |
