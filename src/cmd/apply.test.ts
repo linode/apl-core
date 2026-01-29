@@ -31,7 +31,6 @@ jest.mock('zx', () => ({
 
 jest.mock('./apply-as-apps', () => ({
   applyAsApps: jest.fn(),
-  applyGitOpsApps: jest.fn(),
 }))
 
 jest.mock('./apply-teams', () => ({
@@ -93,7 +92,6 @@ describe('Apply command', () => {
       getImageTagFromValues: require('src/common/values').getImageTagFromValues,
       getPackageVersion: require('src/common/values').getPackageVersion,
       applyAsApps: require('./apply-as-apps').applyAsApps,
-      applyGitOpsApps: require('./apply-as-apps').applyGitOpsApps,
       commit: require('./commit').commit,
       runtimeUpgrade: require('src/common/runtime-upgrade').runtimeUpgrade,
       deletePendingHelmReleases: require('src/common/k8s').deletePendingHelmReleases,
@@ -106,7 +104,6 @@ describe('Apply command', () => {
     mockDeps.getImageTagFromValues.mockResolvedValue('v1.0.0')
     mockDeps.getPackageVersion.mockReturnValue('1.0.0')
     mockDeps.applyAsApps.mockResolvedValue(true)
-    mockDeps.applyGitOpsApps.mockResolvedValue(undefined)
     mockDeps.commit.mockResolvedValue(undefined)
     mockDeps.runtimeUpgrade.mockResolvedValue(undefined)
     mockDeps.deletePendingHelmReleases.mockResolvedValue(undefined)
@@ -167,9 +164,6 @@ describe('Apply command', () => {
 
       // Verify post-upgrade steps
       expect(mockDeps.runtimeUpgrade).toHaveBeenCalledWith({ when: 'post' })
-
-      // Verify GitOps apps setup
-      expect(mockDeps.applyGitOpsApps).toHaveBeenCalled()
 
       // Verify final state
       expect(mockDeps.setDeploymentState).toHaveBeenLastCalledWith({
@@ -248,7 +242,6 @@ describe('Apply command', () => {
       // Verify that applyAll path was taken (which calls all the deployment steps)
       expect(mockDeps.getDeploymentState).toHaveBeenCalled()
       expect(mockDeps.applyAsApps).toHaveBeenCalled()
-      expect(mockDeps.applyGitOpsApps).toHaveBeenCalled()
 
       process.env.DISABLE_SYNC = originalEnv
     })
