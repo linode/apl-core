@@ -1,10 +1,10 @@
-import { ApiException } from '@kubernetes/client-node'
 import {
   applyGitOpsApps,
   getApplications,
-  createOrPatchArgoCdApp,
+  applyArgocdApp,
   removeApplication,
   getArgocdGitopsManifest,
+  ArgocdAppManifest,
 } from './apply-as-apps'
 import { glob } from 'glob'
 import { env } from '../common/envalid'
@@ -33,17 +33,15 @@ jest.mock('../common/debug', () => ({
 const mockGlob = glob as jest.MockedFunction<typeof glob>
 const mockStatSync = statSync as jest.MockedFunction<any>
 const mockGetApplications = jest.fn() as jest.MockedFunction<typeof getApplications>
-const mockCreateOrPatchArgoCdApp = jest.fn() as jest.MockedFunction<typeof createOrPatchArgoCdApp>
+const mockApplyArgoCdApp = jest.fn() as jest.MockedFunction<typeof applyArgocdApp>
 const mockRemoveApplication = jest.fn() as jest.MockedFunction<typeof removeApplication>
 const mockGetArgocdGitopsManifest = jest.fn() as jest.MockedFunction<typeof getArgocdGitopsManifest>
 
-const mockCreateNamespacedCustomObject = jest.fn()
 const mockPatchNamespacedCustomObject = jest.fn()
 
 jest.mock('../common/k8s', () => ({
   k8s: {
     custom: () => ({
-      createNamespacedCustomObject: (...args: any[]) => mockCreateNamespacedCustomObject(...args),
       patchNamespacedCustomObject: (...args: any[]) => mockPatchNamespacedCustomObject(...args),
     }),
   },
@@ -145,10 +143,13 @@ describe('getArgocdGitopsManifest', () => {
   })
 })
 
-describe('createOrPatchArgoCdApp', () => {
-  const mockManifest = {
+describe('applyArgoCdApp', () => {
+  const mockManifest: ArgocdAppManifest = {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'Application',
     metadata: {
       name: 'test-app',
+      namespace: 'argocd',
     },
     spec: {
       project: 'default',
@@ -159,88 +160,35 @@ describe('createOrPatchArgoCdApp', () => {
     jest.clearAllMocks()
   })
 
-  describe('successful creation', () => {
-    it('should create application when it does not exist', async () => {
-      mockCreateNamespacedCustomObject.mockResolvedValue({})
+  it('should server-side apply applications', async () => {
+    mockPatchNamespacedCustomObject.mockResolvedValue({})
 
-      await createOrPatchArgoCdApp(mockManifest)
+    await applyArgocdApp(mockManifest)
 
-      expect(mockCreateNamespacedCustomObject).toHaveBeenCalledTimes(1)
-      expect(mockCreateNamespacedCustomObject).toHaveBeenCalledWith({
-        group: 'argoproj.io',
-        version: 'v1alpha1',
-        namespace: 'argocd',
-        plural: 'applications',
-        body: mockManifest,
-      })
-      expect(mockPatchNamespacedCustomObject).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('patching existing application', () => {
-    it('should patch application when it already exists (ApiException)', async () => {
-      const apiError = new ApiException(409, 'Conflict', undefined, {})
-      mockCreateNamespacedCustomObject.mockRejectedValue(apiError)
-      mockPatchNamespacedCustomObject.mockResolvedValue({})
-
-      await createOrPatchArgoCdApp(mockManifest)
-
-      expect(mockCreateNamespacedCustomObject).toHaveBeenCalledTimes(1)
-      expect(mockPatchNamespacedCustomObject).toHaveBeenCalledTimes(1)
-      expect(mockPatchNamespacedCustomObject).toHaveBeenCalledWith({
+    expect(mockPatchNamespacedCustomObject).toHaveBeenCalledTimes(1)
+    expect(mockPatchNamespacedCustomObject).toHaveBeenCalledWith(
+      {
         group: 'argoproj.io',
         version: 'v1alpha1',
         namespace: 'argocd',
         plural: 'applications',
         name: 'test-app',
         body: mockManifest,
-      })
-    })
-
-    it('should use manifest name for patch operation', async () => {
-      const customManifest = {
-        metadata: { name: 'custom-app-name' },
-        spec: {},
-      }
-      const apiError = new ApiException(409, 'Conflict', undefined, {})
-      mockCreateNamespacedCustomObject.mockRejectedValue(apiError)
-      mockPatchNamespacedCustomObject.mockResolvedValue({})
-
-      await createOrPatchArgoCdApp(customManifest)
-
-      expect(mockPatchNamespacedCustomObject).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: 'custom-app-name',
-        }),
-      )
-    })
+        fieldManager: 'apl-operator',
+        force: true,
+      },
+      {
+        middleware: expect.any(Array),
+        middlewareMergeStrategy: 'append',
+      },
+    )
   })
 
-  describe('error handling', () => {
-    it('should throw non-ApiException errors', async () => {
-      const genericError = new Error('Network error')
-      mockCreateNamespacedCustomObject.mockRejectedValue(genericError)
+  it('should throw non-ApiException errors', async () => {
+    const genericError = new Error('Network error')
+    mockPatchNamespacedCustomObject.mockRejectedValue(genericError)
 
-      await expect(createOrPatchArgoCdApp(mockManifest)).rejects.toThrow('Network error')
-      expect(mockPatchNamespacedCustomObject).not.toHaveBeenCalled()
-    })
-
-    it('should throw when patch operation fails', async () => {
-      const apiError = new ApiException(409, 'Conflict', undefined, {})
-      const patchError = new Error('Patch failed')
-      mockCreateNamespacedCustomObject.mockRejectedValue(apiError)
-      mockPatchNamespacedCustomObject.mockRejectedValue(patchError)
-
-      await expect(createOrPatchArgoCdApp(mockManifest)).rejects.toThrow('Patch failed')
-    })
-
-    it('should handle different ApiException status codes', async () => {
-      const apiError = new ApiException(422, 'Unprocessable Entity', undefined, {})
-      mockCreateNamespacedCustomObject.mockRejectedValue(apiError)
-      mockPatchNamespacedCustomObject.mockResolvedValue({})
-
-      await expect(createOrPatchArgoCdApp(mockManifest)).rejects.toThrow(apiError)
-    })
+    await expect(applyArgocdApp(mockManifest)).rejects.toThrow('Network error')
   })
 })
 
@@ -249,7 +197,7 @@ describe('applyGitOpsApps', () => {
   const mockDeps = {
     getApplications: mockGetApplications,
     getArgocdGitopsManifest: mockGetArgocdGitopsManifest,
-    createOrPatchArgoCdApp: mockCreateOrPatchArgoCdApp,
+    applyArgocdApp: mockApplyArgoCdApp,
     removeApplication: mockRemoveApplication,
   }
 
@@ -274,7 +222,7 @@ describe('applyGitOpsApps', () => {
       mockStatSync.mockReturnValue({ isDirectory: () => true })
       mockGetApplications.mockResolvedValue([])
       mockGetArgocdGitopsManifest.mockReturnValue({ manifest: 'test' } as any)
-      mockCreateOrPatchArgoCdApp.mockResolvedValue(undefined)
+      mockApplyArgoCdApp.mockResolvedValue(undefined)
 
       await applyGitOpsApps(mockDeps)
 
@@ -283,11 +231,11 @@ describe('applyGitOpsApps', () => {
       expect(mockGetApplications).toHaveBeenCalledWith('otomi.io/app=generic-gitops')
 
       expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global')
-      expect(mockCreateOrPatchArgoCdApp).toHaveBeenCalledWith({ manifest: 'test' })
+      expect(mockApplyArgoCdApp).toHaveBeenCalledWith({ manifest: 'test' })
       expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', 'a')
       expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', 'b')
       expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-c', 'c')
-      expect(mockCreateOrPatchArgoCdApp).toHaveBeenCalledTimes(4) // 3 namespaces + 1 global
+      expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(4) // 3 namespaces + 1 global
     })
   })
 
@@ -329,7 +277,7 @@ describe('applyGitOpsApps', () => {
 
       await applyGitOpsApps(mockDeps)
 
-      expect(mockCreateOrPatchArgoCdApp).not.toHaveBeenCalled()
+      expect(mockApplyArgoCdApp).not.toHaveBeenCalled()
       expect(mockRemoveApplication).not.toHaveBeenCalled()
     })
   })
@@ -340,7 +288,7 @@ describe('applyGitOpsApps', () => {
       mockStatSync.mockReturnValue(undefined)
       mockGetApplications.mockResolvedValue([])
       mockGetArgocdGitopsManifest.mockReturnValue({ manifest: 'test' } as any)
-      mockCreateOrPatchArgoCdApp.mockResolvedValue(undefined)
+      mockApplyArgoCdApp.mockResolvedValue(undefined)
 
       await applyGitOpsApps(mockDeps)
 
@@ -356,14 +304,14 @@ describe('applyGitOpsApps', () => {
       mockStatSync.mockReturnValue({ isDirectory: () => true })
       mockGetApplications.mockResolvedValue([])
       mockGetArgocdGitopsManifest.mockReturnValue({ manifest: 'test' } as any)
-      mockCreateOrPatchArgoCdApp
+      mockApplyArgoCdApp
         .mockResolvedValueOnce(undefined) // global succeeds
         .mockRejectedValueOnce(new Error('Failed to create')) // a fails
         .mockResolvedValueOnce(undefined) // b succeeds
 
       await applyGitOpsApps(mockDeps)
 
-      expect(mockCreateOrPatchArgoCdApp).toHaveBeenCalledTimes(3)
+      expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(3)
     })
   })
 
