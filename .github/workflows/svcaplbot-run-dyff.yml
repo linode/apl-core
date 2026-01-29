@@ -31,7 +31,7 @@ jobs:
       - name: Install Helm and Helmfile
         uses: helmfile/helmfile-action@v2.1.1
         with:
-          helmfile-args: version  # In this step, we only want these tools to be installed
+          helmfile-args: version # In this step, we only want these tools to be installed
           helm-plugins: >
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -49,7 +49,7 @@ jobs:
         run: |
           bin/compare.sh --diff-output tmp/diff-output.txt
           diff_text=$(cat tmp/diff-output.txt)
-          format_code='```'
+          format_code='```diff'
           comment_text="Comparison of Helm chart templating output:
           $format_code
           $diff_text
