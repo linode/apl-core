@@ -59,8 +59,17 @@ interface ArgocdAppManifest {
   spec: Record<string, any>
 }
 
+let customApi: ReturnType<typeof k8s.custom> | undefined
+
+function getCustomApi(): ReturnType<typeof k8s.custom> {
+  if (!customApi) {
+    customApi = k8s.custom()
+  }
+  return customApi
+}
+
 async function applyArgocdApp(app: ArgocdAppManifest): Promise<void> {
-  await customApi.patchNamespacedCustomObject(
+  await getCustomApi().patchNamespacedCustomObject(
     {
       ...ARGOCD_APP_PARAMS,
       name: app.metadata.name,
@@ -71,7 +80,6 @@ async function applyArgocdApp(app: ArgocdAppManifest): Promise<void> {
     setHeaderOptions('Content-Type', PatchStrategy.ServerSideApply),
   )
 }
-const customApi = k8s.custom()
 
 const getAppName = (release: HelmRelease): string => {
   return `${release.namespace}-${release.name}`
@@ -123,7 +131,7 @@ const getArgocdAppManifest = (
 const setFinalizers = async (name: string) => {
   try {
     d.info(`Setting finalizers for ${name}`)
-    await customApi.patchNamespacedCustomObject(
+    await getCustomApi().patchNamespacedCustomObject(
       {
         ...ARGOCD_APP_PARAMS,
         name,
@@ -146,7 +154,7 @@ const setFinalizers = async (name: string) => {
 
 const getFinalizers = async (name: string): Promise<string[]> => {
   try {
-    const response = await customApi.getNamespacedCustomObject({
+    const response = await getCustomApi().getNamespacedCustomObject({
       ...ARGOCD_APP_PARAMS,
       name,
     })
@@ -164,7 +172,7 @@ const removeApplication = async (name: string): Promise<void> => {
     if (!finalizers.includes('resources-finalizer.argocd.argoproj.io')) {
       await setFinalizers(name)
     }
-    await customApi.deleteNamespacedCustomObject({
+    await getCustomApi().deleteNamespacedCustomObject({
       ...ARGOCD_APP_PARAMS,
       name,
     })
@@ -206,7 +214,7 @@ async function patchArgocdResources(release: HelmRelease, values: Record<string,
 
 export const getApplications = async (): Promise<string[]> => {
   try {
-    const response = await customApi.listNamespacedCustomObject({
+    const response = await getCustomApi().listNamespacedCustomObject({
       ...ARGOCD_APP_PARAMS,
     })
     const apps = response.items || []
