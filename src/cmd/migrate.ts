@@ -667,6 +667,26 @@ const setLokiStorageSchemaMigration = async (values: Record<string, any>): Promi
   }
 }
 
+const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('setDefaultAplCatalog')
+  if (values?.catalogs?.default) {
+    d.info('Default catalog already exists, skipping')
+    return
+  }
+  const domainSuffix = values?.cluster?.domainSuffix
+  const catalogUrl = domainSuffix
+    ? `https://gitea.${domainSuffix}/otomi/charts.git`
+    : 'https://github.com/linode/apl-charts.git'
+  d.info(`Setting default APL catalog with url ${catalogUrl}`)
+  const defaultCatalog = {
+    branch: 'main',
+    enabled: true,
+    name: 'default',
+    url: catalogUrl,
+  }
+  set(values, 'catalogs.default', defaultCatalog)
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   networkPoliciesMigration,
   teamSettingsMigration,
@@ -677,6 +697,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   installIstioHelmCharts,
   workloadValuesMigration,
   setLokiStorageSchemaMigration,
+  setDefaultAplCatalog,
 }
 
 /**

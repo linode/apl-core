@@ -1,8 +1,8 @@
 import { globSync } from 'glob'
 import { applyChanges, Changes, filterChanges, getBuildName, policiesMigration } from 'src/cmd/migrate'
+import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { getFileMap } from '../common/repo'
-import { terminal } from '../common/debug'
 
 // Mock external dependencies at the top level - BEFORE imports
 jest.mock('uuid', () => ({
@@ -741,4 +741,84 @@ describe('Policies migration', () => {
     expect(loadYaml).toHaveBeenCalledTimes(0)
     expect(saveResourceGroupToFiles).toHaveBeenCalledTimes(0)
   })
+})
+
+describe('setDefaultAplCatalog migration', () => {
+  const getMockValues = () => ({
+    versions: { specVersion: 1 },
+    cluster: {
+      domainSuffix: 'test.example.com',
+    },
+  })
+
+  const getExpectedValues = () => ({
+    versions: { specVersion: 2 },
+    cluster: {
+      domainSuffix: 'test.example.com',
+    },
+    catalogs: {
+      default: {
+        branch: 'main',
+        enabled: true,
+        name: 'default',
+        url: 'https://gitea.test.example.com/otomi/charts.git',
+      },
+    },
+  })
+
+  it('should set the default APL catalog with correct values', async () => {
+    const values: any = getMockValues()
+    const valuesChanges: Changes = [
+      {
+        version: 2,
+        customFunctions: ['setDefaultAplCatalog'],
+      },
+    ]
+    const deps: any = {
+      cd: jest.fn(),
+      rename: jest.fn(),
+      hfValues: jest.fn().mockReturnValue(values),
+      terminal,
+      writeValues: jest.fn(),
+    }
+
+    await applyChanges(valuesChanges, false, deps)
+    const expectedValues = getExpectedValues()
+    expect(deps.writeValues).toHaveBeenCalledWith(expectedValues, true)
+  }, 20000)
+
+  it('should use fallback GitHub URL when cluster.domainSuffix is missing', async () => {
+    const values: any = {
+      versions: { specVersion: 1 },
+    }
+    const valuesChanges: Changes = [
+      {
+        version: 2,
+        customFunctions: ['setDefaultAplCatalog'],
+      },
+    ]
+    const deps: any = {
+      cd: jest.fn(),
+      rename: jest.fn(),
+      hfValues: jest.fn().mockReturnValue(values),
+      terminal,
+      writeValues: jest.fn(),
+    }
+
+    await applyChanges(valuesChanges, false, deps)
+    expect(deps.writeValues).toHaveBeenCalledWith(
+      {
+        versions: { specVersion: 2 },
+        catalogs: {
+          default: {
+            branch: 'main',
+            enabled: true,
+            name: 'default',
+            url: 'https://github.com/linode/apl-charts.git',
+          },
+        },
+      },
+      true,
+    )
+  }, 20000)
 })
