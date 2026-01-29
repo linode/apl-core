@@ -50,7 +50,7 @@ jobs:
           bin/compare.sh --diff-output tmp/diff-output.txt
           diff_text=$(cat tmp/diff-output.txt)
           format_code='```'
-          comment_text="Output of comparison:
+          comment_text="Comparison of Helm chart templating output:
           $format_code
           $diff_text
           $format_code"
