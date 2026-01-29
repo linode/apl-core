@@ -54,7 +54,7 @@ interface HelmRelease {
   version: string
 }
 
-interface ArgocdAppManifest {
+export interface ArgocdAppManifest {
   apiVersion: string
   kind: string
   metadata: {
@@ -67,7 +67,7 @@ interface ArgocdAppManifest {
   spec: Record<string, any>
 }
 
-async function applyArgocdApp(app: ArgocdAppManifest): Promise<void> {
+export async function applyArgocdApp(app: ArgocdAppManifest): Promise<void> {
   await customApi.patchNamespacedCustomObject(
     {
       ...ARGOCD_APP_PARAMS,
@@ -85,9 +85,7 @@ const getAppName = (release: HelmRelease): string => {
   return `${release.namespace}-${release.name}`
 }
 
-const getArgoCdAppManifest = (
-  name: string, appLabel: string, spec: Record<string, any>,
-): ArgocdAppManifest => {
+const getArgoCdAppManifest = (name: string, appLabel: string, spec: Record<string, any>): ArgocdAppManifest => {
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
@@ -163,26 +161,6 @@ export const getArgocdGitopsManifest = (name: string, targetNamespace?: string) 
       namespace: targetNamespace,
     },
   })
-}
-
-export const createOrPatchArgoCdApp = async (manifest: Record<string, any>) => {
-  try {
-    await customApi.createNamespacedCustomObject({
-      ...ARGOCD_APP_PARAMS,
-      body: manifest,
-    })
-  } catch (error) {
-    if (error instanceof ApiException) {
-      d.debug(`ArgoCD application ${manifest.metadata.name} exists, patching.`)
-      await customApi.patchNamespacedCustomObject({
-        ...ARGOCD_APP_PARAMS,
-        name: manifest.metadata.name,
-        body: manifest,
-      })
-    } else {
-      throw error
-    }
-  }
 }
 
 const setFinalizers = async (name: string) => {
@@ -412,7 +390,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
 }
 
 export const applyGitOpsApps = async (
-  deps = { getApplications, getArgocdGitopsManifest, createOrPatchArgoCdApp, removeApplication },
+  deps = { getApplications, getArgocdGitopsManifest, applyArgocdApp, removeApplication },
 ): Promise<void> => {
   d.info('Applying GitOps apps')
   const envDir = env.ENV_DIR
@@ -443,7 +421,7 @@ export const applyGitOpsApps = async (
       d.debug('Creating GitOps apps for cluster resources')
       const appManifest = deps.getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME)
       try {
-        await deps.createOrPatchArgoCdApp(appManifest)
+        await deps.applyArgocdApp(appManifest)
       } catch (e) {
         d.error('Failed to create GitOps app for cluster resources', e)
       }
@@ -455,7 +433,7 @@ export const applyGitOpsApps = async (
           d.debug(`Creating GitOps app for ${dirName}`)
           const appManifest = deps.getArgocdGitopsManifest(appName, dirName)
           try {
-            await deps.createOrPatchArgoCdApp(appManifest)
+            await deps.applyArgocdApp(appManifest)
           } catch (e) {
             d.error(`Failed to create GitOps app for ${dirName}:`, e)
           }
