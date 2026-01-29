@@ -68,12 +68,14 @@ describe('getArgocdGitopsManifest', () => {
       kind: 'Application',
       metadata: {
         name: 'my-app',
+        namespace: 'argocd',
         labels: {
           'otomi.io/app': 'generic-gitops',
         },
         annotations: {
           'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
         },
+        finalizers: ['resources-finalizer.argocd.argoproj.io'],
       },
       spec: {
         project: 'default',
@@ -109,12 +111,14 @@ describe('getArgocdGitopsManifest', () => {
       kind: 'Application',
       metadata: {
         name: 'my-app',
+        namespace: 'argocd',
         labels: {
           'otomi.io/app': 'generic-gitops',
         },
         annotations: {
           'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
         },
+        finalizers: ['resources-finalizer.argocd.argoproj.io'],
       },
       spec: {
         project: 'default',

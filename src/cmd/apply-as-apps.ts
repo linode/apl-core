@@ -85,20 +85,16 @@ const getAppName = (release: HelmRelease): string => {
   return `${release.namespace}-${release.name}`
 }
 
-const getArgocdAppManifest = (
-  release: HelmRelease,
-  values: Record<string, any>,
-  otomiVersion: string,
+const getArgoCdAppManifest = (
+  name: string, appLabel: string, spec: Record<string, any>,
 ): ArgocdAppManifest => {
-  const name = getAppName(release)
-  const patch = appPatches[name] || genericPatch
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
     metadata: {
       name,
       labels: {
-        'otomi.io/app': ARGOCD_APP_DEFAULT_LABEL,
+        'otomi.io/app': appLabel,
       },
       namespace: 'argocd',
       annotations: {
@@ -106,26 +102,36 @@ const getArgocdAppManifest = (
       },
       finalizers: ['resources-finalizer.argocd.argoproj.io'],
     },
-    spec: {
-      syncPolicy: ARGOCD_APP_DEFAULT_SYNC_POLICY,
-      project: 'default',
-      revisionHistoryLimit: 2,
-      source: {
-        path: release.chart.replace('../', ''),
-        repoURL: env.APPS_REPO_URL,
-        targetRevision: env.APPS_REVISION || otomiVersion,
-        helm: {
-          releaseName: release.name,
-          values: objectToYaml(values),
-        },
-      },
-      destination: {
-        server: 'https://kubernetes.default.svc',
-        namespace: release.namespace,
-      },
-      ...patch,
-    },
+    spec,
   }
+}
+
+const getArgocdCoreAppManifest = (
+  release: HelmRelease,
+  values: Record<string, any>,
+  otomiVersion: string,
+): ArgocdAppManifest => {
+  const name = getAppName(release)
+  const patch = (appPatches[name] || genericPatch) as Record<string, any>
+  return getArgoCdAppManifest(name, ARGOCD_APP_DEFAULT_LABEL, {
+    syncPolicy: ARGOCD_APP_DEFAULT_SYNC_POLICY,
+    project: 'default',
+    revisionHistoryLimit: 2,
+    source: {
+      path: release.chart.replace('../', ''),
+      repoURL: env.APPS_REPO_URL,
+      targetRevision: env.APPS_REVISION || otomiVersion,
+      helm: {
+        releaseName: release.name,
+        values: objectToYaml(values),
+      },
+    },
+    destination: {
+      server: 'https://kubernetes.default.svc',
+      namespace: release.namespace,
+    },
+    ...patch,
+  })
 }
 
 export const getArgocdGitopsManifest = (name: string, targetNamespace?: string) => {
@@ -142,34 +148,21 @@ export const getArgocdGitopsManifest = (name: string, targetNamespace?: string) 
   }
   const repoURL = `${env.GIT_PROTOCOL}://${env.GIT_URL}:${env.GIT_PORT}/otomi/values.git`
   const path = targetNamespace ? `${GITOPS_MANIFESTS_NS_PATH}/${targetNamespace}` : GITOPS_MANIFESTS_GLOBAL_PATH
-  return {
-    apiVersion: 'argoproj.io/v1alpha1',
-    kind: 'Application',
-    metadata: {
-      name,
-      labels: {
-        'otomi.io/app': ARGOCD_APP_GITOPS_LABEL,
+  return getArgoCdAppManifest(name, ARGOCD_APP_GITOPS_LABEL, {
+    project: 'default',
+    syncPolicy,
+    sources: [
+      {
+        path,
+        repoURL,
+        targetRevision: 'HEAD',
       },
-      annotations: {
-        'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
-      },
+    ],
+    destination: {
+      server: 'https://kubernetes.default.svc',
+      namespace: targetNamespace,
     },
-    spec: {
-      project: 'default',
-      syncPolicy,
-      sources: [
-        {
-          path,
-          repoURL,
-          targetRevision: 'HEAD',
-        },
-      ],
-      destination: {
-        server: 'https://kubernetes.default.svc',
-        namespace: targetNamespace,
-      },
-    },
-  }
+  })
 }
 
 export const createOrPatchArgoCdApp = async (manifest: Record<string, any>) => {
@@ -300,7 +293,7 @@ const createArgocdAppManifest = async (release: HelmRelease, otomiVersion: strin
   let values = {}
 
   if (existsSync(valuesPath)) values = (await loadYaml(valuesPath)) || {}
-  const manifest = getArgocdAppManifest(release, values, otomiVersion)
+  const manifest = getArgocdCoreAppManifest(release, values, otomiVersion)
 
   await patchArgocdResources(release, values)
 
