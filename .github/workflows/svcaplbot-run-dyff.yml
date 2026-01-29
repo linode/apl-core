@@ -39,7 +39,7 @@ jobs:
 
   run-compare:
     runs-on: ubuntu-latest
-    if: ${{ needs.check-commit.outputs.should_skip != 'true' }}
+    if: ${{ needs.check-commit.outputs.skip != 'true' }}
     steps:
       - name: Install GitHub CLI
         run: |
