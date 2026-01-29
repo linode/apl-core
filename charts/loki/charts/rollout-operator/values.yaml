@@ -25,6 +25,10 @@ hostAliases: []
 #    hostnames:
 #      - domain.tld
 
+# -- Enable or disable the use of host networking for the pod.
+# When true, the pod will use the node's network namespace
+hostNetwork: false
+
 nameOverride: ""
 fullnameOverride: ""
 
