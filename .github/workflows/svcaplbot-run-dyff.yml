@@ -24,7 +24,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 2
-
       - name: Check commit message
         id: check
         run: |
@@ -34,11 +33,18 @@ jobs:
           else
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
+      - name: Show output
+        run: |
+          echo "Skip value: ${{ steps.check.outputs.skip }}"
 
   run-compare:
     runs-on: ubuntu-latest
-    if: needs.check-commit.outputs.should_skip != 'true'
+    needs: check-commit
+    if: ${{ needs.check-commit.outputs.skip != 'true' }}
     steps:
+      - name: Debug
+        run: |
+          echo "Skip was: ${{ needs.check-commit.outputs.skip }}"
       - name: Install GitHub CLI
         run: |
           sudo apt update
