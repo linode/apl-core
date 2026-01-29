@@ -55,8 +55,3 @@ jobs:
           $diff_text
           $format_code"
           gh pr comment ${{ github.event.pull_request.number }} --body "$comment_text"
-      - name: Upload output as artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: script-output
-          path: tmp/diff-output.txt
