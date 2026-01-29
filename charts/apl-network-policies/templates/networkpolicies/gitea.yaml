@@ -31,6 +31,14 @@ spec:
         - namespaceSelector:
             matchLabels:
               name: apl-operator
+    # Allow ArgoCD GitOps access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: argocd
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: argocd-repo-server
     # Allow APL API access
     - from:
         - namespaceSelector:
