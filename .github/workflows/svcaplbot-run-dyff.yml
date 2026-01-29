@@ -81,9 +81,10 @@ jobs:
         run: |
           bin/compare.sh --diff-output tmp/diff-output.txt
           diff_text=$(cat tmp/diff-output.txt)
-          format_code='```'
+          format_code_start='```diff'
+          format_code_end='```'
           comment_text="Comparison of Helm chart templating output:
-          $format_code
+          $format_code_start
           $diff_text
-          $format_code"
+          $format_code_end"
           gh pr comment ${{ github.event.pull_request.number }} --body "$comment_text"
