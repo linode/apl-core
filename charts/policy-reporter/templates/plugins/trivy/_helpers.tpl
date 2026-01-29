@@ -42,8 +42,12 @@ helm.sh/chart: {{ include "trivy-plugin.chart" . }}
 Selector labels
 */}}
 {{- define "trivy-plugin.selectorLabels" -}}
+{{- if .Values.plugin.trivy.selectorLabels }}
+{{- toYaml .Values.plugin.trivy.selectorLabels }}
+{{- else -}}
 app.kubernetes.io/name: {{ include "trivy-plugin.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
 {{- end }}
 
 {{/*
