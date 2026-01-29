@@ -48,7 +48,7 @@ git -c core.hooksPath=/dev/null checkout $branchB
 # order of arguments matters so new changes are green color
 echo "Comparing $targetDirB with $targetDirA"
 if [ -n "$diffOutput" ]; then
-  "${script_dir}/dyff.sh" "$targetDirB" "$targetDirA" > "$diffOutput"
+  "${script_dir}/dyff.sh" "$targetDirB" "$targetDirA" --exclude-chart-versions > "$diffOutput"
   cat "$diffOutput"
 else
   "${script_dir}/dyff.sh" "$targetDirB" "$targetDirA"
