@@ -400,7 +400,7 @@ export const applyGitOpsApps = async (
 
   // First create sets of Applications to be updated
   const requiredGitOpsApps = new Set(namespaceDirs.map((dirName) => `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`))
-  const globalPath = statSync(`${envDir}/${GITOPS_MANIFESTS_GLOBAL_PATH}`)
+  const globalPath = statSync(`${envDir}/${GITOPS_MANIFESTS_GLOBAL_PATH}`, { throwIfNoEntry: false })
   if (globalPath && globalPath.isDirectory()) {
     requiredGitOpsApps.add(ARGOCD_APP_GITOPS_GLOBAL_NAME)
   }

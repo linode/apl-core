@@ -227,7 +227,7 @@ describe('applyGitOpsApps', () => {
       await applyGitOpsApps(mockDeps)
 
       expect(mockGlob).toHaveBeenCalledWith(`${mockEnvDir}/env/manifests/ns/*`, { withFileTypes: true })
-      expect(mockStatSync).toHaveBeenCalledWith(`${mockEnvDir}/env/manifests/global`)
+      expect(mockStatSync).toHaveBeenCalledWith(`${mockEnvDir}/env/manifests/global`, { throwIfNoEntry: false })
       expect(mockGetApplications).toHaveBeenCalledWith('otomi.io/app=generic-gitops')
 
       expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global')
