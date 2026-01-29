@@ -1,0 +1,89 @@
+name: chart-deps compare output to main
+
+on:
+  workflow_dispatch: ~
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "charts/**"
+      - "values/**"
+      - "tests/fixtures/**"
+      - "helmfile.d/**"
+
+permissions:
+  contents: read
+
+jobs:
+  check-commit:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+      - name: Check commit message
+        id: check
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          if [[ "$COMMIT_MSG" == "Merge branch"* ]]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Show output
+        run: |
+          echo "Skip value: ${{ steps.check.outputs.skip }}"
+
+  run-compare:
+    runs-on: ubuntu-latest
+    needs: check-commit
+    if: ${{ needs.check-commit.outputs.skip != 'true' }}
+    steps:
+      - name: Debug
+        run: |
+          echo "Skip was: ${{ needs.check-commit.outputs.skip }}"
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+      - name: Install npm dependencies
+        run: npm install --no-save
+      - name: Install Helm and Helmfile
+        uses: helmfile/helmfile-action@v2.1.1
+        with:
+          helmfile-args: version  # In this step, we only want these tools to be installed
+          helm-plugins: >
+            https://github.com/databus23/helm-diff,
+            https://github.com/jkroepke/helm-secrets
+      - name: Install dyff
+        run: |
+          DYFF_VERSION="1.10.3"
+          wget https://github.com/homeport/dyff/releases/download/v${DYFF_VERSION}/dyff_${DYFF_VERSION}_linux_amd64.tar.gz
+          tar -xzf dyff_${DYFF_VERSION}_linux_amd64.tar.gz
+          sudo mv dyff /usr/local/bin/
+          dyff version
+      - name: Run compare script and add comment
+        id: run_script
+        env:
+          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          bin/compare.sh --diff-output tmp/diff-output.txt
+          diff_text=$(cat tmp/diff-output.txt)
+          format_code='```'
+          comment_text="Comparison of Helm chart templating output:
+          $format_code
+          $diff_text
+          $format_code"
+          gh pr comment ${{ github.event.pull_request.number }} --body "$comment_text"
