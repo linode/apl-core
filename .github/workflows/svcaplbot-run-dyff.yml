@@ -39,8 +39,12 @@ jobs:
 
   run-compare:
     runs-on: ubuntu-latest
+    needs: check-commit
     if: ${{ needs.check-commit.outputs.skip != 'true' }}
     steps:
+      - name: Debug
+        run: |
+          echo "Skip was: ${{ needs.check-commit.outputs.skip }}"
       - name: Install GitHub CLI
         run: |
           sudo apt update
