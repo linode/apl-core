@@ -11,6 +11,7 @@
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "15.2.1",
     "@kubernetes/client-node": "1.4.0",
+    "@linode/kubeseal-encrypt": "^1.0.1",
     "@types/deep-diff": "1.0.5",
     "@types/semver": "7.7.1",
     "ajv": "8.17.1",

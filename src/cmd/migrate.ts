@@ -1,5 +1,6 @@
 import { ApiException } from '@kubernetes/client-node'
-import { randomUUID } from 'crypto'
+import { encryptSecretItem } from '@linode/kubeseal-encrypt'
+import { randomUUID, X509Certificate } from 'crypto'
 import { diff } from 'deep-diff'
 import { existsSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { cp, rename as fsRename, mkdir, readFile, writeFile } from 'fs/promises'
@@ -13,7 +14,7 @@ import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
 import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
-import { writeValues, writeValuesToFile } from 'src/common/values'
+import { objectToYaml, writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
@@ -667,12 +668,83 @@ const setLokiStorageSchemaMigration = async (values: Record<string, any>): Promi
   }
 }
 
+async function getSealedSecretsPEM(): Promise<string> {
+  const d = terminal('getSealedSecretsPEM')
+  const namespace = 'sealed-secrets'
+  const labelSelector = 'sealedsecrets.bitnami.com/sealed-secrets-key'
+
+  try {
+    const response = await k8s.core().listNamespacedSecret({ namespace, labelSelector })
+    const { items } = response as any
+
+    if (!items || items.length === 0) {
+      throw new Error('No sealed secrets keys found')
+    }
+
+    const newestItem = items.reduce((maxItem, currentItem) => {
+      const maxTimestamp = new Date(maxItem.creationTimestamp as Date).getTime()
+      const currentTimestamp = new Date(currentItem.creationTimestamp as Date).getTime()
+      return currentTimestamp > maxTimestamp ? currentItem : maxItem
+    }, items[0])
+
+    if (!newestItem.data?.['tls.crt']) {
+      throw new Error('Sealed secrets certificate not found in secret data')
+    }
+
+    const certificate = Buffer.from(newestItem.data['tls.crt'], 'base64').toString('utf-8')
+    const x509 = new X509Certificate(certificate)
+    const exported = x509.publicKey.export({ format: 'pem', type: 'spki' })
+    return typeof exported === 'string' ? exported : exported.toString('utf-8')
+  } catch (error) {
+    d.error('Error fetching SealedSecrets PEM:', error)
+    throw error
+  }
+}
+
 const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('setDefaultAplCatalog')
+  const gitea = values?.apps?.gitea
+  d.info('Gitea app values:', gitea?.adminPassword, JSON.stringify(gitea))
   if (values?.catalogs?.default) {
     d.info('Default catalog already exists, skipping')
     return
   }
+  const sealedSecretsPEM = await getSealedSecretsPEM()
+  const encryptedPassword = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea?.adminPassword)
+  d.info('Encrypted gitea admin password:', encryptedPassword)
+  const encryptedUsername = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea?.adminUsername)
+  d.info('Encrypted gitea admin username:', encryptedUsername)
+  const defaultCatalogCredentials = {
+    apiVersion: 'bitnami.com/v1alpha1',
+    kind: 'SealedSecret',
+    metadata: {
+      annotations: {
+        'sealedsecrets.bitnami.com/namespace-wide': 'true',
+      },
+      labels: {
+        'apl.io/teamId': 'admin',
+      },
+      name: 'default-catalog-credentials',
+      namespace: 'argocd',
+    },
+    spec: {
+      encryptedData: {
+        password: encryptedPassword,
+        username: encryptedUsername,
+      },
+      template: {
+        immutable: false,
+        metadata: {
+          name: 'default-catalog-credentials',
+          namespace: 'argocd',
+        },
+        type: 'kubernetes.io/basic-auth',
+      },
+    },
+  }
+  const sealedSecretPath = `${env.ENV_DIR}/env/teams/admin/sealedsecrets/default-catalog-credentials.yaml`
+  d.info(`Writing sealed secret to ${sealedSecretPath}`)
+  writeFileSync(sealedSecretPath, objectToYaml(defaultCatalogCredentials))
   const domainSuffix = values?.cluster?.domainSuffix
   const catalogUrl = domainSuffix
     ? `https://gitea.${domainSuffix}/otomi/charts.git`
@@ -683,6 +755,7 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
     enabled: true,
     name: 'default',
     url: catalogUrl,
+    secretName: 'default-catalog-credentials',
   }
   set(values, 'catalogs.default', defaultCatalog)
 }
