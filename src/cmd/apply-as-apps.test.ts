@@ -9,6 +9,7 @@ import {
 import { glob } from 'glob'
 import { env } from '../common/envalid'
 import { statSync } from 'fs'
+import { ARGOCD_APP_PARAMS } from '../common/constants'
 
 jest.mock('glob')
 jest.mock('fs', () => ({
@@ -34,15 +35,16 @@ const mockGlob = glob as jest.MockedFunction<typeof glob>
 const mockStatSync = statSync as jest.MockedFunction<any>
 const mockGetApplications = jest.fn() as jest.MockedFunction<typeof getApplications>
 const mockApplyArgoCdApp = jest.fn() as jest.MockedFunction<typeof applyArgocdApp>
-const mockRemoveApplication = jest.fn() as jest.MockedFunction<typeof removeApplication>
 const mockGetArgocdGitopsManifest = jest.fn() as jest.MockedFunction<typeof getArgocdGitopsManifest>
 
 const mockPatchNamespacedCustomObject = jest.fn()
+const mockDeleteNamespacedCustomObject = jest.fn()
 
 jest.mock('../common/k8s', () => ({
   k8s: {
     custom: () => ({
       patchNamespacedCustomObject: (...args: any[]) => mockPatchNamespacedCustomObject(...args),
+      deleteNamespacedCustomObject: (...args: any[]) => mockDeleteNamespacedCustomObject(...args),
     }),
   },
 }))
@@ -168,10 +170,7 @@ describe('applyArgoCdApp', () => {
     expect(mockPatchNamespacedCustomObject).toHaveBeenCalledTimes(1)
     expect(mockPatchNamespacedCustomObject).toHaveBeenCalledWith(
       {
-        group: 'argoproj.io',
-        version: 'v1alpha1',
-        namespace: 'argocd',
-        plural: 'applications',
+        ...ARGOCD_APP_PARAMS,
         name: 'test-app',
         body: mockManifest,
         fieldManager: 'apl-operator',
@@ -198,7 +197,6 @@ describe('applyGitOpsApps', () => {
     getApplications: mockGetApplications,
     getArgocdGitopsManifest: mockGetArgocdGitopsManifest,
     applyArgocdApp: mockApplyArgoCdApp,
-    removeApplication: mockRemoveApplication,
   }
 
   beforeEach(() => {
@@ -244,13 +242,13 @@ describe('applyGitOpsApps', () => {
       setupMockDirs(['a'])
       mockStatSync.mockReturnValue(undefined)
       mockGetApplications.mockResolvedValue(['gitops-ns-a', 'gitops-ns-b', 'gitops-ns-c'])
-      mockRemoveApplication.mockResolvedValue(undefined)
+      mockDeleteNamespacedCustomObject.mockResolvedValue(undefined)
 
       await applyGitOpsApps(mockDeps)
 
-      expect(mockRemoveApplication).toHaveBeenCalledWith('gitops-ns-b')
-      expect(mockRemoveApplication).toHaveBeenCalledWith('gitops-ns-c')
-      expect(mockRemoveApplication).toHaveBeenCalledTimes(2)
+      expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledWith({ ...ARGOCD_APP_PARAMS, name: 'gitops-ns-b' })
+      expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledWith({ ...ARGOCD_APP_PARAMS, name: 'gitops-ns-c' })
+      expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledTimes(2)
     })
   })
 
@@ -259,13 +257,13 @@ describe('applyGitOpsApps', () => {
       setupMockDirs([])
       mockStatSync.mockReturnValue(undefined)
       mockGetApplications.mockResolvedValue(['gitops-global', 'gitops-ns-a'])
-      mockRemoveApplication.mockResolvedValue(undefined)
+      mockDeleteNamespacedCustomObject.mockResolvedValue(undefined)
 
       await applyGitOpsApps(mockDeps)
 
-      expect(mockRemoveApplication).not.toHaveBeenCalledWith('gitops-global')
-      expect(mockRemoveApplication).toHaveBeenCalledWith('gitops-ns-a')
-      expect(mockRemoveApplication).toHaveBeenCalledTimes(1)
+      expect(mockDeleteNamespacedCustomObject).not.toHaveBeenCalledWith({ ...ARGOCD_APP_PARAMS, name: 'gitops-global' })
+      expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledWith({ ...ARGOCD_APP_PARAMS, name: 'gitops-ns-a' })
+      expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -278,7 +276,7 @@ describe('applyGitOpsApps', () => {
       await applyGitOpsApps(mockDeps)
 
       expect(mockApplyArgoCdApp).not.toHaveBeenCalled()
-      expect(mockRemoveApplication).not.toHaveBeenCalled()
+      expect(mockDeleteNamespacedCustomObject).not.toHaveBeenCalled()
     })
   })
 
@@ -321,11 +319,13 @@ describe('applyGitOpsApps', () => {
       mockGlob.mockResolvedValue([])
       mockStatSync.mockReturnValue(undefined)
       mockGetApplications.mockResolvedValue(['gitops-ns-a', 'gitops-ns-b'])
-      mockRemoveApplication.mockRejectedValueOnce(new Error('Failed to remove')).mockResolvedValueOnce(undefined)
+      mockDeleteNamespacedCustomObject
+        .mockRejectedValueOnce(new Error('Failed to remove'))
+        .mockResolvedValueOnce(undefined)
 
       await applyGitOpsApps(mockDeps)
 
-      expect(mockRemoveApplication).toHaveBeenCalledTimes(2)
+      expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledTimes(2)
     })
   })
 })

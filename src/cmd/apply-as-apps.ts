@@ -398,7 +398,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
 }
 
 export const applyGitOpsApps = async (
-  deps = { getApplications, getArgocdGitopsManifest, applyArgocdApp, removeApplication },
+  deps = { getApplications, getArgocdGitopsManifest, applyArgocdApp },
 ): Promise<void> => {
   d.info('Applying GitOps apps')
   const envDir = env.ENV_DIR
@@ -454,7 +454,14 @@ export const applyGitOpsApps = async (
     await Promise.allSettled(
       removeGitOpsApps.values().map(async (appName) => {
         d.debug(`Removing GitOps app ${appName}`)
-        await deps.removeApplication(appName)
+        try {
+          await getCustomApi().deleteNamespacedCustomObject({
+            ...ARGOCD_APP_PARAMS,
+            name: appName,
+          })
+        } catch (e) {
+          d.error(`Failed to delete GitOps app ${appName}:`, e)
+        }
       }),
     )
   }
