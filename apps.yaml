@@ -55,7 +55,7 @@ appsInfo:
     integration: ExternalDNS is used by App Platform to make public service domains accessible by registering them with App Platform's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then App Platform will rely on nip.io to create host names for all services.
   gitea:
     title: Gitea Self-hosted GIT
-    appVersion: 1.24.7
+    appVersion: 1.25.4
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
