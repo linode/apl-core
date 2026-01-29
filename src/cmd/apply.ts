@@ -11,7 +11,7 @@ import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/co
 import { Argv, CommandModule } from 'yargs'
 import { cd } from 'zx'
 import { runtimeUpgrade } from '../common/runtime-upgrade'
-import { applyAsApps, applyGitOpsApps } from './apply-as-apps'
+import { applyAsApps } from './apply-as-apps'
 import { applyTeams } from './apply-teams'
 import { commit } from './commit'
 
@@ -60,7 +60,6 @@ export const applyAll = async () => {
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(false)
   }
-  await applyGitOpsApps()
   if (appsApplyCompleted) {
     await setDeploymentState({ status: 'deployed', version: deployingVersion })
     d.info('Deployment completed')
