@@ -424,7 +424,7 @@ export const applyGitOpsApps = async (
   }
 
   if (addGitOpsApps.size > 0) {
-    d.info(`Adding GitOps apps: ${addGitOpsApps}`)
+    d.info(`Adding GitOps apps: ${Array.from(addGitOpsApps).join(', ')}`)
     if (addGitOpsApps.has(ARGOCD_APP_GITOPS_GLOBAL_NAME)) {
       d.debug('Creating GitOps apps for cluster resources')
       const appManifest = deps.getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME)
@@ -450,7 +450,7 @@ export const applyGitOpsApps = async (
     )
   }
   if (removeGitOpsApps.size > 0) {
-    d.info(`Removing GitOps apps: ${removeGitOpsApps}`)
+    d.info(`Removing GitOps apps: ${Array.from(removeGitOpsApps).join(', ')}`)
     await Promise.allSettled(
       removeGitOpsApps.values().map(async (appName) => {
         d.debug(`Removing GitOps app ${appName}`)
