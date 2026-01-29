@@ -1,8 +1,36 @@
 #!/bin/bash
 set -ue
 
-targetDirA=$1
-targetDirB=$2
+targetDirA=
+targetDirB=
+miscArgs=( --output github )
+
+while [ $# -ne 0 ]
+do
+  case "$1" in
+    --exclude-chart-versions)
+      miscArgs=( "${miscArgs[@]}" --exclude-regexp '.*metadata.labels.helm.sh/chart' --exclude-regexp '.*metadata.labels.app.kubernetes.io/version' )
+      ;;
+    *)
+      if [ -z "$targetDirA" ]; then
+        targetDirA=$1
+      elif [ -z "$targetDirB" ]; then
+        targetDirB=$1
+      else
+        echo "Extra argument $1"
+        return 1
+      fi
+      ;;
+  esac
+  shift
+done
+if [ -z "$targetDirA" ]; then
+  echo "Missing first argument"
+  return 1
+elif [ -z "$targetDirB" ]; then
+  echo "Missing second argument"
+  return 1
+fi
 
 set +e
 diff_output=$(diff -q -r "$targetDirA" "$targetDirB")
@@ -22,6 +50,6 @@ echo "$diff_output" | while read -r line; do
     # Use dyff to compare the files
     dyff between "$second_path" "$first_path" --omit-header \
       --exclude "data.tls.key" --exclude "/data/ca.crt" --exclude "/data/tls.crt" --exclude "/data/tls.key" \
-      --exclude-regexp "/checksum" --exclude-regexp "/webhooks.*" --ignore-order-changes
+      --exclude-regexp "/checksum" --exclude-regexp "/webhooks.*" --ignore-order-changes "${miscArgs[@]}"
   fi
 done
