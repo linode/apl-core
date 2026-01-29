@@ -5,7 +5,7 @@ targetDirA=$1
 targetDirB=$2
 
 set +e
-diff_output=$(diff -q -r $targetDirA $targetDirB)
+diff_output=$(diff -q -r "$targetDirA" "$targetDirB")
 set -e
 # Process each line of diff output
 
