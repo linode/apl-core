@@ -2,6 +2,7 @@
 set -ue
 
 # Usage: bin/compare.sh -l name=loki
+# Optional: --diff-output <filename> writes the final diff to a file and skips common chart version information
 # Deps: dyff, helmfile
 # brew install homeport/tap/dyff
 # brew install helmfile
