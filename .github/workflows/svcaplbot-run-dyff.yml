@@ -1,8 +1,14 @@
 name: chart-deps compare output to main
 
 on:
+  workflow_dispatch: ~
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened]
+    paths:
+      - "charts/**"
+      - "values/**"
+      - "tests/fixtures/**"
+      - "helmfile.d"/**"
 
 permissions:
   contents: read
@@ -10,8 +16,7 @@ permissions:
 jobs:
   run-compare:
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.labels.*.name, 'chart-deps') &&
-      (github.event.action == 'labeled' || !startsWith(github.event.head_commit.message, 'Merge branch'))
+    if: !startsWith(github.event.head_commit.message, 'Merge branch')
     steps:
       - name: Install GitHub CLI
         run: |
