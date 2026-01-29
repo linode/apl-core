@@ -8,7 +8,7 @@ on:
       - "charts/**"
       - "values/**"
       - "tests/fixtures/**"
-      - "helmfile.d"/**"
+      - "helmfile.d/**"
 
 permissions:
   contents: read
