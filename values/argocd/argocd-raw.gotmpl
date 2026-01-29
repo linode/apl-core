@@ -22,3 +22,15 @@ resources:
       url: {{ printf "https://%s" $v._derived.giteaDomain | b64enc }}
       username: {{ $g.adminUsername | b64enc }}
       password: {{ $g.adminPassword | b64enc }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: argocd-repo-creds-gitea-internal
+      namespace: argocd
+      labels:
+        argocd.argoproj.io/secret-type: repo-creds
+    data:
+      type: {{ print "git" | b64enc | quote }}
+      url: {{ "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git" | b64enc | quote }}
+      username: {{ $g.adminUsername | b64enc }}
+      password: {{ $g.adminPassword | b64enc }}
