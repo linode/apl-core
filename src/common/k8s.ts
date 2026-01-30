@@ -984,15 +984,15 @@ export async function getSealedSecretsPEM(): Promise<string> {
 
   try {
     const response = await k8s.core().listNamespacedSecret({ namespace, labelSelector })
-    const { items } = response as any
+    const { items } = response
 
     if (!items || items.length === 0) {
-      throw new Error('No sealed secrets keys found')
+      throw new Error('No sealed secrets keys found in the sealed-secrets namespace')
     }
 
-    const newestItem = items.reduce((maxItem, currentItem) => {
-      const maxTimestamp = new Date(maxItem.creationTimestamp as Date).getTime()
-      const currentTimestamp = new Date(currentItem.creationTimestamp as Date).getTime()
+    const newestItem = items.reduce((maxItem: V1Secret, currentItem: V1Secret) => {
+      const maxTimestamp = new Date(maxItem.metadata?.creationTimestamp as Date).getTime()
+      const currentTimestamp = new Date(currentItem.metadata?.creationTimestamp as Date).getTime()
       return currentTimestamp > maxTimestamp ? currentItem : maxItem
     }, items[0])
 

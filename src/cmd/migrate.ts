@@ -2,7 +2,7 @@ import { ApiException } from '@kubernetes/client-node'
 import { encryptSecretItem } from '@linode/kubeseal-encrypt'
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
-import { existsSync, renameSync, rmSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { cp, rename as fsRename, mkdir, readFile, writeFile } from 'fs/promises'
 import { glob, globSync } from 'glob'
 import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
@@ -668,27 +668,23 @@ const setLokiStorageSchemaMigration = async (values: Record<string, any>): Promi
   }
 }
 
-const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> => {
-  const d = terminal('setDefaultAplCatalog')
-  if (values?.catalogs?.default) {
-    d.info('Default catalog already exists, skipping')
-    return
-  }
-  const gitea = values?.apps?.gitea
+const GITHUB_CATALOG_URL = 'https://github.com/linode/apl-charts.git'
+const SEALED_SECRET_NAME = 'default-catalog-credentials'
+
+const createCatalogSealedSecret = async (
+  d: ReturnType<typeof terminal>,
+  gitea: { adminUsername: string; adminPassword: string },
+): Promise<void> => {
   const sealedSecretsPEM = await getSealedSecretsPEM()
-  const encryptedPassword = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea?.adminPassword)
-  const encryptedUsername = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea?.adminUsername)
-  const defaultCatalogCredentials = {
+  const encryptedPassword = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea.adminPassword)
+  const encryptedUsername = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea.adminUsername)
+  const sealedSecret = {
     apiVersion: 'bitnami.com/v1alpha1',
     kind: 'SealedSecret',
     metadata: {
-      annotations: {
-        'sealedsecrets.bitnami.com/namespace-wide': 'true',
-      },
-      labels: {
-        'apl.io/teamId': 'admin',
-      },
-      name: 'default-catalog-credentials',
+      annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+      labels: { 'apl.io/teamId': 'admin' },
+      name: SEALED_SECRET_NAME,
       namespace: 'argocd',
     },
     spec: {
@@ -698,28 +694,47 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
       },
       template: {
         immutable: false,
-        metadata: {
-          name: 'default-catalog-credentials',
-          namespace: 'argocd',
-        },
+        metadata: { name: SEALED_SECRET_NAME, namespace: 'argocd' },
         type: 'kubernetes.io/basic-auth',
       },
     },
   }
-  const sealedSecretPath = `${env.ENV_DIR}/env/teams/admin/sealedsecrets/default-catalog-credentials.yaml`
+  const sealedSecretPath = `${env.ENV_DIR}/env/teams/admin/sealedsecrets/${SEALED_SECRET_NAME}.yaml`
+  mkdirSync(dirname(sealedSecretPath), { recursive: true })
   d.info(`Writing sealed secret to ${sealedSecretPath}`)
-  writeFileSync(sealedSecretPath, objectToYaml(defaultCatalogCredentials))
-  const domainSuffix = values?.cluster?.domainSuffix
-  const catalogUrl = domainSuffix
-    ? `https://gitea.${domainSuffix}/otomi/charts.git`
-    : 'https://github.com/linode/apl-charts.git'
+  writeFileSync(sealedSecretPath, objectToYaml(sealedSecret))
+}
+
+const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('setDefaultAplCatalog')
+  if (values?.catalogs?.default) {
+    d.info('Default catalog already exists, skipping')
+    return
+  }
+
+  const gitea = values?.apps?.gitea as { adminUsername?: string; adminPassword?: string } | undefined
+  const hasGitea = !!(gitea?.adminUsername && gitea?.adminPassword)
+
+  if (hasGitea) {
+    try {
+      await createCatalogSealedSecret(d, gitea as { adminUsername: string; adminPassword: string })
+    } catch (error) {
+      d.error('Failed to create catalog sealed secret, continuing without it:', error)
+    }
+  } else {
+    d.info('No gitea credentials found, skipping sealed secret creation')
+  }
+
+  const domainSuffix = values?.cluster?.domainSuffix as string | undefined
+  const catalogUrl = hasGitea && domainSuffix ? `https://gitea.${domainSuffix}/otomi/charts.git` : GITHUB_CATALOG_URL
   d.info(`Setting default APL catalog with url ${catalogUrl}`)
+
   const defaultCatalog = {
     branch: 'main',
     enabled: true,
     name: 'default',
     url: catalogUrl,
-    secretName: 'default-catalog-credentials',
+    ...(hasGitea && { secretName: SEALED_SECRET_NAME }),
   }
   set(values, 'catalogs.default', defaultCatalog)
 }
