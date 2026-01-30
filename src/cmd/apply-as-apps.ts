@@ -397,8 +397,56 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
   return true
 }
 
+export const addGitOpsArgocdApps = async (
+  appNames: Set<string>,
+  namespaceDirs: string[],
+  deps = { getArgocdGitopsManifest, applyArgocdApp },
+): Promise<void> => {
+  d.info(`Adding GitOps apps: ${Array.from(appNames).join(', ')}`)
+  if (appNames.has(ARGOCD_APP_GITOPS_GLOBAL_NAME)) {
+    d.debug('Creating GitOps apps for cluster resources')
+    const appManifest = deps.getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME)
+    try {
+      await deps.applyArgocdApp(appManifest)
+    } catch (e) {
+      d.error('Failed to create GitOps app for cluster resources', e)
+    }
+  }
+  await Promise.allSettled(
+    namespaceDirs.map(async (dirName) => {
+      const appName = `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`
+      if (appNames.has(appName)) {
+        d.debug(`Creating GitOps app for ${dirName}`)
+        const appManifest = deps.getArgocdGitopsManifest(appName, dirName)
+        try {
+          await deps.applyArgocdApp(appManifest)
+        } catch (e) {
+          d.error(`Failed to create GitOps app for ${dirName}:`, e)
+        }
+      }
+    }),
+  )
+}
+
+export const removeGitOpsArgocdApps = async (appNames: Set<string>) => {
+  d.info(`Removing GitOps apps: ${Array.from(appNames).join(', ')}`)
+  await Promise.allSettled(
+    appNames.values().map(async (appName) => {
+      d.debug(`Removing GitOps app ${appName}`)
+      try {
+        await getCustomApi().deleteNamespacedCustomObject({
+          ...ARGOCD_APP_PARAMS,
+          name: appName,
+        })
+      } catch (e) {
+        d.error(`Failed to delete GitOps app ${appName}:`, e)
+      }
+    }),
+  )
+}
+
 export const applyGitOpsApps = async (
-  deps = { getApplications, getArgocdGitopsManifest, applyArgocdApp },
+  deps = { getApplications, addGitOpsArgocdApps, removeGitOpsArgocdApps },
 ): Promise<void> => {
   d.info('Applying GitOps apps')
   const envDir = env.ENV_DIR
@@ -424,46 +472,11 @@ export const applyGitOpsApps = async (
   }
 
   if (addGitOpsApps.size > 0) {
-    d.info(`Adding GitOps apps: ${Array.from(addGitOpsApps).join(', ')}`)
-    if (addGitOpsApps.has(ARGOCD_APP_GITOPS_GLOBAL_NAME)) {
-      d.debug('Creating GitOps apps for cluster resources')
-      const appManifest = deps.getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME)
-      try {
-        await deps.applyArgocdApp(appManifest)
-      } catch (e) {
-        d.error('Failed to create GitOps app for cluster resources', e)
-      }
-    }
-    await Promise.allSettled(
-      namespaceDirs.map(async (dirName) => {
-        const appName = `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`
-        if (addGitOpsApps.has(appName)) {
-          d.debug(`Creating GitOps app for ${dirName}`)
-          const appManifest = deps.getArgocdGitopsManifest(appName, dirName)
-          try {
-            await deps.applyArgocdApp(appManifest)
-          } catch (e) {
-            d.error(`Failed to create GitOps app for ${dirName}:`, e)
-          }
-        }
-      }),
-    )
+    // namespaceDirs includes all existing directory names, function checks addGitOpsApps set if they must be created
+    await deps.addGitOpsArgocdApps(addGitOpsApps, namespaceDirs)
   }
   if (removeGitOpsApps.size > 0) {
-    d.info(`Removing GitOps apps: ${Array.from(removeGitOpsApps).join(', ')}`)
-    await Promise.allSettled(
-      removeGitOpsApps.values().map(async (appName) => {
-        d.debug(`Removing GitOps app ${appName}`)
-        try {
-          await getCustomApi().deleteNamespacedCustomObject({
-            ...ARGOCD_APP_PARAMS,
-            name: appName,
-          })
-        } catch (e) {
-          d.error(`Failed to delete GitOps app ${appName}:`, e)
-        }
-      }),
-    )
+    await deps.removeGitOpsArgocdApps(removeGitOpsApps)
   }
 }
 

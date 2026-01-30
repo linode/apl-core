@@ -2,7 +2,8 @@ import {
   applyGitOpsApps,
   getApplications,
   applyArgocdApp,
-  removeApplication,
+  addGitOpsArgocdApps,
+  removeGitOpsArgocdApps,
   getArgocdGitopsManifest,
   ArgocdAppManifest,
 } from './apply-as-apps'
@@ -35,6 +36,8 @@ const mockGlob = glob as jest.MockedFunction<typeof glob>
 const mockStatSync = statSync as jest.MockedFunction<any>
 const mockGetApplications = jest.fn() as jest.MockedFunction<typeof getApplications>
 const mockApplyArgoCdApp = jest.fn() as jest.MockedFunction<typeof applyArgocdApp>
+const mockAddGitOpsArgocdApps = jest.fn() as jest.MockedFunction<typeof addGitOpsArgocdApps>
+const mockRemoveGitOpsArgocdApps = jest.fn() as jest.MockedFunction<typeof removeGitOpsArgocdApps>
 const mockGetArgocdGitopsManifest = jest.fn() as jest.MockedFunction<typeof getArgocdGitopsManifest>
 
 const mockPatchNamespacedCustomObject = jest.fn()
@@ -195,8 +198,8 @@ describe('applyGitOpsApps', () => {
   const mockEnvDir = '/test'
   const mockDeps = {
     getApplications: mockGetApplications,
-    getArgocdGitopsManifest: mockGetArgocdGitopsManifest,
-    applyArgocdApp: mockApplyArgoCdApp,
+    addGitOpsArgocdApps: mockAddGitOpsArgocdApps,
+    removeGitOpsArgocdApps: mockRemoveGitOpsArgocdApps,
   }
 
   beforeEach(() => {
@@ -213,119 +216,192 @@ describe('applyGitOpsApps', () => {
     mockGlob.mockResolvedValue(mockPaths)
   }
 
-  describe('when there are namespace directories and global directory exists', () => {
-    it('should create gitops apps for new namespaces and global resources', async () => {
-      const namespaceDirs = ['a', 'b', 'c']
-      setupMockDirs(namespaceDirs)
-      mockStatSync.mockReturnValue({ isDirectory: () => true })
-      mockGetApplications.mockResolvedValue([])
-      mockGetArgocdGitopsManifest.mockReturnValue({ manifest: 'test' } as any)
-      mockApplyArgoCdApp.mockResolvedValue(undefined)
+  it('should select files in locations of values repository', async () => {
+    setupMockDirs([])
+    mockStatSync.mockReturnValue({ isDirectory: () => true })
+    mockGetApplications.mockResolvedValue([])
 
-      await applyGitOpsApps(mockDeps)
+    await applyGitOpsApps(mockDeps)
 
-      expect(mockGlob).toHaveBeenCalledWith(`${mockEnvDir}/env/manifests/ns/*`, { withFileTypes: true })
-      expect(mockStatSync).toHaveBeenCalledWith(`${mockEnvDir}/env/manifests/global`, { throwIfNoEntry: false })
-      expect(mockGetApplications).toHaveBeenCalledWith('otomi.io/app=generic-gitops')
-
-      expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global')
-      expect(mockApplyArgoCdApp).toHaveBeenCalledWith({ manifest: 'test' })
-      expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', 'a')
-      expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', 'b')
-      expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-c', 'c')
-      expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(4) // 3 namespaces + 1 global
-    })
+    expect(mockGlob).toHaveBeenCalledWith(`${mockEnvDir}/env/manifests/ns/*`, { withFileTypes: true })
+    expect(mockStatSync).toHaveBeenCalledWith(`${mockEnvDir}/env/manifests/global`, { throwIfNoEntry: false })
   })
 
-  describe('when there are existing apps to remove', () => {
-    it('should remove apps that no longer have corresponding directories', async () => {
-      setupMockDirs(['a'])
-      mockStatSync.mockReturnValue(undefined)
-      mockGetApplications.mockResolvedValue(['gitops-ns-a', 'gitops-ns-b', 'gitops-ns-c'])
-      mockDeleteNamespacedCustomObject.mockResolvedValue(undefined)
+  it('should look up existing applications with a specific label', async () => {
+    setupMockDirs([])
+    mockStatSync.mockReturnValue({ isDirectory: () => true })
+    mockGetApplications.mockResolvedValue([])
 
-      await applyGitOpsApps(mockDeps)
+    await applyGitOpsApps(mockDeps)
 
-      expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledWith({ ...ARGOCD_APP_PARAMS, name: 'gitops-ns-b' })
-      expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledWith({ ...ARGOCD_APP_PARAMS, name: 'gitops-ns-c' })
-      expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledTimes(2)
-    })
+    expect(mockGetApplications).toHaveBeenCalledWith('otomi.io/app=generic-gitops')
   })
 
-  describe('when global app exists but directory does not', () => {
-    it('should not remove the global app', async () => {
-      setupMockDirs([])
-      mockStatSync.mockReturnValue(undefined)
-      mockGetApplications.mockResolvedValue(['gitops-global', 'gitops-ns-a'])
-      mockDeleteNamespacedCustomObject.mockResolvedValue(undefined)
+  it('should create gitops apps for new namespaces and global resources', async () => {
+    const namespaceDirs = ['a', 'b', 'c']
+    setupMockDirs(namespaceDirs)
+    mockStatSync.mockReturnValue({ isDirectory: () => true })
+    mockGetApplications.mockResolvedValue([])
 
-      await applyGitOpsApps(mockDeps)
+    await applyGitOpsApps(mockDeps)
 
-      expect(mockDeleteNamespacedCustomObject).not.toHaveBeenCalledWith({ ...ARGOCD_APP_PARAMS, name: 'gitops-global' })
-      expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledWith({ ...ARGOCD_APP_PARAMS, name: 'gitops-ns-a' })
-      expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledTimes(1)
-    })
+    expect(mockAddGitOpsArgocdApps).toHaveBeenCalledWith(
+      new Set(['gitops-global', 'gitops-ns-a', 'gitops-ns-b', 'gitops-ns-c']),
+      ['a', 'b', 'c'],
+    )
   })
 
-  describe('when no changes are needed', () => {
-    it('should not create or remove any apps', async () => {
-      setupMockDirs(['a', 'b'])
-      mockStatSync.mockReturnValue(undefined)
-      mockGetApplications.mockResolvedValue(['gitops-global', 'gitops-ns-a', 'gitops-ns-b'])
+  it('should remove apps that no longer have corresponding directories', async () => {
+    setupMockDirs(['a'])
+    mockStatSync.mockReturnValue(undefined)
+    mockGetApplications.mockResolvedValue(['gitops-ns-a', 'gitops-ns-b', 'gitops-ns-c'])
 
-      await applyGitOpsApps(mockDeps)
+    await applyGitOpsApps(mockDeps)
 
-      expect(mockApplyArgoCdApp).not.toHaveBeenCalled()
-      expect(mockDeleteNamespacedCustomObject).not.toHaveBeenCalled()
-    })
+    // Apps to remove should be b and c (a still exists)
+    expect(mockRemoveGitOpsArgocdApps).toHaveBeenCalledWith(new Set(['gitops-ns-b', 'gitops-ns-c']))
+    expect(mockAddGitOpsArgocdApps).not.toHaveBeenCalled()
   })
 
-  describe('when glob returns non-directory entries', () => {
-    it('should filter out non-directory entries', async () => {
-      setupMockDirs(['a', 'b'], ['x'])
-      mockStatSync.mockReturnValue(undefined)
-      mockGetApplications.mockResolvedValue([])
-      mockGetArgocdGitopsManifest.mockReturnValue({ manifest: 'test' } as any)
-      mockApplyArgoCdApp.mockResolvedValue(undefined)
+  it('should not remove the global app', async () => {
+    setupMockDirs([])
+    mockStatSync.mockReturnValue(undefined)
+    mockGetApplications.mockResolvedValue(['gitops-global', 'gitops-ns-a'])
 
-      await applyGitOpsApps(mockDeps)
+    await applyGitOpsApps(mockDeps)
 
-      expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', 'a')
-      expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', 'b')
-      expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-ns-x', 'x')
-    })
+    expect(mockAddGitOpsArgocdApps).not.toHaveBeenCalled()
+    // Call should not include gitops-global
+    expect(mockRemoveGitOpsArgocdApps).toHaveBeenCalledWith(new Set(['gitops-ns-a']))
   })
 
-  describe('when app creation fails', () => {
-    it('should continue processing other apps', async () => {
-      setupMockDirs(['a', 'b'])
-      mockStatSync.mockReturnValue({ isDirectory: () => true })
-      mockGetApplications.mockResolvedValue([])
-      mockGetArgocdGitopsManifest.mockReturnValue({ manifest: 'test' } as any)
-      mockApplyArgoCdApp
-        .mockResolvedValueOnce(undefined) // global succeeds
-        .mockRejectedValueOnce(new Error('Failed to create')) // a fails
-        .mockResolvedValueOnce(undefined) // b succeeds
+  it('should not create or remove any apps when no changes are needed', async () => {
+    setupMockDirs(['a', 'b'])
+    mockStatSync.mockReturnValue(undefined)
+    mockGetApplications.mockResolvedValue(['gitops-ns-a', 'gitops-ns-b'])
 
-      await applyGitOpsApps(mockDeps)
+    await applyGitOpsApps(mockDeps)
 
-      expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(3)
-    })
+    expect(mockAddGitOpsArgocdApps).not.toHaveBeenCalled()
+    expect(mockRemoveGitOpsArgocdApps).not.toHaveBeenCalled()
   })
 
-  describe('when app removal fails', () => {
-    it('should continue processing other removals', async () => {
-      // Arrange
-      mockGlob.mockResolvedValue([])
-      mockStatSync.mockReturnValue(undefined)
-      mockGetApplications.mockResolvedValue(['gitops-ns-a', 'gitops-ns-b'])
-      mockDeleteNamespacedCustomObject
-        .mockRejectedValueOnce(new Error('Failed to remove'))
-        .mockResolvedValueOnce(undefined)
+  it('should filter out non-directory entries', async () => {
+    setupMockDirs(['a', 'b'], ['x'])
+    mockStatSync.mockReturnValue(undefined)
+    mockGetApplications.mockResolvedValue([])
 
-      await applyGitOpsApps(mockDeps)
+    await applyGitOpsApps(mockDeps)
 
-      expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledTimes(2)
-    })
+    expect(mockAddGitOpsArgocdApps).toHaveBeenCalledWith(new Set(['gitops-ns-a', 'gitops-ns-b']), ['a', 'b'])
+  })
+})
+
+describe('addGitOpsArgocdApps', () => {
+  const mockDeps = {
+    getArgocdGitopsManifest: mockGetArgocdGitopsManifest,
+    applyArgocdApp: mockApplyArgoCdApp,
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should forward generated manifest', async () => {
+    const appNames = new Set(['gitops-ns-a'])
+    const namespaceDirs = ['a']
+    const mockManifest = { metadata: { name: 'test' } } as ArgocdAppManifest
+    mockGetArgocdGitopsManifest.mockReturnValue(mockManifest)
+
+    await addGitOpsArgocdApps(appNames, namespaceDirs, mockDeps)
+
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', 'a')
+    expect(mockApplyArgoCdApp).toHaveBeenCalledWith(mockManifest)
+    expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(1)
+  })
+
+  it('should create global app when included in appNames', async () => {
+    const appNames = new Set(['gitops-global'])
+    const namespaceDirs = ['a']
+    const mockManifest = { metadata: { name: 'gitops-global' } } as ArgocdAppManifest
+    mockGetArgocdGitopsManifest.mockReturnValue(mockManifest)
+
+    await addGitOpsArgocdApps(appNames, namespaceDirs, mockDeps)
+
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global')
+    expect(mockApplyArgoCdApp).toHaveBeenCalledWith(mockManifest)
+    expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(1)
+  })
+
+  it('should create namespace apps for each directory in appNames', async () => {
+    const appNames = new Set(['gitops-ns-a', 'gitops-ns-b'])
+    const namespaceDirs = ['a', 'b', 'c']
+
+    await addGitOpsArgocdApps(appNames, namespaceDirs, mockDeps)
+
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', 'a')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', 'b')
+    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-ns-c', 'c')
+    expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(2)
+  })
+
+  it('should not create global app when not in appNames', async () => {
+    const appNames = new Set(['gitops-ns-a'])
+    const namespaceDirs = ['a']
+
+    await addGitOpsArgocdApps(appNames, namespaceDirs, mockDeps)
+
+    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-global')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', 'a')
+    expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(1)
+  })
+
+  it('should continue processing when app creation fails', async () => {
+    const appNames = new Set(['gitops-global', 'gitops-ns-a', 'gitops-ns-b'])
+    const namespaceDirs = ['a', 'b']
+
+    mockApplyArgoCdApp
+      .mockResolvedValueOnce(undefined) // global succeeds
+      .mockRejectedValueOnce(new Error('Failed to create')) // a fails
+      .mockResolvedValueOnce(undefined) // b succeeds
+
+    await addGitOpsArgocdApps(appNames, namespaceDirs, mockDeps)
+
+    expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(3)
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', 'a')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', 'b')
+  })
+})
+
+describe('removeGitOpsArgocdApps', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should delete all apps in the provided set', async () => {
+    await removeGitOpsArgocdApps(new Set(['gitops-ns-a', 'gitops-ns-b', 'gitops-ns-c']))
+
+    expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledTimes(3)
+    expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledWith({ ...ARGOCD_APP_PARAMS, name: 'gitops-ns-a' })
+    expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledWith({ ...ARGOCD_APP_PARAMS, name: 'gitops-ns-b' })
+    expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledWith({ ...ARGOCD_APP_PARAMS, name: 'gitops-ns-c' })
+  })
+
+  it('should continue processing when deletion fails', async () => {
+    const appNames = new Set(['gitops-ns-a', 'gitops-ns-b'])
+    mockDeleteNamespacedCustomObject
+      .mockRejectedValueOnce(new Error('Failed to delete'))
+      .mockResolvedValueOnce(undefined)
+
+    await removeGitOpsArgocdApps(appNames)
+
+    expect(mockDeleteNamespacedCustomObject).toHaveBeenCalledTimes(2)
+  })
+
+  it('should do nothing when appNames is empty', async () => {
+    await removeGitOpsArgocdApps(new Set([]))
+
+    expect(mockDeleteNamespacedCustomObject).not.toHaveBeenCalled()
   })
 })
