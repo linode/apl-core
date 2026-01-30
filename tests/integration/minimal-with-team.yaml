@@ -126,7 +126,7 @@ files:
   env/teams/demo/workloadValues/nodejs-helloworld.yaml: |
     image:
       repository: linode/apl-nodejs-helloworld
-      tag: v1.4.0
+      tag: v1.5.1
   env/teams/demo/workloadValues/nodejs-helloworld.managed.yaml: |
     {}
   env/teams/demo/workloadValues/nginx-deployment.yaml: |
@@ -172,6 +172,6 @@ files:
   env/teams/admin/workloadValues/nodejs-helloworld.yaml: |
     image:
       repository: linode/apl-nodejs-helloworld
-      tag: v1.4.0
+      tag: v1.5.1
   env/teams/admin/workloadValues/nodejs-helloworld.managed.yaml: |
     {}
