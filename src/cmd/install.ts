@@ -4,14 +4,7 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
-import {
-  applyServerSide,
-  deletePendingHelmReleases,
-  getDeploymentState,
-  getHelmReleases,
-  setDeploymentState,
-  waitForCRD,
-} from 'src/common/k8s'
+import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState, waitForCRD } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -24,7 +17,6 @@ import {
   createWelcomeConfigMap,
   initialSetupData,
 } from './commit'
-import { collectTraces } from './traces'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -129,13 +121,6 @@ const install = async (): Promise<void> => {
       await installAll()
     } catch (e) {
       d.error(e)
-      // Collect traces on installation failure
-      try {
-        await collectTraces()
-        await deletePendingHelmReleases()
-      } catch (traceError) {
-        d.error('Failed to collect traces:', traceError)
-      }
       throw e
     }
     return

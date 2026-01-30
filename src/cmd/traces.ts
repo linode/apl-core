@@ -5,14 +5,19 @@ import { createUpdateConfigMap, k8s } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
+import { getErrorMessage } from 'src/operator/utils'
+import { env } from 'src/common/envalid'
 
 const cmdName = getFilename(__filename)
-
+const { COLLECTION_INTERVAL_SECONDS, COLLECTION_DURATION_SECONDS, APL_OPERATOR_NAMESPACE, TRACES_REPORT_NAME } = env
+const COLLECTION_INTERVAL_MS = COLLECTION_INTERVAL_SECONDS * 1000
+const COLLECTION_DURATION_MS = COLLECTION_DURATION_SECONDS * 1000
 interface ResourceReport {
   kind: string
   name: string
   namespace: string
   value: string
+  timestamp: string // When this event was captured
 }
 
 interface TraceReport {
@@ -118,6 +123,7 @@ async function getPodsWithIssues(): Promise<ResourceReport[]> {
           name: podName,
           namespace,
           value: issue,
+          timestamp: new Date().toISOString(),
         })
       })
     }),
@@ -132,6 +138,7 @@ async function getPodsWithIssues(): Promise<ResourceReport[]> {
 async function getDeploymentsWithIssues(): Promise<ResourceReport[]> {
   const appsApi = k8s.app()
   const response = await appsApi.listDeploymentForAllNamespaces()
+  const timestamp = new Date().toISOString()
 
   return response.items
     .filter((deployment) => deployment.status?.replicas !== deployment.status?.availableReplicas)
@@ -140,6 +147,7 @@ async function getDeploymentsWithIssues(): Promise<ResourceReport[]> {
       name: deployment.metadata?.name || 'unknown',
       namespace: deployment.metadata?.namespace || 'default',
       value: `Desired ${deployment.status?.replicas}, Available ${deployment.status?.availableReplicas}`,
+      timestamp,
     }))
 }
 
@@ -158,6 +166,7 @@ async function getStatefulSetsWithIssues(): Promise<ResourceReport[]> {
       if (!namespace) return
 
       const response = await appsApi.listNamespacedStatefulSet({ namespace })
+      const timestamp = new Date().toISOString()
       response.items.forEach((sts) => {
         const replicas = sts.spec?.replicas || 0
         const readyReplicas = sts.status?.readyReplicas || 0
@@ -167,6 +176,7 @@ async function getStatefulSetsWithIssues(): Promise<ResourceReport[]> {
             name: sts.metadata?.name || 'unknown',
             namespace,
             value: `Desired ${replicas}, Ready ${readyReplicas}`,
+            timestamp,
           })
         }
       })
@@ -182,6 +192,7 @@ async function getStatefulSetsWithIssues(): Promise<ResourceReport[]> {
 async function getNodesWithIssues(): Promise<ResourceReport[]> {
   const coreApi = k8s.core()
   const response = await coreApi.listNode()
+  const timestamp = new Date().toISOString()
 
   return response.items
     .filter((node) => node.status?.conditions?.some((cond) => cond.type === 'Ready' && cond.status !== 'True'))
@@ -190,6 +201,7 @@ async function getNodesWithIssues(): Promise<ResourceReport[]> {
       name: node.metadata?.name || 'unknown',
       namespace: 'N/A',
       value: 'Node not Ready',
+      timestamp,
     }))
 }
 
@@ -199,6 +211,7 @@ async function getNodesWithIssues(): Promise<ResourceReport[]> {
 async function getServicesWithIssues(): Promise<ResourceReport[]> {
   const coreApi = k8s.core()
   const response = await coreApi.listServiceForAllNamespaces()
+  const timestamp = new Date().toISOString()
 
   return response.items
     .map((service) => {
@@ -217,6 +230,7 @@ async function getServicesWithIssues(): Promise<ResourceReport[]> {
           name,
           namespace,
           value: issue,
+          timestamp,
         }
       }
       return null
@@ -238,6 +252,7 @@ async function getPVCsWithIssues(): Promise<ResourceReport[]> {
       if (!namespace) return
 
       const response = await coreApi.listNamespacedPersistentVolumeClaim({ namespace })
+      const timestamp = new Date().toISOString()
       response.items.forEach((pvc) => {
         if (pvc.status?.phase !== 'Bound') {
           const conditions = pvc.status?.conditions?.map((c) => `${c.type}: ${c.message}`).join('; ') || ''
@@ -246,6 +261,7 @@ async function getPVCsWithIssues(): Promise<ResourceReport[]> {
             name: pvc.metadata?.name || 'unknown',
             namespace,
             value: `Phase: ${pvc.status?.phase}${conditions ? `. ${conditions}` : ''}`,
+            timestamp,
           })
         }
       })
@@ -261,6 +277,7 @@ async function getPVCsWithIssues(): Promise<ResourceReport[]> {
 async function getPVsWithIssues(): Promise<ResourceReport[]> {
   const coreApi = k8s.core()
   const response = await coreApi.listPersistentVolume()
+  const timestamp = new Date().toISOString()
 
   return response.items
     .filter((pv) => pv.status?.phase !== 'Available' && pv.status?.phase !== 'Bound')
@@ -269,6 +286,7 @@ async function getPVsWithIssues(): Promise<ResourceReport[]> {
       name: pv.metadata?.name || 'unknown',
       namespace: 'N/A',
       value: `Phase: ${pv.status?.phase}`,
+      timestamp,
     }))
 }
 
@@ -286,6 +304,7 @@ async function getArgoApplicationsWithIssues(): Promise<ResourceReport[]> {
   })
 
   const items = (response as any).items || []
+  const timestamp = new Date().toISOString()
 
   items.forEach((app: any) => {
     const name = app.metadata?.name || 'unknown'
@@ -315,6 +334,7 @@ async function getArgoApplicationsWithIssues(): Promise<ResourceReport[]> {
         name,
         namespace,
         value: issue,
+        timestamp,
       })
     })
   })
@@ -328,8 +348,10 @@ async function getArgoApplicationsWithIssues(): Promise<ResourceReport[]> {
 async function writeReportToConfigMap(name: string, namespace: string, report: TraceReport): Promise<void> {
   const coreApi = k8s.core()
   const reportJson = JSON.stringify(report, null, 2)
+  // ConfigMap keys must match [-._a-zA-Z0-9]+, so replace colons with dots
+  const reportKey = `report-${report.timestamp.replace(/:/g, '.')}`
 
-  await createUpdateConfigMap(coreApi, name, namespace, { report: reportJson })
+  await createUpdateConfigMap(coreApi, name, namespace, { [reportKey]: reportJson })
 }
 
 /**
@@ -392,22 +414,66 @@ export async function collectTraces(): Promise<void> {
       ...(collectionErrors.length > 0 && { errors: collectionErrors }),
     }
 
-    // Store in ConfigMap
-    const configMapName = 'apl-traces-report'
-    const targetNamespace = 'apl-operator'
-
     if (failedResources.length === 0) {
       d.info('No failing resources found. Your APL instance seems to be healthy.')
-    } else {
-      await writeReportToConfigMap(configMapName, targetNamespace, report)
-      d.info(
-        `Trace report stored in ConfigMap ${targetNamespace}/${configMapName} (${failedResources.length} failed resources)`,
-      )
     }
+
+    // Always write the report to ConfigMap (even when healthy, for timestamp visibility)
+    await writeReportToConfigMap(TRACES_REPORT_NAME, APL_OPERATOR_NAMESPACE, report)
+    d.info(
+      `Trace report stored in ConfigMap ${APL_OPERATOR_NAMESPACE}/${TRACES_REPORT_NAME} (${failedResources.length} issues)`,
+    )
   } catch (error) {
     d.error('Failed to collect traces:', error)
     throw error
   }
+}
+
+async function getCollectionStartTime(name: string, namespace: string): Promise<number> {
+  const coreApi = k8s.core()
+
+  try {
+    const configMap = await coreApi.readNamespacedConfigMap({ name, namespace })
+    // Use ConfigMap's creation timestamp as the start time
+    if (configMap.metadata?.creationTimestamp) {
+      return new Date(configMap.metadata.creationTimestamp).getTime()
+    }
+  } catch {
+    // ConfigMap doesn't exist yet, will be created by first collectTraces() call
+  }
+
+  // No ConfigMap yet, use current time (ConfigMap will be created by collectTraces)
+  return Date.now()
+}
+
+export async function runTraceCollectionLoop(): Promise<void> {
+  const d = terminal('cmd:traces:runTraceCollectionLoop')
+  // Get collection start time from ConfigMap creation timestamp
+  const startTime = await getCollectionStartTime(TRACES_REPORT_NAME, APL_OPERATOR_NAMESPACE)
+  const endTime = startTime + COLLECTION_DURATION_MS
+  const now = Date.now()
+
+  if (now >= endTime) {
+    d.info('Trace collection window (30 minutes) already elapsed, skipping')
+    return
+  }
+
+  const remainingMs = endTime - now
+  d.info(`Starting trace collection loop (${Math.round(remainingMs / 60000)} minutes remaining)`)
+
+  while (Date.now() < endTime) {
+    try {
+      d.info('Running periodic trace collection')
+      await collectTraces()
+    } catch (error) {
+      d.warn('Failed to collect traces:', getErrorMessage(error))
+    }
+
+    // Wait 5 minutes before next collection
+    await new Promise((resolve) => setTimeout(resolve, COLLECTION_INTERVAL_MS))
+  }
+
+  d.info('Trace collection loop completed')
 }
 
 export const module = {
