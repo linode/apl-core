@@ -397,7 +397,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
   return true
 }
 
-export const addGitOpsArgocdApps = async (
+export const addGitOpsApps = async (
   appNames: Set<string>,
   namespaceDirs: string[],
   deps = { getArgocdGitopsManifest, applyArgocdApp },
@@ -428,7 +428,7 @@ export const addGitOpsArgocdApps = async (
   )
 }
 
-export const removeGitOpsArgocdApps = async (appNames: Set<string>) => {
+export const removeGitOpsApps = async (appNames: Set<string>) => {
   d.info(`Removing GitOps apps: ${Array.from(appNames).join(', ')}`)
   await Promise.allSettled(
     appNames.values().map(async (appName) => {
@@ -445,10 +445,9 @@ export const removeGitOpsArgocdApps = async (appNames: Set<string>) => {
   )
 }
 
-export const applyGitOpsApps = async (
-  deps = { getApplications, addGitOpsArgocdApps, removeGitOpsArgocdApps },
-): Promise<void> => {
-  d.info('Applying GitOps apps')
+export const calculateGitOpsAppsDiff = async (
+  deps = { getApplications },
+): Promise<{ toAdd: Set<string>; toRemove: Set<string>; namespaceDirs: string[] }> => {
   const envDir = env.ENV_DIR
   const namespaceListing = await glob(`${envDir}/${GITOPS_MANIFESTS_NS_PATH}/*`, { withFileTypes: true })
   const namespaceDirs = namespaceListing.filter((path) => path.isDirectory()).map((path) => path.name)
@@ -460,23 +459,34 @@ export const applyGitOpsApps = async (
   if (globalPath && globalPath.isDirectory()) {
     requiredGitOpsApps.add(ARGOCD_APP_GITOPS_GLOBAL_NAME)
   }
-  const addGitOpsApps = requiredGitOpsApps.difference(existingGitOpsApps)
-  const removeGitOpsApps = existingGitOpsApps.difference(requiredGitOpsApps)
+  const toAdd = requiredGitOpsApps.difference(existingGitOpsApps)
+  const toRemove = existingGitOpsApps.difference(requiredGitOpsApps)
   // Always create global resources app, but never remove it
-  const globalAppExists = removeGitOpsApps.delete(ARGOCD_APP_GITOPS_GLOBAL_NAME)
+  const globalAppExists = toRemove.delete(ARGOCD_APP_GITOPS_GLOBAL_NAME)
   if (globalAppExists) {
     d.warn(
       `ArgoCD application "${ARGOCD_APP_GITOPS_GLOBAL_NAME}" exists, but points to a nonexistent directory. ` +
         'Please consider removing it manually if not needed.',
     )
   }
-
-  if (addGitOpsApps.size > 0) {
-    // namespaceDirs includes all existing directory names, function checks addGitOpsApps set if they must be created
-    await deps.addGitOpsArgocdApps(addGitOpsApps, namespaceDirs)
+  return {
+    toAdd,
+    toRemove,
+    namespaceDirs,
   }
-  if (removeGitOpsApps.size > 0) {
-    await deps.removeGitOpsArgocdApps(removeGitOpsApps)
+}
+
+export const applyGitOpsApps = async (
+  deps = { calculateGitOpsAppsDiff, addGitOpsApps, removeGitOpsApps },
+): Promise<void> => {
+  d.info('Applying GitOps apps')
+  const { toAdd, toRemove, namespaceDirs } = await deps.calculateGitOpsAppsDiff()
+  if (toAdd.size > 0) {
+    // namespaceDirs includes all existing directory names, function checks addGitOpsApps set if they must be created
+    await deps.addGitOpsApps(toAdd, namespaceDirs)
+  }
+  if (toRemove.size > 0) {
+    await deps.removeGitOpsApps(toRemove)
   }
 }
 
