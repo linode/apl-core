@@ -421,3 +421,8 @@ changes:
     deletions:
       - 'apps.tempo'
       - 'obj.provider.linode.buckets.tempo'
+  - version: 50
+    mutations:
+      - databases.keycloak.backupSidecarResources.limits.memory: 256Mi
+      - databases.gitea.backupSidecarResources.limits.memory: 256Mi
+      - databases.harbor.backupSidecarResources.limits.memory: 256Mi

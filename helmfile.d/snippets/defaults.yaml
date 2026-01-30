@@ -1093,7 +1093,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1122,7 +1122,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1150,7 +1150,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1210,4 +1210,4 @@ environments:
         users: []
         # TODO: update this when schema version changes
         versions:
-          specVersion: 49
+          specVersion: 50
