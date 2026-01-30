@@ -176,7 +176,9 @@ async function checkDependencyUpdates(dependency, allowedUpgradeType) {
     // Get all available versions for the dependency
     allVersions = await $`helm search repo ${dependency.name}/${dependency.name} -l -o json`
       .then((output) => JSON.parse(output.stdout))
-      .then((results) => results.map((entry) => entry.version).filter((version) => semver.valid(version)))
+      .then((results) => results
+        .filter((entry) => semver.valid(entry.version) && entry.name === `${dependency.name}/${dependency.name}`)
+        .map((entry) => entry.version))
   }
 
   if (!allVersions.length) {
