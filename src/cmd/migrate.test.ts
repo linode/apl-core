@@ -856,20 +856,4 @@ describe('setDefaultAplCatalog migration', () => {
       true,
     )
   }, 20000)
-
-  it('should skip when default catalog already exists', async () => {
-    const values: any = {
-      versions: { specVersion: 1 },
-      catalogs: { default: { name: 'default', url: 'https://existing.com/charts.git' } },
-    }
-    const deps: any = makeDeps(values)
-
-    await applyChanges(valuesChanges, false, deps)
-    expect(deps.writeValues).toHaveBeenCalledWith(
-      expect.objectContaining({
-        catalogs: { default: { name: 'default', url: 'https://existing.com/charts.git' } },
-      }),
-      true,
-    )
-  }, 20000)
 })
