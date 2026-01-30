@@ -35,7 +35,7 @@ dependencies:
     version: 12.5.0
     repository: https://dl.gitea.io/charts
   - name: harbor
-    version: 1.18.1
+    version: 1.18.2
     repository: https://helm.goharbor.io
   - name: ingress-nginx
     version: 4.14.2
