@@ -32,24 +32,24 @@ dependencies:
     version: 1.20.0
     repository: https://kubernetes-sigs.github.io/external-dns
   - name: gitea
-    version: 12.4.0
+    version: 12.5.0
     repository: https://dl.gitea.io/charts
   - name: harbor
     version: 1.18.1
     repository: https://helm.goharbor.io
   - name: ingress-nginx
-    version: 4.14.1
+    version: 4.14.2
     repository: https://kubernetes.github.io/ingress-nginx
   - name: base
     alias: istio-base
-    version: 1.28.2
+    version: 1.28.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
-    version: 1.28.2
+    version: 1.28.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
-    version: 1.28.2
+    version: 1.28.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
@@ -71,7 +71,7 @@ dependencies:
     version: 3.5.2
     repository: https://kyverno.github.io/kyverno/
   - name: loki
-    version: 6.49.0
+    version: 6.51.0
     repository: https://grafana.github.io/helm-charts
   - name: metrics-server
     version: 3.13.0
@@ -87,7 +87,7 @@ dependencies:
     version: 0.99.1
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   - name: policy-reporter
-    version: 3.7.0
+    version: 3.7.1
     repository: https://kyverno.github.io/policy-reporter
   - name: prometheus-blackbox-exporter
     version: 11.7.1

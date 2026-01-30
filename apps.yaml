@@ -55,7 +55,7 @@ appsInfo:
     integration: ExternalDNS is used by App Platform to make public service domains accessible by registering them with App Platform's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then App Platform will rely on nip.io to create host names for all services.
   gitea:
     title: Gitea Self-hosted GIT
-    appVersion: 1.24.7
+    appVersion: 1.25.4
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
@@ -87,7 +87,7 @@ appsInfo:
     integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. App Platform runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
   ingress-nginx:
     title: Ingress-NGINX
-    appVersion: 1.14.1
+    appVersion: 1.14.2
     repo: https://github.com/kubernetes/ingress-nginx
     maintainers: NGINX
     relatedLinks:
@@ -97,7 +97,7 @@ appsInfo:
     integration: App Platform integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
-    appVersion: 1.28.2
+    appVersion: 1.28.3
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -174,7 +174,7 @@ appsInfo:
     chartName: tekton-pipelines
   loki:
     title: Loki
-    appVersion: 3.6.3
+    appVersion: 3.6.4
     repo: https://github.com/grafana/loki
     maintainers: Grafana Labs
     relatedLinks:

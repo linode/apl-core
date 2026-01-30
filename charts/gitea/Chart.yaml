@@ -1,17 +1,82 @@
 annotations:
   artifacthub.io/changes: |
+    - kind: changed
+      description: update dependency go-gitea/gitea to v1.25.4 (#1012)
     - kind: fixed
-      description: use bitnamilegacy images (#962)
+      description: remove deployment.labels from selector.matchLabels (#1011)
     - kind: changed
-      description: update dependency helm-unittest/helm-unittest to v1.0.2 (#960)
+      description: update lockfiles (#1009)
     - kind: changed
-      description: update commitlint/commitlint docker tag to v20 (#957)
+      description: update lockfiles (#1008)
     - kind: changed
-      description: update lockfiles (#956)
+      description: update lockfiles (#1006)
     - kind: changed
-      description: update alpine/helm docker tag to v3.19.0 (#954)
+      description: update unittests/bash/test_helper/bats-mock digest to db2acdc (#1002)
+    - kind: changed
+      description: update unittests/bash/test_helper/bats-mock digest to c5674ff (#1000)
+    - kind: changed
+      description: update dependency go-gitea/gitea to v1.25.3 (#999)
+    - kind: changed
+      description: update dependency markdownlint-cli to ^0.47.0 (#998)
+    - kind: changed
+      description: update unittests/bash/test_helper/bats-mock digest to 1ce6b03 (#997)
+    - kind: changed
+      description: update lockfiles (#996)
+    - kind: changed
+      description: update workflow dependencies (minor & patch) (#995)
+    - kind: changed
+      description: update actions/checkout action to v6 (#989)
+    - kind: changed
+      description: update lockfiles (#994)
+    - kind: changed
+      description: update bats testing framework (#992)
+    - kind: changed
+      description: update dependency go-gitea/gitea to v1.25.2 (#990)
+    - kind: changed
+      description: update dependency markdownlint-cli to ^0.46.0 (#988)
+    - kind: changed
+      description: update unittests/bash/test_helper/bats-mock digest to 7839917 (#987)
+    - kind: changed
+      description: update lockfiles (#986)
+    - kind: changed
+      description: update lockfiles (#985)
+    - kind: changed
+      description: update docker.io/thegeeklab/git-sv docker tag to v2.0.7 (#984)
+    - kind: changed
+      description: update bats testing framework (#983)
+    - kind: changed
+      description: update dependency go-gitea/gitea to v1.25.1 (#981)
+    - kind: fixed
+      description: add yamllint as dedicated target
+    - kind: changed
+      description: add missing new line
+    - kind: fixed
+      description: 'avoid duplicated nodeSelector #980'
+    - kind: changed
+      description: update unittests/bash/bats digest to f423e84 (#978)
+    - kind: changed
+      description: update dependency go-gitea/gitea to v1.25.0 (#976)
+    - kind: changed
+      description: update dependency go-gitea/gitea to v1.24.7 (#975)
+    - kind: changed
+      description: update docker.io/thegeeklab/git-sv docker tag to v2.0.6 (#974)
+    - kind: changed
+      description: update bats testing framework (#967)
+    - kind: changed
+      description: update lockfiles (#970)
+    - kind: changed
+      description: update lockfiles (#969)
+    - kind: fixed
+      description: add annotation 'artifacthub.io/links'
+    - kind: changed
+      description: update dependency helm-unittest/helm-unittest to v1.0.3 (#964)
+    - kind: changed
+      description: update lockfiles (#961)
+  artifacthub.io/links: |
+    - name: support
+      url: https://gitea.com/gitea/helm-gitea/issues
 apiVersion: v2
-appVersion: 1.25.2
+appVersion: 1.25.4
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
@@ -53,4 +118,4 @@ sources:
 - https://github.com/go-gitea/gitea
 - https://docker.gitea.com/gitea
 type: application
-version: 12.4.0
+version: 12.5.0
