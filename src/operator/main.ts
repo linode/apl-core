@@ -10,6 +10,7 @@ import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 import { GitRepository } from './git-repository'
 import process from 'node:process'
+import { runTraceCollectionLoop } from '../cmd/traces'
 
 dotenv.config()
 
@@ -86,6 +87,11 @@ async function main(): Promise<void> {
       await installer.reconcileInstall()
     }
     const gitCredentials = await installer.setEnvAndCreateSecrets()
+
+    // Start trace collection in background (runs for 30 minutes from ConfigMap creation)
+    runTraceCollectionLoop().catch((error) => {
+      d.warn('Trace collection loop failed:', getErrorMessage(error))
+    })
 
     // Phase 2: Start operator for GitOps operations
     const config = loadConfig(aplOps, gitCredentials)
