@@ -9,7 +9,7 @@ import { getErrorMessage } from 'src/operator/utils'
 import { env } from 'src/common/envalid'
 
 const cmdName = getFilename(__filename)
-const { COLLECTION_INTERVAL_SECONDS, COLLECTION_DURATION_SECONDS } = env
+const { COLLECTION_INTERVAL_SECONDS, COLLECTION_DURATION_SECONDS, APL_OPERATOR_NAMESPACE, TRACES_REPORT_NAME } = env
 const COLLECTION_INTERVAL_MS = COLLECTION_INTERVAL_SECONDS * 1000
 const COLLECTION_DURATION_MS = COLLECTION_DURATION_SECONDS * 1000
 interface ResourceReport {
@@ -414,17 +414,15 @@ export async function collectTraces(): Promise<void> {
       ...(collectionErrors.length > 0 && { errors: collectionErrors }),
     }
 
-    // Store in ConfigMap
-    const configMapName = 'apl-traces-report'
-    const targetNamespace = 'apl-operator'
-
     if (failedResources.length === 0) {
       d.info('No failing resources found. Your APL instance seems to be healthy.')
     }
 
     // Always write the report to ConfigMap (even when healthy, for timestamp visibility)
-    await writeReportToConfigMap(configMapName, targetNamespace, report)
-    d.info(`Trace report stored in ConfigMap ${targetNamespace}/${configMapName} (${failedResources.length} issues)`)
+    await writeReportToConfigMap(TRACES_REPORT_NAME, APL_OPERATOR_NAMESPACE, report)
+    d.info(
+      `Trace report stored in ConfigMap ${APL_OPERATOR_NAMESPACE}/${TRACES_REPORT_NAME} (${failedResources.length} issues)`,
+    )
   } catch (error) {
     d.error('Failed to collect traces:', error)
     throw error
@@ -450,11 +448,8 @@ async function getCollectionStartTime(name: string, namespace: string): Promise<
 
 export async function runTraceCollectionLoop(): Promise<void> {
   const d = terminal('cmd:traces:runTraceCollectionLoop')
-  const configMapName = 'apl-traces-report'
-  const namespace = 'apl-operator'
-
   // Get collection start time from ConfigMap creation timestamp
-  const startTime = await getCollectionStartTime(configMapName, namespace)
+  const startTime = await getCollectionStartTime(TRACES_REPORT_NAME, APL_OPERATOR_NAMESPACE)
   const endTime = startTime + COLLECTION_DURATION_MS
   const now = Date.now()
 
@@ -474,11 +469,8 @@ export async function runTraceCollectionLoop(): Promise<void> {
       d.warn('Failed to collect traces:', getErrorMessage(error))
     }
 
-    const remainingTime = endTime - Date.now()
-    if (remainingTime > 0) {
-      const waitTime = Math.min(COLLECTION_INTERVAL_MS, remainingTime)
-      await new Promise((resolve) => setTimeout(resolve, waitTime))
-    }
+    // Wait 5 minutes before next collection
+    await new Promise((resolve) => setTimeout(resolve, COLLECTION_INTERVAL_MS))
   }
 
   d.info('Trace collection loop completed')

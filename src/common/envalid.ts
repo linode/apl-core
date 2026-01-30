@@ -57,6 +57,14 @@ export const cliEnvSpec = {
   }),
   COLLECTION_DURATION_SECONDS: num({ desc: 'Traces collection duration (default 30 min)', default: 1800 }),
   COLLECTION_INTERVAL_SECONDS: num({ desc: 'Traces collection interval (default 5 min)', default: 300 }),
+  APL_OPERATOR_NAMESPACE: str({
+    desc: 'Kubernetes namespace where the APL Operator is installed',
+    default: 'apl-operator',
+  }),
+  TRACES_REPORT_NAME: str({
+    desc: 'Kubernetes config map name for reporting traces',
+    default: 'apl-traces-report',
+  }),
 }
 
 export function cleanEnv<T>(spec: { [K in keyof T]: ValidatorSpec<T[K]> }, options?: CleanOptions<T>) {
