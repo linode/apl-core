@@ -898,3 +898,123 @@ describe('AplCatalog', () => {
     })
   })
 })
+
+describe('SealedSecret', () => {
+  const envDir = '/tmp/values'
+
+  const sealedSecretFileMap: FileMap = {
+    kind: 'AplTeamSecret',
+    envDir,
+    jsonPathExpression: '$.teamConfig.*.sealedsecrets[*]',
+    pathGlob: `${envDir}/env/teams/*/sealedsecrets/*.yaml`,
+    processAs: 'arrayItem',
+    resourceGroup: 'team',
+    resourceDir: 'sealedsecrets',
+    loadToSpec: true,
+  }
+
+  describe('renderManifest', () => {
+    it('should render sealed secret with apiVersion, annotations, and namespace under metadata', () => {
+      const data = {
+        name: 'my-secret',
+        apiVersion: 'bitnami.com/v1alpha1',
+        annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+        namespace: 'argocd',
+        encryptedData: { password: 'enc-pass', username: 'enc-user' },
+        template: {
+          immutable: false,
+          metadata: { name: 'my-secret', namespace: 'argocd' },
+          type: 'kubernetes.io/basic-auth',
+        },
+      }
+      const jsonPath = ['$', 'teamConfig', 'admin', 'sealedsecrets', 0]
+      const manifest = renderManifest(sealedSecretFileMap, jsonPath, data)
+
+      expect(manifest).toEqual({
+        apiVersion: 'bitnami.com/v1alpha1',
+        kind: 'SealedSecret',
+        metadata: {
+          annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+          labels: { 'apl.io/teamId': 'admin' },
+          name: 'my-secret',
+          namespace: 'argocd',
+        },
+        spec: {
+          encryptedData: { password: 'enc-pass', username: 'enc-user' },
+          template: {
+            immutable: false,
+            metadata: { name: 'my-secret', namespace: 'argocd' },
+            type: 'kubernetes.io/basic-auth',
+          },
+        },
+      })
+    })
+
+    it('should omit name, apiVersion, annotations, and namespace from spec', () => {
+      const data = {
+        name: 'my-secret',
+        apiVersion: 'bitnami.com/v1alpha1',
+        annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+        namespace: 'argocd',
+        encryptedData: { password: 'enc-pass' },
+      }
+      const jsonPath = ['$', 'teamConfig', 'admin', 'sealedsecrets', 0]
+      const manifest = renderManifest(sealedSecretFileMap, jsonPath, data)
+
+      expect(manifest.spec.name).toBeUndefined()
+      expect(manifest.spec.apiVersion).toBeUndefined()
+      expect(manifest.spec.annotations).toBeUndefined()
+      expect(manifest.spec.namespace).toBeUndefined()
+    })
+  })
+
+  describe('saveResourceGroupToFiles', () => {
+    it('should save sealed secret with correct file path and manifest structure', async () => {
+      const writeValuesToFile = jest.fn()
+      const valuesPublic = {
+        teamConfig: {
+          admin: {
+            sealedsecrets: [
+              {
+                name: 'default-catalog-credentials',
+                apiVersion: 'bitnami.com/v1alpha1',
+                annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+                namespace: 'argocd',
+                encryptedData: { password: 'enc-pass', username: 'enc-user' },
+                template: {
+                  immutable: false,
+                  metadata: { name: 'default-catalog-credentials', namespace: 'argocd' },
+                  type: 'kubernetes.io/basic-auth',
+                },
+              },
+            ],
+          },
+        },
+      }
+
+      await saveResourceGroupToFiles(sealedSecretFileMap, valuesPublic, {}, { writeValuesToFile })
+
+      expect(writeValuesToFile).toHaveBeenCalledTimes(1)
+      expect(writeValuesToFile).toHaveBeenCalledWith(
+        '/tmp/values/env/teams/admin/sealedsecrets/default-catalog-credentials.yaml',
+        expect.objectContaining({
+          apiVersion: 'bitnami.com/v1alpha1',
+          kind: 'SealedSecret',
+          metadata: expect.objectContaining({
+            name: 'default-catalog-credentials',
+            namespace: 'argocd',
+            annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+          }),
+          spec: {
+            encryptedData: { password: 'enc-pass', username: 'enc-user' },
+            template: {
+              immutable: false,
+              metadata: { name: 'default-catalog-credentials', namespace: 'argocd' },
+              type: 'kubernetes.io/basic-auth',
+            },
+          },
+        }),
+      )
+    })
+  })
+})

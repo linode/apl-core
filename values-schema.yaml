@@ -1200,6 +1200,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/codeRepo'
+      sealedsecrets:
+        type: array
+        items:
+          type: object
   teamSelfService:
     title: Team Permissions
     description: Grant team permissions to modify certain configuration parameters.

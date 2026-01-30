@@ -342,7 +342,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       processAs: 'arrayItem',
       resourceGroup: 'team',
       resourceDir: 'sealedsecrets',
-      loadToSpec: false,
+      loadToSpec: true,
     },
     {
       kind: 'AkamaiKnowledgeBase',
@@ -436,11 +436,32 @@ export async function saveValues(
   )
 }
 
+function renderSealedSecretManifest(
+  jsonPath: jsonpath.PathComponent[],
+  data: Record<string, any>,
+): Record<string, any> {
+  const spec = omit(data, ['id', 'name', 'teamId', 'apiVersion', 'annotations', 'namespace'])
+  return {
+    apiVersion: data.apiVersion,
+    kind: 'SealedSecret',
+    metadata: {
+      annotations: data.annotations,
+      labels: { 'apl.io/teamId': getTeamNameFromJsonPath(jsonPath) },
+      name: data.name,
+      namespace: data.namespace,
+    },
+    spec,
+  }
+}
+
 export function renderManifest(
   fileMap: FileMap,
   jsonPath: jsonpath.PathComponent[],
   data: Record<string, any>,
 ): AplManifest {
+  if (fileMap.resourceDir === 'sealedsecrets') {
+    return renderSealedSecretManifest(jsonPath, data) as AplManifest
+  }
   //TODO remove this custom workaround for workloadValues
   let spec = data
   if (fileMap.resourceGroup === 'team') {
@@ -669,6 +690,11 @@ export async function loadFileToSpec(
     if (!filePath.includes('secrets.')) {
       if (fileMap.resourceGroup === 'team' && fileMap.processAs === 'arrayItem') {
         data.spec.name = data.metadata.name
+        if (fileMap.resourceDir === 'sealedsecrets') {
+          if (data.apiVersion) data.spec.apiVersion = data.apiVersion
+          if (data.metadata?.annotations) data.spec.annotations = data.metadata.annotations
+          if (data.metadata?.namespace) data.spec.namespace = data.metadata.namespace
+        }
       }
     }
     if (fileMap.resourceGroup === 'users') {

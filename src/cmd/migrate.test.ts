@@ -792,6 +792,19 @@ describe('setDefaultAplCatalog migration', () => {
             secretName: 'default-catalog-credentials',
           },
         },
+        teamConfig: {
+          admin: {
+            sealedsecrets: [
+              expect.objectContaining({
+                name: 'default-catalog-credentials',
+                apiVersion: 'bitnami.com/v1alpha1',
+                annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+                namespace: 'argocd',
+                encryptedData: { password: 'encrypted-value', username: 'encrypted-value' },
+              }),
+            ],
+          },
+        },
       }),
       true,
     )
