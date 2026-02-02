@@ -683,7 +683,6 @@ const createCatalogSealedSecret = async (
     kind: 'SealedSecret',
     metadata: {
       annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
-      labels: { 'apl.io/teamId': 'admin' },
       name: SEALED_SECRET_NAME,
       namespace: 'argocd',
     },
