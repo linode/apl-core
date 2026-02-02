@@ -735,21 +735,6 @@ environments:
             apiServer:
               create: true
             _rawValues: {}
-          minio:
-            enabled: false
-            provisioning:
-              enabled: true
-            persistence:
-              enabled: true
-              size: 50Gi
-            resources:
-              requests:
-                cpu: 500m
-                memory: 128Mi
-              limits:
-                cpu: "1"
-                memory: 1Gi
-            _rawValues: {}
           oauth2-proxy:
             resources:
               limits:

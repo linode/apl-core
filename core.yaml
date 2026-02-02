@@ -73,10 +73,6 @@ k8s:
       disableIstioInjection: true
     - name: maintenance
       disableIstioInjection: true
-    - name: minio
-      app: minio
-      disableIstioInjection: true
-      disablePolicyChecks: true
     - name: monitoring
       disableIstioInjection: true
     - name: otomi
@@ -239,17 +235,6 @@ adminApps:
     deps: [grafana, prometheus, otel]
     useHost: grafana
     path: /explore?orgId=1&left=%7B"datasource":"loki","queries":%5B%7B"refId":"A"%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
-  - name: minio
-    tags: [storage, backup]
-    ownHost: true
-    ingress:
-      - svc: minio-console
-        port: 9001
-        namespace: minio
-        type: public
-        auth: true
-        removeRequestHeaders:
-          - authorization
   - name: console
     hide: true
     isShared: true

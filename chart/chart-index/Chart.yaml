@@ -76,9 +76,6 @@ dependencies:
   - name: metrics-server
     version: 3.13.0
     repository: https://kubernetes-sigs.github.io/metrics-server
-  - name: minio
-    version: 5.4.0
-    repository: https://charts.min.io/
   - name: oauth2-proxy
     version: 10.1.1
     repository: https://oauth2-proxy.github.io/manifests

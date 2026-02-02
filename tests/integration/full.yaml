@@ -60,8 +60,6 @@ apps:
     enabled: true
   loki:
     enabled: true
-  minio:
-    enabled: true
   otel:
     enabled: true
   prometheus:
