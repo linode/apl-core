@@ -708,11 +708,6 @@ const createCatalogSealedSecret = async (
 
 const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('setDefaultAplCatalog')
-  if (values?.catalogs?.default) {
-    d.info('Default catalog already exists, skipping')
-    return
-  }
-
   const gitea = values?.apps?.gitea as { adminUsername?: string; adminPassword?: string } | undefined
   const hasGitea = !!(gitea?.adminUsername && gitea?.adminPassword)
 
