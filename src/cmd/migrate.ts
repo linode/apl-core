@@ -2,7 +2,7 @@ import { ApiException } from '@kubernetes/client-node'
 import { encryptSecretItem } from '@linode/kubeseal-encrypt'
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
-import { existsSync, renameSync, rmSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { cp, rename as fsRename, mkdir, readFile, writeFile } from 'fs/promises'
 import { glob, globSync } from 'glob'
 import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
@@ -14,7 +14,7 @@ import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
 import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
-import { writeValues, writeValuesToFile } from 'src/common/values'
+import { objectToYaml, writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
@@ -673,42 +673,52 @@ const SEALED_SECRET_NAME = 'default-catalog-credentials'
 
 const createCatalogSealedSecret = async (
   d: ReturnType<typeof terminal>,
-  values: Record<string, any>,
+
   gitea: { adminUsername: string; adminPassword: string },
 ): Promise<void> => {
   const sealedSecretsPEM = await getSealedSecretsPEM()
   const encryptedPassword = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea.adminPassword)
   const encryptedUsername = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea.adminUsername)
-  const sealedSecretSpec = {
-    name: SEALED_SECRET_NAME,
+  const sealedSecret = {
     apiVersion: 'bitnami.com/v1alpha1',
-    annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' } as Record<string, string>,
-    namespace: 'argocd',
-    encryptedData: {
-      password: encryptedPassword,
-      username: encryptedUsername,
+    kind: 'SealedSecret',
+    metadata: {
+      annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+      labels: { 'apl.io/teamId': 'admin' },
+      name: SEALED_SECRET_NAME,
+      namespace: 'argocd',
     },
-    template: {
-      immutable: false,
-      metadata: { name: SEALED_SECRET_NAME, namespace: 'argocd' },
-      type: 'kubernetes.io/basic-auth',
+    spec: {
+      encryptedData: {
+        password: encryptedPassword,
+        username: encryptedUsername,
+      },
+      template: {
+        immutable: false,
+        metadata: { name: SEALED_SECRET_NAME, namespace: 'argocd' },
+        type: 'kubernetes.io/basic-auth',
+      },
     },
   }
-  const sealedsecrets: Record<string, any>[] = get(values, 'teamConfig.admin.sealedsecrets', [])
-  sealedsecrets.push(sealedSecretSpec)
-  d.info(`Setting sealed secret ${SEALED_SECRET_NAME} into teamConfig.admin.sealedsecrets`)
-  set(values, 'teamConfig.admin.sealedsecrets', sealedsecrets)
+  const sealedSecretPath = `${env.ENV_DIR}/env/teams/admin/sealedsecrets/${SEALED_SECRET_NAME}.yaml`
+  mkdirSync(dirname(sealedSecretPath), { recursive: true })
+  d.info(`Writing sealed secret to ${sealedSecretPath}`)
+  writeFileSync(sealedSecretPath, objectToYaml(sealedSecret))
 }
 
 const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('setDefaultAplCatalog')
-  d.info('Setting default APL catalog')
+  if (values?.catalogs?.default) {
+    d.info('Default catalog already exists, skipping')
+    return
+  }
+
   const gitea = values?.apps?.gitea as { adminUsername?: string; adminPassword?: string } | undefined
   const hasGitea = !!(gitea?.adminUsername && gitea?.adminPassword)
 
   if (hasGitea) {
     try {
-      await createCatalogSealedSecret(d, values, gitea as { adminUsername: string; adminPassword: string })
+      await createCatalogSealedSecret(d, gitea as { adminUsername: string; adminPassword: string })
     } catch (error) {
       d.error('Failed to create catalog sealed secret, continuing without it:', error)
     }

@@ -23,14 +23,10 @@ spec:
   sourceRepos:
   {{- $urls | toYaml | nindent 4 }}
 
-  # Only permit applications to deploy to the team namespace in the same cluster
+  # Only permit applications to deploy to the guestbook namespace in the same cluster
   destinations:
   - namespace: team-{{ $v.teamId }}
     server: https://kubernetes.default.svc
-  {{- if eq $v.teamId "admin" }}
-  - namespace: argocd
-    server: https://kubernetes.default.svc
-  {{- end }}
   # Deny all cluster-scoped resources from being created
   {{- if eq $v.teamId "admin" }}
   clusterResourceWhitelist:
