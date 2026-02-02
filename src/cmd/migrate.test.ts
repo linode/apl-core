@@ -820,6 +820,67 @@ describe('setDefaultAplCatalog migration', () => {
     )
   }, 20000)
 
+  it('should not include secretName when sealed secret creation fails', async () => {
+    const { getSealedSecretsPEM } = require('../common/k8s')
+    getSealedSecretsPEM.mockRejectedValue(new Error('PEM fetch failed'))
+
+    const values: any = {
+      versions: { specVersion: 1 },
+      cluster: { domainSuffix: 'test.example.com' },
+      apps: { gitea: { adminUsername: 'admin', adminPassword: 'pass' } },
+    }
+    const deps: any = makeDeps(values)
+
+    await applyChanges(valuesChanges, false, deps)
+    expect(deps.writeValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        catalogs: {
+          default: {
+            branch: 'main',
+            enabled: true,
+            name: 'default',
+            url: 'https://github.com/linode/apl-charts.git',
+          },
+        },
+      }),
+      true,
+    )
+  }, 20000)
+
+  it('should overwrite pre-existing catalog with new defaults', async () => {
+    const values: any = {
+      versions: { specVersion: 1 },
+      cluster: { domainSuffix: 'test.example.com' },
+      apps: { gitea: { adminUsername: 'admin', adminPassword: 'pass' } },
+      catalogs: {
+        default: {
+          branch: 'custom-branch',
+          enabled: false,
+          name: 'custom-name',
+          url: 'https://custom.example.com/repo.git',
+          secretName: 'custom-secret',
+        },
+      },
+    }
+    const deps: any = makeDeps(values)
+
+    await applyChanges(valuesChanges, false, deps)
+    expect(deps.writeValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        catalogs: {
+          default: {
+            branch: 'main',
+            enabled: true,
+            name: 'default',
+            url: 'https://gitea.test.example.com/otomi/charts.git',
+            secretName: 'default-catalog-credentials',
+          },
+        },
+      }),
+      true,
+    )
+  }, 20000)
+
   it('should use fallback GitHub URL when domainSuffix is missing even with gitea credentials', async () => {
     const values: any = {
       versions: { specVersion: 1 },
@@ -836,7 +897,6 @@ describe('setDefaultAplCatalog migration', () => {
             enabled: true,
             name: 'default',
             url: 'https://github.com/linode/apl-charts.git',
-            secretName: 'default-catalog-credentials',
           },
         },
       }),

@@ -673,7 +673,6 @@ const SEALED_SECRET_NAME = 'default-catalog-credentials'
 
 const createCatalogSealedSecret = async (
   d: ReturnType<typeof terminal>,
-
   gitea: { adminUsername: string; adminPassword: string },
 ): Promise<void> => {
   const sealedSecretsPEM = await getSealedSecretsPEM()
@@ -710,10 +709,14 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   const d = terminal('setDefaultAplCatalog')
   const gitea = values?.apps?.gitea as { adminUsername?: string; adminPassword?: string } | undefined
   const hasGitea = !!(gitea?.adminUsername && gitea?.adminPassword)
+  const domainSuffix = values?.cluster?.domainSuffix as string | undefined
+  const useGiteaCatalog = hasGitea && !!domainSuffix
 
-  if (hasGitea) {
+  let secretCreated = false
+  if (useGiteaCatalog) {
     try {
       await createCatalogSealedSecret(d, gitea as { adminUsername: string; adminPassword: string })
+      secretCreated = true
     } catch (error) {
       d.error('Failed to create catalog sealed secret, continuing without it:', error)
     }
@@ -721,16 +724,16 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
     d.info('No gitea credentials found, skipping sealed secret creation')
   }
 
-  const domainSuffix = values?.cluster?.domainSuffix as string | undefined
-  const catalogUrl = hasGitea && domainSuffix ? `https://gitea.${domainSuffix}/otomi/charts.git` : GITHUB_CATALOG_URL
-  d.info(`Setting default APL catalog with url ${catalogUrl}`)
+  let catalogUrl = GITHUB_CATALOG_URL
+  if (useGiteaCatalog && secretCreated) catalogUrl = `https://gitea.${domainSuffix}/otomi/charts.git`
 
+  d.info(`Setting default APL catalog with url ${catalogUrl}`)
   const defaultCatalog = {
     branch: 'main',
     enabled: true,
     name: 'default',
     url: catalogUrl,
-    ...(hasGitea && { secretName: SEALED_SECRET_NAME }),
+    ...(secretCreated && { secretName: SEALED_SECRET_NAME }),
   }
   set(values, 'catalogs.default', defaultCatalog)
 }
