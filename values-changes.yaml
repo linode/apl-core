@@ -421,3 +421,8 @@ changes:
     deletions:
       - 'apps.tempo'
       - 'obj.provider.linode.buckets.tempo'
+  - version: 50
+    deletions:
+      - 'apps.thanos'
+      - 'apps.prometheus.resources.thanosSidecar'
+      - 'obj.provider.linode.buckets.thanos'
