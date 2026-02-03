@@ -4,7 +4,6 @@ folders:
   - istio-admin
   - k8s-admin
   - k8s-teams
-  - thanos
   - trivy
   - trivy-teams
 

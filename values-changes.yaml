@@ -423,4 +423,12 @@ changes:
       - 'obj.provider.linode.buckets.tempo'
   - version: 50
     deletions:
+      - apps.loki.persistence
+  - version: 51
+    deletions:
+      - 'apps.thanos'
+      - 'apps.prometheus.resources.thanosSidecar'
+      - 'obj.provider.linode.buckets.thanos'
+  - version: 52
+    deletions:
       - 'apps.minio'
