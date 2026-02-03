@@ -18,12 +18,6 @@ releases:
     labels:
       pkg: prometheus-operator
     <<: *raw
-  - name: thanos-artifacts
-    installed: {{ $a | get "thanos.enabled" }}
-    namespace: thanos
-    labels:
-      pkg: thanos
-    <<: *raw
   - name: prometheus-operator
     installed: true
     namespace: monitoring
@@ -35,10 +29,4 @@ releases:
       - {{- $a | get "prometheus._rawValues" dict | toYaml | nindent 8 }}
       - alertmanager: {{- $a | get "alertmanager._rawValues" dict | toYaml | nindent 10 }}
       - grafana: {{- $a | get "grafana._rawValues" dict | toYaml | nindent 10 }}
-  - name: thanos
-    installed: {{ $a | get "thanos.enabled" }}
-    namespace: thanos
-    labels:
-      pkg: thanos
-    <<: *default
 
