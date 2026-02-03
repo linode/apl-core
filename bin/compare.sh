@@ -2,15 +2,18 @@
 set -ue
 
 # Usage: bin/compare.sh -l name=loki
+# Alternative: bin/compare.sh base-branch-copy feat-branch-copy -l name=loki
 # Optional: --diff-output <filename> writes the final diff to a file and skips common chart version information
 # Deps: dyff, helmfile
 # brew install homeport/tap/dyff
 # brew install helmfile
 
-export ENV_DIR=$PWD/tests/fixtures
-
 diffOutput=
 templateArgs=
+srcDirA=
+srcDirB=
+targetDirA=
+targetDirB=
 # Process arguments
 while [ $# -ne 0 ]; do
   case "$1" in
@@ -18,33 +21,69 @@ while [ $# -ne 0 ]; do
       diffOutput="$2"
       shift
       ;;
-    *)
-      # Forward everything else to the template command
+    -*)
+      # Forward other options to the template command
       templateArgs=("${templateArgs[@]}" "$1")
+      ;;
+    *)
+      # Process first two positional arguments as potential working directories
+      if [ -z "$srcDirA" ]; then
+        srcDirA=$(realpath "$1")
+      elif [ -z "$srcDirB" ]; then
+        srcDirB=$(realpath "$1")
+      else
+        # Forward everything else to the template command
+        templateArgs=("${templateArgs[@]}" "$1")
+      fi
       ;;
   esac
   shift
 done
 
 readonly script_dir=$(dirname "$0")
-readonly branchA='main'
-# branchB current branch
-readonly branchB=$(git rev-parse --abbrev-ref HEAD)
 
-targetDirA="tmp/${branchA}"
-targetDirB="tmp/${branchB}"
+generate_helm_templates() {
+  local target_dir="$1"
+  rm -rf "$target_dir"
+  node --no-warnings --import tsx src/otomi.ts -- values
+  helmfile template "${templateArgs[@]}" --output-dir-template="$target_dir/{{.Release.Namespace}}-{{.Release.Name}}"
+  mv tests/fixtures/values-repo.yaml "$target_dir/values-repo.yaml"
+}
 
 export NODE_ENV=test
-node --no-warnings --import tsx src/otomi.ts -- values
-helmfile template "${templateArgs[@]}" --output-dir-template="$targetDirB/{{.Release.Namespace}}-{{.Release.Name }}"
-mv tests/fixtures/values-repo.yaml "$targetDirB/values-repo.yaml"
-git -c core.hooksPath=/dev/null checkout $branchA
-# we remove previously rendered manifests so they are not mixed up with newly rendered
-rm -rf $targetDirA
-node --no-warnings --import tsx src/otomi.ts -- values
-helmfile template "${templateArgs[@]}" --output-dir-template="$targetDirA/{{.Release.Namespace}}-{{.Release.Name}}"
-mv tests/fixtures/values-repo.yaml "$targetDirA/values-repo.yaml"
-git -c core.hooksPath=/dev/null checkout $branchB
+if [ -z "$srcDirA" ]; then
+  branchA='main'
+  # branchB current branch
+  branchB=$(git rev-parse --abbrev-ref HEAD)
+
+  targetDirA="$PWD/tmp/${branchA}"
+  targetDirB="$PWD/tmp/${branchB}"
+  export ENV_DIR="$PWD/tests/fixtures"
+  generate_helm_templates "$targetDirB"
+  git -c core.hooksPath=/dev/null checkout $branchA
+  # we remove previously rendered manifests so they are not mixed up with newly rendered
+  rm -rf "$targetDirA"
+  generate_helm_templates "$targetDirA"
+  git -c core.hooksPath=/dev/null checkout $branchB
+else
+  if [ -z "$srcDirB" ]; then
+    echo "Only one directory passed for comparison"
+    exit 1
+  fi
+  startDir=$PWD
+  pushd "$srcDirB"
+  export ENV_DIR="$srcDirB/tests/fixtures"
+  branchB=$(git rev-parse --abbrev-ref HEAD)
+  targetDirB="$startDir/tmp/${branchB}"
+  generate_helm_templates "$targetDirB"
+  popd
+  pushd "$srcDirA"
+  export ENV_DIR="$srcDirA/tests/fixtures"
+  branchA=$(git rev-parse --abbrev-ref HEAD)
+  targetDirA="$startDir/tmp/${branchA}"
+  generate_helm_templates "$targetDirA"
+  popd
+fi
 
 # order of arguments matters so new changes are green color
 echo "Comparing $targetDirB with $targetDirA"
