@@ -71,13 +71,6 @@ spec:
             requests:
                 cpu: 50m
                 memory: 128Mi
-        thanosSidecar:
-            limits:
-                cpu: '1'
-                memory: 512Mi
-            requests:
-                cpu: 10m
-                memory: 64Mi
     retention: 15d
     retentionSize: 4GB
     scrapeInterval: 60s
