@@ -109,9 +109,6 @@ dependencies:
     alias: tekton-pipelines
     version: 1.6.1
     repository: https://cdfoundation.github.io/tekton-helm-chart/
-  - name: thanos
-    version: 15.7.25
-    repository: https://charts.bitnami.com/bitnami
   - name: trivy-operator
     version: 0.31.0
     repository: https://aquasecurity.github.io/helm-charts/
