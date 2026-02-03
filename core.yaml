@@ -58,10 +58,6 @@ k8s:
     - name: kyverno
       app: kyverno
       disableIstioInjection: true
-    - name: thanos
-      app: thanos
-      disableIstioInjection: true
-      disablePolicyChecks: true
     - name: tekton-pipelines
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -225,15 +221,6 @@ adminApps:
         auth: true
         removeRequestHeaders:
           - authorization
-  - name: thanos
-    tags: [metrics, observability]
-    ownHost: true
-    ingress:
-      - svc: thanos-query
-        port: 9090
-        namespace: thanos
-        type: public
-        auth: true
   - name: loki
     tags: [logging, telemetry, observability]
     deps: [grafana, prometheus, otel]
