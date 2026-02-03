@@ -1167,4 +1167,4 @@ environments:
         users: []
         # TODO: update this when schema version changes
         versions:
-          specVersion: 49
+          specVersion: 51
