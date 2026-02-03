@@ -2146,6 +2146,8 @@ properties:
                 $ref: '#/definitions/resources'
               indexGateway:
                 $ref: '#/definitions/resources'
+              singleBinary:
+                $ref: '#/definitions/resources'
           autoscaling:
             properties:
               ingester:
@@ -2163,23 +2165,8 @@ properties:
           adminPassword:
             type: string
             x-secret: '{{ randAlphaNum 20 }}'
-          persistence:
-            properties:
-              ingester:
-                properties:
-                  size:
-                    default: 20Gi
-                    $ref: '#/definitions/size'
-              querier:
-                properties:
-                  size:
-                    default: 10Gi
-                    $ref: '#/definitions/size'
-              compactor:
-                properties:
-                  size:
-                    default: 10Gi
-                    $ref: '#/definitions/size'
+          persistentVolumeSize:
+            $ref: '#/definitions/size'
           v13SchemaStartDate:
             description: Automatically set to a date in the future in case of an upgrade
             title: Schema v13 start date
