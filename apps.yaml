@@ -227,24 +227,6 @@ appsInfo:
     license: Apache 2.0
     about: Sealed Secrets is a Kubernetes Custom Resource Definition Controller which allows you to store even sensitive information in Git repositories.
     integration: App Platform uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
-  thanos:
-    title: Thanos
-    appVersion: 0.36.1
-    repo: https://github.com/thanos-io/thanos
-    maintainers: Thanos
-    relatedLinks:
-      - https://thanos.io
-    license: Apache 2.0
-    dependencies: Prometheus, Grafana
-    about: Thanos is a tool to set up a Highly Available Prometheus with long-term storage capabilities.
-    integration: App Platform installs and configures Thanos using sidecars ans leverages the central object storage configuration.
-    isDeprecated: true
-    deprecationInfo:
-      message: Thanos is being deprecated.
-      reasons:
-        - Since most users opt to store metrics externally, thanos saw limited adoption.
-      options:
-        - Click 'I understand' to continue using Thanos
   trivy:
     title: Trivy Operator
     appVersion: 0.29.0
