@@ -684,13 +684,14 @@ environments:
                 limits:
                   cpu: 200m
                   memory: 256Mi
-            persistence:
-              ingester:
-                size: 20Gi
-              querier:
-                size: 10Gi
-              compactor:
-                size: 10Gi
+              singleBinary:
+                requests:
+                  cpu: 100m
+                  memory: 512Mi
+                limits:
+                  cpu: 500m
+                  memory: 2Gi
+            persistentVolumeSize: 10G
             autoscaling:
               ingester:
                 enabled: false
