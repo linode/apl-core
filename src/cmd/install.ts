@@ -10,13 +10,7 @@ import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
-import {
-  cloneOtomiChartsInGitea,
-  commit,
-  createCredentialsSecret,
-  createWelcomeConfigMap,
-  initialSetupData,
-} from './commit'
+import { commit, createCredentialsSecret, createWelcomeConfigMap, initialSetupData } from './commit'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -103,7 +97,6 @@ export const installAll = async () => {
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(true)
-    await cloneOtomiChartsInGitea()
     const initialData = await initialSetupData()
     await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)
     await retryInstallStep(createWelcomeConfigMap, initialData.secretName, initialData.domainSuffix)
