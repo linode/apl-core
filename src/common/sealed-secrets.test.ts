@@ -154,11 +154,7 @@ describe('sealed-secrets', () => {
       const deps = {
         getSchemaSecretsPaths: jest
           .fn()
-          .mockResolvedValue([
-            'apps.harbor.adminPassword',
-            'apps.harbor.secretKey',
-            'apps.gitea.adminPassword',
-          ]),
+          .mockResolvedValue(['apps.harbor.adminPassword', 'apps.harbor.secretKey', 'apps.gitea.adminPassword']),
       }
 
       const result = await buildSecretToNamespaceMap(secrets, [], deps)
