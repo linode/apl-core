@@ -85,9 +85,9 @@ jobs:
         run: |
           mkdir -p tmp
           "$GITHUB_WORKSPACE/pr/bin/compare.sh" "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/pr" --diff-output tmp/diff-output.txt
-          comment_file=tmp/pr-comment.txt
-          echo "Comparison of Helm chart templating output:" > $comment_file
-          echo '```diff' >> $comment_file
-          cat tmp/diff-output.txt >> $comment_file
-          echo '```' >> $comment_file
+          comment_file="$PWD/tmp/pr-comment.txt"
+          echo "Comparison of Helm chart templating output:" > "$comment_file"
+          echo '```diff' >> "$comment_file"
+          cat tmp/diff-output.txt >> "$comment_file"
+          echo '```' >> "$comment_file"
           cd "$GITHUB_WORKSPACE/pr" && gh pr comment ${{ github.event.pull_request.number }} --body-file "$comment_file"
