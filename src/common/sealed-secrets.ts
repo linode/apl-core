@@ -307,7 +307,7 @@ export const createSealedSecretManifest = async (
 }
 
 /**
- * Write SealedSecret manifests to the env/sealedsecrets directory.
+ * Write SealedSecret manifests to the env/manifests/ns directory.
  */
 export const writeSealedSecretManifests = async (
   manifests: SealedSecretManifest[],
@@ -317,7 +317,8 @@ export const writeSealedSecretManifests = async (
   const d = deps.terminal(`common:${cmdName}:writeSealedSecretManifests`)
 
   for (const manifest of manifests) {
-    const dir = `${envDir}/env/sealedsecrets/${manifest.metadata.namespace}`
+    // /env/manifests/ns/argocd/
+    const dir = `${envDir}/env/manifests/ns/${manifest.metadata.namespace}`
     await deps.mkdir(dir, { recursive: true })
     const filePath = `${dir}/${manifest.metadata.name}.yaml`
     d.info(`Writing sealed secret to ${filePath}`)
