@@ -35,9 +35,7 @@ backup:
   schedule: "0 0 * * *"
   backupOwnerReference: none
   retentionPolicy: 7d
-  type: minioLocal
-  minioLocal:
-    destinationPath: ""
+  type: linode
   linode:
     destinationPath: ""
   usePlugin: false
