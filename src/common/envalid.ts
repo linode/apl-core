@@ -61,7 +61,7 @@ export const cliEnvSpec = {
     desc: 'Kubernetes config map name for reporting traces',
     default: 'apl-traces-report',
   }),
-  DEFAULT_CATALOG_URL: str({
+  GIT_REPO_CATALOG_URL: str({
     desc: 'The URL for the default APL catalog',
     default: 'https://github.com/linode/apl-charts.git',
   }),

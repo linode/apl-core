@@ -721,7 +721,7 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
     d.info('No gitea credentials found, skipping sealed secret creation')
   }
 
-  let catalogUrl = env.DEFAULT_CATALOG_URL
+  let catalogUrl = env.GIT_REPO_CATALOG_URL
   if (useGiteaCatalog && secretCreated) catalogUrl = `https://gitea.${domainSuffix}/otomi/charts.git`
 
   d.info(`Setting default APL catalog with url ${catalogUrl}`)
