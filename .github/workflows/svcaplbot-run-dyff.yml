@@ -16,6 +16,8 @@ permissions:
 jobs:
   check-commit:
     runs-on: ubuntu-latest
+    # Skip this pre-check check when triggered manually
+    if: github.event_name != 'workflow_dispatch'
     outputs:
       skip: ${{ steps.check.outputs.skip }}
     steps:
@@ -40,7 +42,7 @@ jobs:
   run-compare:
     runs-on: ubuntu-latest
     needs: check-commit
-    if: ${{ needs.check-commit.outputs.skip != 'true' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (success() && needs.check-commit.outputs.skip != 'true') }}
     steps:
       - name: Debug
         run: |
@@ -49,17 +51,22 @@ jobs:
         run: |
           sudo apt update
           sudo apt install gh -y
-      - name: Checkout repository
+      - name: Checkout PR branch
         uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
+          path: pr
+      - name: Checkout base branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.base.ref || 'main' }}
+          path: base
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: 'pr/.nvmrc'
       - name: Install npm dependencies
-        run: npm install --no-save
+        run: cd "$GITHUB_WORKSPACE/pr" && npm install --no-save && cd "$GITHUB_WORKSPACE/base" && npm install --no-save
       - name: Install Helm and Helmfile
         uses: helmfile/helmfile-action@v2.1.1
         with:
@@ -79,7 +86,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          bin/compare.sh --diff-output tmp/diff-output.txt
+          mkdir -p tmp
+          "$GITHUB_WORKSPACE/pr/bin/compare.sh" "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/pr" --diff-output tmp/diff-output.txt
           diff_text=$(cat tmp/diff-output.txt)
           format_code_start='```diff'
           format_code_end='```'
@@ -87,4 +95,4 @@ jobs:
           $format_code_start
           $diff_text
           $format_code_end"
-          gh pr comment ${{ github.event.pull_request.number }} --body "$comment_text"
+          cd "$GITHUB_WORKSPACE/pr" && gh pr comment ${{ github.event.pull_request.number }} --body "$comment_text"
