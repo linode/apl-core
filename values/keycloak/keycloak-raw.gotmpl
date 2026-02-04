@@ -17,15 +17,6 @@ resources:
   data:
     password: {{ .Values.otomi.adminPassword | b64enc }}
     username: {{ .Values.apps.keycloak.adminUsername | b64enc }}
-{{- if eq $obj.type "minioLocal" }}
-- apiVersion: v1
-  kind: Secret
-  metadata:
-    name: minio-creds
-  data:
-    MINIO_ACCESS_KEY: "{{ $otomiAdmin | b64enc }}"
-    MINIO_SECRET_KEY: "{{ $v.otomi.adminPassword | b64enc }}"
-{{- end }}
 {{- if eq $obj.type "linode" }}
 - apiVersion: v1
   kind: Secret
