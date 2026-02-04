@@ -435,3 +435,8 @@ changes:
   - version: 53
     customFunctions:
       - setDefaultAplCatalog
+  - version: 54
+    mutations:
+      - databases.keycloak.backupSidecarResources.limits.memory: 256Mi
+      - databases.gitea.backupSidecarResources.limits.memory: 256Mi
+      - databases.harbor.backupSidecarResources.limits.memory: 256Mi
