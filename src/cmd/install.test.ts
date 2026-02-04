@@ -36,7 +36,6 @@ jest.mock('src/common/hf', () => ({
 }))
 
 jest.mock('src/common/git-config', () => ({
-  getUseInternalGiteaFromValues: jest.fn().mockReturnValue(true),
   setGitConfig: jest.fn(),
 }))
 

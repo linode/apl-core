@@ -1231,6 +1231,7 @@ environments:
               shared_buffers: 64MB
               work_mem: 2MB
           gitea:
+            enabled: true
             imageName: null
             size: 5Gi
             walStorageSize: 5Gi
@@ -1301,9 +1302,8 @@ environments:
             - none
         otomi:
           git:
-            useInternalGitea: true
             branch: main
-            repoUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values
+            repoUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git
             user: otomi-admin
             email: pipeline@cluster.local
           hasExternalDNS: false

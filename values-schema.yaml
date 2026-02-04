@@ -2924,22 +2924,12 @@ properties:
         title: Git Configuration
         description: |
           Git configuration for APL values repository.
-          When useInternalGitea is true, APL uses the built-in Gitea instance with auto-derived settings.
-          When useInternalGitea is false, provide external Git repository configuration.
         additionalProperties: false
         properties:
-          useInternalGitea:
-            type: boolean
-            description: |
-              Whether to use the built-in Gitea instance for the APL values repository.
-              - true: Use built-in Gitea (default) - repoUrl, user, and email will be auto-derived
-              - false: Use an external Git provider (GitHub, GitLab, Bitbucket, etc.)
-            default: true
           repoUrl:
             type: string
             description: |
               The base URL of the Git repository (without credentials). Auto-derived for internal Gitea.
-              Required when useInternalGitea is false.
             pattern: '^https?://.+'
           user:
             type: string
@@ -2959,7 +2949,12 @@ properties:
           branch:
             type: string
             description: The branch to use in the Git repository
-            default: main
+        required:
+          - repoUrl
+          - user
+          - password
+          - email
+          - branch
       hasExternalDNS:
         description: Set this to true when an external dns zone is available to manage dns records. (Expects required `dns:` fields to be set.)
         default: false
@@ -2982,6 +2977,8 @@ properties:
       useORCS:
         type: boolean
         description: Defines if the OCI Registry Cache Service (ORCS) is used to cache images from the public registry.
+    required:
+      - git
   ingress:
     properties:
       platformClass:

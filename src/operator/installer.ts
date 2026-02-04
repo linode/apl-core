@@ -130,7 +130,6 @@ export class Installer {
 
       // Also store git config in ConfigMap for future use (avoids hfValues() on startup)
       await setGitConfig({
-        useInternalGitea: otomiGit?.useInternalGitea ?? true,
         repoUrl: otomiGit?.repoUrl,
         branch: otomiGit?.branch ?? 'main',
         email: otomiGit?.email ?? 'pipeline@cluster.local',

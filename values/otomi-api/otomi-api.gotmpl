@@ -4,7 +4,6 @@
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $sops := $v | get "kms.sops" dict }}
 {{- $git := $v.otomi.git }}
-{{- $useInternalGitea := $git.useInternalGitea }}
 {{- $giteaValuesPublicUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
 {{- $helmChartCatalog := printf "https://gitea.%s/otomi/charts.git" $v.cluster.domainSuffix }}
 {{- $defaultPlatformAdminEmail := printf "platform-admin@%s" $v.cluster.domainSuffix }}
@@ -45,13 +44,11 @@ secrets:
   {{- $sopsEnv | nindent 2 }}
 
 env:
-  GIT_USE_INTERNAL_GITEA: {{ $useInternalGitea | quote }}
   HELM_CHART_CATALOG: {{ $helmChartCatalog }}
   DEFAULT_PLATFORM_ADMIN_EMAIL: {{ $defaultPlatformAdminEmail }}
   DEBUG: 'otomi:*,-otomi:authz,-otomi:repo'
   VERBOSITY: '1'
   GIT_REPO_URL: {{ $git.repoUrl }}
-  GIT_REPO_PUBLIC_URL: {{ if $useInternalGitea }}{{ $giteaValuesPublicUrl }}{{ else }}{{ $git.repoUrl }}{{ end }}
   GIT_BRANCH: {{ $git.branch }}
   VERSIONS: |
     {{ $v.versions | toJson | nindent 4}}

@@ -225,8 +225,6 @@ environments:
             registry:
               credentials:
                 password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword | quote }}
-          gitea:
-            enabled: {{ $v.otomi.git.useInternalGitea }}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}

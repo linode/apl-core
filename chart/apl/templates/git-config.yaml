@@ -5,13 +5,10 @@ metadata:
   name: apl-git-config
   namespace: apl-operator
 data:
-  useInternalGitea: {{ $git.useInternalGitea | quote }}
   {{- if $git.repoUrl }}
   repoUrl: {{ $git.repoUrl | quote }}
   {{- end }}
-  {{- if $git.branch }}
   branch: {{ $git.branch | quote }}
-  {{- end }}
   {{- if $git.email }}
   email: {{ $git.email | quote }}
   {{- end }}

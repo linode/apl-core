@@ -45,13 +45,11 @@ otomi:
 
   ## Git repository configuration
   ## By default, APL uses the built-in Gitea instance.
-  ## Set useInternalGitea to false to use an external Git provider (GitHub, GitLab, Bitbucket).
   git:
-    useInternalGitea: true
-    # repoUrl: ''      # Required when useInternalGitea is false (e.g., https://github.com/org/repo)
-    # user: ''         # Git username (defaults to 'otomi-admin' for internal Gitea)
+    # repoUrl: ''      # Repository url (e.g., https://github.com/org/repo)
+    # user: ''         # Git username (defaults to 'otomi-admin')
     # password: ''     # Git password or personal access token
-    # email: ''        # Email for git commits (defaults to 'pipeline@cluster.local' for internal Gitea)
+    # email: ''        # Email for git commits (defaults to 'pipeline@cluster.local')
     branch: main
 
 ## Optional configuration

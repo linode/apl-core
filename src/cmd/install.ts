@@ -3,8 +3,8 @@ import { mkdirSync, rmSync } from 'fs'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { getUseInternalGiteaFromValues, setGitConfig } from 'src/common/git-config'
-import { deployEssential, hf, hfValues, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
+import { setGitConfig } from 'src/common/git-config'
+import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import {
   applyServerSide,
   deletePendingHelmReleases,
@@ -18,13 +18,7 @@ import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
-import {
-  cloneOtomiChartsInGitea,
-  commit,
-  createCredentialsSecret,
-  createWelcomeConfigMap,
-  initialSetupData,
-} from './commit'
+import { commit, createCredentialsSecret, createWelcomeConfigMap, initialSetupData } from './commit'
 import { collectTraces } from './traces'
 
 const cmdName = getFilename(__filename)
@@ -113,31 +107,14 @@ export const installAll = async () => {
   if (!(env.isDev && env.DISABLE_SYNC)) {
     // Get the git configuration from values
     const values = (await hfValues()) as Record<string, any>
-    const useInternalGitea = getUseInternalGiteaFromValues(values)
-    d.info(`Using internal Gitea: ${useInternalGitea}`)
-
     // Commit to Git repository
     await commit(true)
 
-    if (!useInternalGitea) {
-      // External Git: skip Gitea-specific operations
-      d.info('External Git mode: Skipping Gitea charts clone')
-      // Create ConfigMap to store Git configuration for operator
-      await setGitConfig({
-        useInternalGitea: false,
-        repoUrl: values?.otomi?.git?.repoUrl,
-        branch: values?.otomi?.git?.branch ?? 'main',
-        email: values?.otomi?.git?.email,
-      })
-    } else {
-      // Gitea mode (default): clone charts to Gitea
-      d.info('Internal Gitea mode: Cloning charts to Gitea')
-      await cloneOtomiChartsInGitea()
-      // Create ConfigMap to store Git configuration for operator
-      await setGitConfig({
-        useInternalGitea: true,
-      })
-    }
+    await setGitConfig({
+      repoUrl: values?.otomi?.git?.repoUrl,
+      branch: values?.otomi?.git?.branch ?? 'main',
+      email: values?.otomi?.git?.email,
+    })
 
     const initialData = await initialSetupData()
     await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)

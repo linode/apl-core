@@ -5,7 +5,6 @@ metadata:
   name: apl-git-config
   namespace: apl-operator
 data:
-  useInternalGitea: {{ $git.useInternalGitea | quote }}
   {{- if $git.repoUrl }}
   repoUrl: {{ $git.repoUrl | quote }}
   {{- end }}

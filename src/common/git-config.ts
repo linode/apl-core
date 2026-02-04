@@ -1,5 +1,4 @@
 import { terminal } from './debug'
-import { env } from './envalid'
 import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
 import type { CoreV1Api } from '@kubernetes/client-node'
 
@@ -25,28 +24,18 @@ export interface GitRepoConfig {
   password: string
 }
 
-/**
- * Git configuration data stored in ConfigMap (non-sensitive data only).
- */
 export interface GitConfigData {
-  useInternalGitea: boolean
   repoUrl?: string
   branch?: string
   email?: string
   lastUpdated?: string
 }
 
-/**
- * Git credentials stored in Secret.
- */
 export interface GitCredentials {
   username: string
   password: string
 }
 
-/**
- * Reads the Git credentials from the Secret
- */
 export async function getGitCredentials(): Promise<GitCredentials | undefined> {
   const secretData = await getK8sSecret(GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE)
 
@@ -60,16 +49,12 @@ export async function getGitCredentials(): Promise<GitCredentials | undefined> {
   }
 }
 
-/**
- * Reads the Git configuration from the ConfigMap
- */
 export async function getGitConfigData(): Promise<GitConfigData | undefined> {
   const configMap = await getK8sConfigMap(GIT_CONFIG_NAMESPACE, GIT_CONFIG_CONFIGMAP_NAME, k8s.core())
   if (!configMap?.data) return undefined
 
-  const data = configMap.data
+  const { data } = configMap
   return {
-    useInternalGitea: data.useInternalGitea === 'true',
     repoUrl: data.repoUrl,
     branch: data.branch,
     email: data.email,
@@ -89,30 +74,20 @@ export async function getStoredGitRepoConfig(): Promise<GitRepoConfig | undefine
   }
 
   const { username, password } = credentials
-  const { useInternalGitea, branch = 'main', email = 'pipeline@cluster.local' } = configData
+  const { branch, email, repoUrl } = configData
 
-  let repoUrl: string
-  let authenticatedUrl: string
-
-  if (useInternalGitea) {
-    // Internal Gitea - construct URLs from environment variables
-    const gitUrl = env.GIT_URL
-    const gitPort = env.GIT_PORT
-    const protocol = env.GIT_PROTOCOL
-    repoUrl = `${protocol}://${gitUrl}:${gitPort}/otomi/values.git`
-    authenticatedUrl = `${protocol}://${username}:${encodeURIComponent(password)}@${gitUrl}:${gitPort}/otomi/values.git`
-  } else {
-    // External Git - use stored repoUrl
-    if (!configData.repoUrl) {
-      d.warn('External Git selected but no repoUrl found in stored config')
-      return undefined
-    }
-    repoUrl = configData.repoUrl
-    const url = new URL(repoUrl)
-    url.username = username
-    url.password = password
-    authenticatedUrl = url.toString()
+  if (!repoUrl) {
+    d.warn('No repoUrl found in stored config')
+    return undefined
   }
+  if (!branch || !email) {
+    d.warn('No branch or email found in stored config')
+    return undefined
+  }
+  const url = new URL(repoUrl)
+  url.username = username
+  url.password = password
+  const authenticatedUrl = url.toString()
 
   return { repoUrl, authenticatedUrl, branch, email, username, password }
 }
@@ -127,59 +102,33 @@ export async function setGitConfig(config: Partial<GitConfigData>, coreV1Api?: C
     lastUpdated: new Date().toISOString(),
   }
 
-  if (config.useInternalGitea !== undefined) data.useInternalGitea = String(config.useInternalGitea)
   if (config.repoUrl !== undefined) data.repoUrl = config.repoUrl
   if (config.branch !== undefined) data.branch = config.branch
   if (config.email !== undefined) data.email = config.email
 
   await createUpdateConfigMap(api, GIT_CONFIG_CONFIGMAP_NAME, GIT_CONFIG_NAMESPACE, data)
-  d.info(`Updated Git config: useInternalGitea=${config.useInternalGitea}`)
-}
-
-/**
- * Gets the useInternalGitea setting from values, with fallback to true
- */
-export function getUseInternalGiteaFromValues(values: Record<string, any>): boolean {
-  return values?.otomi?.git?.useInternalGitea ?? true
 }
 
 /**
  * Gets repository configuration from values, constructing the authenticated URL with embedded credentials.
- * Works for both internal Gitea and external Git providers.
  */
 export const getRepo = (values: Record<string, any>): GitRepoConfig => {
-  const useInternalGitea = values?.otomi?.git?.useInternalGitea ?? true
   const otomiGit = values?.otomi?.git
 
-  if (!useInternalGitea && !otomiGit?.repoUrl) {
-    throw new Error('External Git selected (useInternalGitea=false) but no otomi.git.repoUrl config was given.')
+  if (!otomiGit?.repoUrl) {
+    throw new Error('No otomi.git.repoUrl config was given.')
   }
 
   const username = otomiGit?.user
   const password = otomiGit?.password
   const email = otomiGit?.email
-  const branch = otomiGit?.branch ?? 'main'
+  const branch = otomiGit?.branch
 
-  let repoUrl: string
-  let authenticatedUrl: string
-
-  if (useInternalGitea) {
-    // Internal Gitea - construct URLs from environment variables
-    const gitUrl = env.GIT_URL
-    const gitPort = env.GIT_PORT
-    const gitOrg = 'otomi'
-    const gitRepo = 'values'
-    const protocol = env.GIT_PROTOCOL
-    repoUrl = `${protocol}://${gitUrl}:${gitPort}/${gitOrg}/${gitRepo}.git`
-    authenticatedUrl = `${protocol}://${username}:${encodeURIComponent(password as string)}@${gitUrl}:${gitPort}/${gitOrg}/${gitRepo}.git`
-  } else {
-    // External Git - use provided repoUrl and embed credentials
-    repoUrl = otomiGit?.repoUrl
-    const url = new URL(repoUrl)
-    url.username = username
-    url.password = password
-    authenticatedUrl = url.toString()
-  }
+  const repoUrl = otomiGit?.repoUrl as string
+  const url = new URL(repoUrl)
+  url.username = username
+  url.password = password
+  const authenticatedUrl = url.toString()
 
   return { repoUrl, authenticatedUrl, branch, email, username, password }
 }
