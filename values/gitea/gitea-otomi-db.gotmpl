@@ -29,16 +29,13 @@ imageName: ghcr.io/{{ $cnpg.pgDefaultPlatformImage }}
 postgresql:
   parameters: {{ toYaml $gdb.postgresqlParameters | nindent 4 }}
 
-{{- if and $b.enabled (eq $obj.type "minioLocal" "linode") }}
+{{- if and $b.enabled (eq $obj.type "linode") }}
 backup:
   enabled: {{ $b.enabled }}
   schedule: {{ $b.schedule | quote }}
   retentionPolicy: {{ $b.retentionPolicy }}
   type:  {{ $obj.type }}
-  {{- if eq $obj.type "minioLocal" }}
-  minioLocal:
-    destinationPath: "s3://cnpg/{{ $b.pathSuffix }}"
-  {{- else if eq $obj.type "linode" }}
+  {{- if eq $obj.type "linode" }}
   linode:
     destinationPath: "s3://{{ $obj.linode.buckets.cnpg }}/{{ $b.pathSuffix }}"
     endpointURL: https://{{ $obj.linode.region }}.linodeobjects.com
