@@ -18,6 +18,7 @@ import {
 import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
+import { X509Certificate } from 'crypto'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { isEmpty, isEqual, map, mapValues } from 'lodash'
 import { dirname, join } from 'path'
@@ -972,6 +973,39 @@ export async function waitForCRD(crdName: string, timeoutSeconds: number = 60): 
     d.debug(`CRD ${crdName} is ready`)
   } catch (error) {
     d.error(`Failed to wait for CRD ${crdName}:`, error)
+    throw error
+  }
+}
+
+export async function getSealedSecretsPEM(): Promise<string> {
+  const d = terminal('common:k8s:getSealedSecretsPEM')
+  const namespace = 'sealed-secrets'
+  const labelSelector = 'sealedsecrets.bitnami.com/sealed-secrets-key'
+
+  try {
+    const response = await k8s.core().listNamespacedSecret({ namespace, labelSelector })
+    const { items } = response
+
+    if (!items || items.length === 0) {
+      throw new Error('No sealed secrets keys found in the sealed-secrets namespace')
+    }
+
+    const newestItem = items.reduce((maxItem: V1Secret, currentItem: V1Secret) => {
+      const maxTimestamp = new Date(maxItem.metadata?.creationTimestamp as Date).getTime()
+      const currentTimestamp = new Date(currentItem.metadata?.creationTimestamp as Date).getTime()
+      return currentTimestamp > maxTimestamp ? currentItem : maxItem
+    }, items[0])
+
+    if (!newestItem.data?.['tls.crt']) {
+      throw new Error('Sealed secrets certificate not found in secret data')
+    }
+
+    const certificate = Buffer.from(newestItem.data['tls.crt'], 'base64').toString('utf-8')
+    const x509 = new X509Certificate(certificate)
+    const exported = x509.publicKey.export({ format: 'pem', type: 'spki' })
+    return typeof exported === 'string' ? exported : exported.toString('utf-8')
+  } catch (error) {
+    d.error('Error fetching SealedSecrets PEM:', error)
     throw error
   }
 }

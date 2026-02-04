@@ -15,6 +15,7 @@ export async function getTeamNames(envDir: string): Promise<Array<string>> {
 type AplKind =
   | 'AplApp'
   | 'AplAlertSet'
+  | 'AplCatalog'
   | 'AplCluster'
   | 'AplDatabase'
   | 'AplDns'
@@ -47,7 +48,14 @@ export interface FileMap {
   jsonPathExpression: string
   pathGlob: string
   processAs: 'arrayItem' | 'mapItem'
-  resourceGroup: 'team' | 'platformSettings' | 'platformApps' | 'platformDatabases' | 'platformBackups' | 'users'
+  resourceGroup:
+    | 'platformApps'
+    | 'platformBackups'
+    | 'platformCatalogs'
+    | 'platformDatabases'
+    | 'platformSettings'
+    | 'team'
+    | 'users'
   resourceDir: string
   loadToSpec: boolean
 }
@@ -144,6 +152,16 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
+      loadToSpec: true,
+    },
+    {
+      kind: 'AplCatalog',
+      envDir,
+      jsonPathExpression: '$.catalogs.*',
+      pathGlob: `${envDir}/env/catalogs/*.{yaml,yaml.dec}`,
+      processAs: 'mapItem',
+      resourceGroup: 'platformCatalogs',
+      resourceDir: 'catalogs',
       loadToSpec: true,
     },
     {

@@ -91,7 +91,6 @@ definitions:
       #   #   - critical
       #   #   - nonCritical
       #   type: object
-
   annotations:
     $ref: '#/definitions/labelsAnnotations'
     description: A set of annotations.
@@ -229,6 +228,31 @@ definitions:
         title: Resource group
         description: An Azure resource group.
         $ref: '#/definitions/wordCharacterPattern'
+  catalog:
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+        description: 'A lowercase name that starts with a letter and may contain dashes.'
+        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+      url:
+        type: string
+        description: 'Git repository URL for the catalog'
+        pattern: '^(https?|git|ssh)://.*\.git$'
+      branch:
+        type: string
+        description: 'Git branch or tag to use'
+      enabled:
+        type: boolean
+        description: 'Whether this catalog is active'
+      secretName:
+        type: string
+        description: 'Kubernetes secret name containing git credentials (for private repos)'
+        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+    required:
+      - name
+      - url
+      - branch
   cluster:
     additionalProperties: false
     properties:
@@ -2450,6 +2474,10 @@ properties:
     patternProperties:
       '^ingress-nginx-[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
         $ref: '#/definitions/ingressNginx'
+  catalogs:
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/catalog'
   cluster:
     $ref: '#/definitions/cluster'
   dns:
@@ -2902,7 +2930,6 @@ properties:
             $ref: '#/definitions/backupRetentionPolicy'
           schedule:
             $ref: '#/definitions/backupSchedule'
-
   obj:
     properties:
       showWizard:
