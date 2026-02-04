@@ -12,7 +12,7 @@ dependencies:
     version: 1.0.1
     repository: oci://ghcr.io/argoproj/argo-helm/argocd-image-updater
   - name: cert-manager
-    version: v1.19.2
+    version: v1.19.3
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
     version: 0.27.0
@@ -38,7 +38,7 @@ dependencies:
     version: 1.18.2
     repository: https://helm.goharbor.io
   - name: ingress-nginx
-    version: 4.14.2
+    version: 4.14.3
     repository: https://kubernetes.github.io/ingress-nginx
   - name: base
     alias: istio-base
@@ -76,9 +76,6 @@ dependencies:
   - name: metrics-server
     version: 3.13.0
     repository: https://kubernetes-sigs.github.io/metrics-server
-  - name: minio
-    version: 5.4.0
-    repository: https://charts.min.io/
   - name: oauth2-proxy
     version: 10.1.1
     repository: https://oauth2-proxy.github.io/manifests
@@ -109,9 +106,6 @@ dependencies:
     alias: tekton-pipelines
     version: 1.6.1
     repository: https://cdfoundation.github.io/tekton-helm-chart/
-  - name: thanos
-    version: 15.7.25
-    repository: https://charts.bitnami.com/bitnami
   - name: trivy-operator
     version: 0.31.0
     repository: https://aquasecurity.github.io/helm-charts/

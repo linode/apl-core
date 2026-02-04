@@ -67,7 +67,7 @@ grafana:
     limits:
       cpu: "1"
       memory: 1Gi
-  sidecar: 
+  sidecar:
     resources:
       limits:
         cpu: 500m
@@ -87,9 +87,3 @@ alertmanager:
       limits:
         cpu: 200m
         memory: 256Mi
-
-prometheus:
-  thanosService:
-    enabled: false
-  thanosServiceMonitor:
-    enabled: false

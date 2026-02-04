@@ -1,14 +1,46 @@
-{{- $v := .Values -}}
+{{- $v := .Values }}
 {{- $l := $v.apps.loki }}
 {{- $obj := $v.obj.provider }}
-{{- $useObjectStorage := eq $obj.type "minioLocal" "linode" }}
+{{- $useObjectStorage := eq $obj.type "linode" }}
 {{- $s3SecretName := "" }}
 {{- if $useObjectStorage }}
   {{- if eq $obj.type "linode" }}
     {{- $s3SecretName = "loki-s3-linode-credentials" }}
-  {{- else if eq $obj.type "minioLocal" }}
-    {{- $s3SecretName = "loki-s3-minio-credentials" }}
   {{- end }}
+{{- end }}
+
+{{- define "loki.reverse-proxy-config" }}
+extraContainers:
+  - name: reverse-proxy
+    {{- with .Values.otomi.linodeLkeImageRepository }}
+    image: {{ . }}/docker/k8spin/loki-multi-tenant-proxy:v1.0.0
+    {{- else }}
+    image: k8spin/loki-multi-tenant-proxy:v1.0.0
+    {{- end }}
+    args:
+      - "run"
+      - "--port=3101"
+      - "--loki-server=http://localhost:3100"
+      - "--auth-config=/etc/reverse-proxy-conf/authn.yaml"
+    ports:
+      - name: auth
+        containerPort: 3101
+        protocol: TCP
+    resources: {{ .Values.apps.loki.resources.reverseProxy | toYaml | nindent 6 }}
+    volumeMounts:
+      - name: reverse-proxy-auth-config
+        mountPath: /etc/reverse-proxy-conf
+
+extraVolumes:
+  - name: reverse-proxy-auth-config
+    secret:
+      secretName: reverse-proxy-auth-config
+
+extraPorts:
+  - port: 3101
+    protocol: TCP
+    name: http
+    targetPort: http
 {{- end }}
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
@@ -19,7 +51,7 @@ imagePullSecrets:
 global:
   {{- with $v.otomi.linodeLkeImageRepository }}
   image:
-    registry: {{ . }}/docker
+    registry: {{ . }}
   {{- end }}
   priorityClassName: otomi-critical
   {{- if eq $v.cluster.linode.tier "enterprise" }}
@@ -27,8 +59,6 @@ global:
   {{- else }}
   dnsService: "kube-dns"
   {{- end }}
-  commonConfig:
-    replication_factor: 1
 
 monitoring:
   serviceMonitor:
@@ -36,7 +66,26 @@ monitoring:
     labels:
       prometheus: system
 
+sidecar:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    repository: quay/kiwigrid/k8s-sidecar
+  {{- end }}
+  resources:
+    limits:
+      cpu: 100m
+      memory: 100Mi
+    requests:
+      cpu: 50m
+      memory: 50Mi
+
 loki:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    repository: docker/grafana/loki
+  {{- end }}
+  commonConfig:
+    replication_factor: 1
   podAnnotations:
     sidecar.istio.io/inject: "false"
   schemaConfig:
@@ -87,10 +136,7 @@ loki:
       ruler: {{ $obj.linode.buckets.loki | quote }}
       admin: {{ $obj.linode.buckets.loki | quote }}
     s3:
-      {{- if eq $obj.type "minioLocal" }}
-      s3: http://minio.minio.svc.cluster.local:9000/loki
-      insecure: true
-      {{- else if eq $obj.type "linode" }}
+      {{- if eq $obj.type "linode" }}
       s3: https://{{ $obj.linode.region }}.linodeobjects.com
       http_config:
         idle_conn_timeout: 90s
@@ -103,6 +149,10 @@ loki:
   {{- else }}
   storage:
     type: filesystem
+    bucketNames:
+      chunks: chunks
+      ruler: ruler
+      admin: admin
   {{- end }}
   structuredConfig:
     limits_config:
@@ -139,6 +189,16 @@ loki:
       allow_structured_metadata: false
       {{- end }}
 
+gateway:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    repository: docker/nginxinc/nginx-unprivileged
+  {{- end }}
+  replicas: 1
+  resources: {{ $l.resources.gateway | toYaml | nindent 4 }}
+  autoscaling: {{ $l.autoscaling.gateway | toYaml | nindent 4 }}
+
+{{- if $useObjectStorage }}
 deploymentMode: Distributed
 
 ingester:
@@ -156,11 +216,6 @@ ingester:
   zoneAwareReplication:
     enabled: false
 
-gateway:
-  replicas: 1
-  resources: {{ $l.resources.gateway | toYaml | nindent 4 }}
-  autoscaling: {{ $l.autoscaling.gateway | toYaml | nindent 4 }}
-
 querier:
   replicas: 1
   resources: {{ $l.resources.querier | toYaml | nindent 4 }}
@@ -172,13 +227,6 @@ querier:
   {{- end }}
 
   autoscaling: {{ $l.autoscaling.querier | toYaml | nindent 4 }}
-
-  {{- if not $useObjectStorage }}
-  persistence:
-    enabled: true
-    size: {{ $l | get "persistence.querier.size" "10Gi" }}
-    storageClass: {{ $v.cluster.defaultStorageClass }}
-  {{- end }}
 
 distributor:
   replicas: 1
@@ -204,38 +252,8 @@ queryFrontend:
     - secretRef:
         name: {{ $s3SecretName }}
   {{- end }}
-  
-  extraContainers:
-  - name: reverse-proxy
-    {{- with $v.otomi.linodeLkeImageRepository }}
-    image: {{ . }}/docker/k8spin/loki-multi-tenant-proxy:v1.0.0
-    {{- else }}
-    image: k8spin/loki-multi-tenant-proxy:v1.0.0
-    {{- end }}
-    args:
-      - "run"
-      - "--port=3101"
-      - "--loki-server=http://localhost:3100"
-      - "--auth-config=/etc/reverse-proxy-conf/authn.yaml"
-    ports:
-      - name: auth
-        containerPort: 3101
-        protocol: TCP
-    resources: {{- $l.resources.reverseProxy | toYaml | nindent 6 }}
-    volumeMounts:
-      - name: reverse-proxy-auth-config
-        mountPath: /etc/reverse-proxy-conf
 
-  extraVolumes:
-  - name: reverse-proxy-auth-config
-    secret:
-      secretName: reverse-proxy-auth-config
-
-  extraPorts:
-  - port: 3101
-    protocol: TCP
-    name: http
-    targetPort: http
+  {{ include "loki.reverse-proxy-config" . | indent 2 }}
 
 queryScheduler:
   replicas: 1
@@ -268,12 +286,19 @@ compactor:
         name: {{ $s3SecretName }}
   {{- end }}
 
-  {{- if not $useObjectStorage }}
-  persistence:
-    enabled: true
-    size: {{ $l | get "persistence.compactor.size" "10Gi" }}
-    storageClass: {{ $v.cluster.defaultStorageClass }}
-  {{- end }}
+singleBinary:
+  replicas: 0
+
+{{- else }}
+deploymentMode: SingleBinary
+
+singleBinary:
+  replicas: 1
+
+  resources: {{ $l.resources.singleBinary | toYaml | nindent 4 }}
+
+  {{ include "loki.reverse-proxy-config" . | indent 2 }}
+{{- end }}
 
 ruler:
   enabled: false
@@ -284,9 +309,6 @@ backend:
 read:
   replicas: 0
 write:
-  replicas: 0
-
-singleBinary:
   replicas: 0
 
 resultsCache:

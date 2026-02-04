@@ -7,9 +7,7 @@
 {{- $gdb := $v.databases.gitea }}
 {{- $obj := $v.obj.provider }}
 {{- $giteaBucketName := "" }}
-{{- if eq $obj.type "minioLocal" }}
-{{- $giteaBucketName = "gitea" }}
-{{- else if eq $obj.type "linode" }}
+{{- if eq $obj.type "linode" }}
 {{- $giteaBucketName = $obj.linode.buckets | get "gitea" nil }}
 {{- end }}
 
@@ -152,22 +150,7 @@ deployment:
   env:
     - name: RCLONE_CONFIG_GITEA_TYPE
       value: s3
-    {{- if eq $obj.type "minioLocal" }}
-    - name: RCLONE_CONFIG_GITEA_PROVIDER
-      value: Minio
-    - name: RCLONE_CONFIG_GITEA_ENDPOINT
-      value: http://minio.minio.svc.cluster.local:9000
-    - name: RCLONE_CONFIG_GITEA_ACCESS_KEY_ID
-      valueFrom:
-        secretKeyRef:
-          name: minio-creds
-          key: MINIO_ACCESS_KEY
-    - name: RCLONE_CONFIG_GITEA_SECRET_ACCESS_KEY
-      valueFrom:
-        secretKeyRef:
-          name: minio-creds
-          key: MINIO_SECRET_KEY
-    {{- else if eq $obj.type "linode" }}
+    {{ if eq $obj.type "linode" }}
     - name: RCLONE_CONFIG_GITEA_PROVIDER
       value: Linode
     - name: RCLONE_CONFIG_GITEA_ENDPOINT
