@@ -32,12 +32,6 @@ releases:
     labels:
       pkg: cert-manager
     <<: *raw
-  - name: minio-artifacts
-    installed: {{ $a.minio.enabled }}
-    namespace: minio
-    labels:
-      pkg: minio
-    <<: *raw
   - name: apl-network-policies
     installed: true
     namespace: apl-operator

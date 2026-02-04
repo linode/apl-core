@@ -60,9 +60,9 @@ if [ -z "$srcDirA" ]; then
   targetDirB="$PWD/tmp/${branchB}"
   export ENV_DIR="$PWD/tests/fixtures"
   generate_helm_templates "$targetDirB"
-  git -c core.hooksPath=/dev/null checkout $branchA
+  git -c core.hooksPath=/dev/null checkout -f $branchA
   generate_helm_templates "$targetDirA"
-  git -c core.hooksPath=/dev/null checkout $branchB
+  git -c core.hooksPath=/dev/null checkout -f $branchB
 else
   if [ -z "$srcDirB" ]; then
     echo "Only one directory passed for comparison"
