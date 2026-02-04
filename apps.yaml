@@ -117,7 +117,7 @@ appsInfo:
     integration: The SSO login page for App Platform is served by Keycloak. Keycloak is used as an identity broker or provider for all App Platform integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of App Platform and is always enabled.
   knative:
     title: Knative Operator
-    appVersion: 1.18.1
+    appVersion: 1.21.0
     repo: https://github.com/knative/serving
     maintainers: Knative
     relatedLinks:
