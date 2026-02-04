@@ -61,8 +61,6 @@ if [ -z "$srcDirA" ]; then
   export ENV_DIR="$PWD/tests/fixtures"
   generate_helm_templates "$targetDirB"
   git -c core.hooksPath=/dev/null checkout $branchA
-  # we remove previously rendered manifests so they are not mixed up with newly rendered
-  rm -rf "$targetDirA"
   generate_helm_templates "$targetDirA"
   git -c core.hooksPath=/dev/null checkout $branchB
 else
