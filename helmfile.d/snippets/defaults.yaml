@@ -1036,7 +1036,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1065,7 +1065,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1093,7 +1093,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1159,4 +1159,4 @@ environments:
             branch: main
             enabled: true
         versions:
-          specVersion: 53
+          specVersion: 54
