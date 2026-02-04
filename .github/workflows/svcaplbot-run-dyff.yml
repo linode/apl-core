@@ -44,9 +44,6 @@ jobs:
     needs: check-commit
     if: ${{ github.event_name == 'workflow_dispatch' || (success() && needs.check-commit.outputs.skip != 'true') }}
     steps:
-      - name: Debug
-        run: |
-          echo "Skip was: ${{ needs.check-commit.outputs.skip }}"
       - name: Install GitHub CLI
         run: |
           sudo apt update
@@ -88,11 +85,9 @@ jobs:
         run: |
           mkdir -p tmp
           "$GITHUB_WORKSPACE/pr/bin/compare.sh" "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/pr" --diff-output tmp/diff-output.txt
-          diff_text=$(cat tmp/diff-output.txt)
-          format_code_start='```diff'
-          format_code_end='```'
-          comment_text="Comparison of Helm chart templating output:
-          $format_code_start
-          $diff_text
-          $format_code_end"
-          cd "$GITHUB_WORKSPACE/pr" && gh pr comment ${{ github.event.pull_request.number }} --body "$comment_text"
+          comment_file="$PWD/tmp/pr-comment.txt"
+          echo "Comparison of Helm chart templating output:" > "$comment_file"
+          echo '```diff' >> "$comment_file"
+          cat tmp/diff-output.txt >> "$comment_file"
+          echo '```' >> "$comment_file"
+          cd "$GITHUB_WORKSPACE/pr" && gh pr comment ${{ github.event.pull_request.number }} --body-file "$comment_file"
