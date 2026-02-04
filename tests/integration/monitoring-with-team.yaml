@@ -54,8 +54,6 @@ apps:
   loki:
     enabled: true
     adminPassword: blablabla
-  minio:
-    enabled: true
   otel:
     enabled: true
   prometheus:
