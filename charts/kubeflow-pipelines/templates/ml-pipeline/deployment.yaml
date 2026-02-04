@@ -95,12 +95,12 @@ spec:
           valueFrom:
             secretKeyRef:
               key: accesskey
-              name: mlpipeline-minio-artifact
+              name: mlpipeline-obj-artifact
         - name: OBJECTSTORECONFIG_SECRETACCESSKEY
           valueFrom:
             secretKeyRef:
               key: secretkey
-              name: mlpipeline-minio-artifact
+              name: mlpipeline-obj-artifact
         - name: OBJECTSTORECONFIG_SECURE
           value: {{ .Values.objectStorage.secure | quote }}
         - name: OBJECTSTORECONFIG_BUCKETNAME

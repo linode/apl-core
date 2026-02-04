@@ -16,14 +16,10 @@ resources:
     metadata:
       labels:
         app: kubeflow-pipelines
-      name: mlpipeline-minio-artifact
+      name: mlpipeline-obj-artifact
     data:
-      {{- if eq $obj.type "minioLocal" }}
-      accesskey: "{{ "otomi-admin" | b64enc }}"
-      secretkey: "{{ $v.otomi.adminPassword | b64enc }}"
-      {{- end }}
       {{- if eq $obj.type "linode" }}
       accesskey: "{{ $obj.linode.accessKeyId | b64enc }}"
       secretkey: "{{ $obj.linode.secretAccessKey | b64enc }}"
       {{- end }}
-  
+

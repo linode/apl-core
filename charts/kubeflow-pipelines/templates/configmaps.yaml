@@ -10,7 +10,7 @@ data:
         credentials:
           fromEnv: false
           secretRef:
-            secretName: mlpipeline-minio-artifact
+            secretName: mlpipeline-obj-artifact
             accessKeyKey: accesskey
             secretKeyKey: secretkey
 kind: ConfigMap
