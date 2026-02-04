@@ -38,8 +38,6 @@ prometheusOperator:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
-  thanosImage:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
   {{- end }}
   admissionWebhooks:
     enabled: true
@@ -69,18 +67,7 @@ crds:
   enabled: false
 prometheus:
   enabled: {{ $p.enabled }}
-  thanosService:
-    enabled: {{ $apps.thanos.enabled }}
-  thanosServiceMonitor:
-    enabled: {{ $apps.thanos.enabled }}
   prometheusSpec:
-    {{- if $apps.thanos.enabled }}
-    thanos:
-      resources: {{- $p.resources.thanosSidecar | toYaml | nindent 8 }}
-      objectStorageConfig:
-        name: thanos-objectstore
-        key: objstore.yml
-    {{- end }}
     {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
     {{ $selType }}Selector:
       matchLabels:
@@ -121,11 +108,7 @@ prometheus:
     externalLabels:
       cluster: "{{ $v.cluster.domainSuffix }}"
     replicaExternalLabelName: __replica__
-    {{- if $apps.thanos.enabled }}
-    retention: 6h
-    {{- else }}
     retention: {{ $p | get "retention" }}
-    {{- end }}
     retentionSize: {{ $p | get "retentionSize" }}
     storageSpec:
       volumeClaimTemplate:
@@ -244,17 +227,13 @@ grafana:
       enabled: true
       label: release
       labelValue: grafana-dashboards
-    {{- if $apps.thanos.enabled }}
-    datasources:
-      isDefaultDatasource: false
-    {{- end }}
   serviceMonitor:
     enabled: {{ $p.enabled }}
     labels:
       prometheus: system
   testFramework:
     enabled: false
-  {{- if or $apps.loki.enabled $apps.thanos.enabled }}
+  {{- if or $apps.loki.enabled }}
   additionalDataSources:
     {{- if $apps.loki.enabled }}
     - name: Loki
@@ -262,24 +241,15 @@ grafana:
       uid: loki
       type: loki
       access: proxy
+      {{- if eq $v.obj.provider.type "minioLocal" "linode" }}
       url: http://loki-query-frontend-headless.monitoring:3101
+      {{- else }}
+      url: http://loki-headless.monitoring:3101
+      {{- end }}
       basicAuth: true
       basicAuthUser: otomi-admin
       secureJsonData:
         basicAuthPassword: {{ $v.apps.loki.adminPassword | quote }}
-    {{- end }}
-    {{- if $apps.thanos.enabled }}
-    - name: Thanos Query
-      access: proxy
-      isDefault: true
-      basicAuth: false
-      editable: false
-      orgId: 1
-      type: prometheus
-      url: http://thanos-query.thanos:9090
-      jsonData:
-        prometheusType: Thanos
-        timeInterval: "60s"
     {{- end }}
   {{- end }}
   adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword | quote }}
