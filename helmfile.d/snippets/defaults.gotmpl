@@ -274,12 +274,6 @@ environments:
       {{- end }}
       otomi:
         adminPassword: {{ randAlphaNum 32 }}
-      catalogs:
-        default:
-          name: default
-          url: https://github.com/linode/apl-charts.git
-          branch: main
-          enabled: true
       cluster:
         owner: customer
         name: apl

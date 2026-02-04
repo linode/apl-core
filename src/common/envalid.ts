@@ -61,6 +61,10 @@ export const cliEnvSpec = {
     desc: 'Kubernetes config map name for reporting traces',
     default: 'apl-traces-report',
   }),
+  DEFAULT_CATALOG_URL: str({
+    desc: 'The URL for the default APL catalog',
+    default: 'https://github.com/linode/apl-charts.git',
+  }),
 }
 
 export function cleanEnv<T>(spec: { [K in keyof T]: ValidatorSpec<T[K]> }, options?: CleanOptions<T>) {

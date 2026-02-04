@@ -668,9 +668,7 @@ const setLokiStorageSchemaMigration = async (values: Record<string, any>): Promi
   }
 }
 
-const GITHUB_CATALOG_URL = 'https://github.com/linode/apl-charts.git'
 const SEALED_SECRET_NAME = 'default-catalog-credentials'
-
 const createCatalogSealedSecret = async (
   d: ReturnType<typeof terminal>,
   gitea: { adminUsername: string; adminPassword: string },
@@ -723,7 +721,7 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
     d.info('No gitea credentials found, skipping sealed secret creation')
   }
 
-  let catalogUrl = GITHUB_CATALOG_URL
+  let catalogUrl = env.DEFAULT_CATALOG_URL
   if (useGiteaCatalog && secretCreated) catalogUrl = `https://gitea.${domainSuffix}/otomi/charts.git`
 
   d.info(`Setting default APL catalog with url ${catalogUrl}`)

@@ -242,11 +242,9 @@ definitions:
       branch:
         type: string
         description: 'Git branch or tag to use'
-        default: 'main'
       enabled:
         type: boolean
         description: 'Whether this catalog is active'
-        default: true
       secretName:
         type: string
         description: 'Kubernetes secret name containing git credentials (for private repos)'
