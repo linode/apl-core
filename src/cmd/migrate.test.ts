@@ -1,8 +1,8 @@
 import { globSync } from 'glob'
 import { applyChanges, Changes, filterChanges, getBuildName, policiesMigration } from 'src/cmd/migrate'
+import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { getFileMap } from '../common/repo'
-import { terminal } from '../common/debug'
 
 // Mock external dependencies at the top level - BEFORE imports
 jest.mock('uuid', () => ({
@@ -14,6 +14,12 @@ jest.mock('../common/values')
 jest.mock('../common/yargs')
 jest.mock('../common/utils')
 jest.mock('zx')
+jest.mock('@linode/kubeseal-encrypt')
+jest.mock('fs', () => ({
+  ...jest.requireActual('fs'),
+  mkdirSync: jest.fn(),
+  writeFileSync: jest.fn(),
+}))
 
 describe('Upgrading values', () => {
   const oldVersion = 1
@@ -36,7 +42,7 @@ describe('Upgrading values', () => {
     },
     {
       version: 2,
-      deletions: ['some.json.path'],
+      deletions: ['some.bla.path'],
       relocations: [{ 'some.json': 'some.bla' }],
     },
     {
@@ -741,4 +747,160 @@ describe('Policies migration', () => {
     expect(loadYaml).toHaveBeenCalledTimes(0)
     expect(saveResourceGroupToFiles).toHaveBeenCalledTimes(0)
   })
+})
+
+describe('setDefaultAplCatalog migration', () => {
+  const valuesChanges: Changes = [
+    {
+      version: 2,
+      customFunctions: ['setDefaultAplCatalog'],
+    },
+  ]
+
+  const makeDeps = (values: any) => ({
+    cd: jest.fn(),
+    rename: jest.fn(),
+    hfValues: jest.fn().mockReturnValue(values),
+    terminal,
+    writeValues: jest.fn(),
+  })
+
+  beforeEach(() => {
+    const { getSealedSecretsPEM } = require('../common/k8s')
+    const { encryptSecretItem } = require('@linode/kubeseal-encrypt')
+    getSealedSecretsPEM.mockResolvedValue('mock-pem')
+    encryptSecretItem.mockResolvedValue('encrypted-value')
+  })
+
+  it('should set gitea catalog URL and secretName when gitea credentials and domainSuffix are present', async () => {
+    const values: any = {
+      versions: { specVersion: 1 },
+      cluster: { domainSuffix: 'test.example.com' },
+      apps: { gitea: { adminUsername: 'admin', adminPassword: 'pass' } },
+    }
+    const deps: any = makeDeps(values)
+
+    await applyChanges(valuesChanges, false, deps)
+    expect(deps.writeValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        catalogs: {
+          default: {
+            branch: 'main',
+            enabled: true,
+            name: 'default',
+            url: 'https://gitea.test.example.com/otomi/charts.git',
+            secretName: 'default-catalog-credentials',
+          },
+        },
+      }),
+      true,
+    )
+  }, 20000)
+
+  it('should use fallback GitHub URL and no secretName when gitea credentials are missing', async () => {
+    const values: any = {
+      versions: { specVersion: 1 },
+      cluster: { domainSuffix: 'test.example.com' },
+    }
+    const deps: any = makeDeps(values)
+
+    await applyChanges(valuesChanges, false, deps)
+    expect(deps.writeValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        catalogs: {
+          default: {
+            branch: 'main',
+            enabled: true,
+            name: 'default',
+            url: 'https://github.com/linode/apl-charts.git',
+          },
+        },
+      }),
+      true,
+    )
+  }, 20000)
+
+  it('should not include secretName when sealed secret creation fails', async () => {
+    const { getSealedSecretsPEM } = require('../common/k8s')
+    getSealedSecretsPEM.mockRejectedValue(new Error('PEM fetch failed'))
+
+    const values: any = {
+      versions: { specVersion: 1 },
+      cluster: { domainSuffix: 'test.example.com' },
+      apps: { gitea: { adminUsername: 'admin', adminPassword: 'pass' } },
+    }
+    const deps: any = makeDeps(values)
+
+    await applyChanges(valuesChanges, false, deps)
+    expect(deps.writeValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        catalogs: {
+          default: {
+            branch: 'main',
+            enabled: true,
+            name: 'default',
+            url: 'https://github.com/linode/apl-charts.git',
+          },
+        },
+      }),
+      true,
+    )
+  }, 20000)
+
+  it('should overwrite pre-existing catalog with new defaults', async () => {
+    const values: any = {
+      versions: { specVersion: 1 },
+      cluster: { domainSuffix: 'test.example.com' },
+      apps: { gitea: { adminUsername: 'admin', adminPassword: 'pass' } },
+      catalogs: {
+        default: {
+          branch: 'custom-branch',
+          enabled: false,
+          name: 'custom-name',
+          url: 'https://custom.example.com/repo.git',
+          secretName: 'custom-secret',
+        },
+      },
+    }
+    const deps: any = makeDeps(values)
+
+    await applyChanges(valuesChanges, false, deps)
+    expect(deps.writeValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        catalogs: {
+          default: {
+            branch: 'main',
+            enabled: true,
+            name: 'default',
+            url: 'https://gitea.test.example.com/otomi/charts.git',
+            secretName: 'default-catalog-credentials',
+          },
+        },
+      }),
+      true,
+    )
+  }, 20000)
+
+  it('should use fallback GitHub URL when domainSuffix is missing even with gitea credentials', async () => {
+    const values: any = {
+      versions: { specVersion: 1 },
+      apps: { gitea: { adminUsername: 'admin', adminPassword: 'pass' } },
+    }
+    const deps: any = makeDeps(values)
+
+    await applyChanges(valuesChanges, false, deps)
+    expect(deps.writeValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        catalogs: {
+          default: {
+            branch: 'main',
+            enabled: true,
+            name: 'default',
+            url: 'https://github.com/linode/apl-charts.git',
+          },
+        },
+      }),
+      true,
+    )
+  }, 20000)
 })

@@ -54,15 +54,11 @@ apps:
   loki:
     enabled: true
     adminPassword: blablabla
-  minio:
-    enabled: true
   otel:
     enabled: true
   prometheus:
     enabled: true
   promtail:
-    enabled: true
-  tempo:
     enabled: true
   istio:
     tracing:

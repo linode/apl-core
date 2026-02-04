@@ -11,10 +11,9 @@ import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/co
 import { Argv, CommandModule } from 'yargs'
 import { cd } from 'zx'
 import { runtimeUpgrade } from '../common/runtime-upgrade'
-import { applyAsApps } from './apply-as-apps'
+import { applyAsApps, applyGitOpsApps } from './apply-as-apps'
 import { applyTeams } from './apply-teams'
 import { commit } from './commit'
-import { collectTraces } from './traces'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -61,6 +60,7 @@ export const applyAll = async () => {
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(false)
   }
+  await applyGitOpsApps()
   if (appsApplyCompleted) {
     await setDeploymentState({ status: 'deployed', version: deployingVersion })
     d.info('Deployment completed')
@@ -84,12 +84,6 @@ export const apply = async (): Promise<void> => {
         await applyAll()
       } catch (e) {
         d.error(e)
-        // Collect traces on apply failure
-        try {
-          await collectTraces()
-        } catch (traceError) {
-          d.error('Failed to collect traces:', traceError)
-        }
         d.info(`Retrying in ${retryOptions.maxTimeout} ms`)
         await deletePendingHelmReleases()
         throw e

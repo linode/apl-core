@@ -102,29 +102,12 @@ releases:
             - name: Prometheus-platform
               editable: false
               uid: prometheus-platform
-              {{- if $v.apps.thanos.enabled }}
-              isDefault: false
-              {{- else }}
               isDefault: true
-              {{- end }}
               type: prometheus
               access: proxy
               url: http://po-prometheus.monitoring:9090
               jsonData:
                 httpMethod: GET
-            {{- if $v.apps.thanos.enabled }}
-            - name: Thanos Query
-              access: proxy
-              isDefault: true
-              basicAuth: false
-              editable: false
-              orgId: 1
-              type: prometheus
-              url: http://thanos-query.thanos:9090
-              jsonData:
-                prometheusType: Thanos
-                timeInterval: "60s"
-            {{- end }}
             - name: Loki
               editable: false
               uid: loki
@@ -135,51 +118,6 @@ releases:
               basicAuthUser: {{ $teamId }}
               secureJsonData:
                 basicAuthPassword: {{ $teamSettings.password | quote }}
-              jsonData:
-                derivedFields:
-                  - datasourceName: Tempo
-                    matcherRegex: "traceID=00-([^\\-]+)-"
-                    name: traceID
-                    url: "$${__value.raw}"
-                    datasourceUid: tempo
-            - name: Tempo
-              type: tempo
-              uid: tempo
-              editable: false
-              access: proxy
-              url: http://tempo-query-frontend.tempo:3100
-              jsonData:
-                tracesToLogsV2:
-                  datasourceUid: 'loki'
-                  spanStartTimeShift: '1h'
-                  spanEndTimeShift: '-1h'
-                  tags: [{ key: 'k8s.namespace.name', value: 'namespace' }]
-                  filterByTraceID: false
-                  filterBySpanID: false
-                  customQuery: true
-                  query: '{namespace="team-{{ $teamId }}"} |= "$${__span.traceId}"'
-                nodeGraph:
-                  enabled: true
-                search:
-                  hide: true
-                traceQuery:
-                  timeShiftEnabled: true
-                  spanStartTimeShift: '1h'
-                  spanEndTimeShift: '-1h'
-                tracesToMetrics:
-                    datasourceUid: 'prometheus-platform'
-                    spanStartTimeShift: '1h'
-                    spanEndTimeShift: '-1h'
-                    tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
-                    queries:
-                      - name: 'Span duration (example)'
-                        query: 'sum(rate(traces_spanmetrics_latency_bucket{$$__tags}[5m]))'
-                httpMethod: GET
-                spanBar:
-                  type: 'Tag'
-                  tag: 'http.path'
-                lokiSearch:
-                  datasourceUid: loki
     {{- if has "msteams" ($teamSettings | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
     installed: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}

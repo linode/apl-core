@@ -121,7 +121,6 @@ sequenceDiagram
                 Install->>Git: git add, commit, push
                 Git-->>Install: changes committed
 
-                Install->>Install: cloneOtomiChartsInGitea()
                 Install->>Install: initialSetupData()
                 Install->>K8s: createUpdateGenericSecret('platform-admin-credentials')
                 K8s-->>Install: secret created

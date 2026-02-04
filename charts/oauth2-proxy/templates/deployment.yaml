@@ -1,3 +1,5 @@
+{{- $redisEnabled := eq (include "oauth2-proxy.redis.enabled" .) "true" -}}
+{{- $redisValues := index .Values "redis-ha" | default dict -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -64,12 +66,12 @@ spec:
       hostAliases:
         {{ toYaml .Values.hostAliases | nindent 8}}
       {{- end }}
-      {{- if or (and .Values.redis.enabled .Values.initContainers.waitForRedis.enabled) .Values.extraInitContainers }}
+      {{- if or (and $redisEnabled .Values.initContainers.waitForRedis.enabled) .Values.extraInitContainers }}
       initContainers:
         {{- if .Values.extraInitContainers }}
         {{- toYaml .Values.extraInitContainers | nindent 6 }}
         {{- end }}
-      {{- if and .Values.redis.enabled .Values.initContainers.waitForRedis.enabled }}
+      {{- if and $redisEnabled .Values.initContainers.waitForRedis.enabled }}
       - name: wait-for-redis
         image: "{{ .Values.initContainers.waitForRedis.image.repository }}:{{ .Values.initContainers.waitForRedis.image.tag }}"
         imagePullPolicy: {{ .Values.initContainers.waitForRedis.image.pullPolicy }}
@@ -108,7 +110,7 @@ spec:
       {{- end }}
       containers:
       - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.repository }}:{{ include "oauth2-proxy.version" . }}"
+        image: "{{ .Values.image.registry | default .Values.global.imageRegistry | default "quay.io" }}/{{ .Values.image.repository }}:{{ include "oauth2-proxy.version" . }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         {{- if .Values.image.command }}
         command:
@@ -180,26 +182,32 @@ spec:
 {{- end }}
         env:
         {{- if .Values.proxyVarsAsSecrets }}
+        {{- if has "client-id" .Values.config.requiredSecretKeys }}
         - name: OAUTH2_PROXY_CLIENT_ID
           valueFrom:
             secretKeyRef:
               name:  {{ template "oauth2-proxy.secretName" . }}
               key: client-id
+        {{- end }}
+        {{- if has "client-secret" .Values.config.requiredSecretKeys }}
         - name: OAUTH2_PROXY_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
               name:  {{ template "oauth2-proxy.secretName" . }}
               key: client-secret
+        {{- end }}
+        {{- if has "cookie-secret" .Values.config.requiredSecretKeys }}
         - name: OAUTH2_PROXY_COOKIE_SECRET
           valueFrom:
             secretKeyRef:
               name:  {{ template "oauth2-proxy.secretName" . }}
               key: cookie-secret
         {{- end }}
+        {{- end }}
         {{- if eq (default "cookie" .Values.sessionStorage.type) "redis" }}
         - name: OAUTH2_PROXY_SESSION_STORE_TYPE
           value: "redis"
-         {{- if or .Values.sessionStorage.redis.existingSecret .Values.sessionStorage.redis.password (and .Values.redis.enabled (.Values.redis.auth))}}
+         {{- if or .Values.sessionStorage.redis.existingSecret .Values.sessionStorage.redis.password (and $redisEnabled ($redisValues.auth))}}
         - name: OAUTH2_PROXY_REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -358,7 +366,7 @@ spec:
           secretName: {{ template "oauth2-proxy.fullname" . }}-accesslist
 {{- end }}
 {{- end }}
-{{- if and .Values.redis.enabled .Values.initContainers.waitForRedis.enabled }}
+{{- if and $redisEnabled .Values.initContainers.waitForRedis.enabled }}
       - name: redis-script
         configMap:
           name: {{ template "oauth2-proxy.fullname" . }}-wait-for-redis

@@ -1,9 +1,10 @@
-global: {}
-# To help compatibility with other charts which use global.imagePullSecrets.
-# global:
-#   imagePullSecrets:
-#   - name: pullSecret1
-#   - name: pullSecret2
+global:
+  # Global registry to pull the images from
+  imageRegistry: ""
+  # To help compatibility with other charts which use global.imagePullSecrets.
+  imagePullSecrets: []
+  #   - name: pullSecret1
+  #   - name: pullSecret2
 
 ## Override the deployment namespace
 ##
@@ -22,6 +23,17 @@ config:
   clientID: "XXXXXXX"
   # OAuth client secret
   clientSecret: "XXXXXXXX"
+  # List of secret keys to include in the secret and expose as environment variables.
+  # By default, all three secrets are required. To exclude certain secrets
+  # (e.g., when using federated token authentication), remove them from this list.
+  # Example to exclude client-secret:
+  # requiredSecretKeys:
+  #   - client-id
+  #   - cookie-secret
+  requiredSecretKeys:
+    - client-id
+    - client-secret
+    - cookie-secret
   # Create a new secret with the following command
   # openssl rand -base64 32 | head -c 32 | base64
   # Use an existing secret for OAuth2 credentials (see secret.yaml for required fields)
@@ -74,7 +86,8 @@ alphaConfig:
   existingSecret: ~
 
 image:
-  repository: "quay.io/oauth2-proxy/oauth2-proxy"
+  registry: ""
+  repository: "oauth2-proxy/oauth2-proxy"
   # appVersion is used by default
   tag: ""
   pullPolicy: "IfNotPresent"
@@ -454,7 +467,7 @@ sessionStorage:
     # Redis password value. Applicable for all Redis configurations. Taken from redis subchart secret if not set. `sessionStorage.redis.existingSecret` takes precedence
     password: ""
     # Key of the Kubernetes secret data containing the redis password value. If you use the redis sub chart, make sure
-    # this password matches the one used in redis.global.redis.password (see below).
+    # this password matches the one used in redis-ha.redisPassword (see below).
     passwordKey: "redis-password"
     # Can be one of standalone|cluster|sentinel
     clientType: "standalone"
@@ -481,7 +494,7 @@ sessionStorage:
       # - "redis://127.0.0.1:8001"
 
 # Enables and configure the automatic deployment of the redis-ha subchart
-redis:
+redis-ha:
   # provision an instance of the redis-ha sub-chart
   enabled: false
   # Redis specific helm chart settings, please see:
@@ -491,6 +504,14 @@ redis:
   #
   # redisPassword: xxxxx
   # replicas: 1
+  #
+  # IMPORTANT: When using a single replica (replicas: 1), you MUST also configure
+  # min-replicas-to-write to 0 to avoid "NOREPLICAS Not enough good replicas to write" errors.
+  # See: https://stackoverflow.com/a/59737862
+  # redis:
+  #   config:
+  #     min-replicas-to-write: 0
+  #
   # persistentVolume:
   #   enabled: false
   #

@@ -11,7 +11,7 @@ image:
   # The Keycloak image repository
   repository: quay.io/keycloak/keycloak
   # Overrides the Keycloak image tag whose default is the chart appVersion
-  tag: "26.4.7"
+  tag: "26.5.1"
   # Overrides the Keycloak image tag with a specific digest
   digest: ""
   # The Keycloak image pull policy
@@ -304,6 +304,8 @@ ingress:
       paths:
         - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
           pathType: Prefix
+          # serviceName: ""  # Optional: Override backend service name (e.g., for AWS ALB action annotations)
+          # servicePort: ""  # Optional: Override backend service port name
   # TLS configuration
   tls: []
   #  - hosts:
@@ -329,6 +331,8 @@ ingress:
         paths:
           - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/admin'
             pathType: Prefix
+            # serviceName: ""  # Optional: Override backend service name (e.g., for AWS ALB action annotations)
+            # servicePort: ""  # Optional: Override backend service port name
 
     # Console TLS configuration
     tls: []
@@ -463,6 +467,8 @@ serviceMonitor:
   path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/metrics'
   # The Service port at which metrics are served
   port: '{{ .Values.http.internalPort }}'
+  # The scheme to use for scraping metrics ("http" or "https"); if not set, the `http.internalScheme` value is used
+  scheme: ""
 
 extraServiceMonitor:
   # If `true`, a ServiceMonitor resource for the prometheus-operator is created
@@ -487,6 +493,8 @@ extraServiceMonitor:
   path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/metrics'
   # The Service port at which metrics are served
   port: '{{ .Values.http.internalPort }}'
+  # The scheme to use for scraping metrics ("http" or "https"); if not set, the `http.internalScheme` value is used
+  scheme: ""
 
 prometheusRule:
   # If `true`, a PrometheusRule resource for the prometheus-operator is created
@@ -567,3 +575,19 @@ test:
     runAsNonRoot: true
   # See https://helm.sh/docs/topics/charts_hooks/#hook-deletion-policies
   deletionPolicy: before-hook-creation
+
+## -- Extra Kubernetes objects to deploy with the helm chart
+extraManifests: []
+  # - |
+  #     apiVersion: v1
+  #     kind: ConfigMap
+  #     metadata:
+  #       name: {{ include "keycloak.fullname" . }}-tpl
+  #     data:
+  #       foo: bar
+  # -   apiVersion: v1
+  #     kind: ConfigMap
+  #     metadata:
+  #       name: "{{ include \"keycloak.fullname\" . }}-tpl"
+  #     data:
+  #       foo: bar

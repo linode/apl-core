@@ -38,8 +38,6 @@ prometheusOperator:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
-  thanosImage:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
   {{- end }}
   admissionWebhooks:
     enabled: true
@@ -69,18 +67,7 @@ crds:
   enabled: false
 prometheus:
   enabled: {{ $p.enabled }}
-  thanosService:
-    enabled: {{ $apps.thanos.enabled }}
-  thanosServiceMonitor:
-    enabled: {{ $apps.thanos.enabled }}
   prometheusSpec:
-    {{- if $apps.thanos.enabled }}
-    thanos:
-      resources: {{- $p.resources.thanosSidecar | toYaml | nindent 8 }}
-      objectStorageConfig:
-        name: thanos-objectstore
-        key: objstore.yml
-    {{- end }}
     {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
     {{ $selType }}Selector:
       matchLabels:
@@ -121,11 +108,7 @@ prometheus:
     externalLabels:
       cluster: "{{ $v.cluster.domainSuffix }}"
     replicaExternalLabelName: __replica__
-    {{- if $apps.thanos.enabled }}
-    retention: 6h
-    {{- else }}
     retention: {{ $p | get "retention" }}
-    {{- end }}
     retentionSize: {{ $p | get "retentionSize" }}
     storageSpec:
       volumeClaimTemplate:
@@ -138,9 +121,6 @@ prometheus:
               storage: {{ $p | get "storageSize" }}
     enableAdminAPI: true
     externalUrl: https://{{ $prometheusDomain }}
-    {{- if $apps.tempo.enabled }}
-    enableRemoteWriteReceiver: true
-    {{- end }}
     {{- if $hasServices }}
     additionalScrapeConfigs:
     {{- range $teamId, $team := $v.teamConfig }}
@@ -247,17 +227,13 @@ grafana:
       enabled: true
       label: release
       labelValue: grafana-dashboards
-    {{- if $apps.thanos.enabled }}
-    datasources:
-      isDefaultDatasource: false
-    {{- end }}
   serviceMonitor:
     enabled: {{ $p.enabled }}
     labels:
       prometheus: system
   testFramework:
     enabled: false
-  {{- if or $apps.loki.enabled $apps.thanos.enabled $apps.tempo.enabled }}
+  {{- if or $apps.loki.enabled }}
   additionalDataSources:
     {{- if $apps.loki.enabled }}
     - name: Loki
@@ -265,75 +241,17 @@ grafana:
       uid: loki
       type: loki
       access: proxy
+      {{- if eq $v.obj.provider.type "minioLocal" "linode" }}
       url: http://loki-query-frontend-headless.monitoring:3101
+      {{- else }}
+      url: http://loki-headless.monitoring:3101
+      {{- end }}
       basicAuth: true
       basicAuthUser: otomi-admin
       secureJsonData:
         basicAuthPassword: {{ $v.apps.loki.adminPassword | quote }}
     {{- end }}
-    {{- if $apps.thanos.enabled }}
-    - name: Thanos Query
-      access: proxy
-      isDefault: true
-      basicAuth: false
-      editable: false
-      orgId: 1
-      type: prometheus
-      url: http://thanos-query.thanos:9090
-      jsonData:
-        prometheusType: Thanos
-        timeInterval: "60s"
-      {{- if $apps.tempo.enabled }}
-        derivedFields:
-          - datasourceName: Tempo
-            matcherRegex: "traceID=00-([^\\-]+)-"
-            name: TraceID
-            url: "$${__value.raw}"
-            datasourceUid: tempo
-      {{- end }}
-    {{- end }}
-    {{- if $apps.tempo.enabled }}
-    - name: Tempo
-      type: tempo
-      uid: tempo
-      access: proxy
-      editable: true
-      url: http://tempo-query-frontend.tempo:3100
-      jsonData:
-        tracesToLogsV2:
-          datasourceUid: 'loki'
-          spanStartTimeShift: '1h'
-          spanEndTimeShift: '-1h'
-          filterByTraceID: false
-          filterBySpanID: false
-          customQuery: true
-          query: '{namespace=~".+"} |= "$${__span.traceId}"'
-        tracesToMetrics:
-          datasourceUid: 'prometheus'
-          spanStartTimeShift: '1h'
-          spanEndTimeShift: '-1h'
-          tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
-          queries:
-            - name: 'Span duration (example)'
-              query: 'sum(rate(traces_spanmetrics_latency_bucket{$$__tags}[5m]))'
-        serviceMap:
-          datasourceUid: 'prometheus'
-        nodeGraph:
-          enabled: true
-        search:
-          hide: false
-        traceQuery:
-          timeShiftEnabled: true
-          spanStartTimeShift: '1h'
-          spanEndTimeShift: '-1h'
-        spanBar:
-          type: 'Tag'
-          tag: 'http.path'
-        httpMethod: GET
-        lokiSearch:
-          datasourceUid: 'loki'
-    {{- end }}
-    {{- end }}
+  {{- end }}
   adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword | quote }}
   grafana.ini: {{- $grafanaIni | nindent 4 }}
     server:

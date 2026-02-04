@@ -60,8 +60,6 @@ apps:
     enabled: true
   loki:
     enabled: true
-  minio:
-    enabled: true
   otel:
     enabled: true
   prometheus:
@@ -72,15 +70,11 @@ apps:
     enabled: false
   rabbitmq:
     enabled: true
-  tempo:
-    enabled: true
   trivy:
     enabled: true
   kyverno:
     enabled: true
   fabric8:
-    enabled: true
-  thanos:
     enabled: true
 teamConfig:
   demo:
@@ -98,7 +92,7 @@ teamConfig:
         ksvc:
           image:
             repository: linode/apl-nodejs-helloworld
-            tag: v1.4.0
+            tag: v1.5.1
           resources:
             limits:
               cpu: 50m

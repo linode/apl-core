@@ -29,15 +29,6 @@ resources:
     username: "{{ $v.otomi.git.user | b64enc }}"
     password: "{{ $v.otomi.git.password | b64enc }}"
 # DB / app backup resources
-{{- if eq $obj.type "minioLocal" }}
-- apiVersion: v1
-  kind: Secret
-  metadata:
-    name: minio-creds
-  data:
-    MINIO_ACCESS_KEY: "{{ $otomiAdmin | b64enc }}"
-    MINIO_SECRET_KEY: "{{ $v.otomi.adminPassword | b64enc }}"
-{{- end }}
 {{- if eq $obj.type "linode" }}
 - apiVersion: v1
   kind: Secret

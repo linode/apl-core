@@ -72,21 +72,12 @@ resources:
     name: harbor-registry-http
   data:
     REGISTRY_HTTP_SECRET: "{{ $h.registry.secret | default "" | b64enc }}"
-{{- if eq $obj.type "minioLocal" }}
-- apiVersion: v1
-  kind: Secret
-  metadata:
-    name: minio-creds
-  data:
-    REGISTRY_STORAGE_S3_ACCESSKEY: "{{ $otomiAdmin | b64enc }}"
-    REGISTRY_STORAGE_S3_SECRETKEY: "{{ $v.otomi.adminPassword | b64enc }}"
-{{- end }}
 {{- if eq $obj.type "linode" }}
 - apiVersion: v1
   kind: Secret
   metadata:
     name: linode-creds
   data:
-    REGISTRY_STORAGE_S3_ACCESSKEY: "{{ $obj.linode.accessKeyId | b64enc }}"
-    REGISTRY_STORAGE_S3_SECRETKEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
+    S3_STORAGE_ACCOUNT: "{{ $obj.linode.accessKeyId | b64enc }}"
+    S3_STORAGE_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
 {{- end }}

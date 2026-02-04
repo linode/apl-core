@@ -91,7 +91,6 @@ definitions:
       #   #   - critical
       #   #   - nonCritical
       #   type: object
-
   annotations:
     $ref: '#/definitions/labelsAnnotations'
     description: A set of annotations.
@@ -229,6 +228,31 @@ definitions:
         title: Resource group
         description: An Azure resource group.
         $ref: '#/definitions/wordCharacterPattern'
+  catalog:
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+        description: 'A lowercase name that starts with a letter and may contain dashes.'
+        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+      url:
+        type: string
+        description: 'Git repository URL for the catalog'
+        pattern: '^(https?|git|ssh)://.*\.git$'
+      branch:
+        type: string
+        description: 'Git branch or tag to use'
+      enabled:
+        type: boolean
+        description: 'Whether this catalog is active'
+      secretName:
+        type: string
+        description: 'Kubernetes secret name containing git credentials (for private repos)'
+        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+    required:
+      - name
+      - url
+      - branch
   cluster:
     additionalProperties: false
     properties:
@@ -2044,52 +2068,6 @@ properties:
             properties:
               operator:
                 $ref: '#/definitions/resources'
-      thanos:
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          query:
-            properties:
-              replicaCount:
-                description: Number of Thanos Query replicas.
-                type: integer
-                default: 1
-          compactor:
-            description: Resolution and Retention flags.
-            properties:
-              retentionResolutionRaw:
-                type: string
-                default: 30d
-              retentionResolution5m:
-                type: string
-                default: 30d
-              retentionResolution1h:
-                type: string
-                default: 10y
-          resources:
-            additionalProperties: false
-            properties:
-              query:
-                $ref: '#/definitions/resources'
-              storegateway:
-                $ref: '#/definitions/resources'
-              compactor:
-                $ref: '#/definitions/resources'
-          persistence:
-            properties:
-              storegateway:
-                properties:
-                  size:
-                    $ref: '#/definitions/size'
-                    default: 10Gi
-              compactor:
-                properties:
-                  size:
-                    $ref: '#/definitions/size'
-                    default: 10Gi
       tekton:
         additionalProperties: false
         properties:
@@ -2143,6 +2121,8 @@ properties:
                 $ref: '#/definitions/resources'
               indexGateway:
                 $ref: '#/definitions/resources'
+              singleBinary:
+                $ref: '#/definitions/resources'
           autoscaling:
             properties:
               ingester:
@@ -2160,23 +2140,8 @@ properties:
           adminPassword:
             type: string
             x-secret: '{{ randAlphaNum 20 }}'
-          persistence:
-            properties:
-              ingester:
-                properties:
-                  size:
-                    default: 20Gi
-                    $ref: '#/definitions/size'
-              querier:
-                properties:
-                  size:
-                    default: 10Gi
-                    $ref: '#/definitions/size'
-              compactor:
-                properties:
-                  size:
-                    default: 10Gi
-                    $ref: '#/definitions/size'
+          persistentVolumeSize:
+            $ref: '#/definitions/size'
           v13SchemaStartDate:
             description: Automatically set to a date in the future in case of an upgrade
             title: Schema v13 start date
@@ -2205,30 +2170,6 @@ properties:
             type: array
           resources:
             $ref: '#/definitions/resources'
-      minio:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          resources:
-            $ref: '#/definitions/resources'
-          provisioning:
-            additionalProperties: false
-            properties:
-              enabled:
-                type: boolean
-                default: true
-          persistence:
-            properties:
-              enabled:
-                type: boolean
-                default: true
-              size:
-                $ref: '#/definitions/size'
-                default: 20Gi
       oauth2-proxy:
         additionalProperties: false
         properties:
@@ -2247,12 +2188,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          architecture:
-            type: string
-            enum:
-              - standalone
-              - replication
-            default: standalone
           password:
             type: string
             x-secret: '{{ randAlpha 24 }}'
@@ -2261,29 +2196,12 @@ properties:
             properties:
               master:
                 $ref: '#/definitions/resources'
-              replica:
-                $ref: '#/definitions/resources'
               sentinel:
                 $ref: '#/definitions/resources'
-              metrics:
-                $ref: '#/definitions/resources'
-          persistence:
-            properties:
-              master:
-                properties:
-                  size:
-                    default: 1Gi
-                    $ref: '#/definitions/size'
-              replica:
-                properties:
-                  size:
-                    default: 1Gi
-                    $ref: '#/definitions/size'
-              sentinet:
-                properties:
-                  size:
-                    default: 1Gi
-                    $ref: '#/definitions/size'
+          replicas:
+            type: integer
+          persistentVolumeSize:
+            $ref: '#/definitions/size'
         type: object
       otomi-api:
         additionalProperties: false
@@ -2457,8 +2375,6 @@ properties:
                 $ref: '#/definitions/resources'
               node-exporter:
                 $ref: '#/definitions/resources'
-              thanosSidecar:
-                $ref: '#/definitions/resources'
               prometheusConfigReloader:
                 $ref: '#/definitions/resources'
       promtail:
@@ -2487,48 +2403,6 @@ properties:
               msgTopologyOperator:
                 description: Controller which is used to create RabbitMQ queues and policies
                 $ref: '#/definitions/resources'
-      tempo:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          resources:
-            additionalProperties: false
-            properties:
-              compactor:
-                $ref: '#/definitions/resources'
-              ingester:
-                $ref: '#/definitions/resources'
-              querier:
-                $ref: '#/definitions/resources'
-              distributor:
-                $ref: '#/definitions/resources'
-              queryFrontend:
-                $ref: '#/definitions/resources'
-              memcached:
-                $ref: '#/definitions/resources'
-              metricsGenerator:
-                $ref: '#/definitions/resources'
-          autoscaling:
-            properties:
-              ingester:
-                $ref: '#/definitions/autoscalingEnabled'
-              querier:
-                $ref: '#/definitions/autoscalingEnabled'
-              distributor:
-                $ref: '#/definitions/autoscalingEnabled'
-              queryFrontend:
-                $ref: '#/definitions/autoscalingEnabled'
-          persistence:
-            properties:
-              ingester:
-                properties:
-                  size:
-                    default: 10Gi
-                    $ref: '#/definitions/size'
       trivy:
         properties:
           _rawValues:
@@ -2597,6 +2471,10 @@ properties:
     patternProperties:
       '^ingress-nginx-[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
         $ref: '#/definitions/ingressNginx'
+  catalogs:
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/catalog'
   cluster:
     $ref: '#/definitions/cluster'
   dns:
@@ -3087,7 +2965,6 @@ properties:
             $ref: '#/definitions/backupRetentionPolicy'
           schedule:
             $ref: '#/definitions/backupSchedule'
-
   obj:
     properties:
       showWizard:
@@ -3124,14 +3001,6 @@ properties:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
                     default: harbor
-                  thanos:
-                    type: string
-                    $ref: '#/definitions/wordCharacterPattern'
-                    default: tempo
-                  tempo:
-                    type: string
-                    $ref: '#/definitions/wordCharacterPattern'
-                    default: tempo
                   gitea:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
@@ -3147,7 +3016,6 @@ properties:
           type:
             type: string
             enum:
-              - minioLocal
               - linode
               - disabled
             default: disabled

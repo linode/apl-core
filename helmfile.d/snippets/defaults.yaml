@@ -683,13 +683,14 @@ environments:
                 limits:
                   cpu: 200m
                   memory: 256Mi
-            persistence:
-              ingester:
-                size: 20Gi
-              querier:
-                size: 10Gi
-              compactor:
-                size: 10Gi
+              singleBinary:
+                requests:
+                  cpu: 100m
+                  memory: 512Mi
+                limits:
+                  cpu: 500m
+                  memory: 2Gi
+            persistentVolumeSize: 10G
             autoscaling:
               ingester:
                 enabled: false
@@ -734,21 +735,6 @@ environments:
             apiServer:
               create: true
             _rawValues: {}
-          minio:
-            enabled: false
-            provisioning:
-              enabled: true
-            persistence:
-              enabled: true
-              size: 50Gi
-            resources:
-              requests:
-                cpu: 500m
-                memory: 128Mi
-              limits:
-                cpu: "1"
-                memory: 1Gi
-            _rawValues: {}
           oauth2-proxy:
             resources:
               limits:
@@ -759,7 +745,6 @@ environments:
                 memory: 32Mi
             _rawValues: {}
           oauth2-proxy-redis:
-            architecture: standalone
             resources:
               master:
                 requests:
@@ -768,13 +753,6 @@ environments:
                 limits:
                   cpu: 200m
                   memory: 128Mi
-              replica:
-                requests:
-                  cpu: 200m
-                  memory: 64Mi
-                limits:
-                  cpu: 500m
-                  memory: 256Mi
               sentinel:
                 requests:
                   cpu: 200m
@@ -782,20 +760,8 @@ environments:
                 limits:
                   cpu: 500m
                   memory: 256Mi
-              metrics:
-                requests:
-                  cpu: 50m
-                  memory: 64Mi
-                limits:
-                  cpu: 100m
-                  memory: 256Mi
-            persistence:
-                master:
-                  size: 1Gi
-                sentinel:
-                  size: 1Gi
-                replica:
-                  size: 1Gi
+            replicas: 1
+            persistentVolumeSize: 1Gi
             _rawValues: {}
           otomi-api:
             editorInactivityTimeout: 1
@@ -945,13 +911,6 @@ environments:
                 limits:
                   cpu: 500m
                   memory: 256Mi
-              thanosSidecar:
-                requests:
-                  cpu: 10m
-                  memory: 64Mi
-                limits:
-                  cpu: "1"
-                  memory: 512Mi
               prometheusConfigReloader:
                 requests:
                   cpu: 10m
@@ -1017,87 +976,6 @@ environments:
                   cpu: "2"
                   memory: 1Gi
             _rawValues: {}
-          tempo:
-            enabled: false
-            resources:
-              compactor:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: "1"
-                  memory: 1Gi
-              ingester:
-                requests:
-                  cpu: 100m
-                  memory: 768Mi
-                limits:
-                  cpu: 500m
-                  memory: 2Gi
-              memcached:
-                requests:
-                  cpu: 50m
-                  memory: 128Mi
-                limits:
-                  cpu: 200m
-                  memory: 512Mi
-              querier:
-                requests:
-                  cpu: 50m
-                  memory: 64Mi
-                limits:
-                  cpu: 200m
-                  memory: 1Gi
-              metricsGenerator:
-                requests:
-                  cpu: 50m
-                  memory: 256Mi
-                limits:
-                  cpu: 200m
-                  memory: 1Gi
-              distributor:
-                requests:
-                  cpu: 50m
-                  memory: 384Mi
-                limits:
-                  cpu: 200m
-                  memory: 1Gi
-              queryFrontend:
-                requests:
-                  cpu: 50m
-                  memory: 128Mi
-                limits:
-                  cpu: 200m
-                  memory: 512Mi
-            persistence:
-              ingester:
-                size: 10Gi
-            autoscaling:
-              ingester:
-                enabled: false
-                minReplicas: 2
-                maxReplicas: 3
-                targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
-              querier:
-                enabled: false
-                minReplicas: 1
-                maxReplicas: 3
-                targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
-              distributor:
-                enabled: false
-                minReplicas: 1
-                maxReplicas: 3
-                targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
-              queryFrontend:
-                enabled: false
-                minReplicas: 1
-                maxReplicas: 3
-                targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
-            _rawValues: {}
           rabbitmq:
             enabled: false
             resources:
@@ -1115,42 +993,6 @@ environments:
                 limits:
                   cpu: 900m
                   memory: 512Mi
-            _rawValues: {}
-          thanos:
-            enabled: false
-            query:
-              replicaCount: 1
-            compactor:
-              retentionResolutionRaw: 30d
-              retentionResolution5m: 30d
-              retentionResolution1h: 10y
-            persistence:
-              compactor:
-                size: 10Gi
-              storegateway:
-                size: 10Gi
-            resources:
-              query:
-                requests:
-                  cpu: 50m
-                  memory: 160Mi
-                limits:
-                  cpu: "1"
-                  memory: 1Gi
-              compactor:
-                requests:
-                  cpu: 50m
-                  memory: 128Mi
-                limits:
-                  cpu: "1"
-                  memory: 1Gi
-              storegateway:
-                requests:
-                  cpu: 50m
-                  memory: 265Mi
-                limits:
-                  cpu: "1"
-                  memory: 1Gi
             _rawValues: {}
           trivy:
             enabled: false
@@ -1193,7 +1035,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1222,7 +1064,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1251,7 +1093,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1315,5 +1157,11 @@ environments:
           aiEnabled: false
         users: []
         # TODO: update this when schema version changes
+        catalogs:
+          default:
+            name: default
+            url: https://github.com/linode/apl-charts.git
+            branch: main
+            enabled: true
         versions:
-          specVersion: 47
+          specVersion: 54

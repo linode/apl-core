@@ -1,7 +1,8 @@
 import { ApiException } from '@kubernetes/client-node'
+import { encryptSecretItem } from '@linode/kubeseal-encrypt'
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
-import { existsSync, renameSync, rmSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { cp, rename as fsRename, mkdir, readFile, writeFile } from 'fs/promises'
 import { glob, globSync } from 'glob'
 import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
@@ -13,14 +14,14 @@ import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
 import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
-import { writeValues, writeValuesToFile } from 'src/common/values'
+import { objectToYaml, writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { ARGOCD_APP_PARAMS } from '../common/constants'
-import { k8s } from '../common/k8s'
+import { getSealedSecretsPEM, k8s } from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
@@ -667,6 +668,73 @@ const setLokiStorageSchemaMigration = async (values: Record<string, any>): Promi
   }
 }
 
+const SEALED_SECRET_NAME = 'default-catalog-credentials'
+const createCatalogSealedSecret = async (
+  d: ReturnType<typeof terminal>,
+  gitea: { adminUsername: string; adminPassword: string },
+): Promise<void> => {
+  const sealedSecretsPEM = await getSealedSecretsPEM()
+  const encryptedPassword = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea.adminPassword)
+  const encryptedUsername = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea.adminUsername)
+  const sealedSecret = {
+    apiVersion: 'bitnami.com/v1alpha1',
+    kind: 'SealedSecret',
+    metadata: {
+      annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+      name: SEALED_SECRET_NAME,
+      namespace: 'argocd',
+    },
+    spec: {
+      encryptedData: {
+        password: encryptedPassword,
+        username: encryptedUsername,
+      },
+      template: {
+        immutable: false,
+        metadata: { name: SEALED_SECRET_NAME, namespace: 'argocd' },
+        type: 'kubernetes.io/basic-auth',
+      },
+    },
+  }
+  const sealedSecretPath = `${env.ENV_DIR}/env/manifests/ns/argocd/${SEALED_SECRET_NAME}.yaml`
+  mkdirSync(dirname(sealedSecretPath), { recursive: true })
+  d.info(`Writing sealed secret to ${sealedSecretPath}`)
+  writeFileSync(sealedSecretPath, objectToYaml(sealedSecret))
+}
+
+const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('setDefaultAplCatalog')
+  const gitea = values?.apps?.gitea as { adminUsername?: string; adminPassword?: string } | undefined
+  const hasGitea = !!(gitea?.adminUsername && gitea?.adminPassword)
+  const domainSuffix = values?.cluster?.domainSuffix as string | undefined
+  const useGiteaCatalog = hasGitea && !!domainSuffix
+
+  let secretCreated = false
+  if (useGiteaCatalog) {
+    try {
+      await createCatalogSealedSecret(d, gitea as { adminUsername: string; adminPassword: string })
+      secretCreated = true
+    } catch (error) {
+      d.error('Failed to create catalog sealed secret, continuing without it:', error)
+    }
+  } else {
+    d.info('No gitea credentials found, skipping sealed secret creation')
+  }
+
+  let catalogUrl = env.GIT_REPO_CATALOG_URL
+  if (useGiteaCatalog && secretCreated) catalogUrl = `https://gitea.${domainSuffix}/otomi/charts.git`
+
+  d.info(`Setting default APL catalog with url ${catalogUrl}`)
+  const defaultCatalog = {
+    branch: 'main',
+    enabled: true,
+    name: 'default',
+    url: catalogUrl,
+    ...(secretCreated && { secretName: SEALED_SECRET_NAME }),
+  }
+  set(values, 'catalogs.default', defaultCatalog)
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   networkPoliciesMigration,
   teamSettingsMigration,
@@ -677,6 +745,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   installIstioHelmCharts,
   workloadValuesMigration,
   setLokiStorageSchemaMigration,
+  setDefaultAplCatalog,
 }
 
 /**
@@ -707,7 +776,6 @@ export const applyChanges = async (
   const prevValues = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
   const values = cloneDeep(prevValues)
   for (const c of changes) {
-    c.deletions?.forEach((entry) => unsetAtPath(entry, values))
     c.additions?.forEach((entry: any) => each(entry, (val, path) => setAtPath(path, values, val)))
     c.bulkAdditions?.forEach((entry) => each(entry, (filePath, path) => bulkAddition(path, values, filePath)))
     c.relocations?.forEach((entry) => each(entry, (newName, oldName) => moveGivenJsonPath(values, oldName, newName)))
@@ -726,13 +794,6 @@ export const applyChanges = async (
           await setDeep(values, path, tmplStr)
         }
       }
-    // Lastly we remove files
-    for (const change of changes) {
-      change.fileDeletions?.forEach((entry) => {
-        const paths = unparsePaths(entry, values)
-        paths.forEach((path) => deleteFile(path))
-      })
-    }
 
     for (const customFunctionName of c.customFunctions || []) {
       const customFunction = customMigrationFunctions[customFunctionName]
@@ -740,6 +801,15 @@ export const applyChanges = async (
         throw new Error(`Error in migration: Custom migration function ${customFunctionName} not found`)
       }
       await customFunction(values)
+    }
+
+    c.deletions?.forEach((entry) => unsetAtPath(entry, values))
+    // Lastly we remove files
+    for (const change of changes) {
+      change.fileDeletions?.forEach((entry) => {
+        const paths = unparsePaths(entry, values)
+        paths.forEach((path) => deleteFile(path))
+      })
     }
 
     Object.assign(values.versions, { specVersion: c.version })
