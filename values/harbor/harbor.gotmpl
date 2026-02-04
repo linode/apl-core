@@ -122,19 +122,10 @@ persistence:
       accessMode: ReadWriteOnce
       size: 5Gi
   imageChartStorage:
-    {{- if eq $obj.type "minioLocal" "linode" }}
+    {{- if eq $obj.type "linode" }}
     disableredirect: true
     type: s3
     s3:
-      {{- if eq $obj.type "minioLocal" }}
-      bucket: harbor
-      region: us-east-1
-      regionendpoint: http://minio.minio.svc.cluster.local:9000
-      existingSecret: minio-creds
-      secure: false
-      v4auth: true
-      {{- end }}
-      {{- if eq $obj.type "linode" }}
       bucket: {{ $obj.linode.buckets.harbor }}
       regionendpoint: https://{{ $obj.linode.region }}.linodeobjects.com
       existingSecret: linode-creds
@@ -147,7 +138,6 @@ persistence:
       # operation once the blob is 5GiB in size. This effectively means there will be no
       # more 403 Forbidden errors from Object Storage unless a layer/blob is > 5GiB in size
       multipartcopythresholdsize: "5368709120"
-      {{- end }}
     {{- else }}
     type: filesystem
     {{- end }}

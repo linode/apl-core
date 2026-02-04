@@ -429,3 +429,6 @@ changes:
       - 'apps.thanos'
       - 'apps.prometheus.resources.thanosSidecar'
       - 'obj.provider.linode.buckets.thanos'
+  - version: 52
+    deletions:
+      - 'apps.minio'
