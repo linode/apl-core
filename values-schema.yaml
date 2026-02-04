@@ -2211,20 +2211,6 @@ properties:
           editorInactivityTimeout:
             type: integer
             default: 10
-          git:
-            additionalProperties: false
-            properties:
-              branch:
-                type: string
-              email:
-                $ref: '#/definitions/email'
-              password:
-                type: string
-                x-secret: ''
-              repoUrl:
-                $ref: '#/definitions/repoUrl'
-              user:
-                type: string
           resources:
             additionalProperties: false
             properties:
