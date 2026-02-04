@@ -6,7 +6,6 @@
 {{- $sops := $v | get "kms.sops" dict }}
 {{- $giteaValuesUrl := "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values" }}
 {{- $giteaValuesPublilcUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
-{{- $helmChartCatalog := printf "https://gitea.%s/otomi/charts.git" $v.cluster.domainSuffix }}
 {{- $defaultPlatformAdminEmail := printf "platform-admin@%s" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 {{- $version := $v.versions | get "api" }}
@@ -45,7 +44,6 @@ secrets:
   {{- $sopsEnv | nindent 2 }}
 
 env:
-  HELM_CHART_CATALOG: {{ $helmChartCatalog }}
   DEFAULT_PLATFORM_ADMIN_EMAIL: {{ $defaultPlatformAdminEmail }}
   DEBUG: 'otomi:*,-otomi:authz,-otomi:repo'
   VERBOSITY: '1'

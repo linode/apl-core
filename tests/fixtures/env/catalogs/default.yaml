@@ -1,0 +1,9 @@
+kind: AplCatalog
+metadata:
+    name: default
+    labels: {}
+spec:
+    branch: main
+    enabled: true
+    name: default
+    url: https://github.com/linode/apl-charts.git
