@@ -41,7 +41,6 @@ jest.mock('zx', () => ({
 
 jest.mock('./commit', () => ({
   commit: jest.fn(),
-  cloneOtomiChartsInGitea: jest.fn(),
   deletePendingHelmReleases: jest.fn(),
   initialSetupData: jest.fn().mockResolvedValue({
     secretName: 'test-secret',
