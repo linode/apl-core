@@ -19,10 +19,6 @@ export const cliEnvSpec = {
   KUBE_VERSION_OVERRIDE: str({ default: undefined }),
   NODE_TLS_REJECT_UNAUTHORIZED: bool({ default: true }),
   OTOMI_DEV: bool({ default: false }),
-  OTOMI_CHARTS_URL: str({
-    default: 'https://github.com/linode/apl-charts.git',
-    desc: 'The apl-charts repository url to clone into Gitea',
-  }),
   OTOMI_IN_TERMINAL: bool({ default: true }),
   STATIC_COLORS: bool({ default: false }),
   TRACE: bool({ default: false }),
@@ -64,6 +60,10 @@ export const cliEnvSpec = {
   TRACES_REPORT_NAME: str({
     desc: 'Kubernetes config map name for reporting traces',
     default: 'apl-traces-report',
+  }),
+  GIT_REPO_CATALOG_URL: str({
+    desc: 'The URL for the default APL catalog',
+    default: 'https://github.com/linode/apl-charts.git',
   }),
 }
 
