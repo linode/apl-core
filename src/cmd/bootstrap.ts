@@ -14,6 +14,7 @@ import { env, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from 'src/common/k8s'
 import { getKmsSettings } from 'src/common/repo'
+import { bootstrapSealedSecrets } from 'src/common/sealed-secrets'
 import { ensureTeamGitOpsDirectories, getFilename, gucci, isCore, loadYaml, rootDir } from 'src/common/utils'
 import { generateSecrets, writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
@@ -291,7 +292,7 @@ export const processValues = async (
     addInitialPasswords,
     addPlatformAdmin,
   },
-): Promise<Record<string, any>> => {
+): Promise<{ originalInput: Record<string, any>; allSecrets: Record<string, any> }> => {
   const d = deps.terminal(`cmd:${cmdName}:processValues`)
   const { VALUES_INPUT } = env
   d.log(`Loading app values from ${VALUES_INPUT}`)
@@ -324,7 +325,7 @@ export const processValues = async (
   // and do some context dependent post processing:
   // to support potential failing chart install we store secrets on cluster
   if (!(env.isDev && env.DISABLE_SYNC)) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
-  return originalInput
+  return { originalInput, allSecrets }
 }
 
 // create file structure based on file entry
@@ -419,6 +420,7 @@ export const bootstrap = async (
     hfValues,
     writeValues,
     bootstrapSops,
+    bootstrapSealedSecrets,
     migrate,
     encrypt,
     decrypt,
@@ -434,10 +436,10 @@ export const bootstrap = async (
   }
   await deps.copyBasicFiles()
   await deps.migrate()
-  const originalValues = await deps.processValues()
+  const { originalInput, allSecrets } = await deps.processValues()
   await deps.handleFileEntry()
-  await deps.bootstrapSops()
-  await ensureTeamGitOpsDirectories(ENV_DIR, originalValues)
+  await deps.bootstrapSealedSecrets(allSecrets, ENV_DIR)
+  await ensureTeamGitOpsDirectories(ENV_DIR, originalInput)
   d.log(`Done bootstrapping values`)
 }
 
@@ -456,7 +458,6 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
-    await decrypt()
     await bootstrap()
     await bootstrapGit()
   },
