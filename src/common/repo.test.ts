@@ -9,6 +9,9 @@ import {
   getTeamNameFromJsonPath,
   getUniqueIdentifierFromFilePath,
   hasCorrespondingDecryptedFile,
+  renderManifest,
+  renderManifestForSecrets,
+  saveResourceGroupToFiles,
   sortTeamConfigArraysByName,
   sortUserArraysByName,
 } from 'src/common/repo'
@@ -620,5 +623,278 @@ describe('sortUserArraysByName', () => {
     // The function should return the same reference (mutates in place)
     expect(result).toBe(spec)
     expect(spec.users[0].email).toBe('alice@example.com')
+  })
+})
+
+describe('AplCatalog', () => {
+  const envDir = '/tmp/values'
+
+  const catalogFileMap: FileMap = {
+    kind: 'AplCatalog',
+    envDir,
+    jsonPathExpression: '$.catalogs.*',
+    pathGlob: `${envDir}/env/catalogs/*.{yaml,yaml.dec}`,
+    processAs: 'mapItem',
+    resourceGroup: 'platformCatalogs',
+    resourceDir: 'catalogs',
+    loadToSpec: true,
+  }
+
+  describe('getFileMap', () => {
+    it('should return the AplCatalog file map', () => {
+      const map = getFileMap('AplCatalog', envDir)
+      expect(map.kind).toBe('AplCatalog')
+      expect(map.processAs).toBe('mapItem')
+      expect(map.resourceGroup).toBe('platformCatalogs')
+      expect(map.resourceDir).toBe('catalogs')
+      expect(map.jsonPathExpression).toBe('$.catalogs.*')
+      expect(map.loadToSpec).toBe(true)
+    })
+  })
+
+  describe('getResourceFileName', () => {
+    it('should return the map key as file name', () => {
+      const data = { name: 'my-catalog', url: 'https://example.com/charts.git' }
+      const jsonPath = ['$', 'catalogs', 'default']
+      const name = getResourceFileName(catalogFileMap, jsonPath, data)
+      expect(name).toBe('default')
+    })
+
+    it('should use the map key even when it differs from data.name', () => {
+      const data = { name: 'production-charts', url: 'https://example.com/charts.git' }
+      const jsonPath = ['$', 'catalogs', 'prod']
+      const name = getResourceFileName(catalogFileMap, jsonPath, data)
+      expect(name).toBe('prod')
+    })
+  })
+
+  describe('getResourceName', () => {
+    it('should return the map key as resource name', () => {
+      const data = { name: 'my-catalog', url: 'https://example.com/charts.git' }
+      const jsonPath = ['$', 'catalogs', 'default']
+      const name = getResourceName(catalogFileMap, jsonPath, data)
+      expect(name).toBe('default')
+    })
+
+    it('should use the map key even when it differs from data.name', () => {
+      const data = { name: 'production-charts', url: 'https://example.com/charts.git' }
+      const jsonPath = ['$', 'catalogs', 'custom-catalog']
+      const name = getResourceName(catalogFileMap, jsonPath, data)
+      expect(name).toBe('custom-catalog')
+    })
+  })
+
+  describe('getFilePath', () => {
+    it('should return the correct file path for a catalog', () => {
+      const data = { name: 'default', url: 'https://example.com/charts.git' }
+      const jsonPath = ['$', 'catalogs', 'default']
+      const filePath = getFilePath(catalogFileMap, jsonPath, data, '')
+      expect(filePath).toBe('/tmp/values/env/catalogs/default.yaml')
+    })
+
+    it('should return the correct secrets file path for a catalog', () => {
+      const data = { name: 'default', url: 'https://example.com/charts.git' }
+      const jsonPath = ['$', 'catalogs', 'default']
+      const filePath = getFilePath(catalogFileMap, jsonPath, data, 'secrets.')
+      expect(filePath).toBe('/tmp/values/env/catalogs/secrets.default.yaml')
+    })
+
+    it('should use the map key for the file name, not data.name', () => {
+      const data = { name: 'production-charts', url: 'https://example.com/charts.git' }
+      const jsonPath = ['$', 'catalogs', 'prod']
+      const filePath = getFilePath(catalogFileMap, jsonPath, data, '')
+      expect(filePath).toBe('/tmp/values/env/catalogs/prod.yaml')
+    })
+  })
+
+  describe('getJsonPath', () => {
+    it('should return the correct json path for a catalog file', () => {
+      const jsonPath = getJsonPath(catalogFileMap, '/tmp/values/env/catalogs/default.yaml')
+      expect(jsonPath).toBe('catalogs.default')
+    })
+
+    it('should return the correct json path for a different catalog name', () => {
+      const jsonPath = getJsonPath(catalogFileMap, '/tmp/values/env/catalogs/custom.yaml')
+      expect(jsonPath).toBe('catalogs.custom')
+    })
+
+    it('should strip secrets prefix and resolve to the same json path', () => {
+      const jsonPath = getJsonPath(catalogFileMap, '/tmp/values/env/catalogs/secrets.default.yaml')
+      expect(jsonPath).toBe('catalogs.default')
+    })
+  })
+
+  describe('renderManifest', () => {
+    it('should render the manifest with full spec data', () => {
+      const data = {
+        name: 'default',
+        url: 'https://github.com/linode/apl-charts.git',
+        branch: 'main',
+        enabled: true,
+      }
+      const jsonPath = ['$', 'catalogs', 'default']
+      const manifest = renderManifest(catalogFileMap, jsonPath, data)
+
+      expect(manifest.kind).toBe('AplCatalog')
+      expect(manifest.metadata.name).toBe('default')
+      expect(manifest.spec).toEqual(data)
+    })
+
+    it('should not add labels for platform catalog resources', () => {
+      const data = { name: 'default', url: 'https://example.com/charts.git', branch: 'main', enabled: true }
+      const jsonPath = ['$', 'catalogs', 'default']
+      const manifest = renderManifest(catalogFileMap, jsonPath, data)
+
+      expect(manifest.metadata.labels).toBeUndefined()
+    })
+
+    it('should preserve spec.name in the manifest (not omitted)', () => {
+      const data = {
+        name: 'production-charts',
+        url: 'https://example.com/charts.git',
+        branch: 'main',
+        enabled: true,
+      }
+      const jsonPath = ['$', 'catalogs', 'prod']
+      const manifest = renderManifest(catalogFileMap, jsonPath, data)
+
+      expect(manifest.metadata.name).toBe('prod')
+      expect(manifest.spec.name).toBe('production-charts')
+    })
+
+    it('should include optional fields like secretName in spec', () => {
+      const data = {
+        name: 'private-catalog',
+        url: 'https://example.com/private-charts.git',
+        branch: 'v2',
+        enabled: false,
+        secretName: 'git-credentials',
+      }
+      const jsonPath = ['$', 'catalogs', 'private']
+      const manifest = renderManifest(catalogFileMap, jsonPath, data)
+
+      expect(manifest.spec.secretName).toBe('git-credentials')
+      expect(manifest.spec.enabled).toBe(false)
+      expect(manifest.spec.branch).toBe('v2')
+    })
+  })
+
+  describe('renderManifestForSecrets', () => {
+    it('should render a secrets manifest for a catalog', () => {
+      const data = { secretName: 'git-credentials' }
+      const manifest = renderManifestForSecrets(catalogFileMap, 'default', data)
+
+      expect(manifest.kind).toBe('AplCatalog')
+      expect(manifest.metadata.name).toBe('default')
+      expect(manifest.spec).toEqual(data)
+    })
+  })
+
+  describe('saveResourceGroupToFiles', () => {
+    it('should save a single catalog to a file', async () => {
+      const writeValuesToFile = jest.fn()
+      const valuesPublic = {
+        catalogs: {
+          default: {
+            name: 'default',
+            url: 'https://github.com/linode/apl-charts.git',
+            branch: 'main',
+            enabled: true,
+          },
+        },
+      }
+
+      await saveResourceGroupToFiles(catalogFileMap, valuesPublic, {}, { writeValuesToFile })
+
+      expect(writeValuesToFile).toHaveBeenCalledTimes(1)
+      expect(writeValuesToFile).toHaveBeenCalledWith(
+        '/tmp/values/env/catalogs/default.yaml',
+        expect.objectContaining({
+          kind: 'AplCatalog',
+          metadata: { name: 'default' },
+          spec: valuesPublic.catalogs.default,
+        }),
+      )
+    })
+
+    it('should save multiple catalogs to separate files', async () => {
+      const writeValuesToFile = jest.fn()
+      const valuesPublic = {
+        catalogs: {
+          default: {
+            name: 'default',
+            url: 'https://github.com/linode/apl-charts.git',
+            branch: 'main',
+            enabled: true,
+          },
+          custom: {
+            name: 'custom-charts',
+            url: 'https://example.com/charts.git',
+            branch: 'v2',
+            enabled: false,
+          },
+        },
+      }
+
+      await saveResourceGroupToFiles(catalogFileMap, valuesPublic, {}, { writeValuesToFile })
+
+      expect(writeValuesToFile).toHaveBeenCalledTimes(2)
+      expect(writeValuesToFile).toHaveBeenCalledWith(
+        '/tmp/values/env/catalogs/default.yaml',
+        expect.objectContaining({
+          kind: 'AplCatalog',
+          metadata: { name: 'default' },
+        }),
+      )
+      expect(writeValuesToFile).toHaveBeenCalledWith(
+        '/tmp/values/env/catalogs/custom.yaml',
+        expect.objectContaining({
+          kind: 'AplCatalog',
+          metadata: { name: 'custom' },
+          spec: valuesPublic.catalogs.custom,
+        }),
+      )
+    })
+
+    it('should save catalog secrets to files with secrets prefix', async () => {
+      const writeValuesToFile = jest.fn()
+      const valuesPublic = {
+        catalogs: {
+          default: {
+            name: 'default',
+            url: 'https://github.com/linode/apl-charts.git',
+            branch: 'main',
+            enabled: true,
+          },
+        },
+      }
+      const valuesSecrets = {
+        catalogs: {
+          default: {
+            secretName: 'git-credentials',
+          },
+        },
+      }
+
+      await saveResourceGroupToFiles(catalogFileMap, valuesPublic, valuesSecrets, { writeValuesToFile })
+
+      expect(writeValuesToFile).toHaveBeenCalledTimes(2)
+      expect(writeValuesToFile).toHaveBeenCalledWith(
+        '/tmp/values/env/catalogs/secrets.default.yaml',
+        expect.objectContaining({
+          kind: 'AplCatalog',
+          metadata: { name: 'default' },
+          spec: valuesSecrets.catalogs.default,
+        }),
+      )
+    })
+
+    it('should not write anything when there are no catalogs', async () => {
+      const writeValuesToFile = jest.fn()
+
+      await saveResourceGroupToFiles(catalogFileMap, {}, {}, { writeValuesToFile })
+
+      expect(writeValuesToFile).not.toHaveBeenCalled()
+    })
   })
 })

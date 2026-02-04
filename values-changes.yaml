@@ -432,3 +432,6 @@ changes:
   - version: 52
     deletions:
       - 'apps.minio'
+  - version: 53
+    customFunctions:
+      - setDefaultAplCatalog
