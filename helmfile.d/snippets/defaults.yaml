@@ -1159,4 +1159,4 @@ environments:
             branch: main
             enabled: true
         versions:
-          specVersion: 53
+          specVersion: 54
