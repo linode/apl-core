@@ -95,4 +95,4 @@ jobs:
           $format_code_start
           $diff_text
           $format_code_end"
-          gh pr comment ${{ github.event.pull_request.number }} --body "$comment_text"
+          cd "$GITHUB_WORKSPACE/pr" && gh pr comment ${{ github.event.pull_request.number }} --body "$comment_text"
