@@ -147,6 +147,7 @@ environments:
                 cpu: 10m
           gitea:
             _rawValues: {}
+            enabled: true
             networkPolicies:
               enabled: true
             databaseMaxConnections: 28
@@ -1073,7 +1074,6 @@ environments:
               shared_buffers: 64MB
               work_mem: 2MB
           gitea:
-            enabled: true
             imageName: null
             size: 5Gi
             walStorageSize: 5Gi
