@@ -17,5 +17,5 @@ spec:
     git:
       branch: main
       repoUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git
-      user: otomi-admin
+      username: otomi-admin
       email: pipeline@cluster.local
