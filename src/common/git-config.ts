@@ -28,7 +28,6 @@ export interface GitConfigData {
   repoUrl?: string
   branch?: string
   email?: string
-  lastUpdated?: string
 }
 
 export interface GitCredentials {
@@ -58,7 +57,6 @@ export async function getGitConfigData(): Promise<GitConfigData | undefined> {
     repoUrl: data.repoUrl,
     branch: data.branch,
     email: data.email,
-    lastUpdated: data.lastUpdated,
   }
 }
 
@@ -98,9 +96,7 @@ export async function getStoredGitRepoConfig(): Promise<GitRepoConfig | undefine
 export async function setGitConfig(config: Partial<GitConfigData>, coreV1Api?: CoreV1Api): Promise<void> {
   const api = coreV1Api ?? k8s.core()
 
-  const data: Record<string, string> = {
-    lastUpdated: new Date().toISOString(),
-  }
+  const data: Record<string, string> = {}
 
   if (config.repoUrl !== undefined) data.repoUrl = config.repoUrl
   if (config.branch !== undefined) data.branch = config.branch
