@@ -1,7 +1,6 @@
 import { terminal } from './debug'
 import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
 import type { CoreV1Api } from '@kubernetes/client-node'
-import { hfValues } from './hf'
 
 const d = terminal('common:git-config')
 
@@ -74,7 +73,7 @@ export async function getGitConfigData(): Promise<GitConfigData | undefined> {
 export async function getStoredGitRepoConfig(): Promise<GitRepoConfig | undefined> {
   let [configData, credentials] = await Promise.all([getGitConfigData(), getGitCredentials()])
 
-  // This can be removed after BYO Git has been released
+  //TODO This can be removed after BYO Git has been released
   if (!credentials) {
     credentials = await getOldGitCredentials()
   }
@@ -83,13 +82,13 @@ export async function getStoredGitRepoConfig(): Promise<GitRepoConfig | undefine
     throw new Error(`Git credentials not found in ${GIT_CONFIG_SECRET_NAME} & gitea-credentials secret`)
   }
 
+  // We cannot do hfValues because the env dir does not exist yet.
+  //TODO This should be removed after BYO Git has been released.
   if (!configData) {
-    const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
-    const otomiGit = defaultValues?.otomi?.git
     configData = {
-      repoUrl: otomiGit?.repoUrl,
-      branch: otomiGit?.branch,
-      email: otomiGit?.email,
+      repoUrl: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
+      branch: 'main',
+      email: 'pipeline@cluster.local',
     }
   }
 
