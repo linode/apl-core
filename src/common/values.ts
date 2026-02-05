@@ -168,7 +168,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.debug('secrets: ', JSON.stringify(secrets, null, 2))
   // from the plain values
   const plainValues = omit(values, cleanSecretPaths) as any
-  await saveValues(env.ENV_DIR, plainValues, secrets)
+  await saveValues(env.ENV_DIR, inValues, {})
 
   d.info('All values were written to ENV_DIR')
 }
