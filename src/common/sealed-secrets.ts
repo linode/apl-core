@@ -72,7 +72,7 @@ export const APP_NAMESPACE_MAP: Record<string, string> = {
 interface SecretOverrideEntry {
   secretName: string
   namespace: string
-  data: Record<string, { valuePath: string } | { static: string }>
+  data: Record<string, { valuePath: string; default?: string } | { static: string }>
 }
 
 export const APP_SECRET_OVERRIDES: Record<string, SecretOverrideEntry[]> = {
@@ -81,7 +81,7 @@ export const APP_SECRET_OVERRIDES: Record<string, SecretOverrideEntry[]> = {
       secretName: 'gitea-admin-secret',
       namespace: 'gitea',
       data: {
-        username: { valuePath: 'apps.gitea.adminUsername' },
+        username: { valuePath: 'apps.gitea.adminUsername', default: 'otomi-admin' },
         password: { valuePath: 'apps.gitea.adminPassword' },
       },
     },
@@ -349,19 +349,30 @@ export const buildSecretToNamespaceMap = async (
       const data: Record<string, string> = {}
       let hasValuePathData = false
 
-      // First pass: collect valuePath data
+      // First pass: collect valuePath data and track if any actual values were found
+      const pendingDefaults: Array<{ key: string; defaultValue: string }> = []
       for (const [key, source] of Object.entries(override.data)) {
         if (!('static' in source)) {
           const value = allFlat[source.valuePath]
           if (value !== undefined && value !== null && value !== '') {
             data[key] = String(value)
             hasValuePathData = true
+          } else if (source.default !== undefined) {
+            // Queue default value - will be added only if we have at least one actual value
+            pendingDefaults.push({ key, defaultValue: source.default })
           }
         }
       }
 
-      // Only add static values if we have at least one valuePath value
+      // Only add defaults and static values if we have at least one actual valuePath value
       if (hasValuePathData) {
+        // Add pending defaults
+        for (const { key, defaultValue } of pendingDefaults) {
+          if (!(key in data)) {
+            data[key] = defaultValue
+          }
+        }
+        // Add static values
         for (const [key, source] of Object.entries(override.data)) {
           if ('static' in source) {
             data[key] = source.static

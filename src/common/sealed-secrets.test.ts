@@ -308,6 +308,30 @@ describe('sealed-secrets', () => {
       expect(giteaDbMapping!.data.username).toBe('gitea')
       expect(giteaDbMapping!.data.password).toBe('pg-pass')
     })
+
+    it('should use default values when valuePath not found but actual value exists', async () => {
+      // When adminPassword exists but adminUsername doesn't, username should use default
+      const secrets = {
+        apps: {
+          gitea: { adminPassword: 'gitea-pass' },
+        },
+      }
+      const allValues = {
+        apps: {
+          gitea: { adminPassword: 'gitea-pass' }, // no adminUsername provided
+        },
+      }
+      const deps = {
+        getSchemaSecretsPaths: jest.fn().mockResolvedValue(['apps.gitea.adminPassword']),
+      }
+
+      const result = await buildSecretToNamespaceMap(secrets, [], allValues, deps)
+
+      const giteaAdminMapping = result.find((m) => m.secretName === 'gitea-admin-secret')
+      expect(giteaAdminMapping).toBeDefined()
+      expect(giteaAdminMapping!.data.username).toBe('otomi-admin') // default value
+      expect(giteaAdminMapping!.data.password).toBe('gitea-pass')
+    })
   })
 
   describe('createSealedSecretManifest', () => {
@@ -491,7 +515,7 @@ describe('sealed-secrets', () => {
       const adminSecret = APP_SECRET_OVERRIDES['apps.gitea'].find((o) => o.secretName === 'gitea-admin-secret')
       expect(adminSecret).toBeDefined()
       expect(adminSecret!.namespace).toBe('gitea')
-      expect(adminSecret!.data.username).toEqual({ valuePath: 'apps.gitea.adminUsername' })
+      expect(adminSecret!.data.username).toEqual({ valuePath: 'apps.gitea.adminUsername', default: 'otomi-admin' })
       expect(adminSecret!.data.password).toEqual({ valuePath: 'apps.gitea.adminPassword' })
 
       const dbSecret = APP_SECRET_OVERRIDES['apps.gitea'].find((o) => o.secretName === 'gitea-db-secret')
