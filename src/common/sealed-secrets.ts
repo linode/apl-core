@@ -12,6 +12,32 @@ import { $ } from 'zx'
 
 const cmdName = 'sealed-secrets'
 
+/**
+ * Ensure a namespace exists. If it doesn't exist, create it with proper labels.
+ * This avoids overwriting labels on existing namespaces that were created by k8s-raw.gotmpl.
+ */
+export const ensureNamespaceExists = async (namespace: string, deps = { $, terminal }): Promise<void> => {
+  const d = deps.terminal(`common:${cmdName}:ensureNamespaceExists`)
+
+  // Check if namespace already exists
+  const existingNs = await deps.$`kubectl get namespace ${namespace}`.nothrow().quiet()
+  if (existingNs.exitCode === 0) {
+    d.debug(`Namespace ${namespace} already exists`)
+    return
+  }
+
+  // Create namespace with proper label
+  d.info(`Creating namespace ${namespace}`)
+  const nsYaml = `apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${namespace}
+  labels:
+    name: ${namespace}`
+
+  await deps.$`echo ${nsYaml} | kubectl apply -f -`.nothrow().quiet()
+}
+
 export interface SecretMapping {
   namespace: string
   secretName: string
@@ -192,8 +218,8 @@ export const createSealedSecretsKeySecret = async (
 ): Promise<void> => {
   const d = deps.terminal(`common:${cmdName}:createSealedSecretsKeySecret`)
 
-  // Create namespace
-  await deps.$`kubectl create namespace sealed-secrets --dry-run=client -o yaml | kubectl apply -f -`.nothrow().quiet()
+  // Create namespace if it doesn't exist
+  await ensureNamespaceExists('sealed-secrets', { $: deps.$, terminal: deps.terminal })
 
   // Check if secret already exists
   const existingSecret = await deps.$`kubectl get secret sealed-secrets-key -n sealed-secrets`.nothrow().quiet()
@@ -509,8 +535,7 @@ export const applySealedSecretManifests = async (
 
   // Ensure namespaces exist and apply manifests
   for (const [namespace, nsManifests] of byNamespace) {
-    d.info(`Ensuring namespace ${namespace} exists`)
-    await deps.$`kubectl create namespace ${namespace} --dry-run=client -o yaml | kubectl apply -f -`.nothrow().quiet()
+    await ensureNamespaceExists(namespace, { $: deps.$, terminal: deps.terminal })
 
     for (const manifest of nsManifests) {
       d.info(`Applying SealedSecret ${manifest.metadata.name} to namespace ${namespace}`)
@@ -552,9 +577,8 @@ export const applySealedSecretManifestsFromDir = async (
     const namespace = nsEntry.name
     const nsDir = join(manifestsDir, namespace)
 
-    // Ensure namespace exists
-    d.info(`Ensuring namespace ${namespace} exists`)
-    await deps.$`kubectl create namespace ${namespace} --dry-run=client -o yaml | kubectl apply -f -`.nothrow().quiet()
+    // Ensure namespace exists with proper labels
+    await ensureNamespaceExists(namespace, { $: deps.$, terminal: deps.terminal })
 
     // Read all YAML files in the namespace directory
     const files = await deps.readdir(nsDir)
