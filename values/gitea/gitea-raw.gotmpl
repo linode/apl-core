@@ -26,7 +26,7 @@ resources:
   metadata:
     name: gitea-admin-secret
   data:
-    username: "{{ $v.otomi.git.user | b64enc }}"
+    username: "{{ $v.otomi.git.username | b64enc }}"
     password: "{{ $v.otomi.git.password | b64enc }}"
 # DB / app backup resources
 {{- if eq $obj.type "linode" }}

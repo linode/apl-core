@@ -36,7 +36,7 @@ tools:
     VERBOSITY: '1'
 
 secrets:
-  GIT_USER: {{ $git.user | quote }}
+  GIT_USER: {{ $git.username | quote }}
   GIT_EMAIL: {{ $git.email | quote }}
   GIT_PASSWORD: {{ $git.password | quote }}
   {{- $sopsEnv | nindent 2 }}
