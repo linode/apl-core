@@ -39,6 +39,11 @@ jest.mock('zx', () => ({
   cd: jest.fn(),
 }))
 
+jest.mock('src/common/sealed-secrets', () => ({
+  applySealedSecretManifestsFromDir: jest.fn().mockResolvedValue(undefined),
+  restartSealedSecretsController: jest.fn().mockResolvedValue(undefined),
+}))
+
 jest.mock('./commit', () => ({
   commit: jest.fn(),
   deletePendingHelmReleases: jest.fn(),

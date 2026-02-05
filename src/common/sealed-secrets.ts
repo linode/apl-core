@@ -576,6 +576,32 @@ export const applySealedSecretManifestsFromDir = async (
 }
 
 /**
+ * Restart the sealed-secrets controller to ensure it uses the correct key.
+ * This is needed because if the controller starts before the sealed-secrets-key secret exists,
+ * it will generate its own key. Restarting forces it to pick up the existing key.
+ */
+export const restartSealedSecretsController = async (deps = { $, terminal }): Promise<void> => {
+  const d = deps.terminal(`common:${cmdName}:restartSealedSecretsController`)
+  d.info('Restarting sealed-secrets controller to ensure correct key is used')
+
+  const result = await deps.$`kubectl rollout restart deployment/sealed-secrets -n sealed-secrets`.nothrow().quiet()
+  if (result.exitCode !== 0) {
+    d.warn(`Failed to restart sealed-secrets controller: ${result.stderr}`)
+    return
+  }
+
+  d.info('Waiting for sealed-secrets controller rollout')
+  const waitResult = await deps.$`kubectl rollout status deployment/sealed-secrets -n sealed-secrets --timeout=120s`
+    .nothrow()
+    .quiet()
+  if (waitResult.exitCode !== 0) {
+    d.warn(`Rollout status check failed: ${waitResult.stderr}`)
+  } else {
+    d.info('Sealed-secrets controller restarted successfully')
+  }
+}
+
+/**
  * Orchestrator: bootstrap sealed secrets for the platform.
  * Replaces bootstrapSops().
  */

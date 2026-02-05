@@ -5,7 +5,7 @@ import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
 import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState, waitForCRD } from 'src/common/k8s'
-import { applySealedSecretManifestsFromDir } from 'src/common/sealed-secrets'
+import { applySealedSecretManifestsFromDir, restartSealedSecretsController } from 'src/common/sealed-secrets'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -102,6 +102,12 @@ export const installAll = async () => {
   // Apply SealedSecret manifests from disk (generated during bootstrap)
   d.info('Applying SealedSecret manifests')
   await applySealedSecretManifestsFromDir(env.ENV_DIR)
+
+  // Restart the sealed-secrets controller to ensure it uses the correct key
+  // This is needed because the controller may have generated its own key before
+  // the bootstrap-created sealed-secrets-key secret was available
+  d.info('Restarting sealed-secrets controller')
+  await restartSealedSecretsController()
 
   d.info('Deploying charts containing label app=core')
   await hf(
