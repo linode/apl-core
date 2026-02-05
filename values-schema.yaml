@@ -2817,7 +2817,7 @@ properties:
             description: The branch to use in the Git repository
         required:
           - repoUrl
-          - user
+          - username
           - password
           - email
           - branch
