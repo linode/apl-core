@@ -2797,7 +2797,7 @@ properties:
             description: |
               The base URL of the Git repository (without credentials). Auto-derived for internal Gitea.
             pattern: '^https?://.+'
-          user:
+          username:
             type: string
             description: |
               Username for authenticating with the Git repository.
