@@ -41,7 +41,7 @@ resources:
   data:
     CF_API_TOKEN: "{{ . | b64enc }}"
   {{- end }}
-  {{- with .apiSecret }}
+  {{- with .apiToken }}
 resources:
 - apiVersion: v1
   kind: Secret
