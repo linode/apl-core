@@ -5,6 +5,7 @@ import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
 import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState, waitForCRD } from 'src/common/k8s'
+import { applySealedSecretManifestsFromDir } from 'src/common/sealed-secrets'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -81,6 +82,26 @@ export const installAll = async () => {
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
+
+  // Deploy sealed-secrets controller first (needs to be ready before applying SealedSecrets)
+  d.info('Deploying sealed-secrets controller')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-01.init.yaml.gotmpl',
+      labelOpts: ['name=sealed-secrets'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  // Wait for SealedSecret CRD to be established
+  d.info('Waiting for SealedSecret CRD to be ready')
+  await retryInstallStep(waitForCRD, 'sealedsecrets.bitnami.com')
+
+  // Apply SealedSecret manifests from disk (generated during bootstrap)
+  d.info('Applying SealedSecret manifests')
+  await applySealedSecretManifestsFromDir(env.ENV_DIR)
 
   d.info('Deploying charts containing label app=core')
   await hf(

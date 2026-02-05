@@ -1,8 +1,10 @@
 import { encryptSecretItem } from '@linode/kubeseal-encrypt'
 import { X509Certificate } from 'crypto'
-import { mkdir, writeFile } from 'fs/promises'
+import { existsSync } from 'fs'
+import { mkdir, readdir, readFile, writeFile } from 'fs/promises'
 import { get } from 'lodash'
 import { pki } from 'node-forge'
+import { join } from 'path'
 import { terminal } from 'src/common/debug'
 import { flattenObject, getSchemaSecretsPaths } from 'src/common/utils'
 import { objectToYaml } from 'src/common/values'
@@ -435,6 +437,94 @@ export const writeSealedSecretManifests = async (
 }
 
 /**
+ * Apply SealedSecret manifests to the Kubernetes cluster.
+ * Creates namespaces if needed and applies the SealedSecret resources.
+ */
+export const applySealedSecretManifests = async (
+  manifests: SealedSecretManifest[],
+  deps = { $, terminal, objectToYaml },
+): Promise<void> => {
+  const d = deps.terminal(`common:${cmdName}:applySealedSecretManifests`)
+
+  // Group manifests by namespace
+  const byNamespace = new Map<string, SealedSecretManifest[]>()
+  for (const manifest of manifests) {
+    const ns = manifest.metadata.namespace
+    if (!byNamespace.has(ns)) {
+      byNamespace.set(ns, [])
+    }
+    byNamespace.get(ns)!.push(manifest)
+  }
+
+  // Ensure namespaces exist and apply manifests
+  for (const [namespace, nsManifests] of byNamespace) {
+    d.info(`Ensuring namespace ${namespace} exists`)
+    await deps.$`kubectl create namespace ${namespace} --dry-run=client -o yaml | kubectl apply -f -`.nothrow().quiet()
+
+    for (const manifest of nsManifests) {
+      d.info(`Applying SealedSecret ${manifest.metadata.name} to namespace ${namespace}`)
+      const yaml = deps.objectToYaml(manifest)
+      const result = await deps.$`echo ${yaml} | kubectl apply -f -`.nothrow().quiet()
+      if (result.exitCode !== 0) {
+        d.error(`Failed to apply SealedSecret ${manifest.metadata.name}: ${result.stderr}`)
+      }
+    }
+  }
+
+  d.info(`Applied ${manifests.length} SealedSecret manifests to cluster`)
+}
+
+/**
+ * Read and apply all SealedSecret manifests from the env/manifests/ns directory.
+ * This should be called during install, after the sealed-secrets controller is deployed.
+ */
+export const applySealedSecretManifestsFromDir = async (
+  envDir: string,
+  deps = { $, terminal, readdir, readFile, existsSync },
+): Promise<void> => {
+  const d = deps.terminal(`common:${cmdName}:applySealedSecretManifestsFromDir`)
+  const manifestsDir = join(envDir, 'env/manifests/ns')
+
+  if (!deps.existsSync(manifestsDir)) {
+    d.info(`No SealedSecret manifests directory found at ${manifestsDir}`)
+    return
+  }
+
+  d.info(`Applying SealedSecret manifests from ${manifestsDir}`)
+
+  // Read all namespace directories
+  const namespaces = await deps.readdir(manifestsDir, { withFileTypes: true })
+  let appliedCount = 0
+
+  for (const nsEntry of namespaces) {
+    if (!nsEntry.isDirectory()) continue
+    const namespace = nsEntry.name
+    const nsDir = join(manifestsDir, namespace)
+
+    // Ensure namespace exists
+    d.info(`Ensuring namespace ${namespace} exists`)
+    await deps.$`kubectl create namespace ${namespace} --dry-run=client -o yaml | kubectl apply -f -`.nothrow().quiet()
+
+    // Read all YAML files in the namespace directory
+    const files = await deps.readdir(nsDir)
+    for (const file of files) {
+      if (!file.endsWith('.yaml') && !file.endsWith('.yml')) continue
+      const filePath = join(nsDir, file)
+      d.info(`Applying SealedSecret from ${filePath}`)
+
+      const result = await deps.$`kubectl apply -f ${filePath}`.nothrow().quiet()
+      if (result.exitCode !== 0) {
+        d.error(`Failed to apply SealedSecret from ${filePath}: ${result.stderr}`)
+      } else {
+        appliedCount += 1
+      }
+    }
+  }
+
+  d.info(`Applied ${appliedCount} SealedSecret manifests from directory`)
+}
+
+/**
  * Orchestrator: bootstrap sealed secrets for the platform.
  * Replaces bootstrapSops().
  */
@@ -479,6 +569,8 @@ export const bootstrapSealedSecrets = async (
   }
 
   // 7. Write SealedSecret manifests to disk
+  // Note: These manifests are applied later during install, after the sealed-secrets
+  // controller is deployed and the SealedSecret CRD is available.
   await deps.writeSealedSecretManifests(manifests, envDir)
 
   d.info(`Bootstrapped ${manifests.length} sealed secret manifests`)
