@@ -95,4 +95,4 @@ jobs:
           echo '```diff' >> "$comment_file"
           cat tmp/diff-output.txt >> "$comment_file"
           echo '```' >> "$comment_file"
-          cd "$GITHUB_WORKSPACE/pr" && gh pr comment ${{ github.event.pull_request.number }} --body-file "$comment_file"
+          cd "$GITHUB_WORKSPACE/pr" && gh pr comment ${{ github.event.pull_request.number }} --body-file "$comment_file" --create-if-none --edit-last
