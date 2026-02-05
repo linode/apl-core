@@ -137,7 +137,7 @@ persistence:
       {{- if eq $obj.type "linode" }}
       bucket: {{ $obj.linode.buckets.harbor }}
       regionendpoint: https://{{ $obj.linode.region }}.linodeobjects.com
-      existingSecret: linode-creds
+      existingSecret: registry-storage-credentials
       region: {{ $obj.linode.region }}
       encrypt: false
       secure: true

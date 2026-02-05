@@ -89,4 +89,11 @@ resources:
   data:
     S3_STORAGE_ACCOUNT: "{{ $obj.linode.accessKeyId | b64enc }}"
     S3_STORAGE_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: registry-storage-credentials
+  data:
+    REGISTRY_STORAGE_S3_ACCESSKEY: "{{ $obj.linode.accessKeyId | b64enc }}"
+    REGISTRY_STORAGE_S3_SECRETKEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
 {{- end }}
