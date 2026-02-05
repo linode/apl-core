@@ -9,8 +9,6 @@ export const GIT_CONFIG_CONFIGMAP_NAME = 'apl-git-config'
 export const GIT_CONFIG_SECRET_NAME = 'apl-git-credentials'
 export const GIT_CONFIG_NAMESPACE = 'apl-operator'
 
-// Types
-
 /**
  * Unified Git repository configuration with credentials.
  * Contains both the base URL (without credentials) and the authenticated URL (with embedded credentials).
@@ -75,12 +73,13 @@ export async function getStoredGitRepoConfig(): Promise<GitRepoConfig | undefine
   const { branch, email, repoUrl } = configData
 
   if (!repoUrl) {
-    d.warn('No repoUrl found in stored config')
-    return undefined
+    throw new Error(`Git repository URL is missing in ${GIT_CONFIG_CONFIGMAP_NAME} config`)
+  }
+  if (!username || !password) {
+    throw new Error(`Git credentials are incomplete in ${GIT_CONFIG_SECRET_NAME} secret`)
   }
   if (!branch || !email) {
-    d.warn('No branch or email found in stored config')
-    return undefined
+    throw new Error(`Git branch or email is missing in ${GIT_CONFIG_CONFIGMAP_NAME} config`)
   }
   const url = new URL(repoUrl)
   url.username = username
