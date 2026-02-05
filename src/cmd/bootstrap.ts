@@ -85,6 +85,11 @@ export const bootstrapSops = async (
   await deps.writeFile(targetPath, output)
   d.log(`Ready generating sops files. The configuration is written to: ${targetPath}`)
 
+  d.info('Copying sops related files')
+  // add sops related files
+  const file = '.gitattributes'
+  await deps.copyFile(`${rootDir}/.values/${file}`, `${envDir}/${file}`)
+
   // prepare some credential files the first time and crypt some
   if (!exists) {
     if (isCli || env.OTOMI_DEV) {
@@ -433,6 +438,7 @@ export const bootstrap = async (
   await deps.migrate()
   const { originalInput, allSecrets } = await deps.processValues()
   await deps.handleFileEntry()
+  await deps.bootstrapSops()
   await deps.bootstrapSealedSecrets(allSecrets, ENV_DIR, originalInput)
   await ensureTeamGitOpsDirectories(ENV_DIR, originalInput)
   d.log(`Done bootstrapping values`)
@@ -453,6 +459,7 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
+    await decrypt()
     await bootstrap()
     await bootstrapGit()
   },
