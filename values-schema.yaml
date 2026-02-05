@@ -1702,6 +1702,8 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
           postgresqlPassword:
             type: string
             description: This password was generated and cannot be changed without manual intervention.
