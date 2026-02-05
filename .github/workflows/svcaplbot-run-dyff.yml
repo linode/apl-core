@@ -65,7 +65,7 @@ jobs:
       - name: Install npm dependencies
         run: cd "$GITHUB_WORKSPACE/pr" && npm install --no-save && cd "$GITHUB_WORKSPACE/base" && npm install --no-save
       - name: Install Helm and Helmfile
-        uses: helmfile/helmfile-action@v2.1.1
+        uses: helmfile/helmfile-action@v2.2.0
         with:
           helmfile-args: version  # In this step, we only want these tools to be installed
           helm-plugins: >
