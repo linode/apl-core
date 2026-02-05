@@ -123,11 +123,25 @@ describe('sealed-secrets', () => {
   })
 
   describe('createSealedSecretsKeySecret', () => {
-    it('should call kubectl to create namespace and TLS secret', async () => {
-      const mockResult = { stderr: '', exitCode: 0 }
-      const mockQuiet = jest.fn().mockResolvedValue(mockResult)
+    it('should create secret if it does not exist', async () => {
+      const mockQuiet = jest.fn().mockResolvedValue({ stderr: '', exitCode: 0 })
       const mockNothrow = jest.fn().mockReturnValue({ quiet: mockQuiet })
-      const mock$ = jest.fn().mockReturnValue({ nothrow: mockNothrow })
+      // First call (namespace): success, Second call (check exists): not found (exitCode 1)
+      // Third call (create): success, Fourth call (label): success
+      const mock$ = jest
+        .fn()
+        .mockReturnValueOnce({
+          nothrow: jest.fn().mockReturnValue({ quiet: jest.fn().mockResolvedValue({ exitCode: 0 }) }),
+        }) // namespace
+        .mockReturnValueOnce({
+          nothrow: jest.fn().mockReturnValue({ quiet: jest.fn().mockResolvedValue({ exitCode: 1 }) }),
+        }) // check exists - NOT FOUND
+        .mockReturnValueOnce({
+          nothrow: jest.fn().mockReturnValue({ quiet: jest.fn().mockResolvedValue({ exitCode: 0 }) }),
+        }) // create
+        .mockReturnValueOnce({
+          nothrow: jest.fn().mockReturnValue({ quiet: jest.fn().mockResolvedValue({ exitCode: 0 }) }),
+        }) // label
       const deps = {
         $: mock$ as any,
         terminal,
@@ -137,10 +151,32 @@ describe('sealed-secrets', () => {
 
       await createSealedSecretsKeySecret('cert-pem', 'key-pem', deps)
 
-      // Should have been called 3 times: namespace creation, secret creation, labeling
-      expect(mock$).toHaveBeenCalledTimes(3)
+      expect(mock$).toHaveBeenCalledTimes(4)
       expect(deps.writeFile).toHaveBeenCalledWith('/tmp/sealed-secrets-bootstrap/tls.crt', 'cert-pem')
       expect(deps.writeFile).toHaveBeenCalledWith('/tmp/sealed-secrets-bootstrap/tls.key', 'key-pem')
+    })
+
+    it('should skip creation if secret already exists', async () => {
+      const mock$ = jest
+        .fn()
+        .mockReturnValueOnce({
+          nothrow: jest.fn().mockReturnValue({ quiet: jest.fn().mockResolvedValue({ exitCode: 0 }) }),
+        }) // namespace
+        .mockReturnValueOnce({
+          nothrow: jest.fn().mockReturnValue({ quiet: jest.fn().mockResolvedValue({ exitCode: 0 }) }),
+        }) // check exists - FOUND
+      const deps = {
+        $: mock$ as any,
+        terminal,
+        writeFile: jest.fn(),
+        mkdir: jest.fn(),
+      }
+
+      await createSealedSecretsKeySecret('cert-pem', 'key-pem', deps)
+
+      // Should only call namespace and check exists, not create or label
+      expect(mock$).toHaveBeenCalledTimes(2)
+      expect(deps.writeFile).not.toHaveBeenCalled()
     })
   })
 
@@ -414,7 +450,7 @@ describe('sealed-secrets', () => {
   })
 
   describe('bootstrapSealedSecrets', () => {
-    it('should orchestrate all steps in sequence', async () => {
+    it('should generate new key pair when no existing cert found', async () => {
       const secrets = {
         apps: { harbor: { adminPassword: 'pass' } },
       }
@@ -443,6 +479,7 @@ describe('sealed-secrets', () => {
 
       const deps = {
         terminal,
+        getExistingSealedSecretsCert: jest.fn().mockResolvedValue(undefined), // No existing cert
         generateSealedSecretsKeyPair: jest.fn().mockReturnValue({
           certificate: 'cert-pem',
           privateKey: 'key-pem',
@@ -457,14 +494,41 @@ describe('sealed-secrets', () => {
 
       await bootstrapSealedSecrets(secrets, '/test', undefined, deps)
 
+      expect(deps.getExistingSealedSecretsCert).toHaveBeenCalled()
       expect(deps.generateSealedSecretsKeyPair).toHaveBeenCalled()
       expect(deps.createSealedSecretsKeySecret).toHaveBeenCalledWith('cert-pem', 'key-pem')
       expect(deps.getPemFromCertificate).toHaveBeenCalledWith('cert-pem')
-      expect(deps.buildSecretToNamespaceMap).toHaveBeenCalledWith(secrets, [], undefined)
-      expect(deps.createSealedSecretManifest).toHaveBeenCalledWith('spki-pem', mockMapping, {
-        encryptSecretItem: deps.encryptSecretItem,
-      })
       expect(deps.writeSealedSecretManifests).toHaveBeenCalledWith([mockManifest], '/test')
+    })
+
+    it('should use existing cert when found', async () => {
+      const secrets = {
+        apps: { harbor: { adminPassword: 'pass' } },
+      }
+      const mockMapping = {
+        namespace: 'harbor',
+        secretName: 'harbor-secrets',
+        data: { adminPassword: 'pass' },
+      }
+
+      const deps = {
+        terminal,
+        getExistingSealedSecretsCert: jest.fn().mockResolvedValue('existing-cert-pem'), // Existing cert found
+        generateSealedSecretsKeyPair: jest.fn(),
+        getPemFromCertificate: jest.fn().mockReturnValue('existing-spki-pem'),
+        createSealedSecretsKeySecret: jest.fn(),
+        buildSecretToNamespaceMap: jest.fn().mockResolvedValue([mockMapping]),
+        createSealedSecretManifest: jest.fn().mockResolvedValue({}),
+        writeSealedSecretManifests: jest.fn(),
+        encryptSecretItem: jest.fn(),
+      }
+
+      await bootstrapSealedSecrets(secrets, '/test', undefined, deps)
+
+      expect(deps.getExistingSealedSecretsCert).toHaveBeenCalled()
+      expect(deps.generateSealedSecretsKeyPair).not.toHaveBeenCalled() // Should NOT generate new key
+      expect(deps.createSealedSecretsKeySecret).not.toHaveBeenCalled() // Should NOT create secret
+      expect(deps.getPemFromCertificate).toHaveBeenCalledWith('existing-cert-pem')
     })
 
     it('should extract team names from secrets', async () => {
@@ -477,6 +541,7 @@ describe('sealed-secrets', () => {
 
       const deps = {
         terminal,
+        getExistingSealedSecretsCert: jest.fn().mockResolvedValue(undefined),
         generateSealedSecretsKeyPair: jest.fn().mockReturnValue({
           certificate: 'cert',
           privateKey: 'key',

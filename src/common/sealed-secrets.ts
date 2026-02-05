@@ -153,8 +153,37 @@ export const getPemFromCertificate = (certificate: string): string => {
 }
 
 /**
+ * Get the existing sealed-secrets certificate from the cluster if it exists.
+ * Returns the certificate PEM string or undefined if not found.
+ */
+export const getExistingSealedSecretsCert = async (deps = { $, terminal }): Promise<string | undefined> => {
+  const d = deps.terminal(`common:${cmdName}:getExistingSealedSecretsCert`)
+
+  const result =
+    await deps.$`kubectl get secret sealed-secrets-key -n sealed-secrets -o jsonpath='{.data.tls\\.crt}' 2>/dev/null`
+      .nothrow()
+      .quiet()
+
+  if (result.exitCode !== 0 || !result.stdout || result.stdout === '') {
+    d.info('No existing sealed-secrets-key found')
+    return undefined
+  }
+
+  try {
+    const certBase64 = result.stdout.replace(/'/g, '')
+    const cert = Buffer.from(certBase64, 'base64').toString('utf-8')
+    d.info('Found existing sealed-secrets-key certificate')
+    return cert
+  } catch {
+    d.warn('Failed to decode existing certificate')
+    return undefined
+  }
+}
+
+/**
  * Create the sealed-secrets namespace and TLS secret in Kubernetes.
  * The controller will pick up this pre-created key on startup.
+ * IMPORTANT: This only creates the secret if it doesn't already exist.
  */
 export const createSealedSecretsKeySecret = async (
   certificate: string,
@@ -162,10 +191,18 @@ export const createSealedSecretsKeySecret = async (
   deps = { $, terminal, writeFile, mkdir },
 ): Promise<void> => {
   const d = deps.terminal(`common:${cmdName}:createSealedSecretsKeySecret`)
-  d.info('Creating sealed-secrets namespace and TLS secret')
 
   // Create namespace
   await deps.$`kubectl create namespace sealed-secrets --dry-run=client -o yaml | kubectl apply -f -`.nothrow().quiet()
+
+  // Check if secret already exists
+  const existingSecret = await deps.$`kubectl get secret sealed-secrets-key -n sealed-secrets`.nothrow().quiet()
+  if (existingSecret.exitCode === 0) {
+    d.info('sealed-secrets-key already exists, skipping creation')
+    return
+  }
+
+  d.info('Creating sealed-secrets TLS secret')
 
   // Write temp files for kubectl create secret tls
   const tmpDir = '/tmp/sealed-secrets-bootstrap'
@@ -175,12 +212,15 @@ export const createSealedSecretsKeySecret = async (
   await deps.writeFile(certPath, certificate)
   await deps.writeFile(keyPath, privateKey)
 
-  // Create the TLS secret
+  // Create the TLS secret (only if it doesn't exist)
   const result =
-    await deps.$`kubectl create secret tls sealed-secrets-key -n sealed-secrets --cert=${certPath} --key=${keyPath} --dry-run=client -o yaml | kubectl apply -f -`
+    await deps.$`kubectl create secret tls sealed-secrets-key -n sealed-secrets --cert=${certPath} --key=${keyPath}`
       .nothrow()
       .quiet()
-  if (result.stderr) d.error(result.stderr)
+  if (result.exitCode !== 0) {
+    d.error(`Failed to create sealed-secrets-key: ${result.stderr}`)
+    return
+  }
 
   // Label the secret so the controller picks it up
   const labelResult =
@@ -548,6 +588,7 @@ export const bootstrapSealedSecrets = async (
     generateSealedSecretsKeyPair,
     getPemFromCertificate,
     createSealedSecretsKeySecret,
+    getExistingSealedSecretsCert,
     buildSecretToNamespaceMap,
     createSealedSecretManifest,
     writeSealedSecretManifests,
@@ -557,14 +598,21 @@ export const bootstrapSealedSecrets = async (
   const d = deps.terminal(`common:${cmdName}:bootstrapSealedSecrets`)
   d.info('Bootstrapping sealed secrets')
 
-  // 1. Generate RSA key pair + self-signed X.509 certificate
-  const { certificate, privateKey } = deps.generateSealedSecretsKeyPair()
+  // 1. Check if there's an existing sealed-secrets key in the cluster
+  const existingCert = await deps.getExistingSealedSecretsCert()
 
-  // 2 & 3. Create namespace and store key pair as K8s TLS secret
-  await deps.createSealedSecretsKeySecret(certificate, privateKey)
-
-  // 4. Extract SPKI PEM public key from certificate
-  const pem = deps.getPemFromCertificate(certificate)
+  let pem: string
+  if (existingCert) {
+    // Use existing certificate for encryption
+    d.info('Using existing sealed-secrets certificate')
+    pem = deps.getPemFromCertificate(existingCert)
+  } else {
+    // Generate new key pair and create the secret
+    d.info('Generating new sealed-secrets key pair')
+    const { certificate, privateKey } = deps.generateSealedSecretsKeyPair()
+    await deps.createSealedSecretsKeySecret(certificate, privateKey)
+    pem = deps.getPemFromCertificate(certificate)
+  }
 
   // 5. Build secret-to-namespace mapping
   const teams = Object.keys(get(secrets, 'teamConfig', {}) as Record<string, unknown>)
