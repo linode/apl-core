@@ -1036,7 +1036,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1065,7 +1065,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1093,7 +1093,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1152,5 +1152,11 @@ environments:
           aiEnabled: false
         users: []
         # TODO: update this when schema version changes
+        catalogs:
+          default:
+            name: default
+            url: https://github.com/linode/apl-charts.git
+            branch: main
+            enabled: true
         versions:
-          specVersion: 52
+          specVersion: 54
