@@ -18,8 +18,6 @@ dotenv.config()
 const d = terminal('operator:main')
 
 async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
-  // Get git config from stored ConfigMap/Secret - NOT from hfValues()
-  // This avoids the path issues with helmfile templates expecting ENV_DIR to be parent of env/
   const gitConfig = await getStoredGitRepoConfig()
 
   if (!gitConfig) {

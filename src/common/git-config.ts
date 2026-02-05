@@ -1,6 +1,7 @@
 import { terminal } from './debug'
 import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
 import type { CoreV1Api } from '@kubernetes/client-node'
+import { hfValues } from './hf'
 
 const d = terminal('common:git-config')
 
@@ -45,6 +46,14 @@ export async function getGitCredentials(): Promise<GitCredentials | undefined> {
     password: secretData.password,
   }
 }
+export async function getOldGitCredentials(): Promise<GitCredentials | undefined> {
+  const secretData = await getK8sSecret('gitea-credentials', GIT_CONFIG_NAMESPACE)
+
+  return {
+    username: secretData?.GIT_USERNAME,
+    password: secretData?.GIT_PASSWORD,
+  }
+}
 
 export async function getGitConfigData(): Promise<GitConfigData | undefined> {
   const configMap = await getK8sConfigMap(GIT_CONFIG_NAMESPACE, GIT_CONFIG_CONFIGMAP_NAME, k8s.core())
@@ -63,10 +72,25 @@ export async function getGitConfigData(): Promise<GitConfigData | undefined> {
  * This avoids calling hfValues() in operator startup path.
  */
 export async function getStoredGitRepoConfig(): Promise<GitRepoConfig | undefined> {
-  const [configData, credentials] = await Promise.all([getGitConfigData(), getGitCredentials()])
+  let [configData, credentials] = await Promise.all([getGitConfigData(), getGitCredentials()])
 
-  if (!configData || !credentials) {
-    return undefined
+  // This can be removed after BYO Git has been released
+  if (!credentials) {
+    credentials = await getOldGitCredentials()
+  }
+
+  if (!credentials) {
+    throw new Error(`Git credentials not found in ${GIT_CONFIG_SECRET_NAME} & gitea-credentials secret`)
+  }
+
+  if (!configData) {
+    const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
+    const otomiGit = defaultValues?.otomi?.git
+    configData = {
+      repoUrl: otomiGit?.repoUrl,
+      branch: otomiGit?.branch,
+      email: otomiGit?.email,
+    }
   }
 
   const { username, password } = credentials
