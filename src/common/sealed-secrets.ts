@@ -62,6 +62,39 @@ export const APP_NAMESPACE_MAP: Record<string, string> = {
 }
 
 /**
+ * Per-app secret override configuration.
+ * When an app requires specific K8s Secret names and key layouts
+ * (e.g. gitea expects `gitea-admin-secret` with `username`/`password` keys),
+ * define overrides here instead of using the default `{app}-secrets` convention.
+ */
+interface SecretOverrideEntry {
+  secretName: string
+  namespace: string
+  data: Record<string, { valuePath: string } | { static: string }>
+}
+
+export const APP_SECRET_OVERRIDES: Record<string, SecretOverrideEntry[]> = {
+  'apps.gitea': [
+    {
+      secretName: 'gitea-admin-secret',
+      namespace: 'gitea',
+      data: {
+        username: { valuePath: 'apps.gitea.adminUsername' },
+        password: { valuePath: 'apps.gitea.adminPassword' },
+      },
+    },
+    {
+      secretName: 'gitea-db-secret',
+      namespace: 'gitea',
+      data: {
+        username: { static: 'gitea' },
+        password: { valuePath: 'apps.gitea.postgresqlPassword' },
+      },
+    },
+  ],
+}
+
+/**
  * Generate an RSA 4096-bit key pair and self-signed X.509 certificate for Sealed Secrets.
  * Follows the pattern from createCustomCA() in bootstrap.ts.
  */
@@ -179,6 +212,55 @@ const resolveNamespace = (secretPath: string): string | undefined => {
   return undefined
 }
 
+// Map specific path prefixes to secret names
+const SECRET_NAME_MAP: Record<string, string> = {
+  'apps.harbor': 'harbor-secrets',
+  'apps.gitea': 'gitea-secrets',
+  'apps.keycloak': 'keycloak-secrets',
+  'apps.grafana': 'grafana-secrets',
+  'apps.loki': 'loki-secrets',
+  'apps.oauth2-proxy': 'oauth2-proxy-secrets',
+  'apps.oauth2-proxy-redis': 'oauth2-proxy-redis-secrets',
+  'apps.prometheus': 'prometheus-secrets',
+  'apps.otomi-api': 'otomi-api-secrets',
+  'apps.cert-manager': 'cert-manager-secrets',
+  'apps.kubeflow-pipelines': 'kubeflow-pipelines-secrets',
+  otomi: 'otomi-platform-secrets',
+  oidc: 'oidc-secrets',
+  smtp: 'smtp-secrets',
+  dns: 'dns-secrets',
+  obj: 'obj-storage-secrets',
+  license: 'license-secrets',
+  users: 'users-secrets',
+  alerts: 'alerts-secrets',
+  cluster: 'cluster-secrets',
+}
+
+/**
+ * Find the group prefix for a secret path.
+ * Returns the prefix that maps to the secret name (e.g., 'apps.harbor' for 'apps.harbor.adminPassword').
+ */
+const findGroupPrefix = (secretPath: string): string | undefined => {
+  const teamMatch = secretPath.match(/^teamConfig\.([^.]+)/)
+  if (teamMatch) {
+    return `teamConfig.${teamMatch[1]}`
+  }
+
+  const sortedKeys = Object.keys(SECRET_NAME_MAP).sort((a, b) => b.length - a.length)
+  for (const prefix of sortedKeys) {
+    if (secretPath === prefix || secretPath.startsWith(`${prefix}.`)) {
+      return prefix
+    }
+  }
+
+  // Fallback: use first two path segments
+  const parts = secretPath.split('.')
+  if (parts.length >= 2) {
+    return parts.slice(0, 2).join('.')
+  }
+  return undefined
+}
+
 /**
  * Derive a K8s secret name from the secret path prefix.
  */
@@ -188,34 +270,10 @@ const deriveSecretName = (secretPath: string): string => {
     return 'team-settings-secrets'
   }
 
-  // Map specific path prefixes to secret names
-  const nameMap: Record<string, string> = {
-    'apps.harbor': 'harbor-secrets',
-    'apps.gitea': 'gitea-secrets',
-    'apps.keycloak': 'keycloak-secrets',
-    'apps.grafana': 'grafana-secrets',
-    'apps.loki': 'loki-secrets',
-    'apps.oauth2-proxy': 'oauth2-proxy-secrets',
-    'apps.oauth2-proxy-redis': 'oauth2-proxy-redis-secrets',
-    'apps.prometheus': 'prometheus-secrets',
-    'apps.otomi-api': 'otomi-api-secrets',
-    'apps.cert-manager': 'cert-manager-secrets',
-    'apps.kubeflow-pipelines': 'kubeflow-pipelines-secrets',
-    otomi: 'otomi-platform-secrets',
-    oidc: 'oidc-secrets',
-    smtp: 'smtp-secrets',
-    dns: 'dns-secrets',
-    obj: 'obj-storage-secrets',
-    license: 'license-secrets',
-    users: 'users-secrets',
-    alerts: 'alerts-secrets',
-    cluster: 'cluster-secrets',
-  }
-
-  const sortedKeys = Object.keys(nameMap).sort((a, b) => b.length - a.length)
+  const sortedKeys = Object.keys(SECRET_NAME_MAP).sort((a, b) => b.length - a.length)
   for (const prefix of sortedKeys) {
     if (secretPath === prefix || secretPath.startsWith(`${prefix}.`)) {
-      return nameMap[prefix]
+      return SECRET_NAME_MAP[prefix]
     }
   }
 
@@ -231,19 +289,26 @@ const deriveSecretName = (secretPath: string): string => {
 export const buildSecretToNamespaceMap = async (
   secrets: Record<string, any>,
   teams: string[],
+  allValues?: Record<string, any>,
   deps = { getSchemaSecretsPaths },
 ): Promise<SecretMapping[]> => {
   const secretPaths = await deps.getSchemaSecretsPaths(teams)
   const flat = flattenObject(secrets)
+  const allFlat = allValues ? flattenObject(allValues) : flat
 
   // Group by namespace + secretName
   const groupMap = new Map<string, SecretMapping>()
+
+  // Determine which secret path prefixes have overrides
+  const overriddenPrefixes = Object.keys(APP_SECRET_OVERRIDES)
 
   for (const secretPath of secretPaths) {
     // Skip SOPS-related paths
     if (secretPath.startsWith('kms.sops')) continue
     // Skip 'users' path — not a simple key-value secret
     if (secretPath === 'users') continue
+    // Skip overridden prefixes — they are handled separately below
+    if (overriddenPrefixes.some((p) => secretPath === p || secretPath.startsWith(`${p}.`))) continue
 
     const namespace = resolveNamespace(secretPath)
     if (!namespace) continue
@@ -257,14 +322,57 @@ export const buildSecretToNamespaceMap = async (
 
     const mapping = groupMap.get(groupKey)!
 
+    // Find the group prefix (e.g., 'apps.harbor' for 'apps.harbor.adminPassword')
+    const groupPrefix = findGroupPrefix(secretPath)
+
     // Find all flat keys that match this secret path
     for (const [flatKey, value] of Object.entries(flat)) {
       if (flatKey === secretPath || flatKey.startsWith(`${secretPath}.`)) {
-        // Use the leaf key name as the data key
-        const dataKey = flatKey.replace(/\./g, '_')
+        // Use leaf key: strip the group prefix to get relative path
+        const relativePath =
+          groupPrefix && (flatKey === groupPrefix || flatKey.startsWith(`${groupPrefix}.`))
+            ? flatKey.slice(groupPrefix.length + 1)
+            : flatKey
+        const dataKey = relativePath.replace(/\./g, '_')
         if (value !== undefined && value !== null && value !== '') {
           mapping.data[dataKey] = String(value)
         }
+      }
+    }
+  }
+
+  // Process APP_SECRET_OVERRIDES
+  for (const [, overrides] of Object.entries(APP_SECRET_OVERRIDES)) {
+    for (const override of overrides) {
+      const data: Record<string, string> = {}
+      let hasValuePathData = false
+
+      // First pass: collect valuePath data
+      for (const [key, source] of Object.entries(override.data)) {
+        if (!('static' in source)) {
+          const value = allFlat[source.valuePath]
+          if (value !== undefined && value !== null && value !== '') {
+            data[key] = String(value)
+            hasValuePathData = true
+          }
+        }
+      }
+
+      // Only add static values if we have at least one valuePath value
+      if (hasValuePathData) {
+        for (const [key, source] of Object.entries(override.data)) {
+          if ('static' in source) {
+            data[key] = source.static
+          }
+        }
+      }
+
+      if (Object.keys(data).length > 0) {
+        groupMap.set(`${override.namespace}/${override.secretName}`, {
+          namespace: override.namespace,
+          secretName: override.secretName,
+          data,
+        })
       }
     }
   }
@@ -333,6 +441,7 @@ export const writeSealedSecretManifests = async (
 export const bootstrapSealedSecrets = async (
   secrets: Record<string, any>,
   envDir: string,
+  allValues?: Record<string, any>,
   deps = {
     terminal,
     generateSealedSecretsKeyPair,
@@ -358,7 +467,7 @@ export const bootstrapSealedSecrets = async (
 
   // 5. Build secret-to-namespace mapping
   const teams = Object.keys(get(secrets, 'teamConfig', {}) as Record<string, unknown>)
-  const mappings = await deps.buildSecretToNamespaceMap(secrets, teams)
+  const mappings = await deps.buildSecretToNamespaceMap(secrets, teams, allValues)
 
   // 6. Create SealedSecret manifests
   const manifests: SealedSecretManifest[] = []

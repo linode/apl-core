@@ -14,13 +14,6 @@ bases:
 {{- $k := $a.keycloak }}
 
 releases:
-  - name: gitea-db-secret-artifacts
-    installed: true
-    namespace: gitea
-    labels:
-      pkg: gitea
-      app: core
-    <<: *raw
   - name: gitea-otomi-db
     installed: true
     namespace: gitea

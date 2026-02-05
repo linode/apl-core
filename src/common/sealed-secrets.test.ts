@@ -2,6 +2,7 @@ import { pki } from 'node-forge'
 import stubs from 'src/test-stubs'
 import {
   APP_NAMESPACE_MAP,
+  APP_SECRET_OVERRIDES,
   bootstrapSealedSecrets,
   buildSecretToNamespaceMap,
   createSealedSecretManifest,
@@ -144,33 +145,23 @@ describe('sealed-secrets', () => {
   })
 
   describe('buildSecretToNamespaceMap', () => {
-    it('should group secrets by namespace and secret name', async () => {
+    it('should group secrets by namespace and secret name with leaf key naming', async () => {
       const secrets = {
         apps: {
           harbor: { adminPassword: 'harbor-pass', secretKey: 'harbor-secret' },
-          gitea: { adminPassword: 'gitea-pass' },
         },
       }
       const deps = {
-        getSchemaSecretsPaths: jest
-          .fn()
-          .mockResolvedValue(['apps.harbor.adminPassword', 'apps.harbor.secretKey', 'apps.gitea.adminPassword']),
+        getSchemaSecretsPaths: jest.fn().mockResolvedValue(['apps.harbor.adminPassword', 'apps.harbor.secretKey']),
       }
 
-      const result = await buildSecretToNamespaceMap(secrets, [], deps)
-
-      expect(result).toHaveLength(2)
+      const result = await buildSecretToNamespaceMap(secrets, [], undefined, deps)
 
       const harborMapping = result.find((m) => m.namespace === 'harbor')
       expect(harborMapping).toBeDefined()
       expect(harborMapping!.secretName).toBe('harbor-secrets')
-      expect(harborMapping!.data).toHaveProperty('apps_harbor_adminPassword', 'harbor-pass')
-      expect(harborMapping!.data).toHaveProperty('apps_harbor_secretKey', 'harbor-secret')
-
-      const giteaMapping = result.find((m) => m.namespace === 'gitea')
-      expect(giteaMapping).toBeDefined()
-      expect(giteaMapping!.secretName).toBe('gitea-secrets')
-      expect(giteaMapping!.data).toHaveProperty('apps_gitea_adminPassword', 'gitea-pass')
+      expect(harborMapping!.data).toHaveProperty('adminPassword', 'harbor-pass')
+      expect(harborMapping!.data).toHaveProperty('secretKey', 'harbor-secret')
     })
 
     it('should skip kms.sops paths', async () => {
@@ -184,7 +175,7 @@ describe('sealed-secrets', () => {
           .mockResolvedValue(['kms.sops.provider', 'kms.sops.age.publicKey', 'apps.harbor.adminPassword']),
       }
 
-      const result = await buildSecretToNamespaceMap(secrets, [], deps)
+      const result = await buildSecretToNamespaceMap(secrets, [], undefined, deps)
 
       expect(result).toHaveLength(1)
       expect(result[0].namespace).toBe('harbor')
@@ -193,16 +184,16 @@ describe('sealed-secrets', () => {
     it('should skip users path', async () => {
       const secrets = {
         users: [{ email: 'admin@example.com' }],
-        apps: { gitea: { adminPassword: 'pass' } },
+        apps: { harbor: { adminPassword: 'pass' } },
       }
       const deps = {
-        getSchemaSecretsPaths: jest.fn().mockResolvedValue(['users', 'apps.gitea.adminPassword']),
+        getSchemaSecretsPaths: jest.fn().mockResolvedValue(['users', 'apps.harbor.adminPassword']),
       }
 
-      const result = await buildSecretToNamespaceMap(secrets, [], deps)
+      const result = await buildSecretToNamespaceMap(secrets, [], undefined, deps)
 
       expect(result).toHaveLength(1)
-      expect(result[0].namespace).toBe('gitea')
+      expect(result[0].namespace).toBe('harbor')
     })
 
     it('should handle teamConfig dynamic paths', async () => {
@@ -215,7 +206,7 @@ describe('sealed-secrets', () => {
         getSchemaSecretsPaths: jest.fn().mockResolvedValue(['teamConfig.team-alpha.someSecret']),
       }
 
-      const result = await buildSecretToNamespaceMap(secrets, ['team-alpha'], deps)
+      const result = await buildSecretToNamespaceMap(secrets, ['team-alpha'], undefined, deps)
 
       expect(result).toHaveLength(1)
       expect(result[0].namespace).toBe('team-team-alpha')
@@ -228,9 +219,94 @@ describe('sealed-secrets', () => {
         getSchemaSecretsPaths: jest.fn().mockResolvedValue(['apps.harbor.adminPassword']),
       }
 
-      const result = await buildSecretToNamespaceMap(secrets, [], deps)
+      const result = await buildSecretToNamespaceMap(secrets, [], undefined, deps)
 
       expect(result).toHaveLength(0)
+    })
+
+    it('should use leaf key naming for nested secret paths', async () => {
+      const secrets = {
+        apps: {
+          harbor: { core: { secret: 'core-secret-val' } },
+        },
+      }
+      const deps = {
+        getSchemaSecretsPaths: jest.fn().mockResolvedValue(['apps.harbor.core.secret']),
+      }
+
+      const result = await buildSecretToNamespaceMap(secrets, [], undefined, deps)
+
+      expect(result).toHaveLength(1)
+      expect(result[0].data).toHaveProperty('core_secret', 'core-secret-val')
+    })
+
+    it('should skip overridden prefixes and generate override secrets instead', async () => {
+      const secrets = {
+        apps: {
+          gitea: { adminPassword: 'gitea-pass', postgresqlPassword: 'pg-pass' },
+          harbor: { adminPassword: 'harbor-pass' },
+        },
+      }
+      const allValues = {
+        apps: {
+          gitea: { adminUsername: 'admin', adminPassword: 'gitea-pass', postgresqlPassword: 'pg-pass' },
+          harbor: { adminPassword: 'harbor-pass' },
+        },
+      }
+      const deps = {
+        getSchemaSecretsPaths: jest
+          .fn()
+          .mockResolvedValue([
+            'apps.gitea.adminPassword',
+            'apps.gitea.postgresqlPassword',
+            'apps.harbor.adminPassword',
+          ]),
+      }
+
+      const result = await buildSecretToNamespaceMap(secrets, [], allValues, deps)
+
+      // Harbor should use default convention
+      const harborMapping = result.find((m) => m.secretName === 'harbor-secrets')
+      expect(harborMapping).toBeDefined()
+      expect(harborMapping!.data).toHaveProperty('adminPassword', 'harbor-pass')
+
+      // Gitea should NOT have a gitea-secrets mapping
+      const giteaDefaultMapping = result.find((m) => m.secretName === 'gitea-secrets')
+      expect(giteaDefaultMapping).toBeUndefined()
+
+      // Gitea should have override-based secrets
+      const giteaAdminMapping = result.find((m) => m.secretName === 'gitea-admin-secret')
+      expect(giteaAdminMapping).toBeDefined()
+      expect(giteaAdminMapping!.namespace).toBe('gitea')
+      expect(giteaAdminMapping!.data).toEqual({ username: 'admin', password: 'gitea-pass' })
+
+      const giteaDbMapping = result.find((m) => m.secretName === 'gitea-db-secret')
+      expect(giteaDbMapping).toBeDefined()
+      expect(giteaDbMapping!.namespace).toBe('gitea')
+      expect(giteaDbMapping!.data).toEqual({ username: 'gitea', password: 'pg-pass' })
+    })
+
+    it('should include static values in override secrets', async () => {
+      const secrets = {
+        apps: {
+          gitea: { postgresqlPassword: 'pg-pass' },
+        },
+      }
+      const allValues = {
+        apps: {
+          gitea: { postgresqlPassword: 'pg-pass' },
+        },
+      }
+      const deps = {
+        getSchemaSecretsPaths: jest.fn().mockResolvedValue(['apps.gitea.postgresqlPassword']),
+      }
+
+      const result = await buildSecretToNamespaceMap(secrets, [], allValues, deps)
+
+      const giteaDbMapping = result.find((m) => m.secretName === 'gitea-db-secret')
+      expect(giteaDbMapping).toBeDefined()
+      expect(giteaDbMapping!.data.username).toBe('gitea')
+      expect(giteaDbMapping!.data.password).toBe('pg-pass')
     })
   })
 
@@ -355,12 +431,12 @@ describe('sealed-secrets', () => {
         encryptSecretItem: jest.fn().mockResolvedValue('encrypted'),
       }
 
-      await bootstrapSealedSecrets(secrets, '/test', deps)
+      await bootstrapSealedSecrets(secrets, '/test', undefined, deps)
 
       expect(deps.generateSealedSecretsKeyPair).toHaveBeenCalled()
       expect(deps.createSealedSecretsKeySecret).toHaveBeenCalledWith('cert-pem', 'key-pem')
       expect(deps.getPemFromCertificate).toHaveBeenCalledWith('cert-pem')
-      expect(deps.buildSecretToNamespaceMap).toHaveBeenCalledWith(secrets, [])
+      expect(deps.buildSecretToNamespaceMap).toHaveBeenCalledWith(secrets, [], undefined)
       expect(deps.createSealedSecretManifest).toHaveBeenCalledWith('spki-pem', mockMapping, {
         encryptSecretItem: deps.encryptSecretItem,
       })
@@ -389,9 +465,9 @@ describe('sealed-secrets', () => {
         encryptSecretItem: jest.fn(),
       }
 
-      await bootstrapSealedSecrets(secrets, '/test', deps)
+      await bootstrapSealedSecrets(secrets, '/test', undefined, deps)
 
-      expect(deps.buildSecretToNamespaceMap).toHaveBeenCalledWith(secrets, ['alpha', 'beta'])
+      expect(deps.buildSecretToNamespaceMap).toHaveBeenCalledWith(secrets, ['alpha', 'beta'], undefined)
     })
   })
 
@@ -404,6 +480,25 @@ describe('sealed-secrets', () => {
       expect(APP_NAMESPACE_MAP['otomi']).toBe('otomi')
       expect(APP_NAMESPACE_MAP['dns']).toBe('external-dns')
       expect(APP_NAMESPACE_MAP['cluster']).toBe('cert-manager')
+    })
+  })
+
+  describe('APP_SECRET_OVERRIDES', () => {
+    it('should have gitea overrides configured', () => {
+      expect(APP_SECRET_OVERRIDES['apps.gitea']).toBeDefined()
+      expect(APP_SECRET_OVERRIDES['apps.gitea']).toHaveLength(2)
+
+      const adminSecret = APP_SECRET_OVERRIDES['apps.gitea'].find((o) => o.secretName === 'gitea-admin-secret')
+      expect(adminSecret).toBeDefined()
+      expect(adminSecret!.namespace).toBe('gitea')
+      expect(adminSecret!.data.username).toEqual({ valuePath: 'apps.gitea.adminUsername' })
+      expect(adminSecret!.data.password).toEqual({ valuePath: 'apps.gitea.adminPassword' })
+
+      const dbSecret = APP_SECRET_OVERRIDES['apps.gitea'].find((o) => o.secretName === 'gitea-db-secret')
+      expect(dbSecret).toBeDefined()
+      expect(dbSecret!.namespace).toBe('gitea')
+      expect(dbSecret!.data.username).toEqual({ static: 'gitea' })
+      expect(dbSecret!.data.password).toEqual({ valuePath: 'apps.gitea.postgresqlPassword' })
     })
   })
 })

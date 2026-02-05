@@ -433,7 +433,7 @@ export const bootstrap = async (
   await deps.migrate()
   const { originalInput, allSecrets } = await deps.processValues()
   await deps.handleFileEntry()
-  await deps.bootstrapSealedSecrets(allSecrets, ENV_DIR)
+  await deps.bootstrapSealedSecrets(allSecrets, ENV_DIR, originalInput)
   await ensureTeamGitOpsDirectories(ENV_DIR, originalInput)
   d.log(`Done bootstrapping values`)
 }

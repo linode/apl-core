@@ -21,13 +21,6 @@ resources:
   data:
     ca-certificates.crt: {{ .Values._derived.caCert | b64enc }}
 {{- end }}
-- apiVersion: v1
-  kind: Secret
-  metadata:
-    name: gitea-admin-secret
-  data:
-    username: "{{ $g.adminUsername | b64enc }}"
-    password: "{{ $g.adminPassword | b64enc }}"
 # DB / app backup resources
 {{- if eq $obj.type "linode" }}
 - apiVersion: v1
