@@ -82,6 +82,9 @@ export const bootstrapSops = async (
     if (privateKey && !process.env.SOPS_AGE_KEY) {
       process.env.SOPS_AGE_KEY = privateKey
       await deps.writeFile(`${envDir}/.secrets`, `SOPS_AGE_KEY=${privateKey}`)
+      await createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', 'apl-operator', {
+        SOPS_AGE_KEY: privateKey,
+      })
     }
   }
 
@@ -121,9 +124,6 @@ export const bootstrapSops = async (
         const { privateKey } = values.kms.sops!.age!
         process.env.SOPS_AGE_KEY = privateKey
         await deps.writeFile(secretsFile, `SOPS_AGE_KEY=${privateKey}`)
-        await createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', 'apl-operator', {
-          SOPS_AGE_KEY: privateKey,
-        })
       }
     }
     // now do a round of encryption and decryption to make sure we have all the files in place for later
