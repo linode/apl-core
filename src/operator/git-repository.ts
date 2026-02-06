@@ -6,29 +6,22 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 export interface GitRepositoryConfig {
-  username: string
-  password: string
-  gitHost: string
-  gitPort: string
-  gitProtocol: string
+  authenticatedUrl: string // Full URL with credentials already embedded
   repoPath: string
-  gitOrg: string
-  gitRepo: string
 }
 
 export class GitRepository {
   private git: SimpleGit
   private _lastRevision = ''
   private d: OtomiDebugger
-  readonly repoUrl: string
+  readonly authenticatedUrl: string
   private readonly repoPath: string
   private readonly skipMarker = '[ci skip]'
 
   constructor(config: GitRepositoryConfig) {
-    const { username, password, gitHost, gitPort, gitProtocol, repoPath, gitOrg, gitRepo } = config
     this.d = terminal('operator:git-repository')
-    this.repoUrl = `${gitProtocol}://${username}:${encodeURIComponent(password)}@${gitHost}:${gitPort}/${gitOrg}/${gitRepo}.git`
-    this.repoPath = repoPath
+    this.authenticatedUrl = config.authenticatedUrl
+    this.repoPath = config.repoPath
     this.git = simpleGit(this.repoPath)
   }
 
@@ -57,7 +50,7 @@ export class GitRepository {
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
     try {
-      await this.git.clone(this.repoUrl, this.repoPath)
+      await this.git.clone(this.authenticatedUrl, this.repoPath)
       this.d.info(`Repository cloned successfully`)
     } catch (error) {
       this.d.error('Failed to clone repository:', getErrorMessage(error))
@@ -72,14 +65,14 @@ export class GitRepository {
 
       if (!origin) {
         this.d.warn('Origin remote not found, adding it')
-        await this.git.remote(['add', 'origin', this.repoUrl])
+        await this.git.remote(['add', 'origin', this.authenticatedUrl])
         this.d.info('Origin remote added successfully')
         return
       }
 
-      if (origin.refs.fetch !== this.repoUrl) {
+      if (origin.refs.fetch !== this.authenticatedUrl) {
         this.d.warn('Origin remote URL mismatch detected, resetting to correct URL')
-        await this.git.remote(['set-url', 'origin', this.repoUrl])
+        await this.git.remote(['set-url', 'origin', this.authenticatedUrl])
         this.d.info('Origin remote URL reset successfully')
       } else {
         this.d.debug('Origin remote URL is correct')

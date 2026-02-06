@@ -440,3 +440,9 @@ changes:
       - databases.keycloak.backupSidecarResources.limits.memory: 256Mi
       - databases.gitea.backupSidecarResources.limits.memory: 256Mi
       - databases.harbor.backupSidecarResources.limits.memory: 256Mi
+  - version: 55
+    deletions:
+      - 'apps.otomi-api.git'
+    relocations:
+      - apps.gitea.adminPassword: otomi.git.password
+      - apps.gitea.adminUsername: otomi.git.username

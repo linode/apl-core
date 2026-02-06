@@ -4,7 +4,8 @@ import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { getFilename } from 'src/common/utils'
-import { getRepo, writeValues } from 'src/common/values'
+import { getRepo } from 'src/common/git-config'
+import { writeValues } from 'src/common/values'
 import { $, cd } from 'zx'
 
 const cmdName = getFilename(__filename)
@@ -22,7 +23,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   // inValues indicates that there is no values repo file structure that helmfile expects
   const values = inValues ?? ((await hfValues()) as Record<string, any>)
-  const { remote, branch, email, username, password } = getRepo(values)
+  const { authenticatedUrl: remote, branch, email, username, password } = getRepo(values)
   cd(env.ENV_DIR)
   if (existsSync(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped, setting identity just in case`)
@@ -58,7 +59,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     await decrypt()
   } catch (e) {
     d.debug(e?.message?.replace(password, '****'))
-    d.info('Remote does not exist yet. Expecting first commit to come later.')
+    d.info('Remote repository is empty or unreachable. Will initialize locally and push initial commit.')
   } finally {
     const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
     // finally write back the new values without overwriting existing values

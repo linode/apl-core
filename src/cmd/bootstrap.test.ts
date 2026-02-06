@@ -207,6 +207,7 @@ describe('Bootstrapping values', () => {
         getKmsSettings: jest.fn(),
         terminal,
         writeFile: jest.fn(),
+        createUpdateGenericSecret: jest.fn(),
       }
       it('should create files on first run and en/de-crypt', async () => {
         deps.pathExists.mockReturnValue(false)

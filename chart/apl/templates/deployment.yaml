@@ -80,7 +80,7 @@ spec:
             - secretRef:
                 name: apl-sops-secrets
             - secretRef:
-                name: gitea-credentials
+                name: apl-git-credentials
           {{- end }}
           volumeMounts:
             - name: otomi-values

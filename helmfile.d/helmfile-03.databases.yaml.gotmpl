@@ -15,14 +15,14 @@ bases:
 
 releases:
   - name: gitea-db-secret-artifacts
-    installed: true
+    installed: {{ $a | get "gitea.enabled" }}
     namespace: gitea
     labels:
       pkg: gitea
       app: core
     <<: *raw
   - name: gitea-otomi-db
-    installed: true
+    installed: {{ $a | get "gitea.enabled" }}
     namespace: gitea
     labels:
       pkg: gitea

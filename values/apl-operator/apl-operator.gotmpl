@@ -20,5 +20,10 @@ resources: {{- toYaml $o.resources.operator | nindent 2 }}
 
 kms: {{- $kms | toYaml | nindent 2 }}
 
-gitPassword: {{ $g.adminPassword | quote }}
-gitUsername: {{ $g.adminUsername | quote }}
+git:
+  password: {{ $v.otomi.git.password | quote }}
+  username: {{ $v.otomi.git.username | quote }}
+  email: {{ $v.otomi.git.email | quote }}
+  repoUrl: {{ $v.otomi.git.repoUrl | quote }}
+  branch: {{ $v.otomi.git.branch | quote }}
+

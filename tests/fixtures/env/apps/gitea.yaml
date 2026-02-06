@@ -4,7 +4,6 @@ metadata:
     labels: {}
 spec:
     _rawValues: {}
-    adminUsername: otomi-admin
     enabled: true
     resources:
         gitea:
