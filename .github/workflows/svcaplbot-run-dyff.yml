@@ -31,14 +31,22 @@ jobs:
         run: |
           COMMIT_MSG=$(git log -1 --pretty=%B)
           IS_DRAFT="${{ github.event.pull_request.draft }}"
+          EVENT_ACTION="${{ github.event.action }}"
 
           echo "Commit message: $COMMIT_MSG"
           echo "Is draft: $IS_DRAFT"
+          echo "Event action: $EVENT_ACTION"
 
-          if [[ $COMMIT_MSG == "Merge branch"* || $IS_DRAFT == "true" ]]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
+          if [[ $IS_DRAFT == "true" ]]; then
+            echo "Skipping - PR is in draft"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif [[ $COMMIT_MSG == "Merge branch"* && $EVENT_ACTION != "ready_for_review" ]]; then
+            # Skip if merge commit, unless it is triggered by the ready_for_review event
+            echo "Skipping - merge commit"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
           else
-            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "Running workflow"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Show output
         run: |
