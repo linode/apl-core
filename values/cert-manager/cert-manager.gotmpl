@@ -19,13 +19,14 @@ prometheus:
     prometheusInstance: system
 
 podAnnotations:
-  sidecar.istio.io/inject: "false"  
-installCRDs: true
+  sidecar.istio.io/inject: "false"
+crds:
+  enabled: true
 resources: {{- toYaml $cm.resources.certManager | nindent 2 }}
 
 startupapicheck:
   jobAnnotations:
-    sidecar.istio.io/inject: "false"  
+    sidecar.istio.io/inject: "false"
   resources: {{- toYaml $cm.resources.startupapicheck | nindent 4 }}
 {{- if $v.otomi.linodeLkeImageRepository }}
   image:
@@ -50,4 +51,3 @@ acmesolver:
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/jetstack/cert-manager-acmesolver"
 {{- end }}
-
