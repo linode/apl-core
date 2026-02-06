@@ -182,11 +182,13 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
         const decExists = existsSync(`${file}.dec`)
 
         if (decExists) {
-          // Compare timestamps: if .dec is newer than encrypted file, it has changes
-          // (matchTimestamps syncs them after encryption, so newer .dec means modifications)
+          // Compare timestamps in whole seconds to avoid sub-second filesystem precision issues
+          // (matchTimestamps syncs them after decryption, so newer .dec means modifications)
           const encTS = await stat(file)
           const decTS = await stat(`${file}.dec`)
-          if (decTS.mtimeMs > encTS.mtimeMs) {
+          const encSec = Math.floor(encTS.mtimeMs / 1000)
+          const decSec = Math.floor(decTS.mtimeMs / 1000)
+          if (decSec > encSec) {
             d.info(`Encrypting ${file}, .dec file is newer (modified since last encryption)`)
             return true
           }
@@ -198,10 +200,10 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
         try {
           // Same logic is used in helm-secrets
           await $`grep -q 'mac.*,type:str]' ${file}`
-          d.info(`Skipping encryption for ${file} (already encrypted, no .dec file)`)
+          d.debug(`Skipping encryption for ${file} (already encrypted, no .dec file)`)
           return false
         } catch {
-          d.info(`${file} is not yet encrypted, will encrypt`)
+          d.debug(`${file} is not yet encrypted, will encrypt`)
           return true
         }
       },

@@ -84,7 +84,7 @@ async function main(): Promise<void> {
     })
 
     // Phase 2: Set environment variables and start operator for GitOps operations
-    await installer.setEnvAndCreateSecrets()
+    // await installer.setEnvAndCreateSecrets()
     const config = await loadConfig(aplOps)
     const operator = new AplOperator(config)
     handleTerminationSignals(operator)
