@@ -1,0 +1,77 @@
+{{- if .Values.apiServicesManagement.enabled -}}
+{{- if not .Values.templating.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "reports-server.fullname" . }}-pre-delete-api-services-cleanup
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "reports-server.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-delete
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded,hook-failed
+    helm.sh/hook-weight: "100"
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      {{- with .Values.apiServicesManagement.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+      {{- with .Values.apiServicesManagement.podLabels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- include "reports-server.labels" . | nindent 8 }}
+    spec:
+      serviceAccount: {{ include "reports-server.serviceAccountName" . }}
+      {{- with .Values.apiServicesManagement.podSecurityContext }}
+      securityContext:
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+      restartPolicy: Never
+      {{- with .Values.apiServicesManagement.imagePullSecrets | default .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: kubectl
+          image: "{{ .Values.apiServicesManagement.image.registry }}/{{ .Values.apiServicesManagement.image.repository }}:{{ .Values.apiServicesManagement.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.apiServicesManagement.image.pullPolicy }}
+          command:
+            - /bin/bash
+            - '-c'
+            - |-
+              set -euo pipefail
+              kubectl wait -n {{ $.Release.Namespace }} pod --for=condition=ready -l app.kubernetes.io/name={{ include "reports-server.name" . }} --timeout=120s
+              kubectl delete apiservice v1alpha2.wgpolicyk8s.io v1.reports.kyverno.io --ignore-not-found=true
+          {{- with .Values.apiServicesManagement.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.apiServicesManagement.tolerations | default .Values.tolerations}}
+      tolerations:
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+      {{- with .Values.apiServicesManagement.nodeSelector | default .Values.nodeSelector }}
+      nodeSelector:
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.apiServicesManagement.podAntiAffinity .Values.apiServicesManagement.podAffinity .Values.apiServicesManagement.nodeAffinity }}
+      affinity:
+        {{- with .Values.apiServicesManagement.podAntiAffinity }}
+        podAntiAffinity:
+          {{- tpl (toYaml .) $ | nindent 10 }}
+        {{- end }}
+        {{- with .Values.apiServicesManagement.podAffinity }}
+        podAffinity:
+          {{- tpl (toYaml .) $ | nindent 10 }}
+        {{- end }}
+        {{- with .Values.apiServicesManagement.nodeAffinity }}
+        nodeAffinity:
+          {{- tpl (toYaml .) $ | nindent 10 }}
+        {{- end }}
+      {{- end }}
+{{- end -}}
+{{- end -}}
