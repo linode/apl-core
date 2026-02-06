@@ -3,4 +3,4 @@ appVersion: 1.16.0
 description: CloudNativePG Grafana Cluster Dashboard.
 name: cluster
 type: application
-version: 0.0.2
+version: 0.0.5

@@ -15,7 +15,7 @@ dependencies:
     version: v1.19.3
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
-    version: 0.27.0
+    version: 0.27.1
     repository: https://cloudnative-pg.github.io/charts
   - name: plugin-barman-cloud
     alias: cloudnative-pg-plugin-barman-cloud
