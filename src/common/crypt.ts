@@ -5,7 +5,7 @@ import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
 import { terminal } from './debug'
 import { cleanEnv, cliEnvSpec, env, isCli } from './envalid'
-import { hasFileDifference, readdirRecurse, rootDir } from './utils'
+import { readdirRecurse, rootDir } from './utils'
 import { BasicArguments } from './yargs'
 
 export interface Arguments extends BasicArguments {
@@ -22,12 +22,12 @@ enum CryptType {
 
 const preCrypt = async (path): Promise<void> => {
   const d = terminal(`common:crypt:preCrypt`)
-  d.debug('Checking prerequisites for the (de,en)crypt action')
+  d.info('Checking prerequisites for the (de,en)crypt action')
   // we might have set GCLOUD_SERVICE_KEY in bootstrap so reparse env
   // just this time (not desired as should be considered read only):
   const lateEnv = cleanEnv(cliEnvSpec)
   if (lateEnv.GCLOUD_SERVICE_KEY) {
-    d.debug('Writing GOOGLE_APPLICATION_CREDENTIAL')
+    d.info('Writing GOOGLE_APPLICATION_CREDENTIAL')
     // and set the location to the file holding the credentials for zx running sops
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
     await writeFile(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(lateEnv.GCLOUD_SERVICE_KEY))
@@ -46,7 +46,7 @@ const getAllSecretFiles = async (path) => {
     (file) => file.endsWith('.yaml') && file.includes('/secrets.'),
   )
 
-  d.debug('getAllSecretFiles: ', files)
+  d.info('getAllSecretFiles: ', files)
   return files
 }
 
@@ -60,7 +60,7 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
   const d = terminal(`common:crypt:processFileChunk`)
   const commands = files.map(async (file) => {
     if (!crypt.condition || (await crypt.condition(file))) {
-      d.debug(`${crypt.cmd} ${file}`)
+      d.info(`${crypt.cmd} ${file}`)
       try {
         const result = await $`${[...crypt.cmd.split(' '), file]}`.quiet()
 
@@ -112,7 +112,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
   // EventEmitter.defaultMaxListeners is 10, if we increase chunkSize in the future then this line will prevent it from crashing
   if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
-  d.debug(`runOnSecretFiles: ${crypt.cmd}`)
+  d.info(`runOnSecretFiles: ${crypt.cmd}`)
   try {
     for (const fileChunk of filesChunked) {
       await processFileChunk(crypt, fileChunk)
@@ -127,20 +127,19 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
   }
 }
 
-const matchTimestamps = async (path, file: string) => {
+const matchTimestamps = async (file: string) => {
   const d = terminal(`common:crypt:matchTimeStamps`)
-  const absFilePath = `${path}/${file}`
-  if (!existsSync(`${absFilePath}.dec`)) {
-    d.debug(`Missing ${file}.dec, skipping...`)
+  if (!existsSync(`${file}.dec`)) {
+    d.info(`Missing ${file}.dec, skipping...`)
     return
   }
 
-  const encTS = await stat(absFilePath)
-  const decTS = await stat(`${absFilePath}.dec`)
-  await utimes(`${absFilePath}.dec`, decTS.mtime, encTS.mtime)
+  const encTS = await stat(file)
+  const decTS = await stat(`${file}.dec`)
+  await utimes(`${file}.dec`, decTS.mtime, encTS.mtime)
   const encSec = Math.round(encTS.mtimeMs / 1000)
   const decSec = Math.round(decTS.mtimeMs / 1000)
-  d.debug(`Updated timestamp for ${file}.dec from ${decSec} to ${encSec}`)
+  d.info(`Updated timestamp for ${file}.dec from ${decSec} to ${encSec}`)
 }
 
 export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<void> => {
@@ -155,7 +154,7 @@ export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
     path,
     {
       cmd: CryptType.DECRYPT,
-      post: async (f) => matchTimestamps(path, f),
+      post: async (f) => matchTimestamps(f),
     },
     files,
   )
@@ -179,33 +178,35 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
           return false
         }
 
-        try {
-          // Same logic is used in helm-secrets: https://github.com/jkroepke/helm-secrets/blob/18a061430899c8cd66be68d8495f4b8489dbf3c3/scripts/lib/backends/sops.sh#L16
-          await $`grep -q 'mac.*,type:str]' ${file}`
-          d.debug(`Skipping encryption for ${file} (already encrypted)`)
-          return false
-        } catch {
-          d.debug(`${file} is not yet encrypted or grep did not match`)
-        }
         // Check if the decrypted version exists
         const decExists = existsSync(`${file}.dec`)
-        if (!decExists) {
-          d.debug(`Did not find decrypted ${file}.dec`)
-          return true
+
+        if (decExists) {
+          // Compare timestamps: if .dec is newer than encrypted file, it has changes
+          // (matchTimestamps syncs them after encryption, so newer .dec means modifications)
+          const encTS = await stat(file)
+          const decTS = await stat(`${file}.dec`)
+          if (decTS.mtimeMs > encTS.mtimeMs) {
+            d.info(`Encrypting ${file}, .dec file is newer (modified since last encryption)`)
+            return true
+          }
+          d.info(`Skipping encryption for ${file} as it has not changed`)
+          return false
         }
 
-        // Compare files
-        const specsAreDifferent = await hasFileDifference(file, `${file}.dec`)
-        if (specsAreDifferent) {
-          d.info(`Encrypting ${file}, difference found between encrypted and .dec file`)
+        // No .dec file - check if file is already encrypted
+        try {
+          // Same logic is used in helm-secrets
+          await $`grep -q 'mac.*,type:str]' ${file}`
+          d.info(`Skipping encryption for ${file} (already encrypted, no .dec file)`)
+          return false
+        } catch {
+          d.info(`${file} is not yet encrypted, will encrypt`)
           return true
         }
-
-        d.info(`Skipping encryption for ${file} as it has not changed`)
-        return false
       },
       cmd: CryptType.ENCRYPT,
-      post: async (f: string) => matchTimestamps(path, f),
+      post: async (f: string) => matchTimestamps(f),
     },
     files,
   )

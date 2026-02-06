@@ -91,7 +91,9 @@ export async function getStoredGitRepoConfig(): Promise<GitRepoConfig | undefine
       email: 'pipeline@cluster.local',
     }
   }
-
+  if (process.env.NODE_ENV === 'development') {
+    configData.repoUrl = process.env.GIT_REPO_URL
+  }
   const { username, password } = credentials
   const { branch, email, repoUrl } = configData
 
@@ -136,8 +138,10 @@ export const getRepo = (values: Record<string, any>): GitRepoConfig => {
   if (!otomiGit?.repoUrl) {
     throw new Error('No otomi.git.repoUrl config was given.')
   }
-
-  const username = otomiGit?.user
+  if (process.env.NODE_ENV === 'development') {
+    otomiGit.repoUrl = process.env.GIT_REPO_URL
+  }
+  const username = otomiGit?.username
   const password = otomiGit?.password
   const email = otomiGit?.email
   const branch = otomiGit?.branch
