@@ -51,6 +51,7 @@ export const bootstrapSops = async (
     readFile,
     terminal,
     writeFile,
+    createUpdateGenericSecret,
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:genSops`)
@@ -82,7 +83,7 @@ export const bootstrapSops = async (
     if (privateKey && !process.env.SOPS_AGE_KEY) {
       process.env.SOPS_AGE_KEY = privateKey
       await deps.writeFile(`${envDir}/.secrets`, `SOPS_AGE_KEY=${privateKey}`)
-      await createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', 'apl-operator', {
+      await deps.createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', 'apl-operator', {
         SOPS_AGE_KEY: privateKey,
       })
     }
