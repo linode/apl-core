@@ -26,11 +26,16 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 2
-      - name: Check commit message
+      - name: Check commit message and draft status
         id: check
         run: |
           COMMIT_MSG=$(git log -1 --pretty=%B)
-          if [[ "$COMMIT_MSG" == "Merge branch"* ]]; then
+          IS_DRAFT="${{ github.event.pull_request.draft }}"
+
+          echo "Commit message: $COMMIT_MSG"
+          echo "Is draft: $IS_DRAFT"
+
+          if [[ $COMMIT_MSG == "Merge branch"* || $IS_DRAFT == "true" ]]; then
             echo "skip=true" >> $GITHUB_OUTPUT
           else
             echo "skip=false" >> $GITHUB_OUTPUT
@@ -90,4 +95,4 @@ jobs:
           echo '```diff' >> "$comment_file"
           cat tmp/diff-output.txt >> "$comment_file"
           echo '```' >> "$comment_file"
-          cd "$GITHUB_WORKSPACE/pr" && gh pr comment ${{ github.event.pull_request.number }} --body-file "$comment_file"
+          cd "$GITHUB_WORKSPACE/pr" && gh pr comment ${{ github.event.pull_request.number }} --body-file "$comment_file" --create-if-none --edit-last
