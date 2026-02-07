@@ -9,7 +9,7 @@ dependencies:
     version: 9.3.7
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
-    version: 1.0.1
+    version: 1.1.0
     repository: oci://ghcr.io/argoproj/argo-helm/argocd-image-updater
   - name: cert-manager
     version: v1.19.3
