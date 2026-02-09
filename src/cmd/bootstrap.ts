@@ -83,9 +83,13 @@ export const bootstrapSops = async (
     if (privateKey && !process.env.SOPS_AGE_KEY) {
       process.env.SOPS_AGE_KEY = privateKey
       await deps.writeFile(`${envDir}/.secrets`, `SOPS_AGE_KEY=${privateKey}`)
-      await deps.createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', 'apl-operator', {
-        SOPS_AGE_KEY: privateKey,
-      })
+      try {
+        await deps.createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', 'apl-operator', {
+          SOPS_AGE_KEY: privateKey,
+        })
+      } catch (e) {
+        d.warn('Failed to create or update apl-sops-secrets secret with SOPS_AGE_KEY, this might come later')
+      }
     }
   }
 

@@ -1,13 +1,16 @@
 import * as process from 'node:process'
 import { terminal } from '../common/debug'
-import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
+import {
+  GIT_CONFIG_NAMESPACE,
+  GIT_CONFIG_SECRET_NAME,
+  getGitConfigData,
+  getGitCredentials,
+  setGitConfig,
+} from '../common/git-config'
+import { hfValues } from '../common/hf'
+import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
-
-export interface GitCredentials {
-  username: string
-  password: string
-}
 
 export class Installer {
   private d = terminal('operator:installer')
@@ -55,6 +58,7 @@ export class Installer {
         // Run the installation sequence
         await this.updateInstallationStatus('in-progress', attemptNumber)
         await this.aplOps.install()
+        await this.ensureSecretsAndConfig()
 
         await this.updateInstallationStatus('completed', attemptNumber)
         return
@@ -105,5 +109,47 @@ export class Installer {
       throw new Error('SOPS_AGE_KEY not found in secret')
     }
     process.env.SOPS_AGE_KEY = aplSopsSecret.SOPS_AGE_KEY
+  }
+
+  private async ensureSecretsAndConfig(): Promise<void> {
+    this.d.info('Verifying secrets and config after installation')
+    const values = (await hfValues()) as Record<string, any>
+    if (!values) {
+      this.d.warn('Could not retrieve hfValues, skipping secrets/config verification')
+      return
+    }
+
+    const otomiGit = values?.otomi?.git
+    const agePrivateKey = values?.kms?.sops?.age?.privateKey
+
+    // Ensure apl-git-credentials secret
+    const credentials = await getGitCredentials()
+    if (!credentials) {
+      this.d.info('Recreating apl-git-credentials secret')
+      await createUpdateGenericSecret(k8s.core(), GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE, {
+        username: otomiGit?.username,
+        password: otomiGit?.password,
+      })
+    }
+
+    // Ensure apl-sops-secrets secret
+    const sopsSecret = await getK8sSecret('apl-sops-secrets', GIT_CONFIG_NAMESPACE)
+    if (!sopsSecret?.SOPS_AGE_KEY && agePrivateKey) {
+      this.d.info('Recreating apl-sops-secrets secret')
+      await createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', GIT_CONFIG_NAMESPACE, {
+        SOPS_AGE_KEY: agePrivateKey,
+      })
+    }
+
+    // Ensure apl-git-config configmap
+    const configData = await getGitConfigData()
+    if (!configData?.repoUrl || !configData?.branch || !configData?.email) {
+      this.d.info('Recreating apl-git-config configmap')
+      await setGitConfig({
+        repoUrl: otomiGit?.repoUrl,
+        branch: otomiGit?.branch,
+        email: otomiGit?.email,
+      })
+    }
   }
 }
