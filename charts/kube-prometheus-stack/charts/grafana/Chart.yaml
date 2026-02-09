@@ -7,6 +7,7 @@ annotations:
       url: https://github.com/grafana/grafana
 apiVersion: v2
 appVersion: 12.3.1
+deprecated: true
 description: The leading tool for querying and visualizing time series and metrics.
 home: https://grafana.com
 icon: https://artifacthub.io/image/b4fed1a7-6c8f-4945-b99d-096efa3e4116
@@ -34,4 +35,4 @@ sources:
 - https://github.com/grafana/grafana
 - https://github.com/grafana/helm-charts
 type: application
-version: 10.5.8
+version: 10.5.15

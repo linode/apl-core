@@ -19,7 +19,7 @@ dependencies:
     repository: https://cloudnative-pg.github.io/charts
   - name: plugin-barman-cloud
     alias: cloudnative-pg-plugin-barman-cloud
-    version: 0.4.0
+    version: 0.5.0
     repository: https://cloudnative-pg.github.io/charts
   - name: cloud-firewall-crd
     version: 0.2.0
@@ -65,7 +65,7 @@ dependencies:
     version: v0.16.0
     repository: oci://ghcr.io/kserve/charts/kserve
   - name: kube-prometheus-stack
-    version: 80.14.4
+    version: 81.5.0
     repository: https://prometheus-community.github.io/helm-charts
   - name: kyverno
     version: 3.5.2
