@@ -17,6 +17,7 @@ jest.mock('src/common/k8s', () => ({
   applyServerSide: jest.fn(),
   restartOtomiApiDeployment: jest.fn(),
   waitForCRD: jest.fn(),
+  getK8sSecret: jest.fn().mockResolvedValue({ password: 'test', username: 'test' }),
   k8s: {
     app: jest.fn(),
   },
@@ -42,6 +43,23 @@ jest.mock('zx', () => ({
 jest.mock('src/common/sealed-secrets', () => ({
   applySealedSecretManifestsFromDir: jest.fn().mockResolvedValue(undefined),
   restartSealedSecretsController: jest.fn().mockResolvedValue(undefined),
+  APP_SECRET_OVERRIDES: {
+    'apps.gitea': [
+      {
+        secretName: 'gitea-admin-secret',
+        namespace: 'gitea',
+        data: {
+          username: { valuePath: 'apps.gitea.adminUsername', default: 'otomi-admin' },
+          password: { valuePath: 'apps.gitea.adminPassword' },
+        },
+      },
+      {
+        secretName: 'gitea-db-secret',
+        namespace: 'gitea',
+        data: { username: { static: 'gitea' }, password: { valuePath: 'apps.gitea.postgresqlPassword' } },
+      },
+    ],
+  },
 }))
 
 jest.mock('./commit', () => ({

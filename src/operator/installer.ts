@@ -86,7 +86,8 @@ export class Installer {
         status,
         attempt: attempt.toString(),
         timestamp: new Date().toISOString(),
-        ...(error && { error }),
+        // Always include error field to prevent stale values from StrategicMergePatch
+        error: error ?? '',
       }
 
       await createUpdateConfigMap(k8s.core(), 'apl-installation-status', 'apl-operator', data)
