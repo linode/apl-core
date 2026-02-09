@@ -14,4 +14,3 @@ core.yaml
 env/status.yaml
 env/bootstrap.yaml
 values-repo.yaml
-secrets.*.yaml
