@@ -33,7 +33,7 @@ export class GitRepository {
         this._lastRevision = logs.latest?.hash || ''
       }
     } catch (error) {
-      this.d.warn('Gitea has no commits yet:', getErrorMessage(error))
+      this.d.warn('Git has no commits yet:', getErrorMessage(error))
       throw error
     }
   }

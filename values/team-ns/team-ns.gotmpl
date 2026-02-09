@@ -67,8 +67,13 @@ canaryIngressGatewayLabel: {{ $v._derived.canaryIngressGatewayLabel | quote }}
 
 gitOps:
   teamRepoUrl:  "https://{{ $v._derived.giteaDomain }}/otomi/team-{{ $teamId }}-argocd.git"
+{{- if contains "gitea-http.gitea.svc.cluster.local" $v.otomi.git.repoUrl }}
   valuesRepoUrl: "https://{{ $v._derived.giteaDomain }}/otomi/values.git"
   workloadValuesRepoUrl: "https://{{ $v._derived.giteaDomain }}/otomi/values.git"
+{{- else }}
+  valuesRepoUrl: "{{ $v.otomi.git.repoUrl }}"
+  workloadValuesRepoUrl: "{{ $v.otomi.git.repoUrl }}"
+{{- end }}
 
 tlsSecretName: {{ $v._derived.tlsSecretName }}
 giteaDomain: {{ $v._derived.giteaDomain }}
