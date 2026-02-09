@@ -57,7 +57,7 @@ const commitAndPush = async (values: Record<string, any>, branch: string, initia
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const message = initialInstall ? 'otomi commit' : 'updated values [ci skip]'
-  const { password } = getRepo(values)
+  const { password } = await getRepo(values)
   cd(env.ENV_DIR)
   try {
     try {
@@ -132,7 +132,7 @@ export const commit = async (initialInstall: boolean, overrideArgs?: HelmArgumen
   await validateValues(overrideArgs)
   d.info('Preparing values')
   const values = (await hfValues()) as Record<string, any>
-  const { branch, remote, username, email } = getRepo(values)
+  const { branch, remote, username, email } = await getRepo(values)
   if (initialInstall) {
     // we call this here again, as we might not have completed (happens upon first install):
     await bootstrapGit(values)

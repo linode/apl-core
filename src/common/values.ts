@@ -9,6 +9,7 @@ import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
+import { getK8sSecret } from './k8s'
 import { saveValues } from './repo'
 import { APP_SECRET_OVERRIDES } from './sealed-secrets'
 import { extract, flattenObject, getValuesSchema, gucci, loadYaml, pkg, removeBlankAttributes } from './utils'
@@ -54,7 +55,27 @@ export interface Repo {
   branch: string
 }
 
-export const getRepo = (values: Record<string, any>): Repo => {
+/**
+ * Resolves a single sealed:namespace/secretName/key placeholder to its actual value
+ * by reading the corresponding K8s Secret. Returns the original value if not a placeholder
+ * or if resolution fails.
+ */
+const resolveSinglePlaceholder = async (value: string, deps = { getK8sSecret }): Promise<string> => {
+  if (!value || !value.startsWith('sealed:')) return value
+  const ref = value.replace('sealed:', '')
+  const parts = ref.split('/')
+  if (parts.length !== 3) return value
+  const [namespace, secretName, key] = parts
+  try {
+    const secret = await deps.getK8sSecret(secretName, namespace)
+    if (secret?.[key] !== undefined) return String(secret[key])
+  } catch {
+    // K8s not available, return placeholder as-is
+  }
+  return value
+}
+
+export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret }): Promise<Repo> => {
   const giteaEnabled = values?.apps?.gitea?.enabled ?? true
   const byor = !!values?.apps?.['otomi-api']?.git
   if (!giteaEnabled && !byor) {
@@ -74,7 +95,7 @@ export const getRepo = (values: Record<string, any>): Repo => {
     branch = otomiApiGit?.branch ?? branch
   } else {
     username = 'otomi-admin'
-    password = values?.apps?.gitea?.adminPassword
+    password = await resolveSinglePlaceholder(String(values?.apps?.gitea?.adminPassword ?? ''), deps)
     email = `pipeline@cluster.local`
     const gitUrl = env.GIT_URL
     const gitPort = env.GIT_PORT
