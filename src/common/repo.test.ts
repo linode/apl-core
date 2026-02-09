@@ -11,6 +11,7 @@ import {
   hasCorrespondingDecryptedFile,
   renderManifest,
   renderManifestForSecrets,
+  resolveSecretPlaceholders,
   saveResourceGroupToFiles,
   sortTeamConfigArraysByName,
   sortUserArraysByName,
@@ -896,5 +897,76 @@ describe('AplCatalog', () => {
 
       expect(writeValuesToFile).not.toHaveBeenCalled()
     })
+  })
+})
+
+describe('resolveSecretPlaceholders', () => {
+  it('should resolve sealed placeholders from K8s secrets', async () => {
+    const values = {
+      apps: { gitea: { adminPassword: 'sealed:gitea/gitea-admin-secret/password', adminUsername: 'admin' } },
+    }
+    const deps = {
+      getK8sSecret: jest.fn().mockResolvedValue({ password: 'real-pass', username: 'otomi-admin' }),
+    }
+
+    const result = await resolveSecretPlaceholders(values, deps)
+
+    expect(result.apps.gitea.adminPassword).toBe('real-pass')
+    expect(result.apps.gitea.adminUsername).toBe('admin')
+    expect(deps.getK8sSecret).toHaveBeenCalledWith('gitea-admin-secret', 'gitea')
+  })
+
+  it('should return values unchanged when no placeholders exist', async () => {
+    const values = { apps: { gitea: { adminPassword: 'plain-value' } } }
+    const deps = { getK8sSecret: jest.fn() }
+
+    const result = await resolveSecretPlaceholders(values, deps)
+    expect(result.apps.gitea.adminPassword).toBe('plain-value')
+    expect(deps.getK8sSecret).not.toHaveBeenCalled()
+  })
+
+  it('should return values unchanged when K8s not available', async () => {
+    const values = { apps: { gitea: { adminPassword: 'sealed:gitea/gitea-admin-secret/password' } } }
+    const deps = { getK8sSecret: jest.fn().mockRejectedValue(new Error('no cluster')) }
+
+    const result = await resolveSecretPlaceholders(values, deps)
+    expect(result.apps.gitea.adminPassword).toBe('sealed:gitea/gitea-admin-secret/password')
+  })
+
+  it('should cache K8s secret reads', async () => {
+    const values = {
+      apps: {
+        gitea: {
+          adminPassword: 'sealed:gitea/gitea-admin-secret/password',
+          adminUsername: 'sealed:gitea/gitea-admin-secret/username',
+        },
+      },
+    }
+    const deps = {
+      getK8sSecret: jest.fn().mockResolvedValue({ password: 'pass', username: 'admin' }),
+    }
+
+    await resolveSecretPlaceholders(values, deps)
+    expect(deps.getK8sSecret).toHaveBeenCalledTimes(1)
+  })
+
+  it('should warn on invalid placeholder format', async () => {
+    const values = { apps: { gitea: { adminPassword: 'sealed:invalid-format' } } }
+    const deps = { getK8sSecret: jest.fn() }
+
+    const result = await resolveSecretPlaceholders(values, deps)
+    expect(result.apps.gitea.adminPassword).toBe('sealed:invalid-format')
+    expect(deps.getK8sSecret).not.toHaveBeenCalled()
+  })
+
+  it('should not mutate original values', async () => {
+    const values = { apps: { gitea: { adminPassword: 'sealed:gitea/gitea-admin-secret/password' } } }
+    const deps = {
+      getK8sSecret: jest.fn().mockResolvedValue({ password: 'real-pass' }),
+    }
+
+    const result = await resolveSecretPlaceholders(values, deps)
+    expect(result.apps.gitea.adminPassword).toBe('real-pass')
+    expect(values.apps.gitea.adminPassword).toBe('sealed:gitea/gitea-admin-secret/password')
   })
 })

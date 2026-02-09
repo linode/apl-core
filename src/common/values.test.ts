@@ -1,5 +1,5 @@
 import { cloneDeep, merge, set } from 'lodash'
-import { generateSecrets } from 'src/common/values'
+import { generateSecrets, replaceSecretsWithPlaceholders } from 'src/common/values'
 import stubs from 'src/test-stubs'
 
 const { terminal } = stubs
@@ -71,5 +71,49 @@ describe('generateSecrets', () => {
 
     const res = await generateSecrets(valuesWithExisting, deps)
     expect(res.nested.twoStage).toBe('exists')
+  })
+})
+
+describe('replaceSecretsWithPlaceholders', () => {
+  it('should replace gitea secrets with sealed secret references', () => {
+    const input = {
+      apps: {
+        gitea: { adminPassword: 'real-pass', postgresqlPassword: 'db-pass', adminUsername: 'admin' },
+        harbor: { adminPassword: 'harbor-pass' },
+      },
+    }
+    const result = replaceSecretsWithPlaceholders(input)
+
+    expect(result.apps.gitea.adminPassword).toBe('sealed:gitea/gitea-admin-secret/password')
+    expect(result.apps.gitea.postgresqlPassword).toBe('sealed:gitea/gitea-db-secret/password')
+    expect(result.apps.gitea.adminUsername).toBe('sealed:gitea/gitea-admin-secret/username')
+    expect(result.apps.harbor.adminPassword).toBe('harbor-pass')
+    // Original should not be modified
+    expect(input.apps.gitea.adminPassword).toBe('real-pass')
+  })
+
+  it('should not replace already-placeholder values', () => {
+    const input = {
+      apps: { gitea: { adminPassword: 'sealed:gitea/gitea-admin-secret/password' } },
+    }
+    const result = replaceSecretsWithPlaceholders(input)
+    expect(result.apps.gitea.adminPassword).toBe('sealed:gitea/gitea-admin-secret/password')
+  })
+
+  it('should not replace non-string values', () => {
+    const input = {
+      apps: { gitea: { adminPassword: 123 as any, postgresqlPassword: 'db-pass' } },
+    }
+    const result = replaceSecretsWithPlaceholders(input)
+    expect(result.apps.gitea.adminPassword).toBe(123)
+    expect(result.apps.gitea.postgresqlPassword).toBe('sealed:gitea/gitea-db-secret/password')
+  })
+
+  it('should handle values without matching paths', () => {
+    const input = {
+      apps: { harbor: { adminPassword: 'harbor-pass' } },
+    }
+    const result = replaceSecretsWithPlaceholders(input)
+    expect(result.apps.harbor.adminPassword).toBe('harbor-pass')
   })
 })
