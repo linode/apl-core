@@ -14,7 +14,7 @@ import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
 import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
-import { objectToYaml, writeValues, writeValuesToFile } from 'src/common/values'
+import { objectToYaml, resolveSinglePlaceholder, writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
@@ -712,7 +712,11 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   let secretCreated = false
   if (useGiteaCatalog) {
     try {
-      await createCatalogSealedSecret(d, gitea as { adminUsername: string; adminPassword: string })
+      const resolvedGitea = {
+        adminUsername: await resolveSinglePlaceholder(String(gitea!.adminUsername)),
+        adminPassword: await resolveSinglePlaceholder(String(gitea!.adminPassword)),
+      }
+      await createCatalogSealedSecret(d, resolvedGitea)
       secretCreated = true
     } catch (error) {
       d.error('Failed to create catalog sealed secret, continuing without it:', error)

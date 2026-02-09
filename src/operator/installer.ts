@@ -2,6 +2,7 @@ import * as process from 'node:process'
 import { terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
 import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
+import { resolveSinglePlaceholder } from '../common/values'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 
@@ -115,8 +116,10 @@ export class Installer {
       this.d.debug('Extracting credentials from installation values')
       const values = (await hfValues()) as Record<string, any>
 
-      const gitUsername: string = values.apps.gitea?.adminUsername || 'otomi-admin'
-      const gitPassword: string = values.apps.gitea?.adminPassword
+      const gitUsername: string = await resolveSinglePlaceholder(
+        String(values.apps.gitea?.adminUsername || 'otomi-admin'),
+      )
+      const gitPassword: string = await resolveSinglePlaceholder(String(values.apps.gitea?.adminPassword ?? ''))
 
       if (!gitUsername || !gitPassword) {
         throw new Error('Git credentials not found in values')

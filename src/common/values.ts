@@ -60,7 +60,7 @@ export interface Repo {
  * by reading the corresponding K8s Secret. Returns the original value if not a placeholder
  * or if resolution fails.
  */
-const resolveSinglePlaceholder = async (value: string, deps = { getK8sSecret }): Promise<string> => {
+export const resolveSinglePlaceholder = async (value: string, deps = { getK8sSecret }): Promise<string> => {
   if (!value || !value.startsWith('sealed:')) return value
   const ref = value.replace('sealed:', '')
   const parts = ref.split('/')
