@@ -78,8 +78,9 @@ const commitAndPush = async (values: Record<string, any>, branch: string, initia
     }
     await $`git commit -m ${message} --no-verify`.quiet()
   } catch (e) {
-    d.log('commitAndPush error ', e?.message?.replace(password, '****'))
-    return
+    const errorMsg = `commitAndPush error: ${e?.message?.replace(password, '****')}`
+    d.error(errorMsg)
+    throw new Error(errorMsg)
   }
   if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
   await retry(

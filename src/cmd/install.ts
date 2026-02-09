@@ -193,6 +193,15 @@ export const installAll = async () => {
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(true)
+
+    // Verify the git push actually succeeded by checking the remote branch exists
+    d.info('Verifying git push succeeded')
+    const verifyResult = await $`git -C ${env.ENV_DIR} ls-remote --exit-code --heads origin main`.nothrow().quiet()
+    if (verifyResult.exitCode !== 0) {
+      throw new Error('Git push verification failed: remote branch main does not exist after commit')
+    }
+    d.info('Git push verified successfully')
+
     const initialData = await initialSetupData()
     await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)
     await retryInstallStep(createWelcomeConfigMap, initialData.secretName, initialData.domainSuffix)

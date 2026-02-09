@@ -35,10 +35,20 @@ jest.mock('src/common/hf', () => ({
   HF_DEFAULT_SYNC_ARGS: ['apply', '--sync-args', '--include-needs'],
 }))
 
-jest.mock('zx', () => ({
-  $: jest.fn(),
-  cd: jest.fn(),
-}))
+jest.mock('zx', () => {
+  const mockResult = { exitCode: 0, stdout: '', stderr: '' }
+  const createMockProcessPromise = () => {
+    const promise = Promise.resolve(mockResult)
+    const chainable: any = promise
+    chainable.nothrow = jest.fn().mockReturnValue(chainable)
+    chainable.quiet = jest.fn().mockReturnValue(chainable)
+    return chainable
+  }
+  return {
+    $: jest.fn().mockImplementation(() => createMockProcessPromise()),
+    cd: jest.fn(),
+  }
+})
 
 jest.mock('src/common/sealed-secrets', () => ({
   applySealedSecretManifestsFromDir: jest.fn().mockResolvedValue(undefined),
@@ -129,7 +139,6 @@ describe('Install command', () => {
       stderr: '',
     })
     mockDeps.deployEssential.mockResolvedValue(true)
-    mockDeps.$.mockResolvedValue(undefined)
   })
 
   describe('module configuration', () => {
