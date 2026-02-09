@@ -156,6 +156,10 @@ export class Installer {
         throw new Error('Git credentials not found in values')
       }
 
+      if (gitPassword.startsWith('sealed:') || gitUsername.startsWith('sealed:')) {
+        throw new Error('Git credentials contain unresolved sealed secret placeholders - K8s secrets may not be ready')
+      }
+
       await createUpdateGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {
         GIT_USERNAME: gitUsername,
         GIT_PASSWORD: gitPassword,

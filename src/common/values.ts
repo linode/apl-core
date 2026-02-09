@@ -60,8 +60,9 @@ export interface Repo {
  * by reading the corresponding K8s Secret. Returns the original value if not a placeholder
  * or if resolution fails.
  */
-export const resolveSinglePlaceholder = async (value: string, deps = { getK8sSecret }): Promise<string> => {
+export const resolveSinglePlaceholder = async (value: string, deps = { getK8sSecret, terminal }): Promise<string> => {
   if (!value || !value.startsWith('sealed:')) return value
+  const d = deps.terminal('common:values:resolveSinglePlaceholder')
   const ref = value.replace('sealed:', '')
   const parts = ref.split('/')
   if (parts.length !== 3) return value
@@ -69,13 +70,14 @@ export const resolveSinglePlaceholder = async (value: string, deps = { getK8sSec
   try {
     const secret = await deps.getK8sSecret(secretName, namespace)
     if (secret?.[key] !== undefined) return String(secret[key])
-  } catch {
-    // K8s not available, return placeholder as-is
+    d.warn(`Could not resolve placeholder ${value}: key '${key}' not found in secret ${namespace}/${secretName}`)
+  } catch (e) {
+    d.warn(`Could not resolve placeholder ${value}: K8s secret ${namespace}/${secretName} not available`)
   }
   return value
 }
 
-export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret }): Promise<Repo> => {
+export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret, terminal }): Promise<Repo> => {
   const giteaEnabled = values?.apps?.gitea?.enabled ?? true
   const byor = !!values?.apps?.['otomi-api']?.git
   if (!giteaEnabled && !byor) {

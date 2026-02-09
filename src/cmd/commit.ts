@@ -137,6 +137,12 @@ export const commit = async (initialInstall: boolean, overrideArgs?: HelmArgumen
   if (initialInstall) {
     // we call this here again, as we might not have completed (happens upon first install):
     await bootstrapGit(values)
+    // Always update the remote URL after bootstrap - the initial bootstrapGit() (called during
+    // the bootstrap phase before install) may have set the URL with unresolved placeholder
+    // passwords because K8s secrets didn't exist yet. Now that secrets are decrypted,
+    // we need to update the URL with the real credentials.
+    cd(env.ENV_DIR)
+    await $`git remote set-url origin ${remote}`.nothrow().quiet()
   } else {
     cd(env.ENV_DIR)
     await setIdentity(username, email)
