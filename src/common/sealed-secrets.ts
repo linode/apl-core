@@ -419,7 +419,7 @@ export const buildSecretToNamespaceMap = async (
       const pendingDefaults: Array<{ key: string; defaultValue: string }> = []
       for (const [key, source] of Object.entries(override.data)) {
         if (!('static' in source)) {
-          const value = allFlat[source.valuePath]
+          const value = flat[source.valuePath] ?? allFlat[source.valuePath]
           if (value !== undefined && value !== null && value !== '') {
             data[key] = String(value)
             hasValuePathData = true

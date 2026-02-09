@@ -345,6 +345,38 @@ describe('sealed-secrets', () => {
       expect(giteaDbMapping!.data.password).toBe('pg-pass')
     })
 
+    it('should create gitea secrets on first install when generated passwords are only in secrets', async () => {
+      // On first install, allValues (originalInput) does NOT contain generated passwords,
+      // but secrets (allSecrets) does. The override lookup must check secrets first.
+      const secrets = {
+        apps: {
+          gitea: { adminPassword: 'generated-admin-pass', postgresqlPassword: 'generated-pg-pass' },
+        },
+      }
+      const allValues = {
+        apps: {
+          gitea: {}, // No generated passwords in originalInput on first install
+        },
+      }
+      const deps = {
+        getSchemaSecretsPaths: jest
+          .fn()
+          .mockResolvedValue(['apps.gitea.adminPassword', 'apps.gitea.postgresqlPassword']),
+      }
+
+      const result = await buildSecretToNamespaceMap(secrets, [], allValues, deps)
+
+      const giteaAdminMapping = result.find((m) => m.secretName === 'gitea-admin-secret')
+      expect(giteaAdminMapping).toBeDefined()
+      expect(giteaAdminMapping!.namespace).toBe('gitea')
+      expect(giteaAdminMapping!.data).toEqual({ username: 'otomi-admin', password: 'generated-admin-pass' })
+
+      const giteaDbMapping = result.find((m) => m.secretName === 'gitea-db-secret')
+      expect(giteaDbMapping).toBeDefined()
+      expect(giteaDbMapping!.namespace).toBe('gitea')
+      expect(giteaDbMapping!.data).toEqual({ username: 'gitea', password: 'generated-pg-pass' })
+    })
+
     it('should use default values when valuePath not found but actual value exists', async () => {
       // When adminPassword exists but adminUsername doesn't, username should use default
       const secrets = {
