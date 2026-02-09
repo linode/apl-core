@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.13.3](https://github.com/linode/apl-core/compare/v4.13.2...v4.13.3) (2026-02-09)
+
+
+### Features
+
+* adding k8s v1.35 support ([#2862](https://github.com/linode/apl-core/issues/2862)) ([6685527](https://github.com/linode/apl-core/commit/668552704b0d95464c0d1468196e6ece2d252949))
+
 ### [4.13.2](https://github.com/linode/apl-core/compare/v4.13.1...v4.13.2) (2026-02-09)
 
 
