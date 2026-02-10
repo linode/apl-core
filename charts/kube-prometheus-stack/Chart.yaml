@@ -25,8 +25,8 @@ dependencies:
   version: 4.51.1
 - condition: grafana.enabled
   name: grafana
-  repository: https://grafana.github.io/helm-charts
-  version: 10.5.15
+  repository: https://grafana-community.github.io/helm-charts
+  version: 11.0.1
 - condition: windowsMonitoring.enabled
   name: prometheus-windows-exporter
   repository: https://prometheus-community.github.io/helm-charts
@@ -69,4 +69,4 @@ sources:
 - https://github.com/prometheus-community/helm-charts
 - https://github.com/prometheus-operator/kube-prometheus
 type: application
-version: 81.5.0
+version: 81.5.2
