@@ -23,6 +23,9 @@ spec:
           podSelector:
             matchLabels:
               app.kubernetes.io/instance: istio-ingressgateway-public
+      ports:
+        - protocol: TCP
+          port: 8080
     # Allow access from gitea for webhook notifications
     - from:
         - namespaceSelector:
@@ -31,6 +34,9 @@ spec:
           podSelector:
             matchLabels:
               app: gitea
+      ports:
+        - protocol: TCP
+          port: 8080
     # Allow monitoring access for metrics scraping
     - from:
         - namespaceSelector:
@@ -39,9 +45,15 @@ spec:
           podSelector:
             matchLabels:
               app.kubernetes.io/instance: po-prometheus
+      ports:
+        - protocol: TCP
+          port: 8080
     # Allow internal otomi namespace communication
     - from:
         - namespaceSelector:
             matchLabels:
               name: otomi
+      ports:
+        - protocol: TCP
+          port: 8080
 {{- end }}
