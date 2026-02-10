@@ -2,16 +2,10 @@
 
 * Installs the web dashboarding system [Grafana](http://grafana.org/)
 
-## 📦 Chart Migration
-
-**This chart is being migrated to [grafana-community/helm-charts](https://github.com/grafana-community/helm-charts).**
-
-After January 30th, 2026, updates and support for this chart will be provided in the new repository. Please update your Helm repository configuration to ensure you continue receiving updates.
-
 ## Get Repo Info
 
 ```console
-helm repo add grafana https://grafana.github.io/helm-charts
+helm repo add grafana-community https://grafana-community.github.io/helm-charts
 helm repo update
 ```
 
@@ -22,7 +16,7 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 To install the chart with the release name `my-release`:
 
 ```console
-helm install my-release grafana/grafana
+helm install my-release grafana-community/grafana
 ```
 
 ## Uninstalling the Chart
@@ -63,286 +57,376 @@ need to instead set `global.imageRegistry`.
 
 Static alerting resources now support Helm templating. This means that alerting resources loaded from external files (`alerting.*.files`) are now processed by the Helm template engine.
 
-If you already use template expressions intended for Alertmanager (for example, `{{ $labels.instance }}`), these must now be escaped to avoid unintended Helm evaluation. To escape them, wrap the braces with an extra layer like this:
+If you already use template expressions intended for Alertmanager (for example, `{{ $labels.instance }}`), these must now be escaped to avoid unintended Helm or Go template evaluation. To escape them, wrap the braces with an extra layer like this:
 
 `{{ "{{" }} $labels.instance {{ "}}" }}`
 
 This ensures the expressions are preserved for Alertmanager instead of being rendered by Helm.
 
+### To 11.0.0
+
+The minimum required Kubernetes version is now 1.25. All references to deprecated APIs have been removed.
+
 ## Configuration
 
-| Parameter                                 | Description                                   | Default                                                 |
-|-------------------------------------------|-----------------------------------------------|---------------------------------------------------------|
-| `replicas`                                | Number of nodes                               | `1`                                                     |
-| `podDisruptionBudget.minAvailable`        | Pod disruption minimum available              | `nil`                                                   |
-| `podDisruptionBudget.maxUnavailable`      | Pod disruption maximum unavailable            | `nil`                                                   |
-| `podDisruptionBudget.apiVersion`          | Pod disruption apiVersion                     | `nil`                                                   |
-| `deploymentStrategy`                      | Deployment strategy                           | `{ "type": "RollingUpdate" }`                           |
-| `livenessProbe`                           | Liveness Probe settings                       | `{ "httpGet": { "path": "/api/health", "port": 3000 } "initialDelaySeconds": 60, "timeoutSeconds": 30, "failureThreshold": 10 }` |
-| `readinessProbe`                          | Readiness Probe settings                      | `{ "httpGet": { "path": "/api/health", "port": 3000 } }`|
-| `securityContext`                         | Deployment securityContext                    | `{"runAsUser": 472, "runAsGroup": 472, "fsGroup": 472}`  |
-| `priorityClassName`                       | Name of Priority Class to assign pods         | `nil`                                                   |
-| `image.registry`                          | Image registry                                | `docker.io`                                       |
-| `image.repository`                        | Image repository                              | `grafana/grafana`                                       |
-| `image.tag`                               | Overrides the Grafana image tag whose default is the chart appVersion (`Must be >= 5.0.0`) | ``                                                      |
-| `image.sha`                               | Image sha (optional)                          | ``                                                      |
-| `image.pullPolicy`                        | Image pull policy                             | `IfNotPresent`                                          |
-| `image.pullSecrets`                       | Image pull secrets (can be templated)         | `[]`                                                    |
-| `service.enabled`                         | Enable grafana service                        | `true`                                                  |
-| `service.ipFamilies`                      | Kubernetes service IP families                | `[]`                                                    |
-| `service.ipFamilyPolicy`                  | Kubernetes service IP family policy           | `""`                                                    |
-| `service.sessionAffinity`                 | Kubernetes service session affinity config    | `""`                                                    |
-| `service.type`                            | Kubernetes service type                       | `ClusterIP`                                             |
-| `service.port`                            | Kubernetes port where service is exposed      | `80`                                                    |
-| `service.portName`                        | Name of the port on the service               | `service`                                               |
-| `service.appProtocol`                     | Adds the appProtocol field to the service     | ``                                                      |
-| `service.targetPort`                      | Internal service is port                      | `3000`                                                  |
-| `service.nodePort`                        | Kubernetes service nodePort                   | `nil`                                                   |
-| `service.annotations`                     | Service annotations (can be templated)        | `{}`                                                    |
-| `service.labels`                          | Custom labels                                 | `{}`                                                    |
-| `service.clusterIP`                       | internal cluster service IP                   | `nil`                                                   |
-| `service.loadBalancerIP`                  | IP address to assign to load balancer (if supported) | `nil`                                            |
-| `service.loadBalancerSourceRanges`        | list of IP CIDRs allowed access to lb (if supported) | `[]`                                             |
-| `service.externalIPs`                     | service external IP addresses                 | `[]`                                                    |
-| `service.externalTrafficPolicy`           | change the default externalTrafficPolicy | `nil`                                            |
-| `headlessService`                         | Create a headless service                     | `false`                                                 |
-| `extraExposePorts`                        | Additional service ports for sidecar containers| `[]`                                                   |
-| `hostAliases`                             | adds rules to the pod's /etc/hosts            | `[]`                                                    |
-| `ingress.enabled`                         | Enables Ingress                               | `false`                                                 |
-| `ingress.annotations`                     | Ingress annotations (values are templated)    | `{}`                                                    |
-| `ingress.labels`                          | Custom labels                                 | `{}`                                                    |
-| `ingress.path`                            | Ingress accepted path                         | `/`                                                     |
-| `ingress.pathType`                        | Ingress type of path                          | `Prefix`                                                |
-| `ingress.hosts`                           | Ingress accepted hostnames                    | `["chart-example.local"]`                                                    |
-| `ingress.extraPaths`                      | Ingress extra paths to prepend to every host configuration. Useful when configuring [custom actions with AWS ALB Ingress Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.6/guide/ingress/annotations/#actions). Requires `ingress.hosts` to have one or more host entries. | `[]`                                                    |
-| `ingress.tls`                             | Ingress TLS configuration                     | `[]`                                                    |
-| `ingress.ingressClassName`                | Ingress Class Name. MAY be required for Kubernetes versions >= 1.18 | `""`                              |
-| `resources`                               | CPU/Memory resource requests/limits           | `{}`                                                    |
-| `nodeSelector`                            | Node labels for pod assignment                | `{}`                                                    |
-| `tolerations`                             | Toleration labels for pod assignment          | `[]`                                                    |
-| `affinity`                                | Affinity settings for pod assignment          | `{}`                                                    |
-| `extraInitContainers`                     | Init containers to add to the grafana pod     | `{}`                                                    |
-| `extraContainers`                         | Sidecar containers to add to the grafana pod  | `""`                                                    |
-| `extraContainerVolumes`                   | Volumes that can be mounted in sidecar containers | `[]`                                                |
-| `extraLabels`                             | Custom labels for all manifests               | `{}`                                                    |
-| `schedulerName`                           | Name of the k8s scheduler (other than default) | `nil`                                                  |
-| `persistence.enabled`                     | Use persistent volume to store data           | `false`                                                 |
-| `persistence.type`                        | Type of persistence (`pvc` or `statefulset`)  | `pvc`                                                   |
-| `persistence.size`                        | Size of persistent volume claim               | `10Gi`                                                  |
-| `persistence.existingClaim`               | Use an existing PVC to persist data (can be templated) | `nil`                                          |
-| `persistence.volumeName`                  | If using a PVC, then use a specific PV name   | `nil`                                                   |
-| `persistence.storageClassName`            | Type of persistent volume claim               | `nil`                                                   |
-| `persistence.accessModes`                 | Persistence access modes                      | `[ReadWriteOnce]`                                       |
-| `persistence.annotations`                 | PersistentVolumeClaim annotations             | `{}`                                                    |
-| `persistence.finalizers`                  | PersistentVolumeClaim finalizers              | `[ "kubernetes.io/pvc-protection" ]`                    |
-| `persistence.extraPvcLabels`              | Extra labels to apply to a PVC.               | `{}`                                                    |
-| `persistence.subPath`                     | Mount a sub dir of the persistent volume (can be templated) | `nil`                                     |
-| `persistence.inMemory.enabled`            | If persistence is not enabled, whether to mount the local storage in-memory to improve performance | `false`                                                   |
-| `persistence.inMemory.sizeLimit`          | SizeLimit for the in-memory local storage     | `nil`                                                   |
-| `persistence.disableWarning`              | Hide NOTES warning, useful when persisting to a database | `false`                                       |
-| `initChownData.enabled`                   | If false, don't reset data ownership at startup | true                                                  |
-| `initChownData.image.registry`            | init-chown-data container image registry      | `docker.io`                                               |
-| `initChownData.image.repository`          | init-chown-data container image repository    | `busybox`                                               |
-| `initChownData.image.tag`                 | init-chown-data container image tag           | `1.31.1`                                                |
-| `initChownData.image.sha`                 | init-chown-data container image sha (optional)| `""`                                                    |
-| `initChownData.image.pullPolicy`          | init-chown-data container image pull policy   | `IfNotPresent`                                          |
-| `initChownData.resources`                 | init-chown-data pod resource requests & limits | `{}`                                                   |
-| `initChownData.securityContext`           | init-chown-data pod securityContext           | `{"readOnlyRootFilesystem": false, "runAsNonRoot": false}`, "runAsUser": 0, "seccompProfile": {"type": "RuntimeDefault"}, "capabilities": {"add": ["CHOWN"], "drop": ["ALL"]}}` |
-| `schedulerName`                           | Alternate scheduler name                      | `nil`                                                   |
-| `env`                                     | Extra environment variables passed to pods    | `{}`                                                    |
-| `envValueFrom`                            | Environment variables from alternate sources. See the API docs on [EnvVarSource](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/#envvarsource-v1-core) for format details. Can be templated | `{}` |
-| `envFromSecret`                           | Name of a Kubernetes secret (must be manually created in the same namespace) containing values to be added to the environment. Can be templated | `""` |
-| `envFromSecrets`                          | List of Kubernetes secrets (must be manually created in the same namespace) containing values to be added to the environment. Can be templated | `[]` |
-| `envFromConfigMaps`                       | List of Kubernetes ConfigMaps (must be manually created in the same namespace) containing values to be added to the environment. Can be templated | `[]` |
-| `envRenderSecret`                         | Sensible environment variables passed to pods and stored as secret. (passed through [tpl](https://helm.sh/docs/howto/charts_tips_and_tricks/#using-the-tpl-function))   | `{}`                               |
-| `enableServiceLinks`                      | Inject Kubernetes services as environment variables. | `true`                                           |
-| `extraSecretMounts`                       | Additional grafana server secret mounts       | `[]`                                                    |
-| `extraVolumeMounts`                       | Additional grafana server volume mounts       | `[]`                                                    |
-| `extraVolumes`                            | Additional Grafana server volumes             | `[]`                                                    |
-| `automountServiceAccountToken`            | Mounted the service account token on the grafana pod. Mandatory, if sidecars are enabled  | `true`      |
-| `createConfigmap`                         | Enable creating the grafana configmap         | `true`                                                  |
-| `extraConfigmapMounts`                    | Additional grafana server configMap volume mounts (values are templated) | `[]`                         |
-| `extraEmptyDirMounts`                     | Additional grafana server emptyDir volume mounts | `[]`                                                 |
-| `plugins`                                 | Plugins to be loaded along with Grafana       | `[]`                                                    |
-| `datasources`                             | Configure grafana datasources (passed through tpl) | `{}`                                               |
-| `alerting`                                | Configure grafana alerting (passed through tpl) | `{}`                                                  |
-| `notifiers`                               | Configure grafana notifiers                   | `{}`                                                    |
-| `dashboardProviders`                      | Configure grafana dashboard providers         | `{}`                                                    |
-| `defaultCurlOptions`                      | Configure default curl short options for all dashboards, the beginning dash is required  | `-skf`       |
-| `dashboards`                              | Dashboards to import                          | `{}`                                                    |
-| `dashboardsConfigMaps`                    | ConfigMaps reference that contains dashboards | `{}`                                                    |
-| `grafana.ini`                             | Grafana's primary configuration               | `{}`                                                    |
-| `global.imageRegistry`                    | Global image pull registry for all images.    | `null`                                   |
-| `global.imagePullSecrets`                 | Global image pull secrets (can be templated). Allows either an array of {name: pullSecret} maps (k8s-style), or an array of strings (more common helm-style).  | `[]`                                                    |
-| `ldap.enabled`                            | Enable LDAP authentication                    | `false`                                                 |
-| `ldap.existingSecret`                     | The name of an existing secret containing the `ldap.toml` file, this must have the key `ldap-toml`. | `""` |
-| `ldap.config`                             | Grafana's LDAP configuration                  | `""`                                                    |
-| `annotations`                             | Deployment annotations                        | `{}`                                                    |
-| `labels`                                  | Deployment labels                             | `{}`                                                    |
-| `podAnnotations`                          | Pod annotations                               | `{}`                                                    |
-| `podLabels`                               | Pod labels                                    | `{}`                                                    |
-| `podPortName`                             | Name of the grafana port on the pod           | `grafana`                                               |
-| `lifecycleHooks`                          | Lifecycle hooks for podStart and preStop [Example](https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/#define-poststart-and-prestop-handlers)     | `{}`                                                    |
-| `sidecar.image.registry`                  | Sidecar image registry                        | `quay.io`                          |
-| `sidecar.image.repository`                | Sidecar image repository                      | `kiwigrid/k8s-sidecar`                          |
-| `sidecar.image.tag`                       | Sidecar image tag                             | `2.5.0`                                                |
-| `sidecar.image.sha`                       | Sidecar image sha (optional)                  | `""`                                                    |
-| `sidecar.imagePullPolicy`                 | Sidecar image pull policy                     | `IfNotPresent`                                          |
-| `sidecar.resources`                       | Sidecar resources                             | `{}`                                                    |
-| `sidecar.securityContext`                 | Sidecar securityContext                       | `{}`                                                    |
-| `sidecar.enableUniqueFilenames`           | Sets the kiwigrid/k8s-sidecar UNIQUE_FILENAMES environment variable. If set to `true` the sidecar will create unique filenames where duplicate data keys exist between ConfigMaps and/or Secrets within the same or multiple Namespaces. | `false`                           |
-| `sidecar.alerts.enabled`             | Enables the cluster wide search for alerts and adds/updates/deletes them in grafana |`false`       |
-| `sidecar.alerts.env`                 | Extra environment variables passed to pods    | `{}`                                                    |
-| `sidecar.alerts.envValueFrom`        | Environment variables from alternate sources. See the API docs on [EnvVarSource](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/#envvarsource-v1-core) for format details. Can be templated | `{}` |
-| `sidecar.alerts.label`               | Label that config maps with alerts should have to be added (can be templated) | `grafana_alert`                               |
-| `sidecar.alerts.labelValue`          | Label value that config maps with alerts should have to be added (can be templated) | `""`                                |
-| `sidecar.alerts.searchNamespace`     | Namespaces list. If specified, the sidecar will search for alerts config-maps  inside these namespaces. Otherwise the namespace in which the sidecar is running will be used. It's also possible to specify ALL to search in all namespaces. | `nil`                               |
-| `sidecar.alerts.watchMethod`         | Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds. | `WATCH` |
-| `sidecar.alerts.resource`            | Should the sidecar looks into secrets, configmaps or both. | `both`                               |
-| `sidecar.alerts.reloadURL`           | Full url of datasource configuration reload API endpoint, to invoke after a config-map change | `"http://localhost:3000/api/admin/provisioning/alerting/reload"` |
-| `sidecar.alerts.skipReload`          | Enabling this omits defining the REQ_URL and REQ_METHOD environment variables | `false` |
-| `sidecar.alerts.initAlerts`          | Set to true to deploy the alerts sidecar as an initContainer. This is needed if skipReload is true, to load any alerts defined at startup time. | `false` |
-| `sidecar.alerts.restartPolicy`        |  Set to `Always` to enable native sidecars. `sidecar.alerts.initAlerts` must be `true` | `""`|
-| `sidecar.alerts.startupProbe`         |  Startup probe for the native sidecar | `{}` |
-| `sidecar.alerts.extraMounts`         | Additional alerts sidecar volume mounts. | `[]`                               |
-| `sidecar.dashboards.enabled`              | Enables the cluster wide search for dashboards and adds/updates/deletes them in grafana | `false`       |
-| `sidecar.dashboards.env`                  | Extra environment variables passed to pods    | `{}`                                                    |
-| `sidecar.dashboards.envValueFrom`         | Environment variables from alternate sources. See the API docs on [EnvVarSource](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/#envvarsource-v1-core) for format details. Can be templated | `{}` |
-| `sidecar.dashboards.SCProvider`           | Enables creation of sidecar provider          | `true`                                                  |
-| `sidecar.dashboards.provider.name`        | Unique name of the grafana provider           | `sidecarProvider`                                       |
-| `sidecar.dashboards.provider.orgid`       | Id of the organisation, to which the dashboards should be added | `1`                                   |
-| `sidecar.dashboards.provider.folder`      | Logical folder in which grafana groups dashboards | `""`                                                |
-| `sidecar.dashboards.provider.folderUid`   | Allows you to specify the static UID for the logical folder above | `""`                                |
-| `sidecar.dashboards.provider.disableDelete` | Activate to avoid the deletion of imported dashboards | `false`                                       |
-| `sidecar.dashboards.provider.allowUiUpdates` | Allow updating provisioned dashboards from the UI | `false`                                          |
-| `sidecar.dashboards.provider.type`        | Provider type                                 | `file`                                                  |
-| `sidecar.dashboards.provider.foldersFromFilesStructure`        | Allow Grafana to replicate dashboard structure from filesystem.                                 | `false`                                                  |
-| `sidecar.dashboards.watchMethod`          | Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds. | `WATCH` |
-| `sidecar.skipTlsVerify`                   | Set to true to skip tls verification for kube api calls | `nil`                                         |
-| `sidecar.dashboards.label`                | Label that config maps with dashboards should have to be added (can be templated) | `grafana_dashboard`                                |
-| `sidecar.dashboards.labelValue`                | Label value that config maps with dashboards should have to be added (can be templated) | `""`                                |
-| `sidecar.dashboards.folder`               | Folder in the pod that should hold the collected dashboards (unless `sidecar.dashboards.defaultFolderName` is set). This path will be mounted. | `/tmp/dashboards`    |
-| `sidecar.dashboards.folderAnnotation`     | The annotation the sidecar will look for in configmaps to override the destination folder for files | `nil`                                                  |
-| `sidecar.dashboards.defaultFolderName`    | The default folder name, it will create a subfolder under the `sidecar.dashboards.folder` and put dashboards in there instead | `nil`                                |
-| `sidecar.dashboards.searchNamespace`      | Namespaces list. If specified, the sidecar will search for dashboards config-maps  inside these namespaces. Otherwise the namespace in which the sidecar is running will be used. It's also possible to specify ALL to search in all namespaces. | `nil`                                |
-| `sidecar.dashboards.script`               | Absolute path to shell script to execute after a configmap got reloaded. | `nil`                                |
-| `sidecar.dashboards.reloadURL`            | Full url of dashboards configuration reload API endpoint, to invoke after a config-map change | `"http://localhost:3000/api/admin/provisioning/dashboards/reload"` |
-| `sidecar.dashboards.skipReload`           | Enabling this omits defining the REQ_USERNAME, REQ_PASSWORD, REQ_URL and REQ_METHOD environment variables | `false` |
-| `sidecar.dashboards.initDashboards`     | Set to true to deploy the dashboards sidecar as an initContainer in addition to a container. This is needed if skipReload is true, to load any dashboards defined at startup time. | `false` |
-| `sidecar.dashboards.restartPolicy`        |  Set to `Always` to enable native sidecars. `sidecar.dashboards.initAlerts` must be `true` | `""`|
-| `sidecar.dashboards.startupProbe`         |  Startup probe for the native sidecar | `{}` |
-| `sidecar.dashboards.resource`             | Should the sidecar looks into secrets, configmaps or both. | `both`                               |
-| `sidecar.dashboards.extraMounts`          | Additional dashboard sidecar volume mounts. | `[]`                               |
-| `sidecar.datasources.enabled`             | Enables the cluster wide search for datasources and adds/updates/deletes them in grafana |`false`       |
-| `sidecar.datasources.label`               | Label that config maps with datasources should have to be added (can be templated) | `grafana_datasource`                               |
-| `sidecar.datasources.labelValue`          | Label value that config maps with datasources should have to be added (can be templated) | `""`                                |
-| `sidecar.datasources.searchNamespace`     | Namespaces list. If specified, the sidecar will search for datasources config-maps  inside these namespaces. Otherwise the namespace in which the sidecar is running will be used. It's also possible to specify ALL to search in all namespaces. | `nil`                               |
-| `sidecar.datasources.watchMethod`         | Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds. | `WATCH` |
-| `sidecar.datasources.resource`            | Should the sidecar looks into secrets, configmaps or both. | `both`                               |
-| `sidecar.datasources.reloadURL`           | Full url of datasource configuration reload API endpoint, to invoke after a config-map change | `"http://localhost:3000/api/admin/provisioning/datasources/reload"` |
-| `sidecar.datasources.skipReload`          | Enabling this omits defining the REQ_URL and REQ_METHOD environment variables | `false` |
-| `sidecar.datasources.initDatasources`     | Set to true to deploy the datasource sidecar as an initContainer in addition to a container. This is needed if skipReload is true, to load any datasources defined at startup time. | `false` |
-| `sidecar.datasources.restartPolicy`        |  Set to `Always` to enable native sidecars. `sidecar.datasources.initAlerts` must be `true` | `""`|
-| `sidecar.datasources.startupProbe`         |  Startup probe for the native sidecar | `{}` |
-| `sidecar.notifiers.enabled`               | Enables the cluster wide search for notifiers and adds/updates/deletes them in grafana | `false`        |
-| `sidecar.notifiers.label`                 | Label that config maps with notifiers should have to be added (can be templated) | `grafana_notifier`                               |
-| `sidecar.notifiers.labelValue`            | Label value that config maps with notifiers should have to be added (can be templated) | `""`                                |
-| `sidecar.notifiers.searchNamespace`       | Namespaces list. If specified, the sidecar will search for notifiers config-maps (or secrets) inside these namespaces. Otherwise the namespace in which the sidecar is running will be used. It's also possible to specify ALL to search in all namespaces. | `nil`                               |
-| `sidecar.notifiers.watchMethod`           | Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds. | `WATCH` |
-| `sidecar.notifiers.resource`              | Should the sidecar looks into secrets, configmaps or both. | `both`                               |
-| `sidecar.notifiers.reloadURL`             | Full url of notifier configuration reload API endpoint, to invoke after a config-map change | `"http://localhost:3000/api/admin/provisioning/notifications/reload"` |
-| `sidecar.notifiers.skipReload`            | Enabling this omits defining the REQ_URL and REQ_METHOD environment variables | `false` |
-| `sidecar.notifiers.initNotifiers`         | Set to true to deploy the notifier sidecar as an initContainer in addition to a container. This is needed if skipReload is true, to load any notifiers defined at startup time. | `false` |
-| `sidecar.notifiers.restartPolicy`        |  Set to `Always` to enable native sidecars. `sidecar.notifiers.initAlerts` must be `true` | `""`|
-| `sidecar.notifiers.startupProbe`         |  Startup probe for the native sidecar | `{}` |
-| `smtp.existingSecret`                     | The name of an existing secret containing the SMTP credentials. | `""`                                  |
-| `smtp.userKey`                            | The key in the existing SMTP secret containing the username. | `"user"`                                 |
-| `smtp.passwordKey`                        | The key in the existing SMTP secret containing the password. | `"password"`                             |
-| `admin.existingSecret`                    | The name of an existing secret containing the admin credentials (can be templated). | `""`                                 |
-| `admin.userKey`                           | The key in the existing admin secret containing the username. | `"admin-user"`                          |
-| `admin.passwordKey`                       | The key in the existing admin secret containing the password. | `"admin-password"`                      |
-| `serviceAccount.automountServiceAccountToken` | Automount the service account token on all pods where is service account is used | `false` |
-| `serviceAccount.annotations`              | ServiceAccount annotations                    |                                                         |
-| `serviceAccount.create`                   | Create service account                        | `true`                                                  |
-| `serviceAccount.labels`                   | ServiceAccount labels                         | `{}`                                                    |
-| `serviceAccount.name`                     | Service account name to use, when empty will be set to created account if `serviceAccount.create` is set else to `default` | `` |
-| `serviceAccount.nameTest`                 | Service account name to use for test, when empty will be set to created account if `serviceAccount.create` is set else to `default` | `nil` |
-| `rbac.create`                             | Create and use RBAC resources                 | `true`                                                  |
-| `rbac.namespaced`                         | Creates Role and Rolebinding instead of the default ClusterRole and ClusteRoleBindings for the grafana instance  | `false` |
-| `rbac.useExistingRole`                    | Set to a rolename to use existing role - skipping role creating - but still doing serviceaccount and rolebinding to the rolename set here. | `nil` |
-| `rbac.pspEnabled`                         | Create PodSecurityPolicy (with `rbac.create`, grant roles permissions as well) | `false`                |
-| `rbac.pspUseAppArmor`                     | Enforce AppArmor in created PodSecurityPolicy (requires `rbac.pspEnabled`)  | `false`                   |
-| `rbac.extraRoleRules`                     | Additional rules to add to the Role           | []                                                      |
-| `rbac.extraClusterRoleRules`              | Additional rules to add to the ClusterRole    | []                                                      |
-| `command`                                 | Define command to be executed by grafana container at startup | `nil`                                   |
-| `args`                                    | Define additional args if command is used     | `nil`                                                   |
-| `testFramework.enabled`                   | Whether to create test-related resources      | `true`                                                  |
-| `testFramework.image.registry`            | `test-framework` image registry.            | `docker.io`                                             |
-| `testFramework.image.repository`          | `test-framework` image repository.            | `bats/bats`                                             |
-| `testFramework.image.tag`                 | `test-framework` image tag.                   | `v1.4.1`                                                |
-| `testFramework.imagePullPolicy`           | `test-framework` image pull policy.           | `IfNotPresent`                                          |
-| `testFramework.securityContext`           | `test-framework` securityContext              | `{}`                                                    |
-| `downloadDashboards.env`                  | Environment variables to be passed to the `download-dashboards` container | `{}`                        |
-| `downloadDashboards.envFromSecret`        | Name of a Kubernetes secret (must be manually created in the same namespace) containing values to be added to the environment. Can be templated | `""` |
-| `downloadDashboards.resources`            | Resources of `download-dashboards` container  | `{}`                                                    |
-| `downloadDashboardsImage.registry`        | Curl docker image registry                    | `docker.io`                                       |
-| `downloadDashboardsImage.repository`      | Curl docker image repository                  | `curlimages/curl`                                       |
-| `downloadDashboardsImage.tag`             | Curl docker image tag                         | `8.9.1`                                                 |
-| `downloadDashboardsImage.sha`             | Curl docker image sha (optional)              | `""`                                                    |
-| `downloadDashboardsImage.pullPolicy`      | Curl docker image pull policy                 | `IfNotPresent`                                          |
-| `namespaceOverride`                       | Override the deployment namespace             | `""` (`Release.Namespace`)                              |
-| `serviceMonitor.enabled`                  | Use servicemonitor from prometheus operator   | `false`                                                 |
-| `serviceMonitor.namespace`                | Namespace this servicemonitor is installed in |                                                         |
-| `serviceMonitor.interval`                 | How frequently Prometheus should scrape       | `1m`                                                    |
-| `serviceMonitor.path`                     | Path to scrape                                | `/metrics`                                              |
-| `serviceMonitor.scheme`                   | Scheme to use for metrics scraping            | `http`                                                  |
-| `serviceMonitor.tlsConfig`                | TLS configuration block for the endpoint      | `{}`                                                    |
-| `serviceMonitor.labels`                   | Labels for the servicemonitor passed to Prometheus Operator      |  `{}`                                |
-| `serviceMonitor.scrapeTimeout`            | Timeout after which the scrape is ended       | `30s`                                                   |
-| `serviceMonitor.relabelings`              | RelabelConfigs to apply to samples before scraping.     | `[]`                                      |
-| `serviceMonitor.metricRelabelings`        | MetricRelabelConfigs to apply to samples before ingestion.  | `[]`                                      |
-| `revisionHistoryLimit`                    | Number of old ReplicaSets to retain           | `10`                                                    |
-| `imageRenderer.enabled`                    | Enable the image-renderer deployment & service                                     | `false`                          |
-| `imageRenderer.image.registry`             | image-renderer Image registry                                                      | `docker.io` |
-| `imageRenderer.image.repository`           | image-renderer Image repository                                                    | `grafana/grafana-image-renderer` |
-| `imageRenderer.image.tag`                  | image-renderer Image tag                                                           | `latest`                         |
-| `imageRenderer.image.sha`                  | image-renderer Image sha (optional)                                                | `""`                             |
-| `imageRenderer.image.pullSecrets`                  |  image-renderer Image pull secrets (optional)                              | `[]`                             |
-| `imageRenderer.image.pullPolicy`           | image-renderer ImagePullPolicy                                                     | `Always`                         |
-| `imageRenderer.env`                        | extra env-vars for image-renderer                                                  | `{}`                             |
-| `imageRenderer.envValueFrom`               | Environment variables for image-renderer from alternate sources. See the API docs on [EnvVarSource](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/#envvarsource-v1-core) for format details. Can be templated | `{}` |
-| `imageRenderer.extraConfigmapMounts`       | Additional image-renderer configMap volume mounts (values are templated)           | `[]`                             |
-| `imageRenderer.extraSecretMounts`          | Additional image-renderer secret volume mounts                                     | `[]`                             |
-| `imageRenderer.extraVolumeMounts`          | Additional image-renderer volume mounts                                            | `[]`                             |
-| `imageRenderer.extraVolumes`               | Additional image-renderer volumes                                                  | `[]`                             |
-| `imageRenderer.serviceAccountName`         | image-renderer deployment serviceAccountName                                       | `""`                             |
-| `imageRenderer.securityContext`            | image-renderer deployment securityContext                                          | `{}`                             |
-| `imageRenderer.podAnnotations`            | image-renderer image-renderer pod annotation                                       | `{}`                             |
-| `imageRenderer.hostAliases`                | image-renderer deployment Host Aliases                                             | `[]`                             |
-| `imageRenderer.priorityClassName`          | image-renderer deployment priority class                                           | `''`                             |
-| `imageRenderer.service.enabled`            | Enable the image-renderer service                                                  | `true`                           |
-| `imageRenderer.service.portName`           | image-renderer service port name                                                   | `http`                           |
-| `imageRenderer.service.port`               | image-renderer port used by deployment                                             | `8081`                           |
-| `imageRenderer.service.targetPort`         | image-renderer service port used by service                                        | `8081`                           |
-| `imageRenderer.appProtocol`                | Adds the appProtocol field to the service                                          | ``                               |
-| `imageRenderer.grafanaSubPath`             | Grafana sub path to use for image renderer callback url                            | `''`                             |
-| `imageRenderer.serverURL`                  | Remote image renderer url                                                          | `''`                             |
-| `imageRenderer.renderingCallbackURL`       | Callback url for the Grafana image renderer                                        | `''`                             |
-| `imageRenderer.podPortName`                | name of the image-renderer port on the pod                                         | `http`                           |
-| `imageRenderer.revisionHistoryLimit`       | number of image-renderer replica sets to keep                                      | `10`                             |
-| `imageRenderer.networkPolicy.limitIngress` | Enable a NetworkPolicy to limit inbound traffic from only the created grafana pods | `true`                           |
-| `imageRenderer.networkPolicy.limitEgress`  | Enable a NetworkPolicy to limit outbound traffic to only the created grafana pods  | `false`                          |
-| `imageRenderer.resources`                  | Set resource limits for image-renderer pods                                        | `{}`                             |
-| `imageRenderer.nodeSelector`               | Node labels for pod assignment                | `{}`                                                    |
-| `imageRenderer.tolerations`                | Toleration labels for pod assignment          | `[]`                                                    |
-| `imageRenderer.affinity`                   | Affinity settings for pod assignment          | `{}`                                                    |
-| `networkPolicy.enabled`                    | Enable creation of NetworkPolicy resources.                                                                              | `false`             |
-| `networkPolicy.allowExternal`              | Don't require client label for connections                                                                               | `true`              |
-| `networkPolicy.explicitNamespacesSelector` | A Kubernetes LabelSelector to explicitly select namespaces from which traffic could be allowed                           | `{}`                |
-| `networkPolicy.ingress`                    | Enable the creation of an ingress network policy             | `true`    |
-| `networkPolicy.egress.enabled`             | Enable the creation of an egress network policy              | `false`   |
-| `networkPolicy.egress.ports`               | An array of ports to allow for the egress                    | `[]`    |
-| `enableKubeBackwardCompatibility`          | Enable backward compatibility of kubernetes where pod's defintion version below 1.13 doesn't have the enableServiceLinks option  | `false`     |
+## Values
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| "grafana.ini".analytics.check_for_updates | bool | `true` |  |
+| "grafana.ini".log.mode | string | `"console"` |  |
+| "grafana.ini".paths.data | string | `"/var/lib/grafana/"` |  |
+| "grafana.ini".paths.logs | string | `"/var/log/grafana"` |  |
+| "grafana.ini".paths.plugins | string | `"/var/lib/grafana/plugins"` |  |
+| "grafana.ini".paths.provisioning | string | `"/etc/grafana/provisioning"` |  |
+| "grafana.ini".server.domain | string | `"{{ if (and .Values.ingress.enabled .Values.ingress.hosts) }}{{ tpl (.Values.ingress.hosts | first) . }}{{ else if (and .Values.route.main.enabled .Values.route.main.hostnames) }}{{ tpl (.Values.route.main.hostnames | first) . }}{{ else }}''{{ end }}"` |  |
+| "grafana.ini".unified_storage.index_path | string | `"/var/lib/grafana-search/bleve"` |  |
+| admin.existingSecret | string | `""` |  |
+| admin.passwordKey | string | `"admin-password"` |  |
+| admin.userKey | string | `"admin-user"` |  |
+| adminUser | string | `"admin"` |  |
+| affinity | object | `{}` |  |
+| alerting | object | `{}` |  |
+| assertNoLeakedSecrets | bool | `true` |  |
+| automountServiceAccountToken | bool | `true` |  |
+| autoscaling.behavior | object | `{}` |  |
+| autoscaling.enabled | bool | `false` |  |
+| autoscaling.maxReplicas | int | `5` |  |
+| autoscaling.minReplicas | int | `1` |  |
+| autoscaling.targetCPU | string | `"60"` |  |
+| autoscaling.targetMemory | string | `""` |  |
+| containerSecurityContext.allowPrivilegeEscalation | bool | `false` |  |
+| containerSecurityContext.capabilities.drop[0] | string | `"ALL"` |  |
+| containerSecurityContext.privileged | bool | `false` |  |
+| containerSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
+| createConfigmap | bool | `true` |  |
+| dashboardProviders | object | `{}` |  |
+| dashboards | object | `{}` |  |
+| dashboardsConfigMaps | object | `{}` |  |
+| datasources | object | `{}` |  |
+| defaultCurlOptions | string | `"-skf"` |  |
+| deploymentStrategy.type | string | `"RollingUpdate"` |  |
+| dnsConfig | object | `{}` |  |
+| dnsPolicy | string | `nil` |  |
+| downloadDashboards.env | object | `{}` |  |
+| downloadDashboards.envFromSecret | string | `""` |  |
+| downloadDashboards.envValueFrom | object | `{}` |  |
+| downloadDashboards.resources | object | `{}` |  |
+| downloadDashboards.securityContext.allowPrivilegeEscalation | bool | `false` |  |
+| downloadDashboards.securityContext.capabilities.drop[0] | string | `"ALL"` |  |
+| downloadDashboards.securityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
+| downloadDashboardsImage.pullPolicy | string | `"IfNotPresent"` |  |
+| downloadDashboardsImage.registry | string | `"docker.io"` | The Docker registry |
+| downloadDashboardsImage.repository | string | `"curlimages/curl"` |  |
+| downloadDashboardsImage.sha | string | `""` |  |
+| downloadDashboardsImage.tag | string | `"8.18.0"` |  |
+| enableKubeBackwardCompatibility | bool | `false` |  |
+| enableServiceLinks | bool | `true` |  |
+| env | object | `{}` |  |
+| envFromConfigMaps | list | `[]` |  |
+| envFromSecret | string | `""` |  |
+| envFromSecrets | list | `[]` |  |
+| envRenderSecret | object | `{}` |  |
+| envValueFrom | object | `{}` |  |
+| extraConfigmapMounts | list | `[]` |  |
+| extraContainerVolumes | list | `[]` |  |
+| extraContainers | string | `""` |  |
+| extraEmptyDirMounts | list | `[]` |  |
+| extraExposePorts | list | `[]` |  |
+| extraInitContainers | list | `[]` |  |
+| extraLabels | object | `{}` |  |
+| extraObjects | list | `[]` |  |
+| extraSecretMounts | list | `[]` |  |
+| extraVolumeMounts | list | `[]` |  |
+| extraVolumes | list | `[]` |  |
+| global.imagePullSecrets | list | `[]` |  |
+| global.imageRegistry | string | `nil` | Overrides the Docker registry globally for all images |
+| gossipPortName | string | `"gossip"` |  |
+| headlessService | bool | `false` |  |
+| hostAliases | list | `[]` |  |
+| hostUsers | string | `nil` |  |
+| image.pullPolicy | string | `"IfNotPresent"` |  |
+| image.pullSecrets | list | `[]` |  |
+| image.registry | string | `"docker.io"` | The Docker registry |
+| image.repository | string | `"grafana/grafana"` | Docker image repository |
+| image.sha | string | `""` |  |
+| image.tag | string | `""` |  |
+| imageRenderer.affinity | object | `{}` |  |
+| imageRenderer.automountServiceAccountToken | bool | `false` |  |
+| imageRenderer.autoscaling.behavior | object | `{}` |  |
+| imageRenderer.autoscaling.enabled | bool | `false` |  |
+| imageRenderer.autoscaling.maxReplicas | int | `5` |  |
+| imageRenderer.autoscaling.minReplicas | int | `1` |  |
+| imageRenderer.autoscaling.targetCPU | string | `"60"` |  |
+| imageRenderer.autoscaling.targetMemory | string | `""` |  |
+| imageRenderer.containerSecurityContext.allowPrivilegeEscalation | bool | `false` |  |
+| imageRenderer.containerSecurityContext.capabilities.drop[0] | string | `"ALL"` |  |
+| imageRenderer.containerSecurityContext.readOnlyRootFilesystem | bool | `true` |  |
+| imageRenderer.containerSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
+| imageRenderer.deploymentStrategy | object | `{}` |  |
+| imageRenderer.enabled | bool | `false` |  |
+| imageRenderer.env.HTTP_HOST | string | `"0.0.0.0"` |  |
+| imageRenderer.env.XDG_CACHE_HOME | string | `"/tmp/.chromium"` |  |
+| imageRenderer.env.XDG_CONFIG_HOME | string | `"/tmp/.chromium"` |  |
+| imageRenderer.envValueFrom | object | `{}` |  |
+| imageRenderer.extraConfigmapMounts | list | `[]` |  |
+| imageRenderer.extraSecretMounts | list | `[]` |  |
+| imageRenderer.extraVolumeMounts | list | `[]` |  |
+| imageRenderer.extraVolumes | list | `[]` |  |
+| imageRenderer.grafanaProtocol | string | `"http"` |  |
+| imageRenderer.grafanaSubPath | string | `""` |  |
+| imageRenderer.hostAliases | list | `[]` |  |
+| imageRenderer.hostUsers | string | `nil` |  |
+| imageRenderer.image.pullPolicy | string | `"Always"` |  |
+| imageRenderer.image.pullSecrets | list | `[]` |  |
+| imageRenderer.image.registry | string | `"docker.io"` | The Docker registry |
+| imageRenderer.image.repository | string | `"grafana/grafana-image-renderer"` |  |
+| imageRenderer.image.sha | string | `""` |  |
+| imageRenderer.image.tag | string | `"latest"` |  |
+| imageRenderer.networkPolicy.extraIngressSelectors | list | `[]` |  |
+| imageRenderer.networkPolicy.limitEgress | bool | `false` |  |
+| imageRenderer.networkPolicy.limitIngress | bool | `true` |  |
+| imageRenderer.nodeSelector | object | `{}` |  |
+| imageRenderer.podAnnotations | object | `{}` |  |
+| imageRenderer.podPortName | string | `"http"` |  |
+| imageRenderer.priorityClassName | string | `""` |  |
+| imageRenderer.renderingCallbackURL | string | `""` |  |
+| imageRenderer.replicas | int | `1` |  |
+| imageRenderer.resources | object | `{}` |  |
+| imageRenderer.revisionHistoryLimit | int | `10` |  |
+| imageRenderer.securityContext | object | `{}` |  |
+| imageRenderer.serverURL | string | `""` |  |
+| imageRenderer.service.appProtocol | string | `""` |  |
+| imageRenderer.service.enabled | bool | `true` |  |
+| imageRenderer.service.port | int | `8081` |  |
+| imageRenderer.service.portName | string | `"http"` |  |
+| imageRenderer.service.targetPort | int | `8081` |  |
+| imageRenderer.serviceAccountName | string | `""` |  |
+| imageRenderer.serviceMonitor.enabled | bool | `false` |  |
+| imageRenderer.serviceMonitor.interval | string | `"1m"` |  |
+| imageRenderer.serviceMonitor.labels | object | `{}` |  |
+| imageRenderer.serviceMonitor.path | string | `"/metrics"` |  |
+| imageRenderer.serviceMonitor.relabelings | list | `[]` |  |
+| imageRenderer.serviceMonitor.scheme | string | `"http"` |  |
+| imageRenderer.serviceMonitor.scrapeTimeout | string | `"30s"` |  |
+| imageRenderer.serviceMonitor.targetLabels | list | `[]` |  |
+| imageRenderer.serviceMonitor.tlsConfig | object | `{}` |  |
+| imageRenderer.tolerations | list | `[]` |  |
+| ingress.annotations | object | `{}` |  |
+| ingress.enabled | bool | `false` |  |
+| ingress.extraPaths | list | `[]` |  |
+| ingress.hosts[0] | string | `"chart-example.local"` |  |
+| ingress.labels | object | `{}` |  |
+| ingress.path | string | `"/"` |  |
+| ingress.pathType | string | `"Prefix"` |  |
+| ingress.tls | list | `[]` |  |
+| initChownData.enabled | bool | `true` |  |
+| initChownData.image.pullPolicy | string | `"IfNotPresent"` |  |
+| initChownData.image.registry | string | `"docker.io"` | The Docker registry |
+| initChownData.image.repository | string | `"library/busybox"` |  |
+| initChownData.image.sha | string | `""` |  |
+| initChownData.image.tag | string | `"1.37.0"` |  |
+| initChownData.resources | object | `{}` |  |
+| initChownData.securityContext.capabilities.add[0] | string | `"CHOWN"` |  |
+| initChownData.securityContext.capabilities.drop[0] | string | `"ALL"` |  |
+| initChownData.securityContext.readOnlyRootFilesystem | bool | `false` |  |
+| initChownData.securityContext.runAsNonRoot | bool | `false` |  |
+| initChownData.securityContext.runAsUser | int | `0` |  |
+| initChownData.securityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
+| ldap.config | string | `""` |  |
+| ldap.enabled | bool | `false` |  |
+| ldap.existingSecret | string | `""` |  |
+| lifecycleHooks | object | `{}` |  |
+| livenessProbe.failureThreshold | int | `10` |  |
+| livenessProbe.httpGet.path | string | `"/api/health"` |  |
+| livenessProbe.httpGet.port | string | `"grafana"` |  |
+| livenessProbe.initialDelaySeconds | int | `60` |  |
+| livenessProbe.timeoutSeconds | int | `30` |  |
+| namespaceOverride | string | `""` |  |
+| networkPolicy.allowExternal | bool | `true` |  |
+| networkPolicy.egress.blockDNSResolution | bool | `false` |  |
+| networkPolicy.egress.enabled | bool | `false` |  |
+| networkPolicy.egress.ports | list | `[]` |  |
+| networkPolicy.egress.to | list | `[]` |  |
+| networkPolicy.enabled | bool | `false` |  |
+| networkPolicy.explicitNamespacesSelector | object | `{}` |  |
+| networkPolicy.ingress | bool | `true` |  |
+| nodeSelector | object | `{}` |  |
+| notifiers | object | `{}` |  |
+| persistence.accessModes[0] | string | `"ReadWriteOnce"` |  |
+| persistence.disableWarning | bool | `false` |  |
+| persistence.enabled | bool | `false` |  |
+| persistence.extraPvcLabels | object | `{}` |  |
+| persistence.finalizers[0] | string | `"kubernetes.io/pvc-protection"` |  |
+| persistence.inMemory.enabled | bool | `false` |  |
+| persistence.lookupVolumeName | bool | `true` |  |
+| persistence.size | string | `"10Gi"` |  |
+| persistence.type | string | `"pvc"` |  |
+| persistence.volumeName | string | `""` |  |
+| plugins | list | `[]` |  |
+| podDisruptionBudget | object | `{}` |  |
+| podPortName | string | `"grafana"` |  |
+| rbac.create | bool | `true` |  |
+| rbac.extraClusterRoleRules | list | `[]` |  |
+| rbac.extraRoleRules | list | `[]` |  |
+| rbac.namespaced | bool | `false` |  |
+| rbac.pspEnabled | bool | `false` |  |
+| rbac.pspUseAppArmor | bool | `false` |  |
+| readinessProbe.httpGet.path | string | `"/api/health"` |  |
+| readinessProbe.httpGet.port | string | `"grafana"` |  |
+| replicas | int | `1` |  |
+| resources | object | `{}` |  |
+| revisionHistoryLimit | int | `10` |  |
+| route | object | `{"main":{"additionalRules":[],"annotations":{},"apiVersion":"gateway.networking.k8s.io/v1","enabled":false,"filters":[],"hostnames":[],"httpsRedirect":false,"kind":"HTTPRoute","labels":{},"matches":[{"path":{"type":"PathPrefix","value":"/"}}],"parentRefs":[]}}` | BETA: Configure the gateway routes for the chart here. More routes can be added by adding a dictionary key like the 'main' route. Be aware that this is an early beta of this feature, kube-prometheus-stack does not guarantee this works and is subject to change. Being BETA this can/will change in the future without notice, do not use unless you want to take that risk [[ref]](https://gateway-api.sigs.k8s.io/references/spec/#gateway.networking.k8s.io%2fv1alpha2) |
+| route.main.apiVersion | string | `"gateway.networking.k8s.io/v1"` | Set the route apiVersion, e.g. gateway.networking.k8s.io/v1 or gateway.networking.k8s.io/v1alpha2 |
+| route.main.enabled | bool | `false` | Enables or disables the route |
+| route.main.kind | string | `"HTTPRoute"` | Set the route kind Valid options are GRPCRoute, HTTPRoute, TCPRoute, TLSRoute, UDPRoute |
+| securityContext.fsGroup | int | `472` |  |
+| securityContext.runAsGroup | int | `472` |  |
+| securityContext.runAsNonRoot | bool | `true` |  |
+| securityContext.runAsUser | int | `472` |  |
+| service.annotations | object | `{}` |  |
+| service.appProtocol | string | `""` |  |
+| service.enabled | bool | `true` |  |
+| service.ipFamilies | list | `[]` |  |
+| service.ipFamilyPolicy | string | `""` |  |
+| service.labels | object | `{}` |  |
+| service.loadBalancerClass | string | `""` |  |
+| service.loadBalancerIP | string | `""` |  |
+| service.loadBalancerSourceRanges | list | `[]` |  |
+| service.port | int | `80` |  |
+| service.portName | string | `"service"` |  |
+| service.sessionAffinity | string | `""` |  |
+| service.targetPort | int | `3000` |  |
+| service.type | string | `"ClusterIP"` |  |
+| serviceAccount.automountServiceAccountToken | bool | `false` |  |
+| serviceAccount.create | bool | `true` |  |
+| serviceAccount.labels | object | `{}` |  |
+| serviceAccount.name | string | `nil` |  |
+| serviceAccount.nameTest | string | `nil` |  |
+| serviceMonitor.basicAuth | object | `{}` |  |
+| serviceMonitor.enabled | bool | `false` |  |
+| serviceMonitor.interval | string | `"30s"` |  |
+| serviceMonitor.labels | object | `{}` |  |
+| serviceMonitor.metricRelabelings | list | `[]` |  |
+| serviceMonitor.path | string | `"/metrics"` |  |
+| serviceMonitor.relabelings | list | `[]` |  |
+| serviceMonitor.scheme | string | `"http"` |  |
+| serviceMonitor.scrapeTimeout | string | `"30s"` |  |
+| serviceMonitor.targetLabels | list | `[]` |  |
+| serviceMonitor.tlsConfig | object | `{}` |  |
+| shareProcessNamespace | bool | `false` |  |
+| sidecar.alerts.enabled | bool | `false` |  |
+| sidecar.alerts.env | object | `{}` |  |
+| sidecar.alerts.envValueFrom | object | `{}` |  |
+| sidecar.alerts.extraMounts | list | `[]` |  |
+| sidecar.alerts.initAlerts | bool | `false` |  |
+| sidecar.alerts.label | string | `"grafana_alert"` |  |
+| sidecar.alerts.labelValue | string | `""` |  |
+| sidecar.alerts.reloadURL | string | `"http://localhost:3000/api/admin/provisioning/alerting/reload"` |  |
+| sidecar.alerts.resource | string | `"both"` |  |
+| sidecar.alerts.resourceName | string | `""` |  |
+| sidecar.alerts.script | string | `nil` |  |
+| sidecar.alerts.searchNamespace | string | `nil` |  |
+| sidecar.alerts.sizeLimit | string | `""` |  |
+| sidecar.alerts.skipReload | bool | `false` |  |
+| sidecar.alerts.watchMethod | string | `"WATCH"` |  |
+| sidecar.dashboards.SCProvider | bool | `true` |  |
+| sidecar.dashboards.defaultFolderName | string | `nil` |  |
+| sidecar.dashboards.enabled | bool | `false` |  |
+| sidecar.dashboards.env | object | `{}` |  |
+| sidecar.dashboards.envValueFrom | object | `{}` |  |
+| sidecar.dashboards.extraMounts | list | `[]` |  |
+| sidecar.dashboards.folder | string | `"/tmp/dashboards"` |  |
+| sidecar.dashboards.folderAnnotation | string | `nil` |  |
+| sidecar.dashboards.initDashboards | bool | `false` |  |
+| sidecar.dashboards.label | string | `"grafana_dashboard"` |  |
+| sidecar.dashboards.labelValue | string | `""` |  |
+| sidecar.dashboards.provider.allowUiUpdates | bool | `false` |  |
+| sidecar.dashboards.provider.disableDelete | bool | `false` |  |
+| sidecar.dashboards.provider.folder | string | `""` |  |
+| sidecar.dashboards.provider.folderUid | string | `""` |  |
+| sidecar.dashboards.provider.foldersFromFilesStructure | bool | `false` |  |
+| sidecar.dashboards.provider.name | string | `"sidecarProvider"` |  |
+| sidecar.dashboards.provider.orgid | int | `1` |  |
+| sidecar.dashboards.provider.type | string | `"file"` |  |
+| sidecar.dashboards.reloadURL | string | `"http://localhost:3000/api/admin/provisioning/dashboards/reload"` |  |
+| sidecar.dashboards.resource | string | `"both"` |  |
+| sidecar.dashboards.resourceName | string | `""` |  |
+| sidecar.dashboards.script | string | `nil` |  |
+| sidecar.dashboards.searchNamespace | string | `nil` |  |
+| sidecar.dashboards.sizeLimit | string | `""` |  |
+| sidecar.dashboards.skipReload | bool | `false` |  |
+| sidecar.dashboards.watchMethod | string | `"WATCH"` |  |
+| sidecar.datasources.enabled | bool | `false` |  |
+| sidecar.datasources.env | object | `{}` |  |
+| sidecar.datasources.envValueFrom | object | `{}` |  |
+| sidecar.datasources.extraMounts | list | `[]` |  |
+| sidecar.datasources.initDatasources | bool | `false` |  |
+| sidecar.datasources.label | string | `"grafana_datasource"` |  |
+| sidecar.datasources.labelValue | string | `""` |  |
+| sidecar.datasources.reloadURL | string | `"http://localhost:3000/api/admin/provisioning/datasources/reload"` |  |
+| sidecar.datasources.resource | string | `"both"` |  |
+| sidecar.datasources.resourceName | string | `""` |  |
+| sidecar.datasources.script | string | `nil` |  |
+| sidecar.datasources.searchNamespace | string | `nil` |  |
+| sidecar.datasources.sizeLimit | string | `""` |  |
+| sidecar.datasources.skipReload | bool | `false` |  |
+| sidecar.datasources.watchMethod | string | `"WATCH"` |  |
+| sidecar.enableUniqueFilenames | bool | `false` |  |
+| sidecar.image.registry | string | `"quay.io"` | The Docker registry |
+| sidecar.image.repository | string | `"kiwigrid/k8s-sidecar"` |  |
+| sidecar.image.sha | string | `""` |  |
+| sidecar.image.tag | string | `"2.5.0"` |  |
+| sidecar.imagePullPolicy | string | `"IfNotPresent"` |  |
+| sidecar.livenessProbe | object | `{}` |  |
+| sidecar.notifiers.enabled | bool | `false` |  |
+| sidecar.notifiers.env | object | `{}` |  |
+| sidecar.notifiers.extraMounts | list | `[]` |  |
+| sidecar.notifiers.initNotifiers | bool | `false` |  |
+| sidecar.notifiers.label | string | `"grafana_notifier"` |  |
+| sidecar.notifiers.labelValue | string | `""` |  |
+| sidecar.notifiers.reloadURL | string | `"http://localhost:3000/api/admin/provisioning/notifications/reload"` |  |
+| sidecar.notifiers.resource | string | `"both"` |  |
+| sidecar.notifiers.resourceName | string | `""` |  |
+| sidecar.notifiers.script | string | `nil` |  |
+| sidecar.notifiers.searchNamespace | string | `nil` |  |
+| sidecar.notifiers.sizeLimit | string | `""` |  |
+| sidecar.notifiers.skipReload | bool | `false` |  |
+| sidecar.notifiers.watchMethod | string | `"WATCH"` |  |
+| sidecar.plugins.enabled | bool | `false` |  |
+| sidecar.plugins.env | object | `{}` |  |
+| sidecar.plugins.extraMounts | list | `[]` |  |
+| sidecar.plugins.initPlugins | bool | `false` |  |
+| sidecar.plugins.label | string | `"grafana_plugin"` |  |
+| sidecar.plugins.labelValue | string | `""` |  |
+| sidecar.plugins.reloadURL | string | `"http://localhost:3000/api/admin/provisioning/plugins/reload"` |  |
+| sidecar.plugins.resource | string | `"both"` |  |
+| sidecar.plugins.resourceName | string | `""` |  |
+| sidecar.plugins.script | string | `nil` |  |
+| sidecar.plugins.searchNamespace | string | `nil` |  |
+| sidecar.plugins.sizeLimit | string | `""` |  |
+| sidecar.plugins.skipReload | bool | `false` |  |
+| sidecar.plugins.watchMethod | string | `"WATCH"` |  |
+| sidecar.readinessProbe | object | `{}` |  |
+| sidecar.resources | object | `{}` |  |
+| sidecar.securityContext.allowPrivilegeEscalation | bool | `false` |  |
+| sidecar.securityContext.capabilities.drop[0] | string | `"ALL"` |  |
+| sidecar.securityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
+| smtp.existingSecret | string | `""` |  |
+| smtp.passwordKey | string | `"password"` |  |
+| smtp.userKey | string | `"user"` |  |
+| testFramework.containerSecurityContext | object | `{}` |  |
+| testFramework.enabled | bool | `true` |  |
+| testFramework.image.registry | string | `"docker.io"` | The Docker registry |
+| testFramework.image.repository | string | `"bats/bats"` |  |
+| testFramework.image.tag | string | `"1.13.0"` |  |
+| testFramework.imagePullPolicy | string | `"IfNotPresent"` |  |
+| testFramework.resources | object | `{}` |  |
+| testFramework.securityContext | object | `{}` |  |
+| tolerations | list | `[]` |  |
+| topologySpreadConstraints | list | `[]` |  |
+| useStatefulSet | bool | `false` |  |
 
 ### Example ingress with path
 
@@ -810,14 +894,14 @@ file.
 
 As next step you have to setup the `grafana.ini` in your `values.yaml` in a way
 that it will make use of the headless service to obtain all the IPs of the
-cluster. You should replace ``{{ Name }}`` with the name of your helm deployment.
+cluster. For example, use ``{{ .Release.Name }}`` to refer to the Helm release name in your values.
 
 ```yaml
 grafana.ini:
   ...
   unified_alerting:
     enabled: true
-    ha_peers: {{ Name }}-headless:9094
+    ha_peers: {{ .Release.Name }}-headless:9094
     ha_listen_address: ${POD_IP}:9094
     ha_advertise_address: ${POD_IP}:9094
     rule_version_record_limit: "5"
