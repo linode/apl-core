@@ -1,5 +1,6 @@
 import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import express, { Request, Response } from 'express'
+import { copyFile } from 'fs/promises'
 import { Server } from 'http'
 import { bootstrapSops } from 'src/cmd/bootstrap'
 import { decrypt, encrypt } from 'src/common/crypt'
@@ -8,7 +9,6 @@ import { hfValues } from './common/hf'
 import { setValuesFile, unsetValuesFile } from './common/repo'
 import { loadYaml, rootDir } from './common/utils'
 import { objectToYaml } from './common/values'
-import { copyFile } from 'fs/promises'
 
 const d = terminal('server')
 const app = express()
@@ -96,8 +96,8 @@ app.get('/apl/schema', async (req: Request, res: Response): Promise<void> => {
 
 export const startServer = (): void => {
   server = app
-    .listen(17771, '0.0.0.0', () => {
-      d.log(`Server listening on http://0.0.0.0:17771`)
+    .listen(17771, '127.0.0.1', () => {
+      d.log(`Server listening on http://127.0.0.1:17771`)
     })
     .on('error', (e) => {
       console.error(e)
