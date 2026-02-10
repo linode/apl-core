@@ -5,7 +5,7 @@ import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
 import { terminal } from './debug'
 import { cleanEnv, cliEnvSpec, env, isCli } from './envalid'
-import { hasFileDifference, readdirRecurse, rootDir } from './utils'
+import { readdirRecurse, rootDir } from './utils'
 import { BasicArguments } from './yargs'
 
 export interface Arguments extends BasicArguments {
@@ -127,17 +127,16 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
   }
 }
 
-const matchTimestamps = async (path, file: string) => {
+const matchTimestamps = async (file: string) => {
   const d = terminal(`common:crypt:matchTimeStamps`)
-  const absFilePath = `${path}/${file}`
-  if (!existsSync(`${absFilePath}.dec`)) {
+  if (!existsSync(`${file}.dec`)) {
     d.debug(`Missing ${file}.dec, skipping...`)
     return
   }
 
-  const encTS = await stat(absFilePath)
-  const decTS = await stat(`${absFilePath}.dec`)
-  await utimes(`${absFilePath}.dec`, decTS.mtime, encTS.mtime)
+  const encTS = await stat(file)
+  const decTS = await stat(`${file}.dec`)
+  await utimes(`${file}.dec`, decTS.mtime, encTS.mtime)
   const encSec = Math.round(encTS.mtimeMs / 1000)
   const decSec = Math.round(decTS.mtimeMs / 1000)
   d.debug(`Updated timestamp for ${file}.dec from ${decSec} to ${encSec}`)
@@ -155,7 +154,7 @@ export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
     path,
     {
       cmd: CryptType.DECRYPT,
-      post: async (f) => matchTimestamps(path, f),
+      post: async (f) => matchTimestamps(f),
     },
     files,
   )
@@ -179,33 +178,37 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
           return false
         }
 
-        try {
-          // Same logic is used in helm-secrets: https://github.com/jkroepke/helm-secrets/blob/18a061430899c8cd66be68d8495f4b8489dbf3c3/scripts/lib/backends/sops.sh#L16
-          await $`grep -q 'mac.*,type:str]' ${file}`
-          d.debug(`Skipping encryption for ${file} (already encrypted)`)
-          return false
-        } catch {
-          d.debug(`${file} is not yet encrypted or grep did not match`)
-        }
         // Check if the decrypted version exists
         const decExists = existsSync(`${file}.dec`)
-        if (!decExists) {
-          d.debug(`Did not find decrypted ${file}.dec`)
-          return true
+
+        if (decExists) {
+          // Compare timestamps in whole seconds to avoid sub-second filesystem precision issues
+          // (matchTimestamps syncs them after decryption, so newer .dec means modifications)
+          const encTS = await stat(file)
+          const decTS = await stat(`${file}.dec`)
+          const encSec = Math.floor(encTS.mtimeMs / 1000)
+          const decSec = Math.floor(decTS.mtimeMs / 1000)
+          if (decSec > encSec) {
+            d.info(`Encrypting ${file}, .dec file is newer (modified since last encryption)`)
+            return true
+          }
+          d.info(`Skipping encryption for ${file} as it has not changed`)
+          return false
         }
 
-        // Compare files
-        const specsAreDifferent = await hasFileDifference(file, `${file}.dec`)
-        if (specsAreDifferent) {
-          d.info(`Encrypting ${file}, difference found between encrypted and .dec file`)
+        // No .dec file - check if file is already encrypted
+        try {
+          // Same logic is used in helm-secrets
+          await $`grep -q 'mac.*,type:str]' ${file}`
+          d.debug(`Skipping encryption for ${file} (already encrypted, no .dec file)`)
+          return false
+        } catch {
+          d.debug(`${file} is not yet encrypted, will encrypt`)
           return true
         }
-
-        d.info(`Skipping encryption for ${file} as it has not changed`)
-        return false
       },
       cmd: CryptType.ENCRYPT,
-      post: async (f: string) => matchTimestamps(path, f),
+      post: async (f: string) => matchTimestamps(f),
     },
     files,
   )
