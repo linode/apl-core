@@ -116,30 +116,6 @@ new password and use it.
 {{- end }}
 
 {{/*
-Return the appropriate apiVersion for rbac.
-*/}}
-{{- define "grafana.rbac.apiVersion" -}}
-{{- if $.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1" }}
-{{- print "rbac.authorization.k8s.io/v1" }}
-{{- else }}
-{{- print "rbac.authorization.k8s.io/v1beta1" }}
-{{- end }}
-{{- end }}
-
-{{/*
-Return the appropriate apiVersion for ingress.
-*/}}
-{{- define "grafana.ingress.apiVersion" -}}
-{{- if and ($.Capabilities.APIVersions.Has "networking.k8s.io/v1") (semverCompare ">= 1.19-0" .Capabilities.KubeVersion.Version) }}
-{{- print "networking.k8s.io/v1" }}
-{{- else if $.Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
-{{- print "networking.k8s.io/v1beta1" }}
-{{- else }}
-{{- print "extensions/v1beta1" }}
-{{- end }}
-{{- end }}
-
-{{/*
 Return the appropriate apiVersion for Horizontal Pod Autoscaler.
 */}}
 {{- define "grafana.hpa.apiVersion" -}}
@@ -150,39 +126,6 @@ Return the appropriate apiVersion for Horizontal Pod Autoscaler.
 {{- end }}
 {{- end }}
 
-{{/*
-Return the appropriate apiVersion for podDisruptionBudget.
-*/}}
-{{- define "grafana.podDisruptionBudget.apiVersion" -}}
-{{- if $.Values.podDisruptionBudget.apiVersion }}
-{{- print $.Values.podDisruptionBudget.apiVersion }}
-{{- else if $.Capabilities.APIVersions.Has "policy/v1/PodDisruptionBudget" }}
-{{- print "policy/v1" }}
-{{- else }}
-{{- print "policy/v1beta1" }}
-{{- end }}
-{{- end }}
-
-{{/*
-Return if ingress is stable.
-*/}}
-{{- define "grafana.ingress.isStable" -}}
-{{- eq (include "grafana.ingress.apiVersion" .) "networking.k8s.io/v1" }}
-{{- end }}
-
-{{/*
-Return if ingress supports ingressClassName.
-*/}}
-{{- define "grafana.ingress.supportsIngressClassName" -}}
-{{- or (eq (include "grafana.ingress.isStable" .) "true") (and (eq (include "grafana.ingress.apiVersion" .) "networking.k8s.io/v1beta1") (semverCompare ">= 1.18-0" .Capabilities.KubeVersion.Version)) }}
-{{- end }}
-
-{{/*
-Return if ingress supports pathType.
-*/}}
-{{- define "grafana.ingress.supportsPathType" -}}
-{{- or (eq (include "grafana.ingress.isStable" .) "true") (and (eq (include "grafana.ingress.apiVersion" .) "networking.k8s.io/v1beta1") (semverCompare ">= 1.18-0" .Capabilities.KubeVersion.Version)) }}
-{{- end }}
 
 {{/*
 Formats imagePullSecrets. Input is (dict "root" . "imagePullSecrets" .{specific imagePullSecrets})
