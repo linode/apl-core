@@ -46,9 +46,12 @@ spec:
             matchLabels:
               app.kubernetes.io/instance: po-prometheus
       ports:
+        # api enspoints
         - protocol: TCP
           port: 8080
-    # Allow internal otomi namespace communication
+          # Livness and readiness probes
+        - protocol: TCP
+          port: 9000
     - from:
         - namespaceSelector:
             matchLabels:
