@@ -15,12 +15,14 @@ spec:
   policyTypes:
     - Ingress
   ingress:
-    # Allow access from Istio public ingress gateway
     - ports:
+        # Allow ingress to api endpoint
         - protocol: TCP
           port: 8080
+        # Allow ingress to api endpoint for health checks
         - protocol: TCP
           port: 9000
+      # Allow access from Istio public ingress gateway
       from:
         - namespaceSelector:
             matchLabels:
