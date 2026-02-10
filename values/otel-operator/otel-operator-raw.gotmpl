@@ -198,12 +198,12 @@ resources:
         exporters:
           debug:
             verbosity: detailed
-          otlphttp/default:
+          otlp_http/default:
             endpoint: http://loki-gateway.monitoring/otlp
             headers:
               X-Scope-OrgID: admins
           {{- range $id, $team := $v.teamConfig }}
-          otlphttp/team-{{ $id }}:
+          otlp_http/team-{{ $id }}:
             endpoint: http://loki-gateway.monitoring/otlp
             headers:
               X-Scope-OrgID: {{ $id }}
@@ -225,13 +225,13 @@ resources:
               receivers:
                 - routing
               exporters:
-                - otlphttp/default
+                - otlp_http/default
             {{- range $id, $team := $v.teamConfig }}
             logs/otlphttp-team-{{ $id }}:
               receivers:
                 - routing
               exporters:
-                - otlphttp/team-{{ $id }}
+                - otlp_http/team-{{ $id }}
             {{- end }}
   {{- end }}
   - apiVersion: rbac.authorization.k8s.io/v1

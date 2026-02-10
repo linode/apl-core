@@ -101,7 +101,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /readyz
-            port: {{ .Values.webhook.port }}
+            port: webhook-server
             scheme: HTTPS
           {{- if .Values.webhook.livenessProbe.initialDelaySeconds }}
           initialDelaySeconds: {{ .Values.webhook.livenessProbe.initialDelaySeconds }}
@@ -117,7 +117,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /readyz
-            port: {{ .Values.webhook.port }}
+            port: webhook-server
             scheme: HTTPS
           {{- if .Values.webhook.readinessProbe.initialDelaySeconds }}
           initialDelaySeconds: {{ .Values.webhook.readinessProbe.initialDelaySeconds }}
@@ -132,7 +132,7 @@ spec:
           {{- end }}
           httpGet:
             path: /readyz
-            port: {{ .Values.webhook.port }}
+            port: webhook-server
             scheme: HTTPS
           {{- if .Values.webhook.startupProbe.periodSeconds }}
           periodSeconds: {{ .Values.webhook.startupProbe.periodSeconds }}
