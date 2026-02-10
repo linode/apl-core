@@ -22,12 +22,12 @@ enum CryptType {
 
 const preCrypt = async (path): Promise<void> => {
   const d = terminal(`common:crypt:preCrypt`)
-  d.info('Checking prerequisites for the (de,en)crypt action')
+  d.debug('Checking prerequisites for the (de,en)crypt action')
   // we might have set GCLOUD_SERVICE_KEY in bootstrap so reparse env
   // just this time (not desired as should be considered read only):
   const lateEnv = cleanEnv(cliEnvSpec)
   if (lateEnv.GCLOUD_SERVICE_KEY) {
-    d.info('Writing GOOGLE_APPLICATION_CREDENTIAL')
+    d.debug('Writing GOOGLE_APPLICATION_CREDENTIAL')
     // and set the location to the file holding the credentials for zx running sops
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
     await writeFile(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(lateEnv.GCLOUD_SERVICE_KEY))
@@ -46,7 +46,7 @@ const getAllSecretFiles = async (path) => {
     (file) => file.endsWith('.yaml') && file.includes('/secrets.'),
   )
 
-  d.info('getAllSecretFiles: ', files)
+  d.debug('getAllSecretFiles: ', files)
   return files
 }
 
@@ -60,7 +60,7 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
   const d = terminal(`common:crypt:processFileChunk`)
   const commands = files.map(async (file) => {
     if (!crypt.condition || (await crypt.condition(file))) {
-      d.info(`${crypt.cmd} ${file}`)
+      d.debug(`${crypt.cmd} ${file}`)
       try {
         const result = await $`${[...crypt.cmd.split(' '), file]}`.quiet()
 
@@ -112,7 +112,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
   // EventEmitter.defaultMaxListeners is 10, if we increase chunkSize in the future then this line will prevent it from crashing
   if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
-  d.info(`runOnSecretFiles: ${crypt.cmd}`)
+  d.debug(`runOnSecretFiles: ${crypt.cmd}`)
   try {
     for (const fileChunk of filesChunked) {
       await processFileChunk(crypt, fileChunk)
@@ -130,7 +130,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
 const matchTimestamps = async (file: string) => {
   const d = terminal(`common:crypt:matchTimeStamps`)
   if (!existsSync(`${file}.dec`)) {
-    d.info(`Missing ${file}.dec, skipping...`)
+    d.debug(`Missing ${file}.dec, skipping...`)
     return
   }
 
@@ -139,7 +139,7 @@ const matchTimestamps = async (file: string) => {
   await utimes(`${file}.dec`, decTS.mtime, encTS.mtime)
   const encSec = Math.round(encTS.mtimeMs / 1000)
   const decSec = Math.round(decTS.mtimeMs / 1000)
-  d.info(`Updated timestamp for ${file}.dec from ${decSec} to ${encSec}`)
+  d.debug(`Updated timestamp for ${file}.dec from ${decSec} to ${encSec}`)
 }
 
 export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<void> => {
