@@ -147,6 +147,7 @@ environments:
                 cpu: 10m
           gitea:
             _rawValues: {}
+            enabled: true
             networkPolicies:
               enabled: true
             databaseMaxConnections: 28
