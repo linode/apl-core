@@ -23,7 +23,7 @@ import { isEmpty, isEqual, map, mapValues } from 'lodash'
 import { dirname, join } from 'path'
 import { Writable } from 'stream'
 import { parse, stringify } from 'yaml'
-import { $, cd, sleep } from 'zx'
+import { $, sleep } from 'zx'
 import {
   ARGOCD_APP_DEFAULT_SYNC_POLICY,
   ARGOCD_APP_PARAMS,
@@ -461,23 +461,6 @@ type WaitTillAvailableOptions = Options & {
   skipSsl?: boolean
   username?: string
   password?: string
-}
-
-export const waitTillGitRepoAvailable = async (repoUrl: string): Promise<void> => {
-  const d = terminal('common:k8s:waitTillGitRepoAvailable')
-  await retry(
-    async () => {
-      try {
-        cd(env.ENV_DIR)
-        // the ls-remote exists with zero even if repo is empty
-        await $`git ls-remote ${repoUrl}`
-      } catch (e) {
-        d.warn(`The values repository is not yet reachable. Retrying in ${env.MIN_TIMEOUT} ms`)
-        throw e
-      }
-    },
-    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
-  )
 }
 
 export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {
