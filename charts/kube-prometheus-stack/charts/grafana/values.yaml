@@ -250,6 +250,9 @@ service:
   # Adds the appProtocol field to the service. This allows to work with istio protocol selection. Ex: "http" or "tcp"
   appProtocol: ""
   sessionAffinity: ""
+  # trafficDistribution allows specifying how traffic is distributed to Service endpoints.
+  # Valid values: "" (default - standard load balancing),"PreferSameZone" (K8s 1.34+), "PreferSameNode" (K8s 1.35+), "PreferClose" (deprecated, use PreferSameZone),
+  trafficDistribution: ""
 
 serviceMonitor:
   ## If true, a ServiceMonitor CR is created for a prometheus operator
