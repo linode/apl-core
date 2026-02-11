@@ -15,32 +15,36 @@ spec:
   policyTypes:
     - Ingress
   ingress:
-    # Allow access from Istio public ingress gateway
-    - from:
+    - ports:
+        # Allow ingress to api endpoint
+        - protocol: TCP
+          port: 8080
+        # Allow ingress to api endpoint for health checks
+        - protocol: TCP
+          port: 9000
+      # Allow access from Istio public ingress gateway
+      from:
         - namespaceSelector:
             matchLabels:
               name: istio-system
           podSelector:
             matchLabels:
               app.kubernetes.io/instance: istio-ingressgateway-public
-    # Allow access from gitea for webhook notifications
-    - from:
+        # Allow access from gitea for webhook notifications
         - namespaceSelector:
             matchLabels:
               name: gitea
           podSelector:
             matchLabels:
               app: gitea
-    # Allow monitoring access for metrics scraping
-    - from:
+        # Allow monitoring access for metrics scraping
         - namespaceSelector:
             matchLabels:
               name: monitoring
           podSelector:
             matchLabels:
               app.kubernetes.io/instance: po-prometheus
-    # Allow internal otomi namespace communication
-    - from:
+        # Allow access from other otomi components
         - namespaceSelector:
             matchLabels:
               name: otomi
