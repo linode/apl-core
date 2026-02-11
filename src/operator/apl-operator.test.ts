@@ -1,5 +1,5 @@
 import { GitRepoConfig } from '../common/git-config'
-import { waitTillGitRepoAvailable } from '../common/k8s'
+import { waitTillGitRepoAvailable } from '../common/gitea'
 import { AplOperations } from './apl-operations'
 import { AplOperator, AplOperatorConfig, ApplyTrigger } from './apl-operator'
 import { GitRepository } from './git-repository'
@@ -35,7 +35,7 @@ jest.mock('../common/debug', () => ({
   })),
 }))
 
-jest.mock('../common/k8s', () => ({
+jest.mock('../common/gitea', () => ({
   waitTillGitRepoAvailable: jest.fn().mockResolvedValue(undefined),
 }))
 jest.mock('../common/hf', () => ({
