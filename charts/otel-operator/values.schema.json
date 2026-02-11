@@ -332,7 +332,8 @@
             "python",
             "dotnet",
             "go",
-            "apacheHttpd"
+            "apacheHttpd",
+            "nginx"
           ],
           "additionalProperties": false,
           "properties": {
@@ -539,6 +540,40 @@
                   "tag": ""
                 }
               ]
+            },
+            "nginx": {
+              "type": "object",
+              "default": {},
+              "title": "The nginx Schema",
+              "required": [
+                "repository",
+                "tag"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "default": "",
+                  "title": "The repository Schema",
+                  "examples": [
+                    ""
+                  ]
+                },
+                "tag": {
+                  "type": "string",
+                  "default": "",
+                  "title": "The tag Schema",
+                  "examples": [
+                    ""
+                  ]
+                }
+              },
+              "examples": [
+                {
+                  "repository": "",
+                  "tag": ""
+                }
+              ]
             }
           },
           "examples": [
@@ -564,6 +599,10 @@
                 "tag": ""
               },
               "apacheHttpd": {
+                "repository": "",
+                "tag": ""
+              },
+              "nginx": {
                 "repository": "",
                 "tag": ""
               }
@@ -2149,6 +2188,10 @@
             "tag": ""
           },
           "apacheHttpd": {
+            "repository": "",
+            "tag": ""
+          },
+          "nginx": {
             "repository": "",
             "tag": ""
           }
