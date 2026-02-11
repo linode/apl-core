@@ -81,7 +81,7 @@ dependencies:
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
-    version: 0.105.0
+    version: 0.105.1
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   - name: policy-reporter
     version: 3.7.1
