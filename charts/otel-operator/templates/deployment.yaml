@@ -83,6 +83,9 @@ spec:
             {{- if and .Values.manager.autoInstrumentationImage.apacheHttpd.repository .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
             - --auto-instrumentation-apache-httpd-image={{ .Values.manager.autoInstrumentationImage.apacheHttpd.repository }}:{{ .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
             {{- end }}
+            {{- if and .Values.manager.autoInstrumentationImage.nginx.repository .Values.manager.autoInstrumentationImage.nginx.tag }}
+            - --auto-instrumentation-nginx-image={{ .Values.manager.autoInstrumentationImage.nginx.repository }}:{{ .Values.manager.autoInstrumentationImage.nginx.tag }}
+            {{- end }}
             {{- if .Values.manager.ignoreMissingCollectorCRDs }}
             - --ignore-missing-collector-crds=true
             {{- end }}
