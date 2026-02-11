@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 0.138.0
+appVersion: 0.144.0
 description: OpenTelemetry Operator Helm chart for Kubernetes
 home: https://opentelemetry.io/
 icon: https://raw.githubusercontent.com/cncf/artwork/a718fa97fffec1b9fd14147682e9e3ac0c8817cb/projects/opentelemetry/icon/color/opentelemetry-icon-color.png
@@ -12,4 +12,4 @@ name: opentelemetry-operator
 sources:
 - https://github.com/open-telemetry/opentelemetry-operator
 type: application
-version: 0.99.1
+version: 0.105.0
