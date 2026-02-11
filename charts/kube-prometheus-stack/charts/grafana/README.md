@@ -298,6 +298,7 @@ The minimum required Kubernetes version is now 1.25. All references to deprecate
 | service.portName | string | `"service"` |  |
 | service.sessionAffinity | string | `""` |  |
 | service.targetPort | int | `3000` |  |
+| service.trafficDistribution | string | `""` |  |
 | service.type | string | `"ClusterIP"` |  |
 | serviceAccount.automountServiceAccountToken | bool | `false` |  |
 | serviceAccount.create | bool | `true` |  |
