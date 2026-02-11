@@ -73,6 +73,9 @@ manager:
     apacheHttpd:
       repository: ""
       tag: ""
+    nginx:
+      repository: ""
+      tag: ""
     # To enable Go instrumentation, manager.autoInstrumentation.go.enabled must be set to true
     go:
       repository: ""
