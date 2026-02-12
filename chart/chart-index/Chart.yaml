@@ -71,7 +71,7 @@ dependencies:
     version: 3.7.0
     repository: https://kyverno.github.io/kyverno/
   - name: loki
-    version: 6.52.0
+    version: 6.53.0
     repository: https://grafana.github.io/helm-charts
   - name: metrics-server
     version: 3.13.0
