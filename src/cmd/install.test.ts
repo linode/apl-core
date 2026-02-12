@@ -17,6 +17,7 @@ jest.mock('src/common/k8s', () => ({
   applyServerSide: jest.fn(),
   restartOtomiApiDeployment: jest.fn(),
   waitForCRD: jest.fn(),
+  getK8sSecret: jest.fn().mockResolvedValue({ password: 'test', username: 'test' }),
   k8s: {
     app: jest.fn(),
   },
@@ -34,9 +35,41 @@ jest.mock('src/common/hf', () => ({
   HF_DEFAULT_SYNC_ARGS: ['apply', '--sync-args', '--include-needs'],
 }))
 
-jest.mock('zx', () => ({
-  $: jest.fn(),
-  cd: jest.fn(),
+jest.mock('zx', () => {
+  const mockResult = { exitCode: 0, stdout: '', stderr: '' }
+  const createMockProcessPromise = () => {
+    const promise = Promise.resolve(mockResult)
+    const chainable: any = promise
+    chainable.nothrow = jest.fn().mockReturnValue(chainable)
+    chainable.quiet = jest.fn().mockReturnValue(chainable)
+    return chainable
+  }
+  return {
+    $: jest.fn().mockImplementation(() => createMockProcessPromise()),
+    cd: jest.fn(),
+  }
+})
+
+jest.mock('src/common/sealed-secrets', () => ({
+  applySealedSecretManifestsFromDir: jest.fn().mockResolvedValue(undefined),
+  restartSealedSecretsController: jest.fn().mockResolvedValue(undefined),
+  APP_SECRET_OVERRIDES: {
+    'apps.gitea': [
+      {
+        secretName: 'gitea-admin-secret',
+        namespace: 'gitea',
+        data: {
+          username: { valuePath: 'apps.gitea.adminUsername', default: 'otomi-admin' },
+          password: { valuePath: 'apps.gitea.adminPassword' },
+        },
+      },
+      {
+        secretName: 'gitea-db-secret',
+        namespace: 'gitea',
+        data: { username: { static: 'gitea' }, password: { valuePath: 'apps.gitea.postgresqlPassword' } },
+      },
+    ],
+  },
 }))
 
 jest.mock('./commit', () => ({
@@ -106,7 +139,6 @@ describe('Install command', () => {
       stderr: '',
     })
     mockDeps.deployEssential.mockResolvedValue(true)
-    mockDeps.$.mockResolvedValue(undefined)
   })
 
   describe('module configuration', () => {

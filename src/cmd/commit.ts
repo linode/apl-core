@@ -58,7 +58,7 @@ const commitAndPush = async (values: Record<string, any>, branch: string, initia
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const message = initialInstall ? 'otomi commit' : 'updated values [ci skip]'
-  const { password } = getRepo(values)
+  const { password } = await getRepo(values)
   cd(env.ENV_DIR)
   try {
     try {
@@ -79,8 +79,9 @@ const commitAndPush = async (values: Record<string, any>, branch: string, initia
     }
     await $`git commit -m ${message} --no-verify`.quiet()
   } catch (e) {
-    d.log('commitAndPush error ', e?.message?.replace(password, '****'))
-    return
+    const errorMsg = `commitAndPush error: ${e?.message?.replace(password, '****')}`
+    d.error(errorMsg)
+    throw new Error(errorMsg)
   }
   if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
   await retry(
@@ -133,10 +134,16 @@ export const commit = async (initialInstall: boolean, overrideArgs?: HelmArgumen
   await validateValues(overrideArgs)
   d.info('Preparing values')
   const values = (await hfValues()) as Record<string, any>
-  const { branch, remote, username, email } = getRepo(values)
+  const { branch, remote, username, email } = await getRepo(values)
   if (initialInstall) {
     // we call this here again, as we might not have completed (happens upon first install):
     await bootstrapGit(values)
+    // Always update the remote URL after bootstrap - the initial bootstrapGit() (called during
+    // the bootstrap phase before install) may have set the URL with unresolved placeholder
+    // passwords because K8s secrets didn't exist yet. Now that secrets are decrypted,
+    // we need to update the URL with the real credentials.
+    cd(env.ENV_DIR)
+    await $`git remote set-url origin ${remote}`.nothrow().quiet()
   } else {
     cd(env.ENV_DIR)
     await setIdentity(username, email)

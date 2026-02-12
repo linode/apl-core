@@ -4,7 +4,9 @@ import { globSync } from 'glob'
 import jsonpath from 'jsonpath'
 import { cloneDeep, get, merge, omit, set } from 'lodash'
 import path from 'path'
-import { getDirNames, loadYaml } from './utils'
+import { terminal } from './debug'
+import { getK8sSecret } from './k8s'
+import { flattenObject, getDirNames, loadYaml } from './utils'
 import { objectToYaml, writeValuesToFile } from './values'
 
 export async function getTeamNames(envDir: string): Promise<Array<string>> {
@@ -566,14 +568,68 @@ export function sortTeamConfigArraysByName(spec: Record<string, any>): Record<st
   return spec
 }
 
+const SECRET_PLACEHOLDER_PREFIX = 'sealed:'
+
+/**
+ * Resolves sealed:namespace/secretName/key placeholders in values
+ * by reading the actual values from K8s Secrets.
+ */
+export async function resolveSecretPlaceholders(
+  values: Record<string, any>,
+  deps = { getK8sSecret },
+): Promise<Record<string, any>> {
+  const d = terminal('common:repo:resolveSecretPlaceholders')
+  const flat = flattenObject(values)
+
+  const placeholders = Object.entries(flat).filter(
+    ([, value]) => typeof value === 'string' && (value as string).startsWith(SECRET_PLACEHOLDER_PREFIX),
+  )
+
+  if (placeholders.length === 0) return values
+
+  const secretCache = new Map<string, Record<string, any> | undefined>()
+  const result = cloneDeep(values)
+
+  for (const [valuePath, placeholder] of placeholders) {
+    const ref = (placeholder as string).replace(SECRET_PLACEHOLDER_PREFIX, '')
+    const parts = ref.split('/')
+    if (parts.length !== 3) {
+      d.warn(`Invalid secret placeholder format: ${placeholder}`)
+      continue
+    }
+    const [namespace, secretName, key] = parts
+    const cacheKey = `${namespace}/${secretName}`
+
+    if (!secretCache.has(cacheKey)) {
+      try {
+        const secret = await deps.getK8sSecret(secretName, namespace)
+        secretCache.set(cacheKey, secret)
+      } catch {
+        d.warn(`Could not read K8s secret ${cacheKey}`)
+        secretCache.set(cacheKey, undefined)
+      }
+    }
+
+    const secretData = secretCache.get(cacheKey)
+    if (secretData?.[key] !== undefined) {
+      set(result, valuePath, secretData[key])
+      d.debug(`Resolved ${valuePath} from ${cacheKey}/${key}`)
+    } else {
+      d.warn(`Could not resolve placeholder: ${placeholder}`)
+    }
+  }
+
+  return result
+}
+
 export async function setValuesFile(
   envDir: string,
-  deps = { pathExists: existsSync, loadValues, writeFile },
+  deps = { pathExists: existsSync, loadValues, writeFile, resolveSecretPlaceholders },
 ): Promise<string> {
   const valuesPath = path.join(envDir, 'values-repo.yaml')
-  // if (await deps.pathExists(valuesPath)) return valuesPath
   const allValues = await deps.loadValues(envDir)
-  await deps.writeFile(valuesPath, objectToYaml(allValues))
+  const resolved = await deps.resolveSecretPlaceholders(allValues)
+  await deps.writeFile(valuesPath, objectToYaml(resolved))
   return valuesPath
 }
 

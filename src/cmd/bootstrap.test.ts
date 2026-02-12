@@ -12,6 +12,8 @@ import {
   processValues,
 } from './bootstrap'
 
+jest.mock('@linode/kubeseal-encrypt')
+
 const { terminal } = stubs
 
 jest.mock('src/common/envalid', () => ({
@@ -37,6 +39,7 @@ describe('Bootstrapping values', () => {
         }),
       }),
       bootstrapSops: jest.fn(),
+      bootstrapSealedSecrets: jest.fn(),
       copyBasicFiles: jest.fn(),
       copyFile: jest.fn(),
       createCustomCA: jest.fn(),
@@ -59,14 +62,14 @@ describe('Bootstrapping values', () => {
     }
   })
   it('should call relevant sub routines', async () => {
-    deps.processValues.mockReturnValue(values)
+    deps.processValues.mockReturnValue({ originalInput: values, allSecrets: {} })
     deps.hfValues.mockReturnValue(values)
     await bootstrap(deps)
     expect(deps.copyBasicFiles).toHaveBeenCalled()
-    expect(deps.bootstrapSops).toHaveBeenCalled()
+    expect(deps.bootstrapSealedSecrets).toHaveBeenCalled()
   })
   it('should copy only skeleton files to env dir if it is empty or nonexisting', async () => {
-    deps.processValues.mockReturnValue(undefined)
+    deps.processValues.mockReturnValue({ originalInput: undefined, allSecrets: {} })
     await bootstrap(deps)
     expect(deps.hfValues).toHaveBeenCalledTimes(0)
   })
@@ -385,7 +388,7 @@ describe('Bootstrapping values', () => {
               { id: 'user2', initialPassword: 'generated-password' },
             ],
           })
-          expect(res).toEqual({
+          expect(res.originalInput).toEqual({
             cluster: { name: 'bla', provider: 'dida' },
             users: [{ id: 'user1', initialPassword: 'existing-password' }, { id: 'user2' }],
           })

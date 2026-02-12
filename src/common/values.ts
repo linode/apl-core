@@ -1,6 +1,6 @@
 import { existsSync } from 'fs'
 import { mkdir, unlink, writeFile } from 'fs/promises'
-import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, omit, pick, set } from 'lodash'
+import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, pick, set } from 'lodash'
 import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { stringify } from 'yaml'
@@ -9,18 +9,10 @@ import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import {
-  extract,
-  flattenObject,
-  getSchemaSecretsPaths,
-  getValuesSchema,
-  gucci,
-  loadYaml,
-  pkg,
-  removeBlankAttributes,
-} from './utils'
-
+import { getK8sSecret } from './k8s'
 import { saveValues } from './repo'
+import { APP_SECRET_OVERRIDES } from './sealed-secrets'
+import { extract, flattenObject, getValuesSchema, gucci, loadYaml, pkg, removeBlankAttributes } from './utils'
 import { HelmArguments } from './yargs'
 
 export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 200): string => {
@@ -63,7 +55,29 @@ export interface Repo {
   branch: string
 }
 
-export const getRepo = (values: Record<string, any>): Repo => {
+/**
+ * Resolves a single sealed:namespace/secretName/key placeholder to its actual value
+ * by reading the corresponding K8s Secret. Returns the original value if not a placeholder
+ * or if resolution fails.
+ */
+export const resolveSinglePlaceholder = async (value: string, deps = { getK8sSecret, terminal }): Promise<string> => {
+  if (!value || !value.startsWith('sealed:')) return value
+  const d = deps.terminal('common:values:resolveSinglePlaceholder')
+  const ref = value.replace('sealed:', '')
+  const parts = ref.split('/')
+  if (parts.length !== 3) return value
+  const [namespace, secretName, key] = parts
+  try {
+    const secret = await deps.getK8sSecret(secretName, namespace)
+    if (secret?.[key] !== undefined) return String(secret[key])
+    d.warn(`Could not resolve placeholder ${value}: key '${key}' not found in secret ${namespace}/${secretName}`)
+  } catch (e) {
+    d.warn(`Could not resolve placeholder ${value}: K8s secret ${namespace}/${secretName} not available`)
+  }
+  return value
+}
+
+export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret, terminal }): Promise<Repo> => {
   const giteaEnabled = values?.apps?.gitea?.enabled ?? true
   const byor = !!values?.apps?.['otomi-api']?.git
   if (!giteaEnabled && !byor) {
@@ -83,7 +97,7 @@ export const getRepo = (values: Record<string, any>): Repo => {
     branch = otomiApiGit?.branch ?? branch
   } else {
     username = 'otomi-admin'
-    password = values?.apps?.gitea?.adminPassword
+    password = await resolveSinglePlaceholder(String(values?.apps?.gitea?.adminPassword ?? ''), deps)
     email = `pipeline@cluster.local`
     const gitUrl = env.GIT_URL
     const gitPort = env.GIT_PORT
@@ -158,19 +172,41 @@ export const writeValuesToFile = async (
 export const writeValues = async (inValues: Record<string, any>, overwrite = false): Promise<void> => {
   const d = terminal('common:values:writeValues')
   d.debug('Writing values: ', inValues)
-  hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
-  const values = inValues
-  const teams = Object.keys(get(inValues, 'teamConfig', {}))
-  const cleanSecretPaths = await getSchemaSecretsPaths(teams)
-  d.debug('cleanSecretPaths: ', cleanSecretPaths)
-  // separate out the secrets
-  const secrets = removeBlankAttributes(pick(values, cleanSecretPaths))
-  d.debug('secrets: ', JSON.stringify(secrets, null, 2))
-  // from the plain values
-  const plainValues = omit(values, cleanSecretPaths) as any
-  await saveValues(env.ENV_DIR, plainValues, secrets)
-
+  const valuesToWrite = replaceSecretsWithPlaceholders(inValues)
+  await saveValues(env.ENV_DIR, valuesToWrite, {})
   d.info('All values were written to ENV_DIR')
+}
+
+/**
+ * Builds a mapping from valuePath → sealed:<namespace>/<secretName>/<key>
+ * using APP_SECRET_OVERRIDES configuration.
+ */
+function buildSecretPlaceholderMap(): Map<string, string> {
+  const map = new Map<string, string>()
+  for (const [, overrides] of Object.entries(APP_SECRET_OVERRIDES)) {
+    for (const override of overrides) {
+      for (const [key, source] of Object.entries(override.data)) {
+        if (!('static' in source) && source.valuePath) {
+          map.set(source.valuePath, `sealed:${override.namespace}/${override.secretName}/${key}`)
+        }
+      }
+    }
+  }
+  return map
+}
+
+export const replaceSecretsWithPlaceholders = (values: Record<string, any>): Record<string, any> => {
+  const result = cloneDeep(values)
+  const placeholderMap = buildSecretPlaceholderMap()
+
+  for (const [valuePath, placeholder] of placeholderMap) {
+    const value = get(result, valuePath)
+    if (value !== undefined && typeof value === 'string' && !value.startsWith('sealed:')) {
+      set(result, valuePath, placeholder)
+    }
+  }
+
+  return result
 }
 
 export const deriveSecrets = async (values: Record<string, any> = {}): Promise<Record<string, any>> => {

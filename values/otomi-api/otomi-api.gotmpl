@@ -3,11 +3,9 @@
 {{- $o := $v.apps | get "otomi-api" }}
 {{- $g := $v.apps.gitea }}
 {{- $cm := $v.apps | get "cert-manager" }}
-{{- $sops := $v | get "kms.sops" dict }}
 {{- $giteaValuesUrl := "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values" }}
 {{- $giteaValuesPublilcUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
 {{- $defaultPlatformAdminEmail := printf "platform-admin@%s" $v.cluster.domainSuffix }}
-{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 {{- $version := $v.versions | get "api" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $coreVersion := $v.otomi.version }}
@@ -41,7 +39,6 @@ secrets:
   GIT_USER: otomi-admin
   GIT_EMAIL: not@us.ed
   GIT_PASSWORD: {{ $g.adminPassword | quote}}
-  {{- $sopsEnv | nindent 2 }}
 
 env:
   DEFAULT_PLATFORM_ADMIN_EMAIL: {{ $defaultPlatformAdminEmail }}

@@ -22,7 +22,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   // inValues indicates that there is no values repo file structure that helmfile expects
   const values = inValues ?? ((await hfValues()) as Record<string, any>)
-  const { remote, branch, email, username, password } = getRepo(values)
+  const { remote, branch, email, username, password } = await getRepo(values)
   cd(env.ENV_DIR)
   if (existsSync(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped, setting identity just in case`)

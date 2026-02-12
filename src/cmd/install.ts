@@ -4,7 +4,19 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
-import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState, waitForCRD } from 'src/common/k8s'
+import {
+  applyServerSide,
+  getDeploymentState,
+  getHelmReleases,
+  getK8sSecret,
+  setDeploymentState,
+  waitForCRD,
+} from 'src/common/k8s'
+import {
+  APP_SECRET_OVERRIDES,
+  applySealedSecretManifestsFromDir,
+  restartSealedSecretsController,
+} from 'src/common/sealed-secrets'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -42,6 +54,58 @@ const retryInstallStep = async <T, Args extends any[]>(
       },
     },
   )
+}
+
+/**
+ * Wait for SealedSecrets controller to decrypt SealedSecret resources into K8s Secrets.
+ * Polls all secrets defined in APP_SECRET_OVERRIDES until they exist in the cluster.
+ */
+const waitForSealedSecrets = async (
+  timeoutMs = 120000,
+  intervalMs = 3000,
+  deps = { getK8sSecret, terminal },
+): Promise<void> => {
+  const d = deps.terminal(`cmd:${cmdName}:waitForSealedSecrets`)
+
+  // Build list of secrets to wait for from APP_SECRET_OVERRIDES
+  const secretsToWait: Array<{ namespace: string; secretName: string }> = []
+  for (const overrides of Object.values(APP_SECRET_OVERRIDES)) {
+    for (const override of overrides) {
+      secretsToWait.push({ namespace: override.namespace, secretName: override.secretName })
+    }
+  }
+
+  if (secretsToWait.length === 0) {
+    d.info('No sealed secrets to wait for')
+    return
+  }
+
+  d.info(`Waiting for ${secretsToWait.length} sealed secrets to be decrypted`)
+  const start = Date.now()
+
+  while (Date.now() - start < timeoutMs) {
+    const pending: string[] = []
+    for (const { namespace, secretName } of secretsToWait) {
+      try {
+        const secret = await deps.getK8sSecret(secretName, namespace)
+        if (!secret) {
+          pending.push(`${namespace}/${secretName}`)
+        }
+      } catch {
+        pending.push(`${namespace}/${secretName}`)
+      }
+    }
+
+    if (pending.length === 0) {
+      d.info('All sealed secrets have been decrypted')
+      return
+    }
+
+    d.info(`Still waiting for sealed secrets: ${pending.join(', ')}`)
+    await new Promise((resolve) => setTimeout(resolve, intervalMs))
+  }
+
+  throw new Error(`Timed out waiting for sealed secrets to be decrypted after ${timeoutMs}ms`)
 }
 
 export const installAll = async () => {
@@ -82,6 +146,38 @@ export const installAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 
+  // Deploy sealed-secrets controller first (needs to be ready before applying SealedSecrets)
+  d.info('Deploying sealed-secrets controller')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-01.init.yaml.gotmpl',
+      labelOpts: ['name=sealed-secrets'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  // Wait for SealedSecret CRD to be established
+  d.info('Waiting for SealedSecret CRD to be ready')
+  await retryInstallStep(waitForCRD, 'sealedsecrets.bitnami.com')
+
+  // Apply SealedSecret manifests from disk (generated during bootstrap)
+  d.info('Applying SealedSecret manifests')
+  await applySealedSecretManifestsFromDir(env.ENV_DIR)
+
+  // Restart the sealed-secrets controller to ensure it uses the correct key
+  // This is needed because the controller may have generated its own key before
+  // the bootstrap-created sealed-secrets-key secret was available
+  d.info('Restarting sealed-secrets controller')
+  await restartSealedSecretsController()
+
+  // Wait for SealedSecrets controller to decrypt all SealedSecret resources into K8s Secrets.
+  // This is critical: subsequent steps (hfValues, commit, getRepo) resolve sealed: placeholders
+  // by reading these K8s Secrets. Without this wait, placeholder resolution fails silently.
+  d.info('Waiting for sealed secrets to be decrypted into K8s Secrets')
+  await waitForSealedSecrets()
+
   d.info('Deploying charts containing label app=core')
   await hf(
     {
@@ -97,6 +193,15 @@ export const installAll = async () => {
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(true)
+
+    // Verify the git push actually succeeded by checking the remote branch exists
+    d.info('Verifying git push succeeded')
+    const verifyResult = await $`git -C ${env.ENV_DIR} ls-remote --exit-code --heads origin main`.nothrow().quiet()
+    if (verifyResult.exitCode !== 0) {
+      throw new Error('Git push verification failed: remote branch main does not exist after commit')
+    }
+    d.info('Git push verified successfully')
+
     const initialData = await initialSetupData()
     await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)
     await retryInstallStep(createWelcomeConfigMap, initialData.secretName, initialData.domainSuffix)
