@@ -3,6 +3,7 @@
 {{- $o := $v.apps | get "otomi-api" }}
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $sops := $v | get "kms.sops" dict }}
+{{- $giteaValuesPublicUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
 {{- $git := $v.otomi.git }}
 {{- $defaultPlatformAdminEmail := printf "platform-admin@%s" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
@@ -46,6 +47,11 @@ env:
   DEBUG: 'otomi:*,-otomi:authz,-otomi:repo'
   VERBOSITY: '1'
   GIT_REPO_URL: {{ $git.repoUrl }}
+  {{- if contains "gitea-http.gitea.svc.cluster.local" $git.repoUrl }}
+  GIT_REPO_PUBLIC_URL: {{ $giteaValuesPublicUrl }}
+  {{- else }}
+  GIT_REPO_PUBLIC_URL: {{ $git.repoUrl }}
+  {{- end }}
   GIT_BRANCH: {{ $git.branch }}
   VERSIONS: |
     {{ $v.versions | toJson | nindent 4}}
