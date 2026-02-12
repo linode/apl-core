@@ -73,12 +73,12 @@ spec:
       value: {{ . }}
     {{- end }}
     - name: BUILDER_IMAGE
-      value: paketobuildpacks/builder-jammy-full:latest
+      value: {{ if $v.linodeLkeImageRepository }}{{ $v.linodeLkeImageRepository }}/docker/{{ end }}paketobuildpacks/builder-jammy-full:latest
     - name: USER_ID
       value: "1001"
       {{- with (dig "mode" "buildpacks" "envVars" nil . ) }}
     - name: ENV_VARS
-      value: 
+      value:
         {{- range . }}
         - {{ .name }}={{ .value }}
         {{- end }}
@@ -118,7 +118,7 @@ spec:
             metadata:
               creationTimestamp: null
             spec:
-              {{- if $v.buildStorageClassName }}  
+              {{- if $v.buildStorageClassName }}
               storageClassName: {{ $v.buildStorageClassName }}
               {{- end }}
               accessModes:
@@ -167,7 +167,7 @@ spec:
       metadata:
         creationTimestamp: null
       spec:
-        {{- if $v.buildStorageClassName }}  
+        {{- if $v.buildStorageClassName }}
         storageClassName: {{ $v.buildStorageClassName }}
         {{- end }}
         accessModes:
