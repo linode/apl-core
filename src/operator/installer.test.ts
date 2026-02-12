@@ -1,3 +1,5 @@
+import * as gitConfig from '../common/git-config'
+import * as hf from '../common/hf'
 import * as k8s from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { Installer } from './installer'
@@ -28,6 +30,7 @@ jest.mock('../common/hf', () => ({
 
 jest.mock('../common/git-config', () => ({
   getGitCredentials: jest.fn().mockResolvedValue(undefined),
+  getGitConfigData: jest.fn().mockResolvedValue(undefined),
   getStoredGitRepoConfig: jest.fn().mockResolvedValue(undefined),
   setGitConfig: jest.fn().mockResolvedValue(undefined),
   GIT_CONFIG_SECRET_NAME: 'apl-git-credentials',
@@ -295,6 +298,198 @@ describe('Installer', () => {
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
 
       await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow('SOPS_AGE_KEY not found in secret')
+    })
+  })
+
+  describe('ensureSecretsAndConfig', () => {
+    const mockValues = {
+      otomi: {
+        git: {
+          repoUrl: 'https://github.com/org/repo.git',
+          branch: 'main',
+          email: 'pipeline@cluster.local',
+          username: 'admin',
+          password: 's3cret',
+        },
+      },
+      kms: {
+        sops: {
+          age: {
+            privateKey: 'AGE-SECRET-KEY-1234',
+          },
+        },
+      },
+    }
+
+    test('should skip when hfValues returns undefined', async () => {
+      ;(hf.hfValues as jest.Mock).mockResolvedValue(undefined)
+
+      await installer.ensureSecretsAndConfig()
+
+      expect(gitConfig.getGitCredentials).not.toHaveBeenCalled()
+      expect(k8s.getK8sSecret).not.toHaveBeenCalled()
+      expect(gitConfig.getGitConfigData).not.toHaveBeenCalled()
+    })
+
+    test('should not recreate resources when all exist', async () => {
+      ;(hf.hfValues as jest.Mock).mockResolvedValue(mockValues)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue({ username: 'admin', password: 's3cret' })
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ SOPS_AGE_KEY: 'existing-key' })
+      ;(gitConfig.getGitConfigData as jest.Mock).mockResolvedValue({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+      })
+
+      await installer.ensureSecretsAndConfig()
+
+      expect(k8s.createUpdateGenericSecret).not.toHaveBeenCalled()
+      expect(gitConfig.setGitConfig).not.toHaveBeenCalled()
+    })
+
+    test('should recreate git credentials when missing', async () => {
+      ;(hf.hfValues as jest.Mock).mockResolvedValue(mockValues)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue(undefined)
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ SOPS_AGE_KEY: 'existing-key' })
+      ;(gitConfig.getGitConfigData as jest.Mock).mockResolvedValue({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+      })
+
+      await installer.ensureSecretsAndConfig()
+
+      expect(k8s.createUpdateGenericSecret).toHaveBeenCalledWith(mockCoreApi, 'apl-git-credentials', 'apl-operator', {
+        username: 'admin',
+        password: 's3cret',
+      })
+    })
+
+    test('should recreate sops secret when missing and age key exists in values', async () => {
+      ;(hf.hfValues as jest.Mock).mockResolvedValue(mockValues)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue({ username: 'admin', password: 's3cret' })
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(undefined)
+      ;(gitConfig.getGitConfigData as jest.Mock).mockResolvedValue({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+      })
+
+      await installer.ensureSecretsAndConfig()
+
+      expect(k8s.createUpdateGenericSecret).toHaveBeenCalledWith(mockCoreApi, 'apl-sops-secrets', 'apl-operator', {
+        SOPS_AGE_KEY: 'AGE-SECRET-KEY-1234',
+      })
+    })
+
+    test('should not recreate sops secret when missing but no age key in values', async () => {
+      const valuesWithoutSops = {
+        ...mockValues,
+        kms: { sops: { age: {} } },
+      }
+      ;(hf.hfValues as jest.Mock).mockResolvedValue(valuesWithoutSops)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue({ username: 'admin', password: 's3cret' })
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(undefined)
+      ;(gitConfig.getGitConfigData as jest.Mock).mockResolvedValue({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+      })
+
+      await installer.ensureSecretsAndConfig()
+
+      expect(k8s.createUpdateGenericSecret).not.toHaveBeenCalled()
+    })
+
+    test('should recreate git config when repoUrl is missing', async () => {
+      ;(hf.hfValues as jest.Mock).mockResolvedValue(mockValues)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue({ username: 'admin', password: 's3cret' })
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ SOPS_AGE_KEY: 'existing-key' })
+      ;(gitConfig.getGitConfigData as jest.Mock).mockResolvedValue({
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+      })
+
+      await installer.ensureSecretsAndConfig()
+
+      expect(gitConfig.setGitConfig).toHaveBeenCalledWith({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+      })
+    })
+
+    test('should recreate git config when branch is missing', async () => {
+      ;(hf.hfValues as jest.Mock).mockResolvedValue(mockValues)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue({ username: 'admin', password: 's3cret' })
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ SOPS_AGE_KEY: 'existing-key' })
+      ;(gitConfig.getGitConfigData as jest.Mock).mockResolvedValue({
+        repoUrl: 'https://github.com/org/repo.git',
+        email: 'pipeline@cluster.local',
+      })
+
+      await installer.ensureSecretsAndConfig()
+
+      expect(gitConfig.setGitConfig).toHaveBeenCalledWith({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+      })
+    })
+
+    test('should recreate git config when email is missing', async () => {
+      ;(hf.hfValues as jest.Mock).mockResolvedValue(mockValues)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue({ username: 'admin', password: 's3cret' })
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ SOPS_AGE_KEY: 'existing-key' })
+      ;(gitConfig.getGitConfigData as jest.Mock).mockResolvedValue({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+      })
+
+      await installer.ensureSecretsAndConfig()
+
+      expect(gitConfig.setGitConfig).toHaveBeenCalledWith({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+      })
+    })
+
+    test('should recreate git config when configData is undefined', async () => {
+      ;(hf.hfValues as jest.Mock).mockResolvedValue(mockValues)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue({ username: 'admin', password: 's3cret' })
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ SOPS_AGE_KEY: 'existing-key' })
+      ;(gitConfig.getGitConfigData as jest.Mock).mockResolvedValue(undefined)
+
+      await installer.ensureSecretsAndConfig()
+
+      expect(gitConfig.setGitConfig).toHaveBeenCalledWith({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+      })
+    })
+
+    test('should recreate all resources when all are missing', async () => {
+      ;(hf.hfValues as jest.Mock).mockResolvedValue(mockValues)
+      ;(gitConfig.getGitCredentials as jest.Mock).mockResolvedValue(undefined)
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(undefined)
+      ;(gitConfig.getGitConfigData as jest.Mock).mockResolvedValue(undefined)
+
+      await installer.ensureSecretsAndConfig()
+
+      expect(k8s.createUpdateGenericSecret).toHaveBeenCalledWith(mockCoreApi, 'apl-git-credentials', 'apl-operator', {
+        username: 'admin',
+        password: 's3cret',
+      })
+      expect(k8s.createUpdateGenericSecret).toHaveBeenCalledWith(mockCoreApi, 'apl-sops-secrets', 'apl-operator', {
+        SOPS_AGE_KEY: 'AGE-SECRET-KEY-1234',
+      })
+      expect(gitConfig.setGitConfig).toHaveBeenCalledWith({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+      })
     })
   })
 })

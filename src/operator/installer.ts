@@ -1,10 +1,10 @@
 import * as process from 'node:process'
 import { terminal } from '../common/debug'
 import {
-  GIT_CONFIG_NAMESPACE,
-  GIT_CONFIG_SECRET_NAME,
   getGitConfigData,
   getGitCredentials,
+  GIT_CONFIG_NAMESPACE,
+  GIT_CONFIG_SECRET_NAME,
   setGitConfig,
 } from '../common/git-config'
 import { hfValues } from '../common/hf'
@@ -111,7 +111,8 @@ export class Installer {
     process.env.SOPS_AGE_KEY = aplSopsSecret.SOPS_AGE_KEY
   }
 
-  private async ensureSecretsAndConfig(): Promise<void> {
+  // public for testing. This method should only be used if you are certain there are values locally.
+  async ensureSecretsAndConfig(): Promise<void> {
     this.d.info('Verifying secrets and config after installation')
     const values = (await hfValues()) as Record<string, any>
     if (!values) {
