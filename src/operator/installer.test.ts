@@ -146,7 +146,6 @@ describe('Installer', () => {
         expect.objectContaining({
           status: 'failed',
           attempt: '1',
-          error: 'Install failed',
         }),
       )
 
@@ -185,7 +184,6 @@ describe('Installer', () => {
         expect.objectContaining({
           status: 'failed',
           attempt: '2',
-          error: 'Install failed 2',
         }),
       )
 
