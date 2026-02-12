@@ -977,6 +977,16 @@ environments:
                   cpu: "2"
                   memory: 1Gi
             _rawValues: {}
+          external-secrets:
+            resources:
+              operator:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: "1"
+                  memory: 512Mi
+            _rawValues: {}
           rabbitmq:
             enabled: false
             resources:

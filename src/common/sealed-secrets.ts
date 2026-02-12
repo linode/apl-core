@@ -90,39 +90,6 @@ export const APP_NAMESPACE_MAP: Record<string, string> = {
 }
 
 /**
- * Per-app secret override configuration.
- * When an app requires specific K8s Secret names and key layouts
- * (e.g. gitea expects `gitea-admin-secret` with `username`/`password` keys),
- * define overrides here instead of using the default `{app}-secrets` convention.
- */
-interface SecretOverrideEntry {
-  secretName: string
-  namespace: string
-  data: Record<string, { valuePath: string; default?: string } | { static: string }>
-}
-
-export const APP_SECRET_OVERRIDES: Record<string, SecretOverrideEntry[]> = {
-  'apps.gitea': [
-    {
-      secretName: 'gitea-admin-secret',
-      namespace: 'gitea',
-      data: {
-        username: { valuePath: 'apps.gitea.adminUsername', default: 'otomi-admin' },
-        password: { valuePath: 'apps.gitea.adminPassword' },
-      },
-    },
-    {
-      secretName: 'gitea-db-secret',
-      namespace: 'gitea',
-      data: {
-        username: { static: 'gitea' },
-        password: { valuePath: 'apps.gitea.postgresqlPassword' },
-      },
-    },
-  ],
-}
-
-/**
  * Generate an RSA 4096-bit key pair and self-signed X.509 certificate for Sealed Secrets.
  * Follows the pattern from createCustomCA() in bootstrap.ts.
  */
@@ -259,21 +226,22 @@ export const createSealedSecretsKeySecret = async (
 }
 
 /**
- * Resolve the namespace for a given secret path using APP_NAMESPACE_MAP.
- * Handles dynamic teamConfig paths.
+ * Resolve the namespace for a given secret path.
+ * All core secrets go to 'sealed-secrets' namespace for ESO access.
+ * APP_NAMESPACE_MAP is kept for reference but not used for SealedSecret placement.
  */
 const resolveNamespace = (secretPath: string): string | undefined => {
   // Check for teamConfig dynamic paths
   const teamMatch = secretPath.match(/^teamConfig\.([^.]+)/)
   if (teamMatch) {
-    return `team-${teamMatch[1]}`
+    return 'sealed-secrets'
   }
 
-  // Find the longest matching prefix in APP_NAMESPACE_MAP
+  // Check if this path matches any known prefix
   const sortedKeys = Object.keys(APP_NAMESPACE_MAP).sort((a, b) => b.length - a.length)
   for (const prefix of sortedKeys) {
     if (secretPath === prefix || secretPath.startsWith(`${prefix}.`)) {
-      return APP_NAMESPACE_MAP[prefix]
+      return 'sealed-secrets'
     }
   }
 
@@ -281,7 +249,7 @@ const resolveNamespace = (secretPath: string): string | undefined => {
 }
 
 // Map specific path prefixes to secret names
-const SECRET_NAME_MAP: Record<string, string> = {
+export const SECRET_NAME_MAP: Record<string, string> = {
   'apps.harbor': 'harbor-secrets',
   'apps.gitea': 'gitea-secrets',
   'apps.keycloak': 'keycloak-secrets',
@@ -367,16 +335,11 @@ export const buildSecretToNamespaceMap = async (
   // Group by namespace + secretName
   const groupMap = new Map<string, SecretMapping>()
 
-  // Determine which secret path prefixes have overrides
-  const overriddenPrefixes = Object.keys(APP_SECRET_OVERRIDES)
-
   for (const secretPath of secretPaths) {
     // Skip SOPS-related paths
     if (secretPath.startsWith('kms.sops')) continue
     // Skip 'users' path — not a simple key-value secret
     if (secretPath === 'users') continue
-    // Skip overridden prefixes — they are handled separately below
-    if (overriddenPrefixes.some((p) => secretPath === p || secretPath.startsWith(`${p}.`))) continue
 
     const namespace = resolveNamespace(secretPath)
     if (!namespace) continue
@@ -405,53 +368,6 @@ export const buildSecretToNamespaceMap = async (
         if (value !== undefined && value !== null && value !== '') {
           mapping.data[dataKey] = String(value)
         }
-      }
-    }
-  }
-
-  // Process APP_SECRET_OVERRIDES
-  for (const [, overrides] of Object.entries(APP_SECRET_OVERRIDES)) {
-    for (const override of overrides) {
-      const data: Record<string, string> = {}
-      let hasValuePathData = false
-
-      // First pass: collect valuePath data and track if any actual values were found
-      const pendingDefaults: Array<{ key: string; defaultValue: string }> = []
-      for (const [key, source] of Object.entries(override.data)) {
-        if (!('static' in source)) {
-          const value = flat[source.valuePath] ?? allFlat[source.valuePath]
-          if (value !== undefined && value !== null && value !== '') {
-            data[key] = String(value)
-            hasValuePathData = true
-          } else if (source.default !== undefined) {
-            // Queue default value - will be added only if we have at least one actual value
-            pendingDefaults.push({ key, defaultValue: source.default })
-          }
-        }
-      }
-
-      // Only add defaults and static values if we have at least one actual valuePath value
-      if (hasValuePathData) {
-        // Add pending defaults
-        for (const { key, defaultValue } of pendingDefaults) {
-          if (!(key in data)) {
-            data[key] = defaultValue
-          }
-        }
-        // Add static values
-        for (const [key, source] of Object.entries(override.data)) {
-          if ('static' in source) {
-            data[key] = source.static
-          }
-        }
-      }
-
-      if (Object.keys(data).length > 0) {
-        groupMap.set(`${override.namespace}/${override.secretName}`, {
-          namespace: override.namespace,
-          secretName: override.secretName,
-          data,
-        })
       }
     }
   }

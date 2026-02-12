@@ -11,7 +11,7 @@ import { env } from './envalid'
 import { hfValues } from './hf'
 import { getK8sSecret } from './k8s'
 import { saveValues } from './repo'
-import { APP_SECRET_OVERRIDES } from './sealed-secrets'
+import { SECRET_NAME_MAP } from './sealed-secrets'
 import { extract, flattenObject, getValuesSchema, gucci, loadYaml, pkg, removeBlankAttributes } from './utils'
 import { HelmArguments } from './yargs'
 
@@ -178,19 +178,28 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
 }
 
 /**
- * Builds a mapping from valuePath → sealed:<namespace>/<secretName>/<key>
- * using APP_SECRET_OVERRIDES configuration.
+ * Builds a mapping from valuePath → sealed:sealed-secrets/<secretName>/<key>
+ * using SECRET_NAME_MAP convention. All core secrets live in sealed-secrets namespace.
  */
 function buildSecretPlaceholderMap(): Map<string, string> {
   const map = new Map<string, string>()
-  for (const [, overrides] of Object.entries(APP_SECRET_OVERRIDES)) {
-    for (const override of overrides) {
-      for (const [key, source] of Object.entries(override.data)) {
-        if (!('static' in source) && source.valuePath) {
-          map.set(source.valuePath, `sealed:${override.namespace}/${override.secretName}/${key}`)
-        }
-      }
-    }
+  // For each SECRET_NAME_MAP entry, create placeholder patterns
+  // The actual paths are resolved at runtime from schema, but for placeholder
+  // replacement we use the convention: apps.gitea.adminPassword → sealed:sealed-secrets/gitea-secrets/adminPassword
+  // This is a static mapping that covers common paths used in git operations
+  const commonSecretPaths: Record<string, { secretName: string; key: string }> = {
+    'apps.gitea.adminPassword': { secretName: 'gitea-secrets', key: 'adminPassword' },
+    'apps.gitea.postgresqlPassword': { secretName: 'gitea-secrets', key: 'postgresqlPassword' },
+    'apps.gitea.adminUsername': { secretName: 'gitea-secrets', key: 'adminUsername' },
+    'apps.keycloak.adminPassword': { secretName: 'keycloak-secrets', key: 'adminPassword' },
+    'apps.keycloak.idp.clientSecret': { secretName: 'keycloak-secrets', key: 'idp_clientSecret' },
+    'apps.keycloak.idp.clientID': { secretName: 'keycloak-secrets', key: 'idp_clientID' },
+    'apps.harbor.adminPassword': { secretName: 'harbor-secrets', key: 'adminPassword' },
+    'otomi.adminPassword': { secretName: 'otomi-platform-secrets', key: 'adminPassword' },
+    'oidc.clientSecret': { secretName: 'oidc-secrets', key: 'clientSecret' },
+  }
+  for (const [valuePath, { secretName, key }] of Object.entries(commonSecretPaths)) {
+    map.set(valuePath, `sealed:sealed-secrets/${secretName}/${key}`)
   }
   return map
 }

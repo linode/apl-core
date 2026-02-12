@@ -19,13 +19,36 @@ resources:
       hasArgocd: "{{ $v.apps.argocd.enabled | toString }}"
       domainSuffix: "{{ $v.cluster.domainSuffix }}"
       teamConfig: {{ $teamConfig | toJson }}
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
       name: apl-gitea-operator-secret
       namespace: apl-gitea-operator
-    data:
-      giteaPassword: {{ $g.adminPassword | b64enc }}
-      oidcClientId: {{ $k.idp.clientID | b64enc }}
-      oidcClientSecret: {{ $k.idp.clientSecret | b64enc }}
-      oidcEndpoint: {{ $v._derived.oidcBaseUrl | b64enc }}
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: apl-gitea-operator-secret
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            giteaPassword: '{{ "{{ .giteaAdminPassword | b64enc }}" }}'
+            oidcClientId: '{{ "{{ .keycloakClientID | b64enc }}" }}'
+            oidcClientSecret: '{{ "{{ .keycloakClientSecret | b64enc }}" }}'
+            oidcEndpoint: {{ $v._derived.oidcBaseUrl | b64enc }}
+      data:
+        - secretKey: giteaAdminPassword
+          remoteRef:
+            key: gitea-secrets
+            property: adminPassword
+        - secretKey: keycloakClientID
+          remoteRef:
+            key: keycloak-secrets
+            property: idp_clientID
+        - secretKey: keycloakClientSecret
+          remoteRef:
+            key: keycloak-secrets
+            property: idp_clientSecret

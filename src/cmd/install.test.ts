@@ -53,23 +53,13 @@ jest.mock('zx', () => {
 jest.mock('src/common/sealed-secrets', () => ({
   applySealedSecretManifestsFromDir: jest.fn().mockResolvedValue(undefined),
   restartSealedSecretsController: jest.fn().mockResolvedValue(undefined),
-  APP_SECRET_OVERRIDES: {
-    'apps.gitea': [
-      {
-        secretName: 'gitea-admin-secret',
-        namespace: 'gitea',
-        data: {
-          username: { valuePath: 'apps.gitea.adminUsername', default: 'otomi-admin' },
-          password: { valuePath: 'apps.gitea.adminPassword' },
-        },
-      },
-      {
-        secretName: 'gitea-db-secret',
-        namespace: 'gitea',
-        data: { username: { static: 'gitea' }, password: { valuePath: 'apps.gitea.postgresqlPassword' } },
-      },
-    ],
-  },
+  buildSecretToNamespaceMap: jest.fn().mockResolvedValue([]),
+}))
+
+jest.mock('src/common/utils', () => ({
+  ...jest.requireActual('src/common/utils'),
+  rootDir: '/test/root',
+  getSchemaSecretsPaths: jest.fn().mockResolvedValue([]),
 }))
 
 jest.mock('./commit', () => ({
@@ -90,11 +80,6 @@ jest.mock('./commit', () => ({
 jest.mock('src/common/cli', () => ({
   cleanupHandler: jest.fn(),
   prepareEnvironment: jest.fn(),
-}))
-
-jest.mock('src/common/utils', () => ({
-  ...jest.requireActual('src/common/utils'),
-  rootDir: '/test/root',
 }))
 
 jest.mock('src/common/yargs', () => ({

@@ -75,7 +75,7 @@ describe('generateSecrets', () => {
 })
 
 describe('replaceSecretsWithPlaceholders', () => {
-  it('should replace gitea secrets with sealed secret references', () => {
+  it('should replace secrets with sealed secret references using convention naming', () => {
     const input = {
       apps: {
         gitea: { adminPassword: 'real-pass', postgresqlPassword: 'db-pass', adminUsername: 'admin' },
@@ -84,20 +84,21 @@ describe('replaceSecretsWithPlaceholders', () => {
     }
     const result = replaceSecretsWithPlaceholders(input)
 
-    expect(result.apps.gitea.adminPassword).toBe('sealed:gitea/gitea-admin-secret/password')
-    expect(result.apps.gitea.postgresqlPassword).toBe('sealed:gitea/gitea-db-secret/password')
-    expect(result.apps.gitea.adminUsername).toBe('sealed:gitea/gitea-admin-secret/username')
-    expect(result.apps.harbor.adminPassword).toBe('harbor-pass')
+    // All secrets now use sealed-secrets namespace with convention names
+    expect(result.apps.gitea.adminPassword).toBe('sealed:sealed-secrets/gitea-secrets/adminPassword')
+    expect(result.apps.gitea.postgresqlPassword).toBe('sealed:sealed-secrets/gitea-secrets/postgresqlPassword')
+    expect(result.apps.gitea.adminUsername).toBe('sealed:sealed-secrets/gitea-secrets/adminUsername')
+    expect(result.apps.harbor.adminPassword).toBe('sealed:sealed-secrets/harbor-secrets/adminPassword')
     // Original should not be modified
     expect(input.apps.gitea.adminPassword).toBe('real-pass')
   })
 
   it('should not replace already-placeholder values', () => {
     const input = {
-      apps: { gitea: { adminPassword: 'sealed:gitea/gitea-admin-secret/password' } },
+      apps: { gitea: { adminPassword: 'sealed:sealed-secrets/gitea-secrets/adminPassword' } },
     }
     const result = replaceSecretsWithPlaceholders(input)
-    expect(result.apps.gitea.adminPassword).toBe('sealed:gitea/gitea-admin-secret/password')
+    expect(result.apps.gitea.adminPassword).toBe('sealed:sealed-secrets/gitea-secrets/adminPassword')
   })
 
   it('should not replace non-string values', () => {
@@ -106,14 +107,14 @@ describe('replaceSecretsWithPlaceholders', () => {
     }
     const result = replaceSecretsWithPlaceholders(input)
     expect(result.apps.gitea.adminPassword).toBe(123)
-    expect(result.apps.gitea.postgresqlPassword).toBe('sealed:gitea/gitea-db-secret/password')
+    expect(result.apps.gitea.postgresqlPassword).toBe('sealed:sealed-secrets/gitea-secrets/postgresqlPassword')
   })
 
   it('should handle values without matching paths', () => {
     const input = {
-      apps: { harbor: { adminPassword: 'harbor-pass' } },
+      apps: { grafana: { someConfig: 'not-a-secret' } },
     }
     const result = replaceSecretsWithPlaceholders(input)
-    expect(result.apps.harbor.adminPassword).toBe('harbor-pass')
+    expect(result.apps.grafana.someConfig).toBe('not-a-secret')
   })
 })

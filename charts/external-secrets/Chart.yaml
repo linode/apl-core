@@ -1,0 +1,16 @@
+apiVersion: v2
+appVersion: 0.14.3
+description: External Secrets Operator for Kubernetes
+home: https://external-secrets.io
+keywords:
+- secrets
+- external-secrets
+kubeVersion: '>=1.19.0-0'
+maintainers:
+- name: External Secrets Community
+  url: https://github.com/external-secrets/external-secrets
+name: external-secrets
+sources:
+- https://github.com/external-secrets/external-secrets
+type: application
+version: 0.14.3

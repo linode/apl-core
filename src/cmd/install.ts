@@ -13,10 +13,11 @@ import {
   waitForCRD,
 } from 'src/common/k8s'
 import {
-  APP_SECRET_OVERRIDES,
   applySealedSecretManifestsFromDir,
+  buildSecretToNamespaceMap,
   restartSealedSecretsController,
 } from 'src/common/sealed-secrets'
+import { getSchemaSecretsPaths } from 'src/common/utils'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -58,34 +59,41 @@ const retryInstallStep = async <T, Args extends any[]>(
 
 /**
  * Wait for SealedSecrets controller to decrypt SealedSecret resources into K8s Secrets.
- * Polls all secrets defined in APP_SECRET_OVERRIDES until they exist in the cluster.
+ * Derives the list of secrets to wait for from schema x-secret fields via buildSecretToNamespaceMap().
  */
 const waitForSealedSecrets = async (
   timeoutMs = 120000,
   intervalMs = 3000,
-  deps = { getK8sSecret, terminal },
+  deps = { getK8sSecret, terminal, buildSecretToNamespaceMap, getSchemaSecretsPaths },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:waitForSealedSecrets`)
 
-  // Build list of secrets to wait for from APP_SECRET_OVERRIDES
-  const secretsToWait: Array<{ namespace: string; secretName: string }> = []
-  for (const overrides of Object.values(APP_SECRET_OVERRIDES)) {
-    for (const override of overrides) {
-      secretsToWait.push({ namespace: override.namespace, secretName: override.secretName })
+  // Build list of secrets to wait for from schema-driven mappings
+  // We pass empty secrets/teams since we just need the secret names and namespaces
+  const mappings = await deps.buildSecretToNamespaceMap({}, [], undefined, {
+    getSchemaSecretsPaths: deps.getSchemaSecretsPaths,
+  })
+
+  // Deduplicate by namespace/secretName
+  const secretsToWait = new Map<string, { namespace: string; secretName: string }>()
+  for (const mapping of mappings) {
+    const key = `${mapping.namespace}/${mapping.secretName}`
+    if (!secretsToWait.has(key)) {
+      secretsToWait.set(key, { namespace: mapping.namespace, secretName: mapping.secretName })
     }
   }
 
-  if (secretsToWait.length === 0) {
+  if (secretsToWait.size === 0) {
     d.info('No sealed secrets to wait for')
     return
   }
 
-  d.info(`Waiting for ${secretsToWait.length} sealed secrets to be decrypted`)
+  d.info(`Waiting for ${secretsToWait.size} sealed secrets to be decrypted`)
   const start = Date.now()
 
   while (Date.now() - start < timeoutMs) {
     const pending: string[] = []
-    for (const { namespace, secretName } of secretsToWait) {
+    for (const { namespace, secretName } of secretsToWait.values()) {
       try {
         const secret = await deps.getK8sSecret(secretName, namespace)
         if (!secret) {
@@ -128,25 +136,7 @@ export const installAll = async () => {
     throw new Error('Failed to deploy essential manifests')
   }
 
-  d.info('Deploying CRDs')
-  await retryInstallStep(applyServerSide, 'charts/kube-prometheus-stack/charts/crds/crds')
-  // Wait for ServiceMonitor CRD to be established before deploying nginx
-  await retryInstallStep(waitForCRD, 'servicemonitors.monitoring.coreos.com')
-  await retryInstallStep(async () => $`kubectl apply -f charts/tekton-triggers/crds --server-side`)
-
-  d.info('Deploying charts containing label stage=prep')
-  await hf(
-    {
-      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values at this stage):
-      fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
-      labelOpts: ['stage=prep'],
-      logLevel: logLevelString(),
-      args: hfArgs,
-    },
-    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-  )
-
-  // Deploy sealed-secrets controller first (needs to be ready before applying SealedSecrets)
+  // Deploy sealed-secrets controller right after essentials
   d.info('Deploying sealed-secrets controller')
   await hf(
     {
@@ -158,25 +148,60 @@ export const installAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 
-  // Wait for SealedSecret CRD to be established
   d.info('Waiting for SealedSecret CRD to be ready')
   await retryInstallStep(waitForCRD, 'sealedsecrets.bitnami.com')
 
-  // Apply SealedSecret manifests from disk (generated during bootstrap)
   d.info('Applying SealedSecret manifests')
   await applySealedSecretManifestsFromDir(env.ENV_DIR)
 
-  // Restart the sealed-secrets controller to ensure it uses the correct key
-  // This is needed because the controller may have generated its own key before
-  // the bootstrap-created sealed-secrets-key secret was available
   d.info('Restarting sealed-secrets controller')
   await restartSealedSecretsController()
 
-  // Wait for SealedSecrets controller to decrypt all SealedSecret resources into K8s Secrets.
-  // This is critical: subsequent steps (hfValues, commit, getRepo) resolve sealed: placeholders
-  // by reading these K8s Secrets. Without this wait, placeholder resolution fails silently.
   d.info('Waiting for sealed secrets to be decrypted into K8s Secrets')
   await waitForSealedSecrets()
+
+  // Deploy ESO (External Secrets Operator)
+  d.info('Deploying external-secrets operator')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-01.init.yaml.gotmpl',
+      labelOpts: ['name=external-secrets'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  d.info('Waiting for ExternalSecret CRD to be ready')
+  await retryInstallStep(waitForCRD, 'externalsecrets.external-secrets.io')
+
+  d.info('Deploying ESO ClusterSecretStore')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-01.init.yaml.gotmpl',
+      labelOpts: ['name=external-secrets-artifacts'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  // Deploy CRDs
+  d.info('Deploying CRDs')
+  await retryInstallStep(applyServerSide, 'charts/kube-prometheus-stack/charts/crds/crds')
+  await retryInstallStep(waitForCRD, 'servicemonitors.monitoring.coreos.com')
+  await retryInstallStep(async () => $`kubectl apply -f charts/tekton-triggers/crds --server-side`)
+
+  d.info('Deploying charts containing label stage=prep')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
+      labelOpts: ['stage=prep'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
 
   d.info('Deploying charts containing label app=core')
   await hf(
