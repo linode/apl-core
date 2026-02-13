@@ -654,14 +654,14 @@ describe('AplCatalog', () => {
 
   describe('getResourceFileName', () => {
     it('should return the map key as file name', () => {
-      const data = { name: 'my-catalog', url: 'https://example.com/charts.git' }
+      const data = { name: 'my-catalog', repositoryUrl: 'https://example.com/charts.git' }
       const jsonPath = ['$', 'catalogs', 'default']
       const name = getResourceFileName(catalogFileMap, jsonPath, data)
       expect(name).toBe('default')
     })
 
     it('should use the map key even when it differs from data.name', () => {
-      const data = { name: 'production-charts', url: 'https://example.com/charts.git' }
+      const data = { name: 'production-charts', repositoryUrl: 'https://example.com/charts.git' }
       const jsonPath = ['$', 'catalogs', 'prod']
       const name = getResourceFileName(catalogFileMap, jsonPath, data)
       expect(name).toBe('prod')
@@ -670,14 +670,14 @@ describe('AplCatalog', () => {
 
   describe('getResourceName', () => {
     it('should return the map key as resource name', () => {
-      const data = { name: 'my-catalog', url: 'https://example.com/charts.git' }
+      const data = { name: 'my-catalog', repositoryUrl: 'https://example.com/charts.git' }
       const jsonPath = ['$', 'catalogs', 'default']
       const name = getResourceName(catalogFileMap, jsonPath, data)
       expect(name).toBe('default')
     })
 
     it('should use the map key even when it differs from data.name', () => {
-      const data = { name: 'production-charts', url: 'https://example.com/charts.git' }
+      const data = { name: 'production-charts', repositoryUrl: 'https://example.com/charts.git' }
       const jsonPath = ['$', 'catalogs', 'custom-catalog']
       const name = getResourceName(catalogFileMap, jsonPath, data)
       expect(name).toBe('custom-catalog')
@@ -686,21 +686,21 @@ describe('AplCatalog', () => {
 
   describe('getFilePath', () => {
     it('should return the correct file path for a catalog', () => {
-      const data = { name: 'default', url: 'https://example.com/charts.git' }
+      const data = { name: 'default', repositoryUrl: 'https://example.com/charts.git' }
       const jsonPath = ['$', 'catalogs', 'default']
       const filePath = getFilePath(catalogFileMap, jsonPath, data, '')
       expect(filePath).toBe('/tmp/values/env/catalogs/default.yaml')
     })
 
     it('should return the correct secrets file path for a catalog', () => {
-      const data = { name: 'default', url: 'https://example.com/charts.git' }
+      const data = { name: 'default', repositoryUrl: 'https://example.com/charts.git' }
       const jsonPath = ['$', 'catalogs', 'default']
       const filePath = getFilePath(catalogFileMap, jsonPath, data, 'secrets.')
       expect(filePath).toBe('/tmp/values/env/catalogs/secrets.default.yaml')
     })
 
     it('should use the map key for the file name, not data.name', () => {
-      const data = { name: 'production-charts', url: 'https://example.com/charts.git' }
+      const data = { name: 'production-charts', repositoryUrl: 'https://example.com/charts.git' }
       const jsonPath = ['$', 'catalogs', 'prod']
       const filePath = getFilePath(catalogFileMap, jsonPath, data, '')
       expect(filePath).toBe('/tmp/values/env/catalogs/prod.yaml')
@@ -728,7 +728,7 @@ describe('AplCatalog', () => {
     it('should render the manifest with full spec data', () => {
       const data = {
         name: 'default',
-        url: 'https://github.com/linode/apl-charts.git',
+        repositoryUrl: 'https://github.com/linode/apl-charts.git',
         branch: 'main',
         enabled: true,
       }
@@ -741,7 +741,7 @@ describe('AplCatalog', () => {
     })
 
     it('should not add labels for platform catalog resources', () => {
-      const data = { name: 'default', url: 'https://example.com/charts.git', branch: 'main', enabled: true }
+      const data = { name: 'default', repositoryUrl: 'https://example.com/charts.git', branch: 'main', enabled: true }
       const jsonPath = ['$', 'catalogs', 'default']
       const manifest = renderManifest(catalogFileMap, jsonPath, data)
 
@@ -751,7 +751,7 @@ describe('AplCatalog', () => {
     it('should preserve spec.name in the manifest (not omitted)', () => {
       const data = {
         name: 'production-charts',
-        url: 'https://example.com/charts.git',
+        repositoryUrl: 'https://example.com/charts.git',
         branch: 'main',
         enabled: true,
       }
@@ -765,7 +765,7 @@ describe('AplCatalog', () => {
     it('should include optional fields like secretName in spec', () => {
       const data = {
         name: 'private-catalog',
-        url: 'https://example.com/private-charts.git',
+        repositoryUrl: 'https://example.com/private-charts.git',
         branch: 'v2',
         enabled: false,
         secretName: 'git-credentials',
@@ -797,7 +797,7 @@ describe('AplCatalog', () => {
         catalogs: {
           default: {
             name: 'default',
-            url: 'https://github.com/linode/apl-charts.git',
+            repositoryUrl: 'https://github.com/linode/apl-charts.git',
             branch: 'main',
             enabled: true,
           },
@@ -823,13 +823,13 @@ describe('AplCatalog', () => {
         catalogs: {
           default: {
             name: 'default',
-            url: 'https://github.com/linode/apl-charts.git',
+            repositoryUrl: 'https://github.com/linode/apl-charts.git',
             branch: 'main',
             enabled: true,
           },
           custom: {
             name: 'custom-charts',
-            url: 'https://example.com/charts.git',
+            repositoryUrl: 'https://example.com/charts.git',
             branch: 'v2',
             enabled: false,
           },
@@ -862,7 +862,7 @@ describe('AplCatalog', () => {
         catalogs: {
           default: {
             name: 'default',
-            url: 'https://github.com/linode/apl-charts.git',
+            repositoryUrl: 'https://github.com/linode/apl-charts.git',
             branch: 'main',
             enabled: true,
           },
