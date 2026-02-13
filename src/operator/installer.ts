@@ -4,7 +4,6 @@ import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
-import { resolveSinglePlaceholder } from '../common/values'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 import { operatorEnv } from './validators'
@@ -144,20 +143,13 @@ export class Installer {
         return { username: gitUsername, password: gitPassword }
       }
 
-      this.d.debug('Extracting credentials from installation values')
-      const values = (await hfValues()) as Record<string, any>
-
-      const gitUsername: string = await resolveSinglePlaceholder(
-        String(values.apps.gitea?.adminUsername || 'otomi-admin'),
-      )
-      const gitPassword: string = await resolveSinglePlaceholder(String(values.apps.gitea?.adminPassword ?? ''))
+      this.d.debug('Reading git credentials from K8s Secret')
+      const giteaSecrets = await getK8sSecret('gitea-secrets', 'sealed-secrets')
+      const gitUsername: string = giteaSecrets?.adminUsername ? String(giteaSecrets.adminUsername) : 'otomi-admin'
+      const gitPassword: string = giteaSecrets?.adminPassword ? String(giteaSecrets.adminPassword) : ''
 
       if (!gitUsername || !gitPassword) {
-        throw new Error('Git credentials not found in values')
-      }
-
-      if (gitPassword.startsWith('sealed:') || gitUsername.startsWith('sealed:')) {
-        throw new Error('Git credentials contain unresolved sealed secret placeholders - K8s secrets may not be ready')
+        throw new Error('Git credentials not found in gitea-secrets K8s Secret')
       }
 
       await createUpdateGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {

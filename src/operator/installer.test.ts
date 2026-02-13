@@ -358,12 +358,6 @@ describe('Installer', () => {
 
     test('should extract credentials and create secrets when secrets do not exist', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
-            adminPassword: 'test-password',
-          },
-        },
         kms: {
           sops: {
             age: {
@@ -373,7 +367,10 @@ describe('Installer', () => {
         },
       }
 
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(k8s.getK8sSecret as jest.Mock)
+        .mockResolvedValueOnce(null) // apl-sops-secrets
+        .mockResolvedValueOnce(null) // gitea-credentials
+        .mockResolvedValueOnce({ adminUsername: 'test-admin', adminPassword: 'test-password' }) // gitea-secrets
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
@@ -394,13 +391,8 @@ describe('Installer', () => {
       expect(process.env.SOPS_AGE_KEY).toBe('AGE-SECRET-KEY-1234567890')
     })
 
-    test('should use default username when not provided', async () => {
+    test('should use default username when not provided in K8s secret', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminPassword: 'test-password',
-          },
-        },
         kms: {
           sops: {
             age: {
@@ -410,7 +402,10 @@ describe('Installer', () => {
         },
       }
 
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(k8s.getK8sSecret as jest.Mock)
+        .mockResolvedValueOnce(null) // apl-sops-secrets
+        .mockResolvedValueOnce(null) // gitea-credentials
+        .mockResolvedValueOnce({ adminPassword: 'test-password' }) // gitea-secrets (no adminUsername)
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
@@ -422,68 +417,49 @@ describe('Installer', () => {
       })
     })
 
-    test('should throw error when password is missing', async () => {
-      const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
-          },
-        },
-      }
+    test('should throw error when password is missing from gitea-secrets', async () => {
+      ;(k8s.getK8sSecret as jest.Mock)
+        .mockResolvedValueOnce(null) // apl-sops-secrets
+        .mockResolvedValueOnce(null) // gitea-credentials
+        .mockResolvedValueOnce({ adminUsername: 'test-admin' }) // gitea-secrets (no adminPassword)
+      ;(hfValues as jest.Mock).mockResolvedValue({})
 
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
-      ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
-
-      await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow('Git credentials not found in values')
+      await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow(
+        'Git credentials not found in gitea-secrets K8s Secret',
+      )
     })
 
-    test('should use default username when username is empty string', async () => {
-      const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: '',
-            adminPassword: 'test-password',
-          },
-        },
-      }
-
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
-      ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
+    test('should use default username when username is empty string in K8s secret', async () => {
+      ;(k8s.getK8sSecret as jest.Mock)
+        .mockResolvedValueOnce(null) // apl-sops-secrets
+        .mockResolvedValueOnce(null) // gitea-credentials
+        .mockResolvedValueOnce({ adminUsername: '', adminPassword: 'test-password' }) // gitea-secrets
+      ;(hfValues as jest.Mock).mockResolvedValue({})
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
       const result = await installer.setEnvAndCreateSecrets()
 
-      // Empty string falls back to default due to || operator
+      // Empty string falls back to default due to ternary check
       expect(result).toEqual({
         username: 'otomi-admin',
         password: 'test-password',
       })
     })
 
-    test('should throw error when password is empty string', async () => {
-      const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
-            adminPassword: '',
-          },
-        },
-      }
+    test('should throw error when password is empty string in K8s secret', async () => {
+      ;(k8s.getK8sSecret as jest.Mock)
+        .mockResolvedValueOnce(null) // apl-sops-secrets
+        .mockResolvedValueOnce(null) // gitea-credentials
+        .mockResolvedValueOnce({ adminUsername: 'test-admin', adminPassword: '' }) // gitea-secrets
+      ;(hfValues as jest.Mock).mockResolvedValue({})
 
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
-      ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
-
-      await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow('Git credentials not found in values')
+      await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow(
+        'Git credentials not found in gitea-secrets K8s Secret',
+      )
     })
 
     test('should skip SOPS key when encrypted', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
-            adminPassword: 'test-password',
-          },
-        },
         kms: {
           sops: {
             age: {
@@ -493,7 +469,10 @@ describe('Installer', () => {
         },
       }
 
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(k8s.getK8sSecret as jest.Mock)
+        .mockResolvedValueOnce(null) // apl-sops-secrets
+        .mockResolvedValueOnce(null) // gitea-credentials
+        .mockResolvedValueOnce({ adminUsername: 'test-admin', adminPassword: 'test-password' }) // gitea-secrets
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
@@ -503,17 +482,11 @@ describe('Installer', () => {
     })
 
     test('should skip SOPS key when not provided', async () => {
-      const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
-            adminPassword: 'test-password',
-          },
-        },
-      }
-
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
-      ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
+      ;(k8s.getK8sSecret as jest.Mock)
+        .mockResolvedValueOnce(null) // apl-sops-secrets
+        .mockResolvedValueOnce(null) // gitea-credentials
+        .mockResolvedValueOnce({ adminUsername: 'test-admin', adminPassword: 'test-password' }) // gitea-secrets
+      ;(hfValues as jest.Mock).mockResolvedValue({})
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
       await installer.setEnvAndCreateSecrets()
@@ -522,37 +495,25 @@ describe('Installer', () => {
     })
 
     test('should handle hfValues failure when secrets do not exist', async () => {
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValueOnce(null) // apl-sops-secrets
       ;(hfValues as jest.Mock).mockRejectedValue(new Error('Failed to get values'))
 
       await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow('Failed to get values')
     })
 
     test('should handle secret creation failure', async () => {
-      const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
-            adminPassword: 'test-password',
-          },
-        },
-      }
-
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
-      ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
+      ;(k8s.getK8sSecret as jest.Mock)
+        .mockResolvedValueOnce(null) // apl-sops-secrets
+        .mockResolvedValueOnce(null) // gitea-credentials
+        .mockResolvedValueOnce({ adminUsername: 'test-admin', adminPassword: 'test-password' }) // gitea-secrets
+      ;(hfValues as jest.Mock).mockResolvedValue({})
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockRejectedValue(new Error('Secret creation failed'))
 
       await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow('Secret creation failed')
     })
 
-    test('should handle nested gitea structure', async () => {
+    test('should read gitea credentials from gitea-secrets K8s Secret', async () => {
       const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'nested-admin',
-            adminPassword: 'nested-password',
-          },
-        },
         kms: {
           sops: {
             age: {
@@ -562,12 +523,16 @@ describe('Installer', () => {
         },
       }
 
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
+      ;(k8s.getK8sSecret as jest.Mock)
+        .mockResolvedValueOnce(null) // apl-sops-secrets
+        .mockResolvedValueOnce(null) // gitea-credentials
+        .mockResolvedValueOnce({ adminUsername: 'nested-admin', adminPassword: 'nested-password' }) // gitea-secrets
       ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
       const result = await installer.setEnvAndCreateSecrets()
 
+      expect(k8s.getK8sSecret).toHaveBeenCalledWith('gitea-secrets', 'sealed-secrets')
       expect(result).toEqual({
         username: 'nested-admin',
         password: 'nested-password',
@@ -575,19 +540,10 @@ describe('Installer', () => {
     })
 
     test('should use only existing SOPS secret when gitea credentials need creation', async () => {
-      const mockValues = {
-        apps: {
-          gitea: {
-            adminUsername: 'test-admin',
-            adminPassword: 'test-password',
-          },
-        },
-      }
-
       ;(k8s.getK8sSecret as jest.Mock)
         .mockResolvedValueOnce({ SOPS_AGE_KEY: 'existing-sops-key' }) // apl-sops-secrets exists
         .mockResolvedValueOnce(null) // gitea-credentials does not exist
-      ;(hfValues as jest.Mock).mockResolvedValue(mockValues)
+        .mockResolvedValueOnce({ adminUsername: 'test-admin', adminPassword: 'test-password' }) // gitea-secrets
       ;(k8s.createUpdateGenericSecret as jest.Mock).mockResolvedValue(undefined)
 
       const result = await installer.setEnvAndCreateSecrets()

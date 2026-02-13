@@ -1,6 +1,6 @@
 import { existsSync } from 'fs'
 import { mkdir, unlink, writeFile } from 'fs/promises'
-import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, pick, set } from 'lodash'
+import { cloneDeep, isEmpty, isEqual, merge, mergeWith, pick, set } from 'lodash'
 import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { stringify } from 'yaml'
@@ -11,7 +11,6 @@ import { env } from './envalid'
 import { hfValues } from './hf'
 import { getK8sSecret } from './k8s'
 import { saveValues } from './repo'
-import { SECRET_NAME_MAP } from './sealed-secrets'
 import { extract, flattenObject, getValuesSchema, gucci, loadYaml, pkg, removeBlankAttributes } from './utils'
 import { HelmArguments } from './yargs'
 
@@ -55,29 +54,8 @@ export interface Repo {
   branch: string
 }
 
-/**
- * Resolves a single sealed:namespace/secretName/key placeholder to its actual value
- * by reading the corresponding K8s Secret. Returns the original value if not a placeholder
- * or if resolution fails.
- */
-export const resolveSinglePlaceholder = async (value: string, deps = { getK8sSecret, terminal }): Promise<string> => {
-  if (!value || !value.startsWith('sealed:')) return value
-  const d = deps.terminal('common:values:resolveSinglePlaceholder')
-  const ref = value.replace('sealed:', '')
-  const parts = ref.split('/')
-  if (parts.length !== 3) return value
-  const [namespace, secretName, key] = parts
-  try {
-    const secret = await deps.getK8sSecret(secretName, namespace)
-    if (secret?.[key] !== undefined) return String(secret[key])
-    d.warn(`Could not resolve placeholder ${value}: key '${key}' not found in secret ${namespace}/${secretName}`)
-  } catch (e) {
-    d.warn(`Could not resolve placeholder ${value}: K8s secret ${namespace}/${secretName} not available`)
-  }
-  return value
-}
-
 export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret, terminal }): Promise<Repo> => {
+  const d = deps.terminal('common:values:getRepo')
   const giteaEnabled = values?.apps?.gitea?.enabled ?? true
   const byor = !!values?.apps?.['otomi-api']?.git
   if (!giteaEnabled && !byor) {
@@ -97,7 +75,14 @@ export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret
     branch = otomiApiGit?.branch ?? branch
   } else {
     username = 'otomi-admin'
-    password = await resolveSinglePlaceholder(String(values?.apps?.gitea?.adminPassword ?? ''), deps)
+    // Read gitea password directly from K8s Secret (core secret in sealed-secrets namespace)
+    try {
+      const secret = await deps.getK8sSecret('gitea-secrets', 'sealed-secrets')
+      password = secret?.adminPassword ? String(secret.adminPassword) : ''
+    } catch {
+      d.warn('Could not read gitea-secrets from sealed-secrets namespace, falling back to values')
+      password = String(values?.apps?.gitea?.adminPassword ?? '')
+    }
     email = `pipeline@cluster.local`
     const gitUrl = env.GIT_URL
     const gitPort = env.GIT_PORT
@@ -168,54 +153,14 @@ export const writeValuesToFile = async (
 
 /**
  * Writes new values to the repo. Will keep the original values if `overwrite` is `false`.
+ * Secret values are written as-is — they are protected by SealedSecrets on the cluster side,
+ * and child secrets are derived via ESO ExternalSecret CRs.
  */
 export const writeValues = async (inValues: Record<string, any>, overwrite = false): Promise<void> => {
   const d = terminal('common:values:writeValues')
   d.debug('Writing values: ', inValues)
-  const valuesToWrite = replaceSecretsWithPlaceholders(inValues)
-  await saveValues(env.ENV_DIR, valuesToWrite, {})
+  await saveValues(env.ENV_DIR, inValues, {})
   d.info('All values were written to ENV_DIR')
-}
-
-/**
- * Builds a mapping from valuePath → sealed:sealed-secrets/<secretName>/<key>
- * using SECRET_NAME_MAP convention. All core secrets live in sealed-secrets namespace.
- */
-function buildSecretPlaceholderMap(): Map<string, string> {
-  const map = new Map<string, string>()
-  // For each SECRET_NAME_MAP entry, create placeholder patterns
-  // The actual paths are resolved at runtime from schema, but for placeholder
-  // replacement we use the convention: apps.gitea.adminPassword → sealed:sealed-secrets/gitea-secrets/adminPassword
-  // This is a static mapping that covers common paths used in git operations
-  const commonSecretPaths: Record<string, { secretName: string; key: string }> = {
-    'apps.gitea.adminPassword': { secretName: 'gitea-secrets', key: 'adminPassword' },
-    'apps.gitea.postgresqlPassword': { secretName: 'gitea-secrets', key: 'postgresqlPassword' },
-    'apps.gitea.adminUsername': { secretName: 'gitea-secrets', key: 'adminUsername' },
-    'apps.keycloak.adminPassword': { secretName: 'keycloak-secrets', key: 'adminPassword' },
-    'apps.keycloak.idp.clientSecret': { secretName: 'keycloak-secrets', key: 'idp_clientSecret' },
-    'apps.keycloak.idp.clientID': { secretName: 'keycloak-secrets', key: 'idp_clientID' },
-    'apps.harbor.adminPassword': { secretName: 'harbor-secrets', key: 'adminPassword' },
-    'otomi.adminPassword': { secretName: 'otomi-platform-secrets', key: 'adminPassword' },
-    'oidc.clientSecret': { secretName: 'oidc-secrets', key: 'clientSecret' },
-  }
-  for (const [valuePath, { secretName, key }] of Object.entries(commonSecretPaths)) {
-    map.set(valuePath, `sealed:sealed-secrets/${secretName}/${key}`)
-  }
-  return map
-}
-
-export const replaceSecretsWithPlaceholders = (values: Record<string, any>): Record<string, any> => {
-  const result = cloneDeep(values)
-  const placeholderMap = buildSecretPlaceholderMap()
-
-  for (const [valuePath, placeholder] of placeholderMap) {
-    const value = get(result, valuePath)
-    if (value !== undefined && typeof value === 'string' && !value.startsWith('sealed:')) {
-      set(result, valuePath, placeholder)
-    }
-  }
-
-  return result
 }
 
 export const deriveSecrets = async (values: Record<string, any> = {}): Promise<Record<string, any>> => {

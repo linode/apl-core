@@ -14,14 +14,14 @@ import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
 import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
-import { objectToYaml, resolveSinglePlaceholder, writeValues, writeValuesToFile } from 'src/common/values'
+import { objectToYaml, writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { ARGOCD_APP_PARAMS } from '../common/constants'
-import { getSealedSecretsPEM, k8s } from '../common/k8s'
+import { getK8sSecret, getSealedSecretsPEM, k8s } from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
@@ -712,9 +712,10 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   let secretCreated = false
   if (useGiteaCatalog) {
     try {
+      const giteaSecrets = await getK8sSecret('gitea-secrets', 'sealed-secrets')
       const resolvedGitea = {
-        adminUsername: await resolveSinglePlaceholder(String(gitea!.adminUsername)),
-        adminPassword: await resolveSinglePlaceholder(String(gitea!.adminPassword)),
+        adminUsername: giteaSecrets?.adminUsername ? String(giteaSecrets.adminUsername) : String(gitea!.adminUsername),
+        adminPassword: giteaSecrets?.adminPassword ? String(giteaSecrets.adminPassword) : String(gitea!.adminPassword),
       }
       await createCatalogSealedSecret(d, resolvedGitea)
       secretCreated = true
