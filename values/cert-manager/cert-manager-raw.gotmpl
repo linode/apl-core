@@ -74,6 +74,32 @@ resources:
             property: linode_apiToken
             {{- end }}
 {{- end }}
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: custom-ca
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: custom-ca
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            tls.crt: '{{ "{{ .customRootCA | b64enc }}" }}'
+            tls.key: '{{ "{{ .customRootCAKey | b64enc }}" }}'
+      data:
+        - secretKey: customRootCA
+          remoteRef:
+            key: cert-manager-secrets
+            property: customRootCA
+        - secretKey: customRootCAKey
+          remoteRef:
+            key: cert-manager-secrets
+            property: customRootCAKey
   - apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
     metadata:

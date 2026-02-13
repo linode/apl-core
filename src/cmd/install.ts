@@ -17,8 +17,7 @@ import {
   buildSecretToNamespaceMap,
   restartSealedSecretsController,
 } from 'src/common/sealed-secrets'
-import { getSchemaSecretsPaths } from 'src/common/utils'
-import { getFilename, rootDir } from 'src/common/utils'
+import { getFilename, getSchemaSecretsPaths, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
@@ -180,6 +179,18 @@ export const installAll = async () => {
     {
       fileOpts: 'helmfile.d/helmfile-01.init.yaml.gotmpl',
       labelOpts: ['name=external-secrets-artifacts'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  // Deploy cert-manager ExternalSecrets (custom-ca, external-dns) now that ESO + ClusterSecretStore are ready
+  d.info('Deploying cert-manager artifacts (ExternalSecrets)')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-07.init.yaml.gotmpl',
+      labelOpts: ['name=cert-manager-artifacts'],
       logLevel: logLevelString(),
       args: hfArgs,
     },

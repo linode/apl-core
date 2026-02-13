@@ -72,31 +72,3 @@ resources:
     value: 1000000
     globalDefault: false
     description: "This priority class should be used for Otomi High priority service pods only."
-
-  - apiVersion: external-secrets.io/v1beta1
-    kind: ExternalSecret
-    metadata:
-      name: custom-ca
-      namespace: cert-manager
-    spec:
-      refreshInterval: 1h
-      secretStoreRef:
-        name: core-secrets-store
-        kind: ClusterSecretStore
-      target:
-        name: custom-ca
-        creationPolicy: Owner
-        template:
-          type: Opaque
-          data:
-            tls.crt: '{{ "{{ .customRootCA | b64enc }}" }}'
-            tls.key: '{{ "{{ .customRootCAKey | b64enc }}" }}'
-      data:
-        - secretKey: customRootCA
-          remoteRef:
-            key: cert-manager-secrets
-            property: customRootCA
-        - secretKey: customRootCAKey
-          remoteRef:
-            key: cert-manager-secrets
-            property: customRootCAKey
