@@ -1,6 +1,5 @@
 {{- $v := .Values }}
 {{- $a := $v.apps.argocd }}
-{{- $g := $v.apps.gitea }}
 resources:
 {{- if $v._derived.untrustedCA }}
   - apiVersion: v1
@@ -10,6 +9,7 @@ resources:
     data:
       custom-ca-certificates.crt: {{ .Values._derived.caCert | b64enc }}
 {{- end }}
+{{- if contains "gitea-http.gitea.svc.cluster.local" $v.otomi.git.repoUrl }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -20,8 +20,8 @@ resources:
     data:
       type: {{ print "git" | b64enc | quote }}
       url: {{ printf "https://%s" $v._derived.giteaDomain | b64enc }}
-      username: {{ $g.adminUsername | b64enc }}
-      password: {{ $g.adminPassword | b64enc }}
+      username: {{ $v.otomi.git.username | b64enc }}
+      password: {{ $v.otomi.git.password| b64enc }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -32,5 +32,19 @@ resources:
     data:
       type: {{ print "git" | b64enc | quote }}
       url: {{ "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git" | b64enc | quote }}
-      username: {{ $g.adminUsername | b64enc }}
-      password: {{ $g.adminPassword | b64enc }}
+      username: {{ $v.otomi.git.username | b64enc }}
+      password: {{ $v.otomi.git.password| b64enc }}
+{{- else }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: argocd-repo-creds-git
+      namespace: argocd
+      labels:
+        argocd.argoproj.io/secret-type: repo-creds
+    data:
+      type: {{ print "git" | b64enc | quote }}
+      url: {{ $v.otomi.git.repoUrl | b64enc }}
+      username: {{ $v.otomi.git.username | b64enc }}
+      password: {{ $v.otomi.git.password | b64enc }}
+{{- end }}
