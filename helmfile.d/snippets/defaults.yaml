@@ -1160,7 +1160,7 @@ environments:
         catalogs:
           default:
             name: default
-            url: https://github.com/linode/apl-charts.git
+            repositoryUrl: https://github.com/linode/apl-charts.git
             branch: main
             enabled: true
         versions:

@@ -235,7 +235,7 @@ definitions:
         type: string
         description: 'A lowercase name that starts with a letter and may contain dashes.'
         pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
-      url:
+      repositoryUrl:
         type: string
         description: 'Git repository URL for the catalog'
         pattern: '^(https?|git|ssh)://.*\.git$'
@@ -251,7 +251,7 @@ definitions:
         pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
     required:
       - name
-      - url
+      - repositoryUrl
       - branch
   cluster:
     additionalProperties: false
