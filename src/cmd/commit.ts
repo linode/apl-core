@@ -8,7 +8,7 @@ import { hfValues } from 'src/common/hf'
 import { waitTillGitRepoAvailable } from 'src/common/gitea'
 import { createUpdateConfigMap, createUpdateGenericSecret, k8s } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
-import { getRepo } from 'src/common/values'
+import { getRepo, GitRepoConfig } from 'src/common/git-config'
 import { HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
@@ -54,11 +54,16 @@ const cleanupGitState = async (d: any): Promise<void> => {
   }
 }
 
-const commitAndPush = async (values: Record<string, any>, branch: string, initialInstall = false): Promise<void> => {
+const commitAndPush = async (
+  values: Record<string, any>,
+  branch: string,
+  initialInstall = false,
+  gitConfig?: GitRepoConfig,
+): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const message = initialInstall ? 'otomi commit' : 'updated values [ci skip]'
-  const { password } = getRepo(values)
+  const { password } = gitConfig ?? getRepo(values)
   cd(env.ENV_DIR)
   try {
     try {
@@ -128,12 +133,17 @@ const commitAndPush = async (values: Record<string, any>, branch: string, initia
   d.log('Successfully pushed the updated values')
 }
 
-export const commit = async (initialInstall: boolean, overrideArgs?: HelmArguments): Promise<void> => {
+export const commit = async (
+  initialInstall: boolean,
+  overrideArgs?: HelmArguments,
+  gitConfig?: GitRepoConfig,
+): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   await validateValues(overrideArgs)
   d.info('Preparing values')
   const values = (await hfValues()) as Record<string, any>
-  const { branch, remote, username, email } = getRepo(values)
+  // Use provided gitConfig if available (operator mode), otherwise read from values (bootstrap/install mode)
+  const { branch, authenticatedUrl: remote, username, email } = gitConfig ?? getRepo(values)
   if (initialInstall) {
     // we call this here again, as we might not have completed (happens upon first install):
     await bootstrapGit(values)
