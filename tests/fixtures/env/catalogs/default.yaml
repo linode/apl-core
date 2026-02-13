@@ -6,4 +6,4 @@ spec:
     branch: main
     enabled: true
     name: default
-    url: https://github.com/linode/apl-charts.git
+    repositoryUrl: https://github.com/linode/apl-charts.git
