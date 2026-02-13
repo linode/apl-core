@@ -185,18 +185,6 @@ export const installAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 
-  // Deploy cert-manager ExternalSecrets (custom-ca, external-dns) now that ESO + ClusterSecretStore are ready
-  d.info('Deploying cert-manager artifacts (ExternalSecrets)')
-  await hf(
-    {
-      fileOpts: 'helmfile.d/helmfile-07.init.yaml.gotmpl',
-      labelOpts: ['name=cert-manager-artifacts'],
-      logLevel: logLevelString(),
-      args: hfArgs,
-    },
-    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-  )
-
   // Deploy CRDs
   d.info('Deploying CRDs')
   await retryInstallStep(applyServerSide, 'charts/kube-prometheus-stack/charts/crds/crds')
@@ -221,6 +209,19 @@ export const installAll = async () => {
       // Using file to circumvent parallel processing, which
       // cannot handle dependencies across multiple files.
       fileOpts: 'helmfile.tpl/helmfile-core.yaml',
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  // Deploy cert-manager artifacts (ExternalSecrets, ClusterIssuers, Certificates)
+  // Must be after app=core (cert-manager CRDs) and after ESO + ClusterSecretStore
+  d.info('Deploying cert-manager artifacts')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-07.init.yaml.gotmpl',
+      labelOpts: ['name=cert-manager-artifacts'],
       logLevel: logLevelString(),
       args: hfArgs,
     },
