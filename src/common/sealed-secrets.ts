@@ -30,10 +30,7 @@ export const ESO_MIGRATED_SECRET_PREFIXES = [
  * Strip x-secret fields for ESO-migrated app prefixes from values.
  * Non-ESO-migrated apps keep their secrets as-is.
  */
-export function stripEsoMigratedSecrets(
-  values: Record<string, any>,
-  secretPaths: string[],
-): Record<string, any> {
+export function stripEsoMigratedSecrets(values: Record<string, any>, secretPaths: string[]): Record<string, any> {
   const result = cloneDeep(values)
   for (const secretPath of secretPaths) {
     const isEsoMigrated = ESO_MIGRATED_SECRET_PREFIXES.some(

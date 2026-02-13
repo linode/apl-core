@@ -6,7 +6,6 @@ import {
   buildSecretToNamespaceMap,
   createSealedSecretManifest,
   createSealedSecretsKeySecret,
-  ESO_MIGRATED_SECRET_PREFIXES,
   generateSealedSecretsKeyPair,
   getPemFromCertificate,
   SECRET_NAME_MAP,
