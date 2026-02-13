@@ -1,14 +1,16 @@
 import * as process from 'node:process'
 import { terminal } from '../common/debug'
+import {
+  getGitConfigData,
+  getGitCredentials,
+  GIT_CONFIG_NAMESPACE,
+  GIT_CONFIG_SECRET_NAME,
+  setGitConfig,
+} from '../common/git-config'
 import { hfValues } from '../common/hf'
 import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
-
-export interface GitCredentials {
-  username: string
-  password: string
-}
 
 export class Installer {
   private d = terminal('operator:installer')
@@ -56,6 +58,7 @@ export class Installer {
         // Run the installation sequence
         await this.updateInstallationStatus('in-progress', attemptNumber)
         await this.aplOps.install()
+        await this.ensureSecretsAndConfig()
 
         await this.updateInstallationStatus('completed', attemptNumber)
         return
@@ -94,70 +97,60 @@ export class Installer {
     }
   }
 
-  public async setEnvAndCreateSecrets(): Promise<GitCredentials> {
+  public async setEnvAndCreateSecrets(): Promise<void> {
     this.d.debug('Retrieving or creating git credentials')
     await this.setupSopsEnvironment()
-    return await this.setupGiteaCredentials()
-  }
-
-  private async setupGiteaCredentials() {
-    try {
-      const giteaCredentialsSecret = await getK8sSecret('gitea-credentials', 'apl-operator')
-
-      if (giteaCredentialsSecret?.GIT_USERNAME && giteaCredentialsSecret?.GIT_PASSWORD) {
-        const gitUsername = giteaCredentialsSecret.GIT_USERNAME
-        const gitPassword = giteaCredentialsSecret.GIT_PASSWORD
-
-        this.d.debug('Using existing git credentials from secret')
-        return { username: gitUsername, password: gitPassword }
-      }
-
-      this.d.debug('Extracting credentials from installation values')
-      const values = (await hfValues()) as Record<string, any>
-
-      const gitUsername: string = values.apps.gitea?.adminUsername || 'otomi-admin'
-      const gitPassword: string = values.apps.gitea?.adminPassword
-
-      if (!gitUsername || !gitPassword) {
-        throw new Error('Git credentials not found in values')
-      }
-
-      await createUpdateGenericSecret(k8s.core(), 'gitea-credentials', 'apl-operator', {
-        GIT_USERNAME: gitUsername,
-        GIT_PASSWORD: gitPassword,
-      })
-
-      this.d.debug('Created git credentials secret')
-      return { username: gitUsername, password: gitPassword }
-    } catch (error) {
-      this.d.error('Failed to retrieve or create gitea credentials:', getErrorMessage(error))
-      throw error
-    }
   }
 
   private async setupSopsEnvironment() {
-    try {
-      const aplSopsSecret = await getK8sSecret('apl-sops-secrets', 'apl-operator')
+    const aplSopsSecret = await getK8sSecret('apl-sops-secrets', 'apl-operator')
 
-      if (aplSopsSecret?.SOPS_AGE_KEY) {
-        process.env.SOPS_AGE_KEY = aplSopsSecret.SOPS_AGE_KEY
-        this.d.debug('Using existing sops credentials from secret')
-      } else {
-        const values = (await hfValues()) as Record<string, any>
-        const sopsAgePrivateKey = values.kms?.sops?.age?.privateKey
-        if (sopsAgePrivateKey && !sopsAgePrivateKey.startsWith('ENC')) {
-          process.env.SOPS_AGE_KEY = sopsAgePrivateKey
-          this.d.debug('Set SOPS_AGE_KEY in environment variables')
-          await createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', 'apl-operator', {
-            SOPS_AGE_KEY: sopsAgePrivateKey,
-          })
-        } else {
-          this.d.debug('SOPS Age private key not found or encrypted, skipping')
-        }
-      }
-    } catch (error) {
-      this.d.error('Failed to retrieve or create sops credentials:', getErrorMessage(error))
-      throw error
+    if (!aplSopsSecret?.SOPS_AGE_KEY) {
+      throw new Error('SOPS_AGE_KEY not found in secret')
+    }
+    process.env.SOPS_AGE_KEY = aplSopsSecret.SOPS_AGE_KEY
+  }
+
+  // public for testing. This method should only be used if you are certain there are values locally.
+  async ensureSecretsAndConfig(): Promise<void> {
+    this.d.info('Verifying secrets and config after installation')
+    const values = (await hfValues()) as Record<string, any>
+    if (!values) {
+      this.d.warn('Could not retrieve hfValues, skipping secrets/config verification')
+      return
+    }
+
+    const otomiGit = values?.otomi?.git
+    const agePrivateKey = values?.kms?.sops?.age?.privateKey
+
+    // Ensure apl-git-credentials secret
+    const credentials = await getGitCredentials()
+    if (!credentials) {
+      this.d.info('Recreating apl-git-credentials secret')
+      await createUpdateGenericSecret(k8s.core(), GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE, {
+        username: otomiGit?.username,
+        password: otomiGit?.password,
+      })
+    }
+
+    // Ensure apl-sops-secrets secret
+    const sopsSecret = await getK8sSecret('apl-sops-secrets', GIT_CONFIG_NAMESPACE)
+    if (!sopsSecret?.SOPS_AGE_KEY && agePrivateKey) {
+      this.d.info('Recreating apl-sops-secrets secret')
+      await createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', GIT_CONFIG_NAMESPACE, {
+        SOPS_AGE_KEY: agePrivateKey,
+      })
+    }
+
+    // Ensure apl-git-config configmap
+    const configData = await getGitConfigData()
+    if (!configData?.repoUrl || !configData?.branch || !configData?.email) {
+      this.d.info('Recreating apl-git-config configmap')
+      await setGitConfig({
+        repoUrl: otomiGit?.repoUrl,
+        branch: otomiGit?.branch,
+        email: otomiGit?.email,
+      })
     }
   }
 }

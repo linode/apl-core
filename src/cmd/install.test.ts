@@ -30,8 +30,13 @@ jest.mock('src/common/values', () => ({
 
 jest.mock('src/common/hf', () => ({
   hf: jest.fn(),
+  hfValues: jest.fn(),
   deployEssential: jest.fn(),
   HF_DEFAULT_SYNC_ARGS: ['apply', '--sync-args', '--include-needs'],
+}))
+
+jest.mock('src/common/git-config', () => ({
+  setGitConfig: jest.fn(),
 }))
 
 jest.mock('zx', () => ({
