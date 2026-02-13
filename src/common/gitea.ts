@@ -11,8 +11,8 @@ export async function resetGiteaPasswordValidity() {
   const [firstPod] = giteaPods.items
   // In case Gitea pods happened to be restarting in the meantime, it will likely fix the issue by itself
   if (firstPod) {
-    const giteaCredentialsSecret = await getK8sSecret('gitea-credentials', 'apl-operator')
-    const userName = giteaCredentialsSecret?.GITEA_USERNAME ?? 'otomi-admin'
+    const giteaCredentialsSecret = await getK8sSecret('apl-git-credentials', 'apl-operator')
+    const userName = giteaCredentialsSecret?.username ?? 'otomi-admin'
     const resetCmd = ['gitea', 'admin', 'user', 'must-change-password', '--unset', userName as string]
     const { stdout, stderr } = await exec(
       firstPod.metadata!.namespace as string,
