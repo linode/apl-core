@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $a := $v.apps.argocd }}
-{{- if $a.enabled }}
+{{- if and $a.enabled $v.gitOps.teamRepoUrl }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

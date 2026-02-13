@@ -1,3 +1,4 @@
+{{- if .Values.gitOps.teamRepoUrl }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -8,3 +9,4 @@ metadata:
 stringData:
   type: git
   url: {{ .Values.gitOps.teamRepoUrl }}
+{{- end }}
