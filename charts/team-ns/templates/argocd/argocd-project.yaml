@@ -5,7 +5,9 @@
 {{- range $i, $item := $v.workloads }}
   {{- $urls = append $urls $item.url }}
 {{- end }}
+{{- if $v.gitOps.teamRepoUrl }}
 {{- $urls = append $urls $v.gitOps.teamRepoUrl }}
+{{- end }}
 {{- $urls = append $urls $v.gitOps.valuesRepoUrl }}
 {{- $urls = sortAlpha (uniq $urls) }}
 

@@ -235,7 +235,7 @@ definitions:
         type: string
         description: 'A lowercase name that starts with a letter and may contain dashes.'
         pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
-      url:
+      repositoryUrl:
         type: string
         description: 'Git repository URL for the catalog'
         pattern: '^(https?|git|ssh)://.*\.git$'
@@ -251,7 +251,7 @@ definitions:
         pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
     required:
       - name
-      - url
+      - repositoryUrl
       - branch
   cluster:
     additionalProperties: false
@@ -1702,9 +1702,8 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          adminPassword:
-            type: string
-            x-secret: '{{ randAlphaNum 20 }}'
+          enabled:
+            type: boolean
           postgresqlPassword:
             type: string
             description: This password was generated and cannot be changed without manual intervention.
@@ -2214,20 +2213,6 @@ properties:
           editorInactivityTimeout:
             type: integer
             default: 10
-          git:
-            additionalProperties: false
-            properties:
-              branch:
-                type: string
-              email:
-                $ref: '#/definitions/email'
-              password:
-                type: string
-                x-secret: ''
-              repoUrl:
-                $ref: '#/definitions/repoUrl'
-              user:
-                type: string
           resources:
             additionalProperties: false
             properties:
@@ -2800,6 +2785,42 @@ properties:
         required:
           - username
           - password
+      git:
+        type: object
+        title: Git Configuration
+        description: |
+          Git configuration for APL values repository.
+        additionalProperties: false
+        properties:
+          repoUrl:
+            type: string
+            description: |
+              The base URL of the Git repository (without credentials). Auto-derived for internal Gitea.
+            pattern: '^https?://.+'
+          username:
+            type: string
+            description: |
+              Username for authenticating with the Git repository.
+              Defaults to 'otomi-admin' for internal Gitea.
+          password:
+            type: string
+            description: Password or token for authenticating with the Git repository
+            x-secret: '{{ randAlphaNum 20 }}'
+          email:
+            type: string
+            description: |
+              Email address to use for Git commits.
+              Defaults to 'pipeline@cluster.local' for internal Gitea.
+            format: email
+          branch:
+            type: string
+            description: The branch to use in the Git repository
+        required:
+          - repoUrl
+          - username
+          - password
+          - email
+          - branch
       hasExternalDNS:
         description: Set this to true when an external dns zone is available to manage dns records. (Expects required `dns:` fields to be set.)
         default: false
@@ -2822,6 +2843,8 @@ properties:
       useORCS:
         type: boolean
         description: Defines if the OCI Registry Cache Service (ORCS) is used to cache images from the public registry.
+    required:
+      - git
   ingress:
     properties:
       platformClass:

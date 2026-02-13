@@ -1,0 +1,14 @@
+{{- $git := .Values.otomi.git | default dict }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apl-git-config
+  namespace: apl-operator
+data:
+  {{- if $git.repoUrl }}
+  repoUrl: {{ $git.repoUrl | quote }}
+  {{- end }}
+  branch: {{ $git.branch | quote }}
+  {{- if $git.email }}
+  email: {{ $git.email | quote }}
+  {{- end }}
