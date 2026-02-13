@@ -14,8 +14,8 @@ import { env, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from 'src/common/k8s'
 import { getKmsSettings } from 'src/common/repo'
-import { bootstrapSealedSecrets } from 'src/common/sealed-secrets'
-import { ensureTeamGitOpsDirectories, getFilename, gucci, isCore, loadYaml, rootDir } from 'src/common/utils'
+import { bootstrapSealedSecrets, stripEsoMigratedSecrets } from 'src/common/sealed-secrets'
+import { ensureTeamGitOpsDirectories, getFilename, getSchemaSecretsPaths, gucci, isCore, loadYaml, rootDir } from 'src/common/utils'
 import { generateSecrets, writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -286,6 +286,8 @@ export const processValues = async (
     generatePassword,
     addInitialPasswords,
     addPlatformAdmin,
+    getSchemaSecretsPaths,
+    stripEsoMigratedSecrets,
   },
 ): Promise<{ originalInput: Record<string, any>; allSecrets: Record<string, any> }> => {
   const d = deps.terminal(`cmd:${cmdName}:processValues`)
@@ -316,7 +318,10 @@ export const processValues = async (
   // add default platform admin & generate initial passwords for users if they don't have one
   const users = deps.getUsers(originalInput)
   // we have generated all we need, now store everything by merging the original values over all the secrets
-  await deps.writeValues(merge(cloneDeep(allSecrets), cloneDeep(originalInput), cloneDeep({ users })))
+  const mergedForDisk = merge(cloneDeep(allSecrets), cloneDeep(originalInput), cloneDeep({ users }))
+  const secretPaths = await deps.getSchemaSecretsPaths(Object.keys(get(mergedForDisk, 'teamConfig', {})))
+  const valuesForDisk = deps.stripEsoMigratedSecrets(mergedForDisk, secretPaths)
+  await deps.writeValues(valuesForDisk)
   // and do some context dependent post processing:
   // to support potential failing chart install we store secrets on cluster
   if (!(env.isDev && env.DISABLE_SYNC)) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)

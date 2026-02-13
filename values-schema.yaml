@@ -1792,7 +1792,6 @@ properties:
                     type: string
                     x-secret: '{{ randAlphaNum 32 }}'
             required:
-              - secret
               - credentials
           databaseMaxConnections:
             type: number
@@ -2763,7 +2762,6 @@ properties:
         default: sub
     required:
       - clientID
-      - clientSecret
       - issuer
   otomi:
     additionalProperties: false

@@ -10,7 +10,7 @@ analytics:
   allow_sign_up: true
   oauth_auto_login: true
   client_id: {{ .keycloak.clientID }}
-  client_secret: {{ .keycloak.clientSecret | quote }}
+  client_secret: {{ .keycloak.clientSecret | default "" | quote }}
   scopes: email profile openid
   email_attribute_path: email
   login_attribute_path: username

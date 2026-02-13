@@ -2,7 +2,7 @@ import { encryptSecretItem } from '@linode/kubeseal-encrypt'
 import { X509Certificate } from 'crypto'
 import { existsSync } from 'fs'
 import { mkdir, readdir, readFile, writeFile } from 'fs/promises'
-import { get } from 'lodash'
+import { cloneDeep, get, unset } from 'lodash'
 import { pki } from 'node-forge'
 import { join } from 'path'
 import { terminal } from 'src/common/debug'
@@ -11,6 +11,40 @@ import { objectToYaml } from 'src/common/values'
 import { $ } from 'zx'
 
 const cmdName = 'sealed-secrets'
+
+/**
+ * Prefixes whose secrets are fully handled by ESO (ExternalSecrets).
+ * These secrets will be stripped from values files written to disk.
+ */
+export const ESO_MIGRATED_SECRET_PREFIXES = [
+  'apps.gitea',
+  'apps.harbor',
+  'apps.keycloak',
+  'apps.oauth2-proxy',
+  'apps.oauth2-proxy-redis',
+  'otomi',
+  'oidc',
+]
+
+/**
+ * Strip x-secret fields for ESO-migrated app prefixes from values.
+ * Non-ESO-migrated apps keep their secrets as-is.
+ */
+export function stripEsoMigratedSecrets(
+  values: Record<string, any>,
+  secretPaths: string[],
+): Record<string, any> {
+  const result = cloneDeep(values)
+  for (const secretPath of secretPaths) {
+    const isEsoMigrated = ESO_MIGRATED_SECRET_PREFIXES.some(
+      (prefix) => secretPath === prefix || secretPath.startsWith(`${prefix}.`),
+    )
+    if (isEsoMigrated) {
+      unset(result, secretPath)
+    }
+  }
+  return result
+}
 
 /**
  * Ensure a namespace exists. If it doesn't exist, create it with proper labels.

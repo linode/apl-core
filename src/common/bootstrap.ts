@@ -1,9 +1,11 @@
 import { existsSync } from 'fs'
+import { get } from 'lodash'
 import { decrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { getFilename } from 'src/common/utils'
+import { stripEsoMigratedSecrets } from 'src/common/sealed-secrets'
+import { getFilename, getSchemaSecretsPaths } from 'src/common/utils'
 import { getRepo, writeValues } from 'src/common/values'
 import { $, cd } from 'zx'
 
@@ -61,9 +63,12 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     d.info('Remote does not exist yet. Expecting first commit to come later.')
   } finally {
     const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
+    // Strip ESO-migrated secrets before writing to disk
+    const secretPaths = await getSchemaSecretsPaths(Object.keys(get(defaultValues, 'teamConfig', {})))
+    const strippedValues = stripEsoMigratedSecrets(defaultValues, secretPaths)
     // finally write back the new values without overwriting existing values
     d.info('Write default values to env repo')
-    await writeValues(defaultValues)
+    await writeValues(strippedValues)
   }
 
   if (!existsSync(`${env.ENV_DIR}/.git`)) {

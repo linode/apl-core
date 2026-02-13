@@ -306,6 +306,8 @@ describe('Bootstrapping values', () => {
           addInitialPasswords: jest.fn().mockReturnValue(usersWithPasswords),
           addPlatformAdmin: jest.fn().mockReturnValue(usersWithPasswords),
           pathExists: jest.fn().mockReturnValue(true),
+          getSchemaSecretsPaths: jest.fn().mockResolvedValue([]),
+          stripEsoMigratedSecrets: jest.fn().mockImplementation((v) => v),
         }
       })
       describe('Creating CA', () => {
@@ -405,6 +407,25 @@ describe('Bootstrapping values', () => {
           deps.getUsers.mockReturnValue(usersWithPasswords)
           await processValues(deps)
           expect(deps.writeValues).toHaveBeenNthCalledWith(1, writtenValues)
+        })
+        it('should call stripEsoMigratedSecrets before writing values to disk', async () => {
+          deps.loadYaml.mockReturnValue(values)
+          const strippedValues = { stripped: true }
+          deps.stripEsoMigratedSecrets.mockReturnValue(strippedValues)
+          deps.getSchemaSecretsPaths.mockResolvedValue(['apps.gitea.adminPassword', 'apps.harbor.adminPassword'])
+          await processValues(deps)
+          expect(deps.stripEsoMigratedSecrets).toHaveBeenCalledTimes(1)
+          expect(deps.getSchemaSecretsPaths).toHaveBeenCalledTimes(1)
+          expect(deps.writeValues).toHaveBeenCalledWith(strippedValues)
+        })
+        it('should still return full allSecrets for bootstrapSealedSecrets', async () => {
+          deps.loadYaml.mockReturnValue(values)
+          deps.getStoredClusterSecrets.mockReturnValue(secrets)
+          deps.generateSecrets.mockReturnValue(generatedSecrets)
+          deps.createCustomCA.mockReturnValue(ca)
+          const result = await processValues(deps)
+          // allSecrets should contain full unstripped secrets
+          expect(result.allSecrets).toEqual(merge(cloneDeep(ca), cloneDeep(secrets), cloneDeep(generatedSecrets)))
         })
       })
     })
