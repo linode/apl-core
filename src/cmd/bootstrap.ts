@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto'
 import { existsSync } from 'fs'
 import { copyFile, cp, mkdir, readFile, writeFile } from 'fs/promises'
 import { generate as generatePassword } from 'generate-password'
-import { cloneDeep, get, isEmpty, merge, set } from 'lodash'
+import { cloneDeep, get, merge, set } from 'lodash'
 import { pki } from 'node-forge'
 import path from 'path'
 import { bootstrapGit } from 'src/common/bootstrap'
@@ -12,7 +12,14 @@ import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from 'src/common/k8s'
+import {
+  createK8sSecret,
+  createUpdateGenericSecret,
+  getDeploymentState,
+  getK8sSecret,
+  k8s,
+  secretId,
+} from 'src/common/k8s'
 import { getKmsSettings } from 'src/common/repo'
 import { ensureTeamGitOpsDirectories, getFilename, gucci, isCore, loadYaml, rootDir } from 'src/common/utils'
 import { generateSecrets, writeValues } from 'src/common/values'
@@ -44,6 +51,7 @@ export const bootstrapSops = async (
     readFile,
     terminal,
     writeFile,
+    createUpdateGenericSecret,
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:genSops`)
@@ -75,6 +83,13 @@ export const bootstrapSops = async (
     if (privateKey && !process.env.SOPS_AGE_KEY) {
       process.env.SOPS_AGE_KEY = privateKey
       await deps.writeFile(`${envDir}/.secrets`, `SOPS_AGE_KEY=${privateKey}`)
+      try {
+        await deps.createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', 'apl-operator', {
+          SOPS_AGE_KEY: privateKey,
+        })
+      } catch (e) {
+        d.warn('Failed to create or update apl-sops-secrets secret with SOPS_AGE_KEY, this might come later')
+      }
     }
   }
 
