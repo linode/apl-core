@@ -180,6 +180,7 @@ adminApps:
   - name: istio
     tags: [ingress, egress, routing, security, tls, observability, policies]
   - name: keycloak
+    path: /admin/otomi/console
     tags: [auth, sso]
     # isShared: true
     ownHost: true
