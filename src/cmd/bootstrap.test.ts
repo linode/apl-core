@@ -307,7 +307,7 @@ describe('Bootstrapping values', () => {
           addPlatformAdmin: jest.fn().mockReturnValue(usersWithPasswords),
           pathExists: jest.fn().mockReturnValue(true),
           getSchemaSecretsPaths: jest.fn().mockResolvedValue([]),
-          stripEsoMigratedSecrets: jest.fn().mockImplementation((v) => v),
+          stripAllSecrets: jest.fn().mockImplementation((v) => v),
         }
       })
       describe('Creating CA', () => {
@@ -370,7 +370,7 @@ describe('Bootstrapping values', () => {
           expect(deps.generateSecrets).toHaveBeenCalledWith(generatedSecrets)
           expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'otomi', generatedSecrets)
         })
-        it('should only write and return original values', async () => {
+        it('should write only non-secret values to disk and return original values', async () => {
           deps.loadYaml.mockReturnValue({
             cluster: { name: 'bla', provider: 'dida' },
           })
@@ -381,10 +381,9 @@ describe('Bootstrapping values', () => {
           deps.generateSecrets.mockReturnValue({ gen: 'x' })
           deps.createCustomCA.mockReturnValue(ca)
           const res = await processValues(deps)
+          // writeValues should NOT include allSecrets (gen, a) — only originalInput + users
           expect(deps.writeValues).toHaveBeenNthCalledWith(1, {
             cluster: { name: 'bla', provider: 'dida' },
-            a: 'cert',
-            gen: 'x',
             users: [
               { id: 'user1', initialPassword: 'existing-password' },
               { id: 'user2', initialPassword: 'generated-password' },
@@ -395,10 +394,12 @@ describe('Bootstrapping values', () => {
             users: [{ id: 'user1', initialPassword: 'existing-password' }, { id: 'user2' }],
           })
         })
-        it('should merge original with generated values and write them to env dir', async () => {
-          const writtenValues = merge(
+        it('should write only originalInput + users to disk (no secrets)', async () => {
+          // mergedForDisk = merge(originalInput, { users }) — no allSecrets
+          // originalInput = merge(storedSecrets, originalValues)
+          const expectedDiskValues = merge(
+            cloneDeep(secrets),
             cloneDeep(values),
-            cloneDeep(mergedSecretsWithGenAndCa),
             cloneDeep({ users: usersWithPasswords }),
           )
           deps.loadYaml.mockReturnValue({ ...values, users })
@@ -406,13 +407,13 @@ describe('Bootstrapping values', () => {
           deps.generateSecrets.mockReturnValue(generatedSecrets)
           deps.getUsers.mockReturnValue(usersWithPasswords)
           await processValues(deps)
-          expect(deps.writeValues).toHaveBeenNthCalledWith(1, writtenValues)
+          expect(deps.writeValues).toHaveBeenNthCalledWith(1, expectedDiskValues)
         })
-        it('should call stripEsoMigratedSecrets (currently no-op) before writing values to disk', async () => {
+        it('should call stripAllSecrets before writing values to disk', async () => {
           deps.loadYaml.mockReturnValue(values)
           deps.getSchemaSecretsPaths.mockResolvedValue(['apps.gitea.adminPassword', 'apps.harbor.adminPassword'])
           await processValues(deps)
-          expect(deps.stripEsoMigratedSecrets).toHaveBeenCalledTimes(1)
+          expect(deps.stripAllSecrets).toHaveBeenCalledTimes(1)
           expect(deps.getSchemaSecretsPaths).toHaveBeenCalledTimes(1)
         })
         it('should still return full allSecrets for bootstrapSealedSecrets', async () => {

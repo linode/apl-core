@@ -31,13 +31,9 @@ resources:
           data:
             type: {{ print "git" | b64enc | quote }}
             url: {{ printf "https://%s" $v._derived.giteaDomain | b64enc }}
-            username: '{{ "{{ .adminUsername | b64enc }}" }}'
+            username: {{ $g.adminUsername | b64enc }}
             password: '{{ "{{ .adminPassword | b64enc }}" }}'
       data:
-        - secretKey: adminUsername
-          remoteRef:
-            key: gitea-secrets
-            property: adminUsername
         - secretKey: adminPassword
           remoteRef:
             key: gitea-secrets
@@ -63,13 +59,9 @@ resources:
           data:
             type: {{ print "git" | b64enc | quote }}
             url: {{ "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git" | b64enc | quote }}
-            username: '{{ "{{ .adminUsername | b64enc }}" }}'
+            username: {{ $g.adminUsername | b64enc }}
             password: '{{ "{{ .adminPassword | b64enc }}" }}'
       data:
-        - secretKey: adminUsername
-          remoteRef:
-            key: gitea-secrets
-            property: adminUsername
         - secretKey: adminPassword
           remoteRef:
             key: gitea-secrets

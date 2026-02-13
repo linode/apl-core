@@ -1,0 +1,26 @@
+{{- $v := .Values }}
+{{- $g := $v.apps.gitea }}
+
+resources:
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
+  metadata:
+    name: gitea-credentials
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: gitea-credentials
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          GIT_USERNAME: {{ $g.adminUsername | b64enc }}
+          GIT_PASSWORD: '{{ "{{ .adminPassword | b64enc }}" }}'
+    data:
+      - secretKey: adminPassword
+        remoteRef:
+          key: gitea-secrets
+          property: adminPassword

@@ -4,24 +4,73 @@
 {{- $obj := $v.obj.provider }}
 {{- if $v.otomi.isMultitenant }}
 resources:
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
       labels:
         app: loki
       name: reverse-proxy-auth-config
-    data:
-      authn.yaml: {{ tpl (readFile "auth-config.gotmpl") (dict "adminPassword" $l.adminPassword "teams" $v.teamConfig) | b64enc }}
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: reverse-proxy-auth-config
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            authn.yaml: |
+              {{ "{{ " }}$adminPassword := .adminPassword{{ " }}" }}
+              users:
+                - username: otomi-admin
+                  password: {{ "\"{{ $adminPassword }}\"" }}
+                  orgid: admins
+              {{- range $id, $team := $v.teamConfig }}
+                - username: {{ $id }}
+                  password: {{ printf "\"{{ .team_%s_password }}\"" $id }}
+                  orgid: {{ $id }}
+              {{- end }}
+      data:
+        - secretKey: adminPassword
+          remoteRef:
+            key: loki-secrets
+            property: adminPassword
+        {{- range $id, $team := $v.teamConfig }}
+        - secretKey: team_{{ $id }}_password
+          remoteRef:
+            key: team-{{ $id }}-settings-secrets
+            property: password
+        {{- end }}
   {{- if eq $obj.type "linode" }}
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
       labels:
         app: loki
       name: loki-s3-linode-credentials
-    type: Opaque
-    data:
-      AWS_ACCESS_KEY_ID: "{{ $obj.linode.accessKeyId | b64enc }}"
-      AWS_SECRET_ACCESS_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: loki-s3-linode-credentials
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            AWS_ACCESS_KEY_ID: '{{ "{{ .accessKeyId | b64enc }}" }}'
+            AWS_SECRET_ACCESS_KEY: '{{ "{{ .secretAccessKey | b64enc }}" }}'
+      data:
+        - secretKey: accessKeyId
+          remoteRef:
+            key: obj-storage-secrets
+            property: linode_accessKeyId
+        - secretKey: secretAccessKey
+          remoteRef:
+            key: obj-storage-secrets
+            property: linode_secretAccessKey
   {{- end }}
   {{- end }}

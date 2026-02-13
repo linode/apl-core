@@ -63,7 +63,7 @@ gitea:
       HELO_HOSTNAME: {{ .hello }}
       FROM: {{ .from }}
       USER: {{ .auth_username }}
-      PASSWD: {{ .auth_password | quote }}
+      PASSWD: placeholder-overridden-by-env
       MAILER_TYPE: smtp
       IS_TLS_ENABLED: true
       SUBJECT_PREFIX: 'Otomi[Gitea]: '
@@ -125,6 +125,13 @@ gitea:
         secretKeyRef:
           name: gitea-db-secret
           key: password
+    {{- with $v | get "smtp" nil }}
+    - name: GITEA__MAILER__PASSWD
+      valueFrom:
+        secretKeyRef:
+          name: gitea-smtp-secret
+          key: password
+    {{- end }}
     - name: GITEA__DATABASE__MAX_OPEN_CONNS
       value: {{ $g.databaseMaxConnections | quote }}
     - name: GITEA__DATABASE__MAX_IDLE_CONNS

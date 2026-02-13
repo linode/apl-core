@@ -87,7 +87,6 @@ affinity: {}
 secrets:
   GIT_USER:
   GIT_EMAIL:
-  GIT_PASSWORD:
 
 env:
   GIT_REPO_URL:

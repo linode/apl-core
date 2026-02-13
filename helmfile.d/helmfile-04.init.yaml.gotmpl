@@ -25,6 +25,12 @@ releases:
     labels:
       pkg: apl-operator
     <<: *default
+  - name: apl-operator-artifacts
+    installed: true
+    namespace: apl-operator
+    labels:
+      pkg: apl-operator
+    <<: *raw
   - name: otomi-operator
     installed: true
     namespace: otomi-operator

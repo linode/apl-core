@@ -12,9 +12,7 @@
 {{- $alertmanagerDomain := printf "alertmanager.%s" $domain }}
 {{- $prometheusDomain := printf "prometheus.%s" $domain }}
 {{- $grafanaDomain := printf "grafana.%s" $domain }}
-{{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
-{{- $opsgenieTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
-{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrl "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
+{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrl "untrustedCA" $v._derived.untrustedCA "keycloak" (dict "clientID" ($k | get "idp.clientID" "otomi"))) | toString }}
 {{- $hasServices := false }}
 {{- range $teamId, $team := $v.teamConfig }}
   {{- if gt (len ($team | get "services" list)) 0 }}{{ $hasServices = true }}{{ end }}
@@ -199,7 +197,8 @@ alertmanager:
     priorityClassName: otomi-critical
     resources: {{- $a.resources.alertmanager | toYaml | nindent 6 }}
     externalUrl: https://{{ $alertmanagerDomain }}
-  config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
+    useExistingSecret: true
+    configSecret: alertmanager-platform-config
 grafana:
   enabled: {{ $g.enabled }}
   defaultDashboardsEnabled: false
@@ -248,11 +247,25 @@ grafana:
       {{- end }}
       basicAuth: true
       basicAuthUser: otomi-admin
-      secureJsonData:
-        basicAuthPassword: {{ $v.apps.loki.adminPassword | quote }}
     {{- end }}
   {{- end }}
-  adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword | quote }}
+  admin:
+    existingSecret: grafana-admin-secret
+    userKey: admin-user
+    passwordKey: admin-password
+  envValueFrom:
+    GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
+      secretKeyRef:
+        name: grafana-oidc-secret
+        key: client_id
+    GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
+      secretKeyRef:
+        name: grafana-oidc-secret
+        key: client_secret
+    GF_LOKI_BASIC_AUTH_PASSWORD:
+      secretKeyRef:
+        name: grafana-loki-datasource-secret
+        key: password
   grafana.ini: {{- $grafanaIni | nindent 4 }}
     server:
       root_url: https://{{ $grafanaDomain }}

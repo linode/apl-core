@@ -4,9 +4,9 @@ import { prepareEnvironment } from 'src/common/cli'
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { hfValues } from 'src/common/hf'
 import { waitTillGitRepoAvailable } from 'src/common/gitea'
-import { createUpdateConfigMap, createUpdateGenericSecret, k8s } from 'src/common/k8s'
+import { hfValues } from 'src/common/hf'
+import { createUpdateConfigMap, createUpdateGenericSecret, getK8sSecret, k8s } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
 import { HelmArguments, setParsedArgs } from 'src/common/yargs'
@@ -163,23 +163,25 @@ export async function initialSetupData(): Promise<InitialData> {
   const values = (await hfValues()) as Record<string, any>
   const { domainSuffix } = values.cluster
   const { hasExternalIDP } = values.otomi
-
-  const defaultPlatformAdminEmail = `platform-admin@${domainSuffix}`
-  const platformAdmin = values.users.find((user: any) => user.email === defaultPlatformAdminEmail)
   const secretName = hasExternalIDP ? 'root-credentials' : 'platform-admin-initial-credentials'
 
-  if (platformAdmin && !hasExternalIDP) {
+  // Read credentials from K8s secrets (SealedSecrets-decrypted)
+  const otomiSecret = await getK8sSecret('otomi-platform-secrets', 'sealed-secrets')
+  const adminPassword = otomiSecret?.adminPassword ? String(otomiSecret.adminPassword) : ''
+
+  if (!hasExternalIDP) {
     return {
       domainSuffix,
-      username: platformAdmin.email,
-      password: platformAdmin.initialPassword,
+      username: `platform-admin@${domainSuffix}`,
+      password: adminPassword,
       secretName,
     }
   } else {
+    const keycloakSecret = await getK8sSecret('keycloak-secrets', 'sealed-secrets')
     return {
       domainSuffix,
-      username: values.apps.keycloak.adminUsername,
-      password: values.apps.keycloak.adminPassword,
+      username: keycloakSecret?.adminUsername ? String(keycloakSecret.adminUsername) : 'otomi-admin',
+      password: keycloakSecret?.adminPassword ? String(keycloakSecret.adminPassword) : adminPassword,
       secretName,
     }
   }

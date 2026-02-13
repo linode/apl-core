@@ -14,7 +14,7 @@ import { env, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from 'src/common/k8s'
 import { getKmsSettings } from 'src/common/repo'
-import { bootstrapSealedSecrets, stripEsoMigratedSecrets } from 'src/common/sealed-secrets'
+import { bootstrapSealedSecrets, stripAllSecrets } from 'src/common/sealed-secrets'
 import {
   ensureTeamGitOpsDirectories,
   getFilename,
@@ -295,7 +295,7 @@ export const processValues = async (
     addInitialPasswords,
     addPlatformAdmin,
     getSchemaSecretsPaths,
-    stripEsoMigratedSecrets,
+    stripAllSecrets,
   },
 ): Promise<{ originalInput: Record<string, any>; allSecrets: Record<string, any> }> => {
   const d = deps.terminal(`cmd:${cmdName}:processValues`)
@@ -325,10 +325,10 @@ export const processValues = async (
   )
   // add default platform admin & generate initial passwords for users if they don't have one
   const users = deps.getUsers(originalInput)
-  // we have generated all we need, now store everything by merging the original values over all the secrets
-  const mergedForDisk = merge(cloneDeep(allSecrets), cloneDeep(originalInput), cloneDeep({ users }))
+  // Write only non-secret values to disk — secrets are stored exclusively in SealedSecrets
+  const mergedForDisk = merge(cloneDeep(originalInput), cloneDeep({ users }))
   const secretPaths = await deps.getSchemaSecretsPaths(Object.keys(get(mergedForDisk, 'teamConfig', {})))
-  const valuesForDisk = deps.stripEsoMigratedSecrets(mergedForDisk, secretPaths)
+  const valuesForDisk = deps.stripAllSecrets(mergedForDisk, secretPaths)
   await deps.writeValues(valuesForDisk)
   // and do some context dependent post processing:
   // to support potential failing chart install we store secrets on cluster

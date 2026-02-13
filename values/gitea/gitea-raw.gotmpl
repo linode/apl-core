@@ -23,13 +23,55 @@ resources:
 {{- end }}
 # DB / app backup resources
 {{- if eq $obj.type "linode" }}
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: linode-creds
-  data:
-    S3_STORAGE_ACCOUNT: "{{ $obj.linode.accessKeyId | b64enc }}"
-    S3_STORAGE_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: linode-creds
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          S3_STORAGE_ACCOUNT: '{{ "{{ .accessKeyId | b64enc }}" }}'
+          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey | b64enc }}" }}'
+    data:
+      - secretKey: accessKeyId
+        remoteRef:
+          key: obj-storage-secrets
+          property: linode_accessKeyId
+      - secretKey: secretAccessKey
+        remoteRef:
+          key: obj-storage-secrets
+          property: linode_secretAccessKey
+{{- end }}
+{{- with $v | get "smtp" nil }}
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
+  metadata:
+    name: gitea-smtp-secret
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: gitea-smtp-secret
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          password: '{{ "{{ .authPassword }}" }}'
+    data:
+      - secretKey: authPassword
+        remoteRef:
+          key: smtp-secrets
+          property: auth_password
 {{- end }}
 {{- if ne $v.cluster.provider "custom" }}
 # Application backup resources

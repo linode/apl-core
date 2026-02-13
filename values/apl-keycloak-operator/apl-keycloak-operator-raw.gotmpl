@@ -48,7 +48,7 @@ resources:
         template:
           type: Opaque
           data:
-            KEYCLOAK_ADMIN: '{{ "{{ .adminUsername | b64enc }}" }}'
+            KEYCLOAK_ADMIN: {{ $k.adminUsername | b64enc }}
             KEYCLOAK_ADMIN_PASSWORD: '{{ "{{ .adminPassword | b64enc }}" }}'
             KEYCLOAK_CLIENT_SECRET: '{{ "{{ .idpClientSecret | b64enc }}" }}'
             USERS: {{ $users | b64enc }}
@@ -57,10 +57,6 @@ resources:
             IDP_CLIENT_SECRET: '{{ "{{ .oidcClientSecret | b64enc }}" }}'
             {{- end }}
       data:
-        - secretKey: adminUsername
-          remoteRef:
-            key: keycloak-secrets
-            property: adminUsername
         - secretKey: adminPassword
           remoteRef:
             key: otomi-platform-secrets

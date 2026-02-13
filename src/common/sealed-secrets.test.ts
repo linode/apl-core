@@ -9,7 +9,7 @@ import {
   generateSealedSecretsKeyPair,
   getPemFromCertificate,
   SECRET_NAME_MAP,
-  stripEsoMigratedSecrets,
+  stripAllSecrets,
   writeSealedSecretManifests,
 } from './sealed-secrets'
 
@@ -248,7 +248,7 @@ describe('sealed-secrets', () => {
 
       expect(result).toHaveLength(1)
       expect(result[0].namespace).toBe('sealed-secrets')
-      expect(result[0].secretName).toBe('team-settings-secrets')
+      expect(result[0].secretName).toBe('team-team-alpha-settings-secrets')
     })
 
     it('should filter out mappings with no data', async () => {
@@ -528,8 +528,8 @@ describe('sealed-secrets', () => {
     })
   })
 
-  describe('stripEsoMigratedSecrets', () => {
-    it('should be a no-op that returns values unchanged (stripping disabled until gotmpl migration)', () => {
+  describe('stripAllSecrets', () => {
+    it('should remove all secret paths from values', () => {
       const values = {
         apps: {
           gitea: { adminPassword: 'secret', postgresqlPassword: 'pg-secret', resources: { cpu: '100m' } },
@@ -538,13 +538,27 @@ describe('sealed-secrets', () => {
       }
       const secretPaths = ['apps.gitea.adminPassword', 'apps.gitea.postgresqlPassword', 'oidc.clientSecret']
 
-      const result = stripEsoMigratedSecrets(values, secretPaths)
+      const result = stripAllSecrets(values, secretPaths)
 
-      // All values should be preserved (stripping disabled)
-      expect(result.apps.gitea.adminPassword).toBe('secret')
-      expect(result.apps.gitea.postgresqlPassword).toBe('pg-secret')
-      expect(result.oidc.clientSecret).toBe('my-secret')
+      // Secret values should be removed
+      expect(result.apps.gitea.adminPassword).toBeUndefined()
+      expect(result.apps.gitea.postgresqlPassword).toBeUndefined()
+      expect(result.oidc.clientSecret).toBeUndefined()
+      // Non-secret values should be preserved
       expect(result.apps.gitea.resources).toEqual({ cpu: '100m' })
+      expect(result.oidc.clientID).toBe('otomi')
+      expect(result.oidc.issuer).toBe('https://example.com')
+    })
+
+    it('should not modify the original values object', () => {
+      const values = {
+        apps: { gitea: { adminPassword: 'secret' } },
+      }
+      const secretPaths = ['apps.gitea.adminPassword']
+
+      stripAllSecrets(values, secretPaths)
+
+      expect(values.apps.gitea.adminPassword).toBe('secret')
     })
   })
 })

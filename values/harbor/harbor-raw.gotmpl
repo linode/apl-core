@@ -33,58 +33,209 @@ resources:
     issuerRef:
       name: custom-ca
       kind: ClusterIssuer
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: harbor-admin-password
-  data:
-    HARBOR_ADMIN_PASSWORD: "{{ $h.adminPassword | b64enc }}"
-- apiVersion: v1
-  kind: Secret
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: harbor-admin-password
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          HARBOR_ADMIN_PASSWORD: '{{ "{{ .adminPassword | b64enc }}" }}'
+    data:
+      - secretKey: adminPassword
+        remoteRef:
+          key: harbor-secrets
+          property: adminPassword
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: harbor-registry-credentials
-  data:
-    REGISTRY_PASSWD: "{{ $h.registry.credentials.password | b64enc }}"
-    REGISTRY_HTPASSWD: "{{ $h.registry.credentials.htpasswd | b64enc }}"
-{{- if ne $h.secretKey nil }}
-- apiVersion: v1
-  kind: Secret
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: harbor-registry-credentials
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          REGISTRY_PASSWD: '{{ "{{ .password | b64enc }}" }}'
+          REGISTRY_HTPASSWD: '{{ "{{ .htpasswd | b64enc }}" }}'
+    data:
+      - secretKey: password
+        remoteRef:
+          key: harbor-secrets
+          property: registry_credentials_password
+      - secretKey: htpasswd
+        remoteRef:
+          key: harbor-secrets
+          property: registry_credentials_htpasswd
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: harbor-secret-key
-  data:
-    secretKey: "{{ $h.secretKey | b64enc }}"
-- apiVersion: v1
-  kind: Secret
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: harbor-secret-key
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          secretKey: '{{ "{{ .secretKey | b64enc }}" }}'
+    data:
+      - secretKey: secretKey
+        remoteRef:
+          key: harbor-secrets
+          property: secretKey
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: harbor-core-secret
-  data:
-    secret: "{{ $h.core.secret | b64enc }}"
-{{- end }}
-- apiVersion: v1
-  kind: Secret
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: harbor-core-secret
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          secret: '{{ "{{ .coreSecret | b64enc }}" }}'
+    data:
+      - secretKey: coreSecret
+        remoteRef:
+          key: harbor-secrets
+          property: core_secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
+  metadata:
+    name: harbor-core-xsrf-secret
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: harbor-core-xsrf-secret
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          CSRF_KEY: '{{ "{{ .xsrfKey | b64enc }}" }}'
+    data:
+      - secretKey: xsrfKey
+        remoteRef:
+          key: harbor-secrets
+          property: core_xsrfKey
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: harbor-jobservice-secret
-  data:
-    JOBSERVICE_SECRET: "{{ $h.jobservice.secret | default "" | b64enc }}"
-- apiVersion: v1
-  kind: Secret
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: harbor-jobservice-secret
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          JOBSERVICE_SECRET: '{{ "{{ .jobserviceSecret | b64enc }}" }}'
+    data:
+      - secretKey: jobserviceSecret
+        remoteRef:
+          key: harbor-secrets
+          property: jobservice_secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: harbor-registry-http
-  data:
-    REGISTRY_HTTP_SECRET: "{{ $h.registry.secret | default "" | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: harbor-registry-http
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          REGISTRY_HTTP_SECRET: '{{ "{{ .registrySecret | b64enc }}" }}'
+    data:
+      - secretKey: registrySecret
+        remoteRef:
+          key: harbor-secrets
+          property: registry_secret
 {{- if eq $obj.type "linode" }}
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: linode-creds
-  data:
-    S3_STORAGE_ACCOUNT: "{{ $obj.linode.accessKeyId | b64enc }}"
-    S3_STORAGE_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
-- apiVersion: v1
-  kind: Secret
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: linode-creds
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          S3_STORAGE_ACCOUNT: '{{ "{{ .accessKeyId | b64enc }}" }}'
+          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey | b64enc }}" }}'
+    data:
+      - secretKey: accessKeyId
+        remoteRef:
+          key: obj-storage-secrets
+          property: linode_accessKeyId
+      - secretKey: secretAccessKey
+        remoteRef:
+          key: obj-storage-secrets
+          property: linode_secretAccessKey
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: registry-storage-credentials
-  data:
-    REGISTRY_STORAGE_S3_ACCESSKEY: "{{ $obj.linode.accessKeyId | b64enc }}"
-    REGISTRY_STORAGE_S3_SECRETKEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: registry-storage-credentials
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          REGISTRY_STORAGE_S3_ACCESSKEY: '{{ "{{ .accessKeyId | b64enc }}" }}'
+          REGISTRY_STORAGE_S3_SECRETKEY: '{{ "{{ .secretAccessKey | b64enc }}" }}'
+    data:
+      - secretKey: accessKeyId
+        remoteRef:
+          key: obj-storage-secrets
+          property: linode_accessKeyId
+      - secretKey: secretAccessKey
+        remoteRef:
+          key: obj-storage-secrets
+          property: linode_secretAccessKey
 {{- end }}

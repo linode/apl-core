@@ -2,7 +2,7 @@ import { encryptSecretItem } from '@linode/kubeseal-encrypt'
 import { X509Certificate } from 'crypto'
 import { existsSync } from 'fs'
 import { mkdir, readdir, readFile, writeFile } from 'fs/promises'
-import { get } from 'lodash'
+import { cloneDeep, get, unset } from 'lodash'
 import { pki } from 'node-forge'
 import { join } from 'path'
 import { terminal } from 'src/common/debug'
@@ -13,32 +13,16 @@ import { $ } from 'zx'
 const cmdName = 'sealed-secrets'
 
 /**
- * Prefixes whose secrets are fully handled by ESO (ExternalSecrets).
- * NOTE: Stripping is currently disabled because helmfile gotmpl templates
- * still directly reference these secret values during rendering (e.g.,
- * derived.gotmpl uses $v.otomi.adminPassword as a fallback, grafana.gotmpl
- * uses keycloak.idp.clientSecret, etc.). Stripping can be re-enabled once
- * all gotmpl templates are migrated to not reference secret values directly.
+ * Strip ALL x-secret fields from values before writing to disk.
+ * Secrets are stored exclusively in SealedSecrets and delivered to apps via ExternalSecrets.
+ * The values repo contains zero secret values.
  */
-export const ESO_MIGRATED_SECRET_PREFIXES = [
-  'apps.gitea',
-  'apps.harbor',
-  'apps.keycloak',
-  'apps.oauth2-proxy',
-  'apps.oauth2-proxy-redis',
-  'otomi',
-  'oidc',
-]
-
-/**
- * Strip x-secret fields for ESO-migrated app prefixes from values.
- * Non-ESO-migrated apps keep their secrets as-is.
- *
- * Currently a no-op: secrets must remain on disk because helmfile gotmpl
- * templates reference them directly during rendering.
- */
-export function stripEsoMigratedSecrets(values: Record<string, any>, _secretPaths: string[]): Record<string, any> {
-  return values
+export function stripAllSecrets(values: Record<string, any>, secretPaths: string[]): Record<string, any> {
+  const stripped = cloneDeep(values)
+  for (const secretPath of secretPaths) {
+    unset(stripped, secretPath)
+  }
+  return stripped
 }
 
 /**
@@ -332,7 +316,7 @@ const findGroupPrefix = (secretPath: string): string | undefined => {
 const deriveSecretName = (secretPath: string): string => {
   const teamMatch = secretPath.match(/^teamConfig\.([^.]+)/)
   if (teamMatch) {
-    return 'team-settings-secrets'
+    return `team-${teamMatch[1]}-settings-secrets`
   }
 
   const sortedKeys = Object.keys(SECRET_NAME_MAP).sort((a, b) => b.length - a.length)

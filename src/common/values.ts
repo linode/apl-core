@@ -80,8 +80,8 @@ export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret
       const secret = await deps.getK8sSecret('gitea-secrets', 'sealed-secrets')
       password = secret?.adminPassword ? String(secret.adminPassword) : ''
     } catch {
-      d.warn('Could not read gitea-secrets from sealed-secrets namespace, falling back to values')
-      password = String(values?.apps?.gitea?.adminPassword ?? '')
+      d.warn('Could not read gitea-secrets from sealed-secrets namespace, password will be empty')
+      password = ''
     }
     email = `pipeline@cluster.local`
     const gitUrl = env.GIT_URL

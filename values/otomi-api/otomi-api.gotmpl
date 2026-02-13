@@ -38,7 +38,7 @@ tools:
 secrets:
   GIT_USER: otomi-admin
   GIT_EMAIL: not@us.ed
-  GIT_PASSWORD: {{ $g.adminPassword | quote}}
+existingSecret: otomi-api-git-credentials
 
 env:
   DEFAULT_PLATFORM_ADMIN_EMAIL: {{ $defaultPlatformAdminEmail }}

@@ -24,6 +24,8 @@ releases:
   {{- $prometheusDomain := printf "prometheus-%s.%s" $teamId $domain }}
   {{- $grafanaDomain := printf "grafana-%s.%s" $teamId $domain }}
   {{- $teamApps := index $tc $teamId "apps" | default dict }}
+  {{- $teamReceivers := $teamSettings | get "alerts.receivers" ($v | get "alerts.receivers" (list "slack")) }}
+  {{- $teamAlertmanagerConfig := tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $teamSettings "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | toString }}
   - name: tekton-dashboard-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -61,8 +63,8 @@ releases:
                 prometheus: system
             resources:
               {{- $teamApps.alertmanager.resources | toYaml | nindent 14 }}
-          # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
-          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $teamSettings "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
+            useExistingSecret: true
+            configSecret: alertmanager-team-{{ $teamId }}-config
         defaultRules:
           rules:
             general: false
@@ -73,7 +75,10 @@ releases:
           prometheusSpec: {}
         grafana:
           enabled: {{ $teamSettings | get "managedMonitoring.grafana" false }}
-          adminPassword: {{ $teamSettings.password | quote }}
+          admin:
+            existingSecret: team-{{ $teamId }}-grafana-admin
+            userKey: admin-user
+            passwordKey: admin-password
           resources:
             {{- $teamApps.grafana.resources.grafana | toYaml | nindent 12 }}
           namespaceOverride: null # team-{{ $teamId }}
@@ -116,8 +121,6 @@ releases:
               url: http://loki-query-frontend-headless.monitoring:3101
               basicAuth: true
               basicAuthUser: {{ $teamId }}
-              secureJsonData:
-                basicAuthPassword: {{ $teamSettings.password | quote }}
     {{- if has "msteams" ($teamSettings | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
     installed: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}
@@ -166,4 +169,78 @@ releases:
       pipeline: otomi-task-teams
     values:
       - ../values/team-ns/team-ns.gotmpl
+  - name: team-secrets-{{ $teamId }}
+    installed: true
+    namespace: team-{{ $teamId }}
+    chart: ../charts/raw
+    labels:
+      tag: teams
+      team: {{ $teamId }}
+      pipeline: otomi-task-teams
+    values:
+      - resources:
+        - apiVersion: external-secrets.io/v1beta1
+          kind: ExternalSecret
+          metadata:
+            name: team-{{ $teamId }}-grafana-admin
+            namespace: team-{{ $teamId }}
+          spec:
+            refreshInterval: 1h
+            secretStoreRef:
+              name: core-secrets-store
+              kind: ClusterSecretStore
+            target:
+              name: team-{{ $teamId }}-grafana-admin
+              creationPolicy: Owner
+              template:
+                type: Opaque
+                data:
+                  admin-user: '{{ "{{ .teamId | b64enc }}" }}'
+                  admin-password: '{{ "{{ .password | b64enc }}" }}'
+            data:
+              - secretKey: teamId
+                remoteRef:
+                  key: team-{{ $teamId }}-settings-secrets
+                  property: id
+              - secretKey: password
+                remoteRef:
+                  key: team-{{ $teamId }}-settings-secrets
+                  property: password
+        {{- if $teamSettings | get "managedMonitoring.alertmanager" false }}
+        - apiVersion: external-secrets.io/v1beta1
+          kind: ExternalSecret
+          metadata:
+            name: alertmanager-team-{{ $teamId }}-config
+            namespace: team-{{ $teamId }}
+          spec:
+            refreshInterval: 1h
+            secretStoreRef:
+              name: core-secrets-store
+              kind: ClusterSecretStore
+            target:
+              name: alertmanager-team-{{ $teamId }}-config
+              creationPolicy: Owner
+              template:
+                type: Opaque
+                data:
+                  alertmanager.yaml: |
+                    {{- $teamAlertmanagerConfig | nindent 20 }}
+            data:
+              {{- if has "slack" $teamReceivers }}
+              - secretKey: slackUrl
+                remoteRef:
+                  key: alerts-secrets
+                  property: slack_url
+              {{- end }}
+              {{- if has "email" $teamReceivers }}
+              - secretKey: smtpAuthPassword
+                remoteRef:
+                  key: smtp-secrets
+                  property: auth_password
+              - secretKey: smtpAuthSecret
+                remoteRef:
+                  key: smtp-secrets
+                  property: auth_secret
+              {{- end }}
+        {{- end }}
 {{- end }}

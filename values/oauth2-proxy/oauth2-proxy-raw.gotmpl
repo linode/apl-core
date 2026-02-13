@@ -10,6 +10,27 @@ resources:
   - apiVersion: external-secrets.io/v1beta1
     kind: ExternalSecret
     metadata:
+      name: oauth2-proxy-redis-password
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: oauth2-proxy-redis-password
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            password: '{{ "{{ .password | b64enc }}" }}'
+      data:
+        - secretKey: password
+          remoteRef:
+            key: oauth2-proxy-redis-secrets
+            property: password
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
       name: oauth2-proxy-client-access
     spec:
       refreshInterval: 1h

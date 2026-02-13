@@ -3,103 +3,242 @@
 
 {{- with $d.provider | get "akamai" nil }}
 resources:
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: akamai-dns
-  data:
-    EXTERNAL_DNS_AKAMAI_CLIENT_SECRET: "{{.clientSecret | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: akamai-dns
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          EXTERNAL_DNS_AKAMAI_CLIENT_SECRET: '{{ "{{ .clientSecret | b64enc }}" }}'
+    data:
+      - secretKey: clientSecret
+        remoteRef:
+          key: dns-secrets
+          property: akamai_clientSecret
 {{- end }}
 
 {{- with $d.provider | get "linode" nil }}
 resources:
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: linode-dns-api-token
-  data:
-    LINODE_TOKEN: "{{ .apiToken | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: linode-dns-api-token
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          LINODE_TOKEN: '{{ "{{ .apiToken | b64enc }}" }}'
+    data:
+      - secretKey: apiToken
+        remoteRef:
+          key: dns-secrets
+          property: linode_apiToken
 {{- end }}
 
 {{- with $d.provider | get "digitalocean" nil }}
 resources:
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: do-token
-  data:
-    DO_TOKEN: "{{ .apiToken | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: do-token
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          DO_TOKEN: '{{ "{{ .apiToken | b64enc }}" }}'
+    data:
+      - secretKey: apiToken
+        remoteRef:
+          key: dns-secrets
+          property: digitalocean_apiToken
 {{- end }}
 
 {{- with $d.provider | get "cloudflare" nil }}
   {{- with .apiToken  }}
 resources:
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: cloudflare-api-key
-  data:
-    CF_API_TOKEN: "{{ . | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: cloudflare-api-key
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          CF_API_TOKEN: '{{ "{{ .apiToken | b64enc }}" }}'
+    data:
+      - secretKey: apiToken
+        remoteRef:
+          key: dns-secrets
+          property: cloudflare_apiToken
   {{- end }}
   {{- with .apiSecret }}
 resources:
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: cloudflare-api-key
-  data:
-    CF_API_KEY: "{{ . | b64enc }}"
-    CF_API_EMAIL: "{{ $d.provider.cloudflare.email | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: cloudflare-api-key
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          CF_API_KEY: '{{ "{{ .apiSecret | b64enc }}" }}'
+          CF_API_EMAIL: {{ $d.provider.cloudflare.email | b64enc | quote }}
+    data:
+      - secretKey: apiSecret
+        remoteRef:
+          key: dns-secrets
+          property: cloudflare_apiSecret
   {{- end }}
 {{- end }}
 
 {{- with $d.provider | get "aws" nil }}
   {{- with .credentials }}
 resources:
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: aws-dns-credentials
-  data:
-    AWS_ACCESS_KEY_ID: "{{ .accessKey | b64enc }}"
-    AWS_SECRET_ACCESS_KEY: "{{ .secretKey | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: aws-dns-credentials
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          AWS_ACCESS_KEY_ID: '{{ "{{ .accessKey | b64enc }}" }}'
+          AWS_SECRET_ACCESS_KEY: '{{ "{{ .secretKey | b64enc }}" }}'
+    data:
+      - secretKey: accessKey
+        remoteRef:
+          key: dns-secrets
+          property: aws_credentials_accessKey
+      - secretKey: secretKey
+        remoteRef:
+          key: dns-secrets
+          property: aws_credentials_secretKey
   {{- end }}
 {{- end }}
 
 {{- with $d.provider | get "azure" nil }}
 resources:
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: azure-dns
-  data:
-    AZURE_TENANT_ID: "{{ .tenantId | b64enc }}"
-    AZURE_SUBSCRIPTION_ID: "{{ .subscriptionId | b64enc }}"
-    AZURE_RESOURCE_GROUP: "{{ .resourceGroup | b64enc }}"
-    AZURE_CLIENT_ID: "{{ .aadClientId | b64enc }}"
-    AZURE_CLIENT_SECRET: "{{ .aadClientSecret | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: azure-dns
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          AZURE_TENANT_ID: {{ .tenantId | b64enc | quote }}
+          AZURE_SUBSCRIPTION_ID: {{ .subscriptionId | b64enc | quote }}
+          AZURE_RESOURCE_GROUP: {{ .resourceGroup | b64enc | quote }}
+          AZURE_CLIENT_ID: {{ .aadClientId | b64enc | quote }}
+          AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret | b64enc }}" }}'
+    data:
+      - secretKey: aadClientSecret
+        remoteRef:
+          key: dns-secrets
+          property: azure_aadClientSecret
 {{- end }}
 
 {{- with $d.provider | get "azure-private-dns" nil }}
 resources:
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: azure-private-dns
-  data:
-    AZURE_TENANT_ID: "{{ .tenantId | b64enc }}"
-    AZURE_SUBSCRIPTION_ID: "{{ .subscriptionId | b64enc }}"
-    AZURE_RESOURCE_GROUP: "{{ .resourceGroup | b64enc }}"
-    AZURE_CLIENT_ID: "{{ .aadClientId | b64enc }}"
-    AZURE_CLIENT_SECRET: "{{ .aadClientSecret | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: azure-private-dns
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          AZURE_TENANT_ID: {{ .tenantId | b64enc | quote }}
+          AZURE_SUBSCRIPTION_ID: {{ .subscriptionId | b64enc | quote }}
+          AZURE_RESOURCE_GROUP: {{ .resourceGroup | b64enc | quote }}
+          AZURE_CLIENT_ID: {{ .aadClientId | b64enc | quote }}
+          AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret | b64enc }}" }}'
+    data:
+      - secretKey: aadClientSecret
+        remoteRef:
+          key: dns-secrets
+          property: azure-private-dns_aadClientSecret
 {{- end }}
 
 {{- with $d.provider | get "google" nil }}
 resources:
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: google-dns
-  data:
-    GOOGLE_APPLICATION_CREDENTIALS: "{{ .serviceAccountKey | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: google-dns
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          GOOGLE_APPLICATION_CREDENTIALS: '{{ "{{ .serviceAccountKey | b64enc }}" }}'
+    data:
+      - secretKey: serviceAccountKey
+        remoteRef:
+          key: dns-secrets
+          property: google_serviceAccountKey
 {{- end }}

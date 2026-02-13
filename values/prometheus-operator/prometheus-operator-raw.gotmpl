@@ -1,17 +1,148 @@
 {{- $v := .Values }}
 {{- $p := $v.apps | get "prometheus" }}
+{{- $a := $v.apps | get "alertmanager" }}
 {{- $obj := $v.obj.provider }}
-{{- if or ($p | get "remoteWrite.rwConfig.basicAuth.enabled" false) }}
+{{- $receivers := $v | get "alerts.receivers" (list "slack") }}
+{{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
+{{- $opsgenieTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
+{{- $alertmanagerConfig := tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | toString }}
 resources:
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: grafana-admin-secret
+      namespace: monitoring
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: grafana-admin-secret
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            admin-user: {{ "otomi-admin" | b64enc }}
+            admin-password: '{{ "{{ .adminPassword | b64enc }}" }}'
+      data:
+        - secretKey: adminPassword
+          remoteRef:
+            key: otomi-platform-secrets
+            property: adminPassword
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: grafana-oidc-secret
+      namespace: monitoring
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: grafana-oidc-secret
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            client_id: '{{ "{{ .clientID | b64enc }}" }}'
+            client_secret: '{{ "{{ .clientSecret | b64enc }}" }}'
+      data:
+        - secretKey: clientID
+          remoteRef:
+            key: keycloak-secrets
+            property: idp_clientID
+        - secretKey: clientSecret
+          remoteRef:
+            key: keycloak-secrets
+            property: idp_clientSecret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: grafana-loki-datasource-secret
+      namespace: monitoring
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: grafana-loki-datasource-secret
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            password: '{{ "{{ .adminPassword | b64enc }}" }}'
+      data:
+        - secretKey: adminPassword
+          remoteRef:
+            key: loki-secrets
+            property: adminPassword
   {{- if $p | get "remoteWrite.rwConfig.basicAuth.enabled" false }}
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
       labels:
         app: prometheus
       name: prometheus-remote-write-basic-auth
-    data:
-      username: {{ $p.remoteWrite.rwConfig.basicAuth.username | b64enc }}
-      password: {{ $p.remoteWrite.rwConfig.basicAuth.password | b64enc }}
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: prometheus-remote-write-basic-auth
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            username: '{{ "{{ .username | b64enc }}" }}'
+            password: '{{ "{{ .password | b64enc }}" }}'
+      data:
+        - secretKey: username
+          remoteRef:
+            key: prometheus-secrets
+            property: remoteWrite_rwConfig_basicAuth_username
+        - secretKey: password
+          remoteRef:
+            key: prometheus-secrets
+            property: remoteWrite_rwConfig_basicAuth_password
   {{- end }}
-{{- end }}
+  {{- if $a.enabled }}
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: alertmanager-platform-config
+      namespace: monitoring
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: alertmanager-platform-config
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            alertmanager.yaml: |
+              {{- $alertmanagerConfig | nindent 14 }}
+      data:
+        {{- if has "slack" $receivers }}
+        - secretKey: slackUrl
+          remoteRef:
+            key: alerts-secrets
+            property: slack_url
+        {{- end }}
+        {{- if has "email" $receivers }}
+        - secretKey: smtpAuthPassword
+          remoteRef:
+            key: smtp-secrets
+            property: auth_password
+        - secretKey: smtpAuthSecret
+          remoteRef:
+            key: smtp-secrets
+            property: auth_secret
+        {{- end }}
+  {{- end }}
