@@ -529,7 +529,7 @@ describe('sealed-secrets', () => {
   })
 
   describe('stripEsoMigratedSecrets', () => {
-    it('should strip ESO-migrated secret paths', () => {
+    it('should be a no-op that returns values unchanged (stripping disabled until gotmpl migration)', () => {
       const values = {
         apps: {
           gitea: { adminPassword: 'secret', postgresqlPassword: 'pg-secret', resources: { cpu: '100m' } },
@@ -540,63 +540,11 @@ describe('sealed-secrets', () => {
 
       const result = stripEsoMigratedSecrets(values, secretPaths)
 
-      expect(result.apps.gitea.adminPassword).toBeUndefined()
-      expect(result.apps.gitea.postgresqlPassword).toBeUndefined()
-      expect(result.oidc.clientSecret).toBeUndefined()
-    })
-
-    it('should keep non-ESO-migrated secret paths', () => {
-      const values = {
-        apps: {
-          grafana: { adminPassword: 'grafana-pass' },
-          loki: { someSecret: 'loki-secret' },
-        },
-        dns: { apiKey: 'dns-key' },
-      }
-      const secretPaths = ['apps.grafana.adminPassword', 'apps.loki.someSecret', 'dns.apiKey']
-
-      const result = stripEsoMigratedSecrets(values, secretPaths)
-
-      expect(result.apps.grafana.adminPassword).toBe('grafana-pass')
-      expect(result.apps.loki.someSecret).toBe('loki-secret')
-      expect(result.dns.apiKey).toBe('dns-key')
-    })
-
-    it('should keep non-secret fields for ESO-migrated apps', () => {
-      const values = {
-        apps: {
-          gitea: { adminPassword: 'secret', resources: { cpu: '100m' } },
-        },
-      }
-      const secretPaths = ['apps.gitea.adminPassword']
-
-      const result = stripEsoMigratedSecrets(values, secretPaths)
-
-      expect(result.apps.gitea.adminPassword).toBeUndefined()
+      // All values should be preserved (stripping disabled)
+      expect(result.apps.gitea.adminPassword).toBe('secret')
+      expect(result.apps.gitea.postgresqlPassword).toBe('pg-secret')
+      expect(result.oidc.clientSecret).toBe('my-secret')
       expect(result.apps.gitea.resources).toEqual({ cpu: '100m' })
-    })
-
-    it('should not mutate the original values object', () => {
-      const values = {
-        apps: { gitea: { adminPassword: 'secret' } },
-      }
-      const secretPaths = ['apps.gitea.adminPassword']
-
-      stripEsoMigratedSecrets(values, secretPaths)
-
-      expect(values.apps.gitea.adminPassword).toBe('secret')
-    })
-
-    it('should handle otomi prefix correctly', () => {
-      const values = {
-        otomi: { adminPassword: 'admin-pass', isMultitenant: true },
-      }
-      const secretPaths = ['otomi.adminPassword']
-
-      const result = stripEsoMigratedSecrets(values, secretPaths)
-
-      expect(result.otomi.adminPassword).toBeUndefined()
-      expect(result.otomi.isMultitenant).toBe(true)
     })
   })
 })

@@ -408,15 +408,12 @@ describe('Bootstrapping values', () => {
           await processValues(deps)
           expect(deps.writeValues).toHaveBeenNthCalledWith(1, writtenValues)
         })
-        it('should call stripEsoMigratedSecrets before writing values to disk', async () => {
+        it('should call stripEsoMigratedSecrets (currently no-op) before writing values to disk', async () => {
           deps.loadYaml.mockReturnValue(values)
-          const strippedValues = { stripped: true }
-          deps.stripEsoMigratedSecrets.mockReturnValue(strippedValues)
           deps.getSchemaSecretsPaths.mockResolvedValue(['apps.gitea.adminPassword', 'apps.harbor.adminPassword'])
           await processValues(deps)
           expect(deps.stripEsoMigratedSecrets).toHaveBeenCalledTimes(1)
           expect(deps.getSchemaSecretsPaths).toHaveBeenCalledTimes(1)
-          expect(deps.writeValues).toHaveBeenCalledWith(strippedValues)
         })
         it('should still return full allSecrets for bootstrapSealedSecrets', async () => {
           deps.loadYaml.mockReturnValue(values)
