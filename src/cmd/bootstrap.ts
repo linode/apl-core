@@ -326,7 +326,8 @@ export const processValues = async (
   // add default platform admin & generate initial passwords for users if they don't have one
   const users = deps.getUsers(originalInput)
   // Write only non-secret values to disk — secrets are stored exclusively in SealedSecrets
-  const mergedForDisk = merge(cloneDeep(originalInput), cloneDeep({ users }))
+  // Include allSecrets so non-secret fields like customRootCA are preserved (stripAllSecrets removes only x-secret paths)
+  const mergedForDisk = merge(cloneDeep(originalInput), cloneDeep(allSecrets), cloneDeep({ users }))
   const secretPaths = await deps.getSchemaSecretsPaths(Object.keys(get(mergedForDisk, 'teamConfig', {})))
   const valuesForDisk = deps.stripAllSecrets(mergedForDisk, secretPaths)
   await deps.writeValues(valuesForDisk)
