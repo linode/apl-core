@@ -729,7 +729,7 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
     branch: 'main',
     enabled: true,
     name: 'default',
-    url: catalogUrl,
+    repositoryUrl: catalogUrl,
     ...(secretCreated && { secretName: SEALED_SECRET_NAME }),
   }
   set(values, 'catalogs.default', defaultCatalog)
