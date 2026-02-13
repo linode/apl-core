@@ -10,7 +10,7 @@ metadata:
   annotations:
     sidecar.istio.io/inject: "false"
     # ArgoCD sync wave annotation to ensure it's applied first
-    argocd.argoproj.io/sync-wave: "-2" 
+    argocd.argoproj.io/sync-wave: "-2"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   workspaces:
@@ -76,7 +76,7 @@ spec:
       value: {{ $v.harborDomain }}/team-{{ $v.teamId }}/{{ .imageName }}:{{ .tag }}
     {{- with (dig "mode" "docker" "envVars" nil . ) }}
     - name: EXTRA_ARGS
-      value: 
+      value:
         {{- range . }}
         - --build-arg={{ .name }}={{ .value }}
         {{- end }}
@@ -116,7 +116,7 @@ spec:
             metadata:
               creationTimestamp: null
             spec:
-              {{- if $v.buildStorageClassName }}  
+              {{- if $v.buildStorageClassName }}
               storageClassName: {{ $v.buildStorageClassName }}
               {{- end }}
               accessModes:
@@ -134,7 +134,7 @@ spec:
         {{- else }}
         - name: git-credentials
           secret:
-            secretName: gitea-credentials
+            secretName: apl-git-credentials
         {{- end }}
         - name: docker-credentials
           secret:
@@ -166,7 +166,7 @@ spec:
       metadata:
         creationTimestamp: null
       spec:
-        {{- if $v.buildStorageClassName }}  
+        {{- if $v.buildStorageClassName }}
         storageClassName: {{ $v.buildStorageClassName }}
         {{- end }}
         accessModes:
@@ -184,7 +184,7 @@ spec:
   {{- else }}
   - name: git-credentials
     secret:
-      secretName: gitea-credentials
+      secretName: apl-git-credentials
   {{- end }}
   - name: docker-credentials
     secret:
@@ -211,7 +211,7 @@ kind: EventListener
 metadata:
   name: gitea-webhook-{{ .name }}
   annotations:
-    argocd.argoproj.io/sync-wave: "-1" 
+    argocd.argoproj.io/sync-wave: "-1"
   labels:
     tekton.dev/pipeline: docker-build-{{ .name }}
     {{- include "team-ns.chart-labels" $ | nindent 4 }}
