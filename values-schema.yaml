@@ -1702,6 +1702,9 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          adminUsername:
+            type: string
+            x-secret: otomi-admin
           adminPassword:
             type: string
             x-secret: '{{ randAlphaNum 20 }}'
@@ -1891,6 +1894,7 @@ properties:
               clientID:
                 $ref: '#/definitions/wordCharacterPattern'
                 default: otomi
+                x-secret: otomi
               clientSecret:
                 type: string
                 x-secret: '{{ randAlphaNum 32 }}'
@@ -1899,6 +1903,7 @@ properties:
             x-secret: ''
           adminUsername:
             type: string
+            x-secret: otomi-admin
           theme:
             type: string
             default: otomi
@@ -2743,6 +2748,7 @@ properties:
         $ref: '#/definitions/url'
       clientID:
         $ref: '#/definitions/wordCharacterPattern'
+        x-secret: ''
       clientSecret:
         type: string
         x-secret: ''
