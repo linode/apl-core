@@ -19,11 +19,21 @@ resources:
         type: Opaque
         data:
           EXTERNAL_DNS_AKAMAI_CLIENT_SECRET: '{{ "{{ .clientSecret | toString }}" }}'
+          EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN: '{{ "{{ .clientToken | toString }}" }}'
+          EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN: '{{ "{{ .accessToken | toString }}" }}'
     data:
       - secretKey: clientSecret
         remoteRef:
           key: dns-secrets
           property: provider_akamai_clientSecret
+      - secretKey: clientToken
+        remoteRef:
+          key: dns-secrets
+          property: provider_akamai_clientToken
+      - secretKey: accessToken
+        remoteRef:
+          key: dns-secrets
+          property: provider_akamai_accessToken
 {{- end }}
 
 {{- with $d.provider | get "linode" nil }}

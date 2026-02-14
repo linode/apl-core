@@ -50,9 +50,15 @@ env:
 - name: EXTERNAL_DNS_AKAMAI_SERVICECONSUMERDOMAIN
   value: "{{ $dns.provider.akamai.host }}"
 - name: EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN
-  value: "{{ $dns.provider.akamai.clientToken }}"
+  valueFrom:
+    secretKeyRef:
+      name: akamai-dns
+      key: EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN
 - name: EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN
-  value: "{{ $dns.provider.akamai.accessToken }}"
+  valueFrom:
+    secretKeyRef:
+      name: akamai-dns
+      key: EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN
 - name: EXTERNAL_DNS_AKAMAI_CLIENT_SECRET
   valueFrom:
     secretKeyRef:
