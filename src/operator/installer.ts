@@ -2,7 +2,6 @@ import * as process from 'node:process'
 import { $ } from 'zx'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { hfValues } from '../common/hf'
 import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
@@ -173,17 +172,9 @@ export class Installer {
         process.env.SOPS_AGE_KEY = aplSopsSecret.SOPS_AGE_KEY
         this.d.debug('Using existing sops credentials from secret')
       } else {
-        const values = (await hfValues()) as Record<string, any>
-        const sopsAgePrivateKey = values.kms?.sops?.age?.privateKey
-        if (sopsAgePrivateKey && !sopsAgePrivateKey.startsWith('ENC')) {
-          process.env.SOPS_AGE_KEY = sopsAgePrivateKey
-          this.d.debug('Set SOPS_AGE_KEY in environment variables')
-          await createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', 'apl-operator', {
-            SOPS_AGE_KEY: sopsAgePrivateKey,
-          })
-        } else {
-          this.d.debug('SOPS Age private key not found or encrypted, skipping')
-        }
+        // SOPS is no longer used (replaced by SealedSecrets + ESO).
+        // Skip hfValues() call which requires the git repo that may not exist yet.
+        this.d.debug('SOPS Age key not found in secret, skipping (SealedSecrets in use)')
       }
     } catch (error) {
       this.d.error('Failed to retrieve or create sops credentials:', getErrorMessage(error))
