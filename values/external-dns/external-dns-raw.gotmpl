@@ -18,12 +18,12 @@ resources:
       template:
         type: Opaque
         data:
-          EXTERNAL_DNS_AKAMAI_CLIENT_SECRET: '{{ "{{ .clientSecret | b64enc }}" }}'
+          EXTERNAL_DNS_AKAMAI_CLIENT_SECRET: '{{ "{{ .clientSecret | base64encode }}" }}'
     data:
       - secretKey: clientSecret
         remoteRef:
           key: dns-secrets
-          property: akamai_clientSecret
+          property: provider_akamai_clientSecret
 {{- end }}
 
 {{- with $d.provider | get "linode" nil }}
@@ -43,12 +43,12 @@ resources:
       template:
         type: Opaque
         data:
-          LINODE_TOKEN: '{{ "{{ .apiToken | b64enc }}" }}'
+          LINODE_TOKEN: '{{ "{{ .apiToken | base64encode }}" }}'
     data:
       - secretKey: apiToken
         remoteRef:
           key: dns-secrets
-          property: linode_apiToken
+          property: provider_linode_apiToken
 {{- end }}
 
 {{- with $d.provider | get "digitalocean" nil }}
@@ -68,12 +68,12 @@ resources:
       template:
         type: Opaque
         data:
-          DO_TOKEN: '{{ "{{ .apiToken | b64enc }}" }}'
+          DO_TOKEN: '{{ "{{ .apiToken | base64encode }}" }}'
     data:
       - secretKey: apiToken
         remoteRef:
           key: dns-secrets
-          property: digitalocean_apiToken
+          property: provider_digitalocean_apiToken
 {{- end }}
 
 {{- with $d.provider | get "cloudflare" nil }}
@@ -94,12 +94,12 @@ resources:
       template:
         type: Opaque
         data:
-          CF_API_TOKEN: '{{ "{{ .apiToken | b64enc }}" }}'
+          CF_API_TOKEN: '{{ "{{ .apiToken | base64encode }}" }}'
     data:
       - secretKey: apiToken
         remoteRef:
           key: dns-secrets
-          property: cloudflare_apiToken
+          property: provider_cloudflare_apiToken
   {{- end }}
   {{- with .apiSecret }}
 resources:
@@ -118,13 +118,13 @@ resources:
       template:
         type: Opaque
         data:
-          CF_API_KEY: '{{ "{{ .apiSecret | b64enc }}" }}'
+          CF_API_KEY: '{{ "{{ .apiSecret | base64encode }}" }}'
           CF_API_EMAIL: {{ $d.provider.cloudflare.email | b64enc | quote }}
     data:
       - secretKey: apiSecret
         remoteRef:
           key: dns-secrets
-          property: cloudflare_apiSecret
+          property: provider_cloudflare_apiSecret
   {{- end }}
 {{- end }}
 
@@ -146,17 +146,17 @@ resources:
       template:
         type: Opaque
         data:
-          AWS_ACCESS_KEY_ID: '{{ "{{ .accessKey | b64enc }}" }}'
-          AWS_SECRET_ACCESS_KEY: '{{ "{{ .secretKey | b64enc }}" }}'
+          AWS_ACCESS_KEY_ID: '{{ "{{ .accessKey | base64encode }}" }}'
+          AWS_SECRET_ACCESS_KEY: '{{ "{{ .secretKey | base64encode }}" }}'
     data:
       - secretKey: accessKey
         remoteRef:
           key: dns-secrets
-          property: aws_credentials_accessKey
+          property: provider_aws_credentials_accessKey
       - secretKey: secretKey
         remoteRef:
           key: dns-secrets
-          property: aws_credentials_secretKey
+          property: provider_aws_credentials_secretKey
   {{- end }}
 {{- end }}
 
@@ -181,12 +181,12 @@ resources:
           AZURE_SUBSCRIPTION_ID: {{ .subscriptionId | b64enc | quote }}
           AZURE_RESOURCE_GROUP: {{ .resourceGroup | b64enc | quote }}
           AZURE_CLIENT_ID: {{ .aadClientId | b64enc | quote }}
-          AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret | b64enc }}" }}'
+          AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret | base64encode }}" }}'
     data:
       - secretKey: aadClientSecret
         remoteRef:
           key: dns-secrets
-          property: azure_aadClientSecret
+          property: provider_azure_aadClientSecret
 {{- end }}
 
 {{- with $d.provider | get "azure-private-dns" nil }}
@@ -210,12 +210,12 @@ resources:
           AZURE_SUBSCRIPTION_ID: {{ .subscriptionId | b64enc | quote }}
           AZURE_RESOURCE_GROUP: {{ .resourceGroup | b64enc | quote }}
           AZURE_CLIENT_ID: {{ .aadClientId | b64enc | quote }}
-          AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret | b64enc }}" }}'
+          AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret | base64encode }}" }}'
     data:
       - secretKey: aadClientSecret
         remoteRef:
           key: dns-secrets
-          property: azure-private-dns_aadClientSecret
+          property: provider_azure-private-dns_aadClientSecret
 {{- end }}
 
 {{- with $d.provider | get "google" nil }}
@@ -235,10 +235,10 @@ resources:
       template:
         type: Opaque
         data:
-          GOOGLE_APPLICATION_CREDENTIALS: '{{ "{{ .serviceAccountKey | b64enc }}" }}'
+          GOOGLE_APPLICATION_CREDENTIALS: '{{ "{{ .serviceAccountKey | base64encode }}" }}'
     data:
       - secretKey: serviceAccountKey
         remoteRef:
           key: dns-secrets
-          property: google_serviceAccountKey
+          property: provider_google_serviceAccountKey
 {{- end }}

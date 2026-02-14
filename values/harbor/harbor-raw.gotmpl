@@ -48,7 +48,7 @@ resources:
       template:
         type: Opaque
         data:
-          HARBOR_ADMIN_PASSWORD: '{{ "{{ .adminPassword | b64enc }}" }}'
+          HARBOR_ADMIN_PASSWORD: '{{ "{{ .adminPassword | base64encode }}" }}'
     data:
       - secretKey: adminPassword
         remoteRef:
@@ -69,8 +69,8 @@ resources:
       template:
         type: Opaque
         data:
-          REGISTRY_PASSWD: '{{ "{{ .password | b64enc }}" }}'
-          REGISTRY_HTPASSWD: '{{ "{{ .htpasswd | b64enc }}" }}'
+          REGISTRY_PASSWD: '{{ "{{ .password | base64encode }}" }}'
+          REGISTRY_HTPASSWD: '{{ "{{ .htpasswd | base64encode }}" }}'
     data:
       - secretKey: password
         remoteRef:
@@ -95,7 +95,7 @@ resources:
       template:
         type: Opaque
         data:
-          secretKey: '{{ "{{ .secretKey | b64enc }}" }}'
+          secretKey: '{{ "{{ .secretKey | base64encode }}" }}'
     data:
       - secretKey: secretKey
         remoteRef:
@@ -116,7 +116,7 @@ resources:
       template:
         type: Opaque
         data:
-          secret: '{{ "{{ .coreSecret | b64enc }}" }}'
+          secret: '{{ "{{ .coreSecret | base64encode }}" }}'
     data:
       - secretKey: coreSecret
         remoteRef:
@@ -137,7 +137,7 @@ resources:
       template:
         type: Opaque
         data:
-          CSRF_KEY: '{{ "{{ .xsrfKey | b64enc }}" }}'
+          CSRF_KEY: '{{ "{{ .xsrfKey | base64encode }}" }}'
     data:
       - secretKey: xsrfKey
         remoteRef:
@@ -158,7 +158,7 @@ resources:
       template:
         type: Opaque
         data:
-          JOBSERVICE_SECRET: '{{ "{{ .jobserviceSecret | b64enc }}" }}'
+          JOBSERVICE_SECRET: '{{ "{{ .jobserviceSecret | base64encode }}" }}'
     data:
       - secretKey: jobserviceSecret
         remoteRef:
@@ -179,7 +179,7 @@ resources:
       template:
         type: Opaque
         data:
-          REGISTRY_HTTP_SECRET: '{{ "{{ .registrySecret | b64enc }}" }}'
+          REGISTRY_HTTP_SECRET: '{{ "{{ .registrySecret | base64encode }}" }}'
     data:
       - secretKey: registrySecret
         remoteRef:
@@ -201,17 +201,13 @@ resources:
       template:
         type: Opaque
         data:
-          S3_STORAGE_ACCOUNT: '{{ "{{ .accessKeyId | b64enc }}" }}'
-          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey | b64enc }}" }}'
+          S3_STORAGE_ACCOUNT: {{ $obj.linode.accessKeyId | b64enc }}
+          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey | base64encode }}" }}'
     data:
-      - secretKey: accessKeyId
-        remoteRef:
-          key: obj-storage-secrets
-          property: linode_accessKeyId
       - secretKey: secretAccessKey
         remoteRef:
           key: obj-storage-secrets
-          property: linode_secretAccessKey
+          property: provider_linode_secretAccessKey
 - apiVersion: external-secrets.io/v1beta1
   kind: ExternalSecret
   metadata:
@@ -227,15 +223,11 @@ resources:
       template:
         type: Opaque
         data:
-          REGISTRY_STORAGE_S3_ACCESSKEY: '{{ "{{ .accessKeyId | b64enc }}" }}'
-          REGISTRY_STORAGE_S3_SECRETKEY: '{{ "{{ .secretAccessKey | b64enc }}" }}'
+          REGISTRY_STORAGE_S3_ACCESSKEY: {{ $obj.linode.accessKeyId | b64enc }}
+          REGISTRY_STORAGE_S3_SECRETKEY: '{{ "{{ .secretAccessKey | base64encode }}" }}'
     data:
-      - secretKey: accessKeyId
-        remoteRef:
-          key: obj-storage-secrets
-          property: linode_accessKeyId
       - secretKey: secretAccessKey
         remoteRef:
           key: obj-storage-secrets
-          property: linode_secretAccessKey
+          property: provider_linode_secretAccessKey
 {{- end }}

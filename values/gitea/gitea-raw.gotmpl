@@ -38,17 +38,13 @@ resources:
       template:
         type: Opaque
         data:
-          S3_STORAGE_ACCOUNT: '{{ "{{ .accessKeyId | b64enc }}" }}'
-          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey | b64enc }}" }}'
+          S3_STORAGE_ACCOUNT: {{ $obj.linode.accessKeyId | b64enc }}
+          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey | base64encode }}" }}'
     data:
-      - secretKey: accessKeyId
-        remoteRef:
-          key: obj-storage-secrets
-          property: linode_accessKeyId
       - secretKey: secretAccessKey
         remoteRef:
           key: obj-storage-secrets
-          property: linode_secretAccessKey
+          property: provider_linode_secretAccessKey
 {{- end }}
 {{- with $v | get "smtp" nil }}
 - apiVersion: external-secrets.io/v1beta1

@@ -195,17 +195,13 @@ releases:
               template:
                 type: Opaque
                 data:
-                  admin-user: '{{ "{{ .teamId | b64enc }}" }}'
-                  admin-password: '{{ "{{ .password | b64enc }}" }}'
+                  admin-user: {{ $teamId | b64enc }}
+                  admin-password: '{{ "{{ .password | base64encode }}" }}'
             data:
-              - secretKey: teamId
-                remoteRef:
-                  key: team-{{ $teamId }}-settings-secrets
-                  property: id
               - secretKey: password
                 remoteRef:
                   key: team-{{ $teamId }}-settings-secrets
-                  property: password
+                  property: settings_password
         {{- if $teamSettings | get "managedMonitoring.alertmanager" false }}
         - apiVersion: external-secrets.io/v1beta1
           kind: ExternalSecret

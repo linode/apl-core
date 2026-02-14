@@ -22,7 +22,7 @@ resources:
         template:
           type: Opaque
           data:
-            password: '{{ "{{ .password | b64enc }}" }}'
+            password: '{{ "{{ .password | base64encode }}" }}'
       data:
         - secretKey: password
           remoteRef:
@@ -43,14 +43,10 @@ resources:
         template:
           type: Opaque
           data:
-            client-id: '{{ "{{ .clientID | b64enc }}" }}'
-            client-secret: '{{ "{{ .clientSecret | b64enc }}" }}'
+            client-id: {{ $k.idp.clientID | b64enc }}
+            client-secret: '{{ "{{ .clientSecret | base64encode }}" }}'
             cookie-secret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 32) | b64enc }}
       data:
-        - secretKey: clientID
-          remoteRef:
-            key: keycloak-secrets
-            property: idp_clientID
         - secretKey: clientSecret
           remoteRef:
             key: keycloak-secrets

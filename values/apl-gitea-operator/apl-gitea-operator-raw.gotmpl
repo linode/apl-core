@@ -35,19 +35,15 @@ resources:
         template:
           type: Opaque
           data:
-            giteaPassword: '{{ "{{ .giteaAdminPassword | b64enc }}" }}'
-            oidcClientId: '{{ "{{ .keycloakClientID | b64enc }}" }}'
-            oidcClientSecret: '{{ "{{ .keycloakClientSecret | b64enc }}" }}'
+            giteaPassword: '{{ "{{ .giteaAdminPassword | base64encode }}" }}'
+            oidcClientId: {{ $k.idp.clientID | b64enc }}
+            oidcClientSecret: '{{ "{{ .keycloakClientSecret | base64encode }}" }}'
             oidcEndpoint: {{ $v._derived.oidcBaseUrl | b64enc }}
       data:
         - secretKey: giteaAdminPassword
           remoteRef:
             key: gitea-secrets
             property: adminPassword
-        - secretKey: keycloakClientID
-          remoteRef:
-            key: keycloak-secrets
-            property: idp_clientID
         - secretKey: keycloakClientSecret
           remoteRef:
             key: keycloak-secrets

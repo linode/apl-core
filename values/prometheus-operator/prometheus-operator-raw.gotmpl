@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $p := $v.apps | get "prometheus" }}
 {{- $a := $v.apps | get "alertmanager" }}
+{{- $k := $v.apps.keycloak }}
 {{- $obj := $v.obj.provider }}
 {{- $receivers := $v | get "alerts.receivers" (list "slack") }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
@@ -24,7 +25,7 @@ resources:
           type: Opaque
           data:
             admin-user: {{ "otomi-admin" | b64enc }}
-            admin-password: '{{ "{{ .adminPassword | b64enc }}" }}'
+            admin-password: '{{ "{{ .adminPassword | base64encode }}" }}'
       data:
         - secretKey: adminPassword
           remoteRef:
@@ -46,13 +47,9 @@ resources:
         template:
           type: Opaque
           data:
-            client_id: '{{ "{{ .clientID | b64enc }}" }}'
-            client_secret: '{{ "{{ .clientSecret | b64enc }}" }}'
+            client_id: {{ $k.idp.clientID | b64enc }}
+            client_secret: '{{ "{{ .clientSecret | base64encode }}" }}'
       data:
-        - secretKey: clientID
-          remoteRef:
-            key: keycloak-secrets
-            property: idp_clientID
         - secretKey: clientSecret
           remoteRef:
             key: keycloak-secrets
@@ -73,7 +70,7 @@ resources:
         template:
           type: Opaque
           data:
-            password: '{{ "{{ .adminPassword | b64enc }}" }}'
+            password: '{{ "{{ .adminPassword | base64encode }}" }}'
       data:
         - secretKey: adminPassword
           remoteRef:
@@ -97,13 +94,9 @@ resources:
         template:
           type: Opaque
           data:
-            username: '{{ "{{ .username | b64enc }}" }}'
-            password: '{{ "{{ .password | b64enc }}" }}'
+            username: {{ $p.remoteWrite.rwConfig.basicAuth.username | b64enc }}
+            password: '{{ "{{ .password | base64encode }}" }}'
       data:
-        - secretKey: username
-          remoteRef:
-            key: prometheus-secrets
-            property: remoteWrite_rwConfig_basicAuth_username
         - secretKey: password
           remoteRef:
             key: prometheus-secrets

@@ -41,7 +41,7 @@ resources:
         - secretKey: team_{{ $id }}_password
           remoteRef:
             key: team-{{ $id }}-settings-secrets
-            property: password
+            property: settings_password
         {{- end }}
   {{- if eq $obj.type "linode" }}
   - apiVersion: external-secrets.io/v1beta1
@@ -61,16 +61,12 @@ resources:
         template:
           type: Opaque
           data:
-            AWS_ACCESS_KEY_ID: '{{ "{{ .accessKeyId | b64enc }}" }}'
-            AWS_SECRET_ACCESS_KEY: '{{ "{{ .secretAccessKey | b64enc }}" }}'
+            AWS_ACCESS_KEY_ID: {{ $obj.linode.accessKeyId | b64enc }}
+            AWS_SECRET_ACCESS_KEY: '{{ "{{ .secretAccessKey | base64encode }}" }}'
       data:
-        - secretKey: accessKeyId
-          remoteRef:
-            key: obj-storage-secrets
-            property: linode_accessKeyId
         - secretKey: secretAccessKey
           remoteRef:
             key: obj-storage-secrets
-            property: linode_secretAccessKey
+            property: provider_linode_secretAccessKey
   {{- end }}
   {{- end }}
