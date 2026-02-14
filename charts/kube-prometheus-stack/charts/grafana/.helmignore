@@ -14,10 +14,14 @@
 *.swp
 *.bak
 *.tmp
+*.orig
 *~
 # Various IDEs
-.vscode
 .project
 .idea/
 *.tmproj
-OWNERS
+.vscode/
+# Helm plugin tooling
+ci/
+tests/
+*.gotmpl
