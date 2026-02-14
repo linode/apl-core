@@ -24,8 +24,8 @@ resources:
         template:
           type: Opaque
           data:
-            admin-user: {{ "otomi-admin" | b64enc }}
-            admin-password: '{{ "{{ .adminPassword | base64encode }}" }}'
+            admin-user: otomi-admin
+            admin-password: '{{ "{{ .adminPassword }}" }}'
       data:
         - secretKey: adminPassword
           remoteRef:
@@ -47,8 +47,8 @@ resources:
         template:
           type: Opaque
           data:
-            client_id: {{ $k.idp.clientID | b64enc }}
-            client_secret: '{{ "{{ .clientSecret | base64encode }}" }}'
+            client_id: {{ $k.idp.clientID }}
+            client_secret: '{{ "{{ .clientSecret }}" }}'
       data:
         - secretKey: clientSecret
           remoteRef:
@@ -70,7 +70,7 @@ resources:
         template:
           type: Opaque
           data:
-            password: '{{ "{{ .adminPassword | base64encode }}" }}'
+            password: '{{ "{{ .adminPassword }}" }}'
       data:
         - secretKey: adminPassword
           remoteRef:
@@ -94,8 +94,8 @@ resources:
         template:
           type: Opaque
           data:
-            username: {{ $p.remoteWrite.rwConfig.basicAuth.username | b64enc }}
-            password: '{{ "{{ .password | base64encode }}" }}'
+            username: {{ $p.remoteWrite.rwConfig.basicAuth.username }}
+            password: '{{ "{{ .password }}" }}'
       data:
         - secretKey: password
           remoteRef:

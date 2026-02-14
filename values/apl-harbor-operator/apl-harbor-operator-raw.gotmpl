@@ -27,11 +27,11 @@ resources:
         template:
           type: Opaque
           data:
-            harborPassword: '{{ "{{ .harborAdminPassword | base64encode }}" }}'
-            harborUser: {{ "admin" | b64enc }}
-            oidcEndpoint: {{ $v._derived.oidcBaseUrl | b64enc }}
-            oidcClientId: {{ $k.idp.clientID | b64enc }}
-            oidcClientSecret: '{{ "{{ .keycloakClientSecret | base64encode }}" }}'
+            harborPassword: '{{ "{{ .harborAdminPassword }}" }}'
+            harborUser: admin
+            oidcEndpoint: {{ $v._derived.oidcBaseUrl }}
+            oidcClientId: {{ $k.idp.clientID }}
+            oidcClientSecret: '{{ "{{ .keycloakClientSecret }}" }}'
       data:
         - secretKey: harborAdminPassword
           remoteRef:

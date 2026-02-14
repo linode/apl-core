@@ -195,8 +195,8 @@ releases:
               template:
                 type: Opaque
                 data:
-                  admin-user: {{ $teamId | b64enc }}
-                  admin-password: '{{ "{{ .password | base64encode }}" }}'
+                  admin-user: {{ $teamId }}
+                  admin-password: '{{ "{{ .password }}" }}'
             data:
               - secretKey: password
                 remoteRef:

@@ -17,8 +17,8 @@ resources:
       template:
         type: Opaque
         data:
-          GIT_USERNAME: {{ $g.adminUsername | b64enc }}
-          GIT_PASSWORD: '{{ "{{ .adminPassword | base64encode }}" }}'
+          GIT_USERNAME: {{ $g.adminUsername }}
+          GIT_PASSWORD: '{{ "{{ .adminPassword }}" }}'
     data:
       - secretKey: adminPassword
         remoteRef:

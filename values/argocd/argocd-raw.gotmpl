@@ -29,10 +29,10 @@ resources:
               argocd.argoproj.io/secret-type: repo-creds
           type: Opaque
           data:
-            type: {{ print "git" | b64enc | quote }}
-            url: {{ printf "https://%s" $v._derived.giteaDomain | b64enc }}
-            username: {{ $g.adminUsername | b64enc }}
-            password: '{{ "{{ .adminPassword | base64encode }}" }}'
+            type: {{ print "git" | quote }}
+            url: {{ printf "https://%s" $v._derived.giteaDomain }}
+            username: {{ $g.adminUsername }}
+            password: '{{ "{{ .adminPassword }}" }}'
       data:
         - secretKey: adminPassword
           remoteRef:
@@ -57,10 +57,10 @@ resources:
               argocd.argoproj.io/secret-type: repo-creds
           type: Opaque
           data:
-            type: {{ print "git" | b64enc | quote }}
-            url: {{ "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git" | b64enc | quote }}
-            username: {{ $g.adminUsername | b64enc }}
-            password: '{{ "{{ .adminPassword | base64encode }}" }}'
+            type: {{ print "git" | quote }}
+            url: {{ "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git" | quote }}
+            username: {{ $g.adminUsername }}
+            password: '{{ "{{ .adminPassword }}" }}'
       data:
         - secretKey: adminPassword
           remoteRef:

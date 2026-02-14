@@ -48,13 +48,13 @@ resources:
         template:
           type: Opaque
           data:
-            KEYCLOAK_ADMIN: {{ $k.adminUsername | b64enc }}
-            KEYCLOAK_ADMIN_PASSWORD: '{{ "{{ .adminPassword | base64encode }}" }}'
-            KEYCLOAK_CLIENT_SECRET: '{{ "{{ .idpClientSecret | base64encode }}" }}'
-            USERS: {{ $users | b64enc }}
+            KEYCLOAK_ADMIN: {{ $k.adminUsername }}
+            KEYCLOAK_ADMIN_PASSWORD: '{{ "{{ .adminPassword }}" }}'
+            KEYCLOAK_CLIENT_SECRET: '{{ "{{ .idpClientSecret }}" }}'
+            USERS: {{ $users | quote }}
             {{- if $v.otomi.hasExternalIDP }}
-            IDP_CLIENT_ID: '{{ "{{ .oidcClientID | base64encode }}" }}'
-            IDP_CLIENT_SECRET: '{{ "{{ .oidcClientSecret | base64encode }}" }}'
+            IDP_CLIENT_ID: '{{ "{{ .oidcClientID }}" }}'
+            IDP_CLIENT_SECRET: '{{ "{{ .oidcClientSecret }}" }}'
             {{- end }}
       data:
         - secretKey: adminPassword

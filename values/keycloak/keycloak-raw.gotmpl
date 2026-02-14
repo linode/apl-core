@@ -25,8 +25,8 @@ resources:
       template:
         type: Opaque
         data:
-          password: '{{ "{{ .adminPassword | base64encode }}" }}'
-          username: {{ $k.adminUsername | b64enc }}
+          password: '{{ "{{ .adminPassword }}" }}'
+          username: {{ $k.adminUsername }}
     data:
       - secretKey: adminPassword
         remoteRef:
@@ -48,8 +48,8 @@ resources:
       template:
         type: Opaque
         data:
-          S3_STORAGE_ACCOUNT: {{ $obj.linode.accessKeyId | b64enc }}
-          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey | base64encode }}" }}'
+          S3_STORAGE_ACCOUNT: {{ $obj.linode.accessKeyId }}
+          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey }}" }}'
     data:
       - secretKey: secretAccessKey
         remoteRef:
