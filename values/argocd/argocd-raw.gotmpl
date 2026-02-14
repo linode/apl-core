@@ -32,7 +32,7 @@ resources:
             type: {{ print "git" | quote }}
             url: {{ printf "https://%s" $v._derived.giteaDomain }}
             username: {{ $g.adminUsername }}
-            password: '{{ "{{ .adminPassword }}" }}'
+            password: '{{ "{{ .adminPassword | toString }}" }}'
       data:
         - secretKey: adminPassword
           remoteRef:
@@ -60,7 +60,7 @@ resources:
             type: {{ print "git" | quote }}
             url: {{ "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git" | quote }}
             username: {{ $g.adminUsername }}
-            password: '{{ "{{ .adminPassword }}" }}'
+            password: '{{ "{{ .adminPassword | toString }}" }}'
       data:
         - secretKey: adminPassword
           remoteRef:

@@ -29,7 +29,7 @@ resources:
         type: Opaque
         data:
           username: {{ $g.adminUsername }}
-          password: '{{ "{{ .adminPassword }}" }}'
+          password: '{{ "{{ .adminPassword | toString }}" }}'
     data:
       - secretKey: adminPassword
         remoteRef:
@@ -61,7 +61,7 @@ resources:
         type: Opaque
         data:
           S3_STORAGE_ACCOUNT: {{ $obj.linode.accessKeyId }}
-          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey }}" }}'
+          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey | toString }}" }}'
     data:
       - secretKey: secretAccessKey
         remoteRef:
@@ -84,7 +84,7 @@ resources:
       template:
         type: Opaque
         data:
-          password: '{{ "{{ .authPassword }}" }}'
+          password: '{{ "{{ .authPassword | toString }}" }}'
     data:
       - secretKey: authPassword
         remoteRef:

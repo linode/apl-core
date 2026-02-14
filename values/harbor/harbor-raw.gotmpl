@@ -48,7 +48,7 @@ resources:
       template:
         type: Opaque
         data:
-          HARBOR_ADMIN_PASSWORD: '{{ "{{ .adminPassword }}" }}'
+          HARBOR_ADMIN_PASSWORD: '{{ "{{ .adminPassword | toString }}" }}'
     data:
       - secretKey: adminPassword
         remoteRef:
@@ -69,8 +69,8 @@ resources:
       template:
         type: Opaque
         data:
-          REGISTRY_PASSWD: '{{ "{{ .password }}" }}'
-          REGISTRY_HTPASSWD: '{{ "{{ .htpasswd }}" }}'
+          REGISTRY_PASSWD: '{{ "{{ .password | toString }}" }}'
+          REGISTRY_HTPASSWD: '{{ "{{ .htpasswd | toString }}" }}'
     data:
       - secretKey: password
         remoteRef:
@@ -95,7 +95,7 @@ resources:
       template:
         type: Opaque
         data:
-          secretKey: '{{ "{{ .secretKey }}" }}'
+          secretKey: '{{ "{{ .secretKey | toString }}" }}'
     data:
       - secretKey: secretKey
         remoteRef:
@@ -116,7 +116,7 @@ resources:
       template:
         type: Opaque
         data:
-          secret: '{{ "{{ .coreSecret }}" }}'
+          secret: '{{ "{{ .coreSecret | toString }}" }}'
     data:
       - secretKey: coreSecret
         remoteRef:
@@ -137,7 +137,7 @@ resources:
       template:
         type: Opaque
         data:
-          CSRF_KEY: '{{ "{{ .xsrfKey }}" }}'
+          CSRF_KEY: '{{ "{{ .xsrfKey | toString }}" }}'
     data:
       - secretKey: xsrfKey
         remoteRef:
@@ -158,7 +158,7 @@ resources:
       template:
         type: Opaque
         data:
-          JOBSERVICE_SECRET: '{{ "{{ .jobserviceSecret }}" }}'
+          JOBSERVICE_SECRET: '{{ "{{ .jobserviceSecret | toString }}" }}'
     data:
       - secretKey: jobserviceSecret
         remoteRef:
@@ -179,7 +179,7 @@ resources:
       template:
         type: Opaque
         data:
-          REGISTRY_HTTP_SECRET: '{{ "{{ .registrySecret }}" }}'
+          REGISTRY_HTTP_SECRET: '{{ "{{ .registrySecret | toString }}" }}'
     data:
       - secretKey: registrySecret
         remoteRef:
@@ -202,7 +202,7 @@ resources:
         type: Opaque
         data:
           S3_STORAGE_ACCOUNT: {{ $obj.linode.accessKeyId }}
-          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey }}" }}'
+          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey | toString }}" }}'
     data:
       - secretKey: secretAccessKey
         remoteRef:
@@ -224,7 +224,7 @@ resources:
         type: Opaque
         data:
           REGISTRY_STORAGE_S3_ACCESSKEY: {{ $obj.linode.accessKeyId }}
-          REGISTRY_STORAGE_S3_SECRETKEY: '{{ "{{ .secretAccessKey }}" }}'
+          REGISTRY_STORAGE_S3_SECRETKEY: '{{ "{{ .secretAccessKey | toString }}" }}'
     data:
       - secretKey: secretAccessKey
         remoteRef:

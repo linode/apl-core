@@ -18,7 +18,7 @@ resources:
       template:
         type: Opaque
         data:
-          EXTERNAL_DNS_AKAMAI_CLIENT_SECRET: '{{ "{{ .clientSecret }}" }}'
+          EXTERNAL_DNS_AKAMAI_CLIENT_SECRET: '{{ "{{ .clientSecret | toString }}" }}'
     data:
       - secretKey: clientSecret
         remoteRef:
@@ -43,7 +43,7 @@ resources:
       template:
         type: Opaque
         data:
-          LINODE_TOKEN: '{{ "{{ .apiToken }}" }}'
+          LINODE_TOKEN: '{{ "{{ .apiToken | toString }}" }}'
     data:
       - secretKey: apiToken
         remoteRef:
@@ -68,7 +68,7 @@ resources:
       template:
         type: Opaque
         data:
-          DO_TOKEN: '{{ "{{ .apiToken }}" }}'
+          DO_TOKEN: '{{ "{{ .apiToken | toString }}" }}'
     data:
       - secretKey: apiToken
         remoteRef:
@@ -94,7 +94,7 @@ resources:
       template:
         type: Opaque
         data:
-          CF_API_TOKEN: '{{ "{{ .apiToken }}" }}'
+          CF_API_TOKEN: '{{ "{{ .apiToken | toString }}" }}'
     data:
       - secretKey: apiToken
         remoteRef:
@@ -118,7 +118,7 @@ resources:
       template:
         type: Opaque
         data:
-          CF_API_KEY: '{{ "{{ .apiSecret }}" }}'
+          CF_API_KEY: '{{ "{{ .apiSecret | toString }}" }}'
           CF_API_EMAIL: {{ $d.provider.cloudflare.email | quote }}
     data:
       - secretKey: apiSecret
@@ -146,8 +146,8 @@ resources:
       template:
         type: Opaque
         data:
-          AWS_ACCESS_KEY_ID: '{{ "{{ .accessKey }}" }}'
-          AWS_SECRET_ACCESS_KEY: '{{ "{{ .secretKey }}" }}'
+          AWS_ACCESS_KEY_ID: '{{ "{{ .accessKey | toString }}" }}'
+          AWS_SECRET_ACCESS_KEY: '{{ "{{ .secretKey | toString }}" }}'
     data:
       - secretKey: accessKey
         remoteRef:
@@ -181,7 +181,7 @@ resources:
           AZURE_SUBSCRIPTION_ID: {{ .subscriptionId | quote }}
           AZURE_RESOURCE_GROUP: {{ .resourceGroup | quote }}
           AZURE_CLIENT_ID: {{ .aadClientId | quote }}
-          AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret }}" }}'
+          AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret | toString }}" }}'
     data:
       - secretKey: aadClientSecret
         remoteRef:
@@ -210,7 +210,7 @@ resources:
           AZURE_SUBSCRIPTION_ID: {{ .subscriptionId | quote }}
           AZURE_RESOURCE_GROUP: {{ .resourceGroup | quote }}
           AZURE_CLIENT_ID: {{ .aadClientId | quote }}
-          AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret }}" }}'
+          AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret | toString }}" }}'
     data:
       - secretKey: aadClientSecret
         remoteRef:
@@ -235,7 +235,7 @@ resources:
       template:
         type: Opaque
         data:
-          GOOGLE_APPLICATION_CREDENTIALS: '{{ "{{ .serviceAccountKey }}" }}'
+          GOOGLE_APPLICATION_CREDENTIALS: '{{ "{{ .serviceAccountKey | toString }}" }}'
     data:
       - secretKey: serviceAccountKey
         remoteRef:

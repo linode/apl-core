@@ -22,14 +22,14 @@ resources:
           type: Opaque
           data:
             authn.yaml: |
-              {{ "{{ " }}$adminPassword := .adminPassword{{ " }}" }}
+              {{ "{{ " }}$adminPassword := .adminPassword | toString{{ " }}" }}
               users:
                 - username: otomi-admin
                   password: {{ "\"{{ $adminPassword }}\"" }}
                   orgid: admins
               {{- range $id, $team := $v.teamConfig }}
                 - username: {{ $id }}
-                  password: {{ printf "\"{{ .team_%s_password }}\"" $id }}
+                  password: {{ printf "\"{{ .team_%s_password | toString }}\"" $id }}
                   orgid: {{ $id }}
               {{- end }}
       data:
@@ -62,7 +62,7 @@ resources:
           type: Opaque
           data:
             AWS_ACCESS_KEY_ID: {{ $obj.linode.accessKeyId }}
-            AWS_SECRET_ACCESS_KEY: '{{ "{{ .secretAccessKey }}" }}'
+            AWS_SECRET_ACCESS_KEY: '{{ "{{ .secretAccessKey | toString }}" }}'
       data:
         - secretKey: secretAccessKey
           remoteRef:

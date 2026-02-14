@@ -22,23 +22,23 @@ resources:
           type: Opaque
           data:
             {{- if hasKey $p "google" }}
-            secret: '{{ "{{ .secret }}" }}'
+            secret: '{{ "{{ .secret | toString }}" }}'
             {{- else if hasKey $p "akamai" }}
-            access_token: '{{ "{{ .access_token }}" }}'
-            client_token: '{{ "{{ .client_token }}" }}'
-            client_secret: '{{ "{{ .client_secret }}" }}'
+            access_token: '{{ "{{ .access_token | toString }}" }}'
+            client_token: '{{ "{{ .client_token | toString }}" }}'
+            client_secret: '{{ "{{ .client_secret | toString }}" }}'
             {{- else if hasKey $p "azure-private-dns" }}
-            secret: '{{ "{{ .secret }}" }}'
+            secret: '{{ "{{ .secret | toString }}" }}'
             {{- else if hasKey $p "azure" }}
-            secret: '{{ "{{ .secret }}" }}'
+            secret: '{{ "{{ .secret | toString }}" }}'
             {{- else if and (hasKey $p "aws") ($p | get "aws.credentials.secretKey" nil) }}
-            secret: '{{ "{{ .secret }}" }}'
+            secret: '{{ "{{ .secret | toString }}" }}'
             {{- else if hasKey $p "digitalocean" }}
-            secret: '{{ "{{ .secret }}" }}'
+            secret: '{{ "{{ .secret | toString }}" }}'
             {{- else if hasKey $p "cloudflare" }}
-            secret: '{{ "{{ .secret }}" }}'
+            secret: '{{ "{{ .secret | toString }}" }}'
             {{- else if hasKey $p "linode" }}
-            secret: '{{ "{{ .secret }}" }}'
+            secret: '{{ "{{ .secret | toString }}" }}'
             {{- end }}
       data:
         - secretKey: secret
@@ -90,7 +90,7 @@ resources:
           type: Opaque
           data:
             tls.crt: {{ $cm.customRootCA | quote }}
-            tls.key: '{{ "{{ .customRootCAKey }}" }}'
+            tls.key: '{{ "{{ .customRootCAKey | toString }}" }}'
       data:
         - secretKey: customRootCAKey
           remoteRef:
@@ -229,7 +229,7 @@ resources:
           type: kubernetes.io/tls
           data:
             tls.crt: {{ $cm.byoWildcardCert | quote }}
-            tls.key: '{{ "{{ .byoWildcardCertKey }}" }}'
+            tls.key: '{{ "{{ .byoWildcardCertKey | toString }}" }}'
       data:
         - secretKey: byoWildcardCertKey
           remoteRef:

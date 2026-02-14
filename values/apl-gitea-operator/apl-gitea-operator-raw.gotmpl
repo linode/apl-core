@@ -35,9 +35,9 @@ resources:
         template:
           type: Opaque
           data:
-            giteaPassword: '{{ "{{ .giteaAdminPassword }}" }}'
+            giteaPassword: '{{ "{{ .giteaAdminPassword | toString }}" }}'
             oidcClientId: {{ $k.idp.clientID }}
-            oidcClientSecret: '{{ "{{ .keycloakClientSecret }}" }}'
+            oidcClientSecret: '{{ "{{ .keycloakClientSecret | toString }}" }}'
             oidcEndpoint: {{ $v._derived.oidcBaseUrl }}
       data:
         - secretKey: giteaAdminPassword

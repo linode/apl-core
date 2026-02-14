@@ -25,7 +25,7 @@ resources:
           type: Opaque
           data:
             admin-user: otomi-admin
-            admin-password: '{{ "{{ .adminPassword }}" }}'
+            admin-password: '{{ "{{ .adminPassword | toString }}" }}'
       data:
         - secretKey: adminPassword
           remoteRef:
@@ -48,7 +48,7 @@ resources:
           type: Opaque
           data:
             client_id: {{ $k.idp.clientID }}
-            client_secret: '{{ "{{ .clientSecret }}" }}'
+            client_secret: '{{ "{{ .clientSecret | toString }}" }}'
       data:
         - secretKey: clientSecret
           remoteRef:
@@ -70,7 +70,7 @@ resources:
         template:
           type: Opaque
           data:
-            password: '{{ "{{ .adminPassword }}" }}'
+            password: '{{ "{{ .adminPassword | toString }}" }}'
       data:
         - secretKey: adminPassword
           remoteRef:
@@ -95,7 +95,7 @@ resources:
           type: Opaque
           data:
             username: {{ $p.remoteWrite.rwConfig.basicAuth.username }}
-            password: '{{ "{{ .password }}" }}'
+            password: '{{ "{{ .password | toString }}" }}'
       data:
         - secretKey: password
           remoteRef:

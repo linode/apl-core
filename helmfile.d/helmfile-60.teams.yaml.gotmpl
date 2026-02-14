@@ -196,7 +196,7 @@ releases:
                 type: Opaque
                 data:
                   admin-user: {{ $teamId }}
-                  admin-password: '{{ "{{ .password }}" }}'
+                  admin-password: '{{ "{{ .password | toString }}" }}'
             data:
               - secretKey: password
                 remoteRef:

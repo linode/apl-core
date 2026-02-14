@@ -49,12 +49,12 @@ resources:
           type: Opaque
           data:
             KEYCLOAK_ADMIN: {{ $k.adminUsername }}
-            KEYCLOAK_ADMIN_PASSWORD: '{{ "{{ .adminPassword }}" }}'
-            KEYCLOAK_CLIENT_SECRET: '{{ "{{ .idpClientSecret }}" }}'
+            KEYCLOAK_ADMIN_PASSWORD: '{{ "{{ .adminPassword | toString }}" }}'
+            KEYCLOAK_CLIENT_SECRET: '{{ "{{ .idpClientSecret | toString }}" }}'
             USERS: {{ $users | quote }}
             {{- if $v.otomi.hasExternalIDP }}
-            IDP_CLIENT_ID: '{{ "{{ .oidcClientID }}" }}'
-            IDP_CLIENT_SECRET: '{{ "{{ .oidcClientSecret }}" }}'
+            IDP_CLIENT_ID: '{{ "{{ .oidcClientID | toString }}" }}'
+            IDP_CLIENT_SECRET: '{{ "{{ .oidcClientSecret | toString }}" }}'
             {{- end }}
       data:
         - secretKey: adminPassword
