@@ -13,6 +13,28 @@
 {{- end }}
 
 resources:
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
+  metadata:
+    name: gitea-admin-secret
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: gitea-admin-secret
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          username: {{ $g.adminUsername | b64enc }}
+          password: '{{ "{{ .adminPassword | base64encode }}" }}'
+    data:
+      - secretKey: adminPassword
+        remoteRef:
+          key: gitea-secrets
+          property: adminPassword
 {{- if $v._derived.untrustedCA }}
 - apiVersion: v1
   kind: Secret

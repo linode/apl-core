@@ -6,7 +6,10 @@ metadata:
     {{- include "external-secrets.labels" . | nindent 4 }}
 rules:
   - apiGroups: ["external-secrets.io"]
-    resources: ["externalsecrets", "externalsecrets/status", "externalsecrets/finalizers", "secretstores", "secretstores/status", "secretstores/finalizers", "clustersecretstores", "clustersecretstores/status", "clustersecretstores/finalizers", "clusterexternalsecrets", "clusterexternalsecrets/status", "clusterexternalsecrets/finalizers"]
+    resources: ["externalsecrets", "externalsecrets/status", "externalsecrets/finalizers", "secretstores", "secretstores/status", "secretstores/finalizers", "clustersecretstores", "clustersecretstores/status", "clustersecretstores/finalizers", "clusterexternalsecrets", "clusterexternalsecrets/status", "clusterexternalsecrets/finalizers", "pushsecrets", "pushsecrets/status", "pushsecrets/finalizers"]
+    verbs: ["get", "list", "watch", "update", "patch", "create", "delete"]
+  - apiGroups: ["generators.external-secrets.io"]
+    resources: ["generatorstates", "generatorstates/status", "generatorstates/finalizers"]
     verbs: ["get", "list", "watch", "update", "patch", "create", "delete"]
   - apiGroups: [""]
     resources: ["secrets", "configmaps", "serviceaccounts", "serviceaccounts/token", "events"]
