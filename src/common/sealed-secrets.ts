@@ -351,8 +351,21 @@ export const buildSecretToNamespaceMap = async (
   for (const secretPath of secretPaths) {
     // Skip SOPS-related paths
     if (secretPath.startsWith('kms.sops')) continue
-    // Skip 'users' path — not a simple key-value secret
-    if (secretPath === 'users') continue
+    // Handle 'users' path specially — serialize pre-processed users array as single JSON value
+    if (secretPath === 'users') {
+      const usersData = secrets.users
+      if (Array.isArray(usersData) && usersData.length > 0) {
+        const namespace = 'sealed-secrets'
+        const secretName = 'users-secrets'
+        const groupKey = `${namespace}/${secretName}`
+        if (!groupMap.has(groupKey)) {
+          groupMap.set(groupKey, { namespace, secretName, data: {} })
+        }
+        const mapping = groupMap.get(groupKey)!
+        mapping.data.usersJson = JSON.stringify(usersData)
+      }
+      continue
+    }
 
     const namespace = resolveNamespace(secretPath)
     if (!namespace) continue

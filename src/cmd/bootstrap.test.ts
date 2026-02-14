@@ -282,6 +282,18 @@ describe('Bootstrapping values', () => {
         { id: 'user1', initialPassword: 'existing-password' },
         { id: 'user2', initialPassword: generatedPassword },
       ]
+      // Pre-processed users (as stored in allSecrets for sealed secret generation)
+      const processedUsers = usersWithPasswords.map((u: any) => ({
+        email: u.email,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        initialPassword: u.initialPassword,
+        groups: [
+          ...(u.isPlatformAdmin ? ['platform-admin'] : []),
+          ...(u.isTeamAdmin ? ['team-admin'] : []),
+          ...(u.teams || []).map((t: string) => `team-${t}`),
+        ],
+      }))
       const ca = { a: 'cert' }
       const mergedSecretsWithCa = merge(cloneDeep(secrets), cloneDeep(ca))
       const mergedSecretsWithGen = merge(cloneDeep(secrets), cloneDeep(generatedSecrets))
@@ -335,7 +347,8 @@ describe('Bootstrapping values', () => {
           deps.getStoredClusterSecrets.mockReturnValue(secrets)
           deps.generateSecrets.mockReturnValue(allSecrets)
           await processValues(deps)
-          expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'otomi', allSecrets)
+          const expected = { ...allSecrets, users: processedUsers }
+          expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'otomi', expected)
           expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
         })
         it('should create a custom ca if issuer is custom-ca or undefined and no CA yet exists', async () => {
@@ -355,11 +368,10 @@ describe('Bootstrapping values', () => {
           deps.generateSecrets.mockReturnValue(generatedSecrets)
           deps.createCustomCA.mockReturnValue(ca)
           await processValues(deps)
-          expect(deps.createK8sSecret).toHaveBeenCalledWith(
-            'otomi-generated-passwords',
-            'otomi',
-            mergedSecretsWithGenAndCa,
-          )
+          expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'otomi', {
+            ...mergedSecretsWithGenAndCa,
+            users: processedUsers,
+          })
         })
         it('should not overwrite stored secrets', async () => {
           deps.loadYaml.mockReturnValue({})
@@ -368,7 +380,10 @@ describe('Bootstrapping values', () => {
           deps.generateSecrets.mockReturnValue(generatedSecrets)
           await processValues(deps)
           expect(deps.generateSecrets).toHaveBeenCalledWith(generatedSecrets)
-          expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'otomi', generatedSecrets)
+          expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'otomi', {
+            ...generatedSecrets,
+            users: processedUsers,
+          })
         })
         it('should merge allSecrets into disk values so non-secret fields like customRootCA are preserved', async () => {
           deps.loadYaml.mockReturnValue({
@@ -381,13 +396,14 @@ describe('Bootstrapping values', () => {
           deps.createCustomCA.mockReturnValue(ca)
           const res = await processValues(deps)
           // mergedForDisk includes allSecrets (stripAllSecrets mock is identity, real impl strips x-secret paths)
+          // processedUsers adds groups:[] to each user via element-wise lodash merge
           expect(deps.writeValues).toHaveBeenNthCalledWith(1, {
             a: 'cert',
             gen: 'x',
             cluster: { name: 'bla', provider: 'dida' },
             users: [
-              { id: 'user1', initialPassword: 'existing-password' },
-              { id: 'user2', initialPassword: 'generated-password' },
+              { id: 'user1', initialPassword: 'existing-password', groups: [] },
+              { id: 'user2', initialPassword: 'generated-password', groups: [] },
             ],
           })
           expect(res.originalInput).toEqual({
@@ -397,8 +413,10 @@ describe('Bootstrapping values', () => {
         })
         it('should merge originalInput + allSecrets + users for disk (stripAllSecrets removes x-secret paths)', async () => {
           // mergedForDisk = merge(originalInput, allSecrets, { users })
-          // allSecrets = merge(ca, storedSecrets, generatedSecrets, kmsValues)
-          const allSecretsExpected = merge(cloneDeep(ca), cloneDeep(secrets), cloneDeep(generatedSecrets))
+          // allSecrets = merge(ca, storedSecrets, generatedSecrets, kmsValues) + users: processedUsers
+          const allSecretsExpected = merge(cloneDeep(ca), cloneDeep(secrets), cloneDeep(generatedSecrets), {
+            users: processedUsers,
+          })
           const expectedDiskValues = merge(
             cloneDeep(secrets),
             cloneDeep(values),
@@ -425,8 +443,10 @@ describe('Bootstrapping values', () => {
           deps.generateSecrets.mockReturnValue(generatedSecrets)
           deps.createCustomCA.mockReturnValue(ca)
           const result = await processValues(deps)
-          // allSecrets should contain full unstripped secrets
-          expect(result.allSecrets).toEqual(merge(cloneDeep(ca), cloneDeep(secrets), cloneDeep(generatedSecrets)))
+          // allSecrets should contain full unstripped secrets including pre-processed users
+          expect(result.allSecrets).toEqual(
+            merge(cloneDeep(ca), cloneDeep(secrets), cloneDeep(generatedSecrets), { users: processedUsers }),
+          )
         })
       })
     })

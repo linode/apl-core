@@ -325,6 +325,22 @@ export const processValues = async (
   )
   // add default platform admin & generate initial passwords for users if they don't have one
   const users = deps.getUsers(originalInput)
+  // Pre-process users into keycloak-operator format (with groups resolved) for sealed secret storage
+  const processedUsers = users.map((user: any) => {
+    const groups: string[] = []
+    if (user.isPlatformAdmin) groups.push('platform-admin')
+    if (user.isTeamAdmin) groups.push('team-admin')
+    for (const team of user.teams || []) groups.push(`team-${team}`)
+    return {
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      initialPassword: user.initialPassword,
+      groups,
+    }
+  })
+  // Store processed users in allSecrets so they flow into sealed secret generation
+  allSecrets.users = processedUsers
   // Write only non-secret values to disk — secrets are stored exclusively in SealedSecrets
   // Include allSecrets so non-secret fields like customRootCA are preserved (stripAllSecrets removes only x-secret paths)
   const mergedForDisk = merge(cloneDeep(originalInput), cloneDeep(allSecrets), cloneDeep({ users }))

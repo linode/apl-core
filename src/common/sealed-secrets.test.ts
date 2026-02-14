@@ -219,9 +219,17 @@ describe('sealed-secrets', () => {
       expect(result[0].namespace).toBe('sealed-secrets')
     })
 
-    it('should skip users path', async () => {
+    it('should serialize users array as single JSON value in users-secrets', async () => {
       const secrets = {
-        users: [{ email: 'admin@example.com' }],
+        users: [
+          {
+            email: 'admin@example.com',
+            firstName: 'Admin',
+            lastName: 'User',
+            initialPassword: 'pass',
+            groups: ['platform-admin'],
+          },
+        ],
         apps: { harbor: { adminPassword: 'pass' } },
       }
       const deps = {
@@ -230,8 +238,11 @@ describe('sealed-secrets', () => {
 
       const result = await buildSecretToNamespaceMap(secrets, [], undefined, deps)
 
-      expect(result).toHaveLength(1)
-      expect(result[0].namespace).toBe('sealed-secrets')
+      expect(result).toHaveLength(2)
+      const usersMapping = result.find((m) => m.secretName === 'users-secrets')
+      expect(usersMapping).toBeDefined()
+      expect(usersMapping!.namespace).toBe('sealed-secrets')
+      expect(usersMapping!.data.usersJson).toBe(JSON.stringify(secrets.users))
     })
 
     it('should handle teamConfig dynamic paths in sealed-secrets namespace', async () => {

@@ -21,16 +21,6 @@
 {{- $k := $c | get "keycloak" }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
-{{ $users := list }}
-{{- range $user := $v.users }}
-  {{ $groups := list }}
-  {{- if $user.isPlatformAdmin }}{{ $groups = append $groups "platform-admin" }}{{ end }}
-  {{- if $user.isTeamAdmin }}{{ $groups = append $groups "team-admin" }}{{ end }}
-  {{- range $team := $user | get "teams" list }}{{ $groups = append $groups (print "team-" $team) }}{{ end }}
-  {{- $users = append $users (dict "email" $user.email "firstName" $user.firstName "lastName" $user.lastName "initialPassword" $user.initialPassword "groups" $groups) }}
-{{- end }}
-{{- $users := $users | toJson }}
-
 resources:
   - apiVersion: external-secrets.io/v1beta1
     kind: ExternalSecret
@@ -51,7 +41,7 @@ resources:
             KEYCLOAK_ADMIN: {{ $k.adminUsername }}
             KEYCLOAK_ADMIN_PASSWORD: '{{ "{{ .adminPassword | toString }}" }}'
             KEYCLOAK_CLIENT_SECRET: '{{ "{{ .idpClientSecret | toString }}" }}'
-            USERS: {{ $users | quote }}
+            USERS: '{{ "{{ .usersJson | toString }}" }}'
             {{- if $v.otomi.hasExternalIDP }}
             IDP_CLIENT_ID: '{{ "{{ .oidcClientID | toString }}" }}'
             IDP_CLIENT_SECRET: '{{ "{{ .oidcClientSecret | toString }}" }}'
@@ -65,6 +55,10 @@ resources:
           remoteRef:
             key: keycloak-secrets
             property: idp_clientSecret
+        - secretKey: usersJson
+          remoteRef:
+            key: users-secrets
+            property: usersJson
         {{- if $v.otomi.hasExternalIDP }}
         - secretKey: oidcClientID
           remoteRef:
