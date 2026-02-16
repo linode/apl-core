@@ -180,7 +180,7 @@ adminApps:
   - name: istio
     tags: [ingress, egress, routing, security, tls, observability, policies]
   - name: keycloak
-    path: /admin/otomi/console
+    path: /admin/otomi/console/
     tags: [auth, sso]
     # isShared: true
     ownHost: true
@@ -218,7 +218,7 @@ adminApps:
           - authorization
   - name: loki
     tags: [logging, telemetry, observability]
-    deps: [grafana, prometheus]
+    deps: [grafana, prometheus, otel]
     useHost: grafana
     path: /explore?orgId=1&left=%7B"datasource":"loki","queries":%5B%7B"refId":"A"%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
   - name: console
@@ -260,7 +260,7 @@ adminApps:
     tags: [secrets, security, observability]
     ownHost: true
   - name: otel
-    tags: [tracing]
+    tags: [logging, tracing]
   - name: trivy
     tags: [security]
     deps: [prometheus, grafana]
