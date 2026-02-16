@@ -165,23 +165,34 @@ export async function initialSetupData(): Promise<InitialData> {
   const { hasExternalIDP } = values.otomi
   const secretName = hasExternalIDP ? 'root-credentials' : 'platform-admin-initial-credentials'
 
-  // Read credentials from K8s secrets (SealedSecrets-decrypted)
-  const otomiSecret = await getK8sSecret('otomi-platform-secrets', 'sealed-secrets')
-  const adminPassword = otomiSecret?.adminPassword ? String(otomiSecret.adminPassword) : ''
-
   if (!hasExternalIDP) {
+    // Read the platform admin's initialPassword from users-secrets (set by keycloak-operator)
+    const usersSecret = await getK8sSecret('users-secrets', 'sealed-secrets')
+    let platformAdminPassword = ''
+    if (usersSecret?.usersJson) {
+      try {
+        const users = JSON.parse(String(usersSecret.usersJson))
+        const defaultEmail = `platform-admin@${domainSuffix}`
+        const platformAdmin = users.find((u: any) => u.email === defaultEmail)
+        platformAdminPassword = platformAdmin?.initialPassword ?? ''
+      } catch {
+        platformAdminPassword = ''
+      }
+    }
     return {
       domainSuffix,
       username: `platform-admin@${domainSuffix}`,
-      password: adminPassword,
+      password: platformAdminPassword,
       secretName,
     }
   } else {
-    const keycloakSecret = await getK8sSecret('keycloak-secrets', 'sealed-secrets')
+    // External IDP: show Keycloak admin credentials (keycloak-initial-admin uses otomi-platform-secrets.adminPassword)
+    const otomiSecret = await getK8sSecret('otomi-platform-secrets', 'sealed-secrets')
+    const adminPassword = otomiSecret?.adminPassword ? String(otomiSecret.adminPassword) : ''
     return {
       domainSuffix,
-      username: keycloakSecret?.adminUsername ? String(keycloakSecret.adminUsername) : 'otomi-admin',
-      password: keycloakSecret?.adminPassword ? String(keycloakSecret.adminPassword) : adminPassword,
+      username: 'otomi-admin',
+      password: adminPassword,
       secretName,
     }
   }
