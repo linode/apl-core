@@ -180,6 +180,7 @@ adminApps:
   - name: istio
     tags: [ingress, egress, routing, security, tls, observability, policies]
   - name: keycloak
+    path: /admin/otomi/console/
     tags: [auth, sso]
     # isShared: true
     ownHost: true
@@ -203,8 +204,6 @@ adminApps:
         auth: true
   - name: kserve
     tags: [ai]
-  - name: kured
-    tags: [security]
   - name: tekton
     tags: [buildpacks, ci, pipelines]
     ownHost: true
@@ -261,7 +260,7 @@ adminApps:
     tags: [secrets, security, observability]
     ownHost: true
   - name: otel
-    tags: [logging, tracing, telemetry, observability]
+    tags: [logging, tracing]
   - name: trivy
     tags: [security]
     deps: [prometheus, grafana]
