@@ -170,14 +170,13 @@ export async function initialSetupData(): Promise<InitialData> {
     const usersSecret = await getK8sSecret('users-secrets', 'sealed-secrets')
     let platformAdminPassword = ''
     if (usersSecret?.usersJson) {
-      try {
-        const users = JSON.parse(String(usersSecret.usersJson))
-        const defaultEmail = `platform-admin@${domainSuffix}`
-        const platformAdmin = users.find((u: any) => u.email === defaultEmail)
-        platformAdminPassword = platformAdmin?.initialPassword ?? ''
-      } catch {
-        platformAdminPassword = ''
-      }
+      // getK8sSecret already parses JSON/YAML values, so usersJson may be an array or a string
+      const users = Array.isArray(usersSecret.usersJson)
+        ? usersSecret.usersJson
+        : JSON.parse(String(usersSecret.usersJson))
+      const defaultEmail = `platform-admin@${domainSuffix}`
+      const platformAdmin = users.find((u: any) => u.email === defaultEmail)
+      platformAdminPassword = platformAdmin?.initialPassword ?? ''
     }
     return {
       domainSuffix,
