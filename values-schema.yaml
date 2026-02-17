@@ -238,7 +238,7 @@ definitions:
       repositoryUrl:
         type: string
         description: 'Git repository URL for the catalog'
-        pattern: '^(https?|git|ssh)://.*\.git$'
+        pattern: '^(https?|git|ssh)://.*'
       branch:
         type: string
         description: 'Git branch or tag to use'
