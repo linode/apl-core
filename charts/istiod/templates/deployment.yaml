@@ -203,15 +203,14 @@ spec:
           - name: PILOT_CA_CERT_CONFIGMAP
             value: "{{ .Values.global.trustBundleName }}"
 {{- end }}
+{{- if .Values.crlConfigMapName }}
+          - name: PILOT_CRL_CONFIGMAP
+            value: "{{ .Values.crlConfigMapName }}"
+{{- end }}
           - name: PILOT_ENABLE_ANALYSIS
             value: "{{ .Values.global.istiod.enableAnalysis }}"
           - name: CLUSTER_ID
             value: "{{ $.Values.global.multiCluster.clusterName | default `Kubernetes` }}"
-          - name: GOMEMLIMIT
-            valueFrom:
-              resourceFieldRef:
-                resource: limits.memory
-                divisor: "1"
           - name: GOMAXPROCS
             valueFrom:
               resourceFieldRef:
