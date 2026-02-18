@@ -1,12 +1,19 @@
 tabWidth: 2
-semi: false
-trailingComma: all
+useTabs: false
+semi: true
 singleQuote: true
-printWidth: 120
+trailingComma: all
+printWidth: 100
+arrowParens: always
+bracketSpacing: true
+bracketSameLine: false
+endOfLine: lf
+
 overrides:
   - files:
       - 'env/**/*.yaml'
+      - 'env/**/*.yml'
       - 'env/**/*.dec'
     options:
-      tabWidth: 4
-      useTabs: true
+      tabWidth: 2
+      useTabs: false
