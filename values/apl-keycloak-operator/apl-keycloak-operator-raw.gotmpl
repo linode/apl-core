@@ -21,31 +21,54 @@
 {{- $k := $c | get "keycloak" }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
-{{ $users := list }}
-{{- range $user := $v.users }}
-  {{ $groups := list }}
-  {{- if $user.isPlatformAdmin }}{{ $groups = append $groups "platform-admin" }}{{ end }}
-  {{- if $user.isTeamAdmin }}{{ $groups = append $groups "team-admin" }}{{ end }}
-  {{- range $team := $user | get "teams" list }}{{ $groups = append $groups (print "team-" $team) }}{{ end }}
-  {{- $users = append $users (dict "email" $user.email "firstName" $user.firstName "lastName" $user.lastName "initialPassword" $user.initialPassword "groups" $groups) }}
-{{- end }}
-{{- $users := $users | toJson }}
-
 resources:
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
       name: apl-keycloak-operator-secret
       namespace: apl-keycloak-operator
-    data:
-      KEYCLOAK_ADMIN: {{ .Values.apps.keycloak.adminUsername | b64enc }}
-      KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword | b64enc }}
-      KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret | b64enc }}
-      USERS: {{ $users | b64enc }}
-      {{- if $v.otomi.hasExternalIDP }}
-      IDP_CLIENT_ID: {{ $oi.clientID | b64enc}}
-      IDP_CLIENT_SECRET: {{ $oi.clientSecret | b64enc }}
-      {{- end }}
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: apl-keycloak-operator-secret
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            KEYCLOAK_ADMIN: {{ $k.adminUsername }}
+            KEYCLOAK_ADMIN_PASSWORD: '{{ "{{ .adminPassword | toString }}" }}'
+            KEYCLOAK_CLIENT_SECRET: '{{ "{{ .idpClientSecret | toString }}" }}'
+            USERS: '{{ "{{ .usersJson | toString }}" }}'
+            {{- if $v.otomi.hasExternalIDP }}
+            IDP_CLIENT_ID: '{{ "{{ .oidcClientID | toString }}" }}'
+            IDP_CLIENT_SECRET: '{{ "{{ .oidcClientSecret | toString }}" }}'
+            {{- end }}
+      data:
+        - secretKey: adminPassword
+          remoteRef:
+            key: otomi-platform-secrets
+            property: adminPassword
+        - secretKey: idpClientSecret
+          remoteRef:
+            key: keycloak-secrets
+            property: idp_clientSecret
+        - secretKey: usersJson
+          remoteRef:
+            key: users-secrets
+            property: usersJson
+        {{- if $v.otomi.hasExternalIDP }}
+        - secretKey: oidcClientID
+          remoteRef:
+            key: oidc-secrets
+            property: clientID
+        - secretKey: oidcClientSecret
+          remoteRef:
+            key: oidc-secrets
+            property: clientSecret
+        {{- end }}
   - apiVersion: v1
     kind: ConfigMap
     metadata:

@@ -6,31 +6,96 @@
 resources:
 
 {{- if and $v.otomi.hasExternalDNS (or (not (hasKey $p "aws")) ($p | get "aws.credentials.secretKey" nil)) }}
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
-      name: "external-dns"
-    data:
-      {{- if hasKey $p "google" }}
-      secret: "{{ $p.google.serviceAccountKey | b64enc }}"
-      {{- else if hasKey $p "akamai" }}
-      access_token: {{ $p.akamai.accessToken | b64enc | quote }}
-      client_token: {{ $p.akamai.clientToken | b64enc | quote }}
-      client_secret: {{ $p.akamai.clientSecret | b64enc | quote }}
-      {{- else if hasKey $p "azure-private-dns" }}
-      secret: "{{ $p | get "azure-private-dns.aadClientSecret" | b64enc }}"
-      {{- else if hasKey $p "azure" }}
-      secret: "{{ $p.azure.aadClientSecret | b64enc }}"
-      {{- else if and (hasKey $p "aws") ($p | get "aws.credentials.secretKey" nil) }}
-      secret: "{{ $p.aws.credentials.secretKey | b64enc }}"
-      {{- else if hasKey $p "digitalocean" }}
-      secret: "{{ $p.digitalocean.apiToken | b64enc }}"
-      {{- else if hasKey $p "cloudflare" }}
-      secret: "{{ $p.cloudflare.apiToken | b64enc }}"
-      {{- else if hasKey $p "linode" }}
-      secret: "{{ $p.linode.apiToken | b64enc }}"
-      {{- end }}
+      name: external-dns
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: external-dns
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            {{- if hasKey $p "google" }}
+            secret: '{{ "{{ .secret | toString }}" }}'
+            {{- else if hasKey $p "akamai" }}
+            access_token: '{{ "{{ .access_token | toString }}" }}'
+            client_token: '{{ "{{ .client_token | toString }}" }}'
+            client_secret: '{{ "{{ .client_secret | toString }}" }}'
+            {{- else if hasKey $p "azure-private-dns" }}
+            secret: '{{ "{{ .secret | toString }}" }}'
+            {{- else if hasKey $p "azure" }}
+            secret: '{{ "{{ .secret | toString }}" }}'
+            {{- else if and (hasKey $p "aws") ($p | get "aws.credentials.secretKey" nil) }}
+            secret: '{{ "{{ .secret | toString }}" }}'
+            {{- else if hasKey $p "digitalocean" }}
+            secret: '{{ "{{ .secret | toString }}" }}'
+            {{- else if hasKey $p "cloudflare" }}
+            secret: '{{ "{{ .secret | toString }}" }}'
+            {{- else if hasKey $p "linode" }}
+            secret: '{{ "{{ .secret | toString }}" }}'
+            {{- end }}
+      data:
+        - secretKey: secret
+          remoteRef:
+            key: dns-secrets
+            {{- if hasKey $p "google" }}
+            property: provider_google_serviceAccountKey
+            {{- else if hasKey $p "akamai" }}
+            property: provider_akamai_clientSecret
+        - secretKey: access_token
+          remoteRef:
+            key: dns-secrets
+            property: provider_akamai_accessToken
+        - secretKey: client_token
+          remoteRef:
+            key: dns-secrets
+            property: provider_akamai_clientToken
+        - secretKey: client_secret
+          remoteRef:
+            key: dns-secrets
+            property: provider_akamai_clientSecret
+            {{- else if hasKey $p "azure-private-dns" }}
+            property: provider_azure-private-dns_aadClientSecret
+            {{- else if hasKey $p "azure" }}
+            property: provider_azure_aadClientSecret
+            {{- else if and (hasKey $p "aws") ($p | get "aws.credentials.secretKey" nil) }}
+            property: provider_aws_credentials_secretKey
+            {{- else if hasKey $p "digitalocean" }}
+            property: provider_digitalocean_apiToken
+            {{- else if hasKey $p "cloudflare" }}
+            property: provider_cloudflare_apiToken
+            {{- else if hasKey $p "linode" }}
+            property: provider_linode_apiToken
+            {{- end }}
 {{- end }}
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: custom-ca
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: custom-ca
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            tls.crt: {{ $cm.customRootCA | quote }}
+            tls.key: '{{ "{{ .customRootCAKey | toString }}" }}'
+      data:
+        - secretKey: customRootCAKey
+          remoteRef:
+            key: cert-manager-secrets
+            property: customRootCAKey
   - apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
     metadata:
@@ -147,15 +212,29 @@ resources:
               {{- end }}
 {{- end }}
 {{- if eq $cm.issuer "byo-wildcard-cert" }}
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
       name: otomi-byo-wildcard-cert
       namespace: istio-system
-    type: kubernetes.io/tls
-    data:
-      tls.crt: {{ $cm.byoWildcardCert | b64enc }}
-      tls.key: {{ $cm.byoWildcardCertKey | b64enc }}
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: otomi-byo-wildcard-cert
+        creationPolicy: Owner
+        template:
+          type: kubernetes.io/tls
+          data:
+            tls.crt: {{ $cm.byoWildcardCert | quote }}
+            tls.key: '{{ "{{ .byoWildcardCertKey | toString }}" }}'
+      data:
+        - secretKey: byoWildcardCertKey
+          remoteRef:
+            key: cert-manager-secrets
+            property: byoWildcardCertKey
 {{- end }}
 {{- if or (eq $cm.issuer "letsencrypt" ) (eq $cm.issuer "custom-ca" ) }}
   - apiVersion: cert-manager.io/v1

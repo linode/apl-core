@@ -220,15 +220,10 @@ environments:
             {{- end }}
           external-dns:
             enabled: {{ $v.otomi.hasExternalDNS }}
-          harbor:
-            adminPassword: {{ $a | get "harbor.adminPassword" $v.otomi.adminPassword | quote }}
-            registry:
-              credentials:
-                password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword | quote }}
+          harbor: {}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
-            adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword | quote }}
           ingress-nginx:
             enabled: true
           istio:

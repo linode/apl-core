@@ -11,17 +11,36 @@
 {{- $teamNamespaces := $teamNamespaces | sortAlpha | toJson }}
 
 resources:
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
       name: apl-harbor-operator-secret
       namespace: apl-harbor-operator
-    data:
-      harborPassword:  {{ $h.adminPassword | b64enc }}
-      harborUser: {{ "admin" | b64enc }}
-      oidcEndpoint: {{ $v._derived.oidcBaseUrl | b64enc }}
-      oidcClientId: {{ $k.idp.clientID | b64enc }}
-      oidcClientSecret: {{ $k.idp.clientSecret | b64enc }}
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: apl-harbor-operator-secret
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            harborPassword: '{{ "{{ .harborAdminPassword | toString }}" }}'
+            harborUser: admin
+            oidcEndpoint: {{ $v._derived.oidcBaseUrl }}
+            oidcClientId: {{ $k.idp.clientID }}
+            oidcClientSecret: '{{ "{{ .keycloakClientSecret | toString }}" }}'
+      data:
+        - secretKey: harborAdminPassword
+          remoteRef:
+            key: harbor-secrets
+            property: adminPassword
+        - secretKey: keycloakClientSecret
+          remoteRef:
+            key: keycloak-secrets
+            property: idp_clientSecret
   - apiVersion: v1
     kind: ConfigMap
     metadata:

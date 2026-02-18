@@ -4,11 +4,11 @@ import { prepareEnvironment } from 'src/common/cli'
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { hfValues } from 'src/common/hf'
-import { waitTillGitRepoAvailable } from 'src/common/gitea'
-import { createUpdateConfigMap, createUpdateGenericSecret, k8s } from 'src/common/k8s'
-import { getFilename } from 'src/common/utils'
 import { getRepo, GitRepoConfig } from 'src/common/git-config'
+import { waitTillGitRepoAvailable } from 'src/common/gitea'
+import { hfValues } from 'src/common/hf'
+import { createUpdateConfigMap, createUpdateGenericSecret, getK8sSecret, k8s } from 'src/common/k8s'
+import { getFilename } from 'src/common/utils'
 import { HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
@@ -63,7 +63,7 @@ const commitAndPush = async (
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const message = initialInstall ? 'otomi commit' : 'updated values [ci skip]'
-  const { password } = gitConfig ?? getRepo(values)
+  const { password } = gitConfig ?? (await getRepo(values))
   cd(env.ENV_DIR)
   try {
     try {
@@ -84,8 +84,9 @@ const commitAndPush = async (
     }
     await $`git commit -m ${message} --no-verify`.quiet()
   } catch (e) {
-    d.log('commitAndPush error ', e?.message?.replace(password, '****'))
-    return
+    const errorMsg = `commitAndPush error: ${e?.message?.replace(password, '****')}`
+    d.error(errorMsg)
+    throw new Error(errorMsg)
   }
   if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
   await retry(
@@ -142,11 +143,16 @@ export const commit = async (
   await validateValues(overrideArgs)
   d.info('Preparing values')
   const values = (await hfValues()) as Record<string, any>
-  // Use provided gitConfig if available (operator mode), otherwise read from values (bootstrap/install mode)
-  const { branch, authenticatedUrl: remote, username, email } = gitConfig ?? getRepo(values)
+  const { branch, authenticatedUrl: remote, username, email } = gitConfig ?? (await getRepo(values))
   if (initialInstall) {
     // we call this here again, as we might not have completed (happens upon first install):
     await bootstrapGit(values)
+    // Always update the remote URL after bootstrap - the initial bootstrapGit() (called during
+    // the bootstrap phase before install) may have set the URL with unresolved placeholder
+    // passwords because K8s secrets didn't exist yet. Now that secrets are decrypted,
+    // we need to update the URL with the real credentials.
+    cd(env.ENV_DIR)
+    await $`git remote set-url origin ${remote}`.nothrow().quiet()
   } else {
     cd(env.ENV_DIR)
     await setIdentity(username, email)
@@ -166,23 +172,35 @@ export async function initialSetupData(): Promise<InitialData> {
   const values = (await hfValues()) as Record<string, any>
   const { domainSuffix } = values.cluster
   const { hasExternalIDP } = values.otomi
-
-  const defaultPlatformAdminEmail = `platform-admin@${domainSuffix}`
-  const platformAdmin = values.users.find((user: any) => user.email === defaultPlatformAdminEmail)
   const secretName = hasExternalIDP ? 'root-credentials' : 'platform-admin-initial-credentials'
 
-  if (platformAdmin && !hasExternalIDP) {
+  if (!hasExternalIDP) {
+    // Read the platform admin's initialPassword from users-secrets (set by keycloak-operator)
+    const usersSecret = await getK8sSecret('users-secrets', 'sealed-secrets')
+    let platformAdminPassword = ''
+    if (usersSecret?.usersJson) {
+      // getK8sSecret already parses JSON/YAML values, so usersJson may be an array or a string
+      const users = Array.isArray(usersSecret.usersJson)
+        ? usersSecret.usersJson
+        : JSON.parse(String(usersSecret.usersJson))
+      const defaultEmail = `platform-admin@${domainSuffix}`
+      const platformAdmin = users.find((u: any) => u.email === defaultEmail)
+      platformAdminPassword = platformAdmin?.initialPassword ?? ''
+    }
     return {
       domainSuffix,
-      username: platformAdmin.email,
-      password: platformAdmin.initialPassword,
+      username: `platform-admin@${domainSuffix}`,
+      password: platformAdminPassword,
       secretName,
     }
   } else {
+    // External IDP: show Keycloak admin credentials (keycloak-initial-admin uses otomi-platform-secrets.adminPassword)
+    const otomiSecret = await getK8sSecret('otomi-platform-secrets', 'sealed-secrets')
+    const adminPassword = otomiSecret?.adminPassword ? String(otomiSecret.adminPassword) : ''
     return {
       domainSuffix,
-      username: values.apps.keycloak.adminUsername,
-      password: values.apps.keycloak.adminPassword,
+      username: 'otomi-admin',
+      password: adminPassword,
       secretName,
     }
   }

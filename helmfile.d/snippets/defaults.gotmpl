@@ -22,8 +22,8 @@ environments:
   default:
     values:
     - apps:
-        kubeflow-pipelines:
-          rootPassword: {{ randAlphaNum 32 }}
+        kubeflow-pipelines: {}
+        gitea: {}
         {{- range $index,$ingressClassName := $ingressClassNames }}
         ingress-nginx-{{ $ingressClassName}}:
           autoscaling:
@@ -267,13 +267,9 @@ environments:
                 useCloudShell: true
                 downloadKubeconfig: true
                 downloadDockerLogin: true
-            password: {{ randAlphaNum 32 }}
       {{- end }}
       {{- end }}
-      otomi:
-        adminPassword: {{ randAlphaNum 32 }}
-        git:
-          password: {{ randAlphaNum 20 }}
+      otomi: {}
       cluster:
         owner: customer
         name: apl

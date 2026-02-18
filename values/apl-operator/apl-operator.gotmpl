@@ -2,7 +2,6 @@
 {{- $o := $v.apps | get "apl-operator" }}
 {{- $version := $v.otomi.version }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
-{{- $g := $v.apps.gitea }}
 {{- $kms := $v | get "kms" dict }}
 image:
   {{- if $v.otomi.linodeLkeImageRepository }}
@@ -19,11 +18,3 @@ imagePullSecrets:
 resources: {{- toYaml $o.resources.operator | nindent 2 }}
 
 kms: {{- $kms | toYaml | nindent 2 }}
-
-git:
-  password: {{ $v.otomi.git.password | quote }}
-  username: {{ $v.otomi.git.username | quote }}
-  email: {{ $v.otomi.git.email | quote }}
-  repoUrl: {{ $v.otomi.git.repoUrl | quote }}
-  branch: {{ $v.otomi.git.branch | quote }}
-

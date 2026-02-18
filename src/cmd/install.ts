@@ -5,8 +5,20 @@ import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { setGitConfig } from 'src/common/git-config'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
-import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState, waitForCRD } from 'src/common/k8s'
-import { getFilename, rootDir } from 'src/common/utils'
+import {
+  applyServerSide,
+  getDeploymentState,
+  getHelmReleases,
+  getK8sSecret,
+  setDeploymentState,
+  waitForCRD,
+} from 'src/common/k8s'
+import {
+  applySealedSecretManifestsFromDir,
+  buildSecretToNamespaceMap,
+  restartSealedSecretsController,
+} from 'src/common/sealed-secrets'
+import { getFilename, getSchemaSecretsPaths, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
@@ -45,6 +57,65 @@ const retryInstallStep = async <T, Args extends any[]>(
   )
 }
 
+/**
+ * Wait for SealedSecrets controller to decrypt SealedSecret resources into K8s Secrets.
+ * Derives the list of secrets to wait for from schema x-secret fields via buildSecretToNamespaceMap().
+ */
+const waitForSealedSecrets = async (
+  timeoutMs = 120000,
+  intervalMs = 3000,
+  deps = { getK8sSecret, terminal, buildSecretToNamespaceMap, getSchemaSecretsPaths },
+): Promise<void> => {
+  const d = deps.terminal(`cmd:${cmdName}:waitForSealedSecrets`)
+
+  // Build list of secrets to wait for from schema-driven mappings
+  // We pass empty secrets/teams since we just need the secret names and namespaces
+  const mappings = await deps.buildSecretToNamespaceMap({}, [], undefined, {
+    getSchemaSecretsPaths: deps.getSchemaSecretsPaths,
+  })
+
+  // Deduplicate by namespace/secretName
+  const secretsToWait = new Map<string, { namespace: string; secretName: string }>()
+  for (const mapping of mappings) {
+    const key = `${mapping.namespace}/${mapping.secretName}`
+    if (!secretsToWait.has(key)) {
+      secretsToWait.set(key, { namespace: mapping.namespace, secretName: mapping.secretName })
+    }
+  }
+
+  if (secretsToWait.size === 0) {
+    d.info('No sealed secrets to wait for')
+    return
+  }
+
+  d.info(`Waiting for ${secretsToWait.size} sealed secrets to be decrypted`)
+  const start = Date.now()
+
+  while (Date.now() - start < timeoutMs) {
+    const pending: string[] = []
+    for (const { namespace, secretName } of secretsToWait.values()) {
+      try {
+        const secret = await deps.getK8sSecret(secretName, namespace)
+        if (!secret) {
+          pending.push(`${namespace}/${secretName}`)
+        }
+      } catch {
+        pending.push(`${namespace}/${secretName}`)
+      }
+    }
+
+    if (pending.length === 0) {
+      d.info('All sealed secrets have been decrypted')
+      return
+    }
+
+    d.info(`Still waiting for sealed secrets: ${pending.join(', ')}`)
+    await new Promise((resolve) => setTimeout(resolve, intervalMs))
+  }
+
+  throw new Error(`Timed out waiting for sealed secrets to be decrypted after ${timeoutMs}ms`)
+}
+
 export const installAll = async () => {
   const d = terminal(`cmd:${cmdName}:installAll`)
   const prevState = await getDeploymentState()
@@ -65,16 +136,65 @@ export const installAll = async () => {
     throw new Error('Failed to deploy essential manifests')
   }
 
+  // Deploy sealed-secrets controller right after essentials
+  d.info('Deploying sealed-secrets controller')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-01.init.yaml.gotmpl',
+      labelOpts: ['name=sealed-secrets'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  d.info('Waiting for SealedSecret CRD to be ready')
+  await retryInstallStep(waitForCRD, 'sealedsecrets.bitnami.com')
+
+  d.info('Applying SealedSecret manifests')
+  await applySealedSecretManifestsFromDir(env.ENV_DIR)
+
+  d.info('Restarting sealed-secrets controller')
+  await restartSealedSecretsController()
+
+  d.info('Waiting for sealed secrets to be decrypted into K8s Secrets')
+  await waitForSealedSecrets()
+
+  // Deploy ESO (External Secrets Operator)
+  d.info('Deploying external-secrets operator')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-01.init.yaml.gotmpl',
+      labelOpts: ['name=external-secrets'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  d.info('Waiting for ExternalSecret CRD to be ready')
+  await retryInstallStep(waitForCRD, 'externalsecrets.external-secrets.io')
+
+  d.info('Deploying ESO ClusterSecretStore')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-01.init.yaml.gotmpl',
+      labelOpts: ['name=external-secrets-artifacts'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  // Deploy CRDs
   d.info('Deploying CRDs')
   await retryInstallStep(applyServerSide, 'charts/kube-prometheus-stack/charts/crds/crds')
-  // Wait for ServiceMonitor CRD to be established before deploying nginx
   await retryInstallStep(waitForCRD, 'servicemonitors.monitoring.coreos.com')
   await retryInstallStep(async () => $`kubectl apply -f charts/tekton-triggers/crds --server-side`)
 
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
-      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values at this stage):
       fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
       labelOpts: ['stage=prep'],
       logLevel: logLevelString(),
@@ -96,17 +216,41 @@ export const installAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 
+  // Deploy cert-manager artifacts (ExternalSecrets, ClusterIssuers, Certificates)
+  // Must be after app=core (cert-manager CRDs) and after ESO + ClusterSecretStore
+  d.info('Deploying cert-manager artifacts')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-07.init.yaml.gotmpl',
+      labelOpts: ['name=cert-manager-artifacts'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
   if (!(env.isDev && env.DISABLE_SYNC)) {
     // Get the git configuration from values
     const values = (await hfValues()) as Record<string, any>
     // Commit to Git repository
     await commit(true)
 
+    const gitBranch = values?.otomi?.git?.branch ?? 'main'
     await setGitConfig({
       repoUrl: values?.otomi?.git?.repoUrl,
-      branch: values?.otomi?.git?.branch ?? 'main',
+      branch: gitBranch,
       email: values?.otomi?.git?.email,
     })
+
+    // Verify the git push actually succeeded by checking the remote branch exists
+    d.info('Verifying git push succeeded')
+    const verifyResult = await $`git -C ${env.ENV_DIR} ls-remote --exit-code --heads origin ${gitBranch}`
+      .nothrow()
+      .quiet()
+    if (verifyResult.exitCode !== 0) {
+      throw new Error(`Git push verification failed: remote branch ${gitBranch} does not exist after commit`)
+    }
+    d.info('Git push verified successfully')
 
     const initialData = await initialSetupData()
     await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)

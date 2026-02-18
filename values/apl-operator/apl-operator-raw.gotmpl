@@ -1,0 +1,25 @@
+{{- $v := .Values }}
+
+resources:
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
+  metadata:
+    name: gitea-credentials
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: gitea-credentials
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          GIT_USERNAME: {{ $v.otomi.git.username | default "otomi-admin" }}
+          GIT_PASSWORD: '{{ "{{ .git_password | toString }}" }}'
+    data:
+      - secretKey: git_password
+        remoteRef:
+          key: otomi-platform-secrets
+          property: git_password

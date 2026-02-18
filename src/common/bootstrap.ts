@@ -1,10 +1,12 @@
 import { existsSync } from 'fs'
+import { get } from 'lodash'
 import { decrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
-import { hfValues } from 'src/common/hf'
-import { getFilename } from 'src/common/utils'
 import { getRepo } from 'src/common/git-config'
+import { hfValues } from 'src/common/hf'
+import { stripAllSecrets } from 'src/common/sealed-secrets'
+import { getFilename, getSchemaSecretsPaths } from 'src/common/utils'
 import { writeValues } from 'src/common/values'
 import { $, cd } from 'zx'
 
@@ -23,7 +25,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   // inValues indicates that there is no values repo file structure that helmfile expects
   const values = inValues ?? ((await hfValues()) as Record<string, any>)
-  const { authenticatedUrl: remote, branch, email, username, password } = getRepo(values)
+  const { authenticatedUrl: remote, branch, email, username, password } = await getRepo(values)
   cd(env.ENV_DIR)
   if (existsSync(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped, setting identity just in case`)
@@ -62,9 +64,12 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     d.info('Remote repository is empty or unreachable. Will initialize locally and push initial commit.')
   } finally {
     const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
+    // Strip ALL secrets before writing to disk — secrets are in SealedSecrets only
+    const secretPaths = await getSchemaSecretsPaths(Object.keys(get(defaultValues, 'teamConfig', {})))
+    const strippedValues = stripAllSecrets(defaultValues, secretPaths)
     // finally write back the new values without overwriting existing values
     d.info('Write default values to env repo')
-    await writeValues(defaultValues)
+    await writeValues(strippedValues)
   }
 
   if (!existsSync(`${env.ENV_DIR}/.git`)) {

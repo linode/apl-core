@@ -17,6 +17,7 @@ jest.mock('src/common/k8s', () => ({
   applyServerSide: jest.fn(),
   restartOtomiApiDeployment: jest.fn(),
   waitForCRD: jest.fn(),
+  getK8sSecret: jest.fn().mockResolvedValue({ password: 'test', username: 'test' }),
   k8s: {
     app: jest.fn(),
   },
@@ -39,9 +40,31 @@ jest.mock('src/common/git-config', () => ({
   setGitConfig: jest.fn(),
 }))
 
-jest.mock('zx', () => ({
-  $: jest.fn(),
-  cd: jest.fn(),
+jest.mock('zx', () => {
+  const mockResult = { exitCode: 0, stdout: '', stderr: '' }
+  const createMockProcessPromise = () => {
+    const promise = Promise.resolve(mockResult)
+    const chainable: any = promise
+    chainable.nothrow = jest.fn().mockReturnValue(chainable)
+    chainable.quiet = jest.fn().mockReturnValue(chainable)
+    return chainable
+  }
+  return {
+    $: jest.fn().mockImplementation(() => createMockProcessPromise()),
+    cd: jest.fn(),
+  }
+})
+
+jest.mock('src/common/sealed-secrets', () => ({
+  applySealedSecretManifestsFromDir: jest.fn().mockResolvedValue(undefined),
+  restartSealedSecretsController: jest.fn().mockResolvedValue(undefined),
+  buildSecretToNamespaceMap: jest.fn().mockResolvedValue([]),
+}))
+
+jest.mock('src/common/utils', () => ({
+  ...jest.requireActual('src/common/utils'),
+  rootDir: '/test/root',
+  getSchemaSecretsPaths: jest.fn().mockResolvedValue([]),
 }))
 
 jest.mock('./commit', () => ({
@@ -62,11 +85,6 @@ jest.mock('./commit', () => ({
 jest.mock('src/common/cli', () => ({
   cleanupHandler: jest.fn(),
   prepareEnvironment: jest.fn(),
-}))
-
-jest.mock('src/common/utils', () => ({
-  ...jest.requireActual('src/common/utils'),
-  rootDir: '/test/root',
 }))
 
 jest.mock('src/common/yargs', () => ({
@@ -111,7 +129,6 @@ describe('Install command', () => {
       stderr: '',
     })
     mockDeps.deployEssential.mockResolvedValue(true)
-    mockDeps.$.mockResolvedValue(undefined)
   })
 
   describe('module configuration', () => {

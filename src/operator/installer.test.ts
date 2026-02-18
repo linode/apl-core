@@ -4,6 +4,31 @@ import * as k8s from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { Installer } from './installer'
 
+const mockZx = jest.fn().mockReturnValue({
+  nothrow: jest.fn().mockReturnValue({
+    quiet: jest.fn().mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' }),
+  }),
+})
+
+jest.mock('zx', () => ({
+  $: (...args: any[]) => mockZx(...args),
+}))
+
+jest.mock('../common/envalid', () => ({
+  env: {
+    GIT_PROTOCOL: 'http',
+    GIT_URL: 'gitea-http.gitea.svc.cluster.local',
+    GIT_PORT: '3000',
+  },
+}))
+
+jest.mock('./validators', () => ({
+  operatorEnv: {
+    GIT_ORG: 'otomi',
+    GIT_REPO: 'values',
+  },
+}))
+
 jest.mock('../common/debug', () => ({
   terminal: jest.fn().mockImplementation(() => ({
     info: jest.fn(),
@@ -236,9 +261,17 @@ describe('Installer', () => {
   })
 
   describe('isInstalled', () => {
-    test('should return completed status when ConfigMap exists', async () => {
+    test('should return completed status when ConfigMap exists and git repo has main branch', async () => {
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
         data: { status: 'completed' },
+      })
+      // getK8sSecret returns credentials for git verification
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ GIT_USERNAME: 'admin', GIT_PASSWORD: 'pass' })
+      // git ls-remote succeeds (main branch exists)
+      mockZx.mockReturnValue({
+        nothrow: jest.fn().mockReturnValue({
+          quiet: jest.fn().mockResolvedValue({ exitCode: 0 }),
+        }),
       })
 
       const isInstalled = await installer.isInstalled()
@@ -246,6 +279,23 @@ describe('Installer', () => {
       expect(k8s.getK8sConfigMap).toHaveBeenCalledWith('apl-operator', 'apl-installation-status', mockCoreApi)
       expect(isInstalled).toBe(true)
       expect(mockAplOps.install).not.toHaveBeenCalled()
+    })
+
+    test('should return false when status is completed but git repo has no main branch', async () => {
+      ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
+        data: { status: 'completed' },
+      })
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ GIT_USERNAME: 'admin', GIT_PASSWORD: 'pass' })
+      // git ls-remote fails (main branch does not exist)
+      mockZx.mockReturnValue({
+        nothrow: jest.fn().mockReturnValue({
+          quiet: jest.fn().mockResolvedValue({ exitCode: 2 }),
+        }),
+      })
+
+      const isInstalled = await installer.isInstalled()
+
+      expect(isInstalled).toBe(false)
     })
 
     test('should return true when ConfigMap does not exist', async () => {
@@ -280,6 +330,19 @@ describe('Installer', () => {
       expect(k8s.getK8sConfigMap).toHaveBeenCalledWith('apl-operator', 'apl-installation-status', mockCoreApi)
       expect(isInstalled).toBe(false)
     })
+
+    test('should return true when git verification fails (gitea not ready)', async () => {
+      ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
+        data: { status: 'completed' },
+      })
+      // getK8sSecret throws (cluster issues)
+      ;(k8s.getK8sSecret as jest.Mock).mockRejectedValue(new Error('connection refused'))
+
+      const isInstalled = await installer.isInstalled()
+
+      // Should assume installed when verification can't be performed
+      expect(isInstalled).toBe(true)
+    })
   })
 
   describe('setEnvAndCreateSecrets', () => {
@@ -292,10 +355,13 @@ describe('Installer', () => {
       expect(process.env.SOPS_AGE_KEY).toBe('existing-sops-key')
     })
 
-    test('should handle failure when SOPS key not found in secret', async () => {
+    test('should skip gracefully when SOPS key not found in secret (SealedSecrets in use)', async () => {
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
 
-      await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow('SOPS_AGE_KEY not found in secret')
+      await installer.setEnvAndCreateSecrets()
+
+      // Should not throw — SOPS is no longer required (replaced by SealedSecrets + ESO)
+      expect(process.env.SOPS_AGE_KEY).toBe('')
     })
   })
 

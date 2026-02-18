@@ -13,6 +13,28 @@
 {{- end }}
 
 resources:
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
+  metadata:
+    name: gitea-admin-secret
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: gitea-admin-secret
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          username: {{ $v.otomi.git.username | default "otomi-admin" }}
+          password: '{{ "{{ .git_password | toString }}" }}'
+    data:
+      - secretKey: git_password
+        remoteRef:
+          key: otomi-platform-secrets
+          property: git_password
 {{- if $v._derived.untrustedCA }}
 - apiVersion: v1
   kind: Secret
@@ -21,22 +43,53 @@ resources:
   data:
     ca-certificates.crt: {{ .Values._derived.caCert | b64enc }}
 {{- end }}
-- apiVersion: v1
-  kind: Secret
-  metadata:
-    name: gitea-admin-secret
-  data:
-    username: "{{ $v.otomi.git.username | b64enc }}"
-    password: "{{ $v.otomi.git.password | b64enc }}"
 # DB / app backup resources
 {{- if eq $obj.type "linode" }}
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: linode-creds
-  data:
-    S3_STORAGE_ACCOUNT: "{{ $obj.linode.accessKeyId | b64enc }}"
-    S3_STORAGE_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: linode-creds
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          S3_STORAGE_ACCOUNT: {{ $obj.linode.accessKeyId }}
+          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey | toString }}" }}'
+    data:
+      - secretKey: secretAccessKey
+        remoteRef:
+          key: obj-storage-secrets
+          property: provider_linode_secretAccessKey
+{{- end }}
+{{- with $v | get "smtp" nil }}
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
+  metadata:
+    name: gitea-smtp-secret
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: gitea-smtp-secret
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          password: '{{ "{{ .authPassword | toString }}" }}'
+    data:
+      - secretKey: authPassword
+        remoteRef:
+          key: smtp-secrets
+          property: auth_password
 {{- end }}
 {{- if ne $v.cluster.provider "custom" }}
 # Application backup resources

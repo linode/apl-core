@@ -10,41 +10,89 @@ resources:
       custom-ca-certificates.crt: {{ .Values._derived.caCert | b64enc }}
 {{- end }}
 {{- if contains "gitea-http.gitea.svc.cluster.local" $v.otomi.git.repoUrl }}
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
       name: argocd-repo-creds-gitea
       namespace: argocd
-      labels:
-        argocd.argoproj.io/secret-type: repo-creds
-    data:
-      type: {{ print "git" | b64enc | quote }}
-      url: {{ printf "https://%s" $v._derived.giteaDomain | b64enc }}
-      username: {{ $v.otomi.git.username | b64enc }}
-      password: {{ $v.otomi.git.password| b64enc }}
-  - apiVersion: v1
-    kind: Secret
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: argocd-repo-creds-gitea
+        creationPolicy: Owner
+        template:
+          metadata:
+            labels:
+              argocd.argoproj.io/secret-type: repo-creds
+          type: Opaque
+          data:
+            type: {{ print "git" | quote }}
+            url: {{ printf "https://%s" $v._derived.giteaDomain }}
+            username: {{ $v.otomi.git.username }}
+            password: '{{ "{{ .gitPassword | toString }}" }}'
+      data:
+        - secretKey: gitPassword
+          remoteRef:
+            key: otomi-platform-secrets
+            property: git_password
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
       name: argocd-repo-creds-gitea-internal
       namespace: argocd
-      labels:
-        argocd.argoproj.io/secret-type: repo-creds
-    data:
-      type: {{ print "git" | b64enc | quote }}
-      url: {{ "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git" | b64enc | quote }}
-      username: {{ $v.otomi.git.username | b64enc }}
-      password: {{ $v.otomi.git.password| b64enc }}
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: argocd-repo-creds-gitea-internal
+        creationPolicy: Owner
+        template:
+          metadata:
+            labels:
+              argocd.argoproj.io/secret-type: repo-creds
+          type: Opaque
+          data:
+            type: {{ print "git" | quote }}
+            url: {{ "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git" | quote }}
+            username: {{ $v.otomi.git.username }}
+            password: '{{ "{{ .gitPassword | toString }}" }}'
+      data:
+        - secretKey: gitPassword
+          remoteRef:
+            key: otomi-platform-secrets
+            property: git_password
 {{- else }}
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
       name: argocd-repo-creds-git
       namespace: argocd
-      labels:
-        argocd.argoproj.io/secret-type: repo-creds
-    data:
-      type: {{ print "git" | b64enc | quote }}
-      url: {{ $v.otomi.git.repoUrl | b64enc }}
-      username: {{ $v.otomi.git.username | b64enc }}
-      password: {{ $v.otomi.git.password | b64enc }}
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: argocd-repo-creds-git
+        creationPolicy: Owner
+        template:
+          metadata:
+            labels:
+              argocd.argoproj.io/secret-type: repo-creds
+          type: Opaque
+          data:
+            type: {{ print "git" | quote }}
+            url: {{ $v.otomi.git.repoUrl }}
+            username: {{ $v.otomi.git.username }}
+            password: '{{ "{{ .gitPassword | toString }}" }}'
+      data:
+        - secretKey: gitPassword
+          remoteRef:
+            key: otomi-platform-secrets
+            property: git_password
 {{- end }}

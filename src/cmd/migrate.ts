@@ -21,7 +21,7 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { ARGOCD_APP_PARAMS } from '../common/constants'
-import { getSealedSecretsPEM, k8s } from '../common/k8s'
+import { getK8sSecret, getSealedSecretsPEM, k8s } from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
@@ -712,7 +712,12 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   let secretCreated = false
   if (useGiteaCatalog) {
     try {
-      await createCatalogSealedSecret(d, gitea as { adminUsername: string; adminPassword: string })
+      const giteaSecrets = await getK8sSecret('gitea-secrets', 'sealed-secrets')
+      const resolvedGitea = {
+        adminUsername: giteaSecrets?.adminUsername ? String(giteaSecrets.adminUsername) : String(gitea!.adminUsername),
+        adminPassword: giteaSecrets?.adminPassword ? String(giteaSecrets.adminPassword) : String(gitea!.adminPassword),
+      }
+      await createCatalogSealedSecret(d, resolvedGitea)
       secretCreated = true
     } catch (error) {
       d.error('Failed to create catalog sealed secret, continuing without it:', error)

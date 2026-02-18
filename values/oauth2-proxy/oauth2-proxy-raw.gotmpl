@@ -7,15 +7,50 @@
 {{- $ingress :=  $v.ingress.platformClass }}
 
 resources:
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: oauth2-proxy-redis-password
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: oauth2-proxy-redis-password
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            password: '{{ "{{ .password | toString }}" }}'
+      data:
+        - secretKey: password
+          remoteRef:
+            key: oauth2-proxy-redis-secrets
+            property: password
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
       name: oauth2-proxy-client-access
-    type: Opaque
-    data:
-      client-id: {{ $k.idp.clientID | b64enc }}
-      client-secret: {{ $k.idp.clientSecret | b64enc }}
-      cookie-secret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 32) | b64enc }}
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: oauth2-proxy-client-access
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            client-id: {{ $k.idp.clientID }}
+            client-secret: '{{ "{{ .clientSecret | toString }}" }}'
+            cookie-secret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 32) }}
+      data:
+        - secretKey: clientSecret
+          remoteRef:
+            key: keycloak-secrets
+            property: idp_clientSecret
   - apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
@@ -203,5 +238,4 @@ resources:
             </div>
           </body>
         </html>
-
 

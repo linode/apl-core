@@ -1,6 +1,6 @@
 import { existsSync } from 'fs'
 import { mkdir, unlink, writeFile } from 'fs/promises'
-import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, omit, pick, set } from 'lodash'
+import { cloneDeep, isEmpty, isEqual, merge, mergeWith, pick, set } from 'lodash'
 import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { stringify } from 'yaml'
@@ -9,18 +9,8 @@ import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import {
-  extract,
-  flattenObject,
-  getSchemaSecretsPaths,
-  getValuesSchema,
-  gucci,
-  loadYaml,
-  pkg,
-  removeBlankAttributes,
-} from './utils'
-
 import { saveValues } from './repo'
+import { extract, flattenObject, getValuesSchema, gucci, loadYaml, pkg, removeBlankAttributes } from './utils'
 import { HelmArguments } from './yargs'
 
 export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 200): string => {
@@ -114,22 +104,13 @@ export const writeValuesToFile = async (
 
 /**
  * Writes new values to the repo. Will keep the original values if `overwrite` is `false`.
+ * Secret values are written as-is — they are protected by SealedSecrets on the cluster side,
+ * and child secrets are derived via ESO ExternalSecret CRs.
  */
 export const writeValues = async (inValues: Record<string, any>, overwrite = false): Promise<void> => {
   const d = terminal('common:values:writeValues')
   d.debug('Writing values: ', inValues)
-  hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
-  const values = inValues
-  const teams = Object.keys(get(inValues, 'teamConfig', {}))
-  const cleanSecretPaths = await getSchemaSecretsPaths(teams)
-  d.debug('cleanSecretPaths: ', cleanSecretPaths)
-  // separate out the secrets
-  const secrets = removeBlankAttributes(pick(values, cleanSecretPaths))
-  d.debug('secrets: ', JSON.stringify(secrets, null, 2))
-  // from the plain values
-  const plainValues = omit(values, cleanSecretPaths) as any
-  await saveValues(env.ENV_DIR, plainValues, secrets)
-
+  await saveValues(env.ENV_DIR, inValues, {})
   d.info('All values were written to ENV_DIR')
 }
 

@@ -1,6 +1,6 @@
+import type { CoreV1Api } from '@kubernetes/client-node'
 import { terminal } from './debug'
 import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
-import type { CoreV1Api } from '@kubernetes/client-node'
 
 const d = terminal('common:git-config')
 
@@ -111,7 +111,7 @@ export async function getStoredGitRepoConfig(): Promise<GitRepoConfig | undefine
   url.password = password
   const authenticatedUrl = url.toString()
 
-  return { repoUrl, authenticatedUrl, branch, email, username, password }
+  return { repoUrl, authenticatedUrl, branch, email, username, password } as GitRepoConfig
 }
 
 /**
@@ -131,8 +131,10 @@ export async function setGitConfig(config: Partial<GitConfigData>, coreV1Api?: C
 
 /**
  * Gets repository configuration from values, constructing the authenticated URL with embedded credentials.
+ * If password is missing or is an unresolved sealed-secret placeholder, falls back to reading
+ * the real password from the K8s secret (populated by ESO from SealedSecrets).
  */
-export const getRepo = (values: Record<string, any>): GitRepoConfig => {
+export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret }): Promise<GitRepoConfig> => {
   const otomiGit = values?.otomi?.git
 
   if (!otomiGit?.repoUrl) {
@@ -142,9 +144,23 @@ export const getRepo = (values: Record<string, any>): GitRepoConfig => {
     otomiGit.repoUrl = process.env.GIT_REPO_URL
   }
   const username = otomiGit?.username
-  const password = otomiGit?.password
+  let password = otomiGit?.password ?? ''
   const email = otomiGit?.email
   const branch = otomiGit?.branch
+
+  // If password is missing or is an unresolved sealed-secret placeholder,
+  // try reading the real password from the K8s secret (populated by ESO from SealedSecrets)
+  if (!password || (typeof password === 'string' && password.startsWith('sealed:'))) {
+    try {
+      const secret = await deps.getK8sSecret('otomi-platform-secrets', 'sealed-secrets')
+      if (secret?.git_password) {
+        password = String(secret.git_password)
+        d.debug('Read git password from K8s secret (ESO)')
+      }
+    } catch {
+      d.warn('Could not read git password from K8s secret, using value from config')
+    }
+  }
 
   const repoUrl = otomiGit?.repoUrl as string
   const url = new URL(repoUrl)
@@ -152,5 +168,5 @@ export const getRepo = (values: Record<string, any>): GitRepoConfig => {
   url.password = password
   const authenticatedUrl = url.toString()
 
-  return { repoUrl, authenticatedUrl, branch, email, username, password }
+  return { repoUrl, authenticatedUrl, branch, email, username, password } as GitRepoConfig
 }
