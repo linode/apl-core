@@ -712,7 +712,7 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   let secretCreated = false
   if (useGiteaCatalog) {
     try {
-      const giteaSecrets = await getK8sSecret('gitea-secrets', 'sealed-secrets')
+      const giteaSecrets = await getK8sSecret('gitea-secrets', 'apl-secrets')
       const resolvedGitea = {
         adminUsername: giteaSecrets?.adminUsername ? String(giteaSecrets.adminUsername) : String(gitea!.adminUsername),
         adminPassword: giteaSecrets?.adminPassword ? String(giteaSecrets.adminPassword) : String(gitea!.adminPassword),
