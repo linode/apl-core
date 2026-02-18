@@ -194,10 +194,10 @@ describe('sealed-secrets', () => {
 
       const result = await buildSecretToNamespaceMap(secrets, [], undefined, deps)
 
-      // All secrets now go to sealed-secrets namespace
+      // All secrets now go to apl-secrets namespace
       const harborMapping = result.find((m) => m.secretName === 'harbor-secrets')
       expect(harborMapping).toBeDefined()
-      expect(harborMapping!.namespace).toBe('sealed-secrets')
+      expect(harborMapping!.namespace).toBe('apl-secrets')
       expect(harborMapping!.data).toHaveProperty('adminPassword', 'harbor-pass')
       expect(harborMapping!.data).toHaveProperty('secretKey', 'harbor-secret')
     })
@@ -216,7 +216,7 @@ describe('sealed-secrets', () => {
       const result = await buildSecretToNamespaceMap(secrets, [], undefined, deps)
 
       expect(result).toHaveLength(1)
-      expect(result[0].namespace).toBe('sealed-secrets')
+      expect(result[0].namespace).toBe('apl-secrets')
     })
 
     it('should serialize users array as single JSON value in users-secrets', async () => {
@@ -241,11 +241,11 @@ describe('sealed-secrets', () => {
       expect(result).toHaveLength(2)
       const usersMapping = result.find((m) => m.secretName === 'users-secrets')
       expect(usersMapping).toBeDefined()
-      expect(usersMapping!.namespace).toBe('sealed-secrets')
+      expect(usersMapping!.namespace).toBe('apl-secrets')
       expect(usersMapping!.data.usersJson).toBe(JSON.stringify(secrets.users))
     })
 
-    it('should handle teamConfig dynamic paths in sealed-secrets namespace', async () => {
+    it('should handle teamConfig dynamic paths in apl-secrets namespace', async () => {
       const secrets = {
         teamConfig: {
           'team-alpha': { someSecret: 'value' },
@@ -258,7 +258,7 @@ describe('sealed-secrets', () => {
       const result = await buildSecretToNamespaceMap(secrets, ['team-alpha'], undefined, deps)
 
       expect(result).toHaveLength(1)
-      expect(result[0].namespace).toBe('sealed-secrets')
+      expect(result[0].namespace).toBe('apl-secrets')
       expect(result[0].secretName).toBe('team-team-alpha-settings-secrets')
     })
 
@@ -289,7 +289,7 @@ describe('sealed-secrets', () => {
       expect(result[0].data).toHaveProperty('core_secret', 'core-secret-val')
     })
 
-    it('should put gitea secrets in sealed-secrets namespace using convention naming', async () => {
+    it('should put gitea secrets in apl-secrets namespace using convention naming', async () => {
       const secrets = {
         apps: {
           gitea: { adminPassword: 'gitea-pass', postgresqlPassword: 'pg-pass' },
@@ -308,16 +308,16 @@ describe('sealed-secrets', () => {
 
       const result = await buildSecretToNamespaceMap(secrets, [], undefined, deps)
 
-      // Harbor should use convention naming in sealed-secrets ns
+      // Harbor should use convention naming in apl-secrets ns
       const harborMapping = result.find((m) => m.secretName === 'harbor-secrets')
       expect(harborMapping).toBeDefined()
-      expect(harborMapping!.namespace).toBe('sealed-secrets')
+      expect(harborMapping!.namespace).toBe('apl-secrets')
       expect(harborMapping!.data).toHaveProperty('adminPassword', 'harbor-pass')
 
-      // Gitea should have a gitea-secrets mapping in sealed-secrets ns
+      // Gitea should have a gitea-secrets mapping in apl-secrets ns
       const giteaMapping = result.find((m) => m.secretName === 'gitea-secrets')
       expect(giteaMapping).toBeDefined()
-      expect(giteaMapping!.namespace).toBe('sealed-secrets')
+      expect(giteaMapping!.namespace).toBe('apl-secrets')
       expect(giteaMapping!.data).toHaveProperty('adminPassword', 'gitea-pass')
       expect(giteaMapping!.data).toHaveProperty('postgresqlPassword', 'pg-pass')
     })
@@ -326,7 +326,7 @@ describe('sealed-secrets', () => {
   describe('createSealedSecretManifest', () => {
     it('should produce correct SealedSecret structure', async () => {
       const mapping = {
-        namespace: 'sealed-secrets',
+        namespace: 'apl-secrets',
         secretName: 'harbor-secrets',
         data: { adminPassword: 'my-password', secretKey: 'my-secret' },
       }
@@ -339,18 +339,18 @@ describe('sealed-secrets', () => {
       expect(result.apiVersion).toBe('bitnami.com/v1alpha1')
       expect(result.kind).toBe('SealedSecret')
       expect(result.metadata.name).toBe('harbor-secrets')
-      expect(result.metadata.namespace).toBe('sealed-secrets')
+      expect(result.metadata.namespace).toBe('apl-secrets')
       expect(result.metadata.annotations['sealedsecrets.bitnami.com/namespace-wide']).toBe('true')
       expect(result.spec.encryptedData.adminPassword).toBe('encrypted-value')
       expect(result.spec.encryptedData.secretKey).toBe('encrypted-value')
       expect(result.spec.template.type).toBe('Opaque')
       expect(result.spec.template.metadata.name).toBe('harbor-secrets')
-      expect(result.spec.template.metadata.namespace).toBe('sealed-secrets')
+      expect(result.spec.template.metadata.namespace).toBe('apl-secrets')
     })
 
     it('should call encryptSecretItem for each data key', async () => {
       const mapping = {
-        namespace: 'sealed-secrets',
+        namespace: 'apl-secrets',
         secretName: 'gitea-secrets',
         data: { key1: 'val1', key2: 'val2', key3: 'val3' },
       }
@@ -361,9 +361,9 @@ describe('sealed-secrets', () => {
       await createSealedSecretManifest('pem', mapping, deps)
 
       expect(deps.encryptSecretItem).toHaveBeenCalledTimes(3)
-      expect(deps.encryptSecretItem).toHaveBeenCalledWith('pem', 'sealed-secrets', 'val1')
-      expect(deps.encryptSecretItem).toHaveBeenCalledWith('pem', 'sealed-secrets', 'val2')
-      expect(deps.encryptSecretItem).toHaveBeenCalledWith('pem', 'sealed-secrets', 'val3')
+      expect(deps.encryptSecretItem).toHaveBeenCalledWith('pem', 'apl-secrets', 'val1')
+      expect(deps.encryptSecretItem).toHaveBeenCalledWith('pem', 'apl-secrets', 'val2')
+      expect(deps.encryptSecretItem).toHaveBeenCalledWith('pem', 'apl-secrets', 'val3')
     })
   })
 
@@ -376,13 +376,13 @@ describe('sealed-secrets', () => {
           metadata: {
             annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
             name: 'harbor-secrets',
-            namespace: 'sealed-secrets',
+            namespace: 'apl-secrets',
           },
           spec: {
             encryptedData: { key: 'enc' },
             template: {
               immutable: false,
-              metadata: { name: 'harbor-secrets', namespace: 'sealed-secrets' },
+              metadata: { name: 'harbor-secrets', namespace: 'apl-secrets' },
               type: 'Opaque',
             },
           },
@@ -397,9 +397,9 @@ describe('sealed-secrets', () => {
 
       await writeSealedSecretManifests(manifests, '/test', deps)
 
-      expect(deps.mkdir).toHaveBeenCalledWith('/test/env/manifests/ns/sealed-secrets', { recursive: true })
+      expect(deps.mkdir).toHaveBeenCalledWith('/test/env/manifests/ns/apl-secrets', { recursive: true })
       expect(deps.writeFile).toHaveBeenCalledWith(
-        '/test/env/manifests/ns/sealed-secrets/harbor-secrets.yaml',
+        '/test/env/manifests/ns/apl-secrets/harbor-secrets.yaml',
         'yaml-content',
       )
     })
@@ -411,7 +411,7 @@ describe('sealed-secrets', () => {
         apps: { harbor: { adminPassword: 'pass' } },
       }
       const mockMapping = {
-        namespace: 'sealed-secrets',
+        namespace: 'apl-secrets',
         secretName: 'harbor-secrets',
         data: { adminPassword: 'pass' },
       }
@@ -421,13 +421,13 @@ describe('sealed-secrets', () => {
         metadata: {
           annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
           name: 'harbor-secrets',
-          namespace: 'sealed-secrets',
+          namespace: 'apl-secrets',
         },
         spec: {
           encryptedData: { adminPassword: 'encrypted' },
           template: {
             immutable: false,
-            metadata: { name: 'harbor-secrets', namespace: 'sealed-secrets' },
+            metadata: { name: 'harbor-secrets', namespace: 'apl-secrets' },
             type: 'Opaque',
           },
         },
@@ -462,7 +462,7 @@ describe('sealed-secrets', () => {
         apps: { harbor: { adminPassword: 'pass' } },
       }
       const mockMapping = {
-        namespace: 'sealed-secrets',
+        namespace: 'apl-secrets',
         secretName: 'harbor-secrets',
         data: { adminPassword: 'pass' },
       }

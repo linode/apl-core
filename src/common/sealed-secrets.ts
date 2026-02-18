@@ -240,21 +240,21 @@ export const createSealedSecretsKeySecret = async (
 
 /**
  * Resolve the namespace for a given secret path.
- * All core secrets go to 'sealed-secrets' namespace for ESO access.
+ * All core secrets go to 'apl-secrets' namespace for ESO access.
  * APP_NAMESPACE_MAP is kept for reference but not used for SealedSecret placement.
  */
 const resolveNamespace = (secretPath: string): string | undefined => {
   // Check for teamConfig dynamic paths
   const teamMatch = secretPath.match(/^teamConfig\.([^.]+)/)
   if (teamMatch) {
-    return 'sealed-secrets'
+    return 'apl-secrets'
   }
 
   // Check if this path matches any known prefix
   const sortedKeys = Object.keys(APP_NAMESPACE_MAP).sort((a, b) => b.length - a.length)
   for (const prefix of sortedKeys) {
     if (secretPath === prefix || secretPath.startsWith(`${prefix}.`)) {
-      return 'sealed-secrets'
+      return 'apl-secrets'
     }
   }
 
@@ -355,7 +355,7 @@ export const buildSecretToNamespaceMap = async (
     if (secretPath === 'users') {
       const usersData = secrets.users
       if (Array.isArray(usersData) && usersData.length > 0) {
-        const namespace = 'sealed-secrets'
+        const namespace = 'apl-secrets'
         const secretName = 'users-secrets'
         const groupKey = `${namespace}/${secretName}`
         if (!groupMap.has(groupKey)) {

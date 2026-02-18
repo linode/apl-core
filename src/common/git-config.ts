@@ -152,7 +152,7 @@ export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret
   // try reading the real password from the K8s secret (populated by ESO from SealedSecrets)
   if (!password || (typeof password === 'string' && password.startsWith('sealed:'))) {
     try {
-      const secret = await deps.getK8sSecret('otomi-platform-secrets', 'sealed-secrets')
+      const secret = await deps.getK8sSecret('otomi-platform-secrets', 'apl-secrets')
       if (secret?.git_password) {
         password = String(secret.git_password)
         d.debug('Read git password from K8s secret (ESO)')

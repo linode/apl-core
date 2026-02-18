@@ -353,7 +353,7 @@ describe('git-config', () => {
           git: {
             repoUrl: 'https://github.com/org/repo.git',
             username: 'admin',
-            password: 'sealed:sealed-secrets/otomi-platform-secrets/git_password',
+            password: 'sealed:apl-secrets/otomi-platform-secrets/git_password',
             branch: 'main',
             email: 'pipeline@cluster.local',
           },
@@ -361,7 +361,7 @@ describe('git-config', () => {
       }
 
       const result = await getRepo(values, { getK8sSecret: secretMock })
-      expect(secretMock).toHaveBeenCalledWith('otomi-platform-secrets', 'sealed-secrets')
+      expect(secretMock).toHaveBeenCalledWith('otomi-platform-secrets', 'apl-secrets')
       expect(result.password).toBe('real-password')
       expect(result.authenticatedUrl).toContain('real-password')
     })
