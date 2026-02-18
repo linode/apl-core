@@ -24,6 +24,8 @@ serviceAccount:
 
 imagePullSecrets: {}
 
+existingSecret: ""
+
 rbac:
   # Specifies whether rbac should be set up
   create: true
