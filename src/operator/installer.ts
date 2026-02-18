@@ -154,12 +154,14 @@ export class Installer {
     const agePrivateKey = values?.kms?.sops?.age?.privateKey
 
     // Ensure apl-git-credentials secret
+    // Only recreate if credentials are missing AND values has the password available
+    // (password may be undefined when secrets are stripped from disk and managed by SealedSecrets + ESO)
     const credentials = await getGitCredentials()
-    if (!credentials) {
+    if (!credentials && otomiGit?.username && otomiGit?.password) {
       this.d.info('Recreating apl-git-credentials secret')
       await createUpdateGenericSecret(k8s.core(), GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE, {
-        username: otomiGit?.username,
-        password: otomiGit?.password,
+        username: otomiGit.username,
+        password: otomiGit.password,
       })
     }
 
