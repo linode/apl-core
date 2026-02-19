@@ -89,31 +89,35 @@ const waitForSealedSecrets = async (
   }
 
   d.info(`Waiting for ${secretsToWait.size} sealed secrets to be decrypted`)
-  const start = Date.now()
 
-  while (Date.now() - start < timeoutMs) {
-    const pending: string[] = []
-    for (const { namespace, secretName } of secretsToWait.values()) {
-      try {
-        const secret = await deps.getK8sSecret(secretName, namespace)
-        if (!secret) {
+  await retry(
+    async () => {
+      const pending: string[] = []
+      for (const { namespace, secretName } of secretsToWait.values()) {
+        try {
+          const secret = await deps.getK8sSecret(secretName, namespace)
+          if (!secret) {
+            pending.push(`${namespace}/${secretName}`)
+          }
+        } catch {
           pending.push(`${namespace}/${secretName}`)
         }
-      } catch {
-        pending.push(`${namespace}/${secretName}`)
       }
-    }
 
-    if (pending.length === 0) {
+      if (pending.length > 0) {
+        d.info(`Still waiting for sealed secrets: ${pending.join(', ')}`)
+        throw new Error(`Sealed secrets not yet decrypted: ${pending.join(', ')}`)
+      }
+
       d.info('All sealed secrets have been decrypted')
-      return
-    }
-
-    d.info(`Still waiting for sealed secrets: ${pending.join(', ')}`)
-    await new Promise((resolve) => setTimeout(resolve, intervalMs))
-  }
-
-  throw new Error(`Timed out waiting for sealed secrets to be decrypted after ${timeoutMs}ms`)
+    },
+    {
+      retries: Math.ceil(timeoutMs / intervalMs),
+      minTimeout: intervalMs,
+      maxTimeout: intervalMs,
+      factor: 1,
+    },
+  )
 }
 
 export const installAll = async () => {
