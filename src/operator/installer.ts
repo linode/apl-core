@@ -2,7 +2,7 @@ import * as process from 'node:process'
 import { $ } from 'zx'
 import { terminal } from '../common/debug'
 import { getStoredGitRepoConfig } from '../common/git-config'
-import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
+import { createUpdateConfigMap, deletePendingHelmReleases, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 
@@ -83,9 +83,16 @@ export class Installer {
         const errorMessage = getErrorMessage(error)
         this.d.error(`Installation attempt ${attemptNumber} failed:`, errorMessage)
         await this.updateInstallationStatus('failed', attemptNumber, errorMessage)
-        this.d.warn(`Installation attempt ${attemptNumber} failed, retrying in 1 second...`)
 
-        // Wait 1 second before retrying
+        // Clean up stuck Helm releases (e.g. pending-install, pending-upgrade)
+        // so the next retry can proceed without "another operation is in progress" errors
+        try {
+          await deletePendingHelmReleases()
+        } catch (cleanupError) {
+          this.d.warn('Failed to clean up pending Helm releases:', getErrorMessage(cleanupError))
+        }
+
+        this.d.warn(`Installation attempt ${attemptNumber} failed, retrying in 1 second...`)
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     }

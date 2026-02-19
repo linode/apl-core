@@ -16,9 +16,9 @@ import {
   V1Status,
 } from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
+import { X509Certificate } from 'crypto'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
-import { X509Certificate } from 'crypto'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { isEmpty, isEqual, map, mapValues } from 'lodash'
 import { dirname, join } from 'path'
@@ -149,12 +149,12 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
   }
 }
 
-export const deleteSecretForHelmRelease = async (releaseName: string, namespace: string) => {
+export const deleteSecretForHelmRelease = async (releaseName: string, namespace: string, revision = 1) => {
   const d = terminal('common:k8s:deleteSecretForHelmRelease')
-  d.info(`Deleting secret for Helm release ${releaseName} in namespace ${namespace}`)
+  d.info(`Deleting secret for Helm release ${releaseName} revision ${revision} in namespace ${namespace}`)
   try {
-    await coreClient.deleteNamespacedSecret({ name: `sh.helm.release.v1.${releaseName}.v1`, namespace })
-    d.debug(`Deleted secret for Helm release ${releaseName} in namespace ${namespace}`)
+    await coreClient.deleteNamespacedSecret({ name: `sh.helm.release.v1.${releaseName}.v${revision}`, namespace })
+    d.debug(`Deleted secret for Helm release ${releaseName} revision ${revision} in namespace ${namespace}`)
   } catch (error) {
     if (error?.response?.statusCode !== 404) {
       throw error
@@ -194,9 +194,11 @@ export const deletePendingHelmReleases = async (): Promise<void> => {
   const d = terminal(`common:k8s:deletePendingHelmReleases`)
   const pendingHelmReleases = await getPendingHelmReleases()
   if (pendingHelmReleases.length > 0) {
-    d.info(`Pending Helm operations detected for releases: ${pendingHelmReleases.join(', ')}. removing secrets...`)
+    d.info(
+      `Pending Helm operations detected for releases: ${pendingHelmReleases.map((r) => `${r.namespace}/${r.name}:v${r.revision}`).join(', ')}. removing secrets...`,
+    )
     for (const release of pendingHelmReleases) {
-      await deleteSecretForHelmRelease(release.name, release.namespace)
+      await deleteSecretForHelmRelease(release.name, release.namespace, release.revision)
     }
   }
 }

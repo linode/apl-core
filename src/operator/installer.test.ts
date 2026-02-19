@@ -27,6 +27,7 @@ jest.mock('../common/k8s', () => ({
   getK8sSecret: jest.fn(),
   createUpdateConfigMap: jest.fn(),
   createUpdateGenericSecret: jest.fn(),
+  deletePendingHelmReleases: jest.fn().mockResolvedValue(undefined),
   k8s: {
     core: jest.fn(),
   },

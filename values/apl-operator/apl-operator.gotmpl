@@ -24,4 +24,4 @@ git:
   branch: {{ $v.otomi.git.branch | default "main" | quote }}
   email: {{ $v.otomi.git.email | default "pipeline@cluster.local" | quote }}
   username: {{ $v.otomi.git.username | default "otomi-admin" | quote }}
-  password: {{ $v.otomi.git.password | default "" | quote }}
+  password: {{ $v.otomi.git | get "password" "" | quote }}
