@@ -1,0 +1,27 @@
+{{- $v := .Values }}
+provider: {{ $v.cluster.provider }}
+gateways:
+{{- range $ingress := $v.ingress.classes }}
+  - name: {{ $ingress.className }}
+    listeners:
+      - hostname: {{ print "*." $v.cluster.domainSuffix | quote }}
+        certificateRefs:
+          - name: {{ $v._derived.tlsSecretName }}
+    # TODO: Add CNAMES
+    #   namespaces:
+    #     from: All
+    {{- with $ingress | get "entrypoint" nil }}
+    entrypoint: {{ . | quote }}
+    {{- end }}
+    {{- with $ingress | get "loadBalancerIP" nil }}
+    loadBalancerIP: {{ . | quote }}
+    {{- end }}
+    {{- with $ingress | get "annotations" nil }}
+    annotations:
+      {{- range $annotation := . }}
+      {{ $annotation.key | quote }}: {{ $annotation.value | quote }}
+      {{- end }}
+    {{- end }}
+  #   sourceIpAddressFiltering:
+  #   nodeBalancerId: null
+{{- end }}
