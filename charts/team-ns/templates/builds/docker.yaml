@@ -134,7 +134,7 @@ spec:
         {{- else }}
         - name: git-credentials
           secret:
-            secretName: apl-git-credentials
+            secretName: gitea-credentials
         {{- end }}
         - name: docker-credentials
           secret:
@@ -184,7 +184,7 @@ spec:
   {{- else }}
   - name: git-credentials
     secret:
-      secretName: apl-git-credentials
+      secretName: gitea-credentials
   {{- end }}
   - name: docker-credentials
     secret:
