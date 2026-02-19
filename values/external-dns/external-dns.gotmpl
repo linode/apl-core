@@ -2,8 +2,8 @@
 {{- $externalDns := $v.apps | get "external-dns" }}
 {{- $dns := $v | get "dns" dict }}
 sources:
-- ingress
-- istio-gateway
+- gateway-httproute
+- gateway-tlsroute
 ## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
 
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
