@@ -6,6 +6,7 @@ import { cloneDeep, get, unset } from 'lodash'
 import { pki } from 'node-forge'
 import { join } from 'path'
 import { terminal } from 'src/common/debug'
+import { ensureNamespaceExists } from 'src/common/k8s'
 import { flattenObject, getSchemaSecretsPaths } from 'src/common/utils'
 import { objectToYaml } from 'src/common/values'
 import { $ } from 'zx'
@@ -23,32 +24,6 @@ export function stripAllSecrets(values: Record<string, any>, secretPaths: string
     unset(stripped, secretPath)
   }
   return stripped
-}
-
-/**
- * Ensure a namespace exists. If it doesn't exist, create it with proper labels.
- * This avoids overwriting labels on existing namespaces that were created by k8s-raw.gotmpl.
- */
-export const ensureNamespaceExists = async (namespace: string, deps = { $, terminal }): Promise<void> => {
-  const d = deps.terminal(`common:${cmdName}:ensureNamespaceExists`)
-
-  // Check if namespace already exists
-  const existingNs = await deps.$`kubectl get namespace ${namespace}`.nothrow().quiet()
-  if (existingNs.exitCode === 0) {
-    d.debug(`Namespace ${namespace} already exists`)
-    return
-  }
-
-  // Create namespace with proper label
-  d.info(`Creating namespace ${namespace}`)
-  const nsYaml = `apiVersion: v1
-kind: Namespace
-metadata:
-  name: ${namespace}
-  labels:
-    name: ${namespace}`
-
-  await deps.$`echo ${nsYaml} | kubectl apply -f -`.nothrow().quiet()
 }
 
 export interface SecretMapping {

@@ -962,6 +962,32 @@ export async function waitForCRD(crdName: string, timeoutSeconds: number = 60): 
   }
 }
 
+/**
+ * Ensure a namespace exists. If it doesn't exist, create it with proper labels.
+ * This avoids overwriting labels on existing namespaces that were created by k8s-raw.gotmpl.
+ */
+export const ensureNamespaceExists = async (namespace: string, deps = { $, terminal }): Promise<void> => {
+  const d = deps.terminal(`common:k8s:ensureNamespaceExists`)
+
+  // Check if namespace already exists
+  const existingNs = await deps.$`kubectl get namespace ${namespace}`.nothrow().quiet()
+  if (existingNs.exitCode === 0) {
+    d.debug(`Namespace ${namespace} already exists`)
+    return
+  }
+
+  // Create namespace with proper label
+  d.info(`Creating namespace ${namespace}`)
+  const nsYaml = `apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${namespace}
+  labels:
+    name: ${namespace}`
+
+  await deps.$`echo ${nsYaml} | kubectl apply -f -`.nothrow().quiet()
+}
+
 export async function getSealedSecretsPEM(): Promise<string> {
   const d = terminal('common:k8s:getSealedSecretsPEM')
   const namespace = 'sealed-secrets'
