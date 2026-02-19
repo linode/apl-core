@@ -17,6 +17,8 @@ manager:
     extraLabels:
       prometheus: system
   podAnnotations: {}
+  extraArgs:
+  - "--metrics-secure=false"
 kubeRBACProxy:
   resources: {{- $o.resources.kubeRBACProxy | toYaml | nindent 4 }}
 {{- if $v.otomi.linodeLkeImageRepository }}
