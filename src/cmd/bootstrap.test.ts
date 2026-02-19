@@ -449,6 +449,37 @@ describe('Bootstrapping values', () => {
             merge(cloneDeep(ca), cloneDeep(secrets), cloneDeep(generatedSecrets), { users: processedUsers }),
           )
         })
+        it('should preserve existing groups when users are recovered from stored secrets (bootstrap retry)', async () => {
+          // Simulate bootstrap retry: stored secrets contain processed users (with groups, without isPlatformAdmin)
+          const storedProcessedUsers = [
+            {
+              email: 'platform-admin@example.com',
+              firstName: 'platform',
+              lastName: 'admin',
+              initialPassword: 'existing-pass',
+              groups: ['platform-admin'],
+            },
+          ]
+          deps.loadYaml.mockReturnValue({})
+          deps.getStoredClusterSecrets.mockReturnValue({ users: storedProcessedUsers })
+          deps.generateSecrets.mockReturnValue({})
+          deps.createCustomCA.mockReturnValue({})
+          // getUsers returns the stored processed users (no isPlatformAdmin flag)
+          deps.getUsers.mockReturnValue(storedProcessedUsers)
+
+          const result = await processValues(deps)
+
+          // Groups should be preserved from existing data, not reset to []
+          expect(result.allSecrets.users).toEqual([
+            {
+              email: 'platform-admin@example.com',
+              firstName: 'platform',
+              lastName: 'admin',
+              initialPassword: 'existing-pass',
+              groups: ['platform-admin'],
+            },
+          ])
+        })
       })
     })
   })

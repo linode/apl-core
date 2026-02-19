@@ -346,6 +346,11 @@ export const processValues = async (
     if (user.isPlatformAdmin) groups.push('platform-admin')
     if (user.isTeamAdmin) groups.push('team-admin')
     for (const team of user.teams || []) groups.push(`team-${team}`)
+    // Preserve existing groups when boolean flags are absent (e.g., user recovered
+    // from stored secrets which uses the processed format without isPlatformAdmin/isTeamAdmin)
+    if (groups.length === 0 && Array.isArray(user.groups) && user.groups.length > 0) {
+      groups.push(...(user.groups as string[]))
+    }
     return {
       email: user.email,
       firstName: user.firstName,
