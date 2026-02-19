@@ -40,6 +40,11 @@ export async function getGitCredentials(): Promise<GitCredentials | undefined> {
     return undefined
   }
 
+  // Reject unresolved sealed-secret placeholders (e.g. during first deploy before secrets are decrypted)
+  if (typeof secretData.password === 'string' && secretData.password.startsWith('sealed:')) {
+    return undefined
+  }
+
   return {
     username: secretData.username,
     password: secretData.password,

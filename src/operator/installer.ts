@@ -1,18 +1,10 @@
 import * as process from 'node:process'
 import { $ } from 'zx'
 import { terminal } from '../common/debug'
-import {
-  getGitConfigData,
-  getGitCredentials,
-  GIT_CONFIG_NAMESPACE,
-  GIT_CONFIG_SECRET_NAME,
-  setGitConfig,
-} from '../common/git-config'
-import { hfValues } from '../common/hf'
-import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
+import { getStoredGitRepoConfig } from '../common/git-config'
+import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
-import { operatorEnv } from './validators'
 
 export class Installer {
   private d = terminal('operator:installer')
@@ -45,17 +37,14 @@ export class Installer {
 
   private async verifyGitRepoHasMainBranch(): Promise<boolean> {
     try {
-      // Get credentials from K8s secret (created by Helm at deploy time)
-      const creds = await getK8sSecret('gitea-credentials', 'apl-operator')
-      const username = creds?.GIT_USERNAME ?? 'otomi-admin'
-      const password = creds?.GIT_PASSWORD ?? ''
-      const repoUrl = `${process.env.GIT_PROTOCOL}://${username}:${password}@${process.env.GIT_URL}:${process.env.GIT_PORT}/${operatorEnv.GIT_ORG}/${operatorEnv.GIT_REPO}.git`
-      const result = await $`git ls-remote --exit-code --heads ${repoUrl} main`.nothrow().quiet()
+      const gitConfig = await getStoredGitRepoConfig()
+      if (!gitConfig) return true // Can't verify without config, assume fine
+      const result = await $`git ls-remote --exit-code --heads ${gitConfig.authenticatedUrl} main`.nothrow().quiet()
       return result.exitCode === 0
     } catch {
       // If we can't check (e.g. gitea not ready yet), assume it's fine
       // The operator will detect the issue later during git polling
-      this.d.warn('Could not verify git repo - gitea may not be ready yet')
+      this.d.warn('Could not verify git repo - may not be ready yet')
       return true
     }
   }
@@ -87,13 +76,14 @@ export class Installer {
         // Run the installation sequence
         await this.updateInstallationStatus('in-progress', attemptNumber)
         await this.aplOps.install()
-        await this.ensureSecretsAndConfig()
 
         await this.updateInstallationStatus('completed', attemptNumber)
         return
       } catch (error) {
-        await this.updateInstallationStatus('failed', attemptNumber)
-        this.d.warn(`Installation attempt ${attemptNumber} failed, retrying in 1 second...`, getErrorMessage(error))
+        const errorMessage = getErrorMessage(error)
+        this.d.error(`Installation attempt ${attemptNumber} failed:`, errorMessage)
+        await this.updateInstallationStatus('failed', attemptNumber, errorMessage)
+        this.d.warn(`Installation attempt ${attemptNumber} failed, retrying in 1 second...`)
 
         // Wait 1 second before retrying
         await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -109,12 +99,14 @@ export class Installer {
     return status
   }
 
-  private async updateInstallationStatus(status: string, attempt: number): Promise<void> {
+  private async updateInstallationStatus(status: string, attempt: number, error?: string): Promise<void> {
     try {
       const data = {
         status,
         attempt: attempt.toString(),
         timestamp: new Date().toISOString(),
+        // Always include error field to prevent stale values from StrategicMergePatch
+        error: error ?? '',
       }
 
       await createUpdateConfigMap(k8s.core(), 'apl-installation-status', 'apl-operator', data)
@@ -129,60 +121,20 @@ export class Installer {
   }
 
   private async setupSopsEnvironment() {
-    const aplSopsSecret = await getK8sSecret('apl-sops-secrets', 'apl-operator')
+    try {
+      const aplSopsSecret = await getK8sSecret('apl-sops-secrets', 'apl-operator')
 
-    if (aplSopsSecret?.SOPS_AGE_KEY) {
-      process.env.SOPS_AGE_KEY = aplSopsSecret.SOPS_AGE_KEY
-      this.d.debug('Using existing sops credentials from secret')
-    } else {
-      // SOPS is no longer used (replaced by SealedSecrets + ESO).
-      // Skip hfValues() call which requires the git repo that may not exist yet.
-      this.d.debug('SOPS Age key not found in secret, skipping (SealedSecrets in use)')
-    }
-  }
-
-  // public for testing. This method should only be used if you are certain there are values locally.
-  async ensureSecretsAndConfig(): Promise<void> {
-    this.d.info('Verifying secrets and config after installation')
-    const values = (await hfValues()) as Record<string, any>
-    if (!values) {
-      this.d.warn('Could not retrieve hfValues, skipping secrets/config verification')
-      return
-    }
-
-    const otomiGit = values?.otomi?.git
-    const agePrivateKey = values?.kms?.sops?.age?.privateKey
-
-    // Ensure apl-git-credentials secret
-    // Only recreate if credentials are missing AND values has the password available
-    // (password may be undefined when secrets are stripped from disk and managed by SealedSecrets + ESO)
-    const credentials = await getGitCredentials()
-    if (!credentials && otomiGit?.username && otomiGit?.password) {
-      this.d.info('Recreating apl-git-credentials secret')
-      await createUpdateGenericSecret(k8s.core(), GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE, {
-        username: otomiGit.username,
-        password: otomiGit.password,
-      })
-    }
-
-    // Ensure apl-sops-secrets secret
-    const sopsSecret = await getK8sSecret('apl-sops-secrets', GIT_CONFIG_NAMESPACE)
-    if (!sopsSecret?.SOPS_AGE_KEY && agePrivateKey) {
-      this.d.info('Recreating apl-sops-secrets secret')
-      await createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', GIT_CONFIG_NAMESPACE, {
-        SOPS_AGE_KEY: agePrivateKey,
-      })
-    }
-
-    // Ensure apl-git-config configmap
-    const configData = await getGitConfigData()
-    if (!configData?.repoUrl || !configData?.branch || !configData?.email) {
-      this.d.info('Recreating apl-git-config configmap')
-      await setGitConfig({
-        repoUrl: otomiGit?.repoUrl,
-        branch: otomiGit?.branch,
-        email: otomiGit?.email,
-      })
+      if (aplSopsSecret?.SOPS_AGE_KEY) {
+        process.env.SOPS_AGE_KEY = aplSopsSecret.SOPS_AGE_KEY
+        this.d.debug('Using existing sops credentials from secret')
+      } else {
+        // SOPS is no longer used (replaced by SealedSecrets + ESO).
+        // Skip hfValues() call which requires the git repo that may not exist yet.
+        this.d.debug('SOPS Age key not found in secret, skipping (SealedSecrets in use)')
+      }
+    } catch (error) {
+      this.d.error('Failed to retrieve sops credentials:', getErrorMessage(error))
+      throw error
     }
   }
 }

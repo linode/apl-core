@@ -67,6 +67,15 @@ describe('git-config', () => {
       const result = await getGitCredentials()
       expect(result).toBeUndefined()
     })
+
+    it('should return undefined when password is a sealed-secret placeholder', async () => {
+      mockGetK8sSecret.mockResolvedValue({
+        username: 'admin',
+        password: 'sealed:apl-secrets/otomi-platform-secrets/git_password',
+      })
+      const result = await getGitCredentials()
+      expect(result).toBeUndefined()
+    })
   })
 
   describe('getOldGitCredentials', () => {

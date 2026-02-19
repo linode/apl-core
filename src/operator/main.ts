@@ -1,17 +1,17 @@
 import * as dotenv from 'dotenv'
-import { terminal } from '../common/debug'
-import { AplOperator, AplOperatorConfig } from './apl-operator'
-import { Installer } from './installer'
-import { operatorEnv } from './validators'
-import { env } from '../common/envalid'
 import fs from 'fs'
-import path from 'path'
-import { AplOperations } from './apl-operations'
-import { getErrorMessage } from './utils'
-import { GitRepository } from './git-repository'
-import { getStoredGitRepoConfig } from '../common/git-config'
 import process from 'node:process'
+import path from 'path'
 import { runTraceCollectionLoop } from '../cmd/traces'
+import { terminal } from '../common/debug'
+import { env } from '../common/envalid'
+import { getStoredGitRepoConfig } from '../common/git-config'
+import { AplOperations } from './apl-operations'
+import { AplOperator, AplOperatorConfig } from './apl-operator'
+import { GitRepository } from './git-repository'
+import { Installer } from './installer'
+import { getErrorMessage } from './utils'
+import { operatorEnv } from './validators'
 
 dotenv.config()
 
@@ -78,13 +78,15 @@ async function main(): Promise<void> {
       await installer.reconcileInstall()
     }
 
+    // Set up SOPS environment if applicable (no-op when SealedSecrets + ESO is in use)
+    await installer.setEnvAndCreateSecrets()
+
     // Start trace collection in background (runs for 30 minutes from ConfigMap creation)
     runTraceCollectionLoop().catch((error) => {
       d.warn('Trace collection loop failed:', getErrorMessage(error))
     })
 
     // Phase 2: Set environment variables and start operator for GitOps operations
-    // await installer.setEnvAndCreateSecrets()
     const config = await loadConfig(aplOps)
     const operator = new AplOperator(config)
     handleTerminationSignals(operator)
