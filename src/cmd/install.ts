@@ -3,7 +3,8 @@ import { mkdirSync, rmSync } from 'fs'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
+import { setGitConfig } from 'src/common/git-config'
+import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState, waitForCRD } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
@@ -96,7 +97,17 @@ export const installAll = async () => {
   )
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
+    // Get the git configuration from values
+    const values = (await hfValues()) as Record<string, any>
+    // Commit to Git repository
     await commit(true)
+
+    await setGitConfig({
+      repoUrl: values?.otomi?.git?.repoUrl,
+      branch: values?.otomi?.git?.branch ?? 'main',
+      email: values?.otomi?.git?.email,
+    })
+
     const initialData = await initialSetupData()
     await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)
     await retryInstallStep(createWelcomeConfigMap, initialData.secretName, initialData.domainSuffix)

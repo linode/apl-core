@@ -146,8 +146,8 @@ environments:
                 memory: 64Mi
                 cpu: 10m
           gitea:
-            adminUsername: otomi-admin
             _rawValues: {}
+            enabled: true
             networkPolicies:
               enabled: true
             databaseMaxConnections: 28
@@ -1143,6 +1143,11 @@ environments:
           receivers:
             - none
         otomi:
+          git:
+            branch: main
+            repoUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git
+            username: otomi-admin
+            email: pipeline@cluster.local
           hasExternalDNS: false
           hasExternalIDP: false
           isMultitenant: true
@@ -1155,8 +1160,8 @@ environments:
         catalogs:
           default:
             name: default
-            url: https://github.com/linode/apl-charts.git
+            repositoryUrl: https://github.com/linode/apl-charts.git
             branch: main
             enabled: true
         versions:
-          specVersion: 54
+          specVersion: 55

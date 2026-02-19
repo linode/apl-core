@@ -1,5 +1,5 @@
 {{- if .Values.podDisruptionBudget }}
-apiVersion: {{ include "grafana.podDisruptionBudget.apiVersion" . }}
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "grafana.fullname" . }}

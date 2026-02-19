@@ -1,13 +1,10 @@
 {{- if .Values.ingress.enabled -}}
-{{- $ingressApiIsStable := eq (include "grafana.ingress.isStable" .) "true" -}}
-{{- $ingressSupportsIngressClassName := eq (include "grafana.ingress.supportsIngressClassName" .) "true" -}}
-{{- $ingressSupportsPathType := eq (include "grafana.ingress.supportsPathType" .) "true" -}}
 {{- $fullName := include "grafana.fullname" . -}}
 {{- $servicePort := .Values.service.port -}}
 {{- $ingressPath := .Values.ingress.path -}}
 {{- $ingressPathType := .Values.ingress.pathType -}}
 {{- $extraPaths := .Values.ingress.extraPaths -}}
-apiVersion: {{ include "grafana.ingress.apiVersion" . }}
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ $fullName }}
@@ -24,9 +21,9 @@ metadata:
     {{- end }}
   {{- end }}
 spec:
-  {{- if and $ingressSupportsIngressClassName .Values.ingress.ingressClassName }}
+  {{- if .Values.ingress.ingressClassName }}
   ingressClassName: {{ .Values.ingress.ingressClassName }}
-  {{- end -}}
+  {{- end }}
   {{- with .Values.ingress.tls }}
   tls:
     {{- tpl (toYaml .) $ | nindent 4 }}
@@ -41,38 +38,24 @@ spec:
           {{- toYaml . | nindent 10 }}
           {{- end }}
           - path: {{ $ingressPath }}
-            {{- if $ingressSupportsPathType }}
             pathType: {{ $ingressPathType }}
-            {{- end }}
             backend:
-              {{- if $ingressApiIsStable }}
               service:
                 name: {{ $fullName }}
                 port:
                   number: {{ $servicePort }}
-              {{- else }}
-              serviceName: {{ $fullName }}
-              servicePort: {{ $servicePort }}
-              {{- end }}
   {{- end }}
   {{- else }}
     - http:
         paths:
           - backend:
-              {{- if $ingressApiIsStable }}
               service:
                 name: {{ $fullName }}
                 port:
                   number: {{ $servicePort }}
-              {{- else }}
-              serviceName: {{ $fullName }}
-              servicePort: {{ $servicePort }}
-              {{- end }}
             {{- with $ingressPath }}
             path: {{ . }}
             {{- end }}
-            {{- if $ingressSupportsPathType }}
             pathType: {{ $ingressPathType }}
-            {{- end }}
   {{- end -}}
 {{- end }}

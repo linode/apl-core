@@ -6,8 +6,9 @@ import { updateDbCollation } from './cloudnative-pg'
 import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
-import { detachApplicationFromApplicationSet, pruneArgoCDImageUpdater, resetGiteaPasswordValidity } from './v4.13.0'
+import { detachApplicationFromApplicationSet, pruneArgoCDImageUpdater } from './v4.13.0'
 import { removeHttpBinApplication } from './remove-httpbin-application'
+import { migrateGitConfig } from './migrate-git-config'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -149,14 +150,19 @@ export const runtimeUpgrades: RuntimeUpgrades = [
   {
     version: '4.14.0',
     applications: {
-      'gitea-gitea': {
-        post: async (context: RuntimeUpgradeContext) => {
-          await resetGiteaPasswordValidity(context)
-        },
-      },
       'istio-system-istiod': {
         post: async () => {
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
+    },
+  },
+  {
+    version: '4.15.0',
+    applications: {
+      'apl-operator-apl-operator': {
+        pre: async (context: RuntimeUpgradeContext) => {
+          await migrateGitConfig(context)
         },
       },
     },
