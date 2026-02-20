@@ -38,8 +38,8 @@ resources:
                   - {{ $appName }}.{{ $domainSuffix }}
                   {{- end }}
                 notPaths:
-                  - /oauth2/*
-                  - /platform-logout
+                  - "/oauth2/*"
+                  - "/platform-logout"
   {{- range $appName := $appNames }}
   - apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
