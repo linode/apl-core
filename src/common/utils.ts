@@ -8,7 +8,7 @@ import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { omit } from 'lodash'
 import { dirname, join, resolve } from 'path'
-import { $, ProcessOutput } from 'zx'
+import { $, ProcessOutput, within } from 'zx'
 import { terminal } from './debug'
 import { env } from './envalid'
 
@@ -107,12 +107,12 @@ export const gucci = async (
     // Cannot template if key contains regex characters, so skip
     if (stringContainsSome(k, ...'^()[]$'.split(''))) return ''
     const val = typeof v === 'object' ? JSON.stringify(v) : v
-    return `-s ${k}='${val ?? ''}'`
+    const escaped = String(val ?? '').replaceAll("'", "'\\''")
+    return `-s ${k}='${escaped}'`
   })
 
-  const quoteBackup = $.quote
-  $.quote = (v) => v
-  try {
+  return within(async () => {
+    $.quote = (v) => v
     let processOutput: ProcessOutput
     const templateContent: string = typeof tmpl === 'string' ? tmpl : dump(tmpl, { lineWidth: -1 })
     // Cannot be a path if it wasn't a string
@@ -128,9 +128,7 @@ export const gucci = async (
     }
     // translate the output from yaml to js, and return it, whatever shape
     return load(ret)
-  } finally {
-    $.quote = quoteBackup
-  }
+  })
 }
 
 export const extract = (
