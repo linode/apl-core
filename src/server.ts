@@ -1,9 +1,7 @@
-import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import express, { Request, Response } from 'express'
 import { Server } from 'http'
 import { terminal } from 'src/common/debug'
 import { hfValues } from './common/hf'
-import { loadYaml, rootDir } from './common/utils'
 import { objectToYaml } from './common/values'
 
 const d = terminal('server')
@@ -42,13 +40,6 @@ app.get('/otomi/values', async (req: Request, res: Response): Promise<void> => {
     d.error(error)
     res.status(status).send(error)
   }
-})
-
-app.get('/apl/schema', async (req: Request, res: Response): Promise<void> => {
-  const schema = await loadYaml(`${rootDir}/values-schema.yaml`)
-  const derefSchema = await $RefParser.dereference(schema as JSONSchema)
-  res.setHeader('Content-type', 'application/json')
-  res.status(200).send(derefSchema)
 })
 
 export const startServer = (): void => {
