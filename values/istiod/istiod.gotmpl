@@ -53,4 +53,8 @@ meshConfig:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 
-# Mutating webhook needs to be available for istio-gateway deployment!
+gatewayClasses:
+  istio:
+    deployment:
+      spec:
+        replicas: 2
