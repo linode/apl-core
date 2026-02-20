@@ -3,11 +3,7 @@
 {{- $checkApps := list "grafana" "prometheus" "alertmanager" "argocd" "tekton" "gitea" "keycloak" "kubeflow-pipelines" }}
 {{- $appNames := list "console" "tty" "api" }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
-{{- $httpRouteAnnotations := dict }}
-{{- if $a | get "external-dns.enabled" }}
-{{- $_ := set $httpRouteAnnotations "externaldns" "true" }}
-{{- $_ = set $httpRouteAnnotations "external-dns.alpha.kubernetes.io/hostname" (print "*." $domainSuffix) }}
-{{- end }}
+{{- $httpRouteAnnotations := $v._derived.httpRouteAnnotations }}
 {{- range $checkApp := $checkApps }}
 {{- if dig $checkApp "enabled" false $a }}
 {{- $appNames = append $appNames $checkApp }}
@@ -27,7 +23,7 @@ resources:
       hostnames:
         - {{ $appName }}.{{ $domainSuffix }}
       parentRefs:
-        - name: platform
+        - name: {{ $v.ingress.platformClass.className }}
       rules:
         - backendRefs:
             - name: {{ $v._derived.ingressPublicGatewayName }}

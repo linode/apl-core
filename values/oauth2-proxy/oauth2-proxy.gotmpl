@@ -4,14 +4,15 @@
 {{- $oauth2 := $v.apps | get "oauth2-proxy" }}
 {{- $r := $v.apps | get "oauth2-proxy-redis" }}
 {{- $o := $v | get "oidc" dict }}
+{{- $domainSuffix := $v.cluster.domainSuffix }}
 
 # get all public domains that don't have the cluster domain as root
-{{ $domains := list (print "." $v.cluster.domainSuffix) "oauth2-proxy.istio-system.svc.cluster.local" }}
+{{ $domains := list (print "." $domainSuffix) "oauth2-proxy.istio-system.svc.cluster.local" }}
 {{- range $teamId, $team := $v.teamConfig }}
   {{- if hasKey $team "services" }}
     {{- range $s := $team.services }}
       {{- if (hasKey $s "domain")}}
-        {{- if not (contains $v.cluster.domainSuffix $s.domain) }}
+        {{- if not (contains $domainSuffix $s.domain) }}
           {{- $domains = append $domains $s.domain }}
         {{- end }}
       {{- end }}
@@ -25,13 +26,13 @@ config:
   configFile: |-
     # Defaults
     email_domains = [ "*" ]
-    upstreams = [ "file:///dev/null" ]
+    upstreams = [ "static://200" ]
     # Custom
     ssl_insecure_skip_verify = {{ $v._derived.untrustedCA }}
     provider = "keycloak-oidc"
     whitelist_domains = {{ $domains | toJson }}
     scope = {{ $o | get "scope" "openid email profile" | quote }}
-    redirect_url = "https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback"
+    redirect_url = "https://{{ $v._derived.authDomain }}/oauth2/callback"
     oidc_issuer_url = {{ $v._derived.oidcBaseUrl | quote }}
     code_challenge_method = "S256"
     insecure_oidc_allow_unverified_email = true
@@ -171,3 +172,21 @@ image:
   registry: {{ . }}
   repository: quay/oauth2-proxy/oauth2-proxy
 {{- end }}
+
+gatewayApi:
+  enabled: true
+  gatewayRef:
+    name: {{ $v.ingress.platformClass.className }}
+  hostnames:
+    - {{ $v._derived.authDomain | quote }}
+  {{ with $v._derived.httpRouteAnnotations }}
+  annotations:
+    {{ . | toYaml | nindent 4 }}
+  {{- end }}
+  {{- with $v.otomi.isPreInstalled }}
+  filters:
+    - name: Access-Control-Allow-Origin
+      value: "https://cloud.linode.com,https://cloud.staging.linode.com,https://cloud.dev.linode.com"
+    - name: Access-Control-Allow-Methods
+      value: "GET, OPTIONS"
+  {{- end }}
