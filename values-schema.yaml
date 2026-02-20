@@ -2811,16 +2811,9 @@ properties:
             description: |
               Email address to use for Git commits.
               Defaults to 'pipeline@cluster.local' for internal Gitea.
-            format: email
           branch:
             type: string
             description: The branch to use in the Git repository
-        required:
-          - repoUrl
-          - username
-          - password
-          - email
-          - branch
       hasExternalDNS:
         description: Set this to true when an external dns zone is available to manage dns records. (Expects required `dns:` fields to be set.)
         default: false
@@ -2843,8 +2836,6 @@ properties:
       useORCS:
         type: boolean
         description: Defines if the OCI Registry Cache Service (ORCS) is used to cache images from the public registry.
-    required:
-      - git
   ingress:
     properties:
       platformClass:
