@@ -1,0 +1,18 @@
+{{- if eq .Values.pdb.enabled true }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "reports-server.fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "reports-server.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "reports-server.name" . }}
+  {{- if .Values.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.pdb.maxUnavailable }}
+  {{- else if .Values.pdb.minAvailable }}
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  {{- end }}
+{{- end }}
