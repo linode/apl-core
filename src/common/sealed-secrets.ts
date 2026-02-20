@@ -1,3 +1,4 @@
+import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { encryptSecretItem } from '@linode/kubeseal-encrypt'
 import { X509Certificate } from 'crypto'
 import { existsSync } from 'fs'
@@ -6,10 +7,10 @@ import { cloneDeep, get, unset } from 'lodash'
 import { pki } from 'node-forge'
 import { join } from 'path'
 import { terminal } from 'src/common/debug'
-import { ensureNamespaceExists } from 'src/common/k8s'
+import { b64enc, ensureNamespaceExists, getK8sSecret, k8s } from 'src/common/k8s'
 import { flattenObject, getSchemaSecretsPaths } from 'src/common/utils'
 import { objectToYaml } from 'src/common/values'
-import { $ } from 'zx'
+import { parse as parseYaml } from 'yaml'
 
 const cmdName = 'sealed-secrets'
 
@@ -136,28 +137,30 @@ export const getPemFromCertificate = (certificate: string): string => {
 /**
  * Get the existing sealed-secrets certificate from the cluster if it exists.
  * Returns the certificate PEM string or undefined if not found.
+ * Note: Uses k8s client directly instead of getK8sSecret() because PEM certificates
+ * are corrupted by the YAML parse step in getK8sSecret().
  */
-export const getExistingSealedSecretsCert = async (deps = { $, terminal }): Promise<string | undefined> => {
+export const getExistingSealedSecretsCert = async (deps = { k8s, terminal }): Promise<string | undefined> => {
   const d = deps.terminal(`common:${cmdName}:getExistingSealedSecretsCert`)
 
-  const result =
-    await deps.$`kubectl get secret sealed-secrets-key -n sealed-secrets -o jsonpath='{.data.tls\\.crt}' 2>/dev/null`
-      .nothrow()
-      .quiet()
-
-  if (result.exitCode !== 0 || !result.stdout || result.stdout === '') {
-    d.info('No existing sealed-secrets-key found')
-    return undefined
-  }
-
   try {
-    const certBase64 = result.stdout.replace(/'/g, '')
-    const cert = Buffer.from(certBase64, 'base64').toString('utf-8')
+    const secret = await deps.k8s.core().readNamespacedSecret({
+      name: 'sealed-secrets-key',
+      namespace: 'sealed-secrets',
+    })
+    if (!secret?.data?.['tls.crt']) {
+      d.info('No existing sealed-secrets-key found')
+      return undefined
+    }
+
     d.info('Found existing sealed-secrets-key certificate')
-    return cert
-  } catch {
-    d.warn('Failed to decode existing certificate')
-    return undefined
+    return Buffer.from(secret.data['tls.crt'], 'base64').toString('utf-8')
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      d.info('No existing sealed-secrets-key found')
+      return undefined
+    }
+    throw error
   }
 }
 
@@ -169,46 +172,38 @@ export const getExistingSealedSecretsCert = async (deps = { $, terminal }): Prom
 export const createSealedSecretsKeySecret = async (
   certificate: string,
   privateKey: string,
-  deps = { $, terminal, writeFile, mkdir },
+  deps = { getK8sSecret, terminal },
 ): Promise<void> => {
   const d = deps.terminal(`common:${cmdName}:createSealedSecretsKeySecret`)
 
-  // Create namespace if it doesn't exist
-  await ensureNamespaceExists('sealed-secrets', { $: deps.$, terminal: deps.terminal })
+  await ensureNamespaceExists('sealed-secrets')
 
   // Check if secret already exists
-  const existingSecret = await deps.$`kubectl get secret sealed-secrets-key -n sealed-secrets`.nothrow().quiet()
-  if (existingSecret.exitCode === 0) {
+  const existing = await deps.getK8sSecret('sealed-secrets-key', 'sealed-secrets')
+  if (existing) {
     d.info('sealed-secrets-key already exists, skipping creation')
     return
   }
 
   d.info('Creating sealed-secrets TLS secret')
 
-  // Write temp files for kubectl create secret tls
-  const tmpDir = '/tmp/sealed-secrets-bootstrap'
-  await deps.mkdir(tmpDir, { recursive: true })
-  const certPath = `${tmpDir}/tls.crt`
-  const keyPath = `${tmpDir}/tls.key`
-  await deps.writeFile(certPath, certificate)
-  await deps.writeFile(keyPath, privateKey)
-
-  // Create the TLS secret (only if it doesn't exist)
-  const result =
-    await deps.$`kubectl create secret tls sealed-secrets-key -n sealed-secrets --cert=${certPath} --key=${keyPath}`
-      .nothrow()
-      .quiet()
-  if (result.exitCode !== 0) {
-    d.error(`Failed to create sealed-secrets-key: ${result.stderr}`)
-    return
-  }
-
-  // Label the secret so the controller picks it up
-  const labelResult =
-    await deps.$`kubectl label secret sealed-secrets-key -n sealed-secrets sealedsecrets.bitnami.com/sealed-secrets-key=active --overwrite`
-      .nothrow()
-      .quiet()
-  if (labelResult.stderr) d.error(labelResult.stderr)
+  await k8s.core().createNamespacedSecret({
+    namespace: 'sealed-secrets',
+    body: {
+      metadata: {
+        name: 'sealed-secrets-key',
+        namespace: 'sealed-secrets',
+        labels: {
+          'sealedsecrets.bitnami.com/sealed-secrets-key': 'active',
+        },
+      },
+      type: 'kubernetes.io/tls',
+      data: {
+        'tls.crt': b64enc(certificate),
+        'tls.key': b64enc(privateKey),
+      },
+    },
+  })
 
   d.info('Created sealed-secrets TLS secret with key label')
 }
@@ -436,7 +431,7 @@ export const writeSealedSecretManifests = async (
  */
 export const applySealedSecretManifests = async (
   manifests: SealedSecretManifest[],
-  deps = { $, terminal, objectToYaml },
+  deps = { terminal },
 ): Promise<void> => {
   const d = deps.terminal(`common:${cmdName}:applySealedSecretManifests`)
 
@@ -452,14 +447,34 @@ export const applySealedSecretManifests = async (
 
   // Ensure namespaces exist and apply manifests
   for (const [namespace, nsManifests] of byNamespace) {
-    await ensureNamespaceExists(namespace, { $: deps.$, terminal: deps.terminal })
+    await ensureNamespaceExists(namespace)
 
     for (const manifest of nsManifests) {
       d.info(`Applying SealedSecret ${manifest.metadata.name} to namespace ${namespace}`)
-      const yaml = deps.objectToYaml(manifest)
-      const result = await deps.$`echo ${yaml} | kubectl apply -f -`.nothrow().quiet()
-      if (result.exitCode !== 0) {
-        d.error(`Failed to apply SealedSecret ${manifest.metadata.name}: ${result.stderr}`)
+      try {
+        await k8s.custom().createNamespacedCustomObject({
+          group: 'bitnami.com',
+          version: 'v1alpha1',
+          namespace,
+          plural: 'sealedsecrets',
+          body: manifest,
+        })
+      } catch (error) {
+        if (error instanceof ApiException && error.code === 409) {
+          await k8s.custom().patchNamespacedCustomObject(
+            {
+              group: 'bitnami.com',
+              version: 'v1alpha1',
+              namespace,
+              plural: 'sealedsecrets',
+              name: manifest.metadata.name,
+              body: manifest,
+            },
+            setHeaderOptions('Content-Type', PatchStrategy.MergePatch),
+          )
+        } else {
+          d.error(`Failed to apply SealedSecret ${manifest.metadata.name}: ${error}`)
+        }
       }
     }
   }
@@ -473,7 +488,7 @@ export const applySealedSecretManifests = async (
  */
 export const applySealedSecretManifestsFromDir = async (
   envDir: string,
-  deps = { $, terminal, readdir, readFile, existsSync },
+  deps = { terminal, readdir, readFile, existsSync },
 ): Promise<void> => {
   const d = deps.terminal(`common:${cmdName}:applySealedSecretManifestsFromDir`)
   const manifestsDir = join(envDir, 'env/manifests/ns')
@@ -494,8 +509,7 @@ export const applySealedSecretManifestsFromDir = async (
     const namespace = nsEntry.name
     const nsDir = join(manifestsDir, namespace)
 
-    // Ensure namespace exists with proper labels
-    await ensureNamespaceExists(namespace, { $: deps.$, terminal: deps.terminal })
+    await ensureNamespaceExists(namespace)
 
     // Read all YAML files in the namespace directory
     const files = await deps.readdir(nsDir)
@@ -504,11 +518,39 @@ export const applySealedSecretManifestsFromDir = async (
       const filePath = join(nsDir, file)
       d.info(`Applying SealedSecret from ${filePath}`)
 
-      const result = await deps.$`kubectl apply -f ${filePath}`.nothrow().quiet()
-      if (result.exitCode !== 0) {
-        d.error(`Failed to apply SealedSecret from ${filePath}: ${result.stderr}`)
-      } else {
-        appliedCount += 1
+      try {
+        const content = await deps.readFile(filePath, 'utf-8')
+        const manifest = parseYaml(content) as SealedSecretManifest
+
+        try {
+          await k8s.custom().createNamespacedCustomObject({
+            group: 'bitnami.com',
+            version: 'v1alpha1',
+            namespace,
+            plural: 'sealedsecrets',
+            body: manifest,
+          })
+          appliedCount += 1
+        } catch (error) {
+          if (error instanceof ApiException && error.code === 409) {
+            await k8s.custom().patchNamespacedCustomObject(
+              {
+                group: 'bitnami.com',
+                version: 'v1alpha1',
+                namespace,
+                plural: 'sealedsecrets',
+                name: manifest.metadata.name,
+                body: manifest,
+              },
+              setHeaderOptions('Content-Type', PatchStrategy.MergePatch),
+            )
+            appliedCount += 1
+          } else {
+            d.error(`Failed to apply SealedSecret from ${filePath}: ${error}`)
+          }
+        }
+      } catch (parseError) {
+        d.error(`Failed to parse SealedSecret from ${filePath}: ${parseError}`)
       }
     }
   }
@@ -521,25 +563,57 @@ export const applySealedSecretManifestsFromDir = async (
  * This is needed because if the controller starts before the sealed-secrets-key secret exists,
  * it will generate its own key. Restarting forces it to pick up the existing key.
  */
-export const restartSealedSecretsController = async (deps = { $, terminal }): Promise<void> => {
+export const restartSealedSecretsController = async (deps = { terminal }): Promise<void> => {
   const d = deps.terminal(`common:${cmdName}:restartSealedSecretsController`)
   d.info('Restarting sealed-secrets controller to ensure correct key is used')
 
-  const result = await deps.$`kubectl rollout restart deployment/sealed-secrets -n sealed-secrets`.nothrow().quiet()
-  if (result.exitCode !== 0) {
-    d.warn(`Failed to restart sealed-secrets controller: ${result.stderr}`)
+  try {
+    await k8s.app().patchNamespacedDeployment(
+      {
+        name: 'sealed-secrets',
+        namespace: 'sealed-secrets',
+        body: {
+          spec: {
+            template: {
+              metadata: {
+                annotations: {
+                  'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+                },
+              },
+            },
+          },
+        },
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+    )
+  } catch (error) {
+    d.warn(`Failed to restart sealed-secrets controller: ${error}`)
     return
   }
 
   d.info('Waiting for sealed-secrets controller rollout')
-  const waitResult = await deps.$`kubectl rollout status deployment/sealed-secrets -n sealed-secrets --timeout=120s`
-    .nothrow()
-    .quiet()
-  if (waitResult.exitCode !== 0) {
-    d.warn(`Rollout status check failed: ${waitResult.stderr}`)
-  } else {
-    d.info('Sealed-secrets controller restarted successfully')
+  const timeoutMs = 120000
+  const intervalMs = 3000
+  const start = Date.now()
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const deployment = await k8s.app().readNamespacedDeployment({
+        name: 'sealed-secrets',
+        namespace: 'sealed-secrets',
+      })
+      const desired = deployment.spec?.replicas ?? 1
+      const updated = deployment.status?.updatedReplicas ?? 0
+      const available = deployment.status?.availableReplicas ?? 0
+      if (updated >= desired && available >= desired) {
+        d.info('Sealed-secrets controller restarted successfully')
+        return
+      }
+    } catch {
+      // Ignore transient read errors during rollout
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs))
   }
+  d.warn('Rollout status check timed out')
 }
 
 /**

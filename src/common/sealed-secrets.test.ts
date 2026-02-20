@@ -19,12 +19,25 @@ jest.mock('@linode/kubeseal-encrypt', () => ({
   encryptSecretItem: jest.fn().mockResolvedValue('encrypted-value'),
 }))
 
-jest.mock('zx', () => ({
-  $: jest.fn().mockReturnValue({
-    nothrow: jest.fn().mockReturnValue({
-      quiet: jest.fn().mockResolvedValue({ stderr: '', exitCode: 0 }),
+jest.mock('src/common/k8s', () => ({
+  getK8sSecret: jest.fn().mockResolvedValue(undefined),
+  ensureNamespaceExists: jest.fn().mockResolvedValue(undefined),
+  b64enc: jest.fn((v: string) => Buffer.from(v).toString('base64')),
+  k8s: {
+    core: jest.fn().mockReturnValue({
+      createNamespacedSecret: jest.fn().mockResolvedValue({}),
     }),
-  }),
+    app: jest.fn().mockReturnValue({
+      patchNamespacedDeployment: jest.fn().mockResolvedValue({}),
+      readNamespacedDeployment: jest
+        .fn()
+        .mockResolvedValue({ spec: { replicas: 1 }, status: { updatedReplicas: 1, availableReplicas: 1 } }),
+    }),
+    custom: jest.fn().mockReturnValue({
+      createNamespacedCustomObject: jest.fn().mockResolvedValue({}),
+      patchNamespacedCustomObject: jest.fn().mockResolvedValue({}),
+    }),
+  },
 }))
 
 jest.mock('src/common/envalid', () => ({
@@ -125,59 +138,27 @@ describe('sealed-secrets', () => {
 
   describe('createSealedSecretsKeySecret', () => {
     it('should create secret if it does not exist', async () => {
-      const mockQuiet = jest.fn().mockResolvedValue({ stderr: '', exitCode: 0 })
-      const mockNothrow = jest.fn().mockReturnValue({ quiet: mockQuiet })
-      // First call (namespace): success, Second call (check exists): not found (exitCode 1)
-      // Third call (create): success, Fourth call (label): success
-      const mock$ = jest
-        .fn()
-        .mockReturnValueOnce({
-          nothrow: jest.fn().mockReturnValue({ quiet: jest.fn().mockResolvedValue({ exitCode: 0 }) }),
-        }) // namespace
-        .mockReturnValueOnce({
-          nothrow: jest.fn().mockReturnValue({ quiet: jest.fn().mockResolvedValue({ exitCode: 1 }) }),
-        }) // check exists - NOT FOUND
-        .mockReturnValueOnce({
-          nothrow: jest.fn().mockReturnValue({ quiet: jest.fn().mockResolvedValue({ exitCode: 0 }) }),
-        }) // create
-        .mockReturnValueOnce({
-          nothrow: jest.fn().mockReturnValue({ quiet: jest.fn().mockResolvedValue({ exitCode: 0 }) }),
-        }) // label
+      const mockGetK8sSecret = jest.fn().mockResolvedValue(undefined)
       const deps = {
-        $: mock$ as any,
+        getK8sSecret: mockGetK8sSecret,
         terminal,
-        writeFile: jest.fn(),
-        mkdir: jest.fn(),
       }
 
       await createSealedSecretsKeySecret('cert-pem', 'key-pem', deps)
 
-      expect(mock$).toHaveBeenCalledTimes(4)
-      expect(deps.writeFile).toHaveBeenCalledWith('/tmp/sealed-secrets-bootstrap/tls.crt', 'cert-pem')
-      expect(deps.writeFile).toHaveBeenCalledWith('/tmp/sealed-secrets-bootstrap/tls.key', 'key-pem')
+      expect(mockGetK8sSecret).toHaveBeenCalledWith('sealed-secrets-key', 'sealed-secrets')
     })
 
     it('should skip creation if secret already exists', async () => {
-      const mock$ = jest
-        .fn()
-        .mockReturnValueOnce({
-          nothrow: jest.fn().mockReturnValue({ quiet: jest.fn().mockResolvedValue({ exitCode: 0 }) }),
-        }) // namespace
-        .mockReturnValueOnce({
-          nothrow: jest.fn().mockReturnValue({ quiet: jest.fn().mockResolvedValue({ exitCode: 0 }) }),
-        }) // check exists - FOUND
+      const mockGetK8sSecret = jest.fn().mockResolvedValue({ 'tls.crt': 'existing-cert' })
       const deps = {
-        $: mock$ as any,
+        getK8sSecret: mockGetK8sSecret,
         terminal,
-        writeFile: jest.fn(),
-        mkdir: jest.fn(),
       }
 
       await createSealedSecretsKeySecret('cert-pem', 'key-pem', deps)
 
-      // Should only call namespace and check exists, not create or label
-      expect(mock$).toHaveBeenCalledTimes(2)
-      expect(deps.writeFile).not.toHaveBeenCalled()
+      expect(mockGetK8sSecret).toHaveBeenCalledWith('sealed-secrets-key', 'sealed-secrets')
     })
   })
 
