@@ -2,16 +2,10 @@
 {{- $h := $v.apps.harbor }}
 {{- $db := $v.databases.harbor }}
 {{- $obj := $v.obj.provider }}
-{{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
-{{- $notaryDomain := printf "notary.%s" $v.cluster.domainSuffix }}
-{{- $harborSecretName := ($harborDomain | replace "." "-") }}
-{{- $notarySecretName := ($notaryDomain | replace "." "-") }}
-{{- $externalUrl := printf "https://%s" $harborDomain }}
-{{/*The cloudNativeDb operator is responsible for creating the secret*/}}
+{{- $harborDomain := printf $v._derived.harborDomain }}
 
-externalURL: {{ $externalUrl }}
+externalURL: https://{{ $harborDomain }}
 fullnameOverride: harbor
-# logLevel - debug, info, warning, error or fatal
 logLevel: warning
 
 existingSecretAdminPassword: harbor-admin-password
@@ -53,9 +47,19 @@ exporter:
     {{- end }}
 
 expose:
+  type: route
   tls:
     enabled: false
-  type: clusterIP
+  route:
+    {{ with $v._derived.httpRouteAnnotations }}
+    annotations:
+      {{ . | toYaml | nindent 6 }}
+    {{- end }}
+    parentRefs:
+      - name: {{ $v.ingress.platformClass.className }}
+        namespace: istio-system
+    hosts:
+      - {{ $v._derived.harborDomain }}
 
 jobservice:
   priorityClassName: otomi-critical

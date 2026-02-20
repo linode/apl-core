@@ -1,8 +1,8 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
-{{- $authApps := list "alertmanager" "grafana" "kubeflow-pipelines" "prometheus" "tekton" "console" "tty" "argocd" }}
+{{- $authApps := list "alertmanager" "argocd" "console" "grafana" "harbor" "kubeflow-pipelines" "prometheus" "tekton" "tty" }}
 {{- $optionalApps := list "alertmanager" "gitea" "grafana" "keycloak" "kubeflow-pipelines" "prometheus" "tekton" }}
-{{- $appNames := list "console" "tty" "api" "argocd" }}
+{{- $appNames := list "console" "api" "tty" "argocd" }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- $httpRouteAnnotations := $v._derived.httpRouteAnnotations }}
 {{- range $appName := $optionalApps }}
@@ -10,6 +10,7 @@
 {{- $appNames = append $appNames $appName }}
 {{- end }}
 {{- end }}
+{{- $appNames = sortAlpha $appNames }}
 {{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
 {{- $logoutRedirectParam := printf "%s/protocol/openid-connect/logout?post_logout_redirect_uri=https://%s/oauth2/start&client_id=%s" $keycloakRealm $v._derived.consoleDomain $a.keycloak.idp.clientID }}
 resources:
