@@ -54,13 +54,6 @@ spec:
           {{- end }}
       {{- else }}
   http:
-    - match:
-        - uri:
-            prefix: /platform-logout
-      redirect:
-        authority: {{ $v.authDomain | quote }}
-        uri: {{ $v.sso.logoutUri | quote }}
-        redirectCode: 302
     -
         {{- with $s.paths | default (list "/") }}
       match:
@@ -316,7 +309,7 @@ spec:
       audiences:
         - {{ $v.sso.clientId }}
       forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
----    
+---
       {{- $principal := printf "%s/*" $v.masterRealm }}
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
@@ -328,7 +321,7 @@ spec:
     matchLabels: {{ $workload | nindent 6 }}
   action: ALLOW
   rules:
-    - from: 
+    - from:
         - source:
             requestPrincipals: [{{ $principal }}]
         {{- if not $s.isShared }}

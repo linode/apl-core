@@ -68,6 +68,17 @@ resources:
             - kind: Service
               name: oauth2-proxy
               port: 80
+        - matches:
+          - path:
+              type: Path
+              value: /platform-logout
+          filters:
+          - type: RequestRedirect
+            requestRedirect:
+              path:
+                type: ReplaceFullPath
+                replaceFullPath: /oauth2/sign_out?rd=/
+              statusCode: 302
         {{- end }}
         - filters:
           - type: RequestRedirect
