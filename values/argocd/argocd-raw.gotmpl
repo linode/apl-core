@@ -48,3 +48,16 @@ resources:
       username: {{ $v.otomi.git.username | b64enc }}
       password: {{ $v.otomi.git.password | b64enc }}
 {{- end }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: argocd-repo-creds-git
+      namespace: argocd
+      labels:
+        argocd.argoproj.io/secret-type: repo-creds
+    data:
+      type: {{ print "git" | b64enc | quote }}
+      url: {{ print "https://github.com/linode/apl-core.git" | b64enc | quote }}
+      depth: {{ print "1" | b64enc | quote }}
+      name: {{ print "apl-core" | b64enc | quote }}
+      project: {{ print "default" | b64enc | quote }}
