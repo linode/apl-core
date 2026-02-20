@@ -184,9 +184,10 @@ gatewayApi:
     {{ . | toYaml | nindent 4 }}
   {{- end }}
   {{- with $v.otomi.isPreInstalled }}
-  filters:
-    - name: Access-Control-Allow-Origin
-      value: "https://cloud.linode.com,https://cloud.staging.linode.com,https://cloud.dev.linode.com"
-    - name: Access-Control-Allow-Methods
-      value: "GET, OPTIONS"
+  rules:
+  - filters:
+      - name: Access-Control-Allow-Origin
+        value: "https://cloud.linode.com,https://cloud.staging.linode.com,https://cloud.dev.linode.com"
+      - name: Access-Control-Allow-Methods
+        value: "GET, OPTIONS"
   {{- end }}
