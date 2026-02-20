@@ -10,11 +10,13 @@
 {{- $appNames = append $appNames $appName }}
 {{- end }}
 {{- end }}
+{{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
+{{- $logoutRedirectParam := printf "%s/protocol/openid-connect/logout?post_logout_redirect_uri=https://%s/oauth2/start&client_id=%s" $keycloakRealm $v._derived.consoleDomain $a.keycloak.idp.clientID }}
 resources:
   - apiVersion: security.istio.io/v1
     kind: AuthorizationPolicy
     metadata:
-      name: {{ $v.ingress.platformClass.className }}-oauth2-proxy-2
+      name: {{ $v.ingress.platformClass.className }}-oauth2-proxy
     spec:
       action: CUSTOM
       provider:
@@ -37,6 +39,7 @@ resources:
                   {{- end }}
                 notPaths:
                   - /oauth2/*
+                  - /platform-logout
   {{- range $appName := $appNames }}
   - apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
@@ -70,14 +73,14 @@ resources:
               port: 80
         - matches:
           - path:
-              type: Path
+              type: Exact
               value: /platform-logout
           filters:
           - type: RequestRedirect
             requestRedirect:
               path:
                 type: ReplaceFullPath
-                replaceFullPath: /oauth2/sign_out?rd=/
+                replaceFullPath: /oauth2/sign_out?rd={{ $logoutRedirectParam | urlquery }}
               statusCode: 302
         {{- end }}
         - filters:

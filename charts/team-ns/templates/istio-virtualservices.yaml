@@ -196,13 +196,6 @@ spec:
               number: {{ $s.port | default 443 }}
       {{- else }}
   http:
-    - match:
-        - uri:
-            prefix: /platform-logout
-      redirect:
-        authority: {{ $v.authDomain | quote }}
-        uri: {{ $v.sso.logoutUri | quote }}
-        redirectCode: 302
     -
         {{- with $s.paths | default (list "/") }}
       match:
