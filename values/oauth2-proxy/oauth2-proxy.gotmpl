@@ -32,7 +32,6 @@ config:
     provider = "keycloak-oidc"
     whitelist_domains = {{ $domains | toJson }}
     scope = {{ $o | get "scope" "openid email profile" | quote }}
-    redirect_url = "https://{{ $v._derived.authDomain }}/oauth2/callback"
     oidc_issuer_url = {{ $v._derived.oidcBaseUrl | quote }}
     code_challenge_method = "S256"
     insecure_oidc_allow_unverified_email = true
@@ -42,7 +41,6 @@ config:
     cookie_refresh = "1m"
     # set to the same as keycloak client idle timeout
     cookie_expire = "30m"
-    reverse_proxy = true
     set_authorization_header = true
     pass_authorization_header = true
     skip_auth_routes = "/manifest.json"

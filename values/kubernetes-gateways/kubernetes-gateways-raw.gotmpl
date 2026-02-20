@@ -1,15 +1,42 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
-{{- $checkApps := list "grafana" "prometheus" "alertmanager" "argocd" "tekton" "gitea" "keycloak" "kubeflow-pipelines" }}
-{{- $appNames := list "console" "tty" "api" }}
+{{- $authApps := list "alertmanager" "grafana" "kubeflow-pipelines" "prometheus" "tekton" "console" "tty" "argocd" }}
+{{- $optionalApps := list "alertmanager" "gitea" "grafana" "keycloak" "kubeflow-pipelines" "prometheus" "tekton" }}
+{{- $appNames := list "console" "tty" "api" "argocd" }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- $httpRouteAnnotations := $v._derived.httpRouteAnnotations }}
-{{- range $checkApp := $checkApps }}
-{{- if dig $checkApp "enabled" false $a }}
-{{- $appNames = append $appNames $checkApp }}
+{{- range $appName := $optionalApps }}
+{{- if dig $appName "enabled" false $a }}
+{{- $appNames = append $appNames $appName }}
 {{- end }}
 {{- end }}
 resources:
+  - apiVersion: security.istio.io/v1
+    kind: AuthorizationPolicy
+    metadata:
+      name: {{ $v.ingress.platformClass.className }}-oauth2-proxy-2
+    spec:
+      action: CUSTOM
+      provider:
+        name: oauth2-proxy
+      targetRefs:
+        - name: {{ $v.ingress.platformClass.className }}
+          kind: Gateway
+          group: gateway.networking.k8s.io
+      rules:
+        # We ONLY authenticate requests that DON'T have an `Authorization` header using oauth2-proxy.
+        # This is because we use RequestAuthentication to authenticate requests with an `Authorization` header.
+        - when:
+            - key: request.headers[authorization]
+              notValues: ["*"]
+          to:
+            - operation:
+                hosts:
+                  {{- range $appName := $authApps }}
+                  - {{ $appName }}.{{ $domainSuffix }}
+                  {{- end }}
+                notPaths:
+                  - /oauth2/*
   {{- range $appName := $appNames }}
   - apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
@@ -25,11 +52,26 @@ resources:
       parentRefs:
         - name: {{ $v.ingress.platformClass.className }}
       rules:
-        - backendRefs:
+        - matches:
+          - path:
+              type: PathPrefix
+              value: /
+          backendRefs:
             - name: {{ $v._derived.ingressPublicGatewayName }}
               port: 80
-          matches:
-            - path:
-                type: PathPrefix
-                value: /
+        {{- if has $appName $authApps }}
+        - matches:
+          - path:
+              type: PathPrefix
+              value: /oauth2
+          backendRefs:
+            - kind: Service
+              name: oauth2-proxy
+              port: 80
+        {{- end }}
+        - filters:
+          - type: RequestRedirect
+            requestRedirect:
+            scheme: https
+            statusCode: 301
     {{- end }}

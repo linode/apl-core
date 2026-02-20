@@ -49,6 +49,24 @@ meshConfig:
         service: platform-otlp-collector.otel.svc.cluster.local
       name: otel-tracing
     {{- end }}
+    - envoyExtAuthzHttp:
+        headersToDownstreamOnDeny:
+          - content-type
+          - set-cookie
+        headersToDownstreamOnAllow:
+          - set-cookie
+        headersToUpstreamOnAllow:
+          - authorization
+          - path
+          - x-auth-request-email
+          - x-auth-request-groups
+          - x-auth-request-user
+        includeRequestHeadersInCheck:
+          - authorization
+          - cookie
+        service: oauth2-proxy.istio-system.svc.cluster.local
+        port: 80
+      name: oauth2-proxy
     {{- with $i | get "extensionProviders" nil }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
