@@ -41,6 +41,10 @@ meshConfig:
   accessLogFormat: |
     [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS% "%UPSTREAM_TRANSPORT_FAILURE_REASON%" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME% %ROUTE_NAME% traceID=%REQ(TRACEPARENT)%
   {{- end }}
+  tcpKeepalive:
+    interval: 5s
+    probes: 3
+    time: 10s
   enableAutoMtls: true
   extensionProviders:
     {{- if $i.tracing.enabled }}
@@ -49,8 +53,30 @@ meshConfig:
         service: platform-otlp-collector.otel.svc.cluster.local
       name: otel-tracing
     {{- end }}
+    - envoyExtAuthzHttp:
+        headersToDownstreamOnDeny:
+          - content-type
+          - set-cookie
+        headersToDownstreamOnAllow:
+          - set-cookie
+        headersToUpstreamOnAllow:
+          - authorization
+          - path
+          - x-auth-request-email
+          - x-auth-request-groups
+          - x-auth-request-user
+        includeRequestHeadersInCheck:
+          - authorization
+          - cookie
+        service: oauth2-proxy.istio-system.svc.cluster.local
+        port: 80
+      name: oauth2-proxy
     {{- with $i | get "extensionProviders" nil }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
 
-# Mutating webhook needs to be available for istio-gateway deployment!
+gatewayClasses:
+  istio:
+    deployment:
+      spec:
+        replicas: 2

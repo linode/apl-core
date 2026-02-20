@@ -19,6 +19,14 @@ releases:
     installed: {{ $a | get "metrics-server.enabled" }}
     namespace: kube-system
     <<: *default
+  - name: kubernetes-gateways
+    installed: true
+    namespace: istio-system
+    labels:
+      tag: ingress
+      stage: prep
+      pkg: kubernetes-gateways
+    <<: *default
   - name: ingress-nginx-artifacts
     installed: true
     namespace: ingress
@@ -55,6 +63,14 @@ releases:
       pkg: istio
       app: core
     <<: *default
+  - name: kubernetes-gateways-artifacts
+    installed: true
+    namespace: istio-system
+    labels:
+      app: core
+      tag: ingress
+      pkg: kubernetes-gateways
+    <<: *raw
   - name: cloudnative-pg
     installed: true
     namespace: cnpg-system

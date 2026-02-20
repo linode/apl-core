@@ -1,0 +1,45 @@
+{{- $v := .Values }}
+{{- range $gateway := .Values.gateways }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ $gateway.name }}
+  {{- with $gateway.annotations }}
+  annotations:
+    {{ . | toYaml | nindent 4 }}
+  {{- end }}
+spec:
+  gatewayClassName: {{ $gateway.class | default $v.defaultGatewayClass }}
+  {{- if eq $v.provider "linode" }}
+  infrastructure:
+    annotations:
+      service.beta.kubernetes.io/linode-loadbalancer-preserve: "true"
+      {{- with $gateway.nodeBalancerId }}
+      service.beta.kubernetes.io/linode-loadbalancer-nodebalancer-id: {{ . | quote }}
+      {{- end }}
+  {{- end }}
+  listeners:
+  {{- range $listener := $gateway.listeners }}
+    - hostname: {{ $listener.hostname | quote }}
+      name: http
+      port: 80
+      protocol: HTTP
+    - hostname: {{ $listener.hostname | quote }}
+      name: https
+      port: 443
+      protocol: HTTPS
+      {{- with $listener.certificateRefs }}
+      tls:
+        certificateRefs:
+          {{- . | toYaml | nindent 10 }}
+      {{- end }}
+      allowedRoutes:
+        namespaces:
+          {{- with $listener.namespaces }}
+          {{- . | toYaml | nindent 10 }}
+          {{- else }}
+          from: All
+          {{- end }}
+  {{- end }}
+{{- end }}

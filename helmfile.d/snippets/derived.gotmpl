@@ -34,6 +34,11 @@
 {{- else if eq $cm.issuer "byo-wildcard-cert" }}
   {{- $tlsSecretName = "otomi-byo-wildcard-cert" }}
 {{- end -}}
+{{- $httpRouteAnnotations := dict }}
+{{- if $v.otomi.hasExternalDNS }}
+{{- $_ := set $httpRouteAnnotations "externaldns" "true" }}
+{{- $_ = set $httpRouteAnnotations "external-dns.alpha.kubernetes.io/hostname" (print "*." $domainSuffix) }}
+{{- end }}
 
 # Istio component variables
 
@@ -207,6 +212,8 @@ environments:
           canaryIngressGatewayLabel: {{ $canaryIngressGatewayLabel | quote }}
           egressGatewayName: {{ $egressGatewayName }}
           egressGatewayLabel: {{ $egressGatewayLabel }}
+          httpRouteAnnotations:
+            {{ $httpRouteAnnotations | toYaml | nindent 12 }}
         apps:
           argocd:
             enabled: true

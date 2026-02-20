@@ -1,0 +1,92 @@
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+{{- $authApps := list "alertmanager" "argocd" "console" "grafana" "harbor" "kubeflow-pipelines" "prometheus" "tekton" "tty" }}
+{{- $optionalApps := list "alertmanager" "gitea" "grafana" "keycloak" "kubeflow-pipelines" "prometheus" }}
+{{- $appNames := list "console" "api" "tty" "argocd" "tekton" }}
+{{- $domainSuffix := $v.cluster.domainSuffix }}
+{{- $httpRouteAnnotations := $v._derived.httpRouteAnnotations }}
+{{- range $appName := $optionalApps }}
+{{- if dig $appName "enabled" false $a }}
+{{- $appNames = append $appNames $appName }}
+{{- end }}
+{{- end }}
+{{- $appNames = sortAlpha $appNames }}
+{{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
+{{- $logoutRedirectParam := printf "%s/protocol/openid-connect/logout?post_logout_redirect_uri=https://%s/oauth2/start&client_id=%s" $keycloakRealm $v._derived.consoleDomain $a.keycloak.idp.clientID }}
+resources:
+  - apiVersion: security.istio.io/v1
+    kind: AuthorizationPolicy
+    metadata:
+      name: {{ $v.ingress.platformClass.className }}-oauth2-proxy
+    spec:
+      action: CUSTOM
+      provider:
+        name: oauth2-proxy
+      targetRefs:
+        - name: {{ $v.ingress.platformClass.className }}
+          kind: Gateway
+          group: gateway.networking.k8s.io
+      rules:
+        # We ONLY authenticate requests that DON'T have an `Authorization` header using oauth2-proxy.
+        # This is because we use RequestAuthentication to authenticate requests with an `Authorization` header.
+        - when:
+            - key: request.headers[authorization]
+              notValues: ["*"]
+          to:
+            - operation:
+                hosts:
+                  {{- range $appName := $authApps }}
+                  - {{ $appName }}.{{ $domainSuffix }}
+                  {{- end }}
+                notPaths:
+                  - "/oauth2/*"
+                  - "/platform-logout"
+  {{- range $appName := $appNames }}
+  - apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    metadata:
+      {{ with $httpRouteAnnotations }}
+      annotations:
+        {{ . | toYaml | nindent 8 }}
+      {{- end }}
+      name: {{ $appName }}
+    spec:
+      hostnames:
+        - {{ $appName }}.{{ $domainSuffix }}
+      parentRefs:
+        - name: {{ $v.ingress.platformClass.className }}
+      rules:
+        - matches:
+          - path:
+              type: PathPrefix
+              value: /
+          backendRefs:
+            - name: {{ $v._derived.ingressPublicGatewayName }}
+              port: 80
+        {{- if has $appName $authApps }}
+        - matches:
+          - path:
+              type: PathPrefix
+              value: /oauth2
+          backendRefs:
+            - kind: Service
+              name: oauth2-proxy
+              port: 80
+        - matches:
+          - path:
+              type: Exact
+              value: /platform-logout
+          filters:
+          - type: RequestRedirect
+            requestRedirect:
+              path:
+                type: ReplaceFullPath
+                replaceFullPath: /oauth2/sign_out?rd={{ $logoutRedirectParam | urlquery }}
+              statusCode: 302
+        {{- end }}
+        - filters:
+          - type: RequestRedirect
+            requestRedirect:
+              scheme: https
+              statusCode: 301
+    {{- end }}

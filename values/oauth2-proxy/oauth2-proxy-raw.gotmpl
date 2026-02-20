@@ -73,7 +73,7 @@ resources:
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <meta http-equiv="refresh" content="0; url={{ $consoleUrl }}">
+            <meta http-equiv="refresh" content="0; url={{ "{{.ProxyPrefix}}/start?rd={{.Redirect}}" }}">
             <title>Login Redirect</title>
             <style>
               .container {
@@ -168,7 +168,7 @@ resources:
             <div class="container">
               <div class="content">
                 <div>You are being redirected to <strong>console</strong> for signing in...</div>
-                <div>If you are not automatically redirected, <a href="{{ $consoleUrl }}">click here</a>.</div>
+                <div>If you are not automatically redirected, <a href="{{ "{{.ProxyPrefix}}/start?rd={{.Redirect}}" }}">click here</a>.</div>
               </div>
               <div class="logo">
                 <svg
@@ -203,5 +203,3 @@ resources:
             </div>
           </body>
         </html>
-
-

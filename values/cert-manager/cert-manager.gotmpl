@@ -51,3 +51,6 @@ acmesolver:
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/jetstack/cert-manager-acmesolver"
 {{- end }}
+
+config:
+  enableGatewayAPI: true
