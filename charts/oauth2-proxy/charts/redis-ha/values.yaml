@@ -14,7 +14,7 @@ image:
   # -- Redis image repository
   repository: public.ecr.aws/docker/library/redis
   # -- Redis image tag
-  tag: 8.2.2-alpine
+  tag: 8.2.4-alpine
   # -- Redis image pull policy
   pullPolicy: IfNotPresent
 
@@ -744,7 +744,7 @@ exporter:
   # -- Exporter image
   image: quay.io/oliver006/redis_exporter
   # -- Exporter image tag
-  tag: v1.67.0
+  tag: v1.80.2
   # -- Exporter image pullPolicy
   pullPolicy: IfNotPresent
 
@@ -1104,5 +1104,6 @@ splitBrainDetection:
     failureThreshold: 5
     exec:
       command:
-        - pidof
         - sh
+        - -c
+        - test -d /proc/1
