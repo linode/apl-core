@@ -1597,9 +1597,35 @@ properties:
               type: integer
           autoscaling:
             repoServer:
-              $ref: '#/definitions/autoscalingEnabled'
+              additionalProperties: false
+              properties:
+                enabled:
+                  default: true
+                  type: boolean
+                maxReplicas:
+                  type: integer
+                  default: 5
+                minReplicas:
+                  type: integer
+                  default: 1
+                targetMemoryUtilizationPercentage:
+                  type: integer
+                  default: 80
             server:
-              $ref: '#/definitions/autoscalingEnabled'
+              additionalProperties: false
+              properties:
+                enabled:
+                  default: true
+                  type: boolean
+                maxReplicas:
+                  type: integer
+                  default: 5
+                minReplicas:
+                  type: integer
+                  default: 1
+                targetMemoryUtilizationPercentage:
+                  type: integer
+                  default: 80
           resources:
             additionalProperties: false
             properties:

@@ -54,7 +54,7 @@ repoServer:
     maxReplicas: {{ $a.autoscaling.repoServer.maxReplicas }}
     minReplicas: {{ $a.autoscaling.repoServer.minReplicas }}
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.repoServer.targetMemoryUtilizationPercentage }}
-    targetCPUUtilizationPercentage: {{ $a.autoscaling.repoServer.targetCPUUtilizationPercentage }}
+    targetCPUUtilizationPercentage: {{ $a.autoscaling.repoServer | get "targetCPUUtilizationPercentage" "null" }}
   resources: {{- $a.resources.repo | toYaml | nindent 4 }}
   metrics:
     enabled: true
@@ -69,7 +69,7 @@ server:
     maxReplicas: {{ $a.autoscaling.server.maxReplicas }}
     minReplicas: {{ $a.autoscaling.server.minReplicas }}
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.server.targetMemoryUtilizationPercentage }}
-    targetCPUUtilizationPercentage: {{ $a.autoscaling.server.targetCPUUtilizationPercentage }}
+    targetCPUUtilizationPercentage: {{ $a.autoscaling.server | get "targetCPUUtilizationPercentage" "null" }}
   resources: {{- $a.resources.server | toYaml | nindent 4 }}
   metrics:
     enabled: true

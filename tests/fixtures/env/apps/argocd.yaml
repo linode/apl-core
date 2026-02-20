@@ -8,13 +8,11 @@ spec:
             enabled: true
             maxReplicas: 5
             minReplicas: 1
-            targetCPUUtilizationPercentage: 80
             targetMemoryUtilizationPercentage: 80
         server:
             enabled: true
             maxReplicas: 5
             minReplicas: 1
-            targetCPUUtilizationPercentage: 80
             targetMemoryUtilizationPercentage: 80
     resources:
         applicationSet:
