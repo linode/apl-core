@@ -54,7 +54,7 @@ resources:
       name: argocd-repo-creds-git
       namespace: argocd
       labels:
-        argocd.argoproj.io/secret-type: repo-creds
+        argocd.argoproj.io/secret-type: repository
     data:
       type: {{ print "git" | b64enc | quote }}
       url: {{ print "https://github.com/linode/apl-core.git" | b64enc | quote }}
