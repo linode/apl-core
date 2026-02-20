@@ -1,0 +1,7 @@
+# npm run gen:chart-schema
+# helm lint chart/apl -f tests/bootstrap/input-local-minimal.yaml
+cluster:
+  name: local
+  k8sContext: local
+  domainSuffix: local.host
+  provider: linode
