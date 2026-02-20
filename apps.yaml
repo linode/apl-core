@@ -218,7 +218,7 @@ appsInfo:
     integration: App Platform uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
   trivy:
     title: Trivy Operator
-    appVersion: 0.29.0
+    appVersion: 0.30.0
     repo: https://github.com/aquasecurity/trivy-operator
     maintainers: Aqua Security
     relatedLinks:
