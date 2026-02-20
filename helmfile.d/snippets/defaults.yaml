@@ -53,7 +53,7 @@ environments:
                   memory: 1Gi
               repo:
                 requests:
-                  cpu: 100m
+                  cpu: 500m
                   memory: 640Mi
                 limits:
                   cpu: "1"
