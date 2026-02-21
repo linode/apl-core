@@ -1,8 +1,7 @@
-import * as process from 'node:process'
 import { $ } from 'zx'
 import { terminal } from '../common/debug'
 import { getStoredGitRepoConfig } from '../common/git-config'
-import { createUpdateConfigMap, deletePendingHelmReleases, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
+import { createUpdateConfigMap, deletePendingHelmReleases, getK8sConfigMap, k8s } from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 
@@ -123,25 +122,6 @@ export class Installer {
   }
 
   public async setEnvAndCreateSecrets(): Promise<void> {
-    this.d.debug('Retrieving or creating git credentials')
-    await this.setupSopsEnvironment()
-  }
-
-  private async setupSopsEnvironment() {
-    try {
-      const aplSopsSecret = await getK8sSecret('apl-sops-secrets', 'apl-operator')
-
-      if (aplSopsSecret?.SOPS_AGE_KEY) {
-        process.env.SOPS_AGE_KEY = aplSopsSecret.SOPS_AGE_KEY
-        this.d.debug('Using existing sops credentials from secret')
-      } else {
-        // SOPS is no longer used (replaced by SealedSecrets + ESO).
-        // Skip hfValues() call which requires the git repo that may not exist yet.
-        this.d.debug('SOPS Age key not found in secret, skipping (SealedSecrets in use)')
-      }
-    } catch (error) {
-      this.d.error('Failed to retrieve sops credentials:', getErrorMessage(error))
-      throw error
-    }
+    this.d.debug('Environment setup complete (SOPS removed, using SealedSecrets + ESO)')
   }
 }

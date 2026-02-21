@@ -90,8 +90,5 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     await $`git checkout -b ${branch}`.nothrow().quiet()
     await $`git remote add origin ${remote}`.nothrow().quiet()
   }
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    await $`git config --local diff.sopsdiffer.textconv "sops -d"`.nothrow().quiet()
-  }
   d.log(`Done bootstrapping git`)
 }

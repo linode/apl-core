@@ -22,10 +22,6 @@ on:
         description: 'Select Domain Zone'
         type: string
         default: DNS-Integration
-      kms:
-        description: 'Should APL encrypt secrets in values repo (DNS or KMS is turned on)?'
-        type: string
-        default: age
       certificate:
         description: 'Select certificate issuer'
         type: string
@@ -85,13 +81,6 @@ on:
           - Zone-2
           - Random
           - DNS-Integration
-      kms:
-        type: choice
-        description: Should APL encrypt secrets in values repo (DNS or KMS is turned on)?
-        options:
-          - age
-          - no_kms
-        default: age
       certificate:
         type: choice
         description: Select certificate issuer
@@ -142,7 +131,6 @@ jobs:
           echo 'install_profile: ${{ inputs.install_profile }}'
           echo 'lke_tier: ${{ inputs.lke_tier }}'
           echo 'kubernetes_version: ${{ inputs.kubernetes_version }}'
-          echo 'kms: ${{ inputs.kms }}'
           echo 'domain_zone: ${{ inputs.domain_zone }}'
           echo 'certificate: ${{ inputs.certificate }}'
           echo 'is_pre_installed: ${{ inputs.is_pre_installed }}'
@@ -314,7 +302,6 @@ jobs:
           additional_args=""
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
-          [[ '${{ inputs.kms }}' == 'age' ]] && additional_args+=" --set kms.sops.provider=age"
           [[ '${{ inputs.is_pre_installed }}' == 'true' ]] && additional_args+=" --set otomi.isPreInstalled=true"
           if [[ '${{ inputs.disableORCS }}' == 'true' ]]; then
             additional_args+=" --set otomi.useORCS=false"

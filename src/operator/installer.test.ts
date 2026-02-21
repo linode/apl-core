@@ -50,9 +50,6 @@ describe('Installer', () => {
     jest.clearAllMocks()
     jest.useFakeTimers()
 
-    // Save original environment variables
-    process.env.SOPS_AGE_KEY = ''
-
     mockCoreApi = {}
     ;(k8s.k8s.core as jest.Mock).mockReturnValue(mockCoreApi)
 
@@ -336,22 +333,8 @@ describe('Installer', () => {
   })
 
   describe('setEnvAndCreateSecrets', () => {
-    test('should use existing SOPS key from secret', async () => {
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValueOnce({ SOPS_AGE_KEY: 'existing-sops-key' })
-
+    test('should complete without errors', async () => {
       await installer.setEnvAndCreateSecrets()
-
-      expect(k8s.getK8sSecret).toHaveBeenCalledWith('apl-sops-secrets', 'apl-operator')
-      expect(process.env.SOPS_AGE_KEY).toBe('existing-sops-key')
-    })
-
-    test('should skip gracefully when SOPS key not found in secret (SealedSecrets in use)', async () => {
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
-
-      await installer.setEnvAndCreateSecrets()
-
-      // Should not throw — SOPS is no longer required (replaced by SealedSecrets + ESO)
-      expect(process.env.SOPS_AGE_KEY).toBe('')
     })
   })
 })
