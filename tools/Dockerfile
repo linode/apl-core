@@ -3,6 +3,8 @@ FROM ubuntu:24.04 AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH
+# https://github.com/kubernetes/kubernetes/releases
+ARG KUBECTL_VERSION=1.34.2
 # https://github.com/helm/helm/tags
 ARG HELM_VERSION=3.19.2
 # https://github.com/databus23/helm-diff/releases
@@ -15,6 +17,10 @@ ARG KUBECONFORM_VERSION=0.7.0
 ARG HELMFILE_VERSION=1.2.2
 # https://nodejs.org/en/download/
 ARG NODE_VERSION=24
+# https://github.com/cloudnative-pg/cloudnative-pg/releases
+ARG CNPG_VERSION=1.27.1
+# https://github.com/jqlang/jq/releases/
+ARG JQ_VERSION=1.8.1
 
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-${TARGETARCH}.tar.gz
 WORKDIR /
@@ -25,9 +31,17 @@ RUN apt-get update && apt-get install -y \
   apache2-utils \
   ca-certificates \
   git \
-  locales && \
+  locales \
+  rsync && \
   rm -rf /var/lib/apt/lists/* && \
   locale-gen en_US.UTF-8
+
+# jq
+RUN curl -LO "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-linux-${TARGETARCH}" && \
+  curl -L "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/sha256sum.txt" | grep "jq-linux-${TARGETARCH}" > sha256sum.txt && \
+  echo sha256sum --check sha256sum.txt && \
+  mv jq-linux-${TARGETARCH} /usr/bin/jq && \
+  chmod +x /usr/bin/jq
 
 RUN mkdir -p /home/app
 RUN groupadd -r app && \
@@ -37,6 +51,19 @@ ENV APP_HOME=/home/app/tools
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 ENV PATH $PATH:$APP_HOME
+
+# kubectl
+RUN curl -LO "https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/$TARGETARCH/kubectl" && \
+  curl -LO "https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/$TARGETARCH/kubectl.sha256" && \
+  echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check && \
+  chmod +x kubectl
+
+# cnpg kubectl plugin
+RUN CNPG_ARCH=$(if [ "${TARGETARCH}" = "amd64" ]; then echo "x86_64"; else echo "${TARGETARCH}"; fi) && \
+  curl -LO "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CNPG_VERSION}/kubectl-cnpg_${CNPG_VERSION}_linux_${CNPG_ARCH}.tar.gz" && \
+  tar -zxvf kubectl-cnpg_${CNPG_VERSION}_linux_${CNPG_ARCH}.tar.gz && \
+  chmod +x kubectl-cnpg && \
+  rm kubectl-cnpg_${CNPG_VERSION}_linux_${CNPG_ARCH}.tar.gz
 
 # helm
 ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
