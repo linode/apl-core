@@ -7,6 +7,10 @@ ARG TARGETARCH
 ARG HELM_VERSION=3.19.2
 # https://github.com/databus23/helm-diff/releases
 ARG HELM_DIFF_VERSION=3.14.1
+# https://github.com/noqcks/gucci/releases
+ARG GUCCI_VERSION=1.9.0
+# https://github.com/yannh/kubeconform/releases/
+ARG KUBECONFORM_VERSION=0.7.0
 # https://github.com/helmfile/helmfile/releases
 ARG HELMFILE_VERSION=1.2.2
 # https://nodejs.org/en/download/
@@ -18,6 +22,7 @@ WORKDIR /
 # Install all required packages in one layer
 RUN apt-get update && apt-get install -y \
   curl \
+  apache2-utils \
   ca-certificates \
   git \
   locales && \
@@ -41,6 +46,14 @@ RUN helm plugin install https://github.com/databus23/helm-diff --version ${HELM_
 # helmfile
 ADD https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz /tmp
 RUN tar -zxvf /tmp/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz -C /tmp && mv /tmp/helmfile helmfile
+
+# gucci
+ADD https://github.com/noqcks/gucci/releases/download/v${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-${TARGETARCH} gucci
+RUN chmod +x gucci
+
+# kubeconform
+ADD https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-${TARGETARCH}.tar.gz /tmp
+RUN tar -zxvf /tmp/kubeconform-linux-${TARGETARCH}.tar.gz -C /tmp && mv /tmp/kubeconform kubeconform
 
 # node
 # https://github.com/nodesource/distributions
