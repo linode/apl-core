@@ -426,6 +426,7 @@ describe('sealed-secrets', () => {
         buildSecretToNamespaceMap: jest.fn().mockResolvedValue([mockMapping]),
         createSealedSecretManifest: jest.fn().mockResolvedValue(mockManifest),
         writeSealedSecretManifests: jest.fn(),
+        createUserSealedSecretManifests: jest.fn().mockResolvedValue([]),
         encryptSecretItem: jest.fn().mockResolvedValue('encrypted'),
       }
 
@@ -457,6 +458,7 @@ describe('sealed-secrets', () => {
         buildSecretToNamespaceMap: jest.fn().mockResolvedValue([mockMapping]),
         createSealedSecretManifest: jest.fn().mockResolvedValue({}),
         writeSealedSecretManifests: jest.fn(),
+        createUserSealedSecretManifests: jest.fn().mockResolvedValue([]),
         encryptSecretItem: jest.fn(),
       }
 
@@ -488,6 +490,7 @@ describe('sealed-secrets', () => {
         buildSecretToNamespaceMap: jest.fn().mockResolvedValue([]),
         createSealedSecretManifest: jest.fn(),
         writeSealedSecretManifests: jest.fn(),
+        createUserSealedSecretManifests: jest.fn().mockResolvedValue([]),
         encryptSecretItem: jest.fn(),
       }
 

@@ -631,6 +631,153 @@ export const restartSealedSecretsController = async (deps = { terminal }): Promi
  * Orchestrator: bootstrap sealed secrets for the platform.
  * Replaces bootstrapSops().
  */
+/**
+ * Aggregate individual user K8s secrets from apl-users namespace into a single
+ * users-secrets Secret in apl-secrets namespace (usersJson key).
+ * This feeds the Keycloak Helm chart configuration.
+ * Called during the operator reconcile loop.
+ */
+export const aggregateUserSecrets = async (deps = { terminal, k8s, b64enc }): Promise<void> => {
+  const d = deps.terminal(`common:${cmdName}:aggregateUserSecrets`)
+  const namespace = 'apl-users'
+  const targetNamespace = 'apl-secrets'
+  const targetSecretName = 'users-secrets'
+
+  try {
+    const res: any = await deps.k8s.core().listNamespacedSecret({ namespace })
+    const users: any[] = []
+
+    for (const item of res.items || []) {
+      if (item.type !== 'Opaque') continue
+      if (!item.data?.email) continue
+
+      const decoded: Record<string, string> = {}
+      for (const [key, value] of Object.entries(item.data as Record<string, string>)) {
+        decoded[key] = Buffer.from(value, 'base64').toString('utf-8')
+      }
+
+      // Build user in keycloak-operator format (with groups)
+      const groups: string[] = []
+      if (decoded.isPlatformAdmin === 'true') groups.push('platform-admin')
+      if (decoded.isTeamAdmin === 'true') groups.push('team-admin')
+      const teams = decoded.teams ? JSON.parse(decoded.teams) : []
+      for (const team of teams) groups.push(`team-${team}`)
+
+      users.push({
+        email: decoded.email,
+        firstName: decoded.firstName || '',
+        lastName: decoded.lastName || '',
+        initialPassword: decoded.initialPassword || '',
+        groups,
+      })
+    }
+
+    if (users.length === 0) {
+      d.info('No user secrets found in apl-users namespace, skipping aggregation')
+      return
+    }
+
+    const usersJson = JSON.stringify(users)
+
+    // Create or update the users-secrets Secret in apl-secrets
+    await ensureNamespaceExists(targetNamespace)
+
+    try {
+      await deps.k8s.core().readNamespacedSecret({ name: targetSecretName, namespace: targetNamespace })
+      // Secret exists, patch it
+      await deps.k8s.core().patchNamespacedSecret(
+        {
+          name: targetSecretName,
+          namespace: targetNamespace,
+          body: {
+            data: { usersJson: deps.b64enc(usersJson) },
+          },
+        },
+        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+      )
+    } catch (error) {
+      if (error instanceof ApiException && error.code === 404) {
+        // Secret doesn't exist, create it
+        await deps.k8s.core().createNamespacedSecret({
+          namespace: targetNamespace,
+          body: {
+            metadata: {
+              name: targetSecretName,
+              namespace: targetNamespace,
+            },
+            type: 'Opaque',
+            data: { usersJson: deps.b64enc(usersJson) },
+          },
+        })
+      } else {
+        throw error
+      }
+    }
+
+    d.info(`Aggregated ${users.length} user(s) into ${targetNamespace}/${targetSecretName}`)
+  } catch (error) {
+    d.warn(`Failed to aggregate user secrets: ${error instanceof Error ? error.message : error}`)
+  }
+}
+
+/**
+ * Create individual SealedSecret manifests for each user in the apl-users namespace.
+ * Each user gets their own SealedSecret with all fields encrypted.
+ */
+export const createUserSealedSecretManifests = async (
+  users: any[],
+  pem: string,
+  deps = { encryptSecretItem, terminal },
+): Promise<SealedSecretManifest[]> => {
+  const d = deps.terminal(`common:${cmdName}:createUserSealedSecretManifests`)
+  const namespace = 'apl-users'
+  const manifests: SealedSecretManifest[] = []
+
+  for (const user of users) {
+    const userId = user.name || user.id
+    if (!userId) {
+      d.warn('Skipping user without id/name')
+      continue
+    }
+
+    const data: Record<string, string> = {
+      email: user.email || '',
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      initialPassword: user.initialPassword || '',
+      isPlatformAdmin: String(user.isPlatformAdmin ?? false),
+      isTeamAdmin: String(user.isTeamAdmin ?? false),
+      teams: JSON.stringify(user.teams || []),
+    }
+
+    const encryptedData: Record<string, string> = {}
+    for (const [key, value] of Object.entries(data)) {
+      encryptedData[key] = await deps.encryptSecretItem(pem, namespace, value)
+    }
+
+    manifests.push({
+      apiVersion: 'bitnami.com/v1alpha1',
+      kind: 'SealedSecret',
+      metadata: {
+        annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+        name: userId,
+        namespace,
+      },
+      spec: {
+        encryptedData,
+        template: {
+          immutable: false,
+          metadata: { name: userId, namespace },
+          type: 'Opaque',
+        },
+      },
+    })
+  }
+
+  d.info(`Created ${manifests.length} individual user SealedSecret manifests`)
+  return manifests
+}
+
 export const bootstrapSealedSecrets = async (
   secrets: Record<string, any>,
   envDir: string,
@@ -644,6 +791,7 @@ export const bootstrapSealedSecrets = async (
     buildSecretToNamespaceMap,
     createSealedSecretManifest,
     writeSealedSecretManifests,
+    createUserSealedSecretManifests,
     encryptSecretItem,
   },
 ): Promise<void> => {
@@ -679,7 +827,31 @@ export const bootstrapSealedSecrets = async (
     manifests.push(manifest)
   }
 
-  // 7. Write SealedSecret manifests to disk
+  // 7. Create individual user SealedSecrets in apl-users namespace
+  const { users } = secrets
+  if (Array.isArray(users) && users.length > 0) {
+    // The users in allSecrets are in processed format (with groups).
+    // We also need original user data (isPlatformAdmin, isTeamAdmin, teams) from allValues.
+    const originalUsers = get(allValues, 'users', []) as any[]
+    // Merge original user fields with processed users for complete SealedSecret data
+    const usersForSecrets = users.map((processedUser: any) => {
+      const originalUser = originalUsers.find((u: any) => u.email === processedUser.email)
+      return {
+        ...processedUser,
+        name: originalUser?.name || processedUser.name,
+        isPlatformAdmin: originalUser?.isPlatformAdmin ?? false,
+        isTeamAdmin: originalUser?.isTeamAdmin ?? false,
+        teams: originalUser?.teams || [],
+      }
+    })
+    const userManifests = await deps.createUserSealedSecretManifests(usersForSecrets, pem, {
+      encryptSecretItem: deps.encryptSecretItem,
+      terminal: deps.terminal,
+    })
+    manifests.push(...userManifests)
+  }
+
+  // 8. Write SealedSecret manifests to disk
   // Note: These manifests are applied later during install, after the sealed-secrets
   // controller is deployed and the SealedSecret CRD is available.
   await deps.writeSealedSecretManifests(manifests, envDir)
