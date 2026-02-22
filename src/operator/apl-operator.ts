@@ -5,7 +5,6 @@ import { env } from '../common/envalid'
 import { GitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/gitea'
 import { hfValues } from '../common/hf'
-import { aggregateUserSecrets } from '../common/sealed-secrets'
 import { ensureTeamGitOpsDirectories } from '../common/utils'
 import { writeValues } from '../common/values'
 import { HelmArguments } from '../common/yargs'
@@ -100,9 +99,6 @@ export class AplOperator {
       } else {
         await this.aplOps.apply()
       }
-
-      // Aggregate individual user secrets into users-secrets for Keycloak
-      await aggregateUserSecrets()
 
       this.d.info(`[${trigger}] Apply process completed`)
 

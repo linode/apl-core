@@ -53,9 +53,6 @@ jest.mock('../common/utils', () => ({
 jest.mock('../cmd/commit', () => ({
   commit: jest.fn().mockResolvedValue(undefined),
 }))
-jest.mock('../common/sealed-secrets', () => ({
-  aggregateUserSecrets: jest.fn().mockResolvedValue(undefined),
-}))
 
 jest.mock('./k8s', () => ({
   updateApplyState: jest.fn().mockResolvedValue(undefined),

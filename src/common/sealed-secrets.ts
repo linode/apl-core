@@ -73,7 +73,6 @@ export const APP_NAMESPACE_MAP: Record<string, string> = {
   dns: 'external-dns',
   obj: 'otomi',
   license: 'otomi',
-  users: 'keycloak',
   alerts: 'monitoring',
   cluster: 'cert-manager',
 }
@@ -261,7 +260,6 @@ export const SECRET_NAME_MAP: Record<string, string> = {
   dns: 'dns-secrets',
   obj: 'obj-storage-secrets',
   license: 'license-secrets',
-  users: 'users-secrets',
   alerts: 'alerts-secrets',
   cluster: 'cluster-secrets',
 }
@@ -319,12 +317,11 @@ const deriveSecretName = (secretPath: string): string => {
 export const buildSecretToNamespaceMap = async (
   secrets: Record<string, any>,
   teams: string[],
-  allValues?: Record<string, any>,
+  _allValues?: Record<string, any>,
   deps = { getSchemaSecretsPaths },
 ): Promise<SecretMapping[]> => {
   const secretPaths = await deps.getSchemaSecretsPaths(teams)
   const flat = flattenObject(secrets)
-  const allFlat = allValues ? flattenObject(allValues) : flat
 
   // Group by namespace + secretName
   const groupMap = new Map<string, SecretMapping>()
@@ -332,21 +329,8 @@ export const buildSecretToNamespaceMap = async (
   for (const secretPath of secretPaths) {
     // Skip SOPS-related paths
     if (secretPath.startsWith('kms.sops')) continue
-    // Handle 'users' path specially — serialize pre-processed users array as single JSON value
-    if (secretPath === 'users') {
-      const usersData = secrets.users
-      if (Array.isArray(usersData) && usersData.length > 0) {
-        const namespace = 'apl-secrets'
-        const secretName = 'users-secrets'
-        const groupKey = `${namespace}/${secretName}`
-        if (!groupMap.has(groupKey)) {
-          groupMap.set(groupKey, { namespace, secretName, data: {} })
-        }
-        const mapping = groupMap.get(groupKey)!
-        mapping.data.usersJson = JSON.stringify(usersData)
-      }
-      continue
-    }
+    // Skip users path — user secrets are managed individually in apl-users namespace
+    if (secretPath === 'users') continue
 
     const namespace = resolveNamespace(secretPath)
     if (!namespace) continue
@@ -625,99 +609,6 @@ export const restartSealedSecretsController = async (deps = { terminal }): Promi
     await new Promise((resolve) => setTimeout(resolve, intervalMs))
   }
   d.warn('Rollout status check timed out')
-}
-
-/**
- * Orchestrator: bootstrap sealed secrets for the platform.
- * Replaces bootstrapSops().
- */
-/**
- * Aggregate individual user K8s secrets from apl-users namespace into a single
- * users-secrets Secret in apl-secrets namespace (usersJson key).
- * This feeds the Keycloak Helm chart configuration.
- * Called during the operator reconcile loop.
- */
-export const aggregateUserSecrets = async (deps = { terminal, k8s, b64enc }): Promise<void> => {
-  const d = deps.terminal(`common:${cmdName}:aggregateUserSecrets`)
-  const namespace = 'apl-users'
-  const targetNamespace = 'apl-secrets'
-  const targetSecretName = 'users-secrets'
-
-  try {
-    const res: any = await deps.k8s.core().listNamespacedSecret({ namespace })
-    const users: any[] = []
-
-    for (const item of res.items || []) {
-      if (item.type !== 'Opaque') continue
-      if (!item.data?.email) continue
-
-      const decoded: Record<string, string> = {}
-      for (const [key, value] of Object.entries(item.data as Record<string, string>)) {
-        decoded[key] = Buffer.from(value, 'base64').toString('utf-8')
-      }
-
-      // Build user in keycloak-operator format (with groups)
-      const groups: string[] = []
-      if (decoded.isPlatformAdmin === 'true') groups.push('platform-admin')
-      if (decoded.isTeamAdmin === 'true') groups.push('team-admin')
-      const teams = decoded.teams ? JSON.parse(decoded.teams) : []
-      for (const team of teams) groups.push(`team-${team}`)
-
-      users.push({
-        email: decoded.email,
-        firstName: decoded.firstName || '',
-        lastName: decoded.lastName || '',
-        initialPassword: decoded.initialPassword || '',
-        groups,
-      })
-    }
-
-    if (users.length === 0) {
-      d.info('No user secrets found in apl-users namespace, skipping aggregation')
-      return
-    }
-
-    const usersJson = JSON.stringify(users)
-
-    // Create or update the users-secrets Secret in apl-secrets
-    await ensureNamespaceExists(targetNamespace)
-
-    try {
-      await deps.k8s.core().readNamespacedSecret({ name: targetSecretName, namespace: targetNamespace })
-      // Secret exists, patch it
-      await deps.k8s.core().patchNamespacedSecret(
-        {
-          name: targetSecretName,
-          namespace: targetNamespace,
-          body: {
-            data: { usersJson: deps.b64enc(usersJson) },
-          },
-        },
-        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
-      )
-    } catch (error) {
-      if (error instanceof ApiException && error.code === 404) {
-        // Secret doesn't exist, create it
-        await deps.k8s.core().createNamespacedSecret({
-          namespace: targetNamespace,
-          body: {
-            metadata: {
-              name: targetSecretName,
-              namespace: targetNamespace,
-            },
-            type: 'Opaque',
-            data: { usersJson: deps.b64enc(usersJson) },
-          },
-        })
-      } else {
-        throw error
-      }
-    }
-
-    d.info(`Aggregated ${users.length} user(s) into ${targetNamespace}/${targetSecretName}`)
-  } catch (error) {
-    d.warn(`Failed to aggregate user secrets: ${error instanceof Error ? error.message : error}`)
-  }
 }
 
 /**

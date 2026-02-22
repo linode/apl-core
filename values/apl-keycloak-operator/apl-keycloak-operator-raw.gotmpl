@@ -41,7 +41,6 @@ resources:
             KEYCLOAK_ADMIN: {{ $k.adminUsername }}
             KEYCLOAK_ADMIN_PASSWORD: '{{ "{{ .adminPassword | toString }}" }}'
             KEYCLOAK_CLIENT_SECRET: '{{ "{{ .idpClientSecret | toString }}" }}'
-            USERS: '{{ "{{ .usersJson | toString }}" }}'
             {{- if $v.otomi.hasExternalIDP }}
             IDP_CLIENT_ID: '{{ "{{ .oidcClientID | toString }}" }}'
             IDP_CLIENT_SECRET: '{{ "{{ .oidcClientSecret | toString }}" }}'
@@ -55,10 +54,6 @@ resources:
           remoteRef:
             key: keycloak-secrets
             property: idp_clientSecret
-        - secretKey: usersJson
-          remoteRef:
-            key: users-secrets
-            property: usersJson
         {{- if $v.otomi.hasExternalIDP }}
         - secretKey: oidcClientID
           remoteRef:
