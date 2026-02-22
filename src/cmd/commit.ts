@@ -1,6 +1,7 @@
 import retry from 'async-retry'
 import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
+import { DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
@@ -176,23 +177,17 @@ export async function initialSetupData(): Promise<InitialData> {
   const secretName = hasExternalIDP ? 'root-credentials' : 'platform-admin-initial-credentials'
 
   if (!hasExternalIDP) {
-    // Read the platform admin's initialPassword from individual user secrets in apl-users namespace
+    // Read the platform admin's initialPassword from the generated passwords secret
     let platformAdminPassword = ''
     try {
-      const res: any = await k8s.core().listNamespacedSecret({ namespace: 'apl-users' })
+      const secretData = await getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi')
+      const allSecrets = secretData?.[DEPLOYMENT_PASSWORDS_SECRET]
+      const users = allSecrets?.users || []
       const defaultEmail = `platform-admin@${domainSuffix}`
-      for (const item of res.items || []) {
-        if (item.type !== 'Opaque' || !item.data?.email) continue
-        const email = Buffer.from(item.data.email, 'base64').toString('utf-8')
-        if (email === defaultEmail) {
-          platformAdminPassword = item.data.initialPassword
-            ? Buffer.from(item.data.initialPassword, 'base64').toString('utf-8')
-            : ''
-          break
-        }
-      }
+      const platformAdmin = users.find((u: any) => u.email === defaultEmail)
+      platformAdminPassword = platformAdmin?.initialPassword || ''
     } catch (error) {
-      d.warn(`Failed to read user secrets from apl-users: ${error instanceof Error ? error.message : error}`)
+      d.warn(`Failed to read platform admin credentials: ${error instanceof Error ? error.message : error}`)
     }
     return {
       domainSuffix,
