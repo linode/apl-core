@@ -268,7 +268,10 @@ describe('Bootstrapping values', () => {
         })
         expect(res.originalInput).toEqual({
           cluster: { name: 'bla', provider: 'dida' },
-          users: [{ id: 'user1', initialPassword: 'existing-password' }, { id: 'user2' }],
+          users: [
+            { id: 'user1', initialPassword: 'existing-password' },
+            { id: 'user2', initialPassword: 'generated-password' },
+          ],
         })
       })
       it('should merge originalInput + allSecrets + users for disk (stripAllSecrets removes x-secret paths)', async () => {

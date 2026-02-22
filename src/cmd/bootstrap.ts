@@ -212,7 +212,9 @@ export const processValues = async (
   // and do some context dependent post processing:
   // to support potential failing chart install we store secrets on cluster
   if (!(env.isDev && env.DISABLE_SYNC)) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
-  return { originalInput, allSecrets }
+  // Include users (with name/UUID) on originalInput for bootstrapSealedSecrets to find them.
+  // getUsers() may return a detached array when originalInput had no 'users' key initially.
+  return { originalInput: { ...originalInput, users }, allSecrets }
 }
 
 // create file structure based on file entry

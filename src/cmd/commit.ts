@@ -169,23 +169,30 @@ export const commit = async (
 }
 
 export async function initialSetupData(): Promise<InitialData> {
+  const d = terminal(`cmd:${cmdName}:initialSetupData`)
   const values = (await hfValues()) as Record<string, any>
   const { domainSuffix } = values.cluster
   const { hasExternalIDP } = values.otomi
   const secretName = hasExternalIDP ? 'root-credentials' : 'platform-admin-initial-credentials'
 
   if (!hasExternalIDP) {
-    // Read the platform admin's initialPassword from users-secrets (set by keycloak-operator)
-    const usersSecret = await getK8sSecret('users-secrets', 'apl-secrets')
+    // Read the platform admin's initialPassword from individual user secrets in apl-users namespace
     let platformAdminPassword = ''
-    if (usersSecret?.usersJson) {
-      // getK8sSecret already parses JSON/YAML values, so usersJson may be an array or a string
-      const users = Array.isArray(usersSecret.usersJson)
-        ? usersSecret.usersJson
-        : JSON.parse(String(usersSecret.usersJson))
+    try {
+      const res: any = await k8s.core().listNamespacedSecret({ namespace: 'apl-users' })
       const defaultEmail = `platform-admin@${domainSuffix}`
-      const platformAdmin = users.find((u: any) => u.email === defaultEmail)
-      platformAdminPassword = platformAdmin?.initialPassword ?? ''
+      for (const item of res.items || []) {
+        if (item.type !== 'Opaque' || !item.data?.email) continue
+        const email = Buffer.from(item.data.email, 'base64').toString('utf-8')
+        if (email === defaultEmail) {
+          platformAdminPassword = item.data.initialPassword
+            ? Buffer.from(item.data.initialPassword, 'base64').toString('utf-8')
+            : ''
+          break
+        }
+      }
+    } catch (error) {
+      d.warn(`Failed to read user secrets from apl-users: ${error instanceof Error ? error.message : error}`)
     }
     return {
       domainSuffix,
