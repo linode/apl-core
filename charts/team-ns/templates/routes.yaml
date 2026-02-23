@@ -33,7 +33,8 @@ spec:
       namespace: istio-system
   rules:
     - backendRefs:
-        - name: {{ $v.ingressPublicGatewayName }}.istio-system.svc.cluster.local
+        - name: {{ $v.ingressPublicGatewayName }}
+          namespace: istio-system
           port: {{ $backendPort }}
       matches:
       {{- if and $s.paths (gt (len $s.paths) 0) }}
