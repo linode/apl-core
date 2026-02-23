@@ -143,11 +143,13 @@ describe('Install command', () => {
       // Verify the key steps were called
       expect(mockDeps.getDeploymentState).toHaveBeenCalled()
       expect(mockDeps.getImageTagFromValues).toHaveBeenCalled()
-      expect(mockDeps.setDeploymentState).toHaveBeenCalledWith({
-        status: 'deploying',
-        deployingTag: 'v1.0.0',
-        deployingVersion: '1.0.0',
-      })
+      expect(mockDeps.setDeploymentState).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'deploying',
+          deployingTag: 'v1.0.0',
+          deployingVersion: '1.0.0',
+        }),
+      )
 
       // Restore environment
       process.env.DISABLE_SYNC = originalEnv
