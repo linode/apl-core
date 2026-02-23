@@ -737,7 +737,7 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
 
 const addLinodeNBAnnotationsToPlatformIngress = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('addLinodeNBAnnotationsToPlatformIngress')
-  if (env.isDev && env.DISABLE_SYNC) {
+  if (env.DISABLE_SYNC) {
     d.info('Skipping Linode NodeBalancer annotation migration in dev/test environment')
     return
   }
