@@ -6,7 +6,7 @@ import { env } from 'src/common/envalid'
 import { setGitConfig } from 'src/common/git-config'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState, waitForCRD } from 'src/common/k8s'
-import { getFilename, loadYaml, rootDir } from 'src/common/utils'
+import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
@@ -45,11 +45,8 @@ const retryInstallStep = async <T, Args extends any[]>(
   )
 }
 
-const getInitialInstallationMode = async (): Promise<'standard' | 'recovery'> => {
-  if (!env.VALUES_INPUT) return 'standard'
-
-  const valuesInput = (await loadYaml(env.VALUES_INPUT, { noError: true })) as Record<string, any> | undefined
-  const mode = valuesInput?.installation?.mode
+const getInitialInstallationMode = (deploymentState: Record<string, any> | undefined): 'standard' | 'recovery' => {
+  const mode = deploymentState?.['installation.mode'] ?? deploymentState?.installationMode
   return mode === 'recovery' || mode === 'standard' ? mode : 'standard'
 }
 
@@ -62,7 +59,7 @@ export const installAll = async () => {
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTagFromValues()
   const version = getPackageVersion()
-  const installationMode = await getInitialInstallationMode()
+  const installationMode = getInitialInstallationMode(prevState as Record<string, any>)
   const deploymentState: Record<string, any> = {
     status: 'deploying',
     deployingTag: tag,

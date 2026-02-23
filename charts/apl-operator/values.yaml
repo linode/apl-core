@@ -58,6 +58,9 @@ affinity: {}
 
 env: {}
 
+installation:
+  mode: standard
+
 kms: {}
 # example:
 #  sops:
