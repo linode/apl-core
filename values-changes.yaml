@@ -443,6 +443,8 @@ changes:
   - version: 55
     deletions:
       - 'apps.otomi-api.git'
+      - 'apps.argocd.autoscaling.server.targetCPUUtilizationPercentage'
+      - 'apps.argocd.autoscaling.repoServer.targetCPUUtilizationPercentage'
     relocations:
       - apps.gitea.adminPassword: otomi.git.password
       - apps.gitea.adminUsername: otomi.git.username
