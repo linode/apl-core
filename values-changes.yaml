@@ -448,4 +448,4 @@ changes:
       - apps.gitea.adminUsername: otomi.git.username
   - version: 56
     customFunctions:
-      - addLinodeNBAnnotationsToPlatformIngress
+      - addLinodeNBAnnotations

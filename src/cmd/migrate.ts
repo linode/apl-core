@@ -3,7 +3,7 @@ import { encryptSecretItem } from '@linode/kubeseal-encrypt'
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'fs'
-import { cp, mkdir, readFile, rename as fsRename, writeFile } from 'fs/promises'
+import { cp, rename as fsRename, mkdir, readFile, writeFile } from 'fs/promises'
 import { glob, globSync } from 'glob'
 import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
 import { basename, dirname, join } from 'path'
@@ -735,8 +735,8 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   set(values, 'catalogs.default', defaultCatalog)
 }
 
-const addLinodeNBAnnotationsToPlatformIngress = async (values: Record<string, any>): Promise<void> => {
-  const d = terminal('addLinodeNBAnnotationsToPlatformIngress')
+const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('addLinodeNBAnnotations')
   if (env.DISABLE_SYNC) {
     d.info('Skipping Linode NodeBalancer annotation migration in dev/test environment')
     return
@@ -799,7 +799,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   workloadValuesMigration,
   setLokiStorageSchemaMigration,
   setDefaultAplCatalog,
-  addLinodeNBAnnotationsToPlatformIngress,
+  addLinodeNBAnnotations,
 }
 
 /**
