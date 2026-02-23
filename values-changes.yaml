@@ -446,3 +446,6 @@ changes:
     relocations:
       - apps.gitea.adminPassword: otomi.git.password
       - apps.gitea.adminUsername: otomi.git.username
+  - version: 56
+    customFunctions:
+      - addLinodeNBAnnotationsToPlatformIngress

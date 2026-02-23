@@ -21,7 +21,7 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { ARGOCD_APP_PARAMS } from '../common/constants'
-import { getSealedSecretsPEM, k8s } from '../common/k8s'
+import { getK8sSecret, getSealedSecretsPEM, k8s } from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
@@ -735,6 +735,56 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   set(values, 'catalogs.default', defaultCatalog)
 }
 
+const addLinodeNBAnnotationsToPlatformIngress = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('addLinodeNBAnnotationsToPlatformIngress')
+  const parsedArgs = getParsedArgs()
+
+  const linodeSecret = await getK8sSecret('linode', 'kube-system')
+  if (!linodeSecret?.token) {
+    d.warn('Linode secret not found or token missing in kube-system, skipping Linode NodeBalancer annotation migration')
+    return
+  }
+  const token = linodeSecret.token as string
+
+  d.info('Querying Linode API for NodeBalancer ID')
+  let nbId: number | undefined
+  try {
+    const response = await fetch('https://api.linode.com/v4/nodebalancers', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+    if (!response.ok) {
+      d.warn(`Failed to fetch NodeBalancers from Linode API: ${response.status} ${response.statusText}`)
+      return
+    }
+    const data = (await response.json()) as { data: Array<{ id: number }> }
+    const nb = data.data?.[0]
+    if (!nb) {
+      d.warn('No NodeBalancer found in Linode API response, skipping')
+      return
+    }
+    nbId = nb.id
+  } catch (error) {
+    d.warn(`Error querying Linode API: ${error}`)
+    return
+  }
+
+  d.info(`Found NodeBalancer ID ${nbId}, adding annotations to ingress.platformClass`)
+  const annotations: Array<{ key: string; value: string }> = get(values, 'ingress.platformClass.annotations', [])
+  const preserveKey = 'service.beta.kubernetes.io/linode-loadbalancer-preserve'
+  const nbIdKey = 'service.beta.kubernetes.io/linode-loadbalancer-nodebalancer-id'
+  if (!annotations.find((a) => a.key === preserveKey)) {
+    annotations.push({ key: preserveKey, value: 'true' })
+  }
+  if (!annotations.find((a) => a.key === nbIdKey)) {
+    annotations.push({ key: nbIdKey, value: String(nbId) })
+  }
+  set(values, 'ingress.platformClass.annotations', annotations)
+  d.info('Linode NodeBalancer annotations added to ingress.platformClass successfully')
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   networkPoliciesMigration,
   teamSettingsMigration,
@@ -746,6 +796,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   workloadValuesMigration,
   setLokiStorageSchemaMigration,
   setDefaultAplCatalog,
+  addLinodeNBAnnotationsToPlatformIngress,
 }
 
 /**
