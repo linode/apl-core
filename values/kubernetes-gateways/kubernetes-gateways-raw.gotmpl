@@ -63,36 +63,36 @@ resources:
         - name: {{ $v.ingress.platformClass.className }}
       rules:
         - matches:
-          - path:
-              type: PathPrefix
-              value: /
+            - path:
+                type: PathPrefix
+                value: /
           backendRefs:
             - name: {{ $v._derived.ingressPublicGatewayName }}
               port: 80
         {{- if has $appName $authApps }}
         - matches:
-          - path:
-              type: PathPrefix
-              value: /oauth2
+            - path:
+                type: PathPrefix
+                value: /oauth2
           backendRefs:
             - kind: Service
               name: oauth2-proxy
               port: 80
         - matches:
-          - path:
-              type: Exact
-              value: /platform-logout
+            - path:
+                type: Exact
+                value: /platform-logout
           filters:
-          - type: RequestRedirect
-            requestRedirect:
-              path:
-                type: ReplaceFullPath
-                replaceFullPath: /oauth2/sign_out?rd={{ $logoutRedirectParam | urlquery }}
-              statusCode: 302
+            - type: RequestRedirect
+              requestRedirect:
+                path:
+                  type: ReplaceFullPath
+                  replaceFullPath: /oauth2/sign_out?rd={{ $logoutRedirectParam | urlquery }}
+                statusCode: 302
         {{- end }}
         - filters:
-          - type: RequestRedirect
-            requestRedirect:
-              scheme: https
-              statusCode: 301
+            - type: RequestRedirect
+              requestRedirect:
+                scheme: https
+                statusCode: 301
     {{- end }}
