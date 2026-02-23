@@ -32,19 +32,15 @@ export class Installer {
     return installStatus === 'completed'
   }
 
-  public async initialize({ skipBootstrap = false }: { skipBootstrap?: boolean } = {}) {
+  public async initialize(): Promise<void> {
     while (true) {
       try {
         await this.aplOps.validateCluster()
-        if (!skipBootstrap) {
-          await this.aplOps.bootstrap()
-        }
+        await this.aplOps.bootstrap()
         return
       } catch (error) {
         const errorMessage = getErrorMessage(error)
-        const step = skipBootstrap ? 'Cluster validation' : 'Bootstrap'
-        this.d.error(`${step} attempt failed:`, errorMessage)
-
+        this.d.error('Bootstrap attempt failed:', errorMessage)
         // Wait 1 second before retrying
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }

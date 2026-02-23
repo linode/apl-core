@@ -46,7 +46,7 @@ const retryInstallStep = async <T, Args extends any[]>(
 }
 
 const getInitialInstallationMode = (deploymentState: Record<string, any> | undefined): 'standard' | 'recovery' => {
-  const mode = deploymentState?.['installation.mode'] ?? deploymentState?.installationMode
+  const mode = deploymentState?.installationMode ?? deploymentState?.installationMode
   return mode === 'recovery' || mode === 'standard' ? mode : 'standard'
 }
 

@@ -88,13 +88,6 @@ describe('Installer', () => {
       expect(mockAplOps.validateCluster).toHaveBeenCalledTimes(1)
       expect(mockAplOps.bootstrap).toHaveBeenCalledTimes(1)
     })
-
-    test('should run validation only when bootstrap is skipped', async () => {
-      await installer.initialize({ skipBootstrap: true })
-
-      expect(mockAplOps.validateCluster).toHaveBeenCalledTimes(1)
-      expect(mockAplOps.bootstrap).toHaveBeenCalledTimes(0)
-    })
   })
 
   describe('reconcileInstall', () => {

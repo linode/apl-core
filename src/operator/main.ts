@@ -41,12 +41,12 @@ async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
 
 async function getInstallationMode(): Promise<'standard' | 'recovery'> {
   const deploymentState = (await getDeploymentState()) as Record<string, any>
-  const installationMode = deploymentState?.['installation.mode'] ?? deploymentState?.installationMode
+  const installationMode = deploymentState?.installationMode
   return installationMode === 'recovery' ? 'recovery' : 'standard'
 }
 
 async function resetRecoveryModeToStandard(): Promise<void> {
-  await setDeploymentState({ 'installation.mode': 'standard' })
+  await setDeploymentState({ installationMode: 'standard' })
 }
 
 function handleTerminationSignals(operator: AplOperator): void {
@@ -77,30 +77,34 @@ async function main(): Promise<void> {
     d.info('Starting APL Operator')
     ensureDirectoryStructure()
     const aplOps = new AplOperations()
-    const installationMode = await getInstallationMode()
-    const isRecoveryMode = installationMode === 'recovery'
-    d.info(`Installation mode: ${installationMode}`)
 
     // Phase 1: Run installation with retry until success
     const installer = new Installer(aplOps)
-    if (isRecoveryMode) {
-      d.info('Recovery mode enabled, checking external git and kms prerequisites')
-      await installer.ensureRecoveryPrerequisites()
-    }
 
+    const installationMode = await getInstallationMode()
     const isInstalled = await installer.isInstalled()
     if (isInstalled) {
       d.info('Installation already completed, skipping install steps')
-    } else {
-      d.info('=== Starting Installation Process ===')
-      await installer.initialize({ skipBootstrap: isRecoveryMode })
-      await installer.reconcileInstall()
-      if (isRecoveryMode) {
-        d.info('Recovery installation completed, switching installation mode to standard')
-        await resetRecoveryModeToStandard()
-      }
+      return
     }
 
+    d.info('=== Starting Installation Process ===')
+    const isRecoveryMode = installationMode === 'recovery'
+    d.info(`Installation mode: ${installationMode}`)
+    if (isRecoveryMode) {
+      d.info('Recovery mode enabled, checking external git and kms prerequisites')
+      await installer.ensureRecoveryPrerequisites()
+    } else {
+      d.info('Standard mode enabled, initializing installer')
+      await installer.initialize()
+    }
+
+    await installer.reconcileInstall()
+
+    if (isRecoveryMode) {
+      d.info('Recovery installation completed, switching installation mode to standard')
+      await resetRecoveryModeToStandard()
+    }
     // Start trace collection in background (runs for 30 minutes from ConfigMap creation)
     runTraceCollectionLoop().catch((error) => {
       d.warn('Trace collection loop failed:', getErrorMessage(error))
