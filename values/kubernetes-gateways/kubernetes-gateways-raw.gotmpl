@@ -27,8 +27,6 @@ resources:
           kind: Gateway
           group: gateway.networking.k8s.io
       rules:
-        # We ONLY authenticate requests that DON'T have an `Authorization` header using oauth2-proxy.
-        # This is because we use RequestAuthentication to authenticate requests with an `Authorization` header.
         - when:
             - key: request.headers[authorization]
               notValues: ["*"]
