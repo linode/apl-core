@@ -116,13 +116,14 @@ describe('Installer', () => {
     })
 
     test('should retry on bootstrap failure', async () => {
-      jest.useRealTimers() // Use real timers for retry delay
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue(null)
       ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
 
       mockAplOps.bootstrap.mockRejectedValueOnce(new Error('Bootstrap failed')).mockResolvedValue(undefined)
 
-      await installer.initialize()
+      const initPromise = installer.initialize()
+      await jest.advanceTimersByTimeAsync(1000)
+      await initPromise
 
       // Verify both attempts occurred
       expect(mockAplOps.bootstrap).toHaveBeenCalledTimes(2)
@@ -130,16 +131,17 @@ describe('Installer', () => {
 
       // Verify failed status was not set
       expect(k8s.createUpdateConfigMap).toHaveBeenCalledTimes(0)
-    }, 10000)
+    })
 
     test('should retry on install failure', async () => {
-      jest.useRealTimers() // Use real timers for retry delay
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue(null)
       ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
 
       mockAplOps.install.mockRejectedValueOnce(new Error('Install failed')).mockResolvedValue(undefined)
 
-      await installer.reconcileInstall()
+      const reconcilePromise = installer.reconcileInstall()
+      await jest.advanceTimersByTimeAsync(1000)
+      await reconcilePromise
 
       // Verify both attempts occurred
       expect(mockAplOps.install).toHaveBeenCalledTimes(2)
@@ -176,10 +178,9 @@ describe('Installer', () => {
           attempt: '2',
         }),
       )
-    }, 10000)
+    })
 
     test('should retry multiple times on repeated failures', async () => {
-      jest.useRealTimers() // Use real timers for retry delay
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue(null)
       ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
 
@@ -188,7 +189,9 @@ describe('Installer', () => {
         .mockRejectedValueOnce(new Error('Install failed 2'))
         .mockResolvedValue(undefined)
 
-      await installer.reconcileInstall()
+      const reconcilePromise = installer.reconcileInstall()
+      await jest.advanceTimersByTimeAsync(2000)
+      await reconcilePromise
 
       // Verify three attempts occurred
       expect(mockAplOps.install).toHaveBeenCalledTimes(3)
@@ -214,10 +217,9 @@ describe('Installer', () => {
           attempt: '3',
         }),
       )
-    }, 10000)
+    })
 
     test('should handle validateCluster failure', async () => {
-      jest.useRealTimers() // Use real timers for retry delay
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue(null)
       ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
 
@@ -225,11 +227,13 @@ describe('Installer', () => {
         .mockRejectedValueOnce(new Error('Cluster validation failed'))
         .mockResolvedValue(undefined)
 
-      await installer.initialize()
+      const initPromise = installer.initialize()
+      await jest.advanceTimersByTimeAsync(1000)
+      await initPromise
 
       // Verify both attempts occurred
       expect(mockAplOps.validateCluster).toHaveBeenCalledTimes(2)
-    }, 10000)
+    })
 
     test('should handle ConfigMap update failure gracefully', async () => {
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue(null)
