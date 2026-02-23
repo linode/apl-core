@@ -737,7 +737,10 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
 
 const addLinodeNBAnnotationsToPlatformIngress = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('addLinodeNBAnnotationsToPlatformIngress')
-  const parsedArgs = getParsedArgs()
+  if (env.isDev && env.DISABLE_SYNC) {
+    d.info('Skipping Linode NodeBalancer annotation migration in dev/test environment')
+    return
+  }
 
   const linodeSecret = await getK8sSecret('linode', 'kube-system')
   if (!linodeSecret?.token) {
