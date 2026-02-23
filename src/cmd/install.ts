@@ -45,12 +45,12 @@ const retryInstallStep = async <T, Args extends any[]>(
   )
 }
 
-const getInitialInstallationMode = async (): Promise<'standard' | 'recovery' | undefined> => {
-  if (!env.VALUES_INPUT) return undefined
+const getInitialInstallationMode = async (): Promise<'standard' | 'recovery'> => {
+  if (!env.VALUES_INPUT) return 'standard'
 
   const valuesInput = (await loadYaml(env.VALUES_INPUT, { noError: true })) as Record<string, any> | undefined
   const mode = valuesInput?.installation?.mode
-  return mode === 'recovery' || mode === 'standard' ? mode : undefined
+  return mode === 'recovery' || mode === 'standard' ? mode : 'standard'
 }
 
 export const installAll = async () => {
@@ -62,7 +62,15 @@ export const installAll = async () => {
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTagFromValues()
   const version = getPackageVersion()
-  await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
+  const installationMode = await getInitialInstallationMode()
+  const deploymentState: Record<string, any> = {
+    status: 'deploying',
+    deployingTag: tag,
+    deployingVersion: version,
+    installationMode,
+  }
+
+  await setDeploymentState(deploymentState)
 
   const state = await getDeploymentState()
   const releases = await getHelmReleases()
@@ -114,7 +122,6 @@ export const installAll = async () => {
       repoUrl: values?.otomi?.git?.repoUrl,
       branch: values?.otomi?.git?.branch ?? 'main',
       email: values?.otomi?.git?.email,
-      installationMode: await getInitialInstallationMode(),
     })
 
     const initialData = await initialSetupData()

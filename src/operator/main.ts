@@ -5,7 +5,8 @@ import path from 'path'
 import { runTraceCollectionLoop } from '../cmd/traces'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { getGitConfigData, getStoredGitRepoConfig, setGitConfig } from '../common/git-config'
+import { getStoredGitRepoConfig } from '../common/git-config'
+import { getDeploymentState, setDeploymentState } from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { AplOperator, AplOperatorConfig } from './apl-operator'
 import { GitRepository } from './git-repository'
@@ -39,12 +40,13 @@ async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
 }
 
 async function getInstallationMode(): Promise<'standard' | 'recovery'> {
-  const gitConfigData = await getGitConfigData()
-  return gitConfigData?.installationMode === 'recovery' ? 'recovery' : 'standard'
+  const deploymentState = (await getDeploymentState()) as Record<string, any>
+  const installationMode = deploymentState?.['installation.mode'] ?? deploymentState?.installationMode
+  return installationMode === 'recovery' ? 'recovery' : 'standard'
 }
 
 async function resetRecoveryModeToStandard(): Promise<void> {
-  await setGitConfig({ installationMode: 'standard' })
+  await setDeploymentState({ 'installation.mode': 'standard' })
 }
 
 function handleTerminationSignals(operator: AplOperator): void {
