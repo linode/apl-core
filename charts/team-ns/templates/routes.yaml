@@ -30,6 +30,7 @@ spec:
     {{- end }}
   parentRefs:
     - name: {{ $s.ingressClassName | default $defaultIngressClass }}
+      namespace: istio-system
   rules:
     - backendRefs:
         - name: {{ $v.ingressPublicGatewayName }}
