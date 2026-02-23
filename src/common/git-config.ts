@@ -69,7 +69,7 @@ export async function getGitConfigData(): Promise<GitConfigData | undefined> {
  * Reconstructs GitRepoConfig from stored ConfigMap + Secret.
  * This avoids calling hfValues() in operator startup path.
  */
-export async function getStoredGitRepoConfig(): Promise<GitRepoConfig | undefined> {
+export async function getStoredGitRepoConfig(): Promise<GitRepoConfig> {
   let [configData, credentials] = await Promise.all([getGitConfigData(), getGitCredentials()])
 
   //TODO This can be removed after BYO Git has been released

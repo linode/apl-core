@@ -6,4 +6,4 @@ metadata:
   namespace: apl-operator
 data:
   status: "pending"
-  installationMode: {{ $installation.mode | quote }}
+  installationMode: {{ .Values.installation.mode | quote }}

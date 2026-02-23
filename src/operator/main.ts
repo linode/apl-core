@@ -6,7 +6,6 @@ import { runTraceCollectionLoop } from '../cmd/traces'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { getStoredGitRepoConfig } from '../common/git-config'
-import { getDeploymentState, setDeploymentState } from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { AplOperator, AplOperatorConfig } from './apl-operator'
 import { GitRepository } from './git-repository'
@@ -37,16 +36,6 @@ async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
     pollIntervalMs: operatorEnv.POLL_INTERVAL_MS,
     reconcileIntervalMs: operatorEnv.RECONCILE_INTERVAL_MS,
   }
-}
-
-async function getInstallationMode(): Promise<'standard' | 'recovery'> {
-  const deploymentState = (await getDeploymentState()) as Record<string, any>
-  const installationMode = deploymentState?.installationMode
-  return installationMode === 'recovery' ? 'recovery' : 'standard'
-}
-
-async function resetRecoveryModeToStandard(): Promise<void> {
-  await setDeploymentState({ installationMode: 'standard' })
 }
 
 function handleTerminationSignals(operator: AplOperator): void {
@@ -81,7 +70,7 @@ async function main(): Promise<void> {
     // Phase 1: Run installation with retry until success
     const installer = new Installer(aplOps)
 
-    const installationMode = await getInstallationMode()
+    const installationMode = await installer.getInstallationMode()
     const isInstalled = await installer.isInstalled()
     if (isInstalled) {
       d.info('Installation already completed, skipping install steps')
@@ -94,6 +83,9 @@ async function main(): Promise<void> {
     if (isRecoveryMode) {
       d.info('Recovery mode enabled, checking external git and kms prerequisites')
       await installer.ensureRecoveryPrerequisites()
+      await installer.recoverFromGit()
+      d.info('Recovery installation completed, switching installation mode to standard')
+      await installer.resetRecoveryModeToStandard()
     } else {
       d.info('Standard mode enabled, initializing installer')
       await installer.initialize()
@@ -101,10 +93,6 @@ async function main(): Promise<void> {
 
     await installer.reconcileInstall()
 
-    if (isRecoveryMode) {
-      d.info('Recovery installation completed, switching installation mode to standard')
-      await resetRecoveryModeToStandard()
-    }
     // Start trace collection in background (runs for 30 minutes from ConfigMap creation)
     runTraceCollectionLoop().catch((error) => {
       d.warn('Trace collection loop failed:', getErrorMessage(error))

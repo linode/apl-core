@@ -1,4 +1,5 @@
 import * as process from 'node:process'
+import { recoverFromGit } from 'src/common/bootstrap'
 import { terminal } from '../common/debug'
 import {
   getGitConfigData,
@@ -32,6 +33,21 @@ export class Installer {
     return installStatus === 'completed'
   }
 
+  public async recoverFromGit(): Promise<void> {
+    while (true) {
+      try {
+        const gitConfig = await getStoredGitRepoConfig()
+        await recoverFromGit(gitConfig)
+        return
+      } catch (error) {
+        const errorMessage = getErrorMessage(error)
+        this.d.error('Recover from git attempt failed:', errorMessage)
+        // Wait 1 second before retrying
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+    }
+  }
+
   public async initialize(): Promise<void> {
     while (true) {
       try {
@@ -53,6 +69,16 @@ export class Installer {
     if (!sopsSecret || Object.keys(sopsSecret).length === 0) {
       throw new Error('KMS/SOPS config not found in apl-sops-secrets secret')
     }
+  }
+
+  public async getInstallationMode(): Promise<'standard' | 'recovery'> {
+    const installationStatus = await getK8sConfigMap('apl-operator', 'apl-installation-status', k8s.core())
+    const installationMode = installationStatus?.data?.installationMode
+    return installationMode === 'recovery' ? 'recovery' : 'standard'
+  }
+
+  public async resetRecoveryModeToStandard(): Promise<void> {
+    await createUpdateConfigMap(k8s.core(), 'apl-installation-status', 'apl-operator', { installationMode: 'standard' })
   }
 
   public async reconcileInstall(): Promise<void> {
