@@ -20,6 +20,7 @@ export const recoverFromGit = async (gitConfig: GitRepoConfig): Promise<void> =>
   d.info(`Removing existing ${env.ENV_DIR} to prepare for git recovery`)
   await $`rm -rf ${env.ENV_DIR}`
   d.info(`Attempting to clone git repository from: ${gitConfig.repoUrl}`)
+  cd(env.ENV_DIR)
   await $`timeout 10 git clone ${gitConfig.authenticatedUrl} ${env.ENV_DIR}`
   await setIdentity(gitConfig.username, gitConfig.email)
   await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
