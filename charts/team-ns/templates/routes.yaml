@@ -1,0 +1,50 @@
+{{- $v := .Values }}
+{{- $defaultIngressClass := $v.ingress.platformClass.className }}
+{{- range $s := $v.services }}
+{{- $isCoreService := $s.isCore | default false }}
+{{- if not (and $isCoreService (eq $v.teamId "admin")) }}
+{{- $tlsPass := $s.tlsPass | default false }}
+{{- $backendPort := ternary 443 80 $tlsPass }}
+{{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
+{{- $teamSuffix := ternary (print "team-" $v.teamId) $v.teamId $isKnativeService }}
+{{- $serviceName := print $s.name "-" $teamSuffix }}
+---
+{{- if $tlsPass }}
+apiVersion: gateway.networking.k8s.io/v1alpha3
+kind: TLSRoute
+{{- else }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+{{- end }}
+metadata:
+  {{- with $v.httpRouteAnnotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  name: {{ $serviceName }}
+spec:
+  hostnames:
+    - {{ $serviceName }}.{{ $v.domain }}
+    {{- if $s.useCname }}
+    - {{ $s.cname.domain }}
+    {{- end }}
+  parentRefs:
+    - name: {{ $s.ingressClassName | default $defaultIngressClass }}
+  rules:
+    - backendRefs:
+        - name: {{ $v.ingressPublicGatewayName }}
+          port: {{ $backendPort }}
+      matches:
+      {{- if and $s.paths (gt (len $s.paths) 0) }}
+      {{- range $path := $s.paths }}
+        - path:
+            type: PathPrefix
+            value: {{ $path }}
+      {{- end }}
+      {{- else }}
+        - path:
+            type: PathPrefix
+            value: /
+      {{- end }}
+{{- end }}
+{{- end }}

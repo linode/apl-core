@@ -63,6 +63,7 @@ ingressGatewayPrefix: {{ $v._derived.ingressGatewayPrefix }}
 ingressPublicGatewayName: {{ $v._derived.ingressPublicGatewayName }}
 defaultIngressGatewayLabel: {{ $v._derived.defaultIngressGatewayLabel }}
 canaryIngressGatewayLabel: {{ $v._derived.canaryIngressGatewayLabel | quote }}
+httpRouteAnnotations: {{- $v._derived.httpRouteAnnotations | toYaml | nindent 2 }}
 
 gitOps:
 {{- if contains "gitea-http.gitea.svc.cluster.local" $v.otomi.git.repoUrl }}
