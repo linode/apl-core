@@ -1,17 +1,17 @@
 import * as dotenv from 'dotenv'
-import { terminal } from '../common/debug'
-import { AplOperator, AplOperatorConfig } from './apl-operator'
-import { Installer } from './installer'
-import { operatorEnv } from './validators'
-import { env } from '../common/envalid'
 import fs from 'fs'
-import path from 'path'
-import { AplOperations } from './apl-operations'
-import { getErrorMessage } from './utils'
-import { GitRepository } from './git-repository'
-import { getStoredGitRepoConfig } from '../common/git-config'
 import process from 'node:process'
+import path from 'path'
 import { runTraceCollectionLoop } from '../cmd/traces'
+import { terminal } from '../common/debug'
+import { env } from '../common/envalid'
+import { getGitConfigData, getStoredGitRepoConfig, setGitConfig } from '../common/git-config'
+import { AplOperations } from './apl-operations'
+import { AplOperator, AplOperatorConfig } from './apl-operator'
+import { GitRepository } from './git-repository'
+import { Installer } from './installer'
+import { getErrorMessage } from './utils'
+import { operatorEnv } from './validators'
 
 dotenv.config()
 
@@ -36,6 +36,15 @@ async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
     pollIntervalMs: operatorEnv.POLL_INTERVAL_MS,
     reconcileIntervalMs: operatorEnv.RECONCILE_INTERVAL_MS,
   }
+}
+
+async function getInstallationMode(): Promise<'standard' | 'recovery'> {
+  const gitConfigData = await getGitConfigData()
+  return gitConfigData?.installationMode === 'recovery' ? 'recovery' : 'standard'
+}
+
+async function resetRecoveryModeToStandard(): Promise<void> {
+  await setGitConfig({ installationMode: 'standard' })
 }
 
 function handleTerminationSignals(operator: AplOperator): void {
@@ -66,16 +75,28 @@ async function main(): Promise<void> {
     d.info('Starting APL Operator')
     ensureDirectoryStructure()
     const aplOps = new AplOperations()
+    const installationMode = await getInstallationMode()
+    const isRecoveryMode = installationMode === 'recovery'
+    d.info(`Installation mode: ${installationMode}`)
 
     // Phase 1: Run installation with retry until success
     const installer = new Installer(aplOps)
+    if (isRecoveryMode) {
+      d.info('Recovery mode enabled, checking external git and kms prerequisites')
+      await installer.ensureRecoveryPrerequisites()
+    }
+
     const isInstalled = await installer.isInstalled()
     if (isInstalled) {
       d.info('Installation already completed, skipping install steps')
     } else {
       d.info('=== Starting Installation Process ===')
-      await installer.initialize()
+      await installer.initialize({ skipBootstrap: isRecoveryMode })
       await installer.reconcileInstall()
+      if (isRecoveryMode) {
+        d.info('Recovery installation completed, switching installation mode to standard')
+        await resetRecoveryModeToStandard()
+      }
     }
 
     // Start trace collection in background (runs for 30 minutes from ConfigMap creation)

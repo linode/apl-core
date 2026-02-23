@@ -3,6 +3,7 @@ import { terminal } from '../common/debug'
 import {
   getGitConfigData,
   getGitCredentials,
+  getStoredGitRepoConfig,
   GIT_CONFIG_NAMESPACE,
   GIT_CONFIG_SECRET_NAME,
   setGitConfig,
@@ -31,19 +32,30 @@ export class Installer {
     return installStatus === 'completed'
   }
 
-  public async initialize() {
+  public async initialize({ skipBootstrap = false }: { skipBootstrap?: boolean } = {}) {
     while (true) {
       try {
         await this.aplOps.validateCluster()
-        await this.aplOps.bootstrap()
+        if (!skipBootstrap) {
+          await this.aplOps.bootstrap()
+        }
         return
       } catch (error) {
         const errorMessage = getErrorMessage(error)
-        this.d.error(`Bootstrap attempt failed:`, errorMessage)
+        const step = skipBootstrap ? 'Cluster validation' : 'Bootstrap'
+        this.d.error(`${step} attempt failed:`, errorMessage)
 
         // Wait 1 second before retrying
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
+    }
+  }
+
+  public async ensureRecoveryPrerequisites(): Promise<void> {
+    await getStoredGitRepoConfig()
+    const sopsSecret = await getK8sSecret('apl-sops-secrets', GIT_CONFIG_NAMESPACE)
+    if (!sopsSecret || Object.keys(sopsSecret).length === 0) {
+      throw new Error('KMS/SOPS config not found in apl-sops-secrets secret')
     }
   }
 

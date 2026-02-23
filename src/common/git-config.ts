@@ -1,8 +1,5 @@
-import { terminal } from './debug'
-import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
 import type { CoreV1Api } from '@kubernetes/client-node'
-
-const d = terminal('common:git-config')
+import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
 
 // Constants
 export const GIT_CONFIG_CONFIGMAP_NAME = 'apl-git-config'
@@ -26,6 +23,7 @@ export interface GitConfigData {
   repoUrl?: string
   branch?: string
   email?: string
+  installationMode?: string
 }
 
 export interface GitCredentials {
@@ -59,11 +57,17 @@ export async function getGitConfigData(): Promise<GitConfigData | undefined> {
   if (!configMap?.data) return undefined
 
   const { data } = configMap
-  return {
+  const config: GitConfigData = {
     repoUrl: data.repoUrl,
     branch: data.branch,
     email: data.email,
   }
+
+  if (data.installationMode !== undefined) {
+    config.installationMode = data.installationMode
+  }
+
+  return config
 }
 
 /**
@@ -125,6 +129,7 @@ export async function setGitConfig(config: Partial<GitConfigData>, coreV1Api?: C
   if (config.repoUrl !== undefined) data.repoUrl = config.repoUrl
   if (config.branch !== undefined) data.branch = config.branch
   if (config.email !== undefined) data.email = config.email
+  if (config.installationMode !== undefined) data.installationMode = config.installationMode
 
   await createUpdateConfigMap(api, GIT_CONFIG_CONFIGMAP_NAME, GIT_CONFIG_NAMESPACE, data)
 }

@@ -88,6 +88,13 @@ describe('Installer', () => {
       expect(mockAplOps.validateCluster).toHaveBeenCalledTimes(1)
       expect(mockAplOps.bootstrap).toHaveBeenCalledTimes(1)
     })
+
+    test('should run validation only when bootstrap is skipped', async () => {
+      await installer.initialize({ skipBootstrap: true })
+
+      expect(mockAplOps.validateCluster).toHaveBeenCalledTimes(1)
+      expect(mockAplOps.bootstrap).toHaveBeenCalledTimes(0)
+    })
   })
 
   describe('reconcileInstall', () => {
@@ -296,6 +303,40 @@ describe('Installer', () => {
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(null)
 
       await expect(installer.setEnvAndCreateSecrets()).rejects.toThrow('SOPS_AGE_KEY not found in secret')
+    })
+  })
+
+  describe('ensureRecoveryPrerequisites', () => {
+    test('should pass when stored git config and sops secret are present', async () => {
+      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockResolvedValue({
+        repoUrl: 'https://github.com/org/repo.git',
+        authenticatedUrl: 'https://admin:s3cret@github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+        username: 'admin',
+        password: 's3cret',
+      })
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ SOPS_AGE_KEY: 'existing-key' })
+
+      await expect(installer.ensureRecoveryPrerequisites()).resolves.toBeUndefined()
+      expect(gitConfig.getStoredGitRepoConfig).toHaveBeenCalledTimes(1)
+      expect(k8s.getK8sSecret).toHaveBeenCalledWith('apl-sops-secrets', 'apl-operator')
+    })
+
+    test('should fail when sops secret is missing', async () => {
+      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockResolvedValue({
+        repoUrl: 'https://github.com/org/repo.git',
+        authenticatedUrl: 'https://admin:s3cret@github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+        username: 'admin',
+        password: 's3cret',
+      })
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(undefined)
+
+      await expect(installer.ensureRecoveryPrerequisites()).rejects.toThrow(
+        'KMS/SOPS config not found in apl-sops-secrets secret',
+      )
     })
   })
 

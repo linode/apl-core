@@ -6,7 +6,7 @@ import { env } from 'src/common/envalid'
 import { setGitConfig } from 'src/common/git-config'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState, waitForCRD } from 'src/common/k8s'
-import { getFilename, rootDir } from 'src/common/utils'
+import { getFilename, loadYaml, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
@@ -43,6 +43,14 @@ const retryInstallStep = async <T, Args extends any[]>(
       },
     },
   )
+}
+
+const getInitialInstallationMode = async (): Promise<'standard' | 'recovery' | undefined> => {
+  if (!env.VALUES_INPUT) return undefined
+
+  const valuesInput = (await loadYaml(env.VALUES_INPUT, { noError: true })) as Record<string, any> | undefined
+  const mode = valuesInput?.installation?.mode
+  return mode === 'recovery' || mode === 'standard' ? mode : undefined
 }
 
 export const installAll = async () => {
@@ -106,6 +114,7 @@ export const installAll = async () => {
       repoUrl: values?.otomi?.git?.repoUrl,
       branch: values?.otomi?.git?.branch ?? 'main',
       email: values?.otomi?.git?.email,
+      installationMode: await getInitialInstallationMode(),
     })
 
     const initialData = await initialSetupData()
