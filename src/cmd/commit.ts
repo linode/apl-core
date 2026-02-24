@@ -1,6 +1,7 @@
 import retry from 'async-retry'
 import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
+import { APL_OPERATOR_NAMESPACE } from 'src/common/constants'
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
@@ -215,7 +216,7 @@ NEXT STEPS:
 For documentation and support, visit: https://techdocs.akamai.com/app-platform/docs/welcome
 `
 
-  await createUpdateConfigMap(k8s.core(), 'welcome', 'apl-operator', {
+  await createUpdateConfigMap(k8s.core(), 'welcome', APL_OPERATOR_NAMESPACE, {
     message: welcomeMessage,
     consoleUrl: `https://console.${domainSuffix}`,
     secretName,

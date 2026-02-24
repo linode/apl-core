@@ -1,6 +1,7 @@
 import { config } from 'dotenv'
 import { bool, cleanEnv as clean, CleanOptions, json, makeValidator, num, str, ValidatorSpec } from 'envalid'
 import { existsSync } from 'fs'
+import { APL_OPERATOR_NAMESPACE } from './constants'
 
 const ciBool = makeValidator<boolean | undefined>((x) => {
   if (x === 'vscode-jest-tests') return true
@@ -55,7 +56,7 @@ export const cliEnvSpec = {
   COLLECTION_INTERVAL_SECONDS: num({ desc: 'Traces collection interval (default 5 min)', default: 300 }),
   APL_OPERATOR_NAMESPACE: str({
     desc: 'Kubernetes namespace where the APL Operator is installed',
-    default: 'apl-operator',
+    default: APL_OPERATOR_NAMESPACE,
   }),
   TRACES_REPORT_NAME: str({
     desc: 'Kubernetes config map name for reporting traces',

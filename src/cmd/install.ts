@@ -1,6 +1,7 @@
 import retry from 'async-retry'
 import { mkdirSync, rmSync } from 'fs'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
+import { APL_OPERATOR_NAMESPACE } from 'src/common/constants'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { setGitConfig } from 'src/common/git-config'
@@ -55,7 +56,7 @@ const retryInstallStep = async <T, Args extends any[]>(
 }
 
 const getInitialInstallationMode = async (): Promise<'standard' | 'recovery'> => {
-  const installationStatus = await getK8sConfigMap('apl-operator', 'apl-installation-status', k8s.core())
+  const installationStatus = await getK8sConfigMap(APL_OPERATOR_NAMESPACE, 'apl-installation-status', k8s.core())
   const mode = installationStatus?.data?.installationMode
   return mode === 'recovery' || mode === 'standard' ? mode : 'standard'
 }
@@ -76,7 +77,7 @@ export const installAll = async () => {
     deployingVersion: version,
   }
 
-  await createUpdateConfigMap(k8s.core(), 'apl-installation-status', 'apl-operator', { installationMode })
+  await createUpdateConfigMap(k8s.core(), 'apl-installation-status', APL_OPERATOR_NAMESPACE, { installationMode })
   await setDeploymentState(deploymentState)
 
   const state = await getDeploymentState()
