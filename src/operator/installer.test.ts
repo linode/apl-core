@@ -37,6 +37,10 @@ jest.mock('../common/git-config', () => ({
   GIT_CONFIG_NAMESPACE: 'apl-operator',
 }))
 
+jest.mock('src/cmd/traces', () => ({
+  runTraceCollectionLoop: jest.fn().mockResolvedValue(undefined),
+}))
+
 jest.mock('./utils', () => ({
   getErrorMessage: jest.fn((error) => (error instanceof Error ? error.message : String(error))),
 }))
