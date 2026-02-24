@@ -97,6 +97,8 @@ export interface GucciOptions {
   asObject?: boolean
 }
 
+export const escapeGucciValue = (val: unknown): string => String(val ?? '').replaceAll("'", "'\\''")
+
 export const gucci = async (
   tmpl: string | unknown,
   ctx: { [key: string]: any },
@@ -107,8 +109,7 @@ export const gucci = async (
     // Cannot template if key contains regex characters, so skip
     if (stringContainsSome(k, ...'^()[]$'.split(''))) return ''
     const val = typeof v === 'object' ? JSON.stringify(v) : v
-    const escaped = String(val ?? '').replaceAll("'", "'\\''")
-    return `-s ${k}='${escaped}'`
+    return `-s ${k}='${escapeGucciValue(val)}'`
   })
 
   return within(async () => {
