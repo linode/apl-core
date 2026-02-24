@@ -2,7 +2,6 @@ import * as dotenv from 'dotenv'
 import fs from 'fs'
 import process from 'node:process'
 import path from 'path'
-import { runTraceCollectionLoop } from '../cmd/traces'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { getStoredGitRepoConfig } from '../common/git-config'
@@ -71,32 +70,22 @@ async function main(): Promise<void> {
     const installer = new Installer(aplOps)
 
     const installationMode = await installer.getInstallationMode()
+    const isRecoveryMode = installationMode === 'recovery'
     const isInstalled = await installer.isInstalled()
     if (isInstalled) {
       d.info('Installation already completed, skipping install steps')
-      return
-    }
-
-    d.info('=== Starting Installation Process ===')
-    const isRecoveryMode = installationMode === 'recovery'
-    d.info(`Installation mode: ${installationMode}`)
-    if (isRecoveryMode) {
+    } else if (isRecoveryMode) {
       d.info('Recovery mode enabled, checking external git and kms prerequisites')
       await installer.ensureRecoveryPrerequisites()
       await installer.recoverFromGit()
       d.info('Recovery installation completed, switching installation mode to standard')
       await installer.resetRecoveryModeToStandard()
+      await installer.reconcileInstall()
     } else {
       d.info('Standard mode enabled, initializing installer')
       await installer.initialize()
+      await installer.reconcileInstall()
     }
-
-    await installer.reconcileInstall()
-
-    // Start trace collection in background (runs for 30 minutes from ConfigMap creation)
-    runTraceCollectionLoop().catch((error) => {
-      d.warn('Trace collection loop failed:', getErrorMessage(error))
-    })
 
     // Phase 2: Set environment variables and start operator for GitOps operations
     // await installer.setEnvAndCreateSecrets()

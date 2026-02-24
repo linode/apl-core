@@ -1,4 +1,5 @@
 import * as process from 'node:process'
+import { runTraceCollectionLoop } from 'src/cmd/traces'
 import { recoverFromGit } from 'src/common/bootstrap'
 import { terminal } from '../common/debug'
 import {
@@ -83,7 +84,9 @@ export class Installer {
 
   public async reconcileInstall(): Promise<void> {
     let attemptNumber = 0
-
+    runTraceCollectionLoop().catch((error) => {
+      this.d.warn('Trace collection loop failed:', getErrorMessage(error))
+    })
     while (true) {
       try {
         attemptNumber += 1
@@ -99,7 +102,6 @@ export class Installer {
       } catch (error) {
         await this.updateInstallationStatus('failed', attemptNumber)
         this.d.warn(`Installation attempt ${attemptNumber} failed, retrying in 1 second...`, getErrorMessage(error))
-
         // Wait 1 second before retrying
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
