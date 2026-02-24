@@ -153,7 +153,7 @@ redis-ha:
   persistentVolume:
     {{- if $r.persistentVolumeSize }}
     size: {{ $r.persistentVolumeSize }}
-    storageClass: {{ $v.cluster.defaultStorageClass }}
+    storageClass: {{ if eq $v.cluster.provider "linode" }}linode-block-storage{{ else }}{{ $v.cluster.defaultStorageClass | default "" }}{{ end }}
     {{- else }}
     enabled: false
     {{- end }}

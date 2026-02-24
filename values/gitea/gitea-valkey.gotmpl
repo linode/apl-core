@@ -18,3 +18,7 @@ auth:
   password: changeme
 
 architecture: standalone
+
+primary:
+  persistence:
+    storageClass: {{ if eq $v.cluster.provider "linode" }}linode-block-storage{{ else }}{{ $v.cluster.defaultStorageClass | default "" }}{{ end }}
