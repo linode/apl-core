@@ -1,11 +1,11 @@
 import type { CoreV1Api } from '@kubernetes/client-node'
-import { APL_OPERATOR_NAMESPACE } from './constants'
+import { APL_OPERATOR_NS } from './constants'
 import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
 
 // Constants
 export const GIT_CONFIG_CONFIGMAP_NAME = 'apl-git-config'
 export const GIT_CONFIG_SECRET_NAME = 'apl-git-credentials'
-export const GIT_CONFIG_NAMESPACE = APL_OPERATOR_NAMESPACE
+export const GIT_CONFIG_NAMESPACE = APL_OPERATOR_NS
 
 /**
  * Unified Git repository configuration with credentials.

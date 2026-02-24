@@ -1,6 +1,6 @@
 import retry from 'async-retry'
 import { $, cd } from 'zx'
-import { APL_OPERATOR_NAMESPACE } from './constants'
+import { APL_OPERATOR_NS } from './constants'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { exec, getK8sSecret, getPodsOfDeployment, k8s } from './k8s'
@@ -12,7 +12,7 @@ export async function resetGiteaPasswordValidity() {
   const [firstPod] = giteaPods.items
   // In case Gitea pods happened to be restarting in the meantime, it will likely fix the issue by itself
   if (firstPod) {
-    const giteaCredentialsSecret = await getK8sSecret('apl-git-credentials', APL_OPERATOR_NAMESPACE)
+    const giteaCredentialsSecret = await getK8sSecret('apl-git-credentials', APL_OPERATOR_NS)
     const userName = giteaCredentialsSecret?.username ?? 'otomi-admin'
     const resetCmd = ['gitea', 'admin', 'user', 'must-change-password', '--unset', userName as string]
     const { stdout, stderr } = await exec(

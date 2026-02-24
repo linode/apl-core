@@ -7,7 +7,7 @@ import { pki } from 'node-forge'
 import path from 'path'
 import { bootstrapGit } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
-import { APL_OPERATOR_NAMESPACE, DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
+import { APL_OPERATOR_NS, DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
@@ -84,7 +84,7 @@ export const bootstrapSops = async (
       process.env.SOPS_AGE_KEY = privateKey
       await deps.writeFile(`${envDir}/.secrets`, `SOPS_AGE_KEY=${privateKey}`)
       try {
-        await deps.createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', APL_OPERATOR_NAMESPACE, {
+        await deps.createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', APL_OPERATOR_NS, {
           SOPS_AGE_KEY: privateKey,
         })
       } catch (e) {

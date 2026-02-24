@@ -1,15 +1,15 @@
 import retry from 'async-retry'
 import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
-import { APL_OPERATOR_NAMESPACE } from 'src/common/constants'
+import { APL_OPERATOR_NS } from 'src/common/constants'
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { hfValues } from 'src/common/hf'
+import { getRepo, GitRepoConfig } from 'src/common/git-config'
 import { waitTillGitRepoAvailable } from 'src/common/gitea'
+import { hfValues } from 'src/common/hf'
 import { createUpdateConfigMap, createUpdateGenericSecret, k8s } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
-import { getRepo, GitRepoConfig } from 'src/common/git-config'
 import { HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
@@ -216,7 +216,7 @@ NEXT STEPS:
 For documentation and support, visit: https://techdocs.akamai.com/app-platform/docs/welcome
 `
 
-  await createUpdateConfigMap(k8s.core(), 'welcome', APL_OPERATOR_NAMESPACE, {
+  await createUpdateConfigMap(k8s.core(), 'welcome', APL_OPERATOR_NS, {
     message: welcomeMessage,
     consoleUrl: `https://console.${domainSuffix}`,
     secretName,
