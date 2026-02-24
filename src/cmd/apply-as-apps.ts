@@ -5,9 +5,9 @@ import {
   setHeaderOptions,
   V1ResourceRequirements,
 } from '@kubernetes/client-node'
-import { existsSync, statSync, mkdirSync, rmSync } from 'fs'
-import { glob } from 'glob'
+import { existsSync, mkdirSync, rmSync, statSync } from 'fs'
 import { readFile } from 'fs/promises'
+import { glob } from 'glob'
 import { appPatches, genericPatch } from 'src/applicationPatches.json'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -93,7 +93,35 @@ const getAppName = (release: HelmRelease): string => {
   return `${release.namespace}-${release.name}`
 }
 
+const normalizeArgoSourcePath = (path: string): string => {
+  if (!path) return path
+  return path.startsWith('/') ? path : `/${path}`
+}
+
+export const getPathsFromSpec = (spec: Record<string, any>): string | undefined => {
+  if (typeof spec?.source?.path === 'string' && spec.source.path.length > 0) {
+    return normalizeArgoSourcePath(spec.source.path)
+  }
+  if (spec?.sources && Array.isArray(spec.sources)) {
+    const normalizedPaths = spec.sources
+      .map((source: { path?: string }) => source?.path)
+      .filter((path): path is string => typeof path === 'string' && path.length > 0)
+      .map((path: string) => normalizeArgoSourcePath(path))
+    return normalizedPaths.length > 0 ? normalizedPaths.join(';') : undefined
+  }
+
+  return undefined
+}
+
 const getArgoCdAppManifest = (name: string, appLabel: string, spec: Record<string, any>): ArgocdAppManifest => {
+  const annotations = {
+    'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
+  }
+  const paths = getPathsFromSpec(spec)
+  if (paths) {
+    annotations['argocd.argoproj.io/manifest-generate-paths'] = paths
+  }
+
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
@@ -103,9 +131,7 @@ const getArgoCdAppManifest = (name: string, appLabel: string, spec: Record<strin
         'otomi.io/app': appLabel,
       },
       namespace: 'argocd',
-      annotations: {
-        'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
-      },
+      annotations,
       finalizers: ['resources-finalizer.argocd.argoproj.io'],
     },
     spec,
@@ -119,12 +145,13 @@ const getArgocdCoreAppManifest = (
 ): ArgocdAppManifest => {
   const name = getAppName(release)
   const patch = (appPatches[name] || genericPatch) as Record<string, any>
+  const chartPath = release.chart.replace('../', '')
   return getArgoCdAppManifest(name, ARGOCD_APP_DEFAULT_LABEL, {
     syncPolicy: ARGOCD_APP_DEFAULT_SYNC_POLICY,
     project: 'default',
     revisionHistoryLimit: 2,
     source: {
-      path: release.chart.replace('../', ''),
+      path: chartPath,
       repoURL: env.APPS_REPO_URL,
       targetRevision: env.APPS_REVISION || otomiVersion,
       helm: {

@@ -1,17 +1,18 @@
-import {
-  applyGitOpsApps,
-  getApplications,
-  applyArgocdApp,
-  addGitOpsApps,
-  removeGitOpsApps,
-  calculateGitOpsAppsDiff,
-  getArgocdGitopsManifest,
-  ArgocdAppManifest,
-} from './apply-as-apps'
-import { glob } from 'glob'
-import { env } from '../common/envalid'
 import { statSync } from 'fs'
+import { glob } from 'glob'
 import { ARGOCD_APP_PARAMS } from '../common/constants'
+import { env } from '../common/envalid'
+import {
+  addGitOpsApps,
+  applyArgocdApp,
+  applyGitOpsApps,
+  ArgocdAppManifest,
+  calculateGitOpsAppsDiff,
+  getApplications,
+  getArgocdGitopsManifest,
+  getPathsFromSpec,
+  removeGitOpsApps,
+} from './apply-as-apps'
 
 jest.mock('glob')
 jest.mock('fs', () => ({
@@ -81,6 +82,7 @@ describe('getArgocdGitopsManifest', () => {
         },
         annotations: {
           'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
+          'argocd.argoproj.io/manifest-generate-paths': '/env/manifests/global',
         },
         finalizers: ['resources-finalizer.argocd.argoproj.io'],
       },
@@ -124,6 +126,7 @@ describe('getArgocdGitopsManifest', () => {
         },
         annotations: {
           'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
+          'argocd.argoproj.io/manifest-generate-paths': '/env/manifests/ns/my-namespace',
         },
         finalizers: ['resources-finalizer.argocd.argoproj.io'],
       },
@@ -149,6 +152,38 @@ describe('getArgocdGitopsManifest', () => {
         },
       },
     })
+  })
+})
+
+describe('getPathsFromSpec', () => {
+  it('should normalize source.path by prepending slash when missing', () => {
+    const paths = getPathsFromSpec({ source: { path: 'charts/my-app' } })
+    expect(paths).toBe('/charts/my-app')
+  })
+
+  it('should keep source.path unchanged when it already starts with slash', () => {
+    const paths = getPathsFromSpec({ source: { path: '/charts/my-app' } })
+    expect(paths).toBe('/charts/my-app')
+  })
+
+  it('should return normalized semicolon-separated paths for sources', () => {
+    const paths = getPathsFromSpec({
+      sources: [{ path: 'env/manifests/global' }, { path: '/env/manifests/ns/team-a' }],
+    })
+    expect(paths).toBe('/env/manifests/global;/env/manifests/ns/team-a')
+  })
+
+  it('should ignore non-string and empty source paths', () => {
+    const paths = getPathsFromSpec({
+      sources: [{ path: 'env/manifests/global' }, { path: '' }, { path: 123 }, { path: null }, {}],
+    })
+    expect(paths).toBe('/env/manifests/global')
+  })
+
+  it('should return undefined when no valid path exists', () => {
+    expect(getPathsFromSpec({})).toBeUndefined()
+    expect(getPathsFromSpec({ source: { path: 123 } })).toBeUndefined()
+    expect(getPathsFromSpec({ sources: [{ path: '' }, { path: null }] })).toBeUndefined()
   })
 })
 
