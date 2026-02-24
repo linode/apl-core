@@ -1,7 +1,7 @@
 import * as process from 'node:process'
 import { runTraceCollectionLoop } from 'src/cmd/traces'
 import { recoverFromGit } from 'src/common/bootstrap'
-import { APL_OPERATOR_NAMESPACE } from 'src/common/constants'
+import { APL_INSTALLATION_STATUS_CM, APL_OPERATOR_NAMESPACE } from 'src/common/constants'
 import { terminal } from '../common/debug'
 import {
   getGitConfigData,
@@ -74,13 +74,13 @@ export class Installer {
   }
 
   public async getInstallationMode(): Promise<'standard' | 'recovery'> {
-    const installationStatus = await getK8sConfigMap(APL_OPERATOR_NAMESPACE, 'apl-installation-status', k8s.core())
+    const installationStatus = await getK8sConfigMap(APL_OPERATOR_NAMESPACE, APL_INSTALLATION_STATUS_CM, k8s.core())
     const installationMode = installationStatus?.data?.installationMode
     return installationMode === 'recovery' ? 'recovery' : 'standard'
   }
 
   public async resetRecoveryModeToStandard(): Promise<void> {
-    await createUpdateConfigMap(k8s.core(), 'apl-installation-status', APL_OPERATOR_NAMESPACE, {
+    await createUpdateConfigMap(k8s.core(), APL_INSTALLATION_STATUS_CM, APL_OPERATOR_NAMESPACE, {
       installationMode: 'standard',
     })
   }
@@ -112,7 +112,7 @@ export class Installer {
   }
 
   private async getInstallationStatus(): Promise<string | undefined> {
-    const configMap = await getK8sConfigMap(APL_OPERATOR_NAMESPACE, 'apl-installation-status', k8s.core())
+    const configMap = await getK8sConfigMap(APL_OPERATOR_NAMESPACE, APL_INSTALLATION_STATUS_CM, k8s.core())
     const status = configMap?.data?.status
     this.d.info(`Current installation status: ${status}`)
     this.d.debug(`ConfigMap data: ${configMap?.data}`)
@@ -127,7 +127,7 @@ export class Installer {
         timestamp: new Date().toISOString(),
       }
 
-      await createUpdateConfigMap(k8s.core(), 'apl-installation-status', APL_OPERATOR_NAMESPACE, data)
+      await createUpdateConfigMap(k8s.core(), APL_INSTALLATION_STATUS_CM, APL_OPERATOR_NAMESPACE, data)
     } catch (err) {
       this.d.warn('Failed to update installation status:', getErrorMessage(err))
     }
