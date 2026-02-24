@@ -150,3 +150,6 @@ operator:
   reconcileIntervalMs: 300000
   # Skip deployment of the operator
   skipDeployment: false
+
+installation:
+  mode: standard
