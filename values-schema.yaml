@@ -1549,7 +1549,7 @@ properties:
     description: Top-level installation settings.
     required:
       - mode
-    additionalProperties: false
+    additionalProperties: true
     properties:
       mode:
         type: string
