@@ -22,9 +22,11 @@ spec:
     matchLabels: {{- include "trivy-operator.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations: {{- toYaml . | nindent 8 }}
-      {{- end }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps/trivy-operator-config.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
       labels:
         {{- include "trivy-operator.selectorLabels" . | nindent 8 }}
         {{- with .Values.operator.podLabels }}
