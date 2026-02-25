@@ -16,6 +16,7 @@ resources:
       client-id: {{ $k.idp.clientID | b64enc }}
       client-secret: {{ $k.idp.clientSecret | b64enc }}
       cookie-secret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 32) | b64enc }}
+  {{ if $v.apps | dig "ingress-nginx-platform" "enabled" false }}
   - apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
@@ -59,6 +60,7 @@ resources:
         - secretName: {{ $v._derived.tlsSecretName }}
           hosts:
             - {{ $v._derived.authDomain | quote }}
+  {{- end }}
   - apiVersion: v1
     kind: ConfigMap
     metadata:

@@ -1,5 +1,6 @@
 {{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
+{{- if $v.useLegacyIngress }}
 # split list of services into separate ingress types:
 # - core apps that need path forwarding (apps.*/appName stuff)
 # - public/private?
@@ -60,4 +61,5 @@
 
   {{- end }}
 
+{{- end }}
 {{- end }}

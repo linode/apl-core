@@ -28,7 +28,7 @@ releases:
       pkg: kubernetes-gateways
     <<: *default
   - name: ingress-nginx-artifacts
-    installed: true
+    installed: {{ $a | get "ingress-nginx-platform.enabled" }}
     namespace: ingress
     labels:
       tag: ingress
@@ -36,7 +36,7 @@ releases:
     <<: *raw
 {{- range $index, $ingress := $v.ingress.classes }}
   - name: ingress-nginx-{{ $ingress.className }}
-    installed: true
+    installed: {{ $a | get "ingress-nginx-platform.enabled" }}
     namespace: ingress
     labels:
       tag: ingress

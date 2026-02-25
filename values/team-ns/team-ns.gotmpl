@@ -63,6 +63,7 @@ ingressGatewayPrefix: {{ $v._derived.ingressGatewayPrefix }}
 ingressPublicGatewayName: {{ $v._derived.ingressPublicGatewayName }}
 defaultIngressGatewayLabel: {{ $v._derived.defaultIngressGatewayLabel }}
 canaryIngressGatewayLabel: {{ $v._derived.canaryIngressGatewayLabel | quote }}
+useLegacyIngress: {{ $a | get "ingress-nginx-platform.enabled" }}
 httpRouteAnnotations: {{- $v._derived.httpRouteAnnotations | toYaml | nindent 2 }}
 
 gitOps:
