@@ -394,7 +394,7 @@ export const createSealedSecretManifest = async (
       template: {
         immutable: false,
         metadata: { name: mapping.secretName, namespace: mapping.namespace },
-        type: 'Opaque',
+        type: 'kubernetes.io/opaque',
       },
     },
   }
@@ -659,7 +659,7 @@ export const createUserSealedSecretManifests = async (
         template: {
           immutable: false,
           metadata: { name: userId, namespace },
-          type: 'Opaque',
+          type: 'kubernetes.io/opaque',
         },
       },
     })
