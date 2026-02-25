@@ -1,19 +1,17 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Added config.requiredSecretKeys option to selectively include secrets (allows excluding client-secret for federated auth scenarios)
+    - kind: changed
+      description: Updated Oauth2-Proxy image to v7.14.2
       links:
         - name: Github PR
-          url: https://github.com/oauth2-proxy/manifests/pull/384
-        - name: Github Issue
-          url: https://github.com/oauth2-proxy/manifests/issues/376
+          url: https://github.com/oauth2-proxy/manifests/pull/390
 apiVersion: v2
-appVersion: 7.13.0
+appVersion: 7.14.2
 dependencies:
 - condition: redis-ha.enabled
   name: redis-ha
   repository: https://dandydeveloper.github.io/charts
-  version: 4.35.7
+  version: 4.35.10
 description: A reverse proxy that provides authentication with Google, Github or other
   providers
 home: https://oauth2-proxy.github.io/oauth2-proxy/
@@ -37,4 +35,4 @@ name: oauth2-proxy
 sources:
 - https://github.com/oauth2-proxy/oauth2-proxy
 - https://github.com/oauth2-proxy/manifests
-version: 10.1.2
+version: 10.1.4
