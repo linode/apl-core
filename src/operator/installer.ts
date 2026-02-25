@@ -63,9 +63,7 @@ export class Installer {
         await this.updateInstallationStatus('completed', attemptNumber)
         return
       } catch (error) {
-        const errorMessage = getErrorMessage(error)
-        this.d.error(`Installation attempt ${attemptNumber} failed:`, errorMessage)
-        await this.updateInstallationStatus('failed', attemptNumber, errorMessage)
+        await this.updateInstallationStatus('failed', attemptNumber)
         this.d.warn(`Installation attempt ${attemptNumber} failed, retrying in 1 second...`, getErrorMessage(error))
 
         // Wait 1 second before retrying
@@ -82,13 +80,12 @@ export class Installer {
     return status
   }
 
-  private async updateInstallationStatus(status: string, attempt: number, error?: string): Promise<void> {
+  private async updateInstallationStatus(status: string, attempt: number): Promise<void> {
     try {
       const data = {
         status,
         attempt: attempt.toString(),
         timestamp: new Date().toISOString(),
-        ...(error && { error }),
       }
 
       await createUpdateConfigMap(k8s.core(), 'apl-installation-status', 'apl-operator', data)

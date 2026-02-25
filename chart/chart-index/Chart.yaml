@@ -6,7 +6,7 @@ version: 0.1.0
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 9.3.7
+    version: 9.4.4
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
     version: 1.0.1
@@ -65,7 +65,7 @@ dependencies:
     version: v0.16.0
     repository: oci://ghcr.io/kserve/charts/kserve
   - name: kube-prometheus-stack
-    version: 81.6.3
+    version: 81.6.9
     repository: https://prometheus-community.github.io/helm-charts
   - name: kyverno
     version: 3.5.2
@@ -77,14 +77,14 @@ dependencies:
     version: 3.13.0
     repository: https://kubernetes-sigs.github.io/metrics-server
   - name: oauth2-proxy
-    version: 10.1.2
+    version: 10.1.4
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
     version: 0.105.1
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   - name: policy-reporter
-    version: 3.7.1
+    version: 3.7.2
     repository: https://kyverno.github.io/policy-reporter
   - name: prometheus-blackbox-exporter
     version: 11.8.0
@@ -100,12 +100,12 @@ dependencies:
     version: 4.4.34
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
-    version: 2.18.0
+    version: 2.18.1
     repository: https://bitnami-labs.github.io/sealed-secrets/
   - name: tekton-pipeline
     alias: tekton-pipelines
     version: 1.6.1
     repository: https://cdfoundation.github.io/tekton-helm-chart/
   - name: trivy-operator
-    version: 0.31.0
+    version: 0.32.0
     repository: https://aquasecurity.github.io/helm-charts/
