@@ -418,6 +418,8 @@ definitions:
     properties:
       _rawValues:
         $ref: '#/definitions/rawValues'
+      enabled:
+        type: boolean
       tracing:
         description: Configure Nginx for tracing. Requires Otel Collector to be enabled.
         properties:
