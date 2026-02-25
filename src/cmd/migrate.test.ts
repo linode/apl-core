@@ -1072,13 +1072,14 @@ describe('sopsMigration', () => {
 })
 
 describe('removeSopsArtifacts', () => {
-  it('should remove .sops.yaml and all secrets files', () => {
+  it('should remove .sops.yaml, secrets files, and user files', () => {
     const mockExistsSync = jest.fn().mockReturnValue(true)
     const mockRmSync = jest.fn()
     const mockGlobSync = jest
       .fn()
       .mockReturnValueOnce([`${env.ENV_DIR}/env/apps/secrets.gitea.yaml`])
       .mockReturnValueOnce([`${env.ENV_DIR}/env/apps/secrets.gitea.yaml.dec`])
+      .mockReturnValueOnce([`${env.ENV_DIR}/env/users/some-uuid.yaml`])
 
     removeSopsArtifacts({
       existsSync: mockExistsSync,
@@ -1090,6 +1091,7 @@ describe('removeSopsArtifacts', () => {
     expect(mockRmSync).toHaveBeenCalledWith(`${env.ENV_DIR}/.sops.yaml`)
     expect(mockRmSync).toHaveBeenCalledWith(`${env.ENV_DIR}/env/apps/secrets.gitea.yaml`)
     expect(mockRmSync).toHaveBeenCalledWith(`${env.ENV_DIR}/env/apps/secrets.gitea.yaml.dec`)
+    expect(mockRmSync).toHaveBeenCalledWith(`${env.ENV_DIR}/env/users/some-uuid.yaml`)
   })
 
   it('should skip .sops.yaml removal when it does not exist', () => {

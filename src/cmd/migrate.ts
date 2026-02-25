@@ -774,6 +774,15 @@ export const removeSopsArtifacts = (deps = { existsSync, rmSync, globSync, termi
     deps.rmSync(f)
     d.info(`Removed ${f}`)
   }
+
+  // Remove user YAML files — users are now managed via SealedSecrets in env/manifests/ns/apl-users/.
+  // These files may contain SOPS-encrypted data that was written by the "Write default values" step
+  // before SOPS decryption ran, contaminating the public YAML files with ENC[...] strings.
+  const userFiles = deps.globSync(`${env.ENV_DIR}/env/users/*.yaml`, { dot: false })
+  for (const f of userFiles) {
+    deps.rmSync(f)
+    d.info(`Removed ${f}`)
+  }
 }
 
 export const sopsMigration = async (
