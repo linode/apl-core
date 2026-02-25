@@ -20,6 +20,17 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
+import {
+  buildSecretToNamespaceMap,
+  createSealedSecretManifest,
+  createSealedSecretsKeySecret,
+  createUserSealedSecretManifests,
+  generateSealedSecretsKeyPair,
+  getExistingSealedSecretsCert,
+  getPemFromCertificate,
+  SealedSecretManifest,
+  writeSealedSecretManifests,
+} from '../common/sealed-secrets'
 import { ARGOCD_APP_PARAMS } from '../common/constants'
 import { getK8sSecret, getSealedSecretsPEM, k8s } from '../common/k8s'
 
@@ -740,6 +751,113 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   set(values, 'catalogs.default', defaultCatalog)
 }
 
+export const removeSopsArtifacts = (deps = { existsSync, rmSync, globSync, terminal }): void => {
+  const d = deps.terminal(`cmd:${cmdName}:removeSopsArtifacts`)
+
+  // Remove .sops.yaml — makes encrypt()/decrypt() no-ops
+  const sopsConfigPath = `${env.ENV_DIR}/.sops.yaml`
+  if (deps.existsSync(sopsConfigPath)) {
+    deps.rmSync(sopsConfigPath)
+    d.info('Removed .sops.yaml')
+  }
+
+  // Remove SOPS-encrypted files
+  const sopsEncrypted = deps.globSync(`${env.ENV_DIR}/env/**/secrets.*.yaml`, { dot: false })
+  for (const f of sopsEncrypted) {
+    deps.rmSync(f)
+    d.info(`Removed ${f}`)
+  }
+
+  // Remove SOPS-decrypted files
+  const sopsDecrypted = deps.globSync(`${env.ENV_DIR}/env/**/secrets.*.yaml.dec`, { dot: false })
+  for (const f of sopsDecrypted) {
+    deps.rmSync(f)
+    d.info(`Removed ${f}`)
+  }
+}
+
+export const sopsMigration = async (
+  values: Record<string, any>,
+  deps = {
+    existsSync,
+    globSync,
+    terminal,
+    getExistingSealedSecretsCert,
+    getPemFromCertificate,
+    generateSealedSecretsKeyPair,
+    createSealedSecretsKeySecret,
+    buildSecretToNamespaceMap,
+    createSealedSecretManifest,
+    createUserSealedSecretManifests,
+    writeSealedSecretManifests,
+    getSchemaSecretsPaths,
+    removeSopsArtifacts,
+  },
+): Promise<void> => {
+  const d = deps.terminal(`cmd:${cmdName}:sopsMigration`)
+
+  // Idempotency guard: no SOPS config means nothing to migrate
+  if (!deps.existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    d.info('No .sops.yaml found, skipping SOPS migration')
+    return
+  }
+
+  // Secondary guard: if manifests already exist, just clean up SOPS artifacts
+  const existingManifests = deps.globSync(`${env.ENV_DIR}/env/manifests/ns/**/*.yaml`, { dot: false })
+  if (existingManifests.length > 0) {
+    d.info('SealedSecret manifests already exist, only cleaning up SOPS artifacts')
+    deps.removeSopsArtifacts()
+    return
+  }
+
+  d.info('Starting SOPS to SealedSecrets migration')
+
+  // Get or generate sealed-secrets key
+  let pem: string
+  const existingCert = await deps.getExistingSealedSecretsCert()
+  if (existingCert) {
+    d.info('Using existing sealed-secrets certificate')
+    pem = deps.getPemFromCertificate(existingCert)
+  } else {
+    d.info('Generating new sealed-secrets key pair')
+    const { certificate, privateKey } = deps.generateSealedSecretsKeyPair()
+    await deps.createSealedSecretsKeySecret(certificate, privateKey)
+    pem = deps.getPemFromCertificate(certificate)
+  }
+
+  // Build secret-to-namespace mappings
+  const teams = Object.keys((values.teamConfig as Record<string, any>) || {})
+  const mappings = await deps.buildSecretToNamespaceMap(values, teams, values)
+
+  // Create core SealedSecret manifests
+  const manifests: SealedSecretManifest[] = []
+  for (const mapping of mappings) {
+    const manifest = await deps.createSealedSecretManifest(pem, mapping)
+    manifests.push(manifest)
+  }
+
+  // Create user SealedSecret manifests
+  const users = values.users as any[] | undefined
+  if (Array.isArray(users) && users.length > 0) {
+    const userManifests = await deps.createUserSealedSecretManifests(users, pem)
+    manifests.push(...userManifests)
+  }
+
+  // Write manifests to disk
+  await deps.writeSealedSecretManifests(manifests, env.ENV_DIR)
+  d.info(`Wrote ${manifests.length} SealedSecret manifests`)
+
+  // Strip secrets from values (in-place mutation — writeValues() persists after return)
+  const secretPaths = await deps.getSchemaSecretsPaths(teams)
+  for (const path of secretPaths) {
+    unset(values, path)
+  }
+
+  // Remove SOPS artifacts
+  deps.removeSopsArtifacts()
+  d.info('SOPS to SealedSecrets migration complete')
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   networkPoliciesMigration,
   teamSettingsMigration,
@@ -751,6 +869,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   workloadValuesMigration,
   setLokiStorageSchemaMigration,
   setDefaultAplCatalog,
+  sopsMigration,
 }
 
 /**

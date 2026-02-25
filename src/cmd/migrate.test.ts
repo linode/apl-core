@@ -1,5 +1,14 @@
+import { existsSync, rmSync } from 'fs'
 import { globSync } from 'glob'
-import { applyChanges, Changes, filterChanges, getBuildName, policiesMigration } from 'src/cmd/migrate'
+import {
+  applyChanges,
+  Changes,
+  filterChanges,
+  getBuildName,
+  policiesMigration,
+  removeSopsArtifacts,
+  sopsMigration,
+} from 'src/cmd/migrate'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { getFileMap } from '../common/repo'
@@ -13,6 +22,7 @@ jest.mock('../common/k8s')
 jest.mock('../common/values')
 jest.mock('../common/yargs')
 jest.mock('../common/utils')
+jest.mock('../common/sealed-secrets')
 jest.mock('zx')
 jest.mock('@linode/kubeseal-encrypt')
 jest.mock('fs', () => ({
@@ -903,4 +913,197 @@ describe('setDefaultAplCatalog migration', () => {
       true,
     )
   }, 20000)
+})
+
+describe('sopsMigration', () => {
+  const mockTerminal = terminal
+  const mockExistsSync = jest.fn()
+  const mockGlobSync = jest.fn()
+  const mockGetExistingSealedSecretsCert = jest.fn()
+  const mockGetPemFromCertificate = jest.fn()
+  const mockGenerateSealedSecretsKeyPair = jest.fn()
+  const mockCreateSealedSecretsKeySecret = jest.fn()
+  const mockBuildSecretToNamespaceMap = jest.fn()
+  const mockCreateSealedSecretManifest = jest.fn()
+  const mockCreateUserSealedSecretManifests = jest.fn()
+  const mockWriteSealedSecretManifests = jest.fn()
+  const mockGetSchemaSecretsPaths = jest.fn()
+  const mockRemoveSopsArtifacts = jest.fn()
+
+  const makeDeps = () => ({
+    existsSync: mockExistsSync,
+    globSync: mockGlobSync,
+    terminal: mockTerminal,
+    getExistingSealedSecretsCert: mockGetExistingSealedSecretsCert,
+    getPemFromCertificate: mockGetPemFromCertificate,
+    generateSealedSecretsKeyPair: mockGenerateSealedSecretsKeyPair,
+    createSealedSecretsKeySecret: mockCreateSealedSecretsKeySecret,
+    buildSecretToNamespaceMap: mockBuildSecretToNamespaceMap,
+    createSealedSecretManifest: mockCreateSealedSecretManifest,
+    createUserSealedSecretManifests: mockCreateUserSealedSecretManifests,
+    writeSealedSecretManifests: mockWriteSealedSecretManifests,
+    getSchemaSecretsPaths: mockGetSchemaSecretsPaths,
+    removeSopsArtifacts: mockRemoveSopsArtifacts,
+  })
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should skip when no .sops.yaml exists', async () => {
+    mockExistsSync.mockReturnValue(false)
+
+    await sopsMigration({ teamConfig: {}, versions: { specVersion: 55 } }, makeDeps())
+
+    expect(mockBuildSecretToNamespaceMap).not.toHaveBeenCalled()
+    expect(mockRemoveSopsArtifacts).not.toHaveBeenCalled()
+  })
+
+  it('should only clean up when manifests already exist', async () => {
+    mockExistsSync.mockReturnValue(true)
+    mockGlobSync.mockReturnValue(['/some/manifest.yaml'])
+
+    await sopsMigration({ teamConfig: {}, versions: { specVersion: 55 } }, makeDeps())
+
+    expect(mockRemoveSopsArtifacts).toHaveBeenCalled()
+    expect(mockBuildSecretToNamespaceMap).not.toHaveBeenCalled()
+  })
+
+  it('should run full migration path', async () => {
+    mockExistsSync.mockReturnValue(true)
+    mockGlobSync.mockReturnValue([])
+    mockGetExistingSealedSecretsCert.mockResolvedValue(undefined)
+    mockGenerateSealedSecretsKeyPair.mockReturnValue({ certificate: 'cert-pem', privateKey: 'key-pem' })
+    mockCreateSealedSecretsKeySecret.mockResolvedValue(undefined)
+    mockGetPemFromCertificate.mockReturnValue('spki-pem')
+    mockBuildSecretToNamespaceMap.mockResolvedValue([
+      { namespace: 'apl-secrets', secretName: 'gitea-secrets', data: { adminPassword: 'pass' } },
+    ])
+    mockCreateSealedSecretManifest.mockResolvedValue({
+      apiVersion: 'bitnami.com/v1alpha1',
+      kind: 'SealedSecret',
+      metadata: { name: 'gitea-secrets', namespace: 'apl-secrets', annotations: {} },
+      spec: { encryptedData: { adminPassword: 'encrypted' }, template: {} },
+    })
+    mockCreateUserSealedSecretManifests.mockResolvedValue([])
+    mockWriteSealedSecretManifests.mockResolvedValue(undefined)
+    mockGetSchemaSecretsPaths.mockResolvedValue(['apps.gitea.adminPassword'])
+
+    const values = {
+      teamConfig: {},
+      versions: { specVersion: 55 },
+      apps: { gitea: { adminPassword: 'pass' } },
+    }
+
+    await sopsMigration(values, makeDeps())
+
+    expect(mockGenerateSealedSecretsKeyPair).toHaveBeenCalled()
+    expect(mockCreateSealedSecretsKeySecret).toHaveBeenCalledWith('cert-pem', 'key-pem')
+    expect(mockBuildSecretToNamespaceMap).toHaveBeenCalled()
+    expect(mockCreateSealedSecretManifest).toHaveBeenCalledWith('spki-pem', expect.any(Object))
+    expect(mockWriteSealedSecretManifests).toHaveBeenCalled()
+    expect(mockGetSchemaSecretsPaths).toHaveBeenCalled()
+    expect(mockRemoveSopsArtifacts).toHaveBeenCalled()
+    // Secrets should be stripped from values (in-place mutation)
+    expect(values.apps.gitea.adminPassword).toBeUndefined()
+  })
+
+  it('should use existing certificate when available', async () => {
+    mockExistsSync.mockReturnValue(true)
+    mockGlobSync.mockReturnValue([])
+    mockGetExistingSealedSecretsCert.mockResolvedValue('existing-cert-pem')
+    mockGetPemFromCertificate.mockReturnValue('existing-spki-pem')
+    mockBuildSecretToNamespaceMap.mockResolvedValue([])
+    mockWriteSealedSecretManifests.mockResolvedValue(undefined)
+    mockGetSchemaSecretsPaths.mockResolvedValue([])
+
+    await sopsMigration({ teamConfig: {}, versions: { specVersion: 55 } }, makeDeps())
+
+    expect(mockGenerateSealedSecretsKeyPair).not.toHaveBeenCalled()
+    expect(mockCreateSealedSecretsKeySecret).not.toHaveBeenCalled()
+    expect(mockGetPemFromCertificate).toHaveBeenCalledWith('existing-cert-pem')
+  })
+
+  it('should handle users', async () => {
+    mockExistsSync.mockReturnValue(true)
+    mockGlobSync.mockReturnValue([])
+    mockGetExistingSealedSecretsCert.mockResolvedValue('cert')
+    mockGetPemFromCertificate.mockReturnValue('pem')
+    mockBuildSecretToNamespaceMap.mockResolvedValue([])
+    mockCreateUserSealedSecretManifests.mockResolvedValue([
+      {
+        apiVersion: 'bitnami.com/v1alpha1',
+        kind: 'SealedSecret',
+        metadata: { name: 'user1', namespace: 'apl-users' },
+      },
+    ])
+    mockWriteSealedSecretManifests.mockResolvedValue(undefined)
+    mockGetSchemaSecretsPaths.mockResolvedValue([])
+
+    const values = {
+      teamConfig: {},
+      versions: { specVersion: 55 },
+      users: [{ name: 'user1', email: 'user1@example.com' }],
+    }
+
+    await sopsMigration(values, makeDeps())
+
+    expect(mockCreateUserSealedSecretManifests).toHaveBeenCalledWith(
+      [{ name: 'user1', email: 'user1@example.com' }],
+      'pem',
+    )
+  })
+
+  it('should handle empty secrets gracefully', async () => {
+    mockExistsSync.mockReturnValue(true)
+    mockGlobSync.mockReturnValue([])
+    mockGetExistingSealedSecretsCert.mockResolvedValue('cert')
+    mockGetPemFromCertificate.mockReturnValue('pem')
+    mockBuildSecretToNamespaceMap.mockResolvedValue([])
+    mockWriteSealedSecretManifests.mockResolvedValue(undefined)
+    mockGetSchemaSecretsPaths.mockResolvedValue([])
+
+    await sopsMigration({ teamConfig: {}, versions: { specVersion: 55 } }, makeDeps())
+
+    expect(mockCreateSealedSecretManifest).not.toHaveBeenCalled()
+    expect(mockWriteSealedSecretManifests).toHaveBeenCalledWith([], env.ENV_DIR)
+    expect(mockRemoveSopsArtifacts).toHaveBeenCalled()
+  })
+})
+
+describe('removeSopsArtifacts', () => {
+  it('should remove .sops.yaml and all secrets files', () => {
+    const mockExistsSync = jest.fn().mockReturnValue(true)
+    const mockRmSync = jest.fn()
+    const mockGlobSync = jest
+      .fn()
+      .mockReturnValueOnce([`${env.ENV_DIR}/env/apps/secrets.gitea.yaml`])
+      .mockReturnValueOnce([`${env.ENV_DIR}/env/apps/secrets.gitea.yaml.dec`])
+
+    removeSopsArtifacts({
+      existsSync: mockExistsSync,
+      rmSync: mockRmSync,
+      globSync: mockGlobSync,
+      terminal,
+    })
+
+    expect(mockRmSync).toHaveBeenCalledWith(`${env.ENV_DIR}/.sops.yaml`)
+    expect(mockRmSync).toHaveBeenCalledWith(`${env.ENV_DIR}/env/apps/secrets.gitea.yaml`)
+    expect(mockRmSync).toHaveBeenCalledWith(`${env.ENV_DIR}/env/apps/secrets.gitea.yaml.dec`)
+  })
+
+  it('should skip .sops.yaml removal when it does not exist', () => {
+    const mockExistsSync = jest.fn().mockReturnValue(false)
+    const mockRmSync = jest.fn()
+    const mockGlobSync = jest.fn().mockReturnValue([])
+
+    removeSopsArtifacts({
+      existsSync: mockExistsSync,
+      rmSync: mockRmSync,
+      globSync: mockGlobSync,
+      terminal,
+    })
+
+    expect(mockRmSync).not.toHaveBeenCalledWith(`${env.ENV_DIR}/.sops.yaml`)
+  })
 })
