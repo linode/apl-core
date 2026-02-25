@@ -114,3 +114,28 @@ resources:
           kind: Service
           name: {{ $v._derived.ingressPublicGatewayName }}
   {{- end }}
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: EnvoyFilter
+    metadata:
+      name: gateway-api-stream-timeout
+      namespace: istio-system
+    spec:
+      workloadSelector:
+        labels:
+          gateway.networking.k8s.io/gateway-name: platform
+      configPatches:
+        - applyTo: NETWORK_FILTER
+          match:
+            context: GATEWAY
+            listener:
+              filterChain:
+                filter:
+                  name: envoy.filters.network.http_connection_manager
+          patch:
+            operation: MERGE
+            value:
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                common_http_protocol_options:
+                  idle_timeout: 3300s  # 55 minutes - lower than upstream 1h default
+                stream_idle_timeout: 240s # 4 minutes - lower than upstream 5min default
