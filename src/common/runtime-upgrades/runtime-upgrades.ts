@@ -165,6 +165,11 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           await migrateGitConfig(context)
         },
       },
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
     },
   },
 ]
