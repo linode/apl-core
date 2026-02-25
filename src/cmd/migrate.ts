@@ -803,14 +803,28 @@ export const sopsMigration = async (
     writeSealedSecretManifests,
     applySealedSecretManifestsFromDir,
     restartSealedSecretsController,
+    getK8sSecret,
     getSchemaSecretsPaths,
     removeSopsArtifacts,
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:sopsMigration`)
 
-  // Idempotency guard: no SOPS config means nothing to migrate
+  // Idempotency guard: no SOPS config means migration already ran.
+  // However, if SealedSecret manifests exist on disk but the K8s Secrets are not yet
+  // decrypted (e.g. the operator was killed after writing manifests but before applying
+  // them, or the controller used its auto-generated key), re-apply them and restart
+  // the controller so subsequent steps can resolve the git password.
   if (!deps.existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    const existingManifests = deps.globSync(`${env.ENV_DIR}/env/manifests/ns/**/*.yaml`, { dot: false })
+    if (existingManifests.length > 0) {
+      const platformSecret = await deps.getK8sSecret('otomi-platform-secrets', 'apl-secrets')
+      if (!platformSecret) {
+        d.info('SealedSecret manifests exist but K8s Secrets are missing — re-applying and restarting controller')
+        await deps.applySealedSecretManifestsFromDir(env.ENV_DIR)
+        await deps.restartSealedSecretsController()
+      }
+    }
     d.info('No .sops.yaml found, skipping SOPS migration')
     return
   }

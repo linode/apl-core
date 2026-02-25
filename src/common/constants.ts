@@ -12,7 +12,7 @@ export const ARGOCD_APP_DEFAULT_SYNC_POLICY = {
     allowEmpty: false,
     selfHeal: true,
   },
-  syncOptions: ['ServerSideApply=true'],
+  syncOptions: ['ServerSideApply=true', 'CreateNamespace=true'],
 }
 
 export interface ObjectMetadata {

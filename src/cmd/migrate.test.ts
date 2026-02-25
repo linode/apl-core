@@ -929,6 +929,7 @@ describe('sopsMigration', () => {
   const mockWriteSealedSecretManifests = jest.fn()
   const mockApplySealedSecretManifestsFromDir = jest.fn().mockResolvedValue(undefined)
   const mockRestartSealedSecretsController = jest.fn().mockResolvedValue(undefined)
+  const mockGetK8sSecret = jest.fn().mockResolvedValue(undefined)
   const mockGetSchemaSecretsPaths = jest.fn()
   const mockRemoveSopsArtifacts = jest.fn()
 
@@ -946,6 +947,7 @@ describe('sopsMigration', () => {
     writeSealedSecretManifests: mockWriteSealedSecretManifests,
     applySealedSecretManifestsFromDir: mockApplySealedSecretManifestsFromDir,
     restartSealedSecretsController: mockRestartSealedSecretsController,
+    getK8sSecret: mockGetK8sSecret,
     getSchemaSecretsPaths: mockGetSchemaSecretsPaths,
     removeSopsArtifacts: mockRemoveSopsArtifacts,
   })
@@ -954,13 +956,40 @@ describe('sopsMigration', () => {
     jest.clearAllMocks()
   })
 
-  it('should skip when no .sops.yaml exists', async () => {
+  it('should skip when no .sops.yaml exists and no manifests on disk', async () => {
     mockExistsSync.mockReturnValue(false)
+    mockGlobSync.mockReturnValue([])
 
     await sopsMigration({ teamConfig: {}, versions: { specVersion: 55 } }, makeDeps())
 
     expect(mockBuildSecretToNamespaceMap).not.toHaveBeenCalled()
+    expect(mockApplySealedSecretManifestsFromDir).not.toHaveBeenCalled()
+    expect(mockRestartSealedSecretsController).not.toHaveBeenCalled()
     expect(mockRemoveSopsArtifacts).not.toHaveBeenCalled()
+  })
+
+  it('should re-apply and restart controller when manifests exist but K8s Secrets are missing', async () => {
+    mockExistsSync.mockReturnValue(false)
+    mockGlobSync.mockReturnValue(['/env/manifests/ns/apl-secrets/otomi-platform-secrets.yaml'])
+    mockGetK8sSecret.mockResolvedValue(undefined) // Secret doesn't exist yet
+
+    await sopsMigration({ teamConfig: {}, versions: { specVersion: 55 } }, makeDeps())
+
+    expect(mockApplySealedSecretManifestsFromDir).toHaveBeenCalledWith(env.ENV_DIR)
+    expect(mockRestartSealedSecretsController).toHaveBeenCalled()
+    expect(mockBuildSecretToNamespaceMap).not.toHaveBeenCalled()
+  })
+
+  it('should skip re-apply when manifests exist and K8s Secrets already exist', async () => {
+    mockExistsSync.mockReturnValue(false)
+    mockGlobSync.mockReturnValue(['/env/manifests/ns/apl-secrets/otomi-platform-secrets.yaml'])
+    mockGetK8sSecret.mockResolvedValue({ git_password: 'somepassword' }) // Secret exists
+
+    await sopsMigration({ teamConfig: {}, versions: { specVersion: 55 } }, makeDeps())
+
+    expect(mockApplySealedSecretManifestsFromDir).not.toHaveBeenCalled()
+    expect(mockRestartSealedSecretsController).not.toHaveBeenCalled()
+    expect(mockBuildSecretToNamespaceMap).not.toHaveBeenCalled()
   })
 
   it('should only clean up when manifests already exist', async () => {
