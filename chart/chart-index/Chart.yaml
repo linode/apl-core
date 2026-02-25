@@ -107,5 +107,5 @@ dependencies:
     version: 1.6.1
     repository: https://cdfoundation.github.io/tekton-helm-chart/
   - name: trivy-operator
-    version: 0.31.0
+    version: 0.32.0
     repository: https://aquasecurity.github.io/helm-charts/
