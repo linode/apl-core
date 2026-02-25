@@ -21,6 +21,7 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import {
+  applySealedSecretManifestsFromDir,
   buildSecretToNamespaceMap,
   createSealedSecretManifest,
   createSealedSecretsKeySecret,
@@ -799,6 +800,7 @@ export const sopsMigration = async (
     createSealedSecretManifest,
     createUserSealedSecretManifests,
     writeSealedSecretManifests,
+    applySealedSecretManifestsFromDir,
     getSchemaSecretsPaths,
     removeSopsArtifacts,
   },
@@ -855,6 +857,11 @@ export const sopsMigration = async (
   // Write manifests to disk
   await deps.writeSealedSecretManifests(manifests, env.ENV_DIR)
   d.info(`Wrote ${manifests.length} SealedSecret manifests`)
+
+  // Apply SealedSecret manifests to the cluster so the sealed-secrets controller
+  // can decrypt them into K8s Secrets before the apply step needs them.
+  d.info('Applying SealedSecret manifests to cluster')
+  await deps.applySealedSecretManifestsFromDir(env.ENV_DIR)
 
   // Strip secrets from values (in-place mutation — writeValues() persists after return)
   const secretPaths = await deps.getSchemaSecretsPaths(teams)
