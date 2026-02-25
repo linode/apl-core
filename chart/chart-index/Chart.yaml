@@ -77,7 +77,7 @@ dependencies:
     version: 3.13.0
     repository: https://kubernetes-sigs.github.io/metrics-server
   - name: oauth2-proxy
-    version: 10.1.2
+    version: 10.1.4
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
@@ -100,12 +100,12 @@ dependencies:
     version: 4.4.34
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
-    version: 2.18.0
+    version: 2.18.1
     repository: https://bitnami-labs.github.io/sealed-secrets/
   - name: tekton-pipeline
     alias: tekton-pipelines
     version: 1.6.1
     repository: https://cdfoundation.github.io/tekton-helm-chart/
   - name: trivy-operator
-    version: 0.31.0
+    version: 0.32.0
     repository: https://aquasecurity.github.io/helm-charts/
