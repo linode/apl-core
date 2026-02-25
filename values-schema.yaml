@@ -245,6 +245,10 @@ definitions:
       enabled:
         type: boolean
         description: 'Whether this catalog is active'
+      chartsPath:
+        type: string
+        description: 'Path within the repository where charts are located'
+        default: 'charts'
       secretName:
         type: string
         description: 'Kubernetes secret name containing git credentials (for private repos)'
