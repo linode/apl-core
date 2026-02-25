@@ -1,0 +1,27 @@
+kind: AplTeamService
+metadata:
+    name: hello-cname
+    labels:
+        apl.io/teamId: demo
+spec:
+    auth: true
+    cname:
+        domain: hello-demo.cname.com
+        tlsSecretName: 'hello-cert'
+    domain: hello-demo.dev.linode-apl.net
+    headers:
+        response:
+            set:
+                - name: X-Frame-Options
+                  value: same-origin
+                - name: sander
+                  value: same-origin
+    ksvc:
+        predeployed: true
+    ownHost: true
+    port: 80
+    trafficControl:
+        enabled: true
+        weightV1: 70
+        weightV2: 30
+    useCname: true

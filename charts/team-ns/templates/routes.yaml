@@ -53,5 +53,21 @@ spec:
               requestRedirect:
                 scheme: https
                 statusCode: 301
+{{- if and $s.useCname $s.cname.tlsSecretName }}
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: {{ $serviceName }}-tls-secret
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      namespace: istio-system
+  to:
+    - group: ""
+      kind: Secret
+      name: {{ $s.cname.tlsSecretName }}
+{{- end }}{{- /* useCname and tlsSecretName */}}
 {{- end }}{{- /* $isCoreService of admin */}}
 {{- end }}{{- /* range services */}}
