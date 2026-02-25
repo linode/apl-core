@@ -29,6 +29,7 @@ import {
   generateSealedSecretsKeyPair,
   getExistingSealedSecretsCert,
   getPemFromCertificate,
+  restartSealedSecretsController,
   SealedSecretManifest,
   writeSealedSecretManifests,
 } from '../common/sealed-secrets'
@@ -801,6 +802,7 @@ export const sopsMigration = async (
     createUserSealedSecretManifests,
     writeSealedSecretManifests,
     applySealedSecretManifestsFromDir,
+    restartSealedSecretsController,
     getSchemaSecretsPaths,
     removeSopsArtifacts,
   },
@@ -862,6 +864,11 @@ export const sopsMigration = async (
   // can decrypt them into K8s Secrets before the apply step needs them.
   d.info('Applying SealedSecret manifests to cluster')
   await deps.applySealedSecretManifestsFromDir(env.ENV_DIR)
+
+  // Restart the sealed-secrets controller so it picks up the migration-generated key.
+  // Without this, the controller uses its auto-generated key and cannot decrypt.
+  d.info('Restarting sealed-secrets controller to use migration key')
+  await deps.restartSealedSecretsController()
 
   // Strip secrets from values (in-place mutation — writeValues() persists after return)
   const secretPaths = await deps.getSchemaSecretsPaths(teams)

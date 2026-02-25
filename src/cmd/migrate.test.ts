@@ -928,6 +928,7 @@ describe('sopsMigration', () => {
   const mockCreateUserSealedSecretManifests = jest.fn()
   const mockWriteSealedSecretManifests = jest.fn()
   const mockApplySealedSecretManifestsFromDir = jest.fn().mockResolvedValue(undefined)
+  const mockRestartSealedSecretsController = jest.fn().mockResolvedValue(undefined)
   const mockGetSchemaSecretsPaths = jest.fn()
   const mockRemoveSopsArtifacts = jest.fn()
 
@@ -944,6 +945,7 @@ describe('sopsMigration', () => {
     createUserSealedSecretManifests: mockCreateUserSealedSecretManifests,
     writeSealedSecretManifests: mockWriteSealedSecretManifests,
     applySealedSecretManifestsFromDir: mockApplySealedSecretManifestsFromDir,
+    restartSealedSecretsController: mockRestartSealedSecretsController,
     getSchemaSecretsPaths: mockGetSchemaSecretsPaths,
     removeSopsArtifacts: mockRemoveSopsArtifacts,
   })
@@ -1005,6 +1007,7 @@ describe('sopsMigration', () => {
     expect(mockCreateSealedSecretManifest).toHaveBeenCalledWith('spki-pem', expect.any(Object))
     expect(mockWriteSealedSecretManifests).toHaveBeenCalled()
     expect(mockApplySealedSecretManifestsFromDir).toHaveBeenCalledWith(env.ENV_DIR)
+    expect(mockRestartSealedSecretsController).toHaveBeenCalled()
     expect(mockGetSchemaSecretsPaths).toHaveBeenCalled()
     expect(mockRemoveSopsArtifacts).toHaveBeenCalled()
     // Secrets should be stripped from values (in-place mutation)
