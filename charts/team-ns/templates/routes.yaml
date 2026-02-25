@@ -48,11 +48,13 @@ spec:
             type: PathPrefix
             value: /
       {{- end }}
+    {{- if not $tlsPass }}
     - filters:
         - type: RequestRedirect
           requestRedirect:
             scheme: https
             statusCode: 301
+    {{- end }}
 {{- if and $s.useCname $s.cname.tlsSecretName }}
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
