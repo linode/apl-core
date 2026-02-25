@@ -6,7 +6,7 @@
 {{- $tlsPass := $s.tlsPass | default false }}
 {{- $backendPort := ternary 443 80 $tlsPass }}
 {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
-{{- $teamSuffix := ternary $v.teamId (print "team-" $v.teamId) $isKnativeService }}
+{{- $teamSuffix := ternary $v.teamId (print "team-" $v.teamId) (or $isCoreService $isKnativeService) }}
 {{- $serviceName := print $s.name "-" $teamSuffix }}
 ---
 {{- if $tlsPass }}
