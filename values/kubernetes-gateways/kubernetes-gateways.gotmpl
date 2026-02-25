@@ -4,9 +4,22 @@ gateways:
 {{- range $ingress := $v.ingress.classes }}
   - name: {{ $ingress.className }}
     listeners:
-      - hostname: {{ print "*." $v.cluster.domainSuffix | quote }}
+      - name: http
+        hostname: {{ print "*." $v.cluster.domainSuffix | quote }}
+        protocol: HTTP
+        port: 80
+        allowedRoutes:
+          namespaces:
+            from: All
+      - name: https
+        hostname: {{ print "*." $v.cluster.domainSuffix | quote }}
+        protocol: HTTPS
+        port: 443
         certificateRefs:
           - name: {{ $v._derived.tlsSecretName }}
+        allowedRoutes:
+          namespaces:
+            from: All
     # TODO: Add CNAMES
     #   namespaces:
     #     from: All
