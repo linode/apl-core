@@ -360,7 +360,7 @@ trivy:
     # -- repository of the Trivy image
     repository: aquasec/trivy
     # -- tag version of the Trivy image
-    tag: 0.66.0
+    tag: 0.69.1
     # -- imagePullSecret is the secret name to be used when pulling trivy image from private registries example : reg-secret
     # It is the user responsibility to create the secret for the private registry in `trivy-operator` namespace
     imagePullSecret: ~
@@ -457,6 +457,10 @@ trivy:
   # ignoreFile:
   #   - CVE-1970-0001
   #   - CVE-1970-0002
+
+  # -- ignoreFileName sets the file name that will be mounted inside the scanner container.
+  # Defaults to ".trivyignore" if not set.
+  ignoreFileName: ""
 
   # -- configFile can be used to tell Trivy to use specific options available only in the config file (e.g. Mirror registries).
   configFile: ~
