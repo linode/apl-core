@@ -9,6 +9,12 @@ ARG KUBECTL_VERSION=1.34.2
 ARG HELM_VERSION=3.19.2
 # https://github.com/databus23/helm-diff/releases
 ARG HELM_DIFF_VERSION=3.14.1
+# https://github.com/jkroepke/helm-secrets/releases
+ARG HELM_SECRETS_VERSION=4.7.4
+# https://github.com/getsops/sops/releases
+ARG SOPS_VERSION=3.11.0
+# https://github.com/FiloSottile/age/releases
+ARG AGE_VERSION=1.2.1
 # https://github.com/noqcks/gucci/releases
 ARG GUCCI_VERSION=1.9.0
 # https://github.com/yannh/kubeconform/releases/
@@ -30,6 +36,7 @@ RUN apt-get update && apt-get install -y \
   curl \
   apache2-utils \
   ca-certificates \
+  coreutils \
   git \
   locales \
   rsync && \
@@ -42,6 +49,9 @@ RUN curl -LO "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq
   echo sha256sum --check sha256sum.txt && \
   mv jq-linux-${TARGETARCH} /usr/bin/jq && \
   chmod +x /usr/bin/jq
+
+# yq
+COPY --from=mikefarah/yq:4 /usr/bin/yq /usr/bin/yq
 
 RUN mkdir -p /home/app
 RUN groupadd -r app && \
@@ -65,10 +75,22 @@ RUN CNPG_ARCH=$(if [ "${TARGETARCH}" = "amd64" ]; then echo "x86_64"; else echo 
   chmod +x kubectl-cnpg && \
   rm kubectl-cnpg_${CNPG_VERSION}_linux_${CNPG_ARCH}.tar.gz
 
+# sops
+ADD https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.amd64 sops
+RUN chmod +x sops
+
+# age
+ADD https://github.com/FiloSottile/age/releases/download/v${AGE_VERSION}/age-v${AGE_VERSION}-linux-amd64.tar.gz age.tar.gz
+RUN tar -zxvf age.tar.gz age/age age/age-keygen --strip-components=1 && \
+  chmod +x age age-keygen && \
+  rm -rf age.tar.gz
+
 # helm
 ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
 RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp && mv /tmp/linux-${TARGETARCH}/helm helm && rm -rf /tmp/*
 RUN helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
+RUN echo "exec \$*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
+RUN helm plugin install https://github.com/jkroepke/helm-secrets --version ${HELM_SECRETS_VERSION}
 
 # helmfile
 ADD https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz /tmp

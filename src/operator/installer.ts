@@ -1,7 +1,7 @@
 import { $ } from 'zx'
 import { terminal } from '../common/debug'
 import { getStoredGitRepoConfig } from '../common/git-config'
-import { createUpdateConfigMap, deletePendingHelmReleases, getK8sConfigMap, k8s } from '../common/k8s'
+import { createUpdateConfigMap, deletePendingHelmReleases, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 
@@ -122,6 +122,21 @@ export class Installer {
   }
 
   public async setEnvAndCreateSecrets(): Promise<void> {
-    this.d.debug('Environment setup complete (SOPS removed, using SealedSecrets + ESO)')
+    this.d.debug('Setting up environment')
+    await this.setupSopsEnvironment()
+  }
+
+  private async setupSopsEnvironment(): Promise<void> {
+    try {
+      const aplSopsSecret = await getK8sSecret('apl-sops-secrets', 'apl-operator')
+      if (!aplSopsSecret?.SOPS_AGE_KEY) {
+        this.d.info('SOPS_AGE_KEY not found — cluster may already use SealedSecrets')
+        return
+      }
+      process.env.SOPS_AGE_KEY = aplSopsSecret.SOPS_AGE_KEY
+      this.d.info('SOPS environment configured')
+    } catch (error) {
+      this.d.info('Could not read apl-sops-secrets — cluster may already use SealedSecrets')
+    }
   }
 }

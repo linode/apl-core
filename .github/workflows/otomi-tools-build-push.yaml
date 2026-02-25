@@ -11,7 +11,6 @@ on:
   push:
     branches:
       - 'main'
-      - 'APL-523'
 
 env:
   NAMESPACE: linode
@@ -71,11 +70,7 @@ jobs:
             echo OLD_VERSION = ${OLD_VERSION}
             echo NEW_VERSION = ${NEW_VERSION}
           fi
-
-          # Override: rebuild v2.10.7 with gucci/kubeconform/htpasswd restored
-          NEW_VERSION="v2.10.7"
-          echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
-          echo "Overriding NEW_VERSION=${NEW_VERSION}"
+          echo "No need to bump the version. Will skip next steps."
 
       - name: Login to GitHub Container Registry
         if: ${{ env.NEW_VERSION != null }}

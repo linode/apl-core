@@ -19,6 +19,7 @@ export const cliEnvSpec = {
   NODE_TLS_REJECT_UNAUTHORIZED: bool({ default: true }),
   OTOMI_DEV: bool({ default: false }),
   OTOMI_IN_TERMINAL: bool({ default: true }),
+  SOPS_AGE_KEY: str({ default: '' }),
   STATIC_COLORS: bool({ default: false }),
   TRACE: bool({ default: false }),
   VERBOSITY: num({ desc: 'The verbosity level', default: 1 }),
