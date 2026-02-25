@@ -12,7 +12,10 @@ const CHART_FILE = '../chart/chart-index/Chart.yaml'
 const CHARTS_DIR = '../charts'
 const APPS_FILE = '../apps.yaml'
 
-function isVersionApplicable(currentVersion, version, allowedUpgradeType) {
+function isVersionApplicable(currentVersion, version, allowedUpgradeType, isExtra) {
+  if (isExtra && semver.eq(version, currentVersion)) {
+    return true // For extra dependencies (e.g. CRDs) the version may be identical
+  }
   if (semver.lte(version, currentVersion)) {
     return false // Ignore versions that are <= current version
   }
@@ -159,7 +162,7 @@ const CHART_VERSION_FUNCS = {
   'kube-prometheus-stack': getKubePromStackApps,
 }
 
-async function checkDependencyUpdates(dependency, allowedUpgradeType) {
+async function checkDependencyUpdates(dependency, allowedUpgradeType, isExtra) {
   const isRegistry = dependency.repository.startsWith('oci:')
   console.log(`Checking updates for dependency: ${dependency.name}`)
   let allVersions
@@ -189,7 +192,7 @@ async function checkDependencyUpdates(dependency, allowedUpgradeType) {
   // Filter versions for allowed upgrades (minor/patch)
   const currentVersion = dependency.version
   const filteredVersions = allVersions.filter((version) => {
-    return isVersionApplicable(currentVersion, version, allowedUpgradeType)
+    return isVersionApplicable(currentVersion, version, allowedUpgradeType, isExtra)
   })
 
   if (!filteredVersions.length) {
@@ -201,8 +204,12 @@ async function checkDependencyUpdates(dependency, allowedUpgradeType) {
   const latestVersion = filteredVersions.sort(semver.rcompare)[0]
 
   if (latestVersion === currentVersion) {
-    console.log(`${dependency.name} is already up to date.`)
-    return undefined
+    if (isExtra) {
+      console.log(`${dependency.name} will be merged using same version.`)
+    } else {
+      console.log(`${dependency.name} is already up to date.`)
+      return undefined
+    }
   }
   return latestVersion
 }
@@ -276,7 +283,7 @@ async function updateDependency(
     // Update the version in Chart.yaml
     mainDependency.version = latestVersion
     for (const extraDependency of extraDependencies) {
-      const extraVersion = await checkDependencyUpdates(extraDependency, allowedUpgradeType)
+      const extraVersion = await checkDependencyUpdates(extraDependency, allowedUpgradeType, true)
       if (extraVersion) {
         await downloadDependency(extraDependency, extraDependency.alias || extraDependency.name, extraVersion)
         // Update the version in Chart.yaml
