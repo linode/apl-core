@@ -48,5 +48,10 @@ spec:
             type: PathPrefix
             value: /
       {{- end }}
-{{- end }}
-{{- end }}
+        - filters:
+            - type: RequestRedirect
+              requestRedirect:
+                scheme: https
+                statusCode: 301
+{{- end }}{{- /* $isCoreService of admin */}}
+{{- end }}{{- /* range services */}}
