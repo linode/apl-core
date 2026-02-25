@@ -31,7 +31,7 @@
       "collapsed": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "P98FD586FDD5909DA"
+        "uid": "prometheus"
       },
       "gridPos": {
         "h": 1,
@@ -45,7 +45,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P98FD586FDD5909DA"
+            "uid": "prometheus"
           },
           "refId": "A"
         }
@@ -753,7 +753,7 @@
       "collapsed": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "P98FD586FDD5909DA"
+        "uid": "prometheus"
       },
       "gridPos": {
         "h": 1,
@@ -767,7 +767,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P98FD586FDD5909DA"
+            "uid": "prometheus"
           },
           "refId": "A"
         }
@@ -908,7 +908,7 @@
       "collapsed": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "P98FD586FDD5909DA"
+        "uid": "prometheus"
       },
       "gridPos": {
         "h": 1,
@@ -922,7 +922,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P98FD586FDD5909DA"
+            "uid": "prometheus"
           },
           "refId": "A"
         }
