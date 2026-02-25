@@ -100,7 +100,7 @@ dependencies:
     version: 4.4.34
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
-    version: 2.18.0
+    version: 2.18.1
     repository: https://bitnami-labs.github.io/sealed-secrets/
   - name: tekton-pipeline
     alias: tekton-pipelines
