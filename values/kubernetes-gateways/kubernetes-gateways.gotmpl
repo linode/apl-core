@@ -46,7 +46,7 @@ gateways:
   {{- $serviceAnnotations := dict }}
   {{- with $ingress | get "annotations" nil }}
     {{- range $annotation := . }}
-    {{ $_ := set $serviceAnnotations $annotation.key $annotation.value }}
+    {{ $_ := set $serviceAnnotations $annotation.key (toString $annotation.value) }}
     {{- end }}
   {{- end }}
   {{- if eq $v.cluster.provider "linode" }}
