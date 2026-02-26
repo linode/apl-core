@@ -2,17 +2,16 @@ nameOverride: ""
 fullnameOverride: ""
 
 defaultGatewayClass: "istio"
-provider: "custom"
 gateways: []
   # - name: platform
   #   listeners:
   #     - hostname: ""
   #       certificateRefs:
   #         - name: ""
-  #   nodeBalancerId: null
   #   loadBalancerIP: null
   #   entrypoint: null
   #   sourceIpAddressFiltering: []
+  #   serviceAnnotations: {}
   #   annotations: {}
   #   namespaces:
   #     from: All

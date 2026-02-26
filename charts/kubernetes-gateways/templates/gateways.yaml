@@ -11,13 +11,15 @@ metadata:
   {{- end }}
 spec:
   gatewayClassName: {{ $gateway.class | default $v.defaultGatewayClass }}
-  {{- if eq $v.provider "linode" }}
+  {{- with $gateway.loadBalancerIP }}
+  addresses:
+    - value: {{ . | quote }}
+      type: IPAddress
+  {{- end }}
+  {{- with $gateway.serviceAnnotations }}
   infrastructure:
     annotations:
-      service.beta.kubernetes.io/linode-loadbalancer-preserve: "true"
-      {{- with $gateway.nodeBalancerId }}
-      service.beta.kubernetes.io/linode-loadbalancer-nodebalancer-id: {{ . | quote }}
-      {{- end }}
+      {{- . | toYaml | nindent 6 }}
   {{- end }}
   listeners:
     {{- $gateway.listeners | toYaml | nindent 4 }}

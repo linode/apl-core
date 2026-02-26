@@ -36,10 +36,32 @@
   {{- end }}
 {{- end }}
 
-provider: {{ $v.cluster.provider }}
 gateways:
 {{- range $ingress := $v.ingress.classes }}
+  {{- $gatewayAnnotations := dict }}
+  {{- if and ($ingress | get "entrypoint" nil) $v.otomi.hasExternalDNS }}
+  {{- $_ := set $gatewayAnnotations "external-dns.alpha.kubernetes.io/target" $ingress.entrypoint }}
+  {{- end }}
+
+  {{- $serviceAnnotations := dict }}
+  {{- with $ingress | get "annotations" nil }}
+    {{- range $annotation := . }}
+    {{ $_ := set $serviceAnnotations $annotation.key $annotation.value }}
+    {{- end }}
+  {{- end }}
+  {{- if eq $v.cluster.provider "linode" }}
+  {{ $_ := set $serviceAnnotations "service.beta.kubernetes.io/linode-loadbalancer-preserve" "true" }}
+  {{- end }}
+
   - name: {{ $ingress.className }}
+    {{- with $gatewayAnnotations }}
+    annotations:
+      {{- . | toYaml | nindent 6 }}
+    {{- end }}
+    {{- with $serviceAnnotations }}
+    serviceAnnotations:
+      {{- . | toYaml | nindent 6 }}
+    {{- end }}
     listeners:
       - name: http
         hostname: {{ print "*." $domainSuffix | quote }}
@@ -93,18 +115,8 @@ gateways:
               matchLabels:
                 kubernetes.io/metadata.name: {{ $cnameListener.namespace }}
       {{- end }}
-    {{- with $ingress | get "entrypoint" nil }}
-    entrypoint: {{ . | quote }}
-    {{- end }}
     {{- with $ingress | get "loadBalancerIP" nil }}
     loadBalancerIP: {{ . | quote }}
     {{- end }}
-    {{- with $ingress | get "annotations" nil }}
-    annotations:
-      {{- range $annotation := . }}
-      {{ $annotation.key | quote }}: {{ $annotation.value | quote }}
-      {{- end }}
-    {{- end }}
   #   sourceIpAddressFiltering:
-  #   nodeBalancerId: null
 {{- end }}

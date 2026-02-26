@@ -38,6 +38,10 @@
 {{- if $v.otomi.hasExternalDNS }}
 {{- $_ := set $httpRouteAnnotations "externaldns" "true" }}
 {{- $_ = set $httpRouteAnnotations "external-dns.alpha.kubernetes.io/hostname" (print "*." $domainSuffix) }}
+{{- if $v | get "dns.provider.linode" nil }}
+# Check Linode Api documentation for allowed values in seconds: https://techdocs.akamai.com/linode-api/reference/post-domain
+{{- $_ = set $httpRouteAnnotations "external-dns.alpha.kubernetes.io/ttl" "1h" }}
+{{- end }}
 {{- end }}
 
 # Istio component variables

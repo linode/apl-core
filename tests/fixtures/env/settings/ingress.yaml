@@ -8,7 +8,7 @@ spec:
               - key: service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol
                 value: true
           className: net-a
-          entrypoint: ''
+          entrypoint: 11.0.1.1
           loadBalancerIP: 11.0.0.1
           sourceIpAddressFiltering: 10.0.0.0/24
     platformClass:
