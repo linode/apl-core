@@ -148,16 +148,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     },
   },
   {
-    version: '4.14.0',
-    applications: {
-      'istio-system-istiod': {
-        post: async () => {
-          await detectAndRestartOutdatedIstioSidecars(k8s.core())
-        },
-      },
-    },
-  },
-  {
     version: '4.15.0',
     applications: {
       'apl-operator-apl-operator': {
