@@ -10,7 +10,6 @@ gateways: []
   #         - name: ""
   #   loadBalancerIP: null
   #   entrypoint: null
-  #   sourceIpAddressFiltering: []
   #   serviceAnnotations: {}
   #   annotations: {}
   #   namespaces:

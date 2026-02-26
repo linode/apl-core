@@ -114,6 +114,27 @@ resources:
           kind: Service
           name: {{ $v._derived.ingressPublicGatewayName }}
   {{- end }}
+  {{- range $ingress := $v.ingress.classes }}
+  {{- if $ingress | get "sourceIpAddressFiltering" nil }}
+  - apiVersion: security.istio.io/v1
+    kind: AuthorizationPolicy
+    metadata:
+      name: {{ $ingress.className }}-allowed-ips
+    spec:
+      targetRef:
+        kind: Gateway
+        group: gateway.networking.k8s.io
+        name: {{ $ingress.className }}
+      action: ALLOW
+      rules:
+        - from:
+            - source:
+                ipBlocks:
+                  {{- range $ip := $ingress.sourceIpAddressFiltering | split "," }}
+                  - {{ $ip | quote }}
+                  {{- end }}
+  {{- end }}
+  {{- end }}
   - apiVersion: networking.istio.io/v1alpha3
     kind: EnvoyFilter
     metadata:
