@@ -159,7 +159,7 @@ appsInfo:
     isAlpha: true
   tekton:
     title: Tekton Pipelines
-    appVersion: 1.6.0
+    appVersion: 1.9.1
     repo: https://github.com/tektoncd/pipeline
     maintainers: Tekton
     relatedLinks:
