@@ -321,7 +321,7 @@ describe('sealed-secrets', () => {
       expect(result.metadata.annotations['sealedsecrets.bitnami.com/namespace-wide']).toBe('true')
       expect(result.spec.encryptedData.adminPassword).toBe('encrypted-value')
       expect(result.spec.encryptedData.secretKey).toBe('encrypted-value')
-      expect(result.spec.template.type).toBe('Opaque')
+      expect(result.spec.template.type).toBe('kubernetes.io/opaque')
       expect(result.spec.template.metadata.name).toBe('harbor-secrets')
       expect(result.spec.template.metadata.namespace).toBe('apl-secrets')
     })
