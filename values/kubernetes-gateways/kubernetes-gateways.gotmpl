@@ -52,8 +52,9 @@ gateways:
         hostname: {{ print "*." $domainSuffix | quote }}
         protocol: HTTPS
         port: 443
-        certificateRefs:
-          - name: {{ $v._derived.tlsSecretName }}
+        tls:
+          certificateRefs:
+            - name: {{ $v._derived.tlsSecretName }}
         allowedRoutes:
           namespaces:
             from: All
@@ -81,9 +82,10 @@ gateways:
         hostname: {{ $cnameListener.hostname }}
         protocol: HTTPS
         port: 443
-        certificateRefs:
-          - name: {{ $cnameListener.secretName }}
-            namespace: {{ $cnameListener.namespace }}
+        tls:
+          certificateRefs:
+            - name: {{ $cnameListener.secretName }}
+              namespace: {{ $cnameListener.namespace }}
         allowedRoutes:
           namespaces:
             from: Selector
