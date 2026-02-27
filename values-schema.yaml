@@ -1550,6 +1550,23 @@ definitions:
 properties:
   alerts:
     $ref: '#/definitions/alerts'
+  installation:
+    type: object
+    description: Top-level installation settings.
+    required:
+      - mode
+    additionalProperties: true
+    properties:
+      mode:
+        type: string
+        description: |
+          Installation execution mode.
+          - `standard`: runs the normal installation workflow and follows the configuration bootstrap process.
+          - `recovery`: runs recovery behavior intended to restore configuration that is stored in external git repository. It neither bootstraps nor initializes the configuration. For this mode `git` and `kms` objects are required so the operator knows how access and decrypt the data.
+        enum:
+          - recovery
+          - standard
+        default: standard
   azure:
     description: Azure specific configuration.
     properties:
