@@ -20,7 +20,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { ARGOCD_APP_PARAMS } from '../common/constants'
+import { APL_OPERATOR_NS, ARGOCD_APP_PARAMS } from '../common/constants'
 import { getK8sSecret, getSealedSecretsPEM, k8s } from '../common/k8s'
 
 const cmdName = getFilename(__filename)
@@ -511,7 +511,7 @@ async function appExists(name: string): Promise<boolean> {
 
 export async function addAplOperator(): Promise<void> {
   const d = terminal('addAplOperator')
-  if (await namespaceExists('apl-operator')) {
+  if (await namespaceExists(APL_OPERATOR_NS)) {
     d.info('Apl-operator namespace already exists, skipping installation')
     return
   }
