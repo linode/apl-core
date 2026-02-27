@@ -10,6 +10,7 @@
 {{- if eq $obj.type "linode" }}
 {{- $giteaBucketName = $obj.linode.buckets | get "gitea" nil }}
 {{- end }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 
 nameOverride: gitea
 fullnameOverride: gitea
@@ -231,3 +232,25 @@ global:
     - otomi-pullsecret-global
 {{- end }}
 
+extraDeploy:
+  - apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    metadata:
+      {{ with $httpRoute.annotations }}
+      annotations:
+        {{ . | toYaml | nindent 8 }}
+      {{- end }}
+      name: gitea
+    spec:
+      hostnames:
+        - {{ $giteaDomain }}
+      parentRefs:
+        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
+      rules:
+        - backendRefs:
+            - name: gitea-http
+              port: 3000
+          matches:
+            - path:
+                type: PathPrefix
+                value: /

@@ -6,3 +6,5 @@
 netpols:
   gitea: {{ $a.gitea.networkPolicies.enabled}}
   otomiApi: {{ $oa.networkPolicies.enabled}}
+
+legacyIngress: {{ $a | get "ingress-nginx-platform.enabled" }}

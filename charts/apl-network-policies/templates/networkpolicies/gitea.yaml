@@ -15,12 +15,20 @@ spec:
   ingress:
     # Allow access from Istio public ingress gateway
     - from:
+        {{- if .Values.legacyIngress }}
         - namespaceSelector:
             matchLabels:
               name: istio-system
           podSelector:
             matchLabels:
               app.kubernetes.io/instance: istio-ingressgateway-public
+        {{- end }}
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+          podSelector:
+            matchLabels:
+              gateway.networking.k8s.io/gateway-name: platform
     # Allow APL Gitea operator access
     - from:
         - namespaceSelector:
