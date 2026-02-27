@@ -3,7 +3,7 @@ import { env } from '../envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS } from '../hf'
 import { k8s } from '../k8s'
 import { logLevelString, terminal } from '../debug'
-import { rootDir } from '../utils'
+import { loadYaml, rootDir } from '../utils'
 import { RuntimeUpgradeContext } from './runtime-upgrades'
 
 const PLATFORM_LB_SERVICE = 'ingress-nginx-platform-controller'
@@ -13,6 +13,11 @@ const NB_ID_ANNOTATION_KEY = 'service.beta.kubernetes.io/linode-loadbalancer-nod
 
 export async function syncIngressNginxPlatform(context: RuntimeUpgradeContext): Promise<void> {
   const d = context.debug
+  const cluster = await loadYaml(`${env.ENV_DIR}/env/settings/cluster.yaml`, { noError: true })
+  if (cluster?.spec?.provider !== 'linode') {
+    d.info('Skipping ingress-nginx-platform sync: provider is not linode')
+    return
+  }
   d.info('Syncing ingress-nginx-platform with updated values containing Linode NodeBalancer annotations')
   await hf(
     {

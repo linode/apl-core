@@ -737,6 +737,11 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
 
 const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('addLinodeNBAnnotations')
+  const cluster = await loadYaml(`${env.ENV_DIR}/env/settings/cluster.yaml`, { noError: true })
+  if (cluster?.spec?.provider !== 'linode') {
+    d.info('Skipping Linode NodeBalancer annotation migration: provider is not linode')
+    return
+  }
   if (env.DISABLE_SYNC) {
     d.info('Skipping Linode NodeBalancer annotation migration in dev/test environment')
     return
@@ -749,7 +754,24 @@ const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void
   }
   const token = linodeSecret.token as string
 
-  d.info('Querying Linode API for NodeBalancer ID')
+  d.info('Fetching external IP from ingress-nginx-platform-controller service')
+  let serviceIp: string | undefined
+  try {
+    const svc = await k8s
+      .core()
+      .readNamespacedService({ name: 'ingress-nginx-platform-controller', namespace: 'ingress' })
+    serviceIp = svc?.status?.loadBalancer?.ingress?.[0]?.ip
+  } catch (error) {
+    d.warn(`Error reading ingress-nginx-platform-controller service: ${error}`)
+    return
+  }
+  if (!serviceIp) {
+    d.warn(
+      'No external IP found on ingress-nginx-platform-controller service, skipping Linode NodeBalancer annotation migration',
+    )
+    return
+  }
+  d.info(`Found service external IP ${serviceIp}, querying Linode API for matching NodeBalancer`)
   let nbId: number | undefined
   try {
     const response = await fetch('https://api.linode.com/v4/nodebalancers', {
@@ -762,10 +784,10 @@ const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void
       d.warn(`Failed to fetch NodeBalancers from Linode API: ${response.status} ${response.statusText}`)
       return
     }
-    const data = (await response.json()) as { data: Array<{ id: number }> }
-    const nb = data.data?.[0]
+    const data = (await response.json()) as { data: Array<{ id: number; ipv4: string }> }
+    const nb = data.data?.find((n) => n.ipv4 === serviceIp)
     if (!nb) {
-      d.warn('No NodeBalancer found in Linode API response, skipping')
+      d.warn(`No NodeBalancer found matching service IP ${serviceIp}, skipping`)
       return
     }
     nbId = nb.id
