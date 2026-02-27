@@ -37,6 +37,10 @@ jest.mock('../common/git-config', () => ({
   getStoredGitRepoConfig: jest.fn(),
 }))
 
+jest.mock('src/common/bootstrap', () => ({
+  recoverFromGit: jest.fn().mockResolvedValue(undefined),
+}))
+
 jest.mock('src/cmd/traces', () => ({
   runTraceCollectionLoop: jest.fn().mockResolvedValue(undefined),
 }))
