@@ -5,6 +5,7 @@
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $cnpg := $v.apps.cnpg }}
 {{- $obj := $v.obj.provider }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 
 resources:
 - apiVersion: cert-manager.io/v1
@@ -88,3 +89,18 @@ resources:
     REGISTRY_STORAGE_S3_ACCESSKEY: "{{ $obj.linode.accessKeyId | b64enc }}"
     REGISTRY_STORAGE_S3_SECRETKEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
 {{- end }}
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+  {{ with $httpRoute.annotations }}
+    annotations:
+    {{ . | toYaml | nindent 8 }}
+  {{- end }}
+    name: harbor-auth-redirects
+  spec:
+    hostnames:
+      - {{ $v._derived.harborDomain }}
+    parentRefs:
+    {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
+    rules:
+    {{- $httpRoute.authRules | toYaml | nindent 4 }}
