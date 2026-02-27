@@ -48,6 +48,20 @@ resources:
                   - "/platform-logout"
                   - "/v2/*"
                   - "/c/*"
+  - apiVersion: security.istio.io/v1
+    kind: AuthorizationPolicy
+    metadata:
+      name: otomi-forbidden-urls
+    spec:
+      action: DENY
+      rules:
+        - to:
+            - operation:
+                hosts:
+                  - {{ $v._derived.giteaDomain }}
+                  - {{ $v._derived.keycloakDomain }}
+                paths:
+                  - /metrics
   {{- range $appName := $appNames }}
   - apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
