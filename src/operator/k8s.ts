@@ -1,5 +1,6 @@
-import { terminal } from '../common/debug'
 import { ApiException, CoreV1Api, KubeConfig } from '@kubernetes/client-node'
+import { APL_OPERATOR_NS } from '../common/constants'
+import { terminal } from '../common/debug'
 import { getErrorMessage } from './utils'
 
 export type ApplyStatus = 'succeeded' | 'failed' | 'in-progress' | 'unknown'
@@ -30,7 +31,7 @@ export const k8s = {
 
 export async function updateApplyState(
   state: ApplyState,
-  namespace: string = 'apl-operator',
+  namespace: string = APL_OPERATOR_NS,
   configMapName: string = 'apl-operator-state',
 ): Promise<void> {
   const d = terminal('operator:k8s:updateApplyState')
