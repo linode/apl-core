@@ -76,8 +76,9 @@ async function main(): Promise<void> {
     if (isInstalled) {
       d.info('Installation already completed, skipping install steps')
     } else if (isRecoveryMode) {
-      d.info('Recovery mode enabled, checking external git and kms prerequisites')
+      d.info('Recovery mode enabled, checking prerequisites')
       await installer.ensureRecoveryPrerequisites()
+      await installer.applyRecoveryManifests()
       await installer.recoverFromGit()
       d.info('Recovery installation completed, switching installation mode to standard')
       await installer.resetRecoveryModeToStandard()

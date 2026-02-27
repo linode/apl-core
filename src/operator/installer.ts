@@ -1,11 +1,21 @@
+import { ApiException } from '@kubernetes/client-node'
 import * as process from 'node:process'
 import { runTraceCollectionLoop } from 'src/cmd/traces'
 import { recoverFromGit } from 'src/common/bootstrap'
 import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { $ } from 'zx'
 import { terminal } from '../common/debug'
+import { env } from '../common/envalid'
 import { getStoredGitRepoConfig, GIT_CONFIG_NAMESPACE } from '../common/git-config'
-import { createUpdateConfigMap, deletePendingHelmReleases, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
+import {
+  createUpdateConfigMap,
+  deletePendingHelmReleases,
+  ensureNamespaceExists,
+  getK8sConfigMap,
+  getK8sSecret,
+  k8s,
+} from '../common/k8s'
+import { loadYaml } from '../common/utils'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 
@@ -84,9 +94,48 @@ export class Installer {
 
   public async ensureRecoveryPrerequisites(): Promise<void> {
     await getStoredGitRepoConfig()
+    // SOPS is optional — sealed-secrets clusters don't have it
     const sopsSecret = await getK8sSecret('apl-sops-secrets', GIT_CONFIG_NAMESPACE)
-    if (!sopsSecret || Object.keys(sopsSecret).length === 0) {
-      throw new Error('KMS/SOPS config not found in apl-sops-secrets secret')
+    if (sopsSecret && Object.keys(sopsSecret).length > 0) {
+      this.d.info('SOPS configuration found for recovery')
+    } else {
+      this.d.info('No SOPS configuration — sealed-secrets mode recovery')
+    }
+  }
+
+  public async applyRecoveryManifests(): Promise<void> {
+    const values = (await loadYaml(env.VALUES_INPUT)) as Record<string, any>
+    const items = values?.installation?.recovery?.manifests?.items
+    if (!Array.isArray(items) || items.length === 0) {
+      this.d.info('No recovery manifests to apply')
+      return
+    }
+
+    this.d.info(`Applying ${items.length} recovery manifest(s)`)
+    for (const item of items) {
+      const namespace = item.metadata?.namespace || 'default'
+      const name = item.metadata?.name
+      await ensureNamespaceExists(namespace)
+
+      try {
+        await k8s.core().createNamespacedSecret({
+          namespace,
+          body: {
+            apiVersion: item.apiVersion,
+            kind: item.kind,
+            metadata: { name, namespace, labels: item.metadata?.labels },
+            type: item.type,
+            data: item.data,
+          },
+        })
+        this.d.info(`Created recovery secret ${namespace}/${name}`)
+      } catch (error) {
+        if (error instanceof ApiException && error.code === 409) {
+          this.d.info(`Recovery secret ${namespace}/${name} already exists, skipping`)
+        } else {
+          throw error
+        }
+      }
     }
   }
 

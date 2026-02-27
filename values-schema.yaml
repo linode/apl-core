@@ -1565,6 +1565,31 @@ properties:
           - recovery
           - standard
         default: standard
+      recovery:
+        type: object
+        description: Recovery settings for disaster recovery scenarios. Only used when mode=recovery.
+        properties:
+          manifests:
+            type: object
+            description: >
+              K8s resource List containing recovery manifests (e.g., sealed-secrets TLS key pairs)
+              to apply during installation. Not stored in the values repository.
+              Export from old cluster:
+              kubectl get secret -n sealed-secrets -l sealedsecrets.bitnami.com/sealed-secrets-key=active -o yaml
+            properties:
+              apiVersion:
+                type: string
+              kind:
+                type: string
+              items:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+              metadata:
+                type: object
+                additionalProperties: true
+            additionalProperties: true
   azure:
     description: Azure specific configuration.
     properties:

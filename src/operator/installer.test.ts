@@ -1,5 +1,7 @@
+import { ApiException } from '@kubernetes/client-node'
 import * as gitConfig from '../common/git-config'
 import * as k8s from '../common/k8s'
+import * as utils from '../common/utils'
 import { AplOperations } from './apl-operations'
 import { Installer } from './installer'
 
@@ -28,9 +30,19 @@ jest.mock('../common/k8s', () => ({
   createUpdateConfigMap: jest.fn(),
   createUpdateGenericSecret: jest.fn(),
   deletePendingHelmReleases: jest.fn().mockResolvedValue(undefined),
+  ensureNamespaceExists: jest.fn().mockResolvedValue(undefined),
   k8s: {
     core: jest.fn(),
   },
+}))
+
+jest.mock('../common/utils', () => ({
+  ...jest.requireActual('../common/utils'),
+  loadYaml: jest.fn(),
+}))
+
+jest.mock('../common/envalid', () => ({
+  env: { VALUES_INPUT: '/tmp/test-values.yaml' },
 }))
 
 jest.mock('../common/git-config', () => ({
@@ -58,7 +70,9 @@ describe('Installer', () => {
     jest.clearAllMocks()
     jest.useFakeTimers()
 
-    mockCoreApi = {}
+    mockCoreApi = {
+      createNamespacedSecret: jest.fn().mockResolvedValue(undefined),
+    }
     ;(k8s.k8s.core as jest.Mock).mockReturnValue(mockCoreApi)
 
     mockAplOps = {
@@ -370,6 +384,195 @@ describe('Installer', () => {
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ OTHER_KEY: 'value' })
 
       await expect(installer.setEnvAndCreateSecrets()).resolves.not.toThrow()
+    })
+  })
+
+  describe('applyRecoveryManifests', () => {
+    test('should create secrets from manifest items', async () => {
+      ;(utils.loadYaml as jest.Mock).mockResolvedValue({
+        installation: {
+          recovery: {
+            manifests: {
+              apiVersion: 'v1',
+              kind: 'List',
+              items: [
+                {
+                  apiVersion: 'v1',
+                  kind: 'Secret',
+                  metadata: {
+                    name: 'sealed-secrets-key',
+                    namespace: 'sealed-secrets',
+                    labels: { 'sealedsecrets.bitnami.com/sealed-secrets-key': 'active' },
+                  },
+                  type: 'kubernetes.io/tls',
+                  data: { 'tls.crt': 'Y2VydA==', 'tls.key': 'a2V5' },
+                },
+                {
+                  apiVersion: 'v1',
+                  kind: 'Secret',
+                  metadata: {
+                    name: 'sealed-secrets-key2',
+                    namespace: 'sealed-secrets',
+                    labels: { 'sealedsecrets.bitnami.com/sealed-secrets-key': 'active' },
+                  },
+                  type: 'kubernetes.io/tls',
+                  data: { 'tls.crt': 'Y2VydDI=', 'tls.key': 'a2V5Mg==' },
+                },
+              ],
+            },
+          },
+        },
+      })
+
+      await installer.applyRecoveryManifests()
+
+      expect(k8s.ensureNamespaceExists).toHaveBeenCalledWith('sealed-secrets')
+      expect(k8s.ensureNamespaceExists).toHaveBeenCalledTimes(2)
+      expect(mockCoreApi.createNamespacedSecret).toHaveBeenCalledTimes(2)
+      expect(mockCoreApi.createNamespacedSecret).toHaveBeenCalledWith({
+        namespace: 'sealed-secrets',
+        body: {
+          apiVersion: 'v1',
+          kind: 'Secret',
+          metadata: {
+            name: 'sealed-secrets-key',
+            namespace: 'sealed-secrets',
+            labels: { 'sealedsecrets.bitnami.com/sealed-secrets-key': 'active' },
+          },
+          type: 'kubernetes.io/tls',
+          data: { 'tls.crt': 'Y2VydA==', 'tls.key': 'a2V5' },
+        },
+      })
+    })
+
+    test('should handle 409 conflict (secret already exists)', async () => {
+      ;(utils.loadYaml as jest.Mock).mockResolvedValue({
+        installation: {
+          recovery: {
+            manifests: {
+              items: [
+                {
+                  apiVersion: 'v1',
+                  kind: 'Secret',
+                  metadata: { name: 'sealed-secrets-key', namespace: 'sealed-secrets' },
+                  type: 'kubernetes.io/tls',
+                  data: { 'tls.crt': 'Y2VydA==' },
+                },
+              ],
+            },
+          },
+        },
+      })
+
+      mockCoreApi.createNamespacedSecret.mockRejectedValue(new ApiException(409, 'Conflict', {}, {}))
+
+      await expect(installer.applyRecoveryManifests()).resolves.not.toThrow()
+    })
+
+    test('should skip when no manifests present', async () => {
+      ;(utils.loadYaml as jest.Mock).mockResolvedValue({
+        installation: { mode: 'recovery' },
+      })
+
+      await installer.applyRecoveryManifests()
+
+      expect(mockCoreApi.createNamespacedSecret).not.toHaveBeenCalled()
+    })
+
+    test('should skip when items array is empty', async () => {
+      ;(utils.loadYaml as jest.Mock).mockResolvedValue({
+        installation: { recovery: { manifests: { items: [] } } },
+      })
+
+      await installer.applyRecoveryManifests()
+
+      expect(mockCoreApi.createNamespacedSecret).not.toHaveBeenCalled()
+    })
+
+    test('should rethrow non-409 errors', async () => {
+      ;(utils.loadYaml as jest.Mock).mockResolvedValue({
+        installation: {
+          recovery: {
+            manifests: {
+              items: [
+                {
+                  apiVersion: 'v1',
+                  kind: 'Secret',
+                  metadata: { name: 'sealed-secrets-key', namespace: 'sealed-secrets' },
+                  data: {},
+                },
+              ],
+            },
+          },
+        },
+      })
+
+      mockCoreApi.createNamespacedSecret.mockRejectedValue(new ApiException(500, 'Internal Server Error', {}, {}))
+
+      await expect(installer.applyRecoveryManifests()).rejects.toThrow()
+    })
+
+    test('should use default namespace when metadata.namespace is not set', async () => {
+      ;(utils.loadYaml as jest.Mock).mockResolvedValue({
+        installation: {
+          recovery: {
+            manifests: {
+              items: [
+                {
+                  apiVersion: 'v1',
+                  kind: 'Secret',
+                  metadata: { name: 'my-secret' },
+                  data: { key: 'val' },
+                },
+              ],
+            },
+          },
+        },
+      })
+
+      await installer.applyRecoveryManifests()
+
+      expect(k8s.ensureNamespaceExists).toHaveBeenCalledWith('default')
+      expect(mockCoreApi.createNamespacedSecret).toHaveBeenCalledWith(
+        expect.objectContaining({
+          namespace: 'default',
+        }),
+      )
+    })
+  })
+
+  describe('ensureRecoveryPrerequisites', () => {
+    test('should succeed without SOPS secret', async () => {
+      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockResolvedValue({
+        authenticatedUrl: 'https://user:pass@github.com/org/repo.git',
+      })
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(undefined)
+
+      await expect(installer.ensureRecoveryPrerequisites()).resolves.not.toThrow()
+    })
+
+    test('should succeed with SOPS secret', async () => {
+      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockResolvedValue({
+        authenticatedUrl: 'https://user:pass@github.com/org/repo.git',
+      })
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ SOPS_AGE_KEY: 'AGE-SECRET-KEY-1ABC' })
+
+      await expect(installer.ensureRecoveryPrerequisites()).resolves.not.toThrow()
+    })
+
+    test('should succeed with empty SOPS secret', async () => {
+      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockResolvedValue({
+        authenticatedUrl: 'https://user:pass@github.com/org/repo.git',
+      })
+      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({})
+
+      await expect(installer.ensureRecoveryPrerequisites()).resolves.not.toThrow()
+    })
+
+    test('should throw when git config is missing', async () => {
+      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockRejectedValue(new Error('Git config not found'))
+
+      await expect(installer.ensureRecoveryPrerequisites()).rejects.toThrow('Git config not found')
     })
   })
 })
