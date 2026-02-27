@@ -9,11 +9,10 @@
 {{- $teamSuffix := ternary (print "team-" $v.teamId) $v.teamId $isKnativeService }}
 {{- $serviceName := print $s.name "-" $teamSuffix }}
 ---
+apiVersion: gateway.networking.k8s.io/v1
 {{- if $tlsPass }}
-apiVersion: gateway.networking.k8s.io/v1alpha3
 kind: TLSRoute
 {{- else }}
-apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 {{- end }}
 metadata:
