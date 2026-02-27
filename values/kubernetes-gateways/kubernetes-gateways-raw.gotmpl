@@ -54,6 +54,10 @@ resources:
       name: otomi-forbidden-urls
     spec:
       action: DENY
+      targetRefs:
+        - name: {{ $v.ingress.platformClass.className }}
+          kind: Gateway
+          group: gateway.networking.k8s.io
       rules:
         - to:
             - operation:
