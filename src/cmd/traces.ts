@@ -1,15 +1,15 @@
 import { ApiException, CoreV1Event, V1ContainerStatus, V1Pod } from '@kubernetes/client-node'
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
+import { env } from 'src/common/envalid'
 import { createUpdateConfigMap, k8s } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
-import { Argv } from 'yargs'
 import { getErrorMessage } from 'src/operator/utils'
-import { env } from 'src/common/envalid'
+import { Argv } from 'yargs'
 
 const cmdName = getFilename(__filename)
-const { COLLECTION_INTERVAL_SECONDS, COLLECTION_DURATION_SECONDS, APL_OPERATOR_NAMESPACE, TRACES_REPORT_NAME } = env
+const { COLLECTION_INTERVAL_SECONDS, COLLECTION_DURATION_SECONDS, APL_OPERATOR_NS, TRACES_REPORT_NAME } = env
 const COLLECTION_INTERVAL_MS = COLLECTION_INTERVAL_SECONDS * 1000
 const COLLECTION_DURATION_MS = COLLECTION_DURATION_SECONDS * 1000
 interface ResourceReport {
@@ -419,9 +419,9 @@ export async function collectTraces(): Promise<void> {
     }
 
     // Always write the report to ConfigMap (even when healthy, for timestamp visibility)
-    await writeReportToConfigMap(TRACES_REPORT_NAME, APL_OPERATOR_NAMESPACE, report)
+    await writeReportToConfigMap(TRACES_REPORT_NAME, APL_OPERATOR_NS, report)
     d.info(
-      `Trace report stored in ConfigMap ${APL_OPERATOR_NAMESPACE}/${TRACES_REPORT_NAME} (${failedResources.length} issues)`,
+      `Trace report stored in ConfigMap ${APL_OPERATOR_NS}/${TRACES_REPORT_NAME} (${failedResources.length} issues)`,
     )
   } catch (error) {
     d.error('Failed to collect traces:', error)
@@ -449,7 +449,7 @@ async function getCollectionStartTime(name: string, namespace: string): Promise<
 export async function runTraceCollectionLoop(): Promise<void> {
   const d = terminal('cmd:traces:runTraceCollectionLoop')
   // Get collection start time from ConfigMap creation timestamp
-  const startTime = await getCollectionStartTime(TRACES_REPORT_NAME, APL_OPERATOR_NAMESPACE)
+  const startTime = await getCollectionStartTime(TRACES_REPORT_NAME, APL_OPERATOR_NS)
   const endTime = startTime + COLLECTION_DURATION_MS
   const now = Date.now()
 
