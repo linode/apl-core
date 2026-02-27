@@ -6,11 +6,15 @@ gateways: []
   # - name: platform
   #   listeners:
   #     - hostname: ""
+  #       name: ""
+  #       protocol: ""
+  #       port: 0
   #       certificateRefs:
   #         - name: ""
+  #       allowedRoutes:
+  #         namespaces:
+  #           from: All
   #   loadBalancerIP: null
   #   entrypoint: null
   #   serviceAnnotations: {}
   #   annotations: {}
-  #   namespaces:
-  #     from: All
