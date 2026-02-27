@@ -69,7 +69,7 @@ gateways:
         port: 80
         allowedRoutes:
           namespaces:
-            from: All
+            from: Same
       - name: https
         hostname: {{ print "*." $domainSuffix | quote }}
         protocol: HTTPS
@@ -94,12 +94,12 @@ gateways:
       {{- end }}
       {{- range $cnameListener := $cnameListeners | get $ingress.className }}
       - name: http-cname-{{ $cnameListener.name }}
-        hostname: {{ print "*." $domainSuffix | quote }}
+        hostname: {{ $cnameListener.hostname }}
         protocol: HTTP
         port: 80
         allowedRoutes:
           namespaces:
-            from: All
+            from: Same
       - name: https-cname-{{ $cnameListener.name }}
         hostname: {{ $cnameListener.hostname }}
         protocol: HTTPS

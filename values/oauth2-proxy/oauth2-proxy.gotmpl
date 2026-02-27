@@ -5,6 +5,7 @@
 {{- $r := $v.apps | get "oauth2-proxy-redis" }}
 {{- $o := $v | get "oidc" dict }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list (print "." $domainSuffix) "oauth2-proxy.istio-system.svc.cluster.local" }}
@@ -174,10 +175,10 @@ image:
 gatewayApi:
   enabled: true
   gatewayRef:
-    name: {{ $v.ingress.platformClass.className }}
+    {{- index $httpRoute.parentRefs 0 | toYaml | nindent 4 }}
   hostnames:
     - {{ $v._derived.authDomain | quote }}
-  {{ with $v._derived.httpRouteAnnotations }}
+  {{ with $httpRoute.annotations }}
   annotations:
     {{ . | toYaml | nindent 4 }}
   {{- end }}

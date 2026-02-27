@@ -3,6 +3,7 @@
 {{- $db := $v.databases.harbor }}
 {{- $obj := $v.obj.provider }}
 {{- $harborDomain := printf $v._derived.harborDomain }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 
 externalURL: https://{{ $harborDomain }}
 fullnameOverride: harbor
@@ -51,13 +52,12 @@ expose:
   tls:
     enabled: false
   route:
-    {{ with $v._derived.httpRouteAnnotations }}
+    {{ with $httpRoute.annotations }}
     annotations:
       {{ . | toYaml | nindent 6 }}
     {{- end }}
     parentRefs:
-      - name: {{ $v.ingress.platformClass.className }}
-        namespace: istio-system
+      {{- $httpRoute.parentRefs | toYaml | nindent 6 }}
     hosts:
       - {{ $v._derived.harborDomain }}
 

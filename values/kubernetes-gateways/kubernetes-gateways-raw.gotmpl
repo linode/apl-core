@@ -3,8 +3,8 @@
 {{- $authApps := list "alertmanager" "argocd" "console" "grafana" "kubeflow-pipelines" "prometheus" "tekton" "tty" }}
 {{- $optionalApps := list "alertmanager" "gitea" "grafana" "keycloak" "kubeflow-pipelines" "prometheus" }}
 {{- $appNames := list "console" "api" "tty" "argocd" "tekton" }}
+{{- $authAppNamespaces := list "argocd" "harbor" }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
-{{- $httpRouteAnnotations := $v._derived.httpRouteAnnotations }}
 {{- range $appName := $optionalApps }}
 {{- if dig $appName "enabled" false $a }}
 {{- $appNames = append $appNames $appName }}
@@ -13,6 +13,7 @@
 {{- $appNames = sortAlpha $appNames }}
 {{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
 {{- $logoutRedirectParam := printf "%s/protocol/openid-connect/logout?post_logout_redirect_uri=https://%s/oauth2/start&client_id=%s" $keycloakRealm $v._derived.consoleDomain $a.keycloak.idp.clientID }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 resources:
   - apiVersion: security.istio.io/v1
     kind: AuthorizationPolicy
@@ -51,7 +52,7 @@ resources:
   - apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
     metadata:
-      {{ with $httpRouteAnnotations }}
+      {{ with $httpRoute.annotations }}
       annotations:
         {{ . | toYaml | nindent 8 }}
       {{- end }}
@@ -60,7 +61,7 @@ resources:
       hostnames:
         - {{ $appName }}.{{ $domainSuffix }}
       parentRefs:
-        - name: {{ $v.ingress.platformClass.className }}
+        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
       rules:
         - matches:
             - path:
@@ -70,31 +71,8 @@ resources:
             - name: {{ $v._derived.ingressPublicGatewayName }}
               port: 80
         {{- if has $appName $authApps }}
-        - matches:
-            - path:
-                type: PathPrefix
-                value: /oauth2
-          backendRefs:
-            - kind: Service
-              name: oauth2-proxy
-              port: 80
-        - matches:
-            - path:
-                type: Exact
-                value: /platform-logout
-          filters:
-            - type: RequestRedirect
-              requestRedirect:
-                path:
-                  type: ReplaceFullPath
-                  replaceFullPath: /oauth2/sign_out?rd={{ $logoutRedirectParam | urlquery }}
-                statusCode: 302
+        {{- $httpRoute.authRules | toYaml | nindent 8 }}
         {{- end }}
-        - filters:
-            - type: RequestRedirect
-              requestRedirect:
-                scheme: https
-                statusCode: 301
   {{- end }}
   {{- range $teamId := (keys $v.teamConfig | sortAlpha) }}
   - apiVersion: gateway.networking.k8s.io/v1beta1
@@ -114,6 +92,21 @@ resources:
           kind: Service
           name: {{ $v._derived.ingressPublicGatewayName }}
   {{- end }}
+  - apiVersion: gateway.networking.k8s.io/v1beta1
+    kind: ReferenceGrant
+    metadata:
+      name: oauth2-proxy-apps
+    spec:
+      from:
+        {{- range $namespace := $authAppNamespaces }}
+        - group: gateway.networking.k8s.io
+          kind: HTTPRoute
+          namespace: {{ $namespace }}
+        {{- end }}
+      to:
+        - group: ""
+          kind: Service
+          name: oauth2-proxy
   {{- range $ingress := $v.ingress.classes }}
   {{- if $ingress | get "sourceIpAddressFiltering" nil }}
   - apiVersion: security.istio.io/v1

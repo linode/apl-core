@@ -6,6 +6,7 @@
 {{- $teamServices := ($team | get "services" list) }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 linodeLkeImageRepository: "{{- $v.otomi.linodeLkeImageRepository }}"
@@ -64,7 +65,7 @@ ingressPublicGatewayName: {{ $v._derived.ingressPublicGatewayName }}
 defaultIngressGatewayLabel: {{ $v._derived.defaultIngressGatewayLabel }}
 canaryIngressGatewayLabel: {{ $v._derived.canaryIngressGatewayLabel | quote }}
 useLegacyIngress: {{ $a | get "ingress-nginx-platform.enabled" }}
-httpRouteAnnotations: {{- $v._derived.httpRouteAnnotations | toYaml | nindent 2 }}
+httpRouteAnnotations: {{- $httpRoute.annotations | toYaml | nindent 2 }}
 
 gitOps:
 {{- if contains "gitea-http.gitea.svc.cluster.local" $v.otomi.git.repoUrl }}
