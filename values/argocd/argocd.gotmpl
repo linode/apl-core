@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $a := $v.apps.argocd }}
 {{- $k := $v.apps.keycloak }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 global:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
@@ -77,6 +78,16 @@ server:
       enabled: true
       additionalLabels:
         prometheus: system
+  httproute:
+    enabled: true
+    {{ with $httpRoute.annotations }}
+    annotations:
+      {{ . | toYaml | nindent 6 }}
+    {{- end }}
+    parentRefs:
+      {{- $httpRoute.parentRefs | toYaml | nindent 6 }}
+    hostnames:
+      - {{ print "argocd." $v.cluster.domainSuffix }}
 
 configs:
   # General Argo CD configuration
@@ -231,3 +242,42 @@ configs:
       g, platform-admin, role:admin
     policy.default: role:readonly
     {{- end }}
+
+extraObjects:
+  - apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    metadata:
+      {{ with $httpRoute.annotations }}
+      annotations:
+        {{ . | toYaml | nindent 8 }}
+      {{- end }}
+      name: argocd-auth-redirects
+    spec:
+      hostnames:
+        - {{ print "argocd." $v.cluster.domainSuffix }}
+      parentRefs:
+        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
+      rules:
+        {{- $httpRoute.authRules | toYaml | nindent 8 }}
+        - matches:
+            - path:
+                type: Exact
+                value: /auth/login
+          filters:
+            - type: RequestRedirect
+              requestRedirect:
+                path:
+                  type: ReplaceFullPath
+                  replaceFullPath: /oauth2/start
+                statusCode: 302
+        - matches:
+            - path:
+                type: Exact
+                value: /auth/logout
+          filters:
+            - type: RequestRedirect
+              requestRedirect:
+                path:
+                  type: ReplaceFullPath
+                  replaceFullPath: /platform-logout
+                statusCode: 302
