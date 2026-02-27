@@ -254,7 +254,7 @@ _internal_defaults_do_not_set:
     # Dev builds from prow are on gcr.io
     hub: docker.io/istio
     # Default tag for Istio images.
-    tag: 1.28.3
+    tag: 1.29.0
     # Variant of the image to use.
     # Currently supported are: [debug, distroless]
     variant: ""
