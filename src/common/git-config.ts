@@ -1,4 +1,5 @@
 import type { CoreV1Api } from '@kubernetes/client-node'
+import { APL_OPERATOR_NS } from './constants'
 import { terminal } from './debug'
 import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
 
@@ -7,7 +8,7 @@ const d = terminal('common:git-config')
 // Constants
 export const GIT_CONFIG_CONFIGMAP_NAME = 'apl-git-config'
 export const GIT_CONFIG_SECRET_NAME = 'apl-git-credentials'
-export const GIT_CONFIG_NAMESPACE = 'apl-operator'
+export const GIT_CONFIG_NAMESPACE = APL_OPERATOR_NS
 
 /**
  * Unified Git repository configuration with credentials.
@@ -64,18 +65,20 @@ export async function getGitConfigData(): Promise<GitConfigData | undefined> {
   if (!configMap?.data) return undefined
 
   const { data } = configMap
-  return {
+  const config: GitConfigData = {
     repoUrl: data.repoUrl,
     branch: data.branch,
     email: data.email,
   }
+
+  return config
 }
 
 /**
  * Reconstructs GitRepoConfig from stored ConfigMap + Secret.
  * This avoids calling hfValues() in operator startup path.
  */
-export async function getStoredGitRepoConfig(): Promise<GitRepoConfig | undefined> {
+export async function getStoredGitRepoConfig(): Promise<GitRepoConfig> {
   let [configData, credentials] = await Promise.all([getGitConfigData(), getGitCredentials()])
 
   //TODO This can be removed after BYO Git has been released

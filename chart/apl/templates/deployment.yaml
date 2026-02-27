@@ -1,7 +1,9 @@
 {{- $kms := .Values.kms | default dict }}
 {{- $imageName := .Values.imageName | default "linode/apl-core" }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
-{{- $useORCS := .Values.otomi.useORCS | default "true"}}
+{{- $useORCS := .Values.otomi.useORCS }}
+{{- $skipDeployment := .Values.installation.skipOperatorDeployment }}
+{{- if not $skipDeployment }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -122,3 +124,4 @@ spec:
         - name: {{ . }}
         {{- end }}
       {{- end }}
+{{- end }}

@@ -3,7 +3,7 @@ import { get } from 'lodash'
 import { decrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
-import { getRepo } from 'src/common/git-config'
+import { getRepo, GitRepoConfig } from 'src/common/git-config'
 import { hfValues } from 'src/common/hf'
 import { stripAllSecrets } from 'src/common/sealed-secrets'
 import { getFilename, getSchemaSecretsPaths } from 'src/common/utils'
@@ -15,6 +15,19 @@ const cmdName = getFilename(__filename)
 export const setIdentity = async (username, email) => {
   await $`git config --local user.name ${username}`.nothrow().quiet()
   await $`git config --local user.email ${email}`.nothrow().quiet()
+}
+
+export const recoverFromGit = async (gitConfig: GitRepoConfig): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:recoverFromGit`)
+  d.info(`Attempting to clone git repository from: ${gitConfig.repoUrl}`)
+  cd(env.ENV_DIR)
+  await $`timeout 10 git clone ${gitConfig.authenticatedUrl} ${env.ENV_DIR}`
+  await setIdentity(gitConfig.username, gitConfig.email)
+  await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    await $`git config --local diff.sopsdiffer.textconv "sops -d"`.nothrow().quiet()
+  }
+  await decrypt()
 }
 /**
  * Prepare the ENV_DIR before anything else. Scenario's:

@@ -69,11 +69,21 @@ async function main(): Promise<void> {
 
     // Phase 1: Run installation with retry until success
     const installer = new Installer(aplOps)
+
+    const installationMode = await installer.getInstallationMode()
+    const isRecoveryMode = installationMode === 'recovery'
     const isInstalled = await installer.isInstalled()
     if (isInstalled) {
       d.info('Installation already completed, skipping install steps')
+    } else if (isRecoveryMode) {
+      d.info('Recovery mode enabled, checking external git and kms prerequisites')
+      await installer.ensureRecoveryPrerequisites()
+      await installer.recoverFromGit()
+      d.info('Recovery installation completed, switching installation mode to standard')
+      await installer.resetRecoveryModeToStandard()
+      await installer.reconcileInstall()
     } else {
-      d.info('=== Starting Installation Process ===')
+      d.info('Standard mode enabled, initializing installer')
       await installer.initialize()
       await installer.reconcileInstall()
     }
