@@ -16,7 +16,7 @@ resources:
       name: argocd-repo-creds-gitea
       namespace: argocd
       labels:
-        argocd.argoproj.io/secret-type: repository
+        argocd.argoproj.io/secret-type: repo-creds
     data:
       type: {{ print "git" | b64enc | quote }}
       url: {{ printf "https://%s" $v._derived.giteaDomain | b64enc }}
@@ -28,7 +28,7 @@ resources:
       name: argocd-repo-creds-gitea-internal
       namespace: argocd
       labels:
-        argocd.argoproj.io/secret-type: repository
+        argocd.argoproj.io/secret-type: repo-creds
     data:
       type: {{ print "git" | b64enc | quote }}
       url: {{ "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git" | b64enc | quote }}
@@ -41,7 +41,7 @@ resources:
       name: argocd-repo-creds-git
       namespace: argocd
       labels:
-        argocd.argoproj.io/secret-type: repository
+        argocd.argoproj.io/secret-type: repo-creds
     data:
       type: {{ print "git" | b64enc | quote }}
       url: {{ $v.otomi.git.repoUrl | b64enc }}
