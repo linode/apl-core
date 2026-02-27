@@ -26,7 +26,7 @@ dependencies:
     repository: https://linode.github.io/cloud-firewall-controller
   - name: cloud-firewall-controller
     alias: linode-cfw
-    version: 0.2.0
+    version: 0.2.1
     repository: https://linode.github.io/cloud-firewall-controller
   - name: external-dns
     version: 1.20.0
