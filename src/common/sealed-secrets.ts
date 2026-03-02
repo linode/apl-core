@@ -501,15 +501,17 @@ export const applySealedSecretManifestsFromDir = async (
   for (const nsEntry of namespaces) {
     if (!nsEntry.isDirectory()) continue
     const namespace = nsEntry.name
-    const nsDir = join(manifestsDir, namespace)
+    const sealedSecretsDir = join(manifestsDir, namespace, 'sealedsecrets')
+
+    if (!deps.existsSync(sealedSecretsDir)) continue
 
     await ensureNamespaceExists(namespace)
 
-    // Read all YAML files in the namespace directory
-    const files = await deps.readdir(nsDir)
+    // Read all YAML files in the sealedsecrets subdirectory
+    const files = await deps.readdir(sealedSecretsDir)
     for (const file of files) {
       if (!file.endsWith('.yaml') && !file.endsWith('.yml')) continue
-      const filePath = join(nsDir, file)
+      const filePath = join(sealedSecretsDir, file)
       d.info(`Applying SealedSecret from ${filePath}`)
 
       try {
