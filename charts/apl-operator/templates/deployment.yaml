@@ -15,6 +15,7 @@ spec:
         # Restart pod when git credentials or config changes (important for migration)
         checksum/git-credentials: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
         checksum/git-config: {{ include (print $.Template.BasePath "/git-config.yaml") . | sha256sum }}
+        checksum/watchdog-script: {{ include (print $.Template.BasePath "/watchdog-script.yaml") . | sha256sum }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -56,6 +57,30 @@ spec:
             - name: git-config
               mountPath: /home/app/.gitconfig
               subPath: .gitconfig
+        - name: watchdog
+          image: "{{ .Values.watchdog.image.repository }}:{{ .Values.watchdog.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/bash", "/scripts/watchdog.sh"]
+          env:
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+          resources:
+            {{- toYaml .Values.watchdog.resources | nindent 12 }}
+          volumeMounts:
+            - name: watchdog-script
+              mountPath: /scripts
       volumes:
         - name: apl-values
           emptyDir: {}
@@ -67,6 +92,10 @@ spec:
             items:
               - key: .gitconfig
                 path: .gitconfig
+        - name: watchdog-script
+          configMap:
+            name: {{ include "apl-operator.fullname" . }}-watchdog
+            defaultMode: 0500
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
