@@ -721,21 +721,7 @@ export const bootstrapSealedSecrets = async (
   // 7. Create individual user SealedSecrets in apl-users namespace
   const { users } = secrets
   if (Array.isArray(users) && users.length > 0) {
-    // The users in allSecrets are in processed format (with groups).
-    // We also need original user data (isPlatformAdmin, isTeamAdmin, teams) from allValues.
-    const originalUsers = get(allValues, 'users', []) as any[]
-    // Merge original user fields with processed users for complete SealedSecret data
-    const usersForSecrets = users.map((processedUser: any) => {
-      const originalUser = originalUsers.find((u: any) => u.email === processedUser.email)
-      return {
-        ...processedUser,
-        name: originalUser?.name || processedUser.name,
-        isPlatformAdmin: originalUser?.isPlatformAdmin ?? false,
-        isTeamAdmin: originalUser?.isTeamAdmin ?? false,
-        teams: originalUser?.teams || [],
-      }
-    })
-    const userManifests = await deps.createUserSealedSecretManifests(usersForSecrets, pem, {
+    const userManifests = await deps.createUserSealedSecretManifests(users, pem, {
       encryptSecretItem: deps.encryptSecretItem,
       terminal: deps.terminal,
     })
