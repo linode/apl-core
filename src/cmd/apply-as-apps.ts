@@ -20,7 +20,7 @@ import { Argv, CommandModule } from 'yargs'
 import { ARGOCD_APP_DEFAULT_SYNC_POLICY, ARGOCD_APP_PARAMS } from '../common/constants'
 import { env } from '../common/envalid'
 
-export const GITOPS_MANIFESTS_NS_PATH = 'env/manifests/ns'
+export const GITOPS_MANIFESTS_NS_PATH = 'env/manifests/namespaces'
 export const GITOPS_MANIFESTS_GLOBAL_PATH = 'env/manifests/global'
 export const ARGOCD_APP_DEFAULT_LABEL = 'managed'
 export const ARGOCD_APP_GITOPS_LABEL = 'generic-gitops'
@@ -162,6 +162,9 @@ export const getArgocdGitopsManifest = (name: string, targetNamespace?: string) 
         path,
         repoURL,
         targetRevision: 'HEAD',
+        directory: {
+          recurse: true,
+        },
       },
     ],
     destination: {
