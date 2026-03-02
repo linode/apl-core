@@ -4,10 +4,14 @@
 {{- $isCoreService := $s.isCore | default false }}
 {{- if not (and $isCoreService (eq $v.teamId "admin")) }}
 {{- $tlsPass := $s.tlsPass | default false }}
-{{- $backendPort := ternary 443 80 $tlsPass }}
+{{- $backendName := ternary (print $v.teamId "-" $s.svc) $s.svc $isCoreService }}
 {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
+{{- $useTrafficControl := dig "trafficControl" "enabled" false $s }}
 {{- $teamSuffix := ternary (print "team-" $v.teamId) $v.teamId $isKnativeService }}
 {{- $serviceName := print $s.name "-" $teamSuffix }}
+{{- $headersRequestSet := dig "headers" "request" "set" nil $s }}
+{{- $headersResponseSet := dig "headers" "response" "set" nil $s }}
+{{- $headersRequestRemove := get $s "removeRequestHeaders" | default nil }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 {{- if $tlsPass }}
@@ -32,9 +36,17 @@ spec:
       namespace: istio-system
   rules:
     - backendRefs:
-        - name: {{ $v.ingressPublicGatewayName }}
-          namespace: istio-system
-          port: {{ $backendPort }}
+      {{- if $useTrafficControl }}
+        - name: {{ $backendName }}-v1
+          port: {{ $s.port }}
+          weight: {{ $s.trafficControl.weightV1 }}
+        - name: {{ $backendName }}-v2
+          port: {{ $s.port }}
+          weight: {{ $s.trafficControl.weightV2 }}
+      {{- else }}
+        - name: {{ $backendName }}
+          port: {{ $s.port }}
+      {{- end }}
       matches:
       {{- if and $s.paths (gt (len $s.paths) 0) }}
       {{- range $path := $s.paths }}
@@ -47,13 +59,33 @@ spec:
             type: PathPrefix
             value: /
       {{- end }}
-    {{- if not $tlsPass }}
-    - filters:
-        - type: RequestRedirect
-          requestRedirect:
-            scheme: https
-            statusCode: 301
-    {{- end }}
+      {{- if or $headersRequestSet $headersRequestRemove $headersResponseSet }}
+      filters:
+        {{- if or $headersRequestSet $headersRequestRemove }}
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            {{- with $headersRequestSet }}
+            set:
+              {{- range . }}
+              - name: {{ .name | quote }}
+                value: {{ .value | quote }}
+              {{- end }}
+            {{- end }}
+            {{- with $headersRequestRemove }}
+            remove:
+              {{- . | toYaml | nindent 14 }}
+            {{- end }}
+        {{- end }}
+        {{- with $headersResponseSet }}
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            set:
+              {{- range . }}
+              - name: {{ .name | quote }}
+                value: {{ .value | quote }}
+              {{- end }}
+        {{- end }}
+      {{- end }}{{- /* any headers */}}
 {{- if and $s.useCname $s.cname.tlsSecretName }}
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
