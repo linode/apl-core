@@ -13,16 +13,18 @@ bases:
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $tc := $v.teamConfig }}
+{{- $domain := ($v.cluster | get "domainSuffix" nil) }}
+{{- $gatewayName := $v.ingress.platformClass.className }}
 {{- $slackTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
+{{- $httpRoute := tpl (readFile "../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 releases:
 {{- range $teamId, $team := omit $tc "admin" }}
   {{- $teamServices := ($team | get "services" list) }}
   {{- $teamSettings := $team.settings }}
-  {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
-  {{- $alertmanagerDomain := printf "alertmanager.%s" $domain }}
-  {{- $prometheusDomain := printf "prometheus-%s.%s" $teamId $domain }}
-  {{- $grafanaDomain := printf "grafana-%s.%s" $teamId $domain }}
+  {{- $alertmanagerHostname := printf "alertmanager-%s.%s" $teamId $domain }}
+  {{- $grafanaHostname := printf "grafana-%s.%s" $teamId $domain }}
+  {{- $tektonHostname := printf "tekton-%s.%s" $teamId $domain }}
   {{- $teamApps := index $tc $teamId "apps" | default dict }}
   - name: tekton-dashboard-{{ $teamId }}
     installed: true
@@ -36,6 +38,46 @@ releases:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
       - resources:
           {{- $teamApps.tekton.resources.dashboard | toYaml | nindent 10 }}
+  - name: tekton-dashboard-{{ $teamId }}-artifacts
+    installed: true
+    namespace: team-{{ $teamId }}
+    labels:
+      tag: teams
+      team: {{ $teamId }}
+      pipeline: otomi-task-teams
+    chart: ../charts/raw
+    values:
+      - resources:
+          - apiVersion: gateway.networking.k8s.io/v1
+            kind: HTTPRoute
+            metadata:
+              {{ with $httpRoute.annotations }}
+              annotations:
+                {{ . | toYaml | nindent 16 }}
+              {{- end }}
+              name: tekton-{{ $teamId }}
+            spec:
+              hostnames:
+                - {{ $tektonHostname }}
+              parentRefs:
+                {{- $httpRoute.parentRefs | toYaml | nindent 16 }}
+              rules:
+                - backendRefs:
+                  - group: ""
+                    kind: Service
+                    name: {{ $teamId }}-tekton-dashboard
+                    port: 9097
+                  filters:
+                  - type: RequestHeaderModifier
+                    requestHeaderModifier:
+                      remove:
+                      - authorization
+                  matches:
+                  - path:
+                      type: PathPrefix
+                      value: /
+                {{- $httpRoute.authRules | toYaml | nindent 16 }}
+          - {{ tpl (readFile "../helmfile.d/snippets/authpolicy-teams.gotmpl") (dict "prefix" "tekton" "teamId" $teamId "gatewayName" $gatewayName "hostnames" (list $tektonHostname)) | indent 12 }}
   - name: prometheus-{{ $teamId }}
     installed: {{ or ($teamSettings | get "managedMonitoring.grafana" false) ($teamSettings | get "managedMonitoring.alertmanager" false) }}
     namespace: team-{{ $teamId }}
@@ -53,7 +95,7 @@ releases:
           enabled: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}
           namespaceOverride: null
           alertmanagerSpec:
-            externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
+            externalUrl: "https://{{ $alertmanagerHostname }}"
             podMetadata:
               annotations:
                 sidecar.istio.io/inject: "true"
@@ -63,6 +105,10 @@ releases:
               {{- $teamApps.alertmanager.resources | toYaml | nindent 14 }}
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $teamSettings "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
+          route:
+            main:
+              hostnames:
+                - {{ $alertmanagerHostname }}
         defaultRules:
           rules:
             general: false
@@ -86,9 +132,13 @@ releases:
                 contains(groups[*], 'platform-admin') && 'Admin' ||
                 contains(groups[*], 'team-{{ $teamId }}') && 'Editor'
             server:
-              root_url: https://grafana-{{ $teamId }}.{{ $domain }}
+              root_url: https://{{ $grafanaHostname }}
             analytics:
               reporting_enabled: false
+          route:
+            main:
+              hostnames:
+                - {{ $grafanaHostname }}
           sidecar:
             datasources:
               defaultDatasourceEnabled: false
@@ -118,6 +168,8 @@ releases:
               basicAuthUser: {{ $teamId }}
               secureJsonData:
                 basicAuthPassword: {{ $teamSettings.password | quote }}
+        extraManifests:
+          - {{ tpl (readFile "../helmfile.d/snippets/authpolicy-teams.gotmpl") (dict "prefix" "po" "teamId" $teamId "gatewayName" $gatewayName "hostnames" (list $alertmanagerHostname $grafanaHostname)) | indent 12 }}
     {{- if has "msteams" ($teamSettings | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
     installed: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}

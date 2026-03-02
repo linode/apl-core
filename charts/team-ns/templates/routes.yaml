@@ -2,9 +2,9 @@
 {{- $defaultIngressClass := $v.ingress.platformClass.className }}
 {{- range $s := $v.services }}
 {{- $isCoreService := $s.isCore | default false }}
-{{- if not (and $isCoreService (eq $v.teamId "admin")) }}
+{{- if not $isCoreService }}
 {{- $tlsPass := $s.tlsPass | default false }}
-{{- $backendName := ternary (print $v.teamId "-" $s.svc) ($s.svc | default $s.name) $isCoreService }}
+{{- $backendName := $s.svc | default $s.name }}
 {{- $backendPort := $s.port | default 80 }}
 {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
 {{- $useTrafficControl := dig "trafficControl" "enabled" false $s }}

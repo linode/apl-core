@@ -1,8 +1,8 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
-{{- $authApps := list "alertmanager" "argocd" "console" "grafana" "kubeflow-pipelines" "prometheus" "tekton" "tty" }}
-{{- $optionalApps := list "alertmanager" "grafana" "kubeflow-pipelines" "prometheus" }}
-{{- $appNames := list "console" "api" "tty" "tekton" }}
+{{- $authApps := list "argocd" "console" "kubeflow-pipelines" "tty" }}
+{{- $optionalApps := list "kubeflow-pipelines" }}
+{{- $appNames := list "console" "api" "tty" }}
 {{- $authAppNamespaces := list "argocd" "harbor" }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- range $appName := $optionalApps }}

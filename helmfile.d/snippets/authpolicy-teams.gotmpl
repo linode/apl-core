@@ -1,0 +1,26 @@
+{{ $v := . }}
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ $v.prefix }}-{{ $v.teamId }}-oauth2-proxy
+spec:
+  action: CUSTOM
+  provider:
+    name: oauth2-proxy
+  targetRefs:
+    - name: {{ $v.gatewayName }}
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  rules:
+    - when:
+        - key: request.headers[authorization]
+          notValues: ["*"]
+      to:
+        - operation:
+            hosts:
+              {{- range $hostname := $v.hostnames }}
+              - {{ $hostname }}
+              {{- end }}
+            notPaths:
+              - "/oauth2/*"
+              - "/platform-logout"
