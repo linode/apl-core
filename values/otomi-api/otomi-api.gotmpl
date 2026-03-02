@@ -7,6 +7,7 @@
 {{- $git := $v.otomi.git }}
 {{- $defaultPlatformAdminEmail := printf "platform-admin@%s" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 {{- $version := $v.versions | get "api" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $coreVersion := $v.otomi.version }}
@@ -80,3 +81,13 @@ podSecurityContext:
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
+
+httpRoute:
+  enabled: true
+  {{ with $httpRoute.annotations }}
+  annotations:
+    {{ . | toYaml | nindent 4 }}
+  {{- end }}
+  hostname: {{ printf "api.%s" $v.cluster.domainSuffix }}
+  parentRefs:
+    {{- $httpRoute.parentRefs | toYaml | nindent 4 }}

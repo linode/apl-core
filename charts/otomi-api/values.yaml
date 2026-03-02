@@ -41,6 +41,12 @@ service:
   type: ClusterIP
   port: 80
 
+httpRoute:
+  enabled: false
+  annotations: {}
+  hostname: ""
+  parentRefs: []
+
 ingress:
   enabled: false
   annotations: {}

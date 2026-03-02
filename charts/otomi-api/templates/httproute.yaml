@@ -1,17 +1,18 @@
+{{- if .Values.httpRoute.enabled }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
+  {{- with .Values.httpRoute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   name: api
   namespace: {{ .Release.Namespace }}
 spec:
   hostnames:
-    - api.{{ .Values.clusterDomainSuffix }}
+    - {{ .Values.httpRoute.hostname }}
   parentRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: platform
-      namespace: istio-system
-      sectionName: https
+    {{- toYaml .Values.httpRoute.parentRefs | nindent 4 }}
   rules:
     - backendRefs:
         - name: {{ include "otomi-api.fullname" . }}
@@ -20,3 +21,4 @@ spec:
         - path:
             type: PathPrefix
             value: /
+{{- end }}
