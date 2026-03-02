@@ -3,7 +3,7 @@
 {{- $authApps := list "argocd" "console" "kubeflow-pipelines" "tty" }}
 {{- $optionalApps := list "kubeflow-pipelines" }}
 {{- $appNames := list "tty" }}
-{{- $authAppNamespaces := list "argocd" "harbor" }}
+{{- $authAppNamespaces := list "argocd" "harbor" "monitoring" "grafana" }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- range $appName := $optionalApps }}
 {{- if dig $appName "enabled" false $a }}
@@ -96,6 +96,19 @@ resources:
   - apiVersion: gateway.networking.k8s.io/v1beta1
     kind: ReferenceGrant
     metadata:
+      name: {{ $teamId }}-oauth2-proxy-apps
+    spec:
+      from:
+        - group: gateway.networking.k8s.io
+          kind: HTTPRoute
+          namespace: team-{{ $teamId }}
+      to:
+        - group: ""
+          kind: Service
+          name: oauth2-proxy
+  - apiVersion: gateway.networking.k8s.io/v1beta1
+    kind: ReferenceGrant
+    metadata:
       name: team-{{ $teamId }}-backend-gateway
     spec:
       from:
@@ -113,7 +126,7 @@ resources:
   - apiVersion: gateway.networking.k8s.io/v1beta1
     kind: ReferenceGrant
     metadata:
-      name: oauth2-proxy-apps
+      name: platform-oauth2-proxy-apps
     spec:
       from:
         {{- range $namespace := $authAppNamespaces }}
