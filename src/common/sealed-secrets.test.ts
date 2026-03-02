@@ -375,9 +375,11 @@ describe('sealed-secrets', () => {
 
       await writeSealedSecretManifests(manifests, '/test', deps)
 
-      expect(deps.mkdir).toHaveBeenCalledWith('/test/env/manifests/ns/apl-secrets', { recursive: true })
+      expect(deps.mkdir).toHaveBeenCalledWith('/test/env/manifests/namespaces/apl-secrets/sealedsecrets', {
+        recursive: true,
+      })
       expect(deps.writeFile).toHaveBeenCalledWith(
-        '/test/env/manifests/ns/apl-secrets/harbor-secrets.yaml',
+        '/test/env/manifests/namespaces/apl-secrets/sealedsecrets/harbor-secrets.yaml',
         'yaml-content',
       )
     })

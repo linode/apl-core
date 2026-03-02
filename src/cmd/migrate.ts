@@ -709,7 +709,7 @@ const createCatalogSealedSecret = async (
       },
     },
   }
-  const sealedSecretPath = `${env.ENV_DIR}/env/manifests/namespaces/argocd/${SEALED_SECRET_NAME}.yaml`
+  const sealedSecretPath = `${env.ENV_DIR}/env/manifests/namespaces/argocd/sealedsecrets/${SEALED_SECRET_NAME}.yaml`
   mkdirSync(dirname(sealedSecretPath), { recursive: true })
   d.info(`Writing sealed secret to ${sealedSecretPath}`)
   writeFileSync(sealedSecretPath, objectToYaml(sealedSecret))
@@ -777,7 +777,7 @@ export const removeSopsArtifacts = (deps = { existsSync, rmSync, globSync, termi
     d.info(`Removed ${f}`)
   }
 
-  // Remove user YAML files — users are now managed via SealedSecrets in env/manifests/ns/apl-users/.
+  // Remove user YAML files — users are now managed via SealedSecrets in env/manifests/namespaces/apl-users/sealedsecrets.
   // These files may contain SOPS-encrypted data that was written by the "Write default values" step
   // before SOPS decryption ran, contaminating the public YAML files with ENC[...] strings.
   const userFiles = deps.globSync(`${env.ENV_DIR}/env/users/*.yaml`, { dot: false })
@@ -816,7 +816,9 @@ export const sopsMigration = async (
   // them, or the controller used its auto-generated key), re-apply them and restart
   // the controller so subsequent steps can resolve the git password.
   if (!deps.existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    const existingManifests = deps.globSync(`${env.ENV_DIR}/env/manifests/ns/**/*.yaml`, { dot: false })
+    const existingManifests = deps.globSync(`${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`, {
+      dot: false,
+    })
     if (existingManifests.length > 0) {
       const platformSecret = await deps.getK8sSecret('otomi-platform-secrets', 'apl-secrets')
       if (!platformSecret) {
@@ -830,7 +832,9 @@ export const sopsMigration = async (
   }
 
   // Secondary guard: if manifests already exist, just clean up SOPS artifacts
-  const existingManifests = deps.globSync(`${env.ENV_DIR}/env/manifests/ns/**/*.yaml`, { dot: false })
+  const existingManifests = deps.globSync(`${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`, {
+    dot: false,
+  })
   if (existingManifests.length > 0) {
     d.info('SealedSecret manifests already exist, only cleaning up SOPS artifacts')
     deps.removeSopsArtifacts()

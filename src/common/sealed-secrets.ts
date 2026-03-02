@@ -401,7 +401,7 @@ export const createSealedSecretManifest = async (
 }
 
 /**
- * Write SealedSecret manifests to the env/manifests/ns directory.
+ * Write SealedSecret manifests to the env/manifests/namespaces directory.
  */
 export const writeSealedSecretManifests = async (
   manifests: SealedSecretManifest[],
@@ -411,8 +411,7 @@ export const writeSealedSecretManifests = async (
   const d = deps.terminal(`common:${cmdName}:writeSealedSecretManifests`)
 
   for (const manifest of manifests) {
-    // /env/manifests/ns/argocd/
-    const dir = `${envDir}/env/manifests/ns/${manifest.metadata.namespace}`
+    const dir = `${envDir}/env/manifests/namespaces/${manifest.metadata.namespace}/sealedsecrets`
     await deps.mkdir(dir, { recursive: true })
     const filePath = `${dir}/${manifest.metadata.name}.yaml`
     d.info(`Writing sealed secret to ${filePath}`)
@@ -478,7 +477,7 @@ export const applySealedSecretManifests = async (
 }
 
 /**
- * Read and apply all SealedSecret manifests from the env/manifests/ns directory.
+ * Read and apply all SealedSecret manifests from the env/manifests/namespaces directory.
  * This should be called during install, after the sealed-secrets controller is deployed.
  */
 export const applySealedSecretManifestsFromDir = async (
@@ -486,7 +485,7 @@ export const applySealedSecretManifestsFromDir = async (
   deps = { terminal, readdir, readFile, existsSync },
 ): Promise<void> => {
   const d = deps.terminal(`common:${cmdName}:applySealedSecretManifestsFromDir`)
-  const manifestsDir = join(envDir, 'env/manifests/ns')
+  const manifestsDir = join(envDir, 'env/manifests/namespaces')
 
   if (!deps.existsSync(manifestsDir)) {
     d.info(`No SealedSecret manifests directory found at ${manifestsDir}`)
