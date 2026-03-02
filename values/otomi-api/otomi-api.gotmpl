@@ -91,3 +91,5 @@ httpRoute:
   hostname: {{ printf "api.%s" $v.cluster.domainSuffix }}
   parentRefs:
     {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
+  additionalRules:
+    {{- $httpRoute.authRules | toYaml | nindent 4 }}

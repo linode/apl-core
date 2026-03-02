@@ -14,6 +14,9 @@ spec:
   parentRefs:
     {{- toYaml .Values.httpRoute.parentRefs | nindent 4 }}
   rules:
+    {{- with .Values.httpRoute.additionalRules }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
     - backendRefs:
         - name: {{ include "otomi-api.fullname" . }}
           port: {{ .Values.service.port }}

@@ -37,3 +37,18 @@ httpRoute:
   hostname: {{ printf "console.%s" $v.cluster.domainSuffix }}
   parentRefs:
     {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
+  additionalRules:
+    {{- $httpRoute.authRules | toYaml | nindent 4 }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: otomi-api
+          port: 80

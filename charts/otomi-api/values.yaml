@@ -46,6 +46,7 @@ httpRoute:
   annotations: {}
   hostname: ""
   parentRefs: []
+  additionalRules: []
 
 ingress:
   enabled: false
