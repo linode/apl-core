@@ -106,22 +106,6 @@ resources:
         - group: ""
           kind: Service
           name: oauth2-proxy
-  - apiVersion: gateway.networking.k8s.io/v1beta1
-    kind: ReferenceGrant
-    metadata:
-      name: team-{{ $teamId }}-backend-gateway
-    spec:
-      from:
-        - group: gateway.networking.k8s.io
-          kind: HTTPRoute
-          namespace: team-{{ $teamId }}
-        - group: gateway.networking.k8s.io
-          kind: TLSRoute
-          namespace: team-{{ $teamId }}
-      to:
-        - group: ""
-          kind: Service
-          name: {{ $v._derived.ingressPublicGatewayName }}
   {{- end }}
   - apiVersion: gateway.networking.k8s.io/v1beta1
     kind: ReferenceGrant
