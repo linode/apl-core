@@ -1,16 +1,9 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $authApps := list "argocd" "console" "kubeflow-pipelines" "tty" }}
-{{- $optionalApps := list "kubeflow-pipelines" }}
-{{- $appNames := list "console" "tty" }}
-{{- $authAppNamespaces := list "argocd" "harbor" }}
+{{- $appNames := list "tty" }}
+{{- $authAppNamespaces := list "argocd" "harbor" "monitoring" "grafana" "kfp" }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
-{{- range $appName := $optionalApps }}
-{{- if dig $appName "enabled" false $a }}
-{{- $appNames = append $appNames $appName }}
-{{- end }}
-{{- end }}
-{{- $appNames = sortAlpha $appNames }}
 {{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
 {{- $logoutRedirectParam := printf "%s/protocol/openid-connect/logout?post_logout_redirect_uri=https://%s/oauth2/start&client_id=%s" $keycloakRealm $v._derived.consoleDomain $a.keycloak.idp.clientID }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
@@ -96,19 +89,16 @@ resources:
   - apiVersion: gateway.networking.k8s.io/v1beta1
     kind: ReferenceGrant
     metadata:
-      name: team-{{ $teamId }}-backend-gateway
+      name: {{ $teamId }}-oauth2-proxy-apps
     spec:
       from:
         - group: gateway.networking.k8s.io
           kind: HTTPRoute
           namespace: team-{{ $teamId }}
-        - group: gateway.networking.k8s.io
-          kind: TLSRoute
-          namespace: team-{{ $teamId }}
       to:
         - group: ""
           kind: Service
-          name: {{ $v._derived.ingressPublicGatewayName }}
+          name: oauth2-proxy
   {{- end }}
   - apiVersion: gateway.networking.k8s.io/v1beta1
     kind: ReferenceGrant
