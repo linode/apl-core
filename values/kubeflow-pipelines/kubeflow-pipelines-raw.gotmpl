@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $kfp := index $v.apps "kubeflow-pipelines" }}
 {{- $obj := $v.obj.provider }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 resources:
   - apiVersion: v1
     kind: Secret
@@ -22,4 +23,25 @@ resources:
       accesskey: "{{ $obj.linode.accessKeyId | b64enc }}"
       secretkey: "{{ $obj.linode.secretAccessKey | b64enc }}"
       {{- end }}
-
+  - apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    metadata:
+      {{ with $httpRoute.annotations }}
+      annotations:
+        {{ . | toYaml | nindent 8 }}
+      {{- end }}
+      name: kubeflow-pipelines
+    spec:
+      hostnames:
+        - kubeflow-pipelines.{{ $v.cluster.domainSuffix }}
+      parentRefs:
+        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
+      rules:
+        - backendRefs:
+            - name: ml-pipeline-ui
+              port: 80
+          matches:
+            - path:
+                type: PathPrefix
+                value: /
+        {{- $httpRoute.authRules | toYaml | nindent 8 }}
