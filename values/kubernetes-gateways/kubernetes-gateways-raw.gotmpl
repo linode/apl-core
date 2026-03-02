@@ -2,7 +2,7 @@
 {{- $a := $v.apps }}
 {{- $authApps := list "argocd" "console" "kubeflow-pipelines" "tty" }}
 {{- $optionalApps := list "kubeflow-pipelines" }}
-{{- $appNames := list "console" "api" "tty" }}
+{{- $appNames := list "tty" }}
 {{- $authAppNamespaces := list "argocd" "harbor" }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- range $appName := $optionalApps }}
