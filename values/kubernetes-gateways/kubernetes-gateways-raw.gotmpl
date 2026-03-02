@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $authApps := list "alertmanager" "argocd" "console" "grafana" "kubeflow-pipelines" "prometheus" "tekton" "tty" }}
-{{- $optionalApps := list "alertmanager" "grafana" "keycloak" "kubeflow-pipelines" "prometheus" }}
+{{- $optionalApps := list "alertmanager" "grafana" "kubeflow-pipelines" "prometheus" }}
 {{- $appNames := list "console" "api" "tty" "tekton" }}
 {{- $authAppNamespaces := list "argocd" "harbor" }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}

@@ -3,6 +3,7 @@
 {{- $consoleLoginVersion := $v.versions.consoleLogin}}
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
 {{- $globalPullSecret := $v.otomi | get "globalPullSecret" nil }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 
 {{ if $v.otomi.linodeLkeImageRepository }}
 image:
@@ -100,3 +101,26 @@ extraEnv: |
       secretKeyRef:
         name: keycloak-initial-admin
         key: password
+
+extraManifests:
+  - apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    metadata:
+      {{ with $httpRoute.annotations }}
+      annotations:
+        {{ . | toYaml | nindent 8 }}
+      {{- end }}
+      name: keycloak
+    spec:
+      hostnames:
+        - {{ $v._derived.keycloakDomain }}
+      parentRefs:
+        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
+      rules:
+        - backendRefs:
+            - name: keycloak-keycloakx-http
+              port: 8080
+          matches:
+            - path:
+                type: PathPrefix
+                value: /
