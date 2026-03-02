@@ -4,7 +4,7 @@
 {{- $isCoreService := $s.isCore | default false }}
 {{- if not (and $isCoreService (eq $v.teamId "admin")) }}
 {{- $tlsPass := $s.tlsPass | default false }}
-{{- $backendName := ternary (print $v.teamId "-" $s.svc) $s.svc $isCoreService }}
+{{- $backendName := ternary (print $v.teamId "-" $s.svc) ($s.svc | default $s.name) $isCoreService }}
 {{- $backendPort := $s.port | default 80 }}
 {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
 {{- $useTrafficControl := dig "trafficControl" "enabled" false $s }}
