@@ -5,6 +5,7 @@
 {{- if not (and $isCoreService (eq $v.teamId "admin")) }}
 {{- $tlsPass := $s.tlsPass | default false }}
 {{- $backendName := ternary (print $v.teamId "-" $s.svc) $s.svc $isCoreService }}
+{{- $backendPort := $s.port | default 80 }}
 {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
 {{- $useTrafficControl := dig "trafficControl" "enabled" false $s }}
 {{- $teamSuffix := ternary (print "team-" $v.teamId) $v.teamId $isKnativeService }}
@@ -38,14 +39,14 @@ spec:
     - backendRefs:
       {{- if $useTrafficControl }}
         - name: {{ $backendName }}-v1
-          port: {{ $s.port }}
+          port: {{ $backendPort }}
           weight: {{ $s.trafficControl.weightV1 }}
         - name: {{ $backendName }}-v2
-          port: {{ $s.port }}
+          port: {{ $backendPort }}
           weight: {{ $s.trafficControl.weightV2 }}
       {{- else }}
         - name: {{ $backendName }}
-          port: {{ $s.port }}
+          port: {{ $backendPort }}
       {{- end }}
       matches:
       {{- if and $s.paths (gt (len $s.paths) 0) }}
