@@ -2,6 +2,7 @@
 {{- $kfp := index $v.apps "kubeflow-pipelines" }}
 {{- $obj := $v.obj.provider }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+{{- $hostname := print "kubeflow-pipelines." $v.cluster.domainSuffix }}
 resources:
   - apiVersion: v1
     kind: Secret
@@ -33,7 +34,7 @@ resources:
       name: kubeflow-pipelines
     spec:
       hostnames:
-        - kubeflow-pipelines.{{ $v.cluster.domainSuffix }}
+        - {{ $hostname }}
       parentRefs:
         {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
       rules:
@@ -45,3 +46,4 @@ resources:
                 type: PathPrefix
                 value: /
         {{- $httpRoute.authRules | toYaml | nindent 8 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "kubeflow-pipelines" "gatewayName" $v.ingress.platformClass.className "hostnames" (list $hostname)) | nindent 4 }}

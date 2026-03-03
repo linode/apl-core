@@ -10,6 +10,10 @@ bases:
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
 {{- $a := $v.apps }}
+{{- $domain := $v.cluster.domainSuffix }}
+{{- $alertmanagerHostname := print "alertmanager." $domain }}
+{{- $grafanaHostname := print "grafana." $domain }}
+{{- $prometheusHostname := print "prometheus." $domain }}
 
 releases:
   - name: prometheus-operator-artifacts
@@ -28,5 +32,6 @@ releases:
       - ../values/prometheus-operator/prometheus-operator.gotmpl
       - {{- $a | get "prometheus._rawValues" dict | toYaml | nindent 8 }}
       - alertmanager: {{- $a | get "alertmanager._rawValues" dict | toYaml | nindent 10 }}
-      - grafana: {{- $a | get "grafana._rawValues" dict | toYaml | nindent 10 }}
-
+        grafana: {{- $a | get "grafana._rawValues" dict | toYaml | nindent 10 }}
+        extraManifests:
+          - {{ tpl (readFile "snippets/authpolicy.gotmpl") (dict "prefix" "po" "gatewayName" $v.ingress.platformClass.className "hostnames" (list $prometheusHostname $alertmanagerHostname $grafanaHostname)) | nindent 12 }}

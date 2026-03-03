@@ -1,0 +1,35 @@
+{{- $v := .Values }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+{{- $domain := $v.cluster.domainSuffix }}
+{{- $hostname := print "tekton." $domain }}
+resources:
+  - apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    metadata:
+      {{ with $httpRoute.annotations }}
+      annotations:
+        {{ . | toYaml | nindent 8 }}
+      {{- end }}
+      name: tekton-dashboard
+    spec:
+      hostnames:
+        - {{ $hostname }}
+      parentRefs:
+        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
+      rules:
+        - backendRefs:
+            - group: ""
+              kind: Service
+              name: tekton-dashboard
+              port: 9097
+          filters:
+            - type: RequestHeaderModifier
+              requestHeaderModifier:
+                remove:
+                  - authorization
+          matches:
+            - path:
+                type: PathPrefix
+                value: /
+        {{- $httpRoute.authRules | toYaml | nindent 8 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "tekton" "gatewayName" $v.ingress.platformClass.className "hostnames" (list $hostname)) | nindent 4 }}

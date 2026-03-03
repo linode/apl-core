@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
-{{- $authApps := list "argocd" "console" "kubeflow-pipelines" "tty" }}
+{{- $authApps := list "console" "tty" }}
 {{- $appNames := list "console" "api" "tty" }}
 {{- $authAppNamespaces := list "argocd" "harbor" "monitoring" "grafana" "kfp" }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
@@ -33,14 +33,6 @@ resources:
                 notPaths:
                   - "/oauth2/*"
                   - "/platform-logout"
-            - operation:
-                hosts:
-                  - {{ $v._derived.harborDomain }}
-                notPaths:
-                  - "/oauth2/*"
-                  - "/platform-logout"
-                  - "/v2/*"
-                  - "/c/*"
   - apiVersion: security.istio.io/v1
     kind: AuthorizationPolicy
     metadata:
