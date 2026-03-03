@@ -2,7 +2,7 @@
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
-  name: {{ $v.prefix }}-{{ $v.teamId }}-oauth2-proxy
+  name: {{ $v.prefix }}-oauth2-proxy
 spec:
   action: CUSTOM
   provider:
@@ -24,3 +24,6 @@ spec:
             notPaths:
               - "/oauth2/*"
               - "/platform-logout"
+            {{- range $path := ($v | get "exclusionPaths" list) }}
+              - {{ $path | quote }}
+            {{- end }}

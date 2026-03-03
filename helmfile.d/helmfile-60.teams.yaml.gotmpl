@@ -77,7 +77,7 @@ releases:
                       type: PathPrefix
                       value: /
                 {{- $httpRoute.authRules | toYaml | nindent 16 }}
-          - {{ tpl (readFile "../helmfile.d/snippets/authpolicy-teams.gotmpl") (dict "prefix" "tekton" "teamId" $teamId "gatewayName" $gatewayName "hostnames" (list $tektonHostname)) | indent 12 }}
+          - {{ tpl (readFile "../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" (print "tekton-" $teamId) "gatewayName" $gatewayName "hostnames" (list $tektonHostname)) | nindent 12 }}
   - name: prometheus-{{ $teamId }}
     installed: {{ or ($teamSettings | get "managedMonitoring.grafana" false) ($teamSettings | get "managedMonitoring.alertmanager" false) }}
     namespace: team-{{ $teamId }}
@@ -169,7 +169,7 @@ releases:
               secureJsonData:
                 basicAuthPassword: {{ $teamSettings.password | quote }}
         extraManifests:
-          - {{ tpl (readFile "../helmfile.d/snippets/authpolicy-teams.gotmpl") (dict "prefix" "po" "teamId" $teamId "gatewayName" $gatewayName "hostnames" (list $alertmanagerHostname $grafanaHostname)) | indent 12 }}
+          - {{ tpl (readFile "../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" (print "po-" $teamId) "gatewayName" $gatewayName "hostnames" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}
     {{- if has "msteams" ($teamSettings | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
     installed: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}

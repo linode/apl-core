@@ -2,12 +2,13 @@
 {{- $a := $v.apps.argocd }}
 {{- $k := $v.apps.keycloak }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+{{- $hostname := print "argocd." $v.cluster.domainSuffix }}
 global:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/argoproj/argocd"
   {{- end }}
-  domain: argocd.{{ $v.cluster.domainSuffix }}
+  domain: {{ $hostname }}
   {{- with $v.otomi | get "nodeSelector" nil }}
   nodeSelector:
     {{- range $key, $val := . }}
@@ -87,7 +88,7 @@ server:
     parentRefs:
       {{- $httpRoute.parentRefs | toYaml | nindent 6 }}
     hostnames:
-      - {{ print "argocd." $v.cluster.domainSuffix }}
+      - {{ $hostname }}
 
 configs:
   # General Argo CD configuration
@@ -98,7 +99,7 @@ configs:
     application.resourceTrackingMethod: annotation
     ga.anonymizeusers: "false"
     statusbadge.enabled: "false"
-    url: https://argocd.{{ $v.cluster.domainSuffix }}
+    url: https://{{ $hostname }}
     users.anonymous.enabled: "false"
     # Note that the clientSecret is not actually used
     # as for now oauth2-proxy handles the login
@@ -254,7 +255,7 @@ extraObjects:
       name: argocd-auth-redirects
     spec:
       hostnames:
-        - {{ print "argocd." $v.cluster.domainSuffix }}
+        - {{ $hostname }}
       parentRefs:
         {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
       rules:
@@ -281,3 +282,4 @@ extraObjects:
                   type: ReplaceFullPath
                   replaceFullPath: /platform-logout
                 statusCode: 302
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "argocd" "gatewayName" $v.ingress.platformClass.className "hostnames" (list $hostname)) | nindent 4 }}
