@@ -696,7 +696,7 @@ const createCatalogSealedSecret = async (
       },
     },
   }
-  const sealedSecretPath = `${env.ENV_DIR}/env/manifests/namespaces/argocd/${SEALED_SECRET_NAME}.yaml`
+  const sealedSecretPath = `${env.ENV_DIR}/env/manifests/namespaces/argocd/sealedsecrets/${SEALED_SECRET_NAME}.yaml`
   mkdirSync(dirname(sealedSecretPath), { recursive: true })
   d.info(`Writing sealed secret to ${sealedSecretPath}`)
   writeFileSync(sealedSecretPath, objectToYaml(sealedSecret))
