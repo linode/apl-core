@@ -2,7 +2,7 @@
 {{- $a := $v.apps }}
 {{- $authApps := list "console" "tty" }}
 {{- $appNames := list "tty" }}
-{{- $authAppNamespaces := list "argocd" "harbor" "monitoring" "grafana" "kfp" "otomi" }}
+{{- $authAppNamespaces := list "argocd" "harbor" "monitoring" "grafana" "kfp" "otomi" "tekton-pipelines"}}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
 {{- $logoutRedirectParam := printf "%s/protocol/openid-connect/logout?post_logout_redirect_uri=https://%s/oauth2/start&client_id=%s" $keycloakRealm $v._derived.consoleDomain $a.keycloak.idp.clientID }}
