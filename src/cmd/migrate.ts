@@ -737,8 +737,7 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
 
 const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('addLinodeNBAnnotations')
-  const cluster = await loadYaml(`${env.ENV_DIR}/env/settings/cluster.yaml`, { noError: true })
-  if (cluster?.spec?.provider !== 'linode') {
+  if (values?.cluster?.provider !== 'linode') {
     d.info('Skipping Linode NodeBalancer annotation migration: provider is not linode')
     return
   }
