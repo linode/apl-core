@@ -1,7 +1,9 @@
 {{- $v := .Values }}
 {{- range $gateway := $v.gateways }}
+{{- $serviceType := $gateway | dig "annotations" "networking.istio.io/service-type" "LoadBalancer" }}
+{{- if eq $serviceType "LoadBalancer" }}
 {{- range $listener := $gateway.listeners }}
-{{- if eq $listener.protocol "HTTP" }}
+{{- if and (eq $listener.protocol "HTTP") $listener.hostname }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -21,6 +23,7 @@ spec:
           requestRedirect:
             scheme: https
             statusCode: 301
-{{- end }}{{/* eq $listener.protocol "HTTP" */}}
+{{- end }}{{/* eq and ($listener.protocol "HTTP" ...) */}}
 {{- end }}{{/* range $listener */}}
+{{- end }}{{/* range eq $serviceType "LoadBalancer" */}}
 {{- end }}{{/* range $gateway */}}
