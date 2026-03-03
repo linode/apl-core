@@ -820,11 +820,15 @@ export const sopsMigration = async (
       dot: false,
     })
     if (existingManifests.length > 0) {
-      const platformSecret = await deps.getK8sSecret('otomi-platform-secrets', 'apl-secrets')
-      if (!platformSecret) {
-        d.info('SealedSecret manifests exist but K8s Secrets are missing — re-applying and restarting controller')
-        await deps.applySealedSecretManifestsFromDir(env.ENV_DIR)
-        await deps.restartSealedSecretsController()
+      try {
+        const platformSecret = await deps.getK8sSecret('otomi-platform-secrets', 'apl-secrets')
+        if (!platformSecret) {
+          d.info('SealedSecret manifests exist but K8s Secrets are missing — re-applying and restarting controller')
+          await deps.applySealedSecretManifestsFromDir(env.ENV_DIR)
+          await deps.restartSealedSecretsController()
+        }
+      } catch {
+        d.info('Could not reach K8s API to check secrets, skipping re-apply')
       }
     }
     d.info('No .sops.yaml found, skipping SOPS migration')
