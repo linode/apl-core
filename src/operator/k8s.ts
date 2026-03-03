@@ -1,4 +1,5 @@
 import { ApiException, CoreV1Api, KubeConfig } from '@kubernetes/client-node'
+import { writeFileSync } from 'fs'
 import { APL_OPERATOR_NS } from '../common/constants'
 import { terminal } from '../common/debug'
 import { getErrorMessage } from './utils'
@@ -72,6 +73,7 @@ export async function updateApplyState(
     }
 
     d.info(`Apply state updated for commit ${state.commitHash}`)
+    writeFileSync('/tmp/heartbeat', '')
   } catch (error) {
     d.error('Failed to update apply state:', getErrorMessage(error))
   }

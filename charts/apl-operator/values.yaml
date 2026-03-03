@@ -48,12 +48,6 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-watchdog:
-  image:
-    repository: curlimages/curl
-    tag: 8.18.0
-  resources: {}
-
 
 
 nodeSelector: {}

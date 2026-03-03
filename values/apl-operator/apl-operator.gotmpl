@@ -27,8 +27,3 @@ git:
   repoUrl: {{ $v.otomi.git.repoUrl | quote }}
   branch: {{ $v.otomi.git.branch | quote }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
-watchdog:
-  image:
-    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/curlimages/curl"
-{{- end }}
