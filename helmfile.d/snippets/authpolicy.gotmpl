@@ -3,6 +3,7 @@ apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: {{ $v.prefix }}-oauth2-proxy
+  namespace: istio-system
 spec:
   action: CUSTOM
   provider:
