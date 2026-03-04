@@ -1,7 +1,9 @@
 annotations:
   artifacthub.io/changes: |
+    - kind: fixed
+      description: Align timeout.reconciliation default with upstream (180s -> 120s)
     - kind: added
-      description: Added support for custom statefulset labels
+      description: Add timeout.reconciliation.jitter config default (60s)
   artifacthub.io/signKey: |
     fingerprint: 2B8F22F57260EFA67BE1C5824B11F800CD9D2252
     url: https://argoproj.github.io/argo-helm/pgp_keys.asc
@@ -28,4 +30,4 @@ name: argo-cd
 sources:
 - https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd
 - https://github.com/argoproj/argo-cd
-version: 9.4.6
+version: 9.4.7
