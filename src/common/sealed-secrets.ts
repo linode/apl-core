@@ -463,24 +463,25 @@ export const applySealedSecretManifests = async (
 /**
  * Read and apply all SealedSecret manifests from the env/manifests/namespaces directory.
  * This should be called during install, after the sealed-secrets controller is deployed.
+ * Returns the list of applied secrets (namespace + secretName) so callers can wait for them.
  */
 export const applySealedSecretManifestsFromDir = async (
   envDir: string,
   deps = { terminal, readdir, readFile, existsSync },
-): Promise<void> => {
+): Promise<{ namespace: string; secretName: string }[]> => {
   const d = deps.terminal(`common:${cmdName}:applySealedSecretManifestsFromDir`)
   const manifestsDir = join(envDir, 'env/manifests/namespaces')
 
   if (!deps.existsSync(manifestsDir)) {
     d.info(`No SealedSecret manifests directory found at ${manifestsDir}`)
-    return
+    return []
   }
 
   d.info(`Applying SealedSecret manifests from ${manifestsDir}`)
 
   // Read all namespace directories
   const namespaces = await deps.readdir(manifestsDir, { withFileTypes: true })
-  let appliedCount = 0
+  const appliedSecrets: { namespace: string; secretName: string }[] = []
 
   for (const nsEntry of namespaces) {
     if (!nsEntry.isDirectory()) continue
@@ -510,7 +511,7 @@ export const applySealedSecretManifestsFromDir = async (
             plural: 'sealedsecrets',
             body: manifest,
           })
-          appliedCount += 1
+          appliedSecrets.push({ namespace, secretName: manifest.metadata.name })
         } catch (error) {
           if (error instanceof ApiException && error.code === 409) {
             try {
@@ -525,7 +526,7 @@ export const applySealedSecretManifestsFromDir = async (
                 },
                 setHeaderOptions('Content-Type', PatchStrategy.MergePatch),
               )
-              appliedCount += 1
+              appliedSecrets.push({ namespace, secretName: manifest.metadata.name })
             } catch (patchError) {
               d.error(`Failed to patch SealedSecret from ${filePath}: ${patchError}`)
             }
@@ -539,7 +540,8 @@ export const applySealedSecretManifestsFromDir = async (
     }
   }
 
-  d.info(`Applied ${appliedCount} SealedSecret manifests from directory`)
+  d.info(`Applied ${appliedSecrets.length} SealedSecret manifests from directory`)
+  return appliedSecrets
 }
 
 /**

@@ -59,15 +59,13 @@ jest.mock('zx', () => {
 })
 
 jest.mock('src/common/sealed-secrets', () => ({
-  applySealedSecretManifestsFromDir: jest.fn().mockResolvedValue(undefined),
+  applySealedSecretManifestsFromDir: jest.fn().mockResolvedValue([]),
   restartSealedSecretsController: jest.fn().mockResolvedValue(undefined),
-  SECRET_NAME_MAP: {},
 }))
 
 jest.mock('src/common/utils', () => ({
   ...jest.requireActual('src/common/utils'),
   rootDir: '/test/root',
-  getSchemaSecretsPaths: jest.fn().mockResolvedValue([]),
 }))
 
 jest.mock('./commit', () => ({

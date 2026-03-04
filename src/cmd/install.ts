@@ -17,12 +17,8 @@ import {
   setDeploymentState,
   waitForCRD,
 } from 'src/common/k8s'
-import {
-  applySealedSecretManifestsFromDir,
-  restartSealedSecretsController,
-  SECRET_NAME_MAP,
-} from 'src/common/sealed-secrets'
-import { getFilename, getSchemaSecretsPaths, rootDir } from 'src/common/utils'
+import { applySealedSecretManifestsFromDir, restartSealedSecretsController } from 'src/common/sealed-secrets'
+import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
@@ -63,46 +59,36 @@ const retryInstallStep = async <T, Args extends any[]>(
 
 /**
  * Wait for SealedSecrets controller to decrypt SealedSecret resources into K8s Secrets.
- * Derives the expected secret names from schema x-secret fields + SECRET_NAME_MAP.
+ * Takes the list of applied secrets from applySealedSecretManifestsFromDir.
  */
 const waitForSealedSecrets = async (
+  appliedSecrets: { namespace: string; secretName: string }[],
   timeoutMs = 120000,
   intervalMs = 3000,
-  deps = { getK8sSecret, terminal, getSchemaSecretsPaths },
+  deps = { getK8sSecret, terminal },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:waitForSealedSecrets`)
 
-  // Get all x-secret paths from schema and map them to K8s secret names
-  const secretPaths = await deps.getSchemaSecretsPaths([])
-  const sortedPrefixes = Object.keys(SECRET_NAME_MAP).sort((a, b) => b.length - a.length)
-  const secretNames = new Set<string>()
-  for (const path of secretPaths) {
-    for (const prefix of sortedPrefixes) {
-      if (path === prefix || path.startsWith(`${prefix}.`)) {
-        secretNames.add(SECRET_NAME_MAP[prefix])
-        break
-      }
-    }
-  }
-
-  if (secretNames.size === 0) {
+  if (appliedSecrets.length === 0) {
     d.info('No sealed secrets to wait for')
     return
   }
 
-  d.info(`Waiting for ${secretNames.size} sealed secrets to be decrypted: ${[...secretNames].join(', ')}`)
+  d.info(
+    `Waiting for ${appliedSecrets.length} sealed secrets to be decrypted: ${appliedSecrets.map((s) => s.secretName).join(', ')}`,
+  )
 
   await retry(
     async () => {
       const pending: string[] = []
-      for (const secretName of secretNames) {
+      for (const { namespace, secretName } of appliedSecrets) {
         try {
-          const secret = await deps.getK8sSecret(secretName, 'apl-secrets')
+          const secret = await deps.getK8sSecret(secretName, namespace)
           if (!secret) {
-            pending.push(secretName)
+            pending.push(`${namespace}/${secretName}`)
           }
         } catch {
-          pending.push(secretName)
+          pending.push(`${namespace}/${secretName}`)
         }
       }
 
@@ -172,13 +158,13 @@ export const installAll = async () => {
   await retryInstallStep(waitForCRD, 'sealedsecrets.bitnami.com')
 
   d.info('Applying SealedSecret manifests')
-  await applySealedSecretManifestsFromDir(env.ENV_DIR)
+  const appliedSecrets = await applySealedSecretManifestsFromDir(env.ENV_DIR)
 
   d.info('Restarting sealed-secrets controller')
   await restartSealedSecretsController()
 
   d.info('Waiting for sealed secrets to be decrypted into K8s Secrets')
-  await waitForSealedSecrets()
+  await waitForSealedSecrets(appliedSecrets)
 
   // Deploy ESO (External Secrets Operator)
   d.info('Deploying external-secrets operator')
