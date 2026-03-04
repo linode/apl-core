@@ -214,7 +214,7 @@ env:
 extraVolumes:
 - name: google-service-account
   secret:
-    secretName: GOOGLE-DNS
+    secretName: google-dns
 extraVolumeMounts:
 - name: google-service-account
   mountPath: /etc/secrets/service-account

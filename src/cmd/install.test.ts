@@ -61,7 +61,7 @@ jest.mock('zx', () => {
 jest.mock('src/common/sealed-secrets', () => ({
   applySealedSecretManifestsFromDir: jest.fn().mockResolvedValue(undefined),
   restartSealedSecretsController: jest.fn().mockResolvedValue(undefined),
-  buildSecretToNamespaceMap: jest.fn().mockResolvedValue([]),
+  SECRET_NAME_MAP: {},
 }))
 
 jest.mock('src/common/utils', () => ({
@@ -281,32 +281,28 @@ describe('Install command', () => {
   })
 
   describe('error handling', () => {
-    test('should handle deployment state errors', async () => {
-      const error = new Error('Failed to get deployment state')
-      mockDeps.getDeploymentState.mockRejectedValueOnce(error)
+    test('should throw on deployment state errors', async () => {
+      mockDeps.getDeploymentState.mockRejectedValueOnce(new Error('Failed to get deployment state'))
 
-      expect(mockDeps.getDeploymentState).toBeDefined()
+      await expect(installAll()).rejects.toThrow('Failed to get deployment state')
     })
 
-    test('should handle image tag retrieval errors', async () => {
-      const error = new Error('Failed to get image tag')
-      mockDeps.getImageTagFromValues.mockRejectedValueOnce(error)
+    test('should throw on image tag retrieval errors', async () => {
+      mockDeps.getImageTagFromValues.mockRejectedValueOnce(new Error('Failed to get image tag'))
 
-      expect(mockDeps.getImageTagFromValues).toBeDefined()
+      await expect(installAll()).rejects.toThrow('Failed to get image tag')
     })
 
-    test('should handle helmfile errors', async () => {
-      const error = new Error('Helmfile execution failed')
-      mockDeps.hf.mockRejectedValueOnce(error)
+    test('should throw on helmfile errors during sealed-secrets deploy', async () => {
+      mockDeps.hf.mockRejectedValueOnce(new Error('Helmfile execution failed'))
 
-      expect(mockDeps.hf).toBeDefined()
+      await expect(installAll()).rejects.toThrow('Helmfile execution failed')
     })
 
-    test('should handle CRDs deployment errors', async () => {
-      const error = new Error('CRDs deployment failed')
-      mockDeps.applyServerSide.mockRejectedValueOnce(error)
+    test('should throw on essential deployment failure', async () => {
+      mockDeps.deployEssential.mockResolvedValueOnce(false)
 
-      expect(mockDeps.applyServerSide).toBeDefined()
+      await expect(installAll()).rejects.toThrow('Failed to deploy essential manifests')
     })
   })
 })

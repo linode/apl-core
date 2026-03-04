@@ -1,14 +1,17 @@
 import { pki } from 'node-forge'
 import stubs from 'src/test-stubs'
 import {
-  APP_NAMESPACE_MAP,
+  applySealedSecretManifests,
   bootstrapSealedSecrets,
   buildSecretToNamespaceMap,
   createSealedSecretManifest,
   createSealedSecretsKeySecret,
+  createUserSealedSecretManifests,
   generateSealedSecretsKeyPair,
   getPemFromCertificate,
+  restartSealedSecretsController,
   SECRET_NAME_MAP,
+  SealedSecretManifest,
   stripAllSecrets,
   writeSealedSecretManifests,
 } from './sealed-secrets'
@@ -499,18 +502,6 @@ describe('sealed-secrets', () => {
     })
   })
 
-  describe('APP_NAMESPACE_MAP', () => {
-    it('should have expected mappings', () => {
-      expect(APP_NAMESPACE_MAP['apps.harbor']).toBe('harbor')
-      expect(APP_NAMESPACE_MAP['apps.gitea']).toBe('gitea')
-      expect(APP_NAMESPACE_MAP['apps.oauth2-proxy']).toBe('istio-system')
-      expect(APP_NAMESPACE_MAP['apps.loki']).toBe('monitoring')
-      expect(APP_NAMESPACE_MAP['otomi']).toBe('otomi')
-      expect(APP_NAMESPACE_MAP['dns']).toBe('external-dns')
-      expect(APP_NAMESPACE_MAP['cluster']).toBe('cert-manager')
-    })
-  })
-
   describe('SECRET_NAME_MAP', () => {
     it('should have expected secret name mappings', () => {
       expect(SECRET_NAME_MAP['apps.harbor']).toBe('harbor-secrets')
@@ -553,6 +544,90 @@ describe('sealed-secrets', () => {
       stripAllSecrets(values, secretPaths)
 
       expect(values.apps.gitea.adminPassword).toBe('secret')
+    })
+  })
+
+  describe('applySealedSecretManifests', () => {
+    const makeMockManifest = (name: string, namespace: string): SealedSecretManifest => ({
+      apiVersion: 'bitnami.com/v1alpha1',
+      kind: 'SealedSecret',
+      metadata: {
+        annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+        name,
+        namespace,
+      },
+      spec: {
+        encryptedData: { key: 'encrypted-value' },
+        template: {
+          immutable: false,
+          metadata: { name, namespace },
+          type: 'kubernetes.io/opaque',
+        },
+      },
+    })
+
+    it('should apply manifests successfully', async () => {
+      const manifests = [makeMockManifest('test-secret', 'apl-secrets')]
+
+      await applySealedSecretManifests(manifests, { terminal })
+
+      const { k8s: mockK8s } = require('src/common/k8s')
+      expect(mockK8s.custom().createNamespacedCustomObject).toHaveBeenCalled()
+    })
+
+    it('should log error when manifests fail to apply', async () => {
+      const { k8s: mockK8s } = require('src/common/k8s')
+      mockK8s.custom().createNamespacedCustomObject.mockRejectedValueOnce(new Error('apply failed'))
+
+      const manifests = [makeMockManifest('test-secret', 'apl-secrets')]
+
+      await applySealedSecretManifests(manifests, { terminal })
+      // Should not throw, just log the error
+    })
+  })
+
+  describe('restartSealedSecretsController', () => {
+    it('should succeed when deployment rolls out quickly', async () => {
+      const { k8s: mockK8s } = require('src/common/k8s')
+      // Mock deployment that is already ready
+      mockK8s.app().readNamespacedDeployment.mockResolvedValue({
+        spec: { replicas: 1 },
+        status: { updatedReplicas: 1, availableReplicas: 1 },
+      })
+
+      await restartSealedSecretsController({ terminal })
+
+      expect(mockK8s.app().patchNamespacedDeployment).toHaveBeenCalled()
+    })
+  })
+
+  describe('createUserSealedSecretManifests', () => {
+    it('should create individual SealedSecret for each user', async () => {
+      const users = [
+        { name: 'user1', email: 'user1@test.com', firstName: 'User', lastName: 'One', initialPassword: 'pass1' },
+        { name: 'user2', email: 'user2@test.com', firstName: 'User', lastName: 'Two', initialPassword: 'pass2' },
+      ]
+
+      const manifests = await createUserSealedSecretManifests(users, 'pem-data', {
+        encryptSecretItem: jest.fn().mockResolvedValue('encrypted'),
+        terminal,
+      })
+
+      expect(manifests).toHaveLength(2)
+      expect(manifests[0].metadata.name).toBe('user1')
+      expect(manifests[0].metadata.namespace).toBe('apl-users')
+      expect(manifests[1].metadata.name).toBe('user2')
+    })
+
+    it('should skip users without id/name', async () => {
+      const users = [{ email: 'noname@test.com' }]
+
+      const manifests = await createUserSealedSecretManifests(users, 'pem-data', {
+        encryptSecretItem: jest.fn().mockResolvedValue('encrypted'),
+        terminal,
+      })
+
+      expect(manifests).toHaveLength(0)
     })
   })
 })

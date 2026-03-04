@@ -121,6 +121,8 @@ releases:
               url: http://loki-query-frontend-headless.monitoring:3101
               basicAuth: true
               basicAuthUser: {{ $teamId }}
+              secureJsonData:
+                basicAuthPassword: $__env{GF_LOKI_BASIC_AUTH_PASSWORD}
     {{- if has "msteams" ($teamSettings | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
     installed: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}
@@ -179,6 +181,7 @@ releases:
       pipeline: otomi-task-teams
     values:
       - resources:
+        {{- if $teamSettings | get "managedMonitoring.grafana" false }}
         - apiVersion: external-secrets.io/v1beta1
           kind: ExternalSecret
           metadata:
@@ -202,6 +205,54 @@ releases:
                 remoteRef:
                   key: team-{{ $teamId }}-settings-secrets
                   property: settings_password
+        {{- end }}
+        {{- if $teamSettings | get "managedMonitoring.grafana" false }}
+        - apiVersion: external-secrets.io/v1beta1
+          kind: ExternalSecret
+          metadata:
+            name: grafana-oidc-secret
+            namespace: team-{{ $teamId }}
+          spec:
+            refreshInterval: 1h
+            secretStoreRef:
+              name: core-secrets-store
+              kind: ClusterSecretStore
+            target:
+              name: grafana-oidc-secret
+              creationPolicy: Owner
+              template:
+                type: Opaque
+                data:
+                  client_id: {{ $v.apps.keycloak.idp.clientID }}
+                  client_secret: '{{ "{{ .clientSecret | toString }}" }}'
+            data:
+              - secretKey: clientSecret
+                remoteRef:
+                  key: keycloak-secrets
+                  property: idp_clientSecret
+        - apiVersion: external-secrets.io/v1beta1
+          kind: ExternalSecret
+          metadata:
+            name: grafana-loki-datasource-secret
+            namespace: team-{{ $teamId }}
+          spec:
+            refreshInterval: 1h
+            secretStoreRef:
+              name: core-secrets-store
+              kind: ClusterSecretStore
+            target:
+              name: grafana-loki-datasource-secret
+              creationPolicy: Owner
+              template:
+                type: Opaque
+                data:
+                  password: '{{ "{{ .adminPassword | toString }}" }}'
+            data:
+              - secretKey: adminPassword
+                remoteRef:
+                  key: loki-secrets
+                  property: adminPassword
+        {{- end }}
         {{- if $teamSettings | get "managedMonitoring.alertmanager" false }}
         - apiVersion: external-secrets.io/v1beta1
           kind: ExternalSecret
@@ -237,6 +288,12 @@ releases:
                 remoteRef:
                   key: smtp-secrets
                   property: auth_secret
+              {{- end }}
+              {{- if has "opsgenie" $teamReceivers }}
+              - secretKey: opsgenieApiKey
+                remoteRef:
+                  key: alerts-secrets
+                  property: opsgenie_apiKey
               {{- end }}
         {{- end }}
 {{- end }}

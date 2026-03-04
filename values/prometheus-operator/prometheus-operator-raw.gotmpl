@@ -138,4 +138,10 @@ resources:
             key: smtp-secrets
             property: auth_secret
         {{- end }}
+        {{- if has "opsgenie" $receivers }}
+        - secretKey: opsgenieApiKey
+          remoteRef:
+            key: alerts-secrets
+            property: opsgenie_apiKey
+        {{- end }}
   {{- end }}

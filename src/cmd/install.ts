@@ -19,8 +19,8 @@ import {
 } from 'src/common/k8s'
 import {
   applySealedSecretManifestsFromDir,
-  buildSecretToNamespaceMap,
   restartSealedSecretsController,
+  SECRET_NAME_MAP,
 } from 'src/common/sealed-secrets'
 import { getFilename, getSchemaSecretsPaths, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
@@ -63,48 +63,46 @@ const retryInstallStep = async <T, Args extends any[]>(
 
 /**
  * Wait for SealedSecrets controller to decrypt SealedSecret resources into K8s Secrets.
- * Derives the list of secrets to wait for from schema x-secret fields via buildSecretToNamespaceMap().
+ * Derives the expected secret names from schema x-secret fields + SECRET_NAME_MAP.
  */
 const waitForSealedSecrets = async (
   timeoutMs = 120000,
   intervalMs = 3000,
-  deps = { getK8sSecret, terminal, buildSecretToNamespaceMap, getSchemaSecretsPaths },
+  deps = { getK8sSecret, terminal, getSchemaSecretsPaths },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:waitForSealedSecrets`)
 
-  // Build list of secrets to wait for from schema-driven mappings
-  // We pass empty secrets/teams since we just need the secret names and namespaces
-  const mappings = await deps.buildSecretToNamespaceMap({}, [], undefined, {
-    getSchemaSecretsPaths: deps.getSchemaSecretsPaths,
-  })
-
-  // Deduplicate by namespace/secretName
-  const secretsToWait = new Map<string, { namespace: string; secretName: string }>()
-  for (const mapping of mappings) {
-    const key = `${mapping.namespace}/${mapping.secretName}`
-    if (!secretsToWait.has(key)) {
-      secretsToWait.set(key, { namespace: mapping.namespace, secretName: mapping.secretName })
+  // Get all x-secret paths from schema and map them to K8s secret names
+  const secretPaths = await deps.getSchemaSecretsPaths([])
+  const sortedPrefixes = Object.keys(SECRET_NAME_MAP).sort((a, b) => b.length - a.length)
+  const secretNames = new Set<string>()
+  for (const path of secretPaths) {
+    for (const prefix of sortedPrefixes) {
+      if (path === prefix || path.startsWith(`${prefix}.`)) {
+        secretNames.add(SECRET_NAME_MAP[prefix])
+        break
+      }
     }
   }
 
-  if (secretsToWait.size === 0) {
+  if (secretNames.size === 0) {
     d.info('No sealed secrets to wait for')
     return
   }
 
-  d.info(`Waiting for ${secretsToWait.size} sealed secrets to be decrypted`)
+  d.info(`Waiting for ${secretNames.size} sealed secrets to be decrypted: ${[...secretNames].join(', ')}`)
 
   await retry(
     async () => {
       const pending: string[] = []
-      for (const { namespace, secretName } of secretsToWait.values()) {
+      for (const secretName of secretNames) {
         try {
-          const secret = await deps.getK8sSecret(secretName, namespace)
+          const secret = await deps.getK8sSecret(secretName, 'apl-secrets')
           if (!secret) {
-            pending.push(`${namespace}/${secretName}`)
+            pending.push(secretName)
           }
         } catch {
-          pending.push(`${namespace}/${secretName}`)
+          pending.push(secretName)
         }
       }
 

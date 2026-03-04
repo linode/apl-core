@@ -52,30 +52,10 @@ export interface SealedSecretManifest {
 }
 
 /**
- * Mapping from secret path prefix to target Kubernetes namespace.
- * Dynamic entries like `teamConfig.{teamId}` are handled separately.
+ * All SealedSecrets are placed in the 'apl-secrets' namespace.
+ * ESO ClusterSecretStore reads from this namespace and distributes secrets to target namespaces.
  */
-export const APP_NAMESPACE_MAP: Record<string, string> = {
-  'apps.harbor': 'harbor',
-  'apps.gitea': 'gitea',
-  'apps.keycloak': 'keycloak',
-  'apps.grafana': 'grafana',
-  'apps.loki': 'monitoring',
-  'apps.oauth2-proxy': 'istio-system',
-  'apps.oauth2-proxy-redis': 'istio-system',
-  'apps.prometheus': 'monitoring',
-  'apps.otomi-api': 'otomi',
-  'apps.cert-manager': 'cert-manager',
-  'apps.kubeflow-pipelines': 'kfp',
-  otomi: 'otomi',
-  oidc: 'otomi',
-  smtp: 'otomi',
-  dns: 'external-dns',
-  obj: 'otomi',
-  license: 'otomi',
-  alerts: 'monitoring',
-  cluster: 'cert-manager',
-}
+const SEALED_SECRETS_NAMESPACE = 'apl-secrets'
 
 /**
  * Generate an RSA 4096-bit key pair and self-signed X.509 certificate for Sealed Secrets.
@@ -220,21 +200,19 @@ export const createSealedSecretsKeySecret = async (
 
 /**
  * Resolve the namespace for a given secret path.
- * All core secrets go to 'apl-secrets' namespace for ESO access.
- * APP_NAMESPACE_MAP is kept for reference but not used for SealedSecret placement.
+ * All secrets go to 'apl-secrets' namespace for ESO ClusterSecretStore access.
  */
 const resolveNamespace = (secretPath: string): string | undefined => {
   // Check for teamConfig dynamic paths
-  const teamMatch = secretPath.match(/^teamConfig\.([^.]+)/)
-  if (teamMatch) {
-    return 'apl-secrets'
+  if (secretPath.match(/^teamConfig\.[^.]+/)) {
+    return SEALED_SECRETS_NAMESPACE
   }
 
-  // Check if this path matches any known prefix
-  const sortedKeys = Object.keys(APP_NAMESPACE_MAP).sort((a, b) => b.length - a.length)
+  // Check if this path matches any known secret name prefix
+  const sortedKeys = Object.keys(SECRET_NAME_MAP).sort((a, b) => b.length - a.length)
   for (const prefix of sortedKeys) {
     if (secretPath === prefix || secretPath.startsWith(`${prefix}.`)) {
-      return 'apl-secrets'
+      return SEALED_SECRETS_NAMESPACE
     }
   }
 
@@ -355,6 +333,8 @@ export const buildSecretToNamespaceMap = async (
           groupPrefix && (flatKey === groupPrefix || flatKey.startsWith(`${groupPrefix}.`))
             ? flatKey.slice(groupPrefix.length + 1)
             : flatKey
+        // Skip empty relative paths (happens when flatKey === groupPrefix)
+        if (!relativePath) continue
         const dataKey = relativePath.replace(/\./g, '_')
         if (value !== undefined && value !== null && value !== '') {
           mapping.data[dataKey] = String(value)
@@ -455,17 +435,21 @@ export const applySealedSecretManifests = async (
         })
       } catch (error) {
         if (error instanceof ApiException && error.code === 409) {
-          await k8s.custom().patchNamespacedCustomObject(
-            {
-              group: 'bitnami.com',
-              version: 'v1alpha1',
-              namespace,
-              plural: 'sealedsecrets',
-              name: manifest.metadata.name,
-              body: manifest,
-            },
-            setHeaderOptions('Content-Type', PatchStrategy.MergePatch),
-          )
+          try {
+            await k8s.custom().patchNamespacedCustomObject(
+              {
+                group: 'bitnami.com',
+                version: 'v1alpha1',
+                namespace,
+                plural: 'sealedsecrets',
+                name: manifest.metadata.name,
+                body: manifest,
+              },
+              setHeaderOptions('Content-Type', PatchStrategy.MergePatch),
+            )
+          } catch (patchError) {
+            d.error(`Failed to patch SealedSecret ${manifest.metadata.name}: ${patchError}`)
+          }
         } else {
           d.error(`Failed to apply SealedSecret ${manifest.metadata.name}: ${error}`)
         }
@@ -529,18 +513,22 @@ export const applySealedSecretManifestsFromDir = async (
           appliedCount += 1
         } catch (error) {
           if (error instanceof ApiException && error.code === 409) {
-            await k8s.custom().patchNamespacedCustomObject(
-              {
-                group: 'bitnami.com',
-                version: 'v1alpha1',
-                namespace,
-                plural: 'sealedsecrets',
-                name: manifest.metadata.name,
-                body: manifest,
-              },
-              setHeaderOptions('Content-Type', PatchStrategy.MergePatch),
-            )
-            appliedCount += 1
+            try {
+              await k8s.custom().patchNamespacedCustomObject(
+                {
+                  group: 'bitnami.com',
+                  version: 'v1alpha1',
+                  namespace,
+                  plural: 'sealedsecrets',
+                  name: manifest.metadata.name,
+                  body: manifest,
+                },
+                setHeaderOptions('Content-Type', PatchStrategy.MergePatch),
+              )
+              appliedCount += 1
+            } catch (patchError) {
+              d.error(`Failed to patch SealedSecret from ${filePath}: ${patchError}`)
+            }
           } else {
             d.error(`Failed to apply SealedSecret from ${filePath}: ${error}`)
           }

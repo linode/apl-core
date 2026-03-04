@@ -247,6 +247,8 @@ grafana:
       {{- end }}
       basicAuth: true
       basicAuthUser: otomi-admin
+      secureJsonData:
+        basicAuthPassword: $__env{GF_LOKI_BASIC_AUTH_PASSWORD}
     {{- end }}
   {{- end }}
   admin:

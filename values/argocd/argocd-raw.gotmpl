@@ -96,6 +96,24 @@ resources:
             key: otomi-platform-secrets
             property: git_password
 {{- end }}
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: argocd-oidc-secret
+      namespace: argocd
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: argocd-secret
+        creationPolicy: Merge
+      data:
+        - secretKey: oidc.clientSecret
+          remoteRef:
+            key: keycloak-secrets
+            property: idp_clientSecret
   - apiVersion: v1
     kind: Secret
     metadata:

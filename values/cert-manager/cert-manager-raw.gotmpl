@@ -41,13 +41,7 @@ resources:
             secret: '{{ "{{ .secret | toString }}" }}'
             {{- end }}
       data:
-        - secretKey: secret
-          remoteRef:
-            key: dns-secrets
-            {{- if hasKey $p "google" }}
-            property: provider_google_serviceAccountKey
-            {{- else if hasKey $p "akamai" }}
-            property: provider_akamai_clientSecret
+        {{- if hasKey $p "akamai" }}
         - secretKey: access_token
           remoteRef:
             key: dns-secrets
@@ -60,6 +54,12 @@ resources:
           remoteRef:
             key: dns-secrets
             property: provider_akamai_clientSecret
+        {{- else }}
+        - secretKey: secret
+          remoteRef:
+            key: dns-secrets
+            {{- if hasKey $p "google" }}
+            property: provider_google_serviceAccountKey
             {{- else if hasKey $p "azure-private-dns" }}
             property: provider_azure-private-dns_aadClientSecret
             {{- else if hasKey $p "azure" }}
@@ -73,6 +73,7 @@ resources:
             {{- else if hasKey $p "linode" }}
             property: provider_linode_apiToken
             {{- end }}
+        {{- end }}
 {{- end }}
   - apiVersion: external-secrets.io/v1beta1
     kind: ExternalSecret

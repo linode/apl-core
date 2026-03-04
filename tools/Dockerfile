@@ -11,7 +11,7 @@ ARG HELM_VERSION=3.19.2
 ARG HELM_DIFF_VERSION=3.14.1
 # https://github.com/jkroepke/helm-secrets/releases
 ARG HELM_SECRETS_VERSION=4.7.4
-# https://github.com/getsops/sops/releases
+# https://github.com/mozilla/sops/releases
 ARG SOPS_VERSION=3.11.0
 # https://github.com/FiloSottile/age/releases
 ARG AGE_VERSION=1.2.1
@@ -34,9 +34,10 @@ WORKDIR /
 # Install all required packages in one layer
 RUN apt-get update && apt-get install -y \
   curl \
-  apache2-utils \
-  ca-certificates \
   coreutils \
+  apache2-utils \
+  apt-transport-https \
+  ca-certificates \
   git \
   locales \
   rsync && \
