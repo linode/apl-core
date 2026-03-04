@@ -48,6 +48,16 @@ spec:
             - secretRef:
                 name: apl-git-credentials
                 optional: true
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test $(( $(date +%s) - $(date -r /tmp/heartbeat +%s) )) -le 900"
+            initialDelaySeconds: 180
+            periodSeconds: 60
+            failureThreshold: 1
+            timeoutSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
