@@ -16,8 +16,8 @@ resources:
       template:
         type: Opaque
         data:
-          GIT_USERNAME: {{ $v.otomi.git | get "username" "otomi-admin" }}
-          GIT_PASSWORD: '{{ "{{ .git_password | toString }}" }}'
+          username: {{ $v.otomi.git | get "username" "otomi-admin" }}
+          password: '{{ "{{ .git_password | toString }}" }}'
     data:
       - secretKey: git_password
         remoteRef:
