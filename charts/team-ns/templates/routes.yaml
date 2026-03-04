@@ -2,14 +2,13 @@
 {{- $defaultIngressClass := $v.ingress.platformClass.className }}
 {{- range $s := $v.services }}
 {{- $isCoreService := $s.isCore | default false }}
-{{- if not $isCoreService }}
+{{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
+{{- if not (or $isCoreService $isKnativeService) }}
 {{- $tlsPass := $s.tlsPass | default false }}
 {{- $backendName := $s.svc | default $s.name }}
 {{- $backendPort := $s.port | default 80 }}
-{{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
 {{- $useTrafficControl := dig "trafficControl" "enabled" false $s }}
-{{- $teamSuffix := ternary (print "team-" $v.teamId) $v.teamId $isKnativeService }}
-{{- $serviceName := print $s.name "-" $teamSuffix }}
+{{- $serviceName := print $s.name "-" $v.teamId }}
 {{- $headersRequestSet := dig "headers" "request" "set" nil $s }}
 {{- $headersResponseSet := dig "headers" "response" "set" nil $s }}
 {{- $headersRequestRemove := get $s "removeRequestHeaders" | default nil }}
@@ -103,5 +102,5 @@ spec:
       kind: Secret
       name: {{ $s.cname.tlsSecretName }}
 {{- end }}{{- /* useCname and tlsSecretName */}}
-{{- end }}{{- /* $isCoreService of admin */}}
+{{- end }}{{- /* $isCoreService or $isKnativeService */}}
 {{- end }}{{- /* range services */}}
