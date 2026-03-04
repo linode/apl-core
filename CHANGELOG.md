@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.14.1](https://github.com/linode/apl-core/compare/v4.14.0...v4.14.1) (2026-03-04)
+
+
+### Others
+
+* tasks version to 3.17.0 ([e56f992](https://github.com/linode/apl-core/commit/e56f992005df6c2d0d8c18e61d67dddf8554ba5a))
+* v4.14.0 changelog update ([#2981](https://github.com/linode/apl-core/issues/2981)) ([9705cb6](https://github.com/linode/apl-core/commit/9705cb6d326e315ffb8509c5ec57ef5fd842d9ac))
+
 ## [4.14.0](https://github.com/linode/apl-core/compare/v4.13.0...v4.14.0) (2026-02-24)
 
 
