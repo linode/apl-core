@@ -3,7 +3,7 @@ import { encryptSecretItem } from '@linode/kubeseal-encrypt'
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'fs'
-import { cp, mkdir, readFile, rename as fsRename, writeFile } from 'fs/promises'
+import { cp, rename as fsRename, mkdir, readFile, writeFile } from 'fs/promises'
 import { glob, globSync } from 'glob'
 import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
 import { basename, dirname, join } from 'path'
@@ -702,6 +702,32 @@ const createCatalogSealedSecret = async (
   writeFileSync(sealedSecretPath, objectToYaml(sealedSecret))
 }
 
+// This migration changes PVCs when using Linode for gitea-valkey and oauth2-proxy-redis-server to use linode-block-storage instead of linode-block-storage-retain
+const ValkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('ValkeyAndOauth2RedisPVCMigration')
+  const giteaEnabled = values?.apps?.gitea?.enabled
+  const oauthEnabled = values?.apps?.oauth2Proxy?.enabled
+  const isLinode = values?.cluster?.provider === 'linode'
+  if (isLinode && (giteaEnabled || oauthEnabled)) {
+    d.info('Changing PVC storage class to linode-block-storage for Gitea and OAuth2 Proxy Redis Server')
+    if (giteaEnabled) {
+      // Kill the PVCs so that they get recreated with the new storage class
+      await createPostMigrationJob(
+        'gitea-pvc-migration',
+        'kubectl delete pvc -l app.kubernetes.io/name=valkey -n gitea',
+      )
+    }
+    if (oauthEnabled) {
+      await createPostMigrationJob(
+        'oauth2-proxy-redis-server-pvc-migration',
+        'kubectl delete pvc -l app=redis -n istio-system',
+      )
+    }
+  } else {
+    d.info('No need to change PVCs for Gitea and OAuth2 Proxy Redis Server')
+  }
+}
+
 const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('setDefaultAplCatalog')
   const gitea = values?.apps?.gitea as { adminUsername?: string; adminPassword?: string } | undefined
@@ -746,6 +772,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   workloadValuesMigration,
   setLokiStorageSchemaMigration,
   setDefaultAplCatalog,
+  ValkeyAndOauth2RedisPVCMigration,
 }
 
 /**
