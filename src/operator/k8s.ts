@@ -1,4 +1,5 @@
 import { ApiException, CoreV1Api, KubeConfig } from '@kubernetes/client-node'
+import { writeFileSync } from 'fs'
 import { APL_OPERATOR_NS } from '../common/constants'
 import { terminal } from '../common/debug'
 import { getErrorMessage } from './utils'
@@ -27,6 +28,15 @@ export const k8s = {
     coreClient = k8s.kc().makeApiClient(CoreV1Api)
     return coreClient
   },
+}
+
+/**
+ * Writes an empty file to /tmp/heartbeat to update its modification timestamp.
+ * Kubernetes liveness probes check this file's age to determine if the operator
+ * is still functioning — a stale or missing file will cause the probe to fail.
+ */
+export function updateHeartbeatFile(): void {
+  writeFileSync('/tmp/heartbeat', '')
 }
 
 export async function updateApplyState(
@@ -72,6 +82,7 @@ export async function updateApplyState(
     }
 
     d.info(`Apply state updated for commit ${state.commitHash}`)
+    updateHeartbeatFile()
   } catch (error) {
     d.error('Failed to update apply state:', getErrorMessage(error))
   }
