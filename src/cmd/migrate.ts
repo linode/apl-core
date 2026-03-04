@@ -557,7 +557,7 @@ async function createPostMigrationJob(name: string, script: string): Promise<voi
               serviceAccountName: 'default',
               containers: [
                 {
-                  image: 'bitnami/kubectl:1.32.4',
+                  image: 'ghcr.io/bitnami/kubectl:1.32.4',
                   name: 'kubectl',
                   command: ['/bin/bash', '-euo', 'pipefail', '-c', script],
                   resources: {
