@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- if $v.useLegacyIngress }}
 {{- $ := . }}
 {{- range $s := $v.services }}
   {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
@@ -355,4 +356,5 @@ spec:
       {{- end }}
     {{- end }}
   {{- end }}
+{{- end }}
 {{- end }}
