@@ -85,6 +85,8 @@ gateways:
         hostname: {{ $tlsListener.hostname }}
         protocol: TLS
         port: 443
+        tls:
+          mode: Passthrough
         allowedRoutes:
           namespaces:
             from: Selector
