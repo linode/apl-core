@@ -1,10 +1,25 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $oa := $v.apps | get "otomi-api" }}
+{{- $useLegacyIngress := $a | get "ingress-nginx-platform.enabled" }}
 
 # Simple per-app network policy configuration
 netpols:
   gitea: {{ $a.gitea.networkPolicies.enabled}}
   otomiApi: {{ $oa.networkPolicies.enabled}}
 
-legacyIngress: {{ $a | get "ingress-nginx-platform.enabled" }}
+ingressGatewaySelectors:
+  {{- if $useLegacyIngress }}
+  - namespaceSelector:
+      matchLabels:
+        name: istio-system
+    podSelector:
+      matchLabels:
+        app.kubernetes.io/instance: istio-ingressgateway-public
+  {{- end }}
+  - namespaceSelector:
+      matchLabels:
+        name: istio-system
+    podSelector:
+      matchLabels:
+        gateway.networking.k8s.io/gateway-name: {{ $v.ingress.platformClass.className }}
