@@ -87,7 +87,7 @@ spec:
         {{- end }}
       {{- end }}{{- /* any headers */}}
 ---
-apiVersion: networking.istio.io/v1beta1
+apiVersion: networking.istio.io/v1
 kind: ServiceEntry
 metadata:
   name: {{ $serviceName }}-internal
