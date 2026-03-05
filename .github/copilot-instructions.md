@@ -22,127 +22,26 @@ Values are loaded in a strict 3-stage pipeline (see [ADR-2021-10-18](../adr/2021
 
 All Helmfile specs in `helmfile.d/` execute alphabetically. Use reusable anchors from `helmfile.d/snippets/templates.gotmpl`:
 
-- `*default` - Standard chart deployment. Values merged: `charts/{name}/values.yaml` → `values/{name}/{name}.gotmpl` → `.Values.apps.{name}._rawValues`
-- `*raw` - Deploy additional K8s manifests (operators + CRs) from `values/{name}/{name}-raw.gotmpl`
-- `*rawCR` - Deploy custom resources using the `raw-cr` chart
-- `*jobs` - Deploy jobs to the `maintenance` namespace using `values/jobs/{name}.gotmpl`
+- Add/modify app defaults in `helmfile.d/snippets/defaults.yaml` and matching schema in `values-schema.yaml`.
+- Adapt chart input shape in `values/<app>/<app>.gotmpl` (example: `values/argocd/argocd.gotmpl`).
+- Register namespaces and platform ingress metadata in `core.yaml` (`k8s.namespaces`, `adminApps`, `teamApps`).
 
 ### Schema-Driven Validation
 
-All user-configurable parameters MUST be defined in `values-schema.yaml` (JSON Schema). Run `npm run validate-values` to validate. The schema serves as both validation and documentation.
-
-## CLI Commands & Workflow
-
-### Essential Commands
-
-```bash
-# Bootstrap a new values repo (creates $ENV_DIR with defaults)
-otomi bootstrap
-
-# Validate user configuration against schema
-otomi validate-values
-
-# Validate rendered Kubernetes manifests
-otomi validate-templates [-l name=myapp]
-
-# Render values for inspection
-otomi values
-
-# Render chart values for a specific app
-otomi x helmfile -l name=myapp write-values
-
-# Deploy all charts (or use -l name=myapp for selective deploy)
-otomi apply [-l name=myapp]
-
-# Generate diff before applying
-otomi diff [-l name=myapp]
-
-# Deploy to cluster (initial setup)
-otomi install
-```
-
-### Development Setup
-
-```bash
-# Install dependencies (helmfile, helm, kubectl, etc.)
-npm run install-deps
-
-# Run CLI locally (bypass Docker)
-export IN_DOCKER=false
-export ENV_DIR=$PWD/tests/fixtures
-export NODE_ENV=test
-
-# Compile TypeScript
-npm run compile
-
-# Run tests
-npm test
-```
-
-## Integrating a New Core App
-
-1. **Add Helm chart** to `charts/{myapp}/` (or vendor from upstream)
-2. **Create values template** at `values/{myapp}/{myapp}.gotmpl`
-3. **Define Helmfile release** in appropriate `helmfile.d/helmfile-*.yaml` file:
-   ```yaml
-   releases:
-     - name: myapp
-       installed: {{ .Values.apps.myapp.enabled }}
-       namespace: my-namespace
-       <<: *default  # or *raw, *rawCR, *jobs
-   ```
-4. **Add schema** for user-configurable properties in `values-schema.yaml` under `.definitions.apps.properties.myapp`
-5. **Configure defaults** in `helmfile.d/snippets/defaults.yaml` under `apps.myapp`
-6. **Add namespace** (if needed) to `core.yaml` at `k8s.namespaces`
-7. **Configure ingress** (if needed) in `core.yaml` at `adminApps` or `teamApps`
-
-## Docker-Based Execution
-
-The `binzx/otomi` script wraps all commands in Docker by default:
-
-- Uses `linode/apl-core:${otomi_version}` image
-- Mounts `$ENV_DIR` as `/home/app/env/`
-- Set `IN_DOCKER=false` to run locally (useful for cloud provider auth plugins)
-
-## Testing Strategy
-
-- Unit tests: `npm test` (Jest, located in `src/**/*.test.ts`)
-- Integration tests: Use fixtures in `tests/fixtures/` with `NODE_ENV=test`
-- Template validation: `otomi validate-templates` (validates all rendered manifests against K8s schemas)
-- Policy tests: `npm run test:opa` (Rego policy testing)
-
-## Key Files & Directories
-
-| Path                   | Purpose                                      |
-| ---------------------- | -------------------------------------------- |
-| `src/cmd/*.ts`         | CLI command implementations                  |
-| `helmfile.d/`          | Helmfile specs (execute alphabetically)      |
-| `helmfile.d/snippets/` | Reusable templates, defaults, derived values |
-| `charts/`              | Helm charts (vendored and custom)            |
-| `values/`              | Value templates for each chart               |
-| `values-schema.yaml`   | JSON Schema for user configuration           |
-| `core.yaml`            | Namespaces, ingress, team apps config        |
-| `binzx/otomi`          | Bash wrapper for Docker-based execution      |
-| `adr/`                 | Architectural Decision Records               |
-
-## Common Gotchas
-
-- **Helmfile labels:** Use `-l name=myapp` to select specific releases (not `-l app=myapp`)
-- **Raw values override:** Use `apps.{name}._rawValues` to override chart values not in schema (use sparingly)
-- **YAML anchors:** Search for `&anchorname` to find anchor definitions when you see `<<: *anchorname`
-- **Keycloak integration:** Use `_derived.oidcBaseUrl`, `apps.keycloak.idp.clientID/clientSecret` for SSO
-- **Untrusted CA:** Check `_derived.untrustedCA` to conditionally disable cert verification
-
-## Debugging Tips
-
-- Check deployment state: `otomi status`
-- View traces on errors: Collected automatically in `otomi apply` failures
-- Inspect Helmfile output: `otomi x helmfile -l name=myapp template`
-- Local development: Use `$PWD/tests/fixtures` as `$ENV_DIR`
-- Enable verbose logging: Add `-v` flag to any command
-
-## References
-
-- Full development guide: [docs/development.md](../docs/development.md)
-- Architectural decisions: [adr/index.md](../adr/index.md)
-- Public docs: https://techdocs.akamai.com/app-platform/docs/welcome
+- `chart/apl-operator/`: Helm chart for the apl-operator itself.
+- `chart/chart-index/Chart.yaml`: List of all 3rd charts used in the platform, used for version management and documentation.
+- `charts/`: Helm charts for applications.
+- `charts/grafana-dashboards` is a special chart that renders the dashboard ConfigMaps and is included as a dependency in the Grafana chart.
+- `helmfile.d/`: Helmfile specs and snippets for rendering manifests.
+- `src/`: TypeScript source code for the apl-operator.
+- `src/operator`: Reconciliation logic for the apl-operator, including controllers and Kubernetes API interactions.
+- `src/cmd/apply-as-apps.ts`: Core logic for rendering and applying ArgoCD applications.
+- `src/cmd/migrate.ts`: Logic for handling git data migrations during platform upgrades.
+- `src/common/runtime-upgrades/`: Logic for handling runtime platform upgrades.
+- `src/common/runtime-upgrade.ts`: Main entrypoint for runtime upgrade logic, invoked during reconciliation when a new version is detected.
+- `values/`: Helm values templates for applications.
+- `values/grafana-dashboards/grafana-dashboards.gotmpl` a way to register Grafana dashboards. Must match directory from `charts/grafana-dashboards`
+- `values-schema.yaml`: JSON schema defining valid configuration keys and types.
+- `tests/`: Test fixtures and test cases for validation.
+- `values-changes.yaml`: Data migration instructions for `src/cmd/migrate.ts`
+- `versions.yaml` pins image tags for platform components (`api`, `console`, `tasks`, `tools`).
