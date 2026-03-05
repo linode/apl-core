@@ -1,4 +1,5 @@
-import { waitTillGitRepoAvailable } from '../common/k8s'
+import { GitRepoConfig } from '../common/git-config'
+import { waitTillGitRepoAvailable } from '../common/gitea'
 import { AplOperations } from './apl-operations'
 import { AplOperator, AplOperatorConfig, ApplyTrigger } from './apl-operator'
 import { GitRepository } from './git-repository'
@@ -12,7 +13,7 @@ const mockDebugFn = jest.fn()
 const mockGitRepo = {
   clone: jest.fn().mockResolvedValue(undefined),
   syncAndAnalyzeChanges: jest.fn().mockResolvedValue({ hasChangesToApply: false, applyTeamsOnly: false }),
-  repoUrl: 'https://username:password@example.com:443/org/repo.git',
+  authenticatedUrl: 'https://username:password@example.com:443/org/repo.git',
   lastRevision: 'abc123',
 }
 
@@ -34,7 +35,7 @@ jest.mock('../common/debug', () => ({
   })),
 }))
 
-jest.mock('../common/k8s', () => ({
+jest.mock('../common/gitea', () => ({
   waitTillGitRepoAvailable: jest.fn().mockResolvedValue(undefined),
 }))
 jest.mock('../common/hf', () => ({
@@ -74,6 +75,7 @@ describe('AplOperator', () => {
     jest.clearAllMocks()
 
     defaultConfig = {
+      gitConfig: {} as GitRepoConfig,
       gitRepo: mockGitRepo as unknown as GitRepository,
       aplOps: mockAplOps as unknown as AplOperations,
       pollIntervalMs: 1,
@@ -108,7 +110,7 @@ describe('AplOperator', () => {
 
       await startPromise
 
-      expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.repoUrl)
+      expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.authenticatedUrl)
       expect(mockGitRepo.clone).toHaveBeenCalled()
 
       expect(mockInfoFn).toHaveBeenCalledWith('APL operator started successfully')
@@ -120,7 +122,7 @@ describe('AplOperator', () => {
 
       await expect(aplOperator.start()).rejects.toThrow('Start failed')
 
-      expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.repoUrl)
+      expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.authenticatedUrl)
       expect(mockGitRepo.clone).toHaveBeenCalled()
 
       expect(mockErrorFn).toHaveBeenCalledWith('Failed to start APL operator:', 'Start failed')

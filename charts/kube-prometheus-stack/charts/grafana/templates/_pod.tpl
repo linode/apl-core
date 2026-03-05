@@ -1419,7 +1419,7 @@ containers:
             key: {{ .Values.admin.passwordKey | default "admin-password" }}
       {{- end }}
       {{- if .Values.plugins }}
-      - name: GF_INSTALL_PLUGINS
+      - name: GF_PLUGINS_PREINSTALL_SYNC
         valueFrom:
           configMapKeyRef:
             name: {{ include "grafana.fullname" . }}

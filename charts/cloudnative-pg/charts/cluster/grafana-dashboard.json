@@ -276,14 +276,14 @@
             {
               "options": {
                 "0": {
-                  "color": "red",
-                  "index": 2,
-                  "text": "None"
-                },
-                "1": {
-                  "color": "orange",
+                  "color": "green",
                   "index": 1,
-                  "text": "Degraded"
+                  "text": "Healthy"
+                },
+                "-1": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "None"
                 }
               },
               "type": "value"
@@ -292,9 +292,9 @@
               "options": {
                 "from": 2,
                 "result": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "Healthy"
+                  "color": "orange",
+                  "index": 2,
+                  "text": "Degraded"
                 },
                 "to": 999
               },
@@ -345,7 +345,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "max(cnpg_pg_replication_streaming_replicas{namespace=~\"$namespace\", pod=~\"$instances\"} - cnpg_pg_replication_is_wal_receiver_up{namespace=~\"$namespace\", pod=~\"$instances\"})",
+          "expr": "(max(cnpg_pg_replication_streaming_replicas{namespace=~\"$namespace\", pod=~\"$instances\"}) - sum(cnpg_pg_replication_is_wal_receiver_up{namespace=~\"$namespace\", pod=~\"$instances\"})) + (clamp_max(max(cnpg_pg_replication_streaming_replicas{namespace=~\"$namespace\", pod=~\"$instances\"}), 1) - 1)",
           "legendFormat": "Replication",
           "range": true,
           "refId": "A"
@@ -1973,7 +1973,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Base Backups are considered healthy when there has been at least one base backup in the last 24 hours.",
+      "description": "WAL is considered Healthy when the last WAL is 0min to 6min old, Delayed when it is less than 15min and Unsynced for >15min.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2235,11 +2235,11 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum by (label_app_kubernetes_io_name) (kube_pod_status_ready{namespace=\"$operatorNamespace\"} * on (pod) group_left( label_app_kubernetes_io_name ) kube_pod_labels{label_app_kubernetes_io_name=~\"cloudnative-pg\"})",
+          "expr": "sum(kube_pod_status_ready{namespace=\"$operatorNamespace\", pod=~\"cloudnative-pg.+|cnpg-controller-manager.+\", condition=\"true\"})",
           "hide": false,
-          "instant": false,
+          "instant": true,
           "legendFormat": "Operator Status",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -2409,7 +2409,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "clamp_max(max(controller_runtime_reconcile_total{namespace=~\"$operatorNamespace\", result=\"error\", controller=\"scheduledbackup\"}), 1)",
+          "expr": "clamp_max(max(controller_runtime_reconcile_total{namespace=~\"$operatorNamespace\", result=\"error\", controller=~\"scheduledbackup|scheduled-backup\"}), 1)",
           "hide": true,
           "legendFormat": "__auto",
           "range": true,
@@ -2511,7 +2511,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Excluding cache",
+      "description": "Container memory working set",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2651,7 +2651,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "cnpg_pg_database_size_bytes{namespace=\"$namespace\"}",
+          "expr": "cnpg_pg_database_size_bytes{namespace=\"$namespace\", pod=~\"$instances\"}",
           "format": "table",
           "instant": false,
           "legendFormat": "__auto",
@@ -5218,7 +5218,7 @@
           "step": 10
         }
       ],
-      "title": "Memory Usage (w/o cache)",
+      "title": "Memory Usage (container memory working set)",
       "type": "timeseries"
     },
     {
@@ -7753,7 +7753,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "cnpg_pg_stat_bgwriter_checkpoints_req{namespace=~\"$namespace\",pod=~\"$instances\"}",
+              "expr": "{__name__=~\"cnpg_pg_stat_(bgwriter|checkpointer)_checkpoints_req\",namespace=~\"$namespace\",pod=~\"$instances\"}",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -7768,7 +7768,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "cnpg_pg_stat_bgwriter_checkpoints_timed{namespace=~\"$namespace\",pod=~\"$instances\"}",
+              "expr": "{__name__=~\"cnpg_pg_stat_(bgwriter|checkpointer)_checkpoints_timed\",namespace=~\"$namespace\",pod=~\"$instances\"}",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 1,
@@ -7867,7 +7867,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "cnpg_pg_stat_bgwriter_checkpoint_write_time{namespace=~\"$namespace\",pod=~\"$instances\"}",
+              "expr": "{__name__=~\"cnpg_pg_stat_(bgwriter_checkpoint|checkpointer)_write_time\",namespace=~\"$namespace\",pod=~\"$instances\"}",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -7882,7 +7882,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "cnpg_pg_stat_bgwriter_checkpoint_sync_time{namespace=~\"$namespace\",pod=~\"$instances\"}",
+              "expr": "{__name__=~\"cnpg_pg_stat_(bgwriter_checkpoint|checkpointer)_sync_time\",namespace=~\"$namespace\",pod=~\"$instances\"}",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 1,
@@ -7912,6 +7912,164 @@
         "w": 24,
         "x": 0,
         "y": 57
+      },
+      "id": 794,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "Show the installed extensions and their versions",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto",
+                  "wrapText": false
+                },
+                "filterable": false,
+                "inspect": false
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Update Available"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "bool"
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "options": {
+                          "0": {
+                            "color": "transparent",
+                            "index": 1
+                          },
+                          "1": {
+                            "color": "red",
+                            "index": 0
+                          }
+                        },
+                        "type": "value"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "applyToRow": true,
+                      "mode": "gradient",
+                      "type": "color-background"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 81
+          },
+          "id": 792,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": false,
+                "displayName": "Value"
+              }
+            ]
+          },
+          "pluginVersion": "11.4.0",
+          "targets": [
+            {
+              "disableTextWrap": false,
+              "exemplar": false,
+              "expr": "max(cnpg_pg_extensions_update_available{pod=~\"$instances\", namespace=~\"$namespace\"}) by (datname, extname, default_version, installed_version)",
+              "format": "table",
+              "fullMetaSearch": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "interval": "",
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "A",
+              "useBackend": false
+            }
+          ],
+          "title": "Installed extensions",
+          "transformations": [
+            {
+              "id": "sortBy",
+              "options": {
+                "fields": {},
+                "sort": [
+                  {
+                    "field": "extname"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true
+                },
+                "indexByName": {
+                  "Time": 0,
+                  "extname": 1,
+                  "datname": 2,
+                  "default_version": 3,
+                  "installed_version": 4,
+                  "Value": 5
+                },
+                "renameByName": {
+                  "default_version": "Default Version",
+                  "datname": "Database",
+                  "extname": "Extension",
+                  "installed_version": "Installed Version",
+                  "Value": "Update Available"
+                },
+                "includeByName": {}
+              }
+            }
+          ],
+          "type": "table"
+        }
+      ],
+      "title": "Extensions",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 58
       },
       "id": 696,
       "panels": [
@@ -7995,7 +8153,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(kube_pod_status_ready{namespace=\"$operatorNamespace\"} * on (pod) group_left( label_app_kubernetes_io_name ) kube_pod_labels{label_app_kubernetes_io_name=~\"cloudnative-pg\"})",
+              "expr": "sum(kube_pod_status_ready{namespace=\"$operatorNamespace\", pod=~\"cloudnative-pg.+|cnpg-controller-manager.+\", condition=\"true\"})",
               "hide": false,
               "instant": true,
               "legendFormat": "Ready Operator Pods",
@@ -8298,7 +8456,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "max(controller_runtime_reconcile_total{namespace=~\"$operatorNamespace\", result=\"error\", controller=\"scheduledbackup\"})",
+              "expr": "max(controller_runtime_reconcile_total{namespace=~\"$operatorNamespace\", result=\"error\", controller=~\"scheduledbackup|scheduled-backup\"})",
               "hide": false,
               "instant": true,
               "legendFormat": "Scheduled Backup Reconcile Errors",
@@ -8516,7 +8674,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "editorMode": "code",
-              "expr": "sum(kube_pod_status_ready{namespace=\"$operatorNamespace\"} * on (pod) group_left( label_app_kubernetes_io_name ) kube_pod_labels{label_app_kubernetes_io_name=~\"cloudnative-pg\"})",
+              "expr": "sum(kube_pod_status_ready{namespace=\"$operatorNamespace\", pod=~\"cloudnative-pg.+|cnpg-controller-manager.+\", condition=\"true\"})",
               "hide": false,
               "instant": false,
               "legendFormat": "Ready Operator Pods",
@@ -8902,7 +9060,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "max(controller_runtime_reconcile_total{namespace=~\"$operatorNamespace\", result=\"error\", controller=\"scheduledbackup\"})",
+              "expr": "max(controller_runtime_reconcile_total{namespace=~\"$operatorNamespace\", result=\"error\", controller=~\"scheduledbackup|scheduled-backup\"})",
               "hide": false,
               "instant": false,
               "legendFormat": "Scheduled Backup Reconcile Errors",
@@ -9079,7 +9237,7 @@
           "type": "prometheus",
           "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "label_values(controller_runtime_active_workers,namespace)",
+        "definition": "label_values(controller_runtime_webhook_requests_total{webhook=\"/mutate-postgresql-cnpg-io-v1-cluster\"},namespace)",
         "description": "Namespace where the CNPG operator is located",
         "hide": 0,
         "includeAll": false,
@@ -9089,7 +9247,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(controller_runtime_active_workers,namespace)",
+          "query": "label_values(controller_runtime_webhook_requests_total{webhook=\"/mutate-postgresql-cnpg-io-v1-cluster\"},namespace)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -9147,7 +9305,7 @@
         "type": "query"
       },
       {
-        "allValue": "$cluster-([1-9][0-9]*)$",
+        "allValue": "$cluster-([1-9][0-9]*)",
         "current": {},
         "datasource": {
           "type": "prometheus",

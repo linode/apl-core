@@ -3,7 +3,7 @@
 Policy Reporter watches for PolicyReport Resources.
 It creates Prometheus Metrics and can send rule validation events to different targets like Loki, Elasticsearch, Slack or Discord
 
-![Version: 3.7.1](https://img.shields.io/badge/Version-3.7.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.7.0](https://img.shields.io/badge/AppVersion-3.7.0-informational?style=flat-square)
+![Version: 3.7.2](https://img.shields.io/badge/Version-3.7.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.7.2](https://img.shields.io/badge/AppVersion-3.7.2-informational?style=flat-square)
 
 ## Documentation
 
@@ -46,6 +46,7 @@ Open `http://localhost:8082/` in your browser.
 | nameOverride | string | `""` | Override the chart name used for all resources |
 | fullnameOverride | string | `"policy-reporter"` | Overwrite the fullname of all resources |
 | namespaceOverride | string | `""` | Overwrite the namespace of all resources |
+| apiVersionOverride | object | `{"podDisruptionBudget":""}` | Overwrite apiVersion for specific resources |
 | image.registry | string | `"ghcr.io"` | Image registry |
 | image.repository | string | `"kyverno/policy-reporter"` | Image repository |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pullPolicy |
@@ -356,6 +357,9 @@ Open `http://localhost:8082/` in your browser.
 | redis.prefix | string | `"policy-reporter"` | Redis key prefix |
 | redis.username | optional | `""` | Username |
 | redis.password | optional | `""` | Password |
+| redis.certificate | optional | `""` | Path to a server CA certificate |
+| redis.secretRef | optional | `""` | Secret name to pull username and password from |
+| redis.skipTLS | bool | `false` | Skip TLS verification |
 | database.type | string | `""` | Use an external Database, supported: mysql, postgres, mariadb |
 | database.database | string | `""` | Database |
 | database.username | string | `""` | Username |

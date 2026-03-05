@@ -91,7 +91,6 @@ definitions:
       #   #   - critical
       #   #   - nonCritical
       #   type: object
-
   annotations:
     $ref: '#/definitions/labelsAnnotations'
     description: A set of annotations.
@@ -229,6 +228,35 @@ definitions:
         title: Resource group
         description: An Azure resource group.
         $ref: '#/definitions/wordCharacterPattern'
+  catalog:
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+        description: 'A lowercase name that starts with a letter and may contain dashes.'
+        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+      repositoryUrl:
+        type: string
+        description: 'Git repository URL for the catalog'
+        pattern: '^(https?|git|ssh)://.*'
+      branch:
+        type: string
+        description: 'Git branch or tag to use'
+      enabled:
+        type: boolean
+        description: 'Whether this catalog is active'
+      chartsPath:
+        type: string
+        description: 'Path within the repository where charts are located'
+        default: 'charts'
+      secretName:
+        type: string
+        description: 'Kubernetes secret name containing git credentials (for private repos)'
+        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+    required:
+      - name
+      - repositoryUrl
+      - branch
   cluster:
     additionalProperties: false
     properties:
@@ -1520,6 +1548,23 @@ definitions:
 properties:
   alerts:
     $ref: '#/definitions/alerts'
+  installation:
+    type: object
+    description: Top-level installation settings.
+    required:
+      - mode
+    additionalProperties: true
+    properties:
+      mode:
+        type: string
+        description: |
+          Installation execution mode.
+          - `standard`: runs the normal installation workflow and follows the configuration bootstrap process.
+          - `recovery`: runs recovery behavior intended to restore configuration that is stored in external git repository. It neither bootstraps nor initializes the configuration. For this mode `git` and `kms` objects are required so the operator knows how access and decrypt the data.
+        enum:
+          - recovery
+          - standard
+        default: standard
   azure:
     description: Azure specific configuration.
     properties:
@@ -1678,9 +1723,8 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          adminPassword:
-            type: string
-            x-secret: '{{ randAlphaNum 20 }}'
+          enabled:
+            type: boolean
           postgresqlPassword:
             type: string
             description: This password was generated and cannot be changed without manual intervention.
@@ -2149,30 +2193,6 @@ properties:
             type: array
           resources:
             $ref: '#/definitions/resources'
-      minio:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          resources:
-            $ref: '#/definitions/resources'
-          provisioning:
-            additionalProperties: false
-            properties:
-              enabled:
-                type: boolean
-                default: true
-          persistence:
-            properties:
-              enabled:
-                type: boolean
-                default: true
-              size:
-                $ref: '#/definitions/size'
-                default: 20Gi
       oauth2-proxy:
         additionalProperties: false
         properties:
@@ -2214,20 +2234,6 @@ properties:
           editorInactivityTimeout:
             type: integer
             default: 10
-          git:
-            additionalProperties: false
-            properties:
-              branch:
-                type: string
-              email:
-                $ref: '#/definitions/email'
-              password:
-                type: string
-                x-secret: ''
-              repoUrl:
-                $ref: '#/definitions/repoUrl'
-              user:
-                type: string
           resources:
             additionalProperties: false
             properties:
@@ -2474,6 +2480,10 @@ properties:
     patternProperties:
       '^ingress-nginx-[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
         $ref: '#/definitions/ingressNginx'
+  catalogs:
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/catalog'
   cluster:
     $ref: '#/definitions/cluster'
   dns:
@@ -2796,6 +2806,35 @@ properties:
         required:
           - username
           - password
+      git:
+        type: object
+        title: Git Configuration
+        description: |
+          Git configuration for APL values repository.
+        additionalProperties: false
+        properties:
+          repoUrl:
+            type: string
+            description: |
+              The base URL of the Git repository (without credentials). Auto-derived for internal Gitea.
+            pattern: '^https?://.+'
+          username:
+            type: string
+            description: |
+              Username for authenticating with the Git repository.
+              Defaults to 'otomi-admin' for internal Gitea.
+          password:
+            type: string
+            description: Password or token for authenticating with the Git repository
+            x-secret: '{{ randAlphaNum 20 }}'
+          email:
+            type: string
+            description: |
+              Email address to use for Git commits.
+              Defaults to 'pipeline@cluster.local' for internal Gitea.
+          branch:
+            type: string
+            description: The branch to use in the Git repository
       hasExternalDNS:
         description: Set this to true when an external dns zone is available to manage dns records. (Expects required `dns:` fields to be set.)
         default: false
@@ -2926,7 +2965,6 @@ properties:
             $ref: '#/definitions/backupRetentionPolicy'
           schedule:
             $ref: '#/definitions/backupSchedule'
-
   obj:
     properties:
       showWizard:
@@ -2978,7 +3016,6 @@ properties:
           type:
             type: string
             enum:
-              - minioLocal
               - linode
               - disabled
             default: disabled

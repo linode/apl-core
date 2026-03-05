@@ -30,12 +30,6 @@ releases:
       pkg: knative
     values:
       - ../values/knative-serving/knative-serving-cr.gotmpl
-  - name: minio
-    installed: {{ $a.minio.enabled }}
-    namespace: minio
-    labels:
-      pkg: minio
-    <<: *default
   - name: tekton-triggers
     installed: true
     namespace: tekton-pipelines

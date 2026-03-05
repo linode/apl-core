@@ -146,8 +146,8 @@ environments:
                 memory: 64Mi
                 cpu: 10m
           gitea:
-            adminUsername: otomi-admin
             _rawValues: {}
+            enabled: true
             networkPolicies:
               enabled: true
             databaseMaxConnections: 28
@@ -736,21 +736,6 @@ environments:
             apiServer:
               create: true
             _rawValues: {}
-          minio:
-            enabled: false
-            provisioning:
-              enabled: true
-            persistence:
-              enabled: true
-              size: 50Gi
-            resources:
-              requests:
-                cpu: 500m
-                memory: 128Mi
-              limits:
-                cpu: "1"
-                memory: 1Gi
-            _rawValues: {}
           oauth2-proxy:
             resources:
               limits:
@@ -1051,7 +1036,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1080,7 +1065,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1108,7 +1093,7 @@ environments:
             backupSidecarResources:
               limits:
                 cpu: "300m"
-                memory: 128Mi
+                memory: 256Mi
               requests:
                 cpu: "50m"
                 memory: 48Mi
@@ -1158,6 +1143,11 @@ environments:
           receivers:
             - none
         otomi:
+          git:
+            branch: main
+            repoUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git
+            username: otomi-admin
+            email: pipeline@cluster.local
           hasExternalDNS: false
           hasExternalIDP: false
           isMultitenant: true
@@ -1167,5 +1157,11 @@ environments:
           aiEnabled: false
         users: []
         # TODO: update this when schema version changes
+        catalogs:
+          default:
+            name: default
+            repositoryUrl: https://github.com/linode/apl-charts.git
+            branch: main
+            enabled: true
         versions:
-          specVersion: 51
+          specVersion: 55

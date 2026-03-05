@@ -1,7 +1,136 @@
-
 # Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [4.14.0](https://github.com/linode/apl-core/compare/v4.13.0...v4.14.0) (2026-02-24)
+
+
+### Features
+
+* add jwt verification for api ([#2800](https://github.com/linode/apl-core/issues/2800)) ([4134d12](https://github.com/linode/apl-core/commit/4134d122ee50130d6cf5aa1c9a6d59059dcb9935))
+* adding k8s v1.35 support ([#2862](https://github.com/linode/apl-core/issues/2862)) ([93980e9](https://github.com/linode/apl-core/commit/93980e99a14b16dac8cd002a8d9ddf1615de7f9e))
+* custom kubernetes manifest in the values repo ([#2893](https://github.com/linode/apl-core/issues/2893)) ([0a3cf8d](https://github.com/linode/apl-core/commit/0a3cf8da4e2c4d4e93cf8746a614a4a5ef9b22fc))
+* deploy secrets as secretRef in chart values ([#2805](https://github.com/linode/apl-core/issues/2805)) ([b8c16dd](https://github.com/linode/apl-core/commit/b8c16dd58e45bc31ec3642d389d10777b8da8f7f))
+* make platform db connection pooling configurable ([#2730](https://github.com/linode/apl-core/issues/2730)) ([41187a2](https://github.com/linode/apl-core/commit/41187a278459747e79e36426b063ddfe1baf2391))
+* optimize helm chart values for the argocd sync ([#2863](https://github.com/linode/apl-core/issues/2863)) ([f135fb4](https://github.com/linode/apl-core/commit/f135fb4ceee1606ff3dc3d5d27d1a72ba1ccea46))
+* remove tempo app ([#2870](https://github.com/linode/apl-core/issues/2870)) ([ed0f77d](https://github.com/linode/apl-core/commit/ed0f77dba74dcfd465ef7766e777a66e9a5748bb))
+* replace Promtail with OpenTelemetry collector ([#2784](https://github.com/linode/apl-core/issues/2784)) ([6440cd9](https://github.com/linode/apl-core/commit/6440cd92fb12ca36529ab4e1719ce7661ff9a853))
+* run traces command every 5 minutes for 30 minutes ([#2876](https://github.com/linode/apl-core/issues/2876)) ([59a554d](https://github.com/linode/apl-core/commit/59a554dbaf08b5758c717df1254fe92ee8c7492a))
+* updated helloworld image to point to linode org ([#2783](https://github.com/linode/apl-core/issues/2783)) ([1003005](https://github.com/linode/apl-core/commit/1003005cc3c405f67fd4c76730a4ebd17e11560b))
+
+
+### Bug Fixes
+
+* adding tekton-pipeline labels to match chart-created ns ([#2801](https://github.com/linode/apl-core/issues/2801)) ([77f3b22](https://github.com/linode/apl-core/commit/77f3b2249438d54e696f2d1ecf22c92e66a30327))
+* attempt to migrate values on every operator cycle ([#2807](https://github.com/linode/apl-core/issues/2807)) ([9e240c7](https://github.com/linode/apl-core/commit/9e240c74729c99664d27149640612eaa3e08c322))
+* buildpacks using ORCS ([#2935](https://github.com/linode/apl-core/issues/2935)) ([88deccf](https://github.com/linode/apl-core/commit/88deccf9a0dd1be7890329f763d2799954c2829d))
+* condition syntax ([#2887](https://github.com/linode/apl-core/issues/2887)) ([ded886a](https://github.com/linode/apl-core/commit/ded886a14a11562247c9475759d67d49115588ca))
+* core tag in api deployment ([#2767](https://github.com/linode/apl-core/issues/2767)) ([710d520](https://github.com/linode/apl-core/commit/710d520fe7a4c27a0c21ec2c5e156783cb59f674))
+* disabling tekton-pipeline redundant ns creation ([#2781](https://github.com/linode/apl-core/issues/2781)) ([ce40d93](https://github.com/linode/apl-core/commit/ce40d9310356fee28ff019a16ec070f38cb40f6b))
+* do not install wiz admission controler as it is part of wiz-kube… ([#2838](https://github.com/linode/apl-core/issues/2838)) ([27100a3](https://github.com/linode/apl-core/commit/27100a321a1f8e06581164c24a3f25c9b71f5279))
+* duplicate credentials warning in Argocd ([#2796](https://github.com/linode/apl-core/issues/2796)) ([7da039d](https://github.com/linode/apl-core/commit/7da039da65af2deb77097f5f658efc57391d55d1))
+* encrypt adminUsername ([#2804](https://github.com/linode/apl-core/issues/2804)) ([fdf7a4d](https://github.com/linode/apl-core/commit/fdf7a4d4731f4f6950f4a1fb0d964631bd1bcb2c))
+* Harbor DB backup object storage secret refs ([#2857](https://github.com/linode/apl-core/issues/2857)) ([65ead02](https://github.com/linode/apl-core/commit/65ead029972ee339bb7b63c75bc3d772895d723e))
+* harbor storage credentials ([#2918](https://github.com/linode/apl-core/issues/2918)) ([d499931](https://github.com/linode/apl-core/commit/d499931b3360ef50107bccfc425614c27bc86c62))
+* no active cluster error in local dev environment ([#2885](https://github.com/linode/apl-core/issues/2885)) ([618b184](https://github.com/linode/apl-core/commit/618b184a4f0fde43561034d063e5307da6507176))
+* only add label for teamresources ([#2792](https://github.com/linode/apl-core/issues/2792)) ([892a009](https://github.com/linode/apl-core/commit/892a009c533de3163bf48051b3d72f33060149b3))
+* reattempt password validity reset on any expiration error ([#2927](https://github.com/linode/apl-core/issues/2927)) ([c8f3a20](https://github.com/linode/apl-core/commit/c8f3a2067086673e76c0f6441d3397076e7f5691))
+* render list with unique set of source repositories in argocd project ([#2833](https://github.com/linode/apl-core/issues/2833)) ([2c6da6a](https://github.com/linode/apl-core/commit/2c6da6af7a7c7ffbc4e072d50fadf7f246dc8cda))
+* replace hanging kubectl delete command with api call ([#2785](https://github.com/linode/apl-core/issues/2785)) ([dee2fdc](https://github.com/linode/apl-core/commit/dee2fdc3a2ce7a59de616de77ffa1a84f9f64800))
+* replace kubectl with k8s client library for argocd apps ([#2881](https://github.com/linode/apl-core/issues/2881)) ([2cc232b](https://github.com/linode/apl-core/commit/2cc232bd48a2bfd92c28fbd7c58877c571908342))
+* serviceMonitor in Loki values ([#2877](https://github.com/linode/apl-core/issues/2877)) ([6436358](https://github.com/linode/apl-core/commit/643635806f115af2526d02087a17e108055b9255))
+* set correct version for apl-nodejs-helloworld ([#2897](https://github.com/linode/apl-core/issues/2897)) ([111f885](https://github.com/linode/apl-core/commit/111f885169315a274cd2f0712df9aa5fef3e3e6f))
+* sortUserArraysByName ([#2875](https://github.com/linode/apl-core/issues/2875)) ([92a69a5](https://github.com/linode/apl-core/commit/92a69a5a940a0103dd916db7360274088d84b9ce))
+* team workload ineffectively deleted ([#2867](https://github.com/linode/apl-core/issues/2867)) ([005e4ee](https://github.com/linode/apl-core/commit/005e4eee942aa0cb6ac919d2184556f79ce06839))
+* update tekton-pipeline ns labels  ([#2793](https://github.com/linode/apl-core/issues/2793)) ([f1830fc](https://github.com/linode/apl-core/commit/f1830fc9040b8bd11bf63a9b7d5308eecebc830a))
+* upgrade script to scale down argocd applicatioset controller ([#2814](https://github.com/linode/apl-core/issues/2814)) ([c9f31de](https://github.com/linode/apl-core/commit/c9f31de8b270e9d0dcae07a613276abd39e37ec9))
+* use file selector for avoiding parallel processing ([#2797](https://github.com/linode/apl-core/issues/2797)) ([40f3c97](https://github.com/linode/apl-core/commit/40f3c9739823a9e67a77ad84cf570b7c6675d77c))
+* use the values managed file only if workload imageUpdateStrategy is set ([#2806](https://github.com/linode/apl-core/issues/2806)) ([39d64f5](https://github.com/linode/apl-core/commit/39d64f5fa8b7685f4e155a50adb6912cd6c855fb))
+
+
+### Reverts
+
+* added PR ref during checkout ([#2889](https://github.com/linode/apl-core/issues/2889)) ([#2892](https://github.com/linode/apl-core/issues/2892)) ([df21f4b](https://github.com/linode/apl-core/commit/df21f4bfeee69b65d0458db46fce21a815429b04))
+* encrypt adminUsername ([#2804](https://github.com/linode/apl-core/issues/2804)) ([#2813](https://github.com/linode/apl-core/issues/2813)) ([57aff7d](https://github.com/linode/apl-core/commit/57aff7d6ce71315bf4c3456ed633943c9873569a))
+* helm chart name ([#2856](https://github.com/linode/apl-core/issues/2856)) ([c16ad49](https://github.com/linode/apl-core/commit/c16ad49d446558d4c7a43f17be4cc6267f1bf528))
+
+
+### CI
+
+* add copilot instructions ([#2846](https://github.com/linode/apl-core/issues/2846)) ([c3fb698](https://github.com/linode/apl-core/commit/c3fb698287ac4bed97f8f671f3f1102572c8fbcd))
+* added PR ref during checkout ([#2889](https://github.com/linode/apl-core/issues/2889)) ([87edf58](https://github.com/linode/apl-core/commit/87edf581a09fe95004814e2eb871d039b93c8ef5))
+* added repository_dispatch trigger ([#2831](https://github.com/linode/apl-core/issues/2831)) ([151b671](https://github.com/linode/apl-core/commit/151b6716910cacbcd59093d111aea4d761f8a2db))
+* attach output comparison to automated PRs ([#2880](https://github.com/linode/apl-core/issues/2880)) ([0438eed](https://github.com/linode/apl-core/commit/0438eedc6e32eb0c34dca9604a1b5e2432d1da37))
+* do not install wiz-sensor ([#2772](https://github.com/linode/apl-core/issues/2772)) ([1008b41](https://github.com/linode/apl-core/commit/1008b416084635ffe14701391be42aa7d21823ff))
+* ensure exact match on helm chart name ([#2895](https://github.com/linode/apl-core/issues/2895)) ([d4fab33](https://github.com/linode/apl-core/commit/d4fab33e8eefa2552c0bc26620a1e9206a30243c))
+* fix output evaluation ([#2890](https://github.com/linode/apl-core/issues/2890)) ([1c83978](https://github.com/linode/apl-core/commit/1c839783a24c210848d6ddef1842ad9063eaed1a))
+* fix output variable name ([#2891](https://github.com/linode/apl-core/issues/2891)) ([416ed34](https://github.com/linode/apl-core/commit/416ed341bf309bddcca9b2cd87909f0b03b9401c))
+* improve readability of chart diff output ([#2894](https://github.com/linode/apl-core/issues/2894)) ([5a97591](https://github.com/linode/apl-core/commit/5a97591e3986b8b98d6321704a3a857ae551a443))
+* missing commit message in event ([#2888](https://github.com/linode/apl-core/issues/2888)) ([797aded](https://github.com/linode/apl-core/commit/797adedd9ee738bae5b3090b7094b245cccc4cd6))
+* syntax and use workflow_dispatch instead ([#2832](https://github.com/linode/apl-core/issues/2832)) ([f6b6e36](https://github.com/linode/apl-core/commit/f6b6e365ffd6114ba4faba5047b04cc886d96167))
+* update codeowners ([#2859](https://github.com/linode/apl-core/issues/2859)) ([cb8b016](https://github.com/linode/apl-core/commit/cb8b016d3d5780d1784e7d26eb7928fb24ddf923))
+* update log gathering command for APL operator ([#2771](https://github.com/linode/apl-core/issues/2771)) ([32be4d3](https://github.com/linode/apl-core/commit/32be4d3788b003ea8758d1fa9341ed5e6cd63495))
+
+
+### Others
+
+* **chart-deps:** update argocd to version 9.1.5 ([#2763](https://github.com/linode/apl-core/issues/2763)) ([19e8ea9](https://github.com/linode/apl-core/commit/19e8ea9e3184ddb63e0e89f69887249194550e83))
+* **chart-deps:** update argocd to version 9.2.4 ([#2827](https://github.com/linode/apl-core/issues/2827)) ([2201df4](https://github.com/linode/apl-core/commit/2201df4e2d19a9d33212e6efc08237503d2a96b9))
+* **chart-deps:** update argocd to version 9.3.4 ([#2847](https://github.com/linode/apl-core/issues/2847)) ([998b42e](https://github.com/linode/apl-core/commit/998b42ec78d0707630a6a39206664c8eee396e7f))
+* **chart-deps:** update argocd to version 9.3.6 ([#2871](https://github.com/linode/apl-core/issues/2871)) ([28c7e31](https://github.com/linode/apl-core/commit/28c7e31dab7b03efbace50ac335011e1f7217208))
+* **chart-deps:** update argocd to version 9.3.7 ([#2878](https://github.com/linode/apl-core/issues/2878)) ([1a7853f](https://github.com/linode/apl-core/commit/1a7853f907a26c02d741429842aa0ced94404f78))
+* **chart-deps:** update cert-manager to version v1.19.2 ([#2786](https://github.com/linode/apl-core/issues/2786)) ([936ee70](https://github.com/linode/apl-core/commit/936ee70a4de8eca08d0efe44e67467fa5085c2f2))
+* **chart-deps:** update cloudnative-pg to version 0.27.0 ([#2787](https://github.com/linode/apl-core/issues/2787)) ([189d010](https://github.com/linode/apl-core/commit/189d010ce75e2c676e5ed28e29a0e33101358ae5))
+* **chart-deps:** update external-dns to version 1.20.0 ([#2828](https://github.com/linode/apl-core/issues/2828)) ([e945b65](https://github.com/linode/apl-core/commit/e945b656440a15f124348604e2dc0120f73d01eb))
+* **chart-deps:** update gitea to version 12.5.0 ([#2865](https://github.com/linode/apl-core/issues/2865)) ([886374a](https://github.com/linode/apl-core/commit/886374ad8e2c4ef74247463ad2505af4a2908939))
+* **chart-deps:** update harbor to version 1.18.1 ([#2788](https://github.com/linode/apl-core/issues/2788)) ([07e607d](https://github.com/linode/apl-core/commit/07e607d484674f0f0d62609320e32ae522137194))
+* **chart-deps:** update harbor to version 1.18.2 ([#2872](https://github.com/linode/apl-core/issues/2872)) ([96dcfe5](https://github.com/linode/apl-core/commit/96dcfe57464cfe79079747bbf20035e83a3beb24))
+* **chart-deps:** update ingress-nginx to version 4.14.1 ([#2776](https://github.com/linode/apl-core/issues/2776)) ([222cd89](https://github.com/linode/apl-core/commit/222cd89abad516f3fe20f47ac41daaf19a008726))
+* **chart-deps:** update ingress-nginx to version 4.14.2 ([#2873](https://github.com/linode/apl-core/issues/2873)) ([d04955d](https://github.com/linode/apl-core/commit/d04955d27d11ff6ca4088d7aab794b22ef1a5fb5))
+* **chart-deps:** update istio to version 1.28.2 ([#2818](https://github.com/linode/apl-core/issues/2818)) ([3e325f9](https://github.com/linode/apl-core/commit/3e325f9e11bae96e202cba322c528f5549bb6da9))
+* **chart-deps:** update istio to version 1.28.3 ([#2854](https://github.com/linode/apl-core/issues/2854)) ([7e6f61c](https://github.com/linode/apl-core/commit/7e6f61c95632a7e22e96716bfb1b05d883d5565c))
+* **chart-deps:** update keycloak to version 7.1.5 ([#2754](https://github.com/linode/apl-core/issues/2754)) ([dd25bf2](https://github.com/linode/apl-core/commit/dd25bf2863c60f41f48905e651c046ee3ffc0cb3))
+* **chart-deps:** update keycloak to version 7.1.6 ([#2840](https://github.com/linode/apl-core/issues/2840)) ([60b2bfc](https://github.com/linode/apl-core/commit/60b2bfcee7a0551d73c1c32b6cd798d085ac15a5))
+* **chart-deps:** update keycloak to version 7.1.7 ([#2858](https://github.com/linode/apl-core/issues/2858)) ([b999725](https://github.com/linode/apl-core/commit/b999725182e49ed58e06cc217f8cb6f89b631629))
+* **chart-deps:** update kube-prometheus-stack to version 79.9.0 ([#2761](https://github.com/linode/apl-core/issues/2761)) ([b4e7db6](https://github.com/linode/apl-core/commit/b4e7db6e94e32a6bc1e25016ec113a6671af017e))
+* **chart-deps:** update kube-prometheus-stack to version 80.13.3 ([#2843](https://github.com/linode/apl-core/issues/2843)) ([068e507](https://github.com/linode/apl-core/commit/068e507f405ec83bbdf8973de70ba4ad98086ab3))
+* **chart-deps:** update kube-prometheus-stack to version 80.14.1 ([#2845](https://github.com/linode/apl-core/issues/2845)) ([b1d5f81](https://github.com/linode/apl-core/commit/b1d5f810ab4263d5bd111f84d688d8403268e4ec))
+* **chart-deps:** update kube-prometheus-stack to version 80.14.3 ([#2848](https://github.com/linode/apl-core/issues/2848)) ([64f3354](https://github.com/linode/apl-core/commit/64f3354d346b9d0f498269dbc4837866eacc5610))
+* **chart-deps:** update kube-prometheus-stack to version 80.14.4 ([#2849](https://github.com/linode/apl-core/issues/2849)) ([c051b18](https://github.com/linode/apl-core/commit/c051b18d64edabdb960ceea61b6e7223f25c1082))
+* **chart-deps:** update loki to version 6.51.0 ([#2860](https://github.com/linode/apl-core/issues/2860)) ([39f20b2](https://github.com/linode/apl-core/commit/39f20b2659f06500c8a9ef611bccc4eab7b59f67))
+* **chart-deps:** update oauth2-proxy to version 10.0.0 ([#2842](https://github.com/linode/apl-core/issues/2842)) ([3bb2ee6](https://github.com/linode/apl-core/commit/3bb2ee64defe7ddd98119ed66fe8b22a533c5c39))
+* **chart-deps:** update oauth2-proxy to version 10.1.0 ([#2855](https://github.com/linode/apl-core/issues/2855)) ([8edfe0f](https://github.com/linode/apl-core/commit/8edfe0fc978d22113fb6f95291357d5f55a91859))
+* **chart-deps:** update oauth2-proxy to version 10.1.1 ([#2866](https://github.com/linode/apl-core/issues/2866)) ([770369d](https://github.com/linode/apl-core/commit/770369d75c230732d5b39a2cdfbbf56b0c61d44a))
+* **chart-deps:** update oauth2-proxy to version 8.5.1 ([#2735](https://github.com/linode/apl-core/issues/2735)) ([1de4e98](https://github.com/linode/apl-core/commit/1de4e981a36dfadaef75aece00d498789394d8b4))
+* **chart-deps:** update policy-reporter to version 3.7.0 ([#2746](https://github.com/linode/apl-core/issues/2746)) ([bbdaf33](https://github.com/linode/apl-core/commit/bbdaf33fd0496be41cb25b99ba42329cfd0482e5))
+* **chart-deps:** update policy-reporter to version 3.7.1 ([#2830](https://github.com/linode/apl-core/issues/2830)) ([973873e](https://github.com/linode/apl-core/commit/973873e43ae1ccf9bb0458f38768e1f4fdedac20))
+* **chart-deps:** update prometheus-blackbox-exporter to version 11.5.0 ([#2744](https://github.com/linode/apl-core/issues/2744)) ([6ea0183](https://github.com/linode/apl-core/commit/6ea01833c6853e8fc2b2e97ce0f060df8859ab44))
+* **chart-deps:** update prometheus-blackbox-exporter to version 11.7.0 ([#2835](https://github.com/linode/apl-core/issues/2835)) ([ffa62f5](https://github.com/linode/apl-core/commit/ffa62f5f63f1c2873dd62779cc202181fe3175fb))
+* **chart-deps:** update prometheus-blackbox-exporter to version 11.7.1 ([#2884](https://github.com/linode/apl-core/issues/2884)) ([469f658](https://github.com/linode/apl-core/commit/469f658fc99effd2a7c932a7cd17cc5aa6028e89))
+* **chart-deps:** update prometheus-msteams to version 1.3.5 ([#2762](https://github.com/linode/apl-core/issues/2762)) ([6b16ac6](https://github.com/linode/apl-core/commit/6b16ac656091a92f6cd05854c2285da11601bae0))
+* **chart-deps:** update prometheus-msteams to version 1.3.6 ([#2819](https://github.com/linode/apl-core/issues/2819)) ([2b3908d](https://github.com/linode/apl-core/commit/2b3908d939a4284c88135517d653176beb6a9dae))
+* **chart-deps:** update sealed-secrets to version 2.18.0 ([#2812](https://github.com/linode/apl-core/issues/2812)) ([90b7652](https://github.com/linode/apl-core/commit/90b7652b7a513de53d615f9f7d6d7cf3db6e4f57))
+* **chart-deps:** update tekton-pipelines to version 1.6.1 ([#2688](https://github.com/linode/apl-core/issues/2688)) ([4d4711d](https://github.com/linode/apl-core/commit/4d4711dfa2c420a577deed8866cd40a1964c0feb))
+* clean up old Istio Operator chart ([#2662](https://github.com/linode/apl-core/issues/2662)) ([cd74991](https://github.com/linode/apl-core/commit/cd749910697a1f370e48b00ed11790fa264b87a9))
+* deprecate thanos ([#2739](https://github.com/linode/apl-core/issues/2739)) ([eaee9d2](https://github.com/linode/apl-core/commit/eaee9d232824fe49fdeda8a18892508bc701e460))
+* **deps:** bump @eslint/compat from 1.4.1 to 2.0.0 ([#2750](https://github.com/linode/apl-core/issues/2750)) ([76d8c04](https://github.com/linode/apl-core/commit/76d8c04a170c2c3df902d9f13b46a955169650cf))
+* **deps:** bump actions/checkout from 5 to 6 ([#2751](https://github.com/linode/apl-core/issues/2751)) ([8e34016](https://github.com/linode/apl-core/commit/8e34016f3289b356d26f8ba703a9a3fb163cb8d8))
+* **deps:** bump glob from 11.0.3 to 13.0.0 ([#2749](https://github.com/linode/apl-core/issues/2749)) ([abc5f4d](https://github.com/linode/apl-core/commit/abc5f4da19966457cd4cdb64dc7a0ffa62bfd410))
+* **deps:** bump globals from 16.5.0 to 17.0.0 ([#2852](https://github.com/linode/apl-core/issues/2852)) ([3241559](https://github.com/linode/apl-core/commit/3241559b452f59174bef7c445153841e6c517daf))
+* **deps:** bump linode/apl-tools from v2.10.5 to v2.10.6 in the docker-dependencies group ([#2780](https://github.com/linode/apl-core/issues/2780)) ([5e49b15](https://github.com/linode/apl-core/commit/5e49b15438e333a2dae3f77f09c20c136b039b18))
+* **deps:** bump the npm-dependencies group across 1 directory with 13 updates ([#2764](https://github.com/linode/apl-core/issues/2764)) ([1b79ad6](https://github.com/linode/apl-core/commit/1b79ad6fe5606e15952f1ea4f618ab2b36112425))
+* **deps:** bump the npm-dependencies group across 1 directory with 9 updates ([#2837](https://github.com/linode/apl-core/issues/2837)) ([89a5f9f](https://github.com/linode/apl-core/commit/89a5f9fda52cf2efce3affd15d2cdb4ef4d3378b))
+* **deps:** bump the npm-dependencies group with 10 updates ([#2779](https://github.com/linode/apl-core/issues/2779)) ([50e14b6](https://github.com/linode/apl-core/commit/50e14b6eaacb6485758e469f902a0e1bb604a520))
+* **deps:** bump the npm-dependencies group with 3 updates ([#2798](https://github.com/linode/apl-core/issues/2798)) ([dec62d1](https://github.com/linode/apl-core/commit/dec62d194cf75a51cb83ebd31cd24284fa9032f2))
+* **deps:** bump the npm-dependencies group with 8 updates ([#2850](https://github.com/linode/apl-core/issues/2850)) ([e70cc78](https://github.com/linode/apl-core/commit/e70cc78347173356627d2693569748cacaaa79e3))
+* **deps:** bump the npm-dependencies group with 8 updates ([#2868](https://github.com/linode/apl-core/issues/2868)) ([8b308ab](https://github.com/linode/apl-core/commit/8b308ab86ffb26a792ca5f6e5ca8dd217121b1e4))
+* post release changelog v4.13.0 ([#2853](https://github.com/linode/apl-core/issues/2853)) ([957cd8b](https://github.com/linode/apl-core/commit/957cd8b668514504cfaf59a99ac27d5ca1119bc8))
+* rc versions update ([0e8556a](https://github.com/linode/apl-core/commit/0e8556aff086ba6d6171291d446f48659301bc65))
+* update base image in Dockerfile and workflow ([#2775](https://github.com/linode/apl-core/issues/2775)) ([6ac55b2](https://github.com/linode/apl-core/commit/6ac55b254762763335c9e3bc8bc24097f8d28f0c))
+* update schema-ref-parser and add it to the transformIgnorePatterns ([#2789](https://github.com/linode/apl-core/issues/2789)) ([16ec507](https://github.com/linode/apl-core/commit/16ec5079ec744175ed288e8247bd1afcb9d0bf68))
+* updated versions ([ea63f80](https://github.com/linode/apl-core/commit/ea63f80e87de8f2822f135233218b8ad4aa6a6b3))
+* upgrade binaries of base image ([#2774](https://github.com/linode/apl-core/issues/2774)) ([f525da1](https://github.com/linode/apl-core/commit/f525da14c7231cd19fc47ccf826250dbf9ccef43))
+* upgrade Gitea to 1.25.2 ([#2758](https://github.com/linode/apl-core/issues/2758)) ([852bcd2](https://github.com/linode/apl-core/commit/852bcd2be52e0e0dd5ea8e929d44a67cd1aba2ac))
 
 ## [4.13.0](https://github.com/linode/apl-core/compare/v4.12.0...v4.13.0) (2026-01-19)
 

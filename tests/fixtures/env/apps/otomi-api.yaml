@@ -4,9 +4,6 @@ metadata:
     labels: {}
 spec:
     editorInactivityTimeout: 5
-    git:
-        email: some@secret.value
-        user: someuser
     _rawValues: {}
     resources:
         api:

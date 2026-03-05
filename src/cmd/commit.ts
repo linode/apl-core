@@ -1,13 +1,15 @@
 import retry from 'async-retry'
 import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
+import { APL_OPERATOR_NS } from 'src/common/constants'
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
+import { getRepo, GitRepoConfig } from 'src/common/git-config'
+import { waitTillGitRepoAvailable } from 'src/common/gitea'
 import { hfValues } from 'src/common/hf'
-import { createUpdateConfigMap, createUpdateGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
-import { getFilename, loadYaml } from 'src/common/utils'
-import { getRepo } from 'src/common/values'
+import { createUpdateConfigMap, createUpdateGenericSecret, k8s } from 'src/common/k8s'
+import { getFilename } from 'src/common/utils'
 import { HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
@@ -53,11 +55,16 @@ const cleanupGitState = async (d: any): Promise<void> => {
   }
 }
 
-const commitAndPush = async (values: Record<string, any>, branch: string, initialInstall = false): Promise<void> => {
+const commitAndPush = async (
+  values: Record<string, any>,
+  branch: string,
+  initialInstall = false,
+  gitConfig?: GitRepoConfig,
+): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const message = initialInstall ? 'otomi commit' : 'updated values [ci skip]'
-  const { password } = getRepo(values)
+  const { password } = gitConfig ?? getRepo(values)
   cd(env.ENV_DIR)
   try {
     try {
@@ -127,12 +134,17 @@ const commitAndPush = async (values: Record<string, any>, branch: string, initia
   d.log('Successfully pushed the updated values')
 }
 
-export const commit = async (initialInstall: boolean, overrideArgs?: HelmArguments): Promise<void> => {
+export const commit = async (
+  initialInstall: boolean,
+  overrideArgs?: HelmArguments,
+  gitConfig?: GitRepoConfig,
+): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   await validateValues(overrideArgs)
   d.info('Preparing values')
   const values = (await hfValues()) as Record<string, any>
-  const { branch, remote, username, email } = getRepo(values)
+  // Use provided gitConfig if available (operator mode), otherwise read from values (bootstrap/install mode)
+  const { branch, authenticatedUrl: remote, username, email } = gitConfig ?? getRepo(values)
   if (initialInstall) {
     // we call this here again, as we might not have completed (happens upon first install):
     await bootstrapGit(values)
@@ -149,88 +161,6 @@ export const commit = async (initialInstall: boolean, overrideArgs?: HelmArgumen
   // continue
   await encrypt()
   await commitAndPush(values, branch, initialInstall)
-}
-
-export const cloneOtomiChartsInGitea = async (): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:gitea-apl-charts`)
-  const versions = await loadYaml(`${rootDir}/versions.yaml`, { noError: true })
-  const tag = versions?.aplCharts
-  d.info(`Checking if apl-charts tag '${tag}' already exists in Gitea`)
-  const values = (await hfValues()) as Record<string, any>
-  const { email, username, password } = getRepo(values)
-  const workDir = '/tmp/apl-charts'
-  const otomiChartsUrl = env.OTOMI_CHARTS_URL
-  const giteaChartsUrl = `http://${username}:${password}@gitea-http.gitea.svc.cluster.local:3000/otomi/charts.git`
-  const retryOptions = {
-    retries: env.RETRIES,
-    randomize: env.RANDOM,
-    minTimeout: env.MIN_TIMEOUT,
-    factor: env.FACTOR,
-  }
-  try {
-    // Check if the tag exists in the remote Gitea repository
-    const tagExists = await retry(
-      async () => {
-        return $`git ls-remote --tags ${giteaChartsUrl} refs/tags/${tag}`
-      },
-      {
-        ...retryOptions,
-        onRetry: async () => {
-          d.warn('Failed to connect to local charts repo. Retrying...')
-        },
-      },
-    )
-    if (tagExists.stdout.trim()) {
-      d.info(`Tag '${tag}' already exists in Gitea. Skipping clone and initialization steps.`)
-      return
-    }
-    d.info(`Cloning apl-charts at tag '${tag}' from upstream`)
-    await $`mkdir -p ${workDir}`
-    await retry(
-      async () => {
-        await $`git clone --branch ${tag} --depth 1 ${otomiChartsUrl} ${workDir}`.quiet()
-      },
-      {
-        ...retryOptions,
-        onRetry: async () => {
-          d.warn('Failed to clone from external charts repo. Retrying...')
-        },
-      },
-    )
-
-    cd(workDir)
-    await $`rm -rf .git`
-    await $`rm -rf .github`
-    await $`rm -rf deployment`
-    await $`rm -rf ksvc`
-    await $`rm -rf icons`
-    await $`rm -rf .vscode`
-    await $`rm -f .gitignore`
-    await $`rm -f LICENSE`
-    await $`git init`
-    await setIdentity(username, email)
-    await $`git add .`
-    await $`git commit -m "first commit for tag ${tag}"`
-    await $`git branch -M main`
-    await $`git tag ${tag}`
-    await $`git remote add origin ${giteaChartsUrl}`
-    await $`git config http.sslVerify false`
-    await retry(
-      async () => {
-        await $`git push -u origin refs/heads/main`.quiet()
-        await $`git push origin refs/tags/${tag}`.quiet()
-      },
-      {
-        ...retryOptions,
-        onRetry: async () => {
-          d.warn('Failed to push to charts repo. Retrying...')
-        },
-      },
-    )
-  } catch (error) {
-    d.info('cloneOtomiChartsInGitea Error ', error?.message?.replace(password, '****'))
-  }
-  d.info(`Cloned apl-charts at tag '${tag}' in Gitea`)
 }
 
 export async function initialSetupData(): Promise<InitialData> {
@@ -286,7 +216,7 @@ NEXT STEPS:
 For documentation and support, visit: https://techdocs.akamai.com/app-platform/docs/welcome
 `
 
-  await createUpdateConfigMap(k8s.core(), 'welcome', 'apl-operator', {
+  await createUpdateConfigMap(k8s.core(), 'welcome', APL_OPERATOR_NS, {
     message: welcomeMessage,
     consoleUrl: `https://console.${domainSuffix}`,
     secretName,

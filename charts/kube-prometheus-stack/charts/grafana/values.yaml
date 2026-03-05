@@ -123,7 +123,7 @@ testFramework:
     # -- The Docker registry
     registry: docker.io
     repository: bats/bats
-    tag: "v1.4.1"
+    tag: "1.13.0"
   imagePullPolicy: IfNotPresent
   securityContext: {}
   containerSecurityContext: {}
@@ -154,6 +154,7 @@ securityContext:
 
 containerSecurityContext:
   allowPrivilegeEscalation: false
+  privileged: false
   capabilities:
     drop:
     - ALL
@@ -189,7 +190,7 @@ downloadDashboardsImage:
   # -- The Docker registry
   registry: docker.io
   repository: curlimages/curl
-  tag: 8.9.1
+  tag: 8.18.0
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -249,6 +250,9 @@ service:
   # Adds the appProtocol field to the service. This allows to work with istio protocol selection. Ex: "http" or "tcp"
   appProtocol: ""
   sessionAffinity: ""
+  # trafficDistribution allows specifying how traffic is distributed to Service endpoints.
+  # Valid values: "" (default - standard load balancing),"PreferSameZone" (K8s 1.34+), "PreferSameNode" (K8s 1.35+), "PreferClose" (deprecated, use PreferSameZone),
+  trafficDistribution: ""
 
 serviceMonitor:
   ## If true, a ServiceMonitor CR is created for a prometheus operator
@@ -280,8 +284,6 @@ hostAliases: []
 
 ingress:
   enabled: false
-  # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
-  # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
   # ingressClassName: nginx
   # Values can be templated
   annotations: {}
@@ -289,19 +291,12 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   labels: {}
   path: /
-
-  # pathType is only for k8s >= 1.1=
   pathType: Prefix
 
   hosts:
     - chart-example.local
   ## Extra paths to prepend to every host configuration. This is useful when working with annotation based services.
   extraPaths: []
-  # - path: /*
-  #   backend:
-  #     serviceName: ssl-redirect
-  #     servicePort: use-annotation
-  ## Or for k8s > 1.19
   # - path: /*
   #   pathType: Prefix
   #   backend:
@@ -468,7 +463,7 @@ initChownData:
     # -- The Docker registry
     registry: docker.io
     repository: library/busybox
-    tag: "1.31.1"
+    tag: "1.37.0"
     sha: ""
     pullPolicy: IfNotPresent
 
@@ -613,7 +608,7 @@ extraSecretMounts: []
   #
   # for CSI e.g. Azure Key Vault use the following
   # - name: secrets-store-inline
-  #  mountPath: /run/secrets
+  #  mountPath: /run/secrets/vault.azure.com
   #  readOnly: true
   #  csi:
   #    driver: secrets-store.csi.k8s.io
@@ -890,8 +885,6 @@ grafana.ini:
     check_for_updates: true
   log:
     mode: console
-  grafana_net:
-    url: https://grafana.net
   server:
     domain: "{{ if (and .Values.ingress.enabled .Values.ingress.hosts) }}{{ tpl (.Values.ingress.hosts | first) . }}{{ else if (and .Values.route.main.enabled .Values.route.main.hostnames) }}{{ tpl (.Values.route.main.hostnames | first) . }}{{ else }}''{{ end }}"
   unified_storage:
@@ -968,7 +961,7 @@ sidecar:
     # -- The Docker registry
     registry: quay.io
     repository: kiwigrid/k8s-sidecar
-    tag: 2.2.1
+    tag: 2.5.0
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}

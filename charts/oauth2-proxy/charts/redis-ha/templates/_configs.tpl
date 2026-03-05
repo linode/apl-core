@@ -327,7 +327,7 @@
 {{- end }}
 
 {{- define "vars.sh" }}
-    HOSTNAME="$(hostname)"
+    HOSTNAME="$(cat /proc/sys/kernel/hostname)"
     {{- if .Values.ro_replicas }}
     RO_REPLICAS="{{ .Values.ro_replicas }}"
     {{- end }}

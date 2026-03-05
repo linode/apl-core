@@ -1,5 +1,7 @@
-import { terminal } from '../common/debug'
 import { ApiException, CoreV1Api, KubeConfig } from '@kubernetes/client-node'
+import { writeFileSync } from 'fs'
+import { APL_OPERATOR_NS } from '../common/constants'
+import { terminal } from '../common/debug'
 import { getErrorMessage } from './utils'
 
 export type ApplyStatus = 'succeeded' | 'failed' | 'in-progress' | 'unknown'
@@ -28,9 +30,18 @@ export const k8s = {
   },
 }
 
+/**
+ * Writes an empty file to /tmp/heartbeat to update its modification timestamp.
+ * Kubernetes liveness probes check this file's age to determine if the operator
+ * is still functioning — a stale or missing file will cause the probe to fail.
+ */
+export function updateHeartbeatFile(): void {
+  writeFileSync('/tmp/heartbeat', '')
+}
+
 export async function updateApplyState(
   state: ApplyState,
-  namespace: string = 'apl-operator',
+  namespace: string = APL_OPERATOR_NS,
   configMapName: string = 'apl-operator-state',
 ): Promise<void> {
   const d = terminal('operator:k8s:updateApplyState')
@@ -71,6 +82,7 @@ export async function updateApplyState(
     }
 
     d.info(`Apply state updated for commit ${state.commitHash}`)
+    updateHeartbeatFile()
   } catch (error) {
     d.error('Failed to update apply state:', getErrorMessage(error))
   }

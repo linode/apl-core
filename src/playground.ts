@@ -1,33 +1,37 @@
 #!/usr/bin/env node --nolazy --import tsx
 
-import { terminal } from './common/debug'
-import { RuntimeUpgradeContext } from './common/runtime-upgrades/runtime-upgrades'
-import { scaleDeployment } from './common/runtime-upgrades/v4.13.0'
+import { createUpdateConfigMap, k8s } from './common/k8s'
+import { PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 
 async function play() {
-  // const version = getPackageVersion()
-  // const prevVersion: string = (await getDeploymentState()).version ?? version
-  // console.log(version)
-  // const state = await getDeploymentState()
-  // const releases = await getHelmReleases()
-  // const data = await hfValues(
-  //   { withWorkloadValues: true },
-  //   '/Users/jehoszafatzimnowoda/workspace/linode/apl-core/tests/fixtures',
-  // )
-  // await writeValuesToFile(`/tmp/status.yaml`, { status: { otomi: state, helm: releases } }, true)
-  // '/tmp/otomi-bootstrap-dev/**/teams/*/builds/*.yaml'
-  const d = terminal('cmd:upgrade:runtimeUpgrade')
-  const context: RuntimeUpgradeContext = {
-    debug: d,
+  const body = {
+    key1: 'value100',
+    key2: 'value200',
   }
-  try {
-    await scaleDeployment(context, 'argocd', 'argocd-applicationset-controller', 0)
-  } catch (error) {
-    d.error('Error during playground execution', error)
-  }
+  await createUpdateConfigMap(k8s.core(), 'create-update', 'default', body)
 
-  // const spec = await load('/tmp/otomi-bootstrap-dev')
-  // console.log(JSON.stringify(spec))
+  const bodyPatch = {
+    apiVersion: 'v1',
+    kind: 'ConfigMap',
+    metadata: {
+      name: 'patch',
+      namespace: 'default',
+    },
+    data: {
+      key1: 'value100',
+      key2: 'value200',
+    },
+  }
+  await k8s.core().patchNamespacedConfigMap(
+    {
+      name: 'patch',
+      namespace: 'default',
+      body: bodyPatch,
+      fieldManager: 'apl-operator',
+      force: true,
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.ServerSideApply),
+  )
 }
 
 play()

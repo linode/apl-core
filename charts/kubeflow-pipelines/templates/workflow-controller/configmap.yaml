@@ -10,10 +10,10 @@ data:
       # insecure will disable TLS. Primarily used for minio installs not configured with TLS
       insecure: {{ not .Values.objectStorage.secure }}
       accessKeySecret:
-        name: mlpipeline-minio-artifact
+        name: mlpipeline-obj-artifact
         key: accesskey
       secretKeySecret:
-        name: mlpipeline-minio-artifact
+        name: mlpipeline-obj-artifact
         key: secretkey
   executor: |
     imagePullPolicy: IfNotPresent

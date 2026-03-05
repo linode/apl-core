@@ -1,0 +1,31 @@
+##
+# This is a test that checks if all resources are correctly provisioned when requested.
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: simple-deployment
+spec:
+  timeouts:
+    apply: 1s
+    exec: 30s
+    assert: 10s
+    cleanup: 30s
+  steps:
+    - name: Install barman cloud plugin
+      try:
+        - script:
+            content: |
+              helm upgrade \
+                --install \
+                --namespace $NAMESPACE \
+                --values ./01-simple_deployment.yaml \
+                --wait \
+                plugin-barman-cloud ../../
+        - assert:
+            file: ./01-simple_deployment-assert.yaml
+    - name: Cleanup
+      try:
+        - script:
+            content: |
+              helm uninstall --namespace $NAMESPACE plugin-barman-cloud
+              kubectl delete customresourcedefinitions.apiextensions.k8s.io objectstores.barmancloud.cnpg.io

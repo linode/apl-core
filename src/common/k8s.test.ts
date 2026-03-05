@@ -14,6 +14,7 @@ import {
   V1StatefulSet,
   V1Status,
 } from '@kubernetes/client-node'
+import { X509Certificate } from 'crypto'
 import retry from 'async-retry'
 import { ARGOCD_APP_PARAMS } from './constants'
 import { terminal } from './debug'
@@ -23,6 +24,7 @@ import {
   appRevisionMatches,
   checkArgoCDAppStatus,
   deleteStatefulSetPods,
+  getSealedSecretsPEM,
   patchArgoCdApp,
   patchContainerResourcesOfSts,
   patchStatefulSetResources,
@@ -54,6 +56,10 @@ class MockApiException<T> extends ApiException<T> {
 jest.mock('@kubernetes/client-node')
 jest.mock('async-retry')
 jest.mock('./envalid')
+jest.mock('crypto', () => ({
+  ...jest.requireActual('crypto'),
+  X509Certificate: jest.fn(),
+}))
 
 const mockRetry = retry as jest.MockedFunction<typeof retry>
 const mockEnv = {
@@ -931,5 +937,73 @@ describe('exec utility test', () => {
     const result = await k8s.exec('default', 'test-pod-1', 'container-1', ['cmd-1', 'arg-1'])
 
     expect(result.exitCode).toBe(255)
+  })
+})
+
+describe('getSealedSecretsPEM', () => {
+  const MockX509Certificate = X509Certificate as jest.MockedClass<typeof X509Certificate>
+  const mockPem = '-----BEGIN PUBLIC KEY-----\nMOCK\n-----END PUBLIC KEY-----'
+
+  const makeSecret = (name: string, timestamp: string, tlsCrt?: string) => ({
+    metadata: { name, creationTimestamp: new Date(timestamp) },
+    data: tlsCrt !== undefined ? { 'tls.crt': Buffer.from(tlsCrt).toString('base64') } : {},
+  })
+
+  let mockCoreApi: { listNamespacedSecret: jest.Mock }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockCoreApi = { listNamespacedSecret: jest.fn() }
+    jest.spyOn(k8s.k8s, 'core').mockReturnValue(mockCoreApi as any)
+
+    MockX509Certificate.mockImplementation(
+      () =>
+        ({
+          publicKey: {
+            export: jest.fn().mockReturnValue(mockPem),
+          },
+        }) as any,
+    )
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('should return PEM from the newest sealed secret', async () => {
+    mockCoreApi.listNamespacedSecret.mockResolvedValue({
+      items: [
+        makeSecret('key-old', '2024-01-01T00:00:00Z', 'old-cert'),
+        makeSecret('key-new', '2024-06-01T00:00:00Z', 'new-cert'),
+      ],
+    })
+
+    const result = await getSealedSecretsPEM()
+    expect(result).toBe(mockPem)
+    expect(MockX509Certificate).toHaveBeenCalledWith('new-cert')
+  })
+
+  it('should throw when no sealed secret keys are found', async () => {
+    mockCoreApi.listNamespacedSecret.mockResolvedValue({ items: [] })
+
+    await expect(getSealedSecretsPEM()).rejects.toThrow('No sealed secrets keys found')
+  })
+
+  it('should throw when tls.crt is missing from the secret data', async () => {
+    mockCoreApi.listNamespacedSecret.mockResolvedValue({
+      items: [makeSecret('key-no-cert', '2024-01-01T00:00:00Z')],
+    })
+
+    await expect(getSealedSecretsPEM()).rejects.toThrow('Sealed secrets certificate not found')
+  })
+
+  it('should work correctly with a single secret item', async () => {
+    mockCoreApi.listNamespacedSecret.mockResolvedValue({
+      items: [makeSecret('key-single', '2024-03-15T00:00:00Z', 'single-cert')],
+    })
+
+    const result = await getSealedSecretsPEM()
+    expect(result).toBe(mockPem)
+    expect(MockX509Certificate).toHaveBeenCalledWith('single-cert')
   })
 })

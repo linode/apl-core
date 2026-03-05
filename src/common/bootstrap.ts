@@ -2,9 +2,10 @@ import { existsSync } from 'fs'
 import { decrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
+import { getRepo, GitRepoConfig } from 'src/common/git-config'
 import { hfValues } from 'src/common/hf'
 import { getFilename } from 'src/common/utils'
-import { getRepo, writeValues } from 'src/common/values'
+import { writeValues } from 'src/common/values'
 import { $, cd } from 'zx'
 
 const cmdName = getFilename(__filename)
@@ -12,6 +13,19 @@ const cmdName = getFilename(__filename)
 export const setIdentity = async (username, email) => {
   await $`git config --local user.name ${username}`.nothrow().quiet()
   await $`git config --local user.email ${email}`.nothrow().quiet()
+}
+
+export const recoverFromGit = async (gitConfig: GitRepoConfig): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:recoverFromGit`)
+  d.info(`Attempting to clone git repository from: ${gitConfig.repoUrl}`)
+  cd(env.ENV_DIR)
+  await $`timeout 10 git clone ${gitConfig.authenticatedUrl} ${env.ENV_DIR}`
+  await setIdentity(gitConfig.username, gitConfig.email)
+  await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    await $`git config --local diff.sopsdiffer.textconv "sops -d"`.nothrow().quiet()
+  }
+  await decrypt()
 }
 /**
  * Prepare the ENV_DIR before anything else. Scenario's:
@@ -22,7 +36,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   // inValues indicates that there is no values repo file structure that helmfile expects
   const values = inValues ?? ((await hfValues()) as Record<string, any>)
-  const { remote, branch, email, username, password } = getRepo(values)
+  const { authenticatedUrl: remote, branch, email, username, password } = getRepo(values)
   cd(env.ENV_DIR)
   if (existsSync(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped, setting identity just in case`)
@@ -58,7 +72,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     await decrypt()
   } catch (e) {
     d.debug(e?.message?.replace(password, '****'))
-    d.info('Remote does not exist yet. Expecting first commit to come later.')
+    d.info('Remote repository is empty or unreachable. Will initialize locally and push initial commit.')
   } finally {
     const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
     // finally write back the new values without overwriting existing values

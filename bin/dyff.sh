@@ -9,7 +9,7 @@ while [ $# -ne 0 ]
 do
   case "$1" in
     --exclude-chart-versions)
-      miscArgs=( "${miscArgs[@]}" --exclude-regexp '.*metadata.labels.helm.sh/chart' --exclude-regexp '.*metadata.labels.app.kubernetes.io/version' )
+      miscArgs=( "${miscArgs[@]}" --exclude-regexp '.*metadata.labels.helm.sh/chart' --exclude-regexp '.*metadata.labels.chart' --exclude-regexp '.*metadata.labels.app.kubernetes.io/version' )
       ;;
     *)
       if [ -z "$targetDirA" ]; then
@@ -18,7 +18,7 @@ do
         targetDirB=$1
       else
         echo "Extra argument $1"
-        return 1
+        exit 1
       fi
       ;;
   esac
@@ -26,10 +26,10 @@ do
 done
 if [ -z "$targetDirA" ]; then
   echo "Missing first argument"
-  return 1
+  exit 1
 elif [ -z "$targetDirB" ]; then
   echo "Missing second argument"
-  return 1
+  exit 1
 fi
 
 set +e

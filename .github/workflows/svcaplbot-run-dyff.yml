@@ -3,7 +3,7 @@ name: chart-deps compare output to main
 on:
   workflow_dispatch: ~
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - "charts/**"
       - "values/**"
@@ -16,6 +16,8 @@ permissions:
 jobs:
   check-commit:
     runs-on: ubuntu-latest
+    # Skip this pre-check check when triggered manually
+    if: github.event_name != 'workflow_dispatch'
     outputs:
       skip: ${{ steps.check.outputs.skip }}
     steps:
@@ -24,14 +26,27 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 2
-      - name: Check commit message
+      - name: Check commit message and draft status
         id: check
         run: |
           COMMIT_MSG=$(git log -1 --pretty=%B)
-          if [[ "$COMMIT_MSG" == "Merge branch"* ]]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
+          IS_DRAFT="${{ github.event.pull_request.draft }}"
+          EVENT_ACTION="${{ github.event.action }}"
+
+          echo "Commit message: $COMMIT_MSG"
+          echo "Is draft: $IS_DRAFT"
+          echo "Event action: $EVENT_ACTION"
+
+          if [[ $IS_DRAFT == "true" ]]; then
+            echo "Skipping - PR is in draft"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif [[ $COMMIT_MSG == "Merge branch"* && $EVENT_ACTION != "ready_for_review" ]]; then
+            # Skip if merge commit, unless it is triggered by the ready_for_review event
+            echo "Skipping - merge commit"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
           else
-            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "Running workflow"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Show output
         run: |
@@ -40,28 +55,30 @@ jobs:
   run-compare:
     runs-on: ubuntu-latest
     needs: check-commit
-    if: ${{ needs.check-commit.outputs.skip != 'true' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (success() && needs.check-commit.outputs.skip != 'true') }}
     steps:
-      - name: Debug
-        run: |
-          echo "Skip was: ${{ needs.check-commit.outputs.skip }}"
       - name: Install GitHub CLI
         run: |
           sudo apt update
           sudo apt install gh -y
-      - name: Checkout repository
+      - name: Checkout PR branch
         uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
+          path: pr
+      - name: Checkout base branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.base.ref || 'main' }}
+          path: base
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: 'pr/.nvmrc'
       - name: Install npm dependencies
-        run: npm install --no-save
+        run: cd "$GITHUB_WORKSPACE/pr" && npm install --no-save && cd "$GITHUB_WORKSPACE/base" && npm install --no-save
       - name: Install Helm and Helmfile
-        uses: helmfile/helmfile-action@v2.1.1
+        uses: helmfile/helmfile-action@v2.3.1
         with:
           helmfile-args: version  # In this step, we only want these tools to be installed
           helm-plugins: >
@@ -79,12 +96,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          bin/compare.sh --diff-output tmp/diff-output.txt
-          diff_text=$(cat tmp/diff-output.txt)
-          format_code_start='```diff'
-          format_code_end='```'
-          comment_text="Comparison of Helm chart templating output:
-          $format_code_start
-          $diff_text
-          $format_code_end"
-          gh pr comment ${{ github.event.pull_request.number }} --body "$comment_text"
+          mkdir -p tmp
+          "$GITHUB_WORKSPACE/pr/bin/compare.sh" "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/pr" --diff-output tmp/diff-output.txt
+          comment_file="$PWD/tmp/pr-comment.txt"
+          echo "Comparison of Helm chart templating output:" > "$comment_file"
+          echo '```diff' >> "$comment_file"
+          cat tmp/diff-output.txt >> "$comment_file"
+          echo '```' >> "$comment_file"
+          cd "$GITHUB_WORKSPACE/pr" && gh pr comment ${{ github.event.pull_request.number }} --body-file "$comment_file" --create-if-none --edit-last

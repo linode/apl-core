@@ -1,49 +1,39 @@
 import * as dotenv from 'dotenv'
-import { terminal } from '../common/debug'
-import { AplOperator, AplOperatorConfig } from './apl-operator'
-import { GitCredentials, Installer } from './installer'
-import { operatorEnv } from './validators'
-import { env } from '../common/envalid'
 import fs from 'fs'
-import path from 'path'
-import { AplOperations } from './apl-operations'
-import { getErrorMessage } from './utils'
-import { GitRepository } from './git-repository'
 import process from 'node:process'
-import { runTraceCollectionLoop } from '../cmd/traces'
+import path from 'path'
+import { terminal } from '../common/debug'
+import { env } from '../common/envalid'
+import { getStoredGitRepoConfig } from '../common/git-config'
+import { AplOperations } from './apl-operations'
+import { AplOperator, AplOperatorConfig } from './apl-operator'
+import { GitRepository } from './git-repository'
+import { Installer } from './installer'
+import { getErrorMessage } from './utils'
+import { operatorEnv } from './validators'
 
 dotenv.config()
 
 const d = terminal('operator:main')
 
-function loadConfig(aplOps: AplOperations, gitCredentials: GitCredentials): AplOperatorConfig {
-  // Get credentials from process.env directly since they may have been set after operatorEnv was parsed
-  const { username } = gitCredentials
-  const { password } = gitCredentials
-  const gitHost = env.GIT_URL
-  const gitPort = env.GIT_PORT
-  const gitProtocol = env.GIT_PROTOCOL
-  const repoPath = env.ENV_DIR
-  const gitOrg = operatorEnv.GIT_ORG
-  const gitRepo = operatorEnv.GIT_REPO
-  const pollIntervalMs = operatorEnv.POLL_INTERVAL_MS
-  const reconcileIntervalMs = operatorEnv.RECONCILE_INTERVAL_MS
+async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
+  const gitConfig = await getStoredGitRepoConfig()
+
+  if (!gitConfig) {
+    throw new Error('Git config not found in stored secrets/configmap. Run installation first.')
+  }
+
   const gitRepository = new GitRepository({
-    username,
-    password,
-    gitHost,
-    gitPort,
-    gitProtocol,
-    repoPath,
-    gitOrg,
-    gitRepo,
+    authenticatedUrl: gitConfig.authenticatedUrl,
+    repoPath: env.ENV_DIR,
   })
 
   return {
     gitRepo: gitRepository,
+    gitConfig,
     aplOps,
-    pollIntervalMs,
-    reconcileIntervalMs,
+    pollIntervalMs: operatorEnv.POLL_INTERVAL_MS,
+    reconcileIntervalMs: operatorEnv.RECONCILE_INTERVAL_MS,
   }
 }
 
@@ -78,23 +68,28 @@ async function main(): Promise<void> {
 
     // Phase 1: Run installation with retry until success
     const installer = new Installer(aplOps)
+
+    const installationMode = await installer.getInstallationMode()
+    const isRecoveryMode = installationMode === 'recovery'
     const isInstalled = await installer.isInstalled()
     if (isInstalled) {
       d.info('Installation already completed, skipping install steps')
+    } else if (isRecoveryMode) {
+      d.info('Recovery mode enabled, checking external git and kms prerequisites')
+      await installer.ensureRecoveryPrerequisites()
+      await installer.recoverFromGit()
+      d.info('Recovery installation completed, switching installation mode to standard')
+      await installer.resetRecoveryModeToStandard()
+      await installer.reconcileInstall()
     } else {
-      d.info('=== Starting Installation Process ===')
+      d.info('Standard mode enabled, initializing installer')
       await installer.initialize()
       await installer.reconcileInstall()
     }
-    const gitCredentials = await installer.setEnvAndCreateSecrets()
 
-    // Start trace collection in background (runs for 30 minutes from ConfigMap creation)
-    runTraceCollectionLoop().catch((error) => {
-      d.warn('Trace collection loop failed:', getErrorMessage(error))
-    })
-
-    // Phase 2: Start operator for GitOps operations
-    const config = loadConfig(aplOps, gitCredentials)
+    // Phase 2: Set environment variables and start operator for GitOps operations
+    // await installer.setEnvAndCreateSecrets()
+    const config = await loadConfig(aplOps)
     const operator = new AplOperator(config)
     handleTerminationSignals(operator)
     d.info('=== Starting Operator Process ===')

@@ -225,8 +225,6 @@ environments:
             registry:
               credentials:
                 password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword | quote }}
-          gitea:
-            enabled: true
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
@@ -244,8 +242,6 @@ environments:
               egressLabel: {{ $istioEgressReleaseLabel }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "linode")) }}
-          minio:
-            enabled: {{ $a.minio.enabled }}
           otel:
             enabled: {{ or $a.otel.enabled $a.loki.enabled }}
           prometheus-msteams:

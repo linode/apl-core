@@ -1,22 +1,27 @@
 import retry from 'async-retry'
 import { mkdirSync, rmSync } from 'fs'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
+import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
-import { applyServerSide, getDeploymentState, getHelmReleases, setDeploymentState, waitForCRD } from 'src/common/k8s'
+import { setGitConfig } from 'src/common/git-config'
+import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
+import {
+  applyServerSide,
+  createUpdateConfigMap,
+  getDeploymentState,
+  getHelmReleases,
+  getK8sConfigMap,
+  k8s,
+  setDeploymentState,
+  waitForCRD,
+} from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
-import {
-  cloneOtomiChartsInGitea,
-  commit,
-  createCredentialsSecret,
-  createWelcomeConfigMap,
-  initialSetupData,
-} from './commit'
+import { commit, createCredentialsSecret, createWelcomeConfigMap, initialSetupData } from './commit'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -50,6 +55,12 @@ const retryInstallStep = async <T, Args extends any[]>(
   )
 }
 
+const getInitialInstallationMode = async (): Promise<'standard' | 'recovery'> => {
+  const installationStatus = await getK8sConfigMap(APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, k8s.core())
+  const mode = installationStatus?.data?.installationMode
+  return mode === 'recovery' || mode === 'standard' ? mode : 'standard'
+}
+
 export const installAll = async () => {
   const d = terminal(`cmd:${cmdName}:installAll`)
   const prevState = await getDeploymentState()
@@ -59,7 +70,15 @@ export const installAll = async () => {
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTagFromValues()
   const version = getPackageVersion()
-  await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
+  const installationMode = await getInitialInstallationMode()
+  const deploymentState: Record<string, any> = {
+    status: 'deploying',
+    deployingTag: tag,
+    deployingVersion: version,
+  }
+
+  await createUpdateConfigMap(k8s.core(), APL_OPERATOR_STATUS_CM, APL_OPERATOR_NS, { installationMode })
+  await setDeploymentState(deploymentState)
 
   const state = await getDeploymentState()
   const releases = await getHelmReleases()
@@ -102,8 +121,17 @@ export const installAll = async () => {
   )
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
+    // Get the git configuration from values
+    const values = (await hfValues()) as Record<string, any>
+    // Commit to Git repository
     await commit(true)
-    await cloneOtomiChartsInGitea()
+
+    await setGitConfig({
+      repoUrl: values?.otomi?.git?.repoUrl,
+      branch: values?.otomi?.git?.branch ?? 'main',
+      email: values?.otomi?.git?.email,
+    })
+
     const initialData = await initialSetupData()
     await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)
     await retryInstallStep(createWelcomeConfigMap, initialData.secretName, initialData.domainSuffix)

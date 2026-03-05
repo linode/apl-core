@@ -2,8 +2,9 @@ import { decrypt } from 'src/common/crypt'
 import { commit } from '../cmd/commit'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
+import { GitRepoConfig } from '../common/git-config'
 import { hfValues } from '../common/hf'
-import { waitTillGitRepoAvailable } from '../common/k8s'
+import { waitTillGitRepoAvailable } from '../common/gitea'
 import { ensureTeamGitOpsDirectories } from '../common/utils'
 import { writeValues } from '../common/values'
 import { HelmArguments } from '../common/yargs'
@@ -14,6 +15,7 @@ import { getErrorMessage } from './utils'
 
 export interface AplOperatorConfig {
   gitRepo: GitRepository
+  gitConfig: GitRepoConfig
   aplOps: AplOperations
   pollIntervalMs: number
   reconcileIntervalMs: number
@@ -35,21 +37,23 @@ export class AplOperator {
   private gitRepo: GitRepository
   private aplOps: AplOperations
 
-  readonly repoUrl: string
+  readonly authenticatedUrl: string
   readonly pollInterval: number
   readonly reconcileInterval: number
+  readonly startupGitConfig: GitRepoConfig
 
   constructor(config: AplOperatorConfig) {
-    const { gitRepo, aplOps, pollIntervalMs, reconcileIntervalMs } = config
+    const { gitRepo, gitConfig, aplOps, pollIntervalMs, reconcileIntervalMs } = config
 
     this.pollInterval = pollIntervalMs
     this.reconcileInterval = reconcileIntervalMs
     this.gitRepo = gitRepo
     this.aplOps = aplOps
-    this.repoUrl = gitRepo.repoUrl
+    this.authenticatedUrl = gitRepo.authenticatedUrl
+    this.startupGitConfig = gitConfig
 
-    this.d.info(`Initializing APL Operator with repo URL: ${maskRepoUrl(gitRepo.repoUrl)}`)
-    this.d.debug(`Initializing APL Operator with repo URL: ${gitRepo.repoUrl}`)
+    this.d.info(`Initializing APL Operator with repo URL: ${maskRepoUrl(gitRepo.authenticatedUrl)}`)
+    this.d.debug(`Initializing APL Operator with repo URL: ${gitRepo.authenticatedUrl}`)
   }
 
   // public for testing
@@ -87,7 +91,7 @@ export class AplOperator {
       const values = await hfValues({}, env.ENV_DIR)
       await ensureTeamGitOpsDirectories(env.ENV_DIR, values ?? {})
 
-      await commit(false, {} as HelmArguments) // Pass an empty object to clear any stale parsed args
+      await commit(false, {} as HelmArguments, this.startupGitConfig) // Pass startup config to use frozen git credentials
 
       if (applyTeamsOnly) {
         await this.aplOps.applyTeams()
@@ -178,7 +182,7 @@ export class AplOperator {
     this.d.info('Starting APL operator')
 
     try {
-      await waitTillGitRepoAvailable(this.repoUrl)
+      await waitTillGitRepoAvailable(this.authenticatedUrl)
       await this.gitRepo.clone()
       this.d.info('APL operator started successfully')
     } catch (error) {

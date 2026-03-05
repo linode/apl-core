@@ -3582,7 +3582,7 @@
       "collapsed": true,
       "datasource": {
         "type": "prometheus",
-        "uid": "P98FD586FDD5909DA"
+        "uid": "prometheus"
       },
       "gridPos": {
         "h": 1,
@@ -3599,7 +3599,7 @@
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "P98FD586FDD5909DA"
+            "uid": "prometheus"
           },
           "fill": 1,
           "fillGradient": 0,
@@ -3638,7 +3638,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "P98FD586FDD5909DA"
+                "uid": "prometheus"
               },
               "expr": "sum(increase(argocd_redis_request_total{namespace=~\"$namespace\"}[$interval])) by (failed)",
               "refId": "A"
@@ -3679,7 +3679,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P98FD586FDD5909DA"
+            "uid": "prometheus"
           },
           "refId": "A"
         }

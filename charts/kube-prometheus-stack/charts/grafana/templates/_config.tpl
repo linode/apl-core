@@ -125,7 +125,7 @@ download_dashboards.sh: |
     {{- end }}
     {{- if kindIs "slice" $value.datasource }}
       {{- range $value.datasource }}
-        | sed '/-- .* --/! s/${{"{"}}{{ .name }}}/{{ .value }}/g' \
+        | sed -E '/-- .* --/! s/\$\{{"{"}}?{{ .name }}\}?/{{ .value }}/g' \
       {{- end }}
     {{- end }}
   {{- end }}

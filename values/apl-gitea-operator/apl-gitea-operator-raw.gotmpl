@@ -25,7 +25,7 @@ resources:
       name: apl-gitea-operator-secret
       namespace: apl-gitea-operator
     data:
-      giteaPassword: {{ $g.adminPassword | b64enc }}
+      giteaPassword: {{ $v.otomi.git.password | b64enc }}
       oidcClientId: {{ $k.idp.clientID | b64enc }}
       oidcClientSecret: {{ $k.idp.clientSecret | b64enc }}
       oidcEndpoint: {{ $v._derived.oidcBaseUrl | b64enc }}

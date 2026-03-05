@@ -24,16 +24,4 @@ resources:
       AWS_ACCESS_KEY_ID: "{{ $obj.linode.accessKeyId | b64enc }}"
       AWS_SECRET_ACCESS_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
   {{- end }}
-  {{- if eq $obj.type "minioLocal" }}
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      labels:
-        app: loki
-      name: loki-s3-minio-credentials
-    type: Opaque
-    data:
-      AWS_ACCESS_KEY_ID: "{{ $otomiAdmin | b64enc }}"
-      AWS_SECRET_ACCESS_KEY: "{{ $v.otomi.adminPassword | b64enc }}"
-  {{- end }}
   {{- end }}

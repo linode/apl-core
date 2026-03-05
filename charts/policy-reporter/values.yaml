@@ -7,6 +7,10 @@ fullnameOverride: "policy-reporter"
 # -- Overwrite the namespace of all resources
 namespaceOverride: ""
 
+# -- Overwrite apiVersion for specific resources
+apiVersionOverride:
+  podDisruptionBudget: ""
+
 image:
   # -- (string) Image registry
   registry: ghcr.io
@@ -881,6 +885,12 @@ redis:
   username: ""
   # -- (optional) Password
   password: ""
+  # -- (optional) Path to a server CA certificate
+  certificate: ""
+  # -- (optional) Secret name to pull username and password from
+  secretRef: ""
+  # -- Skip TLS verification
+  skipTLS: false
 
 database:
   # -- Use an external Database, supported: mysql, postgres, mariadb

@@ -26,12 +26,12 @@ spec:
           valueFrom:
             secretKeyRef:
               key: accesskey
-              name: mlpipeline-minio-artifact
+              name: mlpipeline-obj-artifact
         - name: MINIO_SECRET_KEY
           valueFrom:
             secretKeyRef:
               key: secretkey
-              name: mlpipeline-minio-artifact
+              name: mlpipeline-obj-artifact
         - name: ALLOW_CUSTOM_VISUALIZATIONS
           value: "true"
         - name: FRONTEND_SERVER_NAMESPACE

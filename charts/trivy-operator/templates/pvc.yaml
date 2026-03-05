@@ -3,7 +3,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Values.alternateReportStorage.volumeName }}
-  namespace: {{ .Release.namespace }}
+  namespace: {{ include "trivy-operator.namespace" . }}
 spec:
   accessModes:
     - ReadWriteOnce

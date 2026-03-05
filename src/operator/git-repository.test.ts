@@ -36,14 +36,8 @@ describe('GitRepository', () => {
     jest.clearAllMocks()
 
     defaultConfig = {
-      username: 'testuser',
-      password: 'testpass',
-      gitHost: 'github.com',
-      gitPort: '443',
-      gitProtocol: 'https',
+      authenticatedUrl: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
       repoPath: '/tmp/repo',
-      gitOrg: 'testorg',
-      gitRepo: 'testrepo',
     }
 
     const simpleGit = require('simple-git')
@@ -54,17 +48,8 @@ describe('GitRepository', () => {
   })
 
   describe('constructor', () => {
-    test('should create repository URL correctly', () => {
-      expect(gitRepository.repoUrl).toBe('https://testuser:testpass@github.com:443/testorg/testrepo.git')
-    })
-
-    test('should URL encode password with special characters', () => {
-      const configWithSpecialChars = {
-        ...defaultConfig,
-        password: 'test@pass#123',
-      }
-      const repo = new GitRepository(configWithSpecialChars)
-      expect(repo.repoUrl).toBe('https://testuser:test%40pass%23123@github.com:443/testorg/testrepo.git')
+    test('should store repository URL from config', () => {
+      expect(gitRepository.authenticatedUrl).toBe('https://testuser:testpass@github.com:443/testorg/testrepo.git')
     })
   })
 

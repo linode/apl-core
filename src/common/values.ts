@@ -55,46 +55,6 @@ export const getPackageVersion = (): string => {
   return pkg.version
 }
 
-export interface Repo {
-  email: string
-  username: string
-  password: string
-  remote: string
-  branch: string
-}
-
-export const getRepo = (values: Record<string, any>): Repo => {
-  const giteaEnabled = values?.apps?.gitea?.enabled ?? true
-  const byor = !!values?.apps?.['otomi-api']?.git
-  if (!giteaEnabled && !byor) {
-    throw new Error('Gitea is disabled but no apps.otomi-api.git config was given.')
-  }
-  let username = 'Otomi Admin'
-  let email: string
-  let password: string
-  let branch = 'main'
-  let remote
-  if (!giteaEnabled) {
-    const otomiApiGit = values?.apps?.['otomi-api']?.git
-    username = otomiApiGit?.user
-    password = otomiApiGit?.password
-    remote = otomiApiGit?.repoUrl
-    email = otomiApiGit?.email
-    branch = otomiApiGit?.branch ?? branch
-  } else {
-    username = 'otomi-admin'
-    password = values?.apps?.gitea?.adminPassword
-    email = `pipeline@cluster.local`
-    const gitUrl = env.GIT_URL
-    const gitPort = env.GIT_PORT
-    const gitOrg = 'otomi'
-    const gitRepo = 'values'
-    const protocol = env.GIT_PROTOCOL
-    remote = `${protocol}://${username}:${encodeURIComponent(password)}@${gitUrl}:${gitPort}/${gitOrg}/${gitRepo}.git`
-  }
-  return { remote, branch, email, username, password }
-}
-
 function mergeCustomizer(prev, next) {
   return next
 }
