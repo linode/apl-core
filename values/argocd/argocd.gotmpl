@@ -282,5 +282,5 @@ extraObjects:
                   type: ReplaceFullPath
                   replaceFullPath: /platform-logout
                 statusCode: 302
-  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "argocd" "gatewayName" $v.ingress.platformClass.className "hostnames" (list $hostname)) | nindent 4 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "argocd" "gatewayName" $v.ingress.platformClass.className "host" $hostname) | nindent 4 }}
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "argocd" "host" $hostname) | nindent 4 }}

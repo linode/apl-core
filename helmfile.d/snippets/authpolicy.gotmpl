@@ -1,4 +1,8 @@
-{{ $v := . }}
+{{- $v := . }}
+{{- $hosts := $v | get "hosts" list }}
+{{- with $v | get "host" nil }}
+{{- $hosts = append $hosts . }}
+{{- end }}
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
@@ -19,9 +23,7 @@ spec:
       to:
         - operation:
             hosts:
-              {{- range $hostname := $v.hostnames }}
-              - {{ $hostname }}
-              {{- end }}
+              {{- $hosts | toYaml | nindent 14 }}
             notPaths:
               - "/oauth2/*"
               - "/platform-logout"
