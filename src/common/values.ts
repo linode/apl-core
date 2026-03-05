@@ -1,6 +1,6 @@
 import { existsSync } from 'fs'
 import { mkdir, unlink, writeFile } from 'fs/promises'
-import { cloneDeep, isEmpty, isEqual, merge, mergeWith, pick, set } from 'lodash'
+import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, pick, set } from 'lodash'
 import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { stringify } from 'yaml'
@@ -10,7 +10,16 @@ import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
 import { saveValues } from './repo'
-import { extract, flattenObject, getValuesSchema, gucci, loadYaml, pkg, removeBlankAttributes } from './utils'
+import {
+  extract,
+  flattenObject,
+  getSchemaSecretsPaths,
+  getValuesSchema,
+  gucci,
+  loadYaml,
+  pkg,
+  removeBlankAttributes,
+} from './utils'
 import { HelmArguments } from './yargs'
 
 export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 200): string => {
@@ -135,6 +144,7 @@ export const generateSecrets = async (
   deps = {
     terminal,
     getValuesSchema,
+    getSchemaSecretsPaths,
   },
 ): Promise<Record<string, any>> => {
   const d = deps.terminal('common:values:generateSecrets')
@@ -158,6 +168,16 @@ export const generateSecrets = async (
   // Only return values that have x-secrets prop and are now fully templated:
   const templatePaths = Object.keys(flattenObject(schemaSecrets))
   const res = pick(allSecrets, templatePaths)
+
+  // Template paths use schema patternProperties regex keys which don't match concrete team names.
+  // Expand team paths so team secrets are included in the result.
+  const teamNames = Object.keys(get(values, 'teamConfig', {})).filter((t) => t !== 'admin')
+  if (teamNames.length > 0) {
+    const expandedPaths = await deps.getSchemaSecretsPaths(teamNames)
+    const teamSecrets = pick(allSecrets, expandedPaths)
+    merge(res, teamSecrets)
+  }
+
   d.debug('generateSecrets result: ', res)
   return res
 }
