@@ -6,13 +6,19 @@ import { getFilename } from 'src/common/utils'
 import { HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
+import { getRepo } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 
 export const pull = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:pull`)
   const allValues = await hfValues()
-  const branch = allValues?.otomi?.git?.branch ?? 'main'
+  if (!allValues) {
+    d.error('No values found, skipping git pull')
+    return
+  }
+  const gitRepo = getRepo(allValues)
+  const { branch } = gitRepo
   d.info('Pulling latest values')
   cd(env.ENV_DIR)
   try {
