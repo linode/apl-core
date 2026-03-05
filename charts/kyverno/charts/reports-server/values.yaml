@@ -1,0 +1,302 @@
+# -- Internal settings used with `helm template` to generate install manifest
+# @ignored
+templating:
+  enabled: false
+
+postgresql:
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/postgresql
+    tag: 16.1.0-debian-11-r22
+    digest: ""
+
+  # -- Deploy postgresql dependency chart
+  enabled: true
+
+  auth:
+    postgresPassword: reports
+
+    database: reportsdb
+
+# -- Name override
+nameOverride: ""
+
+# -- Full name override
+fullnameOverride: ""
+
+# -- Number of pod replicas
+replicaCount: 1
+
+# -- Optional cluster name, used to easily identify database records when querying the database directly
+clusterName: ""
+
+image:
+  # -- Image registry
+  registry: ghcr.io
+  # -- Image repository
+  repository: kyverno/reports-server
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Image tag (will default to app version if not set)
+  tag: ~
+
+# -- Image pull secrets
+imagePullSecrets: []
+
+# -- Priority class name
+priorityClassName: system-cluster-critical
+
+serviceAccount:
+  # -- Create service account
+  create: true
+
+  # -- Service account annotations
+  annotations: {}
+
+  # -- Service account name (required if `serviceAccount.create` is `false`)
+  name: ""
+
+# -- Pod annotations
+podAnnotations: {}
+
+# -- Labels to add to resources managed by the chart
+commonLabels: {}
+
+# -- Pod security context
+podSecurityContext:
+  fsGroup: 2000
+
+# -- Provide additional environment variables to the pods. Map with the same format as kubernetes deployment spec's env.
+podEnv: {}
+
+# -- Container security context
+# @default -- See [values.yaml](values.yaml)
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  privileged: false
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
+
+# -- Liveness probe
+livenessProbe:
+  initialDelaySeconds: 20
+  failureThreshold: 10
+  periodSeconds: 10
+  httpGet:
+    path: /livez
+    port: https
+    scheme: HTTPS
+
+# -- Readiness probe
+readinessProbe:
+  initialDelaySeconds: 30
+  failureThreshold: 10
+  periodSeconds: 10
+  httpGet:
+    path: /readyz
+    port: https
+    scheme: HTTPS
+
+metrics:
+  # -- Enable prometheus metrics
+  enabled: true
+
+  serviceMonitor:
+    # -- Enable service monitor for scraping prometheus metrics
+    enabled: false
+
+    # -- Service monitor additional labels
+    additionalLabels: {}
+
+    # -- Service monitor scrape interval
+    interval: ""
+
+    # -- Service monitor metric relabelings
+    metricRelabelings: []
+
+    # -- Service monitor relabelings
+    relabelings: []
+
+    # -- Service monitor scrape timeout
+    scrapeTimeout: ""
+
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment the following
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+resources:
+  # -- Container resource limits
+  limits:
+    # cpu: 100m
+    # memory: 128Mi
+
+  # -- Container resource requests
+  requests:
+    # cpu: 100m
+    # memory: 128Mi
+
+autoscaling:
+  # -- Enable autoscaling
+  enabled: false
+
+  # -- Min number of replicas
+  minReplicas: 1
+
+  # -- Max number of replicas
+  maxReplicas: 100
+
+  # -- Target CPU utilisation
+  targetCPUUtilizationPercentage: 80
+
+  # -- Target Memory utilisation
+  targetMemoryUtilizationPercentage: ~
+
+# -- Using a PDB is highly recommended for highly available deployments. Defaults to enabled. The default configuration doesn't prevent disruption when using a single replica
+pdb:
+  # -- Enable PodDisruptionBudget
+  enabled: true
+  # -- minAvailable pods for PDB, cannot be used together with maxUnavailable
+  minAvailable: ~
+  # -- maxUnavailable pods for PDB, will take precedence over minAvailable if both are defined
+  maxUnavailable: 50%
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity
+affinity: {}
+
+service:
+  # -- Service type
+  type: ClusterIP
+
+  # -- Service port
+  port: 443
+
+config:
+  etcd:
+    enabled: false
+    endpoints: ~
+    insecure: true
+
+  db:
+    # -- If set, database connection information will be read from the Secret with this name. Overrides `db.host`, `db.name`, `db.user`, and `db.password`.
+    secretName: ""
+
+    # -- Database host
+    host: ""
+    # -- The database host will be read from this `key` in the specified Secret, when `db.secretName` is set.
+    hostSecretKeyName: "host"
+
+    # -- Database port
+    port: 5432
+    # -- The database port will be read from this `key` in the specified Secret, when `db.secretName` is set.
+    portSecretKeyName: "port"
+
+    # -- Database name
+    name: reportsdb
+    # -- The database name will be read from this `key` in the specified Secret, when `db.secretName` is set.
+    dbNameSecretKeyName: "dbname"
+
+    # -- Database user
+    user: postgres
+
+    # -- The database username will be read from this `key` in the specified Secret, when `db.secretName` is set.
+    userSecretKeyName: "username"
+
+    # -- Database password
+    password: reports
+
+    # -- The database password will be read from this `key` in the specified Secret, when `db.secretName` is set.
+    passwordSecretKeyName: "password"
+
+    # -- Database SSL
+    sslmode: disable
+
+    # -- Database SSL root cert
+    sslrootcert: ""
+
+    # -- Database SSL key
+    sslkey: ""
+
+    # -- Database SSL cert
+    sslcert: ""
+
+apiServicesManagement:
+  # -- Create a helm hooks to delete api services on uninstall
+  enabled: true
+
+  # -- Install api services in manifest
+  installApiServices:
+    # -- Store reports in reports-server
+    enabled: true
+
+    # -- Store ephemeral reports in reports-server
+    installEphemeralReportsService: true
+
+    # -- Store open reports in reports-server
+    installOpenreportsService: true
+
+  image:
+    # -- (string) Image registry
+    registry: docker.io
+    # -- Image repository
+    repository: bitnamilegacy/kubectl
+    # -- Image tag
+    # Defaults to `latest` if omitted
+    tag: "1.30.2"
+    # -- (string) Image pull policy
+    # Defaults to image.pullPolicy if omitted
+    pullPolicy: ~
+
+  # -- Image pull secrets
+  imagePullSecrets: []
+
+  # -- Security context for the pod
+  podSecurityContext: {}
+
+  # -- Node labels for pod assignment
+  nodeSelector: {}
+
+  # -- List of node taints to tolerate
+  tolerations: []
+
+  # -- Pod anti affinity constraints.
+  podAntiAffinity: {}
+
+  # -- Pod affinity constraints.
+  podAffinity: {}
+
+  # -- Pod labels.
+  podLabels: {}
+
+  # -- Pod annotations.
+  podAnnotations: {}
+
+  # -- Node affinity constraints.
+  nodeAffinity: {}
+
+  # -- Security context for the hook containers
+  securityContext:
+    runAsUser: 65534
+    runAsGroup: 65534
+    runAsNonRoot: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
+
+extraObjects: []
