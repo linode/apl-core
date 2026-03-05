@@ -19,13 +19,32 @@ resources:
       hasArgocd: "{{ $v.apps.argocd.enabled | toString }}"
       domainSuffix: "{{ $v.cluster.domainSuffix }}"
       teamConfig: {{ $teamConfig | toJson }}
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
       name: apl-gitea-operator-secret
       namespace: apl-gitea-operator
-    data:
-      giteaPassword: {{ $v.otomi.git.password | b64enc }}
-      oidcClientId: {{ $k.idp.clientID | b64enc }}
-      oidcClientSecret: {{ $k.idp.clientSecret | b64enc }}
-      oidcEndpoint: {{ $v._derived.oidcBaseUrl | b64enc }}
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: apl-gitea-operator-secret
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            giteaPassword: '{{ "{{ .gitPassword | toString }}" }}'
+            oidcClientId: {{ $k.idp.clientID }}
+            oidcClientSecret: '{{ "{{ .keycloakClientSecret | toString }}" }}'
+            oidcEndpoint: {{ $v._derived.oidcBaseUrl }}
+      data:
+        - secretKey: gitPassword
+          remoteRef:
+            key: otomi-platform-secrets
+            property: git_password
+        - secretKey: keycloakClientSecret
+          remoteRef:
+            key: keycloak-secrets
+            property: idp_clientSecret

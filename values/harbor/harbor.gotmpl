@@ -31,7 +31,8 @@ core:
 
   resources: {{- $h.resources.core | toYaml | nindent 4 }}
   existingSecret: harbor-core-secret
-  xsrfKey: {{ $h | get "core.xsrfKey" nil }}
+  existingXsrfSecret: harbor-core-xsrf-secret
+  existingXsrfSecretKey: CSRF_KEY
 
 database:
   maxOpenConns: {{ $h.databaseMaxConnections }}

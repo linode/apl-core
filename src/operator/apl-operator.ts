@@ -3,8 +3,8 @@ import { commit } from '../cmd/commit'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { GitRepoConfig } from '../common/git-config'
-import { hfValues } from '../common/hf'
 import { waitTillGitRepoAvailable } from '../common/gitea'
+import { hfValues } from '../common/hf'
 import { ensureTeamGitOpsDirectories } from '../common/utils'
 import { writeValues } from '../common/values'
 import { HelmArguments } from '../common/yargs'
@@ -99,6 +99,7 @@ export class AplOperator {
       } else {
         await this.aplOps.apply()
       }
+
       this.d.info(`[${trigger}] Apply process completed`)
 
       await updateApplyState({

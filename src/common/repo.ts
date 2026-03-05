@@ -571,7 +571,6 @@ export async function setValuesFile(
   deps = { pathExists: existsSync, loadValues, writeFile },
 ): Promise<string> {
   const valuesPath = path.join(envDir, 'values-repo.yaml')
-  // if (await deps.pathExists(valuesPath)) return valuesPath
   const allValues = await deps.loadValues(envDir)
   await deps.writeFile(valuesPath, objectToYaml(allValues))
   return valuesPath

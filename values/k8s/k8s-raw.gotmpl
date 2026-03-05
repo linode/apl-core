@@ -72,12 +72,3 @@ resources:
     value: 1000000
     globalDefault: false
     description: "This priority class should be used for Otomi High priority service pods only."
-
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: custom-ca
-      namespace: cert-manager
-    data:
-      tls.crt: {{ $cm.customRootCA | b64enc }}
-      tls.key: {{ $cm.customRootCAKey | b64enc}}

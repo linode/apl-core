@@ -205,8 +205,7 @@ configs:
   {{- end }}
 
   secret:
-    extra:
-      oidc.clientSecret: {{ $k.idp.clientSecret | quote }}
+    extra: {}
   params:
     server.insecure: true # nginx terminates tls
     # -- Number of application status processors

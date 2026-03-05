@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $otomiAdmin := "otomi-admin" }}
+{{- $k := $v.apps.keycloak }}
 {{- $obj := $v.obj.provider }}
 
 resources:
@@ -9,20 +9,50 @@ resources:
     name: custom-ca
   data:
     custom-ca.pem: {{ .Values._derived.caCert | b64enc }}
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: keycloak-initial-admin
     namespace: keycloak
-  data:
-    password: {{ .Values.otomi.adminPassword | b64enc }}
-    username: {{ .Values.apps.keycloak.adminUsername | b64enc }}
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: keycloak-initial-admin
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          password: '{{ "{{ .adminPassword | toString }}" }}'
+          username: {{ $k.adminUsername }}
+    data:
+      - secretKey: adminPassword
+        remoteRef:
+          key: otomi-platform-secrets
+          property: adminPassword
 {{- if eq $obj.type "linode" }}
-- apiVersion: v1
-  kind: Secret
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
   metadata:
     name: linode-creds
-  data:
-    S3_STORAGE_ACCOUNT: "{{ $obj.linode.accessKeyId | b64enc }}"
-    S3_STORAGE_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: linode-creds
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          S3_STORAGE_ACCOUNT: {{ $obj.linode.accessKeyId }}
+          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey | toString }}" }}'
+    data:
+      - secretKey: secretAccessKey
+        remoteRef:
+          key: obj-storage-secrets
+          property: provider_linode_secretAccessKey
 {{- end }}

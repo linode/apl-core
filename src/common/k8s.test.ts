@@ -14,8 +14,8 @@ import {
   V1StatefulSet,
   V1Status,
 } from '@kubernetes/client-node'
-import { X509Certificate } from 'crypto'
 import retry from 'async-retry'
+import { X509Certificate } from 'crypto'
 import { ARGOCD_APP_PARAMS } from './constants'
 import { terminal } from './debug'
 import { env } from './envalid'
@@ -733,8 +733,8 @@ describe('helm operations in progress check', () => {
 
     await k8s.deletePendingHelmReleases()
     expect(mockGetPendingHelmReleases).toHaveBeenCalled()
-    expect(mockDeleteSecretForHelmRelease).toHaveBeenNthCalledWith(1, 'release-1', 'ns-1')
-    expect(mockDeleteSecretForHelmRelease).toHaveBeenNthCalledWith(3, 'release-2', 'ns-2')
+    expect(mockDeleteSecretForHelmRelease).toHaveBeenNthCalledWith(2, 'release-1', 'ns-1', 2)
+    expect(mockDeleteSecretForHelmRelease).toHaveBeenNthCalledWith(3, 'release-2', 'ns-2', 1)
   })
 })
 
