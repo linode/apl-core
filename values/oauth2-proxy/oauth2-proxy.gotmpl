@@ -193,3 +193,6 @@ gatewayApi:
             - name: Access-Control-Allow-Methods
               value: "GET, OPTIONS"
   {{- end }}
+
+extraObjects:
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "oauth2-proxy" "host" $v._derived.authDomain) | nindent 4 }}

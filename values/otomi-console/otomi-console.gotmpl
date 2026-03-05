@@ -4,6 +4,7 @@
 {{- $version := $v.versions | get "console" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+{{- $hostname := print "console." $v.cluster.domainSuffix }}
 replicaCount: 1
 resources: {{- $o.resources | toYaml | nindent 2 }}
 image:
@@ -12,8 +13,6 @@ image:
   {{- end }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
-
-
 
 env:
   API_BASE_URL: /api
@@ -34,7 +33,7 @@ httpRoute:
   annotations:
     {{ . | toYaml | nindent 4 }}
   {{- end }}
-  hostname: {{ printf "console.%s" $v.cluster.domainSuffix }}
+  hostname: {{ $hostname }}
   parentRefs:
     {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
   additionalRules:
@@ -52,3 +51,6 @@ httpRoute:
       backendRefs:
         - name: otomi-api
           port: 80
+
+extraManifests:
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "otomi-console" "host" $hostname) | nindent 4 }}

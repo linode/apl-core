@@ -254,3 +254,4 @@ extraDeploy:
             - path:
                 type: PathPrefix
                 value: /
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "gitea" "host" $giteaDomain) | nindent 4 }}

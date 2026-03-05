@@ -124,3 +124,4 @@ extraManifests:
             - path:
                 type: PathPrefix
                 value: /
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "keycloak" "host" $v._derived.keycloakDomain) | nindent 4 }}
