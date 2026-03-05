@@ -50,7 +50,7 @@ async function renderKyvernoCrdTemplates(chartDir) {
   console.log(`Rendering templates from ${chartDir}`)
   const crdPath = `${chartDir}/crds`
   const tempPath = await $`mktemp -d`
-  await $`helm template --output-dir ${tempPath} ${chartDir}`
+  await $`helm template --set crds.install=true --output-dir ${tempPath} ${chartDir}`
   console.log(`Adding templates in ${crdPath}`)
   await $`mv ${tempPath}/kyverno/charts/crds/templates ${crdPath}`
   await $`rm -R ${tempPath}`
