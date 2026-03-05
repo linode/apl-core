@@ -61,6 +61,21 @@ const retryInstallStep = async <T, Args extends any[]>(
  * Wait for SealedSecrets controller to decrypt SealedSecret resources into K8s Secrets.
  * Takes the list of applied secrets from applySealedSecretManifestsFromDir.
  */
+const allSecretsExist = async (
+  secrets: { namespace: string; secretName: string }[],
+  deps = { getK8sSecret },
+): Promise<boolean> => {
+  for (const { namespace, secretName } of secrets) {
+    try {
+      const secret = await deps.getK8sSecret(secretName, namespace)
+      if (!secret) return false
+    } catch {
+      return false
+    }
+  }
+  return true
+}
+
 const waitForSealedSecrets = async (
   appliedSecrets: { namespace: string; secretName: string }[],
   timeoutMs = 120000,
@@ -160,11 +175,21 @@ export const installAll = async () => {
   d.info('Applying SealedSecret manifests')
   const appliedSecrets = await applySealedSecretManifestsFromDir(env.ENV_DIR)
 
-  d.info('Restarting sealed-secrets controller')
-  await restartSealedSecretsController()
+  if (appliedSecrets.length > 0) {
+    // Check if all secrets are already decrypted (e.g. on retry after a previous successful run)
+    const allExist = await allSecretsExist(appliedSecrets, { getK8sSecret })
+    if (allExist) {
+      d.info('All sealed secrets already decrypted, skipping controller restart')
+    } else {
+      d.info('Restarting sealed-secrets controller to pick up new manifests')
+      await restartSealedSecretsController()
 
-  d.info('Waiting for sealed secrets to be decrypted into K8s Secrets')
-  await waitForSealedSecrets(appliedSecrets)
+      d.info('Waiting for sealed secrets to be decrypted into K8s Secrets')
+      await waitForSealedSecrets(appliedSecrets)
+    }
+  } else {
+    d.info('No sealed secret manifests found, skipping controller restart')
+  }
 
   // Deploy ESO (External Secrets Operator)
   d.info('Deploying external-secrets operator')
