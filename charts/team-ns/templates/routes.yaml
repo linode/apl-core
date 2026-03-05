@@ -86,6 +86,26 @@ spec:
               {{- end }}
         {{- end }}
       {{- end }}{{- /* any headers */}}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: {{ $serviceName }}-internal
+spec:
+  hosts:
+    - {{ $serviceName }}.{{ $v.domain }}
+    {{- if $s.useCname }}
+    - {{ $s.cname.domain }}
+    {{- end }}
+  location: MESH_INTERNAL
+  ports:
+    - number: 80
+      name: http
+      protocol: HTTP
+    - number: 443
+      name: https
+      protocol: TLS
+  resolution: DNS
 {{- if and $s.useCname $s.cname.tlsSecretName }}
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
