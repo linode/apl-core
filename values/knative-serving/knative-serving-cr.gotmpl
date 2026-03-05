@@ -1,8 +1,10 @@
 {{- $v := .Values }}
-{{- $k := $v.apps.knative -}}
-{{- $knativeServingVersion := "1.18" -}}
-{{- $tag := "v1.18.1" -}}
-{{- $netIstioTag := "v1.18.0" -}}
+{{- $k := $v.apps.knative }}
+{{- $knativeServingVersion := "1.18" }}
+{{- $tag := "v1.18.1" }}
+{{- $netIstioTag := "v1.18.0" }}
+{{- $netGatewayTag := "v1.18.0" }}
+{{- $enableLegacyIngress := $v | get "apps.ingress-nginx-platform.enabled" }}
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
@@ -21,7 +23,14 @@ spec:
       cleanup: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/pkg/cleanup/cmd/cleanup:{{ $tag }}"
       net-istio-controller/controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/controller:{{ $netIstioTag }}"
       net-istio-webhook/webhook: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/webhook:{{ $netIstioTag }}"
+      {{- /* TODO: Reactivate when ORCS is updated */}}
+      {{- /* net-gateway-api-controller/controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-gateway-api/cmd/controller:{{ $netGatewayTag }}" */}}
+      {{- /* net-gateway-api-webhook/webhook: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-gateway-api/cmd/webhook:{{ $netGatewayTag }}" */}}
+      net-gateway-api-controller/controller: "gcr.io/knative-releases/knative.dev/net-gateway-api/cmd/controller:{{ $netGatewayTag }}"
+      net-gateway-api-webhook/webhook: "gcr.io/knative-releases/knative.dev/net-gateway-api/cmd/webhook:{{ $netGatewayTag }}"
   {{- end }}
+  additionalManifests:
+    - URL: https://github.com/knative-extensions/net-gateway-api/releases/download/knative-{{ $netGatewayTag }}/net-gateway-api.yaml
   version: "{{ $knativeServingVersion }}"
   {{- if $v._derived.untrustedCA }}
   controller-custom-certs:
@@ -57,6 +66,7 @@ spec:
       enable-service-links: "false"
     network:
       domain-template: "{{`{{.Name}}`}}-{{`{{.Namespace}}`}}.{{`{{.Domain}}`}}"
+      ingress-class: gateway-api.ingress.networking.knative.dev
     autoscaler:
       stable-window: 600s
       scale-to-zero-grace-period: 60s
@@ -68,12 +78,30 @@ spec:
       queue-sidecar-memory-limit: "{{ $k.resources.queueSidecar.limits.memory }}"
     domain:
       {{ $v.cluster.domainSuffix }}: ''
+    {{- if $enableLegacyIngress }}
     istio:
       gateway.knative-serving.knative-ingress-gateway: {{ $v._derived.ingressPublicGatewayName }}.istio-system.svc.cluster.local
+    {{- end }}
+    gateway:
+      external-gateways: |
+        {{- range $ingress := $v.ingress.classes }}
+        - class: istio
+          gateway: istio-system/{{ $ingress.className }}
+          service: istio-system/{{ $ingress.className }}-istio
+          supported-features:
+            - HTTPRouteRequestTimeout
+        {{- end }}
+      local-gateways: |
+        - class: istio
+          gateway: istio-system/knative-local-gateway
+          service: istio-system/knative-local-gateway-istio
+          supported-features:
+            - HTTPRouteRequestTimeout
     features:
       podspec-securitycontext: enabled
   ingress:
     istio:
+      {{- if $enableLegacyIngress }}
       enabled: true
       knative-ingress-gateway:
         selector:
@@ -81,3 +109,6 @@ spec:
       knative-local-gateway:
         selector:
           istio: {{ $v._derived.defaultIngressGatewayLabel }}
+      {{- else }}
+      enabled: false
+      {{- end }}
