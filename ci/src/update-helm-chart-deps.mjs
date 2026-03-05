@@ -53,21 +53,11 @@ async function renderKyvernoCrdTemplates(chartDir) {
   await $`helm template --set crds.install=true --output-dir ${tempPath} ${chartDir}`
   console.log(`Adding templates in ${crdPath}`)
   await $`mv ${tempPath}/kyverno/charts/crds/templates ${crdPath}`
+  await $`mv ${tempPath}/kyverno/charts/kyverno-api/templates/crds ${crdPath}/policies.kyverno.io`
   await $`rm -R ${tempPath}`
   return true
 }
 
-async function renderKyvernoApiCrdTemplates(chartDir) {
-  console.log(`Rendering templates from ${chartDir}`)
-  const crdPath = `${CHARTS_DIR}/kyverno/crds/policies.kyverno.io`
-  const tempPath = await $`mktemp -d`
-  await $`helm template --output-dir ${tempPath} ${chartDir}`
-  console.log(`Adding templates in ${crdPath}`)
-  await fs.rm(crdPath, { force: true, recursive: true })
-  await $`mv ${tempPath}/kyverno-api/templates/crds ${crdPath}`
-  await $`rm -R ${tempPath}`
-  return false
-}
 
 async function renderOtelCrdTemplates(chartDir) {
   console.log(`Rendering templates from ${chartDir}`)
@@ -147,14 +137,12 @@ const CHART_GROUPS = {
   istio: ['base', 'istiod', 'gateway'],
   kserve: ['kserve', 'kserve-crd'],
   'cloud-firewall': ['cloud-firewall-controller', 'cloud-firewall-crd'],
-  kyverno: ['kyverno', 'kyverno-api'],
 }
 // Skip version check for some charts, that are not stored on their own.
-const CHART_SKIP_PRECHECK = ['cloud-firewall-crd', 'kserve-crd', 'kyverno-api']
+const CHART_SKIP_PRECHECK = ['cloud-firewall-crd', 'kserve-crd']
 // Custom post-processing functions, modifying the charts
 const CHART_POST_FUNCS = {
   kyverno: renderKyvernoCrdTemplates,
-  'kyverno-api': renderKyvernoApiCrdTemplates,
   'opentelemetry-operator': renderOtelCrdTemplates,
   'argocd-image-updater': renderArgoCdImageUpdaterCrd,
   'kserve-crd': copyKserveCrdTemplates,
