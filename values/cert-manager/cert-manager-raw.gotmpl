@@ -75,6 +75,7 @@ resources:
             {{- end }}
         {{- end }}
 {{- end }}
+{{- if $cm | get "customRootCA" "" }}
   - apiVersion: external-secrets.io/v1beta1
     kind: ExternalSecret
     metadata:
@@ -97,6 +98,7 @@ resources:
           remoteRef:
             key: cert-manager-secrets
             property: customRootCAKey
+{{- end }}
   - apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
     metadata:

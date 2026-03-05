@@ -1690,7 +1690,6 @@ properties:
               To be used with issuer externally-managed-tls-secret.
             $ref: '#/definitions/idName'
           customRootCA:
-            x-secret: ''
             type: string
             description: CA that is used to create and verify self-signed certificates. Leave it empty to generate one automatically.
           customRootCAKey:
