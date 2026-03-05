@@ -12,7 +12,7 @@ const cmdName = getFilename(__filename)
 export const pull = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:pull`)
   const allValues = await hfValues()
-  const branch = allValues?.apps?.['otomi-api']?.git?.branch ?? 'main'
+  const branch = allValues?.otomi?.git?.branch ?? 'main'
   d.info('Pulling latest values')
   cd(env.ENV_DIR)
   try {
