@@ -95,7 +95,7 @@ resources:
   - apiVersion: gateway.networking.k8s.io/v1beta1
     kind: ReferenceGrant
     metadata:
-      name: oauth2-proxy-apps
+      name: platform-oauth2-proxy-apps
     spec:
       from:
         {{- range $namespace := $authAppNamespaces }}
