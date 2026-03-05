@@ -70,6 +70,9 @@ dependencies:
   - name: kyverno
     version: 3.5.2
     repository: https://kyverno.github.io/kyverno/
+  - name: kyverno-api
+    version: 0.0.1-alpha.2
+    repository: https://kyverno.github.io/api
   - name: loki
     version: 6.53.0
     repository: https://grafana.github.io/helm-charts
