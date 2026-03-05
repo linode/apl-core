@@ -6,6 +6,7 @@
 {{- $teamServices := ($team | get "services" list) }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 {{- $logoutRedirectParam := printf "%s/protocol/openid-connect/logout?post_logout_redirect_uri=https://%s&client_id=%s" $keycloakRealm $v._derived.consoleDomain $a.keycloak.idp.clientID }}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
@@ -64,6 +65,8 @@ ingressGatewayPrefix: {{ $v._derived.ingressGatewayPrefix }}
 ingressPublicGatewayName: {{ $v._derived.ingressPublicGatewayName }}
 defaultIngressGatewayLabel: {{ $v._derived.defaultIngressGatewayLabel }}
 canaryIngressGatewayLabel: {{ $v._derived.canaryIngressGatewayLabel | quote }}
+useLegacyIngress: {{ $a | get "ingress-nginx-platform.enabled" }}
+httpRouteAnnotations: {{- $httpRoute.annotations | toYaml | nindent 2 }}
 
 gitOps:
 {{- if contains "gitea-http.gitea.svc.cluster.local" $v.otomi.git.repoUrl }}

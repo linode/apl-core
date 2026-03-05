@@ -1,0 +1,32 @@
+{{- $v := . }}
+{{- $hosts := $v | get "hosts" list }}
+{{- with $v | get "host" nil }}
+{{- $hosts = append $hosts . }}
+{{- end }}
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ $v.prefix }}-oauth2-proxy
+  namespace: istio-system
+spec:
+  action: CUSTOM
+  provider:
+    name: oauth2-proxy
+  targetRefs:
+    - name: {{ $v.gatewayName }}
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  rules:
+    - when:
+        - key: request.headers[authorization]
+          notValues: ["*"]
+      to:
+        - operation:
+            hosts:
+              {{- $hosts | toYaml | nindent 14 }}
+            notPaths:
+              - "/oauth2/*"
+              - "/platform-logout"
+            {{- range $path := ($v | get "exclusionPaths" list) }}
+              - {{ $path | quote }}
+            {{- end }}

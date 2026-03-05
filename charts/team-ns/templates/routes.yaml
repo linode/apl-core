@@ -1,0 +1,126 @@
+{{- $v := .Values }}
+{{- $defaultIngressClass := $v.ingress.platformClass.className }}
+{{- range $s := $v.services }}
+{{- $isCoreService := $s.isCore | default false }}
+{{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
+{{- if not (or $isCoreService $isKnativeService) }}
+{{- $tlsPass := $s.tlsPass | default false }}
+{{- $backendName := $s.svc | default $s.name }}
+{{- $backendPort := $s.port | default 80 }}
+{{- $useTrafficControl := dig "trafficControl" "enabled" false $s }}
+{{- $serviceName := print $s.name "-" $v.teamId }}
+{{- $headersRequestSet := dig "headers" "request" "set" nil $s }}
+{{- $headersResponseSet := dig "headers" "response" "set" nil $s }}
+{{- $headersRequestRemove := get $s "removeRequestHeaders" | default nil }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+{{- if $tlsPass }}
+kind: TLSRoute
+{{- else }}
+kind: HTTPRoute
+{{- end }}
+metadata:
+  {{- with $v.httpRouteAnnotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  name: {{ $serviceName }}
+spec:
+  hostnames:
+    - {{ $serviceName }}.{{ $v.domain }}
+    {{- if $s.useCname }}
+    - {{ $s.cname.domain }}
+    {{- end }}
+  parentRefs:
+    - name: {{ $s.ingressClassName | default $defaultIngressClass }}
+      namespace: istio-system
+  rules:
+    - backendRefs:
+      {{- if $useTrafficControl }}
+        - name: {{ $backendName }}-v1
+          port: {{ $backendPort }}
+          weight: {{ $s.trafficControl.weightV1 }}
+        - name: {{ $backendName }}-v2
+          port: {{ $backendPort }}
+          weight: {{ $s.trafficControl.weightV2 }}
+      {{- else }}
+        - name: {{ $backendName }}
+          port: {{ $backendPort }}
+      {{- end }}
+      matches:
+      {{- if and $s.paths (gt (len $s.paths) 0) }}
+      {{- range $path := $s.paths }}
+        - path:
+            type: PathPrefix
+            value: {{ $path }}
+      {{- end }}
+      {{- else }}
+        - path:
+            type: PathPrefix
+            value: /
+      {{- end }}
+      {{- if or $headersRequestSet $headersRequestRemove $headersResponseSet }}
+      filters:
+        {{- if or $headersRequestSet $headersRequestRemove }}
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            {{- with $headersRequestSet }}
+            set:
+              {{- range . }}
+              - name: {{ .name | quote }}
+                value: {{ .value | quote }}
+              {{- end }}
+            {{- end }}
+            {{- with $headersRequestRemove }}
+            remove:
+              {{- . | toYaml | nindent 14 }}
+            {{- end }}
+        {{- end }}
+        {{- with $headersResponseSet }}
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            set:
+              {{- range . }}
+              - name: {{ .name | quote }}
+                value: {{ .value | quote }}
+              {{- end }}
+        {{- end }}
+      {{- end }}{{- /* any headers */}}
+---
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: {{ $serviceName }}-internal
+spec:
+  hosts:
+    - {{ $serviceName }}.{{ $v.domain }}
+    {{- if $s.useCname }}
+    - {{ $s.cname.domain }}
+    {{- end }}
+  location: MESH_INTERNAL
+  ports:
+    - number: 80
+      name: http
+      protocol: HTTP
+    - number: 443
+      name: https
+      protocol: TLS
+  resolution: DNS
+{{- if and $s.useCname $s.cname.tlsSecretName }}
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: {{ $serviceName }}-tls-secret
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      namespace: istio-system
+  to:
+    - group: ""
+      kind: Secret
+      name: {{ $s.cname.tlsSecretName }}
+{{- end }}{{- /* useCname and tlsSecretName */}}
+{{- end }}{{- /* $isCoreService or $isKnativeService */}}
+{{- end }}{{- /* range services */}}
