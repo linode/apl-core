@@ -1,0 +1,16 @@
+{{- $dot := . }}
+{{- $v := .Values }}
+{{- range $gateway := $v.gateways }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gateway-{{ $gateway.name }}
+  labels:
+    {{- include "kubernetes-gateways.labels" $dot | nindent 4 }}
+spec:
+  minAvailable: {{ $gateway.minAvailable | default 1 }}
+  selector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: {{ $gateway.name }}
+{{- end }}

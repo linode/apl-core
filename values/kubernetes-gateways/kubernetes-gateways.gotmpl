@@ -120,6 +120,17 @@ gateways:
     {{- with $ingress | get "loadBalancerIP" nil }}
     loadBalancerIP: {{ . | quote }}
     {{- end }}
+    hpa:
+      # TODO: Replace with values
+      minReplicas: 2
+      maxReplicas: 5
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 50
 {{- end }}
 {{- if $v.apps.knative.enabled }}
   - name: knative-local-gateway
@@ -140,4 +151,15 @@ gateways:
         allowedRoutes:
           namespaces:
             from: All
+    hpa:
+      # TODO: Replace with values
+      minReplicas: 2
+      maxReplicas: 5
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 50
 {{- end }}

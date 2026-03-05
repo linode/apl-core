@@ -18,3 +18,8 @@ gateways: []
   #   entrypoint: null
   #   serviceAnnotations: {}
   #   annotations: {}
+  #   minAvailable: 1
+  #   hpa:
+  #     minReplicas: 2
+  #     maxReplicas: 5
+  #     metrics: []
