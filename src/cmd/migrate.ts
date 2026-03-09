@@ -530,7 +530,7 @@ export async function addAplOperator(): Promise<void> {
   d.info('Apl-operator installed')
 }
 
-async function createPostMigrationJob(name: string, script: string): Promise<void> {
+async function createPostMigrationJob(name: string, script: string, command?: string[]): Promise<void> {
   const parsedArgs = getParsedArgs()
   if (parsedArgs?.dryRun || parsedArgs?.local) {
     return
@@ -559,7 +559,7 @@ async function createPostMigrationJob(name: string, script: string): Promise<voi
                 {
                   image: 'ghcr.io/appscode/kubectl:v1.33.9',
                   name: 'kubectl',
-                  command: ['/bin/bash', '-euo', 'pipefail', '-c', script],
+                  command: command || ['/bin/sh', '-eu', '-c', script],
                   resources: {
                     limits: {
                       cpu: '250m',
@@ -616,11 +616,11 @@ export async function installIstioHelmCharts(): Promise<void> {
       '  sleep 10\n' +
       'done &&\n' +
       'echo "No canary gateway detected." &&\n' +
-      'if [[ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts 2>/dev/null) ]]; then\n' +
+      'if kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts >/dev/null 2>&1; then\n' +
       '  kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts\n' +
       'else\n' +
       '  echo "Istio Operator resource not deployed. Skipping"\n' +
-      'fi && if [[ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator 2>/dev/null) ]]; then\n' +
+      'fi && if kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator >/dev/null 2>&1; then\n' +
       '  kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator &&\n' +
       '  kubectl delete customresourcedefinition istiooperators.install.istio.io --ignore-not-found &&\n' +
       '  kubectl delete ns istio-operator --ignore-not-found --wait=false\n' +
@@ -722,16 +722,26 @@ const ValkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
     d.info('Changing PVC storage class to linode-block-storage for Gitea and OAuth2 Proxy Redis Server')
     if (giteaEnabled) {
       // Kill the PVCs so that they get recreated with the new storage class
-      await createPostMigrationJob(
-        'gitea-pvc-migration',
-        'kubectl delete pvc -l app.kubernetes.io/name=valkey -n gitea',
-      )
+      await createPostMigrationJob('gitea-pvc-migration', '', [
+        'kubectl',
+        'delete',
+        'pvc',
+        '-l',
+        'app.kubernetes.io/name=valkey',
+        '-n',
+        'gitea',
+      ])
     }
     if (oauthEnabled) {
-      await createPostMigrationJob(
-        'oauth2-proxy-redis-server-pvc-migration',
-        'kubectl delete pvc -l app=redis -n istio-system',
-      )
+      await createPostMigrationJob('oauth2-proxy-redis-server-pvc-migration', '', [
+        'kubectl',
+        'delete',
+        'pvc',
+        '-l',
+        'app=redis',
+        '-n',
+        'istio-system',
+      ])
     }
   } else {
     d.info('No need to change PVCs for Gitea and OAuth2 Proxy Redis Server')
