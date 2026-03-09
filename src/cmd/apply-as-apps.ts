@@ -118,7 +118,7 @@ const getArgocdCoreAppManifest = (
   otomiVersion: string,
 ): ArgocdAppManifest => {
   const name = getAppName(release)
-  const patch = (appPatches[name] || genericPatch) as Record<string, any>
+  const ignoreDifferences = (appPatches[name] || genericPatch) as Record<string, any>
   return getArgoCdAppManifest(name, ARGOCD_APP_DEFAULT_LABEL, {
     syncPolicy: ARGOCD_APP_DEFAULT_SYNC_POLICY,
     project: 'default',
@@ -136,7 +136,7 @@ const getArgocdCoreAppManifest = (
       server: 'https://kubernetes.default.svc',
       namespace: release.namespace,
     },
-    ...patch,
+    ...ignoreDifferences,
   })
 }
 
