@@ -8,6 +8,7 @@ import * as path from 'path'
 export interface GitRepositoryConfig {
   authenticatedUrl: string // Full URL with credentials already embedded
   repoPath: string
+  branch: string
 }
 
 export class GitRepository {
@@ -16,12 +17,14 @@ export class GitRepository {
   private d: OtomiDebugger
   readonly authenticatedUrl: string
   private readonly repoPath: string
+  private readonly branch: string
   private readonly skipMarker = '[ci skip]'
 
   constructor(config: GitRepositoryConfig) {
     this.d = terminal('operator:git-repository')
     this.authenticatedUrl = config.authenticatedUrl
     this.repoPath = config.repoPath
+    this.branch = config.branch
     this.git = simpleGit(this.repoPath)
   }
 
@@ -50,7 +53,7 @@ export class GitRepository {
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
     try {
-      await this.git.clone(this.authenticatedUrl, this.repoPath)
+      await this.git.clone(this.authenticatedUrl, this.repoPath, ['-b', this.branch])
       this.d.info(`Repository cloned successfully`)
     } catch (error) {
       this.d.error('Failed to clone repository:', getErrorMessage(error))
@@ -109,7 +112,7 @@ export class GitRepository {
       // to avoid re-creating deleted teams and users
       // and to clean-up the untracked files
       await this.git.clean('f', ['-X'])
-      await this.git.pull('origin', 'main')
+      await this.git.pull('origin', this.branch)
       return this.getCurrentRevision()
     } catch (error) {
       this.d.error('Failed to pull repository:', getErrorMessage(error))
