@@ -334,6 +334,12 @@ environments:
             enabled: false
             serving:
               replicas: 1
+              gatewayAutoscaling:
+                enabled: true
+                minReplicas: 3
+                maxReplicas: 5
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
             resources:
               queueSidecar:
                 requests:
@@ -1138,6 +1144,12 @@ environments:
         ingress:
           platformClass:
             className: platform
+            gatewayAutoscaling:
+              enabled: true
+              minReplicas: 2
+              maxReplicas: 5
+              targetCPUUtilizationPercentage: 80
+              targetMemoryUtilizationPercentage: 80
           classes: []
         alerts:
           receivers:

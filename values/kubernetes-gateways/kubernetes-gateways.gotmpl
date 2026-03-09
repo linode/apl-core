@@ -120,17 +120,26 @@ gateways:
     {{- with $ingress | get "loadBalancerIP" nil }}
     loadBalancerIP: {{ . | quote }}
     {{- end }}
+    {{- with $ingress | get "gatewayAutoscaling" nil }}
+    {{- if .enabled }}
     hpa:
-      # TODO: Replace with values
-      minReplicas: 2
-      maxReplicas: 5
+      minReplicas: {{ . | get "minReplicas" 3 }}
+      maxReplicas: {{ . | get "maxReplicas" 5 }}
       metrics:
         - type: Resource
           resource:
             name: cpu
             target:
               type: Utilization
-              averageUtilization: 50
+              averageUtilization: {{ . | get "targetCPUUtilizationPercentage" 80 }}
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              type: Utilization
+              averageUtilization: {{ . | get "targetMemoryUtilizationPercentage" 80 }}
+    {{- end }}
+    {{- end }}
 {{- end }}
 {{- if $v.apps.knative.enabled }}
   - name: knative-local-gateway
@@ -151,15 +160,24 @@ gateways:
         allowedRoutes:
           namespaces:
             from: All
+    {{- with $v.apps.knative.serving.gatewayAutoscaling }}
+    {{- if .enabled }}
     hpa:
-      # TODO: Replace with values
-      minReplicas: 2
-      maxReplicas: 5
+      minReplicas: {{ .minReplicas }}
+      maxReplicas: {{ .maxReplicas }}
       metrics:
         - type: Resource
           resource:
             name: cpu
             target:
               type: Utilization
-              averageUtilization: 50
+              averageUtilization: {{ .targetCPUUtilizationPercentage }}
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              type: Utilization
+              averageUtilization: {{ .targetMemoryUtilizationPercentage }}
+    {{- end }}
+    {{- end }}
 {{- end }}
