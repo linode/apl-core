@@ -38,6 +38,7 @@ describe('GitRepository', () => {
     defaultConfig = {
       authenticatedUrl: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
       repoPath: '/tmp/repo',
+      branch: 'main',
     }
 
     const simpleGit = require('simple-git')
@@ -110,6 +111,7 @@ describe('GitRepository', () => {
       expect(mockGit.clone).toHaveBeenCalledWith(
         'https://testuser:testpass@github.com:443/testorg/testrepo.git',
         '/tmp/repo',
+        ['-b', 'main'],
       )
       expect(fs.existsSync).toHaveBeenCalledWith('/tmp/repo/.git')
     })
@@ -332,6 +334,25 @@ describe('GitRepository', () => {
       })
       expect(gitRepository.lastRevision).toBe('new123')
       expect(mockGit.diff).toHaveBeenCalledWith(['abc123..new123', '--name-only'])
+    })
+
+    test('should pull from the configured branch', async () => {
+      const customBranchRepo = new GitRepository({
+        authenticatedUrl: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
+        repoPath: '/tmp/repo',
+        branch: 'feature-branch',
+      })
+
+      mockGit.pull.mockResolvedValue(undefined)
+      mockGit.log.mockResolvedValue({
+        latest: { hash: 'abc123' },
+        total: 1,
+        all: [],
+      })
+
+      await customBranchRepo.syncAndAnalyzeChanges()
+
+      expect(mockGit.pull).toHaveBeenCalledWith('origin', 'feature-branch')
     })
 
     test('should handle pull failure', async () => {
