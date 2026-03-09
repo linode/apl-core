@@ -797,11 +797,7 @@ const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void
 
   d.info(`Found NodeBalancer ID ${nbId}, adding annotations to ingress.platformClass`)
   const annotations: Array<{ key: string; value: string }> = get(values, 'ingress.platformClass.annotations', [])
-  const preserveKey = 'service.beta.kubernetes.io/linode-loadbalancer-preserve'
   const nbIdKey = 'service.beta.kubernetes.io/linode-loadbalancer-nodebalancer-id'
-  if (!annotations.find((a) => a.key === preserveKey)) {
-    annotations.push({ key: preserveKey, value: 'true' })
-  }
   if (!annotations.find((a) => a.key === nbIdKey)) {
     annotations.push({ key: nbIdKey, value: String(nbId) })
   }
