@@ -17,7 +17,7 @@ export const pull = async (): Promise<void> => {
     d.error('No values found, skipping git pull')
     return
   }
-  const gitRepo = getRepo(allValues)
+  const gitRepo = await getRepo(allValues)
   const { branch } = gitRepo
   d.info('Pulling latest values')
   cd(env.ENV_DIR)

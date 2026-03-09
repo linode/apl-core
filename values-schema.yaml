@@ -907,7 +907,7 @@ definitions:
   secretTemplates:
     definitions:
       otomiAdminUsername:
-        x-secret: 'admin'
+        x-secret: 'otomi-admin'
   securityContext:
     additionalProperties:
       uniqueItems: true
