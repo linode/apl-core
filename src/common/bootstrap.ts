@@ -12,9 +12,10 @@ import { $, cd } from 'zx'
 
 const cmdName = getFilename(__filename)
 
-export const setIdentity = async (username, email) => {
-  await $`git config --local user.name ${username}`.nothrow().quiet()
-  await $`git config --local user.email ${email}`.nothrow().quiet()
+export const setIdentity = async (username, email, cwd?: string) => {
+  const $run = cwd ? $({ cwd }) : $
+  await $run`git config --local user.name ${username}`.nothrow().quiet()
+  await $run`git config --local user.email ${email}`.nothrow().quiet()
 }
 
 export const recoverFromGit = async (gitConfig: GitRepoConfig): Promise<void> => {
