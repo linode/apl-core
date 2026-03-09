@@ -27,6 +27,7 @@ async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
   const gitRepository = new GitRepository({
     authenticatedUrl: gitConfig.authenticatedUrl,
     repoPath: env.ENV_DIR,
+    branch: gitConfig.branch,
   })
 
   return {
