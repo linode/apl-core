@@ -802,7 +802,6 @@ const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void
     annotations.push({ key: nbIdKey, value: String(nbId) })
   }
   set(values, 'ingress.platformClass.annotations', annotations)
-  await writeValues(values, true)
   d.info('Linode NodeBalancer annotations added to ingress.platformClass successfully')
 }
 
