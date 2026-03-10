@@ -89,6 +89,7 @@ metadata:
   name: trigger-template-{{ .name }}
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   resourcetemplates:

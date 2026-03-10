@@ -1176,4 +1176,4 @@ environments:
             branch: main
             enabled: true
         versions:
-          specVersion: 56
+          specVersion: 57

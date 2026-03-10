@@ -447,5 +447,8 @@ changes:
       - apps.gitea.adminPassword: otomi.git.password
       - apps.gitea.adminUsername: otomi.git.username
   - version: 56
+    customFunctions:
+      - addLinodeNBAnnotations
+  - version: 57
     additions:
       - 'apps.ingress-nginx-platform.enabled': true
