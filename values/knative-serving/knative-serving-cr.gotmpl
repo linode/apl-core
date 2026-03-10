@@ -23,11 +23,8 @@ spec:
       cleanup: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/pkg/cleanup/cmd/cleanup:{{ $tag }}"
       net-istio-controller/controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/controller:{{ $netIstioTag }}"
       net-istio-webhook/webhook: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/webhook:{{ $netIstioTag }}"
-      {{- /* TODO: Reactivate when ORCS is updated */}}
-      {{- /* net-gateway-api-controller/controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-gateway-api/cmd/controller:{{ $netGatewayTag }}" */}}
-      {{- /* net-gateway-api-webhook/webhook: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-gateway-api/cmd/webhook:{{ $netGatewayTag }}" */}}
-      net-gateway-api-controller/controller: "gcr.io/knative-releases/knative.dev/net-gateway-api/cmd/controller:{{ $netGatewayTag }}"
-      net-gateway-api-webhook/webhook: "gcr.io/knative-releases/knative.dev/net-gateway-api/cmd/webhook:{{ $netGatewayTag }}"
+      net-gateway-api-controller/controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-gateway-api/cmd/controller:{{ $netGatewayTag }}"
+      net-gateway-api-webhook/webhook: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-gateway-api/cmd/webhook:{{ $netGatewayTag }}"
   {{- end }}
   additionalManifests:
     - URL: https://github.com/knative-extensions/net-gateway-api/releases/download/knative-{{ $netGatewayTag }}/net-gateway-api.yaml
