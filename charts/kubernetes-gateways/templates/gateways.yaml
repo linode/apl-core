@@ -28,6 +28,10 @@ spec:
       group: ""
       kind: ConfigMap
       name: gateway-{{ $gateway.name }}-options
+  {{- with $gateway.allowedListeners }}
+  allowedListeners:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
   listeners:
     {{- $gateway.listeners | toYaml | nindent 4 }}
 {{- end }}

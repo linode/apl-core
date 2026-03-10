@@ -2,40 +2,6 @@
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- $defaultIngressClass := $v.ingress.platformClass.className }}
 
-{{- $tlsListeners := dict }}
-{{- $cnameListeners := dict }}
-{{- /* Create empty list per ingress class */}}
-{{- range $ingress := $v.ingress.classes }}
-  {{- $_ := set $tlsListeners $ingress.className list }}
-  {{- $_ = set $cnameListeners $ingress.className list }}
-{{- end }}
-
-{{- /* Add specific listener configurations for each cname and/or TLS passthrough */}}
-{{- range $teamId, $team := $v.teamConfig }}
-  {{- range $s := $team | get "services" list }}
-    {{- $tlsPass := $s | get "tlsPass" false }}
-    {{- $cnameDomain := $s | dig "cname" "domain" "" }}
-    {{- $useCname := and ($s | get "useCname" false) (ne $cnameDomain "") }}
-    {{- if or $tlsPass $useCname }}
-      {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
-      {{- $teamSuffix := ternary (print "team-" $teamId) $teamId $isKnativeService }}
-      {{- $serviceName := print $s.name "-" $teamSuffix }}
-      {{- $hostname := ternary $cnameDomain (print $serviceName "." $domainSuffix) $useCname }}
-      {{- $ingressClassName := $s | get "ingressClassName" $defaultIngressClass }}
-      {{- $namespaceName := print "team-" $teamId }}
-      {{- if $tlsPass }}
-        {{- $l := get $ingressClassName $tlsListeners }}
-        {{- $l = append $l (dict "name" $serviceName "hostname" $hostname "namespace" $namespaceName) }}
-        {{- $_ := set $tlsListeners $ingressClassName $l }}
-      {{- else if dig "cname" "tlsSecretName" nil $s }}
-        {{- $l := get $ingressClassName $cnameListeners }}
-        {{- $l = append $l (dict "name" $serviceName "hostname" $hostname "namespace" $namespaceName "secretName" $s.cname.tlsSecretName) }}
-        {{- $_ := set $cnameListeners $ingressClassName $l }}
-      {{- end }}
-    {{- end }}
-  {{- end }}
-{{- end }}
-
 gateways:
 {{- range $ingress := $v.ingress.classes }}
   {{- $gatewayAnnotations := dict }}
@@ -62,6 +28,12 @@ gateways:
     serviceAnnotations:
       {{- . | toYaml | nindent 6 }}
     {{- end }}
+    allowedListeners:
+      namespaces:
+        from: Selector
+        selector:
+          matchLabels:
+            type: team
     listeners:
       - name: http
         hostname: {{ print "*." $domainSuffix | quote }}
@@ -80,43 +52,6 @@ gateways:
         allowedRoutes:
           namespaces:
             from: All
-      {{- range $tlsListener := $tlsListeners | get $ingress.className }}
-      - name: tls-{{ $tlsListener.name }}
-        hostname: {{ $tlsListener.hostname }}
-        protocol: TLS
-        port: 443
-        tls:
-          mode: Passthrough
-        allowedRoutes:
-          namespaces:
-            from: Selector
-            selector:
-              matchLabels:
-                kubernetes.io/metadata.name: {{ $tlsListener.namespace }}
-      {{- end }}
-      {{- range $cnameListener := $cnameListeners | get $ingress.className }}
-      - name: http-cname-{{ $cnameListener.name }}
-        hostname: {{ $cnameListener.hostname }}
-        protocol: HTTP
-        port: 80
-        allowedRoutes:
-          namespaces:
-            from: Same
-      - name: https-cname-{{ $cnameListener.name }}
-        hostname: {{ $cnameListener.hostname }}
-        protocol: HTTPS
-        port: 443
-        tls:
-          certificateRefs:
-            - name: {{ $cnameListener.secretName }}
-              namespace: {{ $cnameListener.namespace }}
-        allowedRoutes:
-          namespaces:
-            from: Selector
-            selector:
-              matchLabels:
-                kubernetes.io/metadata.name: {{ $cnameListener.namespace }}
-      {{- end }}
     {{- with $ingress | get "loadBalancerIP" nil }}
     loadBalancerIP: {{ . | quote }}
     {{- end }}
