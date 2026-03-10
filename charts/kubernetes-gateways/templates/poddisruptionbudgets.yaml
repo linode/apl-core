@@ -1,6 +1,7 @@
 {{- $dot := . }}
 {{- $v := .Values }}
 {{- range $gateway := $v.gateways }}
+{{- if gt (default 2 $gateway.replicas | int) 1 }}
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -13,4 +14,5 @@ spec:
   selector:
     matchLabels:
       gateway.networking.k8s.io/gateway-name: {{ $gateway.name }}
+{{- end }}
 {{- end }}

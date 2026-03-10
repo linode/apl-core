@@ -19,6 +19,8 @@ gateways: []
   #   serviceAnnotations: {}
   #   annotations: {}
   #   minAvailable: 1
+  #   replicas: 1
+  #   resources: {}
   #   hpa:
   #     minReplicas: 2
   #     maxReplicas: 5
