@@ -40,6 +40,11 @@ spec:
         name: {{ .Values.basicAuth.secretRef }}
         key: username
     {{- end }}
+    {{- if .Values.monitoring.serviceMonitor.secure }}
+    scheme: https
+    tlsConfig:
+      {{- toYaml .Values.monitoring.serviceMonitor.tlsConfig | nindent 6 }}
+    {{- end }}
     honorLabels: {{ .Values.monitoring.serviceMonitor.honorLabels }}
     {{- if .Values.monitoring.serviceMonitor.scrapeTimeout }}
     scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout }}
