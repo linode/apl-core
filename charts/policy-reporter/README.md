@@ -3,7 +3,7 @@
 Policy Reporter watches for PolicyReport Resources.
 It creates Prometheus Metrics and can send rule validation events to different targets like Loki, Elasticsearch, Slack or Discord
 
-![Version: 3.7.2](https://img.shields.io/badge/Version-3.7.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.7.2](https://img.shields.io/badge/AppVersion-3.7.2-informational?style=flat-square)
+![Version: 3.7.3](https://img.shields.io/badge/Version-3.7.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.7.3](https://img.shields.io/badge/AppVersion-3.7.3-informational?style=flat-square)
 
 ## Documentation
 
@@ -358,6 +358,8 @@ Open `http://localhost:8082/` in your browser.
 | redis.username | optional | `""` | Username |
 | redis.password | optional | `""` | Password |
 | redis.certificate | optional | `""` | Path to a server CA certificate |
+| redis.clientCert | optional | `""` | Path to client certificate for mutual TLS authentication |
+| redis.clientKey | optional | `""` | Path to client key for mutual TLS authentication |
 | redis.secretRef | optional | `""` | Secret name to pull username and password from |
 | redis.skipTLS | bool | `false` | Skip TLS verification |
 | database.type | string | `""` | Use an external Database, supported: mysql, postgres, mariadb |
@@ -639,6 +641,8 @@ Open `http://localhost:8082/` in your browser.
 | monitoring.serviceMonitor.namespaceSelector | optional | `{}` | NamespaceSelector |
 | monitoring.serviceMonitor.scrapeTimeout | optional | `nil` | ScrapeTimeout |
 | monitoring.serviceMonitor.interval | optional | `nil` | Scrape interval |
+| monitoring.serviceMonitor.secure | bool | `false` | Is TLS required for endpoint |
+| monitoring.serviceMonitor.tlsConfig | object | `{}` | TLS Configuration for endpoint |
 | monitoring.grafana.namespace | string | `nil` | Naamespace for configMap of grafana dashboards |
 | monitoring.grafana.dashboards.enabled | bool | `true` | Enable the deployment of grafana dashboards |
 | monitoring.grafana.dashboards.label | string | `"grafana_dashboard"` | Label to find dashboards using the k8s sidecar |
