@@ -10,16 +10,16 @@ metadata:
     {{- include "kubernetes-gateways.labels" $dot | nindent 4 }}
 data:
   deployment: |
-    replicas: {{ $gateway.replicas | default 2 }}
-    {{- with $gateway.resources }}
     spec:
+      replicas: {{ $gateway.replicas | default 2 }}
+      {{- with $gateway.resources }}
       template:
         spec:
           containers:
             - name: istio-proxy
               resources:
                 {{- . | toYaml | nindent 16 }}
-    {{- end }}
+      {{- end }}
   {{- with $gateway.hpa }}
   horizontalPodAutoscaler: |
     spec:
