@@ -880,7 +880,7 @@ export const applyChanges = async (
 
     c.deletions?.forEach((entry) => {
       unsetAtPath(entry, values)
-      const appMatch = entry.match(/^apps\.(\S+)$/)
+      const appMatch = entry.match(/^apps\.([^.\s]+)$/)
       if (appMatch) {
         const appName = appMatch[1]
         deleteFile(`env/apps/${appName}.yaml`)
