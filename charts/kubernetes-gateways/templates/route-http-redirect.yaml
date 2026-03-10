@@ -1,0 +1,32 @@
+{{- $dot := . }}
+{{- $v := .Values }}
+{{- range $gateway := $v.gateways }}
+{{- $serviceType := $gateway | dig "annotations" "networking.istio.io/service-type" "LoadBalancer" }}
+{{- if eq $serviceType "LoadBalancer" }}
+{{- range $listener := $gateway.listeners }}
+{{- if and (eq $listener.protocol "HTTP") $listener.hostname }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $gateway.name }}-{{ $listener.name }}-https-redirect
+  labels:
+    {{- include "kubernetes-gateways.labels" $dot | nindent 4 }}
+spec:
+  hostnames:
+    - {{ $listener.hostname | quote }}
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ $gateway.name }}
+      sectionName: {{ $listener.name }}
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
+{{- end }}{{/* eq and ($listener.protocol "HTTP" ...) */}}
+{{- end }}{{/* range $listener */}}
+{{- end }}{{/* range eq $serviceType "LoadBalancer" */}}
+{{- end }}{{/* range $gateway */}}
