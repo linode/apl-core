@@ -1,0 +1,33 @@
+{{- $dot := . }}
+{{- $v := .Values }}
+{{- range $gateway := $v.gateways }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-{{ $gateway.name }}-options
+  labels:
+    {{- include "kubernetes-gateways.labels" $dot | nindent 4 }}
+data:
+  deployment: |
+    spec:
+      replicas: {{ $gateway.replicas | default 2 }}
+      {{- with $gateway.resources }}
+      template:
+        spec:
+          containers:
+            - name: istio-proxy
+              resources:
+                {{- . | toYaml | nindent 16 }}
+      {{- end }}
+  {{- with $gateway.hpa }}
+  horizontalPodAutoscaler: |
+    spec:
+      minReplicas: {{ .minReplicas | default 2 }}
+      maxReplicas: {{ .maxReplicas | default 2 }}
+      {{- with .metrics }}
+      metrics:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+  {{- end }}
+{{- end }}
