@@ -56,7 +56,7 @@ gateways:
     loadBalancerIP: {{ . | quote }}
     {{- end }}
     {{- with $ingress | get "gateway" nil }}
-    replicas: {{ . | get "replicas" 2 }}
+    replicas: {{ . | get "replicas" 3 }}
     minAvailable: {{ . | get "minAvailable" 1 }}
     resources:
     {{- with $ingress | get "resources" nil }}
@@ -73,7 +73,7 @@ gateways:
     {{- if .enabled }}
     hpa:
       minReplicas: {{ . | get "minReplicas" 3 }}
-      maxReplicas: {{ . | get "maxReplicas" 5 }}
+      maxReplicas: {{ . | get "maxReplicas" 10 }}
       metrics:
         - type: Resource
           resource:
@@ -88,6 +88,23 @@ gateways:
               type: Utilization
               averageUtilization: {{ . | get "targetMemoryUtilizationPercentage" 80 }}
     {{- end }}
+    {{- else }}
+    hpa:
+      minReplicas: 3
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 80
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              type: Utilization
+              averageUtilization: 80
     {{- end }}
     {{- end }}
 {{- end }}
