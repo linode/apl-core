@@ -753,6 +753,80 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   set(values, 'catalogs.default', defaultCatalog)
 }
 
+const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('addLinodeNBAnnotations')
+  if (values?.cluster?.provider !== 'linode') {
+    d.info('Skipping Linode NodeBalancer annotation migration: provider is not linode')
+    return
+  }
+  if (env.DISABLE_SYNC) {
+    d.info('Skipping Linode NodeBalancer annotation migration in dev/test environment')
+    return
+  }
+
+  const linodeSecret = await getK8sSecret('linode', 'kube-system')
+  if (!linodeSecret?.token) {
+    d.warn('Linode secret not found or token missing in kube-system, skipping Linode NodeBalancer annotation migration')
+    return
+  }
+  const token = linodeSecret.token as string
+
+  d.info('Fetching external IP from ingress-nginx-platform-controller service')
+  let serviceIp: string | undefined
+  try {
+    const svc = await k8s
+      .core()
+      .readNamespacedService({ name: 'ingress-nginx-platform-controller', namespace: 'ingress' })
+    serviceIp = svc?.status?.loadBalancer?.ingress?.[0]?.ip
+  } catch (error) {
+    d.warn(`Error reading ingress-nginx-platform-controller service: ${error}`)
+    return
+  }
+  if (!serviceIp) {
+    d.warn(
+      'No external IP found on ingress-nginx-platform-controller service, skipping Linode NodeBalancer annotation migration',
+    )
+    return
+  }
+  d.info(`Found service external IP ${serviceIp}, querying Linode API for matching NodeBalancer`)
+  let nbId: number | undefined
+  try {
+    const response = await fetch('https://api.linode.com/v4/nodebalancers', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+    if (!response.ok) {
+      d.warn(`Failed to fetch NodeBalancers from Linode API: ${response.status} ${response.statusText}`)
+      return
+    }
+    const data = (await response.json()) as { data: Array<{ id: number; ipv4: string }> }
+    const nb = data.data?.find((n) => n.ipv4 === serviceIp)
+    if (!nb) {
+      d.warn(`No NodeBalancer found matching service IP ${serviceIp}, skipping`)
+      return
+    }
+    nbId = nb.id
+  } catch (error) {
+    d.warn(`Error querying Linode API: ${error}`)
+    return
+  }
+
+  d.info(`Found NodeBalancer ID ${nbId}, adding annotations to ingress.platformClass`)
+  const annotations: Array<{ key: string; value: string }> = get(values, 'ingress.platformClass.annotations', [])
+  const preserveKey = 'service.beta.kubernetes.io/linode-loadbalancer-preserve'
+  const nbIdKey = 'service.beta.kubernetes.io/linode-loadbalancer-nodebalancer-id'
+  if (!annotations.find((a) => a.key === preserveKey)) {
+    annotations.push({ key: preserveKey, value: 'true' })
+  }
+  if (!annotations.find((a) => a.key === nbIdKey)) {
+    annotations.push({ key: nbIdKey, value: String(nbId) })
+  }
+  set(values, 'ingress.platformClass.annotations', annotations)
+  d.info('Linode NodeBalancer annotations added to ingress.platformClass successfully')
+}
+
 export const removeSopsArtifacts = (deps = { existsSync, rmSync, globSync, terminal }): void => {
   const d = deps.terminal(`cmd:${cmdName}:removeSopsArtifacts`)
 
@@ -914,6 +988,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   workloadValuesMigration,
   setLokiStorageSchemaMigration,
   setDefaultAplCatalog,
+  addLinodeNBAnnotations,
   sopsMigration,
 }
 
