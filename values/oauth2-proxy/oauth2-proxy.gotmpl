@@ -184,14 +184,15 @@ gatewayApi:
   {{- end }}
   {{- with $v.otomi.isPreInstalled }}
   rules:
-    - filters:
-      - type: ResponseHeaderModifier
-        responseHeaderModifier:
-          set:
-            - name: Access-Control-Allow-Origin
-              value: "https://cloud.linode.com,https://cloud.staging.linode.com,https://cloud.dev.linode.com"
-            - name: Access-Control-Allow-Methods
-              value: "GET, OPTIONS"
+    - type: CORS
+      cors:
+        allowOrigins:
+          - "https://cloud.linode.com"
+          - "https://cloud.staging.linode.com"
+          - "https://cloud.dev.linode.com"
+        allowMethods:
+          - GET
+          - OPTIONS
   {{- end }}
 
 extraObjects:
