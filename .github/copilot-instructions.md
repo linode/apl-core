@@ -39,9 +39,10 @@ All Helmfile specs in `helmfile.d/` execute alphabetically. Use reusable anchors
 - `src/cmd/migrate.ts`: Logic for handling git data migrations during platform upgrades.
 - `src/common/runtime-upgrades/`: Logic for handling runtime platform upgrades.
 - `src/common/runtime-upgrade.ts`: Main entrypoint for runtime upgrade logic, invoked during reconciliation when a new version is detected.
+- `tests/`: Test fixtures and test cases for validation.
 - `values/`: Helm values templates for applications.
 - `values/grafana-dashboards/grafana-dashboards.gotmpl` a way to register Grafana dashboards. Must match directory from `charts/grafana-dashboards`
-- `values-schema.yaml`: JSON schema defining valid configuration keys and types.
-- `tests/`: Test fixtures and test cases for validation.
 - `values-changes.yaml`: Data migration instructions for `src/cmd/migrate.ts`
+- `values/prometheus-operator/rules`: Additional Prometheus rules for monitoring and alerting.
+- `values-schema.yaml`: JSON schema defining valid configuration keys and types.
 - `versions.yaml` pins image tags for platform components (`api`, `console`, `tasks`, `tools`).
