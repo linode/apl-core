@@ -107,6 +107,12 @@ export class GitRepository {
     return logResult.all.every((commit) => commit.message.includes(this.skipMarker))
   }
 
+  private async resetAndRetryPull(): Promise<string> {
+    await this.git.reset(['--hard', 'HEAD'])
+    await this.git.pull('origin', this.branch)
+    return this.getCurrentRevision()
+  }
+
   private async pull(): Promise<string> {
     try {
       // to avoid re-creating deleted teams and users
@@ -115,8 +121,13 @@ export class GitRepository {
       await this.git.pull('origin', this.branch)
       return this.getCurrentRevision()
     } catch (error) {
-      this.d.error('Failed to pull repository:', getErrorMessage(error))
-      throw new OperatorError('Repository pull failed', error as Error)
+      this.d.warn('Pull failed, resetting local state and retrying:', getErrorMessage(error))
+      try {
+        return await this.resetAndRetryPull()
+      } catch (retryError) {
+        this.d.error('Failed to pull repository:', getErrorMessage(retryError))
+        throw new OperatorError('Repository pull failed', retryError as Error)
+      }
     }
   }
 
