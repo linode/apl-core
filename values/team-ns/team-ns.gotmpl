@@ -69,6 +69,7 @@ useLegacyIngress: {{ $a | get "ingress-nginx-platform.enabled" }}
 httpRouteAnnotations: {{- $httpRoute.annotations | toYaml | nindent 2 }}
 
 gitOps:
+  branch: {{ $v.otomi.git.branch }}
 {{- if contains "gitea-http.gitea.svc.cluster.local" $v.otomi.git.repoUrl }}
   teamRepoUrl:  "https://{{ $v._derived.giteaDomain }}/otomi/team-{{ $teamId }}-argocd.git"
   valuesRepoUrl: "https://{{ $v._derived.giteaDomain }}/otomi/values.git"
