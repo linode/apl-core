@@ -14,3 +14,11 @@ spec:
     platformClass:
         entrypoint: ''
         className: platform
+        gateway:
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 2000m
+              memory: 2048Mi
