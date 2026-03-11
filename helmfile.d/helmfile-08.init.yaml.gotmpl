@@ -11,7 +11,7 @@ bases:
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $domain := $v.cluster.domainSuffix }}
-{{- $hosts := list (print "alertmanager." $domain) (print "grafana." $domain) (print print "prometheus." $domain) }}
+{{- $hosts := list (print "alertmanager." $domain) (print "grafana." $domain) (print "prometheus." $domain) }}
 
 releases:
   - name: prometheus-operator-artifacts
