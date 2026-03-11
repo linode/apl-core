@@ -12,17 +12,17 @@ spec:
   project: team-{{ $v.teamId }}
   sources:
   - repoURL: {{ $v.gitOps.valuesRepoUrl }}
-    targetRevision: HEAD
+    targetRevision: {{ $v.gitOps.branch }}
     path: 'env/teams/{{ $v.teamId }}/sealedsecrets'
     {{- if $v.aiEnabled }}
   - repoURL: {{ $v.gitOps.valuesRepoUrl }}
-    targetRevision: HEAD
+    targetRevision: {{ $v.gitOps.branch }}
     path: 'env/teams/{{ $v.teamId }}/knowledgebases'
   - repoURL: {{ $v.gitOps.valuesRepoUrl }}
-    targetRevision: HEAD
+    targetRevision: {{ $v.gitOps.branch }}
     path: 'env/teams/{{ $v.teamId }}/databases'
   - repoURL: {{ $v.gitOps.valuesRepoUrl }}
-    targetRevision: HEAD
+    targetRevision: {{ $v.gitOps.branch }}
     path: 'env/teams/{{ $v.teamId }}/agents'
     {{- end }}
   destination:
