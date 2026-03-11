@@ -124,3 +124,14 @@ webhooks:
   #         operator: In
   #         values:
   #           - production
+
+namespaceSelector:
+  # -- Namespace selector to filter which namespaces the webhooks apply to.
+  # See https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-namespaceselector
+  # Example:
+  #     matchExpressions:
+  #       - key: team
+  #         operator: NotIn
+  #         values:
+  #           - team-a
+  matchExpressions: []
