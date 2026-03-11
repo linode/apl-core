@@ -11,7 +11,7 @@ image:
   # The Keycloak image repository
   repository: quay.io/keycloak/keycloak
   # Overrides the Keycloak image tag whose default is the chart appVersion
-  tag: "26.5.3"
+  tag: "26.5.5"
   # Overrides the Keycloak image tag with a specific digest
   digest: ""
   # The Keycloak image pull policy
@@ -279,6 +279,56 @@ serviceHeadless:
   annotations: {}
   # Add additional ports to the headless service, e. g. for admin console or exposing JGroups ports
   extraPorts: []
+
+# -- Expose the service via gateway-api HTTPRoute
+# Requires Gateway API resources and suitable controller installed within the cluster
+# (see: https://gateway-api.sigs.k8s.io/guides/)
+httpRoute:
+  # HTTPRoute enabled.
+  enabled: false
+  # Additional HTTPRoute labels
+  labels: {}
+  # HTTPRoute annotations.
+  annotations: {}
+  # The Service port targeted by the HTTPRoute, MUST BE AN NUMBER
+  servicePort: 80
+  # Which Gateways this Route is attached to.
+  parentRefs:
+    - name: gateway
+      sectionName: http
+    # namespace: default
+  # Hostnames matching HTTP header.
+  hostnames:
+    - chart-example.local
+  # List of rules and filters applied.
+  rules:
+    - matches:
+      - path:
+          type: PathPrefix
+          value: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
+
+  # HTTPRoute for console only (/auth/admin)
+  console:
+    # If `true`, an HTTPRoute is created for console path only
+    enabled: false
+    # Additional HTTPRoute labels
+    labels: {}
+    # HTTPRoute annotations.
+    annotations: {}
+    # Which Gateways this Route is attached to.
+    parentRefs:
+      - name: gateway
+        sectionName: http
+      # namespace: default
+    # Hostnames matching HTTP header.
+    hostnames:
+      - chart-example.local
+    # List of rules and filters applied.
+    rules:
+      - matches:
+        - path:
+            type: PathPrefix
+            value: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/admin'
 
 ingress:
   # If `true`, an Ingress is created
