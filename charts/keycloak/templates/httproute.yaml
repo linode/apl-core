@@ -1,0 +1,99 @@
+{{- $httpRoute := .Values.httpRoute -}}
+{{- if $httpRoute.enabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "keycloak.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "keycloak.labels" . | nindent 4 }}
+    {{- range $key, $value := $httpRoute.labels }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- with $httpRoute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- with $httpRoute.parentRefs }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with $httpRoute.hostnames }}
+  hostnames:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range $httpRoute.rules }}
+    {{- with .matches }}
+    - matches:
+      {{- range . }}
+      {{- if .path }}
+        - path:
+            type: {{ .path.type }}
+            value: {{ tpl .path.value $ }}
+        {{- end }}
+      {{- else }}
+      {{ . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- end }}
+    {{- with .filters }}
+      filters:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+      backendRefs:
+        - name: {{ include "keycloak.fullname" $ }}-http
+          port: {{ $httpRoute.servicePort }}
+    {{- end }}
+{{- end }}
+---
+{{- if $httpRoute.console.enabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "keycloak.fullname" . }}-console
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "keycloak.labels" . | nindent 4 }}
+    {{- range $key, $value := $httpRoute.labels }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+    {{- range $key, $value := $httpRoute.console.labels }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- with $httpRoute.console.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+      {{- with pluck "parentRefs" $httpRoute.console $httpRoute | first }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with pluck "hostnames" $httpRoute.console $httpRoute | first }}
+  hostnames:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range $httpRoute.console.rules }}
+    {{- with .matches }}
+    - matches:
+      {{- range . }}
+      {{- if .path }}
+        - path:
+            type: {{ .path.type }}
+            value: {{ tpl .path.value $ }}
+        {{- end }}
+      {{- else }}
+      {{ . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- end }}
+    {{- with .filters }}
+      filters:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+      backendRefs:
+        - name: {{ include "keycloak.fullname" $ }}-http
+          port: {{ $httpRoute.servicePort }}
+    {{- end }}
+{{- end }}
