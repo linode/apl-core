@@ -18,6 +18,18 @@ imagePullSecrets:
 service:
   httpPort: 8080
 
+httpRoute:
+  enabled: true
+  {{- with $httpRoute.annotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  servicePort: 8080
+  parentRefs:
+    {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
+  hostnames:
+    - {{ $v._derived.keycloakDomain }}
+
 http:
   relativePath: "/"
 
@@ -103,25 +115,4 @@ extraEnv: |
         key: password
 
 extraManifests:
-  - apiVersion: gateway.networking.k8s.io/v1
-    kind: HTTPRoute
-    metadata:
-      {{ with $httpRoute.annotations }}
-      annotations:
-        {{ . | toYaml | nindent 8 }}
-      {{- end }}
-      name: keycloak
-    spec:
-      hostnames:
-        - {{ $v._derived.keycloakDomain }}
-      parentRefs:
-        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
-      rules:
-        - backendRefs:
-            - name: keycloak-keycloakx-http
-              port: 8080
-          matches:
-            - path:
-                type: PathPrefix
-                value: /
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "keycloak" "host" $v._derived.keycloakDomain) | nindent 4 }}
