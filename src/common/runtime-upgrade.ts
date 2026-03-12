@@ -69,9 +69,12 @@ export async function runtimeUpgrade({ when, deploymentState }: RuntimeUpgradeAr
             d.info(
               `Runtime upgrade operations detected for version ${upgrade.version}, application: ${applicationName}`,
             )
-            // Wait for the ArgoCD app to be synced and healthy before running the operation
-            await waitForArgoCDAppSync(applicationName, k8s.custom(), d)
-            await waitForArgoCDAppHealthy(applicationName, k8s.custom(), d)
+            // In dev-mode, the app is likely not syncing in the cluster
+            if (process.env.NODE_ENV !== 'development') {
+              // Wait for the ArgoCD app to be synced and healthy before running the operation
+              await waitForArgoCDAppSync(applicationName, k8s.custom(), d)
+              await waitForArgoCDAppHealthy(applicationName, k8s.custom(), d)
+            }
             //execute the application-specific operation
             await applicationOperation(context)
           }
