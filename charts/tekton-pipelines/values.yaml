@@ -25,7 +25,7 @@ serviceaccount:
 # Values for tekton-pipelines-controller
 controller:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.6.0@sha256:84efabe03a5e5441379171d5c071bc28612aa7656ec4f508b01d89ee431e4141
+    image: ghcr.io/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.9.1@sha256:84eafd35dddc1f3da54ee1790c6504061f4e6a0ed217bf3d6542a4ef4296f03d
     labels: {}
   pod:
     labels: {}
