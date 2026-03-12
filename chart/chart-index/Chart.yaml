@@ -6,7 +6,7 @@ version: 0.1.0
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 9.4.9
+    version: 9.4.10
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
     version: 1.0.1
@@ -42,21 +42,21 @@ dependencies:
     repository: https://kubernetes.github.io/ingress-nginx
   - name: base
     alias: istio-base
-    version: 1.29.0
+    version: 1.29.1
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
-    version: 1.29.0
+    version: 1.29.1
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
-    version: 1.29.0
+    version: 1.29.1
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
-    version: 7.1.8
+    version: 7.1.9
     repository: https://codecentric.github.io/helm-charts
   - name: knative-operator
-    version: v1.18.1
+    version: v1.21.1
     repository: https://knative.github.io/operator
   - name: kserve-crd
     version: v0.16.0
@@ -71,7 +71,7 @@ dependencies:
     version: 3.5.2
     repository: https://kyverno.github.io/kyverno/
   - name: loki
-    version: 6.53.0
+    version: 6.54.0
     repository: https://grafana.github.io/helm-charts
   - name: metrics-server
     version: 3.13.0
@@ -100,11 +100,11 @@ dependencies:
     version: 4.4.34
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
-    version: 2.18.1
+    version: 2.18.3
     repository: https://bitnami-labs.github.io/sealed-secrets/
   - name: tekton-pipeline
     alias: tekton-pipelines
-    version: 1.6.1
+    version: 1.9.1
     repository: https://cdfoundation.github.io/tekton-helm-chart/
   - name: trivy-operator
     version: 0.32.0

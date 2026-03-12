@@ -55,11 +55,25 @@ gateways:
     {{- with $ingress | get "loadBalancerIP" nil }}
     loadBalancerIP: {{ . | quote }}
     {{- end }}
-    {{- with $ingress | get "gatewayAutoscaling" nil }}
+    {{- with $ingress | get "gateway" dict }}
+    replicas: {{ . | get "replicas" 3 }}
+    minAvailable: {{ . | get "minAvailable" 1 }}
+    resources:
+    {{- with . | get "resources" nil }}
+      {{- . | toYaml | nindent 6 }}
+    {{- else }}
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    {{- end }}{{- /* with . | get "resources" nil */}}
+    {{- with . | get "autoscaling" (dict "enabled" true) }}
     {{- if .enabled }}
     hpa:
       minReplicas: {{ . | get "minReplicas" 3 }}
-      maxReplicas: {{ . | get "maxReplicas" 5 }}
+      maxReplicas: {{ . | get "maxReplicas" 10 }}
       metrics:
         - type: Resource
           resource:
@@ -73,8 +87,9 @@ gateways:
             target:
               type: Utilization
               averageUtilization: {{ . | get "targetMemoryUtilizationPercentage" 80 }}
-    {{- end }}
-    {{- end }}
+    {{- end }}{{- /* if .enabled */}}
+    {{- end }}{{- /* with . | get "autoscaling" */}}
+    {{- end }}{{- /* with $ingress */}}
 {{- end }}
 {{- if $v.apps.knative.enabled }}
   - name: knative-local-gateway
@@ -95,7 +110,12 @@ gateways:
         allowedRoutes:
           namespaces:
             from: All
-    {{- with $v.apps.knative.serving.gatewayAutoscaling }}
+    {{- with $v.apps.knative.serving.gateway }}
+    replicas: {{ .replicas }}
+    minAvailable: {{ .minAvailable }}
+    resources:
+      {{ .resources | toYaml | nindent 6 }}
+    {{- with .autoscaling }}
     {{- if .enabled }}
     hpa:
       minReplicas: {{ .minReplicas }}
@@ -113,6 +133,7 @@ gateways:
             target:
               type: Utilization
               averageUtilization: {{ .targetMemoryUtilizationPercentage }}
-    {{- end }}
-    {{- end }}
+    {{- end }}{{- /* if .enabled */}}
+    {{- end }}{{- /* with .autoscaling */}}
+    {{- end }}{{- /* with $v.apps.knative.serving.gateway */}}
 {{- end }}

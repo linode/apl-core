@@ -52,9 +52,9 @@ expose:
   tls:
     enabled: false
   route:
-    {{ with $httpRoute.annotations }}
+    {{- with $httpRoute.annotations }}
     annotations:
-      {{ . | toYaml | nindent 6 }}
+      {{- . | toYaml | nindent 6 }}
     {{- end }}
     parentRefs:
       {{- $httpRoute.parentRefs | toYaml | nindent 6 }}

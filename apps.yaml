@@ -12,7 +12,7 @@ appsInfo:
     integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by App Platform to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: Argo CD
-    appVersion: 3.3.2
+    appVersion: 3.3.3
     repo: https://github.com/argoproj/argo-helm
     maintainers: Argo Project
     relatedLinks:
@@ -97,7 +97,7 @@ appsInfo:
     integration: App Platform integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
-    appVersion: 1.29.0
+    appVersion: 1.29.1
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -107,7 +107,7 @@ appsInfo:
     integration: App Platform has security best practices built in, and is designed for intrusion. Istio is used by App Platform as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of App Platform and can not be disabled.
   keycloak:
     title: Keycloak
-    appVersion: 26.5.3
+    appVersion: 26.5.5
     repo: https://github.com/keycloak/keycloak
     maintainers: Keycloak
     relatedLinks:
@@ -117,7 +117,7 @@ appsInfo:
     integration: The SSO login page for App Platform is served by Keycloak. Keycloak is used as an identity broker or provider for all App Platform integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of App Platform and is always enabled.
   knative:
     title: Knative Operator
-    appVersion: 1.18.1
+    appVersion: 1.21.1
     repo: https://github.com/knative/serving
     maintainers: Knative
     relatedLinks:
@@ -159,7 +159,7 @@ appsInfo:
     isAlpha: true
   tekton:
     title: Tekton Pipelines
-    appVersion: 1.6.0
+    appVersion: 1.9.1
     repo: https://github.com/tektoncd/pipeline
     maintainers: Tekton
     relatedLinks:
@@ -174,7 +174,7 @@ appsInfo:
     chartName: tekton-pipelines
   loki:
     title: Loki
-    appVersion: 3.6.5
+    appVersion: 3.6.7
     repo: https://github.com/grafana/loki
     maintainers: Grafana Labs
     relatedLinks:
@@ -208,7 +208,7 @@ appsInfo:
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
-    appVersion: 0.35.0
+    appVersion: 0.36.0
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:

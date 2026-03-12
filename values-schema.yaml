@@ -513,8 +513,20 @@ definitions:
         properties:
           annotations:
             $ref: '#/definitions/annotations'
-      gatewayAutoscaling:
-        $ref: '#/definitions/autoscalingEnabled'
+      gateway:
+        type: object
+        description: 'Gateway deployment configuration'
+        properties:
+          replicas:
+            type: integer
+            minimum: 1
+          minAvailable:
+            type: integer
+            minimum: 1
+          resources:
+            $ref: '#/definitions/resources'
+          autoscaling:
+            $ref: '#/definitions/autoscalingEnabled'
   ipV4Address:
     type: string
     pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
@@ -2031,8 +2043,20 @@ properties:
                 default: 1
                 type: integer
                 minimum: 1
-              gatewayAutoscaling:
-                $ref: '#/definitions/autoscalingEnabled'
+              gateway:
+                type: object
+                description: 'Gateway deployment configuration'
+                properties:
+                  replicas:
+                    type: integer
+                    minimum: 1
+                  minAvailable:
+                    type: integer
+                    minimum: 1
+                  resources:
+                    $ref: '#/definitions/resources'
+                  autoscaling:
+                    $ref: '#/definitions/autoscalingEnabled'
       kubeflow-pipelines:
         additionalProperties: false
         properties:
