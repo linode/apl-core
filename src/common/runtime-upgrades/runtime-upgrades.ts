@@ -165,6 +165,9 @@ export const runtimeUpgrades: RuntimeUpgrades = [
   },
   {
     version: '4.16.0',
+    pre: async (context: RuntimeUpgradeContext) => {
+      await upgradeKnativeServing(context, ['1.19', '1.20', '1.21'])
+    },
     post: async (context: RuntimeUpgradeContext) => {
       await syncIngressNginxPlatform(context)
     },
