@@ -151,7 +151,7 @@ describe('Apply command', () => {
       await applyAll()
 
       // Verify pre-upgrade steps
-      expect(mockDeps.runtimeUpgrade).toHaveBeenCalledWith({ when: 'pre' })
+      expect(mockDeps.runtimeUpgrade).toHaveBeenCalledWith({ when: 'pre', deploymentState: { status: 'deployed' } })
 
       // Verify deployment state management
       expect(mockDeps.getDeploymentState).toHaveBeenCalled()
@@ -166,7 +166,7 @@ describe('Apply command', () => {
       expect(mockDeps.applyAsApps).toHaveBeenCalled()
 
       // Verify post-upgrade steps
-      expect(mockDeps.runtimeUpgrade).toHaveBeenCalledWith({ when: 'post' })
+      expect(mockDeps.runtimeUpgrade).toHaveBeenCalledWith({ when: 'post', deploymentState: { status: 'deployed' } })
 
       // Verify GitOps apps setup
       expect(mockDeps.applyGitOpsApps).toHaveBeenCalled()

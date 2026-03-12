@@ -2,16 +2,16 @@ import semver from 'semver'
 import { getApplications } from 'src/cmd/apply-as-apps'
 import { terminal } from './debug'
 import { deployEssential } from './hf'
-import { getDeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
+import { DeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
 import { RuntimeUpgradeContext, RuntimeUpgrades, runtimeUpgrades } from './runtime-upgrades/runtime-upgrades'
 
 interface RuntimeUpgradeArgs {
   when: string
+  deploymentState?: DeploymentState
 }
 
-export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void> {
+export async function runtimeUpgrade({ when, deploymentState }: RuntimeUpgradeArgs): Promise<void> {
   const d = terminal('cmd:upgrade:runtimeUpgrade')
-  const deploymentState = await getDeploymentState()
 
   if (!deploymentState?.version || !deploymentState?.deployingVersion) {
     d.info('Skipping the runtime upgrade procedure because this is initial installation')

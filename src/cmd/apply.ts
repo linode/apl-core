@@ -34,7 +34,7 @@ export const applyAll = async () => {
   const prevState = await getDeploymentState()
   const argv: HelmArguments = getParsedArgs()
 
-  await runtimeUpgrade({ when: 'pre' })
+  await runtimeUpgrade({ when: 'pre', deploymentState: prevState })
 
   d.info('Start apply all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
@@ -52,7 +52,7 @@ export const applyAll = async () => {
   const appsApplyCompleted = await applyAsApps(params)
 
   if (appsApplyCompleted) {
-    await runtimeUpgrade({ when: 'post' })
+    await runtimeUpgrade({ when: 'post', deploymentState: prevState })
   } else {
     d.info('Apps apply step not completed, skipping upgrade checks')
   }
