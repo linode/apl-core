@@ -6,6 +6,7 @@ import { mkdir, readdir, readFile, writeFile } from 'fs/promises'
 import { cloneDeep, get, unset } from 'lodash'
 import { pki } from 'node-forge'
 import { join } from 'path'
+import { SEALED_SECRETS_NAMESPACE } from 'src/common/constants'
 import { terminal } from 'src/common/debug'
 import { b64enc, ensureNamespaceExists, getK8sSecret, k8s } from 'src/common/k8s'
 import { flattenObject, getSchemaSecretsPaths } from 'src/common/utils'
@@ -13,6 +14,8 @@ import { objectToYaml } from 'src/common/values'
 import { parse as parseYaml } from 'yaml'
 
 const cmdName = 'sealed-secrets'
+const ROLLOUT_TIMEOUT_MS = 120000
+const ROLLOUT_INTERVAL_MS = 3000
 
 /**
  * Strip ALL x-secret fields from values before writing to disk.
@@ -51,17 +54,21 @@ export interface SealedSecretManifest {
   }
 }
 
-/**
- * All SealedSecrets are placed in the 'apl-secrets' namespace.
- * ESO ClusterSecretStore reads from this namespace and distributes secrets to target namespaces.
- */
-const SEALED_SECRETS_NAMESPACE = 'apl-secrets'
+export interface SealedSecretsKeyPair {
+  certificate: string
+  privateKey: string
+}
+
+export interface AppliedSecret {
+  namespace: string
+  secretName: string
+}
 
 /**
  * Generate an RSA 4096-bit key pair and self-signed X.509 certificate for Sealed Secrets.
  * Follows the pattern from createCustomCA() in bootstrap.ts.
  */
-export const generateSealedSecretsKeyPair = (deps = { terminal, pki }): { certificate: string; privateKey: string } => {
+export const generateSealedSecretsKeyPair = (deps = { terminal, pki }): SealedSecretsKeyPair => {
   const d = deps.terminal(`common:${cmdName}:generateSealedSecretsKeyPair`)
   d.info('Generating sealed-secrets RSA key pair')
 
@@ -400,6 +407,26 @@ export const writeSealedSecretManifests = async (
 }
 
 /**
+ * Apply a single SealedSecret manifest using server-side apply (create-or-update).
+ * Uses the same pattern as applyArgocdApp() in apply-as-apps.ts.
+ */
+const applySealedSecretResource = async (manifest: SealedSecretManifest): Promise<void> => {
+  await k8s.custom().patchNamespacedCustomObject(
+    {
+      group: 'bitnami.com',
+      version: 'v1alpha1',
+      namespace: manifest.metadata.namespace,
+      plural: 'sealedsecrets',
+      name: manifest.metadata.name,
+      body: manifest,
+      fieldManager: 'apl-operator',
+      force: true,
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.ServerSideApply),
+  )
+}
+
+/**
  * Apply SealedSecret manifests to the Kubernetes cluster.
  * Creates namespaces if needed and applies the SealedSecret resources.
  */
@@ -426,33 +453,9 @@ export const applySealedSecretManifests = async (
     for (const manifest of nsManifests) {
       d.info(`Applying SealedSecret ${manifest.metadata.name} to namespace ${namespace}`)
       try {
-        await k8s.custom().createNamespacedCustomObject({
-          group: 'bitnami.com',
-          version: 'v1alpha1',
-          namespace,
-          plural: 'sealedsecrets',
-          body: manifest,
-        })
+        await applySealedSecretResource(manifest)
       } catch (error) {
-        if (error instanceof ApiException && error.code === 409) {
-          try {
-            await k8s.custom().patchNamespacedCustomObject(
-              {
-                group: 'bitnami.com',
-                version: 'v1alpha1',
-                namespace,
-                plural: 'sealedsecrets',
-                name: manifest.metadata.name,
-                body: manifest,
-              },
-              setHeaderOptions('Content-Type', PatchStrategy.MergePatch),
-            )
-          } catch (patchError) {
-            d.error(`Failed to patch SealedSecret ${manifest.metadata.name}: ${patchError}`)
-          }
-        } else {
-          d.error(`Failed to apply SealedSecret ${manifest.metadata.name}: ${error}`)
-        }
+        d.error(`Failed to apply SealedSecret ${manifest.metadata.name}: ${error}`)
       }
     }
   }
@@ -468,7 +471,7 @@ export const applySealedSecretManifests = async (
 export const applySealedSecretManifestsFromDir = async (
   envDir: string,
   deps = { terminal, readdir, readFile, existsSync },
-): Promise<{ namespace: string; secretName: string }[]> => {
+): Promise<AppliedSecret[]> => {
   const d = deps.terminal(`common:${cmdName}:applySealedSecretManifestsFromDir`)
   const manifestsDir = join(envDir, 'env/manifests/namespaces')
 
@@ -481,7 +484,7 @@ export const applySealedSecretManifestsFromDir = async (
 
   // Read all namespace directories
   const namespaces = await deps.readdir(manifestsDir, { withFileTypes: true })
-  const appliedSecrets: { namespace: string; secretName: string }[] = []
+  const appliedSecrets: AppliedSecret[] = []
 
   for (const nsEntry of namespaces) {
     if (!nsEntry.isDirectory()) continue
@@ -503,39 +506,10 @@ export const applySealedSecretManifestsFromDir = async (
         const content = await deps.readFile(filePath, 'utf-8')
         const manifest = parseYaml(content) as SealedSecretManifest
 
-        try {
-          await k8s.custom().createNamespacedCustomObject({
-            group: 'bitnami.com',
-            version: 'v1alpha1',
-            namespace,
-            plural: 'sealedsecrets',
-            body: manifest,
-          })
-          appliedSecrets.push({ namespace, secretName: manifest.metadata.name })
-        } catch (error) {
-          if (error instanceof ApiException && error.code === 409) {
-            try {
-              await k8s.custom().patchNamespacedCustomObject(
-                {
-                  group: 'bitnami.com',
-                  version: 'v1alpha1',
-                  namespace,
-                  plural: 'sealedsecrets',
-                  name: manifest.metadata.name,
-                  body: manifest,
-                },
-                setHeaderOptions('Content-Type', PatchStrategy.MergePatch),
-              )
-              appliedSecrets.push({ namespace, secretName: manifest.metadata.name })
-            } catch (patchError) {
-              d.error(`Failed to patch SealedSecret from ${filePath}: ${patchError}`)
-            }
-          } else {
-            d.error(`Failed to apply SealedSecret from ${filePath}: ${error}`)
-          }
-        }
-      } catch (parseError) {
-        d.error(`Failed to parse SealedSecret from ${filePath}: ${parseError}`)
+        await applySealedSecretResource(manifest)
+        appliedSecrets.push({ namespace, secretName: manifest.metadata.name })
+      } catch (error) {
+        d.error(`Failed to apply SealedSecret from ${filePath}: ${error}`)
       }
     }
   }
@@ -578,10 +552,8 @@ export const restartSealedSecretsController = async (deps = { terminal }): Promi
   }
 
   d.info('Waiting for sealed-secrets controller rollout')
-  const timeoutMs = 120000
-  const intervalMs = 3000
   const start = Date.now()
-  while (Date.now() - start < timeoutMs) {
+  while (Date.now() - start < ROLLOUT_TIMEOUT_MS) {
     try {
       const deployment = await k8s.app().readNamespacedDeployment({
         name: 'sealed-secrets',
@@ -597,7 +569,7 @@ export const restartSealedSecretsController = async (deps = { terminal }): Promi
     } catch {
       // Ignore transient read errors during rollout
     }
-    await new Promise((resolve) => setTimeout(resolve, intervalMs))
+    await new Promise((resolve) => setTimeout(resolve, ROLLOUT_INTERVAL_MS))
   }
   d.warn('Rollout status check timed out')
 }

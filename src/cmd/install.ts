@@ -17,7 +17,11 @@ import {
   setDeploymentState,
   waitForCRD,
 } from 'src/common/k8s'
-import { applySealedSecretManifestsFromDir, restartSealedSecretsController } from 'src/common/sealed-secrets'
+import {
+  AppliedSecret,
+  applySealedSecretManifestsFromDir,
+  restartSealedSecretsController,
+} from 'src/common/sealed-secrets'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -61,10 +65,7 @@ const retryInstallStep = async <T, Args extends any[]>(
  * Wait for SealedSecrets controller to decrypt SealedSecret resources into K8s Secrets.
  * Takes the list of applied secrets from applySealedSecretManifestsFromDir.
  */
-const allSecretsExist = async (
-  secrets: { namespace: string; secretName: string }[],
-  deps = { getK8sSecret },
-): Promise<boolean> => {
+const allSecretsExist = async (secrets: AppliedSecret[], deps = { getK8sSecret }): Promise<boolean> => {
   for (const { namespace, secretName } of secrets) {
     try {
       const secret = await deps.getK8sSecret(secretName, namespace)
@@ -77,7 +78,7 @@ const allSecretsExist = async (
 }
 
 const waitForSealedSecrets = async (
-  appliedSecrets: { namespace: string; secretName: string }[],
+  appliedSecrets: AppliedSecret[],
   timeoutMs = 120000,
   intervalMs = 3000,
   deps = { getK8sSecret, terminal },
@@ -108,7 +109,6 @@ const waitForSealedSecrets = async (
       }
 
       if (pending.length > 0) {
-        d.info(`Still waiting for sealed secrets: ${pending.join(', ')}`)
         throw new Error(`Sealed secrets not yet decrypted: ${pending.join(', ')}`)
       }
 
@@ -181,7 +181,9 @@ export const installAll = async () => {
     if (allExist) {
       d.info('All sealed secrets already decrypted, skipping controller restart')
     } else {
-      d.info('Restarting sealed-secrets controller to pick up new manifests')
+      // The controller may have started before the sealed-secrets-key TLS secret existed,
+      // causing it to generate its own key. Restarting forces it to pick up the pre-created key.
+      d.info('Restarting sealed-secrets controller to ensure correct key is used')
       await restartSealedSecretsController()
 
       d.info('Waiting for sealed secrets to be decrypted into K8s Secrets')

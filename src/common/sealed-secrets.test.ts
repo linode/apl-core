@@ -10,8 +10,8 @@ import {
   generateSealedSecretsKeyPair,
   getPemFromCertificate,
   restartSealedSecretsController,
-  SECRET_NAME_MAP,
   SealedSecretManifest,
+  SECRET_NAME_MAP,
   stripAllSecrets,
   writeSealedSecretManifests,
 } from './sealed-secrets'
@@ -572,12 +572,12 @@ describe('sealed-secrets', () => {
       await applySealedSecretManifests(manifests, { terminal })
 
       const { k8s: mockK8s } = require('src/common/k8s')
-      expect(mockK8s.custom().createNamespacedCustomObject).toHaveBeenCalled()
+      expect(mockK8s.custom().patchNamespacedCustomObject).toHaveBeenCalled()
     })
 
     it('should log error when manifests fail to apply', async () => {
       const { k8s: mockK8s } = require('src/common/k8s')
-      mockK8s.custom().createNamespacedCustomObject.mockRejectedValueOnce(new Error('apply failed'))
+      mockK8s.custom().patchNamespacedCustomObject.mockRejectedValueOnce(new Error('apply failed'))
 
       const manifests = [makeMockManifest('test-secret', 'apl-secrets')]
 

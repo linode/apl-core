@@ -20,7 +20,12 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { APL_OPERATOR_NS, ARGOCD_APP_PARAMS } from '../common/constants'
+import {
+  APL_OPERATOR_NS,
+  ARGOCD_APP_PARAMS,
+  OTOMI_PLATFORM_SECRETS,
+  SEALED_SECRETS_NAMESPACE,
+} from '../common/constants'
 import { getK8sSecret, getSealedSecretsPEM, k8s } from '../common/k8s'
 import {
   applySealedSecretManifestsFromDir,
@@ -725,7 +730,7 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   let secretCreated = false
   if (useGiteaCatalog) {
     try {
-      const giteaSecrets = await getK8sSecret('gitea-secrets', 'apl-secrets')
+      const giteaSecrets = await getK8sSecret('gitea-secrets', SEALED_SECRETS_NAMESPACE)
       const resolvedGitea = {
         adminUsername: giteaSecrets?.adminUsername ? String(giteaSecrets.adminUsername) : String(gitea!.adminUsername),
         adminPassword: giteaSecrets?.adminPassword ? String(giteaSecrets.adminPassword) : String(gitea!.adminPassword),
@@ -895,7 +900,7 @@ export const sopsMigration = async (
     })
     if (existingManifests.length > 0) {
       try {
-        const platformSecret = await deps.getK8sSecret('otomi-platform-secrets', 'apl-secrets')
+        const platformSecret = await deps.getK8sSecret(OTOMI_PLATFORM_SECRETS, SEALED_SECRETS_NAMESPACE)
         if (!platformSecret) {
           d.info('SealedSecret manifests exist but K8s Secrets are missing — re-applying and restarting controller')
           await deps.applySealedSecretManifestsFromDir(env.ENV_DIR)

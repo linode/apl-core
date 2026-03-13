@@ -1,7 +1,13 @@
 import retry from 'async-retry'
 import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
-import { APL_OPERATOR_NS, DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
+import {
+  APL_OPERATOR_NS,
+  DEPLOYMENT_PASSWORDS_SECRET,
+  OTOMI_NAMESPACE,
+  OTOMI_PLATFORM_SECRETS,
+  SEALED_SECRETS_NAMESPACE,
+} from 'src/common/constants'
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
@@ -176,7 +182,7 @@ export async function initialSetupData(): Promise<InitialData> {
     // Read the platform admin's initialPassword from the generated passwords secret
     let platformAdminPassword = ''
     try {
-      const secretData = await getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi')
+      const secretData = await getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, OTOMI_NAMESPACE)
       const allSecrets = secretData?.[DEPLOYMENT_PASSWORDS_SECRET]
       const users = allSecrets?.users || []
       const defaultEmail = `platform-admin@${domainSuffix}`
@@ -193,7 +199,7 @@ export async function initialSetupData(): Promise<InitialData> {
     }
   } else {
     // External IDP: show Keycloak admin credentials (keycloak-initial-admin uses otomi-platform-secrets.adminPassword)
-    const otomiSecret = await getK8sSecret('otomi-platform-secrets', 'apl-secrets')
+    const otomiSecret = await getK8sSecret(OTOMI_PLATFORM_SECRETS, SEALED_SECRETS_NAMESPACE)
     const adminPassword = otomiSecret?.adminPassword ? String(otomiSecret.adminPassword) : ''
     return {
       domainSuffix,

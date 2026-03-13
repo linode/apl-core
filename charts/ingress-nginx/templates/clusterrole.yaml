@@ -27,7 +27,6 @@ rules:
       - namespaces
 {{- end}}
     verbs:
-      - get
       - list
       - watch
   - apiGroups:
