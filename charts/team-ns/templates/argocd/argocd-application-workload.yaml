@@ -43,7 +43,7 @@ spec:
       - $values/env/teams/{{ $v.teamId }}/workloadValues/{{ $workload.name }}.managed.yaml
       {{- end }}
   - repoURL: {{ $v.gitOps.workloadValuesRepoUrl | quote }}
-    targetRevision: '{{ .revision }}'
+    targetRevision: {{ $v.gitOps.branch | quote }}
     ref: values
   syncPolicy:
     automated:
