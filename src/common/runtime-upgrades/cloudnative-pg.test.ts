@@ -1,22 +1,25 @@
-import { getPrimaryPod, executePSQLScript, executePSQLOnPrimary, updateDbCollation } from './cloudnative-pg'
-import * as k8s from '../k8s'
-import { CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
 import { terminal } from '../debug'
+import * as k8s from '../k8s'
+import { executePSQLOnPrimary, executePSQLScript, getPrimaryPod, updateDbCollation } from './cloudnative-pg'
+
+jest.mock('../k8s', () => ({
+  k8s: {
+    custom: jest.fn(),
+  },
+  exec: jest.fn(),
+}))
 
 describe('CloudnativePG Kubernetes API Functions', () => {
-  let mockKubeConfig: jest.Mocked<KubeConfig>
-  let mockCustomApi: jest.Mocked<CustomObjectsApi>
-  let mockExec: jest.SpyInstance<Promise<k8s.ExecResult>>
+  let mockCustomApi: { getNamespacedCustomObject: jest.Mock }
+  let mockExec: jest.MockedFunction<typeof k8s.exec>
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockKubeConfig = new KubeConfig() as jest.Mocked<KubeConfig>
-    mockKubeConfig.loadFromDefault = jest.fn()
-    mockCustomApi = jest.mocked(k8s.k8s.custom(), { shallow: true }) as jest.Mocked<CustomObjectsApi>
-
-    mockKubeConfig.makeApiClient = jest.fn().mockReturnValue(mockCustomApi)
-    k8s.k8s.custom = jest.fn().mockReturnValue(mockCustomApi)
-    mockExec = jest.spyOn(k8s, 'exec')
+    mockCustomApi = {
+      getNamespacedCustomObject: jest.fn(),
+    }
+    jest.mocked(k8s.k8s.custom).mockReturnValue(mockCustomApi as any)
+    mockExec = jest.mocked(k8s.exec)
   })
 
   describe('getPrimaryPod', () => {
