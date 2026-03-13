@@ -1,5 +1,5 @@
 import retry from 'async-retry'
-import { $, cd } from 'zx'
+import { $ } from 'zx'
 import { APL_OPERATOR_NS } from './constants'
 import { terminal } from './debug'
 import { env } from './envalid'
@@ -29,14 +29,14 @@ export const waitTillGitRepoAvailable = async (repoUrl: string): Promise<void> =
   const d = terminal('common:gitea:waitTillGitRepoAvailable')
   await retry(
     async () => {
+      const $git = $({ cwd: env.ENV_DIR })
       try {
-        cd(env.ENV_DIR)
         // the ls-remote exists with zero even if repo is empty
-        await $`git ls-remote ${repoUrl}`
+        await $git`git ls-remote ${repoUrl}`
       } catch (e) {
         if (e.stderr && e.stderr.includes('remote: Update your password')) {
           await resetGiteaPasswordValidity()
-          await $`git ls-remote ${repoUrl}`
+          await $git`git ls-remote ${repoUrl}`
         } else {
           d.warn(`The values repository is not yet reachable. Retrying in ${env.MIN_TIMEOUT} ms`)
           throw e

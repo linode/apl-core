@@ -1,6 +1,6 @@
 import { existsSync } from 'fs'
 import { mkdir, unlink, writeFile } from 'fs/promises'
-import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, omit, pick, set } from 'lodash'
+import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, pick, set } from 'lodash'
 import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { stringify } from 'yaml'
@@ -9,6 +9,7 @@ import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
+import { saveValues } from './repo'
 import {
   extract,
   flattenObject,
@@ -19,8 +20,6 @@ import {
   pkg,
   removeBlankAttributes,
 } from './utils'
-
-import { saveValues } from './repo'
 import { HelmArguments } from './yargs'
 
 export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 200): string => {
@@ -114,22 +113,13 @@ export const writeValuesToFile = async (
 
 /**
  * Writes new values to the repo. Will keep the original values if `overwrite` is `false`.
+ * Secret values are written as-is — they are protected by SealedSecrets on the cluster side,
+ * and child secrets are derived via ESO ExternalSecret CRs.
  */
 export const writeValues = async (inValues: Record<string, any>, overwrite = false): Promise<void> => {
   const d = terminal('common:values:writeValues')
   d.debug('Writing values: ', inValues)
-  hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
-  const values = inValues
-  const teams = Object.keys(get(inValues, 'teamConfig', {}))
-  const cleanSecretPaths = await getSchemaSecretsPaths(teams)
-  d.debug('cleanSecretPaths: ', cleanSecretPaths)
-  // separate out the secrets
-  const secrets = removeBlankAttributes(pick(values, cleanSecretPaths))
-  d.debug('secrets: ', JSON.stringify(secrets, null, 2))
-  // from the plain values
-  const plainValues = omit(values, cleanSecretPaths) as any
-  await saveValues(env.ENV_DIR, plainValues, secrets)
-
+  await saveValues(env.ENV_DIR, inValues, {})
   d.info('All values were written to ENV_DIR')
 }
 
@@ -154,6 +144,7 @@ export const generateSecrets = async (
   deps = {
     terminal,
     getValuesSchema,
+    getSchemaSecretsPaths,
   },
 ): Promise<Record<string, any>> => {
   const d = deps.terminal('common:values:generateSecrets')
@@ -177,6 +168,16 @@ export const generateSecrets = async (
   // Only return values that have x-secrets prop and are now fully templated:
   const templatePaths = Object.keys(flattenObject(schemaSecrets))
   const res = pick(allSecrets, templatePaths)
+
+  // Template paths use schema patternProperties regex keys which don't match concrete team names.
+  // Expand team paths so team secrets are included in the result.
+  const teamNames = Object.keys(get(values, 'teamConfig', {})).filter((t) => t !== 'admin')
+  if (teamNames.length > 0) {
+    const expandedPaths = await deps.getSchemaSecretsPaths(teamNames)
+    const teamSecrets = pick(allSecrets, expandedPaths)
+    merge(res, teamSecrets)
+  }
+
   d.debug('generateSecrets result: ', res)
   return res
 }

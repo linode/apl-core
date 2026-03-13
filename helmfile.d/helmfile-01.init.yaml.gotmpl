@@ -34,6 +34,14 @@ releases:
     installed: {{ $a | get "sealed-secrets.enabled" }}
     namespace: sealed-secrets
     <<: *default
+  - name: external-secrets
+    installed: {{ $a | get "sealed-secrets.enabled" }}
+    namespace: external-secrets
+    <<: *default
+  - name: external-secrets-artifacts
+    installed: {{ $a | get "sealed-secrets.enabled" }}
+    namespace: external-secrets
+    <<: *raw
   - name: cert-manager
     installed: true
     namespace: cert-manager

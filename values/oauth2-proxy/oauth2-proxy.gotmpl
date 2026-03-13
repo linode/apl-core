@@ -104,7 +104,8 @@ sessionStorage:
     standalone:
       connectionUrl: "redis://oauth2-proxy-redis-ha-haproxy.istio-system.svc.cluster.local:6379"
     {{- end }}
-    password: {{ $r | get "password" | quote }}
+    existingSecret: oauth2-proxy-redis-password
+    passwordKey: password
 
 redis-ha:
   global:
@@ -114,7 +115,7 @@ redis-ha:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/redis"
   {{- end }}
   enabled: true
-  redisPassword: {{ $r | get "password" | quote }}
+  existingSecret: oauth2-proxy-redis-password
   replicas: {{ $r.replicas }}
   redis:
     resources: {{- $r.resources.master | toYaml | nindent 6 }}

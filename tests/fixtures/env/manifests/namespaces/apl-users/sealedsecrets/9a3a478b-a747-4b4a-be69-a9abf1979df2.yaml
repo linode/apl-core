@@ -1,0 +1,22 @@
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+    annotations:
+        sealedsecrets.bitnami.com/namespace-wide: 'true'
+    name: 9a3a478b-a747-4b4a-be69-a9abf1979df2
+    namespace: apl-users
+spec:
+    encryptedData:
+        email: team@member.com
+        firstName: team
+        lastName: member
+        initialPassword: team-member-password
+        isPlatformAdmin: 'false'
+        isTeamAdmin: 'false'
+        teams: '["demo"]'
+    template:
+        immutable: false
+        metadata:
+            name: 9a3a478b-a747-4b4a-be69-a9abf1979df2
+            namespace: apl-users
+        type: kubernetes.io/opaque

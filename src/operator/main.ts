@@ -76,8 +76,9 @@ async function main(): Promise<void> {
     if (isInstalled) {
       d.info('Installation already completed, skipping install steps')
     } else if (isRecoveryMode) {
-      d.info('Recovery mode enabled, checking external git and kms prerequisites')
+      d.info('Recovery mode enabled, checking prerequisites')
       await installer.ensureRecoveryPrerequisites()
+      await installer.applyRecoveryManifests()
       await installer.recoverFromGit()
       d.info('Recovery installation completed, switching installation mode to standard')
       await installer.resetRecoveryModeToStandard()
@@ -88,8 +89,10 @@ async function main(): Promise<void> {
       await installer.reconcileInstall()
     }
 
+    // Set up SOPS environment if applicable (no-op when SealedSecrets + ESO is in use)
+    await installer.setEnvAndCreateSecrets()
+
     // Phase 2: Set environment variables and start operator for GitOps operations
-    // await installer.setEnvAndCreateSecrets()
     const config = await loadConfig(aplOps)
     const operator = new AplOperator(config)
     handleTerminationSignals(operator)

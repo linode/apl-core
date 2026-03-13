@@ -91,7 +91,7 @@ on:
         options:
           - age
           - no_kms
-        default: age
+        default: no_kms
       certificate:
         type: choice
         description: Select certificate issuer

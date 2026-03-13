@@ -10,7 +10,6 @@ import {
   getUniqueIdentifierFromFilePath,
   hasCorrespondingDecryptedFile,
   renderManifest,
-  renderManifestForSecrets,
   saveResourceGroupToFiles,
   sortTeamConfigArraysByName,
   sortUserArraysByName,
@@ -47,7 +46,6 @@ describe('getFilePath', () => {
     const data = {}
     const jsonPath = ['$', 'apps', 'grafana']
     expect(getFilePath(fileMap, jsonPath, data, '')).toEqual('/tmp/values/env/apps/grafana.yaml')
-    expect(getFilePath(fileMap, jsonPath, data, 'secrets.')).toEqual('/tmp/values/env/apps/secrets.grafana.yaml')
   })
   it('should get path for teamA', () => {
     const fileMap: FileMap = {
@@ -234,11 +232,8 @@ describe('getFilePath', () => {
     }
     const jsonPath = ['$', 'teamConfig', 'demo', 'netpols', '[1]']
     const data = { name: 'a' }
-    let filePath = getFilePath(fileMap, jsonPath, data, '')
+    const filePath = getFilePath(fileMap, jsonPath, data, '')
     expect(filePath).toBe('/tmp/env/teams/demo/netpols/a.yaml')
-
-    filePath = getFilePath(fileMap, jsonPath, data, 'secrets.')
-    expect(filePath).toBe('/tmp/env/teams/demo/netpols/secrets.a.yaml')
   })
 
   it('should return file path for platfrom dns', () => {
@@ -254,11 +249,8 @@ describe('getFilePath', () => {
     }
     const jsonPath = ['$', 'dns']
     const data = { name: 'a' }
-    let filePath = getFilePath(fileMap, jsonPath, data, '')
+    const filePath = getFilePath(fileMap, jsonPath, data, '')
     expect(filePath).toBe('/tmp/env/settings/dns.yaml')
-
-    filePath = getFilePath(fileMap, jsonPath, data, 'secrets.')
-    expect(filePath).toBe('/tmp/env/settings/secrets.dns.yaml')
   })
   it('should return file path for user', () => {
     const fileMap: FileMap = {
@@ -273,11 +265,8 @@ describe('getFilePath', () => {
     }
     const jsonPath = ['$', 'dns']
     const data = { id: 'a' }
-    let filePath = getFilePath(fileMap, jsonPath, data, '')
+    const filePath = getFilePath(fileMap, jsonPath, data, '')
     expect(filePath).toBe('/tmp/env/users/a.yaml')
-
-    filePath = getFilePath(fileMap, jsonPath, data, 'secrets.')
-    expect(filePath).toBe('/tmp/env/users/secrets.a.yaml')
   })
 })
 
@@ -692,13 +681,6 @@ describe('AplCatalog', () => {
       expect(filePath).toBe('/tmp/values/env/catalogs/default.yaml')
     })
 
-    it('should return the correct secrets file path for a catalog', () => {
-      const data = { name: 'default', repositoryUrl: 'https://example.com/charts.git' }
-      const jsonPath = ['$', 'catalogs', 'default']
-      const filePath = getFilePath(catalogFileMap, jsonPath, data, 'secrets.')
-      expect(filePath).toBe('/tmp/values/env/catalogs/secrets.default.yaml')
-    })
-
     it('should use the map key for the file name, not data.name', () => {
       const data = { name: 'production-charts', repositoryUrl: 'https://example.com/charts.git' }
       const jsonPath = ['$', 'catalogs', 'prod']
@@ -779,17 +761,6 @@ describe('AplCatalog', () => {
     })
   })
 
-  describe('renderManifestForSecrets', () => {
-    it('should render a secrets manifest for a catalog', () => {
-      const data = { secretName: 'git-credentials' }
-      const manifest = renderManifestForSecrets(catalogFileMap, 'default', data)
-
-      expect(manifest.kind).toBe('AplCatalog')
-      expect(manifest.metadata.name).toBe('default')
-      expect(manifest.spec).toEqual(data)
-    })
-  })
-
   describe('saveResourceGroupToFiles', () => {
     it('should save a single catalog to a file', async () => {
       const writeValuesToFile = jest.fn()
@@ -852,39 +823,6 @@ describe('AplCatalog', () => {
           kind: 'AplCatalog',
           metadata: { name: 'custom' },
           spec: valuesPublic.catalogs.custom,
-        }),
-      )
-    })
-
-    it('should save catalog secrets to files with secrets prefix', async () => {
-      const writeValuesToFile = jest.fn()
-      const valuesPublic = {
-        catalogs: {
-          default: {
-            name: 'default',
-            repositoryUrl: 'https://github.com/linode/apl-charts.git',
-            branch: 'main',
-            enabled: true,
-          },
-        },
-      }
-      const valuesSecrets = {
-        catalogs: {
-          default: {
-            secretName: 'git-credentials',
-          },
-        },
-      }
-
-      await saveResourceGroupToFiles(catalogFileMap, valuesPublic, valuesSecrets, { writeValuesToFile })
-
-      expect(writeValuesToFile).toHaveBeenCalledTimes(2)
-      expect(writeValuesToFile).toHaveBeenCalledWith(
-        '/tmp/values/env/catalogs/secrets.default.yaml',
-        expect.objectContaining({
-          kind: 'AplCatalog',
-          metadata: { name: 'default' },
-          spec: valuesSecrets.catalogs.default,
         }),
       )
     })
