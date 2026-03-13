@@ -9,7 +9,7 @@ import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
 import { detachApplicationFromApplicationSet, pruneArgoCDImageUpdater } from './v4.13.0'
 import { removeHttpBinApplication } from './remove-httpbin-application'
 import { migrateGitConfig } from './migrate-git-config'
-import { syncIngressNginxPlatform } from './add-linode-nb-annotations'
+import { syncIngressNginxService } from './add-linode-nb-annotations'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -165,8 +165,8 @@ export const runtimeUpgrades: RuntimeUpgrades = [
   },
   {
     version: '4.16.0',
-    post: async (context: RuntimeUpgradeContext) => {
-      await syncIngressNginxPlatform(context)
+    pre: async (context: RuntimeUpgradeContext) => {
+      await syncIngressNginxService(context)
     },
   },
 ]
