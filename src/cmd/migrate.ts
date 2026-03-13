@@ -878,7 +878,16 @@ export const applyChanges = async (
       await customFunction(values)
     }
 
-    c.deletions?.forEach((entry) => unsetAtPath(entry, values))
+    c.deletions?.forEach((entry) => {
+      unsetAtPath(entry, values)
+      const appMatch = entry.match(/^apps\.([^.\s]+)$/)
+      if (appMatch) {
+        const appName = appMatch[1]
+        deleteFile(`env/apps/${appName}.yaml`)
+        deleteFile(`env/apps/secrets.${appName}.yaml`)
+        deleteFile(`env/apps/secrets.${appName}.yaml.dec`)
+      }
+    })
     // Lastly we remove files
     for (const change of changes) {
       change.fileDeletions?.forEach((entry) => {
