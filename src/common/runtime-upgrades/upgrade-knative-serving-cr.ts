@@ -1,7 +1,10 @@
 import { k8s } from '../k8s'
 import { RuntimeUpgradeContext } from '../runtime-upgrades/runtime-upgrades'
 
-export const upgradeKnativeServing = async (context: RuntimeUpgradeContext) => {
+export const upgradeKnativeServing = async (
+  context: RuntimeUpgradeContext,
+  targetVersions: string[] = ['1.16', '1.17', '1.18'],
+) => {
   const group = 'operator.knative.dev'
   const version = 'v1beta1'
   const plural = 'knativeservings'
@@ -24,7 +27,7 @@ export const upgradeKnativeServing = async (context: RuntimeUpgradeContext) => {
       return
     }
 
-    for (const targetVersion of ['1.16', '1.17', '1.18']) {
+    for (const targetVersion of targetVersions) {
       context.debug.info(`Patching KnativeServing to ${targetVersion}...`)
       await client.patchNamespacedCustomObject({
         group,
