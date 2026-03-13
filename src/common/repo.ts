@@ -4,7 +4,7 @@ import { globSync } from 'glob'
 import jsonpath from 'jsonpath'
 import { cloneDeep, get, merge, omit, set } from 'lodash'
 import path from 'path'
-import { getDirNames, loadYaml } from './utils'
+import { getDirNames, getSchemaSecretsPaths, loadYaml } from './utils'
 import { objectToYaml, writeValuesToFile } from './values'
 
 export async function getTeamNames(envDir: string): Promise<Array<string>> {
@@ -462,28 +462,13 @@ export function renderManifest(
   return manifest
 }
 
-export function renderManifestForSecrets(fileMap: FileMap, resourceName: string, data: Record<string, any>) {
-  let spec = data
-  if (fileMap.resourceGroup === 'users') {
-    spec = omit(data, ['id', 'name'])
-  }
-  return {
-    kind: fileMap.kind,
-    metadata: {
-      name: resourceName,
-    },
-    spec,
-  }
-}
-
 export async function saveResourceGroupToFiles(
   fileMap: FileMap,
   valuesPublic: Record<string, any>,
-  valuesSecrets: Record<string, any>,
+  _valuesSecrets: Record<string, any>,
   deps = { writeValuesToFile },
 ): Promise<void> {
   const jsonPathsValuesPublic = jsonpath.nodes(valuesPublic, fileMap.jsonPathExpression)
-  const jsonPathsvaluesSecrets = jsonpath.nodes(valuesSecrets, fileMap.jsonPathExpression)
 
   await Promise.all(
     jsonPathsValuesPublic.map(async (node) => {
@@ -506,22 +491,8 @@ export async function saveResourceGroupToFiles(
     }),
   )
 
-  await Promise.all(
-    jsonPathsvaluesSecrets.map(async (node) => {
-      const nodePath = node.path
-      const nodeValue = node.value
-      try {
-        const filePath = getFilePath(fileMap, nodePath, nodeValue, 'secrets.')
-        const resourceName = getResourceName(fileMap, nodePath, nodeValue)
-        const manifest = renderManifestForSecrets(fileMap, resourceName, nodeValue)
-        await deps.writeValuesToFile(filePath, manifest)
-      } catch (e) {
-        console.log(nodePath)
-        console.log(fileMap)
-        throw e
-      }
-    }),
-  )
+  // Secrets are now stored as SealedSecret manifests via buildSecretToNamespaceMap() + writeSealedSecretManifests()
+  // No longer writing secrets.*.yaml files
 }
 
 export function getUniqueIdentifierFromFilePath(filePath: string): string {
@@ -588,7 +559,10 @@ export function unsetValuesFileSync(envDir: string): string {
   return valuesPath
 }
 
-export async function loadValues(envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> {
+export async function loadValues(
+  envDir: string,
+  deps = { loadToSpec, loadSealedSecretsToSpec },
+): Promise<Record<string, any>> {
   const fileMaps = getFileMaps(envDir).filter((map) => map.loadToSpec === true)
   const spec = {}
 
@@ -597,9 +571,103 @@ export async function loadValues(envDir: string, deps = { loadToSpec }): Promise
       await deps.loadToSpec(spec, fileMap)
     }),
   )
+  await deps.loadSealedSecretsToSpec(spec, envDir)
   sortTeamConfigArraysByName(spec)
   sortUserArraysByName(spec)
   return spec
+}
+
+/**
+ * Read sealed secret manifests and merge their encryptedData back into the values spec.
+ * This restores secret values that helmfile templates need at render time.
+ *
+ * Uses the values schema (x-secret paths) to correctly map sealed secret data keys
+ * back to their original dot-paths, since some property names contain underscores
+ * (e.g., smtp.auth_password) that should NOT be converted to nested paths.
+ */
+export async function loadSealedSecretsToSpec(
+  spec: Record<string, any>,
+  envDir: string,
+  deps = { loadYaml, getSchemaSecretsPaths },
+): Promise<void> {
+  const sealedSecretsGlob = `${envDir}/env/manifests/namespaces/*/sealedsecrets/*.yaml`
+  const files = globSync(sealedSecretsGlob, { nodir: true })
+  if (files.length === 0) return
+
+  // Get team names from spec to expand teamConfig.* paths
+  const teams = Object.keys(get(spec, 'teamConfig', {}))
+  const secretPaths = await deps.getSchemaSecretsPaths(teams)
+
+  // Build a lookup: for each group prefix + dataKey → full schema path
+  // e.g., "apps.harbor" + "core_secret" → "apps.harbor.core.secret"
+  const dataKeyToPath = buildDataKeyToPathMap(secretPaths)
+
+  for (const filePath of files) {
+    const manifest = (await deps.loadYaml(filePath)) as Record<string, any> | undefined
+    if (!manifest?.spec?.encryptedData) continue
+
+    const { name: secretName = '' } = (manifest.metadata ?? {}) as { name?: string }
+    const { encryptedData } = manifest.spec as { encryptedData: Record<string, string> }
+
+    // Determine target path in spec from the secret name
+    const targetPath = resolveSecretTargetPath(secretName, spec)
+    if (!targetPath) continue
+
+    for (const [dataKey, value] of Object.entries(encryptedData)) {
+      const lookupKey = `${targetPath}/${dataKey}`
+      const fullPath = dataKeyToPath.get(lookupKey)
+      if (fullPath) {
+        set(spec, fullPath, value)
+      }
+    }
+  }
+}
+
+/**
+ * Build a map from "groupPrefix/dataKey" → "full.schema.path".
+ * The dataKey is derived from the relative path by replacing dots with underscores,
+ * matching the convention used in buildSecretToNamespaceMap (sealed-secrets.ts).
+ */
+function buildDataKeyToPathMap(secretPaths: string[]): Map<string, string> {
+  const result = new Map<string, string>()
+  for (const secretPath of secretPaths) {
+    const groupPrefix = findGroupPrefix(secretPath)
+    if (!groupPrefix) continue
+    const relativePath = secretPath.slice(groupPrefix.length + 1)
+    if (!relativePath) continue
+    const dataKey = relativePath.replace(/\./g, '_')
+    result.set(`${groupPrefix}/${dataKey}`, secretPath)
+  }
+  return result
+}
+
+/**
+ * Find the group prefix for a secret path — mirrors the logic in sealed-secrets.ts.
+ */
+function findGroupPrefix(secretPath: string): string | undefined {
+  const teamMatch = secretPath.match(/^teamConfig\.([^.]+)/)
+  if (teamMatch) return `teamConfig.${teamMatch[1]}`
+  const appsMatch = secretPath.match(/^apps\.([^.]+)/)
+  if (appsMatch) return `apps.${appsMatch[1]}`
+  const [firstSegment] = secretPath.split('.')
+  if (firstSegment && firstSegment !== 'kms' && firstSegment !== 'users') return firstSegment
+  return undefined
+}
+
+function resolveSecretTargetPath(secretName: string, spec: Record<string, any>): string | undefined {
+  // team-{name}-settings-secrets → teamConfig.{name}
+  const teamMatch = secretName.match(/^team-(.+)-settings-secrets$/)
+  if (teamMatch) return `teamConfig.${teamMatch[1]}`
+
+  // {name}-secrets → apps.{name} or {name}
+  const nameMatch = secretName.match(/^(.+)-secrets$/)
+  if (!nameMatch) return undefined
+
+  const [, name] = nameMatch
+  if (get(spec, `apps.${name}`) !== undefined) return `apps.${name}`
+  if (get(spec, name) !== undefined) return name
+
+  return undefined
 }
 
 export function extractTeamDirectory(filePath: string): string {
