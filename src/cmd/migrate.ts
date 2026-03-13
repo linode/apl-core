@@ -738,6 +738,8 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
 const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('addLinodeNBAnnotations')
   if (values?.cluster?.provider !== 'linode') {
+    // In non-Linode env, old and new setup co-exist in two separate LB services until this gets deactivated
+    set(values, 'apps.ingress-nginx-platform.enabled', true)
     d.info('Skipping Linode NodeBalancer annotation migration: provider is not linode')
     return
   }
@@ -806,6 +808,8 @@ const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void
     annotations.push({ key: nbIdKey, value: String(nbId) })
   }
   set(values, 'ingress.platformClass.annotations', annotations)
+  // The following is overridden during the pre-upgrade script
+  set(values, 'apps.ingress-nginx-platform.enabled', false)
   d.info('Linode NodeBalancer annotations added to ingress.platformClass successfully')
 }
 
