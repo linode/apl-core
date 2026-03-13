@@ -170,7 +170,7 @@ export class Installer {
       } catch (error) {
         const errorMessage = getErrorMessage(error)
         this.d.error(`Installation attempt ${attemptNumber} failed:`, errorMessage)
-        await this.updateInstallationStatus('failed', attemptNumber, errorMessage)
+        await this.updateInstallationStatus('failed', attemptNumber)
 
         // Clean up stuck Helm releases (e.g. pending-install, pending-upgrade)
         // so the next retry can proceed without "another operation is in progress" errors
@@ -194,14 +194,12 @@ export class Installer {
     return status
   }
 
-  private async updateInstallationStatus(status: string, attempt: number, error?: string): Promise<void> {
+  private async updateInstallationStatus(status: string, attempt: number): Promise<void> {
     try {
       const data = {
         status,
         attempt: attempt.toString(),
         timestamp: new Date().toISOString(),
-        // Always include error field to prevent stale values from StrategicMergePatch
-        error: error ?? '',
       }
 
       await createUpdateConfigMap(k8s.core(), APL_OPERATOR_STATUS_CM, APL_OPERATOR_NS, data)

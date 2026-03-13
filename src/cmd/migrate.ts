@@ -20,12 +20,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import {
-  APL_OPERATOR_NS,
-  ARGOCD_APP_PARAMS,
-  OTOMI_PLATFORM_SECRETS,
-  SEALED_SECRETS_NAMESPACE,
-} from '../common/constants'
+import { APL_OPERATOR_NS, ARGOCD_APP_PARAMS, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
 import { getK8sSecret, getSealedSecretsPEM, k8s } from '../common/k8s'
 import {
   applySealedSecretManifestsFromDir,
@@ -900,7 +895,7 @@ export const sopsMigration = async (
     })
     if (existingManifests.length > 0) {
       try {
-        const platformSecret = await deps.getK8sSecret(OTOMI_PLATFORM_SECRETS, SEALED_SECRETS_NAMESPACE)
+        const platformSecret = await deps.getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
         if (!platformSecret) {
           d.info('SealedSecret manifests exist but K8s Secrets are missing — re-applying and restarting controller')
           await deps.applySealedSecretManifestsFromDir(env.ENV_DIR)

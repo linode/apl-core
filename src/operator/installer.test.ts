@@ -169,7 +169,7 @@ describe('Installer', () => {
         }),
       )
 
-      // Verify failed status was recorded with error message
+      // Verify failed status was recorded
       expect(k8s.createUpdateConfigMap).toHaveBeenCalledWith(
         mockCoreApi,
         'apl-installation-status',
@@ -177,7 +177,6 @@ describe('Installer', () => {
         expect.objectContaining({
           status: 'failed',
           attempt: '1',
-          error: 'Install failed',
         }),
       )
 

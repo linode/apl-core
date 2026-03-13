@@ -71,7 +71,7 @@ describe('git-config', () => {
     it('should return undefined when password is a sealed-secret placeholder', async () => {
       mockGetK8sSecret.mockResolvedValue({
         username: 'admin',
-        password: 'sealed:apl-secrets/otomi-platform-secrets/git_password',
+        password: 'sealed:apl-secrets/otomi-secrets/git_password',
       })
       const result = await getGitCredentials()
       expect(result).toBeUndefined()
@@ -362,7 +362,7 @@ describe('git-config', () => {
           git: {
             repoUrl: 'https://github.com/org/repo.git',
             username: 'admin',
-            password: 'sealed:apl-secrets/otomi-platform-secrets/git_password',
+            password: 'sealed:apl-secrets/otomi-secrets/git_password',
             branch: 'main',
             email: 'pipeline@cluster.local',
           },
@@ -370,7 +370,7 @@ describe('git-config', () => {
       }
 
       const result = await getRepo(values, { getK8sSecret: secretMock })
-      expect(secretMock).toHaveBeenCalledWith('otomi-platform-secrets', 'apl-secrets')
+      expect(secretMock).toHaveBeenCalledWith('otomi-secrets', 'apl-secrets')
       expect(result.password).toBe('real-password')
       expect(result.authenticatedUrl).toContain('real-password')
     })

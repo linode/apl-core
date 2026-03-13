@@ -36,7 +36,7 @@ resources:
       data:
         - secretKey: gitPassword
           remoteRef:
-            key: otomi-platform-secrets
+            key: otomi-secrets
             property: git_password
   - apiVersion: external-secrets.io/v1beta1
     kind: ExternalSecret
@@ -64,7 +64,7 @@ resources:
       data:
         - secretKey: gitPassword
           remoteRef:
-            key: otomi-platform-secrets
+            key: otomi-secrets
             property: git_password
 {{- else }}
   - apiVersion: external-secrets.io/v1beta1
@@ -93,7 +93,7 @@ resources:
       data:
         - secretKey: gitPassword
           remoteRef:
-            key: otomi-platform-secrets
+            key: otomi-secrets
             property: git_password
 {{- end }}
   - apiVersion: external-secrets.io/v1beta1

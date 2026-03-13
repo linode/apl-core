@@ -969,7 +969,7 @@ describe('sopsMigration', () => {
 
   it('should re-apply and restart controller when manifests exist but K8s Secrets are missing', async () => {
     mockExistsSync.mockReturnValue(false)
-    mockGlobSync.mockReturnValue(['/env/manifests/namespaces/apl-secrets/sealedsecrets/otomi-platform-secrets.yaml'])
+    mockGlobSync.mockReturnValue(['/env/manifests/namespaces/apl-secrets/sealedsecrets/otomi-secrets.yaml'])
     mockGetK8sSecret.mockResolvedValue(undefined) // Secret doesn't exist yet
 
     await sopsMigration({ teamConfig: {}, versions: { specVersion: 55 } }, makeDeps())
@@ -981,7 +981,7 @@ describe('sopsMigration', () => {
 
   it('should skip re-apply when manifests exist and K8s Secrets already exist', async () => {
     mockExistsSync.mockReturnValue(false)
-    mockGlobSync.mockReturnValue(['/env/manifests/namespaces/apl-secrets/sealedsecrets/otomi-platform-secrets.yaml'])
+    mockGlobSync.mockReturnValue(['/env/manifests/namespaces/apl-secrets/sealedsecrets/otomi-secrets.yaml'])
     mockGetK8sSecret.mockResolvedValue({ git_password: 'somepassword' }) // Secret exists
 
     await sopsMigration({ teamConfig: {}, versions: { specVersion: 55 } }, makeDeps())

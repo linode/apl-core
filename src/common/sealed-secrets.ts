@@ -206,93 +206,39 @@ export const createSealedSecretsKeySecret = async (
 }
 
 /**
- * Resolve the namespace for a given secret path.
- * All secrets go to 'apl-secrets' namespace for ESO ClusterSecretStore access.
- */
-const resolveNamespace = (secretPath: string): string | undefined => {
-  // Check for teamConfig dynamic paths
-  if (secretPath.match(/^teamConfig\.[^.]+/)) {
-    return SEALED_SECRETS_NAMESPACE
-  }
-
-  // Check if this path matches any known secret name prefix
-  const sortedKeys = Object.keys(SECRET_NAME_MAP).sort((a, b) => b.length - a.length)
-  for (const prefix of sortedKeys) {
-    if (secretPath === prefix || secretPath.startsWith(`${prefix}.`)) {
-      return SEALED_SECRETS_NAMESPACE
-    }
-  }
-
-  return undefined
-}
-
-// Map specific path prefixes to secret names
-export const SECRET_NAME_MAP: Record<string, string> = {
-  'apps.harbor': 'harbor-secrets',
-  'apps.gitea': 'gitea-secrets',
-  'apps.keycloak': 'keycloak-secrets',
-  'apps.grafana': 'grafana-secrets',
-  'apps.loki': 'loki-secrets',
-  'apps.oauth2-proxy': 'oauth2-proxy-secrets',
-  'apps.oauth2-proxy-redis': 'oauth2-proxy-redis-secrets',
-  'apps.prometheus': 'prometheus-secrets',
-  'apps.otomi-api': 'otomi-api-secrets',
-  'apps.cert-manager': 'cert-manager-secrets',
-  'apps.kubeflow-pipelines': 'kubeflow-pipelines-secrets',
-  otomi: 'otomi-platform-secrets',
-  oidc: 'oidc-secrets',
-  smtp: 'smtp-secrets',
-  dns: 'dns-secrets',
-  obj: 'obj-storage-secrets',
-  license: 'license-secrets',
-  alerts: 'alerts-secrets',
-  cluster: 'cluster-secrets',
-}
-
-/**
  * Find the group prefix for a secret path.
- * Returns the prefix that maps to the secret name (e.g., 'apps.harbor' for 'apps.harbor.adminPassword').
+ * Groups: teamConfig.X, apps.X, or a single top-level key (e.g., 'otomi', 'dns').
  */
 const findGroupPrefix = (secretPath: string): string | undefined => {
   const teamMatch = secretPath.match(/^teamConfig\.([^.]+)/)
-  if (teamMatch) {
-    return `teamConfig.${teamMatch[1]}`
-  }
+  if (teamMatch) return `teamConfig.${teamMatch[1]}`
 
-  const sortedKeys = Object.keys(SECRET_NAME_MAP).sort((a, b) => b.length - a.length)
-  for (const prefix of sortedKeys) {
-    if (secretPath === prefix || secretPath.startsWith(`${prefix}.`)) {
-      return prefix
-    }
-  }
+  const appsMatch = secretPath.match(/^apps\.([^.]+)/)
+  if (appsMatch) return `apps.${appsMatch[1]}`
 
-  // Fallback: use first two path segments
-  const parts = secretPath.split('.')
-  if (parts.length >= 2) {
-    return parts.slice(0, 2).join('.')
-  }
+  // Top-level paths: use the first segment as the group prefix
+  const [firstSegment] = secretPath.split('.')
+  // Skip paths like 'kms' and 'users' which are handled separately
+  if (firstSegment && firstSegment !== 'kms' && firstSegment !== 'users') return firstSegment
+
   return undefined
 }
 
 /**
- * Derive a K8s secret name from the secret path prefix.
+ * Derive a K8s secret name from a secret path.
+ * Convention: all secrets follow {name}-secrets pattern.
+ *   - teamConfig.X  -> team-X-settings-secrets
+ *   - apps.X        -> X-secrets
+ *   - topLevel      -> topLevel-secrets
  */
 const deriveSecretName = (secretPath: string): string => {
   const teamMatch = secretPath.match(/^teamConfig\.([^.]+)/)
-  if (teamMatch) {
-    return `team-${teamMatch[1]}-settings-secrets`
-  }
+  if (teamMatch) return `team-${teamMatch[1]}-settings-secrets`
 
-  const sortedKeys = Object.keys(SECRET_NAME_MAP).sort((a, b) => b.length - a.length)
-  for (const prefix of sortedKeys) {
-    if (secretPath === prefix || secretPath.startsWith(`${prefix}.`)) {
-      return SECRET_NAME_MAP[prefix]
-    }
-  }
+  const appsMatch = secretPath.match(/^apps\.([^.]+)/)
+  if (appsMatch) return `${appsMatch[1]}-secrets`
 
-  // Fallback: derive from first two path segments
-  const parts = secretPath.split('.')
-  return `${parts.slice(0, 2).join('-')}-secrets`
+  return `${secretPath.split('.')[0]}-secrets`
 }
 
 /**
@@ -317,14 +263,13 @@ export const buildSecretToNamespaceMap = async (
     // Skip users path — user secrets are managed individually in apl-users namespace
     if (secretPath === 'users') continue
 
-    const namespace = resolveNamespace(secretPath)
-    if (!namespace) continue
+    if (!findGroupPrefix(secretPath)) continue
 
     const secretName = deriveSecretName(secretPath)
-    const groupKey = `${namespace}/${secretName}`
+    const groupKey = `${SEALED_SECRETS_NAMESPACE}/${secretName}`
 
     if (!groupMap.has(groupKey)) {
-      groupMap.set(groupKey, { namespace, secretName, data: {} })
+      groupMap.set(groupKey, { namespace: SEALED_SECRETS_NAMESPACE, secretName, data: {} })
     }
 
     const mapping = groupMap.get(groupKey)!

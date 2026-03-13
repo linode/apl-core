@@ -5,7 +5,7 @@ import {
   APL_OPERATOR_NS,
   DEPLOYMENT_PASSWORDS_SECRET,
   OTOMI_NAMESPACE,
-  OTOMI_PLATFORM_SECRETS,
+  OTOMI_SECRETS,
   SEALED_SECRETS_NAMESPACE,
 } from 'src/common/constants'
 import { encrypt } from 'src/common/crypt'
@@ -198,12 +198,13 @@ export async function initialSetupData(): Promise<InitialData> {
       secretName,
     }
   } else {
-    // External IDP: show Keycloak admin credentials (keycloak-initial-admin uses otomi-platform-secrets.adminPassword)
-    const otomiSecret = await getK8sSecret(OTOMI_PLATFORM_SECRETS, SEALED_SECRETS_NAMESPACE)
+    // External IDP: show Keycloak admin credentials
+    const adminUsername = values?.apps?.keycloak?.adminUsername || 'otomi-admin'
+    const otomiSecret = await getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
     const adminPassword = otomiSecret?.adminPassword ? String(otomiSecret.adminPassword) : ''
     return {
       domainSuffix,
-      username: 'otomi-admin',
+      username: adminUsername,
       password: adminPassword,
       secretName,
     }

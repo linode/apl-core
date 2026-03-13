@@ -11,7 +11,6 @@ import {
   getPemFromCertificate,
   restartSealedSecretsController,
   SealedSecretManifest,
-  SECRET_NAME_MAP,
   stripAllSecrets,
   writeSealedSecretManifests,
 } from './sealed-secrets'
@@ -502,14 +501,26 @@ describe('sealed-secrets', () => {
     })
   })
 
-  describe('SECRET_NAME_MAP', () => {
-    it('should have expected secret name mappings', () => {
-      expect(SECRET_NAME_MAP['apps.harbor']).toBe('harbor-secrets')
-      expect(SECRET_NAME_MAP['apps.gitea']).toBe('gitea-secrets')
-      expect(SECRET_NAME_MAP['apps.keycloak']).toBe('keycloak-secrets')
-      expect(SECRET_NAME_MAP['otomi']).toBe('otomi-platform-secrets')
-      expect(SECRET_NAME_MAP['oidc']).toBe('oidc-secrets')
-      expect(SECRET_NAME_MAP['dns']).toBe('dns-secrets')
+  describe('secret name derivation', () => {
+    it('should derive correct secret names via buildSecretToNamespaceMap', async () => {
+      const secrets = {
+        apps: { harbor: { adminPassword: 'pass' } },
+        otomi: { adminPassword: 'pass' },
+        obj: { provider: { linode: { secretAccessKey: 'key' } } },
+        dns: { provider: { linode: { apiToken: 'token' } } },
+      }
+      const result = await buildSecretToNamespaceMap(secrets, [], undefined, {
+        getSchemaSecretsPaths: jest
+          .fn()
+          .mockResolvedValue([
+            'apps.harbor.adminPassword',
+            'otomi.adminPassword',
+            'obj.provider.linode.secretAccessKey',
+            'dns.provider.linode.apiToken',
+          ]),
+      })
+      const names = result.map((m) => m.secretName).sort()
+      expect(names).toEqual(['dns-secrets', 'harbor-secrets', 'obj-secrets', 'otomi-secrets'])
     })
   })
 

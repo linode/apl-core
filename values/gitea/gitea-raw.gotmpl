@@ -33,7 +33,7 @@ resources:
     data:
       - secretKey: git_password
         remoteRef:
-          key: otomi-platform-secrets
+          key: otomi-secrets
           property: git_password
 {{- if $v._derived.untrustedCA }}
 - apiVersion: v1
@@ -65,7 +65,7 @@ resources:
     data:
       - secretKey: secretAccessKey
         remoteRef:
-          key: obj-storage-secrets
+          key: obj-secrets
           property: provider_linode_secretAccessKey
 {{- end }}
 {{- with $v | get "smtp" nil }}
