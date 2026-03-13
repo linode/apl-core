@@ -14,6 +14,7 @@ import { runtimeUpgrade } from '../common/runtime-upgrade'
 import { applyAsApps, applyGitOpsApps } from './apply-as-apps'
 import { applyTeams } from './apply-teams'
 import { commit } from './commit'
+import semver from 'semver'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -34,12 +35,21 @@ export const applyAll = async () => {
   const prevState = await getDeploymentState()
   const argv: HelmArguments = getParsedArgs()
 
-  await runtimeUpgrade({ when: 'pre', deploymentState: prevState })
+  const tag = await getImageTagFromValues()
+  const deployingVersion = getPackageVersion()
+  // Use higher deploymentVersion for upgrade checks
+  const upgradeState =
+    !semver.valid(prevState?.deployingVersion) || semver.gt(deployingVersion, prevState.deployingVersion!)
+      ? {
+          ...prevState,
+          deployingVersion,
+        }
+      : prevState
+  await runtimeUpgrade({ when: 'pre', deploymentState: upgradeState })
 
   d.info('Start apply all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
-  const tag = await getImageTagFromValues()
-  const deployingVersion = getPackageVersion()
+  // Reset deploymentVersion to current package version
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion })
 
   // We still need to deploy all teams because some settings depend on platform apps.
@@ -52,7 +62,7 @@ export const applyAll = async () => {
   const appsApplyCompleted = await applyAsApps(params)
 
   if (appsApplyCompleted) {
-    await runtimeUpgrade({ when: 'post', deploymentState: prevState })
+    await runtimeUpgrade({ when: 'post', deploymentState: upgradeState })
   } else {
     d.info('Apps apply step not completed, skipping upgrade checks')
   }
