@@ -2,14 +2,14 @@ import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/clien
 import { OtomiDebugger } from '../debug'
 import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
 import { getParsedArgs } from '../yargs'
+import { syncIngressNginxPlatform } from './add-linode-nb-annotations'
 import { updateDbCollation } from './cloudnative-pg'
+import { migrateGitConfig } from './migrate-git-config'
+import { removeHttpBinApplication } from './remove-httpbin-application'
 import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
 import { detachApplicationFromApplicationSet, pruneArgoCDImageUpdater } from './v4.13.0'
-import { removeHttpBinApplication } from './remove-httpbin-application'
-import { migrateGitConfig } from './migrate-git-config'
-import { syncIngressNginxPlatform } from './add-linode-nb-annotations'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -150,6 +150,9 @@ export const runtimeUpgrades: RuntimeUpgrades = [
   },
   {
     version: '4.15.0',
+    pre: async (context: RuntimeUpgradeContext) => {
+      await upgradeKnativeServing(context, ['1.19', '1.20', '1.21'])
+    },
     applications: {
       'apl-operator-apl-operator': {
         pre: async (context: RuntimeUpgradeContext) => {
