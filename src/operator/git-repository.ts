@@ -1,9 +1,9 @@
+import * as fs from 'fs'
+import * as path from 'path'
 import simpleGit, { SimpleGit } from 'simple-git'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { OperatorError } from './errors'
 import { getErrorMessage } from './utils'
-import * as fs from 'fs'
-import * as path from 'path'
 
 export interface GitRepositoryConfig {
   authenticatedUrl: string // Full URL with credentials already embedded
@@ -112,7 +112,8 @@ export class GitRepository {
       // to avoid re-creating deleted teams and users
       // and to clean-up the untracked files
       await this.git.clean('f', ['-X'])
-      await this.git.pull('origin', this.branch)
+      await this.git.fetch('origin', this.branch)
+      await this.git.reset(['--hard', `origin/${this.branch}`])
       return this.getCurrentRevision()
     } catch (error) {
       this.d.error('Failed to pull repository:', getErrorMessage(error))
