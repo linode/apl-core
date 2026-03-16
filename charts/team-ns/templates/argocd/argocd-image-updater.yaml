@@ -42,7 +42,7 @@ spec:
       writeBackConfig:
         method: git
         gitConfig:
-          branch: main
+          branch: {{ $v.gitOps.branch | quote }}
           repository: {{ $v.gitOps.workloadValuesRepoUrl | quote }}
           writeBackTarget: "helmvalues:/env/teams/{{ $v.teamId }}/workloadValues/{{ .name }}.managed.yaml"
     {{- end }}
