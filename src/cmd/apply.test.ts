@@ -102,7 +102,7 @@ describe('Apply command', () => {
     }
 
     // Set up default mock return values
-    mockDeps.getDeploymentState.mockResolvedValue({ status: 'deployed' })
+    mockDeps.getDeploymentState.mockResolvedValue({ status: 'deployed', deployingVersion: '1.0.0' })
     mockDeps.getImageTagFromValues.mockResolvedValue('v1.0.0')
     mockDeps.getPackageVersion.mockReturnValue('1.0.0')
     mockDeps.applyAsApps.mockResolvedValue(true)
@@ -150,23 +150,30 @@ describe('Apply command', () => {
 
       await applyAll()
 
-      // Verify pre-upgrade steps
-      expect(mockDeps.runtimeUpgrade).toHaveBeenCalledWith({ when: 'pre' })
-
-      // Verify deployment state management
-      expect(mockDeps.getDeploymentState).toHaveBeenCalled()
-      expect(mockDeps.getImageTagFromValues).toHaveBeenCalled()
       expect(mockDeps.setDeploymentState).toHaveBeenCalledWith({
         status: 'deploying',
         deployingTag: 'v1.0.0',
         deployingVersion: '1.0.0',
       })
 
+      expect(mockDeps.getDeploymentState).toHaveBeenCalled()
+      // Verify pre-upgrade steps
+      expect(mockDeps.runtimeUpgrade).toHaveBeenCalledWith({
+        when: 'pre',
+        deploymentState: { status: 'deployed', deployingVersion: '1.0.0' },
+      })
+
+      // Verify deployment state management
+      expect(mockDeps.getImageTagFromValues).toHaveBeenCalled()
+
       // Verify core apply process
       expect(mockDeps.applyAsApps).toHaveBeenCalled()
 
       // Verify post-upgrade steps
-      expect(mockDeps.runtimeUpgrade).toHaveBeenCalledWith({ when: 'post' })
+      expect(mockDeps.runtimeUpgrade).toHaveBeenCalledWith({
+        when: 'post',
+        deploymentState: { status: 'deployed', deployingVersion: '1.0.0' },
+      })
 
       // Verify GitOps apps setup
       expect(mockDeps.applyGitOpsApps).toHaveBeenCalled()

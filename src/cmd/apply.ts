@@ -31,16 +31,17 @@ const setup = (): void => {
 
 export const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
-  const prevState = await getDeploymentState()
   const argv: HelmArguments = getParsedArgs()
 
-  await runtimeUpgrade({ when: 'pre' })
-
-  d.info('Start apply all')
-  d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTagFromValues()
   const deployingVersion = getPackageVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion })
+  const deploymentState = await getDeploymentState()
+
+  await runtimeUpgrade({ when: 'pre', deploymentState })
+
+  d.info('Start apply all')
+  d.info(`Deployment state: ${JSON.stringify(deploymentState)}`)
 
   // We still need to deploy all teams because some settings depend on platform apps.
   const teamsApplyCompleted = await applyTeams()
@@ -52,7 +53,7 @@ export const applyAll = async () => {
   const appsApplyCompleted = await applyAsApps(params)
 
   if (appsApplyCompleted) {
-    await runtimeUpgrade({ when: 'post' })
+    await runtimeUpgrade({ when: 'post', deploymentState })
   } else {
     d.info('Apps apply step not completed, skipping upgrade checks')
   }
