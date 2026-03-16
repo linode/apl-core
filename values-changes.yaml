@@ -449,3 +449,8 @@ changes:
   - version: 56
     customFunctions:
       - addLinodeNBAnnotations
+  - version: 57
+    deletions:
+      - 'kms.sops'
+    customFunctions:
+      - sopsMigration

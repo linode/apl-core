@@ -72,12 +72,16 @@ resources:
     value: 1000000
     globalDefault: false
     description: "This priority class should be used for Otomi High priority service pods only."
-
+  {{- if $v.cluster.domainSuffix }}
+  # CoreDNS custom config to resolve platform domains to the ingress controller ClusterIP.
+  # This avoids hairpin NAT issues where pods cannot reach services via the external LoadBalancer IP.
   - apiVersion: v1
-    kind: Secret
+    kind: ConfigMap
     metadata:
-      name: custom-ca
-      namespace: cert-manager
+      name: coredns-custom
+      namespace: kube-system
     data:
-      tls.crt: {{ $cm.customRootCA | b64enc }}
-      tls.key: {{ $cm.customRootCAKey | b64enc}}
+      otomi-hairpin.include: |
+        {{- $escapedDomain := $v.cluster.domainSuffix | replace "." "\\." }}
+        rewrite name regex (.+)\.{{ $escapedDomain }} ingress-nginx-platform-controller.ingress.svc.cluster.local answer auto
+  {{- end }}
