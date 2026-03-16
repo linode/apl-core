@@ -152,21 +152,29 @@ export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret
     otomiGit.repoUrl = process.env.GIT_REPO_URL
   }
   const username = otomiGit?.username
-  let password = otomiGit?.password ?? ''
+  let password = ''
   const email = otomiGit?.email
   const branch = otomiGit?.branch
 
-  // If password is missing or is an unresolved sealed-secret placeholder,
-  // try reading the real password from the K8s secret (populated by ESO from SealedSecrets)
-  if (!password || (typeof password === 'string' && password.startsWith('sealed:'))) {
-    try {
-      const secret = await deps.getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
-      if (secret?.git_password) {
-        password = String(secret.git_password)
-        d.debug('Read git password from K8s secret (ESO)')
-      }
-    } catch {
-      d.warn('Could not read git password from K8s secret, using value from config')
+  // Always try the K8s secret first for the real password.
+  // Values may contain encrypted sealed-secret ciphertext (from loadSealedSecretsToSpec)
+  // which must not be used as the actual git password.
+  try {
+    const secret = await deps.getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
+    if (secret?.git_password) {
+      password = String(secret.git_password)
+      d.debug('Read git password from K8s secret (ESO)')
+    }
+  } catch {
+    d.debug('Could not read git password from K8s secret')
+  }
+
+  // Fall back to values if K8s secret is not available (e.g., during bootstrap)
+  if (!password) {
+    const valuesPassword = otomiGit?.password ?? ''
+    // Only use the values password if it's not an unresolved sealed-secret placeholder
+    if (valuesPassword && !(typeof valuesPassword === 'string' && valuesPassword.startsWith('sealed:'))) {
+      password = valuesPassword
     }
   }
 
