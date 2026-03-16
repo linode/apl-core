@@ -102,7 +102,7 @@ describe('Apply command', () => {
     }
 
     // Set up default mock return values
-    mockDeps.getDeploymentState.mockResolvedValue({ status: 'deployed' })
+    mockDeps.getDeploymentState.mockResolvedValue({ status: 'deployed', deployingVersion: '1.0.0' })
     mockDeps.getImageTagFromValues.mockResolvedValue('v1.0.0')
     mockDeps.getPackageVersion.mockReturnValue('1.0.0')
     mockDeps.applyAsApps.mockResolvedValue(true)
@@ -150,6 +150,13 @@ describe('Apply command', () => {
 
       await applyAll()
 
+      expect(mockDeps.setDeploymentState).toHaveBeenCalledWith({
+        status: 'deploying',
+        deployingTag: 'v1.0.0',
+        deployingVersion: '1.0.0',
+      })
+
+      expect(mockDeps.getDeploymentState).toHaveBeenCalled()
       // Verify pre-upgrade steps
       expect(mockDeps.runtimeUpgrade).toHaveBeenCalledWith({
         when: 'pre',
@@ -157,13 +164,7 @@ describe('Apply command', () => {
       })
 
       // Verify deployment state management
-      expect(mockDeps.getDeploymentState).toHaveBeenCalled()
       expect(mockDeps.getImageTagFromValues).toHaveBeenCalled()
-      expect(mockDeps.setDeploymentState).toHaveBeenCalledWith({
-        status: 'deploying',
-        deployingTag: 'v1.0.0',
-        deployingVersion: '1.0.0',
-      })
 
       // Verify core apply process
       expect(mockDeps.applyAsApps).toHaveBeenCalled()
