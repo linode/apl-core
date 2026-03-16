@@ -98,6 +98,9 @@ describe('getArgocdGitopsManifest', () => {
             path: 'env/manifests/global',
             repoURL: 'https://git.example.com:443/otomi/values.git',
             targetRevision: 'HEAD',
+            directory: {
+              recurse: true,
+            },
           },
         ],
         destination: {
@@ -138,9 +141,12 @@ describe('getArgocdGitopsManifest', () => {
         },
         sources: [
           {
-            path: 'env/manifests/ns/my-namespace',
+            path: 'env/manifests/namespaces/my-namespace',
             repoURL: 'https://git.example.com:443/otomi/values.git',
             targetRevision: 'HEAD',
+            directory: {
+              recurse: true,
+            },
           },
         ],
         destination: {

@@ -1,10 +1,12 @@
-import { GitRepository, GitRepositoryConfig } from './git-repository'
 import { OperatorError } from './errors'
+import { GitRepository, GitRepositoryConfig } from './git-repository'
 
 jest.mock('simple-git', () => {
   const mockGit = {
     clone: jest.fn(),
     log: jest.fn(),
+    fetch: jest.fn(),
+    reset: jest.fn(),
     pull: jest.fn(),
     diff: jest.fn(),
     clean: jest.fn(),
@@ -38,6 +40,7 @@ describe('GitRepository', () => {
     defaultConfig = {
       authenticatedUrl: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
       repoPath: '/tmp/repo',
+      branch: 'main',
     }
 
     const simpleGit = require('simple-git')
@@ -110,6 +113,7 @@ describe('GitRepository', () => {
       expect(mockGit.clone).toHaveBeenCalledWith(
         'https://testuser:testpass@github.com:443/testorg/testrepo.git',
         '/tmp/repo',
+        ['-b', 'main'],
       )
       expect(fs.existsSync).toHaveBeenCalledWith('/tmp/repo/.git')
     })
@@ -192,7 +196,7 @@ describe('GitRepository', () => {
     })
   })
 
-  describe('pull', () => {
+  describe('fetch', () => {
     test('should return no changes when revisions match', async () => {
       const revision = 'abc123'
       Object.defineProperty(gitRepository, '_lastRevision', {
@@ -200,7 +204,7 @@ describe('GitRepository', () => {
         writable: true,
       })
 
-      mockGit.pull.mockResolvedValue(undefined)
+      mockGit.fetch.mockResolvedValue(undefined)
 
       mockGit.log.mockResolvedValue({
         latest: { hash: revision },
@@ -214,7 +218,7 @@ describe('GitRepository', () => {
         hasChangesToApply: false,
         applyTeamsOnly: false,
       })
-      expect(mockGit.pull).toHaveBeenCalled()
+      expect(mockGit.fetch).toHaveBeenCalled()
       expect(mockGit.log).toHaveBeenCalledWith({ maxCount: 1 })
     })
 
@@ -224,7 +228,7 @@ describe('GitRepository', () => {
         writable: true,
       })
 
-      mockGit.pull.mockResolvedValue(undefined)
+      mockGit.fetch.mockResolvedValue(undefined)
 
       mockGit.log.mockResolvedValue({
         latest: { hash: 'new123' },
@@ -239,7 +243,7 @@ describe('GitRepository', () => {
         applyTeamsOnly: false,
       })
       expect(gitRepository.lastRevision).toBe('new123')
-      expect(mockGit.pull).toHaveBeenCalled()
+      expect(mockGit.fetch).toHaveBeenCalled()
       expect(mockGit.log).toHaveBeenCalledWith({ maxCount: 1 })
     })
 
@@ -249,7 +253,7 @@ describe('GitRepository', () => {
         writable: true,
       })
 
-      mockGit.pull.mockResolvedValue(undefined)
+      mockGit.fetch.mockResolvedValue(undefined)
 
       mockGit.log.mockResolvedValueOnce({
         latest: { hash: 'new123' },
@@ -280,7 +284,7 @@ describe('GitRepository', () => {
         writable: true,
       })
 
-      mockGit.pull.mockResolvedValue(undefined)
+      mockGit.fetch.mockResolvedValue(undefined)
 
       mockGit.log.mockResolvedValueOnce({
         latest: { hash: 'new123' },
@@ -310,7 +314,7 @@ describe('GitRepository', () => {
         writable: true,
       })
 
-      mockGit.pull.mockResolvedValue(undefined)
+      mockGit.fetch.mockResolvedValue(undefined)
 
       mockGit.log.mockResolvedValueOnce({
         latest: { hash: 'new123' },
@@ -334,12 +338,31 @@ describe('GitRepository', () => {
       expect(mockGit.diff).toHaveBeenCalledWith(['abc123..new123', '--name-only'])
     })
 
-    test('should handle pull failure', async () => {
-      const error = new Error('Pull failed')
-      mockGit.pull.mockRejectedValue(error)
+    test('should fetch from the configured branch', async () => {
+      const customBranchRepo = new GitRepository({
+        authenticatedUrl: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
+        repoPath: '/tmp/repo',
+        branch: 'feature-branch',
+      })
+
+      mockGit.fetch.mockResolvedValue(undefined)
+      mockGit.log.mockResolvedValue({
+        latest: { hash: 'abc123' },
+        total: 1,
+        all: [],
+      })
+
+      await customBranchRepo.syncAndAnalyzeChanges()
+
+      expect(mockGit.fetch).toHaveBeenCalledWith('origin', 'feature-branch')
+    })
+
+    test('should handle fetch failure', async () => {
+      const error = new Error('Fetch failed')
+      mockGit.fetch.mockRejectedValue(error)
 
       await expect(gitRepository.syncAndAnalyzeChanges()).rejects.toBeInstanceOf(OperatorError)
-      expect(mockGit.pull).toHaveBeenCalled()
+      expect(mockGit.fetch).toHaveBeenCalled()
     })
   })
 

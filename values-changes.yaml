@@ -448,4 +448,7 @@ changes:
       - apps.gitea.adminUsername: otomi.git.username
   - version: 56
     customFunctions:
+      - addLinodeNBAnnotations
+  - version: 57
+    customFunctions:
       - ValkeyAndOauth2RedisPVCMigration

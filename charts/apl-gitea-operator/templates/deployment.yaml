@@ -33,12 +33,10 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: [npm, run, operator:gitea]
           env:
-            - name: GITEA_URL
-              value: "{{ .Values.env.GITEA_URL }}"
-            - name: GITEA_URL_PORT
-              value: "{{ .Values.env.GITEA_URL_PORT }}"
-            - name: GITEA_OPERATOR_NAMESPACE
-              value: "{{ .Values.env.GITEA_OPERATOR_NAMESPACE }}"
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

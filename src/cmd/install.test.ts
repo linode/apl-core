@@ -13,12 +13,15 @@ jest.mock('fs', () => ({
 jest.mock('src/common/k8s', () => ({
   getDeploymentState: jest.fn(),
   setDeploymentState: jest.fn(),
+  getK8sConfigMap: jest.fn(),
+  createUpdateConfigMap: jest.fn(),
   getHelmReleases: jest.fn(),
   applyServerSide: jest.fn(),
   restartOtomiApiDeployment: jest.fn(),
   waitForCRD: jest.fn(),
   k8s: {
     app: jest.fn(),
+    core: jest.fn(),
   },
 }))
 
@@ -80,6 +83,7 @@ describe('Install command', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    require('src/common/k8s').k8s.core.mockReturnValue({})
 
     // Mock environment
     process.env.NODE_ENV = 'test'
@@ -89,6 +93,8 @@ describe('Install command', () => {
       deletePendingHelmReleases: require('src/common/k8s').deletePendingHelmReleases,
       getDeploymentState: require('src/common/k8s').getDeploymentState,
       setDeploymentState: require('src/common/k8s').setDeploymentState,
+      getK8sConfigMap: require('src/common/k8s').getK8sConfigMap,
+      createUpdateConfigMap: require('src/common/k8s').createUpdateConfigMap,
       getHelmReleases: require('src/common/k8s').getHelmReleases,
       getImageTagFromValues: require('src/common/values').getImageTagFromValues,
       getPackageVersion: require('src/common/values').getPackageVersion,
@@ -102,6 +108,7 @@ describe('Install command', () => {
 
     // Set up default mock return values
     mockDeps.getDeploymentState.mockResolvedValue({ status: 'initial' })
+    mockDeps.getK8sConfigMap.mockResolvedValue(undefined)
     mockDeps.getImageTagFromValues.mockResolvedValue('v1.0.0')
     mockDeps.getPackageVersion.mockReturnValue('1.0.0')
     mockDeps.getHelmReleases.mockResolvedValue([])
@@ -143,11 +150,21 @@ describe('Install command', () => {
       // Verify the key steps were called
       expect(mockDeps.getDeploymentState).toHaveBeenCalled()
       expect(mockDeps.getImageTagFromValues).toHaveBeenCalled()
-      expect(mockDeps.setDeploymentState).toHaveBeenCalledWith({
-        status: 'deploying',
-        deployingTag: 'v1.0.0',
-        deployingVersion: '1.0.0',
-      })
+      expect(mockDeps.createUpdateConfigMap).toHaveBeenCalledWith(
+        expect.anything(),
+        'apl-installation-status',
+        'apl-operator',
+        {
+          installationMode: 'standard',
+        },
+      )
+      expect(mockDeps.setDeploymentState).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'deploying',
+          deployingTag: 'v1.0.0',
+          deployingVersion: '1.0.0',
+        }),
+      )
 
       // Restore environment
       process.env.DISABLE_SYNC = originalEnv

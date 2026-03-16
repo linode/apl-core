@@ -148,3 +148,8 @@ operator:
   pollIntervalMs: 1000
   # Reconcile interval for applying changes (milliseconds)
   reconcileIntervalMs: 300000
+
+installation:
+  mode: standard
+  # Skip deployment of the operator
+  skipOperatorDeployment: false

@@ -1,8 +1,12 @@
 import * as process from 'node:process'
+import { runTraceCollectionLoop } from 'src/cmd/traces'
+import { recoverFromGit } from 'src/common/bootstrap'
+import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { terminal } from '../common/debug'
 import {
   getGitConfigData,
   getGitCredentials,
+  getStoredGitRepoConfig,
   GIT_CONFIG_NAMESPACE,
   GIT_CONFIG_SECRET_NAME,
   setGitConfig,
@@ -31,7 +35,22 @@ export class Installer {
     return installStatus === 'completed'
   }
 
-  public async initialize() {
+  public async recoverFromGit(): Promise<void> {
+    while (true) {
+      try {
+        const gitConfig = await getStoredGitRepoConfig()
+        await recoverFromGit(gitConfig)
+        return
+      } catch (error) {
+        const errorMessage = getErrorMessage(error)
+        this.d.error('Recover from git attempt failed:', errorMessage)
+        // Wait 1 second before retrying
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+    }
+  }
+
+  public async initialize(): Promise<void> {
     while (true) {
       try {
         await this.aplOps.validateCluster()
@@ -39,17 +58,38 @@ export class Installer {
         return
       } catch (error) {
         const errorMessage = getErrorMessage(error)
-        this.d.error(`Bootstrap attempt failed:`, errorMessage)
-
+        this.d.error('Bootstrap attempt failed:', errorMessage)
         // Wait 1 second before retrying
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     }
   }
 
+  public async ensureRecoveryPrerequisites(): Promise<void> {
+    await getStoredGitRepoConfig()
+    const sopsSecret = await getK8sSecret('apl-sops-secrets', GIT_CONFIG_NAMESPACE)
+    if (!sopsSecret || Object.keys(sopsSecret).length === 0) {
+      throw new Error('KMS/SOPS config not found in apl-sops-secrets secret')
+    }
+  }
+
+  public async getInstallationMode(): Promise<'standard' | 'recovery'> {
+    const installationStatus = await getK8sConfigMap(APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, k8s.core())
+    const installationMode = installationStatus?.data?.installationMode
+    return installationMode === 'recovery' ? 'recovery' : 'standard'
+  }
+
+  public async resetRecoveryModeToStandard(): Promise<void> {
+    await createUpdateConfigMap(k8s.core(), APL_OPERATOR_STATUS_CM, APL_OPERATOR_NS, {
+      installationMode: 'standard',
+    })
+  }
+
   public async reconcileInstall(): Promise<void> {
     let attemptNumber = 0
-
+    runTraceCollectionLoop().catch((error) => {
+      this.d.warn('Trace collection loop failed:', getErrorMessage(error))
+    })
     while (true) {
       try {
         attemptNumber += 1
@@ -65,7 +105,6 @@ export class Installer {
       } catch (error) {
         await this.updateInstallationStatus('failed', attemptNumber)
         this.d.warn(`Installation attempt ${attemptNumber} failed, retrying in 1 second...`, getErrorMessage(error))
-
         // Wait 1 second before retrying
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
@@ -73,7 +112,7 @@ export class Installer {
   }
 
   private async getInstallationStatus(): Promise<string | undefined> {
-    const configMap = await getK8sConfigMap('apl-operator', 'apl-installation-status', k8s.core())
+    const configMap = await getK8sConfigMap(APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, k8s.core())
     const status = configMap?.data?.status
     this.d.info(`Current installation status: ${status}`)
     this.d.debug(`ConfigMap data: ${configMap?.data}`)
@@ -88,7 +127,7 @@ export class Installer {
         timestamp: new Date().toISOString(),
       }
 
-      await createUpdateConfigMap(k8s.core(), 'apl-installation-status', 'apl-operator', data)
+      await createUpdateConfigMap(k8s.core(), APL_OPERATOR_STATUS_CM, APL_OPERATOR_NS, data)
     } catch (err) {
       this.d.warn('Failed to update installation status:', getErrorMessage(err))
     }
@@ -100,7 +139,7 @@ export class Installer {
   }
 
   private async setupSopsEnvironment() {
-    const aplSopsSecret = await getK8sSecret('apl-sops-secrets', 'apl-operator')
+    const aplSopsSecret = await getK8sSecret('apl-sops-secrets', APL_OPERATOR_NS)
 
     if (!aplSopsSecret?.SOPS_AGE_KEY) {
       throw new Error('SOPS_AGE_KEY not found in secret')
