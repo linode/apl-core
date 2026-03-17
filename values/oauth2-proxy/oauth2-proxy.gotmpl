@@ -27,6 +27,7 @@ config:
   configFile: |-
     # Defaults
     email_domains = [ "*" ]
+    # Upon successful token verification, oauth2-proxy returns 200 and K8s gateway passes the request to the app route
     upstreams = [ "static://200" ]
     # Custom
     ssl_insecure_skip_verify = {{ $v._derived.untrustedCA }}
