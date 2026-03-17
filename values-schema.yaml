@@ -515,7 +515,7 @@ definitions:
             $ref: '#/definitions/annotations'
       gateway:
         type: object
-        description: 'Gateway deployment configuration'
+        description: 'Ingress gateway deployment configuration'
         properties:
           replicas:
             type: integer
@@ -2045,7 +2045,7 @@ properties:
                 minimum: 1
               gateway:
                 type: object
-                description: 'Gateway deployment configuration'
+                description: 'Knative local gateway deployment configuration'
                 properties:
                   replicas:
                     type: integer
