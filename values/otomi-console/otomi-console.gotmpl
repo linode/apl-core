@@ -4,7 +4,6 @@
 {{- $version := $v.versions | get "console" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
-{{- $hostname := print "console." $v.cluster.domainSuffix }}
 replicaCount: 1
 resources: {{- $o.resources | toYaml | nindent 2 }}
 image:
@@ -33,7 +32,7 @@ httpRoute:
   annotations:
     {{ . | toYaml | nindent 4 }}
   {{- end }}
-  hostname: {{ $hostname }}
+  hostname: {{ $v._derived.consoleDomain }}
   parentRefs:
     {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
   additionalRules:
@@ -53,4 +52,4 @@ httpRoute:
           port: 80
 
 extraManifests:
-  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "otomi-console" "host" $hostname) | nindent 4 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "otomi-console" "host" $v._derived.consoleDomain) | nindent 4 }}

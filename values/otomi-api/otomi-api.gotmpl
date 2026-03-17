@@ -8,7 +8,6 @@
 {{- $defaultPlatformAdminEmail := printf "platform-admin@%s" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
-{{- $hostname := print "api." $v.cluster.domainSuffix }}
 {{- $version := $v.versions | get "api" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $coreVersion := $v.otomi.version }}
@@ -86,11 +85,11 @@ httpRoute:
   annotations:
     {{ . | toYaml | nindent 4 }}
   {{- end }}
-  hostname: {{ $hostname }}
+  hostname: {{ $v._derived.apiDomain }}
   parentRefs:
     {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
   additionalRules:
     {{- $httpRoute.authRules | toYaml | nindent 4 }}
 
 extraManifests:
-  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "otomi-api" "host" $hostname) | nindent 4 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "otomi-api" "host" $v._derived.apiDomain) | nindent 4 }}
