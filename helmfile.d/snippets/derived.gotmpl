@@ -197,6 +197,7 @@ environments:
           oidcWellKnownUrlBackchannel: {{ $oidcWellKnownBackchannel}}
           authDomain: {{ printf "auth.%s" $domainSuffix }}
           apiDomain: {{ print "api." $domainSuffix }}
+          ttyDomain: {{ print "tty." $domainSuffix }}
           consoleDomain: {{ printf "console.%s" $domainSuffix }}
           giteaDomain: {{ printf "gitea.%s" $domainSuffix }}
           keycloakDomain: {{ printf "keycloak.%s" $domainSuffix }}

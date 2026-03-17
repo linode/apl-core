@@ -92,4 +92,5 @@ httpRoute:
     {{- $httpRoute.authRules | toYaml | nindent 4 }}
 
 extraManifests:
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "tty" "gatewayName" $v.ingress.platformClass.className "host" $v._derived.ttyDomain) | nindent 4 }}
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "otomi-api" "host" $v._derived.apiDomain) | nindent 4 }}
