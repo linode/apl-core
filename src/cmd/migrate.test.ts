@@ -1,5 +1,5 @@
 import { globSync } from 'glob'
-import { applyChanges, Changes, filterChanges, getBuildName, policiesMigration } from 'src/cmd/migrate'
+import { applyChanges, Changes, filterChanges, getBuildName, policiesMigration, processDeletionEntry } from 'src/cmd/migrate'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { getFileMap } from '../common/repo'
@@ -903,4 +903,41 @@ describe('setDefaultAplCatalog migration', () => {
       true,
     )
   }, 20000)
+})
+
+describe('processDeletionEntry', () => {
+  const mockDeleteFile = jest.fn()
+  const deps = { deleteFile: mockDeleteFile }
+
+  beforeEach(() => {
+    mockDeleteFile.mockClear()
+  })
+
+  it('should unset the path in values', () => {
+    const values: any = { apps: { myApp: { key: 'value' } }, other: 'data' }
+    processDeletionEntry('apps.myApp', values, deps)
+    expect(values.apps.myApp).toBeUndefined()
+    expect(values.other).toBe('data')
+  })
+
+  it('should delete app files when entry matches apps.<name>', () => {
+    const values: any = { apps: { myApp: {} } }
+    processDeletionEntry('apps.myApp', values, deps)
+    expect(mockDeleteFile).toHaveBeenCalledTimes(3)
+    expect(mockDeleteFile).toHaveBeenCalledWith('env/apps/myApp.yaml')
+    expect(mockDeleteFile).toHaveBeenCalledWith('env/apps/secrets.myApp.yaml')
+    expect(mockDeleteFile).toHaveBeenCalledWith('env/apps/secrets.myApp.yaml.dec')
+  })
+
+  it('should not delete files when entry does not match apps.<name>', () => {
+    const values: any = { some: { path: 'value' } }
+    processDeletionEntry('some.path', values, deps)
+    expect(mockDeleteFile).not.toHaveBeenCalled()
+  })
+
+  it('should not delete files when entry is a nested app path', () => {
+    const values: any = { apps: { myApp: { nested: 'value' } } }
+    processDeletionEntry('apps.myApp.nested', values, deps)
+    expect(mockDeleteFile).not.toHaveBeenCalled()
+  })
 })
