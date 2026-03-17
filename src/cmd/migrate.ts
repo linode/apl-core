@@ -77,6 +77,17 @@ export const deleteFile = async (
   }
 }
 
+export const processDeletionEntry = (entry: string, values: Record<string, any>, deps = { deleteFile }): void => {
+  unsetAtPath(entry, values)
+  const appMatch = entry.match(/^apps\.([^.\s]+)$/)
+  if (appMatch) {
+    const appName = appMatch[1]
+    deps.deleteFile(`env/apps/${appName}.yaml`)
+    deps.deleteFile(`env/apps/secrets.${appName}.yaml`)
+    deps.deleteFile(`env/apps/secrets.${appName}.yaml.dec`)
+  }
+}
+
 export const rename = async (
   oldName: string,
   newName: string,
@@ -878,7 +889,7 @@ export const applyChanges = async (
       await customFunction(values)
     }
 
-    c.deletions?.forEach((entry) => unsetAtPath(entry, values))
+    c.deletions?.forEach((entry) => processDeletionEntry(entry, values))
     // Lastly we remove files
     for (const change of changes) {
       change.fileDeletions?.forEach((entry) => {
