@@ -80,11 +80,11 @@ resources:
         kind: Gateway
         group: gateway.networking.k8s.io
         name: {{ $ingress.className }}
-      action: ALLOW
+      action: DENY
       rules:
         - from:
             - source:
-                ipBlocks:
+                notIpBlocks:
                   {{- range $ip := $ingress.sourceIpAddressFiltering | split "," }}
                   - {{ $ip | quote }}
                   {{- end }}
