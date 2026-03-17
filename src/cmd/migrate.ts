@@ -77,11 +77,7 @@ export const deleteFile = async (
   }
 }
 
-export const processDeletionEntry = (
-  entry: string,
-  values: Record<string, any>,
-  deps = { deleteFile },
-): void => {
+export const processDeletionEntry = (entry: string, values: Record<string, any>, deps = { deleteFile }): void => {
   unsetAtPath(entry, values)
   const appMatch = entry.match(/^apps\.([^.\s]+)$/)
   if (appMatch) {

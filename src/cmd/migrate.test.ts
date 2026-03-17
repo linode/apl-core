@@ -1,5 +1,12 @@
 import { globSync } from 'glob'
-import { applyChanges, Changes, filterChanges, getBuildName, policiesMigration, processDeletionEntry } from 'src/cmd/migrate'
+import {
+  applyChanges,
+  Changes,
+  filterChanges,
+  getBuildName,
+  policiesMigration,
+  processDeletionEntry,
+} from 'src/cmd/migrate'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { getFileMap } from '../common/repo'
