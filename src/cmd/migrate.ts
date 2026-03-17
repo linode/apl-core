@@ -721,27 +721,17 @@ const ValkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
   if (isLinode && (giteaEnabled || oauthEnabled)) {
     d.info('Changing PVC storage class to linode-block-storage for Gitea and OAuth2 Proxy Redis Server')
     if (giteaEnabled) {
-      // Kill the PVCs so that they get recreated with the new storage class
-      await createPostMigrationJob('gitea-pvc-migration', '', [
-        'kubectl',
-        'delete',
-        'pvc',
-        '-l',
-        'app.kubernetes.io/name=valkey',
-        '-n',
-        'gitea',
-      ])
+      // Remove StatefulSet first so it does not immediately recreate PVCs with the old storage class.
+      await createPostMigrationJob(
+        'gitea-pvc-migration',
+        'kubectl delete statefulset gitea-valkey-primary -n gitea --ignore-not-found',
+      )
     }
     if (oauthEnabled) {
-      await createPostMigrationJob('oauth2-proxy-redis-server-pvc-migration', '', [
-        'kubectl',
-        'delete',
-        'pvc',
-        '-l',
-        'app=redis',
-        '-n',
-        'istio-system',
-      ])
+      await createPostMigrationJob(
+        'oauth2-proxy-redis-server-pvc-migration',
+        'kubectl delete statefulset oauth2-proxy-redis-ha-server -n istio-system --ignore-not-found',
+      )
     }
   } else {
     d.info('No need to change PVCs for Gitea and OAuth2 Proxy Redis Server')
