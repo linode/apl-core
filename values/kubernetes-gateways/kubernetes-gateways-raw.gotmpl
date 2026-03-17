@@ -14,7 +14,7 @@ resources:
     spec:
       action: CUSTOM
       provider:
-        name: oauth2-proxy
+        name: oauth2-proxy-ext-authz
       targetRefs:
         - name: {{ $v.ingress.platformClass.className }}
           kind: Gateway

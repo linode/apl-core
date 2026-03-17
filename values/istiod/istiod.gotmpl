@@ -70,7 +70,7 @@ meshConfig:
           - cookie
         service: oauth2-proxy.istio-system.svc.cluster.local
         port: 80
-      name: oauth2-proxy
+      name: oauth2-proxy-ext-authz
     {{- with $i | get "extensionProviders" nil }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
