@@ -20,6 +20,7 @@ resources:
           kind: Gateway
           group: gateway.networking.k8s.io
       rules:
+        # Match HTTP requests without or with empty Authorization header
         - when:
             - key: request.headers[authorization]
               notValues: ["*"]
