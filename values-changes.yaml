@@ -450,5 +450,5 @@ changes:
     customFunctions:
       - addLinodeNBAnnotations
   - version: 57
-    additions:
-      - 'apps.ingress-nginx-platform.enabled': true
+    customFunctions:
+      - setIngressDefault

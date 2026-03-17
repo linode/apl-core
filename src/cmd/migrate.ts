@@ -809,6 +809,18 @@ const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void
   d.info('Linode NodeBalancer annotations added to ingress.platformClass successfully')
 }
 
+const setIngressDefault = async (values: Record<string, any>) => {
+  const d = terminal('setIngressDefault')
+  if (values?.cluster?.provider !== 'linode') {
+    // In non-Linode env, old and new setup co-exist in two separate LB services until this gets deactivated
+    set(values, 'apps.ingress-nginx-platform.enabled', true)
+    d.info('Skipping Linode NodeBalancer annotation migration: provider is not linode')
+    return
+  }
+  // The following is overridden during the pre-upgrade script
+  set(values, 'apps.ingress-nginx-platform.enabled', false)
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   networkPoliciesMigration,
   teamSettingsMigration,
@@ -821,6 +833,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   setLokiStorageSchemaMigration,
   setDefaultAplCatalog,
   addLinodeNBAnnotations,
+  setIngressDefault,
 }
 
 /**
