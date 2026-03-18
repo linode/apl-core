@@ -1,4 +1,4 @@
-import { ApiException } from '@kubernetes/client-node'
+import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { encryptSecretItem } from '@linode/kubeseal-encrypt'
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
@@ -21,7 +21,7 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { APL_OPERATOR_NS, ARGOCD_APP_PARAMS } from '../common/constants'
-import { getK8sSecret, getSealedSecretsPEM, k8s } from '../common/k8s'
+import { getArgoCdApp, getK8sSecret, getSealedSecretsPEM, k8s, setArgoCdAppSync } from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
@@ -529,6 +529,91 @@ async function hasPvcWithStorageClass(
   }
 }
 
+const sleep = async (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
+
+async function waitForPodsDeletion(namespace: string, labelSelector: string, timeoutMs = 300000): Promise<void> {
+  const start = Date.now()
+  while (Date.now() - start < timeoutMs) {
+    const pods = await k8s.core().listNamespacedPod({ namespace, labelSelector })
+    if ((pods.items || []).length === 0) return
+    await sleep(5000)
+  }
+}
+
+async function waitForStatefulSetDeletion(name: string, namespace: string, timeoutMs = 300000): Promise<void> {
+  const start = Date.now()
+  while (Date.now() - start < timeoutMs) {
+    const exists = await checkExists(async () => await k8s.app().readNamespacedStatefulSet({ name, namespace }))
+    if (!exists) return
+    await sleep(5000)
+  }
+}
+
+async function deletePvcsByLabel(namespace: string, labelSelector: string): Promise<void> {
+  const pvcList = await k8s.core().listNamespacedPersistentVolumeClaim({ namespace, labelSelector })
+  for (const pvc of pvcList.items || []) {
+    const name = pvc?.metadata?.name
+    if (!name) continue
+    try {
+      await k8s.core().deleteNamespacedPersistentVolumeClaim({ name, namespace })
+    } catch (error) {
+      if (!(error instanceof ApiException && error.code === 404)) throw error
+    }
+  }
+}
+
+async function migrateStatefulSetPvc(opts: {
+  appName: string
+  statefulSetName: string
+  namespace: string
+  pvcLabelSelector: string
+  d: ReturnType<typeof terminal>
+}): Promise<void> {
+  const parsedArgs = getParsedArgs()
+  if (parsedArgs?.dryRun || parsedArgs?.local) {
+    return
+  }
+
+  let syncDisabled = false
+  try {
+    const app = await getArgoCdApp(opts.appName, k8s.custom())
+    if (app) {
+      await setArgoCdAppSync(opts.appName, false, k8s.custom())
+      syncDisabled = true
+    } else {
+      opts.d.info(`Argo CD application ${opts.appName} not found. Skipping sync disable.`)
+    }
+
+    await k8s.app().patchNamespacedStatefulSet(
+      {
+        name: opts.statefulSetName,
+        namespace: opts.namespace,
+        body: { spec: { replicas: 0 } },
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+    )
+
+    await waitForPodsDeletion(opts.namespace, opts.pvcLabelSelector)
+
+    try {
+      await k8s.app().deleteNamespacedStatefulSet({ name: opts.statefulSetName, namespace: opts.namespace })
+    } catch (error) {
+      if (!(error instanceof ApiException && error.code === 404)) throw error
+    }
+
+    await waitForStatefulSetDeletion(opts.statefulSetName, opts.namespace)
+    await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
+  } finally {
+    if (syncDisabled) {
+      try {
+        await setArgoCdAppSync(opts.appName, true, k8s.custom())
+      } catch (error) {
+        opts.d.warn(`Failed to re-enable Argo CD sync for ${opts.appName}: ${error}`)
+      }
+    }
+  }
+}
+
 export async function addAplOperator(): Promise<void> {
   const d = terminal('addAplOperator')
   if (await namespaceExists(APL_OPERATOR_NS)) {
@@ -742,34 +827,20 @@ const ValkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
   if (isLinode && (giteaEnabled || oauthEnabled)) {
     d.info('Changing PVC storage class to linode-block-storage for Gitea and OAuth2 Proxy Redis Server')
     if (giteaEnabled) {
-      const hasLegacyGiteaPvc = await hasPvcWithStorageClass(
-        'gitea',
-        'app.kubernetes.io/name=valkey',
-        legacyStorageClass,
-      )
+      // const hasLegacyGiteaPvc = await hasPvcWithStorageClass(
+      //   'gitea',
+      //   'app.kubernetes.io/name=valkey',
+      //   legacyStorageClass,
+      // )
+      const hasLegacyGiteaPvc = true
       if (hasLegacyGiteaPvc) {
-        // Stop and remove controller first, then remove PVCs to avoid StatefulSet recreating pods with old claims.
-        await createPostMigrationJob(
-          'gitea-pvc-migration',
-          'app_exists=0\n' +
-            'if kubectl get applications.argoproj.io -n argocd gitea-gitea-valkey >/dev/null 2>&1; then\n' +
-            '  app_exists=1\n' +
-            '  kubectl patch applications.argoproj.io gitea-gitea-valkey -n argocd --type=\'merge\' -p \'{"spec":{"syncPolicy":{"automated":null}}}\'\n' +
-            'else\n' +
-            '  echo "Argo CD application gitea-gitea-valkey not found. Skipping sync disable."\n' +
-            'fi\n' +
-            'restore_sync() {\n' +
-            '  if [ "$app_exists" = "1" ]; then\n' +
-            '    kubectl patch applications.argoproj.io gitea-gitea-valkey -n argocd --type=\'merge\' -p \'{"spec":{"syncPolicy":{"automated":{}}}}\' || true\n' +
-            '  fi\n' +
-            '}\n' +
-            'trap restore_sync EXIT\n' +
-            'kubectl scale statefulset gitea-valkey-primary -n gitea --replicas=0 --ignore-not-found\n' +
-            'kubectl wait --for=delete pod -l app.kubernetes.io/name=valkey -n gitea --timeout=300s || true\n' +
-            'kubectl delete statefulset gitea-valkey-primary -n gitea --ignore-not-found\n' +
-            'kubectl wait --for=delete statefulset/gitea-valkey-primary -n gitea --timeout=300s || true\n' +
-            'kubectl delete pvc -l app.kubernetes.io/name=valkey -n gitea --ignore-not-found',
-        )
+        await migrateStatefulSetPvc({
+          appName: 'gitea-gitea-valkey',
+          statefulSetName: 'gitea-valkey-primary',
+          namespace: 'gitea',
+          pvcLabelSelector: 'app.kubernetes.io/name=valkey',
+          d,
+        })
       } else {
         d.info(`Skipping gitea PVC migration: no PVC found with storageClass ${legacyStorageClass}`)
       }
@@ -777,28 +848,13 @@ const ValkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
     if (oauthEnabled) {
       const hasLegacyOauthPvc = await hasPvcWithStorageClass('istio-system', 'app=redis', legacyStorageClass)
       if (hasLegacyOauthPvc) {
-        // Same sequence for oauth2-proxy redis: stop pods, remove controller, then remove PVCs.
-        await createPostMigrationJob(
-          'oauth2-proxy-redis-server-pvc-migration',
-          'app_exists=0\n' +
-            'if kubectl get applications.argoproj.io -n argocd istio-system-oauth2-proxy >/dev/null 2>&1; then\n' +
-            '  app_exists=1\n' +
-            '  kubectl patch applications.argoproj.io istio-system-oauth2-proxy -n argocd --type=\'merge\' -p \'{"spec":{"syncPolicy":{"automated":null}}}\'\n' +
-            'else\n' +
-            '  echo "Argo CD application istio-system-oauth2-proxy not found. Skipping sync disable."\n' +
-            'fi\n' +
-            'restore_sync() {\n' +
-            '  if [ "$app_exists" = "1" ]; then\n' +
-            '    kubectl patch applications.argoproj.io istio-system-oauth2-proxy -n argocd --type=\'merge\' -p \'{"spec":{"syncPolicy":{"automated":{}}}}\' || true\n' +
-            '  fi\n' +
-            '}\n' +
-            'trap restore_sync EXIT\n' +
-            'kubectl scale statefulset oauth2-proxy-redis-ha-server -n istio-system --replicas=0 --ignore-not-found\n' +
-            'kubectl wait --for=delete pod -l app=redis -n istio-system --timeout=300s || true\n' +
-            'kubectl delete statefulset oauth2-proxy-redis-ha-server -n istio-system --ignore-not-found\n' +
-            'kubectl wait --for=delete statefulset/oauth2-proxy-redis-ha-server -n istio-system --timeout=300s || true\n' +
-            'kubectl delete pvc -l app=redis -n istio-system --ignore-not-found',
-        )
+        await migrateStatefulSetPvc({
+          appName: 'istio-system-oauth2-proxy',
+          statefulSetName: 'oauth2-proxy-redis-ha-server',
+          namespace: 'istio-system',
+          pvcLabelSelector: 'app=redis',
+          d,
+        })
       } else {
         d.info(`Skipping oauth2-proxy redis PVC migration: no PVC found with storageClass ${legacyStorageClass}`)
       }
