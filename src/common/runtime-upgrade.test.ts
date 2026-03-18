@@ -19,7 +19,6 @@ jest.mock('./runtime-upgrades/runtime-upgrades', () => ({
   },
 }))
 
-const mockGetDeploymentState = getDeploymentState as jest.MockedFunction<typeof getDeploymentState>
 const mockWaitForArgoCDAppSync = waitForArgoCDAppSync as jest.MockedFunction<typeof waitForArgoCDAppSync>
 const mockWaitForArgoCDAppHealthy = waitForArgoCDAppHealthy as jest.MockedFunction<typeof waitForArgoCDAppHealthy>
 const mockGetApplications = getApplications as jest.MockedFunction<typeof getApplications>
@@ -47,9 +46,7 @@ describe('runtimeUpgrade', () => {
 
   describe('first installation scenarios', () => {
     it('should skip runtime upgrade for first installation (empty deployment state)', async () => {
-      mockGetDeploymentState.mockResolvedValue({})
-
-      await runtimeUpgrade({ when: 'pre' })
+      await runtimeUpgrade({ when: 'pre', deploymentState: {} })
 
       expect(mockDebugger.info).toHaveBeenCalledWith(
         'Skipping the runtime upgrade procedure because this is initial installation',
@@ -57,8 +54,6 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should skip runtime upgrade for null deployment state', async () => {
-      mockGetDeploymentState.mockResolvedValue(null as any)
-
       await runtimeUpgrade({ when: 'pre' })
 
       expect(mockDebugger.info).toHaveBeenCalledWith(
@@ -69,9 +64,7 @@ describe('runtimeUpgrade', () => {
 
   describe('version handling and filtering', () => {
     it('should skip when no applicable upgrades found', async () => {
-      mockGetDeploymentState.mockResolvedValue({ version: '2.0.0', deployingVersion: '2.0.1' })
-
-      await runtimeUpgrade({ when: 'pre' })
+      await runtimeUpgrade({ when: 'pre', deploymentState: { version: '2.0.0', deployingVersion: '2.0.1' } })
 
       expect(mockDebugger.info).toHaveBeenCalledWith('The current version of the App Platform: 2.0.0')
       expect(mockDebugger.info).toHaveBeenCalledWith('Deploying essential manifests')
@@ -79,9 +72,7 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should use current version when deployment state has no version', async () => {
-      mockGetDeploymentState.mockResolvedValue({ status: 'deployed', deployingVersion: '1.0.1' })
-
-      await runtimeUpgrade({ when: 'pre' })
+      await runtimeUpgrade({ when: 'pre', deploymentState: { status: 'deployed', deployingVersion: '2.0.0' } })
 
       expect(mockDebugger.info).toHaveBeenCalledWith(
         'Skipping the runtime upgrade procedure because this is initial installation',
@@ -103,9 +94,7 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should execute global pre operations', async () => {
-      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0', deployingVersion: '1.0.1' })
-
-      await runtimeUpgrade({ when: 'pre' })
+      await runtimeUpgrade({ when: 'pre', deploymentState: { version: '1.0.0', deployingVersion: '2.0.0' } })
 
       expect(mockPreOperation).toHaveBeenCalledWith({
         debug: mockDebugger,
@@ -114,9 +103,7 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should execute global post operations', async () => {
-      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0', deployingVersion: '1.0.1' })
-
-      await runtimeUpgrade({ when: 'post' })
+      await runtimeUpgrade({ when: 'post', deploymentState: { version: '1.0.0', deployingVersion: '2.0.0' } })
 
       expect(mockPostOperation).toHaveBeenCalledWith({
         debug: mockDebugger,
@@ -131,9 +118,7 @@ describe('runtimeUpgrade', () => {
         pre: mockPreOperation,
       })
 
-      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0' })
-
-      await runtimeUpgrade({ when: 'post' })
+      await runtimeUpgrade({ when: 'post', deploymentState: { version: '1.0.0' } })
 
       expect(mockPreOperation).not.toHaveBeenCalled()
     })
@@ -161,9 +146,8 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should execute application-specific operations with ArgoCD waits', async () => {
-      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0', deployingVersion: '1.0.1' })
       mockGetApplications.mockResolvedValue(['istio-operator'])
-      await runtimeUpgrade({ when: 'post' })
+      await runtimeUpgrade({ when: 'post', deploymentState: { version: '1.0.0', deployingVersion: '2.0.0' } })
 
       expect(mockWaitForArgoCDAppSync).toHaveBeenCalledWith('istio-operator', mockCustomApi, mockDebugger)
       expect(mockWaitForArgoCDAppHealthy).toHaveBeenCalledWith('istio-operator', mockCustomApi, mockDebugger)
@@ -176,10 +160,9 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should not execute application operations for wrong phase', async () => {
-      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0', deployingVersion: '1.0.1' })
       mockGetApplications.mockResolvedValue(['argocd'])
 
-      await runtimeUpgrade({ when: 'pre' })
+      await runtimeUpgrade({ when: 'pre', deploymentState: { version: '1.0.0', deployingVersion: '2.0.0' } })
 
       expect(mockWaitForArgoCDAppSync).toHaveBeenCalledWith('argocd', mockCustomApi, mockDebugger)
       expect(mockWaitForArgoCDAppHealthy).toHaveBeenCalledWith('argocd', mockCustomApi, mockDebugger)
@@ -207,9 +190,7 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should execute both global and application operations in correct order', async () => {
-      mockGetDeploymentState.mockResolvedValue({ version: '1.0.0', deployingVersion: '1.0.1' })
-
-      await runtimeUpgrade({ when: 'pre' })
+      await runtimeUpgrade({ when: 'pre', deploymentState: { version: '1.0.0', deployingVersion: '2.0.0' } })
 
       expect(mockGlobalPre).toHaveBeenCalledWith({
         debug: mockDebugger,
@@ -261,5 +242,29 @@ describe('filterRuntimeUpgrades', () => {
   it('should handle edge case with exact version match', () => {
     const result = filterRuntimeUpgrades('1.5.0', sampleUpgrades)
     expect(result).toEqual([{ version: '2.0.0' }])
+  })
+
+  describe('with deployingVersion upper bound', () => {
+    it('should exclude upgrades beyond the deploying version', () => {
+      const result = filterRuntimeUpgrades('1.2.0', sampleUpgrades, '1.6.0')
+      expect(result).toEqual([{ version: '1.5.0' }])
+    })
+
+    it('should include upgrade matching the deploying version exactly', () => {
+      const result = filterRuntimeUpgrades('0.9.0', sampleUpgrades, '1.5.0')
+      expect(result).toEqual([{ version: '1.0.0' }, { version: '1.5.0' }])
+    })
+
+    it('should handle prerelease deploying version with coerce', () => {
+      // semver.coerce('4.15.0-rc.0') = 4.15.0, so 4.15.0 upgrade should be included
+      const upgrades: RuntimeUpgrades = [{ version: '4.15.0' }, { version: '4.16.0' }]
+      const result = filterRuntimeUpgrades('4.14.1', upgrades, '4.15.0-rc.0')
+      expect(result).toEqual([{ version: '4.15.0' }])
+    })
+
+    it('should return all applicable upgrades when deployingVersion is not provided', () => {
+      const result = filterRuntimeUpgrades('1.2.0', sampleUpgrades)
+      expect(result).toEqual([{ version: '1.5.0' }, { version: '2.0.0' }])
+    })
   })
 })

@@ -2,16 +2,16 @@ import semver from 'semver'
 import { getApplications } from 'src/cmd/apply-as-apps'
 import { terminal } from './debug'
 import { deployEssential } from './hf'
-import { getDeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
+import { DeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
 import { RuntimeUpgradeContext, RuntimeUpgrades, runtimeUpgrades } from './runtime-upgrades/runtime-upgrades'
 
 interface RuntimeUpgradeArgs {
   when: string
+  deploymentState?: DeploymentState
 }
 
-export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void> {
+export async function runtimeUpgrade({ when, deploymentState }: RuntimeUpgradeArgs): Promise<void> {
   const d = terminal('cmd:upgrade:runtimeUpgrade')
-  const deploymentState = await getDeploymentState()
 
   if (!deploymentState?.version || !deploymentState?.deployingVersion) {
     d.info('Skipping the runtime upgrade procedure because this is initial installation')
@@ -33,7 +33,7 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
   }
 
   const apps = await getApplications()
-  const filteredUpgrades = filterRuntimeUpgrades(deployedVersion, runtimeUpgrades)
+  const filteredUpgrades = filterRuntimeUpgrades(deployedVersion, runtimeUpgrades, deploymentState.deployingVersion)
 
   if (filteredUpgrades.length === 0) {
     d.info('No runtime upgrade operations detected, skipping')
@@ -69,9 +69,12 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
             d.info(
               `Runtime upgrade operations detected for version ${upgrade.version}, application: ${applicationName}`,
             )
-            // Wait for the ArgoCD app to be synced and healthy before running the operation
-            await waitForArgoCDAppSync(applicationName, k8s.custom(), d)
-            await waitForArgoCDAppHealthy(applicationName, k8s.custom(), d)
+            // In dev-mode, the app is likely not syncing in the cluster
+            if (process.env.NODE_ENV !== 'development' || applicationName !== 'apl-operator-apl-operator') {
+              // Wait for the ArgoCD app to be synced and healthy before running the operation
+              await waitForArgoCDAppSync(applicationName, k8s.custom(), d)
+              await waitForArgoCDAppHealthy(applicationName, k8s.custom(), d)
+            }
             //execute the application-specific operation
             await applicationOperation(context)
           }
@@ -81,10 +84,19 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
   }
 }
 
-export function filterRuntimeUpgrades(version: string, rUpgrades: RuntimeUpgrades): RuntimeUpgrades {
+export function filterRuntimeUpgrades(
+  version: string,
+  rUpgrades: RuntimeUpgrades,
+  deployingVersion?: string,
+): RuntimeUpgrades {
   const currentVersion = semver.coerce(version)
   if (!currentVersion) {
     throw new Error(`Unsupported version format: ${version}`)
   }
-  return rUpgrades.filter((rUpgrade) => semver.gt(rUpgrade.version, currentVersion))
+  const targetVersion = deployingVersion ? semver.coerce(deployingVersion) : null
+  return rUpgrades.filter((rUpgrade) => {
+    if (semver.lte(rUpgrade.version, currentVersion)) return false
+    if (targetVersion && semver.gt(rUpgrade.version, targetVersion)) return false
+    return true
+  })
 }
