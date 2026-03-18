@@ -509,6 +509,22 @@ async function appExists(name: string): Promise<boolean> {
   )
 }
 
+async function hasPvcWithStorageClass(
+  namespace: string,
+  labelSelector: string,
+  storageClassName: string,
+): Promise<boolean> {
+  try {
+    const pvcList = await k8s.core().listNamespacedPersistentVolumeClaim({ namespace, labelSelector })
+    return (pvcList?.items || []).some((pvc) => pvc?.spec?.storageClassName === storageClassName)
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      return false
+    }
+    throw error
+  }
+}
+
 export async function addAplOperator(): Promise<void> {
   const d = terminal('addAplOperator')
   if (await namespaceExists(APL_OPERATOR_NS)) {
@@ -718,20 +734,42 @@ const ValkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
   const giteaEnabled = values?.apps?.gitea?.enabled
   const oauthEnabled = values?.apps?.oauth2Proxy?.enabled
   const isLinode = values?.cluster?.provider === 'linode'
+  const legacyStorageClass = 'linode-block-storage-retain'
   if (isLinode && (giteaEnabled || oauthEnabled)) {
     d.info('Changing PVC storage class to linode-block-storage for Gitea and OAuth2 Proxy Redis Server')
     if (giteaEnabled) {
-      // Remove StatefulSet first so it does not immediately recreate PVCs with the old storage class.
-      await createPostMigrationJob(
-        'gitea-pvc-migration',
-        'kubectl delete statefulset gitea-valkey-primary -n gitea --ignore-not-found',
+      const hasLegacyGiteaPvc = await hasPvcWithStorageClass(
+        'gitea',
+        'app.kubernetes.io/name=valkey',
+        legacyStorageClass,
       )
+      if (hasLegacyGiteaPvc) {
+        // Ensure pods release PVCs before deletion, then remove StatefulSet so it is recreated from updated values.
+        await createPostMigrationJob(
+          'gitea-pvc-migration',
+          'kubectl scale statefulset gitea-valkey-primary -n gitea --replicas=0 --ignore-not-found &&\n' +
+            'kubectl wait --for=delete pod -l app.kubernetes.io/name=valkey -n gitea --timeout=300s || true &&\n' +
+            'kubectl delete pvc -l app.kubernetes.io/name=valkey -n gitea --ignore-not-found &&\n' +
+            'kubectl delete statefulset gitea-valkey-primary -n gitea --ignore-not-found',
+        )
+      } else {
+        d.info(`Skipping gitea PVC migration: no PVC found with storageClass ${legacyStorageClass}`)
+      }
     }
     if (oauthEnabled) {
-      await createPostMigrationJob(
-        'oauth2-proxy-redis-server-pvc-migration',
-        'kubectl delete statefulset oauth2-proxy-redis-ha-server -n istio-system --ignore-not-found',
-      )
+      const hasLegacyOauthPvc = await hasPvcWithStorageClass('istio-system', 'app=redis', legacyStorageClass)
+      if (hasLegacyOauthPvc) {
+        // Same sequence for oauth2-proxy redis: stop pods, remove PVCs, then remove StatefulSet.
+        await createPostMigrationJob(
+          'oauth2-proxy-redis-server-pvc-migration',
+          'kubectl scale statefulset oauth2-proxy-redis-ha-server -n istio-system --replicas=0 --ignore-not-found &&\n' +
+            'kubectl wait --for=delete pod -l app=redis -n istio-system --timeout=300s || true &&\n' +
+            'kubectl delete pvc -l app=redis -n istio-system --ignore-not-found &&\n' +
+            'kubectl delete statefulset oauth2-proxy-redis-ha-server -n istio-system --ignore-not-found',
+        )
+      } else {
+        d.info(`Skipping oauth2-proxy redis PVC migration: no PVC found with storageClass ${legacyStorageClass}`)
+      }
     }
   } else {
     d.info('No need to change PVCs for Gitea and OAuth2 Proxy Redis Server')
