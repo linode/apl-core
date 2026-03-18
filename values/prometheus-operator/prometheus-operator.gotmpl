@@ -26,11 +26,6 @@
 annotations:
   {{ . | toYaml | nindent 2 }}
 {{- end }}
-filters:
-  - type: RequestHeaderModifier
-    requestHeaderModifier:
-      remove:
-        - authorization
 parentRefs:
   {{- .parentRefs | toYaml | nindent 2 }}
 additionalRules:
@@ -103,8 +98,13 @@ prometheus:
       {{- end }}
       pullPolicy: {{ $g | get "image.prometheus.pullPolicy" "IfNotPresent" }}
     podMetadata:
-      annotations:
-        sidecar.istio.io/inject: "true"
+      labels:
+        otomi.io/auth: platform
+        {{- if $v.apps.istio.defaultRevision }}
+        istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
+        {{- else }}
+        istio-injection: enabled
+        {{- end }}
     resources: {{- $p.resources.prometheus | toYaml | nindent 6 }}
     # all team alert managers that will get alerts
     alertingEndpoints:
@@ -209,10 +209,14 @@ alertmanager:
   enabled: {{ $a.enabled }}
   alertmanagerSpec:
     podMetadata:
-      annotations:
-        sidecar.istio.io/inject: "true"
       labels:
         prometheus: system
+        otomi.io/auth: platform
+        {{- if $v.apps.istio.defaultRevision }}
+        istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
+        {{- else }}
+        istio-injection: enabled
+        {{- end }}
     image:
       {{- if $v.otomi.linodeLkeImageRepository }}
       registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
@@ -296,6 +300,8 @@ grafana:
       hostnames:
         - {{ $grafanaDomain }}
       {{- include "prometheus-operator.common-route-opts" $httpRoute | nindent 6 }}
+  podLabels:
+    otomi.io/auth: platform
 
 kubernetesServiceMonitors:
   enabled: {{ $p.enabled }}

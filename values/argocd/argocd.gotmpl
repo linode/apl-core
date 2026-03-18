@@ -89,6 +89,8 @@ server:
       {{- $httpRoute.parentRefs | toYaml | nindent 6 }}
     hostnames:
       - {{ $hostname }}
+  podLabels:
+    otomi.io/auth: platform
 
 configs:
   # General Argo CD configuration

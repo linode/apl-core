@@ -21,6 +21,9 @@ podSecurityContext:
   runAsUser: 100
   runAsGroup: 101
 
+podLabels:
+  otomi.io/auth: platform
+
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
