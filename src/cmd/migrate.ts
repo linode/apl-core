@@ -835,18 +835,16 @@ const createCatalogSealedSecret = async (
 const ValkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('ValkeyAndOauth2RedisPVCMigration')
   const giteaEnabled = values?.apps?.gitea?.enabled
-  const oauthEnabled = values?.apps?.oauth2Proxy?.enabled
   const isLinode = values?.cluster?.provider === 'linode'
   const legacyStorageClass = 'linode-block-storage-retain'
-  if (isLinode && (giteaEnabled || oauthEnabled)) {
+  if (isLinode) {
     d.info('Changing PVC storage class to linode-block-storage for Gitea and OAuth2 Proxy Redis Server')
     if (giteaEnabled) {
-      // const hasLegacyGiteaPvc = await hasPvcWithStorageClass(
-      //   'gitea',
-      //   'app.kubernetes.io/name=valkey',
-      //   legacyStorageClass,
-      // )
-      const hasLegacyGiteaPvc = true
+      const hasLegacyGiteaPvc = await hasPvcWithStorageClass(
+        'gitea',
+        'app.kubernetes.io/name=valkey',
+        legacyStorageClass,
+      )
       if (hasLegacyGiteaPvc) {
         await migrateStatefulSetPvc({
           appName: 'gitea-gitea-valkey',
@@ -859,22 +857,18 @@ const ValkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
         d.info(`Skipping gitea PVC migration: no PVC found with storageClass ${legacyStorageClass}`)
       }
     }
-    if (oauthEnabled) {
-      const hasLegacyOauthPvc = await hasPvcWithStorageClass('istio-system', 'app=redis', legacyStorageClass)
-      if (hasLegacyOauthPvc) {
-        await migrateStatefulSetPvc({
-          appName: 'istio-system-oauth2-proxy',
-          statefulSetName: 'oauth2-proxy-redis-ha-server',
-          namespace: 'istio-system',
-          pvcLabelSelector: 'app=redis',
-          d,
-        })
-      } else {
-        d.info(`Skipping oauth2-proxy redis PVC migration: no PVC found with storageClass ${legacyStorageClass}`)
-      }
+    const hasLegacyOauthPvc = await hasPvcWithStorageClass('istio-system', 'app=redis', legacyStorageClass)
+    if (hasLegacyOauthPvc) {
+      await migrateStatefulSetPvc({
+        appName: 'istio-system-oauth2-proxy',
+        statefulSetName: 'oauth2-proxy-redis-ha-server',
+        namespace: 'istio-system',
+        pvcLabelSelector: 'app=redis',
+        d,
+      })
+    } else {
+      d.info(`Skipping oauth2-proxy redis PVC migration: no PVC found with storageClass ${legacyStorageClass}`)
     }
-  } else {
-    d.info('No need to change PVCs for Gitea and OAuth2 Proxy Redis Server')
   }
 }
 
