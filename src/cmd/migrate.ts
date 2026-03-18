@@ -748,13 +748,14 @@ const ValkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
         legacyStorageClass,
       )
       if (hasLegacyGiteaPvc) {
-        // Ensure pods release PVCs before deletion, then remove StatefulSet so it is recreated from updated values.
+        // Stop and remove controller first, then remove PVCs to avoid StatefulSet recreating pods with old claims.
         await createPostMigrationJob(
           'gitea-pvc-migration',
           'kubectl scale statefulset gitea-valkey-primary -n gitea --replicas=0 --ignore-not-found &&\n' +
             'kubectl wait --for=delete pod -l app.kubernetes.io/name=valkey -n gitea --timeout=300s || true &&\n' +
-            'kubectl delete pvc -l app.kubernetes.io/name=valkey -n gitea --ignore-not-found &&\n' +
-            'kubectl delete statefulset gitea-valkey-primary -n gitea --ignore-not-found',
+            'kubectl delete statefulset gitea-valkey-primary -n gitea --ignore-not-found &&\n' +
+            'kubectl wait --for=delete statefulset/gitea-valkey-primary -n gitea --timeout=300s || true &&\n' +
+            'kubectl delete pvc -l app.kubernetes.io/name=valkey -n gitea --ignore-not-found',
         )
       } else {
         d.info(`Skipping gitea PVC migration: no PVC found with storageClass ${legacyStorageClass}`)
@@ -763,13 +764,14 @@ const ValkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
     if (oauthEnabled) {
       const hasLegacyOauthPvc = await hasPvcWithStorageClass('istio-system', 'app=redis', legacyStorageClass)
       if (hasLegacyOauthPvc) {
-        // Same sequence for oauth2-proxy redis: stop pods, remove PVCs, then remove StatefulSet.
+        // Same sequence for oauth2-proxy redis: stop pods, remove controller, then remove PVCs.
         await createPostMigrationJob(
           'oauth2-proxy-redis-server-pvc-migration',
           'kubectl scale statefulset oauth2-proxy-redis-ha-server -n istio-system --replicas=0 --ignore-not-found &&\n' +
             'kubectl wait --for=delete pod -l app=redis -n istio-system --timeout=300s || true &&\n' +
-            'kubectl delete pvc -l app=redis -n istio-system --ignore-not-found &&\n' +
-            'kubectl delete statefulset oauth2-proxy-redis-ha-server -n istio-system --ignore-not-found',
+            'kubectl delete statefulset oauth2-proxy-redis-ha-server -n istio-system --ignore-not-found &&\n' +
+            'kubectl wait --for=delete statefulset/oauth2-proxy-redis-ha-server -n istio-system --timeout=300s || true &&\n' +
+            'kubectl delete pvc -l app=redis -n istio-system --ignore-not-found',
         )
       } else {
         d.info(`Skipping oauth2-proxy redis PVC migration: no PVC found with storageClass ${legacyStorageClass}`)
