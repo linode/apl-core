@@ -518,7 +518,11 @@ async function hasPvcWithStorageClass(
     const pvcList = await k8s.core().listNamespacedPersistentVolumeClaim({ namespace, labelSelector })
     return (pvcList?.items || []).some((pvc) => pvc?.spec?.storageClassName === storageClassName)
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
     if (error instanceof ApiException && error.code === 404) {
+      return false
+    }
+    if (message.includes('HTTP protocol is not allowed when skipTLSVerify is not set or false')) {
       return false
     }
     throw error
