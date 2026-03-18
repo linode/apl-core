@@ -751,10 +751,23 @@ const ValkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
         // Stop and remove controller first, then remove PVCs to avoid StatefulSet recreating pods with old claims.
         await createPostMigrationJob(
           'gitea-pvc-migration',
-          'kubectl scale statefulset gitea-valkey-primary -n gitea --replicas=0 --ignore-not-found &&\n' +
-            'kubectl wait --for=delete pod -l app.kubernetes.io/name=valkey -n gitea --timeout=300s || true &&\n' +
-            'kubectl delete statefulset gitea-valkey-primary -n gitea --ignore-not-found &&\n' +
-            'kubectl wait --for=delete statefulset/gitea-valkey-primary -n gitea --timeout=300s || true &&\n' +
+          'app_exists=0\n' +
+            'if kubectl get applications.argoproj.io -n argocd gitea-gitea-valkey >/dev/null 2>&1; then\n' +
+            '  app_exists=1\n' +
+            '  kubectl patch applications.argoproj.io gitea-gitea-valkey -n argocd --type=\'merge\' -p \'{"spec":{"syncPolicy":{"automated":null}}}\'\n' +
+            'else\n' +
+            '  echo "Argo CD application gitea-gitea-valkey not found. Skipping sync disable."\n' +
+            'fi\n' +
+            'restore_sync() {\n' +
+            '  if [ "$app_exists" = "1" ]; then\n' +
+            '    kubectl patch applications.argoproj.io gitea-gitea-valkey -n argocd --type=\'merge\' -p \'{"spec":{"syncPolicy":{"automated":{}}}}\' || true\n' +
+            '  fi\n' +
+            '}\n' +
+            'trap restore_sync EXIT\n' +
+            'kubectl scale statefulset gitea-valkey-primary -n gitea --replicas=0 --ignore-not-found\n' +
+            'kubectl wait --for=delete pod -l app.kubernetes.io/name=valkey -n gitea --timeout=300s || true\n' +
+            'kubectl delete statefulset gitea-valkey-primary -n gitea --ignore-not-found\n' +
+            'kubectl wait --for=delete statefulset/gitea-valkey-primary -n gitea --timeout=300s || true\n' +
             'kubectl delete pvc -l app.kubernetes.io/name=valkey -n gitea --ignore-not-found',
         )
       } else {
@@ -767,10 +780,23 @@ const ValkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
         // Same sequence for oauth2-proxy redis: stop pods, remove controller, then remove PVCs.
         await createPostMigrationJob(
           'oauth2-proxy-redis-server-pvc-migration',
-          'kubectl scale statefulset oauth2-proxy-redis-ha-server -n istio-system --replicas=0 --ignore-not-found &&\n' +
-            'kubectl wait --for=delete pod -l app=redis -n istio-system --timeout=300s || true &&\n' +
-            'kubectl delete statefulset oauth2-proxy-redis-ha-server -n istio-system --ignore-not-found &&\n' +
-            'kubectl wait --for=delete statefulset/oauth2-proxy-redis-ha-server -n istio-system --timeout=300s || true &&\n' +
+          'app_exists=0\n' +
+            'if kubectl get applications.argoproj.io -n argocd istio-system-oauth2-proxy >/dev/null 2>&1; then\n' +
+            '  app_exists=1\n' +
+            '  kubectl patch applications.argoproj.io istio-system-oauth2-proxy -n argocd --type=\'merge\' -p \'{"spec":{"syncPolicy":{"automated":null}}}\'\n' +
+            'else\n' +
+            '  echo "Argo CD application istio-system-oauth2-proxy not found. Skipping sync disable."\n' +
+            'fi\n' +
+            'restore_sync() {\n' +
+            '  if [ "$app_exists" = "1" ]; then\n' +
+            '    kubectl patch applications.argoproj.io istio-system-oauth2-proxy -n argocd --type=\'merge\' -p \'{"spec":{"syncPolicy":{"automated":{}}}}\' || true\n' +
+            '  fi\n' +
+            '}\n' +
+            'trap restore_sync EXIT\n' +
+            'kubectl scale statefulset oauth2-proxy-redis-ha-server -n istio-system --replicas=0 --ignore-not-found\n' +
+            'kubectl wait --for=delete pod -l app=redis -n istio-system --timeout=300s || true\n' +
+            'kubectl delete statefulset oauth2-proxy-redis-ha-server -n istio-system --ignore-not-found\n' +
+            'kubectl wait --for=delete statefulset/oauth2-proxy-redis-ha-server -n istio-system --timeout=300s || true\n' +
             'kubectl delete pvc -l app=redis -n istio-system --ignore-not-found',
         )
       } else {
