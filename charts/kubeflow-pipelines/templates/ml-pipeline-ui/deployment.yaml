@@ -14,9 +14,13 @@ spec:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
-      labels: {{- include "kfp.labels" . | nindent 8 }}
+      labels:
+        {{- include "kfp.labels" . | nindent 8 }}
         app: ml-pipeline-ui
         application-crd-id: kubeflow-pipelines
+        {{- with .Values.mlPipelineUi.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       containers:
       - env:

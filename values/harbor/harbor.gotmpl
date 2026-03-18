@@ -27,6 +27,8 @@ core:
   resources: {{- $h.resources.core | toYaml | nindent 4 }}
   existingSecret: harbor-core-secret
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
+  podLabels:
+    otomi.io/auth: platform
 
 database:
   maxOpenConns: {{ $h.databaseMaxConnections }}
@@ -153,6 +155,8 @@ portal:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-portal"
   {{- end }}
   resources: {{- $h.resources.portal | toYaml | nindent 4 }}
+  podLabels:
+    otomi.io/auth: platform
 
 redis:
   internal:

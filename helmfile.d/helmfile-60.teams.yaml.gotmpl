@@ -67,11 +67,6 @@ releases:
                     kind: Service
                     name: {{ $teamId }}-tekton-dashboard
                     port: 9097
-                  filters:
-                  - type: RequestHeaderModifier
-                    requestHeaderModifier:
-                      remove:
-                      - authorization
                   matches:
                   - path:
                       type: PathPrefix
@@ -97,11 +92,6 @@ releases:
           namespaceOverride: null
           alertmanagerSpec:
             externalUrl: "https://{{ $alertmanagerHostname }}"
-            podMetadata:
-              annotations:
-                sidecar.istio.io/inject: "true"
-              labels:
-                prometheus: system
             resources:
               {{- $teamApps.alertmanager.resources | toYaml | nindent 14 }}
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true

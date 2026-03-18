@@ -22,11 +22,6 @@ resources:
               kind: Service
               name: tekton-dashboard
               port: 9097
-          filters:
-            - type: RequestHeaderModifier
-              requestHeaderModifier:
-                remove:
-                  - authorization
           matches:
             - path:
                 type: PathPrefix

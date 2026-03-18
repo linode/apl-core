@@ -26,7 +26,7 @@
 {{- $keycloakBaseUrl := printf "https://keycloak.%s" $domainSuffix }}
 {{- $oidcBaseUrl := printf "%s/realms/otomi" $keycloakBaseUrl }}
 {{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
-{{- $oidcBaseUrlBackchannel := "http://keycloak-keycloakx-http.keycloak/realms/otomi" }}
+{{- $oidcBaseUrlBackchannel := "http://keycloak-keycloakx-http.keycloak:8080/realms/otomi" }}
 {{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
 {{- $tlsSecretName := "otomi-cert-manager-wildcard-cert" }}
 {{- if eq $cm.issuer "externally-managed-tls-secret" }}
