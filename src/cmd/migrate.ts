@@ -518,15 +518,19 @@ async function hasPvcWithStorageClass(
     const pvcList = await k8s.core().listNamespacedPersistentVolumeClaim({ namespace, labelSelector })
     return (pvcList?.items || []).some((pvc) => pvc?.spec?.storageClassName === storageClassName)
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
     if (error instanceof ApiException && error.code === 404) {
       return false
     }
-    if (message.includes('HTTP protocol is not allowed when skipTLSVerify is not set or false')) {
+    if (isK8sTlsHttpError(error)) {
       return false
     }
     throw error
   }
+}
+
+function isK8sTlsHttpError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return message.includes('HTTP protocol is not allowed when skipTLSVerify is not set or false')
 }
 
 const sleep = async (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
@@ -603,6 +607,16 @@ async function migrateStatefulSetPvc(opts: {
 
     await waitForStatefulSetDeletion(opts.statefulSetName, opts.namespace)
     await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
+  } catch (error) {
+    if (isK8sTlsHttpError(error)) {
+      opts.d.warn(
+        `Skipping ${opts.statefulSetName} PVC migration due to Kubernetes client TLS/HTTP configuration: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      )
+      return
+    }
+    throw error
   } finally {
     if (syncDisabled) {
       try {
