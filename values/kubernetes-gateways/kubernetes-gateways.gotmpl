@@ -59,7 +59,7 @@ gateways:
     replicas: {{ . | get "replicas" 3 }}
     minAvailable: {{ . | get "minAvailable" 1 }}
     resources:
-    {{- with . | get "resources" nil }}
+    {{- with $ingress.gateway | get "resources" nil }}
       {{- . | toYaml | nindent 6 }}
     {{- else }}
       requests:
@@ -68,8 +68,8 @@ gateways:
       limits:
         cpu: 1000m
         memory: 1024Mi
-    {{- end }}{{- /* with . | get "resources" nil */}}
-    {{- with . | get "autoscaling" (dict "enabled" true) }}
+    {{- end }}{{- /* with $ingress.gateway | get "resources" nil */}}
+    {{- with $ingress.gateway | get "autoscaling" (dict "enabled" true) }}
     {{- if .enabled }}
     hpa:
       minReplicas: {{ . | get "minReplicas" 3 }}
@@ -88,7 +88,7 @@ gateways:
               type: Utilization
               averageUtilization: {{ . | get "targetMemoryUtilizationPercentage" 80 }}
     {{- end }}{{- /* if .enabled */}}
-    {{- end }}{{- /* with . | get "autoscaling" */}}
+    {{- end }}{{- /* with $ingress.gateway | get "autoscaling" */}}
     {{- end }}{{- /* with $ingress */}}
 {{- end }}
 {{- if $v.apps.knative.enabled }}
