@@ -95,7 +95,7 @@ export function filterRuntimeUpgrades(
   }
   const targetVersion = deployingVersion ? semver.coerce(deployingVersion) : null
   return rUpgrades.filter((rUpgrade) => {
-    if (!semver.gt(rUpgrade.version, currentVersion)) return false
+    if (semver.lte(rUpgrade.version, currentVersion)) return false
     if (targetVersion && semver.gt(rUpgrade.version, targetVersion)) return false
     return true
   })
