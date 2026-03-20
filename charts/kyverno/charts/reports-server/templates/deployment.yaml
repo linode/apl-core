@@ -1,0 +1,118 @@
+{{- $env := .Values.podEnv }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "reports-server.fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "reports-server.labels" . | nindent 4 }}
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "reports-server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "reports-server.labels" . | nindent 8 }}
+    spec:
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "reports-server.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: reports-server
+          args:
+            {{- if .Values.config.etcd.enabled }}
+            - --etcd
+            {{- if .Values.config.etcd.insecure }}
+            - --etcdSkipTLS
+            {{- end }}
+            - --etcdEndpoints=https://etcd-0.etcd.{{ $.Release.Namespace }}:2379,https://etcd-1.etcd.{{ $.Release.Namespace }}:2379,https://etcd-2.etcd.{{ $.Release.Namespace }}:2379
+            {{- else }}
+            - --dbsslmode={{ .Values.config.db.sslmode }}
+            - --dbsslrootcert={{ .Values.config.db.sslrootcert }}
+            - --dbsslkey={{ .Values.config.db.sslkey }}
+            - --dbsslcert={{ .Values.config.db.sslcert }}
+            {{- end }}
+            - --servicename={{ include "reports-server.fullname" . }}
+            - --servicens={{ $.Release.Namespace }}
+            - --storereports={{ .Values.apiServicesManagement.installApiServices.enabled }}
+            - --storeephemeralreports={{ .Values.apiServicesManagement.installApiServices.installEphemeralReportsService }}
+            - --storeopenreports={{ .Values.apiServicesManagement.installApiServices.installOpenreportsService }}
+            - --cert-dir=/tmp
+            - --secure-port=4443
+            {{- if .Values.metrics.enabled }}
+            - --authorization-always-allow-paths=/metrics
+            {{- end }}
+            - --clustername={{ .Values.clusterName }}
+          env:
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+                  divisor: '1'
+            - name: DB_HOST
+              {{- include "reports-server.dbHost" . | nindent 14 }}
+            - name: DB_PORT
+              {{- include "reports-server.dbPort" . | nindent 14 }}
+            - name: DB_DATABASE
+              {{- include "reports-server.dbName" . | nindent 14 }}
+            - name: DB_USER
+              {{- include "reports-server.dbUser" . | nindent 14 }}
+            - name: DB_PASSWORD
+              {{- include "reports-server.dbPassword" . | nindent 14 }}
+          {{- with $env }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-dir
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: https
+              containerPort: 4443
+              protocol: TCP
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - emptyDir: {}
+        name: tmp-dir
