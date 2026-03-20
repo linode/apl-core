@@ -100,6 +100,7 @@ prometheus:
     podMetadata:
       labels:
         otomi.io/auth: platform
+        otomi.io/auth-policy: monitoring
         {{- if $v.apps.istio.defaultRevision }}
         istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
         {{- else }}
@@ -212,6 +213,7 @@ alertmanager:
       labels:
         prometheus: system
         otomi.io/auth: platform
+        otomi.io/auth-policy: monitoring
         {{- if $v.apps.istio.defaultRevision }}
         istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
         {{- else }}
@@ -302,6 +304,7 @@ grafana:
       {{- include "prometheus-operator.common-route-opts" $httpRoute | nindent 6 }}
   podLabels:
     otomi.io/auth: platform
+    otomi.io/auth-policy: platform
 
 kubernetesServiceMonitors:
   enabled: {{ $p.enabled }}

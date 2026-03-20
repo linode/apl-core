@@ -29,6 +29,7 @@ core:
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
   podLabels:
     otomi.io/auth: platform
+    otomi.io/auth-policy: harbor
 
 database:
   maxOpenConns: {{ $h.databaseMaxConnections }}
@@ -157,6 +158,7 @@ portal:
   resources: {{- $h.resources.portal | toYaml | nindent 4 }}
   podLabels:
     otomi.io/auth: platform
+    otomi.io/auth-policy: platform
 
 redis:
   internal:

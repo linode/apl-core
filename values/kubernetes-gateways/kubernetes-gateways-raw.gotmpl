@@ -90,28 +90,7 @@ resources:
                   {{- end }}
   {{- end }}
   {{- end }}
-  - apiVersion: security.istio.io/v1
-    kind: AuthorizationPolicy
-    metadata:
-      name: platform-auth-require-jwt
-    spec:
-      action: DENY
-      selector:
-        matchLabels:
-          otomi.io/auth: platform
-      rules:
-      {{- /* Deny requests without a valid JWT token, which can be provided by OAuth2-Proxy */}}
-        - from:
-            - source:
-                notRequestPrincipals: ["*"]
-          to:
-            - operation:
-                notPaths:
-                  - "/oauth2/*"
-                  - "/platform-logout"
-              {{- range $path := ($v | get "exclusionPaths" list) }}
-                  - {{ $path | quote }}
-              {{- end }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" "platform") | nindent 4 }}
   - apiVersion: security.istio.io/v1
     kind: RequestAuthentication
     metadata:
