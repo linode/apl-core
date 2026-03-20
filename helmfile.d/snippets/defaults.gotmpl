@@ -24,8 +24,11 @@ environments:
     - apps:
         kubeflow-pipelines:
           rootPassword: {{ randAlphaNum 32 }}
-        {{- range $index,$ingressClassName := $ingressClassNames }}
-        ingress-nginx-{{ $ingressClassName}}:
+        {{- range $index, $ingressClassName := $ingressClassNames }}
+        ingress-nginx-{{ $ingressClassName }}:
+          {{- if eq $ingressClassName "platform" }}
+          enabled: false
+          {{- end }}
           autoscaling:
             enabled: true
             minReplicas: 2

@@ -19,8 +19,16 @@ releases:
     installed: {{ $a | get "metrics-server.enabled" }}
     namespace: kube-system
     <<: *default
-  - name: ingress-nginx-artifacts
+  - name: kubernetes-gateways
     installed: true
+    namespace: istio-system
+    labels:
+      tag: ingress
+      stage: prep
+      pkg: kubernetes-gateways
+    <<: *default
+  - name: ingress-nginx-artifacts
+    installed: {{ $a | get "ingress-nginx-platform.enabled" }}
     namespace: ingress
     labels:
       tag: ingress
@@ -28,7 +36,7 @@ releases:
     <<: *raw
 {{- range $index, $ingress := $v.ingress.classes }}
   - name: ingress-nginx-{{ $ingress.className }}
-    installed: true
+    installed: {{ $a | get "ingress-nginx-platform.enabled" }}
     namespace: ingress
     labels:
       tag: ingress
@@ -55,6 +63,14 @@ releases:
       pkg: istio
       app: core
     <<: *default
+  - name: kubernetes-gateways-artifacts
+    installed: true
+    namespace: istio-system
+    labels:
+      app: core
+      tag: ingress
+      pkg: kubernetes-gateways
+    <<: *raw
   - name: cloudnative-pg
     installed: true
     namespace: cnpg-system

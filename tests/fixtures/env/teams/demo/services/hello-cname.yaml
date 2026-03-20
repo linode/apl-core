@@ -1,26 +1,27 @@
 kind: AplTeamService
 metadata:
-    name: service-e
+    name: hello-cname
     labels:
         apl.io/teamId: demo
 spec:
+    auth: true
     cname:
-        domain: net-a-demo.cname.com
-        tlsSecretName: 'net-a-cname'
+        domain: hello-demo.cname.com
+        tlsSecretName: 'hello-cert'
+    domain: hello-demo.dev.linode-apl.net
     headers:
-        request:
-            set:
-                - name: someheader
-                  value: somevalue
         response:
             set:
                 - name: X-Frame-Options
                   value: same-origin
                 - name: sander
                   value: same-origin
-    ingressClassName: net-a
+    ksvc:
+        predeployed: true
+    ownHost: true
+    port: 80
     trafficControl:
         enabled: true
-        weightV1: 50
-        weightV2: 50
+        weightV1: 70
+        weightV2: 30
     useCname: true
