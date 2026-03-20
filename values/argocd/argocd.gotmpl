@@ -1,12 +1,14 @@
 {{- $v := .Values }}
 {{- $a := $v.apps.argocd }}
 {{- $k := $v.apps.keycloak }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+{{- $hostname := print "argocd." $v.cluster.domainSuffix }}
 global:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/argoproj/argocd"
   {{- end }}
-  domain: argocd.{{ $v.cluster.domainSuffix }}
+  domain: {{ $hostname }}
   {{- with $v.otomi | get "nodeSelector" nil }}
   nodeSelector:
     {{- range $key, $val := . }}
@@ -77,6 +79,16 @@ server:
       enabled: true
       additionalLabels:
         prometheus: system
+  httproute:
+    enabled: true
+    {{ with $httpRoute.annotations }}
+    annotations:
+      {{ . | toYaml | nindent 6 }}
+    {{- end }}
+    parentRefs:
+      {{- $httpRoute.parentRefs | toYaml | nindent 6 }}
+    hostnames:
+      - {{ $hostname }}
 
 configs:
   # General Argo CD configuration
@@ -87,7 +99,7 @@ configs:
     application.resourceTrackingMethod: annotation
     ga.anonymizeusers: "false"
     statusbadge.enabled: "false"
-    url: https://argocd.{{ $v.cluster.domainSuffix }}
+    url: https://{{ $hostname }}
     users.anonymous.enabled: "false"
     # Note that the clientSecret is not actually used
     # as for now oauth2-proxy handles the login
@@ -231,3 +243,44 @@ configs:
       g, platform-admin, role:admin
     policy.default: role:readonly
     {{- end }}
+
+extraObjects:
+  - apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    metadata:
+      {{ with $httpRoute.annotations }}
+      annotations:
+        {{ . | toYaml | nindent 8 }}
+      {{- end }}
+      name: argocd-auth-redirects
+    spec:
+      hostnames:
+        - {{ $hostname }}
+      parentRefs:
+        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
+      rules:
+        {{- $httpRoute.authRules | toYaml | nindent 8 }}
+        - matches:
+            - path:
+                type: Exact
+                value: /auth/login
+          filters:
+            - type: RequestRedirect
+              requestRedirect:
+                path:
+                  type: ReplaceFullPath
+                  replaceFullPath: /oauth2/start
+                statusCode: 302
+        - matches:
+            - path:
+                type: Exact
+                value: /auth/logout
+          filters:
+            - type: RequestRedirect
+              requestRedirect:
+                path:
+                  type: ReplaceFullPath
+                  replaceFullPath: /platform-logout
+                statusCode: 302
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "argocd" "gatewayName" $v.ingress.platformClass.className "host" $hostname) | nindent 4 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "argocd" "host" $hostname) | nindent 4 }}

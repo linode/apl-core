@@ -24,4 +24,6 @@ fullnameOverride: ""
 
 args: []
 
+podLabels: {}
+
 teamId: ""
