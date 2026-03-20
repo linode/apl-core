@@ -13,7 +13,7 @@ bases:
 
 releases:
   - name: istio-ingressgateway-public
-    installed: true
+    installed: {{ $a | get "ingress-nginx-platform.enabled" }}
     namespace: istio-system
     labels:
       pkg: istio

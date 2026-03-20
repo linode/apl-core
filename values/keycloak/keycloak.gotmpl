@@ -3,6 +3,7 @@
 {{- $consoleLoginVersion := $v.versions.consoleLogin}}
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
 {{- $globalPullSecret := $v.otomi | get "globalPullSecret" nil }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 
 {{ if $v.otomi.linodeLkeImageRepository }}
 image:
@@ -16,6 +17,18 @@ imagePullSecrets:
 
 service:
   httpPort: 8080
+
+httpRoute:
+  enabled: true
+  {{- with $httpRoute.annotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  servicePort: 8080
+  parentRefs:
+    {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
+  hostnames:
+    - {{ $v._derived.keycloakDomain }}
 
 http:
   relativePath: "/"
@@ -100,3 +113,6 @@ extraEnv: |
       secretKeyRef:
         name: keycloak-initial-admin
         key: password
+
+extraManifests:
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "keycloak" "host" $v._derived.keycloakDomain) | nindent 4 }}

@@ -26,6 +26,13 @@ service:
   type: ClusterIP
   port: 80
 
+httpRoute:
+  enabled: false
+  annotations: {}
+  hostname: ""
+  parentRefs: []
+  additionalRules: []
+
 ingress:
   enabled: false
   annotations: {}
@@ -52,6 +59,7 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+podLabels: {}
 
 podAnnotations: {}
 
