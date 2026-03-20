@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- if $v.useLegacyIngress }}
 {{- $ns := .Release.Namespace }}
 {{- $ := . }}
 # collect unique domains for this GW
@@ -86,4 +87,5 @@ spec:
 ---
   {{- end }}
   {{- end }}
+{{- end }}
 {{- end }}
