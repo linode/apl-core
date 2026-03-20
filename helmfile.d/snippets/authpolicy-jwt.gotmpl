@@ -20,10 +20,6 @@ spec:
         {{- /* Allow requests with a valid JWT token, which can be provided by OAuth2-Proxy */}}
         - source:
             requestPrincipals: ["*"]
-        - source:
-            namespaces:
-              - monitoring
-              - "team-*"
         {{- /* Optionally in addition allow requests from select namespaces */}}
         {{- with $excludeNamespaces }}
         - source:
