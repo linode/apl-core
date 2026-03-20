@@ -85,7 +85,7 @@ releases:
     <<: *default
   - name: tekton-dashboard
     installed: true
-    namespace: tekton-pipelines
+    namespace: tekton-dashboard
     labels:
       pkg: tekton-pipelines
     chart: ../charts/tekton-dashboard
@@ -93,7 +93,7 @@ releases:
       - ../values/tekton-dashboard/tekton-dashboard.gotmpl
   - name: tekton-dashboard-artifacts
     installed: true
-    namespace: tekton-pipelines
+    namespace: tekton-dashboard
     labels:
       pkg: tekton-pipelines
     <<: *raw

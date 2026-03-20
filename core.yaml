@@ -58,6 +58,8 @@ k8s:
     - name: kyverno
       app: kyverno
       disableIstioInjection: true
+    - name: tekton-dashboard
+      app: tekton-pipelines
     - name: tekton-pipelines
       disableIstioInjection: true
       disablePolicyChecks: true

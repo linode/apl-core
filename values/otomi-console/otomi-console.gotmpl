@@ -21,6 +21,10 @@ podSecurityContext:
   runAsUser: 100
   runAsGroup: 101
 
+podLabels:
+  otomi.io/auth: platform
+  otomi.io/auth-policy: platform
+
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
@@ -52,5 +56,5 @@ httpRoute:
           port: 80
 
 extraManifests:
-  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "console" "gatewayName" $v.ingress.platformClass.className "host" $v._derived.consoleDomain) | nindent 4 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" "console" "gatewayName" $v.ingress.platformClass.className "host" $v._derived.consoleDomain) | nindent 4 }}
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "otomi-console" "host" $v._derived.consoleDomain) | nindent 4 }}

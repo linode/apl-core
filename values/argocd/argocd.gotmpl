@@ -89,6 +89,9 @@ server:
       {{- $httpRoute.parentRefs | toYaml | nindent 6 }}
     hostnames:
       - {{ $hostname }}
+  podLabels:
+    otomi.io/auth: platform
+    otomi.io/auth-policy: platform
 
 configs:
   # General Argo CD configuration
@@ -282,5 +285,5 @@ extraObjects:
                   type: ReplaceFullPath
                   replaceFullPath: /platform-logout
                 statusCode: 302
-  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "argocd" "gatewayName" $v.ingress.platformClass.className "host" $hostname) | nindent 4 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" "argocd" "gatewayName" $v.ingress.platformClass.className "host" $hostname) | nindent 4 }}
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "argocd" "host" $hostname) | nindent 4 }}

@@ -10,6 +10,10 @@ image:
   repository: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard"
 {{- end }}
 
+podLabels:
+  otomi.io/auth: platform
+  otomi.io/auth-policy: platform
+
 args:
   - --port=9097
   - --logout-url=

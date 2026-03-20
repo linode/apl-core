@@ -23,6 +23,10 @@ args:
   - --stream-logs=true
   - --external-logs=
 
+podLabels:
+  otomi.io/auth: platform
+  otomi.io/auth-policy: platform
+
 {{- if $v.otomi.linodeLkeImageRepository }}
 image:
   repository: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard"
