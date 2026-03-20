@@ -150,7 +150,7 @@ export const commit = async (
     await bootstrapGit(values)
   } else {
     cd(env.ENV_DIR)
-    await setIdentity(username, email)
+    await setIdentity(username ?? 'otomi-admin', email)
     // the url might need updating (e.g. if credentials changed)
     await $`git remote set-url origin ${remote}`
   }
