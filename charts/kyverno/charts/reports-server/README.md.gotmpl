@@ -1,0 +1,31 @@
+{{ template "chart.header" . }}
+{{ template "chart.deprecationWarning" . }}
+{{ template "chart.description" . }}
+
+{{ template "chart.badgesSection" . }}
+
+TODO
+
+## Installing the Chart
+
+Add `reports-server` Helm repository:
+
+```shell
+helm repo add reports-server https://kyverno.github.io/reports-server/
+```
+
+Install `reports-server` Helm chart:
+
+```shell
+helm install reports-server --namespace reports-server --create-namespace reports-server/reports-server
+```
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}
