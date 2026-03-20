@@ -46,5 +46,5 @@ resources:
                 type: PathPrefix
                 value: /
         {{- $httpRoute.authRules | toYaml | nindent 8 }}
-  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "kubeflow-pipelines" "gatewayName" $v.ingress.platformClass.className "host" $hostname) | nindent 4 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" "kubeflow-pipelines" "gatewayName" $v.ingress.platformClass.className "host" $hostname) | nindent 4 }}
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "kubeflow-pipelines" "host" $hostname) | nindent 4 }}

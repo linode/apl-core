@@ -20,6 +20,8 @@ serviceAccount:
   name: "apl-harbor-operator"
   annotations: {}
 
+podLabels: {}
+
 podAnnotations: {}
 
 podSecurityContext:

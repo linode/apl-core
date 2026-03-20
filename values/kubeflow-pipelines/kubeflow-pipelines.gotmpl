@@ -48,6 +48,7 @@ mlPipelineUi:
   resources: {{- $kfp.resources.mlPipelineUi | toYaml | nindent 4 }}
   podLabels:
     otomi.io/auth: platform
+    otomi.io/auth-policy: platform
     {{- if $v.apps.istio.defaultRevision }}
     istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
     {{- else }}
