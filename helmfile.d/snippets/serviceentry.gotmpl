@@ -1,0 +1,21 @@
+{{- $v := . }}
+{{- $hosts := $v | get "hosts" list }}
+{{- with $v | get "host" nil }}
+{{- $hosts = append $hosts . }}
+{{- end }}
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: {{ $v.name }}
+spec:
+  hosts:
+    {{- $hosts | toYaml | nindent 4 }}
+  ports:
+    - number: 80
+      name: http
+      protocol: HTTP
+    - number: 443
+      name: https
+      protocol: TLS
+  location: MESH_INTERNAL
+  resolution: DNS

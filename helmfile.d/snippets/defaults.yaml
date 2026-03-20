@@ -334,6 +334,22 @@ environments:
             enabled: false
             serving:
               replicas: 1
+              gateway:
+                replicas: 2
+                minAvailable: 1
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 128Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 1024Mi
+                autoscaling:
+                  enabled: true
+                  minReplicas: 2
+                  maxReplicas: 10
+                  targetCPUUtilizationPercentage: 80
+                  targetMemoryUtilizationPercentage: 80
             resources:
               queueSidecar:
                 requests:
@@ -1138,6 +1154,22 @@ environments:
         ingress:
           platformClass:
             className: platform
+            gateway:
+              replicas: 3
+              minAvailable: 1
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 1000m
+                  memory: 1024Mi
+              autoscaling:
+                enabled: true
+                minReplicas: 3
+                maxReplicas: 10
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
           classes: []
         alerts:
           receivers:
@@ -1164,4 +1196,4 @@ environments:
             branch: main
             enabled: true
         versions:
-          specVersion: 55
+          specVersion: 57
