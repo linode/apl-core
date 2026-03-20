@@ -13,14 +13,11 @@ spec:
   policyTypes:
     - Ingress
   ingress:
-    # Allow access from Istio public ingress gateway
     - from:
-        - namespaceSelector:
-            matchLabels:
-              name: istio-system
-          podSelector:
-            matchLabels:
-              app.kubernetes.io/instance: istio-ingressgateway-public
+      # Allow access from public ingress gateway
+      {{- with .Values.ingressGatewaySelectors }}
+      {{- . | toYaml | nindent 8 }}
+      {{- end }}
     # Allow APL Gitea operator access
     - from:
         - namespaceSelector:
