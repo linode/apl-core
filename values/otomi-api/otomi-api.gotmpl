@@ -7,11 +7,11 @@
 {{- $git := $v.otomi.git }}
 {{- $defaultPlatformAdminEmail := printf "platform-admin@%s" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 {{- $version := $v.versions | get "api" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $coreVersion := $v.otomi.version }}
 {{- $coreIsSemver := regexMatch "^[0-9.]+" $coreVersion }}
-
 
 replicaCount: 1
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
@@ -71,8 +71,6 @@ core:
   teamApps: {{- toYaml $v.teamApps | nindent 4 }}
   {{ readFile "../../apps.yaml" | nindent 2}}
 
-
-
 podSecurityContext:
   runAsUser: 999
 
@@ -80,3 +78,19 @@ podSecurityContext:
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
+
+httpRoute:
+  enabled: true
+  {{ with $httpRoute.annotations }}
+  annotations:
+    {{ . | toYaml | nindent 4 }}
+  {{- end }}
+  hostname: {{ $v._derived.apiDomain }}
+  parentRefs:
+    {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
+  additionalRules:
+    {{- $httpRoute.authRules | toYaml | nindent 4 }}
+
+extraManifests:
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "tty" "gatewayName" $v.ingress.platformClass.className "host" $v._derived.ttyDomain) | nindent 4 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "otomi-api" "hosts" (list $v._derived.apiDomain $v._derived.ttyDomain)) | nindent 4 }}

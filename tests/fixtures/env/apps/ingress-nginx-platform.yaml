@@ -28,3 +28,4 @@ spec:
     tracing:
         enabled: true
         samplingRatio: '0.01'
+    enabled: true
