@@ -4,7 +4,5 @@ metadata:
     labels:
         apl.io/teamId: demo
 spec:
-    ksvc:
-        predeployed: true
     port: 443
     tlsPass: true
