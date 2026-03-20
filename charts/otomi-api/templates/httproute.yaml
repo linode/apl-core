@@ -1,0 +1,27 @@
+{{- if .Values.httpRoute.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  {{- with .Values.httpRoute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: api
+  namespace: {{ .Release.Namespace }}
+spec:
+  hostnames:
+    - {{ .Values.httpRoute.hostname }}
+  parentRefs:
+    {{- toYaml .Values.httpRoute.parentRefs | nindent 4 }}
+  rules:
+    {{- with .Values.httpRoute.additionalRules }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    - backendRefs:
+        - name: {{ include "otomi-api.fullname" . }}
+          port: {{ .Values.service.port }}
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+{{- end }}
