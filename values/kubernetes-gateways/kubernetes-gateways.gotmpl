@@ -1,0 +1,139 @@
+{{- $v := .Values }}
+{{- $domainSuffix := $v.cluster.domainSuffix }}
+{{- $defaultIngressClass := $v.ingress.platformClass.className }}
+
+gateways:
+{{- range $ingress := $v.ingress.classes }}
+  {{- $gatewayAnnotations := dict }}
+  {{- if and ($ingress | get "entrypoint" nil) $v.otomi.hasExternalDNS }}
+  {{- $_ := set $gatewayAnnotations "external-dns.alpha.kubernetes.io/target" $ingress.entrypoint }}
+  {{- end }}
+
+  {{- $serviceAnnotations := dict }}
+  {{- with $ingress | get "annotations" nil }}
+    {{- range $annotation := . }}
+    {{ $_ := set $serviceAnnotations $annotation.key (toString $annotation.value) }}
+    {{- end }}
+  {{- end }}
+  {{- if eq $v.cluster.provider "linode" }}
+  {{ $_ := set $serviceAnnotations "service.beta.kubernetes.io/linode-loadbalancer-preserve" "true" }}
+  {{- end }}
+
+  - name: {{ $ingress.className }}
+    {{- with $gatewayAnnotations }}
+    annotations:
+      {{- . | toYaml | nindent 6 }}
+    {{- end }}
+    {{- with $serviceAnnotations }}
+    serviceAnnotations:
+      {{- . | toYaml | nindent 6 }}
+    {{- end }}
+    allowedListeners:
+      namespaces:
+        from: Selector
+        selector:
+          matchLabels:
+            type: team
+    listeners:
+      - name: http
+        hostname: {{ print "*." $domainSuffix | quote }}
+        protocol: HTTP
+        port: 80
+        allowedRoutes:
+          namespaces:
+            from: Same
+      - name: https
+        hostname: {{ print "*." $domainSuffix | quote }}
+        protocol: HTTPS
+        port: 443
+        tls:
+          certificateRefs:
+            - name: {{ $v._derived.tlsSecretName }}
+        allowedRoutes:
+          namespaces:
+            from: All
+    {{- with $ingress | get "loadBalancerIP" nil }}
+    loadBalancerIP: {{ . | quote }}
+    {{- end }}
+    {{- with $ingress | get "gateway" dict }}
+    replicas: {{ . | get "replicas" 3 }}
+    minAvailable: {{ . | get "minAvailable" 1 }}
+    resources:
+    {{- with $ingress.gateway | get "resources" nil }}
+      {{- . | toYaml | nindent 6 }}
+    {{- else }}
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    {{- end }}{{- /* with $ingress.gateway | get "resources" nil */}}
+    {{- with $ingress.gateway | get "autoscaling" (dict "enabled" true) }}
+    {{- if .enabled }}
+    hpa:
+      minReplicas: {{ . | get "minReplicas" 3 }}
+      maxReplicas: {{ . | get "maxReplicas" 10 }}
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: {{ . | get "targetCPUUtilizationPercentage" 80 }}
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              type: Utilization
+              averageUtilization: {{ . | get "targetMemoryUtilizationPercentage" 80 }}
+    {{- end }}{{- /* if .enabled */}}
+    {{- end }}{{- /* with $ingress.gateway | get "autoscaling" */}}
+    {{- end }}{{- /* with $ingress */}}
+{{- end }}
+{{- if $v.apps.knative.enabled }}
+  - name: knative-local-gateway
+    annotations:
+      networking.istio.io/service-type: ClusterIP
+    listeners:
+      - name: http
+        protocol: HTTP
+        port: 80
+        allowedRoutes:
+          namespaces:
+            from: All
+      - name: tls
+        protocol: TLS
+        port: 443
+        tls:
+          mode: Passthrough
+        allowedRoutes:
+          namespaces:
+            from: All
+    {{- with $v.apps.knative.serving.gateway }}
+    replicas: {{ .replicas }}
+    minAvailable: {{ .minAvailable }}
+    resources:
+      {{ .resources | toYaml | nindent 6 }}
+    {{- with .autoscaling }}
+    {{- if .enabled }}
+    hpa:
+      minReplicas: {{ .minReplicas }}
+      maxReplicas: {{ .maxReplicas }}
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: {{ .targetCPUUtilizationPercentage }}
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              type: Utilization
+              averageUtilization: {{ .targetMemoryUtilizationPercentage }}
+    {{- end }}{{- /* if .enabled */}}
+    {{- end }}{{- /* with .autoscaling */}}
+    {{- end }}{{- /* with $v.apps.knative.serving.gateway */}}
+{{- end }}
