@@ -1,0 +1,92 @@
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+{{- $authAppNamespaces := list "argocd" "harbor" "monitoring" "grafana" "kfp" "otomi" "tekton-pipelines"}}
+{{- $domainSuffix := $v.cluster.domainSuffix }}
+{{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
+{{- $logoutRedirectParam := printf "%s/protocol/openid-connect/logout?post_logout_redirect_uri=https://%s/oauth2/start&client_id=%s" $keycloakRealm $v._derived.consoleDomain $a.keycloak.idp.clientID }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+resources:
+  - apiVersion: security.istio.io/v1
+    kind: AuthorizationPolicy
+    metadata:
+      name: otomi-forbidden-urls
+    spec:
+      action: DENY
+      targetRefs:
+        - name: {{ $v.ingress.platformClass.className }}
+          kind: Gateway
+          group: gateway.networking.k8s.io
+      rules:
+        - to:
+            - operation:
+                hosts:
+                  - {{ $v._derived.giteaDomain }}
+                  - {{ $v._derived.keycloakDomain }}
+                paths:
+                  - /metrics
+  - apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    metadata:
+      {{ with $httpRoute.annotations }}
+      annotations:
+        {{ . | toYaml | nindent 8 }}
+      {{- end }}
+      name: tty-auth
+    spec:
+      hostnames:
+        - tty.{{ $domainSuffix }}
+      parentRefs:
+        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
+      rules:
+        {{- $httpRoute.authRules | toYaml | nindent 8 }}
+  {{- range $teamId := (keys $v.teamConfig | sortAlpha) }}
+  - apiVersion: gateway.networking.k8s.io/v1beta1
+    kind: ReferenceGrant
+    metadata:
+      name: {{ $teamId }}-oauth2-proxy-apps
+    spec:
+      from:
+        - group: gateway.networking.k8s.io
+          kind: HTTPRoute
+          namespace: team-{{ $teamId }}
+      to:
+        - group: ""
+          kind: Service
+          name: oauth2-proxy
+  {{- end }}
+  - apiVersion: gateway.networking.k8s.io/v1beta1
+    kind: ReferenceGrant
+    metadata:
+      name: platform-oauth2-proxy-apps
+    spec:
+      from:
+        {{- range $namespace := $authAppNamespaces }}
+        - group: gateway.networking.k8s.io
+          kind: HTTPRoute
+          namespace: {{ $namespace }}
+        {{- end }}
+      to:
+        - group: ""
+          kind: Service
+          name: oauth2-proxy
+  {{- range $ingress := $v.ingress.classes }}
+  {{- if $ingress | get "sourceIpAddressFiltering" nil }}
+  - apiVersion: security.istio.io/v1
+    kind: AuthorizationPolicy
+    metadata:
+      name: {{ $ingress.className }}-allowed-ips
+    spec:
+      targetRef:
+        kind: Gateway
+        group: gateway.networking.k8s.io
+        name: {{ $ingress.className }}
+      action: DENY
+      rules:
+        - from:
+            - source:
+                notIpBlocks:
+                  {{- range $ip := $ingress.sourceIpAddressFiltering | split "," }}
+                  - {{ $ip | quote }}
+                  {{- end }}
+  {{- end }}
+  {{- end }}

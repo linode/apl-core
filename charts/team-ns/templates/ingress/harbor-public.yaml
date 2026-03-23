@@ -1,9 +1,7 @@
 {{- $v := .Values }}
-{{- if eq $v.teamId "admin" }}
-{{- if $v.apps.harbor.enabled }}
+{{- if and $v.useLegacyIngress (eq $v.teamId "admin") $v.apps.harbor.enabled }}
 {{- $ingress :=  $v.ingress.platformClass }}
 {{- $ingressGateway := $v.ingressPublicGatewayName | default "istio-ingressgateway-public" }}
-{{- $name :=  printf "nginx-team-%s-platform-public-open-forward-harbor" $v.teamId }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -24,11 +22,11 @@ metadata:
     nginx.ingress.kubernetes.io/whitelist-source-range: "{{ . }}"
     {{- end }}
     {{- if and (hasKey $ingress "entrypoint") (ne $ingress.entrypoint "") }}
-    external-dns.alpha.kubernetes.io/target: {{ $ingress.entrypoint }} 
+    external-dns.alpha.kubernetes.io/target: {{ $ingress.entrypoint }}
     {{- end }}
   labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
-  name: {{ $name }}
-  namespace: "istio-system"
+  name: nginx-team-admin-platform-public-open-forward-harbor
+  namespace: istio-system
 spec:
   ingressClassName: platform
   rules:
@@ -67,5 +65,4 @@ spec:
     - hosts:
         - {{ $v.harborDomain }}
       secretName: {{ $v.tlsSecretName }}
-{{- end }}
 {{- end }}

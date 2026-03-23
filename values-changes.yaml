@@ -451,4 +451,7 @@ changes:
       - addLinodeNBAnnotations
   - version: 57
     customFunctions:
+      - setIngressDefault
+  - version: 58
+    customFunctions:
       - valkeyAndOauth2RedisPVCMigration

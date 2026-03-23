@@ -15,10 +15,28 @@
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrl "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 {{- $hasServices := false }}
 {{- range $teamId, $team := $v.teamConfig }}
   {{- if gt (len ($team | get "services" list)) 0 }}{{ $hasServices = true }}{{ end }}
 {{- end }}
+
+{{- define "prometheus-operator.common-route-opts" }}
+{{ with .annotations }}
+annotations:
+  {{ . | toYaml | nindent 2 }}
+{{- end }}
+filters:
+  - type: RequestHeaderModifier
+    requestHeaderModifier:
+      remove:
+        - authorization
+parentRefs:
+  {{- .parentRefs | toYaml | nindent 2 }}
+additionalRules:
+  {{- .authRules | toYaml | nindent 2 }}
+{{- end }}
+
 nameOverride: po
 fullnameOverride: po
 {{- with .Values.otomi | get "globalPullSecret" nil }}
@@ -147,6 +165,13 @@ prometheus:
       {{- . | nindent 6 }}
       {{- end }}
     {{- end }}
+  route:
+    main:
+      enabled: true
+      hostnames:
+        - {{ $prometheusDomain }}
+      {{- include "prometheus-operator.common-route-opts" $httpRoute | nindent 6 }}
+
   additionalPodMonitors:
     {{- range $m := (tpl (readFile "pod-monitors.gotmpl") $v | fromYaml) | get "additionalPodMonitors" }}
     - {{- toYaml $m | nindent 6 }}
@@ -200,6 +225,12 @@ alertmanager:
     resources: {{- $a.resources.alertmanager | toYaml | nindent 6 }}
     externalUrl: https://{{ $alertmanagerDomain }}
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
+  route:
+    main:
+      enabled: true
+      hostnames:
+        - {{ $alertmanagerDomain }}
+      {{- include "prometheus-operator.common-route-opts" $httpRoute | nindent 6 }}
 grafana:
   enabled: {{ $g.enabled }}
   defaultDashboardsEnabled: false
@@ -259,6 +290,12 @@ grafana:
       # serve_from_sub_path: true
     security:
       allow_embedding: true
+  route:
+    main:
+      enabled: true
+      hostnames:
+        - {{ $grafanaDomain }}
+      {{- include "prometheus-operator.common-route-opts" $httpRoute | nindent 6 }}
 
 kubernetesServiceMonitors:
   enabled: {{ $p.enabled }}

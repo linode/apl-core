@@ -6,7 +6,7 @@ version: 0.1.0
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 9.4.10
+    version: 9.4.15
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
     version: 1.0.1
@@ -35,7 +35,7 @@ dependencies:
     version: 12.5.0
     repository: https://dl.gitea.io/charts
   - name: harbor
-    version: 1.18.2
+    version: 1.18.3
     repository: https://helm.goharbor.io
   - name: ingress-nginx
     version: 4.14.3
