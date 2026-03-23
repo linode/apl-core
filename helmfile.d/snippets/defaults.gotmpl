@@ -1,4 +1,5 @@
 {{- /* Only dynamic defaults */}}
+{{- $versions := (readFile "../versions.yaml" | fromYaml) }}
 {{- $ENV_DIR := env "ENV_DIR" | default "../env" }}
 {{- $dirPath := printf "%s/env/teams" $ENV_DIR }}
 {{- $ingressFilePath := printf "%s/env/settings/ingress.yaml" $ENV_DIR }}
@@ -277,6 +278,12 @@ environments:
         adminPassword: {{ randAlphaNum 32 }}
         git:
           password: {{ randAlphaNum 20 }}
+      catalogs:
+        default:
+          name: default
+          repositoryUrl: https://github.com/linode/apl-charts.git
+          branch: {{ $versions.aplCharts }}
+          enabled: true
       cluster:
         owner: customer
         name: apl
