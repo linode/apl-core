@@ -1188,12 +1188,5 @@ environments:
           useORCS: true
           aiEnabled: false
         users: []
-        # TODO: update this when schema version changes
-        catalogs:
-          default:
-            name: default
-            repositoryUrl: https://github.com/linode/apl-charts.git
-            branch: main
-            enabled: true
         versions:
           specVersion: 57
