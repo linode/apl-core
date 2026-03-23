@@ -19,7 +19,7 @@ import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
-import { $, cd } from 'zx'
+import { $, cd, sleep } from 'zx'
 import { APL_OPERATOR_NS, ARGOCD_APP_PARAMS } from '../common/constants'
 import { getArgoCdApp, getK8sSecret, getSealedSecretsPEM, k8s, setArgoCdAppSync } from '../common/k8s'
 
@@ -532,19 +532,9 @@ async function hasPvcWithStorageClass(
     if (error instanceof ApiException && error.code === 404) {
       return false
     }
-    if (isK8sTlsHttpError(error)) {
-      return false
-    }
     throw error
   }
 }
-
-function isK8sTlsHttpError(error: unknown): boolean {
-  const message = error instanceof Error ? error.message : String(error)
-  return message.includes('HTTP protocol is not allowed when skipTLSVerify is not set or false')
-}
-
-const sleep = async (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
 async function waitForPodsDeletion(namespace: string, labelSelector: string, timeoutMs = 300000): Promise<void> {
   const start = Date.now()
@@ -619,14 +609,6 @@ async function migrateStatefulSetPvc(opts: {
     await waitForStatefulSetDeletion(opts.statefulSetName, opts.namespace)
     await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
   } catch (error) {
-    if (isK8sTlsHttpError(error)) {
-      opts.d.warn(
-        `Skipping ${opts.statefulSetName} PVC migration due to Kubernetes client TLS/HTTP configuration: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      )
-      return
-    }
     throw error
   } finally {
     if (syncDisabled) {
@@ -843,8 +825,12 @@ const createCatalogSealedSecret = async (
 }
 
 // This migration changes PVCs when using Linode for gitea-valkey and oauth2-proxy-redis-server to use linode-block-storage instead of linode-block-storage-retain
-const ValkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Promise<void> => {
-  const d = terminal('ValkeyAndOauth2RedisPVCMigration')
+const valkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('valkeyAndOauth2RedisPVCMigration')
+  if (env.DISABLE_SYNC) {
+    d.info('Skipping valkey And Oauth2 Redis PVC migration in dev/test environment')
+    return
+  }
   const giteaEnabled = values?.apps?.gitea?.enabled
   const isLinode = values?.cluster?.provider === 'linode'
   const legacyStorageClass = 'linode-block-storage-retain'
@@ -1001,7 +987,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   workloadValuesMigration,
   setLokiStorageSchemaMigration,
   setDefaultAplCatalog,
-  ValkeyAndOauth2RedisPVCMigration,
+  valkeyAndOauth2RedisPVCMigration,
   addLinodeNBAnnotations,
 }
 
