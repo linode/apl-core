@@ -100,7 +100,7 @@ prometheus:
     podMetadata:
       labels:
         otomi.io/auth: platform
-        otomi.io/auth-policy: monitoring
+        otomi.io/auth-policy: prometheus
         {{- if $v.apps.istio.defaultRevision }}
         istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
         {{- else }}
@@ -114,13 +114,19 @@ prometheus:
       port: http-web
       scheme: http
       apiVersion: v2
-    {{- range $id, $team := $v.teamConfig }}
+      relabelings:
+        - targetLabel: __address__
+          replacement: po-alertmanager.monitoring.svc.cluster.local:9093
+    {{- range $id, $team := (omit $v.teamConfig "admin") }}
     {{- if ($v.teamConfig | get "managedMonitoring" "alertmanager") }}
     - name: '{{ $id }}-po-alertmanager'
       namespace: 'team-{{ $id }}'
       port: http-web
       scheme: http
       apiVersion: v2
+      relabelings:
+        - targetLabel: __address__
+          replacement: {{ $id }}-po-alertmanager.team-{{ $id }}.svc.cluster.local:9093
     {{- end }}
     {{- end }}
     priorityClassName: otomi-critical
@@ -237,6 +243,19 @@ alertmanager:
       hostnames:
         - {{ $alertmanagerDomain }}
       {{- include "prometheus-operator.common-route-opts" $httpRoute | nindent 6 }}
+  serviceMonitor:
+    relabelings:
+      - sourceLabels: [__address__]
+        regex: '(\d+)\.(\d+)\.(\d+)\.(\d+):(\d+)'
+        replacement: '$5'
+        targetLabel: __tmp_pod_ip_port
+      - sourceLabels: [service, __meta_kubernetes_namespace]
+        separator: "."
+        replacement: '$1.svc.cluster.local'
+        targetLabel: __tmp_service_namespace
+      - sourceLabels: [__tmp_service_namespace, __tmp_pod_ip_port]
+        separator: ":"
+        targetLabel: __address__
 grafana:
   enabled: {{ $g.enabled }}
   defaultDashboardsEnabled: false
@@ -268,6 +287,9 @@ grafana:
     enabled: {{ $p.enabled }}
     labels:
       prometheus: system
+    relabelings:
+      - targetLabel: __address__
+        replacement: po-grafana.grafana.svc.cluster.local:80
   testFramework:
     enabled: false
   {{- if or $apps.loki.enabled }}
@@ -304,7 +326,7 @@ grafana:
       {{- include "prometheus-operator.common-route-opts" $httpRoute | nindent 6 }}
   podLabels:
     otomi.io/auth: platform
-    otomi.io/auth-policy: platform
+    otomi.io/auth-policy: monitoring
 
 kubernetesServiceMonitors:
   enabled: {{ $p.enabled }}

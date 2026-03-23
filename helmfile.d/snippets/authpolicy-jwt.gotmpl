@@ -3,6 +3,10 @@
 {{- with $v | get "excludeNamespace" nil }}
 {{- $excludeNamespaces = append $excludeNamespaces . }}
 {{- end }}
+{{- $excludeAccounts := $v | get "excludeAccounts" list }}
+{{- with $v | get "excludeAccount" nil }}
+{{- $excludeAccounts = append $excludeAccounts . }}
+{{- end }}
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
@@ -26,7 +30,12 @@ spec:
             namespaces:
               {{- toYaml . | nindent 14 }}
         {{- end }}
-    {{- with $v | get "allowPaths" list }}
+        {{- with $excludeAccounts }}
+        - source:
+            serviceAccounts:
+              {{- toYaml . | nindent 14 }}
+        {{- end }}
+    {{- with $v | get "excludePaths" list }}
     - to:
         {{- /* Optionally exempt certain paths from checks */}}
         - operation:
