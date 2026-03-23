@@ -828,7 +828,7 @@ const createCatalogSealedSecret = async (
 const valkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('valkeyAndOauth2RedisPVCMigration')
   if (env.DISABLE_SYNC) {
-    d.info('Skipping valkey And Oauth2 Redis PVC migration in dev/test environment')
+    d.info('Skipping Valkey and Oauth2 Redis PVC migration in dev/test environment')
     return
   }
   const giteaEnabled = values?.apps?.gitea?.enabled
