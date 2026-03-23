@@ -148,7 +148,7 @@ With above new chart version won't add extra `-ha` suffix to all redis resources
 The following table lists the configurable parameters of the oauth2-proxy chart and their default values.
 
 | Parameter                                             | Description                                                                                                                                                                                                                                                      | Default                                                                                              |
-|-------------------------------------------------------| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+|-------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
 | `affinity`                                            | node/pod affinities                                                                                                                                                                                                                                              | None                                                                                                 |
 | `alphaConfig.annotations`                             | Configmap annotations                                                                                                                                                                                                                                            | `{}`                                                                                                 |
 | `alphaConfig.configData`                              | Arbitrary configuration data to append                                                                                                                                                                                                                           | `{}`                                                                                                 |
@@ -198,8 +198,7 @@ The following table lists the configurable parameters of the oauth2-proxy chart 
 | `extraVolumes`                                        | list of extra volumes                                                                                                                                                                                                                                            | `[]`                                                                                                 |
 | `gatewayApi.annotations`                              | Additional annotations to add to the HTTPRoute                                                                                                                                                                                                                   | `{}`                                                                                                 |
 | `gatewayApi.enabled`                                  | Enable Gateway API HTTPRoute                                                                                                                                                                                                                                     | `false`                                                                                              |
-| `gatewayApi.gatewayRef.name`                          | Name of the Gateway resource to attach the HTTPRoute to                                                                                                                                                                                                          | `""`                                                                                                 |
-| `gatewayApi.gatewayRef.namespace`                     | Namespace of the Gateway resource                                                                                                                                                                                                                                | `""`                                                                                                 |
+| `gatewayApi.gatewayRef`                               | The ParentRef of the HTTPRoute according to: https://gateway-api.sigs.k8s.io/reference/spec/#parentreference                                                                                                                                                     | `{}`                                                                                                 |
 | `gatewayApi.hostnames`                                | Hostnames to match in the HTTPRoute                                                                                                                                                                                                                              | `[]`                                                                                                 |
 | `gatewayApi.labels`                                   | Additional labels to add to the HTTPRoute                                                                                                                                                                                                                        | `{}`                                                                                                 |
 | `gatewayApi.rules`                                    | HTTPRoute rule configuration. If not specified, a default rule with PathPrefix `/` will be created                                                                                                                                                               | `[]`                                                                                                 |
@@ -353,6 +352,7 @@ gatewayApi:
   gatewayRef:
     name: my-gateway
     namespace: gateway-system
+    sectionName: my-gateway-https-listener-name
   hostnames:
     - oauth.example.com
   rules:
@@ -372,7 +372,8 @@ gatewayApi:
     example.com/annotation: "value"
 ```
 
-If you don't specify custom rules, the chart will create a default rule that matches all paths with `PathPrefix: /` and routes to the oauth2-proxy service.
+If you don't specify custom rules, the chart will create a default rule that matches all paths with `PathPrefix: /` and routes to the oauth2-proxy service. 
+If you don't specify a sectionName, the rules will be applied to all listeners of the referenced Gateway.
 
 ## TLS Configuration
 
