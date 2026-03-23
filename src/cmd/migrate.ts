@@ -642,77 +642,67 @@ export async function addAplOperator(): Promise<void> {
   d.info('Apl-operator installed')
 }
 
-async function createPostMigrationJob(name: string, script: string, command?: string[]): Promise<void> {
+async function createPostMigrationJob(name: string, script: string): Promise<void> {
   const parsedArgs = getParsedArgs()
   if (parsedArgs?.dryRun || parsedArgs?.local) {
     return
   }
-  const d = terminal('createPostMigrationJob')
-  try {
-    await k8s.batch().createNamespacedJob({
-      namespace: 'maintenance',
-      body: {
-        apiVersion: 'batch/v1',
-        kind: 'Job',
-        metadata: {
-          name,
-          namespace: 'maintenance',
-        },
-        spec: {
-          template: {
-            metadata: {
-              annotations: {
-                'sidecar.istio.io/inject': 'false',
-              },
+  await k8s.batch().createNamespacedJob({
+    namespace: 'maintenance',
+    body: {
+      apiVersion: 'batch/v1',
+      kind: 'Job',
+      metadata: {
+        name,
+        namespace: 'maintenance',
+      },
+      spec: {
+        template: {
+          metadata: {
+            annotations: {
+              'sidecar.istio.io/inject': 'false',
             },
-            spec: {
-              serviceAccountName: 'default',
-              containers: [
-                {
-                  image: 'ghcr.io/appscode/kubectl:v1.33.9',
-                  name: 'kubectl',
-                  command: command || ['/bin/sh', '-eu', '-c', script],
-                  resources: {
-                    limits: {
-                      cpu: '250m',
-                      memory: '256Mi',
-                    },
-                    requests: {
-                      cpu: '100m',
-                      memory: '128Mi',
-                    },
+          },
+          spec: {
+            serviceAccountName: 'default',
+            containers: [
+              {
+                image: 'bitnami/kubectl:1.32.4',
+                name: 'kubectl',
+                command: ['/bin/bash', '-euo', 'pipefail', '-c', script],
+                resources: {
+                  limits: {
+                    cpu: '250m',
+                    memory: '256Mi',
                   },
-                  securityContext: {
-                    runAsNonRoot: true,
-                    runAsUser: 65535,
-                    runAsGroup: 65535,
-                    allowPrivilegeEscalation: false,
-                    capabilities: {
-                      drop: ['ALL'],
-                    },
+                  requests: {
+                    cpu: '100m',
+                    memory: '128Mi',
                   },
                 },
-              ],
-              restartPolicy: 'Never',
-              securityContext: {
-                fsGroup: 65535,
-                seccompProfile: {
-                  type: 'RuntimeDefault',
+                securityContext: {
+                  runAsNonRoot: true,
+                  runAsUser: 65535,
+                  runAsGroup: 65535,
+                  allowPrivilegeEscalation: false,
+                  capabilities: {
+                    drop: ['ALL'],
+                  },
                 },
+              },
+            ],
+            restartPolicy: 'Never',
+            securityContext: {
+              fsGroup: 65535,
+              seccompProfile: {
+                type: 'RuntimeDefault',
               },
             },
           },
         },
       },
-    })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    if (message.includes('HTTP protocol is not allowed when skipTLSVerify is not set or false')) {
-      d.warn(`Skipping post-migration job '${name}': ${message}`)
-      return
-    }
-    throw error
-  }
+    },
+  })
 }
 
 export async function installIstioHelmCharts(): Promise<void> {
@@ -728,11 +718,11 @@ export async function installIstioHelmCharts(): Promise<void> {
       '  sleep 10\n' +
       'done &&\n' +
       'echo "No canary gateway detected." &&\n' +
-      'if kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts >/dev/null 2>&1; then\n' +
+      'if [[ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts 2>/dev/null) ]]; then\n' +
       '  kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts\n' +
       'else\n' +
       '  echo "Istio Operator resource not deployed. Skipping"\n' +
-      'fi && if kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator >/dev/null 2>&1; then\n' +
+      'fi && if [[ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator 2>/dev/null) ]]; then\n' +
       '  kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator &&\n' +
       '  kubectl delete customresourcedefinition istiooperators.install.istio.io --ignore-not-found &&\n' +
       '  kubectl delete ns istio-operator --ignore-not-found --wait=false\n' +
