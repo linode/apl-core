@@ -3,3 +3,4 @@ console: v4.13.0
 consoleLogin: v4.13.0
 tasks: 3.18.0
 tools: 2.10.6
+aplCharts: v1.3.1
