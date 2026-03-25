@@ -110,7 +110,7 @@ spec:
       {{- end }}
       containers:
       - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.registry | default .Values.global.imageRegistry | default "quay.io" }}/{{ .Values.image.repository }}:{{ include "oauth2-proxy.version" . }}"
+        image: "{{ tpl .Values.image.registry $ | default (tpl .Values.global.imageRegistry $) | default "quay.io" }}/{{ .Values.image.repository }}:{{ include "oauth2-proxy.version" . }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         {{- if .Values.image.command }}
         command:
@@ -129,7 +129,7 @@ spec:
         {{- end }}
         {{- end }}
         {{- if .Values.config.cookieName }}
-          - --cookie-name={{ .Values.config.cookieName }}
+          - --cookie-name={{ tpl .Values.config.cookieName $ }}
         {{- end }}
         {{- if kindIs "map" .Values.extraArgs }}
           {{- range $key, $value := .Values.extraArgs }}
@@ -413,7 +413,7 @@ spec:
 
     {{- with (.Values.imagePullSecrets | default .Values.global.imagePullSecrets) }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{- tpl (toYaml .) $ | nindent 8 }}
     {{- end }}
     {{- with .Values.affinity }}
       affinity:

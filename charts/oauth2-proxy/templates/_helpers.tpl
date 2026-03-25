@@ -44,7 +44,7 @@ app.kubernetes.io/part-of: {{ template "oauth2-proxy.name" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 {{- if .Values.customLabels }}
-{{ toYaml .Values.customLabels }}
+{{ tpl (toYaml .Values.customLabels) $ }}
 {{- end }}
 {{- end }}
 
@@ -61,7 +61,7 @@ Get the secret name.
 */}}
 {{- define "oauth2-proxy.secretName" -}}
 {{- if .Values.config.existingSecret -}}
-{{- printf "%s" .Values.config.existingSecret -}}
+{{- printf "%s" (tpl .Values.config.existingSecret $) -}}
 {{- else -}}
 {{- printf "%s" (include "oauth2-proxy.fullname" .) -}}
 {{- end -}}

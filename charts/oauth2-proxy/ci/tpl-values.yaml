@@ -1,3 +1,6 @@
+global:
+  registry: 'quay.io'
+
 extraEnv:
   - name: TEST_ENV_VAR_2
     value: '{{ $.Release.Name }}'
@@ -30,6 +33,11 @@ extraVolumes:
         - key: secret
           path: secret
 
+image:
+  registry: '{{ .Values.global.registry }}'
+imagePullSecrets:
+  - name: '{{ .Release.Name }}'
+
 authenticatedEmailsFile:
   annotations:
     test-annotations/test: "{{ $.Release.Name }}"
@@ -37,6 +45,7 @@ authenticatedEmailsFile:
 config:
   annotations:
     test-annotations/test: "{{ $.Release.Name }}"
+  cookieName: '{{ $.Release.Name }}'
 
 deploymentAnnotations:
   test-annotations/test: "{{ $.Release.Name }}"
@@ -60,3 +69,6 @@ serviceAccount:
 serviceMonitor:
   annotations:
     test-annotations/test: "{{ $.Release.Name }}"
+
+customLabels:
+  test-labels/test: "{{ $.Release.Name }}"
