@@ -75,7 +75,7 @@ set -e
 echo "$diff_output" | while read -r line; do
   # diff -q -r emits: "Files <pathA> and <pathB> differ"
   if [[ $line =~ ^Files[[:space:]]+(.+)[[:space:]]+and[[:space:]]+(.+)[[:space:]]+differ$ ]]; then
-    # Capture regexp groups from the abouve pattern to get the full paths of the differing files
+    # Capture regex groups from the above regex pattern to get the full paths of the differing files
     first_path="${BASH_REMATCH[1]}"
     second_path="${BASH_REMATCH[2]}"
     relative_first_path=$(to_relative_path "$first_path" "$targetDirA")
