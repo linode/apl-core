@@ -219,12 +219,6 @@ metadata:
     {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   serviceAccountName: tekton-triggers-team-{{ $v.teamId }}
-  resources:
-    kubernetesResource:
-      spec:
-        template:
-          spec:
-            priorityClassName: tekton-low
   triggers:
     - name: tekton-webhook-{{ .name }}
       bindings:
