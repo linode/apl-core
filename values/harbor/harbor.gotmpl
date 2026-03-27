@@ -19,6 +19,7 @@ updateStrategy:
 core:
   secretName: harbor-token-service-ca
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
     {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-core"
@@ -42,6 +43,7 @@ database:
 
 exporter:
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
     {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-exporter"
@@ -63,6 +65,7 @@ expose:
 
 jobservice:
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
     {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-jobservice"
@@ -80,6 +83,7 @@ metrics:
       prometheus: system
 
 nginx:
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   resources: {{- $h.resources.nginx | toYaml | nindent 4 }}
     {{- if $v.otomi.linodeLkeImageRepository }}
   image:
@@ -148,6 +152,7 @@ persistence:
 
 portal:
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-portal"
@@ -157,6 +162,7 @@ portal:
 redis:
   internal:
     priorityClassName: otomi-critical
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     {{- if $v.otomi.linodeLkeImageRepository }}
     image:
       repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/redis-photon"
@@ -168,16 +174,18 @@ registry:
   existingSecret: harbor-registry-http
 
   registry:
-      {{- if $v.otomi.linodeLkeImageRepository }}
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
     image:
       repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/registry-photon"
-      {{- end }}
+    {{- end }}
     resources: {{- $h.resources.registry | toYaml | nindent 6 }}
   controller:
-      {{- if $v.otomi.linodeLkeImageRepository }}
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
     image:
       repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-registryctl"
-      {{- end }}
+    {{- end }}
     resources: {{- $h.resources.registryController | toYaml | nindent 6 }}
   relativeurls: false
   credentials:
@@ -186,11 +194,11 @@ registry:
 
 trivy:
   priorityClassName: otomi-critical
-
-    {{- if $v.otomi.linodeLkeImageRepository }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/trivy-adapter-photon"
-    {{- end }}
+  {{- end }}
   resources:
     {{- $h.resources.trivy | toYaml  | nindent 4 }}
   automountServiceAccountToken: true

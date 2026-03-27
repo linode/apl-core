@@ -38,3 +38,5 @@ resources:
   {{- end }}
 
 priorityClassName: otomi-critical
+
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}

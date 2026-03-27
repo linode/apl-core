@@ -198,3 +198,5 @@ gatewayApi:
 
 extraObjects:
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "oauth2-proxy" "host" $v._derived.authDomain) | nindent 4 }}
+
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}

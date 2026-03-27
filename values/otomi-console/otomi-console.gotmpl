@@ -54,3 +54,5 @@ httpRoute:
 extraManifests:
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "console" "gatewayName" $v.ingress.platformClass.className "host" $v._derived.consoleDomain) | nindent 4 }}
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "otomi-console" "host" $v._derived.consoleDomain) | nindent 4 }}
+
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}

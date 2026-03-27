@@ -25,3 +25,5 @@ kubeRBACProxy:
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/brancz/kube-rbac-proxy"
 {{- end }}
+
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}

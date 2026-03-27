@@ -1183,7 +1183,8 @@ environments:
           hasExternalDNS: false
           hasExternalIDP: false
           isMultitenant: true
-          nodeSelector: {}
+          nodeSelector:
+            kubernetes.io/os: linux
           isPreInstalled: false
           useORCS: true
           aiEnabled: false

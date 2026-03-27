@@ -40,3 +40,5 @@ podSecurityContext:
 
 resources: {{- $t.resources.operator | toYaml | nindent 2 }}
 
+
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}

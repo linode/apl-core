@@ -43,6 +43,7 @@ admissionController:
       registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr"
   {{- end }}
     resources: {{- $kv.resources.admissionController | toYaml | nindent 6 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 
 cleanupController:
   {{- if $v.otomi.linodeLkeImageRepository }}
@@ -56,6 +57,7 @@ cleanupController:
   replicas: 3
   {{- end }}
   resources: {{- $kv.resources.cleanupController | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 
 backgroundController:
   {{- if $v.otomi.linodeLkeImageRepository }}
@@ -69,6 +71,7 @@ backgroundController:
   replicas: 2
   {{- end }}
   resources: {{- $kv.resources.backgroundController | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   serviceMonitor:
     enabled: true
     additionalLabels:
@@ -86,6 +89,7 @@ reportsController:
   replicas: 2
   {{- end }}
   resources: {{- $kv.resources.reportsController | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 
 features:
   logging:

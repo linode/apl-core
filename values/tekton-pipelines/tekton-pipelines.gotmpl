@@ -8,6 +8,7 @@ namespace:
 
 controller:
   resources: {{- $t.resources.pipelinesController | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   deployment:
     image: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.3.1@sha256:702fca76e77ef1dc991d72b41fe7af4be00f0e0c84160060a7bdf11cd6a3429f"
   images:
@@ -19,6 +20,7 @@ controller:
 
 remoteresolver:
   resources: {{- $t.resources.pipelinesRemoteresolver | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   deployment:
     image: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.3.1@sha256:625e3314b0036766b71255791dc91cc5243a880b2f1c252f81f494facf8efd61"
 
@@ -29,5 +31,6 @@ events:
 
 webhook:
   resources: {{- $t.resources.pipelinesWebhook | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   deployment:
     image: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.3.1@sha256:dadeab6bfad0a577b74761e3bc04f9fb3a457b831f9d0cddd2cc4af1699ca42d"

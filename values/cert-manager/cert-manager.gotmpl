@@ -54,3 +54,5 @@ acmesolver:
 
 config:
   enableGatewayAPI: true
+
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}
