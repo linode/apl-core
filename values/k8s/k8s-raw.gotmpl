@@ -1,6 +1,5 @@
 {{- $v := .Values }}
 {{- $cm := $v.apps | get "cert-manager" }}
-{{- $t := $v.apps | get "tekton" }}
 {{- $dockerConfigTpl := readFile "../../helmfile.d/snippets/dockercfg.gotmpl" }}
 resources:
   {{- if  ( (hasKey $v "bootstrap"))}}
@@ -73,15 +72,6 @@ resources:
     value: 1000000
     globalDefault: false
     description: "This priority class should be used for Otomi High priority service pods only."
-  {{- if $t.enabled }}
-  - apiVersion: scheduling.k8s.io/v1
-    kind: PriorityClass
-    metadata:
-      name: tekton-low
-    value: -10
-    globalDefault: false
-    description: "This priority class should be used for Tekton pods only."
-  {{- end }}
 
   - apiVersion: v1
     kind: Secret
