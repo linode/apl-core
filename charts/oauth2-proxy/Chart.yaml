@@ -1,12 +1,27 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: changed
-      description: Updated Oauth2-Proxy image to v7.14.2
+    - kind: fixed
+      description: Restructured config.configFile generation to support alphaConfig without conflicts
       links:
-        - name: Github PR
-          url: https://github.com/oauth2-proxy/manifests/pull/390
+        - name: GitHub Issue
+          url: https://github.com/oauth2-proxy/manifests/issues/226
+    - kind: added
+      description: Added structured configuration with config.emailDomains and config.upstreams for better flexibility
+      links:
+        - name: GitHub Issue
+          url: https://github.com/oauth2-proxy/manifests/issues/226
+    - kind: added
+      description: Added config.forceLegacyConfig flag for users with custom configFile when using alphaConfig
+      links:
+        - name: GitHub Issue
+          url: https://github.com/oauth2-proxy/manifests/issues/226
+    - kind: added
+      description: Added comprehensive alphaConfig examples with upstreamConfig configuration
+      links:
+        - name: GitHub Issue
+          url: https://github.com/oauth2-proxy/manifests/issues/311
 apiVersion: v2
-appVersion: 7.14.2
+appVersion: 7.15.0
 dependencies:
 - condition: redis-ha.enabled
   name: redis-ha
@@ -35,4 +50,4 @@ name: oauth2-proxy
 sources:
 - https://github.com/oauth2-proxy/oauth2-proxy
 - https://github.com/oauth2-proxy/manifests
-version: 10.1.4
+version: 10.4.0
