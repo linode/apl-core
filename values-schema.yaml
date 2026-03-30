@@ -1,1569 +1,10 @@
 $schema: 'http://json-schema.org/draft-07/schema'
 version: 3
 additionalProperties: true
-definitions:
-  rawValues:
-    description: "May define value overrides for a chart. WARNING: these values currently have no schema and can't be validated as such, and may break deployment. You are on your own here."
-    type: object
-  alerts:
-    additionalProperties: false
-    type: object
-    properties:
-      repeatInterval:
-        default: 3h
-        description: Waiting time before sending a notification again after it was sent successfully for an alert.
-        title: Repeat Interval
-        type: string
-      groupInterval:
-        default: 5m
-        description: Waiting time before sending a notification about new alerts that are added to a group of alerts.
-        title: Group Interval
-        type: string
-      receivers:
-        description: Select notification channel(s) for receiving alerts. Use 'none' if no channel available.
-        title: Notification receivers
-        type: array
-        items:
-          enum:
-            - slack
-            - msteams
-            # - email
-            - none
-          type: string
-        uniqueItems: true
-      slack:
-        title: Slack
-        description: Configure Slack endpoints for alerts.
-        additionalProperties: false
-        properties:
-          channel:
-            default: mon-apl
-            description: The Slack channel for non-critical notifications.
-            title: Non-critical
-            type: string
-          channelCrit:
-            default: mon-apl-crit
-            description: The Slack channel for critical notifications.
-            title: Critical
-            type: string
-          url:
-            type: string
-            description: A Slack webhook URL.
-            x-secret: ''
-        # TODO: Enable again when form rework is done
-        # required:
-        #   - url
-        type: object
-      msteams:
-        additionalProperties: false
-        description: Configure Microsoft Teams endpoints for alerts.
-        properties:
-          highPrio:
-            title: High prio web hook
-            type: string
-            x-secret: ''
-          lowPrio:
-            title: Low prio web hook
-            type: string
-            x-secret: ''
-        # TODO: Enable again when form rework is done
-        # required:
-        #   - highPrio
-        #   - lowPrio
-        title: Microsoft Teams
-        type: object
-      # NOTE: keep this in case email alertReceiver gets re-enabled again
-      # email:
-      #   title: Email
-      #   description: Configure email endpoints for alerts.
-      #   additionalProperties: false
-      #   properties:
-      #     critical:
-      #       title: Critical Events
-      #       $ref: '#/email'
-      #       description: One or more email addresses (comma separated) for critical events.
-      #     nonCritical:
-      #       title: Non-critical Events
-      #       $ref: '#/email'
-      #       description: One or more email addresses (comma separated) for non-critical events.
-      #   # TODO: Enable again when form rework is done
-      #   # required:
-      #   #   - critical
-      #   #   - nonCritical
-      #   type: object
-  annotations:
-    $ref: '#/definitions/labelsAnnotations'
-    description: A set of annotations.
-  autoscaling:
-    additionalProperties: false
-    properties:
-      maxReplicas:
-        type: integer
-        default: 10
-      minReplicas:
-        type: integer
-        default: 1
-  autoscalingEnabled:
-    additionalProperties: false
-    properties:
-      enabled:
-        default: true
-        type: boolean
-      maxReplicas:
-        type: integer
-        default: 10
-      minReplicas:
-        type: integer
-        default: 1
-      targetCPUUtilizationPercentage:
-        type: integer
-        default: 80
-      targetMemoryUtilizationPercentage:
-        type: integer
-        default: 80
-  akamai:
-    definitions:
-      dns:
-        properties:
-          host:
-            title: Akamai API host
-            description: Akamai Edgegrid API server
-            $ref: '#/definitions/wordCharacterPattern'
-          accessToken:
-            title: Akamai access token
-            description: Akamai Edgegrid API access token
-            $ref: '#/definitions/wordCharacterPattern'
-            x-secret: ''
-          clientToken:
-            title: Akamai client token
-            description: Akamai Edgegrid API client token
-            $ref: '#/definitions/wordCharacterPattern'
-            x-secret: ''
-          clientSecret:
-            title: Akamai client secret
-            description: Akamai Edgegrid API client secret
-            $ref: '#/definitions/wordCharacterPattern'
-            x-secret: ''
-        required:
-          - host
-          - accessToken
-          - clientToken
-          - clientSecret
-  aws:
-    definitions:
-      accessKey:
-        title: AWS access key
-        description: An AWS access key ID.
-        $ref: '#/definitions/wordCharacterPattern'
-        x-secret: ''
-      secretKey:
-        title: AWS secret key
-        description: An AWS secret key.
-        type: string
-        x-secret: ''
-      region:
-        title: AWS region
-        description: An AWS region.
-        $ref: '#/definitions/wordCharacterPattern'
-      role:
-        description: Role may be set explicitly if no metadata can be accessed.
-        example: arn:aws:iam::YYYYYYYYYYYY:role/dns-manager
-        $ref: '#/definitions/wordCharacterPattern'
-  azure:
-    definitions:
-      clientId:
-        title: Azure client id
-        description: An Azure client id.
-        $ref: '#/definitions/wordCharacterPattern'
-      clientSecret:
-        title: Azure client secret
-        description: An Azure client secret.
-        type: string
-        x-secret: ''
-      dns:
-        properties:
-          resourceGroup:
-            $ref: '#/definitions/azure/definitions/resourceGroup'
-          hostedZoneName:
-            title: Hosted zone name
-            description: Name of the DNS zone that should be used.
-            $ref: '#/definitions/wordCharacterPattern'
-          tenantId:
-            $ref: '#/definitions/azure/definitions/tenantId'
-          subscriptionId:
-            $ref: '#/definitions/azure/definitions/subscriptionId'
-          aadClientId:
-            $ref: '#/definitions/azure/definitions/clientId'
-          aadClientSecret:
-            $ref: '#/definitions/azure/definitions/clientSecret'
-            title: Client secret
-            type: string
-            description: Azure Application Client Secret
-            x-secret: ''
-        required:
-          - tenantId
-          - subscriptionId
-          - resourceGroup
-          - aadClientId
-          - aadClientSecret
-      environment:
-        title: Azure environment
-        description: An Azure environment.
-        type: string
-        default: AzurePublicCloud
-        enum:
-          - AzurePublicCloud
-          - AzureChinaCloud
-          - AzureUSGovernment
-          - AzureGermanCloud
-      tenantId:
-        title: Azure tenant id
-        description: An Azure tenant id.
-        $ref: '#/definitions/wordCharacterPattern'
-      subscriptionId:
-        title: Azure subscription id
-        description: An Azure subscription id.
-        $ref: '#/definitions/wordCharacterPattern'
-      resourceGroup:
-        title: Resource group
-        description: An Azure resource group.
-        $ref: '#/definitions/wordCharacterPattern'
-  catalog:
-    additionalProperties: false
-    properties:
-      name:
-        type: string
-        description: 'A lowercase name that starts with a letter and may contain dashes.'
-        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
-      repositoryUrl:
-        type: string
-        description: 'Git repository URL for the catalog'
-        pattern: '^(https?|git|ssh)://.*'
-      branch:
-        type: string
-        description: 'Git branch or tag to use'
-      enabled:
-        type: boolean
-        description: 'Whether this catalog is active'
-      chartsPath:
-        type: string
-        description: 'Path within the repository where charts are located'
-        default: 'charts'
-      secretName:
-        type: string
-        description: 'Kubernetes secret name containing git credentials (for private repos)'
-        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
-    required:
-      - name
-      - repositoryUrl
-      - branch
-  cluster:
-    additionalProperties: false
-    properties:
-      apiServer:
-        description: Used to generate KUBECONFIG for download, for local access to target cluster.
-        pattern: '^https:\/\/.*'
-      domainSuffix:
-        $ref: '#/definitions/domain'
-        description: Domain suffix for the cluster. Also added to list of dns zones in the Otomi Console.
-      k8sContext:
-        $ref: '#/definitions/k8sContext'
-        description: Optional. Must be set for development mode and must point to an existing context in KUBECONFIG.
-      name:
-        $ref: '#/definitions/idName'
-        description: Short name that will be used in construction of cluster domain and messaging.
-      owner:
-        $ref: '#/definitions/idName'
-        description: The name of the organization owning the cluster.
-        default: otomi
-      provider:
-        $ref: '#/definitions/provider'
-      linode:
-        additionalProperties: false
-        properties:
-          tier:
-            type: string
-            description: Linode Kubernetes Engine tier (standard LKE or enterprise LKE-E)
-            enum:
-              - standard
-              - enterprise
-      defaultStorageClass:
-        type: string
-        description: Default storage class for platform components. Use '' for relying on the cluster's default storage class.
-        default: ''
-    required:
-      - name
-      - provider
-  containerSpecNoSec:
-    properties:
-      image:
-        $ref: '#/definitions/image'
-      resources:
-        $ref: '#/definitions/resources'
-      env:
-        $ref: '#/definitions/env'
-      files:
-        $ref: '#/definitions/files'
-      nativeSecrets:
-        $ref: '#/definitions/nativeSecrets'
-        description: Reserved for internal use.
-      secrets:
-        $ref: '#/definitions/secrets'
-      secretMounts:
-        $ref: '#/definitions/secretMounts'
-      command:
-        type: array
-        items:
-          type: string
-      args:
-        type: array
-        items:
-          type: string
-    required:
-      - image
-      - resources
-  containerSpec:
-    allOf:
-      - $ref: '#/definitions/securityContext'
-      - $ref: '#/definitions/containerSpecNoSec'
-  cpuQuantity:
-    description: Amount of cpu cores, or slice of cpu core in millis.
-    examples:
-      - '1'
-      - 200m
-    pattern: ^([1-9][0-9]*|([0]|[1-9]+)\\.[0-9]{1,3}|[1-9][0-9]*m)$
-    type: string
-  domain:
-    pattern: ^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))|([a-f0-9:]+:+)+[a-f0-9]+$
-    type: string
-  duration:
-    description: 'Prometheus duration (See: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#configuration-file)'
-    pattern: '((([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?|0)'
-    type: string
-    default: 1d
-  email:
-    pattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
-    type: string
-  env:
-    additionalProperties: false
-    examples:
-      - FOO: bar
-      - bar: foo
-    patternProperties:
-      '[a-zA-Z_]{1,}[a-zA-Z0-9_]*':
-        maxLength: 131072
-        type: string
-    nullable: true
-    type: object
-    title: Environment variables
-  files:
-    additionalProperties: false
-    description: Dictionary of absolute path > content pairs.
-    patternProperties:
-      '^[/].*':
-        type: string
-  google:
-    additionalProperties: false
-    definitions:
-      accountJson:
-        type: string
-        x-secret: ''
-      project:
-        $ref: '#/definitions/wordCharacterPattern'
-  hostPort:
-    pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
-    type: string
-  idName:
-    description: A lowercase name that starts with a letter and may contain dashes.
-    pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
-    type: string
-  image:
-    additionalProperties: false
-    properties:
-      pullPolicy:
-        default: IfNotPresent
-        enum:
-          - IfNotPresent
-          - Always
-        type: string
-      repository:
-        $ref: '#/definitions/repository'
-      tag:
-        default: latest
-        $ref: '#/definitions/wordCharacterPattern'
-    title: Container image
-  imagePullPolicy:
-    default: IfNotPresent
-    enum:
-      - IfNotPresent
-      - Always
-    type: string
-  imageTag:
-    x-default: stable
-    pattern: '[\w][\w.-]{0,127}'
-    type: string
-    x-message: a valid container registry image tag
-  imageSimple:
-    properties:
-      tag:
-        $ref: '#/definitions/imageTag'
-      pullPolicy:
-        $ref: '#/definitions/imagePullPolicy'
-    required:
-      - tag
-    type: object
-    title: Container image
-  ingressNginx:
-    additionalProperties: false
-    properties:
-      _rawValues:
-        $ref: '#/definitions/rawValues'
-      enabled:
-        type: boolean
-      tracing:
-        description: Configure Nginx for tracing. Requires Otel Collector to be enabled.
-        properties:
-          enabled:
-            default: false
-            type: boolean
-          samplingRatio:
-            type: string
-            default: '0.01'
-      autoscaling:
-        additionalProperties: false
-        properties:
-          enabled:
-            default: true
-            type: boolean
-          maxReplicas:
-            type: integer
-            default: 10
-          minReplicas:
-            type: integer
-            default: 1
-          targetCPUUtilizationPercentage:
-            type: integer
-            default: 80
-          targetMemoryUtilizationPercentage:
-            type: integer
-            default: 80
-      maxBodySize:
-        type: string
-        default: 1024m
-      maxBodySizeBytes:
-        type: integer
-        minimum: 0
-        default: 1073741824
-        description: Needed for modsecurity. Should correspond to maxBodySize, but expressed in bytes.
-      modsecurity:
-        title: MOD Security
-        description: Enables MOD Security functionality.
-        properties:
-          block:
-            description: Makes nginx block requests that are marked as violating the modsec rules.
-            type: boolean
-            default: false
-          enabled:
-            type: boolean
-            default: false
-          owasp:
-            description: Turns on the default OWASP rule set for modsec. See
-            type: boolean
-            default: true
-        type: object
-      image:
-        properties:
-          tag:
-            $ref: '#/definitions/imageTag'
-            x-default: v1.0.5
-          pullPolicy:
-            $ref: '#/definitions/imagePullPolicy'
-      resources:
-        controller:
-          $ref: '#/definitions/resources'
-        opentelemetry:
-          $ref: '#/definitions/resources'
-        defaultBackend:
-          $ref: '#/definitions/resources'
-      service:
-        properties:
-          annotations:
-            $ref: '#/definitions/annotations'
-  ingressClassParameters:
-    type: object
-    properties:
-      entrypoint:
-        description: A public IP address that has a route to a private loadbalancer ip, allowing access to private clusters. (Provider "custom" only.)
-        type: string
-      network:
-        title: Load balancer type
-        type: string
-        enum:
-          - public
-        default: public
-      loadBalancerIP:
-        title: Load balancer IP address
-        description: A static IP address assigned to a load balancer
-        type: string
-      sourceIpAddressFiltering:
-        title: Source IP address filtering
-        type: string
-        description: 'Whitelist source IP address ranges. The value is a comma separated list of CIDRs, e.g. 10.0.0.0/24,172.10.0.1'
-      annotations:
-        properties:
-          annotations:
-            $ref: '#/definitions/annotations'
-      gateway:
-        type: object
-        description: 'Ingress gateway deployment configuration'
-        properties:
-          replicas:
-            type: integer
-            minimum: 1
-          minAvailable:
-            type: integer
-            minimum: 1
-          resources:
-            $ref: '#/definitions/resources'
-          autoscaling:
-            $ref: '#/definitions/autoscalingEnabled'
-  ipV4Address:
-    type: string
-    pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
-  jobs:
-    description: You may pass an array of Job objects. The Kubernetes API accepts
-      a Job specification, which is meant for run-to-completion apps (e.g. batch
-      Jobs).
-    items:
-      type: object
-      allOf:
-        - properties:
-            id:
-              type: string
-              readOnly: true
-          type: object
-        - $ref: '#/definitions/jobSpec'
-        - $ref: '#/definitions/podSpec'
-    type: array
-  jobSpec:
-    properties:
-      type:
-        default: Job
-        enum:
-          - Job
-          - CronJob
-        type: string
-      name:
-        $ref: '#/definitions/idName'
-        title: Name
-        description: A job name
-        example: some-job
-      enabled:
-        default: true
-        type: boolean
-      runPolicy:
-        default: OnSpecChange
-        description: |
-          If runPolicy is set to 'Always', the job controller will always be re-deployed after a successful deployment with Helm.
-          If runPolicy is set to 'OnSpecChange', the job controller will only be re-deployed if one changes this specification.
-        enum:
-          - Always
-          - OnSpecChange
-        type: string
-      schedule:
-        default: 0 1 * * *
-        description: Must give a cron-type expression if the job type is 'Cronjob'.
-        type: string
-      script:
-        $ref: '#/definitions/script'
-      shell:
-        default: /bin/sh
-        description: Full path to a shell binary that exists in the image.
-        type: string
-      ttlSecondsAfterFinished:
-        default: 86400
-        description: Time To Live after job is finished in seconds. Will be removed afterwards.
-        minimum: 0
-        title: TTL after finished
-        type: integer
-      init:
-        type: array
-        items:
-          $ref: '#/definitions/containerSpec'
-        nullable: true
-    required:
-      - name
-      - script
-      - type
-    type: object
-  k8sContext:
-    description: The cluster k8s context as found in $KUBECONFIG.
-    $ref: '#/definitions/wordCharacterPattern'
-  labels:
-    $ref: '#/definitions/labelsAnnotations'
-    description: A set of labels.
-  labelsAnnotations:
-    additionalProperties: false
-    patternProperties:
-      '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$':
-        pattern: '^((.){1,253}\/)?(.){1,63}$'
-        type: string
-  logLevel:
-    type: string
-    default: info
-    enum:
-      - error
-      - warn
-      - info
-      - debug
-      - trace
-  memoryQuantity:
-    description: Amount of memory. Valid units are E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki.
-    examples:
-      - 1Mi
-      - 0.5M
-    pattern: '^([0-9]+\.)?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$'
-    type: string
-  nativeSecrets:
-    description: List of kubernetes secret names.
-    additionalProperties: false
-    patternProperties:
-      '[a-zA-Z_]{1,}[a-zA-Z0-9_]*':
-        maxLength: 131072
-        type: string
-    nullable: true
-    type: object
-    title: Kubernetes secrets
-  appNetworkPolicyConfig:
-    type: object
-    properties:
-      enabled:
-        type: boolean
-        default: false
-        description: Enable network policies for this application with sensible defaults
-  netpol:
-    type: object
-    properties:
-      name:
-        $ref: '#/definitions/idName'
-        title: Network Policy name
-        description: 'A unique name for the network policy'
-      ruleType:
-        properties:
-          type:
-            type: string
-            enum:
-              - ingress
-              - egress
-          ingress:
-            properties:
-              toLabelName:
-                type: string
-                title: Selector label name
-                description: 'The name of the Pod selector label'
-              toLabelValue:
-                type: string
-                title: Selector label value
-                description: 'The value of the Pod selector label'
-              mode:
-                default: AllowOnly
-                enum:
-                  - AllowOnly
-                  - AllowAll
-              allow:
-                title: Add team or team with service
-                type: array
-                items:
-                  type: object
-                  properties:
-                    fromLabelName:
-                      type: string
-                      title: Selector label name
-                      description: 'The name of the Pod selector label'
-                    fromLabelValue:
-                      type: string
-                      title: Selector label value
-                      description: 'The value of the Pod selector label'
-                    fromNamespace:
-                      $ref: '#/definitions/idName'
-                      title: Namespace name
-                      description: 'The name of the namespace'
-                  required:
-                    - fromNamespace
-          egress:
-            properties:
-              domain:
-                title: FQDN or IP address
-                $ref: '#/definitions/domain'
-              ports:
-                properties:
-                  number:
-                    title: Port number
-                    type: integer
-                    minimum: 1
-                    maximum: 65535
-                  protocol:
-                    title: Protocol
-                    type: string
-                    enum: [HTTPS, HTTP, TCP]
-                    default: HTTPS
-                required:
-                  - number
-                  - protocol
-                default:
-                  - number: 443
-                    protocol: HTTPS
-            required:
-              - domain
-        required:
-          - type
-    required:
-      - name
-  path:
-    description: An absolute path
-    type: string
-    pattern: '^[/].*$'
-  podSecurityContext:
-    allOf:
-      - $ref: '#/definitions/securityContext'
-      - properties:
-          fsGroup:
-            description: Supplementary group ID. Volumes that support ownership management are modified to be owned and writable by this ID.
-            $ref: '#/definitions/unixOwnerId'
-          fsGroupChangePolicy:
-            description: |
-              'Defines behavior for changing ownership and permission of the volume before being exposed inside a Pod. This field only applies to volume types that support fsGroup controlled ownership and permissions.
-              This field has two possible values:
-              - OnRootMismatch: Only change permissions and ownership if permission and ownership of root directory does not match with expected permissions of the volume. This could help shorten the time it takes to change ownership and permission of a volume.
-              - Always: Always change permission and ownership of the volume when volume is mounted.'
-            type: string
-            enum:
-              - Always
-              - OnRootMismatch
-    description: Security context for the pod.
-    title: Pod security context
-  podSpec:
-    allOf:
-      - properties:
-          annotations:
-            $ref: '#/definitions/annotations'
-            title: Pod annotations
-        type: object
-      - $ref: '#/definitions/podSecurityContext'
-      - $ref: '#/definitions/containerSpec'
-    type: object
-  portNumber:
-    maximum: 32768
-    minimum: 80
-    type: integer
-  provider:
-    type: string
-    description: Enter the cloud provider of the cluster.
-    enum:
-      - custom
-      - linode
-    default: linode
-  registry:
-    pattern: '^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
-    type: string
-  repoUrl:
-    description: Path to a remote git repo with or without protocol prefix of either https:// or file:// (https:// used if omitted)
-    pattern: '^(https://|file://)?(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$'
-    type: string
-  repository:
-    description: A container image repository.
-    pattern: '^[a-z0-9]+(?:[/._-]{1,2}[a-z0-9]+)*$'
-    type: string
-  resource:
-    additionalProperties: false
-    properties:
-      cpu:
-        $ref: '#/definitions/cpuQuantity'
-      memory:
-        $ref: '#/definitions/memoryQuantity'
-    required:
-      - cpu
-      - memory
-  resources:
-    additionalProperties: false
-    description: Compute resources for containers.
-    properties:
-      limits:
-        $ref: '#/definitions/resource'
-        description: Requested resources (best effort).
-      requests:
-        $ref: '#/definitions/resource'
-        description: Requested resources (guaranteed).
-    required:
-      - limits
-      - requests
-    title: Pod resources
-  unixOwnerIdRange:
-    type: object
-    additionalProperties: false
-    required: [min, max]
-    properties:
-      min:
-        type: integer
-        minimum: 0
-        maximum: 65535
-      max:
-        type: integer
-        minimum: 0
-        maximum: 65535
-  unixOwnerId:
-    description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext. If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
-    type: integer
-    minimum: 0
-    maximum: 65535
-    default: 1001
-  script:
-    description: May specify a non-empty string containing an executable script.
-    type: string
-    properties:
-      id:
-        readOnly: true
-        type: string
-      name:
-        $ref: '#/definitions/idName'
-    required:
-      - name
-      - type
-  backupSchedule:
-    default: 0 0 * * *
-    description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
-    type: string
-  secret:
-    type: object
-    properties:
-      id:
-        readOnly: true
-        type: string
-      clusterWide:
-        description: Will create the secret in all namespaces.
-        type: boolean
-        default: false
-      teamWide:
-        description: Will create the secret in all team-* namespaces.
-        type: boolean
-        default: false
-      name:
-        $ref: '#/definitions/idName'
-      namespace:
-        $ref: '#/definitions/idName'
-        description: A kubernetes namespace.
-    required:
-      - name
-    oneOf:
-      - title: Generic
-        properties:
-          type:
-            default: generic
-            enum:
-              - generic
-          entries:
-            type: array
-            items:
-              description: A property name at vaultPath
-              minItems: 1
-              # a valid secret key must consist of alphanumeric characters, '-', '_' or '.' (e.g. 'key.name',  or 'KEY_NAME',  or 'key-name' )
-              pattern: '^[-._a-zA-Z0-9]+$'
-              type: string
-            uniqueItems: true
-        required:
-          - type
-          - entries
-      - title: Docker registry
-        properties:
-          type:
-            default: docker-registry
-            enum:
-              - docker-registry
-            type: string
-        required:
-          - type
-      - title: TLS
-        properties:
-          type:
-            default: tls
-            enum:
-              - tls
-            type: string
-          crt:
-            type: string
-            default: 'tls.crt'
-          key:
-            type: string
-            default: 'tls.key'
-          ca:
-            type: string
-            default: 'ca.crt'
-        required:
-          - type
-          - crt
-          - key
-  secrets:
-    description: List of secret names that will have their props injected as env vars into the container.
-    items:
-      type: string
-      pattern: '[a-zA-Z_]{1,}[a-zA-Z0-9_]*'
-    nullable: true
-    title: Secrets
-    type: array
-  secretMounts:
-    description: Dictionary of absolute folder path > secret name. Will mount the contents of the secret in the container at the specified folder path.
-    examples:
-      - /foo: bar
-    nullable: true
-    patternProperties:
-      '^[/].*$':
-        type: string
-    title: Secret mounts
-    type: object
-  secretTemplates:
-    definitions:
-      otomiAdminUsername:
-        x-secret: 'admin'
-  securityContext:
-    additionalProperties:
-      uniqueItems: true
-    properties:
-      runAsUser:
-        $ref: '#/definitions/unixOwnerId'
-      runAsNonRoot:
-        description: Enforces that the container must run as non root. This implies that the UID must also be set with runAsUser.
-        type: boolean
-        default: true
-      runAsGroup:
-        description: The GID to run the entrypoint of the container process. Defaults to group specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
-        $ref: '#/definitions/unixOwnerId'
-  service:
-    additionalProperties: false
-    properties:
-      authz:
-        additionalProperties: false
-        description: Identifies a workload to authorize.
-        properties:
-          forwardOriginalToken:
-            default: false
-            description: If true istio will forward the bearer token instead of removing it from the headers.
-            type: boolean
-          workload:
-            $ref: '#/definitions/labelsAnnotations'
-      trafficControl:
-        title: Traffic Control
-        description: Split traffic between multiple services (blue/green, canary)
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          weightV1:
-            type: integer
-            default: 90
-          weightV2:
-            type: integer
-            default: 10
-      certName:
-        description: The name of a TLS secret known to exist in the team namespace.
-        example: www-example-com
-        type: string
-      domain:
-        description: A custom service domain name (max 64 bytes).
-        maxLength: 64
-        $ref: '#/definitions/wordCharacterPattern'
-      forwardPath:
-        default: false
-        description: Whether to forward the path into the service, or 'terminate' it.
-        type: boolean
-      hasCert:
-        description: Select when a certificate exists and should not be generated.
-        type: boolean
-      headers:
-        properties:
-          response:
-            properties:
-              set:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                    value:
-                      type: string
-                  required:
-                    - name
-                    - value
-          request:
-            properties:
-              set:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                    value:
-                      type: string
-                  required:
-                    - name
-                    - value
-      hide:
-        description: Used by otomi console to determine wether to render it on screen or not. Only used by core services.
-        type: boolean
-      host:
-        description: Reference to another core service name. Used by otomi console to show a variation of a core service with a different path (i.e. Loki). Only used by core services.
-        $ref: '#/definitions/wordCharacterPattern'
-      id:
-        description: Unique identifier created by and used in API. Optional.
-        type: string
-      auth:
-        description: Available only for core apps.
-        type: boolean
-      isShared:
-        description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
-        type: boolean
-      ksvc:
-        type: object
-        properties:
-          predeployed:
-            description: Set this flag it the service is managed by knative service
-            type: boolean
-            default: false
-      logo:
-        description: Used by otomi-console as an override mechanism to display another logo.
-        properties:
-          name:
-            type: string
-        required:
-          - name
-      name:
-        $ref: '#/definitions/idName'
-        description: Short name. Will be used for generation of knative service name, as well as service URL.
-      namespace:
-        $ref: '#/definitions/idName'
-        description: A kubernetes namespace. Only used by core services, so should be disallowed for non-admins.
-      ownHost:
-        default: true
-        description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.
-        type: boolean
-      path:
-        description: Used by otomi-console to render a path for the app. Only used by core services.
-        $ref: '#/definitions/wordCharacterPattern'
-      paths:
-        items:
-          description: |
-            Path mapping to only route certain paths to the service. This allows micro services to operate on the same domain and port.
-            When left empty all paths will go to this service.
-          $ref: '#/definitions/wordCharacterPattern'
-        # nullable: true
-        type: array
-      port:
-        $ref: '#/definitions/portNumber'
-        description: Points to the backing k8s service (only used when 'svc' is set).
-      ingressClassName:
-        description: Ingress class name
-        $ref: '#/definitions/idName'
-        default: platform
-      svc:
-        $ref: '#/definitions/idName'
-        description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
-      tlsPass:
-        description: Will pass the request to the backing service without TLS termination.
-        type: boolean
-        default: false
-      useCname:
-        description: Will configure additional host(CNAME) for the service.
-        type: boolean
-        default: false
-      cname:
-        properties:
-          domain:
-            description: CNAME of the service.
-            type: string
-          tlsSecretName:
-            description: Kubernetes secret name of type TLS (not required if the tlsPass flag is set to true).
-            $ref: '#/definitions/idName'
-      removeRequestHeaders:
-        description: >-
-          Strip selected headers from HTTP request.
-        type: array
-        items:
-          type: string
-    required:
-      - name
-  size:
-    description: Disk size. Valid units are E|P|T|G|Ti|Gi.
-    examples:
-      - 1Gi
-      - 0.5Ti
-    pattern: '^([0-9]+\.)?[0-9]+(E|P|T|G||Ti|Gi)?$'
-    type: string
-  subdomainType:
-    type: string
-    # A lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character (e.g. 'example.com')
-    pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
-  team:
-    additionalProperties: false
-    properties:
-      settings:
-        properties:
-          id:
-            $ref: '#/definitions/idName'
-            description: Must be the same as the name.
-          networkPolicy:
-            ingressPrivate:
-              title: Enable filtering of ingress traffic inside the cluster
-              description: When set a user can define ingress from other services for a particular team service
-              type: boolean
-              default: true
-            egressPublic:
-              title: Enable filtering of egress traffic outside the cluster
-              description: When set a user can define egress towards FQDNs and public IPs for a team service
-              type: boolean
-              default: true
-          managedMonitoring:
-            title: Managed monitoring
-            description: Activate managed Grafana, Prometheus or Alertmanager instances
-            properties:
-              grafana:
-                type: boolean
-              alertmanager:
-                type: boolean
-          limitRange:
-            description: 'Kubernetes limit range. As is.'
-            properties:
-              default:
-                $ref: '#/definitions/resource'
-              defaultRequest:
-                $ref: '#/definitions/resource'
-          oidc:
-            additionalProperties: false
-            properties:
-              groupMapping:
-                description: IDP group id to map onto this team.
-                $ref: '#/definitions/wordCharacterPattern'
-          password:
-            description: Will be used to separate team resources.
-            type: string
-            x-secret: ''
-          resourceQuota:
-            description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
-            type: array
-            items:
-              type: object
-              properties:
-                name:
-                  type: string
-                value:
-                  type: string
-              required:
-                - name
-                - value
-          selfService:
-            $ref: '#/definitions/teamSelfService'
-          alerts:
-            $ref: '#/definitions/alerts'
-      apps:
-        additionalProperties: true
-        alertmanager:
-          additionalProperties: false
-          properties:
-            resources:
-              $ref: '#/definitions/resources'
-        grafana:
-          additionalProperties: false
-          properties:
-            additionalProperties: false
-            properties:
-              grafana:
-                $ref: '#/definitions/resources'
-              sidecar:
-                $ref: '#/definitions/resources'
-        tekton:
-          additionalProperties: false
-          properties:
-            resources:
-              additionalProperties: false
-              properties:
-                dashboard:
-                  $ref: '#/definitions/resources'
-                buildpacksTask:
-                  $ref: '#/definitions/resources'
-                gitCloneTask:
-                  $ref: '#/definitions/resources'
-                grypeTask:
-                  $ref: '#/definitions/resources'
-                kanikoTask:
-                  $ref: '#/definitions/resources'
-      services:
-        items:
-          $ref: '#/definitions/service'
-        type: array
-      netpols:
-        items:
-          $ref: '#/definitions/netpol'
-        type: array
-      workloads:
-        type: array
-        items:
-          $ref: '#/definitions/workload'
-      policies:
-        type: object
-      builds:
-        type: array
-        items:
-          $ref: '#/definitions/build'
-      codeRepos:
-        type: array
-        items:
-          $ref: '#/definitions/codeRepo'
-  teamSelfService:
-    title: Team Permissions
-    description: Grant team permissions to modify certain configuration parameters.
-    type: object
-    properties:
-      teamMembers:
-        title: Team Members Permissions
-        type: object
-        properties:
-          createServices:
-            title: Create Services
-            type: boolean
-            default: false
-            description: Permission to create services.
-          editSecurityPolicies:
-            title: Edit Security Policies
-            type: boolean
-            default: false
-            description: Permission to edit security policies.
-          useCloudShell:
-            title: Use Cloud Shell
-            type: boolean
-            default: false
-            description: Permission to use the cloud shell.
-          downloadKubeconfig:
-            title: Download Kubeconfig
-            type: boolean
-            default: false
-            description: Permission to download the kubeconfig.
-          downloadDockerLogin:
-            title: Download Docker Login
-            type: boolean
-            default: false
-            description: Permission to download the docker login configuration.
-        required:
-          - createServices
-          - editSecurityPolicies
-          - useCloudShell
-          - downloadKubeconfig
-          - downloadDockerLogin
-  x-acl:
-    platformAdmin: [read-any, update-any]
-    teamAdmin: [read]
-    teamMember: [read]
-  backupRetentionPolicy:
-    default: 7d
-    description: Delete backups according to retention policy. In DAYS|WEEKS|MONTHS
-    title: Retention policy
-    type: string
-  url:
-    pattern: '^https?:\/\/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/=]*)'
-    type: string
-  volumes:
-    items:
-      additionalProperties: false
-      properties:
-        name:
-          description: Name must match mount name.
-          $ref: '#/definitions/idName'
-        configMap:
-          properties:
-            name:
-              $ref: '#/definitions/idName'
-    type: array
-  wordCharacterPattern:
-    type: string
-    # At least one non whitespace character
-    pattern: ^[^\s]+$
-  policies:
-    type: object
-  build:
-    type: object
-    description: Define location of code to build
-    properties:
-      name:
-        description: Name of the build
-        $ref: '#/definitions/idName'
-      imageName:
-        description: Name of the image
-        $ref: '#/definitions/idName'
-      tag:
-        description: Image tag
-        $ref: '#/definitions/imageTag'
-      trigger:
-        type: boolean
-        default: false
-      externalRepo:
-        type: boolean
-        description: Select when using an external private Git repository.
-        default: false
-      scanSource:
-        type: boolean
-        default: true
-        description: Select to scan source
-      secretName:
-        description: The name of the secret with the credentials of the external private Git repository
-        $ref: '#/definitions/idName'
-      mode:
-        properties:
-          docker:
-            properties:
-              repoUrl:
-                description: URL of the Git repository holding the application code.
-                $ref: '#/definitions/url'
-              revision:
-                description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
-                $ref: '#/definitions/wordCharacterPattern'
-                default: HEAD
-              path:
-                description: A relative directory path within the Git repository.
-                type: string
-                default: ./Dockerfile
-              envVars:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                    value:
-                      type: string
-                  required:
-                    - name
-                    - value
-          buildpacks:
-            properties:
-              repoUrl:
-                description: URL of the Git repository holding the application code.
-                $ref: '#/definitions/url'
-              revision:
-                description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
-                $ref: '#/definitions/wordCharacterPattern'
-                default: HEAD
-              path:
-                description: A relative directory path within the Git repository.
-                type: string
-              envVars:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                    value:
-                      type: string
-                  required:
-                    - name
-                    - value
-    required:
-      - name
-  sealedsecret:
-    type: object
-    description: Define location of code to build
-    properties:
-      name:
-        $ref: '#/definitions/idName'
-      namespace:
-        $ref: '#/definitions/idName'
-      immutable:
-        description: 'Immutable, if set to true, ensures that data stored in the Secret cannot be updated (only object metadata can be modified).'
-        type: boolean
-      type:
-        description: Used to facilitate programmatic handling of secret data.
-        type: string
-        default: kubernetes.io/opaque
-        enum:
-          [
-            'kubernetes.io/opaque',
-            'kubernetes.io/service-account-token',
-            'kubernetes.io/dockercfg',
-            'kubernetes.io/dockerconfigjson',
-            'kubernetes.io/basic-auth',
-            'kubernetes.io/ssh-auth',
-            'kubernetes.io/tls',
-          ]
-      encryptedData:
-        type: object
-      metadata:
-        type: object
-    required:
-      - type
-      - encryptedData
-      - name
-  workload:
-    type: object
-    description: Define location of the application's manifests or chart
-    properties:
-      name:
-        $ref: '#/definitions/idName'
-      url:
-        description: URL to either Helm or Git repository
-        $ref: '#/definitions/url'
-      chartProvider:
-        type: string
-        title: Chart provider
-        enum: ['helm', 'git']
-        default: git
-      path:
-        description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
-        $ref: '#/definitions/wordCharacterPattern'
-      chart:
-        description: Chart is a Helm chart name, and must be specified for applications sourced from a Helm repo.
-        $ref: '#/definitions/wordCharacterPattern'
-      revision:
-        description: In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD. In case of Helm, this is a semver tag for the Chart's version.
-        $ref: '#/definitions/wordCharacterPattern'
-        default: HEAD
-      chartMetadata:
-        title: ''
-        properties:
-          helmChartVersion:
-            type: string
-            title: Helm chart version
-            default: ''
-          helmChartDescription:
-            type: string
-            title: Helm chart description
-            default: ''
-      namespace:
-        description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
-        $ref: '#/definitions/idName'
-      createNamespace:
-        type: boolean
-        default: false
-      sidecarInject:
-        type: boolean
-        default: false
-      imageUpdateStrategy:
-        description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
-        title: Auto Image Updater
-        additionalProperties: false
-        properties:
-          digest:
-            additionalProperties: false
-            properties:
-              imageRepository:
-                type: string
-                description: The container image repository name
-                $ref: '#/definitions/wordCharacterPattern'
-              tag:
-                $ref: '#/definitions/wordCharacterPattern'
-              imageParameter:
-                type: string
-                default: image.name
-                description: The parameter for specifying the image name
-              tagParameter:
-                type: string
-                default: image.tag
-                description: The parameter for specifying the image tag
-            required:
-              - tag
-          semver:
-            additionalProperties: false
-            properties:
-              imageRepository:
-                type: string
-                description: The container image repository name
-                $ref: '#/definitions/wordCharacterPattern'
-              versionConstraint:
-                $ref: '#/definitions/wordCharacterPattern'
-              imageParameter:
-                type: string
-                default: image.name
-                description: The parameter for specifying the image name
-              tagParameter:
-                type: string
-                default: image.tag
-                description: The parameter for specifying the image tag
-            required:
-              - versionConstraint
-          type:
-            type: string
-            enum:
-              - semver
-              - digest
-              - disabled
-            default: disabled
-        required:
-          - type
-    required:
-      - name
-      - url
-  user:
-    type: object
-    description: A user in keycloak, who can be a platform admin, a team admin, or a team member.
-    properties:
-      name:
-        type: string
-      email:
-        $ref: '#/definitions/email'
-        x-secret: ''
-      firstName:
-        type: string
-        x-secret: ''
-      lastName:
-        type: string
-        x-secret: ''
-      isPlatformAdmin:
-        type: boolean
-        x-secret: ''
-      isTeamAdmin:
-        type: boolean
-        x-secret: ''
-      teams:
-        type: array
-        items:
-          type: string
-          x-secret: ''
-      initialPassword:
-        type: string
-        x-secret: ''
-    required:
-      - email
-      - firstName
-      - lastName
-  codeRepo:
-    type: object
-    description: Define location of code repository to build
-    properties:
-      name:
-        $ref: '#/definitions/idName'
-      gitService:
-        description: Git service provider
-        type: string
-        default: gitea
-        enum:
-          - gitea
-          - github
-          - gitlab
-      repositoryUrl:
-        description: URL of the Git repository holding the application code.
-        $ref: '#/definitions/repoUrl'
-      private:
-        type: boolean
-        default: false
-      secret:
-        description: The name of the secret with the credentials of the external private Git repository
-        type: string
-    required:
-      - name
-      - gitService
-      - repositoryUrl
 
 properties:
   alerts:
-    $ref: '#/definitions/alerts'
+    $ref: 'values-schema/definitions.yaml#/definitions/alerts'
   installation:
     type: object
     description: Top-level installation settings.
@@ -1603,21 +44,21 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
           image:
-            $ref: '#/definitions/imageSimple'
+            $ref: 'values-schema/definitions.yaml#/definitions/imageSimple'
           resources:
             properties:
               alertmanger:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       argocd:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           controllerStatusProcessors:
             default: 20
             type: integer
@@ -1634,40 +75,40 @@ properties:
               type: integer
           autoscaling:
             repoServer:
-              $ref: '#/definitions/autoscalingEnabled'
+              $ref: 'values-schema/definitions.yaml#/definitions/autoscalingEnabled'
             server:
-              $ref: '#/definitions/autoscalingEnabled'
+              $ref: 'values-schema/definitions.yaml#/definitions/autoscalingEnabled'
           resources:
             additionalProperties: false
             properties:
               server:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               controller:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               repo:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               redis:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               applicationSet:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               notifications:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               imageUpdater:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       cert-manager:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           resources:
             certManager:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
             startupapicheck:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
             cainjector:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
             webhook:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
           byoWildcardCert:
             description: 'Bring your own trusted wildcard certificate. Only applicable for byo-wildcard-cert issuer'
             type: string
@@ -1679,7 +120,7 @@ properties:
             description: |
               The name of a custom secret in the istio-system namespace that contains a trusted certificate and private key.
               To be used with issuer externally-managed-tls-secret.
-            $ref: '#/definitions/idName'
+            $ref: 'values-schema/definitions.yaml#/definitions/idName'
           customRootCA:
             x-secret: ''
             type: string
@@ -1689,7 +130,7 @@ properties:
             type: string
             description: CA private key that is used to issue certificates. Leave it empty to generate one automatically.
           email:
-            $ref: '#/definitions/email'
+            $ref: 'values-schema/definitions.yaml#/definitions/email'
           issuer:
             description: |
               Indicates the origin of the wildcard certificate.
@@ -1716,11 +157,11 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           resources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
           barmanPluginResources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
           useBackupPlugin:
             type: boolean
             default: false
@@ -1729,16 +170,16 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           logLevel:
             type: string
             default: 'info'
           resources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
       gitea:
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             type: boolean
           postgresqlPassword:
@@ -1756,16 +197,16 @@ properties:
             additionalProperties: false
             properties:
               gitea:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               init:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
           networkPolicies:
-            $ref: '#/definitions/appNetworkPolicyConfig'
+            $ref: 'values-schema/definitions.yaml#/definitions/appNetworkPolicyConfig'
       grafana:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
@@ -1773,17 +214,17 @@ properties:
             type: string
             x-secret: ''
           image:
-            $ref: '#/definitions/imageSimple'
+            $ref: 'values-schema/definitions.yaml#/definitions/imageSimple'
           resources:
             grafana:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
             sidecar:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
       harbor:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             type: boolean
             default: true
@@ -1823,7 +264,7 @@ properties:
                     x-secret: ''
                   username:
                     type: string
-                    $ref: '#/definitions/secretTemplates/definitions/otomiAdminUsername'
+                    $ref: 'values-schema/definitions.yaml#/definitions/secretTemplates/definitions/otomiAdminUsername'
                   password:
                     type: string
                     x-secret: '{{ randAlphaNum 32 }}'
@@ -1840,30 +281,30 @@ properties:
             additionalProperties: false
             properties:
               core:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               jobservice:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               portal:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               redis:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               registry:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               registryController:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               trivy:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               nginx:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
           secretKey:
             type: string
             x-secret: '{{ randAlpha 16 }}'
       ingress-nginx-platform:
-        $ref: '#/definitions/ingressNginx'
+        $ref: 'values-schema/definitions.yaml#/definitions/ingressNginx'
       istio:
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           tracing:
             description: Configure Istio for tracing. Requires Otel Collector to be enabled.
             properties:
@@ -1876,11 +317,11 @@ properties:
           autoscaling:
             properties:
               egressgateway:
-                $ref: '#/definitions/autoscaling'
+                $ref: 'values-schema/definitions.yaml#/definitions/autoscaling'
               ingressgateway:
-                $ref: '#/definitions/autoscaling'
+                $ref: 'values-schema/definitions.yaml#/definitions/autoscaling'
               pilot:
-                $ref: '#/definitions/autoscaling'
+                $ref: 'values-schema/definitions.yaml#/definitions/autoscaling'
           egressGateway:
             properties:
               enabled:
@@ -1899,26 +340,26 @@ properties:
             items:
               type: object
           image:
-            $ref: '#/definitions/imageSimple'
+            $ref: 'values-schema/definitions.yaml#/definitions/imageSimple'
           resources:
             properties:
               egressgateway:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               ingressgateway:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               ingressgateway-private:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               pilot:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               proxy:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               operator:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       keycloak:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           idp:
             additionalProperties: false
             properties:
@@ -1926,7 +367,7 @@ properties:
                 type: string
                 default: otomi-idp
               clientID:
-                $ref: '#/definitions/wordCharacterPattern'
+                $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
                 default: otomi
               clientSecret:
                 type: string
@@ -1942,9 +383,9 @@ properties:
           image:
             properties:
               keycloak:
-                $ref: '#/definitions/imageSimple'
+                $ref: 'values-schema/definitions.yaml#/definitions/imageSimple'
               postgresql:
-                $ref: '#/definitions/imageSimple'
+                $ref: 'values-schema/definitions.yaml#/definitions/imageSimple'
           databaseMaxConnections:
             type: number
             description: Maximum amount of total connections of the application to the database server
@@ -1958,9 +399,9 @@ properties:
             additionalProperties: false
             properties:
               keycloak:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               operator:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       kserve:
         additionalProperties: false
         properties:
@@ -1968,16 +409,16 @@ properties:
             type: boolean
             default: false
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           resources:
             additionalProperties: false
             properties:
               controller:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               rbacProxy:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               inferenceService:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       kyverno:
         additionalProperties: false
         properties:
@@ -1985,7 +426,7 @@ properties:
             type: boolean
             default: false
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           mode:
             type: string
             enum: ['DevTest', 'Prod']
@@ -1994,13 +435,13 @@ properties:
             additionalProperties: false
             properties:
               admissionController:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               cleanupController:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               backgroundController:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               reportsController:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       policy-reporter:
         additionalProperties: false
         properties:
@@ -2008,34 +449,34 @@ properties:
             type: boolean
             default: false
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           resources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
       knative:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             type: boolean
             default: true
           resources:
             queueSidecar:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
             controller:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
             activator:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
             webhook:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
             autoscaler:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
             autoscalerHpa:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
             operator:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
             operatorWebhook:
-              $ref: '#/definitions/resources'
+              $ref: 'values-schema/definitions.yaml#/definitions/resources'
           serving:
             type: object
             properties:
@@ -2054,14 +495,14 @@ properties:
                     type: integer
                     minimum: 1
                   resources:
-                    $ref: '#/definitions/resources'
+                    $ref: 'values-schema/definitions.yaml#/definitions/resources'
                   autoscaling:
-                    $ref: '#/definitions/autoscalingEnabled'
+                    $ref: 'values-schema/definitions.yaml#/definitions/autoscalingEnabled'
       kubeflow-pipelines:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             default: false
             type: boolean
@@ -2071,7 +512,7 @@ properties:
                 properties:
                   size:
                     default: 20Gi
-                    $ref: '#/definitions/size'
+                    $ref: 'values-schema/definitions.yaml#/definitions/size'
           rootPassword:
             type: string
             x-secret: '{{ randAlphaNum 32 }}'
@@ -2079,36 +520,36 @@ properties:
             additionalProperties: false
             properties:
               cacheDeployer:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               cacheServer:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               metadataEnvoy:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               metadataGrpc:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               metadataWriter:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               mlPipeline:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               mlPipelinePersistenceagent:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               mlPipelineScheduledworkflow:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               mlPipelineUi:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               mlPipelineViewer:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               mlPipelineVisualizationserver:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               mysql:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               workflowController:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       linode-cfw:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
@@ -2116,40 +557,40 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           resources:
             properties:
               operator:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       tekton:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           resources:
             additionalProperties: false
             properties:
               dashboard:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               pipelinesController:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               pipelinesRemoteresolver:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               pipelinesEvents:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               pipelinesWebhook:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               triggersInterceptors:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               triggersController:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               triggersWebhook:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       loki:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
@@ -2157,44 +598,44 @@ properties:
             additionalProperties: false
             properties:
               compactor:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               ingester:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               gateway:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               querier:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               distributor:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               queryFrontend:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               reverseProxy:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               queryScheduler:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               indexGateway:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               singleBinary:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
           autoscaling:
             properties:
               ingester:
-                $ref: '#/definitions/autoscalingEnabled'
+                $ref: 'values-schema/definitions.yaml#/definitions/autoscalingEnabled'
               gateway:
-                $ref: '#/definitions/autoscalingEnabled'
+                $ref: 'values-schema/definitions.yaml#/definitions/autoscalingEnabled'
               querier:
-                $ref: '#/definitions/autoscalingEnabled'
+                $ref: 'values-schema/definitions.yaml#/definitions/autoscalingEnabled'
               distributor:
-                $ref: '#/definitions/autoscalingEnabled'
+                $ref: 'values-schema/definitions.yaml#/definitions/autoscalingEnabled'
               queryFrontend:
-                $ref: '#/definitions/autoscalingEnabled'
+                $ref: 'values-schema/definitions.yaml#/definitions/autoscalingEnabled'
               queryScheduler:
-                $ref: '#/definitions/autoscalingEnabled'
+                $ref: 'values-schema/definitions.yaml#/definitions/autoscalingEnabled'
           adminPassword:
             type: string
             x-secret: '{{ randAlphaNum 20 }}'
           persistentVolumeSize:
-            $ref: '#/definitions/size'
+            $ref: 'values-schema/definitions.yaml#/definitions/size'
           v13SchemaStartDate:
             description: Automatically set to a date in the future in case of an upgrade
             title: Schema v13 start date
@@ -2209,7 +650,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             type: boolean
             default: true
@@ -2222,12 +663,12 @@ properties:
           extraArgs:
             type: array
           resources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
       oauth2-proxy:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           config:
             properties:
               cookieSecret:
@@ -2236,11 +677,11 @@ properties:
                 type: string
                 x-secret: '{{ randAlphaNum 32 | b64enc }}'
           resources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
       oauth2-proxy-redis:
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           password:
             type: string
             x-secret: '{{ randAlpha 24 }}'
@@ -2248,19 +689,19 @@ properties:
             additionalProperties: false
             properties:
               master:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               sentinel:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
           replicas:
             type: integer
           persistentVolumeSize:
-            $ref: '#/definitions/size'
+            $ref: 'values-schema/definitions.yaml#/definitions/size'
         type: object
       otomi-api:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           editorInactivityTimeout:
             type: integer
             default: 10
@@ -2268,18 +709,18 @@ properties:
             additionalProperties: false
             properties:
               api:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               tools:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
           networkPolicies:
-            $ref: '#/definitions/appNetworkPolicyConfig'
+            $ref: 'values-schema/definitions.yaml#/definitions/appNetworkPolicyConfig'
       otomi-console:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           resources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
         allOf:
           - anyOf:
               - not:
@@ -2298,57 +739,57 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           resources:
             additionalProperties: false
             properties:
               operator:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       apl-harbor-operator:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           resources:
             additionalProperties: false
             properties:
               operator:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       apl-gitea-operator:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           resources:
             additionalProperties: false
             properties:
               operator:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       apl-keycloak-operator:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           resources:
             additionalProperties: false
             properties:
               operator:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       apl-operator:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           resources:
             additionalProperties: false
             properties:
               operator:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       prometheus:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
@@ -2376,7 +817,7 @@ properties:
                       username:
                         type: string
                       password:
-                        $ref: '#/definitions/wordCharacterPattern'
+                        $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
                         x-secret: ''
                   customConfig:
                     description: Custom remote write config. Will be appended to the remoteWrite list.
@@ -2388,49 +829,49 @@ properties:
             type: string
             default: 60s
           retention:
-            $ref: '#/definitions/duration'
+            $ref: 'values-schema/definitions.yaml#/definitions/duration'
           retentionSize:
             description: 'The maximum number of bytes of storage blocks to retain. The oldest data will be removed first. Defaults to 0 or disabled. Units supported: B, KB, MB, GB, TB, PB, EB'
             default: 4GB
             pattern: '^([0-9]+\.)?[0-9]+(B|KB|MB|GB|TB|PB|EB)?$'
           storageSize:
-            $ref: '#/definitions/size'
+            $ref: 'values-schema/definitions.yaml#/definitions/size'
             default: 5Gi
           image:
             properties:
               prometheus:
-                $ref: '#/definitions/imageSimple'
+                $ref: 'values-schema/definitions.yaml#/definitions/imageSimple'
               kube-state-metrics:
-                $ref: '#/definitions/imageSimple'
+                $ref: 'values-schema/definitions.yaml#/definitions/imageSimple'
               node-exporter:
-                $ref: '#/definitions/imageSimple'
+                $ref: 'values-schema/definitions.yaml#/definitions/imageSimple'
           resources:
             properties:
               prometheusOperator:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               prometheus:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               kube-state-metrics:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               node-exporter:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               prometheusConfigReloader:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       promtail:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
           resources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
       rabbitmq:
         additionalProperties: false
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
@@ -2438,14 +879,14 @@ properties:
             properties:
               clusterOperator:
                 description: Controller which is used to create RabbitMQ-clusters
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               msgTopologyOperator:
                 description: Controller which is used to create RabbitMQ queues and policies
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       trivy:
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
@@ -2459,13 +900,13 @@ properties:
             additionalProperties: false
             properties:
               operator:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               trivy:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
       otel:
         properties:
           _rawValues:
-            $ref: '#/definitions/rawValues'
+            $ref: 'values-schema/definitions.yaml#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
@@ -2488,7 +929,7 @@ properties:
               attributes:
                 type: array
                 title: Kubernetes Attributes
-                $ref: '#/definitions/labelsAnnotations'
+                $ref: 'values-schema/definitions.yaml#/definitions/labelsAnnotations'
                 description: 'Attributes to extract metadata from pods'
           operator:
             properties:
@@ -2500,29 +941,29 @@ properties:
             additionalProperties: false
             properties:
               otlpCollector:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               logsCollector:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               manager:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
               kubeRBACProxy:
-                $ref: '#/definitions/resources'
+                $ref: 'values-schema/definitions.yaml#/definitions/resources'
     patternProperties:
       '^ingress-nginx-[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
-        $ref: '#/definitions/ingressNginx'
+        $ref: 'values-schema/definitions.yaml#/definitions/ingressNginx'
   catalogs:
     type: object
     additionalProperties:
-      $ref: '#/definitions/catalog'
+      $ref: 'values-schema/definitions.yaml#/definitions/catalog'
   cluster:
-    $ref: '#/definitions/cluster'
+    $ref: 'values-schema/definitions.yaml#/definitions/cluster'
   dns:
     additionalProperties: false
     properties:
       zones:
         description: Extra dns zones that the cluster can administer. Team services can use this to publish their URLs on.
         items:
-          $ref: '#/definitions/domain'
+          $ref: 'values-schema/definitions.yaml#/definitions/domain'
         type: array
       domainFilters:
         description: Limit possible target zones by domain suffixes.
@@ -2547,7 +988,7 @@ properties:
             additionalProperties: false
             properties:
               akamai:
-                $ref: '#/definitions/akamai/definitions/dns'
+                $ref: 'values-schema/definitions.yaml#/definitions/akamai/definitions/dns'
             required:
               - akamai
           - title: AWS
@@ -2559,14 +1000,14 @@ properties:
                   credentials:
                     properties:
                       secretKey:
-                        $ref: '#/definitions/aws/definitions/secretKey'
+                        $ref: 'values-schema/definitions.yaml#/definitions/aws/definitions/secretKey'
                       accessKey:
-                        $ref: '#/definitions/aws/definitions/accessKey'
+                        $ref: 'values-schema/definitions.yaml#/definitions/aws/definitions/accessKey'
                     required: [secretKey, accessKey]
                   region:
-                    $ref: '#/definitions/aws/definitions/region'
+                    $ref: 'values-schema/definitions.yaml#/definitions/aws/definitions/region'
                   role:
-                    $ref: '#/definitions/aws/definitions/role'
+                    $ref: 'values-schema/definitions.yaml#/definitions/aws/definitions/role'
                 required: [region]
                 oneOf:
                   - required: [credentials]
@@ -2581,14 +1022,14 @@ properties:
             additionalProperties: false
             properties:
               azure:
-                $ref: '#/definitions/azure/definitions/dns'
+                $ref: 'values-schema/definitions.yaml#/definitions/azure/definitions/dns'
             required:
               - azure
           - title: Azure Private
             additionalProperties: false
             properties:
               azure-private-dns:
-                $ref: '#/definitions/azure/definitions/dns'
+                $ref: 'values-schema/definitions.yaml#/definitions/azure/definitions/dns'
             required:
               - azure-private-dns
           - title: Google
@@ -2597,10 +1038,10 @@ properties:
               google:
                 properties:
                   serviceAccountKey:
-                    $ref: '#/definitions/google/definitions/accountJson'
+                    $ref: 'values-schema/definitions.yaml#/definitions/google/definitions/accountJson'
                     description: A service account key in json format for managing a DNS zone.
                   project:
-                    $ref: '#/definitions/google/definitions/project'
+                    $ref: 'values-schema/definitions.yaml#/definitions/google/definitions/project'
                 required: [project, serviceAccountKey]
             required:
               - google
@@ -2641,7 +1082,7 @@ properties:
                     x-secret: ''
                     description: Required when Email is set.
                   email:
-                    $ref: '#/definitions/email'
+                    $ref: 'values-schema/definitions.yaml#/definitions/email'
                     description: Required when Email is set.
                   proxied:
                     type: boolean
@@ -2681,7 +1122,7 @@ properties:
             required:
               - other
       entrypoint:
-        $ref: '#/definitions/ipV4Address'
+        $ref: 'values-schema/definitions.yaml#/definitions/ipV4Address'
         description: Optional. A public IP address that will override (loadbalancer) ip used for registering hosts. This allows for access to private clusters.
   files:
     type: object
@@ -2719,11 +1160,11 @@ properties:
                     title: AWS KMS keys
                     type: string
                   accessKey:
-                    $ref: '#/definitions/aws/definitions/accessKey'
+                    $ref: 'values-schema/definitions.yaml#/definitions/aws/definitions/accessKey'
                   secretKey:
-                    $ref: '#/definitions/aws/definitions/secretKey'
+                    $ref: 'values-schema/definitions.yaml#/definitions/aws/definitions/secretKey'
                   region:
-                    $ref: '#/definitions/aws/definitions/region'
+                    $ref: 'values-schema/definitions.yaml#/definitions/aws/definitions/region'
                 required:
                   - accessKey
                   - keys
@@ -2741,11 +1182,11 @@ properties:
                     title: Azure Keyvault keys
                     type: string
                   clientId:
-                    $ref: '#/definitions/azure/definitions/clientId'
+                    $ref: 'values-schema/definitions.yaml#/definitions/azure/definitions/clientId'
                   clientSecret:
-                    $ref: '#/definitions/azure/definitions/clientSecret'
+                    $ref: 'values-schema/definitions.yaml#/definitions/azure/definitions/clientSecret'
                   tenantId:
-                    $ref: '#/definitions/azure/definitions/tenantId'
+                    $ref: 'values-schema/definitions.yaml#/definitions/azure/definitions/tenantId'
                 required:
                   - clientId
                   - clientSecret
@@ -2763,9 +1204,9 @@ properties:
                     title: GCP KMS keys
                     type: string
                   accountJson:
-                    $ref: '#/definitions/google/definitions/accountJson'
+                    $ref: 'values-schema/definitions.yaml#/definitions/google/definitions/accountJson'
                   project:
-                    $ref: '#/definitions/google/definitions/project'
+                    $ref: 'values-schema/definitions.yaml#/definitions/google/definitions/project'
                 required:
                   - keys
                   - accountJson
@@ -2777,20 +1218,20 @@ properties:
     description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'
     properties:
       issuer:
-        $ref: '#/definitions/url'
+        $ref: 'values-schema/definitions.yaml#/definitions/url'
       clientID:
-        $ref: '#/definitions/wordCharacterPattern'
+        $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
       clientSecret:
         type: string
         x-secret: ''
       platformAdminGroupID:
-        $ref: '#/definitions/wordCharacterPattern'
+        $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
       allTeamsAdminGroupID:
-        $ref: '#/definitions/wordCharacterPattern'
+        $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
       teamAdminGroupID:
-        $ref: '#/definitions/wordCharacterPattern'
+        $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
       usernameClaimMapper:
-        $ref: '#/definitions/wordCharacterPattern'
+        $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
         description: Claim name from identity provider used by Keycloak to create the username. Best to not change this from the default.
         default: '${CLAIM.upn}'
       subClaimMapper:
@@ -2823,15 +1264,15 @@ properties:
         additionalProperties: false
         properties:
           username:
-            $ref: '#/definitions/wordCharacterPattern'
+            $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
           password:
             type: string
             x-secret: ''
           email:
-            $ref: '#/definitions/email'
+            $ref: 'values-schema/definitions.yaml#/definitions/email'
             default: not@us.ed
           server:
-            $ref: '#/definitions/wordCharacterPattern'
+            $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
             default: docker.io
         required:
           - username
@@ -2878,7 +1319,7 @@ properties:
         description: Whether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
         type: boolean
       nodeSelector:
-        $ref: '#/definitions/labelsAnnotations'
+        $ref: 'values-schema/definitions.yaml#/definitions/labelsAnnotations'
         description: 'One or more "label: value" pairs that must exist on one or more nodes, which will force all otomi platform workloads to be scheduled there.'
       version:
         default: latest
@@ -2896,7 +1337,7 @@ properties:
               className:
                 type: string
                 enum: [platform]
-          - $ref: '#/definitions/ingressClassParameters'
+          - $ref: 'values-schema/definitions.yaml#/definitions/ingressClassParameters'
       classes:
         type: array
         items:
@@ -2905,7 +1346,7 @@ properties:
               properties:
                 className:
                   type: string
-            - $ref: '#/definitions/ingressClassParameters'
+            - $ref: 'values-schema/definitions.yaml#/definitions/ingressClassParameters'
           required:
             - className
   smtp:
@@ -2922,12 +1363,12 @@ properties:
       auth_username:
         type: string
       from:
-        $ref: '#/definitions/email'
+        $ref: 'values-schema/definitions.yaml#/definitions/email'
         description: The "from" address. Defaults to alerts@$clusterDomain.
       hello:
         type: string
       smarthost:
-        $ref: '#/definitions/hostPort'
+        $ref: 'values-schema/definitions.yaml#/definitions/hostPort'
         description: 'The smtp host:port combination.'
     required:
       - smarthost
@@ -2945,9 +1386,9 @@ properties:
                 type: boolean
                 default: false
               retentionPolicy:
-                $ref: '#/definitions/backupRetentionPolicy'
+                $ref: 'values-schema/definitions.yaml#/definitions/backupRetentionPolicy'
               schedule:
-                $ref: '#/definitions/backupSchedule'
+                $ref: 'values-schema/definitions.yaml#/definitions/backupSchedule'
               pathSuffix:
                 type: string
                 pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
@@ -2959,9 +1400,9 @@ properties:
                 type: boolean
                 default: false
               retentionPolicy:
-                $ref: '#/definitions/backupRetentionPolicy'
+                $ref: 'values-schema/definitions.yaml#/definitions/backupRetentionPolicy'
               schedule:
-                $ref: '#/definitions/backupSchedule'
+                $ref: 'values-schema/definitions.yaml#/definitions/backupSchedule'
               pathSuffix:
                 type: string
                 pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
@@ -2973,9 +1414,9 @@ properties:
                 type: boolean
                 default: false
               retentionPolicy:
-                $ref: '#/definitions/backupRetentionPolicy'
+                $ref: 'values-schema/definitions.yaml#/definitions/backupRetentionPolicy'
               schedule:
-                $ref: '#/definitions/backupSchedule'
+                $ref: 'values-schema/definitions.yaml#/definitions/backupSchedule'
               pathSuffix:
                 type: string
                 pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
@@ -2990,11 +1431,11 @@ properties:
             type: boolean
             default: false
           resources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
           retentionPolicy:
-            $ref: '#/definitions/backupRetentionPolicy'
+            $ref: 'values-schema/definitions.yaml#/definitions/backupRetentionPolicy'
           schedule:
-            $ref: '#/definitions/backupSchedule'
+            $ref: 'values-schema/definitions.yaml#/definitions/backupSchedule'
   obj:
     properties:
       showWizard:
@@ -3007,37 +1448,37 @@ properties:
             properties:
               region:
                 description: The region of the bucket
-                $ref: '#/definitions/wordCharacterPattern'
+                $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
               accessKeyId:
                 type: string
                 description: The ID of the access key
-                $ref: '#/definitions/wordCharacterPattern'
+                $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
               secretAccessKey:
                 type: string
                 description: The secret of the access key
-                $ref: '#/definitions/wordCharacterPattern'
+                $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
                 x-secret: ''
               buckets:
                 properties:
                   loki:
                     type: string
-                    $ref: '#/definitions/wordCharacterPattern'
+                    $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
                     default: loki
                   cnpg:
                     type: string
-                    $ref: '#/definitions/wordCharacterPattern'
+                    $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
                     default: cnpg
                   harbor:
                     type: string
-                    $ref: '#/definitions/wordCharacterPattern'
+                    $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
                     default: harbor
                   gitea:
                     type: string
-                    $ref: '#/definitions/wordCharacterPattern'
+                    $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
                     default: gitea
                   kubeflow-pipelines:
                     type: string
-                    $ref: '#/definitions/wordCharacterPattern'
+                    $ref: 'values-schema/definitions.yaml#/definitions/wordCharacterPattern'
                     default: kubeflow-pipelines
             required:
               - region
@@ -3059,9 +1500,9 @@ properties:
           walStorageSize:
             type: string
           resources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
           backupSidecarResources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
           postgresqlParameters:
             type: object
             additionalProperties:
@@ -3088,9 +1529,9 @@ properties:
           walStorageSize:
             type: string
           resources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
           backupSidecarResources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
           postgresqlParameters:
             type: object
             additionalProperties:
@@ -3117,9 +1558,9 @@ properties:
           walStorageSize:
             type: string
           resources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
           backupSidecarResources:
-            $ref: '#/definitions/resources'
+            $ref: 'values-schema/definitions.yaml#/definitions/resources'
           postgresqlParameters:
             type: object
             additionalProperties:
@@ -3142,7 +1583,7 @@ properties:
     additionalProperties: false
     patternProperties:
       '^[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
-        $ref: '#/definitions/team'
+        $ref: 'values-schema/definitions.yaml#/definitions/team'
     properties:
       admin:
         properties:
@@ -3178,6 +1619,6 @@ properties:
   users:
     type: array
     items:
-      $ref: '#/definitions/user'
+      $ref: 'values-schema/definitions.yaml#/definitions/user'
 required:
   - cluster

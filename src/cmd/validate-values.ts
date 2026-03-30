@@ -1,10 +1,11 @@
+import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import Ajv, { ValidateFunction } from 'ajv'
 import { unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { getFilename, loadYaml, rootDir } from 'src/common/utils'
+import { getFilename, rootDir } from 'src/common/utils'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
@@ -32,7 +33,7 @@ export const validateValues = async (argv: HelmArguments = getParsedArgs(), envD
   }
 
   d.info('Loading values-schema.yaml')
-  const valuesSchema = (await loadYaml(`${rootDir}/values-schema.yaml`)) as Record<string, any>
+  const valuesSchema = (await $RefParser.dereference(`${rootDir}/values-schema.yaml`)) as Record<string, any>
   d.debug('Initializing Ajv')
   const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
   d.debug('Compiling Ajv validation')

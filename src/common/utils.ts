@@ -162,8 +162,7 @@ export const extract = (
 let valuesSchema: Record<string, any>
 export const getValuesSchema = async (): Promise<Record<string, any>> => {
   if (valuesSchema) return valuesSchema
-  const schema = await loadYaml(`${rootDir}/values-schema.yaml`)
-  const derefSchema = await $RefParser.dereference(schema as JSONSchema)
+  const derefSchema = await $RefParser.dereference(`${rootDir}/values-schema.yaml`)
   valuesSchema = omit(derefSchema, ['definitions'])
 
   return valuesSchema
