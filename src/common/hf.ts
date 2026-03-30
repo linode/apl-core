@@ -22,6 +22,15 @@ export const HF_DEFAULT_SYNC_ARGS = [
   '--disable-openapi-validation --qps=20',
 ]
 
+export const HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS = [
+  'sync',
+  '--reuse-values', // Preserve values from existing releases on retry - makes install idempotent
+  '--concurrency=1',
+  '--sync-args',
+  // These two need to be in same string as is passed as single argument to --sync-args
+  '--disable-openapi-validation --qps=20',
+]
+
 type HFParams = {
   fileOpts?: string | string[] | null
   labelOpts?: string | string[] | null
