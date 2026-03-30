@@ -212,7 +212,7 @@ adminApps:
     path: /#/namespaces/team-admin/pipelineruns
     ingress:
       - svc: tekton-dashboard
-        namespace: tekton-pipelines
+        namespace: tekton-dashboard
         port: 9097
         type: public
         auth: true
