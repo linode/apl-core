@@ -23,7 +23,6 @@ additionalServiceMonitors:
     endpoints:
       - targetPort: http-envoy-prom
         path: /stats/prometheus
-  {{- end }}
   {{- with $v._derived.canaryIngressGatewayLabel }}
   - name: istio-{{ . }}
     namespace: istio-system
@@ -36,7 +35,8 @@ additionalServiceMonitors:
     endpoints:
       - targetPort: http-envoy-prom
         path: /stats/prometheus
-  {{- end }}
+  {{- end }}{{- /* with */}}
+  {{- end }}{{- /* if $v.apps | get "ingress-nginx-platform.enabled" */}}
   - name: istiod
     namespace: istio-system
     selector:
