@@ -69,6 +69,10 @@ function ensureDirectoryStructure() {
   if (!fs.existsSync(repoPath)) {
     fs.mkdirSync(repoPath, { recursive: true })
   }
+}
+
+function ensureManifestDirectories() {
+  const repoPath = env.ENV_DIR
   ensureDirectoryWithGitkeep(path.join(repoPath, operatorEnv.GITOPS_MANIFESTS_NS_PATH))
   ensureDirectoryWithGitkeep(path.join(repoPath, operatorEnv.GITOPS_MANIFESTS_GLOBAL_PATH))
 }
@@ -102,6 +106,7 @@ async function main(): Promise<void> {
 
     // Phase 2: Set environment variables and start operator for GitOps operations
     // await installer.setEnvAndCreateSecrets()
+    ensureManifestDirectories()
     const config = await loadConfig(aplOps)
     const operator = new AplOperator(config)
     handleTerminationSignals(operator)
