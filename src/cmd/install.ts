@@ -5,7 +5,7 @@ import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { setGitConfig } from 'src/common/git-config'
-import { deployEssential, hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
+import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS, hfValues } from 'src/common/hf'
 import {
   applyServerSide,
   createUpdateConfigMap,
@@ -64,7 +64,7 @@ const getInitialInstallationMode = async (): Promise<'standard' | 'recovery'> =>
 export const installAll = async () => {
   const d = terminal(`cmd:${cmdName}:installAll`)
   const prevState = await getDeploymentState()
-  const hfArgs = HF_DEFAULT_SYNC_ARGS
+  const hfArgs = HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS
 
   d.info('Start install all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
