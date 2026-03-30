@@ -18,7 +18,7 @@ podLabels:
   {{- if $v.apps.istio.defaultRevision }}
   istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
   {{- else }}
-  istio-injection: enabled
+  sidecar.istio.io/inject: "true"
   {{- end }}
 
 resources: {{- toYaml $o.resources.operator | nindent 2 }}

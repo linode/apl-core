@@ -104,7 +104,7 @@ prometheus:
         {{- if $v.apps.istio.defaultRevision }}
         istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
         {{- else }}
-        istio-injection: enabled
+        sidecar.istio.io/inject: "true"
         {{- end }}
     resources: {{- $p.resources.prometheus | toYaml | nindent 6 }}
     # all team alert managers that will get alerts
@@ -223,7 +223,7 @@ alertmanager:
         {{- if $v.apps.istio.defaultRevision }}
         istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
         {{- else }}
-        istio-injection: enabled
+        sidecar.istio.io/inject: "true"
         {{- end }}
     image:
       {{- if $v.otomi.linodeLkeImageRepository }}
