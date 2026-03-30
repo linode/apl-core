@@ -49,6 +49,16 @@ function handleTerminationSignals(operator: AplOperator): void {
   process.on('SIGINT', () => exitHandler('SIGINT'))
 }
 
+function ensureDirectoryWithGitkeep(dirPath: string): void {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true })
+  }
+  const gitkeepPath = path.join(dirPath, '.gitkeep')
+  if (!fs.existsSync(gitkeepPath)) {
+    fs.writeFileSync(gitkeepPath, '')
+  }
+}
+
 function ensureDirectoryStructure() {
   const repoPath = env.ENV_DIR
   const parentDir = path.dirname(repoPath)
@@ -59,6 +69,8 @@ function ensureDirectoryStructure() {
   if (!fs.existsSync(repoPath)) {
     fs.mkdirSync(repoPath, { recursive: true })
   }
+  ensureDirectoryWithGitkeep(path.join(repoPath, operatorEnv.GITOPS_MANIFESTS_NS_PATH))
+  ensureDirectoryWithGitkeep(path.join(repoPath, operatorEnv.GITOPS_MANIFESTS_GLOBAL_PATH))
 }
 
 async function main(): Promise<void> {
