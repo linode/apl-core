@@ -118,7 +118,7 @@ prometheus:
         - targetLabel: __address__
           replacement: po-alertmanager.monitoring.svc.cluster.local:9093
     {{- range $id, $team := (omit $v.teamConfig "admin") }}
-    {{- if ($v.teamConfig | get "managedMonitoring" "alertmanager") }}
+    {{- if ($team | get "settings.managedMonitoring.alertmanager" false) }}
     - name: '{{ $id }}-po-alertmanager'
       namespace: 'team-{{ $id }}'
       port: http-web
