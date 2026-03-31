@@ -161,8 +161,8 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
-      'knative-operator-knative-operator': {
-        post: async (context: RuntimeUpgradeContext) => {
+      'knative-serving-knative-serving': {
+        pre: async (context: RuntimeUpgradeContext) => {
           await upgradeKnativeServing(context, ['1.19', '1.20', '1.21'])
         },
       },
