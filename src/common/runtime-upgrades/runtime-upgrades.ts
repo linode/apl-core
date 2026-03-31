@@ -8,7 +8,7 @@ import { migrateGitConfig } from './migrate-git-config'
 import { removeHttpBinApplication } from './remove-httpbin-application'
 import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
-import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
+import { deleteKnativeServingCR, upgradeKnativeServing } from './upgrade-knative-serving-cr'
 import { detachApplicationFromApplicationSet, pruneArgoCDImageUpdater } from './v4.13.0'
 
 export interface RuntimeUpgradeContext {
@@ -161,9 +161,9 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
-      'knative-serving-knative-serving': {
-        pre: async (context: RuntimeUpgradeContext) => {
-          await upgradeKnativeServing(context, ['1.19', '1.20', '1.21'])
+      'knative-operator-knative-operator': {
+        post: async (context: RuntimeUpgradeContext) => {
+          await deleteKnativeServingCR(context)
         },
       },
     },
