@@ -74,6 +74,8 @@ apps:
     enabled: true
   kyverno:
     enabled: true
+  tekton:
+    enabled: true
   fabric8:
     enabled: true
 teamConfig:

@@ -4,6 +4,7 @@ metadata:
     labels: {}
 spec:
     _rawValues: {}
+    enabled: true
     resources:
         dashboard:
             limits:
