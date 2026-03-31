@@ -78,13 +78,19 @@ releases:
     namespace: rabbitmq
     <<: *default
   - name: tekton-pipelines
-    installed: true
+    installed: {{ $a | get "tekton.enabled" }}
     namespace: tekton-pipelines
     labels:
       pkg: tekton-pipelines
     <<: *default
+  - name: tekton-pipelines-artifacts
+    installed: {{ $a | get "tekton.enabled" }}
+    namespace: tekton-pipelines
+    labels:
+      pkg: tekton-pipelines
+    <<: *raw
   - name: tekton-dashboard
-    installed: true
+    installed: {{ $a | get "tekton.enabled" }}
     namespace: tekton-pipelines
     labels:
       pkg: tekton-pipelines
@@ -92,7 +98,7 @@ releases:
     values:
       - ../values/tekton-dashboard/tekton-dashboard.gotmpl
   - name: tekton-dashboard-artifacts
-    installed: true
+    installed: {{ $a | get "tekton.enabled" }}
     namespace: tekton-pipelines
     labels:
       pkg: tekton-pipelines

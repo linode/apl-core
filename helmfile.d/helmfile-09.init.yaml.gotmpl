@@ -31,7 +31,7 @@ releases:
     values:
       - ../values/knative-serving/knative-serving-cr.gotmpl
   - name: tekton-triggers
-    installed: true
+    installed: {{ $a | get "tekton.enabled" }}
     namespace: tekton-pipelines
     labels:
       pkg: tekton-triggers
