@@ -150,9 +150,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
   },
   {
     version: '4.15.0',
-    pre: async (context: RuntimeUpgradeContext) => {
-      await upgradeKnativeServing(context, ['1.19', '1.20', '1.21'])
-    },
     applications: {
       'apl-operator-apl-operator': {
         pre: async (context: RuntimeUpgradeContext) => {
@@ -162,6 +159,11 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       'istio-system-istiod': {
         post: async () => {
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
+      'knative-operator-knative-operator': {
+        post: async (context: RuntimeUpgradeContext) => {
+          await upgradeKnativeServing(context, ['1.19', '1.20', '1.21'])
         },
       },
     },
