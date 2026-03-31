@@ -35,6 +35,12 @@ jest.mock('../common/debug', () => ({
   })),
 }))
 
+jest.mock('fs', () => ({
+  existsSync: jest.fn(),
+  mkdirSync: jest.fn(),
+  writeFileSync: jest.fn(),
+}))
+
 jest.mock('../common/gitea', () => ({
   waitTillGitRepoAvailable: jest.fn().mockResolvedValue(undefined),
 }))
@@ -70,9 +76,11 @@ jest.mock('./apl-operations', () => ({
 describe('AplOperator', () => {
   let aplOperator: AplOperator
   let defaultConfig: AplOperatorConfig
+  const fs = require('fs')
 
   beforeEach(() => {
     jest.clearAllMocks()
+    fs.existsSync.mockReturnValue(false)
 
     defaultConfig = {
       gitConfig: {} as GitRepoConfig,
@@ -112,6 +120,8 @@ describe('AplOperator', () => {
 
       expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.authenticatedUrl)
       expect(mockGitRepo.clone).toHaveBeenCalled()
+      expect(fs.mkdirSync).toHaveBeenCalledTimes(2)
+      expect(fs.writeFileSync).toHaveBeenCalledTimes(2)
 
       expect(mockInfoFn).toHaveBeenCalledWith('APL operator started successfully')
     })

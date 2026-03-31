@@ -1,10 +1,12 @@
+import fs from 'fs'
+import path from 'path'
 import { decrypt } from 'src/common/crypt'
 import { commit } from '../cmd/commit'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { GitRepoConfig } from '../common/git-config'
-import { hfValues } from '../common/hf'
 import { waitTillGitRepoAvailable } from '../common/gitea'
+import { hfValues } from '../common/hf'
 import { ensureTeamGitOpsDirectories } from '../common/utils'
 import { writeValues } from '../common/values'
 import { HelmArguments } from '../common/yargs'
@@ -12,6 +14,7 @@ import { AplOperations } from './apl-operations'
 import { GitRepository } from './git-repository'
 import { updateApplyState } from './k8s'
 import { getErrorMessage } from './utils'
+import { operatorEnv } from './validators'
 
 export interface AplOperatorConfig {
   gitRepo: GitRepository
@@ -28,6 +31,16 @@ export enum ApplyTrigger {
 
 function maskRepoUrl(url: string): string {
   return url.replace(/(https?:\/\/)([^@]+)(@.+)/g, '$1***$3')
+}
+
+function ensureDirectoryWithGitkeep(dirPath: string): void {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true })
+  }
+  const gitkeepPath = path.join(dirPath, '.gitkeep')
+  if (!fs.existsSync(gitkeepPath)) {
+    fs.writeFileSync(gitkeepPath, '')
+  }
 }
 
 export class AplOperator {
@@ -172,6 +185,11 @@ export class AplOperator {
     await new Promise((resolve) => setTimeout(resolve, interval))
   }
 
+  private ensureManifestDirectories(): void {
+    ensureDirectoryWithGitkeep(path.join(env.ENV_DIR, operatorEnv.GITOPS_MANIFESTS_NS_PATH))
+    ensureDirectoryWithGitkeep(path.join(env.ENV_DIR, operatorEnv.GITOPS_MANIFESTS_GLOBAL_PATH))
+  }
+
   public async start(): Promise<void> {
     if (this.isRunning) {
       this.d.warn('Operator is already running')
@@ -184,6 +202,7 @@ export class AplOperator {
     try {
       await waitTillGitRepoAvailable(this.authenticatedUrl)
       await this.gitRepo.clone()
+      this.ensureManifestDirectories()
       this.d.info('APL operator started successfully')
     } catch (error) {
       this.isRunning = false
