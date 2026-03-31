@@ -27,7 +27,7 @@ releases:
   {{- $tektonHostname := printf "tekton-%s.%s" $teamId $domain }}
   {{- $teamApps := index $tc $teamId "apps" | default dict }}
   - name: tekton-dashboard-{{ $teamId }}
-    installed: true
+    installed: {{ $a | get "tekton.enabled" }}
     namespace: team-{{ $teamId }}
     chart: ../charts/tekton-dashboard
     labels:
@@ -39,7 +39,7 @@ releases:
       - resources:
           {{- $teamApps.tekton.resources.dashboard | toYaml | nindent 10 }}
   - name: tekton-dashboard-{{ $teamId }}-artifacts
-    installed: true
+    installed: {{ $a | get "tekton.enabled" }}
     namespace: team-{{ $teamId }}
     labels:
       tag: teams
