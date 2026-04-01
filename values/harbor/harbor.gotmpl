@@ -153,6 +153,9 @@ portal:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-portal"
   {{- end }}
   resources: {{- $h.resources.portal | toYaml | nindent 4 }}
+  podLabels:
+    otomi.io/auth: platform
+    otomi.io/auth-policy: platform
 
 redis:
   internal:

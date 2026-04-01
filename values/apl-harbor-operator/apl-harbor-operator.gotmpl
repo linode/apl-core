@@ -14,6 +14,13 @@ imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
 
+podLabels:
+  {{- if $v.apps.istio.defaultRevision }}
+  istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
+  {{- else }}
+  sidecar.istio.io/inject: "true"
+  {{- end }}
+
 resources: {{- toYaml $o.resources.operator | nindent 2 }}
 
 env:
