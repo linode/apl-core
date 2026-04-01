@@ -9,7 +9,11 @@ spec:
     matchLabels: {{- include "tekton-dashboard.selector-labels" . | indent 6 }}
   template:
     metadata:
-      labels: {{- include "tekton-dashboard.labels" . | indent 8 }}
+      labels:
+        {{- include "tekton-dashboard.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       name: {{ template "tekton-dashboard.fullname" . }}
     spec:
       containers:

@@ -55,6 +55,7 @@ resources:
           remoteRef:
             key: oauth2-proxy-secrets
             property: config_cookieSecret
+  {{ if $v.apps | dig "ingress-nginx-platform" "enabled" false }}
   - apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
@@ -98,6 +99,7 @@ resources:
         - secretName: {{ $v._derived.tlsSecretName }}
           hosts:
             - {{ $v._derived.authDomain | quote }}
+  {{- end }}
   - apiVersion: v1
     kind: ConfigMap
     metadata:
@@ -112,7 +114,7 @@ resources:
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <meta http-equiv="refresh" content="0; url={{ $consoleUrl }}">
+            <meta http-equiv="refresh" content="0; url={{ "{{.ProxyPrefix}}/start?rd={{.Redirect}}" }}">
             <title>Login Redirect</title>
             <style>
               .container {
@@ -207,7 +209,7 @@ resources:
             <div class="container">
               <div class="content">
                 <div>You are being redirected to <strong>console</strong> for signing in...</div>
-                <div>If you are not automatically redirected, <a href="{{ $consoleUrl }}">click here</a>.</div>
+                <div>If you are not automatically redirected, <a href="{{ "{{.ProxyPrefix}}/start?rd={{.Redirect}}" }}">click here</a>.</div>
               </div>
               <div class="logo">
                 <svg
@@ -242,4 +244,3 @@ resources:
             </div>
           </body>
         </html>
-

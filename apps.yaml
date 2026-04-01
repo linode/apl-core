@@ -12,7 +12,7 @@ appsInfo:
     integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by App Platform to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: Argo CD
-    appVersion: 3.3.3
+    appVersion: 3.3.6
     repo: https://github.com/argoproj/argo-helm
     maintainers: Argo Project
     relatedLinks:
@@ -76,7 +76,7 @@ appsInfo:
     integration: App Platform uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
-    appVersion: 2.14.2
+    appVersion: 2.14.3
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
@@ -139,7 +139,7 @@ appsInfo:
     isAlpha: true
   kyverno:
     title: Kyverno
-    appVersion: 1.15.2
+    appVersion: 1.17.1
     repo: https://github.com/kyverno/kyverno
     maintainers: Nirmata
     relatedLinks:
@@ -218,7 +218,7 @@ appsInfo:
     integration: App Platform uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
   trivy:
     title: Trivy Operator
-    appVersion: 0.30.0
+    appVersion: 0.30.1
     repo: https://github.com/aquasecurity/trivy-operator
     maintainers: Aqua Security
     relatedLinks:

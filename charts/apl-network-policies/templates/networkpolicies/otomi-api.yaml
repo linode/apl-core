@@ -22,14 +22,11 @@ spec:
         # Allow ingress to api endpoint for health checks
         - protocol: TCP
           port: 9000
-      # Allow access from Istio public ingress gateway
       from:
-        - namespaceSelector:
-            matchLabels:
-              name: istio-system
-          podSelector:
-            matchLabels:
-              app.kubernetes.io/instance: istio-ingressgateway-public
+        # Allow access from public ingress gateway
+        {{- with .Values.ingressGatewaySelectors }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
         # Allow access from gitea for webhook notifications
         - namespaceSelector:
             matchLabels:

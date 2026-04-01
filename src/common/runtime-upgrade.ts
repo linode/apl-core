@@ -33,7 +33,7 @@ export async function runtimeUpgrade({ when, deploymentState }: RuntimeUpgradeAr
   }
 
   const apps = await getApplications()
-  const filteredUpgrades = filterRuntimeUpgrades(deployedVersion, runtimeUpgrades)
+  const filteredUpgrades = filterRuntimeUpgrades(deployedVersion, runtimeUpgrades, deploymentState.deployingVersion)
 
   if (filteredUpgrades.length === 0) {
     d.info('No runtime upgrade operations detected, skipping')
@@ -84,10 +84,19 @@ export async function runtimeUpgrade({ when, deploymentState }: RuntimeUpgradeAr
   }
 }
 
-export function filterRuntimeUpgrades(version: string, rUpgrades: RuntimeUpgrades): RuntimeUpgrades {
+export function filterRuntimeUpgrades(
+  version: string,
+  rUpgrades: RuntimeUpgrades,
+  deployingVersion?: string,
+): RuntimeUpgrades {
   const currentVersion = semver.coerce(version)
   if (!currentVersion) {
     throw new Error(`Unsupported version format: ${version}`)
   }
-  return rUpgrades.filter((rUpgrade) => semver.gt(rUpgrade.version, currentVersion))
+  const targetVersion = deployingVersion ? semver.coerce(deployingVersion) : null
+  return rUpgrades.filter((rUpgrade) => {
+    if (semver.lte(rUpgrade.version, currentVersion)) return false
+    if (targetVersion && semver.gt(rUpgrade.version, targetVersion)) return false
+    return true
+  })
 }

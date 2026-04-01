@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- if $v.useLegacyIngress }}
 {{- $ := . }}
 {{- range $s := $v.services }}
   {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
@@ -316,7 +317,7 @@ spec:
       audiences:
         - {{ $v.sso.clientId }}
       forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
----    
+---
       {{- $principal := printf "%s/*" $v.masterRealm }}
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
@@ -328,7 +329,7 @@ spec:
     matchLabels: {{ $workload | nindent 6 }}
   action: ALLOW
   rules:
-    - from: 
+    - from:
         - source:
             requestPrincipals: [{{ $principal }}]
         {{- if not $s.isShared }}
@@ -355,4 +356,5 @@ spec:
       {{- end }}
     {{- end }}
   {{- end }}
+{{- end }}
 {{- end }}

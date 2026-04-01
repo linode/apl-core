@@ -8,10 +8,10 @@ metadata:
     app.kubernetes.io/instance: release-name
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: release-name-crds
-    app.kubernetes.io/version: 3.5.2
-    helm.sh/chart: crds-3.5.2
+    app.kubernetes.io/version: 3.7.1
+    helm.sh/chart: crds-3.7.1
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.20.0
   name: policies.kyverno.io
 spec:
   group: kyverno.io
@@ -4202,7 +4202,7 @@ spec:
                             version:
                               description: |-
                                 Version defines the Pod Security Standard versions that Kubernetes supports.
-                                Allowed values are v1.19, v1.20, v1.21, v1.22, v1.23, v1.24, v1.25, v1.26, v1.27, v1.28, v1.29, latest. Defaults to latest.
+                                Allowed values are v1.19, v1.20, v1.21, v1.22, v1.23, v1.24, v1.25, v1.26, v1.27, v1.28, v1.29, v1.30, v1.31, v1.32, latest. Defaults to latest.
                               enum:
                               - v1.19
                               - v1.20
@@ -4215,6 +4215,9 @@ spec:
                               - v1.27
                               - v1.28
                               - v1.29
+                              - v1.30
+                              - v1.31
+                              - v1.32
                               - latest
                               type: string
                           type: object
@@ -9336,7 +9339,7 @@ spec:
                                 version:
                                   description: |-
                                     Version defines the Pod Security Standard versions that Kubernetes supports.
-                                    Allowed values are v1.19, v1.20, v1.21, v1.22, v1.23, v1.24, v1.25, v1.26, v1.27, v1.28, v1.29, latest. Defaults to latest.
+                                    Allowed values are v1.19, v1.20, v1.21, v1.22, v1.23, v1.24, v1.25, v1.26, v1.27, v1.28, v1.29, v1.30, v1.31, v1.32, latest. Defaults to latest.
                                   enum:
                                   - v1.19
                                   - v1.20
@@ -9349,6 +9352,9 @@ spec:
                                   - v1.27
                                   - v1.28
                                   - v1.29
+                                  - v1.30
+                                  - v1.31
+                                  - v1.32
                                   - latest
                                   type: string
                               type: object
@@ -14241,7 +14247,7 @@ spec:
                             version:
                               description: |-
                                 Version defines the Pod Security Standard versions that Kubernetes supports.
-                                Allowed values are v1.19, v1.20, v1.21, v1.22, v1.23, v1.24, v1.25, v1.26, v1.27, v1.28, v1.29, latest. Defaults to latest.
+                                Allowed values are v1.19, v1.20, v1.21, v1.22, v1.23, v1.24, v1.25, v1.26, v1.27, v1.28, v1.29, v1.30, v1.31, v1.32, latest. Defaults to latest.
                               enum:
                               - v1.19
                               - v1.20
@@ -14254,6 +14260,9 @@ spec:
                               - v1.27
                               - v1.28
                               - v1.29
+                              - v1.30
+                              - v1.31
+                              - v1.32
                               - latest
                               type: string
                           type: object
@@ -19343,7 +19352,7 @@ spec:
                                 version:
                                   description: |-
                                     Version defines the Pod Security Standard versions that Kubernetes supports.
-                                    Allowed values are v1.19, v1.20, v1.21, v1.22, v1.23, v1.24, v1.25, v1.26, v1.27, v1.28, v1.29, latest. Defaults to latest.
+                                    Allowed values are v1.19, v1.20, v1.21, v1.22, v1.23, v1.24, v1.25, v1.26, v1.27, v1.28, v1.29, v1.30, v1.31, v1.32, latest. Defaults to latest.
                                   enum:
                                   - v1.19
                                   - v1.20
@@ -19356,6 +19365,9 @@ spec:
                                   - v1.27
                                   - v1.28
                                   - v1.29
+                                  - v1.30
+                                  - v1.31
+                                  - v1.32
                                   - latest
                                   type: string
                               type: object
