@@ -453,7 +453,8 @@ changes:
     customFunctions:
       - setIngressDefault
   - version: 58
-    customFunctions:
-      - valkeyAndOauth2RedisPVCMigration
     additions:
       - apps.tekton.enabled: true
+  - version: 59
+    customFunctions:
+      - valkeyAndOauth2RedisPVCMigration
