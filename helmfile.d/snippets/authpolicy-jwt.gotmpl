@@ -1,0 +1,44 @@
+{{- $v := . }}
+{{- $excludeNamespaces := $v | get "excludeNamespaces" list }}
+{{- with $v | get "excludeNamespace" nil }}
+{{- $excludeNamespaces = append $excludeNamespaces . }}
+{{- end }}
+{{- $excludeAccounts := $v | get "excludeAccounts" list }}
+{{- with $v | get "excludeAccount" nil }}
+{{- $excludeAccounts = append $excludeAccounts . }}
+{{- end }}
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ $v.name }}-auth-require-jwt
+  {{- with $v | get "namespace" nil }}
+  namespace: {{ . }}
+  {{- end }}
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      otomi.io/auth-policy: {{ $v.name }}
+  rules:
+    - from:
+        {{- /* Allow requests with a valid JWT token, which can be provided by OAuth2-Proxy */}}
+        - source:
+            requestPrincipals: ["*"]
+        {{- /* Optionally in addition allow requests from select namespaces */}}
+        {{- with $excludeNamespaces }}
+        - source:
+            namespaces:
+              {{- toYaml . | nindent 14 }}
+        {{- end }}
+        {{- with $excludeAccounts }}
+        - source:
+            serviceAccounts:
+              {{- toYaml . | nindent 14 }}
+        {{- end }}
+    {{- with $v | get "excludePaths" list }}
+    - to:
+        {{- /* Optionally exempt certain paths from checks */}}
+        - operation:
+            paths:
+              {{- toYaml . | nindent 14 }}
+    {{- end }}
