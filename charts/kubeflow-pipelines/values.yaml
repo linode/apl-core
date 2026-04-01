@@ -40,6 +40,7 @@ mlPipelineScheduledworkflow:
   resources: {}
 
 mlPipelineUi:
+  podLabels: {}
   resources: {}
 
 mlPipelineViewer:

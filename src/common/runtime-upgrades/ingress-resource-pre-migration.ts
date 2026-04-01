@@ -6,6 +6,7 @@ import { logLevelString, terminal } from '../debug'
 import { loadYaml, rootDir } from '../utils'
 import { RuntimeUpgradeContext } from './runtime-upgrades'
 import { ApiException } from '@kubernetes/client-node'
+import { removeApplication } from '../../cmd/apply-as-apps'
 
 const PLATFORM_LB_SERVICE = 'ingress-nginx-platform-controller'
 const PLATFORM_LB_NAMESPACE = 'ingress'
@@ -92,4 +93,10 @@ export async function syncIngressNginxService(context: RuntimeUpgradeContext): P
   await waitForLoadBalancerAnnotations(d)
   d.info('Removing LoadBalancer service')
   await removeIngressService()
+}
+
+export async function removeTektonDashboardApp(context: RuntimeUpgradeContext) {
+  const d = context.debug
+  d.info('Removing Tekton Dashboard application from tekton-pipelines namespace')
+  await removeApplication('tekton-pipelines-tekton-dashboard')
 }
