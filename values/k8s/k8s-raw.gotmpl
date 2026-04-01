@@ -83,5 +83,9 @@ resources:
     data:
       otomi-hairpin.include: |
         {{- $escapedDomain := $v.cluster.domainSuffix | replace "." "\\." }}
+        {{- if $v.apps | get "ingress-nginx-platform.enabled" false }}
         rewrite name regex (.+)\.{{ $escapedDomain }} ingress-nginx-platform-controller.ingress.svc.cluster.local answer auto
+        {{- else }}
+        rewrite name regex (.+)\.{{ $escapedDomain }} {{ $v.ingress.platformClass.className }}-istio.istio-system.svc.cluster.local answer auto
+        {{- end }}
   {{- end }}
