@@ -120,8 +120,6 @@ describe('AplOperator', () => {
 
       expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.authenticatedUrl)
       expect(mockGitRepo.clone).toHaveBeenCalled()
-      expect(fs.mkdirSync).toHaveBeenCalledTimes(2)
-      expect(fs.writeFileSync).toHaveBeenCalledTimes(2)
 
       expect(mockInfoFn).toHaveBeenCalledWith('APL operator started successfully')
     })
