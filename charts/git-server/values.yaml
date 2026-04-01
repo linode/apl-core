@@ -1,8 +1,8 @@
 repoName: otomi/values.git
 
 image:
-  repository: rockstorm/git-server
-  tag: "2.52"
+  repository: nginx
+  tag: alpine
   pullPolicy: IfNotPresent
 
 initImage:

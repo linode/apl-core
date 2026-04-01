@@ -60,6 +60,13 @@ spec:
         - name: git-server
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              apk add --no-cache git fcgiwrap spawn-fcgi
+              spawn-fcgi -s /var/run/fcgiwrap.sock -M 0666 /usr/bin/fcgiwrap
+              exec nginx -g 'daemon off;'
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
