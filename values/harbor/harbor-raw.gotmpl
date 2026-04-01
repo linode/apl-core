@@ -72,6 +72,7 @@ resources:
         data:
           REGISTRY_PASSWD: '{{ "{{ .password | toString }}" }}'
           REGISTRY_HTPASSWD: '{{ "{{ .htpasswd | toString }}" }}'
+          REGISTRY_USERNAME: '{{ "{{ .username | toString }}" }}'
     data:
       - secretKey: password
         remoteRef:
@@ -81,6 +82,10 @@ resources:
         remoteRef:
           key: harbor-secrets
           property: registry_credentials_htpasswd
+      - secretKey: username
+        remoteRef:
+          key: harbor-secrets
+          property: registry_credentials_username
 - apiVersion: external-secrets.io/v1beta1
   kind: ExternalSecret
   metadata:
