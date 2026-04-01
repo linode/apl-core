@@ -1,0 +1,35 @@
+repoName: otomi/values.git
+
+image:
+  repository: rockstorm/git-http-backend
+  tag: "2"
+  pullPolicy: IfNotPresent
+
+initImage:
+  git:
+    repository: alpine/git
+    tag: latest
+    pullPolicy: IfNotPresent
+  alpine:
+    repository: alpine
+    tag: latest
+    pullPolicy: IfNotPresent
+
+persistence:
+  size: 1Gi
+  storageClass: ""
+
+auth:
+  username: otomi-admin
+  password: ""
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+service:
+  port: 80

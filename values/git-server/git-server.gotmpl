@@ -1,0 +1,13 @@
+{{- $v := .Values }}
+{{- $g := $v.apps | get "git-server" dict }}
+repoName: otomi/values.git
+auth:
+  username: {{ $v.otomi.git.username | quote }}
+  password: {{ $v.otomi.git.password | quote }}
+persistence:
+  size: {{ $g | get "persistence.size" "1Gi" }}
+  {{- with $v.cluster | get "defaultStorageClass" nil }}
+  storageClass: {{ . | quote }}
+  {{- end }}
+resources:
+  {{- $g | get "resources" dict | toYaml | nindent 2 }}
