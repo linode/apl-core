@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- if $v.apps.tekton.enabled }}
 {{- $t := .Values.teamApps.tekton }}
 apiVersion: tekton.dev/v1
 kind: Task
@@ -209,3 +210,4 @@ spec:
       emptyDir: {}
     - name: layers-dir
       emptyDir: {}
+{{- end }}

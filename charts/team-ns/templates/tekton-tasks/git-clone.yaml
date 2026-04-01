@@ -1,4 +1,5 @@
 {{- $v := .Values}}
+{{- if $v.apps.tekton.enabled }}
 {{- $t := $v.teamApps.tekton }}
 apiVersion: tekton.dev/v1
 kind: Task
@@ -268,3 +269,4 @@ spec:
         printf "%s" "${RESULT_COMMITTER_DATE}" > "$(results.committer-date.path)"
         printf "%s" "${RESULT_SHA}" > "$(results.commit.path)"
         printf "%s" "${PARAM_URL}" > "$(results.url.path)"
+{{- end }}
