@@ -1,14 +1,16 @@
 import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import cleanDeep, { CleanOptions } from 'clean-deep'
 import { createHash } from 'crypto'
-import { existsSync, readFileSync } from 'fs'
+import fs, { existsSync, readFileSync } from 'fs'
 import { readdir, readFile, writeFile } from 'fs/promises'
 import { glob } from 'glob'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { omit } from 'lodash'
+import * as pathModule from 'path'
 import { dirname, join, resolve } from 'path'
 import { $, ProcessOutput, within } from 'zx'
+import { operatorEnv } from '../operator/validators'
 import { terminal } from './debug'
 import { env } from './envalid'
 
@@ -215,10 +217,27 @@ async function ensureKeepFile(keepFilePath: string, deps = { writeFile }): Promi
   await deps.writeFile(keepFilePath, '')
 }
 
+export function ensureManifestDirectories(): void {
+  ;[operatorEnv.GITOPS_MANIFESTS_NS_PATH, operatorEnv.GITOPS_MANIFESTS_GLOBAL_PATH].forEach((p) =>
+    ensureDirectoryWithGitkeepAsync(pathModule.join(env.ENV_DIR, p)),
+  )
+}
+
+async function ensureDirectoryWithGitkeepAsync(dirPath: string, deps = { fs, path: pathModule }) {
+  await deps.fs.promises.mkdir(dirPath, { recursive: true })
+  const gitkeepPath = deps.path.join(dirPath, '.gitkeep')
+
+  try {
+    await deps.fs.promises.access(gitkeepPath)
+  } catch {
+    await deps.fs.promises.writeFile(gitkeepPath, '')
+  }
+}
+
 export async function ensureTeamGitOpsDirectories(
   envDir: string,
   values: Record<string, any>,
-  deps = { writeFile, glob },
+  deps = { fs, path: pathModule, glob },
 ) {
   const dirs = await deps.glob(`${envDir}/env/teams/*`)
   const baseGitOpsDirs = ['sealedsecrets', 'workloadValues']
@@ -236,10 +255,7 @@ export async function ensureTeamGitOpsDirectories(
 
   await Promise.allSettled(
     keepFilePaths.map(async (keepFilePath) => {
-      await ensureKeepFile(keepFilePath, deps)
-      if (!existsSync(dirname(keepFilePath))) {
-        await $`mkdir -p ${dirname(keepFilePath)}`
-      }
+      await ensureDirectoryWithGitkeepAsync(dirname(keepFilePath), deps)
     }),
   )
   return keepFilePaths
