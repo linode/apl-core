@@ -11,6 +11,7 @@ additionalServiceMonitors:
       - port: http
         interval: 30s
         path: /metrics
+  {{- if $v.apps | get "ingress-nginx-platform.enabled" }}
   - name: istio-ingressgateway-public
     namespace: istio-system
     selector:
@@ -34,7 +35,8 @@ additionalServiceMonitors:
     endpoints:
       - targetPort: http-envoy-prom
         path: /stats/prometheus
-  {{- end }}
+  {{- end }}{{- /* with */}}
+  {{- end }}{{- /* if $v.apps | get "ingress-nginx-platform.enabled" */}}
   - name: istiod
     namespace: istio-system
     selector:

@@ -67,17 +67,12 @@ releases:
                     kind: Service
                     name: {{ $teamId }}-tekton-dashboard
                     port: 9097
-                  filters:
-                  - type: RequestHeaderModifier
-                    requestHeaderModifier:
-                      remove:
-                      - authorization
                   matches:
                   - path:
                       type: PathPrefix
                       value: /
                 {{- $httpRoute.authRules | toYaml | nindent 16 }}
-          - {{ tpl (readFile "../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" (print "tekton-" $teamId) "gatewayName" $gatewayName "host" $tektonHostname) | nindent 12 }}
+          - {{ tpl (readFile "../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" (print "tekton-" $teamId) "gatewayName" $gatewayName "host" $tektonHostname) | nindent 12 }}
           - {{ tpl (readFile "../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" (print "tekton-" $teamId) "host" $tektonHostname) | nindent 12 }}
   - name: prometheus-{{ $teamId }}
     installed: {{ or ($teamSettings | get "managedMonitoring.grafana" false) ($teamSettings | get "managedMonitoring.alertmanager" false) }}
@@ -97,13 +92,11 @@ releases:
           namespaceOverride: null
           alertmanagerSpec:
             externalUrl: "https://{{ $alertmanagerHostname }}"
-            podMetadata:
-              annotations:
-                sidecar.istio.io/inject: "true"
-              labels:
-                prometheus: system
             resources:
               {{- $teamApps.alertmanager.resources | toYaml | nindent 14 }}
+            podMetadata:
+              labels:
+                otomi.io/auth-policy: monitoring-{{ $teamId }}
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $teamSettings "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
           route:
@@ -169,8 +162,11 @@ releases:
               basicAuthUser: {{ $teamId }}
               secureJsonData:
                 basicAuthPassword: {{ $teamSettings.password | quote }}
+          podLabels:
+            otomi.io/auth-policy: monitoring-{{ $teamId }}
         extraManifests:
-          - {{ tpl (readFile "../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" (print "monitoring-" $teamId) "gatewayName" $gatewayName "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}
+          - {{ tpl (readFile "../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" (print "monitoring-" $teamId) "gatewayName" $gatewayName "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}
+          - {{ tpl (readFile "../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" (print "monitoring-" $teamId) "excludeNamespace" (print "team-" $teamId) "excludeAccount" "monitoring/po-prometheus") | nindent 12 }}
           - {{ tpl (readFile "../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" (print "monitoring-" $teamId) "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}
     {{- if has "msteams" ($teamSettings | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
