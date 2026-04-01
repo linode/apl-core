@@ -22,15 +22,10 @@ resources:
               kind: Service
               name: tekton-dashboard
               port: 9097
-          filters:
-            - type: RequestHeaderModifier
-              requestHeaderModifier:
-                remove:
-                  - authorization
           matches:
             - path:
                 type: PathPrefix
                 value: /
         {{- $httpRoute.authRules | toYaml | nindent 8 }}
-  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "tekton" "gatewayName" $v.ingress.platformClass.className "host" $hostname) | nindent 4 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" "tekton" "gatewayName" $v.ingress.platformClass.className "host" $hostname) | nindent 4 }}
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "tekton" "host" $hostname) | nindent 4 }}
