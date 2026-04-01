@@ -40,6 +40,8 @@ apps:
     enabled: {{ $a.argocd.enabled }}
   kyverno:
     enabled: {{ $a.kyverno.enabled }}
+  tekton:
+    enabled: {{ $a.tekton.enabled }}
 
 aiEnabled: {{ $v.otomi.aiEnabled }}
 isMultitenant: {{ $v.otomi.isMultitenant }}
