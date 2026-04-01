@@ -166,8 +166,8 @@ describe('git-config', () => {
 
       const result = await getStoredGitRepoConfig()
       expect(result).toEqual({
-        repoUrl: 'http://git-server.git-server.svc.cluster.local:3000/otomi/values.git',
-        authenticatedUrl: 'http://admin:s3cret@git-server.git-server.svc.cluster.local:3000/otomi/values.git',
+        repoUrl: 'http://git-server.git-server.svc.cluster.local/otomi/values.git',
+        authenticatedUrl: 'http://admin:s3cret@git-server.git-server.svc.cluster.local/otomi/values.git',
         branch: 'main',
         email: 'pipeline@cluster.local',
         username: 'admin',
