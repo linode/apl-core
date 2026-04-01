@@ -2,7 +2,7 @@ import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/clien
 import { OtomiDebugger } from '../debug'
 import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
 import { getParsedArgs } from '../yargs'
-import { syncIngressNginxService } from './add-linode-nb-annotations'
+import { removeTektonDashboardApp, syncIngressNginxService } from './ingress-resource-pre-migration'
 import { updateDbCollation } from './cloudnative-pg'
 import { migrateGitConfig } from './migrate-git-config'
 import { removeHttpBinApplication } from './remove-httpbin-application'
@@ -170,6 +170,7 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     version: '4.16.0',
     pre: async (context: RuntimeUpgradeContext) => {
       await syncIngressNginxService(context)
+      await removeTektonDashboardApp(context)
     },
   },
 ]

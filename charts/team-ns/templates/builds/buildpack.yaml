@@ -110,6 +110,7 @@ spec:
         taskRunTemplate:
           serviceAccountName: sa-team-{{ $v.teamId }}
           podTemplate:
+            priorityClassName: tekton-low
             securityContext:
               fsGroup: 65532
         workspaces:
