@@ -14,6 +14,7 @@ controller:
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/triggers/cmd/controller"
   {{- end }}
+  nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}
 
 webhook:
   resources: {{- $t.resources.triggersWebhook | toYaml | nindent 4 }}
@@ -21,3 +22,4 @@ webhook:
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/triggers/cmd/webhook"
   {{- end }}
+  nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}
