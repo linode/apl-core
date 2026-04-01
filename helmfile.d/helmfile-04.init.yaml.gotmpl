@@ -91,7 +91,7 @@ releases:
     <<: *raw
   - name: tekton-dashboard
     installed: {{ $a | get "tekton.enabled" }}
-    namespace: tekton-pipelines
+    namespace: tekton-dashboard
     labels:
       pkg: tekton-pipelines
     chart: ../charts/tekton-dashboard
@@ -99,7 +99,7 @@ releases:
       - ../values/tekton-dashboard/tekton-dashboard.gotmpl
   - name: tekton-dashboard-artifacts
     installed: {{ $a | get "tekton.enabled" }}
-    namespace: tekton-pipelines
+    namespace: tekton-dashboard
     labels:
       pkg: tekton-pipelines
     <<: *raw
