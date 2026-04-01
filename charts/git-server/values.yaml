@@ -2,7 +2,7 @@ repoName: otomi/values.git
 
 image:
   repository: rockstorm/git-http-backend
-  tag: "2"
+  tag: "2.52"
   pullPolicy: IfNotPresent
 
 initImage:
