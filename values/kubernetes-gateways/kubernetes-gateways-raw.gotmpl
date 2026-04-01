@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
-{{- $authAppNamespaces := list "argocd" "harbor" "monitoring" "grafana" "kfp" "otomi" "tekton-pipelines"}}
+{{- $authAppNamespaces := list "argocd" "harbor" "monitoring" "grafana" "kfp" "otomi" "tekton-dashboard"}}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
 {{- $logoutRedirectParam := printf "%s/protocol/openid-connect/logout?post_logout_redirect_uri=https://%s/oauth2/start&client_id=%s" $keycloakRealm $v._derived.consoleDomain $a.keycloak.idp.clientID }}
@@ -90,3 +90,21 @@ resources:
                   {{- end }}
   {{- end }}
   {{- end }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" "platform") | nindent 4 }}
+  - apiVersion: security.istio.io/v1
+    kind: RequestAuthentication
+    metadata:
+      name: platform-auth
+    spec:
+      selector:
+        matchLabels:
+          otomi.io/auth: platform
+      {{- /* Applies the authentication request where the Authorization header is present */}}
+      jwtRules:
+        - issuer: {{ $v._derived.oidcBaseUrl }}
+          jwksUri: {{ $v._derived.oidcBaseUrlBackchannel }}/protocol/openid-connect/certs
+          audiences:
+            - {{  $v.apps.keycloak.idp.clientID }}
+          fromHeaders:
+            - name: Authorization
+              prefix: "Bearer "

@@ -225,7 +225,7 @@ const setFinalizers = async (name: string) => {
   }
 }
 
-const getFinalizers = async (name: string): Promise<string[]> => {
+const getFinalizers = async (name: string): Promise<string[] | undefined> => {
   try {
     const response = await getCustomApi().getNamespacedCustomObject({
       ...ARGOCD_APP_PARAMS,
@@ -234,6 +234,9 @@ const getFinalizers = async (name: string): Promise<string[]> => {
     const app = response.body as any
     return Array.isArray(app.metadata?.finalizers) ? app.metadata.finalizers : []
   } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      return undefined
+    }
     d.warn(`Failed to get finalizers for ${name}: ${error}`)
     return []
   }
@@ -242,6 +245,9 @@ const getFinalizers = async (name: string): Promise<string[]> => {
 export const removeApplication = async (name: string): Promise<void> => {
   try {
     const finalizers = await getFinalizers(name)
+    if (finalizers === undefined) {
+      return
+    }
     if (!finalizers.includes('resources-finalizer.argocd.argoproj.io')) {
       await setFinalizers(name)
     }
@@ -251,7 +257,9 @@ export const removeApplication = async (name: string): Promise<void> => {
     })
     d.info(`Deleted application ${name}`)
   } catch (e) {
-    d.error(`Failed to delete application ${name}: ${e.message}`)
+    if (!(e instanceof ApiException && e.code === 404)) {
+      d.error(`Failed to delete application ${name}: ${e.message}`)
+    }
   }
 }
 

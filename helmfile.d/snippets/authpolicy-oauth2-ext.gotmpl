@@ -28,6 +28,6 @@ spec:
             notPaths:
               - "/oauth2/*"
               - "/platform-logout"
-            {{- range $path := ($v | get "exclusionPaths" list) }}
+            {{- range $path := ($v | get "excludePaths" list) }}
               - {{ $path | quote }}
             {{- end }}
