@@ -1,4 +1,5 @@
 {{- $v := .Values}}
+{{- if $v.apps.tekton.enabled }}
 {{- $t := $v.teamApps.tekton }}
 apiVersion: tekton.dev/v1
 kind: Task
@@ -50,3 +51,4 @@ spec:
             - "ALL"
         seccompProfile:
           type: RuntimeDefault
+{{- end }}
