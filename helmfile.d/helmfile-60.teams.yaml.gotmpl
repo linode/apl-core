@@ -157,7 +157,11 @@ releases:
               uid: loki
               type: loki
               access: proxy
+              {{- if eq $v.obj.provider.type "linode" }}
               url: http://loki-query-frontend-headless.monitoring:3101
+              {{- else }}
+              url: http://loki-headless.monitoring:3101
+              {{- end }}
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               secureJsonData:
