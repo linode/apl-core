@@ -225,8 +225,8 @@ environments:
                   memory: 512Mi
               registry:
                 requests:
-                  cpu: 20m
-                  memory: 32Mi
+                  cpu: 100m
+                  memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 256Mi
