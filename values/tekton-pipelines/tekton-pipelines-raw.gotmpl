@@ -1,0 +1,8 @@
+resources:
+  - apiVersion: scheduling.k8s.io/v1
+    kind: PriorityClass
+    metadata:
+      name: tekton-low
+    value: -10
+    globalDefault: false
+    description: "This priority class should be used for Tekton pods only."

@@ -31,3 +31,7 @@ webhook:
   resources: {{- $t.resources.pipelinesWebhook | toYaml | nindent 4 }}
   deployment:
     image: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.3.1@sha256:dadeab6bfad0a577b74761e3bc04f9fb3a457b831f9d0cddd2cc4af1699ca42d"
+
+configDefaults:
+  default-pod-template: |
+    priorityClassName: tekton-low
