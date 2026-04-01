@@ -600,6 +600,8 @@ async function migrateStatefulSetPvc(opts: {
 
     await waitForPodsDeletion(opts.namespace, opts.pvcLabelSelector)
 
+    await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
+
     try {
       await k8s.app().deleteNamespacedStatefulSet({ name: opts.statefulSetName, namespace: opts.namespace })
     } catch (error) {
@@ -607,7 +609,6 @@ async function migrateStatefulSetPvc(opts: {
     }
 
     await waitForStatefulSetDeletion(opts.statefulSetName, opts.namespace)
-    await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
   } catch (error) {
     throw error
   } finally {
