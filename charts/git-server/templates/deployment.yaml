@@ -28,21 +28,21 @@ spec:
               if [ ! -d /data/{{ .Values.repoName }} ]; then
                 mkdir -p /data/{{ dir .Values.repoName }}
                 git init --bare /data/{{ .Values.repoName }}
-                git -C /data/{{ .Values.repoName }} config http.receivepack true
               fi
+              git -C /data/{{ .Values.repoName }} config http.receivepack true
+              touch /data/{{ .Values.repoName }}/git-daemon-export-ok
           volumeMounts:
             - name: data
               mountPath: /data
-        - name: init-auth
-          image: {{ .Values.initImage.alpine.repository }}:{{ .Values.initImage.alpine.tag }}
-          imagePullPolicy: {{ .Values.initImage.alpine.pullPolicy }}
-          command:
-            - sh
-            - -ec
-            - |
-              apk add --no-cache apache2-utils
-              htpasswd -Bbc /auth/htpasswd "${GIT_USERNAME}" "${GIT_PASSWORD}"
+      containers:
+        - name: git-server
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            - name: PORT
+              value: {{ .Values.service.port | quote }}
+            - name: GIT_PROJECT_ROOT
+              value: /data
             - name: GIT_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -53,20 +53,6 @@ spec:
                 secretKeyRef:
                   name: git-server-credentials
                   key: password
-          volumeMounts:
-            - name: auth
-              mountPath: /auth
-      containers:
-        - name: git-server
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command:
-            - /bin/sh
-            - -c
-            - |
-              apk add --no-cache git fcgiwrap spawn-fcgi
-              spawn-fcgi -s /var/run/fcgiwrap.sock -M 0666 /usr/bin/fcgiwrap
-              exec nginx -g 'daemon off;'
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -84,27 +70,9 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
-            - name: auth
-              mountPath: /auth
-            - name: nginx-config
-              mountPath: /etc/nginx/nginx.conf
-              subPath: nginx.conf
-            - name: tmp
-              mountPath: /tmp
-            - name: var-run
-              mountPath: /var/run
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:
         - name: data
           persistentVolumeClaim:
             claimName: git-server-data
-        - name: auth
-          emptyDir: {}
-        - name: nginx-config
-          configMap:
-            name: git-server-nginx-config
-        - name: tmp
-          emptyDir: {}
-        - name: var-run
-          emptyDir: {}

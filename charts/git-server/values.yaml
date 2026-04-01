@@ -1,17 +1,13 @@
 repoName: otomi/values.git
 
 image:
-  repository: nginx
-  tag: alpine
+  repository: clubbers1892/simple-git-server
+  tag: v0.1.0
   pullPolicy: IfNotPresent
 
 initImage:
   git:
     repository: alpine/git
-    tag: latest
-    pullPolicy: IfNotPresent
-  alpine:
-    repository: alpine
     tag: latest
     pullPolicy: IfNotPresent
 
