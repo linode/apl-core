@@ -455,3 +455,5 @@ changes:
   - version: 58
     customFunctions:
       - valkeyAndOauth2RedisPVCMigration
+    additions:
+      - apps.tekton.enabled: true
