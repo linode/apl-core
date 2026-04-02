@@ -17,7 +17,7 @@ metadata:
   namespace: {{ include "argocd-image-updater.namespace" . | quote }}
 spec:
   ports:
-    - name: https
+    - name: metrics
       protocol: TCP
       port: {{ .Values.metrics.service.servicePort }}
       targetPort: metrics
@@ -38,6 +38,10 @@ spec:
   - ports:
     - port: metrics
       protocol: TCP
+    {{- if .Values.ingress.enabled }}
+    - port: webhook
+      protocol: TCP
+    {{- end }}
   podSelector:
     matchLabels:
       {{- include "argocd-image-updater.selectorLabels" . | nindent 6 }}
