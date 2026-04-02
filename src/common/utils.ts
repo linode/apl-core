@@ -1,8 +1,8 @@
 import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import cleanDeep, { CleanOptions } from 'clean-deep'
 import { createHash } from 'crypto'
-import fs, { existsSync, readFileSync } from 'fs'
-import { readdir, readFile } from 'fs/promises'
+import { existsSync, readFileSync } from 'fs'
+import { access, mkdir, readdir, readFile, writeFile } from 'fs/promises'
 import { glob } from 'glob'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
@@ -211,18 +211,25 @@ export async function ensureManifestDirectories(): Promise<void> {
   await ensureDirectoryWithGitkeepAsync(join(env.ENV_DIR, operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH))
 }
 
-async function ensureDirectoryWithGitkeepAsync(dirPath: string, deps = { fs }) {
-  await deps.fs.promises.mkdir(dirPath, { recursive: true })
+async function ensureDirectoryWithGitkeepAsync(
+  dirPath: string,
+  deps = { access, writeFile, mkdir, glob },
+): Promise<void> {
+  await deps.mkdir(dirPath, { recursive: true })
   const gitkeepPath = join(dirPath, '.gitkeep')
 
   try {
-    await deps.fs.promises.access(gitkeepPath)
+    await deps.access(gitkeepPath)
   } catch {
-    await deps.fs.promises.writeFile(gitkeepPath, '')
+    await deps.writeFile(gitkeepPath, '')
   }
 }
 
-export async function ensureTeamGitOpsDirectories(envDir: string, values: Record<string, any>, deps = { fs, glob }) {
+export async function ensureTeamGitOpsDirectories(
+  envDir: string,
+  values: Record<string, any>,
+  deps = { access, writeFile, mkdir, glob },
+) {
   const dirs = await deps.glob(`${envDir}/env/teams/*`)
   const baseGitOpsDirs = ['sealedsecrets', 'workloadValues']
   const aiGitOpsDirs = ['databases', 'knowledgebases', 'agents']
