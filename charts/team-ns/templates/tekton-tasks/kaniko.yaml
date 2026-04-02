@@ -1,5 +1,6 @@
 
 {{- $v := .Values }}
+{{- if $v.apps.tekton.enabled }}
 {{- $t := .Values.teamApps.tekton }}
 apiVersion: tekton.dev/v1
 kind: Task
@@ -88,3 +89,4 @@ spec:
         set -e
         image="$(params.IMAGE)"
         echo -n "${image}" | tee "$(results.IMAGE_URL.path)"
+{{- end }}
