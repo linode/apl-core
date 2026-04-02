@@ -211,10 +211,7 @@ export async function ensureManifestDirectories(): Promise<void> {
   await ensureDirectoryWithGitkeepAsync(join(env.ENV_DIR, operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH))
 }
 
-async function ensureDirectoryWithGitkeepAsync(
-  dirPath: string,
-  deps = { access, writeFile, mkdir, glob },
-): Promise<void> {
+async function ensureDirectoryWithGitkeepAsync(dirPath: string, deps = { access, writeFile, mkdir }): Promise<void> {
   await deps.mkdir(dirPath, { recursive: true })
   const gitkeepPath = join(dirPath, '.gitkeep')
 
@@ -246,7 +243,7 @@ export async function ensureTeamGitOpsDirectories(
 
   await Promise.allSettled(
     keepFilePaths.map(async (keepFilePath) => {
-      await ensureDirectoryWithGitkeepAsync(dirname(keepFilePath), deps)
+      await ensureDirectoryWithGitkeepAsync(dirname(keepFilePath))
     }),
   )
   return keepFilePaths
