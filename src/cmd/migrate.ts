@@ -599,6 +599,7 @@ async function migrateStatefulSetPvc(opts: {
     )
 
     await waitForPodsDeletion(opts.namespace, opts.pvcLabelSelector)
+    await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
 
     try {
       await k8s.app().deleteNamespacedStatefulSet({ name: opts.statefulSetName, namespace: opts.namespace })
@@ -607,17 +608,8 @@ async function migrateStatefulSetPvc(opts: {
     }
 
     await waitForStatefulSetDeletion(opts.statefulSetName, opts.namespace)
-    await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
   } catch (error) {
     throw error
-  } finally {
-    if (syncDisabled) {
-      try {
-        await setArgoCdAppSync(opts.appName, true, k8s.custom())
-      } catch (error) {
-        opts.d.warn(`Failed to re-enable Argo CD sync for ${opts.appName}: ${error}`)
-      }
-    }
   }
 }
 
