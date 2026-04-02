@@ -64,6 +64,7 @@ export const applyAll = async (): Promise<void> => {
   }
   await applyGitOpsApps()
   await setDeploymentState({ status: 'deployed', version: deployingVersion })
+  d.info('Deployment completed')
 }
 
 export const apply = async (): Promise<void> => {
