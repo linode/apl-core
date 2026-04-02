@@ -2,12 +2,11 @@ import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import cleanDeep, { CleanOptions } from 'clean-deep'
 import { createHash } from 'crypto'
 import fs, { existsSync, readFileSync } from 'fs'
-import { readdir, readFile, writeFile } from 'fs/promises'
+import { readdir, readFile } from 'fs/promises'
 import { glob } from 'glob'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { omit } from 'lodash'
-import * as pathModule from 'path'
 import { dirname, join, resolve } from 'path'
 import { $, ProcessOutput, within } from 'zx'
 import { operatorEnv } from '../operator/validators'
@@ -207,25 +206,14 @@ export const getSchemaSecretsPaths = async (teams: string[]): Promise<string[]> 
   return cleanSecretPaths
 }
 
-async function ensureKeepFile(keepFilePath: string, deps = { writeFile }): Promise<void> {
-  const dirPath = dirname(keepFilePath)
-  if (!existsSync(dirPath)) {
-    await $`mkdir -p ${dirname(keepFilePath)}`
-  }
-  if (existsSync(keepFilePath)) return
-  // create the .keep file
-  await deps.writeFile(keepFilePath, '')
+export async function ensureManifestDirectories(): Promise<void> {
+  await ensureDirectoryWithGitkeepAsync(join(env.ENV_DIR, operatorEnv.GITOPS_MANIFESTS_NS_RELATIVE_DIR_PATH))
+  await ensureDirectoryWithGitkeepAsync(join(env.ENV_DIR, operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH))
 }
 
-export function ensureManifestDirectories(): void {
-  ;[operatorEnv.GITOPS_MANIFESTS_NS_PATH, operatorEnv.GITOPS_MANIFESTS_GLOBAL_PATH].forEach((p) =>
-    ensureDirectoryWithGitkeepAsync(pathModule.join(env.ENV_DIR, p)),
-  )
-}
-
-async function ensureDirectoryWithGitkeepAsync(dirPath: string, deps = { fs, path: pathModule }) {
+async function ensureDirectoryWithGitkeepAsync(dirPath: string, deps = { fs }) {
   await deps.fs.promises.mkdir(dirPath, { recursive: true })
-  const gitkeepPath = deps.path.join(dirPath, '.gitkeep')
+  const gitkeepPath = join(dirPath, '.gitkeep')
 
   try {
     await deps.fs.promises.access(gitkeepPath)
@@ -234,11 +222,7 @@ async function ensureDirectoryWithGitkeepAsync(dirPath: string, deps = { fs, pat
   }
 }
 
-export async function ensureTeamGitOpsDirectories(
-  envDir: string,
-  values: Record<string, any>,
-  deps = { fs, path: pathModule, glob },
-) {
+export async function ensureTeamGitOpsDirectories(envDir: string, values: Record<string, any>, deps = { fs, glob }) {
   const dirs = await deps.glob(`${envDir}/env/teams/*`)
   const baseGitOpsDirs = ['sealedsecrets', 'workloadValues']
   const aiGitOpsDirs = ['databases', 'knowledgebases', 'agents']

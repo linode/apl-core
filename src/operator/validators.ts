@@ -6,11 +6,11 @@ dotenv.config()
 export const operatorEnv = cleanEnv(process.env, {
   GIT_ORG: str({ desc: 'Git organisation', default: 'otomi' }),
   GIT_REPO: str({ desc: 'Git repository', default: 'values' }),
-  GITOPS_MANIFESTS_NS_PATH: str({
+  GITOPS_MANIFESTS_NS_RELATIVE_DIR_PATH: str({
     desc: 'Path to the gitops manifests namespace',
     default: 'env/manifests/namespaces',
   }),
-  GITOPS_MANIFESTS_GLOBAL_PATH: str({
+  GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH: str({
     desc: 'Path to the gitops manifests global',
     default: 'env/manifests/global',
   }),
