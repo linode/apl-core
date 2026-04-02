@@ -21,7 +21,7 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd, sleep } from 'zx'
 import { APL_OPERATOR_NS, ARGOCD_APP_PARAMS } from '../common/constants'
-import { getK8sSecret, getSealedSecretsPEM, k8s } from '../common/k8s'
+import { getArgoCdApp, getK8sSecret, getSealedSecretsPEM, k8s, setArgoCdAppSync } from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
@@ -579,7 +579,16 @@ async function migrateStatefulSetPvc(opts: {
     return
   }
 
+  let syncDisabled = false
   try {
+    const app = await getArgoCdApp(opts.appName, k8s.custom())
+    if (app) {
+      await setArgoCdAppSync(opts.appName, false, k8s.custom())
+      syncDisabled = true
+    } else {
+      opts.d.info(`Argo CD application ${opts.appName} not found. Skipping sync disable.`)
+    }
+
     await k8s.app().patchNamespacedStatefulSet(
       {
         name: opts.statefulSetName,
