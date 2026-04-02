@@ -321,7 +321,6 @@ export const updateOperatorApplication = async (expectedRevision: string): Promi
       const values = await getAplOperatorValues()
       d.info(`Updating apl-operator application to revision ${expectedRevision}.`)
       await patchArgoCdApp('apl-operator-apl-operator', expectedRevision, values, k8s.custom())
-      d.info('Skipping further updates until apl-operator has restarted.')
       return true
     }
   } catch (error) {
