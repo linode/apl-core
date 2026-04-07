@@ -207,7 +207,7 @@ export const getSchemaSecretsPaths = async (teams: string[]): Promise<string[]> 
 }
 
 export async function ensureManifestDirectories(): Promise<void> {
-  await ensureDirectoryWithGitkeepAsync(join(env.ENV_DIR, operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_DIR_PATH))
+  await ensureDirectoryWithGitkeepAsync(join(env.ENV_DIR, operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_PATH))
   await ensureDirectoryWithGitkeepAsync(join(env.ENV_DIR, operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH))
 }
 
