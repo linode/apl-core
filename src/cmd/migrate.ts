@@ -579,12 +579,10 @@ async function migrateStatefulSetPvc(opts: {
     return
   }
 
-  let syncDisabled = false
   try {
     const app = await getArgoCdApp(opts.appName, k8s.custom())
     if (app) {
       await setArgoCdAppSync(opts.appName, false, k8s.custom())
-      syncDisabled = true
     } else {
       opts.d.info(`Argo CD application ${opts.appName} not found. Skipping sync disable.`)
     }
