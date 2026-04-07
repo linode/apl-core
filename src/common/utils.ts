@@ -207,7 +207,7 @@ export const getSchemaSecretsPaths = async (teams: string[]): Promise<string[]> 
 }
 
 export async function ensureManifestDirectories(): Promise<void> {
-  await ensureDirectoryWithGitkeepAsync(join(env.ENV_DIR, operatorEnv.GITOPS_MANIFESTS_NS_RELATIVE_DIR_PATH))
+  await ensureDirectoryWithGitkeepAsync(join(env.ENV_DIR, operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_DIR_PATH))
   await ensureDirectoryWithGitkeepAsync(join(env.ENV_DIR, operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH))
 }
 
@@ -222,11 +222,7 @@ async function ensureDirectoryWithGitkeepAsync(dirPath: string, deps = { access,
   }
 }
 
-export async function ensureTeamGitOpsDirectories(
-  envDir: string,
-  values: Record<string, any>,
-  deps = { access, writeFile, mkdir, glob },
-) {
+export async function ensureTeamGitOpsDirectories(envDir: string, values: Record<string, any>, deps = { glob }) {
   const dirs = await deps.glob(`${envDir}/env/teams/*`)
   const baseGitOpsDirs = ['sealedsecrets', 'workloadValues']
   const aiGitOpsDirs = ['databases', 'knowledgebases', 'agents']

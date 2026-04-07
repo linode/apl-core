@@ -153,7 +153,7 @@ export const getArgocdGitopsManifest = (name: string, targetNamespace?: string) 
   }
   const repoURL = `${env.GIT_PROTOCOL}://${env.GIT_URL}:${env.GIT_PORT}/otomi/values.git`
   const path = targetNamespace
-    ? `${operatorEnv.GITOPS_MANIFESTS_NS_RELATIVE_DIR_PATH}/${targetNamespace}`
+    ? `${operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_DIR_PATH}/${targetNamespace}`
     : operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH
   return getArgoCdAppManifest(name, ARGOCD_APP_GITOPS_LABEL, {
     project: 'default',
@@ -461,7 +461,7 @@ export const calculateGitOpsAppsDiff = async (
   deps = { getApplications },
 ): Promise<{ toAdd: Set<string>; toRemove: Set<string>; namespaceDirs: string[] }> => {
   const envDir = env.ENV_DIR
-  const namespaceListing = await glob(`${envDir}/${operatorEnv.GITOPS_MANIFESTS_NS_RELATIVE_DIR_PATH}/*`, {
+  const namespaceListing = await glob(`${envDir}/${operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_DIR_PATH}/*`, {
     withFileTypes: true,
   })
   const namespaceDirs = namespaceListing.filter((path) => path.isDirectory()).map((path) => path.name)

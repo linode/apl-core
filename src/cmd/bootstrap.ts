@@ -461,7 +461,7 @@ export const bootstrap = async (
   const originalValues = await deps.processValues()
   await deps.handleFileEntry()
   await deps.bootstrapSops()
-  deps.ensureManifestDirectories()
+  await deps.ensureManifestDirectories()
   await ensureTeamGitOpsDirectories(ENV_DIR, originalValues)
   d.log(`Done bootstrapping values`)
 }
