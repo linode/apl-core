@@ -71,7 +71,7 @@ async function main(): Promise<void> {
     // Phase 1: Run installation with retry until success
     const installer = new Installer(aplOps)
 
-    const { installationMode, isInstalled } = await retryInstallStep(installer.getInstallationState)
+    const { installationMode, isInstalled } = await retryInstallStep(() => installer.getInstallationState())
     const isRecoveryMode = installationMode === 'recovery'
     if (isInstalled) {
       d.info('Installation already completed, skipping install steps')
