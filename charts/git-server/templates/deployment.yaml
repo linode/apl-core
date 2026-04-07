@@ -27,7 +27,7 @@ spec:
             - |
               if [ ! -d /data/{{ .Values.repoName }} ]; then
                 mkdir -p /data/{{ dir .Values.repoName }}
-                git init --bare /data/{{ .Values.repoName }}
+                git init --bare --initial-branch=main /data/{{ .Values.repoName }}
               fi
               git -C /data/{{ .Values.repoName }} config http.receivepack true
               touch /data/{{ .Values.repoName }}/git-daemon-export-ok
