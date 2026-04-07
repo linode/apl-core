@@ -40,7 +40,8 @@ RUN apt-get update && apt-get install -y \
   ca-certificates \
   git \
   locales \
-  rsync && \
+  rsync \
+  tini && \
   rm -rf /var/lib/apt/lists/* && \
   locale-gen en_US.UTF-8
 

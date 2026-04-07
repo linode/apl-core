@@ -54,4 +54,5 @@ COPY --from=ci /home/app/stack/dist /home/app/stack/dist
 COPY --from=clean /home/app/stack/node_modules /home/app/stack/node_modules
 COPY --chown=app . .
 
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["dist/src/otomi.js"]
