@@ -27,13 +27,6 @@ spec:
         {{- with .Values.ingressGatewaySelectors }}
         {{- . | toYaml | nindent 8 }}
         {{- end }}
-        # Allow access from gitea for webhook notifications
-        - namespaceSelector:
-            matchLabels:
-              name: gitea
-          podSelector:
-            matchLabels:
-              app: gitea
         # Allow monitoring access for metrics scraping
         - namespaceSelector:
             matchLabels:
