@@ -1,35 +1,48 @@
 # Grafana Helm Chart
 
-* Installs the web dashboarding system [Grafana](http://grafana.org/)
+The leading tool for querying and visualizing time series and metrics.
 
-## Get Repo Info
+## Source Code
+
+* <https://github.com/grafana/grafana>
+
+## Requirements
+
+Kubernetes: `^1.25.0-0`
+
+## Installing the Chart
+
+### OCI Registry
+
+OCI registries are preferred in Helm as they implement unified storage, distribution, and improved security.
+
+```console
+helm install RELEASE-NAME oci://ghcr.io/grafana-community/helm-charts/grafana
+```
+
+### HTTP Registry
 
 ```console
 helm repo add grafana-community https://grafana-community.github.io/helm-charts
 helm repo update
-```
-
-_See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation._
-
-## Installing the Chart
-
-To install the chart with the release name `my-release`:
-
-```console
-helm install my-release grafana-community/grafana
+helm install RELEASE-NAME grafana-community/grafana
 ```
 
 ## Uninstalling the Chart
 
-To uninstall/delete the my-release deployment:
+To remove all of the Kubernetes objects associated with the Helm chart release:
 
 ```console
-helm delete my-release
+helm delete RELEASE-NAME
 ```
 
-The command removes all the Kubernetes components associated with the chart and deletes the release.
+## Changelog
 
-## Upgrading an existing Release to a new major version
+See the [changelog](https://grafana-community.github.io/helm-charts/changelog/?chart=grafana).
+
+---
+
+## Upgrading
 
 A major chart version change (like v1.2.3 -> v2.0.0) indicates that there is an
 incompatible breaking change needing manual actions.
@@ -68,366 +81,6 @@ This ensures the expressions are preserved for Alertmanager instead of being ren
 The minimum required Kubernetes version is now 1.25. All references to deprecated APIs have been removed.
 
 ## Configuration
-
-## Values
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| "grafana.ini".analytics.check_for_updates | bool | `true` |  |
-| "grafana.ini".log.mode | string | `"console"` |  |
-| "grafana.ini".paths.data | string | `"/var/lib/grafana/"` |  |
-| "grafana.ini".paths.logs | string | `"/var/log/grafana"` |  |
-| "grafana.ini".paths.plugins | string | `"/var/lib/grafana/plugins"` |  |
-| "grafana.ini".paths.provisioning | string | `"/etc/grafana/provisioning"` |  |
-| "grafana.ini".server.domain | string | `"{{ if (and .Values.ingress.enabled .Values.ingress.hosts) }}{{ tpl (.Values.ingress.hosts | first) . }}{{ else if (and .Values.route.main.enabled .Values.route.main.hostnames) }}{{ tpl (.Values.route.main.hostnames | first) . }}{{ else }}''{{ end }}"` |  |
-| "grafana.ini".unified_storage.index_path | string | `"/var/lib/grafana-search/bleve"` |  |
-| admin.existingSecret | string | `""` |  |
-| admin.passwordKey | string | `"admin-password"` |  |
-| admin.userKey | string | `"admin-user"` |  |
-| adminUser | string | `"admin"` |  |
-| affinity | object | `{}` |  |
-| alerting | object | `{}` |  |
-| assertNoLeakedSecrets | bool | `true` |  |
-| automountServiceAccountToken | bool | `true` |  |
-| autoscaling.behavior | object | `{}` |  |
-| autoscaling.enabled | bool | `false` |  |
-| autoscaling.maxReplicas | int | `5` |  |
-| autoscaling.minReplicas | int | `1` |  |
-| autoscaling.targetCPU | string | `"60"` |  |
-| autoscaling.targetMemory | string | `""` |  |
-| containerSecurityContext.allowPrivilegeEscalation | bool | `false` |  |
-| containerSecurityContext.capabilities.drop[0] | string | `"ALL"` |  |
-| containerSecurityContext.privileged | bool | `false` |  |
-| containerSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
-| createConfigmap | bool | `true` |  |
-| dashboardProviders | object | `{}` |  |
-| dashboards | object | `{}` |  |
-| dashboardsConfigMaps | object | `{}` |  |
-| datasources | object | `{}` |  |
-| defaultCurlOptions | string | `"-skf"` |  |
-| deploymentStrategy.type | string | `"RollingUpdate"` |  |
-| dnsConfig | object | `{}` |  |
-| dnsPolicy | string | `nil` |  |
-| downloadDashboards.env | object | `{}` |  |
-| downloadDashboards.envFromSecret | string | `""` |  |
-| downloadDashboards.envValueFrom | object | `{}` |  |
-| downloadDashboards.resources | object | `{}` |  |
-| downloadDashboards.securityContext.allowPrivilegeEscalation | bool | `false` |  |
-| downloadDashboards.securityContext.capabilities.drop[0] | string | `"ALL"` |  |
-| downloadDashboards.securityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
-| downloadDashboardsImage.pullPolicy | string | `"IfNotPresent"` |  |
-| downloadDashboardsImage.registry | string | `"docker.io"` | The Docker registry |
-| downloadDashboardsImage.repository | string | `"curlimages/curl"` |  |
-| downloadDashboardsImage.sha | string | `""` |  |
-| downloadDashboardsImage.tag | string | `"8.18.0"` |  |
-| enableKubeBackwardCompatibility | bool | `false` |  |
-| enableServiceLinks | bool | `true` |  |
-| env | object | `{}` |  |
-| envFromConfigMaps | list | `[]` |  |
-| envFromSecret | string | `""` |  |
-| envFromSecrets | list | `[]` |  |
-| envRenderSecret | object | `{}` |  |
-| envValueFrom | object | `{}` |  |
-| extraConfigmapMounts | list | `[]` |  |
-| extraContainerVolumes | list | `[]` |  |
-| extraContainers | string | `""` |  |
-| extraEmptyDirMounts | list | `[]` |  |
-| extraExposePorts | list | `[]` |  |
-| extraInitContainers | list | `[]` |  |
-| extraLabels | object | `{}` |  |
-| extraObjects | list | `[]` |  |
-| extraSecretMounts | list | `[]` |  |
-| extraVolumeMounts | list | `[]` |  |
-| extraVolumes | list | `[]` |  |
-| global.imagePullSecrets | list | `[]` |  |
-| global.imageRegistry | string | `nil` | Overrides the Docker registry globally for all images |
-| gossipPortName | string | `"gossip"` |  |
-| headlessService | bool | `false` |  |
-| hostAliases | list | `[]` |  |
-| hostUsers | string | `nil` |  |
-| image.pullPolicy | string | `"IfNotPresent"` |  |
-| image.pullSecrets | list | `[]` |  |
-| image.registry | string | `"docker.io"` | The Docker registry |
-| image.repository | string | `"grafana/grafana"` | Docker image repository |
-| image.sha | string | `""` |  |
-| image.tag | string | `""` |  |
-| imageRenderer.affinity | object | `{}` |  |
-| imageRenderer.automountServiceAccountToken | bool | `false` |  |
-| imageRenderer.autoscaling.behavior | object | `{}` |  |
-| imageRenderer.autoscaling.enabled | bool | `false` |  |
-| imageRenderer.autoscaling.maxReplicas | int | `5` |  |
-| imageRenderer.autoscaling.minReplicas | int | `1` |  |
-| imageRenderer.autoscaling.targetCPU | string | `"60"` |  |
-| imageRenderer.autoscaling.targetMemory | string | `""` |  |
-| imageRenderer.containerSecurityContext.allowPrivilegeEscalation | bool | `false` |  |
-| imageRenderer.containerSecurityContext.capabilities.drop[0] | string | `"ALL"` |  |
-| imageRenderer.containerSecurityContext.readOnlyRootFilesystem | bool | `true` |  |
-| imageRenderer.containerSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
-| imageRenderer.deploymentStrategy | object | `{}` |  |
-| imageRenderer.enabled | bool | `false` |  |
-| imageRenderer.env.HTTP_HOST | string | `"0.0.0.0"` |  |
-| imageRenderer.env.XDG_CACHE_HOME | string | `"/tmp/.chromium"` |  |
-| imageRenderer.env.XDG_CONFIG_HOME | string | `"/tmp/.chromium"` |  |
-| imageRenderer.envValueFrom | object | `{}` |  |
-| imageRenderer.extraConfigmapMounts | list | `[]` |  |
-| imageRenderer.extraSecretMounts | list | `[]` |  |
-| imageRenderer.extraVolumeMounts | list | `[]` |  |
-| imageRenderer.extraVolumes | list | `[]` |  |
-| imageRenderer.grafanaProtocol | string | `"http"` |  |
-| imageRenderer.grafanaSubPath | string | `""` |  |
-| imageRenderer.hostAliases | list | `[]` |  |
-| imageRenderer.hostUsers | string | `nil` |  |
-| imageRenderer.image.pullPolicy | string | `"Always"` |  |
-| imageRenderer.image.pullSecrets | list | `[]` |  |
-| imageRenderer.image.registry | string | `"docker.io"` | The Docker registry |
-| imageRenderer.image.repository | string | `"grafana/grafana-image-renderer"` |  |
-| imageRenderer.image.sha | string | `""` |  |
-| imageRenderer.image.tag | string | `"latest"` |  |
-| imageRenderer.networkPolicy.extraIngressSelectors | list | `[]` |  |
-| imageRenderer.networkPolicy.limitEgress | bool | `false` |  |
-| imageRenderer.networkPolicy.limitIngress | bool | `true` |  |
-| imageRenderer.nodeSelector | object | `{}` |  |
-| imageRenderer.podAnnotations | object | `{}` |  |
-| imageRenderer.podPortName | string | `"http"` |  |
-| imageRenderer.priorityClassName | string | `""` |  |
-| imageRenderer.renderingCallbackURL | string | `""` |  |
-| imageRenderer.replicas | int | `1` |  |
-| imageRenderer.resources | object | `{}` |  |
-| imageRenderer.revisionHistoryLimit | int | `10` |  |
-| imageRenderer.securityContext | object | `{}` |  |
-| imageRenderer.serverURL | string | `""` |  |
-| imageRenderer.service.appProtocol | string | `""` |  |
-| imageRenderer.service.enabled | bool | `true` |  |
-| imageRenderer.service.port | int | `8081` |  |
-| imageRenderer.service.portName | string | `"http"` |  |
-| imageRenderer.service.targetPort | int | `8081` |  |
-| imageRenderer.serviceAccountName | string | `""` |  |
-| imageRenderer.serviceMonitor.enabled | bool | `false` |  |
-| imageRenderer.serviceMonitor.interval | string | `"1m"` |  |
-| imageRenderer.serviceMonitor.labels | object | `{}` |  |
-| imageRenderer.serviceMonitor.path | string | `"/metrics"` |  |
-| imageRenderer.serviceMonitor.relabelings | list | `[]` |  |
-| imageRenderer.serviceMonitor.scheme | string | `"http"` |  |
-| imageRenderer.serviceMonitor.scrapeTimeout | string | `"30s"` |  |
-| imageRenderer.serviceMonitor.targetLabels | list | `[]` |  |
-| imageRenderer.serviceMonitor.tlsConfig | object | `{}` |  |
-| imageRenderer.tolerations | list | `[]` |  |
-| ingress.annotations | object | `{}` |  |
-| ingress.enabled | bool | `false` |  |
-| ingress.extraPaths | list | `[]` |  |
-| ingress.hosts[0] | string | `"chart-example.local"` |  |
-| ingress.labels | object | `{}` |  |
-| ingress.path | string | `"/"` |  |
-| ingress.pathType | string | `"Prefix"` |  |
-| ingress.tls | list | `[]` |  |
-| initChownData.enabled | bool | `true` |  |
-| initChownData.image.pullPolicy | string | `"IfNotPresent"` |  |
-| initChownData.image.registry | string | `"docker.io"` | The Docker registry |
-| initChownData.image.repository | string | `"library/busybox"` |  |
-| initChownData.image.sha | string | `""` |  |
-| initChownData.image.tag | string | `"1.37.0"` |  |
-| initChownData.resources | object | `{}` |  |
-| initChownData.securityContext.capabilities.add[0] | string | `"CHOWN"` |  |
-| initChownData.securityContext.capabilities.drop[0] | string | `"ALL"` |  |
-| initChownData.securityContext.readOnlyRootFilesystem | bool | `false` |  |
-| initChownData.securityContext.runAsNonRoot | bool | `false` |  |
-| initChownData.securityContext.runAsUser | int | `0` |  |
-| initChownData.securityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
-| ldap.config | string | `""` |  |
-| ldap.enabled | bool | `false` |  |
-| ldap.existingSecret | string | `""` |  |
-| lifecycleHooks | object | `{}` |  |
-| livenessProbe.failureThreshold | int | `10` |  |
-| livenessProbe.httpGet.path | string | `"/api/health"` |  |
-| livenessProbe.httpGet.port | string | `"grafana"` |  |
-| livenessProbe.initialDelaySeconds | int | `60` |  |
-| livenessProbe.timeoutSeconds | int | `30` |  |
-| namespaceOverride | string | `""` |  |
-| networkPolicy.allowExternal | bool | `true` |  |
-| networkPolicy.egress.blockDNSResolution | bool | `false` |  |
-| networkPolicy.egress.enabled | bool | `false` |  |
-| networkPolicy.egress.ports | list | `[]` |  |
-| networkPolicy.egress.to | list | `[]` |  |
-| networkPolicy.enabled | bool | `false` |  |
-| networkPolicy.explicitNamespacesSelector | object | `{}` |  |
-| networkPolicy.ingress | bool | `true` |  |
-| nodeSelector | object | `{}` |  |
-| notifiers | object | `{}` |  |
-| persistence.accessModes[0] | string | `"ReadWriteOnce"` |  |
-| persistence.disableWarning | bool | `false` |  |
-| persistence.enabled | bool | `false` |  |
-| persistence.extraPvcLabels | object | `{}` |  |
-| persistence.finalizers[0] | string | `"kubernetes.io/pvc-protection"` |  |
-| persistence.inMemory.enabled | bool | `false` |  |
-| persistence.lookupVolumeName | bool | `true` |  |
-| persistence.size | string | `"10Gi"` |  |
-| persistence.type | string | `"pvc"` |  |
-| persistence.volumeName | string | `""` |  |
-| plugins | list | `[]` |  |
-| podDisruptionBudget | object | `{}` |  |
-| podPortName | string | `"grafana"` |  |
-| rbac.create | bool | `true` |  |
-| rbac.extraClusterRoleRules | list | `[]` |  |
-| rbac.extraRoleRules | list | `[]` |  |
-| rbac.namespaced | bool | `false` |  |
-| rbac.pspEnabled | bool | `false` |  |
-| rbac.pspUseAppArmor | bool | `false` |  |
-| readinessProbe.httpGet.path | string | `"/api/health"` |  |
-| readinessProbe.httpGet.port | string | `"grafana"` |  |
-| replicas | int | `1` |  |
-| resources | object | `{}` |  |
-| revisionHistoryLimit | int | `10` |  |
-| route | object | `{"main":{"additionalRules":[],"annotations":{},"apiVersion":"gateway.networking.k8s.io/v1","enabled":false,"filters":[],"hostnames":[],"httpsRedirect":false,"kind":"HTTPRoute","labels":{},"matches":[{"path":{"type":"PathPrefix","value":"/"}}],"parentRefs":[]}}` | BETA: Configure the gateway routes for the chart here. More routes can be added by adding a dictionary key like the 'main' route. Be aware that this is an early beta of this feature, kube-prometheus-stack does not guarantee this works and is subject to change. Being BETA this can/will change in the future without notice, do not use unless you want to take that risk [[ref]](https://gateway-api.sigs.k8s.io/references/spec/#gateway.networking.k8s.io%2fv1alpha2) |
-| route.main.apiVersion | string | `"gateway.networking.k8s.io/v1"` | Set the route apiVersion, e.g. gateway.networking.k8s.io/v1 or gateway.networking.k8s.io/v1alpha2 |
-| route.main.enabled | bool | `false` | Enables or disables the route |
-| route.main.kind | string | `"HTTPRoute"` | Set the route kind Valid options are GRPCRoute, HTTPRoute, TCPRoute, TLSRoute, UDPRoute |
-| securityContext.fsGroup | int | `472` |  |
-| securityContext.runAsGroup | int | `472` |  |
-| securityContext.runAsNonRoot | bool | `true` |  |
-| securityContext.runAsUser | int | `472` |  |
-| service.annotations | object | `{}` |  |
-| service.appProtocol | string | `""` |  |
-| service.enabled | bool | `true` |  |
-| service.ipFamilies | list | `[]` |  |
-| service.ipFamilyPolicy | string | `""` |  |
-| service.labels | object | `{}` |  |
-| service.loadBalancerClass | string | `""` |  |
-| service.loadBalancerIP | string | `""` |  |
-| service.loadBalancerSourceRanges | list | `[]` |  |
-| service.port | int | `80` |  |
-| service.portName | string | `"service"` |  |
-| service.sessionAffinity | string | `""` |  |
-| service.targetPort | int | `3000` |  |
-| service.trafficDistribution | string | `""` |  |
-| service.type | string | `"ClusterIP"` |  |
-| serviceAccount.automountServiceAccountToken | bool | `false` |  |
-| serviceAccount.create | bool | `true` |  |
-| serviceAccount.labels | object | `{}` |  |
-| serviceAccount.name | string | `nil` |  |
-| serviceAccount.nameTest | string | `nil` |  |
-| serviceMonitor.basicAuth | object | `{}` |  |
-| serviceMonitor.enabled | bool | `false` |  |
-| serviceMonitor.interval | string | `"30s"` |  |
-| serviceMonitor.labels | object | `{}` |  |
-| serviceMonitor.metricRelabelings | list | `[]` |  |
-| serviceMonitor.path | string | `"/metrics"` |  |
-| serviceMonitor.relabelings | list | `[]` |  |
-| serviceMonitor.scheme | string | `"http"` |  |
-| serviceMonitor.scrapeTimeout | string | `"30s"` |  |
-| serviceMonitor.targetLabels | list | `[]` |  |
-| serviceMonitor.tlsConfig | object | `{}` |  |
-| shareProcessNamespace | bool | `false` |  |
-| sidecar.alerts.enabled | bool | `false` |  |
-| sidecar.alerts.env | object | `{}` |  |
-| sidecar.alerts.envValueFrom | object | `{}` |  |
-| sidecar.alerts.extraMounts | list | `[]` |  |
-| sidecar.alerts.initAlerts | bool | `false` |  |
-| sidecar.alerts.label | string | `"grafana_alert"` |  |
-| sidecar.alerts.labelValue | string | `""` |  |
-| sidecar.alerts.reloadURL | string | `"http://localhost:3000/api/admin/provisioning/alerting/reload"` |  |
-| sidecar.alerts.resource | string | `"both"` |  |
-| sidecar.alerts.resourceName | string | `""` |  |
-| sidecar.alerts.script | string | `nil` |  |
-| sidecar.alerts.searchNamespace | string | `nil` |  |
-| sidecar.alerts.sizeLimit | string | `""` |  |
-| sidecar.alerts.skipReload | bool | `false` |  |
-| sidecar.alerts.watchMethod | string | `"WATCH"` |  |
-| sidecar.dashboards.SCProvider | bool | `true` |  |
-| sidecar.dashboards.defaultFolderName | string | `nil` |  |
-| sidecar.dashboards.enabled | bool | `false` |  |
-| sidecar.dashboards.env | object | `{}` |  |
-| sidecar.dashboards.envValueFrom | object | `{}` |  |
-| sidecar.dashboards.extraMounts | list | `[]` |  |
-| sidecar.dashboards.folder | string | `"/tmp/dashboards"` |  |
-| sidecar.dashboards.folderAnnotation | string | `nil` |  |
-| sidecar.dashboards.initDashboards | bool | `false` |  |
-| sidecar.dashboards.label | string | `"grafana_dashboard"` |  |
-| sidecar.dashboards.labelValue | string | `""` |  |
-| sidecar.dashboards.provider.allowUiUpdates | bool | `false` |  |
-| sidecar.dashboards.provider.disableDelete | bool | `false` |  |
-| sidecar.dashboards.provider.folder | string | `""` |  |
-| sidecar.dashboards.provider.folderUid | string | `""` |  |
-| sidecar.dashboards.provider.foldersFromFilesStructure | bool | `false` |  |
-| sidecar.dashboards.provider.name | string | `"sidecarProvider"` |  |
-| sidecar.dashboards.provider.orgid | int | `1` |  |
-| sidecar.dashboards.provider.type | string | `"file"` |  |
-| sidecar.dashboards.reloadURL | string | `"http://localhost:3000/api/admin/provisioning/dashboards/reload"` |  |
-| sidecar.dashboards.resource | string | `"both"` |  |
-| sidecar.dashboards.resourceName | string | `""` |  |
-| sidecar.dashboards.script | string | `nil` |  |
-| sidecar.dashboards.searchNamespace | string | `nil` |  |
-| sidecar.dashboards.sizeLimit | string | `""` |  |
-| sidecar.dashboards.skipReload | bool | `false` |  |
-| sidecar.dashboards.watchMethod | string | `"WATCH"` |  |
-| sidecar.datasources.enabled | bool | `false` |  |
-| sidecar.datasources.env | object | `{}` |  |
-| sidecar.datasources.envValueFrom | object | `{}` |  |
-| sidecar.datasources.extraMounts | list | `[]` |  |
-| sidecar.datasources.initDatasources | bool | `false` |  |
-| sidecar.datasources.label | string | `"grafana_datasource"` |  |
-| sidecar.datasources.labelValue | string | `""` |  |
-| sidecar.datasources.reloadURL | string | `"http://localhost:3000/api/admin/provisioning/datasources/reload"` |  |
-| sidecar.datasources.resource | string | `"both"` |  |
-| sidecar.datasources.resourceName | string | `""` |  |
-| sidecar.datasources.script | string | `nil` |  |
-| sidecar.datasources.searchNamespace | string | `nil` |  |
-| sidecar.datasources.sizeLimit | string | `""` |  |
-| sidecar.datasources.skipReload | bool | `false` |  |
-| sidecar.datasources.watchMethod | string | `"WATCH"` |  |
-| sidecar.enableUniqueFilenames | bool | `false` |  |
-| sidecar.image.registry | string | `"quay.io"` | The Docker registry |
-| sidecar.image.repository | string | `"kiwigrid/k8s-sidecar"` |  |
-| sidecar.image.sha | string | `""` |  |
-| sidecar.image.tag | string | `"2.5.0"` |  |
-| sidecar.imagePullPolicy | string | `"IfNotPresent"` |  |
-| sidecar.livenessProbe | object | `{}` |  |
-| sidecar.notifiers.enabled | bool | `false` |  |
-| sidecar.notifiers.env | object | `{}` |  |
-| sidecar.notifiers.extraMounts | list | `[]` |  |
-| sidecar.notifiers.initNotifiers | bool | `false` |  |
-| sidecar.notifiers.label | string | `"grafana_notifier"` |  |
-| sidecar.notifiers.labelValue | string | `""` |  |
-| sidecar.notifiers.reloadURL | string | `"http://localhost:3000/api/admin/provisioning/notifications/reload"` |  |
-| sidecar.notifiers.resource | string | `"both"` |  |
-| sidecar.notifiers.resourceName | string | `""` |  |
-| sidecar.notifiers.script | string | `nil` |  |
-| sidecar.notifiers.searchNamespace | string | `nil` |  |
-| sidecar.notifiers.sizeLimit | string | `""` |  |
-| sidecar.notifiers.skipReload | bool | `false` |  |
-| sidecar.notifiers.watchMethod | string | `"WATCH"` |  |
-| sidecar.plugins.enabled | bool | `false` |  |
-| sidecar.plugins.env | object | `{}` |  |
-| sidecar.plugins.extraMounts | list | `[]` |  |
-| sidecar.plugins.initPlugins | bool | `false` |  |
-| sidecar.plugins.label | string | `"grafana_plugin"` |  |
-| sidecar.plugins.labelValue | string | `""` |  |
-| sidecar.plugins.reloadURL | string | `"http://localhost:3000/api/admin/provisioning/plugins/reload"` |  |
-| sidecar.plugins.resource | string | `"both"` |  |
-| sidecar.plugins.resourceName | string | `""` |  |
-| sidecar.plugins.script | string | `nil` |  |
-| sidecar.plugins.searchNamespace | string | `nil` |  |
-| sidecar.plugins.sizeLimit | string | `""` |  |
-| sidecar.plugins.skipReload | bool | `false` |  |
-| sidecar.plugins.watchMethod | string | `"WATCH"` |  |
-| sidecar.readinessProbe | object | `{}` |  |
-| sidecar.resources | object | `{}` |  |
-| sidecar.securityContext.allowPrivilegeEscalation | bool | `false` |  |
-| sidecar.securityContext.capabilities.drop[0] | string | `"ALL"` |  |
-| sidecar.securityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
-| smtp.existingSecret | string | `""` |  |
-| smtp.passwordKey | string | `"password"` |  |
-| smtp.userKey | string | `"user"` |  |
-| testFramework.containerSecurityContext | object | `{}` |  |
-| testFramework.enabled | bool | `true` |  |
-| testFramework.image.registry | string | `"docker.io"` | The Docker registry |
-| testFramework.image.repository | string | `"bats/bats"` |  |
-| testFramework.image.tag | string | `"1.13.0"` |  |
-| testFramework.imagePullPolicy | string | `"IfNotPresent"` |  |
-| testFramework.resources | object | `{}` |  |
-| testFramework.securityContext | object | `{}` |  |
-| tolerations | list | `[]` |  |
-| topologySpreadConstraints | list | `[]` |  |
-| useStatefulSet | bool | `false` |  |
 
 ### Example ingress with path
 
@@ -500,6 +153,7 @@ dashboards:
       file: dashboards/custom-dashboard.json
     prometheus-stats:
       # Ref: https://grafana.com/dashboards/2
+      # title: My Custom Title   # optional; when set for a downloaded dashboard (gnetId or url), overrides the title displayed in Grafana
       gnetId: 2
       revision: 2
       datasource: Prometheus
@@ -526,15 +180,15 @@ dashboards:
 
 ## BASE64 dashboards
 
-Dashboards could be stored on a server that does not return JSON directly and instead of it returns a Base64 encoded file (e.g. Gerrit)
-A new parameter has been added to the url use case so if you specify a b64content value equals to true after the url entry a Base64 decoding is applied before save the file to disk.
+Dashboards could be stored on a server that does not return JSON directly and instead of it returns a base64 encoded file (e.g. Gerrit)
+A new parameter has been added to the URL use case so if you specify a b64content value equals to true after the URL entry a base64 decoding is applied before save the file to disk.
 If this entry is not set or is equals to false not decoding is applied to the file before saving it to disk.
 
 ### Gerrit use case
 
 Gerrit API for download files has the following schema: <https://yourgerritserver/a/{project-name}/branches/{branch-id}/files/{file-id}/content> where {project-name} and
-{file-id} usually has '/' in their values and so they MUST be replaced by %2F so if project-name is user/repo, branch-id is master and file-id is equals to dir1/dir2/dashboard
-the url value is <https://yourgerritserver/a/user%2Frepo/branches/master/files/dir1%2Fdir2%2Fdashboard/content>
+{file-id} usually has '/' in their values and so they MUST be replaced by %2F so if project-name is user/repository, branch-id is master and file-id is equals to dir1/dir2/dashboard
+the URL value is <https://yourgerritserver/a/user%2Frepo/branches/master/files/dir1%2Fdir2%2Fdashboard/content>
 
 ## Sidecar for dashboards
 
@@ -566,7 +220,7 @@ data:
 If the parameter `sidecar.datasources.enabled` is set, an init container is deployed in the grafana
 pod. This container lists all secrets (or configmaps, though not recommended) in the cluster and
 filters out the ones with a label as defined in `sidecar.datasources.label`. The files defined in
-those secrets are written to a folder and accessed by grafana on startup. Using these yaml files,
+those secrets are written to a folder and accessed by grafana on startup. Using these YAML files,
 the data sources in grafana can be imported.
 
 Should you aim for reloading datasources in Grafana each time the config is changed, set `sidecar.datasources.skipReload: false` and adjust `sidecar.datasources.reloadURL` to `http://<svc-name>.<namespace>.svc.cluster.local/api/admin/provisioning/datasources/reload`.
@@ -658,7 +312,7 @@ datasources:
 If the parameter `sidecar.notifiers.enabled` is set, an init container is deployed in the grafana
 pod. This container lists all secrets (or configmaps, though not recommended) in the cluster and
 filters out the ones with a label as defined in `sidecar.notifiers.label`. The files defined in
-those secrets are written to a folder and accessed by grafana on startup. Using these yaml files,
+those secrets are written to a folder and accessed by grafana on startup. Using these YAML files,
 the notification channels in grafana can be imported. The secrets must be created before
 `helm install` so that the notifiers init container can list the secrets.
 
@@ -912,4 +566,18 @@ grafana.ini:
 ```
 
 ### Installing plugins
-For installing plugins please see the [official documentation](https://grafana.com/docs/grafana/latest/administration/plugin-management/#install-plugins-using-the-grafana-helm-chart).
+
+If you want to install a Grafana plugin using the helm chart, you can do so by using the identifier of the plugin, for example `digirich-bubblechart-panel` will install [Bubble Chart](https://grafana.com/grafana/plugins/digrich-bubblechart-panel/). 
+
+You can also install a plugin and a specific version by specifying the version and URL of the download file as shown in the example below : 
+
+```yaml
+plugins:
+  - digrich-bubblechart-panel
+  - grafana-clock-panel
+  ## You can also use other plugin download URL, as long as they are valid zip files,
+  ## and specify the name of the plugin as prefix, with an version. Like this:
+  # - marcusolsson-json-datasource@1.3.24@https://grafana.com/api/plugins/marcusolsson-json-datasource/versions/1.3.24/download
+```
+
+Generic documentation about plugins can be found in the [official documentation](https://grafana.com/docs/grafana/latest/administration/plugin-management/).
