@@ -1,0 +1,19 @@
+# Test Case 2: alphaConfig enabled with forceLegacyConfig=false and no custom legacy config
+# Expected: Chart generates the minimal legacy config with only email_domains.
+
+alphaConfig:
+  enabled: true
+  configData:
+    providers:
+      - id: google
+        provider: google
+        clientID: fake-client-id
+        clientSecret: fake-client-secret
+    upstreamConfig:
+      upstreams:
+        - id: alpha-service
+          path: /
+          uri: http://alpha-backend:8080
+
+config:
+  forceLegacyConfig: false
