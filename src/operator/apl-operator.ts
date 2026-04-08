@@ -5,7 +5,7 @@ import { env } from '../common/envalid'
 import { GitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/gitea'
 import { hfValues } from '../common/hf'
-import { ensureTeamGitOpsDirectories } from '../common/utils'
+import { ensureManifestDirectories, ensureTeamGitOpsDirectories } from '../common/utils'
 import { writeValues } from '../common/values'
 import { HelmArguments } from '../common/yargs'
 import { AplOperations } from './apl-operations'
@@ -90,6 +90,7 @@ export class AplOperator {
       }
       const values = await hfValues({}, env.ENV_DIR)
       await ensureTeamGitOpsDirectories(env.ENV_DIR, values ?? {})
+      await ensureManifestDirectories()
 
       await commit(false, {} as HelmArguments, this.startupGitConfig) // Pass startup config to use frozen git credentials
 
