@@ -49,6 +49,7 @@ jest.mock('../common/crypt', () => ({
 }))
 jest.mock('../common/utils', () => ({
   ensureTeamGitOpsDirectories: jest.fn().mockResolvedValue(undefined),
+  ensureManifestDirectories: jest.fn().mockResolvedValue(undefined),
 }))
 jest.mock('../cmd/commit', () => ({
   commit: jest.fn().mockResolvedValue(undefined),
