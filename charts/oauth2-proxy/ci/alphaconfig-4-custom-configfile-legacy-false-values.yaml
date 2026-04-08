@@ -1,0 +1,22 @@
+# Test Case 4: alphaConfig enabled + custom configFile + forceLegacyConfig=false
+# Expected: Chart ignores the custom legacy config and generates only email_domains.
+
+alphaConfig:
+  enabled: true
+  configData:
+    providers:
+      - id: google
+        provider: google
+        clientID: fake-client-id
+        clientSecret: fake-client-secret
+    upstreamConfig:
+      upstreams:
+        - id: alpha-service
+          path: /
+          uri: http://alpha-backend:8080
+
+config:
+  configFile: |-
+    email_domains = [ "example.com" ]
+    upstreams = [ "http://ignored-backend:8080" ]
+  forceLegacyConfig: false
