@@ -1,0 +1,30 @@
+# Test Case 5: alphaConfig enabled + existingConfig + forceLegacyConfig=false
+# Expected: Chart ignores the external legacy ConfigMap and generates only email_domains.
+
+alphaConfig:
+  enabled: true
+  configData:
+    providers:
+      - id: google
+        provider: google
+        clientID: fake-client-id
+        clientSecret: fake-client-secret
+    upstreamConfig:
+      upstreams:
+        - id: alpha-service
+          path: /
+          uri: http://alpha-backend:8080
+
+config:
+  existingConfig: my-external-configmap
+  forceLegacyConfig: false
+
+extraObjects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: my-external-configmap
+    data:
+      oauth2_proxy.cfg: |
+        email_domains = [ "ignored.example.com" ]
+        upstreams = [ "http://ignored-backend:8080" ]
