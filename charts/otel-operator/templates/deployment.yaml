@@ -46,6 +46,7 @@ spec:
       containers:
         - args:
             - --metrics-addr=0.0.0.0:{{ .Values.manager.ports.metricsPort }}
+            - --metrics-secure=false
             {{- if .Values.manager.leaderElection.enabled }}
             - --enable-leader-election
             {{- end }}
