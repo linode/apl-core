@@ -21,7 +21,15 @@ import {
   secretId,
 } from 'src/common/k8s'
 import { getKmsSettings } from 'src/common/repo'
-import { ensureTeamGitOpsDirectories, getFilename, gucci, isCore, loadYaml, rootDir } from 'src/common/utils'
+import {
+  ensureManifestDirectories,
+  ensureTeamGitOpsDirectories,
+  getFilename,
+  gucci,
+  isCore,
+  loadYaml,
+  rootDir,
+} from 'src/common/utils'
 import { generateSecrets, writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -438,6 +446,7 @@ export const bootstrap = async (
     encrypt,
     decrypt,
     handleFileEntry,
+    ensureManifestDirectories,
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:bootstrap`)
@@ -452,6 +461,7 @@ export const bootstrap = async (
   const originalValues = await deps.processValues()
   await deps.handleFileEntry()
   await deps.bootstrapSops()
+  await deps.ensureManifestDirectories()
   await ensureTeamGitOpsDirectories(ENV_DIR, originalValues)
   d.log(`Done bootstrapping values`)
 }
