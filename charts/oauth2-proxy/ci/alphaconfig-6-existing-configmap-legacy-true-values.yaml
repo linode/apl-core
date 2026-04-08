@@ -1,0 +1,30 @@
+# Test Case 6: alphaConfig enabled + existingConfig + forceLegacyConfig=true
+# Expected: Chart mounts the external legacy ConfigMap as the main config.
+
+alphaConfig:
+  enabled: true
+  configData:
+    providers:
+      - id: google
+        provider: google
+        clientID: fake-client-id
+        clientSecret: fake-client-secret
+    upstreamConfig:
+      upstreams:
+        - id: alpha-service
+          path: /
+          uri: http://alpha-backend:8080
+
+config:
+  existingConfig: my-external-configmap
+  forceLegacyConfig: true
+
+extraObjects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: my-external-configmap
+    data:
+      oauth2_proxy.cfg: |
+        email_domains = [ "legacy.example.com" ]
+        encode_state = true
