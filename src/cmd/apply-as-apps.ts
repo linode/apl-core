@@ -5,9 +5,9 @@ import {
   setHeaderOptions,
   V1ResourceRequirements,
 } from '@kubernetes/client-node'
-import { existsSync, statSync, mkdirSync, rmSync } from 'fs'
-import { glob } from 'glob'
+import { existsSync, mkdirSync, rmSync, statSync } from 'fs'
 import { readFile } from 'fs/promises'
+import { glob } from 'glob'
 import { appPatches, genericPatch } from 'src/applicationPatches.json'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -16,12 +16,11 @@ import { appRevisionMatches, k8s, patchArgoCdApp, patchContainerResourcesOfSts }
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTagFromValues, objectToYaml } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { operatorEnv } from 'src/operator/validators'
 import { Argv, CommandModule } from 'yargs'
 import { ARGOCD_APP_DEFAULT_SYNC_POLICY, ARGOCD_APP_PARAMS } from '../common/constants'
 import { env } from '../common/envalid'
 
-export const GITOPS_MANIFESTS_NS_PATH = 'env/manifests/namespaces'
-export const GITOPS_MANIFESTS_GLOBAL_PATH = 'env/manifests/global'
 export const ARGOCD_APP_DEFAULT_LABEL = 'managed'
 export const ARGOCD_APP_GITOPS_LABEL = 'generic-gitops'
 export const ARGOCD_APP_GITOPS_NS_PREFIX = 'gitops-ns'
@@ -153,7 +152,9 @@ export const getArgocdGitopsManifest = (name: string, targetNamespace?: string) 
     syncPolicy.syncOptions.push('CreateNamespace=true')
   }
   const repoURL = `${env.GIT_PROTOCOL}://${env.GIT_URL}:${env.GIT_PORT}/otomi/values.git`
-  const path = targetNamespace ? `${GITOPS_MANIFESTS_NS_PATH}/${targetNamespace}` : GITOPS_MANIFESTS_GLOBAL_PATH
+  const path = targetNamespace
+    ? `${operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_PATH}/${targetNamespace}`
+    : operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH
   return getArgoCdAppManifest(name, ARGOCD_APP_GITOPS_LABEL, {
     project: 'default',
     syncPolicy,
@@ -460,13 +461,17 @@ export const calculateGitOpsAppsDiff = async (
   deps = { getApplications },
 ): Promise<{ toAdd: Set<string>; toRemove: Set<string>; namespaceDirs: string[] }> => {
   const envDir = env.ENV_DIR
-  const namespaceListing = await glob(`${envDir}/${GITOPS_MANIFESTS_NS_PATH}/*`, { withFileTypes: true })
+  const namespaceListing = await glob(`${envDir}/${operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_PATH}/*`, {
+    withFileTypes: true,
+  })
   const namespaceDirs = namespaceListing.filter((path) => path.isDirectory()).map((path) => path.name)
   const existingGitOpsApps = new Set(await deps.getApplications(`otomi.io/app=${ARGOCD_APP_GITOPS_LABEL}`))
 
   // First create sets of Applications to be updated
   const requiredGitOpsApps = new Set(namespaceDirs.map((dirName) => `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`))
-  const globalPath = statSync(`${envDir}/${GITOPS_MANIFESTS_GLOBAL_PATH}`, { throwIfNoEntry: false })
+  const globalPath = statSync(`${envDir}/${operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH}`, {
+    throwIfNoEntry: false,
+  })
   if (globalPath && globalPath.isDirectory()) {
     requiredGitOpsApps.add(ARGOCD_APP_GITOPS_GLOBAL_NAME)
   }
