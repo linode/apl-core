@@ -44,7 +44,7 @@ app.kubernetes.io/part-of: {{ template "oauth2-proxy.name" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 {{- if .Values.customLabels }}
-{{ toYaml .Values.customLabels }}
+{{ tpl (toYaml .Values.customLabels) $ }}
 {{- end }}
 {{- end }}
 
@@ -61,7 +61,7 @@ Get the secret name.
 */}}
 {{- define "oauth2-proxy.secretName" -}}
 {{- if .Values.config.existingSecret -}}
-{{- printf "%s" .Values.config.existingSecret -}}
+{{- printf "%s" (tpl .Values.config.existingSecret $) -}}
 {{- else -}}
 {{- printf "%s" (include "oauth2-proxy.fullname" .) -}}
 {{- end -}}
@@ -161,6 +161,44 @@ metricsServer:
 {{- if .Values.alphaConfig.configFile }}
 {{- tpl .Values.alphaConfig.configFile $ | nindent 0 }}
 {{- end }}
+{{- end -}}
+
+{{/*
+If `config.forceLegacyConfig=false`, the chart ignores both the `config.configFile` and `config.existingConfig` overrides and only generates a minimal necessary legacy config.
+If `config.existingConfig` is set and `config.forceLegacyConfig=true`, the external ConfigMap is mounted into the mounted file.
+If `config.configFile` is set and `config.forceLegacyConfig=true`, the chart renders that inline content into the mounted file.
+*/}}
+{{- define "oauth2-proxy.legacy-config.mode" -}}
+{{- if and .Values.alphaConfig.enabled (not .Values.config.forceLegacyConfig) -}}
+generated-alpha-compatible
+{{- else if .Values.config.existingConfig -}}
+existing-configmap
+{{- else if .Values.config.configFile -}}
+inline-custom
+{{- else if .Values.alphaConfig.enabled -}}
+generated-alpha-compatible
+{{- else -}}
+generated-legacy
+{{- end -}}
+{{- end -}}
+
+{{- define "oauth2-proxy.legacy-config.name" -}}
+{{- if eq (include "oauth2-proxy.legacy-config.mode" .) "existing-configmap" -}}
+{{- .Values.config.existingConfig -}}
+{{- else -}}
+{{- template "oauth2-proxy.fullname" . -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "oauth2-proxy.legacy-config.content" -}}
+{{- if eq (include "oauth2-proxy.legacy-config.mode" .) "inline-custom" -}}
+{{- tpl .Values.config.configFile $ -}}
+{{- else if eq (include "oauth2-proxy.legacy-config.mode" .) "generated-alpha-compatible" -}}
+email_domains = {{ .Values.config.emailDomains | toJson }}
+{{- else -}}
+email_domains = {{ .Values.config.emailDomains | toJson }}
+upstreams = {{ .Values.config.upstreams | toJson }}
+{{- end -}}
 {{- end -}}
 
 {{- define "oauth2-proxy.secrets" -}}
