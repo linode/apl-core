@@ -1,0 +1,22 @@
+# Test Case 3: alphaConfig enabled + custom configFile + forceLegacyConfig=true
+# Expected: Chart keeps the custom legacy config file content unchanged.
+
+alphaConfig:
+  enabled: true
+  configData:
+    providers:
+      - id: google
+        provider: google
+        clientID: fake-client-id
+        clientSecret: fake-client-secret
+    upstreamConfig:
+      upstreams:
+        - id: alpha-service
+          path: /
+          uri: http://alpha-backend:8080
+
+config:
+  configFile: |-
+    email_domains = [ "example.com" ]
+    encode_state = true
+  forceLegacyConfig: true
