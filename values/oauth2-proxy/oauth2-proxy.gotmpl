@@ -40,12 +40,13 @@ config:
     cookie_domains = {{ $domains | toJson }}
     cookie_samesite = "none"
     # set to the same as keycloak realm's accessCodeLifespan
-    cookie_refresh = "1m"
+    cookie_refresh = "30s"
     # set to the same as keycloak client idle timeout
-    cookie_expire = "30m"
+    cookie_expire = "2m"
     set_authorization_header = true
     pass_authorization_header = true
     skip_auth_routes = "/manifest.json"
+    api_routes = ["/api/"]
     silence_ping_logging = true
     custom_templates_dir = "/etc/oauth2-proxy"
 
