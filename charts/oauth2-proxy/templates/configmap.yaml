@@ -1,5 +1,4 @@
-{{- if not .Values.config.existingConfig }}
-{{- if .Values.config.configFile }}
+{{- if ne (include "oauth2-proxy.legacy-config.mode" .) "existing-configmap" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,6 +12,6 @@ metadata:
   name: {{ template "oauth2-proxy.fullname" . }}
   namespace: {{ template "oauth2-proxy.namespace" $ }}
 data:
-  oauth2_proxy.cfg: {{ tpl .Values.config.configFile $ | quote }}
-{{- end }}
+  oauth2_proxy.cfg: |
+{{ include "oauth2-proxy.legacy-config.content" . | nindent 4 }}
 {{- end }}
