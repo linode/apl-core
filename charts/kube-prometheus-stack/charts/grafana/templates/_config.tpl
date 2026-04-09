@@ -132,6 +132,14 @@ download_dashboards.sh: |
   {{- if $value.b64content }}
     | base64 -d \
   {{- end }}
+  {{- /*
+  Overrides original title with a custom title.
+  Deterministic search as title is generally indented with 2 spaces, 4 spaces or a tab.
+  Escape characters that may be wrongly interpreted by sed: backslash (\), double backslash (\\), and ampersand (&).
+  */}}
+  {{- if $value.title }}
+    | sed -E '/^(\t|  |    )"title":/ s#"title": *"[^"]*"#"title": "{{ $value.title | replace "\\" "\\\\" | replace "\"" "\\\"" | replace "&" "\\&" }}"#' \
+  {{- end }}
   > "{{- if $dpPath -}}{{ $dpPath }}{{- else -}}/var/lib/grafana/dashboards/{{ $provider }}{{- end -}}/{{ $key }}.json"
     {{ end }}
   {{- end }}
