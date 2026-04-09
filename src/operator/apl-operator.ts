@@ -76,6 +76,11 @@ export class AplOperator {
 
     try {
       const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
+      // specVersion is managed by the migration system — do not overwrite it with defaults.
+      // migrate() compares the on-disk specVersion against values-changes.yaml to detect pending migrations.
+      if (defaultValues?.versions) {
+        delete defaultValues.versions.specVersion
+      }
       this.d.info('Write default values to env repo')
       await writeValues(defaultValues)
 
