@@ -10,13 +10,15 @@ export const GIT_CONFIG_NAMESPACE = APL_OPERATOR_NS
 /**
  * Unified Git repository configuration with credentials.
  * Contains both the base URL (without credentials) and the authenticated URL (with embedded credentials).
+ * The authenticatedUrl uses token-only auth (password/token in URL username position, no password field),
+ * which is the standard format for PAT/token-based git authentication.
  */
 export interface GitRepoConfig {
   repoUrl: string // URL without credentials (e.g., https://github.com/org/repo.git)
-  authenticatedUrl: string // URL with embedded credentials for git operations
+  authenticatedUrl: string // URL with token-only auth: https://TOKEN@host/path
   branch: string
   email: string
-  username: string
+  username?: string // Optional: only used for git commit author identity (git config user.name)
   password: string
 }
 
@@ -27,14 +29,14 @@ export interface GitConfigData {
 }
 
 export interface GitCredentials {
-  username: string
+  username?: string
   password: string
 }
 
 export async function getGitCredentials(): Promise<GitCredentials | undefined> {
   const secretData = await getK8sSecret(GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE)
 
-  if (!secretData?.username || !secretData?.password) {
+  if (!secretData?.password) {
     return undefined
   }
 
@@ -79,7 +81,7 @@ export async function getStoredGitRepoConfig(): Promise<GitRepoConfig> {
   }
 
   if (!credentials) {
-    throw new Error(`Git credentials not found in ${GIT_CONFIG_SECRET_NAME} & gitea-credentials secret`)
+    throw new Error(`Git password/token not found in ${GIT_CONFIG_SECRET_NAME} or gitea-credentials secret`)
   }
 
   // We cannot do hfValues because the env dir does not exist yet.
@@ -100,15 +102,20 @@ export async function getStoredGitRepoConfig(): Promise<GitRepoConfig> {
   if (!repoUrl) {
     throw new Error(`Git repository URL is missing in ${GIT_CONFIG_CONFIGMAP_NAME} config`)
   }
-  if (!username || !password) {
-    throw new Error(`Git credentials are incomplete in ${GIT_CONFIG_SECRET_NAME} secret`)
+  if (!password) {
+    throw new Error(`Git password/token is missing in ${GIT_CONFIG_SECRET_NAME} secret`)
   }
   if (!branch || !email) {
     throw new Error(`Git branch or email is missing in ${GIT_CONFIG_CONFIGMAP_NAME} config`)
   }
   const url = new URL(repoUrl)
-  url.username = username
-  url.password = password
+  if (username) {
+    url.username = username
+    url.password = password
+  } else {
+    url.username = password
+    url.password = ''
+  }
   const authenticatedUrl = url.toString()
 
   return { repoUrl, authenticatedUrl, branch, email, username, password }
@@ -141,15 +148,20 @@ export const getRepo = (values: Record<string, any>): GitRepoConfig => {
   if (process.env.NODE_ENV === 'development') {
     otomiGit.repoUrl = process.env.GIT_REPO_URL
   }
-  const username = otomiGit?.username
+  const username: string | undefined = otomiGit?.username
   const password = otomiGit?.password
   const email = otomiGit?.email
   const branch = otomiGit?.branch
 
   const repoUrl = otomiGit?.repoUrl as string
   const url = new URL(repoUrl)
-  url.username = username
-  url.password = password
+  if (username) {
+    url.username = username
+    url.password = password
+  } else {
+    url.username = password
+    url.password = ''
+  }
   const authenticatedUrl = url.toString()
 
   return { repoUrl, authenticatedUrl, branch, email, username, password }
