@@ -126,12 +126,25 @@ export class AplOperator {
 
   private async migrateGitRepoIfUrlChanged(values: Record<string, any> | undefined): Promise<void> {
     const newRepoUrl = values?.otomi?.git?.repoUrl
-    if (newRepoUrl && newRepoUrl !== this.startupGitConfig.repoUrl) {
+    const newBranch = values?.otomi?.git?.branch
+
+    const urlChanged = newRepoUrl && newRepoUrl !== this.startupGitConfig.repoUrl
+    const branchChanged = newBranch && newBranch !== this.startupGitConfig.branch
+
+    if (urlChanged) {
       this.d.info(
-        `Git repository URL changed from ${this.startupGitConfig.repoUrl} to ${newRepoUrl}, trying to push content to new repository before applying`,
+        `Git repository URL changed from ${this.startupGitConfig.repoUrl} to ${newRepoUrl}, pushing content to new repository before applying`,
       )
+    }
+    if (branchChanged) {
+      this.d.info(
+        `Git branch changed from ${this.startupGitConfig.branch} to ${newBranch}, pushing content to new branch before applying`,
+      )
+    }
+
+    if (urlChanged || branchChanged) {
       const newConfig = getRepo(values)
-      await this.gitRepo.pushToNewRepo(newConfig.authenticatedUrl)
+      await this.gitRepo.pushToNewRepo(newConfig.authenticatedUrl, newConfig.branch)
     }
   }
 

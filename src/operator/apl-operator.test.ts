@@ -295,14 +295,14 @@ describe('AplOperator', () => {
 
     test('should push to new repo when repoUrl has changed', async () => {
       const newAuthUrl = 'https://user:pass@example.com/new-repo.git'
-      getRepoMock.mockReturnValue({ authenticatedUrl: newAuthUrl })
+      getRepoMock.mockReturnValue({ authenticatedUrl: newAuthUrl, branch: 'main' })
 
       await (aplOperator as any).migrateGitRepoIfUrlChanged({
         otomi: { git: { repoUrl: 'https://example.com/new-repo.git' } },
       })
 
       expect(getRepoMock).toHaveBeenCalled()
-      expect(mockGitRepo.pushToNewRepo).toHaveBeenCalledWith(newAuthUrl)
+      expect(mockGitRepo.pushToNewRepo).toHaveBeenCalledWith(newAuthUrl, 'main')
     })
   })
 

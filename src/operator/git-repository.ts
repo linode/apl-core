@@ -107,15 +107,17 @@ export class GitRepository {
     return logResult.all.every((commit) => commit.message.includes(this.skipMarker))
   }
 
-  async pushToNewRepo(authenticatedUrl: string): Promise<void> {
+  async pushToNewRepo(authenticatedUrl: string, targetBranch?: string): Promise<void> {
+    const branch = targetBranch ?? this.branch
     const tempRemote = 'migration-target'
     try {
       await this.git.remote(['add', tempRemote, authenticatedUrl])
-      const result = await this.git.listRemote(['--heads', tempRemote, this.branch])
+      const result = await this.git.listRemote(['--heads', tempRemote, branch])
       if (result) {
-        this.d.info(`Remote branch '${this.branch}' already exists at new repository, skipping push`)
+        this.d.info(`Remote branch '${branch}' already exists at new repository, skipping push`)
       } else {
-        await this.git.push(tempRemote, this.branch, ['--set-upstream'])
+        const refspec = branch === this.branch ? branch : `${this.branch}:${branch}`
+        await this.git.push(tempRemote, refspec, ['--set-upstream'])
         this.d.info('Content pushed to new repository successfully')
       }
     } catch (error) {

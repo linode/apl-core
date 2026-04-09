@@ -225,6 +225,16 @@ describe('GitRepository', () => {
       expect(mockGit.remote).toHaveBeenCalledWith(['remove', 'migration-target'])
     })
 
+    test('should use refspec when target branch name differs from local branch', async () => {
+      mockGit.remote.mockResolvedValue(undefined)
+      mockGit.listRemote.mockResolvedValue('')
+      mockGit.push.mockResolvedValue(undefined)
+
+      await gitRepository.pushToNewRepo('https://newuser:newpass@github.com/org/new-repo.git', 'develop')
+
+      expect(mockGit.push).toHaveBeenCalledWith('migration-target', 'main:develop', ['--set-upstream'])
+    })
+
     test('should remove temp remote even if push fails', async () => {
       mockGit.remote.mockResolvedValue(undefined)
       mockGit.listRemote.mockResolvedValue('')
