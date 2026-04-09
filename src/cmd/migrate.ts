@@ -1,4 +1,4 @@
-import { ApiException } from '@kubernetes/client-node'
+import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { encryptSecretItem } from '@linode/kubeseal-encrypt'
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
@@ -19,9 +19,9 @@ import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
-import { $, cd } from 'zx'
+import { $, cd, sleep } from 'zx'
 import { APL_OPERATOR_NS, ARGOCD_APP_PARAMS } from '../common/constants'
-import { getK8sSecret, getSealedSecretsPEM, k8s } from '../common/k8s'
+import { getArgoCdApp, getK8sSecret, getSealedSecretsPEM, k8s, setArgoCdAppSync } from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
@@ -520,6 +520,107 @@ async function appExists(name: string): Promise<boolean> {
   )
 }
 
+async function hasPvcWithStorageClass(
+  namespace: string,
+  labelSelector: string,
+  storageClassName: string,
+): Promise<boolean> {
+  try {
+    const pvcList = await k8s.core().listNamespacedPersistentVolumeClaim({ namespace, labelSelector })
+    return (pvcList?.items || []).some((pvc) => pvc?.spec?.storageClassName === storageClassName)
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      return false
+    }
+    throw error
+  }
+}
+
+async function waitForPodsDeletion(namespace: string, labelSelector: string, timeoutMs = 300000): Promise<void> {
+  const start = Date.now()
+  while (Date.now() - start < timeoutMs) {
+    const pods = await k8s.core().listNamespacedPod({ namespace, labelSelector })
+    if ((pods.items || []).length === 0) return
+    await sleep(5000)
+  }
+}
+
+async function waitForStatefulSetDeletion(name: string, namespace: string, timeoutMs = 300000): Promise<void> {
+  const start = Date.now()
+  while (Date.now() - start < timeoutMs) {
+    const exists = await checkExists(async () => await k8s.app().readNamespacedStatefulSet({ name, namespace }))
+    if (!exists) return
+    await sleep(5000)
+  }
+}
+
+async function deletePvcsByLabel(namespace: string, labelSelector: string): Promise<void> {
+  const pvcList = await k8s.core().listNamespacedPersistentVolumeClaim({ namespace, labelSelector })
+  for (const pvc of pvcList.items || []) {
+    const name = pvc?.metadata?.name
+    if (!name) continue
+    try {
+      await k8s.core().deleteNamespacedPersistentVolumeClaim({ name, namespace })
+    } catch (error) {
+      if (!(error instanceof ApiException && error.code === 404)) throw error
+    }
+  }
+}
+
+async function migrateStatefulSetPvc(opts: {
+  appName: string
+  statefulSetName: string
+  namespace: string
+  pvcLabelSelector: string
+  d: ReturnType<typeof terminal>
+}): Promise<void> {
+  const parsedArgs = getParsedArgs()
+  if (parsedArgs?.dryRun || parsedArgs?.local) {
+    return
+  }
+
+  let syncDisabled = false
+  try {
+    const app = await getArgoCdApp(opts.appName, k8s.custom())
+    if (app) {
+      await setArgoCdAppSync(opts.appName, false, k8s.custom())
+      syncDisabled = true
+    } else {
+      opts.d.info(`Argo CD application ${opts.appName} not found. Skipping sync disable.`)
+    }
+
+    await k8s.app().patchNamespacedStatefulSet(
+      {
+        name: opts.statefulSetName,
+        namespace: opts.namespace,
+        body: { spec: { replicas: 0 } },
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+    )
+
+    await waitForPodsDeletion(opts.namespace, opts.pvcLabelSelector)
+
+    try {
+      await k8s.app().deleteNamespacedStatefulSet({ name: opts.statefulSetName, namespace: opts.namespace })
+    } catch (error) {
+      if (!(error instanceof ApiException && error.code === 404)) throw error
+    }
+
+    await waitForStatefulSetDeletion(opts.statefulSetName, opts.namespace)
+    await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
+  } catch (error) {
+    throw error
+  } finally {
+    if (syncDisabled) {
+      try {
+        await setArgoCdAppSync(opts.appName, true, k8s.custom())
+      } catch (error) {
+        opts.d.warn(`Failed to re-enable Argo CD sync for ${opts.appName}: ${error}`)
+      }
+    }
+  }
+}
+
 export async function addAplOperator(): Promise<void> {
   const d = terminal('addAplOperator')
   if (await namespaceExists(APL_OPERATOR_NS)) {
@@ -713,6 +814,51 @@ const createCatalogSealedSecret = async (
   writeFileSync(sealedSecretPath, objectToYaml(sealedSecret))
 }
 
+// This migration changes PVCs when using Linode for gitea-valkey and oauth2-proxy-redis-server to use linode-block-storage instead of linode-block-storage-retain
+const valkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('valkeyAndOauth2RedisPVCMigration')
+  if (env.DISABLE_SYNC) {
+    d.info('Skipping Valkey and Oauth2 Redis PVC migration in dev/test environment')
+    return
+  }
+  const giteaEnabled = values?.apps?.gitea?.enabled
+  const isLinode = values?.cluster?.provider === 'linode'
+  const legacyStorageClass = 'linode-block-storage-retain'
+  if (isLinode) {
+    d.info('Changing PVC storage class to linode-block-storage for Gitea and OAuth2 Proxy Redis Server')
+    if (giteaEnabled) {
+      const hasLegacyGiteaPvc = await hasPvcWithStorageClass(
+        'gitea',
+        'app.kubernetes.io/name=valkey',
+        legacyStorageClass,
+      )
+      if (hasLegacyGiteaPvc) {
+        await migrateStatefulSetPvc({
+          appName: 'gitea-gitea-valkey',
+          statefulSetName: 'gitea-valkey-primary',
+          namespace: 'gitea',
+          pvcLabelSelector: 'app.kubernetes.io/name=valkey',
+          d,
+        })
+      } else {
+        d.info(`Skipping gitea PVC migration: no PVC found with storageClass ${legacyStorageClass}`)
+      }
+    }
+    const hasLegacyOauthPvc = await hasPvcWithStorageClass('istio-system', 'app=redis', legacyStorageClass)
+    if (hasLegacyOauthPvc) {
+      await migrateStatefulSetPvc({
+        appName: 'istio-system-oauth2-proxy',
+        statefulSetName: 'oauth2-proxy-redis-ha-server',
+        namespace: 'istio-system',
+        pvcLabelSelector: 'app=redis',
+        d,
+      })
+    } else {
+      d.info(`Skipping oauth2-proxy redis PVC migration: no PVC found with storageClass ${legacyStorageClass}`)
+    }
+  }
+}
+
 const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('setDefaultAplCatalog')
   const gitea = values?.apps?.gitea as { adminUsername?: string; adminPassword?: string } | undefined
@@ -843,6 +989,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   workloadValuesMigration,
   setLokiStorageSchemaMigration,
   setDefaultAplCatalog,
+  valkeyAndOauth2RedisPVCMigration,
   addLinodeNBAnnotations,
   setIngressDefault,
 }

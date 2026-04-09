@@ -104,5 +104,5 @@ resources:
     {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
     rules:
     {{- $httpRoute.authRules | toYaml | nindent 4 }}
-- {{ tpl (readFile "../../helmfile.d/snippets/authpolicy.gotmpl") (dict "prefix" "harbor" "gatewayName" $v.ingress.platformClass.className "host" $harborDomain "exclusionPaths" (list "/v2/*" "/service/*")) | nindent 2 }}
+- {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" "harbor" "gatewayName" $v.ingress.platformClass.className "host" $harborDomain "excludePaths" (list "/v2/*" "/service/*" "/api/*" "/c/*")) | nindent 2 }}
 - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "harbor" "host" $harborDomain) | nindent 2 }}

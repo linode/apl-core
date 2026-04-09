@@ -184,7 +184,11 @@ rules:
   - apiGroups:
       - ""
     resources:
+{{- if semverCompare ">=1.33-0" .Capabilities.KubeVersion.Version }}
+      - nodes/pods
+{{- else }}
       - nodes/proxy
+{{- end }}
     verbs:
       - get
   - apiGroups:
@@ -211,6 +215,13 @@ rules:
       - get
       - list
       - update
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
   - apiGroups:
       - events.k8s.io
     resources:

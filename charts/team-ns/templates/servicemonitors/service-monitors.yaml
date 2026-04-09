@@ -17,6 +17,9 @@ spec:
   - enableHttp2: true
     path: /metrics
     port: http-web
+    relabelings:
+      - targetLabel: __address__
+        replacement: {{ $v.teamId }}-po-alertmanager.{{ $ns }}.svc.cluster.local:9093
   namespaceSelector:
     matchNames:
     - team-{{ $v.teamId }}
@@ -40,6 +43,9 @@ spec:
     port: http-web
     scheme: http
     scrapeTimeout: 30s
+    relabelings:
+      - targetLabel: __address__
+        replacement: {{ $v.teamId }}-po-grafana.{{ $ns }}.svc.cluster.local:80
   namespaceSelector:
     matchNames:
     - team-{{ $v.teamId }}
