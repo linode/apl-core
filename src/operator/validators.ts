@@ -6,6 +6,14 @@ dotenv.config()
 export const operatorEnv = cleanEnv(process.env, {
   GIT_ORG: str({ desc: 'Git organisation', default: 'otomi' }),
   GIT_REPO: str({ desc: 'Git repository', default: 'values' }),
+  GITOPS_NS_MANIFESTS_RELATIVE_PATH: str({
+    desc: 'Path to the gitops manifests namespace',
+    default: 'env/manifests/namespaces',
+  }),
+  GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH: str({
+    desc: 'Path to the gitops manifests global',
+    default: 'env/manifests/global',
+  }),
   POLL_INTERVAL_MS: num({ desc: 'Interval in which the operator polls Git', default: 1000 }),
   RECONCILE_INTERVAL_MS: num({ desc: 'Interval in which the operator reconciles the cluster in', default: 300_000 }),
   INSTALL_RETRIES: num({ desc: 'Number of installation retry attempts', default: 1000 }),

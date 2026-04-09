@@ -13,6 +13,7 @@ import { env, isCli } from 'src/common/envalid'
 import { createK8sSecret, getK8sSecret, secretId } from 'src/common/k8s'
 import { bootstrapSealedSecrets, stripAllSecrets } from 'src/common/sealed-secrets'
 import {
+  ensureManifestDirectories,
   ensureTeamGitOpsDirectories,
   getFilename,
   getSchemaSecretsPaths,
@@ -290,6 +291,7 @@ export const bootstrap = async (
     bootstrapSealedSecrets,
     migrate,
     handleFileEntry,
+    ensureManifestDirectories,
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:bootstrap`)
@@ -304,6 +306,7 @@ export const bootstrap = async (
   const { originalInput, allSecrets } = await deps.processValues()
   await deps.handleFileEntry()
   await deps.bootstrapSealedSecrets(allSecrets, ENV_DIR, originalInput)
+  await deps.ensureManifestDirectories()
   await ensureTeamGitOpsDirectories(ENV_DIR, originalInput)
   d.log(`Done bootstrapping values`)
 }
