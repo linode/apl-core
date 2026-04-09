@@ -9,6 +9,8 @@ analytics:
   org_role: Admin
   allow_sign_up: true
   oauth_auto_login: true
+  # $__env{} is Grafana's built-in environment variable interpolation for config values.
+  # See: https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#variable-expansion
   client_id: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_ID}
   client_secret: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
   scopes: email profile openid

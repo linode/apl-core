@@ -40,7 +40,7 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "otomi-api.fullname" . }}
-            {{- with .Values.existingSecret }}
+            {{- with .Values.gitConfig.existingSecret }}
             - secretRef:
                 name: {{ . }}
             {{- end }}
@@ -81,7 +81,7 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "otomi-api.fullname" . }}
-            {{- with .Values.existingSecret }}
+            {{- with .Values.gitConfig.existingSecret }}
             - secretRef:
                 name: {{ . }}
             {{- end }}
