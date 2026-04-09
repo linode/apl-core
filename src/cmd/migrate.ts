@@ -37,6 +37,7 @@ import {
 } from '../common/sealed-secrets'
 
 const cmdName = getFilename(__filename)
+const sealedSecretManifestsGlob = `${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`
 
 interface Arguments extends BasicArguments {
   dryRun?: boolean
@@ -1047,7 +1048,7 @@ export const sopsMigration = async (
   // them, or the controller used its auto-generated key), re-apply them and restart
   // the controller so subsequent steps can resolve the git password.
   if (!deps.existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    const existingManifests = deps.globSync(`${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`, {
+    const existingManifests = deps.globSync(sealedSecretManifestsGlob, {
       dot: false,
     })
     if (existingManifests.length > 0) {
@@ -1067,7 +1068,7 @@ export const sopsMigration = async (
   }
 
   // Secondary guard: if manifests already exist, just clean up SOPS artifacts
-  const existingManifests = deps.globSync(`${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`, {
+  const existingManifests = deps.globSync(sealedSecretManifestsGlob, {
     dot: false,
   })
   if (existingManifests.length > 0) {

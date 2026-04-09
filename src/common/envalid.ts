@@ -66,6 +66,14 @@ export const cliEnvSpec = {
     desc: 'The URL for the default APL catalog',
     default: 'https://github.com/linode/apl-charts.git',
   }),
+  SEALED_SECRETS_TIMEOUT_MS: num({
+    desc: 'Timeout in milliseconds for waiting on sealed secrets operations',
+    default: 120000,
+  }),
+  SEALED_SECRETS_INTERVAL_MS: num({
+    desc: 'Polling interval in milliseconds for sealed secrets readiness checks',
+    default: 3000,
+  }),
 }
 
 export function cleanEnv<T>(spec: { [K in keyof T]: ValidatorSpec<T[K]> }, options?: CleanOptions<T>) {

@@ -8,14 +8,13 @@ import { pki } from 'node-forge'
 import { join } from 'path'
 import { SEALED_SECRETS_NAMESPACE } from 'src/common/constants'
 import { terminal } from 'src/common/debug'
+import { env } from 'src/common/envalid'
 import { b64enc, ensureNamespaceExists, getK8sSecret, k8s } from 'src/common/k8s'
 import { flattenObject, getSchemaSecretsPaths } from 'src/common/utils'
 import { objectToYaml } from 'src/common/values'
 import { parse as parseYaml } from 'yaml'
 
 const cmdName = 'sealed-secrets'
-const ROLLOUT_TIMEOUT_MS = 120000
-const ROLLOUT_INTERVAL_MS = 3000
 
 /**
  * Strip ALL x-secret fields from values before writing to disk.
@@ -498,7 +497,7 @@ export const restartSealedSecretsController = async (deps = { terminal }): Promi
 
   d.info('Waiting for sealed-secrets controller rollout')
   const start = Date.now()
-  while (Date.now() - start < ROLLOUT_TIMEOUT_MS) {
+  while (Date.now() - start < env.SEALED_SECRETS_TIMEOUT_MS) {
     try {
       const deployment = await k8s.app().readNamespacedDeployment({
         name: 'sealed-secrets',
@@ -514,7 +513,7 @@ export const restartSealedSecretsController = async (deps = { terminal }): Promi
     } catch {
       // Ignore transient read errors during rollout
     }
-    await new Promise((resolve) => setTimeout(resolve, ROLLOUT_INTERVAL_MS))
+    await new Promise((resolve) => setTimeout(resolve, env.SEALED_SECRETS_INTERVAL_MS))
   }
   d.warn('Rollout status check timed out')
 }

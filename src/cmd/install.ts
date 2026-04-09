@@ -79,8 +79,8 @@ const allSecretsExist = async (secrets: AppliedSecret[], deps = { getK8sSecret }
 
 const waitForSealedSecrets = async (
   appliedSecrets: AppliedSecret[],
-  timeoutMs = 120000,
-  intervalMs = 3000,
+  timeoutMs = env.SEALED_SECRETS_TIMEOUT_MS,
+  intervalMs = env.SEALED_SECRETS_INTERVAL_MS,
   deps = { getK8sSecret, terminal },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:waitForSealedSecrets`)
