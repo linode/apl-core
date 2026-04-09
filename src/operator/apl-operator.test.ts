@@ -266,6 +266,46 @@ describe('AplOperator', () => {
     })
   })
 
+  describe('migrateGitRepoIfUrlChanged', () => {
+    let getRepoMock: jest.Mock
+
+    beforeEach(() => {
+      getRepoMock = require('../common/git-config').getRepo
+      getRepoMock.mockReset()
+    })
+
+    test('should not push when values is undefined', async () => {
+      await (aplOperator as any).migrateGitRepoIfUrlChanged(undefined)
+      expect(mockGitRepo.pushToNewRepo).not.toHaveBeenCalled()
+    })
+
+    test('should not push when repoUrl is not in values', async () => {
+      await (aplOperator as any).migrateGitRepoIfUrlChanged({ otomi: { git: {} } })
+      expect(mockGitRepo.pushToNewRepo).not.toHaveBeenCalled()
+    })
+
+    test('should not push when repoUrl matches startupGitConfig', async () => {
+      const url = 'https://example.com/repo.git'
+      const operator = new AplOperator({ ...defaultConfig, gitConfig: { repoUrl: url } as GitRepoConfig })
+
+      await (operator as any).migrateGitRepoIfUrlChanged({ otomi: { git: { repoUrl: url } } })
+
+      expect(mockGitRepo.pushToNewRepo).not.toHaveBeenCalled()
+    })
+
+    test('should push to new repo when repoUrl has changed', async () => {
+      const newAuthUrl = 'https://user:pass@example.com/new-repo.git'
+      getRepoMock.mockReturnValue({ authenticatedUrl: newAuthUrl })
+
+      await (aplOperator as any).migrateGitRepoIfUrlChanged({
+        otomi: { git: { repoUrl: 'https://example.com/new-repo.git' } },
+      })
+
+      expect(getRepoMock).toHaveBeenCalled()
+      expect(mockGitRepo.pushToNewRepo).toHaveBeenCalledWith(newAuthUrl)
+    })
+  })
+
   describe('pollAndApplyGitChanges', () => {
     test('should poll and apply changes if detected', async () => {
       jest.useFakeTimers()
