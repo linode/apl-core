@@ -84,6 +84,15 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Create a fully qualified name for image-renderer resources.
+We truncate at 47 chars to reserve space for the longest suffix (-image-renderer, 16 chars)
+so the Service name stays within the 63-char DNS label limit.
+*/}}
+{{- define "grafana.imageRenderer.fullname" -}}
+{{- include "grafana.fullname" . | trunc 47 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "grafana.imageRenderer.labels" -}}
