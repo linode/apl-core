@@ -3,6 +3,7 @@ import cleanDeep, { CleanOptions } from 'clean-deep'
 import { createHash } from 'crypto'
 import { existsSync, readFileSync } from 'fs'
 import { access, mkdir, readdir, readFile, writeFile } from 'fs/promises'
+import { generate as generatePassword } from 'generate-password'
 import { glob } from 'glob'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
@@ -220,6 +221,10 @@ async function ensureDirectoryWithGitkeepAsync(dirPath: string, deps = { access,
   } catch {
     await deps.writeFile(gitkeepPath, '')
   }
+}
+
+export function generateSecretPassword(): string {
+  return generatePassword({ length: 32, numbers: true, uppercase: true, lowercase: true, strict: true })
 }
 
 export async function ensureTeamGitOpsDirectories(envDir: string, values: Record<string, any>, deps = { glob }) {

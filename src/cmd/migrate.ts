@@ -13,7 +13,7 @@ import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
-import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
+import { generateSecretPassword, getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { objectToYaml, writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
@@ -780,35 +780,40 @@ const setLokiStorageSchemaMigration = async (values: Record<string, any>): Promi
   }
 }
 
-const SEALED_SECRET_NAME = 'default-catalog-credentials'
-const createCatalogSealedSecret = async (
+const createSealedSecret = async (
   d: ReturnType<typeof terminal>,
-  gitea: { adminUsername: string; adminPassword: string },
+  credentialsData: Record<string, string>,
+  secretName: string,
+  namespace = 'argocd',
+  secretType = 'kubernetes.io/basic-auth',
 ): Promise<void> => {
   const sealedSecretsPEM = await getSealedSecretsPEM()
-  const encryptedPassword = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea.adminPassword)
-  const encryptedUsername = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea.adminUsername)
+
+  // Encrypt all fields in the credentials data
+  const encryptedData: Record<string, string> = {}
+  for (const [key, value] of Object.entries(credentialsData)) {
+    encryptedData[key] = await encryptSecretItem(sealedSecretsPEM, namespace, value)
+  }
+
   const sealedSecret = {
     apiVersion: 'bitnami.com/v1alpha1',
     kind: 'SealedSecret',
     metadata: {
       annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
-      name: SEALED_SECRET_NAME,
-      namespace: 'argocd',
+      name: secretName,
+      namespace,
     },
     spec: {
-      encryptedData: {
-        password: encryptedPassword,
-        username: encryptedUsername,
-      },
+      encryptedData,
       template: {
         immutable: false,
-        metadata: { name: SEALED_SECRET_NAME, namespace: 'argocd' },
-        type: 'kubernetes.io/basic-auth',
+        metadata: { name: secretName, namespace },
+        type: secretType,
       },
     },
   }
-  const sealedSecretPath = `${env.ENV_DIR}/env/manifests/namespaces/argocd/sealedsecrets/${SEALED_SECRET_NAME}.yaml`
+
+  const sealedSecretPath = `${env.ENV_DIR}/env/manifests/namespaces/${namespace}/sealedsecrets/${secretName}.yaml`
   mkdirSync(dirname(sealedSecretPath), { recursive: true })
   d.info(`Writing sealed secret to ${sealedSecretPath}`)
   writeFileSync(sealedSecretPath, objectToYaml(sealedSecret))
@@ -861,6 +866,7 @@ const valkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
 
 const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('setDefaultAplCatalog')
+  const CATALOG_SEALED_SECRET_NAME = 'default-catalog-credentials'
   const gitea = values?.apps?.gitea as { adminUsername?: string; adminPassword?: string } | undefined
   const hasGitea = !!(gitea?.adminUsername && gitea?.adminPassword)
   const domainSuffix = values?.cluster?.domainSuffix as string | undefined
@@ -869,7 +875,11 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   let secretCreated = false
   if (useGiteaCatalog) {
     try {
-      await createCatalogSealedSecret(d, gitea as { adminUsername: string; adminPassword: string })
+      await createSealedSecret(
+        d,
+        { adminUsername: gitea.adminUsername!, adminPassword: gitea.adminPassword! },
+        CATALOG_SEALED_SECRET_NAME,
+      )
       secretCreated = true
     } catch (error) {
       d.error('Failed to create catalog sealed secret, continuing without it:', error)
@@ -887,9 +897,19 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
     enabled: true,
     name: 'default',
     repositoryUrl: catalogUrl,
-    ...(secretCreated && { secretName: SEALED_SECRET_NAME }),
+    ...(secretCreated && { secretName: CATALOG_SEALED_SECRET_NAME }),
   }
   set(values, 'catalogs.default', defaultCatalog)
+}
+
+const setRedisSecretForArgoCD = async (): Promise<void> => {
+  const d = terminal('setRedisSecretForArgoCD')
+  try {
+    const redisPassword = generateSecretPassword()
+    await createSealedSecret(d, { auth: redisPassword }, 'argocd-redis')
+  } catch (error) {
+    d.error('Failed to create redis sealed secret, continuing without it:', error)
+  }
 }
 
 const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void> => {
@@ -992,6 +1012,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   valkeyAndOauth2RedisPVCMigration,
   addLinodeNBAnnotations,
   setIngressDefault,
+  setRedisSecretForArgoCD,
 }
 
 /**
