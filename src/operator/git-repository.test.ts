@@ -12,8 +12,6 @@ jest.mock('simple-git', () => {
     clean: jest.fn(),
     getRemotes: jest.fn(),
     remote: jest.fn(),
-    listRemote: jest.fn(),
-    push: jest.fn(),
   }
   return jest.fn().mockImplementation(() => mockGit)
 })
@@ -48,8 +46,6 @@ describe('GitRepository', () => {
     const simpleGit = require('simple-git')
     mockGit = simpleGit()
     mockGit.clean.mockResolvedValue(undefined)
-    mockGit.listRemote.mockResolvedValue('abc123 refs/heads/main') // branch exists by default
-    mockGit.push.mockResolvedValue(undefined)
 
     gitRepository = new GitRepository(defaultConfig)
   })
@@ -188,24 +184,6 @@ describe('GitRepository', () => {
         'https://testuser:testpass@github.com:443/testorg/testrepo.git',
       ])
       expect(mockGit.clone).not.toHaveBeenCalled()
-    })
-
-    test('should push local content when remote branch is empty', async () => {
-      fs.existsSync.mockReturnValue(true)
-      mockGit.getRemotes.mockResolvedValue([
-        {
-          name: 'origin',
-          refs: {
-            fetch: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
-            push: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
-          },
-        },
-      ])
-      mockGit.listRemote.mockResolvedValue('') // empty = branch does not exist
-
-      await gitRepository.clone()
-
-      expect(mockGit.push).toHaveBeenCalledWith('origin', 'main', ['--set-upstream'])
     })
 
     test('should throw error when origin verification fails', async () => {

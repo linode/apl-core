@@ -2,7 +2,7 @@ import { decrypt } from 'src/common/crypt'
 import { commit } from '../cmd/commit'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { GitRepoConfig } from '../common/git-config'
+import { getRepo, GitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/gitea'
 import { hfValues } from '../common/hf'
 import { ensureManifestDirectories, ensureTeamGitOpsDirectories } from '../common/utils'
@@ -93,6 +93,7 @@ export class AplOperator {
       await ensureManifestDirectories()
 
       await commit(false, {} as HelmArguments, this.startupGitConfig) // Pass startup config to use frozen git credentials
+      await this.migrateGitRepoIfUrlChanged(values)
 
       if (applyTeamsOnly) {
         await this.aplOps.applyTeams()
@@ -120,6 +121,15 @@ export class AplOperator {
       })
     } finally {
       this.isApplying = false
+    }
+  }
+
+  private async migrateGitRepoIfUrlChanged(values: Record<string, any> | undefined): Promise<void> {
+    const newRepoUrl = values?.otomi?.git?.repoUrl
+    if (newRepoUrl && newRepoUrl !== this.startupGitConfig.repoUrl) {
+      this.d.info('Git repository URL changed, pushing content to new repository before applying')
+      const newConfig = getRepo(values)
+      await this.gitRepo.pushToNewRepo(newConfig.authenticatedUrl)
     }
   }
 

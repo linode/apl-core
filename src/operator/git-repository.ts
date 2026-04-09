@@ -47,7 +47,6 @@ export class GitRepository {
     if (fs.existsSync(gitPath)) {
       this.d.info(`Repository already exists at ${this.repoPath}, skipping clone`)
       await this.verifyAndFixOriginRemote()
-      await this.pushIfRemoteEmpty()
       return
     }
 
@@ -108,16 +107,17 @@ export class GitRepository {
     return logResult.all.every((commit) => commit.message.includes(this.skipMarker))
   }
 
-  private async pushIfRemoteEmpty(): Promise<void> {
+  async pushToNewRepo(authenticatedUrl: string): Promise<void> {
+    const tempRemote = 'migration-target'
     try {
-      const result = await this.git.listRemote(['--heads', 'origin', this.branch])
-      if (!result) {
-        this.d.info(`Remote branch '${this.branch}' is empty, pushing local content`)
-        await this.git.push('origin', this.branch, ['--set-upstream'])
-      }
+      await this.git.remote(['add', tempRemote, authenticatedUrl])
+      await this.git.push(tempRemote, this.branch, ['--set-upstream'])
+      this.d.info('Content pushed to new repository successfully')
     } catch (error) {
-      this.d.error('Failed to check/push to remote:', getErrorMessage(error))
-      throw new OperatorError('Failed to push to empty repository', error as Error)
+      this.d.error('Failed to push content to new repository:', getErrorMessage(error))
+      throw new OperatorError('Failed to push to new repository', error as Error)
+    } finally {
+      await this.git.remote(['remove', tempRemote]).catch(() => {})
     }
   }
 
