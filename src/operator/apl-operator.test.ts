@@ -13,6 +13,7 @@ const mockDebugFn = jest.fn()
 const mockGitRepo = {
   clone: jest.fn().mockResolvedValue(undefined),
   syncAndAnalyzeChanges: jest.fn().mockResolvedValue({ hasChangesToApply: false, applyTeamsOnly: false }),
+  pushToNewRepo: jest.fn().mockResolvedValue(undefined),
   authenticatedUrl: 'https://username:password@example.com:443/org/repo.git',
   lastRevision: 'abc123',
 }
@@ -25,6 +26,10 @@ const mockAplOps = {
   applyTeams: jest.fn().mockResolvedValue(undefined),
   migrate: jest.fn().mockResolvedValue(undefined),
 }
+
+jest.mock('../common/git-config', () => ({
+  getRepo: jest.fn(),
+}))
 
 jest.mock('../common/debug', () => ({
   terminal: jest.fn().mockImplementation(() => ({
