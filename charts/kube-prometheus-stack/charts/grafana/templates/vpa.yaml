@@ -1,0 +1,56 @@
+{{- if and .Values.verticalPodAutoscaler.enabled (.Capabilities.APIVersions.Has "autoscaling.k8s.io/v1/VerticalPodAutoscaler") }}
+
+{{- $vpa := .Values.verticalPodAutoscaler }}
+{{- $resources := $vpa.controlledResources | default dict }}
+{{- $target := $vpa.target | default dict }}
+{{- $container := $vpa.container | default dict }}
+
+{{- /* Match deployment.yaml condition */ -}}
+{{- $isDeployment := and (not .Values.useStatefulSet) (or (not .Values.persistence.enabled) (eq .Values.persistence.type "pvc")) -}}
+
+{{- /* Derived defaults */ -}}
+{{- $defaultApiVersion := "apps/v1" -}}
+{{- $defaultKind := ternary "Deployment" "StatefulSet" $isDeployment -}}
+{{- $defaultName := include "grafana.fullname" . -}}
+
+{{- /* Optional override (ONLY if you document it in values.yaml/schema) */ -}}
+{{- $t := $vpa.targetRef | default dict -}}
+{{- $apiVersion := default $defaultApiVersion $t.apiVersion -}}
+{{- $kind := default $defaultKind $t.kind -}}
+{{- $name := default $defaultName $t.name -}}
+
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ include "grafana.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+spec:
+  targetRef:
+    apiVersion: {{ $apiVersion | quote }}
+    kind: {{ $kind | quote }}
+    name: {{ $name | quote }}
+  updatePolicy:
+    updateMode: {{ default "Off" $vpa.updateMode | quote }}
+  resourcePolicy:
+    containerPolicies:
+      - containerName: "grafana"
+{{- if or (get $resources "cpu") (get $resources "memory") }}
+        controlledResources:
+{{- if (get $resources "cpu") }}
+          - "cpu"
+{{- end }}
+{{- if (get $resources "memory") }}
+          - "memory"
+{{- end }}
+{{- end }}
+{{- with $vpa.minAllowed }}
+        minAllowed:
+{{ toYaml . | nindent 10 }}
+{{- end }}
+{{- with $vpa.maxAllowed }}
+        maxAllowed:
+{{ toYaml . | nindent 10 }}
+{{- end }}
+{{- end }}
