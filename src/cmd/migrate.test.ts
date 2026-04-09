@@ -992,16 +992,6 @@ describe('sopsMigration', () => {
     expect(mockBuildSecretToNamespaceMap).not.toHaveBeenCalled()
   })
 
-  it('should only clean up when manifests already exist', async () => {
-    mockExistsSync.mockReturnValue(true)
-    mockGlobSync.mockReturnValue(['/some/manifest.yaml'])
-
-    await sopsMigration({ teamConfig: {}, versions: { specVersion: 55 } }, makeDeps())
-
-    expect(mockRemoveSopsArtifacts).toHaveBeenCalled()
-    expect(mockBuildSecretToNamespaceMap).not.toHaveBeenCalled()
-  })
-
   it('should run full migration path', async () => {
     mockExistsSync.mockReturnValue(true)
     mockGlobSync.mockReturnValue([])

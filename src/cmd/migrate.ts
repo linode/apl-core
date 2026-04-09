@@ -1067,16 +1067,6 @@ export const sopsMigration = async (
     return
   }
 
-  // Secondary guard: if manifests already exist, just clean up SOPS artifacts
-  const existingManifests = deps.globSync(sealedSecretManifestsGlob, {
-    dot: false,
-  })
-  if (existingManifests.length > 0) {
-    d.info('SealedSecret manifests already exist, only cleaning up SOPS artifacts')
-    deps.removeSopsArtifacts()
-    return
-  }
-
   d.info('Starting SOPS to SealedSecrets migration')
 
   // Get or generate sealed-secrets key
