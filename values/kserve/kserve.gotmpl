@@ -3,6 +3,7 @@
 
 kserve:
   controller:
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     rbacProxy:
       resources: {{- $ks.resources.rbacProxy | toYaml | nindent 8 }}
     resources: {{- $ks.resources.controller | toYaml | nindent 6 }}

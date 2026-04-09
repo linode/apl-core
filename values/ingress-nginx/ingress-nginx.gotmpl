@@ -22,6 +22,8 @@ controller:
     enabled: false
     patch:
       priorityClassName: otomi-critical
+      nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 8 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   resources: {{- $app.resources.controller | toYaml | nindent 4 }}
   replicaCount: 2
   minAvailable: 1
@@ -102,6 +104,7 @@ defaultBackend:
   enabled: true
   useComponentLabel: true
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   resources: {{- $app.resources.defaultBackend | toYaml | nindent 4 }}
   service:
     omitClusterIP: true

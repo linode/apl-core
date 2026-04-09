@@ -9,12 +9,7 @@ global:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/argoproj/argocd"
   {{- end }}
   domain: {{ $hostname }}
-  {{- with $v.otomi | get "nodeSelector" nil }}
-  nodeSelector:
-    {{- range $key, $val := . }}
-    {{ $key }}: {{ $val }}
-    {{- end }}
-  {{- end }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 # ApplicationSet Controller
 applicationSet:
   replicas: {{ $a.applicationSet.replicas }}

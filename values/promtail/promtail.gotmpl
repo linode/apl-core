@@ -66,3 +66,5 @@ sidecar:
     image:
       registry: "{{ $v.otomi.linodeLkeImageRepository }}/docker"
 {{- end }}
+
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}

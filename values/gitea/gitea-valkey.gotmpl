@@ -19,3 +19,8 @@ auth:
   password: changeme
 
 architecture: standalone
+
+primary:
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
+replica:
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}

@@ -14,3 +14,5 @@ sidecarImage:
 priorityClassName: "otomi-critical"
 
 resources: {{- $cnpg.barmanPluginResources | toYaml | nindent 2 }}
+
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}

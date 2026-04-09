@@ -26,3 +26,5 @@ sourceFilters:
     disableClusterReports: false
     kinds:
       exclude: [ReplicaSet]
+
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}

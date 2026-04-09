@@ -29,3 +29,5 @@ env:
   HARBOR_BASE_URL_PORT: '80'
   HARBOR_OPERATOR_NAMESPACE: apl-harbor-operator
   HARBOR_SYSTEM_NAMESPACE: harbor
+
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}

@@ -15,3 +15,5 @@ imagePullSecrets:
 {{- end }}
 
 resources: {{- toYaml $o.resources.operator | nindent 2 }}
+
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}

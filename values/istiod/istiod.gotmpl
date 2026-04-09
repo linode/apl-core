@@ -4,6 +4,7 @@
 autoscaleMin: {{ $i.autoscaling.pilot.minReplicas }}
 autoscaleMax: {{ $i.autoscaling.pilot.maxReplicas }}
 resources: {{- $i.resources.pilot | toYaml | nindent 2 }}
+nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}
 {{- if $v._derived.untrustedCA }}
 jwksResolverExtraRootCA: |
   {{- $v._derived.caCertRoot | nindent 2 }}

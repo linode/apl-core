@@ -30,3 +30,5 @@ image:
   pullPolicy: IfNotPresent
 
 pspEnabled: false
+
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}

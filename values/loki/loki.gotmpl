@@ -195,6 +195,7 @@ gateway:
     repository: docker/nginxinc/nginx-unprivileged
   {{- end }}
   replicas: 1
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   resources: {{ $l.resources.gateway | toYaml | nindent 4 }}
   autoscaling: {{ $l.autoscaling.gateway | toYaml | nindent 4 }}
 
@@ -204,6 +205,7 @@ deploymentMode: Distributed
 ingester:
   replicas: 3
   maxUnavailable: 1
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   resources: {{ $l.resources.ingester | toYaml | nindent 4 }}
   autoscaling: {{ $l.autoscaling.ingester | toYaml | nindent 4 }}
 
@@ -218,6 +220,7 @@ ingester:
 
 querier:
   replicas: 1
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   resources: {{ $l.resources.querier | toYaml | nindent 4 }}
 
   {{- if $s3SecretName }}
@@ -230,6 +233,7 @@ querier:
 
 distributor:
   replicas: 1
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   resources: {{ $l.resources.distributor | toYaml | nindent 4 }}
 
   {{- if $s3SecretName }}
@@ -242,6 +246,7 @@ distributor:
 
 queryFrontend:
   replicas: 1
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   resources: {{ $l.resources.queryFrontend | toYaml | nindent 4 }}
   autoscaling: {{ $l.autoscaling.queryFrontend | toYaml | nindent 4 }}
   podAnnotations:
@@ -257,6 +262,7 @@ queryFrontend:
 
 queryScheduler:
   replicas: 1
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   resources: {{ $l.resources.queryScheduler | toYaml | nindent 4 }}
   autoscaling: {{ $l.autoscaling.queryScheduler | toYaml | nindent 4 }}
 
@@ -268,6 +274,7 @@ queryScheduler:
 
 indexGateway:
   replicas: 1
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   resources: {{ $l.resources.indexGateway | toYaml | nindent 4 }}
 
   {{- if $s3SecretName }}
@@ -278,6 +285,7 @@ indexGateway:
 
 compactor:
   replicas: 1
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   resources: {{ $l.resources.compactor | toYaml | nindent 4 }}
 
   {{- if $s3SecretName }}
@@ -294,6 +302,7 @@ deploymentMode: SingleBinary
 
 singleBinary:
   replicas: 1
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 
   resources: {{ $l.resources.singleBinary | toYaml | nindent 4 }}
 

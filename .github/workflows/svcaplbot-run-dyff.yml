@@ -5,10 +5,13 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
-      - "charts/**"
-      - "values/**"
-      - "tests/fixtures/**"
-      - "helmfile.d/**"
+      - '.github/workflows/svcaplbot-run-dyff.yml'
+      - 'bin/dyff.sh'
+      - 'bin/compare.sh'
+      - 'charts/**'
+      - 'values/**'
+      - 'tests/fixtures/**'
+      - 'helmfile.d/**'
 
 permissions:
   contents: read
@@ -80,7 +83,7 @@ jobs:
       - name: Install Helm and Helmfile
         uses: helmfile/helmfile-action@v2.4.1
         with:
-          helmfile-args: version  # In this step, we only want these tools to be installed
+          helmfile-args: version # In this step, we only want these tools to be installed
           helm-plugins: >
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets

@@ -48,6 +48,7 @@ defaultRules:
     {{- end }}
 prometheusOperator:
   resources: {{- $p.resources.prometheusOperator | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
@@ -106,6 +107,7 @@ prometheus:
         {{- else }}
         sidecar.istio.io/inject: "true"
         {{- end }}
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     resources: {{- $p.resources.prometheus | toYaml | nindent 6 }}
     # all team alert managers that will get alerts
     alertingEndpoints:
@@ -234,6 +236,7 @@ alertmanager:
       {{- end }}
       pullPolicy: {{ $a | get "image.pullPolicy" "IfNotPresent" }}
     priorityClassName: otomi-critical
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     resources: {{- $a.resources.alertmanager | toYaml | nindent 6 }}
     externalUrl: https://{{ $alertmanagerDomain }}
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
@@ -273,6 +276,7 @@ grafana:
     {{- end }}
     pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
   resources: {{- $g.resources.grafana | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   sidecar:
     resources: {{- $g.resources.sidecar | toYaml | nindent 6 }}
     {{- if $v.otomi.linodeLkeImageRepository }}
@@ -335,6 +339,7 @@ kubeStateMetrics:
   enabled: {{ $p.enabled }}
 
 kube-state-metrics:
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   prometheus:
     monitor:
       additionalLabels:
@@ -357,6 +362,7 @@ nodeExporter:
   enabled: {{ $p.enabled }}
 
 prometheus-node-exporter:
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   prometheus:
     monitor:
       additionalLabels:

@@ -222,3 +222,5 @@ provider: {{ .name }}
 
 deploymentStrategy:
   type: RollingUpdate
+
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}

@@ -17,6 +17,7 @@ service:
   type: ClusterIP
 
 resources: {{- $i.resources.egressgateway | toYaml | nindent 2 }}
+nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}
 
 strategy:
   rollingUpdate:
