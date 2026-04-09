@@ -12,6 +12,8 @@ jest.mock('simple-git', () => {
     clean: jest.fn(),
     getRemotes: jest.fn(),
     remote: jest.fn(),
+    listRemote: jest.fn(),
+    push: jest.fn(),
   }
   return jest.fn().mockImplementation(() => mockGit)
 })
@@ -193,6 +195,45 @@ describe('GitRepository', () => {
 
       await expect(gitRepository.clone()).rejects.toBeInstanceOf(OperatorError)
       expect(mockGit.getRemotes).toHaveBeenCalled()
+    })
+  })
+
+  describe('pushToNewRepo', () => {
+    test('should push when remote branch does not exist', async () => {
+      mockGit.remote.mockResolvedValue(undefined)
+      mockGit.listRemote.mockResolvedValue('')
+      mockGit.push.mockResolvedValue(undefined)
+
+      await gitRepository.pushToNewRepo('https://newuser:newpass@github.com/org/new-repo.git')
+
+      expect(mockGit.remote).toHaveBeenCalledWith([
+        'add',
+        'migration-target',
+        'https://newuser:newpass@github.com/org/new-repo.git',
+      ])
+      expect(mockGit.push).toHaveBeenCalledWith('migration-target', 'main', ['--set-upstream'])
+      expect(mockGit.remote).toHaveBeenCalledWith(['remove', 'migration-target'])
+    })
+
+    test('should skip push when remote branch already exists', async () => {
+      mockGit.remote.mockResolvedValue(undefined)
+      mockGit.listRemote.mockResolvedValue('abc123 refs/heads/main')
+
+      await gitRepository.pushToNewRepo('https://newuser:newpass@github.com/org/new-repo.git')
+
+      expect(mockGit.push).not.toHaveBeenCalled()
+      expect(mockGit.remote).toHaveBeenCalledWith(['remove', 'migration-target'])
+    })
+
+    test('should remove temp remote even if push fails', async () => {
+      mockGit.remote.mockResolvedValue(undefined)
+      mockGit.listRemote.mockResolvedValue('')
+      mockGit.push.mockRejectedValue(new Error('Push failed'))
+
+      await expect(
+        gitRepository.pushToNewRepo('https://newuser:newpass@github.com/org/new-repo.git'),
+      ).rejects.toBeInstanceOf(OperatorError)
+      expect(mockGit.remote).toHaveBeenCalledWith(['remove', 'migration-target'])
     })
   })
 

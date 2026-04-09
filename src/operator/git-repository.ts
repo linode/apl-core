@@ -111,8 +111,13 @@ export class GitRepository {
     const tempRemote = 'migration-target'
     try {
       await this.git.remote(['add', tempRemote, authenticatedUrl])
-      await this.git.push(tempRemote, this.branch, ['--set-upstream'])
-      this.d.info('Content pushed to new repository successfully')
+      const result = await this.git.listRemote(['--heads', tempRemote, this.branch])
+      if (result) {
+        this.d.info(`Remote branch '${this.branch}' already exists at new repository, skipping push`)
+      } else {
+        await this.git.push(tempRemote, this.branch, ['--set-upstream'])
+        this.d.info('Content pushed to new repository successfully')
+      }
     } catch (error) {
       this.d.error('Failed to push content to new repository:', getErrorMessage(error))
       throw new OperatorError('Failed to push to new repository', error as Error)
