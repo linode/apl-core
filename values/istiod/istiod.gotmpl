@@ -68,6 +68,7 @@ meshConfig:
         includeRequestHeadersInCheck:
           - authorization
           - cookie
+          - accept
         service: oauth2-proxy.istio-system.svc.cluster.local
         port: 80
       name: oauth2-proxy-ext-authz
