@@ -126,6 +126,8 @@ export class AplOperator {
 
   private async migrateGitRepoIfUrlChanged(values: Record<string, any> | undefined): Promise<void> {
     const newRepoUrl = values?.otomi?.git?.repoUrl
+    this.d.info(`[${this.startupGitConfig.repoUrl}] Repository new URL: ${newRepoUrl}`)
+    this.d.info(`git values: ${values?.otomi?.git}`)
     if (newRepoUrl && newRepoUrl !== this.startupGitConfig.repoUrl) {
       this.d.info('Git repository URL changed, pushing content to new repository before applying')
       const newConfig = getRepo(values)
