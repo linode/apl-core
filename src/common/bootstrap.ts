@@ -10,7 +10,7 @@ import { $, cd } from 'zx'
 
 const cmdName = getFilename(__filename)
 
-export const setIdentity = async (username, email) => {
+export const setIdentity = async (username: string, email: string) => {
   await $`git config --local user.name ${username}`.nothrow().quiet()
   await $`git config --local user.email ${email}`.nothrow().quiet()
 }
@@ -20,7 +20,7 @@ export const recoverFromGit = async (gitConfig: GitRepoConfig): Promise<void> =>
   d.info(`Attempting to clone git repository from: ${gitConfig.repoUrl}`)
   cd(env.ENV_DIR)
   await $`timeout 10 git clone ${gitConfig.authenticatedUrl} ${env.ENV_DIR}`
-  await setIdentity(gitConfig.username, gitConfig.email)
+  await setIdentity(gitConfig.username ?? 'otomi-admin', gitConfig.email)
   await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
     await $`git config --local diff.sopsdiffer.textconv "sops -d"`.nothrow().quiet()
@@ -40,7 +40,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   cd(env.ENV_DIR)
   if (existsSync(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped, setting identity just in case`)
-    await setIdentity(username, email)
+    await setIdentity(username ?? 'otomi-admin', email)
     return
   }
   // we don't care about ssl verification as repo endpoint is either ours or user input
@@ -92,7 +92,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
   }
 
-  await setIdentity(username, email)
+  await setIdentity(username ?? 'otomi-admin', email)
 
   if (!hasCommits) {
     await $`git checkout -b ${branch}`.nothrow().quiet()
