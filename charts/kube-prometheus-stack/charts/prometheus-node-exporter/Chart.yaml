@@ -4,7 +4,7 @@ annotations:
     - name: Chart Source
       url: https://github.com/prometheus-community/helm-charts
 apiVersion: v2
-appVersion: 1.10.2
+appVersion: 1.11.1
 description: A Helm chart for prometheus node-exporter
 home: https://github.com/prometheus/node_exporter/
 icon: https://raw.githubusercontent.com/cncf/artwork/refs/heads/main/projects/prometheus/icon/color/prometheus-icon-color.svg
@@ -26,4 +26,4 @@ name: prometheus-node-exporter
 sources:
 - https://github.com/prometheus/node_exporter/
 type: application
-version: 4.51.1
+version: 4.53.1
