@@ -1,4 +1,5 @@
 import * as process from 'node:process'
+import { addRedisSecretForArgoCD } from 'src/cmd/migrate'
 import { runTraceCollectionLoop } from 'src/cmd/traces'
 import { recoverFromGit } from 'src/common/bootstrap'
 import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
@@ -175,6 +176,15 @@ export class Installer {
       this.d.info('Recreating apl-sops-secrets secret')
       await createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', GIT_CONFIG_NAMESPACE, {
         SOPS_AGE_KEY: agePrivateKey,
+      })
+    }
+
+    // Ensure ArgoCD Redis Secret
+    const argocdRedisSecret = await getK8sSecret('argocd-redis', GIT_CONFIG_NAMESPACE)
+    if (!argocdRedisSecret) {
+      this.d.info('Creating argocd-redis secret')
+      await addRedisSecretForArgoCD().catch((error) => {
+        this.d.error('Failed to create argocd-redis secret:', getErrorMessage(error))
       })
     }
 

@@ -786,6 +786,7 @@ const createSealedSecret = async (
   secretName: string,
   namespace = 'argocd',
   secretType = 'kubernetes.io/basic-auth',
+  customAnnotations: Record<string, string> = {},
 ): Promise<void> => {
   const sealedSecretsPEM = await getSealedSecretsPEM()
 
@@ -799,7 +800,10 @@ const createSealedSecret = async (
     apiVersion: 'bitnami.com/v1alpha1',
     kind: 'SealedSecret',
     metadata: {
-      annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+      annotations: {
+        'sealedsecrets.bitnami.com/namespace-wide': 'true',
+        ...customAnnotations,
+      },
       name: secretName,
       namespace,
     },
@@ -902,11 +906,13 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   set(values, 'catalogs.default', defaultCatalog)
 }
 
-const setRedisSecretForArgoCD = async (): Promise<void> => {
-  const d = terminal('setRedisSecretForArgoCD')
+export const addRedisSecretForArgoCD = async (): Promise<void> => {
+  const d = terminal('addRedisSecretForArgoCD')
   try {
     const redisPassword = generateSecretPassword()
-    await createSealedSecret(d, { auth: redisPassword }, 'argocd-redis')
+    await createSealedSecret(d, { auth: redisPassword }, 'argocd-redis', undefined, undefined, {
+      'sealedsecrets.bitnami.com/managed': 'true',
+    })
   } catch (error) {
     d.error('Failed to create redis sealed secret, continuing without it:', error)
   }
@@ -1012,7 +1018,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   valkeyAndOauth2RedisPVCMigration,
   addLinodeNBAnnotations,
   setIngressDefault,
-  setRedisSecretForArgoCD,
+  addRedisSecretForArgoCD,
 }
 
 /**

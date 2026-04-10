@@ -460,4 +460,4 @@ changes:
       - valkeyAndOauth2RedisPVCMigration
   - version: 60
     customFunctions:
-      - setRedisSecretForArgoCD
+      - addRedisSecretForArgoCD
