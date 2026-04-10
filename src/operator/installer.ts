@@ -16,6 +16,11 @@ import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 
+type InstallationState = {
+  installationMode: 'standard' | 'recovery'
+  isInstalled: boolean
+}
+
 export class Installer {
   private d = terminal('operator:installer')
   private aplOps: AplOperations
@@ -25,14 +30,22 @@ export class Installer {
     this.d.info('Initializing Installer')
   }
 
-  public async isInstalled(): Promise<boolean> {
-    const installStatus = await this.getInstallationStatus()
-    if (installStatus === undefined) {
-      // Indicate migrated state by setting negative value
+  public async getInstallationState(): Promise<InstallationState> {
+    const configMap = await getK8sConfigMap(APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, k8s.core())
+    const installationMode = configMap?.data?.installationMode === 'recovery' ? 'recovery' : 'standard'
+    const status = configMap?.data?.status
+    this.d.info(`Current installation status: ${status}`)
+
+    let isInstalled: boolean
+    if (configMap !== undefined && status === undefined) {
+      // ConfigMap exists but has no status: operator was upgraded on an already-installed cluster
       await this.updateInstallationStatus('completed', -1)
-      return true
+      isInstalled = true
+    } else {
+      isInstalled = status === 'completed'
     }
-    return installStatus === 'completed'
+
+    return { installationMode, isInstalled }
   }
 
   public async recoverFromGit(): Promise<void> {
@@ -71,12 +84,6 @@ export class Installer {
     if (!sopsSecret || Object.keys(sopsSecret).length === 0) {
       throw new Error('KMS/SOPS config not found in apl-sops-secrets secret')
     }
-  }
-
-  public async getInstallationMode(): Promise<'standard' | 'recovery'> {
-    const installationStatus = await getK8sConfigMap(APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, k8s.core())
-    const installationMode = installationStatus?.data?.installationMode
-    return installationMode === 'recovery' ? 'recovery' : 'standard'
   }
 
   public async resetRecoveryModeToStandard(): Promise<void> {
