@@ -1,0 +1,31 @@
+repoName: otomi/values.git
+
+image:
+  repository: docker.io/clubbers1892/simple-git-server
+  tag: v0.1.1
+  pullPolicy: IfNotPresent
+
+initImage:
+  git:
+    repository: alpine/git
+    tag: latest
+    pullPolicy: IfNotPresent
+
+persistence:
+  size: 1Gi
+  storageClass: ""
+
+auth:
+  username: otomi-admin
+  password: ""
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+service:
+  port: 80

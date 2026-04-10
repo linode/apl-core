@@ -1,0 +1,20 @@
+# Test Case 1: alphaConfig enabled with no custom legacy config
+# Expected: Default behavior still generates the minimal legacy config with only email_domains.
+
+alphaConfig:
+  enabled: true
+  configData:
+    providers:
+      - id: google
+        provider: google
+        clientID: fake-client-id
+        clientSecret: fake-client-secret
+    upstreamConfig:
+      upstreams:
+        - id: alpha-service
+          path: /
+          uri: http://alpha-backend:8080
+
+# Implicit through default values, but explicitly set here for clarity in the test case
+config:
+  forceLegacyConfig: true
