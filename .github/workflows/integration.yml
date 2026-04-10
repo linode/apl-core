@@ -233,9 +233,6 @@ jobs:
             --k8s_version ${{ env.LKE_VERSION }} \
             --node_pools.type ${{ inputs.linode_types }} \
             --node_pools.count 3 \
-            --node_pools.autoscaler.enabled true \
-            --node_pools.autoscaler.max 3 \
-            --node_pools.autoscaler.min 3 \
             --tags testing \
             --no-defaults \
             $ha $tier_arg $cp_acl
