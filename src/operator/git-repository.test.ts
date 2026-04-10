@@ -198,6 +198,28 @@ describe('GitRepository', () => {
     })
   })
 
+  describe('validateRepoAccess', () => {
+    test('should succeed when repository is reachable', async () => {
+      mockGit.listRemote.mockResolvedValue('abc123 refs/heads/main')
+
+      await expect(
+        gitRepository.validateRepoAccess('https://user:pass@github.com/org/repo.git'),
+      ).resolves.toBeUndefined()
+
+      expect(mockGit.listRemote).toHaveBeenCalledWith(['https://user:pass@github.com/org/repo.git'])
+    })
+
+    test('should throw OperatorError when repository is unreachable', async () => {
+      mockGit.listRemote.mockRejectedValue(new Error('Authentication failed'))
+
+      await expect(
+        gitRepository.validateRepoAccess('https://user:badpass@github.com/org/repo.git'),
+      ).rejects.toBeInstanceOf(OperatorError)
+
+      expect(mockGit.listRemote).toHaveBeenCalledWith(['https://user:badpass@github.com/org/repo.git'])
+    })
+  })
+
   describe('pushToNewRepo', () => {
     test('should push when remote branch does not exist', async () => {
       mockGit.remote.mockResolvedValue(undefined)

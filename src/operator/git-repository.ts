@@ -107,6 +107,16 @@ export class GitRepository {
     return logResult.all.every((commit) => commit.message.includes(this.skipMarker))
   }
 
+  async validateRepoAccess(authenticatedUrl: string): Promise<void> {
+    try {
+      await this.git.listRemote([authenticatedUrl])
+      this.d.info('New git repository credentials validated successfully')
+    } catch (error) {
+      this.d.error('Failed to validate new git repository access:', getErrorMessage(error))
+      throw new OperatorError('New git repository is unreachable or credentials are invalid', error as Error)
+    }
+  }
+
   async pushToNewRepo(authenticatedUrl: string, targetBranch?: string): Promise<void> {
     const branch = targetBranch ?? this.branch
     const tempRemote = 'migration-target'

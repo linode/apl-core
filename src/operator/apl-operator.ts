@@ -26,6 +26,12 @@ export enum ApplyTrigger {
   Reconcile = 'reconcile',
 }
 
+interface GitConfigChanges {
+  urlChanged: boolean
+  branchChanged: boolean
+  credentialsChanged: boolean
+}
+
 function maskRepoUrl(url: string): string {
   return url.replace(/(https?:\/\/)([^@]+)(@.+)/g, '$1***$3')
 }
@@ -124,26 +130,43 @@ export class AplOperator {
     }
   }
 
-  private async migrateGitRepoIfUrlChanged(values: Record<string, any> | undefined): Promise<void> {
-    const newRepoUrl = values?.otomi?.git?.repoUrl
-    const newBranch = values?.otomi?.git?.branch
+  private detectGitConfigChanges(git: Record<string, any> | undefined): GitConfigChanges {
+    const config = this.startupGitConfig
+    return {
+      urlChanged: !!git?.repoUrl && git.repoUrl !== config.repoUrl,
+      branchChanged: !!git?.branch && git.branch !== config.branch,
+      credentialsChanged:
+        (!!git?.username && git.username !== config.username) || (!!git?.password && git.password !== config.password),
+    }
+  }
 
-    const urlChanged = newRepoUrl && newRepoUrl !== this.startupGitConfig.repoUrl
-    const branchChanged = newBranch && newBranch !== this.startupGitConfig.branch
+  private async migrateGitRepoIfUrlChanged(values: Record<string, any> | undefined): Promise<void> {
+    if (!values) {
+      this.d.info('No values found, skipping git repository migration check')
+      return
+    }
+    const git = values?.otomi?.git
+    const { urlChanged, branchChanged, credentialsChanged } = this.detectGitConfigChanges(git)
+
+    if (!urlChanged && !branchChanged && !credentialsChanged) return
 
     if (urlChanged) {
       this.d.info(
-        `Git repository URL changed from ${this.startupGitConfig.repoUrl} to ${newRepoUrl}, pushing content to new repository before applying`,
+        `Git repository URL changed from ${this.startupGitConfig.repoUrl} to ${git.repoUrl}, pushing content to new repository before applying`,
       )
     }
     if (branchChanged) {
       this.d.info(
-        `Git branch changed from ${this.startupGitConfig.branch} to ${newBranch}, pushing content to new branch before applying`,
+        `Git branch changed from ${this.startupGitConfig.branch} to ${git.branch}, pushing content to new branch before applying`,
       )
     }
+    if (credentialsChanged) {
+      this.d.info('Git credentials changed, validating new configuration before applying')
+    }
 
+    const newConfig = getRepo(values)
+    await this.gitRepo.validateRepoAccess(newConfig.authenticatedUrl)
     if (urlChanged || branchChanged) {
-      const newConfig = getRepo(values)
       await this.gitRepo.pushToNewRepo(newConfig.authenticatedUrl, newConfig.branch)
     }
   }

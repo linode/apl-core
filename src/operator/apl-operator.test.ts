@@ -14,6 +14,7 @@ const mockGitRepo = {
   clone: jest.fn().mockResolvedValue(undefined),
   syncAndAnalyzeChanges: jest.fn().mockResolvedValue({ hasChangesToApply: false, applyTeamsOnly: false }),
   pushToNewRepo: jest.fn().mockResolvedValue(undefined),
+  validateRepoAccess: jest.fn().mockResolvedValue(undefined),
   authenticatedUrl: 'https://username:password@example.com:443/org/repo.git',
   lastRevision: 'abc123',
 }
@@ -274,26 +275,29 @@ describe('AplOperator', () => {
       getRepoMock.mockReset()
     })
 
-    test('should not push when values is undefined', async () => {
+    test('should not push or validate when values is undefined', async () => {
       await (aplOperator as any).migrateGitRepoIfUrlChanged(undefined)
+      expect(mockGitRepo.validateRepoAccess).not.toHaveBeenCalled()
       expect(mockGitRepo.pushToNewRepo).not.toHaveBeenCalled()
     })
 
-    test('should not push when repoUrl is not in values', async () => {
+    test('should not push or validate when no git config changed', async () => {
       await (aplOperator as any).migrateGitRepoIfUrlChanged({ otomi: { git: {} } })
+      expect(mockGitRepo.validateRepoAccess).not.toHaveBeenCalled()
       expect(mockGitRepo.pushToNewRepo).not.toHaveBeenCalled()
     })
 
-    test('should not push when repoUrl matches startupGitConfig', async () => {
+    test('should not push or validate when repoUrl matches startupGitConfig', async () => {
       const url = 'https://example.com/repo.git'
       const operator = new AplOperator({ ...defaultConfig, gitConfig: { repoUrl: url } as GitRepoConfig })
 
       await (operator as any).migrateGitRepoIfUrlChanged({ otomi: { git: { repoUrl: url } } })
 
+      expect(mockGitRepo.validateRepoAccess).not.toHaveBeenCalled()
       expect(mockGitRepo.pushToNewRepo).not.toHaveBeenCalled()
     })
 
-    test('should push to new repo when repoUrl has changed', async () => {
+    test('should validate and push when repoUrl has changed', async () => {
       const newAuthUrl = 'https://user:pass@example.com/new-repo.git'
       getRepoMock.mockReturnValue({ authenticatedUrl: newAuthUrl, branch: 'main' })
 
@@ -302,7 +306,45 @@ describe('AplOperator', () => {
       })
 
       expect(getRepoMock).toHaveBeenCalled()
+      expect(mockGitRepo.validateRepoAccess).toHaveBeenCalledWith(newAuthUrl)
       expect(mockGitRepo.pushToNewRepo).toHaveBeenCalledWith(newAuthUrl, 'main')
+    })
+
+    test('should validate and push when branch has changed', async () => {
+      const newAuthUrl = 'https://user:pass@example.com/repo.git'
+      getRepoMock.mockReturnValue({ authenticatedUrl: newAuthUrl, branch: 'develop' })
+
+      await (aplOperator as any).migrateGitRepoIfUrlChanged({
+        otomi: { git: { branch: 'develop' } },
+      })
+
+      expect(mockGitRepo.validateRepoAccess).toHaveBeenCalledWith(newAuthUrl)
+      expect(mockGitRepo.pushToNewRepo).toHaveBeenCalledWith(newAuthUrl, 'develop')
+    })
+
+    test('should validate but not push when only credentials changed', async () => {
+      const newAuthUrl = 'https://newuser:newpass@example.com/repo.git'
+      getRepoMock.mockReturnValue({ authenticatedUrl: newAuthUrl, branch: 'main' })
+
+      await (aplOperator as any).migrateGitRepoIfUrlChanged({
+        otomi: { git: { username: 'newuser', password: 'newpass' } },
+      })
+
+      expect(mockGitRepo.validateRepoAccess).toHaveBeenCalledWith(newAuthUrl)
+      expect(mockGitRepo.pushToNewRepo).not.toHaveBeenCalled()
+    })
+
+    test('should bail out if validateRepoAccess fails', async () => {
+      getRepoMock.mockReturnValue({ authenticatedUrl: 'https://user:badpass@example.com/repo.git', branch: 'main' })
+      mockGitRepo.validateRepoAccess.mockRejectedValueOnce(new Error('Authentication failed'))
+
+      await expect(
+        (aplOperator as any).migrateGitRepoIfUrlChanged({
+          otomi: { git: { username: 'user', password: 'badpass' } },
+        }),
+      ).rejects.toThrow('Authentication failed')
+
+      expect(mockGitRepo.pushToNewRepo).not.toHaveBeenCalled()
     })
   })
 
