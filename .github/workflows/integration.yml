@@ -226,14 +226,6 @@ jobs:
             args+=(--control_plane.high_availability true)
           fi
 
-          if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
-            args+=(--control_plane.acl.enabled true)
-            IFS=',' read -ra acl_ips <<< '${{ env.LKE_CP_ACL_IPV4 }}'
-            for acl_ip in "${acl_ips[@]}"; do
-              args+=(--control_plane.acl.addresses.ipv4 "$acl_ip")
-            done
-          fi
-
           linode-cli lke cluster-create \
             --label ${{ env.LINODE_CLUSTER_NAME }} \
             --region nl-ams \
@@ -379,6 +371,15 @@ jobs:
 
 
           wait $HELM_PID
+
+          if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
+            cluster_patch_args=(${{ env.LINODE_CLUSTER_ID }} --control_plane.acl.enabled true)
+            IFS=',' read -ra acl_ips <<< '${{ env.LKE_CP_ACL_IPV4 }}'
+            for acl_ip in "${acl_ips[@]}"; do
+              cluster_patch_args+=(--control_plane.acl.addresses.ipv4 "$acl_ip")
+            done
+            linode-cli lke cluster-update "${cluster_patch_args[@]}"
+          fi
       - name: Gather k8s events on failure
         if: failure()
         run: |
