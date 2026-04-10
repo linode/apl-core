@@ -37,7 +37,7 @@ const setup = (): void => {
   mkdirSync(dir, { recursive: true })
 }
 
-const retryInstallStep = async <T, Args extends any[]>(
+export const retryInstallStep = async <T, Args extends any[]>(
   fn: (...args: Args) => Promise<T>,
   ...args: Args
 ): Promise<T> => {
