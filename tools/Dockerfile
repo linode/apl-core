@@ -32,6 +32,7 @@ ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-${TARGETARCH}.tar.gz
 WORKDIR /
 
 # Install all required packages in one layer
+# tini is needed to properly handle signals and avoid zombie processes when running the container
 RUN apt-get update && apt-get install -y \
   curl \
   coreutils \
