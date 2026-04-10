@@ -343,7 +343,7 @@ jobs:
           fi
 
           if [[ -n '${{ env.LKE_APL_FIREWALL_INBOUND_RULES }}' ]]; then
-            install_args+=(--apps.linode-cfw._rawValues.firewall.inbound "${{ env.LKE_APL_FIREWALL_INBOUND_RULES }}")
+            install_args+=(--set apps.linode-cfw._rawValues.firewall.inbound="${{ env.LKE_APL_FIREWALL_INBOUND_RULES }}")
           fi
 
           helm install "${install_args[@]}" &
