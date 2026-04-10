@@ -11,6 +11,22 @@ jest.mock('../common/debug', () => ({
     error: jest.fn(),
     debug: jest.fn(),
   })),
+  logLevels: {
+    FATAL: -2,
+    ERROR: -1,
+    WARN: 0,
+    INFO: 1,
+    DEBUG: 2,
+    TRACE: 3,
+    [-2]: 'FATAL',
+    [-1]: 'ERROR',
+    [0]: 'WARN',
+    [1]: 'INFO',
+    [2]: 'DEBUG',
+    [3]: 'TRACE',
+  },
+  logLevel: jest.fn(),
+  logLevelString: jest.fn(),
 }))
 
 jest.mock('../common/k8s', () => ({
