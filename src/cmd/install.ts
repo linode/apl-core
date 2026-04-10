@@ -15,7 +15,7 @@ import {
   getK8sSecret,
   k8s,
   setDeploymentState,
-  waitForCRD,
+  waitForCRD
 } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'

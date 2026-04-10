@@ -21,7 +21,14 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd, sleep } from 'zx'
 import { APL_OPERATOR_NS, ARGOCD_APP_PARAMS } from '../common/constants'
-import { getArgoCdApp, getK8sSecret, getSealedSecretsPEM, k8s, setArgoCdAppSync } from '../common/k8s'
+import {
+  createUpdateGenericSecret,
+  getArgoCdApp,
+  getK8sSecret,
+  getSealedSecretsPEM,
+  k8s,
+  setArgoCdAppSync,
+} from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
@@ -910,8 +917,8 @@ export const addRedisSecretForArgoCD = async (): Promise<void> => {
   const d = terminal('addRedisSecretForArgoCD')
   try {
     const redisPassword = generateSecretPassword()
-    await createSealedSecret(d, { auth: redisPassword }, 'argocd-redis', undefined, undefined, {
-      'sealedsecrets.bitnami.com/managed': 'true',
+    await createUpdateGenericSecret(k8s.core(), 'argocd-redis', 'argocd', {
+      auth: redisPassword,
     })
   } catch (error) {
     d.error('Failed to create redis sealed secret, continuing without it:', error)
