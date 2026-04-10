@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.15.2](https://github.com/linode/apl-core/compare/v4.15.1...v4.15.2) (2026-04-10)
+
+
+### Features
+
+* add checksum for team config ([#3119](https://github.com/linode/apl-core/issues/3119)) ([602e6dc](https://github.com/linode/apl-core/commit/602e6dc2636b8ddac3ac634787b652392f2bcade))
+
+
+### Bug Fixes
+
+* set correct loki url when no obj storage ([#3098](https://github.com/linode/apl-core/issues/3098)) ([4a94f0e](https://github.com/linode/apl-core/commit/4a94f0efab996244d370930c8eaafc884a8a65f5))
+
 ## [4.15.0](https://github.com/linode/apl-core/compare/v4.5.0...v4.15.0) (2026-03-23)
 
 
