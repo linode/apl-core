@@ -129,7 +129,7 @@ env:
   DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
   LKE_TIER: ${{ inputs.lke_tier }}
   LKE_VERSION: ${{ inputs.kubernetes_version }}
-  LKE_CP_ACL_IPV4: '0.0.0.0/0'
+  LKE_CP_ACL_IPV4: ${{ vars.LKE_CP_ACL_IPV4 }}
 
 jobs:
   preprocess-input:
@@ -217,16 +217,22 @@ jobs:
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
+          args=()
           if [[ '${{ env.LKE_TIER }}' == 'enterprise' ]]; then
-            tier_arg="--tier enterprise"
             export LINODE_CLI_API_VERSION=v4beta
-            ha=""
+            args+=(--tier enterprise)
           else
-            tier_arg=""
-            ha="--control_plane.high_availability true"
+            args+=(--control_plane.high_availability true)
           fi
 
-          cp_acl="--control_plane.acl.enabled true --control_plane.acl.addresses.ipv4 $LKE_CP_ACL_IPV4"
+          if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
+            args+=(--control_plane.acl.enabled true)
+            IFS=',' read -ra acl_ips <<< '${{ env.LKE_CP_ACL_IPV4 }}'
+            for acl_ip in "${acl_ips[@]}"; do
+              args+=(--control_plane.acl.addresses.ipv4 "$acl_ip")
+            done
+          fi
+
           linode-cli lke cluster-create \
             --label ${{ env.LINODE_CLUSTER_NAME }} \
             --region nl-ams \
@@ -235,7 +241,7 @@ jobs:
             --node_pools.count 3 \
             --tags testing \
             --no-defaults \
-            $ha $tier_arg $cp_acl
+            "${args[@]}"
       - name: Retrieve cluster id
         run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
       - name: Wait for cluster to be ready
