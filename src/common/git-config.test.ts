@@ -56,10 +56,10 @@ describe('git-config', () => {
       expect(result).toBeUndefined()
     })
 
-    it('should return undefined when username is missing', async () => {
+    it('should return credentials without username when username is missing', async () => {
       mockGetK8sSecret.mockResolvedValue({ password: 's3cret' })
       const result = await getGitCredentials()
-      expect(result).toBeUndefined()
+      expect(result).toEqual({ username: undefined, password: 's3cret' })
     })
 
     it('should return undefined when password is missing', async () => {
@@ -125,7 +125,7 @@ describe('git-config', () => {
   })
 
   describe('getStoredGitRepoConfig', () => {
-    it('should return full config with authenticated URL', async () => {
+    it('should use basic auth when username is provided', async () => {
       mockGetK8sConfigMap.mockResolvedValue({
         data: {
           repoUrl: 'https://github.com/org/repo.git',
@@ -142,6 +142,27 @@ describe('git-config', () => {
         branch: 'main',
         email: 'pipeline@cluster.local',
         username: 'admin',
+        password: 's3cret',
+      })
+    })
+
+    it('should use PAT auth (token only) when username is not provided', async () => {
+      mockGetK8sConfigMap.mockResolvedValue({
+        data: {
+          repoUrl: 'https://github.com/org/repo.git',
+          branch: 'main',
+          email: 'pipeline@cluster.local',
+        },
+      })
+      mockGetK8sSecret.mockResolvedValue({ password: 's3cret' })
+
+      const result = await getStoredGitRepoConfig()
+      expect(result).toEqual({
+        repoUrl: 'https://github.com/org/repo.git',
+        authenticatedUrl: 'https://s3cret@github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+        username: undefined,
         password: 's3cret',
       })
     })
@@ -191,9 +212,9 @@ describe('git-config', () => {
       mockGetK8sSecret.mockResolvedValue(undefined) // both calls return undefined
 
       // getOldGitCredentials returns { username: undefined, password: undefined }
-      // which passes the !credentials check but fails the !username || !password check
+      // which passes the !credentials check but fails the !password check
       await expect(getStoredGitRepoConfig()).rejects.toThrow(
-        'Git credentials are incomplete in apl-git-credentials secret',
+        'Git password/token is missing in apl-git-credentials secret',
       )
     })
 
@@ -298,7 +319,7 @@ describe('git-config', () => {
   })
 
   describe('getRepo', () => {
-    it('should return full config from values', async () => {
+    it('should use basic auth when username is provided', async () => {
       const values = {
         otomi: {
           git: {
@@ -322,6 +343,28 @@ describe('git-config', () => {
       })
     })
 
+    it('should use PAT auth (token only) when username is not provided', async () => {
+      const values = {
+        otomi: {
+          git: {
+            repoUrl: 'https://github.com/org/repo.git',
+            password: 's3cret',
+            branch: 'main',
+            email: 'pipeline@cluster.local',
+          },
+        },
+      }
+
+      const result = await getRepo(values)
+      expect(result).toEqual({
+        repoUrl: 'https://github.com/org/repo.git',
+        authenticatedUrl: 'https://s3cret@github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+        username: undefined,
+        password: 's3cret',
+      })
+    })
     it('should throw when repoUrl is missing', async () => {
       await expect(getRepo({ otomi: { git: {} } })).rejects.toThrow('No otomi.git.repoUrl config was given.')
     })

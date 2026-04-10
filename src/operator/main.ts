@@ -11,6 +11,7 @@ import { GitRepository } from './git-repository'
 import { Installer } from './installer'
 import { getErrorMessage } from './utils'
 import { operatorEnv } from './validators'
+import { retryInstallStep } from '../cmd/install'
 
 dotenv.config()
 
@@ -70,9 +71,8 @@ async function main(): Promise<void> {
     // Phase 1: Run installation with retry until success
     const installer = new Installer(aplOps)
 
-    const installationMode = await installer.getInstallationMode()
+    const { installationMode, isInstalled } = await retryInstallStep(() => installer.getInstallationState())
     const isRecoveryMode = installationMode === 'recovery'
-    const isInstalled = await installer.isInstalled()
     if (isInstalled) {
       d.info('Installation already completed, skipping install steps')
     } else if (isRecoveryMode) {

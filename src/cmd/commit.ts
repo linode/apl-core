@@ -158,7 +158,7 @@ export const commit = async (
     // we need to update the URL with the real credentials.
     await $git`git remote set-url origin ${remote}`.nothrow().quiet()
   } else {
-    await setIdentity(username, email, env.ENV_DIR)
+    await setIdentity(username ?? 'otomi-admin', email, env.ENV_DIR)
     // the url might need updating (e.g. if credentials changed)
     await $git`git remote set-url origin ${remote}`
   }
