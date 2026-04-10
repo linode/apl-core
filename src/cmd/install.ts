@@ -4,7 +4,7 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { setGitConfig } from 'src/common/git-config'
+import { GIT_CONFIG_NAMESPACE, setGitConfig } from 'src/common/git-config'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS, hfValues } from 'src/common/hf'
 import {
   applyServerSide,
@@ -12,6 +12,7 @@ import {
   getDeploymentState,
   getHelmReleases,
   getK8sConfigMap,
+  getK8sSecret,
   k8s,
   setDeploymentState,
   waitForCRD,
@@ -19,9 +20,11 @@ import {
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { getErrorMessage } from 'src/operator/utils'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
 import { commit, createCredentialsSecret, createWelcomeConfigMap, initialSetupData } from './commit'
+import { addRedisSecretForArgoCD } from './migrate'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -166,6 +169,20 @@ const install = async (): Promise<void> => {
   )
 }
 
+const prepareMandatorySecrets = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:prepareMandatorySecrets`)
+  d.info('Preparing mandatory secrets for installation')
+
+  // Ensure ArgoCD Redis Secret
+  const argocdRedisSecret = await getK8sSecret('argocd-redis', GIT_CONFIG_NAMESPACE)
+  if (!argocdRedisSecret) {
+    d.info('Creating argocd-redis secret')
+    await addRedisSecretForArgoCD().catch((error) => {
+      d.error('Failed to create argocd-redis secret:', getErrorMessage(error))
+    })
+  }
+}
+
 export const module: CommandModule = {
   command: cmdName,
   describe: 'Install all k8s resources for first-time setup',
@@ -174,6 +191,7 @@ export const module: CommandModule = {
     setParsedArgs(argv)
     setup()
     await prepareEnvironment()
+    await prepareMandatorySecrets()
     await install()
   },
 }
