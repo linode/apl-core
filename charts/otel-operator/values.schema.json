@@ -2137,6 +2137,14 @@
       "examples": [
         false
       ]
+    },
+    "extraObjects": {
+      "type": "array",
+      "default": [],
+      "title": "Extra manifests to deploy as an array",
+      "items": {
+        "type": "object"
+      }
     }
   },
   "examples": [
