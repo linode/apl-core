@@ -60,7 +60,7 @@ controller:
     ssl-redirect: true
     use-forwarded-headers: false
     use-proxy-protocol: true
-    enable-opentelemetry: {{ $app.tracing.enabled }}
+    enable-opentelemetry: false
     otel-sampler: AlwaysOn
     otel-sampler-ratio: {{ $app.tracing.samplingRatio }}
     otlp-collector-host: platform-otlp-collector.otel.svc

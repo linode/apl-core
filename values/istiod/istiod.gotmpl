@@ -47,12 +47,6 @@ meshConfig:
     time: 10s
   enableAutoMtls: true
   extensionProviders:
-    {{- if $i.tracing.enabled }}
-    - opentelemetry:
-        port: 4317
-        service: platform-otlp-collector.otel.svc.cluster.local
-      name: otel-tracing
-    {{- end }}
     - envoyExtAuthzHttp:
         headersToDownstreamOnDeny:
           - content-type

@@ -420,15 +420,6 @@ definitions:
         $ref: '#/definitions/rawValues'
       enabled:
         type: boolean
-      tracing:
-        description: Configure Nginx for tracing. Requires Otel Collector to be enabled.
-        properties:
-          enabled:
-            default: false
-            type: boolean
-          samplingRatio:
-            type: string
-            default: '0.01'
       autoscaling:
         additionalProperties: false
         properties:
@@ -1864,15 +1855,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          tracing:
-            description: Configure Istio for tracing. Requires Otel Collector to be enabled.
-            properties:
-              enabled:
-                default: false
-                type: boolean
-              samplingRatio:
-                type: string
-                default: '0.01'
           autoscaling:
             properties:
               egressgateway:
