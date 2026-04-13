@@ -1,7 +1,7 @@
 appsInfo:
   alertmanager:
     title: Alertmanager
-    appVersion: 0.31.1
+    appVersion: 0.32.0
     repo: https://github.com/prometheus/alertmanager
     maintainers: Prometheus Community
     relatedLinks:
