@@ -1,6 +1,6 @@
 import { existsSync } from 'fs'
 import { mkdir, unlink, writeFile } from 'fs/promises'
-import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, omit, pick, set, unset } from 'lodash'
+import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, omit, pick, set } from 'lodash'
 import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { stringify } from 'yaml'
@@ -164,27 +164,19 @@ export const generateSecrets = async (
   const schemaSecrets = extract(schema, leaf)
   // Remove properties with blank `x-secret`
   const template = removeBlankAttributes(schemaSecrets)
-  const templatePaths = Object.keys(flattenObject(schemaSecrets))
 
   d.debug('Secrets template: ', template)
   d.info('Generating secrets from the secrets template')
   const generatedSecrets = (await gucci(template, {})) as Record<string, any>
-  const sanitizedValues = cloneDeep(values)
 
-  templatePaths.forEach((secretPath) => {
-    const currentValue = get(sanitizedValues, secretPath)
-    if (currentValue === undefined || currentValue === null || currentValue === '') {
-      unset(sanitizedValues, secretPath)
-    }
-  })
-
-  const mergedGeneratedSecrets = merge(generatedSecrets, sanitizedValues)
+  const mergedGeneratedSecrets = merge(generatedSecrets)
 
   const derivedSecrets = await deriveSecrets(mergedGeneratedSecrets)
   const allSecrets = merge(cloneDeep(derivedSecrets), cloneDeep(mergedGeneratedSecrets))
 
   d.info('Generated all secrets')
   // Only return values that have x-secrets prop and are now fully templated:
+  const templatePaths = Object.keys(flattenObject(schemaSecrets))
   const res = pick(allSecrets, templatePaths)
   d.debug('generateSecrets result: ', res)
   return res

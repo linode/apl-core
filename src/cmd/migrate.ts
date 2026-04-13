@@ -13,7 +13,7 @@ import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
-import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
+import { createArgoCdRedisSecret, getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { objectToYaml, writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
@@ -49,12 +49,9 @@ interface Change {
   renamings?: Array<{
     [oldName: string]: string
   }>
-  additions?: Array<
-    | {
-        [mutation: string]: string
-      }
-    | string
-  >
+  additions?: Array<{
+    [mutation: string]: string
+  }>
   fileAdditions?: Array<string>
   bulkAdditions?: Array<{
     [mutation: string]: string
@@ -909,19 +906,19 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   set(values, 'catalogs.default', defaultCatalog)
 }
 
-// export const addRedisSecretForArgoCD = async (): Promise<void> => {
-//   const d = terminal('addRedisSecretForArgoCD')
-//   try {
-//     const argocdRedisSecret = await getK8sSecret('argocd-redis', 'argocd')
-//     if (argocdRedisSecret) {
-//       await k8s.core().deleteNamespacedSecret({ name: 'argocd-redis', namespace: 'argocd' })
-//       return
-//     }
-//     await createArgoCdRedisSecret()
-//   } catch (error) {
-//     d.error('Failed to create redis sealed secret, continuing without it:', error)
-//   }
-// }
+export const addRedisSecretForArgoCD = async (): Promise<void> => {
+  const d = terminal('addRedisSecretForArgoCD')
+  try {
+    const argocdRedisSecret = await getK8sSecret('argocd-redis', 'argocd')
+    if (argocdRedisSecret) {
+      await k8s.core().deleteNamespacedSecret({ name: 'argocd-redis', namespace: 'argocd' })
+      return
+    }
+    await createArgoCdRedisSecret()
+  } catch (error) {
+    d.error('Failed to create redis sealed secret, continuing without it:', error)
+  }
+}
 
 const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('addLinodeNBAnnotations')
@@ -1023,6 +1020,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   valkeyAndOauth2RedisPVCMigration,
   addLinodeNBAnnotations,
   setIngressDefault,
+  addRedisSecretForArgoCD,
 }
 
 /**

@@ -459,5 +459,5 @@ changes:
     customFunctions:
       - valkeyAndOauth2RedisPVCMigration
   - version: 60
-    additions:
-      - apps.argocd.redisPassword: ''
+    customFunctions:
+      - addRedisSecretForArgoCD

@@ -72,11 +72,4 @@ describe('generateSecrets', () => {
     const res = await generateSecrets(valuesWithExisting, deps)
     expect(res.nested.twoStage).toBe('exists')
   })
-
-  it('should regenerate blank secret values instead of preserving nulls', async () => {
-    const valuesWithNullSecret = merge(cloneDeep(values), { nested: { templatedSecret: null } })
-
-    const res = await generateSecrets(valuesWithNullSecret, deps)
-    expect(res.nested.templatedSecret).toBe('dummy')
-  })
 })
