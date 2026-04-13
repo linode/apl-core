@@ -5,7 +5,7 @@ import { getParsedArgs } from '../yargs'
 import { updateDbCollation } from './cloudnative-pg'
 import { removeOldMinioResources } from './remove-old-minio-resources'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
-import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
+import { deleteKnativeServingCR, upgradeKnativeServing } from './upgrade-knative-serving-cr'
 import { detachApplicationFromApplicationSet, pruneArgoCDImageUpdater } from './v4.13.0'
 import { removeHttpBinApplication } from './remove-httpbin-application'
 import { migrateGitConfig } from './migrate-git-config'
@@ -159,6 +159,11 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       'istio-system-istiod': {
         post: async () => {
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
+      'knative-operator-knative-operator': {
+        post: async (context: RuntimeUpgradeContext) => {
+          await deleteKnativeServingCR(context)
         },
       },
     },
