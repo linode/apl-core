@@ -1,0 +1,22 @@
+# we don't allow json files in the root except package.json
+
+.history
+.tmp
+_.bak
+node_modules/
+/coverage/
+/dist/
+/env/
+_.DS*Store
+.vscode/values-schema.yaml
+*.env
+/.secrets
+chart/apl/values.schema.json
+chart/apl/README.md
+workflow/
+\_.new
+.envrc
+otomi.cpuprofile
+/.idea/
+tmp
+\*\*values-repo.yaml
