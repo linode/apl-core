@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.15.3](https://github.com/linode/apl-core/compare/v4.15.2...v4.15.3) (2026-04-13)
+
+
+### Features
+
+* recreating the knativeserving after upgrade ([#3099](https://github.com/linode/apl-core/issues/3099)) ([77371da](https://github.com/linode/apl-core/commit/77371da64b3488a8bb09d0ed8aa5556c124ce0d3))
+
 ### [4.15.2](https://github.com/linode/apl-core/compare/v4.15.1...v4.15.2) (2026-04-10)
 
 
