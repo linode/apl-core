@@ -129,8 +129,6 @@ env:
   DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
   LKE_TIER: ${{ inputs.lke_tier }}
   LKE_VERSION: ${{ inputs.kubernetes_version }}
-  LKE_CP_ACL_IPV4: ${{ vars.LKE_CP_ACL_IPV4 }}
-  LKE_APL_FIREWALL_INBOUND_RULES: ${{ vars.LKE_APL_FIREWALL_INBOUND_RULES }}
 
 jobs:
   preprocess-input:
@@ -302,6 +300,8 @@ jobs:
           EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
+          LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
+          LKE_APL_FIREWALL_INBOUND_RULES: ${{ secrets.LKE_APL_FIREWALL_INBOUND_RULES }}
         run: |
           touch values.yaml
 
