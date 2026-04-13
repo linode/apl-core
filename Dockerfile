@@ -1,4 +1,4 @@
-FROM linode/apl-tools:v2.10.6 AS ci
+FROM linode/apl-tools:v2.11.0 AS ci
 
 ENV APP_HOME=/home/app/stack
 
@@ -36,7 +36,7 @@ FROM ci AS clean
 # below command removes the packages specified in devDependencies and set NODE_ENV to production
 RUN npm prune --production
 
-FROM linode/apl-tools:v2.10.6 AS prod
+FROM linode/apl-tools:v2.11.0 AS prod
 ARG APPS_REVISION=''
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env
@@ -54,4 +54,5 @@ COPY --from=ci /home/app/stack/dist /home/app/stack/dist
 COPY --from=clean /home/app/stack/node_modules /home/app/stack/node_modules
 COPY --chown=app . .
 
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["dist/src/otomi.js"]
