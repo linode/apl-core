@@ -16,7 +16,8 @@ spec:
     containerPolicies:
     - containerName: manager
       {{- if .Values.manager.verticalPodAutoscaler.controlledResources }}
-      controlledResources: {{ .Values.manager.verticalPodAutoscaler.controlledResources }}
+      controlledResources:
+        {{- toYaml .Values.manager.verticalPodAutoscaler.controlledResources | nindent 8 }}
       {{- end }}
       {{- if .Values.manager.verticalPodAutoscaler.maxAllowed }}
       maxAllowed:
