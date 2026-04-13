@@ -906,11 +906,27 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   set(values, 'catalogs.default', defaultCatalog)
 }
 
-export const addRedisSecretForArgoCD = async (): Promise<void> => {
+export const addRedisSecretForArgoCD = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('addRedisSecretForArgoCD')
+  const argocdNamespace = 'argocd'
+  const secretName = 'argocd-redis'
+
   try {
+    const parsedArgs = getParsedArgs()
+    if (parsedArgs?.dryRun || parsedArgs?.local || env.DISABLE_SYNC) {
+      d.info('Skipping cluster cleanup in dry-run/local/dev mode')
+      return
+    }
+
+    try {
+      await k8s.core().deleteNamespacedSecret({ name: secretName, namespace: argocdNamespace })
+      d.info(`Deleted Secret ${secretName} in namespace ${argocdNamespace}`)
+    } catch (error) {
+      if (!(error instanceof ApiException && error.code === 404)) throw error
+      d.info(`Secret ${secretName} was not found in namespace ${argocdNamespace}`)
+    }
   } catch (error) {
-    d.error('Failed to create redis sealed secret, continuing without it:', error)
+    d.error('Failed to remove legacy ArgoCD redis secret, continuing migration:', error)
   }
 }
 
