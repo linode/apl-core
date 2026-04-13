@@ -190,7 +190,7 @@ downloadDashboardsImage:
   # -- The Docker registry
   registry: docker.io
   repository: curlimages/curl
-  tag: 8.18.0
+  tag: 8.19.0
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -346,6 +346,15 @@ route:
     timeouts: {}
     # request: 10s
     # backendRequest: 5s
+
+    ## SessionPersistence defines and configures session persistence for the route rule.
+    ## Ref. https://gateway-api.sigs.k8s.io/geps/gep-1619/
+    sessionPersistence: {}
+    # sessionName: grafana-session
+    # type: Cookie
+    # absoluteTimeout: 48h
+    # cookieConfig:
+    #   lifetimeType: Permanent
 
     ## Filters define the filters that are applied to requests that match this rule.
     filters: []
@@ -970,7 +979,7 @@ sidecar:
     # -- The Docker registry
     registry: quay.io
     repository: kiwigrid/k8s-sidecar
-    tag: 2.5.5
+    tag: 2.6.0
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}
