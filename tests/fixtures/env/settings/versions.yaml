@@ -4,3 +4,4 @@ metadata:
     labels: {}
 spec:
     specVersion: 59
+    specVersion: 60
