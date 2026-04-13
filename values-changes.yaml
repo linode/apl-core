@@ -459,6 +459,7 @@ changes:
     customFunctions:
       - valkeyAndOauth2RedisPVCMigration
   - version: 60
+    customFunctions:
+      - removeIngressTracing
     deletions:
-      - 'apps.ingress-nginx-platform.tracing'
       - 'apps.istio.tracing'

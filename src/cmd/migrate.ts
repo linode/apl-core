@@ -968,6 +968,15 @@ const setIngressDefault = async (values: Record<string, any>) => {
   set(values, 'apps.ingress-nginx-platform.enabled', false)
 }
 
+const removeIngressTracing = async (values: Record<string, any>) => {
+  const apps: Record<string, any> = values?.apps ?? {}
+  Object.entries(apps).forEach(([key, value]) => {
+    if (key.startsWith('ingress-nginx-')) {
+      unset(value, 'tracing')
+    }
+  })
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   networkPoliciesMigration,
   teamSettingsMigration,
@@ -982,6 +991,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   valkeyAndOauth2RedisPVCMigration,
   addLinodeNBAnnotations,
   setIngressDefault,
+  removeIngressTracing,
 }
 
 /**
