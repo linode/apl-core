@@ -253,9 +253,6 @@ environments:
                   cpu: 200m
             _rawValues: {}
           istio:
-            tracing:
-              enabled: false
-              samplingRatio: "0.01"
             autoscaling:
               egressgateway:
                 minReplicas: 2
