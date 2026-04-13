@@ -257,8 +257,6 @@ export const buildSecretToNamespaceMap = async (
   const groupMap = new Map<string, SecretMapping>()
 
   for (const secretPath of secretPaths) {
-    // Skip SOPS-related paths
-    if (secretPath.startsWith('kms.sops')) continue
     // Skip users path — user secrets are managed individually in apl-users namespace
     if (secretPath === 'users') continue
 
@@ -396,11 +394,7 @@ export const applySealedSecretManifests = async (
 
     for (const manifest of nsManifests) {
       d.info(`Applying SealedSecret ${manifest.metadata.name} to namespace ${namespace}`)
-      try {
-        await applySealedSecretResource(manifest)
-      } catch (error) {
-        d.error(`Failed to apply SealedSecret ${manifest.metadata.name}: ${error}`)
-      }
+      await applySealedSecretResource(manifest)
     }
   }
 
