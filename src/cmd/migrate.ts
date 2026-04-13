@@ -13,7 +13,7 @@ import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
-import { createArgoCdRedisSecret, getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
+import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { objectToYaml, writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
@@ -909,12 +909,6 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
 export const addRedisSecretForArgoCD = async (): Promise<void> => {
   const d = terminal('addRedisSecretForArgoCD')
   try {
-    const argocdRedisSecret = await getK8sSecret('argocd-redis', 'argocd')
-    if (argocdRedisSecret) {
-      await k8s.core().deleteNamespacedSecret({ name: 'argocd-redis', namespace: 'argocd' })
-      return
-    }
-    await createArgoCdRedisSecret()
   } catch (error) {
     d.error('Failed to create redis sealed secret, continuing without it:', error)
   }

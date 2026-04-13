@@ -168,8 +168,7 @@ export const generateSecrets = async (
   d.debug('Secrets template: ', template)
   d.info('Generating secrets from the secrets template')
   const generatedSecrets = (await gucci(template, {})) as Record<string, any>
-
-  const mergedGeneratedSecrets = merge(generatedSecrets)
+  const mergedGeneratedSecrets = merge(generatedSecrets, cloneDeep(values))
 
   const derivedSecrets = await deriveSecrets(mergedGeneratedSecrets)
   const allSecrets = merge(cloneDeep(derivedSecrets), cloneDeep(mergedGeneratedSecrets))

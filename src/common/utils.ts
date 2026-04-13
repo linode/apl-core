@@ -13,7 +13,6 @@ import { $, ProcessOutput, within } from 'zx'
 import { operatorEnv } from '../operator/validators'
 import { terminal } from './debug'
 import { env } from './envalid'
-import { createK8sSecret } from './k8s'
 
 const packagePath = process.cwd()
 
@@ -251,19 +250,19 @@ export async function ensureTeamGitOpsDirectories(envDir: string, values: Record
   return keepFilePaths
 }
 
-export const createArgoCdRedisSecret = async (): Promise<void> => {
-  try {
-    const d = terminal('common:utils:createArgoCdRedisSecret')
-    d.info('Creating argocd-redis secret')
-    const redisPassword = generateSecretPassword()
-    await createK8sSecret('argocd-redis', 'argocd', {
-      auth: redisPassword,
-    })
-  } catch (error) {
-    const d = terminal('common:utils:createArgoCdRedisSecret')
-    d.error('Failed to create argocd-redis secret:', error)
-  }
-}
+// export const createArgoCdRedisSecret = async (): Promise<void> => {
+//   try {
+//     const d = terminal('common:utils:createArgoCdRedisSecret')
+//     d.info('Creating argocd-redis secret')
+//     const redisPassword = generateSecretPassword()
+//     await createK8sSecret('argocd-redis', 'argocd', {
+//       auth: redisPassword,
+//     })
+//   } catch (error) {
+//     const d = terminal('common:utils:createArgoCdRedisSecret')
+//     d.error('Failed to create argocd-redis secret:', error)
+//   }
+// }
 
 function hashContent(content: Buffer): string {
   return createHash('sha256').update(content).digest('hex')

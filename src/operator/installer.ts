@@ -2,7 +2,6 @@ import * as process from 'node:process'
 import { runTraceCollectionLoop } from 'src/cmd/traces'
 import { recoverFromGit } from 'src/common/bootstrap'
 import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
-import { createArgoCdRedisSecret } from 'src/common/utils'
 import { terminal } from '../common/debug'
 import {
   getGitConfigData,
@@ -180,10 +179,10 @@ export class Installer {
     }
 
     // Ensure ArgoCD Redis Secret
-    const argocdRedisSecret = await getK8sSecret('argocd-redis', GIT_CONFIG_NAMESPACE)
-    if (!argocdRedisSecret) {
-      await createArgoCdRedisSecret()
-    }
+    // const argocdRedisSecret = await getK8sSecret('argocd-redis', GIT_CONFIG_NAMESPACE)
+    // if (!argocdRedisSecret) {
+    //   await createArgoCdRedisSecret()
+    // }
 
     // Ensure apl-git-config configmap
     const configData = await getGitConfigData()
