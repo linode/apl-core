@@ -103,6 +103,29 @@ describe('Upgrading values', () => {
       )
       expect(deps.rename).toHaveBeenCalledWith(`somefile.yaml`, `newloc.yaml`, false)
     })
+
+    it('should support scalar additions entries', async () => {
+      const scalarAdditionChanges: Changes = [
+        {
+          version: 2,
+          additions: ['apps.argocd.redisPassword'],
+        },
+      ]
+
+      await applyChanges(scalarAdditionChanges, false, deps)
+
+      expect(deps.writeValues).toHaveBeenCalledWith(
+        expect.objectContaining({
+          apps: {
+            argocd: {
+              redisPassword: '',
+            },
+          },
+          versions: { specVersion: 2 },
+        }),
+        true,
+      )
+    })
   })
 })
 

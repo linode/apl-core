@@ -49,9 +49,12 @@ interface Change {
   renamings?: Array<{
     [oldName: string]: string
   }>
-  additions?: Array<{
-    [mutation: string]: string
-  }>
+  additions?: Array<
+    | {
+        [mutation: string]: string
+      }
+    | string
+  >
   fileAdditions?: Array<string>
   bulkAdditions?: Array<{
     [mutation: string]: string
@@ -1050,7 +1053,14 @@ export const applyChanges = async (
   const prevValues = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
   const values = cloneDeep(prevValues)
   for (const c of changes) {
-    c.additions?.forEach((entry: any) => each(entry, (val, path) => setAtPath(path, values, val)))
+    c.additions?.forEach((entry: any) => {
+      // Support both object-shaped additions and scalar JSON-path entries.
+      if (typeof entry === 'string') {
+        setAtPath(entry, values, '' as any)
+        return
+      }
+      each(entry, (val, path) => setAtPath(path, values, val))
+    })
     c.bulkAdditions?.forEach((entry) => each(entry, (filePath, path) => bulkAddition(path, values, filePath)))
     c.relocations?.forEach((entry) => each(entry, (newName, oldName) => moveGivenJsonPath(values, oldName, newName)))
     if (c.mutations)

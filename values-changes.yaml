@@ -460,4 +460,4 @@ changes:
       - valkeyAndOauth2RedisPVCMigration
   - version: 60
     additions:
-      - apps.argocd.redisPassword
+      - apps.argocd.redisPassword: ''
