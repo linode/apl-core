@@ -185,7 +185,7 @@ appsInfo:
     integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When App Platform is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. App Platform shortcuts can be used to provide selections of logs based on interest.
   prometheus:
     title: Prometheus
-    appVersion: 3.11.1
+    appVersion: 3.11.2
     repo: https://github.com/prometheus/prometheus
     maintainers: Prometheus
     relatedLinks:
