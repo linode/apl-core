@@ -2454,27 +2454,6 @@ properties:
           enabled:
             type: boolean
             default: false
-          otlpCollector:
-            properties:
-              autoscaler:
-                properties:
-                  maxReplicas:
-                    type: integer
-                    default: 5
-                  minReplicas:
-                    type: integer
-                    default: 2
-                  targetCPUUtilizationPercentage:
-                    type: integer
-                    default: 80
-                  targetMemoryUtilizationPercentage:
-                    type: integer
-                    default: 80
-              attributes:
-                type: array
-                title: Kubernetes Attributes
-                $ref: '#/definitions/labelsAnnotations'
-                description: 'Attributes to extract metadata from pods'
           operator:
             properties:
               replicaCount:
@@ -2484,8 +2463,6 @@ properties:
           resources:
             additionalProperties: false
             properties:
-              otlpCollector:
-                $ref: '#/definitions/resources'
               logsCollector:
                 $ref: '#/definitions/resources'
               manager:

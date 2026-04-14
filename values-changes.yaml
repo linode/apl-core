@@ -463,3 +463,5 @@ changes:
       - removeIngressTracing
     deletions:
       - 'apps.istio.tracing'
+      - 'apps.otel.otlpCollector'
+      - 'apps.otel.resources.otlpCollector'
