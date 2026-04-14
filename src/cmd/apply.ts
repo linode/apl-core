@@ -36,7 +36,7 @@ export const applyAll = async (): Promise<void> => {
   const tag = await getImageTagFromValues()
   const revisionUpdated = await updateOperatorApplication(env.APPS_REVISION || tag)
   if (revisionUpdated) {
-    d.info('Operator is has pending update to a different revision. Pausing until restart.')
+    d.info('Operator has pending update to a different revision. Pausing until restart.')
     return
   }
   const deployingVersion = getPackageVersion()
