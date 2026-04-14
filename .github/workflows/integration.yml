@@ -229,13 +229,14 @@ jobs:
 
           CURRENT_IP=$(curl https://ipv4.whatismyip.akamai.com/)
           echo "Current IP: $CURRENT_IP"
-          args+=(--control_plane.acl.enabled true --control_plane.acl.addresses.ipv4 "$CURRENT_IP")
+          args+=(--control_plane.acl.enabled true)
           if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
             IFS=',' read -ra acl_ips <<< '${{ env.LKE_CP_ACL_IPV4 }}'
             for acl_ip in "${acl_ips[@]}"; do
               args+=(--control_plane.acl.addresses.ipv4 "$acl_ip")
             done
           fi
+          args+=(--control_plane.acl.addresses.ipv4 "$CURRENT_IP")
 
           linode-cli lke cluster-create \
             --label ${{ env.LINODE_CLUSTER_NAME }} \
