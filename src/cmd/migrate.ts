@@ -554,6 +554,48 @@ async function waitForStatefulSetDeletion(name: string, namespace: string, timeo
   }
 }
 
+async function restartDeployment(name: string, namespace: string): Promise<void> {
+  await k8s.app().patchNamespacedDeployment(
+    {
+      name,
+      namespace,
+      body: {
+        spec: {
+          template: {
+            metadata: {
+              annotations: {
+                'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+              },
+            },
+          },
+        },
+      },
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+  )
+}
+
+async function restartStatefulSet(name: string, namespace: string): Promise<void> {
+  await k8s.app().patchNamespacedStatefulSet(
+    {
+      name,
+      namespace,
+      body: {
+        spec: {
+          template: {
+            metadata: {
+              annotations: {
+                'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+              },
+            },
+          },
+        },
+      },
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+  )
+}
+
 async function deletePvcsByLabel(namespace: string, labelSelector: string): Promise<void> {
   const pvcList = await k8s.core().listNamespacedPersistentVolumeClaim({ namespace, labelSelector })
   for (const pvc of pvcList.items || []) {
@@ -924,6 +966,30 @@ export const addRedisSecretForArgoCD = async (values: Record<string, any>): Prom
     } catch (error) {
       if (!(error instanceof ApiException && error.code === 404)) throw error
       d.info(`Secret ${secretName} was not found in namespace ${argocdNamespace}`)
+    }
+
+    // Components consume REDIS_PASSWORD as env var, so they must restart after secret rotation.
+    const restartTargets = [
+      { kind: 'deployment', name: 'argocd-server' },
+      { kind: 'deployment', name: 'argocd-repo-server' },
+      { kind: 'statefulset', name: 'argocd-application-controller' },
+      { kind: 'deployment', name: 'argocd-application-controller' },
+    ]
+    for (const target of restartTargets) {
+      try {
+        if (target.kind === 'deployment') {
+          await restartDeployment(target.name, argocdNamespace)
+        } else {
+          await restartStatefulSet(target.name, argocdNamespace)
+        }
+        d.info(`Restarted ${target.kind}/${target.name}`)
+      } catch (error) {
+        if (error instanceof ApiException && error.code === 404) {
+          d.debug(`Could not restart ${target.kind}/${target.name}: not found`)
+          continue
+        }
+        throw error
+      }
     }
   } catch (error) {
     d.error('Failed to remove legacy ArgoCD redis secret, continuing migration:', error)
