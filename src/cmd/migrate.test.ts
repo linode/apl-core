@@ -937,6 +937,13 @@ describe('sopsMigration', () => {
     existsSync: mockExistsSync,
     globSync: mockGlobSync,
     terminal: mockTerminal,
+    getOrCreateSealedSecretsPem: jest.fn().mockImplementation(async (innerDeps: any) => {
+      const cert = await innerDeps.getExistingSealedSecretsCert()
+      if (cert) return innerDeps.getPemFromCertificate(cert)
+      const { certificate, privateKey } = innerDeps.generateSealedSecretsKeyPair()
+      await innerDeps.createSealedSecretsKeySecret(certificate, privateKey)
+      return innerDeps.getPemFromCertificate(certificate)
+    }),
     getExistingSealedSecretsCert: mockGetExistingSealedSecretsCert,
     getPemFromCertificate: mockGetPemFromCertificate,
     generateSealedSecretsKeyPair: mockGenerateSealedSecretsKeyPair,

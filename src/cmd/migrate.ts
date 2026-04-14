@@ -30,6 +30,7 @@ import {
   createUserSealedSecretManifests,
   generateSealedSecretsKeyPair,
   getExistingSealedSecretsCert,
+  getOrCreateSealedSecretsPem,
   getPemFromCertificate,
   restartSealedSecretsController,
   SealedSecretManifest,
@@ -1015,6 +1016,7 @@ export const sopsMigration = async (
     existsSync,
     globSync,
     terminal,
+    getOrCreateSealedSecretsPem,
     getExistingSealedSecretsCert,
     getPemFromCertificate,
     generateSealedSecretsKeyPair,
@@ -1060,17 +1062,13 @@ export const sopsMigration = async (
   d.info('Starting SOPS to SealedSecrets migration')
 
   // Get or generate sealed-secrets key
-  let pem: string
-  const existingCert = await deps.getExistingSealedSecretsCert()
-  if (existingCert) {
-    d.info('Using existing sealed-secrets certificate')
-    pem = deps.getPemFromCertificate(existingCert)
-  } else {
-    d.info('Generating new sealed-secrets key pair')
-    const { certificate, privateKey } = deps.generateSealedSecretsKeyPair()
-    await deps.createSealedSecretsKeySecret(certificate, privateKey)
-    pem = deps.getPemFromCertificate(certificate)
-  }
+  const pem = await deps.getOrCreateSealedSecretsPem({
+    terminal: deps.terminal,
+    getExistingSealedSecretsCert: deps.getExistingSealedSecretsCert,
+    getPemFromCertificate: deps.getPemFromCertificate,
+    generateSealedSecretsKeyPair: deps.generateSealedSecretsKeyPair,
+    createSealedSecretsKeySecret: deps.createSealedSecretsKeySecret,
+  })
 
   // Build secret-to-namespace mappings
   const teams = Object.keys((values.teamConfig as Record<string, any>) || {})
