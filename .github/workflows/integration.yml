@@ -227,7 +227,7 @@ jobs:
           fi
 
           CURRENT_IP=$(curl https://ipv4.whatismyip.akamai.com/)
-          echo 'Current IP: $CURRENT_IP'
+          echo "Current IP: $CURRENT_IP"
           args+=(--control_plane.acl.enabled true --control_plane.acl.addresses.ipv4 "$CURRENT_IP")
           if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
             IFS=',' read -ra acl_ips <<< '${{ env.LKE_CP_ACL_IPV4 }}'
