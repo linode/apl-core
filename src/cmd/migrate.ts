@@ -61,11 +61,11 @@ interface Change {
 
 export type Changes = Array<Change>
 
-export const deleteFile = async (
+export const deleteFile = (
   relativeFilePath: string,
   dryRun = false,
   deps = { existsSync, renameSync, terminal, rmSync },
-): Promise<void> => {
+): void => {
   const d = deps.terminal(`cmd:${cmdName}:rename`)
   const path = `${env.ENV_DIR}/${relativeFilePath}`
   if (!deps.existsSync(path)) {
@@ -430,7 +430,7 @@ const buildImageNameMigration = async (values: Record<string, any>): Promise<voi
         set(build, 'imageName', build.name)
         const buildName = getBuildName(build.name, build.tag)
         set(build, 'name', buildName)
-        await deleteFile(`env/teams/${teamName}/builds/${build.imageName}.yaml`)
+        deleteFile(`env/teams/${teamName}/builds/${build.imageName}.yaml`)
       }
     }),
   )
