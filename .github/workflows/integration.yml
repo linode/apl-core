@@ -129,7 +129,6 @@ env:
   DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
   LKE_TIER: ${{ inputs.lke_tier }}
   LKE_VERSION: ${{ inputs.kubernetes_version }}
-  LKE_CP_ACL_IPV4: '0.0.0.0/0'
 
 jobs:
   preprocess-input:
@@ -217,28 +216,23 @@ jobs:
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
+          args=()
           if [[ '${{ env.LKE_TIER }}' == 'enterprise' ]]; then
-            tier_arg="--tier enterprise"
             export LINODE_CLI_API_VERSION=v4beta
-            ha=""
+            args+=(--tier enterprise)
           else
-            tier_arg=""
-            ha="--control_plane.high_availability true"
+            args+=(--control_plane.high_availability true)
           fi
 
-          cp_acl="--control_plane.acl.enabled true --control_plane.acl.addresses.ipv4 $LKE_CP_ACL_IPV4"
           linode-cli lke cluster-create \
             --label ${{ env.LINODE_CLUSTER_NAME }} \
             --region nl-ams \
             --k8s_version ${{ env.LKE_VERSION }} \
             --node_pools.type ${{ inputs.linode_types }} \
             --node_pools.count 3 \
-            --node_pools.autoscaler.enabled true \
-            --node_pools.autoscaler.max 3 \
-            --node_pools.autoscaler.min 3 \
             --tags testing \
             --no-defaults \
-            $ha $tier_arg $cp_acl
+            "${args[@]}"
       - name: Retrieve cluster id
         run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
       - name: Wait for cluster to be ready
@@ -306,30 +300,14 @@ jobs:
           EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
+          LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
+          LKE_APL_FIREWALL_INBOUND_RULES: ${{ secrets.LKE_APL_FIREWALL_INBOUND_RULES }}
         run: |
           touch values.yaml
 
           adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
 
-          additional_args=""
-          [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
-          [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
-          [[ '${{ inputs.kms }}' == 'age' ]] && additional_args+=" --set kms.sops.provider=age"
-          [[ '${{ inputs.is_pre_installed }}' == 'true' ]] && additional_args+=" --set otomi.isPreInstalled=true"
-          if [[ '${{ inputs.disableORCS }}' == 'true' ]]; then
-            additional_args+=" --set otomi.useORCS=false"
-            if [[ ! ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]]; then
-              # If a pipeline installs APL from the semver tag then pull container image from DockerHub
-              # Use cache registry otherwise
-              kubectl create secret docker-registry reg-otomi-github \
-                --docker-server=${{ env.CACHE_REGISTRY }} \
-                --docker-username=${{ env.BOT_USERNAME }} \
-                --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
-              additional_args+=" --set imageName=${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }} --set imagePullSecretNames[0]=reg-otomi-github"
-            fi
-          fi
-
-          install_args="otomi chart/apl --wait --wait-for-jobs --timeout 90m0s \
+          install_args=(otomi chart/apl --wait --wait-for-jobs --timeout 90m0s \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values.yaml \
             --set cluster.provider=linode \
@@ -345,10 +323,30 @@ jobs:
             --set otomi.hasExternalDNS=true \
             --set otomi.adminPassword=$adminPassword \
             --set otomi.version=${GITHUB_REF##*/} \
-            --set apps.linode-cfw.enabled=true \
-            $additional_args"
+            --set apps.linode-cfw.enabled=true)
 
-          helm install $install_args &
+          [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
+          [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
+          [[ '${{ inputs.kms }}' == 'age' ]] && install_args+=(--set kms.sops.provider=age)
+          [[ '${{ inputs.is_pre_installed }}' == 'true' ]] && install_args+=(--set otomi.isPreInstalled=true)
+          if [[ '${{ inputs.disableORCS }}' == 'true' ]]; then
+            install_args+=(--set otomi.useORCS=false)
+            if [[ ! ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]]; then
+              # If a pipeline installs APL from the semver tag then pull container image from DockerHub
+              # Use cache registry otherwise
+              kubectl create secret docker-registry reg-otomi-github \
+                --docker-server=${{ env.CACHE_REGISTRY }} \
+                --docker-username=${{ env.BOT_USERNAME }} \
+                --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
+              install_args+=(--set imageName=${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }} --set imagePullSecretNames[0]=reg-otomi-github)
+            fi
+          fi
+
+          if [[ -n '${{ env.LKE_APL_FIREWALL_INBOUND_RULES }}' ]]; then
+            install_args+=(--set-json apps.linode-cfw._rawValues.firewall.inbound='${{ env.LKE_APL_FIREWALL_INBOUND_RULES }}')
+          fi
+
+          helm install "${install_args[@]}" &
           HELM_PID=$!
           sleep 120
 
@@ -373,6 +371,15 @@ jobs:
 
 
           wait $HELM_PID
+
+          if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
+            cluster_patch_args=(${{ env.LINODE_CLUSTER_ID }} --control_plane.acl.enabled true)
+            IFS=',' read -ra acl_ips <<< '${{ env.LKE_CP_ACL_IPV4 }}'
+            for acl_ip in "${acl_ips[@]}"; do
+              cluster_patch_args+=(--control_plane.acl.addresses.ipv4 "$acl_ip")
+            done
+            linode-cli lke cluster-update "${cluster_patch_args[@]}"
+          fi
       - name: Gather k8s events on failure
         if: failure()
         run: |
