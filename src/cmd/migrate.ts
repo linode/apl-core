@@ -952,6 +952,7 @@ export const addRedisSecretForArgoCD = async (values: Record<string, any>): Prom
   const d = terminal('addRedisSecretForArgoCD')
   const argocdNamespace = 'argocd'
   const secretName = 'argocd-redis'
+  const redisPassword = get(values, 'apps.argocd.redisPassword')
 
   try {
     const parsedArgs = getParsedArgs()
@@ -960,12 +961,46 @@ export const addRedisSecretForArgoCD = async (values: Record<string, any>): Prom
       return
     }
 
+    if (typeof redisPassword !== 'string' || redisPassword.length === 0) {
+      d.warn('apps.argocd.redisPassword is missing, skipping argocd-redis migration')
+      return
+    }
+
+    const secretBody = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: {
+        name: secretName,
+        namespace: argocdNamespace,
+      },
+      type: 'Opaque',
+      stringData: {
+        auth: redisPassword,
+      },
+    }
+
     try {
-      await k8s.core().deleteNamespacedSecret({ name: secretName, namespace: argocdNamespace })
-      d.info(`Deleted Secret ${secretName} in namespace ${argocdNamespace}`)
+      await k8s.core().createNamespacedSecret({
+        namespace: argocdNamespace,
+        body: secretBody,
+      })
+      d.info(`Created Secret ${secretName} in namespace ${argocdNamespace}`)
     } catch (error) {
-      if (!(error instanceof ApiException && error.code === 404)) throw error
-      d.info(`Secret ${secretName} was not found in namespace ${argocdNamespace}`)
+      if (!(error instanceof ApiException && error.code === 409)) throw error
+
+      const existing = await k8s.core().readNamespacedSecret({ name: secretName, namespace: argocdNamespace })
+      await k8s.core().replaceNamespacedSecret({
+        name: secretName,
+        namespace: argocdNamespace,
+        body: {
+          ...secretBody,
+          metadata: {
+            ...secretBody.metadata,
+            resourceVersion: existing.metadata?.resourceVersion,
+          },
+        },
+      })
+      d.info(`Updated Secret ${secretName} in namespace ${argocdNamespace}`)
     }
 
     // Components consume REDIS_PASSWORD as env var, so they must restart after secret rotation.
