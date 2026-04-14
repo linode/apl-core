@@ -29,7 +29,7 @@ resources:
               argocd.argoproj.io/secret-type: repo-creds
           type: Opaque
           data:
-            type: {{ print "git" | quote }}
+            type: git
             url: {{ printf "https://%s" $v._derived.giteaDomain }}
             username: {{ $v.otomi.git.username }}
             password: '{{ "{{ .gitPassword | toString }}" }}'
@@ -57,7 +57,7 @@ resources:
               argocd.argoproj.io/secret-type: repo-creds
           type: Opaque
           data:
-            type: {{ print "git" | quote }}
+            type: git
             url: {{ "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git" | quote }}
             username: {{ $v.otomi.git.username }}
             password: '{{ "{{ .gitPassword | toString }}" }}'
@@ -86,7 +86,7 @@ resources:
               argocd.argoproj.io/secret-type: repo-creds
           type: Opaque
           data:
-            type: {{ print "git" | quote }}
+            type: git
             url: {{ $v.otomi.git.repoUrl }}
             username: {{ $v.otomi.git.username }}
             password: '{{ "{{ .gitPassword | toString }}" }}'
