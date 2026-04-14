@@ -1005,6 +1005,7 @@ export const addRedisSecretForArgoCD = async (values: Record<string, any>): Prom
 
     // Components consume REDIS_PASSWORD as env var, so they must restart after secret rotation.
     const restartTargets = [
+      { kind: 'deployment', name: 'argocd-redis' },
       { kind: 'deployment', name: 'argocd-server' },
       { kind: 'deployment', name: 'argocd-repo-server' },
       { kind: 'statefulset', name: 'argocd-application-controller' },
