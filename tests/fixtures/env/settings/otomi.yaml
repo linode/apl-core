@@ -5,7 +5,6 @@ metadata:
 spec:
     globalPullSecret:
         username: otomi
-        password: blablabla
     hasExternalDNS: true
     hasExternalIDP: false
     nodeSelector:

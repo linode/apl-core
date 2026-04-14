@@ -6,7 +6,5 @@ spec:
     receivers:
         - slack
         - msteams
-    msteams:
-        highPrio: https://xxxxxxx.com
-        lowPrio: https://xxxxxxxx.com
+    msteams: {}
     slack: {}
