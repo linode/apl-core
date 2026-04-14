@@ -12,6 +12,7 @@ import {
   getDeploymentState,
   getHelmReleases,
   getK8sConfigMap,
+  getK8sSecret,
   k8s,
   setDeploymentState,
   waitForCRD,
@@ -19,9 +20,11 @@ import {
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { getErrorMessage } from 'src/operator/utils'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
 import { commit, createCredentialsSecret, createWelcomeConfigMap, initialSetupData } from './commit'
+import { addRedisSecretForArgoCD } from './migrate'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -170,14 +173,15 @@ const prepareMandatorySecrets = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:prepareMandatorySecrets`)
   d.info('Preparing mandatory secrets for installation')
 
-  // // Ensure ArgoCD Redis Secret
-  // const argocdRedisSecret = await getK8sSecret('argocd-redis', GIT_CONFIG_NAMESPACE)
-  // if (!argocdRedisSecret) {
-  //   d.info('Creating argocd-redis secret')
-  //   await addRedisSecretForArgoCD().catch((error) => {
-  //     d.error('Failed to create argocd-redis secret:', getErrorMessage(error))
-  //   })
-  // }
+  // Ensure ArgoCD Redis Secret
+  const argocdRedisSecret = await getK8sSecret('argocd-redis', 'argocd')
+  if (!argocdRedisSecret) {
+    d.info('Creating argocd-redis secret')
+    const values = (await hfValues()) as Record<string, any>
+    await addRedisSecretForArgoCD(values).catch((error) => {
+      d.error('Failed to create argocd-redis secret:', getErrorMessage(error))
+    })
+  }
 }
 
 export const module: CommandModule = {
