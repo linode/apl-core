@@ -164,8 +164,7 @@ export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret
   const branch = otomiGit?.branch
 
   // Always try the K8s secret first for the real password.
-  // Values may contain encrypted sealed-secret ciphertext (from loadSealedSecretsToSpec)
-  // which must not be used as the actual git password.
+  // On disk, secrets are stripped — the values spec has no plaintext password.
   try {
     const secret = await deps.getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
     if (secret?.git_password) {

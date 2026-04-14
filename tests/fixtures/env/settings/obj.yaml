@@ -6,6 +6,7 @@ spec:
     provider:
         linode:
             accessKeyId: someaccessKeyId
+            secretAccessKey: somesecretvalue
             buckets:
                 cnpg: my-clusterid-cnpg
                 gitea: my-clusterid-gitea

@@ -7,4 +7,5 @@ spec:
     persistence:
         mysql:
             size: 20Gi
+    rootPassword: mysqlsomesecretvalue
     _rawValues: {}
