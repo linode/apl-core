@@ -32,6 +32,7 @@ jest.mock('zx', () => ({
 jest.mock('./apply-as-apps', () => ({
   applyAsApps: jest.fn(),
   applyGitOpsApps: jest.fn(),
+  updateOperatorApplication: jest.fn(),
 }))
 
 jest.mock('./apply-teams', () => ({
@@ -94,6 +95,7 @@ describe('Apply command', () => {
       getPackageVersion: require('src/common/values').getPackageVersion,
       applyAsApps: require('./apply-as-apps').applyAsApps,
       applyGitOpsApps: require('./apply-as-apps').applyGitOpsApps,
+      updateOperatorApplication: require('./apply-as-apps').updateOperatorApplication,
       commit: require('./commit').commit,
       runtimeUpgrade: require('src/common/runtime-upgrade').runtimeUpgrade,
       deletePendingHelmReleases: require('src/common/k8s').deletePendingHelmReleases,
@@ -107,6 +109,7 @@ describe('Apply command', () => {
     mockDeps.getPackageVersion.mockReturnValue('1.0.0')
     mockDeps.applyAsApps.mockResolvedValue(true)
     mockDeps.applyGitOpsApps.mockResolvedValue(undefined)
+    mockDeps.updateOperatorApplication.mockResolvedValue(false)
     mockDeps.commit.mockResolvedValue(undefined)
     mockDeps.runtimeUpgrade.mockResolvedValue(undefined)
     mockDeps.deletePendingHelmReleases.mockResolvedValue(undefined)
@@ -376,6 +379,38 @@ describe('Apply command', () => {
 
       process.env.DISABLE_SYNC = originalEnv
       process.env.NODE_ENV = originalIsDev
+    })
+  })
+
+  describe('updateOperatorApplication return value', () => {
+    test('should return early when updateOperatorApplication returns true', async () => {
+      mockDeps.updateOperatorApplication.mockResolvedValue(true)
+
+      await applyAll()
+
+      expect(mockDeps.setDeploymentState).not.toHaveBeenCalled()
+      expect(mockDeps.getDeploymentState).not.toHaveBeenCalled()
+      expect(mockDeps.runtimeUpgrade).not.toHaveBeenCalled()
+      expect(mockDeps.applyAsApps).not.toHaveBeenCalled()
+      expect(mockDeps.applyGitOpsApps).not.toHaveBeenCalled()
+      expect(mockDeps.commit).not.toHaveBeenCalled()
+    })
+
+    test('should continue full deployment when updateOperatorApplication returns false', async () => {
+      mockDeps.updateOperatorApplication.mockResolvedValue(false)
+
+      const originalEnv = process.env.DISABLE_SYNC
+      process.env.DISABLE_SYNC = 'true'
+
+      await applyAll()
+
+      expect(mockDeps.setDeploymentState).toHaveBeenCalled()
+      expect(mockDeps.getDeploymentState).toHaveBeenCalled()
+      expect(mockDeps.runtimeUpgrade).toHaveBeenCalled()
+      expect(mockDeps.applyAsApps).toHaveBeenCalled()
+      expect(mockDeps.applyGitOpsApps).toHaveBeenCalled()
+
+      process.env.DISABLE_SYNC = originalEnv
     })
   })
 
