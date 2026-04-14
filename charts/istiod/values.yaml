@@ -254,7 +254,7 @@ _internal_defaults_do_not_set:
     # Dev builds from prow are on gcr.io
     hub: docker.io/istio
     # Default tag for Istio images.
-    tag: 1.29.1
+    tag: 1.29.2
     # Variant of the image to use.
     # Currently supported are: [debug, distroless]
     variant: ""
@@ -551,6 +551,11 @@ _internal_defaults_do_not_set:
   base:
     # For istioctl usage to disable istio config crds in base
     enableIstioConfigCRDs: true
+    # Override the failurePolicy for the validation webhook.
+    # By default, the webhook starts with "Ignore" and istiod flips it to "Fail" once ready.
+    # Set to "Fail" to avoid the flip-flop, which is useful for server-side apply tools
+    # that do not support .Release.IsUpgrade (e.g. helm template | kubectl apply --server-side).
+    # validationFailurePolicy: Fail
 
   # Gateway Settings
   gateways:
