@@ -1,5 +1,5 @@
 import Ajv, { ValidateFunction } from 'ajv'
-import { cloneDeep, unset } from 'lodash'
+import { cloneDeep, difference, unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
@@ -19,44 +19,27 @@ const internalPaths: string[] = ['k8s', 'adminApps', 'teamApps']
  */
 export function removeSecretRequirements(schema: Record<string, any>): Record<string, any> {
   const cleaned = cloneDeep(schema)
-  removeSecretRequirementsInPlace(cleaned)
+  removeSecretsInPlace(cleaned)
   return cleaned
 }
 
-function removeSecretRequirementsInPlace(schema: Record<string, any>): void {
-  if (!schema || typeof schema !== 'object') return
-
-  // Collect property names that have x-secret in this node
-  const secretProps = new Set<string>()
-  if (schema.properties) {
-    for (const [propName, propSchema] of Object.entries(schema.properties as Record<string, any>)) {
-      if (propSchema && typeof propSchema === 'object' && 'x-secret' in propSchema) {
-        secretProps.add(propName)
-      }
+function removeSecretsInPlace(node: any): void {
+  if (!node || typeof node !== 'object') return
+  if (node.properties && Array.isArray(node.required)) {
+    const secretProps = Object.keys(node.properties as Record<string, any>).filter(
+      (key) => 'x-secret' in (node.properties[key] ?? {}),
+    )
+    if (secretProps.length > 0) {
+      const filtered = difference(node.required as string[], secretProps)
+      // eslint-disable-next-line no-param-reassign
+      if (filtered.length === 0) delete node.required
+      // eslint-disable-next-line no-param-reassign
+      else node.required = filtered
     }
   }
-
-  // Remove secret properties from required array
-  if (Array.isArray(schema.required) && secretProps.size > 0) {
-    const filtered = schema.required.filter((r: string) => !secretProps.has(r))
-    if (filtered.length === 0) {
-      // eslint-disable-next-line no-param-reassign
-      delete schema.required
-    } else {
-      // eslint-disable-next-line no-param-reassign
-      schema.required = filtered
-    }
-  }
-
-  // Recurse into all sub-schemas
-  for (const value of Object.values(schema)) {
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        removeSecretRequirementsInPlace(item)
-      }
-    } else if (value && typeof value === 'object') {
-      removeSecretRequirementsInPlace(value)
-    }
+  for (const value of Object.values(node as Record<string, unknown>)) {
+    if (Array.isArray(value)) value.forEach(removeSecretsInPlace)
+    else if (value && typeof value === 'object') removeSecretsInPlace(value)
   }
 }
 
