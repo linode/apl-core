@@ -11,7 +11,7 @@ permissions:
 jobs:
   auto-approve:
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]' || github.actor == 'svcAPLBot'
+    if: github.actor == 'dependabot[bot]' || github.event.pull_request.user.login == 'svcAPLBot'
     steps:
       - name: Auto approve PRs
         uses: hmarr/auto-approve-action@v4
