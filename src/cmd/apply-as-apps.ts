@@ -307,35 +307,38 @@ const getAplOperatorValues = async (): Promise<string> => {
   return await readFile(`${valuesDir}/apl-operator-apl-operator.yaml`, 'utf-8')
 }
 
-export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
-  const helmfileSource = argv.file?.toString() || 'helmfile.d/'
-  d.info(`Parsing helm releases defined in ${helmfileSource}`)
-  setup()
-  const otomiVersion = await getImageTagFromValues()
+export const updateOperatorApplication = async (expectedRevision: string): Promise<boolean> => {
+  d.info('Checking running revision of apl-operator...')
   try {
-    const expectedRevision = env.APPS_REVISION || otomiVersion
-    d.info('Checking running revision of apl-operator...')
     const operatorRevisionMatches = await appRevisionMatches(
       'apl-operator-apl-operator',
-      env.APPS_REVISION || otomiVersion,
+      expectedRevision,
       k8s.custom(),
     )
     if (operatorRevisionMatches) {
       d.info(`Expected revision ${expectedRevision} found for apl-operator.`)
+      return false
     } else {
       const values = await getAplOperatorValues()
       d.info(`Updating apl-operator application to revision ${expectedRevision}.`)
       await patchArgoCdApp('apl-operator-apl-operator', expectedRevision, values, k8s.custom())
-      d.info('Skipping further updates until apl-operator has restarted.')
-      return false
+      return true
     }
   } catch (error) {
     if (error instanceof ApiException && error.code === 404) {
       d.info('apl-operator application not found, continuing')
+      return false
     } else {
       throw error
     }
   }
+}
+
+export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
+  const helmfileSource = argv.file?.toString() || 'helmfile.d/'
+  d.info(`Parsing helm releases defined in ${helmfileSource}`)
+  setup()
+  const otomiVersion = await getImageTagFromValues()
   const res = await hf({
     fileOpts: argv.file,
     labelOpts: argv.label,
@@ -406,7 +409,6 @@ export const applyAsApps = async (argv: HelmArguments): Promise<boolean> => {
     errors.map((e) => d.error(e))
     d.error(`Not all applications have been deployed successfully`)
   }
-  return true
 }
 
 export const addGitOpsApps = async (
