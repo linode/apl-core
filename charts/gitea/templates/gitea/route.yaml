@@ -1,0 +1,52 @@
+{{- if .Values.route.enabled -}}
+{{- $fullName := include "gitea.fullname" . -}}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "gitea.labels" . | nindent 4 }}
+  {{- with .Values.route.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.route.host }}
+  host: {{ tpl .Values.route.host . | quote }}
+  {{- end }}
+  {{- if .Values.route.path }}
+  path: {{ tpl .Values.route.path . | quote }}
+  {{- end }}
+  to:
+    kind: Service
+    name: {{ $fullName }}-http
+  port:
+    targetPort: http
+  wildcardPolicy: {{ .Values.route.wildcardPolicy }}
+  {{- with .Values.route.tls }}
+  {{- if .termination }}
+  tls:
+    termination: {{ .termination }}
+    {{- if .insecureEdgeTerminationPolicy }}
+    insecureEdgeTerminationPolicy: {{ .insecureEdgeTerminationPolicy }}
+    {{- end }}
+    {{- if .key }}
+    key: |
+      {{- .key | nindent 6 }}
+    {{- end }}
+    {{- if .certificate }}
+    certificate: |
+      {{- .certificate | nindent 6 }}
+    {{- end }}
+    {{- if .caCertificate }}
+    caCertificate: |
+      {{- .caCertificate | nindent 6 }}
+    {{- end }}
+    {{- if .destinationCACertificate }}
+    destinationCACertificate: |
+      {{- .destinationCACertificate | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+{{- end }}

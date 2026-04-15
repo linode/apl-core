@@ -1,82 +1,102 @@
 annotations:
   artifacthub.io/changes: |
+    - kind: added
+      description: enhance openshift support (#1063)
     - kind: changed
-      description: update dependency go-gitea/gitea to v1.25.4 (#1012)
+      description: update lockfiles (#1065)
+    - kind: changed
+      description: update alpine/helm docker tag to v3.20.2 (#1064)
+    - kind: changed
+      description: update lockfiles (#1062)
+    - kind: changed
+      description: update lockfiles (#1061)
+    - kind: changed
+      description: update workflow dependencies (minor & patch) (#1060)
     - kind: fixed
-      description: remove deployment.labels from selector.matchLabels (#1011)
+      description: broken pipe in change-password help probe (#1052)
     - kind: changed
-      description: update lockfiles (#1009)
+      description: update lockfiles (#1058)
     - kind: changed
-      description: update lockfiles (#1008)
+      description: update lockfiles (#1057)
     - kind: changed
-      description: update lockfiles (#1006)
+      description: update lockfiles (#1055)
     - kind: changed
-      description: update unittests/bash/test_helper/bats-mock digest to db2acdc (#1002)
+      description: update lockfiles (#1054)
     - kind: changed
-      description: update unittests/bash/test_helper/bats-mock digest to c5674ff (#1000)
+      description: update lockfiles (#1053)
     - kind: changed
-      description: update dependency go-gitea/gitea to v1.25.3 (#999)
+      description: update lockfiles (#1050)
     - kind: changed
-      description: update dependency markdownlint-cli to ^0.47.0 (#998)
+      description: update lockfiles (#1049)
     - kind: changed
-      description: update unittests/bash/test_helper/bats-mock digest to 1ce6b03 (#997)
+      description: update lockfiles (#1048)
     - kind: changed
-      description: update lockfiles (#996)
+      description: remove myself from maintainers list (#1047)
     - kind: changed
-      description: update workflow dependencies (minor & patch) (#995)
+      description: update commitlint/commitlint docker tag to v20.5.0 (#1046)
     - kind: changed
-      description: update actions/checkout action to v6 (#989)
+      description: update lockfiles (#1045)
     - kind: changed
-      description: update lockfiles (#994)
+      description: update workflow dependencies (minor & patch) (#1044)
     - kind: changed
-      description: update bats testing framework (#992)
+      description: update dependency go-gitea/gitea to v1.25.5 (#1043)
     - kind: changed
-      description: update dependency go-gitea/gitea to v1.25.2 (#990)
+      description: update lockfiles (#1040)
     - kind: changed
-      description: update dependency markdownlint-cli to ^0.46.0 (#988)
+      description: update lockfiles (#1039)
     - kind: changed
-      description: update unittests/bash/test_helper/bats-mock digest to 7839917 (#987)
+      description: update workflow dependencies (minor & patch) (#1037)
     - kind: changed
-      description: update lockfiles (#986)
+      description: update lockfiles (#1036)
     - kind: changed
-      description: update lockfiles (#985)
+      description: update lockfiles (#1035)
     - kind: changed
-      description: update docker.io/thegeeklab/git-sv docker tag to v2.0.7 (#984)
+      description: update lockfiles (#1033)
     - kind: changed
-      description: update bats testing framework (#983)
+      description: update lockfiles (#1032)
     - kind: changed
-      description: update dependency go-gitea/gitea to v1.25.1 (#981)
+      description: update lockfiles (#1031)
+    - kind: changed
+      description: update lockfiles (#1030)
+    - kind: changed
+      description: update commitlint/commitlint docker tag to v20.4.2 (#1029)
+    - kind: changed
+      description: update lockfiles (#1028)
+    - kind: changed
+      description: update lockfiles (#1026)
+    - kind: changed
+      description: update lockfiles (#1025)
+    - kind: changed
+      description: update https://github.com/aws-actions/configure-aws-credentials action to v6 (#1024)
+    - kind: changed
+      description: update commitlint/commitlint docker tag to v20.4.1 (#1021)
+    - kind: changed
+      description: update unittests/bash/test_helper/bats-mock digest to 9c239d6 (#1020)
+    - kind: changed
+      description: update lockfiles (#1019)
+    - kind: changed
+      description: update lockfiles (#1018)
+    - kind: changed
+      description: update commitlint/commitlint docker tag to v20.4.0 (#1017)
+    - kind: changed
+      description: update lockfiles (#1015)
+    - kind: changed
+      description: update workflow dependencies (minor & patch) (#1014)
+    - kind: changed
+      description: update bats testing framework (#1013)
     - kind: fixed
-      description: add yamllint as dedicated target
-    - kind: changed
-      description: add missing new line
+      description: 'suppress search domain queries for valkeys headless service [Close #972] (#982)'
     - kind: fixed
-      description: 'avoid duplicated nodeSelector #980'
+      description: add missing persistence configuration of valkey primary and replica
     - kind: changed
-      description: update unittests/bash/bats digest to f423e84 (#978)
-    - kind: changed
-      description: update dependency go-gitea/gitea to v1.25.0 (#976)
-    - kind: changed
-      description: update dependency go-gitea/gitea to v1.24.7 (#975)
-    - kind: changed
-      description: update docker.io/thegeeklab/git-sv docker tag to v2.0.6 (#974)
-    - kind: changed
-      description: update bats testing framework (#967)
-    - kind: changed
-      description: update lockfiles (#970)
-    - kind: changed
-      description: update lockfiles (#969)
+      description: add postgresql-ha.persistence.storageClass
     - kind: fixed
-      description: add annotation 'artifacthub.io/links'
-    - kind: changed
-      description: update dependency helm-unittest/helm-unittest to v1.0.3 (#964)
-    - kind: changed
-      description: update lockfiles (#961)
+      description: add options to disable persistence of dependencies
   artifacthub.io/links: |
     - name: support
       url: https://gitea.com/gitea/helm-gitea/issues
 apiVersion: v2
-appVersion: 1.25.4
+appVersion: 1.25.5
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
@@ -104,8 +124,6 @@ keywords:
 - gitea
 - gogs
 maintainers:
-- email: ross@golder.org
-  name: Ross Golder
 - email: markus.pesch+apps@cryptic.systems
   name: Markus Pesch
 - email: dselen@nerthus.nl
@@ -118,4 +136,4 @@ sources:
 - https://github.com/go-gitea/gitea
 - https://docker.gitea.com/gitea
 type: application
-version: 12.5.0
+version: 12.5.1
