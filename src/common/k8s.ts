@@ -16,11 +16,11 @@ import {
   V1Status,
 } from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
+import { X509Certificate } from 'crypto'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
-import { X509Certificate } from 'crypto'
 import { access, mkdir, writeFile } from 'fs/promises'
-import { isEmpty, isEqual, map, mapValues } from 'lodash'
+import { get, isEmpty, isEqual, map, mapValues } from 'lodash'
 import { dirname, join } from 'path'
 import { Writable } from 'stream'
 import { parse, stringify } from 'yaml'
@@ -894,6 +894,78 @@ export async function setArgoCdAppSync(
     },
     setHeaderOptions('Content-Type', PatchStrategy.JsonPatch),
   )
+}
+
+export const createArgoCdRedisSecret = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('common:utils:createArgoCdRedisSecret')
+  const argocdNamespace = 'argocd'
+  const secretName = 'argocd-redis'
+  const helmReleaseName = 'argocd-artifacts'
+  const redisPassword = get(values, 'apps.argocd.redisPassword')
+
+  if (typeof redisPassword !== 'string' || redisPassword.length === 0) {
+    d.warn('apps.argocd.redisPassword is missing, skipping argocd-redis reconciliation')
+    return
+  }
+
+  try {
+    await k8s.core().createNamespace({
+      body: {
+        apiVersion: 'v1',
+        kind: 'Namespace',
+        metadata: {
+          name: argocdNamespace,
+        },
+      },
+    })
+    d.info(`Created namespace ${argocdNamespace}`)
+  } catch (error) {
+    if (!(error instanceof ApiException && error.code === 409)) throw error
+  }
+
+  const secretBody = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+      name: secretName,
+      namespace: argocdNamespace,
+      labels: {
+        'app.kubernetes.io/managed-by': 'Helm',
+      },
+      annotations: {
+        'meta.helm.sh/release-name': helmReleaseName,
+        'meta.helm.sh/release-namespace': argocdNamespace,
+      },
+    },
+    type: 'Opaque',
+    stringData: {
+      auth: redisPassword,
+    },
+  }
+
+  try {
+    await k8s.core().createNamespacedSecret({
+      namespace: argocdNamespace,
+      body: secretBody,
+    })
+    d.info(`Created Secret ${secretName} in namespace ${argocdNamespace}`)
+  } catch (error) {
+    if (!(error instanceof ApiException && error.code === 409)) throw error
+
+    const existing = await k8s.core().readNamespacedSecret({ name: secretName, namespace: argocdNamespace })
+    await k8s.core().replaceNamespacedSecret({
+      name: secretName,
+      namespace: argocdNamespace,
+      body: {
+        ...secretBody,
+        metadata: {
+          ...secretBody.metadata,
+          resourceVersion: existing.metadata?.resourceVersion,
+        },
+      },
+    })
+    d.info(`Updated Secret ${secretName} in namespace ${argocdNamespace}`)
+  }
 }
 
 export async function restartOtomiApiDeployment(appApi: AppsV1Api): Promise<void> {

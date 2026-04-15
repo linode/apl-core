@@ -8,6 +8,7 @@ import { setGitConfig } from 'src/common/git-config'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS, hfValues } from 'src/common/hf'
 import {
   applyServerSide,
+  createArgoCdRedisSecret,
   createUpdateConfigMap,
   getDeploymentState,
   getHelmReleases,
@@ -16,7 +17,7 @@ import {
   setDeploymentState,
   waitForCRD,
 } from 'src/common/k8s'
-import { createArgoCdRedisSecret, getFilename, rootDir } from 'src/common/utils'
+import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { getErrorMessage } from 'src/operator/utils'
@@ -175,7 +176,7 @@ const prepareMandatorySecrets = async (): Promise<void> => {
   d.info('Creating argocd-redis secret when possible')
   const values = (await hfValues()) as Record<string, any>
   await createArgoCdRedisSecret(values).catch((error) => {
-    d.error('Failed to create argocd-redis secret:', getErrorMessage(error))
+    d.warn('Failed to create argocd-redis secret:', getErrorMessage(error))
   })
 }
 

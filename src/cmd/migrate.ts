@@ -13,7 +13,7 @@ import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
-import { createArgoCdRedisSecret, getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
+import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { objectToYaml, writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
@@ -21,7 +21,14 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd, sleep } from 'zx'
 import { APL_OPERATOR_NS, ARGOCD_APP_PARAMS } from '../common/constants'
-import { getArgoCdApp, getK8sSecret, getSealedSecretsPEM, k8s, setArgoCdAppSync } from '../common/k8s'
+import {
+  createArgoCdRedisSecret,
+  getArgoCdApp,
+  getK8sSecret,
+  getSealedSecretsPEM,
+  k8s,
+  setArgoCdAppSync,
+} from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
@@ -931,7 +938,7 @@ export const addRedisSecretForArgoCD = async (values: Record<string, any>): Prom
   try {
     const parsedArgs = getParsedArgs()
     if (parsedArgs?.dryRun || parsedArgs?.local || env.DISABLE_SYNC) {
-      d.info('Skipping cluster cleanup in dry-run/local/dev mode')
+      d.info('Skipping ArgoCD redis secret creation in dry-run/local/dev mode')
       return
     }
 
@@ -967,7 +974,7 @@ export const addRedisSecretForArgoCD = async (values: Record<string, any>): Prom
       }
     }
   } catch (error) {
-    d.error('Failed to remove legacy ArgoCD redis secret, continuing migration:', error)
+    d.error('Failed to create/update ArgoCD redis secret, continuing migration:', error)
   }
 }
 
