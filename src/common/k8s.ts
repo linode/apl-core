@@ -956,27 +956,12 @@ export const createArgoCdRedisSecret = async (values: Record<string, any>): Prom
   }
 
   try {
-    await k8s.core().createNamespacedSecret({
-      namespace: argocdNamespace,
-      body: secretBody,
-    })
-    d.info(`Created Secret ${secretName} in namespace ${argocdNamespace}`)
+    await k8s.object().patch(secretBody, undefined, undefined, 'apl-operator', true, PatchStrategy.ServerSideApply)
+    d.info(`Patched Secret ${secretName} in namespace ${argocdNamespace}`)
   } catch (error) {
     if (!(error instanceof ApiException && error.code === 409)) throw error
-
-    const existing = await k8s.core().readNamespacedSecret({ name: secretName, namespace: argocdNamespace })
-    await k8s.core().replaceNamespacedSecret({
-      name: secretName,
-      namespace: argocdNamespace,
-      body: {
-        ...secretBody,
-        metadata: {
-          ...secretBody.metadata,
-          resourceVersion: existing.metadata?.resourceVersion,
-        },
-      },
-    })
-    d.info(`Updated Secret ${secretName} in namespace ${argocdNamespace}`)
+    d.error(`Failed to patch Secret ${secretName} with server-side apply:`, error)
+    throw error
   }
 }
 
