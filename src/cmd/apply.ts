@@ -3,8 +3,15 @@ import { mkdirSync, rmSync } from 'fs'
 import { cloneDeep } from 'lodash'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
-import { env } from 'src/common/envalid'
-import { deletePendingHelmReleases, getDeploymentState, setDeploymentState } from 'src/common/k8s'
+import { env, isCli } from 'src/common/envalid'
+import { hfValues } from 'src/common/hf'
+import {
+  checkClusterIdentity,
+  deletePendingHelmReleases,
+  ensureClusterIdentity,
+  getDeploymentState,
+  setDeploymentState,
+} from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -64,6 +71,12 @@ export const applyAll = async (): Promise<void> => {
   }
   await applyGitOpsApps()
   await setDeploymentState({ status: 'deployed', version: deployingVersion })
+  if (!(env.isDev && env.DISABLE_SYNC)) {
+    const values = await hfValues()
+    if (values?.cluster?.name) {
+      await ensureClusterIdentity(values.cluster.name)
+    }
+  }
   d.info('Deployment completed')
 }
 
@@ -103,6 +116,12 @@ export const module: CommandModule = {
     setParsedArgs(argv)
     setup()
     await prepareEnvironment()
+    if (isCli && !argv.nonInteractive && !(env.isDev && env.DISABLE_SYNC)) {
+      const values = await hfValues()
+      if (values?.cluster?.name) {
+        await checkClusterIdentity(values.cluster.name)
+      }
+    }
     await apply()
   },
 }

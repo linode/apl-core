@@ -23,7 +23,9 @@ import * as k8s from './k8s'
 import {
   appRevisionMatches,
   checkArgoCDAppStatus,
+  checkClusterIdentity,
   deleteStatefulSetPods,
+  ensureClusterIdentity,
   getSealedSecretsPEM,
   patchArgoCdApp,
   patchContainerResourcesOfSts,
@@ -1005,5 +1007,164 @@ describe('getSealedSecretsPEM', () => {
     const result = await getSealedSecretsPEM()
     expect(result).toBe(mockPem)
     expect(MockX509Certificate).toHaveBeenCalledWith('single-cert')
+  })
+})
+
+describe('checkClusterIdentity', () => {
+  const mockTerminal = terminal('test:checkClusterIdentity')
+  let mockGetK8sConfigMap: jest.Mock
+  let mockK8s: { core: jest.Mock }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockGetK8sConfigMap = jest.fn()
+    mockK8s = { core: jest.fn().mockReturnValue({}) }
+  })
+
+  it('should pass when configmap does not exist (first time)', async () => {
+    mockGetK8sConfigMap.mockResolvedValue(undefined)
+
+    await expect(
+      checkClusterIdentity('my-cluster', {
+        getK8sConfigMap: mockGetK8sConfigMap,
+        k8s: mockK8s as any,
+        terminal: () => mockTerminal,
+      }),
+    ).resolves.not.toThrow()
+
+    expect(mockGetK8sConfigMap).toHaveBeenCalledWith('otomi', 'apl-cluster-identity', {})
+  })
+
+  it('should pass when cluster names match', async () => {
+    mockGetK8sConfigMap.mockResolvedValue({ data: { clusterName: 'my-cluster' } })
+
+    await expect(
+      checkClusterIdentity('my-cluster', {
+        getK8sConfigMap: mockGetK8sConfigMap,
+        k8s: mockK8s as any,
+        terminal: () => mockTerminal,
+      }),
+    ).resolves.not.toThrow()
+  })
+
+  it('should throw when cluster names do not match', async () => {
+    mockGetK8sConfigMap.mockResolvedValue({ data: { clusterName: 'production-cluster' } })
+
+    await expect(
+      checkClusterIdentity('staging-cluster', {
+        getK8sConfigMap: mockGetK8sConfigMap,
+        k8s: mockK8s as any,
+        terminal: () => mockTerminal,
+      }),
+    ).rejects.toThrow('ABORT: Cluster identity mismatch')
+  })
+
+  it('should include both cluster names in error message', async () => {
+    mockGetK8sConfigMap.mockResolvedValue({ data: { clusterName: 'production-cluster' } })
+
+    await expect(
+      checkClusterIdentity('staging-cluster', {
+        getK8sConfigMap: mockGetK8sConfigMap,
+        k8s: mockK8s as any,
+        terminal: () => mockTerminal,
+      }),
+    ).rejects.toThrow(/production-cluster.*staging-cluster/)
+  })
+
+  it('should pass when configmap exists but has no clusterName data', async () => {
+    mockGetK8sConfigMap.mockResolvedValue({ data: {} })
+
+    await expect(
+      checkClusterIdentity('my-cluster', {
+        getK8sConfigMap: mockGetK8sConfigMap,
+        k8s: mockK8s as any,
+        terminal: () => mockTerminal,
+      }),
+    ).resolves.not.toThrow()
+  })
+
+  it('should propagate k8s API errors', async () => {
+    mockGetK8sConfigMap.mockRejectedValue(new Error('Connection refused'))
+
+    await expect(
+      checkClusterIdentity('my-cluster', {
+        getK8sConfigMap: mockGetK8sConfigMap,
+        k8s: mockK8s as any,
+        terminal: () => mockTerminal,
+      }),
+    ).rejects.toThrow('Connection refused')
+  })
+})
+
+describe('ensureClusterIdentity', () => {
+  const mockTerminal = terminal('test:ensureClusterIdentity')
+  let mockGetK8sConfigMap: jest.Mock
+  let mockCreateK8sConfigMap: jest.Mock
+  let mockK8s: { core: jest.Mock }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockGetK8sConfigMap = jest.fn()
+    mockCreateK8sConfigMap = jest.fn()
+    mockK8s = { core: jest.fn().mockReturnValue({}) }
+  })
+
+  it('should create configmap when it does not exist', async () => {
+    mockGetK8sConfigMap.mockResolvedValue(undefined)
+    mockCreateK8sConfigMap.mockResolvedValue({})
+
+    await ensureClusterIdentity('my-cluster', {
+      getK8sConfigMap: mockGetK8sConfigMap,
+      createK8sConfigMap: mockCreateK8sConfigMap,
+      k8s: mockK8s as any,
+      terminal: () => mockTerminal,
+    })
+
+    expect(mockCreateK8sConfigMap).toHaveBeenCalledWith(
+      'otomi',
+      'apl-cluster-identity',
+      { clusterName: 'my-cluster' },
+      {},
+    )
+  })
+
+  it('should not update configmap when it already exists', async () => {
+    mockGetK8sConfigMap.mockResolvedValue({ data: { clusterName: 'existing-cluster' } })
+
+    await ensureClusterIdentity('my-cluster', {
+      getK8sConfigMap: mockGetK8sConfigMap,
+      createK8sConfigMap: mockCreateK8sConfigMap,
+      k8s: mockK8s as any,
+      terminal: () => mockTerminal,
+    })
+
+    expect(mockCreateK8sConfigMap).not.toHaveBeenCalled()
+  })
+
+  it('should propagate k8s API errors on read', async () => {
+    mockGetK8sConfigMap.mockRejectedValue(new Error('Forbidden'))
+
+    await expect(
+      ensureClusterIdentity('my-cluster', {
+        getK8sConfigMap: mockGetK8sConfigMap,
+        createK8sConfigMap: mockCreateK8sConfigMap,
+        k8s: mockK8s as any,
+        terminal: () => mockTerminal,
+      }),
+    ).rejects.toThrow('Forbidden')
+  })
+
+  it('should propagate k8s API errors on create', async () => {
+    mockGetK8sConfigMap.mockResolvedValue(undefined)
+    mockCreateK8sConfigMap.mockRejectedValue(new Error('Namespace not found'))
+
+    await expect(
+      ensureClusterIdentity('my-cluster', {
+        getK8sConfigMap: mockGetK8sConfigMap,
+        createK8sConfigMap: mockCreateK8sConfigMap,
+        k8s: mockK8s as any,
+        terminal: () => mockTerminal,
+      }),
+    ).rejects.toThrow('Namespace not found')
   })
 })

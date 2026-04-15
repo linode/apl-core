@@ -1,5 +1,6 @@
 export const DEPLOYMENT_PASSWORDS_SECRET = 'otomi-generated-passwords'
 export const DEPLOYMENT_STATUS_CONFIGMAP = 'otomi-status'
+export const CLUSTER_IDENTITY_CONFIGMAP = 'apl-cluster-identity'
 export const APL_OPERATOR_NS = 'apl-operator'
 export const APL_OPERATOR_STATUS_CM = 'apl-installation-status'
 export const ARGOCD_APP_PARAMS = {

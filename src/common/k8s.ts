@@ -28,6 +28,7 @@ import { $, sleep } from 'zx'
 import {
   ARGOCD_APP_DEFAULT_SYNC_POLICY,
   ARGOCD_APP_PARAMS,
+  CLUSTER_IDENTITY_CONFIGMAP,
   DEPLOYMENT_PASSWORDS_SECRET,
   DEPLOYMENT_STATUS_CONFIGMAP,
 } from './constants'
@@ -455,6 +456,66 @@ export const checkKubeContext = async (): Promise<void> => {
       await $`kubectl config use ${k8sContext}`
     }
   }
+}
+
+const CLUSTER_IDENTITY_NS = 'otomi'
+
+/**
+ * Check whether the cluster.name from ENV_DIR matches the cluster identity stored on the cluster.
+ * This prevents accidentally applying configuration meant for a different cluster.
+ * Only runs in interactive (CLI) mode. If the configmap doesn't exist yet, the check is skipped.
+ */
+export const checkClusterIdentity = async (
+  clusterName: string,
+  deps = { getK8sConfigMap, k8s, terminal },
+): Promise<void> => {
+  const d = deps.terminal('common:k8s:checkClusterIdentity')
+  d.info('Validating cluster identity')
+
+  const configMap = await deps.getK8sConfigMap(CLUSTER_IDENTITY_NS, CLUSTER_IDENTITY_CONFIGMAP, deps.k8s.core())
+  if (!configMap) {
+    d.info('No cluster identity configmap found, skipping identity check (will be created after successful apply)')
+    return
+  }
+
+  const storedClusterName = configMap.data?.clusterName
+  if (!storedClusterName) {
+    d.warn('Cluster identity configmap exists but has no clusterName data, skipping check')
+    return
+  }
+
+  if (storedClusterName !== clusterName) {
+    throw new Error(
+      `ABORT: Cluster identity mismatch! The cluster has identity "${storedClusterName}" ` +
+        `but the current ENV_DIR configuration has cluster.name="${clusterName}". ` +
+        `This likely means you are targeting the wrong cluster. ` +
+        `If you intentionally renamed the cluster, delete the "${CLUSTER_IDENTITY_CONFIGMAP}" ` +
+        `configmap in the "${CLUSTER_IDENTITY_NS}" namespace and retry.`,
+    )
+  }
+
+  d.info(`Cluster identity verified: "${clusterName}"`)
+}
+
+/**
+ * Ensure the cluster identity configmap exists on the cluster.
+ * Creates it with the current cluster.name if it doesn't exist. Never updates an existing one.
+ */
+export const ensureClusterIdentity = async (
+  clusterName: string,
+  deps = { getK8sConfigMap, createK8sConfigMap, k8s, terminal },
+): Promise<void> => {
+  const d = deps.terminal('common:k8s:ensureClusterIdentity')
+
+  const existing = await deps.getK8sConfigMap(CLUSTER_IDENTITY_NS, CLUSTER_IDENTITY_CONFIGMAP, deps.k8s.core())
+  if (existing) {
+    d.debug('Cluster identity configmap already exists, not updating')
+    return
+  }
+
+  d.info(`Creating cluster identity configmap with clusterName="${clusterName}"`)
+  await deps.createK8sConfigMap(CLUSTER_IDENTITY_NS, CLUSTER_IDENTITY_CONFIGMAP, { clusterName }, deps.k8s.core())
+  d.info('Cluster identity configmap created successfully')
 }
 
 type WaitTillAvailableOptions = Options & {

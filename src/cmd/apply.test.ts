@@ -11,7 +11,9 @@ jest.mock('fs', () => ({
 }))
 
 jest.mock('src/common/k8s', () => ({
+  checkClusterIdentity: jest.fn(),
   deletePendingHelmReleases: jest.fn(),
+  ensureClusterIdentity: jest.fn(),
   getDeploymentState: jest.fn(),
   setDeploymentState: jest.fn(),
   restartOtomiApiDeployment: jest.fn(),
@@ -47,6 +49,10 @@ jest.mock('src/common/runtime-upgrade', () => ({
   runtimeUpgrade: jest.fn(),
 }))
 
+jest.mock('src/common/hf', () => ({
+  hfValues: jest.fn(),
+}))
+
 jest.mock('src/common/cli', () => ({
   cleanupHandler: jest.fn(),
   prepareEnvironment: jest.fn(),
@@ -73,6 +79,7 @@ jest.mock('src/common/envalid', () => ({
     DISABLE_SYNC: false,
     ENV_DIR: '/test/env',
   },
+  isCli: true,
 }))
 
 // Import the actual functions to test (after mocks are set up)
@@ -91,8 +98,11 @@ describe('Apply command', () => {
     mockDeps = {
       getDeploymentState: require('src/common/k8s').getDeploymentState,
       setDeploymentState: require('src/common/k8s').setDeploymentState,
+      ensureClusterIdentity: require('src/common/k8s').ensureClusterIdentity,
+      checkClusterIdentity: require('src/common/k8s').checkClusterIdentity,
       getImageTagFromValues: require('src/common/values').getImageTagFromValues,
       getPackageVersion: require('src/common/values').getPackageVersion,
+      hfValues: require('src/common/hf').hfValues,
       applyAsApps: require('./apply-as-apps').applyAsApps,
       applyGitOpsApps: require('./apply-as-apps').applyGitOpsApps,
       updateOperatorApplication: require('./apply-as-apps').updateOperatorApplication,
@@ -107,6 +117,9 @@ describe('Apply command', () => {
     mockDeps.getDeploymentState.mockResolvedValue({ status: 'deployed', deployingVersion: '1.0.0' })
     mockDeps.getImageTagFromValues.mockResolvedValue('v1.0.0')
     mockDeps.getPackageVersion.mockReturnValue('1.0.0')
+    mockDeps.hfValues.mockResolvedValue({ cluster: { name: 'test-cluster' } })
+    mockDeps.ensureClusterIdentity.mockResolvedValue(undefined)
+    mockDeps.checkClusterIdentity.mockResolvedValue(undefined)
     mockDeps.applyAsApps.mockResolvedValue(true)
     mockDeps.applyGitOpsApps.mockResolvedValue(undefined)
     mockDeps.updateOperatorApplication.mockResolvedValue(false)
@@ -457,6 +470,43 @@ describe('Apply command', () => {
       expect(mockDeps.cd).toBeDefined()
 
       process.env.DISABLE_SYNC = originalEnv
+    })
+  })
+
+  describe('cluster identity', () => {
+    test('should call ensureClusterIdentity after successful applyAll when sync is enabled', async () => {
+      const { env } = require('src/common/envalid')
+      env.isDev = false
+      env.DISABLE_SYNC = false
+
+      await applyAll()
+
+      expect(mockDeps.hfValues).toHaveBeenCalled()
+      expect(mockDeps.ensureClusterIdentity).toHaveBeenCalledWith('test-cluster')
+    })
+
+    test('should skip ensureClusterIdentity when isDev and DISABLE_SYNC are both true', async () => {
+      const { env } = require('src/common/envalid')
+      env.isDev = true
+      env.DISABLE_SYNC = true
+
+      await applyAll()
+
+      expect(mockDeps.ensureClusterIdentity).not.toHaveBeenCalled()
+
+      env.isDev = false
+      env.DISABLE_SYNC = false
+    })
+
+    test('should not call ensureClusterIdentity when hfValues returns no cluster name', async () => {
+      const { env } = require('src/common/envalid')
+      env.isDev = false
+      env.DISABLE_SYNC = false
+      mockDeps.hfValues.mockResolvedValueOnce({ cluster: {} })
+
+      await applyAll()
+
+      expect(mockDeps.ensureClusterIdentity).not.toHaveBeenCalled()
     })
   })
 })

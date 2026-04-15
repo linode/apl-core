@@ -9,6 +9,7 @@ import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS, hfValues 
 import {
   applyServerSide,
   createUpdateConfigMap,
+  ensureClusterIdentity,
   getDeploymentState,
   getHelmReleases,
   getK8sConfigMap,
@@ -137,6 +138,12 @@ export const installAll = async () => {
     await retryInstallStep(createWelcomeConfigMap, initialData.secretName, initialData.domainSuffix)
   }
   await setDeploymentState({ status: 'deployed', version })
+  if (!(env.isDev && env.DISABLE_SYNC)) {
+    const clusterValues = (await hfValues()) as Record<string, any>
+    if (clusterValues?.cluster?.name) {
+      await ensureClusterIdentity(clusterValues.cluster.name)
+    }
+  }
   d.info('Installation completed')
 }
 
