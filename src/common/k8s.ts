@@ -7,6 +7,7 @@ import {
   DiscoveryV1Api,
   Exec,
   KubeConfig,
+  KubernetesObjectApi,
   NetworkingV1Api,
   PatchStrategy,
   setHeaderOptions,
@@ -16,11 +17,11 @@ import {
   V1Status,
 } from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
+import { X509Certificate } from 'crypto'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
-import { X509Certificate } from 'crypto'
 import { access, mkdir, writeFile } from 'fs/promises'
-import { isEmpty, isEqual, map, mapValues } from 'lodash'
+import { get, isEmpty, isEqual, map, mapValues } from 'lodash'
 import { dirname, join } from 'path'
 import { Writable } from 'stream'
 import { parse, stringify } from 'yaml'
@@ -47,6 +48,7 @@ let batchClient: BatchV1Api
 let networkingClient: NetworkingV1Api
 let customClient: CustomObjectsApi
 let discoveryClient: DiscoveryV1Api
+let objectClient: KubernetesObjectApi
 let execObject: Exec
 export const k8s = {
   kc: (): KubeConfig => {
@@ -84,6 +86,11 @@ export const k8s = {
     if (customClient) return customClient
     customClient = k8s.kc().makeApiClient(CustomObjectsApi)
     return customClient
+  },
+  object: (): KubernetesObjectApi => {
+    if (objectClient) return objectClient
+    objectClient = k8s.kc().makeApiClient(KubernetesObjectApi)
+    return objectClient
   },
 }
 
@@ -893,6 +900,110 @@ export async function setArgoCdAppSync(
       body: patch,
     },
     setHeaderOptions('Content-Type', PatchStrategy.JsonPatch),
+  )
+}
+
+export const createArgoCdRedisSecret = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('common:k8s:createArgoCdRedisSecret')
+  const argocdNamespace = 'argocd'
+  const secretName = 'argocd-redis'
+  const helmReleaseName = 'argocd-artifacts'
+  const redisPassword = get(values, 'apps.argocd.redisPassword')
+
+  if (typeof redisPassword !== 'string' || redisPassword.length === 0) {
+    d.warn('apps.argocd.redisPassword is missing, skipping argocd-redis reconciliation')
+    return
+  }
+
+  try {
+    await k8s.object().patch(
+      {
+        apiVersion: 'v1',
+        kind: 'Namespace',
+        metadata: {
+          name: argocdNamespace,
+        },
+      },
+      undefined,
+      undefined,
+      'apl-operator',
+      true,
+      PatchStrategy.ServerSideApply,
+    )
+    d.info(`Patched with server-side apply ${argocdNamespace}`)
+  } catch (error) {
+    if (!(error instanceof ApiException && error.code === 409)) throw error
+  }
+
+  const secretBody = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+      name: secretName,
+      namespace: argocdNamespace,
+      labels: {
+        'app.kubernetes.io/managed-by': 'Helm',
+      },
+      annotations: {
+        'meta.helm.sh/release-name': helmReleaseName,
+        'meta.helm.sh/release-namespace': argocdNamespace,
+      },
+    },
+    type: 'Opaque',
+    stringData: {
+      auth: redisPassword,
+    },
+  }
+
+  try {
+    await k8s.object().patch(secretBody, undefined, undefined, 'apl-operator', true, PatchStrategy.ServerSideApply)
+    d.info(`Patched Secret ${secretName} in namespace ${argocdNamespace}`)
+  } catch (error) {
+    if (!(error instanceof ApiException && error.code === 409)) throw error
+    d.error(`Failed to patch Secret ${secretName} with server-side apply:`, error)
+    throw error
+  }
+}
+
+export async function restartDeployment(name: string, namespace: string): Promise<void> {
+  await k8s.app().patchNamespacedDeployment(
+    {
+      name,
+      namespace,
+      body: {
+        spec: {
+          template: {
+            metadata: {
+              annotations: {
+                'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+              },
+            },
+          },
+        },
+      },
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+  )
+}
+
+export async function restartStatefulSet(name: string, namespace: string): Promise<void> {
+  await k8s.app().patchNamespacedStatefulSet(
+    {
+      name,
+      namespace,
+      body: {
+        spec: {
+          template: {
+            metadata: {
+              annotations: {
+                'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+              },
+            },
+          },
+        },
+      },
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
   )
 }
 
