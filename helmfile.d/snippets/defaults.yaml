@@ -146,8 +146,7 @@ environments:
                 memory: 64Mi
                 cpu: 10m
           git-server:
-            persistence:
-              size: 1Gi
+            enabled: true
             resources:
               requests:
                 cpu: 50m

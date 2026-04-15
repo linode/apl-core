@@ -1,4 +1,5 @@
 repoName: otomi/values.git
+branchName: main
 
 image:
   repository: docker.io/clubbers1892/simple-git-server
@@ -8,11 +9,11 @@ image:
 initImage:
   git:
     repository: alpine/git
-    tag: latest
+    tag: v2.52.0
     pullPolicy: IfNotPresent
 
 persistence:
-  size: 1Gi
+  size: 256Mi
   storageClass: ""
 
 auth:
