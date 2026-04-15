@@ -12,7 +12,6 @@ import {
   getDeploymentState,
   getHelmReleases,
   getK8sConfigMap,
-  getK8sSecret,
   k8s,
   setDeploymentState,
   waitForCRD,
@@ -173,15 +172,12 @@ const prepareMandatorySecrets = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:prepareMandatorySecrets`)
   d.info('Preparing mandatory secrets for installation')
 
-  // Ensure ArgoCD Redis Secret
-  const argocdRedisSecret = await getK8sSecret('argocd-redis', 'argocd')
-  if (!argocdRedisSecret) {
-    d.info('Creating argocd-redis secret')
-    const values = (await hfValues()) as Record<string, any>
-    await addRedisSecretForArgoCD(values).catch((error) => {
-      d.error('Failed to create argocd-redis secret:', getErrorMessage(error))
-    })
-  }
+  // Ensure ArgoCD Redis Secret exists and has Helm ownership metadata before Helm applies Argo CD.
+  d.info('Reconciling argocd-redis secret')
+  const values = (await hfValues()) as Record<string, any>
+  await addRedisSecretForArgoCD(values).catch((error) => {
+    d.error('Failed to reconcile argocd-redis secret:', getErrorMessage(error))
+  })
 }
 
 export const module: CommandModule = {

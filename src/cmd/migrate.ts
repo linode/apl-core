@@ -952,6 +952,7 @@ export const addRedisSecretForArgoCD = async (values: Record<string, any>): Prom
   const d = terminal('addRedisSecretForArgoCD')
   const argocdNamespace = 'argocd'
   const secretName = 'argocd-redis'
+  const helmReleaseName = 'argocd-artifacts'
   const redisPassword = get(values, 'apps.argocd.redisPassword')
 
   try {
@@ -972,6 +973,13 @@ export const addRedisSecretForArgoCD = async (values: Record<string, any>): Prom
       metadata: {
         name: secretName,
         namespace: argocdNamespace,
+        labels: {
+          'app.kubernetes.io/managed-by': 'Helm',
+        },
+        annotations: {
+          'meta.helm.sh/release-name': helmReleaseName,
+          'meta.helm.sh/release-namespace': argocdNamespace,
+        },
       },
       type: 'Opaque',
       stringData: {
