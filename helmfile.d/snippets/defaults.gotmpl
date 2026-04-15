@@ -23,6 +23,8 @@ environments:
   default:
     values:
     - apps:
+        argocd:
+          redisPassword: {{ randAlphaNum 32 }}
         kubeflow-pipelines:
           rootPassword: {{ randAlphaNum 32 }}
         {{- range $index, $ingressClassName := $ingressClassNames }}

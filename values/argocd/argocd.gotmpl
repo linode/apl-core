@@ -44,6 +44,12 @@ notifications:
   enabled: true
   resources: {{- $a.resources.notifications | toYaml | nindent 4 }}
 
+redisSecretInit:
+  enabled: false
+
+redis-ha:
+  existingSecret: argocd-redis
+
 redis:
   resources: {{- $a.resources.redis | toYaml | nindent 4 }}
   {{- if $v.otomi.linodeLkeImageRepository }}

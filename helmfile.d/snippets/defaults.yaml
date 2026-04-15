@@ -1200,4 +1200,4 @@ environments:
           aiEnabled: false
         users: []
         versions:
-          specVersion: 59
+          specVersion: 60
