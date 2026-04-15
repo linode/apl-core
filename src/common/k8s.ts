@@ -7,6 +7,7 @@ import {
   DiscoveryV1Api,
   Exec,
   KubeConfig,
+  KubernetesObjectApi,
   NetworkingV1Api,
   PatchStrategy,
   setHeaderOptions,
@@ -47,6 +48,7 @@ let batchClient: BatchV1Api
 let networkingClient: NetworkingV1Api
 let customClient: CustomObjectsApi
 let discoveryClient: DiscoveryV1Api
+let objectClient: KubernetesObjectApi
 let execObject: Exec
 export const k8s = {
   kc: (): KubeConfig => {
@@ -84,6 +86,11 @@ export const k8s = {
     if (customClient) return customClient
     customClient = k8s.kc().makeApiClient(CustomObjectsApi)
     return customClient
+  },
+  object: (): KubernetesObjectApi => {
+    if (objectClient) return objectClient
+    objectClient = k8s.kc().makeApiClient(KubernetesObjectApi)
+    return objectClient
   },
 }
 
@@ -909,16 +916,21 @@ export const createArgoCdRedisSecret = async (values: Record<string, any>): Prom
   }
 
   try {
-    await k8s.core().createNamespace({
-      body: {
+    await k8s.object().patch(
+      {
         apiVersion: 'v1',
         kind: 'Namespace',
         metadata: {
           name: argocdNamespace,
         },
       },
-    })
-    d.info(`Created namespace ${argocdNamespace}`)
+      undefined,
+      undefined,
+      'apl-operator',
+      true,
+      PatchStrategy.ServerSideApply,
+    )
+    d.info(`Patched with server-side apply ${argocdNamespace}`)
   } catch (error) {
     if (!(error instanceof ApiException && error.code === 409)) throw error
   }
@@ -966,6 +978,48 @@ export const createArgoCdRedisSecret = async (values: Record<string, any>): Prom
     })
     d.info(`Updated Secret ${secretName} in namespace ${argocdNamespace}`)
   }
+}
+
+export async function restartDeployment(name: string, namespace: string): Promise<void> {
+  await k8s.app().patchNamespacedDeployment(
+    {
+      name,
+      namespace,
+      body: {
+        spec: {
+          template: {
+            metadata: {
+              annotations: {
+                'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+              },
+            },
+          },
+        },
+      },
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+  )
+}
+
+export async function restartStatefulSet(name: string, namespace: string): Promise<void> {
+  await k8s.app().patchNamespacedStatefulSet(
+    {
+      name,
+      namespace,
+      body: {
+        spec: {
+          template: {
+            metadata: {
+              annotations: {
+                'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+              },
+            },
+          },
+        },
+      },
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+  )
 }
 
 export async function restartOtomiApiDeployment(appApi: AppsV1Api): Promise<void> {

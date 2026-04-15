@@ -27,6 +27,8 @@ import {
   getK8sSecret,
   getSealedSecretsPEM,
   k8s,
+  restartDeployment,
+  restartStatefulSet,
   setArgoCdAppSync,
 } from '../common/k8s'
 
@@ -559,48 +561,6 @@ async function waitForStatefulSetDeletion(name: string, namespace: string, timeo
     if (!exists) return
     await sleep(5000)
   }
-}
-
-async function restartDeployment(name: string, namespace: string): Promise<void> {
-  await k8s.app().patchNamespacedDeployment(
-    {
-      name,
-      namespace,
-      body: {
-        spec: {
-          template: {
-            metadata: {
-              annotations: {
-                'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
-              },
-            },
-          },
-        },
-      },
-    },
-    setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
-  )
-}
-
-async function restartStatefulSet(name: string, namespace: string): Promise<void> {
-  await k8s.app().patchNamespacedStatefulSet(
-    {
-      name,
-      namespace,
-      body: {
-        spec: {
-          template: {
-            metadata: {
-              annotations: {
-                'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
-              },
-            },
-          },
-        },
-      },
-    },
-    setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
-  )
 }
 
 async function deletePvcsByLabel(namespace: string, labelSelector: string): Promise<void> {
