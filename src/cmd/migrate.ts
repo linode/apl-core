@@ -21,7 +21,16 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd, sleep } from 'zx'
 import { APL_OPERATOR_NS, ARGOCD_APP_PARAMS } from '../common/constants'
-import { getArgoCdApp, getK8sSecret, getSealedSecretsPEM, k8s, setArgoCdAppSync } from '../common/k8s'
+import {
+  createArgoCdRedisSecret,
+  getArgoCdApp,
+  getK8sSecret,
+  getSealedSecretsPEM,
+  k8s,
+  restartDeployment,
+  restartStatefulSet,
+  setArgoCdAppSync,
+} from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
@@ -882,6 +891,53 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   set(values, 'catalogs.default', defaultCatalog)
 }
 
+export const addRedisSecretForArgoCD = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('addRedisSecretForArgoCD')
+  const argocdNamespace = 'argocd'
+
+  try {
+    const parsedArgs = getParsedArgs()
+    if (parsedArgs?.dryRun || parsedArgs?.local || env.DISABLE_SYNC) {
+      d.info('Skipping ArgoCD redis secret creation in dry-run/local/dev mode')
+      return
+    }
+
+    if (!(await namespaceExists(argocdNamespace))) {
+      d.info(`Namespace ${argocdNamespace} not found, skipping argocd-redis migration`)
+      return
+    }
+
+    await createArgoCdRedisSecret(values)
+
+    // Components consume REDIS_PASSWORD as env var, so they must restart after secret rotation.
+    const restartTargets = [
+      { kind: 'deployment', name: 'argocd-redis' },
+      { kind: 'deployment', name: 'argocd-server' },
+      { kind: 'deployment', name: 'argocd-repo-server' },
+      { kind: 'statefulset', name: 'argocd-application-controller' },
+      { kind: 'deployment', name: 'argocd-application-controller' },
+    ]
+    for (const target of restartTargets) {
+      try {
+        if (target.kind === 'deployment') {
+          await restartDeployment(target.name, argocdNamespace)
+        } else {
+          await restartStatefulSet(target.name, argocdNamespace)
+        }
+        d.info(`Restarted ${target.kind}/${target.name}`)
+      } catch (error) {
+        if (error instanceof ApiException && error.code === 404) {
+          d.debug(`Could not restart ${target.kind}/${target.name}: not found`)
+          continue
+        }
+        throw error
+      }
+    }
+  } catch (error) {
+    d.error('Failed to create/update ArgoCD redis secret, continuing migration:', error)
+  }
+}
+
 const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('addLinodeNBAnnotations')
   if (values?.cluster?.provider !== 'linode') {
@@ -982,6 +1038,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   valkeyAndOauth2RedisPVCMigration,
   addLinodeNBAnnotations,
   setIngressDefault,
+  addRedisSecretForArgoCD,
 }
 
 /**
