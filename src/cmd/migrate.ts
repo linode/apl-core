@@ -1,6 +1,6 @@
 import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { encryptSecretItem } from '@linode/kubeseal-encrypt'
-import { randomUUID } from 'crypto'
+import { randomBytes, randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { cp, rename as fsRename, mkdir, readFile, writeFile } from 'fs/promises'
@@ -927,7 +927,11 @@ export const addRedisSecretForArgoCD = async (values: Record<string, any>): Prom
       return
     }
 
-    await createArgoCdRedisSecret(values)
+    // redisPassword is an x-secret field: never present in values on disk.
+    // Generate one and write it into the shared values object so sopsMigration (v61) seals the same password.
+    const redisPassword = randomBytes(24).toString('base64url')
+    set(values, 'apps.argocd.redisPassword', redisPassword)
+    await createArgoCdRedisSecret({ apps: { argocd: { redisPassword } } })
 
     // Components consume REDIS_PASSWORD as env var, so they must restart after secret rotation.
     const restartTargets = [

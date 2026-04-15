@@ -114,13 +114,27 @@ resources:
           remoteRef:
             key: keycloak-secrets
             property: idp_clientSecret
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
-      name: argocd-redis
+      name: argocd-redis-secret
       namespace: argocd
-    data:
-      auth: {{ $a.redisPassword | b64enc | quote }}
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: argocd-redis
+        creationPolicy: Merge
+        template:
+          data:
+            auth: '{{ "{{ .redisPassword | toString }}" }}'
+      data:
+        - secretKey: redisPassword
+          remoteRef:
+            key: argocd-secrets
+            property: redisPassword
   - apiVersion: v1
     kind: Secret
     metadata:

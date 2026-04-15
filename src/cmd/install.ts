@@ -195,6 +195,17 @@ export const installAll = async () => {
     d.info('No sealed secret manifests found, skipping controller restart')
   }
 
+  // Ensure ArgoCD Redis Secret exists and has Helm ownership metadata before Helm applies ArgoCD.
+  // redisPassword is an x-secret field and sealed in apl-secrets/argocd-secrets (decrypted just above),
+  // so we read it directly from K8s rather than from values.
+  d.info('Creating argocd-redis secret from sealed secret')
+  const argocdSealedSecret = await getK8sSecret('argocd-secrets', 'apl-secrets').catch(() => undefined)
+  await createArgoCdRedisSecret({ apps: { argocd: { redisPassword: argocdSealedSecret?.redisPassword } } }).catch(
+    (error) => {
+      d.warn('Could not pre-create argocd-redis secret:', getErrorMessage(error))
+    },
+  )
+
   // Deploy ESO (External Secrets Operator)
   d.info('Deploying external-secrets operator')
   await hf(
@@ -321,18 +332,6 @@ const install = async (): Promise<void> => {
   )
 }
 
-const prepareMandatorySecrets = async (): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:prepareMandatorySecrets`)
-  d.info('Preparing mandatory secrets for installation')
-
-  // Ensure ArgoCD Redis Secret exists and has Helm ownership metadata before Helm applies Argo CD.
-  d.info('Creating argocd-redis secret when possible')
-  const values = (await hfValues()) as Record<string, any>
-  await createArgoCdRedisSecret(values).catch((error) => {
-    d.warn('Failed to create argocd-redis secret:', getErrorMessage(error))
-  })
-}
-
 export const module: CommandModule = {
   command: cmdName,
   describe: 'Install all k8s resources for first-time setup',
@@ -341,7 +340,6 @@ export const module: CommandModule = {
     setParsedArgs(argv)
     setup()
     await prepareEnvironment()
-    await prepareMandatorySecrets()
     await install()
   },
 }
