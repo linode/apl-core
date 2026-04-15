@@ -897,7 +897,7 @@ export async function setArgoCdAppSync(
 }
 
 export const createArgoCdRedisSecret = async (values: Record<string, any>): Promise<void> => {
-  const d = terminal('common:utils:createArgoCdRedisSecret')
+  const d = terminal('common:k8s:createArgoCdRedisSecret')
   const argocdNamespace = 'argocd'
   const secretName = 'argocd-redis'
   const helmReleaseName = 'argocd-artifacts'
