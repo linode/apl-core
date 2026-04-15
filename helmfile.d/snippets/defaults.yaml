@@ -146,6 +146,7 @@ environments:
                 memory: 64Mi
                 cpu: 10m
           git-server:
+            _rawValues: { }
             enabled: true
             resources:
               requests:

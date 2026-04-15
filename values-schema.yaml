@@ -2355,10 +2355,7 @@ properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
           resources:
-            additionalProperties: false
-            properties:
-              operator:
-                $ref: '#/definitions/resources'
+            $ref: '#/definitions/resources'
       prometheus:
         additionalProperties: false
         properties:
