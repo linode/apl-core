@@ -42,14 +42,14 @@ dependencies:
     repository: https://kubernetes.github.io/ingress-nginx
   - name: base
     alias: istio-base
-    version: 1.29.1
+    version: 1.29.2
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
-    version: 1.29.1
+    version: 1.29.2
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
-    version: 1.29.1
+    version: 1.29.2
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
@@ -65,7 +65,7 @@ dependencies:
     version: v0.16.0
     repository: oci://ghcr.io/kserve/charts/kserve
   - name: kube-prometheus-stack
-    version: 83.0.2
+    version: 83.4.0
     repository: https://prometheus-community.github.io/helm-charts
   - name: kyverno
     version: 3.7.1
@@ -81,7 +81,7 @@ dependencies:
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
-    version: 0.109.0
+    version: 0.109.2
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   - name: policy-reporter
     version: 3.7.3
@@ -100,7 +100,7 @@ dependencies:
     version: 4.4.34
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
-    version: 2.18.4
+    version: 2.18.5
     repository: https://bitnami-labs.github.io/sealed-secrets/
   - name: tekton-pipeline
     alias: tekton-pipelines

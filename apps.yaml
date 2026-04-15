@@ -1,7 +1,7 @@
 appsInfo:
   alertmanager:
     title: Alertmanager
-    appVersion: 0.31.1
+    appVersion: 0.32.0
     repo: https://github.com/prometheus/alertmanager
     maintainers: Prometheus Community
     relatedLinks:
@@ -97,7 +97,7 @@ appsInfo:
     integration: App Platform integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
-    appVersion: 1.29.1
+    appVersion: 1.29.2
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -208,7 +208,7 @@ appsInfo:
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
-    appVersion: 0.36.1
+    appVersion: 0.36.6
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:

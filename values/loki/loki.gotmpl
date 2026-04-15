@@ -297,6 +297,9 @@ singleBinary:
 
   resources: {{ $l.resources.singleBinary | toYaml | nindent 4 }}
 
+  podAnnotations:
+    checksum/team-config: {{ ( toString (keys $v.teamConfig | sortAlpha ) ) | sha256sum }}
+
   {{ include "loki.reverse-proxy-config" . | indent 2 }}
 {{- end }}
 

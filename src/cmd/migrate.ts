@@ -61,11 +61,11 @@ interface Change {
 
 export type Changes = Array<Change>
 
-export const deleteFile = async (
+export const deleteFile = (
   relativeFilePath: string,
   dryRun = false,
   deps = { existsSync, renameSync, terminal, rmSync },
-): Promise<void> => {
+): void => {
   const d = deps.terminal(`cmd:${cmdName}:rename`)
   const path = `${env.ENV_DIR}/${relativeFilePath}`
   if (!deps.existsSync(path)) {
@@ -430,7 +430,7 @@ const buildImageNameMigration = async (values: Record<string, any>): Promise<voi
         set(build, 'imageName', build.name)
         const buildName = getBuildName(build.name, build.tag)
         set(build, 'name', buildName)
-        await deleteFile(`env/teams/${teamName}/builds/${build.imageName}.yaml`)
+        deleteFile(`env/teams/${teamName}/builds/${build.imageName}.yaml`)
       }
     }),
   )
@@ -621,12 +621,10 @@ async function migrateStatefulSetPvc(opts: {
     return
   }
 
-  let syncDisabled = false
   try {
     const app = await getArgoCdApp(opts.appName, k8s.custom())
     if (app) {
       await setArgoCdAppSync(opts.appName, false, k8s.custom())
-      syncDisabled = true
     } else {
       opts.d.info(`Argo CD application ${opts.appName} not found. Skipping sync disable.`)
     }
@@ -641,6 +639,7 @@ async function migrateStatefulSetPvc(opts: {
     )
 
     await waitForPodsDeletion(opts.namespace, opts.pvcLabelSelector)
+    await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
 
     try {
       await k8s.app().deleteNamespacedStatefulSet({ name: opts.statefulSetName, namespace: opts.namespace })
@@ -649,17 +648,8 @@ async function migrateStatefulSetPvc(opts: {
     }
 
     await waitForStatefulSetDeletion(opts.statefulSetName, opts.namespace)
-    await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
   } catch (error) {
     throw error
-  } finally {
-    if (syncDisabled) {
-      try {
-        await setArgoCdAppSync(opts.appName, true, k8s.custom())
-      } catch (error) {
-        opts.d.warn(`Failed to re-enable Argo CD sync for ${opts.appName}: ${error}`)
-      }
-    }
   }
 }
 
