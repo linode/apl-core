@@ -23,6 +23,7 @@ environments:
   default:
     values:
     - apps:
+        argocd: {}
         kubeflow-pipelines: {}
         gitea: {}
         {{- range $index, $ingressClassName := $ingressClassNames }}

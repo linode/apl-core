@@ -459,6 +459,9 @@ changes:
     customFunctions:
       - valkeyAndOauth2RedisPVCMigration
   - version: 60
+    customFunctions:
+      - addRedisSecretForArgoCD
+  - version: 61
     deletions:
       - 'kms.sops'
     customFunctions:

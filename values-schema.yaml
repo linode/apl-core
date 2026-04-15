@@ -1643,6 +1643,9 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          redisPassword:
+            type: string
+            x-secret: '{{ randAlphaNum 32 }}'
           controllerStatusProcessors:
             default: 20
             type: integer
