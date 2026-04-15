@@ -822,44 +822,35 @@ const setLokiStorageSchemaMigration = async (values: Record<string, any>): Promi
   }
 }
 
-const createSealedSecret = async (
+const SEALED_SECRET_NAME = 'default-catalog-credentials'
+const createCatalogSealedSecret = async (
   d: ReturnType<typeof terminal>,
-  credentialsData: Record<string, string>,
-  secretName: string,
-  namespace = 'argocd',
-  secretType = 'kubernetes.io/basic-auth',
-  customAnnotations: Record<string, string> = {},
+  gitea: { adminUsername: string; adminPassword: string },
 ): Promise<void> => {
   const sealedSecretsPEM = await getSealedSecretsPEM()
-
-  // Encrypt all fields in the credentials data
-  const encryptedData: Record<string, string> = {}
-  for (const [key, value] of Object.entries(credentialsData)) {
-    encryptedData[key] = await encryptSecretItem(sealedSecretsPEM, namespace, value)
-  }
-
+  const encryptedPassword = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea.adminPassword)
+  const encryptedUsername = await encryptSecretItem(sealedSecretsPEM, 'argocd', gitea.adminUsername)
   const sealedSecret = {
     apiVersion: 'bitnami.com/v1alpha1',
     kind: 'SealedSecret',
     metadata: {
-      annotations: {
-        'sealedsecrets.bitnami.com/namespace-wide': 'true',
-        ...customAnnotations,
-      },
-      name: secretName,
-      namespace,
+      annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+      name: SEALED_SECRET_NAME,
+      namespace: 'argocd',
     },
     spec: {
-      encryptedData,
+      encryptedData: {
+        password: encryptedPassword,
+        username: encryptedUsername,
+      },
       template: {
         immutable: false,
-        metadata: { name: secretName, namespace },
-        type: secretType,
+        metadata: { name: SEALED_SECRET_NAME, namespace: 'argocd' },
+        type: 'kubernetes.io/basic-auth',
       },
     },
   }
-
-  const sealedSecretPath = `${env.ENV_DIR}/env/manifests/namespaces/${namespace}/sealedsecrets/${secretName}.yaml`
+  const sealedSecretPath = `${env.ENV_DIR}/env/manifests/namespaces/argocd/sealedsecrets/${SEALED_SECRET_NAME}.yaml`
   mkdirSync(dirname(sealedSecretPath), { recursive: true })
   d.info(`Writing sealed secret to ${sealedSecretPath}`)
   writeFileSync(sealedSecretPath, objectToYaml(sealedSecret))
@@ -912,7 +903,6 @@ const valkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
 
 const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('setDefaultAplCatalog')
-  const CATALOG_SEALED_SECRET_NAME = 'default-catalog-credentials'
   const gitea = values?.apps?.gitea as { adminUsername?: string; adminPassword?: string } | undefined
   const hasGitea = !!(gitea?.adminUsername && gitea?.adminPassword)
   const domainSuffix = values?.cluster?.domainSuffix as string | undefined
@@ -921,11 +911,7 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   let secretCreated = false
   if (useGiteaCatalog) {
     try {
-      await createSealedSecret(
-        d,
-        { adminUsername: gitea.adminUsername!, adminPassword: gitea.adminPassword! },
-        CATALOG_SEALED_SECRET_NAME,
-      )
+      await createCatalogSealedSecret(d, gitea as { adminUsername: string; adminPassword: string })
       secretCreated = true
     } catch (error) {
       d.error('Failed to create catalog sealed secret, continuing without it:', error)
@@ -943,7 +929,7 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
     enabled: true,
     name: 'default',
     repositoryUrl: catalogUrl,
-    ...(secretCreated && { secretName: CATALOG_SEALED_SECRET_NAME }),
+    ...(secretCreated && { secretName: SEALED_SECRET_NAME }),
   }
   set(values, 'catalogs.default', defaultCatalog)
 }
@@ -1126,14 +1112,7 @@ export const applyChanges = async (
   const prevValues = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
   const values = cloneDeep(prevValues)
   for (const c of changes) {
-    c.additions?.forEach((entry: any) => {
-      // Support both object-shaped additions and scalar JSON-path entries.
-      if (typeof entry === 'string') {
-        setAtPath(entry, values, '' as any)
-        return
-      }
-      each(entry, (val, path) => setAtPath(path, values, val))
-    })
+    c.additions?.forEach((entry: any) => each(entry, (val, path) => setAtPath(path, values, val)))
     c.bulkAdditions?.forEach((entry) => each(entry, (filePath, path) => bulkAddition(path, values, filePath)))
     c.relocations?.forEach((entry) => each(entry, (newName, oldName) => moveGivenJsonPath(values, oldName, newName)))
     if (c.mutations)

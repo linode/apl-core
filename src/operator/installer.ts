@@ -178,12 +178,6 @@ export class Installer {
       })
     }
 
-    // Ensure ArgoCD Redis Secret
-    // const argocdRedisSecret = await getK8sSecret('argocd-redis', GIT_CONFIG_NAMESPACE)
-    // if (!argocdRedisSecret) {
-    //   await createArgoCdRedisSecret()
-    // }
-
     // Ensure apl-git-config configmap
     const configData = await getGitConfigData()
     if (!configData?.repoUrl || !configData?.branch || !configData?.email) {
