@@ -51,6 +51,13 @@ resources:
   - apiVersion: v1
     kind: Secret
     metadata:
+      name: argocd-redis
+      namespace: argocd
+    data:
+      auth: {{ $a.redisPassword | b64enc | quote }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
       name: argocd-repo-apl-core
       namespace: argocd
       labels:
