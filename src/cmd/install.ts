@@ -16,14 +16,13 @@ import {
   setDeploymentState,
   waitForCRD,
 } from 'src/common/k8s'
-import { getFilename, rootDir } from 'src/common/utils'
+import { createArgoCdRedisSecret, getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { getErrorMessage } from 'src/operator/utils'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
 import { commit, createCredentialsSecret, createWelcomeConfigMap, initialSetupData } from './commit'
-import { addRedisSecretForArgoCD } from './migrate'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -173,10 +172,10 @@ const prepareMandatorySecrets = async (): Promise<void> => {
   d.info('Preparing mandatory secrets for installation')
 
   // Ensure ArgoCD Redis Secret exists and has Helm ownership metadata before Helm applies Argo CD.
-  d.info('Reconciling argocd-redis secret')
+  d.info('Creating argocd-redis secret when possible')
   const values = (await hfValues()) as Record<string, any>
-  await addRedisSecretForArgoCD(values).catch((error) => {
-    d.error('Failed to reconcile argocd-redis secret:', getErrorMessage(error))
+  await createArgoCdRedisSecret(values).catch((error) => {
+    d.error('Failed to create argocd-redis secret:', getErrorMessage(error))
   })
 }
 

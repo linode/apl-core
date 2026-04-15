@@ -13,7 +13,7 @@ import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
-import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
+import { createArgoCdRedisSecret, getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { objectToYaml, writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
@@ -951,9 +951,6 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
 export const addRedisSecretForArgoCD = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('addRedisSecretForArgoCD')
   const argocdNamespace = 'argocd'
-  const secretName = 'argocd-redis'
-  const helmReleaseName = 'argocd-artifacts'
-  const redisPassword = get(values, 'apps.argocd.redisPassword')
 
   try {
     const parsedArgs = getParsedArgs()
@@ -962,54 +959,12 @@ export const addRedisSecretForArgoCD = async (values: Record<string, any>): Prom
       return
     }
 
-    if (typeof redisPassword !== 'string' || redisPassword.length === 0) {
-      d.warn('apps.argocd.redisPassword is missing, skipping argocd-redis migration')
+    if (!(await namespaceExists(argocdNamespace))) {
+      d.info(`Namespace ${argocdNamespace} not found, skipping argocd-redis migration`)
       return
     }
 
-    const secretBody = {
-      apiVersion: 'v1',
-      kind: 'Secret',
-      metadata: {
-        name: secretName,
-        namespace: argocdNamespace,
-        labels: {
-          'app.kubernetes.io/managed-by': 'Helm',
-        },
-        annotations: {
-          'meta.helm.sh/release-name': helmReleaseName,
-          'meta.helm.sh/release-namespace': argocdNamespace,
-        },
-      },
-      type: 'Opaque',
-      stringData: {
-        auth: redisPassword,
-      },
-    }
-
-    try {
-      await k8s.core().createNamespacedSecret({
-        namespace: argocdNamespace,
-        body: secretBody,
-      })
-      d.info(`Created Secret ${secretName} in namespace ${argocdNamespace}`)
-    } catch (error) {
-      if (!(error instanceof ApiException && error.code === 409)) throw error
-
-      const existing = await k8s.core().readNamespacedSecret({ name: secretName, namespace: argocdNamespace })
-      await k8s.core().replaceNamespacedSecret({
-        name: secretName,
-        namespace: argocdNamespace,
-        body: {
-          ...secretBody,
-          metadata: {
-            ...secretBody.metadata,
-            resourceVersion: existing.metadata?.resourceVersion,
-          },
-        },
-      })
-      d.info(`Updated Secret ${secretName} in namespace ${argocdNamespace}`)
-    }
+    await createArgoCdRedisSecret(values)
 
     // Components consume REDIS_PASSWORD as env var, so they must restart after secret rotation.
     const restartTargets = [

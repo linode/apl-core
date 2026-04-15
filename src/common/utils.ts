@@ -1,4 +1,5 @@
 import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
+import { ApiException } from '@kubernetes/client-node'
 import cleanDeep, { CleanOptions } from 'clean-deep'
 import { createHash } from 'crypto'
 import { existsSync, readFileSync } from 'fs'
@@ -7,12 +8,13 @@ import { generate as generatePassword } from 'generate-password'
 import { glob } from 'glob'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
-import { omit } from 'lodash'
+import { get, omit } from 'lodash'
 import { dirname, join, resolve } from 'path'
 import { $, ProcessOutput, within } from 'zx'
 import { operatorEnv } from '../operator/validators'
 import { terminal } from './debug'
 import { env } from './envalid'
+import { k8s } from './k8s'
 
 const packagePath = process.cwd()
 
@@ -250,19 +252,77 @@ export async function ensureTeamGitOpsDirectories(envDir: string, values: Record
   return keepFilePaths
 }
 
-// export const createArgoCdRedisSecret = async (): Promise<void> => {
-//   try {
-//     const d = terminal('common:utils:createArgoCdRedisSecret')
-//     d.info('Creating argocd-redis secret')
-//     const redisPassword = generateSecretPassword()
-//     await createK8sSecret('argocd-redis', 'argocd', {
-//       auth: redisPassword,
-//     })
-//   } catch (error) {
-//     const d = terminal('common:utils:createArgoCdRedisSecret')
-//     d.error('Failed to create argocd-redis secret:', error)
-//   }
-// }
+export const createArgoCdRedisSecret = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('common:utils:createArgoCdRedisSecret')
+  const argocdNamespace = 'argocd'
+  const secretName = 'argocd-redis'
+  const helmReleaseName = 'argocd-artifacts'
+  const redisPassword = get(values, 'apps.argocd.redisPassword')
+
+  if (typeof redisPassword !== 'string' || redisPassword.length === 0) {
+    d.warn('apps.argocd.redisPassword is missing, skipping argocd-redis reconciliation')
+    return
+  }
+
+  try {
+    await k8s.core().createNamespace({
+      body: {
+        apiVersion: 'v1',
+        kind: 'Namespace',
+        metadata: {
+          name: argocdNamespace,
+        },
+      },
+    })
+    d.info(`Created namespace ${argocdNamespace}`)
+  } catch (error) {
+    if (!(error instanceof ApiException && error.code === 409)) throw error
+  }
+
+  const secretBody = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+      name: secretName,
+      namespace: argocdNamespace,
+      labels: {
+        'app.kubernetes.io/managed-by': 'Helm',
+      },
+      annotations: {
+        'meta.helm.sh/release-name': helmReleaseName,
+        'meta.helm.sh/release-namespace': argocdNamespace,
+      },
+    },
+    type: 'Opaque',
+    stringData: {
+      auth: redisPassword,
+    },
+  }
+
+  try {
+    await k8s.core().createNamespacedSecret({
+      namespace: argocdNamespace,
+      body: secretBody,
+    })
+    d.info(`Created Secret ${secretName} in namespace ${argocdNamespace}`)
+  } catch (error) {
+    if (!(error instanceof ApiException && error.code === 409)) throw error
+
+    const existing = await k8s.core().readNamespacedSecret({ name: secretName, namespace: argocdNamespace })
+    await k8s.core().replaceNamespacedSecret({
+      name: secretName,
+      namespace: argocdNamespace,
+      body: {
+        ...secretBody,
+        metadata: {
+          ...secretBody.metadata,
+          resourceVersion: existing.metadata?.resourceVersion,
+        },
+      },
+    })
+    d.info(`Updated Secret ${secretName} in namespace ${argocdNamespace}`)
+  }
+}
 
 function hashContent(content: Buffer): string {
   return createHash('sha256').update(content).digest('hex')
