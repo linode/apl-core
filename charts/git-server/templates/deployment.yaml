@@ -34,6 +34,23 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+        - name: hash-password
+          image: debian:bookworm-slim
+          command:
+            - sh
+            - -ec
+            - |
+              apt-get update -qq && apt-get install -y --no-install-recommends apache2-utils
+              htpasswd -bnB "" "$GIT_PASSWORD" | cut -d: -f2 | tr -d '\n' > /etc/git-auth/password-hash
+          env:
+            - name: GIT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: git-server-credentials
+                  key: password
+          volumeMounts:
+            - name: git-auth
+              mountPath: /etc/git-auth
       containers:
         - name: git-server
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -48,11 +65,8 @@ spec:
                 secretKeyRef:
                   name: git-server-credentials
                   key: username
-            - name: GIT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: git-server-credentials
-                  key: password
+            - name: GIT_PASSWORD_HASH_FILE
+              value: /etc/git-auth/password-hash
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -70,9 +84,14 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+            - name: git-auth
+              mountPath: /etc/git-auth
+              readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:
         - name: data
           persistentVolumeClaim:
             claimName: git-server-data
+        - name: git-auth
+          emptyDir: {}
