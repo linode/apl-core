@@ -55,4 +55,4 @@ COPY --from=clean /home/app/stack/node_modules /home/app/stack/node_modules
 COPY --chown=app . .
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["dist/src/otomi.js"]
+CMD ["node", "dist/src/operator/main.js"]

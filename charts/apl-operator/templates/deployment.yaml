@@ -35,9 +35,14 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           workingDir: /home/app/stack
+          {{- with .Values.command }}
           command:
-            - node
-            - dist/src/operator/main.js
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.commandArgs }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           env:
             - name: CI
               value: "true"
