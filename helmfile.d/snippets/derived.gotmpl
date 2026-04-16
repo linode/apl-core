@@ -200,6 +200,7 @@ environments:
           ttyDomain: {{ print "tty." $domainSuffix }}
           consoleDomain: {{ printf "console.%s" $domainSuffix }}
           giteaDomain: {{ printf "gitea.%s" $domainSuffix }}
+          giteaDbUsername: gitea
           keycloakDomain: {{ printf "keycloak.%s" $domainSuffix }}
           harborDomain: {{ printf "harbor.%s" $domainSuffix }}
           tlsSecretName: {{ $tlsSecretName }}
@@ -222,15 +223,10 @@ environments:
             {{- end }}
           external-dns:
             enabled: {{ $v.otomi.hasExternalDNS }}
-          harbor:
-            adminPassword: {{ $a | get "harbor.adminPassword" $v.otomi.adminPassword | quote }}
-            registry:
-              credentials:
-                password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword | quote }}
+          harbor: {}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
-            adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword | quote }}
           ingress-nginx:
             enabled: true
           istio:

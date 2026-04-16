@@ -32,7 +32,23 @@ releases:
     installed: {{ and ($a | get "loki.enabled") (not ($a | get "loki.enableOpenTelemetry")) }}
     namespace: monitoring
     <<: *default
+  - name: prometheus-msteams-artifacts
+    installed: {{ has "msteams" ($v | get "alerts.receivers") }}
+    namespace: monitoring
+    <<: *raw
   - name: prometheus-msteams
     installed: {{ has "msteams" ($v | get "alerts.receivers") }}
     namespace: monitoring
-    <<: *default
+    missingFileHandler: Debug
+    chart: ../charts/prometheus-msteams
+    values:
+      - ../values/prometheus-msteams/prometheus-msteams.gotmpl
+      - snippets/common.gotmpl
+      - configFile: /etc/secret/connectors.yaml
+        extraVolumes:
+          - name: connectors-secret
+            secret:
+              secretName: prometheus-msteams-connectors
+        extraVolumeMounts:
+          - name: connectors-secret
+            mountPath: /etc/secret

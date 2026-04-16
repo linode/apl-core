@@ -14,13 +14,13 @@ export const cliEnvSpec = {
   CI: ciBool({ default: false }),
   DISABLE_SYNC: bool({ default: false, desc: 'will disable contacting the cluster as found in kube context' }),
   ENV_DIR: str({ default: `${process.cwd()}/env` }),
-  SOPS_AGE_KEY: str({ default: '' }),
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
   IN_DOCKER: bool({ default: false }),
   KUBE_VERSION_OVERRIDE: str({ default: undefined }),
   NODE_TLS_REJECT_UNAUTHORIZED: bool({ default: true }),
   OTOMI_DEV: bool({ default: false }),
   OTOMI_IN_TERMINAL: bool({ default: true }),
+  SOPS_AGE_KEY: str({ default: '' }),
   STATIC_COLORS: bool({ default: false }),
   TRACE: bool({ default: false }),
   VERBOSITY: num({ desc: 'The verbosity level', default: 1 }),
@@ -65,6 +65,14 @@ export const cliEnvSpec = {
   GIT_REPO_CATALOG_URL: str({
     desc: 'The URL for the default APL catalog',
     default: 'https://github.com/linode/apl-charts.git',
+  }),
+  SEALED_SECRETS_TIMEOUT_MS: num({
+    desc: 'Timeout in milliseconds for waiting on sealed secrets operations',
+    default: 120000,
+  }),
+  SEALED_SECRETS_INTERVAL_MS: num({
+    desc: 'Polling interval in milliseconds for sealed secrets readiness checks',
+    default: 3000,
   }),
 }
 
