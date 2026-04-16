@@ -420,15 +420,6 @@ definitions:
         $ref: '#/definitions/rawValues'
       enabled:
         type: boolean
-      tracing:
-        description: Configure Nginx for tracing. Requires Otel Collector to be enabled.
-        properties:
-          enabled:
-            default: false
-            type: boolean
-          samplingRatio:
-            type: string
-            default: '0.01'
       autoscaling:
         additionalProperties: false
         properties:
@@ -1896,15 +1887,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          tracing:
-            description: Configure Istio for tracing. Requires Otel Collector to be enabled.
-            properties:
-              enabled:
-                default: false
-                type: boolean
-              samplingRatio:
-                type: string
-                default: '0.01'
           autoscaling:
             properties:
               egressgateway:
@@ -2505,27 +2487,6 @@ properties:
           enabled:
             type: boolean
             default: false
-          otlpCollector:
-            properties:
-              autoscaler:
-                properties:
-                  maxReplicas:
-                    type: integer
-                    default: 5
-                  minReplicas:
-                    type: integer
-                    default: 2
-                  targetCPUUtilizationPercentage:
-                    type: integer
-                    default: 80
-                  targetMemoryUtilizationPercentage:
-                    type: integer
-                    default: 80
-              attributes:
-                type: array
-                title: Kubernetes Attributes
-                $ref: '#/definitions/labelsAnnotations'
-                description: 'Attributes to extract metadata from pods'
           operator:
             properties:
               replicaCount:
@@ -2535,8 +2496,6 @@ properties:
           resources:
             additionalProperties: false
             properties:
-              otlpCollector:
-                $ref: '#/definitions/resources'
               logsCollector:
                 $ref: '#/definitions/resources'
               manager:
