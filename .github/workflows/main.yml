@@ -5,6 +5,13 @@ on:
       - '**'
     tags-ignore:
       - '*'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - '**'
   workflow_dispatch: ~
 env:
   CACHE_REGISTRY: ghcr.io
