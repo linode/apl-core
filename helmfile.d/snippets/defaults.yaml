@@ -253,9 +253,6 @@ environments:
                   cpu: 200m
             _rawValues: {}
           istio:
-            tracing:
-              enabled: false
-              samplingRatio: "0.01"
             autoscaling:
               egressgateway:
                 minReplicas: 2
@@ -939,29 +936,9 @@ environments:
             _rawValues: {}
           otel:
             enabled: false
-            otlpCollector:
-              autoscaler:
-                minReplicas: 2
-                maxReplicas: 5
-                targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
-              attributes:
-                - k8s.pod.name
-                - k8s.pod.uid
-                - k8s.deployment.name
-                - k8s.namespace.name
-                - k8s.node.name
-                - k8s.pod.start_time
             operator:
               replicaCount: 1
             resources:
-              otlpCollector:
-                requests:
-                  cpu: 50m
-                  memory: 256Mi
-                limits:
-                  cpu: "1"
-                  memory: 1Gi
               logsCollector:
                 requests:
                   cpu: 50m
@@ -1200,4 +1177,4 @@ environments:
           aiEnabled: false
         users: []
         versions:
-          specVersion: 61
+          specVersion: 62
