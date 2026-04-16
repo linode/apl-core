@@ -3,11 +3,24 @@
 
 set -e
 
-echo "Decode and set the Kubernetes configuration for the dev environment"
-if [ -z "$KUBECONFIG" ]; then
-  echo $DEV_KUBECONFIG_64 | base64 -d >.kubeconfig
-  export KUBECONFIG=$(pwd)/.kubeconfig
+echo "Fetch the Kubernetes configuration for the dev environment"
+export KUBECONFIG=$(mktemp -d)/.kubeconfig
+linode-cli get-kubeconfig --id "$DEV_CLUSTER_ID" --kubeconfig "$KUBECONFIG"
+
+CURRENT_IP=$(curl -sS https://ipv4.whatismyip.akamai.com/)
+echo "Current IP: $CURRENT_IP"
+update_args=("$DEV_CLUSTER_ID" --control_plane.acl.enabled true)
+if [[ -n "${LKE_CP_ACL_IPV4}" ]]; then
+  IFS=',' read -ra acl_ips <<< "${LKE_CP_ACL_IPV4}"
+  for acl_ip in "${acl_ips[@]}"; do
+    update_args+=(--control_plane.acl.addresses.ipv4 "$acl_ip")
+  done
 fi
+reset_args=("${update_args[@]}")
+update_args+=(--control_plane.acl.addresses.ipv4 "$CURRENT_IP")
+
+echo "Updating ACL"
+linode-cli lke cluster-update "${update_args[@]}"
 
 echo "Restart platform deployments"
 kubectl -n otomi rollout restart deployment/otomi-api
@@ -17,3 +30,6 @@ kubectl rollout restart deployment -n apl-keycloak-operator apl-keycloak-operato
 kubectl rollout restart deployment -n apl-gitea-operator apl-gitea-operator
 kubectl rollout restart deployment -n otomi-operator otomi-operator
 kubectl rollout restart deployment -n apl-operator apl-operator
+
+echo "Resetting ACL"
+linode-cli lke cluster-update "${reset_args[@]}"
