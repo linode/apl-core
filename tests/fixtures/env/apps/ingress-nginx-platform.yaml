@@ -25,7 +25,4 @@ spec:
             requests:
                 cpu: 100m
                 memory: 192Mi
-    tracing:
-        enabled: true
-        samplingRatio: '0.01'
     enabled: true
