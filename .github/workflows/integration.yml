@@ -227,7 +227,7 @@ jobs:
             args+=(--control_plane.high_availability true)
           fi
 
-          CURRENT_IP=$(curl https://ipv4.whatismyip.akamai.com/)
+          CURRENT_IP=$(curl -sS https://ipv4.whatismyip.akamai.com/)
           echo "Current IP: $CURRENT_IP"
           args+=(--control_plane.acl.enabled true)
           if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
