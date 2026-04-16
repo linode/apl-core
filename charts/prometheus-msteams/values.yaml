@@ -67,11 +67,16 @@ customCardTemplate: ""
 
 templateFile: /etc/template/card.tmpl
 
+configFile: /etc/config/connectors.yaml
+
 extraConfigmapMounts: []
 # extraConfigmapMounts:
 #   - name: customConfigMap
 #     configMap:
 #       name: customConfigMapName
+
+## Additional Volumes
+extraVolumes: []
 
 ## Additional Volume mounts
 extraVolumeMounts: []
