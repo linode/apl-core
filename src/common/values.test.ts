@@ -60,6 +60,7 @@ describe('generateSecrets', () => {
     deps = {
       terminal,
       getValuesSchema: jest.fn().mockReturnValue(schema),
+      getSchemaSecretsPaths: jest.fn().mockResolvedValue([]),
     }
   })
   it('should generate new secrets and return only secrets', async () => {
@@ -71,5 +72,27 @@ describe('generateSecrets', () => {
 
     const res = await generateSecrets(valuesWithExisting, deps)
     expect(res.nested.twoStage).toBe('exists')
+  })
+  it('should include team secrets with expanded paths', async () => {
+    const teamValues = cloneDeep(values)
+    set(teamValues, 'teamConfig.demo.settings.password', 'team-secret-pw')
+
+    deps.getSchemaSecretsPaths.mockResolvedValue(['teamConfig.demo.settings.password'])
+
+    const res = await generateSecrets(teamValues, deps)
+    expect(deps.getSchemaSecretsPaths).toHaveBeenCalledWith(['demo'])
+    expect(res.teamConfig.demo.settings.password).toBe('team-secret-pw')
+  })
+  it('should not call getSchemaSecretsPaths when no dynamic teams exist', async () => {
+    const res = await generateSecrets(values, deps)
+    expect(deps.getSchemaSecretsPaths).not.toHaveBeenCalled()
+    expect(res).toEqual(expected)
+  })
+  it('should exclude admin team from dynamic team expansion', async () => {
+    const teamValues = cloneDeep(values)
+    set(teamValues, 'teamConfig.admin.settings.password', 'admin-pw')
+
+    const res = await generateSecrets(teamValues, deps)
+    expect(deps.getSchemaSecretsPaths).not.toHaveBeenCalled()
   })
 })

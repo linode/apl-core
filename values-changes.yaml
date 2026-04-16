@@ -461,3 +461,8 @@ changes:
   - version: 60
     customFunctions:
       - addRedisSecretForArgoCD
+  - version: 61
+    deletions:
+      - 'kms.sops'
+    customFunctions:
+      - sopsMigration
