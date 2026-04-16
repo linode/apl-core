@@ -72,10 +72,12 @@ const hfCore = (args: HFParams, envDir = env.ENV_DIR): ProcessPromise => {
   stringArray.push(`--log-level=${paramsCopy.logLevel.toLowerCase()}`)
   process.env.HELM_DIFF_COLOR = 'true'
   process.env.HELM_DIFF_USE_UPGRADE_DRY_RUN = 'true'
+  // Always run helmfile from rootDir to ensure helmfile.d/ is found regardless of process cwd
+  const $hf = $({ cwd: rootDir })
   if ((parsedArgs?.dryRun || parsedArgs?.local) && paramsCopy.args.includes('sync')) {
-    return $`echo ENV_DIR=${envDir} helmfile ${stringArray} ${paramsCopy.args}`.quiet()
+    return $hf`echo ENV_DIR=${envDir} helmfile ${stringArray} ${paramsCopy.args}`.quiet()
   } else {
-    return $`ENV_DIR=${envDir} helmfile ${stringArray} ${paramsCopy.args}`.quiet()
+    return $hf`ENV_DIR=${envDir} helmfile ${stringArray} ${paramsCopy.args}`.quiet()
   }
 }
 

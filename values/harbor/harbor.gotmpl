@@ -26,7 +26,14 @@ core:
 
   resources: {{- $h.resources.core | toYaml | nindent 4 }}
   existingSecret: harbor-core-secret
-  xsrfKey: {{ $h | get "core.xsrfKey" nil }}
+  existingXsrfSecret: harbor-core-xsrf-secret
+  existingXsrfSecretKey: CSRF_KEY
+  extraEnvVars:
+    - name: REGISTRY_CREDENTIAL_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: harbor-registry-credentials
+          key: REGISTRY_USERNAME
 
 database:
   maxOpenConns: {{ $h.databaseMaxConnections }}
@@ -72,6 +79,12 @@ jobservice:
     - stdout
   resources: {{- $h.resources.jobservice | toYaml | nindent 4 }}
   existingSecret: harbor-jobservice-secret
+  extraEnvVars:
+    - name: REGISTRY_CREDENTIAL_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: harbor-registry-credentials
+          key: REGISTRY_USERNAME
 
 metrics:
   serviceMonitor:

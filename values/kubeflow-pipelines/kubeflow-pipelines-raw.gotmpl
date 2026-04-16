@@ -1,29 +1,60 @@
 {{- $v := .Values }}
-{{- $kfp := index $v.apps "kubeflow-pipelines" }}
 {{- $obj := $v.obj.provider }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 {{- $hostname := print "kubeflow-pipelines." $v.cluster.domainSuffix }}
 resources:
-  - apiVersion: v1
-    kind: Secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
-      labels:
-        app: kubeflow-pipelines
       name: kfp-mysql-secret
-    data:
-      password: "{{ $kfp.rootPassword | b64enc }}"
-      username: "{{ "root" | b64enc }}"
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: kfp-mysql-secret
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            username: root
+            password: '{{ "{{ .rootPassword | toString }}" }}'
+      data:
+        - secretKey: rootPassword
+          remoteRef:
+            key: kubeflow-pipelines-secrets
+            property: rootPassword
+  {{- if eq $obj.type "linode" }}
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: mlpipeline-obj-artifact
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: mlpipeline-obj-artifact
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            accesskey: {{ $obj.linode.accessKeyId }}
+            secretkey: '{{ "{{ .secretAccessKey | toString }}" }}'
+      data:
+        - secretKey: secretAccessKey
+          remoteRef:
+            key: obj-secrets
+            property: provider_linode_secretAccessKey
+  {{- else }}
   - apiVersion: v1
     kind: Secret
     metadata:
-      labels:
-        app: kubeflow-pipelines
       name: mlpipeline-obj-artifact
-    data:
-      {{- if eq $obj.type "linode" }}
-      accesskey: "{{ $obj.linode.accessKeyId | b64enc }}"
-      secretkey: "{{ $obj.linode.secretAccessKey | b64enc }}"
-      {{- end }}
+    data: {}
+  {{- end }}
   - apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
     metadata:
