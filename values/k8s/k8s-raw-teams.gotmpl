@@ -1,6 +1,5 @@
 {{- $v := .Values }}
 {{- $cm := $v.apps | get "cert-manager" }}
-{{- $dockerConfigTpl := readFile "../../helmfile.d/snippets/dockercfg.gotmpl" }}
 resources:
   {{- range $id, $team := omit $v.teamConfig "admin"}}
     {{- $ns := printf "team-%s" $id }}
@@ -17,14 +16,31 @@ resources:
         istio-injection: enabled
         {{- end }}
     {{- with $v.otomi | get "globalPullSecret" nil }}
-  - apiVersion: v1
-    kind: Secret
-    type: kubernetes.io/dockerconfigjson
+    {{- $gpsUsername := . | get "username" "" }}
+    {{- $gpsServer := . | get "server" "docker.io" }}
+    {{- $gpsEmail := . | get "email" "not@val.id" }}
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
     metadata:
       name: otomi-pullsecret-global
       namespace: {{ $ns }}
-    data:
-      .dockerconfigjson: {{ tpl $dockerConfigTpl . | b64enc }}
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: otomi-pullsecret-global
+        creationPolicy: Owner
+        template:
+          type: kubernetes.io/dockerconfigjson
+          data:
+            .dockerconfigjson: '{"auths":{"{{ $gpsServer }}":{"username":"{{ $gpsUsername }}","password":"{{ "{{ .password | toString }}" }}","email":"{{ $gpsEmail }}"}}}'
+      data:
+        - secretKey: password
+          remoteRef:
+            key: otomi-secrets
+            property: globalPullSecret_password
     {{- end }}
   # patching service account here as helm does not recognize it as it's own
   - apiVersion: v1

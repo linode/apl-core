@@ -1,18 +1,21 @@
+import { ApiException } from '@kubernetes/client-node'
 import * as process from 'node:process'
 import { runTraceCollectionLoop } from 'src/cmd/traces'
 import { recoverFromGit } from 'src/common/bootstrap'
 import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
+import { $ } from 'zx'
 import { terminal } from '../common/debug'
+import { env } from '../common/envalid'
+import { getStoredGitRepoConfig, GIT_CONFIG_NAMESPACE } from '../common/git-config'
 import {
-  getGitConfigData,
-  getGitCredentials,
-  getStoredGitRepoConfig,
-  GIT_CONFIG_NAMESPACE,
-  GIT_CONFIG_SECRET_NAME,
-  setGitConfig,
-} from '../common/git-config'
-import { hfValues } from '../common/hf'
-import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from '../common/k8s'
+  createUpdateConfigMap,
+  deletePendingHelmReleases,
+  ensureNamespaceExists,
+  getK8sConfigMap,
+  getK8sSecret,
+  k8s,
+} from '../common/k8s'
+import { loadYaml } from '../common/utils'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 
@@ -45,7 +48,31 @@ export class Installer {
       isInstalled = status === 'completed'
     }
 
+    if (isInstalled) {
+      // Verify the git repo actually has content - the previous install may have
+      // marked status as completed but the pod was killed before the git push finished
+      const gitRepoHasContent = await this.verifyGitRepoHasMainBranch()
+      if (!gitRepoHasContent) {
+        this.d.warn('Installation marked as completed but git repo has no main branch - will re-install')
+        isInstalled = false
+      }
+    }
+
     return { installationMode, isInstalled }
+  }
+
+  private async verifyGitRepoHasMainBranch(): Promise<boolean> {
+    try {
+      const gitConfig = await getStoredGitRepoConfig()
+      if (!gitConfig) return true // Can't verify without config, assume fine
+      const result = await $`git ls-remote --exit-code --heads ${gitConfig.authenticatedUrl} main`.nothrow().quiet()
+      return result.exitCode === 0
+    } catch {
+      // If we can't check (e.g. gitea not ready yet), assume it's fine
+      // The operator will detect the issue later during git polling
+      this.d.warn('Could not verify git repo - may not be ready yet')
+      return true
+    }
   }
 
   public async recoverFromGit(): Promise<void> {
@@ -80,9 +107,48 @@ export class Installer {
 
   public async ensureRecoveryPrerequisites(): Promise<void> {
     await getStoredGitRepoConfig()
+    // SOPS is optional — sealed-secrets clusters don't have it
     const sopsSecret = await getK8sSecret('apl-sops-secrets', GIT_CONFIG_NAMESPACE)
-    if (!sopsSecret || Object.keys(sopsSecret).length === 0) {
-      throw new Error('KMS/SOPS config not found in apl-sops-secrets secret')
+    if (sopsSecret && Object.keys(sopsSecret).length > 0) {
+      this.d.info('SOPS configuration found for recovery')
+    } else {
+      this.d.info('No SOPS configuration — sealed-secrets mode recovery')
+    }
+  }
+
+  public async applyRecoveryManifests(): Promise<void> {
+    const values = (await loadYaml(env.VALUES_INPUT)) as Record<string, any>
+    const items = values?.installation?.recovery?.manifests?.items
+    if (!Array.isArray(items) || items.length === 0) {
+      this.d.info('No recovery manifests to apply')
+      return
+    }
+
+    this.d.info(`Applying ${items.length} recovery manifest(s)`)
+    for (const item of items) {
+      const namespace = item.metadata?.namespace || 'default'
+      const name = item.metadata?.name
+      await ensureNamespaceExists(namespace)
+
+      try {
+        await k8s.core().createNamespacedSecret({
+          namespace,
+          body: {
+            apiVersion: item.apiVersion,
+            kind: item.kind,
+            metadata: { name, namespace, labels: item.metadata?.labels },
+            type: item.type,
+            data: item.data,
+          },
+        })
+        this.d.info(`Created recovery secret ${namespace}/${name}`)
+      } catch (error) {
+        if (error instanceof ApiException && error.code === 409) {
+          this.d.info(`Recovery secret ${namespace}/${name} already exists, skipping`)
+        } else {
+          throw error
+        }
+      }
     }
   }
 
@@ -105,14 +171,23 @@ export class Installer {
         // Run the installation sequence
         await this.updateInstallationStatus('in-progress', attemptNumber)
         await this.aplOps.install()
-        await this.ensureSecretsAndConfig()
 
         await this.updateInstallationStatus('completed', attemptNumber)
         return
       } catch (error) {
+        const errorMessage = getErrorMessage(error)
+        this.d.error(`Installation attempt ${attemptNumber} failed:`, errorMessage)
         await this.updateInstallationStatus('failed', attemptNumber)
-        this.d.warn(`Installation attempt ${attemptNumber} failed, retrying in 1 second...`, getErrorMessage(error))
-        // Wait 1 second before retrying
+
+        // Clean up stuck Helm releases (e.g. pending-install, pending-upgrade)
+        // so the next retry can proceed without "another operation is in progress" errors
+        try {
+          await deletePendingHelmReleases()
+        } catch (cleanupError) {
+          this.d.warn('Failed to clean up pending Helm releases:', getErrorMessage(cleanupError))
+        }
+
+        this.d.warn(`Installation attempt ${attemptNumber} failed, retrying in 1 second...`)
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     }
@@ -141,59 +216,21 @@ export class Installer {
   }
 
   public async setEnvAndCreateSecrets(): Promise<void> {
-    this.d.debug('Retrieving or creating git credentials')
+    this.d.debug('Setting up environment')
     await this.setupSopsEnvironment()
   }
 
-  private async setupSopsEnvironment() {
-    const aplSopsSecret = await getK8sSecret('apl-sops-secrets', APL_OPERATOR_NS)
-
-    if (!aplSopsSecret?.SOPS_AGE_KEY) {
-      throw new Error('SOPS_AGE_KEY not found in secret')
-    }
-    process.env.SOPS_AGE_KEY = aplSopsSecret.SOPS_AGE_KEY
-  }
-
-  // public for testing. This method should only be used if you are certain there are values locally.
-  async ensureSecretsAndConfig(): Promise<void> {
-    this.d.info('Verifying secrets and config after installation')
-    const values = (await hfValues()) as Record<string, any>
-    if (!values) {
-      this.d.warn('Could not retrieve hfValues, skipping secrets/config verification')
-      return
-    }
-
-    const otomiGit = values?.otomi?.git
-    const agePrivateKey = values?.kms?.sops?.age?.privateKey
-
-    // Ensure apl-git-credentials secret
-    const credentials = await getGitCredentials()
-    if (!credentials) {
-      this.d.info('Recreating apl-git-credentials secret')
-      await createUpdateGenericSecret(k8s.core(), GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE, {
-        username: otomiGit?.username,
-        password: otomiGit?.password,
-      })
-    }
-
-    // Ensure apl-sops-secrets secret
-    const sopsSecret = await getK8sSecret('apl-sops-secrets', GIT_CONFIG_NAMESPACE)
-    if (!sopsSecret?.SOPS_AGE_KEY && agePrivateKey) {
-      this.d.info('Recreating apl-sops-secrets secret')
-      await createUpdateGenericSecret(k8s.core(), 'apl-sops-secrets', GIT_CONFIG_NAMESPACE, {
-        SOPS_AGE_KEY: agePrivateKey,
-      })
-    }
-
-    // Ensure apl-git-config configmap
-    const configData = await getGitConfigData()
-    if (!configData?.repoUrl || !configData?.branch || !configData?.email) {
-      this.d.info('Recreating apl-git-config configmap')
-      await setGitConfig({
-        repoUrl: otomiGit?.repoUrl,
-        branch: otomiGit?.branch,
-        email: otomiGit?.email,
-      })
+  private async setupSopsEnvironment(): Promise<void> {
+    try {
+      const aplSopsSecret = await getK8sSecret('apl-sops-secrets', APL_OPERATOR_NS)
+      if (!aplSopsSecret?.SOPS_AGE_KEY) {
+        this.d.info('SOPS_AGE_KEY not found — cluster may already use SealedSecrets')
+        return
+      }
+      process.env.SOPS_AGE_KEY = aplSopsSecret.SOPS_AGE_KEY
+      this.d.info('SOPS environment configured')
+    } catch (error) {
+      this.d.info('Could not read apl-sops-secrets — cluster may already use SealedSecrets')
     }
   }
 }

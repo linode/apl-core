@@ -1,18 +1,21 @@
 import { existsSync } from 'fs'
+import { get } from 'lodash'
 import { decrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
 import { getRepo, GitRepoConfig } from 'src/common/git-config'
 import { hfValues } from 'src/common/hf'
-import { getFilename } from 'src/common/utils'
+import { stripAllSecrets } from 'src/common/sealed-secrets'
+import { getFilename, getSchemaSecretsPaths } from 'src/common/utils'
 import { writeValues } from 'src/common/values'
 import { $, cd } from 'zx'
 
 const cmdName = getFilename(__filename)
 
-export const setIdentity = async (username: string, email: string) => {
-  await $`git config --local user.name ${username}`.nothrow().quiet()
-  await $`git config --local user.email ${email}`.nothrow().quiet()
+export const setIdentity = async (username: string, email: string, cwd?: string) => {
+  const $run = cwd ? $({ cwd }) : $
+  await $run`git config --local user.name ${username}`.nothrow().quiet()
+  await $run`git config --local user.email ${email}`.nothrow().quiet()
 }
 
 export const recoverFromGit = async (gitConfig: GitRepoConfig): Promise<void> => {
@@ -36,7 +39,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   // inValues indicates that there is no values repo file structure that helmfile expects
   const values = inValues ?? ((await hfValues()) as Record<string, any>)
-  const { authenticatedUrl: remote, branch, email, username, password } = getRepo(values)
+  const { authenticatedUrl: remote, branch, email, username, password } = await getRepo(values)
   cd(env.ENV_DIR)
   if (existsSync(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped, setting identity just in case`)
@@ -75,9 +78,12 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     d.info('Remote repository is empty or unreachable. Will initialize locally and push initial commit.')
   } finally {
     const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
+    // Strip ALL secrets before writing to disk — secrets are in SealedSecrets only
+    const secretPaths = await getSchemaSecretsPaths(Object.keys(get(defaultValues, 'teamConfig', {})))
+    const strippedValues = stripAllSecrets(defaultValues, secretPaths)
     // finally write back the new values without overwriting existing values
     d.info('Write default values to env repo')
-    await writeValues(defaultValues)
+    await writeValues(strippedValues)
   }
 
   if (!existsSync(`${env.ENV_DIR}/.git`)) {
@@ -98,8 +104,10 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     await $`git checkout -b ${branch}`.nothrow().quiet()
     await $`git remote add origin ${remote}`.nothrow().quiet()
   }
+
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
     await $`git config --local diff.sopsdiffer.textconv "sops -d"`.nothrow().quiet()
   }
+
   d.log(`Done bootstrapping git`)
 }
