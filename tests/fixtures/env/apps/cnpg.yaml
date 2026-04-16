@@ -17,5 +17,5 @@ spec:
         limits:
             cpu: 100m
             memory: 200Mi
-    useBackupPlugin: false
     _rawValues: {}
+    useBackupPlugin: true
