@@ -1,6 +1,6 @@
-api: APL-523
-console: APL-523
-consoleLogin: APL-523
-tasks: APL-523
+api: main
+console: main
+consoleLogin: main
+tasks: main
 tools: main
 aplCharts: main
