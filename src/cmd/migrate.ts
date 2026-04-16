@@ -190,8 +190,8 @@ export function filterChanges(version: number, changes: Changes): Changes {
   return changes.filter((c) => c.version - version > 0)
 }
 
-const replace = async (tmplStr: string, prev: any): Promise<string> => {
-  if (!tmplStr.includes('.prev')) return tmplStr
+const replace = async (tmplStr: any, prev: any): Promise<string> => {
+  if (typeof tmplStr !== 'string' || !tmplStr.includes('.prev')) return tmplStr
   const tmpl = `{{ ${tmplStr} }}`
   return (await gucci(tmpl, { prev })) as string
 }
