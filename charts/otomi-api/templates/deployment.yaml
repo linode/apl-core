@@ -40,6 +40,10 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "otomi-api.fullname" . }}
+            {{- with .Values.gitConfig.existingSecret }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
             - configMapRef:
                 name: {{ include "otomi-api.fullname" . }}
           livenessProbe:
@@ -77,6 +81,10 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "otomi-api.fullname" . }}
+            {{- with .Values.gitConfig.existingSecret }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
             - configMapRef:
                 name: {{ include "otomi-api.fullname" . }}
           ports:
