@@ -461,3 +461,6 @@ changes:
   - version: 60
     customFunctions:
       - addRedisSecretForArgoCD
+  - version: 61
+    additions:
+      - 'apps.git-server.enabled': false
