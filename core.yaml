@@ -89,6 +89,11 @@ k8s:
       disablePolicyChecks: true
     - name: sealed-secrets
       app: sealed-secrets
+    - name: external-secrets
+      app: external-secrets
+      disableIstioInjection: true
+    - name: apl-secrets
+      disableIstioInjection: true
     - name: policy-reporter
       app: policy-reporter
       disablePolicyChecks: true

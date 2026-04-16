@@ -13,10 +13,16 @@ import {
   getDeploymentState,
   getHelmReleases,
   getK8sConfigMap,
+  getK8sSecret,
   k8s,
   setDeploymentState,
   waitForCRD,
 } from 'src/common/k8s'
+import {
+  AppliedSecret,
+  applySealedSecretManifestsFromDir,
+  restartSealedSecretsController,
+} from 'src/common/sealed-secrets'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -57,6 +63,68 @@ export const retryInstallStep = async <T, Args extends any[]>(
   )
 }
 
+/**
+ * Wait for SealedSecrets controller to decrypt SealedSecret resources into K8s Secrets.
+ * Takes the list of applied secrets from applySealedSecretManifestsFromDir.
+ */
+const allSecretsExist = async (secrets: AppliedSecret[], deps = { getK8sSecret }): Promise<boolean> => {
+  for (const { namespace, secretName } of secrets) {
+    try {
+      const secret = await deps.getK8sSecret(secretName, namespace)
+      if (!secret) return false
+    } catch {
+      return false
+    }
+  }
+  return true
+}
+
+const waitForSealedSecrets = async (
+  appliedSecrets: AppliedSecret[],
+  timeoutMs = env.SEALED_SECRETS_TIMEOUT_MS,
+  intervalMs = env.SEALED_SECRETS_INTERVAL_MS,
+  deps = { getK8sSecret, terminal },
+): Promise<void> => {
+  const d = deps.terminal(`cmd:${cmdName}:waitForSealedSecrets`)
+
+  if (appliedSecrets.length === 0) {
+    d.info('No sealed secrets to wait for')
+    return
+  }
+
+  d.info(
+    `Waiting for ${appliedSecrets.length} sealed secrets to be decrypted: ${appliedSecrets.map((s) => s.secretName).join(', ')}`,
+  )
+
+  await retry(
+    async () => {
+      const pending: string[] = []
+      for (const { namespace, secretName } of appliedSecrets) {
+        try {
+          const secret = await deps.getK8sSecret(secretName, namespace)
+          if (!secret) {
+            pending.push(`${namespace}/${secretName}`)
+          }
+        } catch {
+          pending.push(`${namespace}/${secretName}`)
+        }
+      }
+
+      if (pending.length > 0) {
+        throw new Error(`Sealed secrets not yet decrypted: ${pending.join(', ')}`)
+      }
+
+      d.info('All sealed secrets have been decrypted')
+    },
+    {
+      retries: Math.ceil(timeoutMs / intervalMs),
+      minTimeout: intervalMs,
+      maxTimeout: intervalMs,
+      factor: 1,
+    },
+  )
+}
+
 const getInitialInstallationMode = async (): Promise<'standard' | 'recovery'> => {
   const installationStatus = await getK8sConfigMap(APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, k8s.core())
   const mode = installationStatus?.data?.installationMode
@@ -91,16 +159,88 @@ export const installAll = async () => {
     throw new Error('Failed to deploy essential manifests')
   }
 
+  // Deploy sealed-secrets controller right after essentials
+  d.info('Deploying sealed-secrets controller')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-01.init.yaml.gotmpl',
+      labelOpts: ['name=sealed-secrets'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  d.info('Waiting for SealedSecret CRD to be ready')
+  await retryInstallStep(waitForCRD, 'sealedsecrets.bitnami.com')
+
+  d.info('Applying SealedSecret manifests')
+  const appliedSecrets = await applySealedSecretManifestsFromDir(env.ENV_DIR)
+
+  if (appliedSecrets.length > 0) {
+    // Check if all secrets are already decrypted (e.g. on retry after a previous successful run)
+    const allExist = await allSecretsExist(appliedSecrets, { getK8sSecret })
+    if (allExist) {
+      d.info('All sealed secrets already decrypted, skipping controller restart')
+    } else {
+      // The controller may have started before the sealed-secrets-key TLS secret existed,
+      // causing it to generate its own key. Restarting forces it to pick up the pre-created key.
+      d.info('Restarting sealed-secrets controller to ensure correct key is used')
+      await restartSealedSecretsController()
+
+      d.info('Waiting for sealed secrets to be decrypted into K8s Secrets')
+      await waitForSealedSecrets(appliedSecrets)
+    }
+  } else {
+    d.info('No sealed secret manifests found, skipping controller restart')
+  }
+
+  // Ensure ArgoCD Redis Secret exists and has Helm ownership metadata before Helm applies ArgoCD.
+  // redisPassword is an x-secret field and sealed in apl-secrets/argocd-secrets (decrypted just above),
+  // so we read it directly from K8s rather than from values.
+  d.info('Creating argocd-redis secret from sealed secret')
+  const argocdSealedSecret = await getK8sSecret('argocd-secrets', 'apl-secrets').catch(() => undefined)
+  await createArgoCdRedisSecret({ apps: { argocd: { redisPassword: argocdSealedSecret?.redisPassword } } }).catch(
+    (error) => {
+      d.warn('Could not pre-create argocd-redis secret:', getErrorMessage(error))
+    },
+  )
+
+  // Deploy ESO (External Secrets Operator)
+  d.info('Deploying external-secrets operator')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-01.init.yaml.gotmpl',
+      labelOpts: ['name=external-secrets'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  d.info('Waiting for ExternalSecret CRD to be ready')
+  await retryInstallStep(waitForCRD, 'externalsecrets.external-secrets.io')
+
+  d.info('Deploying ESO ClusterSecretStore')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-01.init.yaml.gotmpl',
+      labelOpts: ['name=external-secrets-artifacts'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  // Deploy CRDs
   d.info('Deploying CRDs')
   await retryInstallStep(applyServerSide, 'charts/kube-prometheus-stack/charts/crds/crds')
-  // Wait for ServiceMonitor CRD to be established before deploying nginx
   await retryInstallStep(waitForCRD, 'servicemonitors.monitoring.coreos.com')
   await retryInstallStep(async () => $`kubectl apply -f charts/tekton-triggers/crds --server-side`)
 
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
-      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values at this stage):
       fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
       labelOpts: ['stage=prep'],
       logLevel: logLevelString(),
@@ -122,17 +262,41 @@ export const installAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 
+  // Deploy cert-manager artifacts (ExternalSecrets, ClusterIssuers, Certificates)
+  // Must be after app=core (cert-manager CRDs) and after ESO + ClusterSecretStore
+  d.info('Deploying cert-manager artifacts')
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-07.init.yaml.gotmpl',
+      labelOpts: ['name=cert-manager-artifacts'],
+      logLevel: logLevelString(),
+      args: hfArgs,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
   if (!(env.isDev && env.DISABLE_SYNC)) {
     // Get the git configuration from values
     const values = (await hfValues()) as Record<string, any>
     // Commit to Git repository
     await commit(true)
 
+    const gitBranch = values?.otomi?.git?.branch ?? 'main'
     await setGitConfig({
       repoUrl: values?.otomi?.git?.repoUrl,
-      branch: values?.otomi?.git?.branch ?? 'main',
+      branch: gitBranch,
       email: values?.otomi?.git?.email,
     })
+
+    // Verify the git push actually succeeded by checking the remote branch exists
+    d.info('Verifying git push succeeded')
+    const verifyResult = await $`git -C ${env.ENV_DIR} ls-remote --exit-code --heads origin ${gitBranch}`
+      .nothrow()
+      .quiet()
+    if (verifyResult.exitCode !== 0) {
+      throw new Error(`Git push verification failed: remote branch ${gitBranch} does not exist after commit`)
+    }
+    d.info('Git push verified successfully')
 
     const initialData = await initialSetupData()
     await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)
@@ -168,18 +332,6 @@ const install = async (): Promise<void> => {
   )
 }
 
-const prepareMandatorySecrets = async (): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:prepareMandatorySecrets`)
-  d.info('Preparing mandatory secrets for installation')
-
-  // Ensure ArgoCD Redis Secret exists and has Helm ownership metadata before Helm applies Argo CD.
-  d.info('Creating argocd-redis secret when possible')
-  const values = (await hfValues()) as Record<string, any>
-  await createArgoCdRedisSecret(values).catch((error) => {
-    d.warn('Failed to create argocd-redis secret:', getErrorMessage(error))
-  })
-}
-
 export const module: CommandModule = {
   command: cmdName,
   describe: 'Install all k8s resources for first-time setup',
@@ -188,7 +340,6 @@ export const module: CommandModule = {
     setParsedArgs(argv)
     setup()
     await prepareEnvironment()
-    await prepareMandatorySecrets()
     await install()
   },
 }

@@ -15,8 +15,6 @@ bases:
 {{- $tc := $v.teamConfig }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $gatewayName := $v.ingress.platformClass.className }}
-{{- $slackTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
-{{- $opsgenieTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 {{- $httpRoute := tpl (readFile "../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 releases:
 {{- range $teamId, $team := omit $tc "admin" }}
@@ -97,8 +95,8 @@ releases:
             podMetadata:
               labels:
                 otomi.io/auth-policy: monitoring-{{ $teamId }}
-          # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
-          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $teamSettings "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
+            useExistingSecret: true
+            configSecret: alertmanager-team-{{ $teamId }}-config
           route:
             main:
               hostnames:
@@ -113,7 +111,10 @@ releases:
           prometheusSpec: {}
         grafana:
           enabled: {{ $teamSettings | get "managedMonitoring.grafana" false }}
-          adminPassword: {{ $teamSettings.password | quote }}
+          admin:
+            existingSecret: team-{{ $teamId }}-grafana-admin
+            userKey: admin-user
+            passwordKey: admin-password
           resources:
             {{- $teamApps.grafana.resources.grafana | toYaml | nindent 12 }}
           namespaceOverride: null # team-{{ $teamId }}
@@ -165,7 +166,7 @@ releases:
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               secureJsonData:
-                basicAuthPassword: {{ $teamSettings.password | quote }}
+                basicAuthPassword: $__env{GF_LOKI_BASIC_AUTH_PASSWORD}
           podLabels:
             otomi.io/auth-policy: monitoring-{{ $teamId }}
         extraManifests:
@@ -220,4 +221,14 @@ releases:
       pipeline: otomi-task-teams
     values:
       - ../values/team-ns/team-ns.gotmpl
+  - name: team-secrets-{{ $teamId }}
+    installed: true
+    namespace: team-{{ $teamId }}
+    chart: ../charts/raw
+    labels:
+      tag: teams
+      team: {{ $teamId }}
+      pipeline: otomi-task-teams
+    values:
+      - ../values/team-secrets/team-secrets-raw.gotmpl
 {{- end }}
