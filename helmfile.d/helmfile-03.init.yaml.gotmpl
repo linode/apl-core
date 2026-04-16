@@ -12,6 +12,13 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
+  - name: git-server-artifacts
+    installed: {{ $a | get "git-server.enabled" }}
+    namespace: git-server
+    labels:
+      pkg: git-server
+      app: core
+    <<: *raw
   - name: git-server
     installed: {{ $a | get "git-server.enabled" }}
     namespace: git-server

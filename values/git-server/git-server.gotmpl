@@ -2,9 +2,6 @@
 {{- $g := $v.apps | get "git-server" dict }}
 repoName: otomi/values.git
 branchName: {{ $v.otomi.git.branch | quote }}
-auth:
-  username: {{ $v.otomi.git.username | quote }}
-  password: {{ $v.otomi.git.password | quote }}
 {{- with $v.cluster | get "defaultStorageClass" nil }}
 persistence:
   storageClass: {{ . | quote }}
