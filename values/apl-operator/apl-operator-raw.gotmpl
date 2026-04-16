@@ -1,0 +1,25 @@
+{{- $v := .Values }}
+
+resources:
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
+  metadata:
+    name: apl-git-credentials
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: apl-git-credentials
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          username: {{ $v.otomi.git | get "username" "otomi-admin" }}
+          password: '{{ "{{ .git_password | toString }}" }}'
+    data:
+      - secretKey: git_password
+        remoteRef:
+          key: otomi-secrets
+          property: git_password
