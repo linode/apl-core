@@ -1,6 +1,6 @@
 api: main
-console: main
-consoleLogin: main
+console: APL-1781
+consoleLogin: APL-1781
 tasks: main
 tools: main
 aplCharts: main
