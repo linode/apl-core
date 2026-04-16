@@ -56,6 +56,10 @@ tolerations: []
 
 affinity: {}
 
+command: []
+
+commandArgs: []
+
 env: {}
 
 kms: {}

@@ -462,28 +462,13 @@ export function renderManifest(
   return manifest
 }
 
-export function renderManifestForSecrets(fileMap: FileMap, resourceName: string, data: Record<string, any>) {
-  let spec = data
-  if (fileMap.resourceGroup === 'users') {
-    spec = omit(data, ['id', 'name'])
-  }
-  return {
-    kind: fileMap.kind,
-    metadata: {
-      name: resourceName,
-    },
-    spec,
-  }
-}
-
 export async function saveResourceGroupToFiles(
   fileMap: FileMap,
   valuesPublic: Record<string, any>,
-  valuesSecrets: Record<string, any>,
+  _valuesSecrets: Record<string, any>,
   deps = { writeValuesToFile },
 ): Promise<void> {
   const jsonPathsValuesPublic = jsonpath.nodes(valuesPublic, fileMap.jsonPathExpression)
-  const jsonPathsvaluesSecrets = jsonpath.nodes(valuesSecrets, fileMap.jsonPathExpression)
 
   await Promise.all(
     jsonPathsValuesPublic.map(async (node) => {
@@ -506,22 +491,8 @@ export async function saveResourceGroupToFiles(
     }),
   )
 
-  await Promise.all(
-    jsonPathsvaluesSecrets.map(async (node) => {
-      const nodePath = node.path
-      const nodeValue = node.value
-      try {
-        const filePath = getFilePath(fileMap, nodePath, nodeValue, 'secrets.')
-        const resourceName = getResourceName(fileMap, nodePath, nodeValue)
-        const manifest = renderManifestForSecrets(fileMap, resourceName, nodeValue)
-        await deps.writeValuesToFile(filePath, manifest)
-      } catch (e) {
-        console.log(nodePath)
-        console.log(fileMap)
-        throw e
-      }
-    }),
-  )
+  // Secrets are now stored as SealedSecret manifests via buildSecretToNamespaceMap() + writeSealedSecretManifests()
+  // No longer writing secrets.*.yaml files
 }
 
 export function getUniqueIdentifierFromFilePath(filePath: string): string {
@@ -571,7 +542,6 @@ export async function setValuesFile(
   deps = { pathExists: existsSync, loadValues, writeFile },
 ): Promise<string> {
   const valuesPath = path.join(envDir, 'values-repo.yaml')
-  // if (await deps.pathExists(valuesPath)) return valuesPath
   const allValues = await deps.loadValues(envDir)
   await deps.writeFile(valuesPath, objectToYaml(allValues))
   return valuesPath

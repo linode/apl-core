@@ -69,6 +69,3 @@ spec:
             requests:
                 cpu: 20m
                 memory: 128Mi
-    tracing:
-        enabled: true
-        samplingRatio: '0.01'

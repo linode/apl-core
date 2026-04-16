@@ -67,6 +67,15 @@ describe('git-config', () => {
       const result = await getGitCredentials()
       expect(result).toBeUndefined()
     })
+
+    it('should return undefined when password is a sealed-secret placeholder', async () => {
+      mockGetK8sSecret.mockResolvedValue({
+        username: 'admin',
+        password: 'sealed:apl-secrets/otomi-secrets/git_password',
+      })
+      const result = await getGitCredentials()
+      expect(result).toBeUndefined()
+    })
   })
 
   describe('getOldGitCredentials', () => {
@@ -310,7 +319,7 @@ describe('git-config', () => {
   })
 
   describe('getRepo', () => {
-    it('should use basic auth when username is provided', () => {
+    it('should use basic auth when username is provided', async () => {
       const values = {
         otomi: {
           git: {
@@ -323,7 +332,7 @@ describe('git-config', () => {
         },
       }
 
-      const result = getRepo(values)
+      const result = await getRepo(values)
       expect(result).toEqual({
         repoUrl: 'https://github.com/org/repo.git',
         authenticatedUrl: 'https://admin:s3cret@github.com/org/repo.git',
@@ -334,7 +343,7 @@ describe('git-config', () => {
       })
     })
 
-    it('should use PAT auth (token only) when username is not provided', () => {
+    it('should use PAT auth (token only) when username is not provided', async () => {
       const values = {
         otomi: {
           git: {
@@ -346,7 +355,7 @@ describe('git-config', () => {
         },
       }
 
-      const result = getRepo(values)
+      const result = await getRepo(values)
       expect(result).toEqual({
         repoUrl: 'https://github.com/org/repo.git',
         authenticatedUrl: 'https://s3cret@github.com/org/repo.git',
@@ -356,20 +365,19 @@ describe('git-config', () => {
         password: 's3cret',
       })
     })
-
-    it('should throw when repoUrl is missing', () => {
-      expect(() => getRepo({ otomi: { git: {} } })).toThrow('No otomi.git.repoUrl config was given.')
+    it('should throw when repoUrl is missing', async () => {
+      await expect(getRepo({ otomi: { git: {} } })).rejects.toThrow('No otomi.git.repoUrl config was given.')
     })
 
-    it('should throw when otomi.git is missing', () => {
-      expect(() => getRepo({ otomi: {} })).toThrow('No otomi.git.repoUrl config was given.')
+    it('should throw when otomi.git is missing', async () => {
+      await expect(getRepo({ otomi: {} })).rejects.toThrow('No otomi.git.repoUrl config was given.')
     })
 
-    it('should throw when values is empty', () => {
-      expect(() => getRepo({})).toThrow('No otomi.git.repoUrl config was given.')
+    it('should throw when values is empty', async () => {
+      await expect(getRepo({})).rejects.toThrow('No otomi.git.repoUrl config was given.')
     })
 
-    it('should use GIT_REPO_URL env var in development mode', () => {
+    it('should use GIT_REPO_URL env var in development mode', async () => {
       process.env.NODE_ENV = 'development'
       process.env.GIT_REPO_URL = 'http://localhost:3000/dev/repo.git'
 
@@ -385,9 +393,65 @@ describe('git-config', () => {
         },
       }
 
-      const result = getRepo(values)
+      const result = await getRepo(values)
       expect(result.repoUrl).toBe('http://localhost:3000/dev/repo.git')
       expect(result.authenticatedUrl).toBe('http://admin:s3cret@localhost:3000/dev/repo.git')
+    })
+
+    it('should fallback to K8s secret when password is a sealed placeholder', async () => {
+      const secretMock = jest.fn().mockResolvedValue({ git_password: 'real-password' })
+      const values = {
+        otomi: {
+          git: {
+            repoUrl: 'https://github.com/org/repo.git',
+            username: 'admin',
+            password: 'sealed:apl-secrets/otomi-secrets/git_password',
+            branch: 'main',
+            email: 'pipeline@cluster.local',
+          },
+        },
+      }
+
+      const result = await getRepo(values, { getK8sSecret: secretMock })
+      expect(secretMock).toHaveBeenCalledWith('otomi-secrets', 'apl-secrets')
+      expect(result.password).toBe('real-password')
+      expect(result.authenticatedUrl).toContain('real-password')
+    })
+
+    it('should fallback to K8s secret when password is empty', async () => {
+      const secretMock = jest.fn().mockResolvedValue({ git_password: 'from-k8s' })
+      const values = {
+        otomi: {
+          git: {
+            repoUrl: 'https://github.com/org/repo.git',
+            username: 'admin',
+            password: '',
+            branch: 'main',
+            email: 'pipeline@cluster.local',
+          },
+        },
+      }
+
+      const result = await getRepo(values, { getK8sSecret: secretMock })
+      expect(result.password).toBe('from-k8s')
+    })
+
+    it('should keep empty password when K8s secret also has no password', async () => {
+      const secretMock = jest.fn().mockResolvedValue(null)
+      const values = {
+        otomi: {
+          git: {
+            repoUrl: 'https://github.com/org/repo.git',
+            username: 'admin',
+            password: '',
+            branch: 'main',
+            email: 'pipeline@cluster.local',
+          },
+        },
+      }
+
+      const result = await getRepo(values, { getK8sSecret: secretMock })
+      expect(result.password).toBe('')
     })
   })
 })
