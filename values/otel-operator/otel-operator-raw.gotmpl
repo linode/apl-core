@@ -2,61 +2,6 @@
 {{- $o := $v.apps.otel }}
 {{- $lokiEnabled := and $v.apps.loki.enabled $v.apps.loki.enableOpenTelemetry }}
 resources:
-  - apiVersion: opentelemetry.io/v1beta1
-    kind: OpenTelemetryCollector
-    metadata:
-      name: platform-otlp
-    spec:
-      mode: deployment
-      resources: {{ $o.resources.otlpCollector | toYaml | nindent 8 }}
-      autoscaler:
-        minReplicas: {{ $o.otlpCollector.autoscaler.minReplicas }}
-        maxReplicas: {{ $o.otlpCollector.autoscaler.maxReplicas }}
-        targetCPUUtilization: {{ $o.otlpCollector.autoscaler.targetCPUUtilizationPercentage }}
-        targetMemoryUtilization: {{ $o.otlpCollector.autoscaler.targetMemoryUtilizationPercentage }}
-      managementState: managed
-      config:
-        receivers:
-          otlp:
-            protocols:
-              grpc: {}
-              http: {}
-        processors:
-          memory_limiter:
-            check_interval: 1s
-            limit_percentage: 75
-            spike_limit_percentage: 15
-          batch:
-            send_batch_size: 10000
-            timeout: 10s
-          k8sattributes:
-            auth_type: serviceAccount
-            passthrough: false
-            extract:
-              {{- with $o.otlpCollector.attributes }}
-              metadata:
-              {{ . | toYaml | nindent 16 }}
-              {{- end }}
-        exporters:
-          debug: {}
-        service:
-          pipelines:
-            logs:
-              receivers:
-                - otlp
-              processors:
-                - batch
-              exporters:
-                - debug
-            traces:
-              receivers:
-                - otlp
-              processors:
-                - memory_limiter
-                - batch
-                - k8sattributes
-              exporters:
-                - debug
   {{- if $lokiEnabled }}
   - apiVersion: opentelemetry.io/v1beta1
     kind: OpenTelemetryCollector
@@ -268,18 +213,6 @@ resources:
           - get
           - list
           - watch
-  - apiVersion: rbac.authorization.k8s.io/v1
-    kind: ClusterRoleBinding
-    metadata:
-      name: platform-otlp-collector
-    subjects:
-      - kind: ServiceAccount
-        name: platform-otlp-collector
-        namespace: otel
-    roleRef:
-      kind: ClusterRole
-      name: otel-collector
-      apiGroup: rbac.authorization.k8s.io
   {{- if $lokiEnabled }}
   - apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding

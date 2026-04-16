@@ -60,7 +60,6 @@ managedMonitoring: {{- $team | get "settings.managedMonitoring" dict | toYaml | 
 teamId: {{ $teamId }}
 teamApps: {{- toYaml $teamApps | nindent 2 }}
 teamIds: {{- toYaml (keys $v.teamConfig | sortAlpha) | nindent 2 }}
-tracingEnabled: {{ $a.istio.tracing.enabled }}
 services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 2 }}
 resourceQuota: {{- $teamResourceQuotas | toYaml | nindent 2 }}
 ingressGatewayPrefix: {{ $v._derived.ingressGatewayPrefix }}
