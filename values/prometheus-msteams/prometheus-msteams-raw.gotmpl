@@ -1,0 +1,30 @@
+{{- $v := .Values }}
+resources:
+- apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
+  metadata:
+    name: prometheus-msteams-connectors
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: prometheus-msteams-connectors
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          connectors.yaml: |
+            connectors:
+            - high_priority_channel: {{ "{{ .highPrio | toString }}" }}
+            - low_priority_channel: {{ "{{ .lowPrio | toString }}" }}
+    data:
+      - secretKey: highPrio
+        remoteRef:
+          key: alerts-secrets
+          property: msteams_highPrio
+      - secretKey: lowPrio
+        remoteRef:
+          key: alerts-secrets
+          property: msteams_lowPrio

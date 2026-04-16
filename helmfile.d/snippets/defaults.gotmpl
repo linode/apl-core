@@ -23,10 +23,9 @@ environments:
   default:
     values:
     - apps:
-        argocd:
-          redisPassword: {{ randAlphaNum 32 }}
-        kubeflow-pipelines:
-          rootPassword: {{ randAlphaNum 32 }}
+        argocd: {}
+        kubeflow-pipelines: {}
+        gitea: {}
         {{- range $index, $ingressClassName := $ingressClassNames }}
         ingress-nginx-{{ $ingressClassName }}:
           {{- if eq $ingressClassName "platform" }}
@@ -273,13 +272,9 @@ environments:
                 useCloudShell: true
                 downloadKubeconfig: true
                 downloadDockerLogin: true
-            password: {{ randAlphaNum 32 }}
       {{- end }}
       {{- end }}
-      otomi:
-        adminPassword: {{ randAlphaNum 32 }}
-        git:
-          password: {{ randAlphaNum 20 }}
+      otomi: {}
       catalogs:
         default:
           name: default

@@ -24,6 +24,9 @@ serviceAccount:
 
 imagePullSecrets: {}
 
+gitConfig:
+  existingSecret: ""
+
 rbac:
   # Specifies whether rbac should be set up
   create: true
@@ -96,7 +99,6 @@ affinity: {}
 secrets:
   GIT_USER:
   GIT_EMAIL:
-  GIT_PASSWORD:
 
 env:
   GIT_REPO_URL:
@@ -120,10 +122,3 @@ tools:
     # requests:
     #   cpu: 100m
     #   memory: 100Mi
-
-  secrets:
-    SOPS_AGE_KEY: ''
-    GCLOUD_SERVICE_KEY: ''
-    AZURE_TENANT_ID: ''
-    AZURE_CLIENT_ID: ''
-    AZURE_CLIENT_SECRET: ''

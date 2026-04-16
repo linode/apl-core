@@ -19,6 +19,8 @@ jest.mock('src/common/k8s', () => ({
   applyServerSide: jest.fn(),
   restartOtomiApiDeployment: jest.fn(),
   waitForCRD: jest.fn(),
+  getK8sSecret: jest.fn().mockResolvedValue({ password: 'test', username: 'test' }),
+  createArgoCdRedisSecret: jest.fn().mockResolvedValue(undefined),
   k8s: {
     app: jest.fn(),
     core: jest.fn(),
@@ -36,15 +38,36 @@ jest.mock('src/common/hf', () => ({
   hfValues: jest.fn(),
   deployEssential: jest.fn(),
   HF_DEFAULT_SYNC_ARGS: ['apply', '--sync-args', '--include-needs'],
+  HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS: ['apply', '--include-needs'],
 }))
 
 jest.mock('src/common/git-config', () => ({
   setGitConfig: jest.fn(),
 }))
 
-jest.mock('zx', () => ({
-  $: jest.fn(),
-  cd: jest.fn(),
+jest.mock('zx', () => {
+  const mockResult = { exitCode: 0, stdout: '', stderr: '' }
+  const createMockProcessPromise = () => {
+    const promise = Promise.resolve(mockResult)
+    const chainable: any = promise
+    chainable.nothrow = jest.fn().mockReturnValue(chainable)
+    chainable.quiet = jest.fn().mockReturnValue(chainable)
+    return chainable
+  }
+  return {
+    $: jest.fn().mockImplementation(() => createMockProcessPromise()),
+    cd: jest.fn(),
+  }
+})
+
+jest.mock('src/common/sealed-secrets', () => ({
+  applySealedSecretManifestsFromDir: jest.fn().mockResolvedValue([]),
+  restartSealedSecretsController: jest.fn().mockResolvedValue(undefined),
+}))
+
+jest.mock('src/common/utils', () => ({
+  ...jest.requireActual('src/common/utils'),
+  rootDir: '/test/root',
 }))
 
 jest.mock('./commit', () => ({
@@ -65,11 +88,6 @@ jest.mock('./commit', () => ({
 jest.mock('src/common/cli', () => ({
   cleanupHandler: jest.fn(),
   prepareEnvironment: jest.fn(),
-}))
-
-jest.mock('src/common/utils', () => ({
-  ...jest.requireActual('src/common/utils'),
-  rootDir: '/test/root',
 }))
 
 jest.mock('src/common/yargs', () => ({
@@ -118,7 +136,6 @@ describe('Install command', () => {
       stderr: '',
     })
     mockDeps.deployEssential.mockResolvedValue(true)
-    mockDeps.$.mockResolvedValue(undefined)
   })
 
   describe('module configuration', () => {
@@ -264,32 +281,28 @@ describe('Install command', () => {
   })
 
   describe('error handling', () => {
-    test('should handle deployment state errors', async () => {
-      const error = new Error('Failed to get deployment state')
-      mockDeps.getDeploymentState.mockRejectedValueOnce(error)
+    test('should throw on deployment state errors', async () => {
+      mockDeps.getDeploymentState.mockRejectedValueOnce(new Error('Failed to get deployment state'))
 
-      expect(mockDeps.getDeploymentState).toBeDefined()
+      await expect(installAll()).rejects.toThrow('Failed to get deployment state')
     })
 
-    test('should handle image tag retrieval errors', async () => {
-      const error = new Error('Failed to get image tag')
-      mockDeps.getImageTagFromValues.mockRejectedValueOnce(error)
+    test('should throw on image tag retrieval errors', async () => {
+      mockDeps.getImageTagFromValues.mockRejectedValueOnce(new Error('Failed to get image tag'))
 
-      expect(mockDeps.getImageTagFromValues).toBeDefined()
+      await expect(installAll()).rejects.toThrow('Failed to get image tag')
     })
 
-    test('should handle helmfile errors', async () => {
-      const error = new Error('Helmfile execution failed')
-      mockDeps.hf.mockRejectedValueOnce(error)
+    test('should throw on helmfile errors during sealed-secrets deploy', async () => {
+      mockDeps.hf.mockRejectedValueOnce(new Error('Helmfile execution failed'))
 
-      expect(mockDeps.hf).toBeDefined()
+      await expect(installAll()).rejects.toThrow('Helmfile execution failed')
     })
 
-    test('should handle CRDs deployment errors', async () => {
-      const error = new Error('CRDs deployment failed')
-      mockDeps.applyServerSide.mockRejectedValueOnce(error)
+    test('should throw on essential deployment failure', async () => {
+      mockDeps.deployEssential.mockResolvedValueOnce(false)
 
-      expect(mockDeps.applyServerSide).toBeDefined()
+      await expect(installAll()).rejects.toThrow('Failed to deploy essential manifests')
     })
   })
 })
