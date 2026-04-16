@@ -107,6 +107,7 @@ export class AplOperator {
       } else {
         await this.aplOps.apply()
       }
+
       this.d.info(`[${trigger}] Apply process completed`)
 
       await updateApplyState({

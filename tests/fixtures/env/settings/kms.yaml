@@ -6,5 +6,6 @@ spec:
     sops:
         azure:
             clientId: somesecretvalue
+            clientSecret: somesecretvalue
             keys: somesecretvalue
             tenantId: somesecretvalue

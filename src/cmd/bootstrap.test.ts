@@ -3,14 +3,14 @@ import { pki } from 'node-forge'
 import stubs from 'src/test-stubs'
 import {
   bootstrap,
-  bootstrapSops,
   copyBasicFiles,
   createCustomCA,
-  getKmsValues,
   getStoredClusterSecrets,
   handleFileEntry,
   processValues,
 } from './bootstrap'
+
+jest.mock('@linode/kubeseal-encrypt')
 
 const { terminal } = stubs
 
@@ -36,23 +36,14 @@ describe('Bootstrapping values', () => {
           quiet: jest.fn(),
         }),
       }),
-      bootstrapSops: jest.fn(),
+      bootstrapSealedSecrets: jest.fn(),
       copyBasicFiles: jest.fn(),
       copyFile: jest.fn(),
       createCustomCA: jest.fn(),
       ensureManifestDirectories: jest.fn(),
       handleFileEntry: jest.fn(),
-      decrypt: jest.fn(),
-      encrypt: jest.fn(),
-      existsSync: jest.fn(),
-      genSops: jest.fn(),
-      getDeploymentState: jest.fn().mockReturnValue({}),
-      getImageTagFromValues: jest.fn(),
       getK8sSecret: jest.fn(),
-      hfValues: jest.fn(),
-      isCli: true,
       migrate: jest.fn(),
-      nothrow: jest.fn(),
       pathExists: jest.fn(),
       processValues: jest.fn(),
       terminal,
@@ -60,16 +51,14 @@ describe('Bootstrapping values', () => {
     }
   })
   it('should call relevant sub routines', async () => {
-    deps.processValues.mockReturnValue(values)
-    deps.hfValues.mockReturnValue(values)
+    deps.processValues.mockReturnValue({ originalInput: values, allSecrets: {} })
     await bootstrap(deps)
     expect(deps.copyBasicFiles).toHaveBeenCalled()
-    expect(deps.bootstrapSops).toHaveBeenCalled()
+    expect(deps.bootstrapSealedSecrets).toHaveBeenCalled()
   })
   it('should copy only skeleton files to env dir if it is empty or nonexisting', async () => {
-    deps.processValues.mockReturnValue(undefined)
+    deps.processValues.mockReturnValue({ originalInput: undefined, allSecrets: {} })
     await bootstrap(deps)
-    expect(deps.hfValues).toHaveBeenCalledTimes(0)
   })
   it('should get stored cluster secrets if those exist', async () => {
     deps.getK8sSecret.mockReturnValue({ 'otomi-generated-passwords': secrets })
@@ -82,329 +71,257 @@ describe('Bootstrapping values', () => {
     expect(res).toEqual(undefined)
   })
 
-  describe('getKmsValues', () => {
-    let kmsValuesDeps: any
-    const ageKeys = { publicKey: 'agePublicKey', privateKey: 'agePrivateKey' }
-    const values = { someKey: 'someValue' }
+  describe('Copying basic files', () => {
+    const deps = {
+      copy: jest.fn(),
+      copyFile: jest.fn(),
+      copySchema: jest.fn(),
+      mkdir: jest.fn(),
+      pathExists: jest.fn(),
+      terminal,
+    }
+    it('should not throw any exception', async () => {
+      const res = await copyBasicFiles(deps)
+      expect(res).toBe(undefined)
+    })
+  })
+  describe('Creating folders and files for workload', () => {
+    const values = {
+      values: {
+        image: {
+          repository: 'linode/apl-nodejs-helloworld',
+          tag: 'v1.5.1',
+        },
+      },
+    }
+    const workload = {
+      files: {
+        'env/teams/workloads/demo/values.yaml': JSON.stringify(values),
+      },
+    }
+    const deps = {
+      loadYaml: jest.fn().mockReturnValue(workload),
+      mkdir: jest.fn(),
+      terminal,
+      writeFile: jest.fn(),
+    }
+    it('should create folders and files based on file entry in yaml', async () => {
+      await handleFileEntry(deps)
+      expect(deps.mkdir).toHaveBeenCalledWith('/test/env/teams/workloads/demo', { recursive: true })
+      expect(deps.writeFile).toHaveBeenCalledWith('/test/env/teams/workloads/demo/values.yaml', JSON.stringify(values))
+    })
+  })
+  describe('Checking for a custom CA', () => {
+    const deps = {
+      pki: {
+        rsa: {
+          generateKeyPair: jest.fn().mockReturnValue({
+            publicKey: { n: {}, e: {} },
+            privateKey: { d: {}, p: {}, q: {} },
+          }),
+        },
+        createCertificate: jest.fn().mockReturnValue({
+          publicKey: {},
+          serialNumber: '01',
+          validity: {},
+          sign: jest.fn(),
+          setSubject: jest.fn(),
+          setIssuer: jest.fn(),
+          setExtensions: jest.fn(),
+        }),
+        certificateToPem: jest.fn(),
+        privateKeyToPem: jest.fn(),
+      } as unknown as typeof pki,
+      writeValues: jest.fn(),
+      terminal,
+    }
+    deps.pki.certificateToPem = jest.fn().mockReturnValue('certpem')
+    deps.pki.privateKeyToPem = jest.fn().mockReturnValue('keypem')
+    it('should create a new key pair when none exist', () => {
+      const res = createCustomCA(deps)
+      expect(res).toMatchObject({
+        apps: {
+          'cert-manager': {
+            customRootCA: 'certpem',
+            customRootCAKey: 'keypem',
+          },
+        },
+      })
+    })
+  })
+  describe('processing values', () => {
+    const generatedSecrets = { gen: 'x' }
+    const generatedPassword = 'generated-password'
+    const usersWithPasswords = [
+      { id: 'user1', initialPassword: 'existing-password' },
+      { id: 'user2', initialPassword: generatedPassword },
+    ]
+    // Users stored directly in allSecrets (keycloak-operator derives groups from raw fields)
+
+    const ca = { a: 'cert' }
+    const mergedSecretsWithCa = merge(cloneDeep(secrets), cloneDeep(ca))
+    const mergedSecretsWithGen = merge(cloneDeep(secrets), cloneDeep(generatedSecrets))
+    const mergedSecretsWithGenAndCa = merge(cloneDeep(mergedSecretsWithGen), cloneDeep(ca))
+    let deps
     beforeEach(() => {
-      kmsValuesDeps = {
-        generateAgeKeys: jest.fn().mockResolvedValue(ageKeys),
-        hfValues: jest.fn(),
-      }
-    })
-    it('should not get kms values if those do not exist', async () => {
-      kmsValuesDeps.hfValues.mockReturnValue(values)
-      const res = await getKmsValues(kmsValuesDeps)
-      expect(res).toBeUndefined()
-    })
-    it('should get kms values if those exist', async () => {
-      const deps = {
-        generateAgeKeys: jest.fn(),
-      }
-      const values = {
-        kms: {
-          sops: {
-            provider: 'azure',
-          },
-        },
-      }
-      deps.generateAgeKeys.mockResolvedValue({ publicKey: 'key1', privateKey: 'key2' })
-
-      const res = await getKmsValues(values, deps)
-      expect(res).toEqual({
-        kms: {
-          sops: {
-            provider: 'azure',
-          },
-        },
-      })
-    })
-    it('should generate and return new age keys if provider is age and keys are missing', async () => {
-      const deps = {
-        generateAgeKeys: jest.fn(),
-      }
-      const values = {
-        kms: {
-          sops: {
-            provider: 'age',
-          },
-        },
-      }
-      deps.generateAgeKeys.mockResolvedValue({ publicKey: 'key1', privateKey: 'key2' })
-
-      const res = await getKmsValues(values, deps)
-      expect(res).toEqual({
-        kms: {
-          sops: {
-            provider: 'age',
-            age: { publicKey: 'key1', privateKey: 'key2' },
-          },
-        },
-      })
-    })
-    describe('Copying basic files', () => {
-      const deps = {
-        copy: jest.fn(),
-        copyFile: jest.fn(),
-        copySchema: jest.fn(),
-        mkdir: jest.fn(),
-        pathExists: jest.fn(),
+      deps = {
+        createCustomCA: jest.fn().mockReturnValue(ca),
+        createK8sSecret: jest.fn(),
+        generateSecrets: jest.fn().mockReturnValue(generatedSecrets),
+        getStoredClusterSecrets: jest.fn().mockReturnValue(secrets),
+        loadYaml: jest.fn(),
         terminal,
+        writeValues: jest.fn(),
+        getUsers: jest.fn().mockReturnValue(usersWithPasswords),
+        getSchemaSecretsPaths: jest.fn().mockResolvedValue([]),
+        stripAllSecrets: jest.fn().mockImplementation((v) => v),
       }
-      it('should not throw any exception', async () => {
-        const res = await copyBasicFiles(deps)
-        expect(res).toBe(undefined)
+    })
+    describe('Creating CA', () => {
+      it('should ask to create a CA if issuer is custom-ca', async () => {
+        await processValues(deps)
+        expect(deps.createCustomCA).toHaveBeenCalledTimes(1)
       })
     })
-    describe('Creating folders and files for workload', () => {
-      const values = {
-        values: {
-          image: {
-            repository: 'linode/apl-nodejs-helloworld',
-            tag: 'v1.5.1',
-          },
-        },
-      }
-      const workload = {
-        files: {
-          'env/teams/workloads/demo/values.yaml': JSON.stringify(values),
-        },
-      }
-      const deps = {
-        loadYaml: jest.fn().mockReturnValue(workload),
-        mkdir: jest.fn(),
-        terminal,
-        writeFile: jest.fn(),
-      }
-      it('should create folders and files based on file entry in yaml', async () => {
-        await handleFileEntry(deps)
-        expect(deps.mkdir).toHaveBeenCalledWith('/test/env/teams/workloads/demo', { recursive: true })
-        expect(deps.writeFile).toHaveBeenCalledWith(
-          '/test/env/teams/workloads/demo/values.yaml',
-          JSON.stringify(values),
+    describe('processing app values', () => {
+      it('should generate secrets by taking values and previously generated secrets as input', async () => {
+        deps.loadYaml.mockReturnValue(values)
+        await processValues(deps)
+        expect(deps.generateSecrets).toHaveBeenCalledWith(merge(cloneDeep(secrets), cloneDeep(values)))
+        expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
+      })
+      it('should overwrite a stored secret with one that was provided in values', async () => {
+        const newSecret = { secret: 'new' }
+        const valuesWithSecrets = merge(cloneDeep(values), newSecret)
+        const allSecrets = merge(cloneDeep(mergedSecretsWithCa), newSecret)
+        deps.loadYaml.mockReturnValue(valuesWithSecrets)
+        deps.getStoredClusterSecrets.mockReturnValue(secrets)
+        deps.generateSecrets.mockReturnValue(allSecrets)
+        await processValues(deps)
+        const expected = { ...allSecrets, users: usersWithPasswords }
+        expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'otomi', expected)
+        expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
+      })
+      it('should create a custom ca if issuer is custom-ca or undefined and no CA yet exists', async () => {
+        deps.loadYaml.mockReturnValue({ apps: { 'cert-manager': { issuer: 'custom-ca' } } })
+        await processValues(deps)
+        expect(deps.createCustomCA).toHaveBeenCalled()
+      })
+      it('should not re-create a custom ca if issuer is custom-ca or undefined and a CA already exists', async () => {
+        deps.loadYaml.mockReturnValue({
+          apps: { 'cert-manager': { issuer: 'custom-ca', customRootCA: 'certpem', customRootCAKey: 'keypem' } },
+        })
+        await processValues(deps)
+        expect(deps.createCustomCA).not.toHaveBeenCalled()
+      })
+      it('should only store secrets', async () => {
+        deps.getStoredClusterSecrets.mockReturnValue(secrets)
+        deps.generateSecrets.mockReturnValue(generatedSecrets)
+        deps.createCustomCA.mockReturnValue(ca)
+        await processValues(deps)
+        expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'otomi', {
+          ...mergedSecretsWithGenAndCa,
+          users: usersWithPasswords,
+        })
+      })
+      it('should not overwrite stored secrets', async () => {
+        deps.loadYaml.mockReturnValue({})
+        deps.getStoredClusterSecrets.mockReturnValue(generatedSecrets)
+        deps.createCustomCA.mockReturnValue({})
+        deps.generateSecrets.mockReturnValue(generatedSecrets)
+        await processValues(deps)
+        expect(deps.generateSecrets).toHaveBeenCalledWith(generatedSecrets)
+        expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'otomi', {
+          ...generatedSecrets,
+          users: usersWithPasswords,
+        })
+      })
+      it('should merge allSecrets into disk values so non-secret fields like customRootCA are preserved', async () => {
+        deps.loadYaml.mockReturnValue({
+          cluster: { name: 'bla', provider: 'dida' },
+        })
+        deps.getStoredClusterSecrets.mockReturnValue({
+          users: [{ id: 'user1', initialPassword: 'existing-password' }, { id: 'user2' }],
+        })
+        deps.generateSecrets.mockReturnValue({ gen: 'x' })
+        deps.createCustomCA.mockReturnValue(ca)
+        const res = await processValues(deps)
+        // mergedForDisk includes allSecrets (stripAllSecrets mock is identity, real impl strips x-secret paths)
+        expect(deps.writeValues).toHaveBeenNthCalledWith(1, {
+          a: 'cert',
+          gen: 'x',
+          cluster: { name: 'bla', provider: 'dida' },
+          users: [
+            { id: 'user1', initialPassword: 'existing-password' },
+            { id: 'user2', initialPassword: 'generated-password' },
+          ],
+        })
+        expect(res.originalInput).toEqual({
+          cluster: { name: 'bla', provider: 'dida' },
+          users: [
+            { id: 'user1', initialPassword: 'existing-password' },
+            { id: 'user2', initialPassword: 'generated-password' },
+          ],
+        })
+      })
+      it('should merge originalInput + allSecrets + users for disk (stripAllSecrets removes x-secret paths)', async () => {
+        // mergedForDisk = merge(originalInput, allSecrets, { users })
+        // allSecrets = merge(ca, storedSecrets, generatedSecrets) + users: usersWithPasswords
+        const allSecretsExpected = merge(cloneDeep(ca), cloneDeep(secrets), cloneDeep(generatedSecrets), {
+          users: usersWithPasswords,
+        })
+        const expectedDiskValues = merge(
+          cloneDeep(secrets),
+          cloneDeep(values),
+          cloneDeep(allSecretsExpected),
+          cloneDeep({ users: usersWithPasswords }),
+        )
+        deps.loadYaml.mockReturnValue({ ...values, users })
+        deps.getStoredClusterSecrets.mockReturnValue(secrets)
+        deps.generateSecrets.mockReturnValue(generatedSecrets)
+        deps.getUsers.mockReturnValue(usersWithPasswords)
+        await processValues(deps)
+        expect(deps.writeValues).toHaveBeenNthCalledWith(1, expectedDiskValues)
+      })
+      it('should call stripAllSecrets before writing values to disk', async () => {
+        deps.loadYaml.mockReturnValue(values)
+        deps.getSchemaSecretsPaths.mockResolvedValue(['apps.gitea.adminPassword', 'apps.harbor.adminPassword'])
+        await processValues(deps)
+        expect(deps.stripAllSecrets).toHaveBeenCalledTimes(1)
+        expect(deps.getSchemaSecretsPaths).toHaveBeenCalledTimes(1)
+      })
+      it('should still return full allSecrets for bootstrapSealedSecrets', async () => {
+        deps.loadYaml.mockReturnValue(values)
+        deps.getStoredClusterSecrets.mockReturnValue(secrets)
+        deps.generateSecrets.mockReturnValue(generatedSecrets)
+        deps.createCustomCA.mockReturnValue(ca)
+        const result = await processValues(deps)
+        // allSecrets should contain full unstripped secrets including pre-processed users
+        expect(result.allSecrets).toEqual(
+          merge(cloneDeep(ca), cloneDeep(secrets), cloneDeep(generatedSecrets), { users: usersWithPasswords }),
         )
       })
-    })
-    describe('Generating sops related files', () => {
-      const settings = {
-        kms: {
-          sops: {
-            provider: 'aws',
-            aws: {
-              keys: 'key1,key2',
-            },
+      it('should store users as-is in allSecrets (keycloak-operator derives groups)', async () => {
+        const storedUsers = [
+          {
+            email: 'platform-admin@example.com',
+            firstName: 'platform',
+            lastName: 'admin',
+            initialPassword: 'existing-pass',
+            isPlatformAdmin: true,
+            teams: ['dev'],
           },
-        },
-      }
-      const deps = {
-        copyFile: jest.fn(),
-        decrypt: jest.fn(),
-        encrypt: jest.fn(),
-        gucci: jest.fn().mockReturnValue('ok'),
-        hfValues: jest.fn(),
-        loadYaml: jest.fn().mockReturnValue(settings),
-        pathExists: jest.fn(),
-        readFile: jest.fn(),
-        getKmsSettings: jest.fn(),
-        terminal,
-        writeFile: jest.fn(),
-        createUpdateGenericSecret: jest.fn(),
-      }
-      it('should create files on first run and en/de-crypt', async () => {
-        deps.pathExists.mockReturnValue(false)
-        deps.getKmsSettings.mockReturnValue({
-          kms: {
-            sops: {
-              provider: 'age',
-              age: { publicKey: 'key1', privateKey: 'key2' },
-            },
-          },
-        })
+        ]
+        deps.loadYaml.mockReturnValue({})
+        deps.getStoredClusterSecrets.mockReturnValue({ users: storedUsers })
+        deps.generateSecrets.mockReturnValue({})
+        deps.createCustomCA.mockReturnValue({})
+        deps.getUsers.mockReturnValue(storedUsers)
 
-        await bootstrapSops(undefined, deps)
-        expect(deps.encrypt).toHaveBeenCalled()
-        expect(deps.decrypt).toHaveBeenCalled()
-      })
-      it('should just create files on next runs', async () => {
-        deps.pathExists.mockReturnValue(true)
-        deps.hfValues.mockReturnValue(settings)
-        deps.decrypt = jest.fn()
-        deps.encrypt = jest.fn()
-        const res = await bootstrapSops(undefined, deps)
-        expect(res).toBe(undefined)
-        expect(deps.encrypt).not.toHaveBeenCalled()
-        expect(deps.decrypt).not.toHaveBeenCalled()
-      })
-    })
-    describe('Checking for a custom CA', () => {
-      const deps = {
-        pki: {
-          rsa: {
-            generateKeyPair: jest.fn().mockReturnValue({
-              publicKey: { n: {}, e: {} },
-              privateKey: { d: {}, p: {}, q: {} },
-            }),
-          },
-          createCertificate: jest.fn().mockReturnValue({
-            publicKey: {},
-            serialNumber: '01',
-            validity: {},
-            sign: jest.fn(),
-            setSubject: jest.fn(),
-            setIssuer: jest.fn(),
-            setExtensions: jest.fn(),
-          }),
-          certificateToPem: jest.fn(),
-          privateKeyToPem: jest.fn(),
-        } as unknown as typeof pki,
-        writeValues: jest.fn(),
-        terminal,
-      }
-      deps.pki.certificateToPem = jest.fn().mockReturnValue('certpem')
-      deps.pki.privateKeyToPem = jest.fn().mockReturnValue('keypem')
-      it('should create a new key pair when none exist', () => {
-        const res = createCustomCA(deps)
-        expect(res).toMatchObject({
-          apps: {
-            'cert-manager': {
-              customRootCA: 'certpem',
-              customRootCAKey: 'keypem',
-            },
-          },
-        })
-      })
-    })
-    describe('processing values', () => {
-      const generatedSecrets = { gen: 'x' }
-      const generatedPassword = 'generated-password'
-      const usersWithPasswords = [
-        { id: 'user1', initialPassword: 'existing-password' },
-        { id: 'user2', initialPassword: generatedPassword },
-      ]
-      const ca = { a: 'cert' }
-      const mergedSecretsWithCa = merge(cloneDeep(secrets), cloneDeep(ca))
-      const mergedSecretsWithGen = merge(cloneDeep(secrets), cloneDeep(generatedSecrets))
-      const mergedSecretsWithGenAndCa = merge(cloneDeep(mergedSecretsWithGen), cloneDeep(ca))
-      let deps
-      beforeEach(() => {
-        deps = {
-          createCustomCA: jest.fn().mockReturnValue(ca),
-          createK8sSecret: jest.fn(),
-          decrypt: jest.fn(),
-          existsSync: jest.fn(),
-          generateSecrets: jest.fn().mockReturnValue(generatedSecrets),
-          getStoredClusterSecrets: jest.fn().mockReturnValue(secrets),
-          getKmsValues: jest.fn().mockReturnValue({}),
-          hfValues: jest.fn().mockReturnValue(values),
-          loadYaml: jest.fn(),
-          terminal,
-          validateValues: jest.fn().mockReturnValue(true),
-          writeValues: jest.fn(),
-          getUsers: jest.fn().mockReturnValue(usersWithPasswords),
-          generatePassword: jest.fn().mockReturnValue(generatedPassword),
-          addInitialPasswords: jest.fn().mockReturnValue(usersWithPasswords),
-          addPlatformAdmin: jest.fn().mockReturnValue(usersWithPasswords),
-          pathExists: jest.fn().mockReturnValue(true),
-        }
-      })
-      describe('Creating CA', () => {
-        it('should ask to create a CA if issuer is custom-ca', async () => {
-          await processValues(deps)
-          expect(deps.createCustomCA).toHaveBeenCalledTimes(1)
-        })
-      })
-      describe('processing app values', () => {
-        it('should not retrieve values from env dir', async () => {
-          await processValues(deps)
-          expect(deps.hfValues).toHaveBeenCalledTimes(0)
-        })
-        it('should generate secrets by taking values and previously generated secrets as input', async () => {
-          deps.loadYaml.mockReturnValue(values)
-          await processValues(deps)
-          expect(deps.generateSecrets).toHaveBeenCalledWith(merge(cloneDeep(secrets), cloneDeep(values)))
-          expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
-        })
-        it('should overwrite a stored secret with one that was provided in values', async () => {
-          const newSecret = { secret: 'new' }
-          const valuesWithSecrets = merge(cloneDeep(values), newSecret)
-          const allSecrets = merge(cloneDeep(mergedSecretsWithCa), newSecret)
-          deps.loadYaml.mockReturnValue(valuesWithSecrets)
-          deps.getStoredClusterSecrets.mockReturnValue(secrets)
-          deps.generateSecrets.mockReturnValue(allSecrets)
-          await processValues(deps)
-          expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'otomi', allSecrets)
-          expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
-        })
-        it('should create a custom ca if issuer is custom-ca or undefined and no CA yet exists', async () => {
-          deps.loadYaml.mockReturnValue({ apps: { 'cert-manager': { issuer: 'custom-ca' } } })
-          await processValues(deps)
-          expect(deps.createCustomCA).toHaveBeenCalled()
-        })
-        it('should not re-create a custom ca if issuer is custom-ca or undefined and a CA already exists', async () => {
-          deps.loadYaml.mockReturnValue({
-            apps: { 'cert-manager': { issuer: 'custom-ca', customRootCA: 'certpem', customRootCAKey: 'keypem' } },
-          })
-          await processValues(deps)
-          expect(deps.createCustomCA).not.toHaveBeenCalled()
-        })
-        it('should only store secrets', async () => {
-          deps.getStoredClusterSecrets.mockReturnValue(secrets)
-          deps.generateSecrets.mockReturnValue(generatedSecrets)
-          deps.createCustomCA.mockReturnValue(ca)
-          await processValues(deps)
-          expect(deps.createK8sSecret).toHaveBeenCalledWith(
-            'otomi-generated-passwords',
-            'otomi',
-            mergedSecretsWithGenAndCa,
-          )
-        })
-        it('should not overwrite stored secrets', async () => {
-          deps.loadYaml.mockReturnValue({})
-          deps.getStoredClusterSecrets.mockReturnValue(generatedSecrets)
-          deps.createCustomCA.mockReturnValue({})
-          deps.generateSecrets.mockReturnValue(generatedSecrets)
-          await processValues(deps)
-          expect(deps.generateSecrets).toHaveBeenCalledWith(generatedSecrets)
-          expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'otomi', generatedSecrets)
-        })
-        it('should only write and return original values', async () => {
-          deps.loadYaml.mockReturnValue({
-            cluster: { name: 'bla', provider: 'dida' },
-          })
-          deps.createCustomCA.mockReturnValue({ a: 'cert' })
-          deps.getStoredClusterSecrets.mockReturnValue({
-            users: [{ id: 'user1', initialPassword: 'existing-password' }, { id: 'user2' }],
-          })
-          deps.generateSecrets.mockReturnValue({ gen: 'x' })
-          deps.createCustomCA.mockReturnValue(ca)
-          const res = await processValues(deps)
-          expect(deps.writeValues).toHaveBeenNthCalledWith(1, {
-            cluster: { name: 'bla', provider: 'dida' },
-            a: 'cert',
-            gen: 'x',
-            users: [
-              { id: 'user1', initialPassword: 'existing-password' },
-              { id: 'user2', initialPassword: 'generated-password' },
-            ],
-          })
-          expect(res).toEqual({
-            cluster: { name: 'bla', provider: 'dida' },
-            users: [{ id: 'user1', initialPassword: 'existing-password' }, { id: 'user2' }],
-          })
-        })
-        it('should merge original with generated values and write them to env dir', async () => {
-          const writtenValues = merge(
-            cloneDeep(values),
-            cloneDeep(mergedSecretsWithGenAndCa),
-            cloneDeep({ users: usersWithPasswords }),
-          )
-          deps.loadYaml.mockReturnValue({ ...values, users })
-          deps.getStoredClusterSecrets.mockReturnValue(secrets)
-          deps.generateSecrets.mockReturnValue(generatedSecrets)
-          deps.getUsers.mockReturnValue(usersWithPasswords)
-          await processValues(deps)
-          expect(deps.writeValues).toHaveBeenNthCalledWith(1, writtenValues)
-        })
+        const result = await processValues(deps)
+
+        // Users stored directly — no groups transformation
+        expect(result.allSecrets.users).toEqual(storedUsers)
       })
     })
   })
