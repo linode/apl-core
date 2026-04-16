@@ -314,6 +314,7 @@ jobs:
           EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
+          LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
           LKE_APL_FIREWALL_INBOUND_RULES: ${{ secrets.LKE_APL_FIREWALL_INBOUND_RULES }}
         run: |
           touch values.yaml
@@ -384,6 +385,16 @@ jobs:
 
 
           wait $HELM_PID
+
+          if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
+            echo "Resetting ACL to internal IPs"
+            cluster_patch_args=(${{ env.LINODE_CLUSTER_ID }} --control_plane.acl.enabled true)
+            IFS=',' read -ra acl_ips <<< '${{ env.LKE_CP_ACL_IPV4 }}'
+            for acl_ip in "${acl_ips[@]}"; do
+              cluster_patch_args+=(--control_plane.acl.addresses.ipv4 "$acl_ip")
+            done
+            linode-cli lke cluster-update "${cluster_patch_args[@]}"
+          fi
       - name: Gather k8s events on failure
         if: failure()
         run: |
