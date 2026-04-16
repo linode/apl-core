@@ -1,5 +1,5 @@
 import Ajv, { ValidateFunction } from 'ajv'
-import { unset } from 'lodash'
+import { cloneDeep, difference, unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
@@ -12,6 +12,36 @@ import { chalk } from 'zx'
 const cmdName = getFilename(__filename)
 
 const internalPaths: string[] = ['k8s', 'adminApps', 'teamApps']
+
+/**
+ * Remove x-secret properties from `required` arrays throughout the schema.
+ * Disk values have secrets stripped, so requiring them would always fail validation.
+ */
+export function removeSecretRequirements(schema: Record<string, any>): Record<string, any> {
+  const cleaned = cloneDeep(schema)
+  removeSecretsInPlace(cleaned)
+  return cleaned
+}
+
+function removeSecretsInPlace(node: any): void {
+  if (!node || typeof node !== 'object') return
+  if (node.properties && Array.isArray(node.required)) {
+    const secretProps = Object.keys(node.properties as Record<string, any>).filter(
+      (key) => 'x-secret' in (node.properties[key] ?? {}),
+    )
+    if (secretProps.length > 0) {
+      const filtered = difference(node.required as string[], secretProps)
+      // eslint-disable-next-line no-param-reassign
+      if (filtered.length === 0) delete node.required
+      // eslint-disable-next-line no-param-reassign
+      else node.required = filtered
+    }
+  }
+  for (const value of Object.values(node as Record<string, unknown>)) {
+    if (Array.isArray(value)) value.forEach(removeSecretsInPlace)
+    else if (value && typeof value === 'object') removeSecretsInPlace(value)
+  }
+}
 
 // TODO: Accept json path to validate - on empty, validate all
 export const validateValues = async (argv: HelmArguments = getParsedArgs(), envDir = env.ENV_DIR): Promise<void> => {
@@ -33,12 +63,14 @@ export const validateValues = async (argv: HelmArguments = getParsedArgs(), envD
 
   d.info('Loading values-schema.yaml')
   const valuesSchema = (await loadYaml(`${rootDir}/values-schema.yaml`)) as Record<string, any>
+  // Disk values have secrets stripped — remove x-secret fields from required arrays
+  const adjustedSchema = removeSecretRequirements(valuesSchema)
   d.debug('Initializing Ajv')
   const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
   d.debug('Compiling Ajv validation')
   let validate: ValidateFunction<unknown>
   try {
-    validate = ajv.compile(valuesSchema)
+    validate = ajv.compile(adjustedSchema)
   } catch (error) {
     throw new Error(`Schema is invalid: ${chalk.italic(error.message)}`)
   }
