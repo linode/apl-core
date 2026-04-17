@@ -11,7 +11,7 @@ initImage:
     repository: alpine/git
     tag: v2.52.0
     pullPolicy: IfNotPresent
-  debian:
+  ubuntu:
     repository: ubuntu
     tag: "24.04"
     pullPolicy: IfNotPresent

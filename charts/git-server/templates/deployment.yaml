@@ -35,8 +35,8 @@ spec:
             - name: data
               mountPath: /data
         - name: hash-password
-          image: {{ .Values.initImage.debian.repository }}:{{ .Values.initImage.debian.tag }}
-          imagePullPolicy: {{ .Values.initImage.debian.pullPolicy }}
+          image: {{ .Values.initImage.ubuntu.repository }}:{{ .Values.initImage.ubuntu.tag }}
+          imagePullPolicy: {{ .Values.initImage.ubuntu.pullPolicy }}
           command:
             - sh
             - -ec
