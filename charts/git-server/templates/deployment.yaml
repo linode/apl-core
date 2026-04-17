@@ -35,7 +35,8 @@ spec:
             - name: data
               mountPath: /data
         - name: hash-password
-          image: debian:bookworm-slim
+          image: {{ .Values.initImage.debian.repository }}:{{ .Values.initImage.debian.tag }}
+          imagePullPolicy: {{ .Values.initImage.debian.pullPolicy }}
           command:
             - sh
             - -ec

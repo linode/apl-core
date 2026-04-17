@@ -1,5 +1,14 @@
 {{- $v := .Values }}
 {{- $g := $v.apps | get "git-server" dict }}
+{{- if $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-http-git-server"
+initImage:
+  git:
+    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/alpine/git"
+  debian:
+    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/ubuntu"
+{{- end }}
 repoName: otomi/values.git
 branchName: {{ $v.otomi.git.branch | quote }}
 {{- with $v.cluster | get "defaultStorageClass" nil }}
