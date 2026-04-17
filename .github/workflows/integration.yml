@@ -52,6 +52,7 @@ on:
         type: choice
         options:
           - 'v1.31.9+lke7'
+          - 'v1.32.9+lke2'
           - '1.33'
           - '1.34'
           - '1.35'
@@ -215,6 +216,8 @@ jobs:
           echo "::add-mask::$DOMAIN"
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Create k8s cluster for testing
+        env:
+          LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
         run: |
           args=()
           if [[ '${{ env.LKE_TIER }}' == 'enterprise' ]]; then
@@ -223,6 +226,17 @@ jobs:
           else
             args+=(--control_plane.high_availability true)
           fi
+
+          CURRENT_IP=$(curl -sS https://ipv4.whatismyip.akamai.com/)
+          echo "Current IP: $CURRENT_IP"
+          args+=(--control_plane.acl.enabled true)
+          if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
+            IFS=',' read -ra acl_ips <<< '${{ env.LKE_CP_ACL_IPV4 }}'
+            for acl_ip in "${acl_ips[@]}"; do
+              args+=(--control_plane.acl.addresses.ipv4 "$acl_ip")
+            done
+          fi
+          args+=(--control_plane.acl.addresses.ipv4 "$CURRENT_IP")
 
           linode-cli lke cluster-create \
             --label ${{ env.LINODE_CLUSTER_NAME }} \
@@ -373,6 +387,7 @@ jobs:
           wait $HELM_PID
 
           if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
+            echo "Resetting ACL to internal IPs"
             cluster_patch_args=(${{ env.LINODE_CLUSTER_ID }} --control_plane.acl.enabled true)
             IFS=',' read -ra acl_ips <<< '${{ env.LKE_CP_ACL_IPV4 }}'
             for acl_ip in "${acl_ips[@]}"; do
