@@ -461,3 +461,15 @@ changes:
   - version: 60
     customFunctions:
       - addRedisSecretForArgoCD
+  - version: 61
+    deletions:
+      - 'kms.sops'
+    customFunctions:
+      - sopsMigration
+  - version: 62
+    customFunctions:
+      - removeIngressTracing
+    deletions:
+      - 'apps.istio.tracing'
+      - 'apps.otel.otlpCollector'
+      - 'apps.otel.resources.otlpCollector'

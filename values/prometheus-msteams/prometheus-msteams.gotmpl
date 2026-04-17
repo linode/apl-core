@@ -10,9 +10,7 @@ image:
   pullSecrets:
     - otomi-pullsecret-global
 {{- end }}
-connectors:
-- high_priority_channel: {{ $v.alerts.msteams.highPrio }}
-- low_priority_channel: {{ $v.alerts.msteams.lowPrio }}
+connectors: []
 
 metrics:
   serviceMonitor:

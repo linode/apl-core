@@ -41,7 +41,10 @@ spec:
           configMap:
             name: {{ template "app.name" . }}-card-template
       {{- if .Values.extraConfigmapMounts }}
-      {{ toYaml .Values.extraConfigmapMounts | nindent 8 }}
+        {{- toYaml .Values.extraConfigmapMounts | nindent 8 }}
+      {{- end }}
+      {{- if .Values.extraVolumes }}
+        {{- toYaml .Values.extraVolumes | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -69,7 +72,7 @@ spec:
           {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
           {{- end }}
           args:
-            - -config-file=/etc/config/connectors.yaml
+            - -config-file={{ .Values.configFile }}
             - -template-file={{ .Values.templateFile }}
 {{- if .Values.workflowWebhook }}
             - -workflow-webhook={{ .Values.workflowWebhook }}
