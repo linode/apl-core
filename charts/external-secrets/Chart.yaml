@@ -1,16 +1,20 @@
 apiVersion: v2
-appVersion: 0.14.3
-description: External Secrets Operator for Kubernetes
-home: https://external-secrets.io
+appVersion: v0.20.4
+dependencies:
+- condition: bitwarden-sdk-server.enabled
+  name: bitwarden-sdk-server
+  repository: oci://ghcr.io/external-secrets/charts
+  version: v0.5.1
+description: External secrets management for Kubernetes
+home: https://github.com/external-secrets/external-secrets
+icon: https://raw.githubusercontent.com/external-secrets/external-secrets/main/assets/eso-logo-large.png
 keywords:
+- kubernetes-external-secrets
 - secrets
-- external-secrets
-kubeVersion: '>=1.19.0-0'
+kubeVersion: '>= 1.19.0-0'
 maintainers:
-- name: External Secrets Community
-  url: https://github.com/external-secrets/external-secrets
+- email: kellinmcavoy@gmail.com
+  name: mcavoyk
 name: external-secrets
-sources:
-- https://github.com/external-secrets/external-secrets
 type: application
-version: 0.14.3
+version: 0.20.4
