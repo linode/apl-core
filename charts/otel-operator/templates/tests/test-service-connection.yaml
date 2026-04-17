@@ -1,4 +1,3 @@
-{{ if .Values.kubeRBACProxy.enabled }}
 ---
 apiVersion: v1
 kind: Pod
@@ -18,7 +17,7 @@ spec:
         - name: MANAGER_METRICS_SERVICE_CLUSTERIP
           value: "{{ include "opentelemetry-operator.fullname" . }}"
         - name: MANAGER_METRICS_SERVICE_PORT
-          value: "{{ .Values.kubeRBACProxy.ports.proxyPort }}"
+          value: "{{ .Values.manager.ports.metricsPort }}"
       command:
         - sh
         - -c
@@ -52,7 +51,6 @@ spec:
   {{- end }}
   securityContext:
 {{ toYaml .Values.securityContext | indent 4 }}
-{{- end }}
 ---
 apiVersion: v1
 kind: Pod

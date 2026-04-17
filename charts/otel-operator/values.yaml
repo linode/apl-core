@@ -104,9 +104,23 @@ manager:
   # operator.golang.flags: false
   # operator.collector.default.config: false
   ports:
-    metricsPort: 8080
+    metricsPort: 8443
     webhookPort: 9443
     healthzPort: 8081
+  ## Metrics server configuration
+  ## The operator uses controller-runtime built-in auth for the metrics server
+  metrics:
+    # Enable authentication and authorization for the metrics server
+    # Corresponds to --metrics-secure flag in the operator
+    secure: true
+
+    # TLS configuration (optional, self-signed certs generated if not provided)
+    # Corresponds to --metrics-tls-cert-file and --metrics-tls-key-file flags
+    tls:
+      # Path to TLS certificate file (optional)
+      certFile: ""
+      # Path to TLS private key file (optional)
+      keyFile: ""
   resources: {}
   # resources:
   #   limits:
@@ -147,6 +161,10 @@ manager:
     annotations: {}
     metricsEndpoints:
       - port: metrics
+        scheme: https
+        bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+        tlsConfig:
+          insecureSkipVerify: true
     # Used to set relabeling and metricRelabeling configs on the ServiceMonitor
     # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
     relabelings: []
@@ -224,39 +242,6 @@ manager:
       minReplicas: 2
   # Enable manager pod automatically rolling
   rolling: false
-
-  ## Container specific securityContext
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-  securityContext:
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop:
-        - ALL
-    runAsNonRoot: true
-    seccompProfile:
-      type: RuntimeDefault
-
-## Provide OpenTelemetry Operator kube-rbac-proxy container image.
-##
-kubeRBACProxy:
-  enabled: true
-  image:
-    repository: quay.io/brancz/kube-rbac-proxy
-    tag: v0.20.0
-  ports:
-    proxyPort: 8443
-  resources: {}
-  # resources:
-  #   limits:
-  #     cpu: 500m
-  #     memory: 128Mi
-  #   requests:
-  #     cpu: 5m
-  #     memory: 64Mi
-
-  ## List of additional cli arguments to configure the kube-rbac-proxy
-  ## for example: --tls-cipher-suites, --tls-min-version, etc.
-  extraArgs: []
 
   ## Container specific securityContext
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
