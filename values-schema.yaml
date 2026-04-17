@@ -420,15 +420,6 @@ definitions:
         $ref: '#/definitions/rawValues'
       enabled:
         type: boolean
-      tracing:
-        description: Configure Nginx for tracing. Requires Otel Collector to be enabled.
-        properties:
-          enabled:
-            default: false
-            type: boolean
-          samplingRatio:
-            type: string
-            default: '0.01'
       autoscaling:
         additionalProperties: false
         properties:
@@ -923,7 +914,7 @@ definitions:
   secretTemplates:
     definitions:
       otomiAdminUsername:
-        x-secret: 'admin'
+        x-secret: 'otomi-admin'
   securityContext:
     additionalProperties:
       uniqueItems: true
@@ -1581,6 +1572,31 @@ properties:
           - recovery
           - standard
         default: standard
+      recovery:
+        type: object
+        description: Recovery settings for disaster recovery scenarios. Only used when mode=recovery.
+        properties:
+          manifests:
+            type: object
+            description: >
+              K8s resource List containing recovery manifests (e.g., sealed-secrets TLS key pairs)
+              to apply during installation. Not stored in the values repository.
+              Export from old cluster:
+              kubectl get secret -n sealed-secrets -l sealedsecrets.bitnami.com/sealed-secrets-key=active -o yaml
+            properties:
+              apiVersion:
+                type: string
+              kind:
+                type: string
+              items:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+              metadata:
+                type: object
+                additionalProperties: true
+            additionalProperties: true
   azure:
     description: Azure specific configuration.
     properties:
@@ -1618,6 +1634,9 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          redisPassword:
+            type: string
+            x-secret: '{{ randAlphaNum 32 }}'
           controllerStatusProcessors:
             default: 20
             type: integer
@@ -1681,7 +1700,6 @@ properties:
               To be used with issuer externally-managed-tls-secret.
             $ref: '#/definitions/idName'
           customRootCA:
-            x-secret: ''
             type: string
             description: CA that is used to create and verify self-signed certificates. Leave it empty to generate one automatically.
           customRootCAKey:
@@ -1741,6 +1759,12 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
+          adminUsername:
+            type: string
+            default: otomi-admin
+          adminPassword:
+            type: string
+            x-secret: '{{ randAlphaNum 20 }}'
           postgresqlPassword:
             type: string
             description: This password was generated and cannot be changed without manual intervention.
@@ -1828,7 +1852,6 @@ properties:
                     type: string
                     x-secret: '{{ randAlphaNum 32 }}'
             required:
-              - secret
               - credentials
           databaseMaxConnections:
             type: number
@@ -1864,15 +1887,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          tracing:
-            description: Configure Istio for tracing. Requires Otel Collector to be enabled.
-            properties:
-              enabled:
-                default: false
-                type: boolean
-              samplingRatio:
-                type: string
-                default: '0.01'
           autoscaling:
             properties:
               egressgateway:
@@ -1936,6 +1950,7 @@ properties:
             x-secret: ''
           adminUsername:
             type: string
+            default: otomi-admin
           theme:
             type: string
             default: otomi
@@ -2472,27 +2487,6 @@ properties:
           enabled:
             type: boolean
             default: false
-          otlpCollector:
-            properties:
-              autoscaler:
-                properties:
-                  maxReplicas:
-                    type: integer
-                    default: 5
-                  minReplicas:
-                    type: integer
-                    default: 2
-                  targetCPUUtilizationPercentage:
-                    type: integer
-                    default: 80
-                  targetMemoryUtilizationPercentage:
-                    type: integer
-                    default: 80
-              attributes:
-                type: array
-                title: Kubernetes Attributes
-                $ref: '#/definitions/labelsAnnotations'
-                description: 'Attributes to extract metadata from pods'
           operator:
             properties:
               replicaCount:
@@ -2502,8 +2496,6 @@ properties:
           resources:
             additionalProperties: false
             properties:
-              otlpCollector:
-                $ref: '#/definitions/resources'
               logsCollector:
                 $ref: '#/definitions/resources'
               manager:
@@ -2783,6 +2775,7 @@ properties:
         $ref: '#/definitions/url'
       clientID:
         $ref: '#/definitions/wordCharacterPattern'
+        x-secret: ''
       clientSecret:
         type: string
         x-secret: ''
@@ -2802,7 +2795,6 @@ properties:
         default: sub
     required:
       - clientID
-      - clientSecret
       - issuer
   otomi:
     additionalProperties: false

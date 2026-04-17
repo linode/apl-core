@@ -23,8 +23,9 @@ environments:
   default:
     values:
     - apps:
-        kubeflow-pipelines:
-          rootPassword: {{ randAlphaNum 32 }}
+        argocd: {}
+        kubeflow-pipelines: {}
+        gitea: {}
         {{- range $index, $ingressClassName := $ingressClassNames }}
         ingress-nginx-{{ $ingressClassName }}:
           {{- if eq $ingressClassName "platform" }}
@@ -40,9 +41,6 @@ environments:
             enabled: false
             block: false
             owasp: true
-          tracing:
-            enabled: false
-            samplingRatio: "0.01"
           maxBodySize: 1024m
           maxBodySizeBytes: 1073741824
           resources:
@@ -271,13 +269,9 @@ environments:
                 useCloudShell: true
                 downloadKubeconfig: true
                 downloadDockerLogin: true
-            password: {{ randAlphaNum 32 }}
       {{- end }}
       {{- end }}
-      otomi:
-        adminPassword: {{ randAlphaNum 32 }}
-        git:
-          password: {{ randAlphaNum 20 }}
+      otomi: {}
       catalogs:
         default:
           name: default

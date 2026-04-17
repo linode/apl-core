@@ -10,9 +10,3 @@ resources:
       accessLogging:
       - providers:
         - name: envoy
-      {{- if $i.tracing.enabled }}
-      tracing:
-      - providers:
-        - name: otel-tracing
-        randomSamplingPercentage: {{ $i.tracing.samplingRatio }}
-      {{- end }}

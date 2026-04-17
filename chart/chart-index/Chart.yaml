@@ -6,7 +6,7 @@ version: 0.1.0
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 9.5.0
+    version: 9.5.1
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
     version: 1.1.5
@@ -19,7 +19,7 @@ dependencies:
     repository: https://cloudnative-pg.github.io/charts
   - name: plugin-barman-cloud
     alias: cloudnative-pg-plugin-barman-cloud
-    version: 0.5.0
+    version: 0.6.0
     repository: https://cloudnative-pg.github.io/charts
   - name: cloud-firewall-crd
     version: 0.2.0
@@ -31,6 +31,9 @@ dependencies:
   - name: external-dns
     version: 1.20.0
     repository: https://kubernetes-sigs.github.io/external-dns
+  - name: external-secrets
+    version: 0.14.3
+    repository: https://charts.external-secrets.io
   - name: gitea
     version: 12.5.0
     repository: https://dl.gitea.io/charts
@@ -42,14 +45,14 @@ dependencies:
     repository: https://kubernetes.github.io/ingress-nginx
   - name: base
     alias: istio-base
-    version: 1.29.1
+    version: 1.29.2
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
-    version: 1.29.1
+    version: 1.29.2
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
-    version: 1.29.1
+    version: 1.29.2
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
