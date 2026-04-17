@@ -200,6 +200,7 @@ environments:
           ttyDomain: {{ print "tty." $domainSuffix }}
           consoleDomain: {{ printf "console.%s" $domainSuffix }}
           giteaDomain: {{ printf "gitea.%s" $domainSuffix }}
+          giteaDbUsername: gitea
           keycloakDomain: {{ printf "keycloak.%s" $domainSuffix }}
           harborDomain: {{ printf "harbor.%s" $domainSuffix }}
           tlsSecretName: {{ $tlsSecretName }}

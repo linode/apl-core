@@ -8,14 +8,14 @@ import { pki } from 'node-forge'
 import { join } from 'path'
 import { SEALED_SECRETS_NAMESPACE } from 'src/common/constants'
 import { terminal } from 'src/common/debug'
+import { env } from 'src/common/envalid'
 import { b64enc, ensureNamespaceExists, getK8sSecret, k8s } from 'src/common/k8s'
 import { flattenObject, getSchemaSecretsPaths } from 'src/common/utils'
 import { objectToYaml } from 'src/common/values'
 import { parse as parseYaml } from 'yaml'
 
 const cmdName = 'sealed-secrets'
-const ROLLOUT_TIMEOUT_MS = 120000
-const ROLLOUT_INTERVAL_MS = 3000
+const SEALED_SECRETS_MANIFESTS_SUBDIR = 'env/manifests/namespaces'
 
 /**
  * Strip ALL x-secret fields from values before writing to disk.
@@ -258,8 +258,6 @@ export const buildSecretToNamespaceMap = async (
   const groupMap = new Map<string, SecretMapping>()
 
   for (const secretPath of secretPaths) {
-    // Skip SOPS-related paths
-    if (secretPath.startsWith('kms.sops')) continue
     // Skip users path — user secrets are managed individually in apl-users namespace
     if (secretPath === 'users') continue
 
@@ -343,7 +341,7 @@ export const writeSealedSecretManifests = async (
   const d = deps.terminal(`common:${cmdName}:writeSealedSecretManifests`)
 
   for (const manifest of manifests) {
-    const dir = `${envDir}/env/manifests/namespaces/${manifest.metadata.namespace}/sealedsecrets`
+    const dir = `${envDir}/${SEALED_SECRETS_MANIFESTS_SUBDIR}/${manifest.metadata.namespace}/sealedsecrets`
     await deps.mkdir(dir, { recursive: true })
     const filePath = `${dir}/${manifest.metadata.name}.yaml`
     d.info(`Writing sealed secret to ${filePath}`)
@@ -397,11 +395,7 @@ export const applySealedSecretManifests = async (
 
     for (const manifest of nsManifests) {
       d.info(`Applying SealedSecret ${manifest.metadata.name} to namespace ${namespace}`)
-      try {
-        await applySealedSecretResource(manifest)
-      } catch (error) {
-        d.error(`Failed to apply SealedSecret ${manifest.metadata.name}: ${error}`)
-      }
+      await applySealedSecretResource(manifest)
     }
   }
 
@@ -418,7 +412,7 @@ export const applySealedSecretManifestsFromDir = async (
   deps = { terminal, readdir, readFile, existsSync },
 ): Promise<AppliedSecret[]> => {
   const d = deps.terminal(`common:${cmdName}:applySealedSecretManifestsFromDir`)
-  const manifestsDir = join(envDir, 'env/manifests/namespaces')
+  const manifestsDir = join(envDir, SEALED_SECRETS_MANIFESTS_SUBDIR)
 
   if (!deps.existsSync(manifestsDir)) {
     d.info(`No SealedSecret manifests directory found at ${manifestsDir}`)
@@ -498,7 +492,7 @@ export const restartSealedSecretsController = async (deps = { terminal }): Promi
 
   d.info('Waiting for sealed-secrets controller rollout')
   const start = Date.now()
-  while (Date.now() - start < ROLLOUT_TIMEOUT_MS) {
+  while (Date.now() - start < env.SEALED_SECRETS_TIMEOUT_MS) {
     try {
       const deployment = await k8s.app().readNamespacedDeployment({
         name: 'sealed-secrets',
@@ -514,7 +508,7 @@ export const restartSealedSecretsController = async (deps = { terminal }): Promi
     } catch {
       // Ignore transient read errors during rollout
     }
-    await new Promise((resolve) => setTimeout(resolve, ROLLOUT_INTERVAL_MS))
+    await new Promise((resolve) => setTimeout(resolve, env.SEALED_SECRETS_INTERVAL_MS))
   }
   d.warn('Rollout status check timed out')
 }
@@ -577,6 +571,31 @@ export const createUserSealedSecretManifests = async (
   return manifests
 }
 
+/**
+ * Get the PEM public key from the existing sealed-secrets certificate in the cluster,
+ * or generate a new RSA key pair, store it in the cluster, and return its PEM.
+ */
+export const getOrCreateSealedSecretsPem = async (
+  deps = {
+    terminal,
+    getExistingSealedSecretsCert,
+    getPemFromCertificate,
+    generateSealedSecretsKeyPair,
+    createSealedSecretsKeySecret,
+  },
+): Promise<string> => {
+  const d = deps.terminal(`common:${cmdName}:getOrCreateSealedSecretsPem`)
+  const existingCert = await deps.getExistingSealedSecretsCert()
+  if (existingCert) {
+    d.info('Using existing sealed-secrets certificate')
+    return deps.getPemFromCertificate(existingCert)
+  }
+  d.info('Generating new sealed-secrets key pair')
+  const { certificate, privateKey } = deps.generateSealedSecretsKeyPair()
+  await deps.createSealedSecretsKeySecret(certificate, privateKey)
+  return deps.getPemFromCertificate(certificate)
+}
+
 export const bootstrapSealedSecrets = async (
   secrets: Record<string, any>,
   envDir: string,
@@ -597,21 +616,14 @@ export const bootstrapSealedSecrets = async (
   const d = deps.terminal(`common:${cmdName}:bootstrapSealedSecrets`)
   d.info('Bootstrapping sealed secrets')
 
-  // 1. Check if there's an existing sealed-secrets key in the cluster
-  const existingCert = await deps.getExistingSealedSecretsCert()
-
-  let pem: string
-  if (existingCert) {
-    // Use existing certificate for encryption
-    d.info('Using existing sealed-secrets certificate')
-    pem = deps.getPemFromCertificate(existingCert)
-  } else {
-    // Generate new key pair and create the secret
-    d.info('Generating new sealed-secrets key pair')
-    const { certificate, privateKey } = deps.generateSealedSecretsKeyPair()
-    await deps.createSealedSecretsKeySecret(certificate, privateKey)
-    pem = deps.getPemFromCertificate(certificate)
-  }
+  // 1. Get or create the sealed-secrets PEM public key
+  const pem = await getOrCreateSealedSecretsPem({
+    terminal: deps.terminal,
+    getExistingSealedSecretsCert: deps.getExistingSealedSecretsCert,
+    getPemFromCertificate: deps.getPemFromCertificate,
+    generateSealedSecretsKeyPair: deps.generateSealedSecretsKeyPair,
+    createSealedSecretsKeySecret: deps.createSealedSecretsKeySecret,
+  })
 
   // 5. Build secret-to-namespace mapping
   const teams = Object.keys(get(secrets, 'teamConfig', {}) as Record<string, unknown>)

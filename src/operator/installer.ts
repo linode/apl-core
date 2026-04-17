@@ -19,6 +19,11 @@ import { loadYaml } from '../common/utils'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
 
+type InstallationState = {
+  installationMode: 'standard' | 'recovery'
+  isInstalled: boolean
+}
+
 export class Installer {
   private d = terminal('operator:installer')
   private aplOps: AplOperations
@@ -28,24 +33,32 @@ export class Installer {
     this.d.info('Initializing Installer')
   }
 
-  public async isInstalled(): Promise<boolean> {
-    const installStatus = await this.getInstallationStatus()
-    if (installStatus === undefined) {
-      // Indicate migrated state by setting negative value
+  public async getInstallationState(): Promise<InstallationState> {
+    const configMap = await getK8sConfigMap(APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, k8s.core())
+    const installationMode = configMap?.data?.installationMode === 'recovery' ? 'recovery' : 'standard'
+    const status = configMap?.data?.status
+    this.d.info(`Current installation status: ${status}`)
+
+    let isInstalled: boolean
+    if (configMap !== undefined && status === undefined) {
+      // ConfigMap exists but has no status: operator was upgraded on an already-installed cluster
       await this.updateInstallationStatus('completed', -1)
-      return true
+      isInstalled = true
+    } else {
+      isInstalled = status === 'completed'
     }
-    if (installStatus === 'completed') {
+
+    if (isInstalled) {
       // Verify the git repo actually has content - the previous install may have
       // marked status as completed but the pod was killed before the git push finished
       const gitRepoHasContent = await this.verifyGitRepoHasMainBranch()
       if (!gitRepoHasContent) {
         this.d.warn('Installation marked as completed but git repo has no main branch - will re-install')
-        return false
+        isInstalled = false
       }
-      return true
     }
-    return false
+
+    return { installationMode, isInstalled }
   }
 
   private async verifyGitRepoHasMainBranch(): Promise<boolean> {
@@ -137,12 +150,6 @@ export class Installer {
         }
       }
     }
-  }
-
-  public async getInstallationMode(): Promise<'standard' | 'recovery'> {
-    const installationStatus = await getK8sConfigMap(APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, k8s.core())
-    const installationMode = installationStatus?.data?.installationMode
-    return installationMode === 'recovery' ? 'recovery' : 'standard'
   }
 
   public async resetRecoveryModeToStandard(): Promise<void> {

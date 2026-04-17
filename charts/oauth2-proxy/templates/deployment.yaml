@@ -27,8 +27,8 @@ spec:
   template:
     metadata:
       annotations:
-        {{- if .Values.config.configFile }}
-        checksum/config: {{ tpl .Values.config.configFile $ | sha256sum }}
+        {{- if ne (include "oauth2-proxy.legacy-config.mode" .) "existing-configmap" }}
+        checksum/config: {{ include "oauth2-proxy.legacy-config.content" . | sha256sum }}
         {{- end }}
         {{- if .Values.alphaConfig.enabled }}
         checksum/alpha-config: {{ include "oauth2-proxy.alpha-config" . | sha256sum }}
@@ -110,7 +110,7 @@ spec:
       {{- end }}
       containers:
       - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.registry | default .Values.global.imageRegistry | default "quay.io" }}/{{ .Values.image.repository }}:{{ include "oauth2-proxy.version" . }}"
+        image: "{{ tpl .Values.image.registry $ | default (tpl .Values.global.imageRegistry $) | default "quay.io" }}/{{ .Values.image.repository }}:{{ include "oauth2-proxy.version" . }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         {{- if .Values.image.command }}
         command:
@@ -129,7 +129,7 @@ spec:
         {{- end }}
         {{- end }}
         {{- if .Values.config.cookieName }}
-          - --cookie-name={{ .Values.config.cookieName }}
+          - --cookie-name={{ tpl .Values.config.cookieName $ }}
         {{- end }}
         {{- if kindIs "map" .Values.extraArgs }}
           {{- range $key, $value := .Values.extraArgs }}
@@ -145,9 +145,7 @@ spec:
             {{- toYaml . | nindent 10 }}
           {{- end }}
         {{- end }}
-        {{- if or .Values.config.existingConfig .Values.config.configFile }}
           - --config=/etc/oauth2_proxy/oauth2_proxy.cfg
-        {{- end }}
         {{- if .Values.authenticatedEmailsFile.enabled }}
         {{- if .Values.authenticatedEmailsFile.template }}
           - --authenticated-emails-file=/etc/oauth2-proxy/{{ .Values.authenticatedEmailsFile.template }}
@@ -304,11 +302,9 @@ spec:
           readOnly: true
 {{- end }}
 {{- end }}
-{{- if or .Values.config.existingConfig .Values.config.configFile }}
         - mountPath: /etc/oauth2_proxy/oauth2_proxy.cfg
           name: configmain
           subPath: oauth2_proxy.cfg
-{{- end }}
 {{- if .Values.alphaConfig.enabled }}
         - mountPath: /etc/oauth2_proxy/oauth2_proxy.yml
           name: configalpha
@@ -372,12 +368,10 @@ spec:
           name: {{ template "oauth2-proxy.fullname" . }}-wait-for-redis
           defaultMode: 0775
 {{- end }}
-{{- if or .Values.config.existingConfig .Values.config.configFile }}
       - configMap:
           defaultMode: 420
-          name: {{ if .Values.config.existingConfig }}{{ .Values.config.existingConfig }}{{ else }}{{ template "oauth2-proxy.fullname" . }}{{ end }}
+          name: {{ include "oauth2-proxy.legacy-config.name" . | trim }}
         name: configmain
-{{- end }}
 {{- if .Values.alphaConfig.enabled }}
 {{- if .Values.alphaConfig.existingConfig }}
       - configMap:
@@ -413,7 +407,7 @@ spec:
 
     {{- with (.Values.imagePullSecrets | default .Values.global.imagePullSecrets) }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{- tpl (toYaml .) $ | nindent 8 }}
     {{- end }}
     {{- with .Values.affinity }}
       affinity:

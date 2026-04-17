@@ -1,6 +1,6 @@
 import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { encryptSecretItem } from '@linode/kubeseal-encrypt'
-import { randomUUID } from 'crypto'
+import { randomBytes, randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { cp, rename as fsRename, mkdir, readFile, writeFile } from 'fs/promises'
@@ -21,7 +21,16 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd, sleep } from 'zx'
 import { APL_OPERATOR_NS, ARGOCD_APP_PARAMS, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
-import { getArgoCdApp, getK8sSecret, getSealedSecretsPEM, k8s, setArgoCdAppSync } from '../common/k8s'
+import {
+  createArgoCdRedisSecret,
+  getArgoCdApp,
+  getK8sSecret,
+  getSealedSecretsPEM,
+  k8s,
+  restartDeployment,
+  restartStatefulSet,
+  setArgoCdAppSync,
+} from '../common/k8s'
 import {
   applySealedSecretManifestsFromDir,
   buildSecretToNamespaceMap,
@@ -30,6 +39,7 @@ import {
   createUserSealedSecretManifests,
   generateSealedSecretsKeyPair,
   getExistingSealedSecretsCert,
+  getOrCreateSealedSecretsPem,
   getPemFromCertificate,
   restartSealedSecretsController,
   SealedSecretManifest,
@@ -37,6 +47,7 @@ import {
 } from '../common/sealed-secrets'
 
 const cmdName = getFilename(__filename)
+const sealedSecretManifestsGlob = `${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`
 
 interface Arguments extends BasicArguments {
   dryRun?: boolean
@@ -74,11 +85,11 @@ interface Change {
 
 export type Changes = Array<Change>
 
-export const deleteFile = async (
+export const deleteFile = (
   relativeFilePath: string,
   dryRun = false,
   deps = { existsSync, renameSync, terminal, rmSync },
-): Promise<void> => {
+): void => {
   const d = deps.terminal(`cmd:${cmdName}:rename`)
   const path = `${env.ENV_DIR}/${relativeFilePath}`
   if (!deps.existsSync(path)) {
@@ -443,7 +454,7 @@ const buildImageNameMigration = async (values: Record<string, any>): Promise<voi
         set(build, 'imageName', build.name)
         const buildName = getBuildName(build.name, build.tag)
         set(build, 'name', buildName)
-        await deleteFile(`env/teams/${teamName}/builds/${build.imageName}.yaml`)
+        deleteFile(`env/teams/${teamName}/builds/${build.imageName}.yaml`)
       }
     }),
   )
@@ -592,12 +603,10 @@ async function migrateStatefulSetPvc(opts: {
     return
   }
 
-  let syncDisabled = false
   try {
     const app = await getArgoCdApp(opts.appName, k8s.custom())
     if (app) {
       await setArgoCdAppSync(opts.appName, false, k8s.custom())
-      syncDisabled = true
     } else {
       opts.d.info(`Argo CD application ${opts.appName} not found. Skipping sync disable.`)
     }
@@ -612,6 +621,7 @@ async function migrateStatefulSetPvc(opts: {
     )
 
     await waitForPodsDeletion(opts.namespace, opts.pvcLabelSelector)
+    await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
 
     try {
       await k8s.app().deleteNamespacedStatefulSet({ name: opts.statefulSetName, namespace: opts.namespace })
@@ -620,17 +630,8 @@ async function migrateStatefulSetPvc(opts: {
     }
 
     await waitForStatefulSetDeletion(opts.statefulSetName, opts.namespace)
-    await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
   } catch (error) {
     throw error
-  } finally {
-    if (syncDisabled) {
-      try {
-        await setArgoCdAppSync(opts.appName, true, k8s.custom())
-      } catch (error) {
-        opts.d.warn(`Failed to re-enable Argo CD sync for ${opts.appName}: ${error}`)
-      }
-    }
   }
 }
 
@@ -910,6 +911,57 @@ const setDefaultAplCatalog = async (values: Record<string, any>): Promise<void> 
   set(values, 'catalogs.default', defaultCatalog)
 }
 
+export const addRedisSecretForArgoCD = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('addRedisSecretForArgoCD')
+  const argocdNamespace = 'argocd'
+
+  try {
+    const parsedArgs = getParsedArgs()
+    if (parsedArgs?.dryRun || parsedArgs?.local || env.DISABLE_SYNC) {
+      d.info('Skipping ArgoCD redis secret creation in dry-run/local/dev mode')
+      return
+    }
+
+    if (!(await namespaceExists(argocdNamespace))) {
+      d.info(`Namespace ${argocdNamespace} not found, skipping argocd-redis migration`)
+      return
+    }
+
+    // redisPassword is an x-secret field: never present in values on disk.
+    // Generate one and write it into the shared values object so sopsMigration (v61) seals the same password.
+    const redisPassword = randomBytes(24).toString('base64url')
+    set(values, 'apps.argocd.redisPassword', redisPassword)
+    await createArgoCdRedisSecret({ apps: { argocd: { redisPassword } } })
+
+    // Components consume REDIS_PASSWORD as env var, so they must restart after secret rotation.
+    const restartTargets = [
+      { kind: 'deployment', name: 'argocd-redis' },
+      { kind: 'deployment', name: 'argocd-server' },
+      { kind: 'deployment', name: 'argocd-repo-server' },
+      { kind: 'statefulset', name: 'argocd-application-controller' },
+      { kind: 'deployment', name: 'argocd-application-controller' },
+    ]
+    for (const target of restartTargets) {
+      try {
+        if (target.kind === 'deployment') {
+          await restartDeployment(target.name, argocdNamespace)
+        } else {
+          await restartStatefulSet(target.name, argocdNamespace)
+        }
+        d.info(`Restarted ${target.kind}/${target.name}`)
+      } catch (error) {
+        if (error instanceof ApiException && error.code === 404) {
+          d.debug(`Could not restart ${target.kind}/${target.name}: not found`)
+          continue
+        }
+        throw error
+      }
+    }
+  } catch (error) {
+    d.error('Failed to create/update ArgoCD redis secret, continuing migration:', error)
+  }
+}
+
 const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('addLinodeNBAnnotations')
   if (values?.cluster?.provider !== 'linode') {
@@ -1024,6 +1076,7 @@ export const sopsMigration = async (
     existsSync,
     globSync,
     terminal,
+    getOrCreateSealedSecretsPem,
     getExistingSealedSecretsCert,
     getPemFromCertificate,
     generateSealedSecretsKeyPair,
@@ -1047,7 +1100,7 @@ export const sopsMigration = async (
   // them, or the controller used its auto-generated key), re-apply them and restart
   // the controller so subsequent steps can resolve the git password.
   if (!deps.existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    const existingManifests = deps.globSync(`${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`, {
+    const existingManifests = deps.globSync(sealedSecretManifestsGlob, {
       dot: false,
     })
     if (existingManifests.length > 0) {
@@ -1066,30 +1119,16 @@ export const sopsMigration = async (
     return
   }
 
-  // Secondary guard: if manifests already exist, just clean up SOPS artifacts
-  const existingManifests = deps.globSync(`${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`, {
-    dot: false,
-  })
-  if (existingManifests.length > 0) {
-    d.info('SealedSecret manifests already exist, only cleaning up SOPS artifacts')
-    deps.removeSopsArtifacts()
-    return
-  }
-
   d.info('Starting SOPS to SealedSecrets migration')
 
   // Get or generate sealed-secrets key
-  let pem: string
-  const existingCert = await deps.getExistingSealedSecretsCert()
-  if (existingCert) {
-    d.info('Using existing sealed-secrets certificate')
-    pem = deps.getPemFromCertificate(existingCert)
-  } else {
-    d.info('Generating new sealed-secrets key pair')
-    const { certificate, privateKey } = deps.generateSealedSecretsKeyPair()
-    await deps.createSealedSecretsKeySecret(certificate, privateKey)
-    pem = deps.getPemFromCertificate(certificate)
-  }
+  const pem = await deps.getOrCreateSealedSecretsPem({
+    terminal: deps.terminal,
+    getExistingSealedSecretsCert: deps.getExistingSealedSecretsCert,
+    getPemFromCertificate: deps.getPemFromCertificate,
+    generateSealedSecretsKeyPair: deps.generateSealedSecretsKeyPair,
+    createSealedSecretsKeySecret: deps.createSealedSecretsKeySecret,
+  })
 
   // Build secret-to-namespace mappings
   const teams = Object.keys((values.teamConfig as Record<string, any>) || {})
@@ -1146,6 +1185,15 @@ const setIngressDefault = async (values: Record<string, any>) => {
   set(values, 'apps.ingress-nginx-platform.enabled', false)
 }
 
+const removeIngressTracing = async (values: Record<string, any>) => {
+  const apps: Record<string, any> = values?.apps ?? {}
+  Object.entries(apps).forEach(([key, value]) => {
+    if (key.startsWith('ingress-nginx-')) {
+      unset(value, 'tracing')
+    }
+  })
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   networkPoliciesMigration,
   teamSettingsMigration,
@@ -1161,6 +1209,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   addLinodeNBAnnotations,
   sopsMigration,
   setIngressDefault,
+  removeIngressTracing,
 }
 
 /**

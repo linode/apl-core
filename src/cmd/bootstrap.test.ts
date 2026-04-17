@@ -40,6 +40,7 @@ describe('Bootstrapping values', () => {
       copyBasicFiles: jest.fn(),
       copyFile: jest.fn(),
       createCustomCA: jest.fn(),
+      ensureManifestDirectories: jest.fn(),
       handleFileEntry: jest.fn(),
       getK8sSecret: jest.fn(),
       migrate: jest.fn(),

@@ -8,6 +8,7 @@ import { setGitConfig } from 'src/common/git-config'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS, hfValues } from 'src/common/hf'
 import {
   applyServerSide,
+  createArgoCdRedisSecret,
   createUpdateConfigMap,
   getDeploymentState,
   getHelmReleases,
@@ -25,6 +26,7 @@ import {
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { getErrorMessage } from 'src/operator/utils'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
 import { commit, createCredentialsSecret, createWelcomeConfigMap, initialSetupData } from './commit'
@@ -43,7 +45,7 @@ const setup = (): void => {
   mkdirSync(dir, { recursive: true })
 }
 
-const retryInstallStep = async <T, Args extends any[]>(
+export const retryInstallStep = async <T, Args extends any[]>(
   fn: (...args: Args) => Promise<T>,
   ...args: Args
 ): Promise<T> => {
@@ -79,8 +81,8 @@ const allSecretsExist = async (secrets: AppliedSecret[], deps = { getK8sSecret }
 
 const waitForSealedSecrets = async (
   appliedSecrets: AppliedSecret[],
-  timeoutMs = 120000,
-  intervalMs = 3000,
+  timeoutMs = env.SEALED_SECRETS_TIMEOUT_MS,
+  intervalMs = env.SEALED_SECRETS_INTERVAL_MS,
   deps = { getK8sSecret, terminal },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:waitForSealedSecrets`)
@@ -192,6 +194,17 @@ export const installAll = async () => {
   } else {
     d.info('No sealed secret manifests found, skipping controller restart')
   }
+
+  // Ensure ArgoCD Redis Secret exists and has Helm ownership metadata before Helm applies ArgoCD.
+  // redisPassword is an x-secret field and sealed in apl-secrets/argocd-secrets (decrypted just above),
+  // so we read it directly from K8s rather than from values.
+  d.info('Creating argocd-redis secret from sealed secret')
+  const argocdSealedSecret = await getK8sSecret('argocd-secrets', 'apl-secrets').catch(() => undefined)
+  await createArgoCdRedisSecret({ apps: { argocd: { redisPassword: argocdSealedSecret?.redisPassword } } }).catch(
+    (error) => {
+      d.warn('Could not pre-create argocd-redis secret:', getErrorMessage(error))
+    },
+  )
 
   // Deploy ESO (External Secrets Operator)
   d.info('Deploying external-secrets operator')

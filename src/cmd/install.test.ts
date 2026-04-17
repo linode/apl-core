@@ -20,6 +20,7 @@ jest.mock('src/common/k8s', () => ({
   restartOtomiApiDeployment: jest.fn(),
   waitForCRD: jest.fn(),
   getK8sSecret: jest.fn().mockResolvedValue({ password: 'test', username: 'test' }),
+  createArgoCdRedisSecret: jest.fn().mockResolvedValue(undefined),
   k8s: {
     app: jest.fn(),
     core: jest.fn(),
@@ -37,6 +38,7 @@ jest.mock('src/common/hf', () => ({
   hfValues: jest.fn(),
   deployEssential: jest.fn(),
   HF_DEFAULT_SYNC_ARGS: ['apply', '--sync-args', '--include-needs'],
+  HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS: ['apply', '--include-needs'],
 }))
 
 jest.mock('src/common/git-config', () => ({

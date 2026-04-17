@@ -258,8 +258,8 @@ describe('Installer', () => {
     })
   })
 
-  describe('isInstalled', () => {
-    test('should return completed status when ConfigMap exists and git repo has main branch', async () => {
+  describe('getInstallationState', () => {
+    test('should return isInstalled=true and standard mode when status is completed and git repo has main branch', async () => {
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
         data: { status: 'completed' },
       })
@@ -279,11 +279,11 @@ describe('Installer', () => {
         }),
       })
 
-      const isInstalled = await installer.isInstalled()
+      const state = await installer.getInstallationState()
 
       expect(k8s.getK8sConfigMap).toHaveBeenCalledWith('apl-operator', 'apl-installation-status', mockCoreApi)
-      expect(isInstalled).toBe(true)
-      expect(mockAplOps.install).not.toHaveBeenCalled()
+      expect(state.isInstalled).toBe(true)
+      expect(state.installationMode).toBe('standard')
     })
 
     test('should return false when status is completed but git repo has no main branch', async () => {
@@ -305,42 +305,77 @@ describe('Installer', () => {
         }),
       })
 
-      const isInstalled = await installer.isInstalled()
+      const state = await installer.getInstallationState()
 
-      expect(isInstalled).toBe(false)
+      expect(state.isInstalled).toBe(false)
     })
 
-    test('should return true when ConfigMap does not exist', async () => {
+    test('should return isInstalled=true when ConfigMap does not exist (migrated state)', async () => {
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue(null)
+      ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
+      // Git verification will run since isInstalled=true for migrated state
+      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockResolvedValue({
+        authenticatedUrl: 'https://admin:pass@gitea:3000/otomi/values.git',
+        repoUrl: 'https://gitea:3000/otomi/values.git',
+        branch: 'main',
+        email: 'test@test.com',
+        username: 'admin',
+        password: 'pass',
+      })
+      mockZx.mockReturnValue({
+        nothrow: jest.fn().mockReturnValue({
+          quiet: jest.fn().mockResolvedValue({ exitCode: 0 }),
+        }),
+      })
 
-      const isInstalled = await installer.isInstalled()
+      const state = await installer.getInstallationState()
 
       expect(k8s.getK8sConfigMap).toHaveBeenCalledWith('apl-operator', 'apl-installation-status', mockCoreApi)
-      expect(isInstalled).toBe(true)
+      expect(state.isInstalled).toBe(true)
+      expect(k8s.createUpdateConfigMap).toHaveBeenCalled()
     })
 
-    test('should handle in-progress status', async () => {
+    test('should return isInstalled=false when status is in-progress', async () => {
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
         data: { status: 'in-progress' },
       })
-      ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
 
-      const isInstalled = await installer.isInstalled()
+      const state = await installer.getInstallationState()
 
-      expect(k8s.getK8sConfigMap).toHaveBeenCalledWith('apl-operator', 'apl-installation-status', mockCoreApi)
-      expect(isInstalled).toBe(false)
+      expect(state.isInstalled).toBe(false)
     })
 
-    test('should handle failed status', async () => {
+    test('should return isInstalled=false when status is failed', async () => {
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
-        data: { status: 'failed', error: 'Previous installation failed' },
+        data: { status: 'failed' },
       })
-      ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
 
-      const isInstalled = await installer.isInstalled()
+      const state = await installer.getInstallationState()
 
-      expect(k8s.getK8sConfigMap).toHaveBeenCalledWith('apl-operator', 'apl-installation-status', mockCoreApi)
-      expect(isInstalled).toBe(false)
+      expect(state.isInstalled).toBe(false)
+    })
+
+    test('should return recovery installationMode when set', async () => {
+      ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
+        data: { status: 'in-progress', installationMode: 'recovery' },
+      })
+
+      const state = await installer.getInstallationState()
+
+      expect(state.installationMode).toBe('recovery')
+    })
+
+    test('should return true when git verification fails (gitea not ready)', async () => {
+      ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
+        data: { status: 'completed' },
+      })
+      // getStoredGitRepoConfig throws (cluster issues)
+      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockRejectedValue(new Error('connection refused'))
+
+      const state = await installer.getInstallationState()
+
+      // Should assume installed when verification can't be performed
+      expect(state.isInstalled).toBe(true)
     })
 
     test('should return true when git verification fails (gitea not ready)', async () => {

@@ -1,7 +1,7 @@
 appsInfo:
   alertmanager:
     title: Alertmanager
-    appVersion: 0.31.1
+    appVersion: 0.32.0
     repo: https://github.com/prometheus/alertmanager
     maintainers: Prometheus Community
     relatedLinks:
@@ -23,7 +23,7 @@ appsInfo:
     integration: Argo CD is configured by App Platform to use the SSO provided by keycloak, and maps App Platform groups to Argo CD roles. The otomi-admin role is made super admin within Argo CD. The team-admin role has access to Argo CD and is admin of all team projects. Members of team roles are only allowed to administer their own projects. All Teams will automatically get access to a Git repo, and Argo CD is configured to listen to this repo. All a team has to do is to fill their repo with intended state, commit, and automation takes care of the rest.
   cert-manager:
     title: Cert-manager
-    appVersion: 1.19.4
+    appVersion: 1.20.1
     repo: https://github.com/cert-manager/cert-manager
     maintainers: The Linux Foundation
     relatedLinks:
@@ -33,7 +33,7 @@ appsInfo:
     integration: Cert-manager is used by App Platform to automatically create and rotate TLS certificates for service endpoints. You may bring your own CA, or let App Platform create one for you (default). It is recommended to use Let's Encrypt for production certificates. Setting cert-manager to use Let's Encrypt requires DNS availability of the requesting domains, and forces App Platform to install external-dns. Because a lot of DNS settings are used by other App Platform contexts, most DNS configuration is found under settings/dns.
   cnpg:
     title: CloudNative PostgreSQL Operator
-    appVersion: 1.28.1
+    appVersion: 1.29.0
     repo: https://github.com/cloudnative-pg/cloudnative-pg
     maintainers: EDB
     relatedLinks:
@@ -65,7 +65,7 @@ appsInfo:
     integration: App Platform uses Gitea as its default repository for App Platform configuration (values). Gitea can also be used by Teams to provide application code repositories. Access to Gitea is provided by the OIDC integration in App Platform. Members of the otomi-admin and team-admin group can seamlessly sign in to Gitea. When Argo CD is enabled, App Platform will automatically create a Gitops repository for each Team in Gitea.
   grafana:
     title: Grafana
-    appVersion: 12.3.3
+    appVersion: 12.4.2
     repo: https://github.com/grafana/grafana
     maintainers: Grafana Labs
     relatedLinks:
@@ -97,7 +97,7 @@ appsInfo:
     integration: App Platform integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
-    appVersion: 1.29.1
+    appVersion: 1.29.2
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -185,7 +185,7 @@ appsInfo:
     integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When App Platform is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. App Platform shortcuts can be used to provide selections of logs based on interest.
   prometheus:
     title: Prometheus
-    appVersion: 3.9.1
+    appVersion: 3.11.1
     repo: https://github.com/prometheus/prometheus
     maintainers: Prometheus
     relatedLinks:
@@ -208,7 +208,7 @@ appsInfo:
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
-    appVersion: 0.36.1
+    appVersion: 0.36.6
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:

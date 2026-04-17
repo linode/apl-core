@@ -586,14 +586,13 @@ describe('sealed-secrets', () => {
       expect(mockK8s.custom().patchNamespacedCustomObject).toHaveBeenCalled()
     })
 
-    it('should log error when manifests fail to apply', async () => {
+    it('should throw when manifests fail to apply', async () => {
       const { k8s: mockK8s } = require('src/common/k8s')
       mockK8s.custom().patchNamespacedCustomObject.mockRejectedValueOnce(new Error('apply failed'))
 
       const manifests = [makeMockManifest('test-secret', 'apl-secrets')]
 
-      await applySealedSecretManifests(manifests, { terminal })
-      // Should not throw, just log the error
+      await expect(applySealedSecretManifests(manifests, { terminal })).rejects.toThrow('apply failed')
     })
   })
 

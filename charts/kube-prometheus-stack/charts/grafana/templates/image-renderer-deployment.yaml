@@ -86,7 +86,7 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: {{ .Values.imageRenderer.healthcheckPath }}
               port: {{ .Values.imageRenderer.service.portName }}
           env:
             - name: HTTP_PORT

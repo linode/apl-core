@@ -13,6 +13,7 @@ import { env, isCli } from 'src/common/envalid'
 import { createK8sSecret, getK8sSecret, secretId } from 'src/common/k8s'
 import { bootstrapSealedSecrets, stripAllSecrets } from 'src/common/sealed-secrets'
 import {
+  ensureManifestDirectories,
   ensureTeamGitOpsDirectories,
   getFilename,
   getSchemaSecretsPaths,
@@ -185,18 +186,19 @@ export const processValues = async (
   // Store users in allSecrets for sealed secret generation
   // The keycloak-operator derives groups from isPlatformAdmin/isTeamAdmin/teams directly
   allSecrets.users = users
+  // Include users in originalInput — getUsers() may return a detached array
+  // when originalInput had no 'users' key initially
+  const newInput = merge(cloneDeep(originalInput), cloneDeep({ users }))
   // Write only non-secret values to disk — secrets are stored exclusively in SealedSecrets
   // Include allSecrets so non-secret fields like customRootCA are preserved (stripAllSecrets removes only x-secret paths)
-  const mergedForDisk = merge(cloneDeep(originalInput), cloneDeep(allSecrets), cloneDeep({ users }))
+  const mergedForDisk = merge(cloneDeep(newInput), cloneDeep(allSecrets))
   const secretPaths = await deps.getSchemaSecretsPaths(Object.keys(get(mergedForDisk, 'teamConfig', {})))
   const valuesForDisk = deps.stripAllSecrets(mergedForDisk, secretPaths)
   await deps.writeValues(valuesForDisk)
   // and do some context dependent post processing:
   // to support potential failing chart install we store secrets on cluster
   if (!(env.isDev && env.DISABLE_SYNC)) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
-  // Include users (with name/UUID) on originalInput for bootstrapSealedSecrets to find them.
-  // getUsers() may return a detached array when originalInput had no 'users' key initially.
-  return { originalInput: { ...originalInput, users }, allSecrets }
+  return { originalInput: newInput, allSecrets }
 }
 
 // create file structure based on file entry
@@ -290,6 +292,7 @@ export const bootstrap = async (
     bootstrapSealedSecrets,
     migrate,
     handleFileEntry,
+    ensureManifestDirectories,
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:bootstrap`)
@@ -304,6 +307,7 @@ export const bootstrap = async (
   const { originalInput, allSecrets } = await deps.processValues()
   await deps.handleFileEntry()
   await deps.bootstrapSealedSecrets(allSecrets, ENV_DIR, originalInput)
+  await deps.ensureManifestDirectories()
   await ensureTeamGitOpsDirectories(ENV_DIR, originalInput)
   d.log(`Done bootstrapping values`)
 }

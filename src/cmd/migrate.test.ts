@@ -937,6 +937,13 @@ describe('sopsMigration', () => {
     existsSync: mockExistsSync,
     globSync: mockGlobSync,
     terminal: mockTerminal,
+    getOrCreateSealedSecretsPem: jest.fn().mockImplementation(async (innerDeps: any) => {
+      const cert = await innerDeps.getExistingSealedSecretsCert()
+      if (cert) return innerDeps.getPemFromCertificate(cert)
+      const { certificate, privateKey } = innerDeps.generateSealedSecretsKeyPair()
+      await innerDeps.createSealedSecretsKeySecret(certificate, privateKey)
+      return innerDeps.getPemFromCertificate(certificate)
+    }),
     getExistingSealedSecretsCert: mockGetExistingSealedSecretsCert,
     getPemFromCertificate: mockGetPemFromCertificate,
     generateSealedSecretsKeyPair: mockGenerateSealedSecretsKeyPair,
@@ -989,16 +996,6 @@ describe('sopsMigration', () => {
 
     expect(mockApplySealedSecretManifestsFromDir).not.toHaveBeenCalled()
     expect(mockRestartSealedSecretsController).not.toHaveBeenCalled()
-    expect(mockBuildSecretToNamespaceMap).not.toHaveBeenCalled()
-  })
-
-  it('should only clean up when manifests already exist', async () => {
-    mockExistsSync.mockReturnValue(true)
-    mockGlobSync.mockReturnValue(['/some/manifest.yaml'])
-
-    await sopsMigration({ teamConfig: {}, versions: { specVersion: 55 } }, makeDeps())
-
-    expect(mockRemoveSopsArtifacts).toHaveBeenCalled()
     expect(mockBuildSecretToNamespaceMap).not.toHaveBeenCalled()
   })
 
