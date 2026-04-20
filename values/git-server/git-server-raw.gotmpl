@@ -16,10 +16,9 @@ resources:
         template:
           type: Opaque
           data:
-            username: {{ $v.otomi.git.username | quote }}
-            password: '{{ "{{ .gitPassword | toString }}" }}'
+            htpasswd: '{{ "{{ .htpasswd | toString }}" }}'
       data:
-        - secretKey: gitPassword
+        - secretKey: htpasswd
           remoteRef:
-            key: otomi-secrets
-            property: git_password
+            key: git-server-secrets
+            property: htpasswd

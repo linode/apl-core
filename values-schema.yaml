@@ -2367,6 +2367,9 @@ properties:
         properties:
           enabled:
             type: boolean
+          htpasswd:
+            type: string
+            x-secret: ''
           _rawValues:
             $ref: '#/definitions/rawValues'
           resources:
