@@ -81,6 +81,7 @@ spec:
         - name: {{ $backendName }}
           port: {{ $backendPort }}
       {{- end }}
+      {{- if not $tlsPass }}
       matches:
       {{- if and $s.paths (gt (len $s.paths) 0) }}
       {{- range $path := $s.paths }}
@@ -120,6 +121,7 @@ spec:
               {{- end }}
         {{- end }}
       {{- end }}{{- /* any headers */}}
+      {{- end }}{{- /* not tlsPass */}}
 ---
 apiVersion: networking.istio.io/v1
 kind: ServiceEntry
