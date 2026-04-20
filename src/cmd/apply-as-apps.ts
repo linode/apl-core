@@ -13,7 +13,7 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
 import { appRevisionMatches, k8s, patchArgoCdApp, patchContainerResourcesOfSts } from 'src/common/k8s'
-import { getFilename, loadYaml } from 'src/common/utils'
+import { getFilename, getNames, loadYaml } from 'src/common/utils'
 import { getImageTagFromValues, objectToYaml } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { operatorEnv } from 'src/operator/validators'
@@ -269,16 +269,13 @@ async function patchArgocdResources(release: HelmRelease, values: Record<string,
 
 export const getApplications = async (
   labelSelector: string | undefined = `otomi.io/app=${ARGOCD_APP_DEFAULT_LABEL}`,
-): Promise<string[]> => {
+): Promise<KubernetesObject[]> => {
   try {
     const response = await getCustomApi().listNamespacedCustomObject({
       ...ARGOCD_APP_PARAMS,
       labelSelector,
     })
-    const apps = response.items || []
-    return apps
-      .filter((app: KubernetesObject) => app.metadata?.name && app.metadata.name !== '')
-      .map((app: KubernetesObject) => app.metadata!.name!)
+    return response.items || []
   } catch (error) {
     d.error(`Failed to list applications: ${error}`)
     return []
@@ -357,7 +354,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const errors: Array<any> = []
   // Generate JSON object with all helmfile releases defined in helmfile.d
   const releases: [] = JSON.parse(res.stdout.toString())
-  const currentApplications = await getApplications()
+  const currentApplications = getNames(await getApplications())
 
   const manifestsToApply: ArgocdAppManifest[] = []
 
@@ -467,7 +464,7 @@ export const calculateGitOpsAppsDiff = async (
     withFileTypes: true,
   })
   const namespaceDirs = namespaceListing.filter((path) => path.isDirectory()).map((path) => path.name)
-  const existingGitOpsApps = new Set(await deps.getApplications(`otomi.io/app=${ARGOCD_APP_GITOPS_LABEL}`))
+  const existingGitOpsApps = new Set(getNames(await deps.getApplications(`otomi.io/app=${ARGOCD_APP_GITOPS_LABEL}`)))
 
   // First create sets of Applications to be updated
   const requiredGitOpsApps = new Set(namespaceDirs.map((dirName) => `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`))

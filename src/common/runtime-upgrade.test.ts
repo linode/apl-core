@@ -27,6 +27,7 @@ const mockDeployEssential = deployEssential as jest.MockedFunction<typeof deploy
 const mockK8s = k8s as jest.Mocked<typeof k8s>
 
 mockDeployEssential.mockResolvedValue(true)
+mockGetApplications.mockResolvedValue([])
 // Mock the custom API
 const mockCustomApi = { mockCustomApi: true }
 mockK8s.custom.mockReturnValue(mockCustomApi as any)
@@ -146,7 +147,7 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should execute application-specific operations with ArgoCD waits', async () => {
-      mockGetApplications.mockResolvedValue(['istio-operator'])
+      mockGetApplications.mockResolvedValue([{ metadata: { name: 'istio-operator' } }])
       await runtimeUpgrade({ when: 'post', deploymentState: { version: '1.0.0', deployingVersion: '2.0.0' } })
 
       expect(mockWaitForArgoCDAppSync).toHaveBeenCalledWith('istio-operator', mockCustomApi, mockDebugger)
@@ -160,7 +161,7 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should not execute application operations for wrong phase', async () => {
-      mockGetApplications.mockResolvedValue(['argocd'])
+      mockGetApplications.mockResolvedValue([{ metadata: { name: 'argocd' } }])
 
       await runtimeUpgrade({ when: 'pre', deploymentState: { version: '1.0.0', deployingVersion: '2.0.0' } })
 

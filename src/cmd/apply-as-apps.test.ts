@@ -12,6 +12,7 @@ import { glob } from 'glob'
 import { env } from '../common/envalid'
 import { statSync } from 'fs'
 import { ARGOCD_APP_PARAMS } from '../common/constants'
+import { getNames } from '../common/utils'
 
 jest.mock('glob')
 jest.mock('fs', () => ({
@@ -215,7 +216,7 @@ describe('getApplications', () => {
     }
     mockListNamespacedCustomObject.mockResolvedValue(mockApps)
 
-    const result = await getApplications()
+    const result = getNames(await getApplications())
 
     expect(mockListNamespacedCustomObject).toHaveBeenCalledWith({
       ...ARGOCD_APP_PARAMS,
@@ -230,7 +231,7 @@ describe('getApplications', () => {
     }
     mockListNamespacedCustomObject.mockResolvedValue(mockApps)
 
-    const result = await getApplications('otomi.io/app=generic-gitops')
+    const result = getNames(await getApplications('otomi.io/app=generic-gitops'))
 
     expect(mockListNamespacedCustomObject).toHaveBeenCalledWith({
       ...ARGOCD_APP_PARAMS,
@@ -250,7 +251,7 @@ describe('getApplications', () => {
     }
     mockListNamespacedCustomObject.mockResolvedValue(mockApps)
 
-    const result = await getApplications()
+    const result = getNames(await getApplications())
 
     expect(result).toEqual(['app1', 'app2'])
   })
@@ -258,7 +259,7 @@ describe('getApplications', () => {
   it('should return empty array on error', async () => {
     mockListNamespacedCustomObject.mockRejectedValue(new Error('API error'))
 
-    const result = await getApplications()
+    const result = getNames(await getApplications())
 
     expect(result).toEqual([])
   })
@@ -285,7 +286,7 @@ describe('calculateGitOpsAppsDiff', () => {
 
   it('should identify apps to add when directories exist but apps do not', async () => {
     setupMockDirs(['a', 'b', 'c'])
-    mockGetApplications.mockResolvedValue(['gitops-ns-c'])
+    mockGetApplications.mockResolvedValue([{ metadata: { name: 'gitops-ns-c' } }])
     mockStatSync.mockReturnValue({ isDirectory: () => true })
 
     const result = await calculateGitOpsAppsDiff(mockDeps)
@@ -296,7 +297,11 @@ describe('calculateGitOpsAppsDiff', () => {
   })
 
   it('should identify apps to remove when apps exist but directories do not', async () => {
-    mockGetApplications.mockResolvedValue(['gitops-ns-a', 'gitops-ns-b', 'gitops-ns-c'])
+    mockGetApplications.mockResolvedValue([
+      { metadata: { name: 'gitops-ns-a' } },
+      { metadata: { name: 'gitops-ns-b' } },
+      { metadata: { name: 'gitops-ns-c' } },
+    ])
     setupMockDirs(['a'])
     mockStatSync.mockReturnValue(undefined)
 
@@ -318,7 +323,10 @@ describe('calculateGitOpsAppsDiff', () => {
   })
 
   it('should not remove global app even if directory does not exist', async () => {
-    mockGetApplications.mockResolvedValue(['gitops-global', 'gitops-ns-a'])
+    mockGetApplications.mockResolvedValue([
+      { metadata: { name: 'gitops-global' } },
+      { metadata: { name: 'gitops-ns-a' } },
+    ])
     setupMockDirs([])
     mockStatSync.mockReturnValue(undefined)
 
@@ -339,7 +347,11 @@ describe('calculateGitOpsAppsDiff', () => {
   })
 
   it('should handle no changes scenario', async () => {
-    mockGetApplications.mockResolvedValue(['gitops-global', 'gitops-ns-a', 'gitops-ns-b'])
+    mockGetApplications.mockResolvedValue([
+      { metadata: { name: 'gitops-global' } },
+      { metadata: { name: 'gitops-ns-a' } },
+      { metadata: { name: 'gitops-ns-b' } },
+    ])
     setupMockDirs(['a', 'b'])
     mockStatSync.mockReturnValue({ isDirectory: () => true })
 
