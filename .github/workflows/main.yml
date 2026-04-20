@@ -12,7 +12,6 @@ env:
   REPO: linode/apl-core
   DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
   DOCKER_USERNAME: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
-  DEV_KUBECONFIG_64: ${{ secrets.DEV_KUBECONFIG }}
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
   COMMIT_SHA: ${{ github.sha }}
@@ -82,7 +81,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Install the Linode CLI
+        uses: linode/action-linode-cli@v1
+        with:
+          token: ${{ secrets.LINODE_TOKEN }}
       - name: Deploy to dev
+        env:
+          DEV_CLUSTER_ID: ${{ secrets.DEV_CLUSTER_ID }}
+          LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
         run: ci/scripts/trigger_dev.sh
 
   release:
