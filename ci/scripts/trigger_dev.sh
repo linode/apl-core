@@ -23,6 +23,7 @@ echo "Updating ACL"
 linode-cli lke cluster-update "${update_args[@]}"
 
 echo "Restart platform deployments"
+set +e
 kubectl -n otomi rollout restart deployment/otomi-api
 kubectl -n otomi rollout restart deployment/otomi-console
 kubectl rollout restart deployment -n apl-harbor-operator apl-harbor-operator
