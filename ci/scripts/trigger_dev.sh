@@ -1,7 +1,7 @@
 #! /bin/bash
 # This script is used to deploy the latest changes merged on main to the dev environment.
 
-set -e
+set -euo pipefail
 
 echo "Fetch the Kubernetes configuration for the dev environment"
 export KUBECONFIG=$(mktemp -d)/.kubeconfig
@@ -21,6 +21,17 @@ update_args+=(--control_plane.acl.addresses.ipv4 "$CURRENT_IP")
 
 echo "Updating ACL"
 linode-cli lke cluster-update "${update_args[@]}"
+
+echo "Waiting for ACL to apply..."
+while true; do
+    if kubectl get pods 2> /dev/null; then
+       echo "Ok."
+       break
+    else
+       echo "Retrying in 5 seconds"
+       sleep 5
+    fi
+done
 
 echo "Restart platform deployments"
 set +e
