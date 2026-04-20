@@ -133,11 +133,8 @@ export const deriveSecrets = async (values: Record<string, any> = {}): Promise<R
 
   set(secrets, 'apps.harbor.registry.credentials.htpasswd', htpasswd)
 
-  const gitUsername = values.otomi?.git?.username ?? 'otomi-admin'
-  const gitHtpasswd = (await $`htpasswd -nbB ${gitUsername} ${values.otomi.git.password}`).stdout.trim()
+  const gitHtpasswd = (await $`htpasswd -nbB ${values.otomi?.git?.username} ${values.otomi.git.password}`).stdout.trim()
   set(secrets, 'apps.git-server.htpasswd', gitHtpasswd)
-  d.info(`Derived htpasswd secrets for harbor and git-server: ${htpasswd}, ${gitHtpasswd}`)
-  d.info('Derived secrets from generated secrets')
   return secrets
 }
 /**

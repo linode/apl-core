@@ -7,6 +7,7 @@ describe('generateSecrets', () => {
   const values = { one: 'val', secret: 'prop', apps: { yo: { di: { lo: 'loves you' } } } }
   set(values, 'apps.harbor.registry.credentials.username', 'u')
   set(values, 'apps.harbor.registry.credentials.password', 'p')
+  set(values, 'otomi.git.password', 'gitPassword')
   const simpleTemplate = 'dummy'
   const schema = {
     properties: {
