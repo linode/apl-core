@@ -1209,6 +1209,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   addLinodeNBAnnotations,
   sopsMigration,
   setIngressDefault,
+  addRedisSecretForArgoCD,
   removeIngressTracing,
 }
 
