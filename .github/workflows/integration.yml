@@ -360,6 +360,19 @@ jobs:
             install_args+=(--set-json apps.linode-cfw._rawValues.firewall.inbound='${{ env.LKE_APL_FIREWALL_INBOUND_RULES }}')
           fi
 
+          # Wait for KubeAPI to respond before attempting install
+          echo "Checking Kubernetes API availability..."
+          while true; do
+              kubectl get pods 2> /dev/null
+              if [[ "$?" = 0 ]]; then
+                 echo "Ok."
+                 break
+              else
+                 echo "Retrying in 5 seconds"
+                 sleep 5
+              fi
+          done
+
           helm install "${install_args[@]}" &
           HELM_PID=$!
           sleep 120
