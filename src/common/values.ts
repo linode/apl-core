@@ -125,7 +125,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
 
 export const deriveSecrets = async (values: Record<string, any> = {}): Promise<Record<string, any>> => {
   // Some secrets needs to be drived from the generated secrets
-
+  const d = terminal('common:values:deriveSecrets')
   const secrets = {}
   const htpasswd = (
     await $`htpasswd -nbB ${values.apps.harbor.registry.credentials.username} ${values.apps.harbor.registry.credentials.password}`
@@ -136,7 +136,8 @@ export const deriveSecrets = async (values: Record<string, any> = {}): Promise<R
   const gitUsername = values.otomi?.git?.username ?? 'otomi-admin'
   const gitHtpasswd = (await $`htpasswd -nbB ${gitUsername} ${values.otomi.git.password}`).stdout.trim()
   set(secrets, 'apps.git-server.htpasswd', gitHtpasswd)
-
+  d.info(`Derived htpasswd secrets for harbor and git-server: ${htpasswd}, ${gitHtpasswd}`)
+  d.info('Derived secrets from generated secrets')
   return secrets
 }
 /**
