@@ -1,5 +1,5 @@
 {{- $kms := .Values.kms | default dict }}
-{{- $imageName := .Values.imageName | default "linode/apl-core" }}
+{{- $imageName := .Values.imageName | default "docker.io/linode/apl-core" }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
 {{- $useORCS := .Values.otomi.useORCS }}
 {{- $skipDeployment := .Values.installation.skipOperatorDeployment }}
