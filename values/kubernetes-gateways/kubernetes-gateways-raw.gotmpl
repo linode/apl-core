@@ -9,21 +9,39 @@ resources:
   - apiVersion: security.istio.io/v1
     kind: AuthorizationPolicy
     metadata:
-      name: otomi-forbidden-urls
+      name: deny-metrics-external-gitea
+      namespace: gitea
     spec:
       action: DENY
-      targetRefs:
-        - name: {{ $v.ingress.platformClass.className }}
-          kind: Gateway
-          group: gateway.networking.k8s.io
+      selector:
+        matchLabels:
+          app: gitea
       rules:
         - to:
             - operation:
-                hosts:
-                  - {{ $v._derived.giteaDomain }}
-                  - {{ $v._derived.keycloakDomain }}
-                paths:
-                  - /metrics
+                paths: ["/metrics"]
+                ports: ["3000"]
+          from:
+            - source:
+                notNamespaces: ["monitoring"]
+  - apiVersion: security.istio.io/v1
+    kind: AuthorizationPolicy
+    metadata:
+      name: deny-metrics-external-keycloak
+      namespace: keycloak
+    spec:
+      action: DENY
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: keycloakx
+      rules:
+        - to:
+            - operation:
+                paths: ["/metrics"]
+                ports: ["9000"]
+          from:
+            - source:
+                notNamespaces: ["monitoring"]
   - apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
     metadata:
