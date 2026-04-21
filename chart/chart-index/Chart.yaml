@@ -12,7 +12,7 @@ dependencies:
     version: 1.1.5
     repository: oci://ghcr.io/argoproj/argo-helm/argocd-image-updater
   - name: cert-manager
-    version: v1.20.1
+    version: v1.20.2
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
     version: 0.28.0
