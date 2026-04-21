@@ -118,14 +118,6 @@ export class Installer {
     }
   }
 
-  private async getInstallationStatus(): Promise<string | undefined> {
-    const configMap = await getK8sConfigMap(APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, k8s.core())
-    const status = configMap?.data?.status
-    this.d.info(`Current installation status: ${status}`)
-    this.d.debug(`ConfigMap data: ${configMap?.data}`)
-    return status
-  }
-
   private async updateInstallationStatus(status: string, attempt: number): Promise<void> {
     try {
       const data = {
