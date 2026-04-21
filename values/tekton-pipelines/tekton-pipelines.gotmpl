@@ -16,7 +16,7 @@ controller:
     sidecarlogresults: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.9.2@sha256:0623a2085539a1aac38c2b89da59cc544839c7085684861e24737068a80acaa0"
     workingdirinit: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.9.2@sha256:57f4e62abb27e460ec1cef38c911ab9b53ca5f3757b88828e8d2c24e5718112e"
     shellImage: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/cgr{{ else }}cgr.dev{{ end }}/chainguard/busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791"
-    shellImageWin: "mcr.microsoft.com/powershell:nanoserver@sha256:b6d5ff841b78bdf2dfed7550000fd4f3437385b8fa686ec0f010be24777654d6"
+    shellImageWin: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/microsoft{{ else }}mcr.microsoft.com{{ end }}/powershell:nanoserver@sha256:b6d5ff841b78bdf2dfed7550000fd4f3437385b8fa686ec0f010be24777654d6"
 
 remoteresolver:
   resources: {{- $t.resources.pipelinesRemoteresolver | toYaml | nindent 4 }}
