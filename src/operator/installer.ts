@@ -3,7 +3,6 @@ import * as process from 'node:process'
 import { runTraceCollectionLoop } from 'src/cmd/traces'
 import { recoverFromGit } from 'src/common/bootstrap'
 import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
-import { $ } from 'zx'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { getStoredGitRepoConfig, GIT_CONFIG_NAMESPACE } from '../common/git-config'
@@ -48,31 +47,7 @@ export class Installer {
       isInstalled = status === 'completed'
     }
 
-    if (isInstalled) {
-      // Verify the git repo actually has content - the previous install may have
-      // marked status as completed but the pod was killed before the git push finished
-      const gitRepoHasContent = await this.verifyGitRepoHasMainBranch()
-      if (!gitRepoHasContent) {
-        this.d.warn('Installation marked as completed but git repo has no main branch - will re-install')
-        isInstalled = false
-      }
-    }
-
     return { installationMode, isInstalled }
-  }
-
-  private async verifyGitRepoHasMainBranch(): Promise<boolean> {
-    try {
-      const gitConfig = await getStoredGitRepoConfig()
-      if (!gitConfig) return true // Can't verify without config, assume fine
-      const result = await $`git ls-remote --exit-code --heads ${gitConfig.authenticatedUrl} main`.nothrow().quiet()
-      return result.exitCode === 0
-    } catch {
-      // If we can't check (e.g. gitea not ready yet), assume it's fine
-      // The operator will detect the issue later during git polling
-      this.d.warn('Could not verify git repo - may not be ready yet')
-      return true
-    }
   }
 
   public async recoverFromGit(): Promise<void> {
@@ -191,14 +166,6 @@ export class Installer {
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     }
-  }
-
-  private async getInstallationStatus(): Promise<string | undefined> {
-    const configMap = await getK8sConfigMap(APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, k8s.core())
-    const status = configMap?.data?.status
-    this.d.info(`Current installation status: ${status}`)
-    this.d.debug(`ConfigMap data: ${configMap?.data}`)
-    return status
   }
 
   private async updateInstallationStatus(status: string, attempt: number): Promise<void> {
