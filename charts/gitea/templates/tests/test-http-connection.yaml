@@ -9,9 +9,18 @@ metadata:
   annotations:
     "helm.sh/hook": test-success
 spec:
+  {{- $hostUsers := include "gitea.hostUsers" . | trim }}
+  {{- $testContainerSecurityContext := include "gitea.containerSecurityContext" (list . (dict)) | trim }}
+  {{- if $hostUsers }}
+  hostUsers: {{ $hostUsers }}
+  {{- end }}
   containers:
     - name: wget
       image: "{{ .Values.test.image.name }}:{{ .Values.test.image.tag }}"
+      {{- if $testContainerSecurityContext }}
+      securityContext:
+        {{- $testContainerSecurityContext | nindent 8 }}
+      {{- end }}
       command: ['wget']
       args:  ['{{ include "gitea.fullname" . }}-http:{{ .Values.service.http.port }}']
   restartPolicy: Never
