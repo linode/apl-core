@@ -76,6 +76,87 @@ imagePullSecrets:
 {{- end }}
 {{- end -}}
 
+{{/*
+Return true when OpenShift compatibility defaults should be rendered.
+If openshift.enabled is unset, auto-detect via the SCC API.
+*/}}
+{{- define "gitea.openshift.enabled" -}}
+{{- if kindIs "bool" .Values.openshift.enabled -}}
+{{ ternary "true" "false" .Values.openshift.enabled }}
+{{- else if .Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints" -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the pod's hostUsers setting when OpenShift compatibility is enabled.
+*/}}
+{{- define "gitea.hostUsers" -}}
+{{- if eq (include "gitea.openshift.enabled" . | trim) "true" -}}
+{{- if kindIs "bool" .Values.openshift.hostUsers -}}
+{{ ternary "true" "false" .Values.openshift.hostUsers }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Render pod securityContext. On non-OpenShift clusters an empty map defaults fsGroup to 1000.
+*/}}
+{{- define "gitea.podSecurityContext" -}}
+{{- $podSecurityContext := deepCopy .Values.podSecurityContext -}}
+{{- if and (ne (include "gitea.openshift.enabled" . | trim) "true") (not (hasKey $podSecurityContext "fsGroup")) -}}
+{{- $_ := set $podSecurityContext "fsGroup" 1000 -}}
+{{- end -}}
+{{- if gt (len $podSecurityContext) 0 -}}
+{{ toYaml $podSecurityContext }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Render container securityContext with OpenShift restricted SCC defaults when enabled.
+*/}}
+{{- define "gitea.containerSecurityContext" -}}
+{{- $root := index . 0 -}}
+{{- $containerSecurityContext := deepCopy (index . 1) -}}
+{{- if eq (include "gitea.openshift.enabled" $root | trim) "true" -}}
+{{- $containerSecurityContext = mergeOverwrite (dict
+  "allowPrivilegeEscalation" false
+  "capabilities" (dict "drop" (list "ALL"))
+  "runAsNonRoot" true
+  "seccompProfile" (dict "type" "RuntimeDefault")
+) $containerSecurityContext -}}
+{{- end -}}
+{{- if gt (len $containerSecurityContext) 0 -}}
+{{ toYaml $containerSecurityContext }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Render the securityContext for init containers that execute Gitea/GPG commands.
+These default to runAsUser 1000 outside OpenShift to preserve existing behavior.
+*/}}
+{{- define "gitea.commandInitContainerSecurityContext" -}}
+{{- $root := index . 0 -}}
+{{- $containerSecurityContext := deepCopy (index . 1) -}}
+{{- if and (ne (include "gitea.openshift.enabled" $root | trim) "true") (not (hasKey $containerSecurityContext "runAsUser")) -}}
+{{- $_ := set $containerSecurityContext "runAsUser" 1000 -}}
+{{- end -}}
+{{- include "gitea.containerSecurityContext" (list $root $containerSecurityContext) -}}
+{{- end -}}
+
+{{/*
+Render the runtime container securityContext while honoring the deprecated securityContext value.
+*/}}
+{{- define "gitea.runtimeContainerSecurityContext" -}}
+{{- $containerSecurityContext := deepCopy .Values.containerSecurityContext -}}
+{{- if and (eq (len $containerSecurityContext) 0) .Values.securityContext -}}
+{{- $containerSecurityContext = deepCopy .Values.securityContext -}}
+{{- end -}}
+{{- include "gitea.containerSecurityContext" (list . $containerSecurityContext) -}}
+{{- end -}}
+
 
 {{/*
 Storage Class
@@ -139,7 +220,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- else if (index .Values "valkey-cluster").enabled -}}
 {{- printf "redis+cluster://:%s@%s-valkey-cluster-headless.%s.svc.%s:%g/0?pool_size=100&idle_timeout=180s&" (index .Values "valkey-cluster").global.valkey.password .Release.Name .Release.Namespace .Values.clusterDomain (index .Values "valkey-cluster").service.ports.valkey -}}
 {{- else if (index .Values "valkey").enabled -}}
-{{- printf "redis://:%s@%s-valkey-headless.%s.svc.%s:%g/0?pool_size=100&idle_timeout=180s&" (index .Values "valkey").global.valkey.password .Release.Name .Release.Namespace .Values.clusterDomain (index .Values "valkey").master.service.ports.valkey -}}
+{{- printf "redis://:%s@%s-valkey-primary.%s.svc.%s:%g/0?pool_size=100&idle_timeout=180s&" (index .Values "valkey").global.valkey.password .Release.Name .Release.Namespace .Values.clusterDomain (index .Values "valkey").master.service.ports.valkey -}}
 {{- end -}}
 {{- end -}}
 
@@ -153,14 +234,24 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 {{- define "valkey.servicename" -}}
 {{- if (index .Values "valkey-cluster").enabled -}}
-{{- printf "%s-valkey-cluster-headless.%s.svc.%s" .Release.Name .Release.Namespace .Values.clusterDomain -}}
+{{- printf "%s-valkey-cluster-headless.%s.svc" .Release.Name .Release.Namespace -}}
 {{- else if (index .Values "valkey").enabled -}}
-{{- printf "%s-valkey-headless.%s.svc.%s" .Release.Name .Release.Namespace .Values.clusterDomain -}}
+{{- printf "%s-valkey-primary.%s.svc" .Release.Name .Release.Namespace -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "gitea.default_domain" -}}
 {{- printf "%s-http.%s.svc.%s" (include "gitea.fullname" .) .Release.Namespace .Values.clusterDomain -}}
+{{- end -}}
+
+{{- define "gitea.public_hostname" -}}
+{{- if and .Values.route.enabled .Values.route.host -}}
+{{ tpl .Values.route.host . }}
+{{- else if gt (len .Values.ingress.hosts) 0 -}}
+{{ tpl (index .Values.ingress.hosts 0).host $ }}
+{{- else -}}
+{{ include "gitea.default_domain" . }}
+{{- end -}}
 {{- end -}}
 
 {{- define "gitea.ldap_settings" -}}
@@ -213,7 +304,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "gitea.public_protocol" -}}
-{{- if and .Values.ingress.enabled (gt (len .Values.ingress.tls) 0) -}}
+{{- if and .Values.route.enabled .Values.route.tls.termination -}}
+https
+{{- else if and .Values.ingress.enabled (gt (len .Values.ingress.tls) 0) -}}
 https
 {{- else -}}
 {{ .Values.gitea.config.server.PROTOCOL }}
@@ -346,11 +439,7 @@ https
     {{- $_ := set .Values.gitea.config.server "PROTOCOL" "http" -}}
   {{- end -}}
   {{- if not (.Values.gitea.config.server.DOMAIN) -}}
-    {{- if gt (len .Values.ingress.hosts) 0 -}}
-      {{- $_ := set .Values.gitea.config.server "DOMAIN" ( tpl (index .Values.ingress.hosts 0).host $) -}}
-    {{- else -}}
-      {{- $_ := set .Values.gitea.config.server "DOMAIN" (include "gitea.default_domain" .) -}}
-    {{- end -}}
+    {{- $_ := set .Values.gitea.config.server "DOMAIN" (include "gitea.public_hostname" .) -}}
   {{- end -}}
   {{- if not .Values.gitea.config.server.ROOT_URL -}}
     {{- $_ := set .Values.gitea.config.server "ROOT_URL" (printf "%s://%s" (include "gitea.public_protocol" .) .Values.gitea.config.server.DOMAIN) -}}
