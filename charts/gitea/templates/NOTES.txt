@@ -1,5 +1,12 @@
 1. Get the application URL by running these commands:
-{{- if .Values.ingress.enabled }}
+{{- if .Values.route.enabled }}
+  {{- if .Values.route.host }}
+  {{ include "gitea.public_protocol" . }}://{{ tpl .Values.route.host . }}{{ .Values.route.path }}
+  {{- else }}
+  export ROUTE_HOST=$(kubectl get route --namespace {{ .Release.Namespace }} {{ include "gitea.fullname" . }} -o jsonpath="{.spec.host}")
+  echo {{ include "gitea.public_protocol" . }}://$ROUTE_HOST{{ .Values.route.path }}
+  {{- end }}
+{{- else if .Values.ingress.enabled }}
 {{- range $host := .Values.ingress.hosts }}
   {{- range .paths }}
   http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
