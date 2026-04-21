@@ -64,7 +64,7 @@ stringData:
       
       echo 'Wait for valkey to become avialable...'
       until [ "${RETRY}" -ge "${MAX}" ]; do
-        nc -vz -w2 {{ include "valkey.servicename" . }} {{ include "valkey.port" . }} && break
+        RES_OPTIONS="ndots:0" nc -vz -w2 {{ include "valkey.servicename" . }} {{ include "valkey.port" . }} && break
         RETRY=$[${RETRY}+1]
         echo "...not ready yet (${RETRY}/${MAX})"
       done
@@ -123,7 +123,7 @@ stringData:
           #   should add it to prevent requiring frequent admin password resets.
           local -a change_args
           change_args=(--username "${GITEA_ADMIN_USERNAME}" --password "${GITEA_ADMIN_PASSWORD}")
-          if gitea admin user change-password --help | grep -qF -- '--must-change-password'; then
+          if gitea admin user change-password --help | grep -F -- '--must-change-password' >/dev/null; then
             change_args+=(--must-change-password=false)
           fi
           gitea admin user change-password "${change_args[@]}"

@@ -43,6 +43,11 @@ spec:
         {{- toYaml .Values.deployment.labels | nindent 8 }}
         {{- end }}
     spec:
+      {{- $hostUsers := include "gitea.hostUsers" . | trim }}
+      {{- $podSecurityContext := include "gitea.podSecurityContext" . | trim }}
+      {{- $containerSecurityContext := include "gitea.containerSecurityContext" (list . (deepCopy .Values.containerSecurityContext)) | trim }}
+      {{- $commandInitContainerSecurityContext := include "gitea.commandInitContainerSecurityContext" (list . (deepCopy .Values.containerSecurityContext)) | trim }}
+      {{- $runtimeContainerSecurityContext := include "gitea.runtimeContainerSecurityContext" . | trim }}
       {{- if .Values.schedulerName }}
       schedulerName: "{{ .Values.schedulerName }}"
       {{- end }}
@@ -52,9 +57,14 @@ spec:
       {{- if .Values.priorityClassName }}
       priorityClassName: "{{ .Values.priorityClassName }}"
       {{- end }}
+      {{- if $hostUsers }}
+      hostUsers: {{ $hostUsers }}
+      {{- end }}
       {{- include "gitea.images.pullSecrets" . | nindent 6 }}
+      {{- if $podSecurityContext }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- $podSecurityContext | nindent 8 }}
+      {{- end }}
       initContainers:
         {{- if .Values.preExtraInitContainers }}
         {{- toYaml .Values.preExtraInitContainers | nindent 8 }}
@@ -91,15 +101,25 @@ spec:
               subPath: {{ .Values.persistence.subPath }}
               {{- end }}
             {{- include "gitea.init-additional-mounts" . | nindent 12 }}
+          {{- if $containerSecurityContext }}
           securityContext:
-            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+            {{- $containerSecurityContext | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.initContainers.resources | nindent 12 }}
         - name: init-app-ini
           image: "{{ include "gitea.image" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.gitea.extraEnvSourceFile }}
+          command:
+          - "/bin/bash"
+          - "-c"
+          args:
+          - "test -f {{ .Values.gitea.extraEnvSourceFile }} && source {{ .Values.gitea.extraEnvSourceFile }} || { echo 'ERROR: Failed to source {{ .Values.gitea.extraEnvSourceFile }}'; exit 1; } && {{ .Values.initContainersScriptsVolumeMountPath }}/config_environment.sh"
+          {{- else }}
           command:
           - "{{ .Values.initContainersScriptsVolumeMountPath }}/config_environment.sh"
+          {{- end }}
           env:
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini
@@ -136,23 +156,30 @@ spec:
               mountPath: "/env-to-ini-mounts/additionals/{{ $idx }}/"
             {{- end }}
             {{- include "gitea.init-additional-mounts" . | nindent 12 }}
+          {{- if $containerSecurityContext }}
           securityContext:
-            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+            {{- $containerSecurityContext | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.initContainers.resources | nindent 12 }}
         {{- if .Values.signing.enabled }}
         - name: configure-gpg
           image: "{{ include "gitea.image" . }}"
+          {{- if .Values.gitea.extraEnvSourceFile }}
+          command:
+          - "/bin/bash"
+          - "-c"
+          args:
+          - "test -f {{ .Values.gitea.extraEnvSourceFile }} && source {{ .Values.gitea.extraEnvSourceFile }} || { echo 'ERROR: Failed to source {{ .Values.gitea.extraEnvSourceFile }}'; exit 1; } && {{ .Values.initContainersScriptsVolumeMountPath }}/configure_gpg_environment.sh"
+          {{- else }}
           command:
           - "{{ .Values.initContainersScriptsVolumeMountPath }}/configure_gpg_environment.sh"
+          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if $commandInitContainerSecurityContext }}
           securityContext:
-            {{- /* By default this container runs as user 1000 unless otherwise stated */ -}}
-            {{- $csc := deepCopy .Values.containerSecurityContext -}}
-            {{- if not (hasKey $csc "runAsUser") -}}
-            {{- $_ := set $csc "runAsUser" 1000 -}}
-            {{- end -}}
-            {{- toYaml $csc | nindent 12 }}
+            {{- $commandInitContainerSecurityContext | nindent 12 }}
+          {{- end }}
           env:
             - name: GNUPGHOME
               value: {{ .Values.signing.gpgHome }}
@@ -177,16 +204,21 @@ spec:
         {{- end }}
         - name: configure-gitea
           image: "{{ include "gitea.image" . }}"
+          {{- if .Values.gitea.extraEnvSourceFile }}
+          command:
+          - "/bin/bash"
+          - "-c"
+          args:
+          - "test -f {{ .Values.gitea.extraEnvSourceFile }} && source {{ .Values.gitea.extraEnvSourceFile }} || { echo 'ERROR: Failed to source {{ .Values.gitea.extraEnvSourceFile }}'; exit 1; } && {{ .Values.initContainersScriptsVolumeMountPath }}/configure_gitea.sh"
+          {{- else }}
           command:
           - "{{ .Values.initContainersScriptsVolumeMountPath }}/configure_gitea.sh"
+          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if $commandInitContainerSecurityContext }}
           securityContext:
-            {{- /* By default this container runs as user 1000 unless otherwise stated */ -}}
-            {{- $csc := deepCopy .Values.containerSecurityContext -}}
-            {{- if not (hasKey $csc "runAsUser") -}}
-            {{- $_ := set $csc "runAsUser" 1000 -}}
-            {{- end -}}
-            {{- toYaml $csc | nindent 12 }}
+            {{- $commandInitContainerSecurityContext | nindent 12 }}
+          {{- end }}
           env:
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini
@@ -344,13 +376,10 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          {{- if $runtimeContainerSecurityContext }}
           securityContext:
-            {{- /* Honor the deprecated securityContext variable when defined */ -}}
-            {{- if .Values.containerSecurityContext -}}
-            {{ toYaml .Values.containerSecurityContext | nindent 12 -}}
-            {{- else -}}
-            {{ toYaml .Values.securityContext | nindent 12 -}}
-            {{- end }}
+            {{- $runtimeContainerSecurityContext | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: temp
               mountPath: /tmp
