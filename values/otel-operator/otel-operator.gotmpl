@@ -18,6 +18,7 @@ manager:
       prometheus: system
     metricsEndpoints:
       - port: metrics
-  podAnnotations: {}
+  ports:
+    metricsPort: 8080
   metrics:
     secure: false
