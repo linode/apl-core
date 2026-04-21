@@ -5,16 +5,6 @@ import * as utils from '../common/utils'
 import { AplOperations } from './apl-operations'
 import { Installer } from './installer'
 
-const mockZx = jest.fn().mockReturnValue({
-  nothrow: jest.fn().mockReturnValue({
-    quiet: jest.fn().mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' }),
-  }),
-})
-
-jest.mock('zx', () => ({
-  $: (...args: any[]) => mockZx(...args),
-}))
-
 jest.mock('../common/debug', () => ({
   terminal: jest.fn().mockImplementation(() => ({
     info: jest.fn(),
@@ -259,24 +249,9 @@ describe('Installer', () => {
   })
 
   describe('getInstallationState', () => {
-    test('should return isInstalled=true and standard mode when status is completed and git repo has main branch', async () => {
+    test('should return isInstalled=true and standard mode when status is completed', async () => {
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
         data: { status: 'completed' },
-      })
-      // getStoredGitRepoConfig returns valid config
-      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockResolvedValue({
-        authenticatedUrl: 'https://admin:pass@gitea:3000/otomi/values.git',
-        repoUrl: 'https://gitea:3000/otomi/values.git',
-        branch: 'main',
-        email: 'test@test.com',
-        username: 'admin',
-        password: 'pass',
-      })
-      // git ls-remote succeeds (main branch exists)
-      mockZx.mockReturnValue({
-        nothrow: jest.fn().mockReturnValue({
-          quiet: jest.fn().mockResolvedValue({ exitCode: 0 }),
-        }),
       })
 
       const state = await installer.getInstallationState()
@@ -286,47 +261,9 @@ describe('Installer', () => {
       expect(state.installationMode).toBe('standard')
     })
 
-    test('should return false when status is completed but git repo has no main branch', async () => {
-      ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
-        data: { status: 'completed' },
-      })
-      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockResolvedValue({
-        authenticatedUrl: 'https://admin:pass@gitea:3000/otomi/values.git',
-        repoUrl: 'https://gitea:3000/otomi/values.git',
-        branch: 'main',
-        email: 'test@test.com',
-        username: 'admin',
-        password: 'pass',
-      })
-      // git ls-remote fails (main branch does not exist)
-      mockZx.mockReturnValue({
-        nothrow: jest.fn().mockReturnValue({
-          quiet: jest.fn().mockResolvedValue({ exitCode: 2 }),
-        }),
-      })
-
-      const state = await installer.getInstallationState()
-
-      expect(state.isInstalled).toBe(false)
-    })
-
     test('should return isInstalled=true when ConfigMap does not exist (migrated state)', async () => {
       ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue(null)
       ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
-      // Git verification will run since isInstalled=true for migrated state
-      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockResolvedValue({
-        authenticatedUrl: 'https://admin:pass@gitea:3000/otomi/values.git',
-        repoUrl: 'https://gitea:3000/otomi/values.git',
-        branch: 'main',
-        email: 'test@test.com',
-        username: 'admin',
-        password: 'pass',
-      })
-      mockZx.mockReturnValue({
-        nothrow: jest.fn().mockReturnValue({
-          quiet: jest.fn().mockResolvedValue({ exitCode: 0 }),
-        }),
-      })
 
       const state = await installer.getInstallationState()
 
