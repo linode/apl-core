@@ -59,8 +59,8 @@ spec:
   parentRefs:
     {{- if or $tlsPass $useCname }}
     - name: {{ $s.ingressClassName | default $defaultIngressClass }}-workloads
-      kind: ListenerSet
-      group: gateway.networking.k8s.io
+      kind: XListenerSet
+      group: gateway.networking.x-k8s.io
     {{- end }}
     {{- if not $tlsPass }}
     - name: {{ $s.ingressClassName | default $defaultIngressClass }}
@@ -148,8 +148,8 @@ spec:
 {{- /* Collect CNAME hostnames for HTTP-HTTPS redirect */}}
 {{- $httpRedirects := list }}
 ---
-apiVersion: gateway.networking.k8s.io/v1
-kind: ListenerSet
+apiVersion: gateway.networking.x-k8s.io/v1alpha1
+kind: XListenerSet
 metadata:
   name: {{ $ingress.className }}-workloads
 spec:
@@ -201,8 +201,8 @@ spec:
   hostnames:
     - {{ .hostname }}
   parentRefs:
-    - group: gateway.networking.k8s.io
-      kind: ListenerSet
+    - group: gateway.networking.x-k8s.io
+      kind: XListenerSet
       name: {{ $ingress.className }}-workloads
       sectionName: http-cname-{{ .name }}
   rules:
