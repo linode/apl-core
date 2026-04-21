@@ -16,12 +16,8 @@ manager:
     enabled: true
     extraLabels:
       prometheus: system
+    metricsEndpoints:
+      - port: metrics
   podAnnotations: {}
-  extraArgs:
-  - "--metrics-secure=false"
-kubeRBACProxy:
-  resources: {{- $o.resources.kubeRBACProxy | toYaml | nindent 4 }}
-{{- if $v.otomi.linodeLkeImageRepository }}
-  image:
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/brancz/kube-rbac-proxy"
-{{- end }}
+  metrics:
+    secure: false
