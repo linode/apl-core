@@ -9,6 +9,7 @@ import { ensureManifestDirectories, ensureTeamGitOpsDirectories } from '../commo
 import { writeValues } from '../common/values'
 import { HelmArguments } from '../common/yargs'
 import { AplOperations } from './apl-operations'
+import { disableGitServerIfMigrated } from './helpers/disable-git-server'
 import { GitRepository } from './git-repository'
 import { updateApplyState } from './k8s'
 import { getErrorMessage } from './utils'
@@ -88,6 +89,7 @@ export class AplOperator {
       const values = await hfValues({}, env.ENV_DIR)
       await ensureTeamGitOpsDirectories(env.ENV_DIR, values ?? {})
       await ensureManifestDirectories()
+      await disableGitServerIfMigrated(values ?? {})
 
       await commit(false, {} as HelmArguments, this.gitRepo.config)
 

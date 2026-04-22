@@ -62,6 +62,10 @@ jest.mock('./k8s', () => ({
   appRevisionMatches: jest.fn().mockResolvedValue(true),
 }))
 
+jest.mock('./helpers/disable-git-server', () => ({
+  disableGitServerIfMigrated: jest.fn().mockResolvedValue(undefined),
+}))
+
 jest.mock('./git-repository', () => ({
   GitRepository: jest.fn().mockImplementation(() => mockGitRepo),
 }))
