@@ -286,7 +286,17 @@ describe('calculateGitOpsAppsDiff', () => {
 
   it('should identify apps to add when directories exist but apps do not', async () => {
     setupMockDirs(['a', 'b', 'c'])
-    mockGetApplications.mockResolvedValue([{ metadata: { name: 'gitops-ns-c' } }])
+    mockGetApplications.mockResolvedValue([
+      {
+        metadata: {
+          name: 'gitops-ns-c',
+          namespace: '',
+        },
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'Application',
+        spec: {},
+      },
+    ])
     mockStatSync.mockReturnValue({ isDirectory: () => true })
 
     const result = await calculateGitOpsAppsDiff(mockDeps)
@@ -298,9 +308,33 @@ describe('calculateGitOpsAppsDiff', () => {
 
   it('should identify apps to remove when apps exist but directories do not', async () => {
     mockGetApplications.mockResolvedValue([
-      { metadata: { name: 'gitops-ns-a' } },
-      { metadata: { name: 'gitops-ns-b' } },
-      { metadata: { name: 'gitops-ns-c' } },
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'Application',
+        metadata: {
+          name: 'gitops-ns-a',
+          namespace: '',
+        },
+        spec: {},
+      },
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'Application',
+        metadata: {
+          name: 'gitops-ns-b',
+          namespace: '',
+        },
+        spec: {},
+      },
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'Application',
+        metadata: {
+          name: 'gitops-ns-c',
+          namespace: '',
+        },
+        spec: {},
+      },
     ])
     setupMockDirs(['a'])
     mockStatSync.mockReturnValue(undefined)
@@ -324,8 +358,24 @@ describe('calculateGitOpsAppsDiff', () => {
 
   it('should not remove global app even if directory does not exist', async () => {
     mockGetApplications.mockResolvedValue([
-      { metadata: { name: 'gitops-global' } },
-      { metadata: { name: 'gitops-ns-a' } },
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'Application',
+        metadata: {
+          name: 'gitops-global',
+          namespace: '',
+        },
+        spec: {},
+      },
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'Application',
+        metadata: {
+          name: 'gitops-ns-a',
+          namespace: '',
+        },
+        spec: {},
+      },
     ])
     setupMockDirs([])
     mockStatSync.mockReturnValue(undefined)
@@ -348,9 +398,33 @@ describe('calculateGitOpsAppsDiff', () => {
 
   it('should handle no changes scenario', async () => {
     mockGetApplications.mockResolvedValue([
-      { metadata: { name: 'gitops-global' } },
-      { metadata: { name: 'gitops-ns-a' } },
-      { metadata: { name: 'gitops-ns-b' } },
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'Application',
+        metadata: {
+          name: 'gitops-global',
+          namespace: '',
+        },
+        spec: {},
+      },
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'Application',
+        metadata: {
+          name: 'gitops-ns-a',
+          namespace: '',
+        },
+        spec: {},
+      },
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'Application',
+        metadata: {
+          name: 'gitops-ns-b',
+          namespace: '',
+        },
+        spec: {},
+      },
     ])
     setupMockDirs(['a', 'b'])
     mockStatSync.mockReturnValue({ isDirectory: () => true })

@@ -147,7 +147,17 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should execute application-specific operations with ArgoCD waits', async () => {
-      mockGetApplications.mockResolvedValue([{ metadata: { name: 'istio-operator' } }])
+      mockGetApplications.mockResolvedValue([
+        {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'Application',
+          metadata: {
+            name: 'istio-operator',
+            namespace: '',
+          },
+          spec: {},
+        },
+      ])
       await runtimeUpgrade({ when: 'post', deploymentState: { version: '1.0.0', deployingVersion: '2.0.0' } })
 
       expect(mockWaitForArgoCDAppSync).toHaveBeenCalledWith('istio-operator', mockCustomApi, mockDebugger)
@@ -161,7 +171,17 @@ describe('runtimeUpgrade', () => {
     })
 
     it('should not execute application operations for wrong phase', async () => {
-      mockGetApplications.mockResolvedValue([{ metadata: { name: 'argocd' } }])
+      mockGetApplications.mockResolvedValue([
+        {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'Application',
+          metadata: {
+            name: 'argocd',
+            namespace: '',
+          },
+          spec: {},
+        },
+      ])
 
       await runtimeUpgrade({ when: 'pre', deploymentState: { version: '1.0.0', deployingVersion: '2.0.0' } })
 

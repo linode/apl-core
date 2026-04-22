@@ -1,9 +1,4 @@
-import {
-  ApiException,
-  PatchStrategy,
-  setHeaderOptions,
-  V1ResourceRequirements,
-} from '@kubernetes/client-node'
+import { ApiException, PatchStrategy, setHeaderOptions, V1ResourceRequirements } from '@kubernetes/client-node'
 import { mkdirSync, rmSync, statSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { glob } from 'glob'
@@ -60,8 +55,8 @@ interface HelmRelease {
 }
 
 export interface ArgocdAppManifest {
-  apiVersion: string
-  kind: string
+  apiVersion: 'argoproj.io/v1alpha1'
+  kind: 'Application'
   metadata: {
     name: string
     namespace: string
