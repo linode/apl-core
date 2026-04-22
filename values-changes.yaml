@@ -473,3 +473,6 @@ changes:
       - 'apps.istio.tracing'
       - 'apps.otel.otlpCollector'
       - 'apps.otel.resources.otlpCollector'
+  - version: 64
+    deletions:
+      - 'teamConfig.{team}.services[].tlsPass'
