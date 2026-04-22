@@ -12,7 +12,14 @@ import { appPatches, genericPatch } from 'src/applicationPatches.json'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
-import { appRevisionMatches, k8s, patchArgoCdApp, patchContainerResourcesOfSts } from 'src/common/k8s'
+import {
+  appRevisionMatches,
+  argoCdHasUnrecoverableErrors,
+  k8s,
+  patchArgoCdApp,
+  patchContainerResourcesOfSts,
+  restartStatefulSet,
+} from 'src/common/k8s'
 import { getFilename, getNames, loadYaml } from 'src/common/utils'
 import { getImageTagFromValues, objectToYaml } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -354,7 +361,12 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const errors: Array<any> = []
   // Generate JSON object with all helmfile releases defined in helmfile.d
   const releases: [] = JSON.parse(res.stdout.toString())
-  const currentApplications = getNames(await getApplications())
+  const currentApplications = await getApplications()
+  const currentApplicationNames = getNames(currentApplications)
+
+  if (argoCdHasUnrecoverableErrors(currentApplications)) {
+    await restartStatefulSet('argocd', 'argocd-application-controller')
+  }
 
   const manifestsToApply: ArgocdAppManifest[] = []
 
@@ -372,7 +384,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
           manifestsToApply.push(manifest)
         } else {
           const appName = getAppName(release)
-          if (currentApplications.includes(appName)) {
+          if (currentApplicationNames.includes(appName)) {
             await removeApplication(appName)
           }
         }

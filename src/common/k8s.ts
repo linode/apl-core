@@ -835,6 +835,18 @@ export async function waitForArgoCDAppHealthy(
   )
 }
 
+export function argoCdHasUnrecoverableErrors(applications: Record<string, any>[]) {
+  for (const application of applications) {
+    const operationState = application.status?.operationState
+    if (
+      operationState?.phase === 'Failed' &&
+      operationState?.message === 'runtime error: invalid memory address or nil pointer dereference'
+    ) {
+      return true
+    }
+  }
+}
+
 export async function appRevisionMatches(appName: string, expectedRevision: string, customApi: CustomObjectsApi) {
   const application = await customApi.getNamespacedCustomObject({
     ...ARGOCD_APP_PARAMS,
