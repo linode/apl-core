@@ -1,12 +1,12 @@
 import {
-  applyGitOpsApps,
-  getApplications,
-  applyArgocdApp,
   addGitOpsApps,
-  removeGitOpsApps,
-  calculateGitOpsAppsDiff,
-  getArgocdGitopsManifest,
+  applyArgocdApp,
+  applyGitOpsApps,
   ArgocdAppManifest,
+  calculateGitOpsAppsDiff,
+  getApplications,
+  getArgocdGitopsManifest,
+  removeGitOpsApps,
 } from './apply-as-apps'
 import { glob } from 'glob'
 import { env } from '../common/envalid'
@@ -22,6 +22,9 @@ jest.mock('fs', () => ({
   existsSync: jest.fn(),
 }))
 jest.mock('../common/envalid')
+jest.mock('../common/git-config', () => ({
+  getStoredGitRepoConfig: jest.fn().mockResolvedValue({ repoUrl: 'https://git.example.com/otomi/values.git' }),
+}))
 jest.mock('../common/debug', () => ({
   ...jest.requireActual('../common/debug'),
   terminal: jest.fn(() => ({
@@ -57,18 +60,11 @@ jest.mock('../common/k8s', () => ({
 }))
 
 describe('getArgocdGitopsManifest', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-    ;(env as any) = {
-      GIT_PROTOCOL: 'https',
-      GIT_URL: 'git.example.com',
-      GIT_PORT: '443',
-    }
-  })
+  const repoURL = 'https://git.example.com/otomi/values.git'
 
   it('should create manifest with correct structure for global deployment', () => {
     const name = 'my-app'
-    const manifest = getArgocdGitopsManifest(name)
+    const manifest = getArgocdGitopsManifest(name, repoURL)
 
     expect(manifest).toEqual({
       apiVersion: 'argoproj.io/v1alpha1',
@@ -96,7 +92,7 @@ describe('getArgocdGitopsManifest', () => {
         sources: [
           {
             path: 'env/manifests/global',
-            repoURL: 'https://git.example.com:443/otomi/values.git',
+            repoURL,
             targetRevision: 'HEAD',
             directory: {
               recurse: true,
@@ -114,7 +110,7 @@ describe('getArgocdGitopsManifest', () => {
   it('should create manifest with correct structure for namespaced deployment', () => {
     const name = 'my-app'
     const targetNamespace = 'my-namespace'
-    const manifest = getArgocdGitopsManifest(name, targetNamespace)
+    const manifest = getArgocdGitopsManifest(name, repoURL, targetNamespace)
 
     expect(manifest).toEqual({
       apiVersion: 'argoproj.io/v1alpha1',
@@ -142,7 +138,7 @@ describe('getArgocdGitopsManifest', () => {
         sources: [
           {
             path: 'env/manifests/namespaces/my-namespace',
-            repoURL: 'https://git.example.com:443/otomi/values.git',
+            repoURL,
             targetRevision: 'HEAD',
             directory: {
               recurse: true,
@@ -415,12 +411,17 @@ describe('applyGitOpsApps', () => {
 })
 
 describe('addGitOpsApps', () => {
+  const repoUrl = 'https://git.example.com/otomi/values.git'
+  const mockGetStoredGitRepoConfig = jest.fn().mockResolvedValue({ repoUrl })
+
   beforeEach(() => {
     jest.clearAllMocks()
+    mockGetStoredGitRepoConfig.mockResolvedValue({ repoUrl })
   })
   const mockDeps = {
     getArgocdGitopsManifest: mockGetArgocdGitopsManifest,
     applyArgocdApp: mockApplyArgoCdApp,
+    getStoredGitRepoConfig: mockGetStoredGitRepoConfig,
   }
 
   it('should create global app when included in appNames', async () => {
@@ -432,7 +433,7 @@ describe('addGitOpsApps', () => {
 
     await addGitOpsApps(appNames, namespaceDirs, mockDeps)
 
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global', repoUrl)
     expect(mockApplyArgoCdApp).toHaveBeenCalledWith(mockManifest)
   })
 
@@ -442,9 +443,9 @@ describe('addGitOpsApps', () => {
 
     await addGitOpsApps(appNames, namespaceDirs, mockDeps)
 
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', 'a')
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', 'b')
-    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-ns-c', 'c')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', repoUrl, 'a')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', repoUrl, 'b')
+    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-ns-c', repoUrl, 'c')
     expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(2)
   })
 
@@ -454,8 +455,8 @@ describe('addGitOpsApps', () => {
 
     await addGitOpsApps(appNames, namespaceDirs, mockDeps)
 
-    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-global')
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', 'a')
+    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-global', repoUrl)
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', repoUrl, 'a')
   })
 
   it('should continue processing when app creation fails', async () => {
@@ -470,9 +471,9 @@ describe('addGitOpsApps', () => {
     await addGitOpsApps(appNames, namespaceDirs, mockDeps)
 
     expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(3)
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global')
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', 'a')
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', 'b')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global', repoUrl)
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', repoUrl, 'a')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', repoUrl, 'b')
   })
 
   it('should handle empty appNames set', async () => {

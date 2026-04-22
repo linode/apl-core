@@ -20,6 +20,7 @@ import { operatorEnv } from 'src/operator/validators'
 import { Argv, CommandModule } from 'yargs'
 import { ARGOCD_APP_DEFAULT_SYNC_POLICY, ARGOCD_APP_PARAMS } from '../common/constants'
 import { env } from '../common/envalid'
+import { getStoredGitRepoConfig } from '../common/git-config'
 
 export const ARGOCD_APP_DEFAULT_LABEL = 'managed'
 export const ARGOCD_APP_GITOPS_LABEL = 'generic-gitops'
@@ -139,7 +140,7 @@ const getArgocdCoreAppManifest = (
   })
 }
 
-export const getArgocdGitopsManifest = (name: string, targetNamespace?: string) => {
+export const getArgocdGitopsManifest = (name: string, repoURL: string, targetNamespace?: string) => {
   const syncPolicy = {
     automated: {
       selfHeal: true,
@@ -151,7 +152,6 @@ export const getArgocdGitopsManifest = (name: string, targetNamespace?: string) 
     syncPolicy.automated.prune = true
     syncPolicy.syncOptions.push('CreateNamespace=true')
   }
-  const repoURL = `${env.GIT_PROTOCOL}://${env.GIT_URL}:${env.GIT_PORT}/otomi/values.git`
   const path = targetNamespace
     ? `${operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_PATH}/${targetNamespace}`
     : operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH
@@ -414,12 +414,13 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
 export const addGitOpsApps = async (
   appNames: Set<string>,
   namespaceDirs: string[],
-  deps = { getArgocdGitopsManifest, applyArgocdApp },
+  deps = { getArgocdGitopsManifest, applyArgocdApp, getStoredGitRepoConfig },
 ): Promise<void> => {
   d.info(`Adding GitOps apps: ${Array.from(appNames).join(', ')}`)
+  const { repoUrl } = await deps.getStoredGitRepoConfig()
   if (appNames.has(ARGOCD_APP_GITOPS_GLOBAL_NAME)) {
     d.debug('Creating GitOps apps for cluster resources')
-    const appManifest = deps.getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME)
+    const appManifest = deps.getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME, repoUrl)
     try {
       await deps.applyArgocdApp(appManifest)
     } catch (e) {
@@ -431,7 +432,7 @@ export const addGitOpsApps = async (
       const appName = `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`
       if (appNames.has(appName)) {
         d.debug(`Creating GitOps app for ${dirName}`)
-        const appManifest = deps.getArgocdGitopsManifest(appName, dirName)
+        const appManifest = deps.getArgocdGitopsManifest(appName, repoUrl, dirName)
         try {
           await deps.applyArgocdApp(appManifest)
         } catch (e) {
