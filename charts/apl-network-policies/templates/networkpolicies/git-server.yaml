@@ -39,12 +39,4 @@ spec:
           podSelector:
             matchLabels:
               app.kubernetes.io/name: otomi-api
-    # Allow team build access for git clone
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              type: team
-          podSelector:
-            matchLabels:
-              tekton.dev/task: git-clone
 {{- end }}
