@@ -1,5 +1,5 @@
 {{- $kms := .Values.kms | default dict }}
-{{- $imageName := .Values.imageName | default "docker.io/linode/apl-core" }}
+{{- $imageName := .Values.imageName | default "linode/apl-core" }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
 {{- $useORCS := .Values.otomi.useORCS }}
 {{- $skipDeployment := .Values.installation.skipOperatorDeployment }}
@@ -39,7 +39,7 @@ spec:
           {{- if $useORCS }}
           image: "mirror.registry.linodelke.net/docker/{{ $imageName }}:{{ $version }}"
           {{- else }}
-          image: "{{ $imageName }}:{{ $version }}"
+          image: "docker.io/{{ $imageName }}:{{ $version }}"
           {{- end }}
           imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }}
           securityContext:
