@@ -364,8 +364,14 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const currentApplications = await getApplications()
   const currentApplicationNames = getNames(currentApplications)
 
-  if (argoCdHasUnrecoverableErrors(currentApplications)) {
-    await restartStatefulSet('argocd', 'argocd-application-controller')
+  const argoCdErrorApp = argoCdHasUnrecoverableErrors(currentApplications)
+  if (argoCdErrorApp) {
+    d.info(`Unrecoverable error condition detected in application ${argoCdErrorApp}. Restarting controller...`)
+    try {
+      await restartStatefulSet('argocd-application-controller', 'argocd')
+    } catch (error) {
+      d.warn(error)
+    }
   }
 
   const manifestsToApply: ArgocdAppManifest[] = []
