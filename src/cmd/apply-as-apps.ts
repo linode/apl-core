@@ -1,11 +1,10 @@
 import {
   ApiException,
-  KubernetesObject,
   PatchStrategy,
   setHeaderOptions,
   V1ResourceRequirements,
 } from '@kubernetes/client-node'
-import { existsSync, mkdirSync, rmSync, statSync } from 'fs'
+import { mkdirSync, rmSync, statSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { glob } from 'glob'
 import { appPatches, genericPatch } from 'src/applicationPatches.json'
@@ -259,24 +258,22 @@ function getResources(values: Record<string, any>) {
   return resources
 }
 
-async function patchArgocdResources(release: HelmRelease, values: Record<string, any>) {
-  if (release.name === 'argocd') {
-    const resources = getResources(values)
-    await patchContainerResourcesOfSts(
-      'argocd-application-controller',
-      'argocd',
-      'application-controller',
-      resources,
-      k8s.app(),
-      k8s.core(),
-      d,
-    )
-  }
+async function patchArgocdResources(values: Record<string, any>) {
+  const resources = getResources(values)
+  await patchContainerResourcesOfSts(
+    'argocd-application-controller',
+    'argocd',
+    'application-controller',
+    resources,
+    k8s.app(),
+    k8s.core(),
+    d,
+  )
 }
 
 export const getApplications = async (
   labelSelector: string | undefined = `otomi.io/app=${ARGOCD_APP_DEFAULT_LABEL}`,
-): Promise<KubernetesObject[]> => {
+): Promise<ArgocdAppManifest[]> => {
   try {
     const response = await getCustomApi().listNamespacedCustomObject({
       ...ARGOCD_APP_PARAMS,
@@ -289,17 +286,15 @@ export const getApplications = async (
   }
 }
 
-const createArgocdAppManifest = async (release: HelmRelease, otomiVersion: string): Promise<ArgocdAppManifest> => {
+const readAppValues = async (release: HelmRelease): Promise<Record<string, any>> => {
   const appName = `${release.namespace}-${release.name}`
   const valuesPath = `${valuesDir}/${appName}.yaml`
-  let values = {}
+  return (await loadYaml(valuesPath, { noError: true })) || {}
+}
 
-  if (existsSync(valuesPath)) values = (await loadYaml(valuesPath)) || {}
-  const manifest = getArgocdCoreAppManifest(release, values, otomiVersion)
-
-  await patchArgocdResources(release, values)
-
-  return manifest
+const createArgocdAppManifest = async (release: HelmRelease, otomiVersion: string): Promise<ArgocdAppManifest> => {
+  const values = await readAppValues(release)
+  return getArgocdCoreAppManifest(release, values, otomiVersion)
 }
 
 const getAplOperatorValues = async (): Promise<string> => {
@@ -338,6 +333,26 @@ export const updateOperatorApplication = async (expectedRevision: string): Promi
   }
 }
 
+const checkArgoCdController = async (applications: ArgocdAppManifest[], releases: HelmRelease[]): Promise<void> => {
+  try {
+    const argoCdErrorApp = argoCdHasUnrecoverableErrors(applications)
+    if (argoCdErrorApp) {
+      d.info(`Unrecoverable error condition detected in application ${argoCdErrorApp}. Restarting controller...`)
+      await restartStatefulSet('argocd-application-controller', 'argocd')
+    } else {
+      const argoCdRelease = releases.find((release: HelmRelease) => release.name === 'argocd')
+      if (argoCdRelease) {
+        const argoCdValues = await readAppValues(argoCdRelease)
+        if (argoCdValues) {
+          await patchArgocdResources(argoCdValues)
+        }
+      }
+    }
+  } catch (error) {
+    d.warn(error)
+  }
+}
+
 export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
@@ -364,15 +379,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const currentApplications = await getApplications()
   const currentApplicationNames = getNames(currentApplications)
 
-  const argoCdErrorApp = argoCdHasUnrecoverableErrors(currentApplications)
-  if (argoCdErrorApp) {
-    d.info(`Unrecoverable error condition detected in application ${argoCdErrorApp}. Restarting controller...`)
-    try {
-      await restartStatefulSet('argocd-application-controller', 'argocd')
-    } catch (error) {
-      d.warn(error)
-    }
-  }
+  await checkArgoCdController(currentApplications, releases)
 
   const manifestsToApply: ArgocdAppManifest[] = []
 
