@@ -26,7 +26,8 @@
     "url": "git+https://github.com/linode/apl-core.git"
   },
   "scripts": {
-    "update-helm-chart-deps": "src/update-helm-chart-deps.mjs"
+    "update-helm-chart-deps": "src/update-helm-chart-deps.mjs",
+    "check-schema-versions": "src/check-schema-versions.mjs"
   },
   "type": "commonjs",
   "version": "1.0.0"

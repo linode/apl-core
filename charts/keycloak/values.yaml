@@ -11,7 +11,7 @@ image:
   # The Keycloak image repository
   repository: quay.io/keycloak/keycloak
   # Overrides the Keycloak image tag whose default is the chart appVersion
-  tag: "26.5.5"
+  tag: "26.5.6"
   # Overrides the Keycloak image tag with a specific digest
   digest: ""
   # The Keycloak image pull policy
@@ -35,6 +35,9 @@ podManagementPolicy: OrderedReady
 
 # StatefulSet's update strategy
 updateStrategy: RollingUpdate
+
+# StatefulSet's revision history limit (number of old ReplicaSets to retain). Defaults to 10 if not set
+revisionHistoryLimit: ""
 
 # Pod restart policy. One of `Always`, `OnFailure`, or `Never`
 restartPolicy: Always
@@ -243,7 +246,7 @@ secrets: {}
 service:
   # Annotations for HTTP service
   annotations: {}
-  # Additional labels for headless and HTTP Services
+  # Additional labels for HTTP Service
   labels: {}
   # key: value
   # The Service type
@@ -264,7 +267,7 @@ service:
   # to connect to the LoadBalancer, e. g. will result in Security Groups
   # (or equivalent) with inbound source ranges allowed to connect
   loadBalancerSourceRanges: []
-  # When using Service type LoadBalancer, you can preserve the source IP seen in the container
+  # When using Service type LoadBalancer or NodePort, you can preserve the source IP seen in the container
   # by changing the default (Cluster) to be Local.
   # See https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
   externalTrafficPolicy: "Cluster"
@@ -277,6 +280,8 @@ service:
 serviceHeadless:
   # Annotations for headless service
   annotations: {}
+  # Additional labels for headless service
+  labels: {}
   # Add additional ports to the headless service, e. g. for admin console or exposing JGroups ports
   extraPorts: []
 
@@ -440,7 +445,7 @@ dbchecker:
     # Docker image used to check Database readiness at startup
     repository: docker.io/busybox
     # Image tag for the dbchecker image
-    tag: 1.32
+    tag: 1.37
     # Image pull policy for the dbchecker image
     pullPolicy: IfNotPresent
   # SecurityContext for the dbchecker container

@@ -1059,10 +1059,6 @@ definitions:
       svc:
         $ref: '#/definitions/idName'
         description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
-      tlsPass:
-        description: Will pass the request to the backing service without TLS termination.
-        type: boolean
-        default: false
       useCname:
         description: Will configure additional host(CNAME) for the service.
         type: boolean
@@ -1073,7 +1069,7 @@ definitions:
             description: CNAME of the service.
             type: string
           tlsSecretName:
-            description: Kubernetes secret name of type TLS (not required if the tlsPass flag is set to true).
+            description: Kubernetes secret name of type TLS.
             $ref: '#/definitions/idName'
       removeRequestHeaders:
         description: >-
