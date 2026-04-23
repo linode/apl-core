@@ -140,7 +140,7 @@ const getArgocdCoreAppManifest = (
   })
 }
 
-export const getArgocdGitopsManifest = (name: string, repoURL: string, targetNamespace?: string) => {
+export const getArgocdGitopsManifest = (name: string, repoURL: string, branch: string, targetNamespace?: string) => {
   const syncPolicy = {
     automated: {
       selfHeal: true,
@@ -162,7 +162,7 @@ export const getArgocdGitopsManifest = (name: string, repoURL: string, targetNam
       {
         path,
         repoURL,
-        targetRevision: 'HEAD',
+        targetRevision: branch,
         directory: {
           recurse: true,
         },
@@ -417,10 +417,10 @@ export const addGitOpsApps = async (
   deps = { getArgocdGitopsManifest, applyArgocdApp, getStoredGitRepoConfig },
 ): Promise<void> => {
   d.info(`Adding GitOps apps: ${Array.from(appNames).join(', ')}`)
-  const { repoUrl } = await deps.getStoredGitRepoConfig()
+  const { repoUrl, branch } = await deps.getStoredGitRepoConfig()
   if (appNames.has(ARGOCD_APP_GITOPS_GLOBAL_NAME)) {
     d.debug('Creating GitOps apps for cluster resources')
-    const appManifest = deps.getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME, repoUrl)
+    const appManifest = deps.getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME, repoUrl, branch)
     try {
       await deps.applyArgocdApp(appManifest)
     } catch (e) {
@@ -432,7 +432,7 @@ export const addGitOpsApps = async (
       const appName = `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`
       if (appNames.has(appName)) {
         d.debug(`Creating GitOps app for ${dirName}`)
-        const appManifest = deps.getArgocdGitopsManifest(appName, repoUrl, dirName)
+        const appManifest = deps.getArgocdGitopsManifest(appName, repoUrl, branch, dirName)
         try {
           await deps.applyArgocdApp(appManifest)
         } catch (e) {
@@ -460,9 +460,9 @@ export const removeGitOpsApps = async (appNames: Set<string>) => {
   )
 }
 
-export const calculateGitOpsAppsDiff = async (
+export const calculateGitOpsAppsSyncState = async (
   deps = { getApplications },
-): Promise<{ toAdd: Set<string>; toRemove: Set<string>; namespaceDirs: string[] }> => {
+): Promise<{ toRemove: Set<string>; namespaceDirs: string[]; requiredGitOpsApps: Set<string> }> => {
   const envDir = env.ENV_DIR
   const namespaceListing = await glob(`${envDir}/${operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_PATH}/*`, {
     withFileTypes: true,
@@ -470,7 +470,6 @@ export const calculateGitOpsAppsDiff = async (
   const namespaceDirs = namespaceListing.filter((path) => path.isDirectory()).map((path) => path.name)
   const existingGitOpsApps = new Set(await deps.getApplications(`otomi.io/app=${ARGOCD_APP_GITOPS_LABEL}`))
 
-  // First create sets of Applications to be updated
   const requiredGitOpsApps = new Set(namespaceDirs.map((dirName) => `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`))
   const globalPath = statSync(`${envDir}/${operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH}`, {
     throwIfNoEntry: false,
@@ -478,9 +477,8 @@ export const calculateGitOpsAppsDiff = async (
   if (globalPath && globalPath.isDirectory()) {
     requiredGitOpsApps.add(ARGOCD_APP_GITOPS_GLOBAL_NAME)
   }
-  const toAdd = requiredGitOpsApps.difference(existingGitOpsApps)
   const toRemove = existingGitOpsApps.difference(requiredGitOpsApps)
-  // Always create global resources app, but never remove it
+  // Never remove the global app — warn instead if its directory is gone
   const globalAppExists = toRemove.delete(ARGOCD_APP_GITOPS_GLOBAL_NAME)
   if (globalAppExists) {
     d.warn(
@@ -489,21 +487,18 @@ export const calculateGitOpsAppsDiff = async (
     )
   }
   return {
-    toAdd,
     toRemove,
     namespaceDirs,
+    requiredGitOpsApps,
   }
 }
 
 export const applyGitOpsApps = async (
-  deps = { calculateGitOpsAppsDiff, addGitOpsApps, removeGitOpsApps },
+  deps = { calculateGitOpsAppsSyncState, addGitOpsApps, removeGitOpsApps },
 ): Promise<void> => {
   d.info('Applying GitOps apps')
-  const { toAdd, toRemove, namespaceDirs } = await deps.calculateGitOpsAppsDiff()
-  if (toAdd.size > 0) {
-    // namespaceDirs includes all existing directory names, function checks addGitOpsApps set if they must be created
-    await deps.addGitOpsApps(toAdd, namespaceDirs)
-  }
+  const { toRemove, namespaceDirs, requiredGitOpsApps } = await deps.calculateGitOpsAppsSyncState()
+  await deps.addGitOpsApps(requiredGitOpsApps, namespaceDirs)
   if (toRemove.size > 0) {
     await deps.removeGitOpsApps(toRemove)
   }
