@@ -473,6 +473,9 @@ changes:
       - 'apps.istio.tracing'
       - 'apps.otel.otlpCollector'
       - 'apps.otel.resources.otlpCollector'
+  - version: 63
+    mutations:
+      - apps.cnpg.useBackupPlugin: true
   - version: 64
     deletions:
       - 'teamConfig.{team}.services[].tlsPass'
