@@ -20,7 +20,6 @@ spec:
         predeployed: true
     ownHost: true
     port: 80
-    tlsPass: true
     trafficControl:
         enabled: true
         weightV1: 70
