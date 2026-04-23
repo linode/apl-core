@@ -11,7 +11,6 @@
 {{- $isCoreService := $s.isCore | default false }}
 {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
 {{- if not (or $isCoreService $isKnativeService) }}
-{{- $tlsPass := $s.tlsPass | default false }}
 {{- $cnameDomain := dig "cname" "domain" "" $s }}
 {{- $useCname := and ($s.useCname | default false) (ne $cnameDomain "") }}
 {{- $ingressClassName := $s.ingressClassName | default $defaultIngressClass }}
@@ -24,26 +23,15 @@
 {{- $headersResponseSet := dig "headers" "response" "set" nil $s }}
 {{- $headersRequestRemove := get $s "removeRequestHeaders" | default nil }}
 
-{{- /* Add specific listener configurations for each cname and/or TLS passthrough */}}
-{{- if or $tlsPass $useCname }}
-  {{- $hostname := ternary $cnameDomain $defaultHostname $useCname }}
-  {{- if $tlsPass }}
-    {{- $l := get $extraListeners $ingressClassName }}
-    {{- $l = append $l (dict "name" $serviceName "hostname" $hostname "tlsPass" true) }}
-    {{- $_ := set $extraListeners $ingressClassName $l }}
-  {{- else }}
-    {{- $l := get $extraListeners $ingressClassName }}
-    {{- $l = append $l (dict "name" $serviceName "hostname" $hostname "tlsPass" false "secretName" (dig "cname" "tlsSecretName" "" $s)) }}
-    {{- $_ := set $extraListeners $ingressClassName $l }}
-  {{- end }}
+{{- /* Add specific listener configurations for each cname */}}
+{{- if $useCname }}
+  {{- $l := get $extraListeners $ingressClassName }}
+  {{- $l = append $l (dict "name" $serviceName "hostname" $cnameDomain "secretName" (dig "cname" "tlsSecretName" "" $s)) }}
+  {{- $_ := set $extraListeners $ingressClassName $l }}
 {{- end }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
-{{- if $tlsPass }}
-kind: TLSRoute
-{{- else }}
 kind: HTTPRoute
-{{- end }}
 metadata:
   {{- with $v.httpRouteAnnotations }}
   annotations:
@@ -57,17 +45,15 @@ spec:
     - {{ $cnameDomain }}
     {{- end }}
   parentRefs:
-    {{- if or $tlsPass $useCname }}
+    {{- if $useCname }}
     - name: {{ $s.ingressClassName | default $defaultIngressClass }}-workloads
       kind: XListenerSet
       group: gateway.networking.x-k8s.io
     {{- end }}
-    {{- if not $tlsPass }}
     - name: {{ $s.ingressClassName | default $defaultIngressClass }}
       namespace: istio-system
       kind: Gateway
       group: gateway.networking.k8s.io
-    {{- end }}
   rules:
     - backendRefs:
       {{- if $useTrafficControl }}
@@ -160,17 +146,6 @@ spec:
     group: gateway.networking.k8s.io
   listeners:
   {{- range $listener := . }}
-    {{- if $listener.tlsPass }}
-    - name: tls-{{ $listener.name }}
-      hostname: {{ $listener.hostname }}
-      protocol: TLS
-      port: 443
-      tls:
-        mode: Passthrough
-      allowedRoutes:
-        namespaces:
-          from: Same
-    {{- else }}
     - name: http-cname-{{ $listener.name }}
       hostname: {{ $listener.hostname }}
       protocol: HTTP
@@ -189,7 +164,6 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
-    {{- end }}
   {{- end }}
 {{- range $httpRedirects }}
 ---
