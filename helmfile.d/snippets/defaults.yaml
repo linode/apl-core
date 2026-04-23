@@ -134,7 +134,7 @@ environments:
               limits:
                 cpu: 100m
                 memory: 200Mi
-            useBackupPlugin: false
+            useBackupPlugin: true
             _rawValues: {}
           external-dns:
             logLevel: info
@@ -1170,4 +1170,4 @@ environments:
           aiEnabled: false
         users: []
         versions:
-          specVersion: 64
+          specVersion: 65
