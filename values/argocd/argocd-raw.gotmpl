@@ -16,7 +16,7 @@ resources:
       name: argocd-repo-creds-gitea
       namespace: argocd
     spec:
-      refreshInterval: 1h
+      refreshInterval: 1m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -44,7 +44,7 @@ resources:
       name: argocd-repo-creds-gitea-internal
       namespace: argocd
     spec:
-      refreshInterval: 1h
+      refreshInterval: 1m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -74,7 +74,7 @@ resources:
       name: argocd-repo-creds-git-server
       namespace: argocd
     spec:
-      refreshInterval: 1h
+      refreshInterval: 1m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -103,7 +103,7 @@ resources:
       name: argocd-repo-creds-git
       namespace: argocd
     spec:
-      refreshInterval: 1h
+      refreshInterval: 1m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
