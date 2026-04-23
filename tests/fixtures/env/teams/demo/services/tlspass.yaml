@@ -1,8 +1,0 @@
-kind: AplTeamService
-metadata:
-    name: tlspass
-    labels:
-        apl.io/teamId: demo
-spec:
-    port: 443
-    tlsPass: true
