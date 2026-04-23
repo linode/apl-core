@@ -494,6 +494,9 @@
           },
           "extraPorts": {
             "type": "array"
+          },
+          "labels": {
+            "type": "object"
           }
         }
       },
