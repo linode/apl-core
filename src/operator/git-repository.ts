@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import simpleGit, { SimpleGit } from 'simple-git'
+import { setIdentity } from '../common/bootstrap'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { OperatorError } from './errors'
 import { getErrorMessage } from './utils'
@@ -9,6 +10,8 @@ export interface GitRepositoryConfig {
   authenticatedUrl: string // Full URL with credentials already embedded
   repoPath: string
   branch: string
+  username?: string
+  email: string
 }
 
 export class GitRepository {
@@ -18,6 +21,8 @@ export class GitRepository {
   readonly authenticatedUrl: string
   private readonly repoPath: string
   private readonly branch: string
+  private readonly username: string
+  private readonly email: string
   private readonly skipMarker = '[ci skip]'
 
   constructor(config: GitRepositoryConfig) {
@@ -25,6 +30,8 @@ export class GitRepository {
     this.authenticatedUrl = config.authenticatedUrl
     this.repoPath = config.repoPath
     this.branch = config.branch
+    this.username = config.username ?? 'otomi-admin'
+    this.email = config.email
     this.git = simpleGit(this.repoPath)
   }
 
@@ -47,18 +54,17 @@ export class GitRepository {
     if (fs.existsSync(gitPath)) {
       this.d.info(`Repository already exists at ${this.repoPath}, skipping clone`)
       await this.verifyAndFixOriginRemote()
-      return
+    } else {
+      this.d.info(`Cloning repository to ${this.repoPath}`)
+      try {
+        await this.git.clone(this.authenticatedUrl, this.repoPath, ['-b', this.branch])
+        this.d.info(`Repository cloned successfully`)
+      } catch (error) {
+        this.d.error('Failed to clone repository:', getErrorMessage(error))
+        throw new OperatorError('Repository clone failed', error as Error)
+      }
     }
-
-    this.d.info(`Cloning repository to ${this.repoPath}`)
-
-    try {
-      await this.git.clone(this.authenticatedUrl, this.repoPath, ['-b', this.branch])
-      this.d.info(`Repository cloned successfully`)
-    } catch (error) {
-      this.d.error('Failed to clone repository:', getErrorMessage(error))
-      throw new OperatorError('Repository clone failed', error as Error)
-    }
+    await setIdentity(this.username, this.email, this.repoPath)
   }
 
   private async verifyAndFixOriginRemote(): Promise<void> {

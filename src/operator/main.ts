@@ -28,6 +28,8 @@ async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
     authenticatedUrl: gitConfig.authenticatedUrl,
     repoPath: env.ENV_DIR,
     branch: gitConfig.branch,
+    username: gitConfig.username,
+    email: gitConfig.email,
   })
 
   return {

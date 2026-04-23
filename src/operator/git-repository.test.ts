@@ -29,6 +29,10 @@ jest.mock('fs', () => ({
   existsSync: jest.fn(),
 }))
 
+jest.mock('../common/bootstrap', () => ({
+  setIdentity: jest.fn().mockResolvedValue(undefined),
+}))
+
 describe('GitRepository', () => {
   let mockGit
   let gitRepository: GitRepository
@@ -41,6 +45,7 @@ describe('GitRepository', () => {
       authenticatedUrl: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
       repoPath: '/tmp/repo',
       branch: 'main',
+      email: 'test@example.com',
     }
 
     const simpleGit = require('simple-git')
@@ -343,6 +348,7 @@ describe('GitRepository', () => {
         authenticatedUrl: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
         repoPath: '/tmp/repo',
         branch: 'feature-branch',
+        email: 'test@example.com',
       })
 
       mockGit.fetch.mockResolvedValue(undefined)
