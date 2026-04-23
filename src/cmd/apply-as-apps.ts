@@ -328,7 +328,10 @@ export const updateOperatorApplication = async (expectedRevision: string): Promi
   }
 }
 
-const checkArgoCdController = async (applications: ArgocdAppManifest[], releases: HelmRelease[]): Promise<void> => {
+export const checkArgoCdController = async (
+  applications: ArgocdAppManifest[],
+  releases: HelmRelease[],
+): Promise<void> => {
   try {
     const argoCdErrorApp = argoCdHasUnrecoverableErrors(applications)
     if (argoCdErrorApp) {

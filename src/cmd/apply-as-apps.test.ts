@@ -6,6 +6,7 @@ import {
   removeGitOpsApps,
   calculateGitOpsAppsDiff,
   getArgocdGitopsManifest,
+  checkArgoCdController,
   ArgocdAppManifest,
 } from './apply-as-apps'
 import { glob } from 'glob'
@@ -46,6 +47,10 @@ const mockGetArgocdGitopsManifest = jest.fn() as jest.MockedFunction<typeof getA
 const mockPatchNamespacedCustomObject = jest.fn()
 const mockDeleteNamespacedCustomObject = jest.fn()
 const mockListNamespacedCustomObject = jest.fn()
+const mockRestartStatefulSet = jest.fn()
+const mockArgoCdHasUnrecoverableErrors = jest.fn()
+const mockPatchContainerResourcesOfSts = jest.fn()
+const mockLoadYaml = jest.fn()
 
 const ARGOCD_BASE_MANIFEST: ArgocdAppManifest = {
   apiVersion: 'argoproj.io/v1alpha1',
@@ -64,7 +69,17 @@ jest.mock('../common/k8s', () => ({
       deleteNamespacedCustomObject: (...args: any[]) => mockDeleteNamespacedCustomObject(...args),
       listNamespacedCustomObject: (...args: any[]) => mockListNamespacedCustomObject(...args),
     }),
+    app: () => ({}),
+    core: () => ({}),
   },
+  argoCdHasUnrecoverableErrors: (...args: any[]) => mockArgoCdHasUnrecoverableErrors(...args),
+  restartStatefulSet: (...args: any[]) => mockRestartStatefulSet(...args),
+  patchContainerResourcesOfSts: (...args: any[]) => mockPatchContainerResourcesOfSts(...args),
+}))
+
+jest.mock('../common/utils', () => ({
+  ...jest.requireActual('../common/utils'),
+  loadYaml: (...args: any[]) => mockLoadYaml(...args),
 }))
 
 describe('getArgocdGitopsManifest', () => {
@@ -590,5 +605,82 @@ describe('removeGitOpsApps', () => {
     await removeGitOpsApps(new Set([]))
 
     expect(mockDeleteNamespacedCustomObject).not.toHaveBeenCalled()
+  })
+})
+
+describe('checkArgoCdController', () => {
+  const argocdRelease = {
+    name: 'argocd',
+    namespace: 'argocd',
+    enabled: true,
+    installed: true,
+    labels: '',
+    chart: 'charts/argocd',
+    version: '1.0.0',
+  }
+
+  const mockApplications: ArgocdAppManifest[] = [
+    { ...ARGOCD_BASE_MANIFEST, metadata: { name: 'argocd-argocd', namespace: 'argocd' } },
+  ]
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should restart the controller when unrecoverable errors are detected', async () => {
+    mockArgoCdHasUnrecoverableErrors.mockReturnValue('argocd-argocd')
+    mockRestartStatefulSet.mockResolvedValue(undefined)
+
+    await checkArgoCdController(mockApplications, [argocdRelease])
+
+    expect(mockRestartStatefulSet).toHaveBeenCalledWith('argocd-application-controller', 'argocd')
+    expect(mockPatchContainerResourcesOfSts).not.toHaveBeenCalled()
+  })
+
+  it('should patch argocd resources when no unrecoverable errors are detected', async () => {
+    mockArgoCdHasUnrecoverableErrors.mockReturnValue(null)
+    mockLoadYaml.mockResolvedValue({
+      controller: {
+        resources: {
+          limits: { cpu: '2', memory: '2Gi' },
+          requests: { cpu: '500m', memory: '512Mi' },
+        },
+      },
+    })
+    mockPatchContainerResourcesOfSts.mockResolvedValue(undefined)
+
+    await checkArgoCdController(mockApplications, [argocdRelease])
+
+    expect(mockRestartStatefulSet).not.toHaveBeenCalled()
+    expect(mockPatchContainerResourcesOfSts).toHaveBeenCalledWith(
+      'argocd-application-controller',
+      'argocd',
+      'application-controller',
+      {
+        limits: { cpu: '2', memory: '2Gi' },
+        requests: { cpu: '500m', memory: '512Mi' },
+      },
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+    )
+  })
+
+  it('should not patch resources when the argocd release is not in the releases list', async () => {
+    mockArgoCdHasUnrecoverableErrors.mockReturnValue(null)
+
+    await checkArgoCdController(mockApplications, [])
+
+    expect(mockRestartStatefulSet).not.toHaveBeenCalled()
+    expect(mockPatchContainerResourcesOfSts).not.toHaveBeenCalled()
+  })
+
+  it('should not throw when an internal error occurs', async () => {
+    mockArgoCdHasUnrecoverableErrors.mockImplementation(() => {
+      throw new Error('Unexpected error')
+    })
+
+    await expect(checkArgoCdController(mockApplications, [argocdRelease])).resolves.toBeUndefined()
+    expect(mockRestartStatefulSet).not.toHaveBeenCalled()
   })
 })
