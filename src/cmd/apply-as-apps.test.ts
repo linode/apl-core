@@ -47,6 +47,16 @@ const mockPatchNamespacedCustomObject = jest.fn()
 const mockDeleteNamespacedCustomObject = jest.fn()
 const mockListNamespacedCustomObject = jest.fn()
 
+const ARGOCD_BASE_MANIFEST: ArgocdAppManifest = {
+  apiVersion: 'argoproj.io/v1alpha1',
+  kind: 'Application',
+  metadata: {
+    name: '',
+    namespace: '',
+  },
+  spec: {},
+}
+
 jest.mock('../common/k8s', () => ({
   k8s: {
     custom: () => ({
@@ -72,8 +82,7 @@ describe('getArgocdGitopsManifest', () => {
     const manifest = getArgocdGitopsManifest(name)
 
     expect(manifest).toEqual({
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
+      ...ARGOCD_BASE_MANIFEST,
       metadata: {
         name: 'my-app',
         namespace: 'argocd',
@@ -118,8 +127,7 @@ describe('getArgocdGitopsManifest', () => {
     const manifest = getArgocdGitopsManifest(name, targetNamespace)
 
     expect(manifest).toEqual({
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
+      ...ARGOCD_BASE_MANIFEST,
       metadata: {
         name: 'my-app',
         namespace: 'argocd',
@@ -161,8 +169,7 @@ describe('getArgocdGitopsManifest', () => {
 
 describe('applyArgoCdApp', () => {
   const mockManifest: ArgocdAppManifest = {
-    apiVersion: 'argoproj.io/v1alpha1',
-    kind: 'Application',
+    ...ARGOCD_BASE_MANIFEST,
     metadata: {
       name: 'test-app',
       namespace: 'argocd',
@@ -288,13 +295,11 @@ describe('calculateGitOpsAppsDiff', () => {
     setupMockDirs(['a', 'b', 'c'])
     mockGetApplications.mockResolvedValue([
       {
+        ...ARGOCD_BASE_MANIFEST,
         metadata: {
           name: 'gitops-ns-c',
           namespace: '',
         },
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
-        spec: {},
       },
     ])
     mockStatSync.mockReturnValue({ isDirectory: () => true })
@@ -309,31 +314,25 @@ describe('calculateGitOpsAppsDiff', () => {
   it('should identify apps to remove when apps exist but directories do not', async () => {
     mockGetApplications.mockResolvedValue([
       {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
+        ...ARGOCD_BASE_MANIFEST,
         metadata: {
           name: 'gitops-ns-a',
           namespace: '',
         },
-        spec: {},
       },
       {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
+        ...ARGOCD_BASE_MANIFEST,
         metadata: {
           name: 'gitops-ns-b',
           namespace: '',
         },
-        spec: {},
       },
       {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
+        ...ARGOCD_BASE_MANIFEST,
         metadata: {
           name: 'gitops-ns-c',
           namespace: '',
         },
-        spec: {},
       },
     ])
     setupMockDirs(['a'])
@@ -359,22 +358,18 @@ describe('calculateGitOpsAppsDiff', () => {
   it('should not remove global app even if directory does not exist', async () => {
     mockGetApplications.mockResolvedValue([
       {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
+        ...ARGOCD_BASE_MANIFEST,
         metadata: {
           name: 'gitops-global',
           namespace: '',
         },
-        spec: {},
       },
       {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
+        ...ARGOCD_BASE_MANIFEST,
         metadata: {
           name: 'gitops-ns-a',
           namespace: '',
         },
-        spec: {},
       },
     ])
     setupMockDirs([])
@@ -399,31 +394,25 @@ describe('calculateGitOpsAppsDiff', () => {
   it('should handle no changes scenario', async () => {
     mockGetApplications.mockResolvedValue([
       {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
+        ...ARGOCD_BASE_MANIFEST,
         metadata: {
           name: 'gitops-global',
           namespace: '',
         },
-        spec: {},
       },
       {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
+        ...ARGOCD_BASE_MANIFEST,
         metadata: {
           name: 'gitops-ns-a',
           namespace: '',
         },
-        spec: {},
       },
       {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
+        ...ARGOCD_BASE_MANIFEST,
         metadata: {
           name: 'gitops-ns-b',
           namespace: '',
         },
-        spec: {},
       },
     ])
     setupMockDirs(['a', 'b'])
