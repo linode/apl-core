@@ -1,7 +1,4 @@
-{{/* Below merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
-{{- $v := .Values | merge (dict) }}
-{{/* Above merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
-{{- $ := . }}
+{{- $v := .Values }}
 {{- if not (eq $v.teamId "admin") }}
 {{- $egressFilteringEnabled := $v | dig "networkPolicy" "egressPublic" true }}
 {{- if $egressFilteringEnabled }}
@@ -25,21 +22,21 @@ spec:
     - {{ $hostName }}  # not used but still mandatory
   addresses:
     - {{ $host | quote }}
+  {{- with .ruleType.egress.ports }}
   ports:
-{{- with .ruleType.egress.ports }}
-{{- range . }}
-  - number: {{ .number }}
-    name: {{ printf "%s-%s" (lower .protocol) (toString .number) }}
-    protocol: {{ .protocol }}
-{{- end }} {{/* range $port := $entry */}}
-{{- end }}
+    {{- range . }}
+    - number: {{ .number }}
+      name: {{ printf "%s-%s" (lower .protocol) (toString .number) }}
+      protocol: {{ .protocol }}
+    {{- end }} {{/* range $port := $entry */}}
+  {{- end }}
   resolution: STATIC
   location: MESH_EXTERNAL
   endpoints:
     - address: {{ $host | quote }}
   exportTo:
     - "."
-{{- else }}
+{{- else }}{{/* if $isIp*/}}
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
@@ -48,17 +45,17 @@ metadata:
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   hosts:
-  - {{ $host }}
-{{- with .ruleType.egress.ports }}
+    - {{ $host }}
+  {{- with .ruleType.egress.ports }}
   ports:
-{{- range . }}
-  - number: {{ .number }}
-    name: {{ printf "%s-%s" (lower .protocol) (toString .number) }}
-    protocol: {{ .protocol }}
-{{- end }} {{/* range $port := $entry */}}
-{{- end }}
+    {{- range . }}
+    - number: {{ .number }}
+      name: {{ printf "%s-%s" (lower .protocol) (toString .number) }}
+      protocol: {{ .protocol }}
+    {{- end }} {{/* range $port := $entry */}}
+  {{- end }}
   exportTo:
-  - "."
+    - "."
   location: MESH_EXTERNAL
   resolution: DNS
 {{- end }} {{/* if isIp */}}
