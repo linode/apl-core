@@ -463,19 +463,19 @@ changes:
       - addRedisSecretForArgoCD
   - version: 61
     deletions:
+      - 'teamConfig.{team}.services[].tlsPass'
+  - version: 62
+    deletions:
       - 'kms.sops'
     customFunctions:
       - sopsMigration
-  - version: 62
+  - version: 63
     customFunctions:
       - removeIngressTracing
     deletions:
       - 'apps.istio.tracing'
       - 'apps.otel.otlpCollector'
       - 'apps.otel.resources.otlpCollector'
-  - version: 63
+  - version: 64
     mutations:
       - apps.cnpg.useBackupPlugin: true
-  - version: 64
-    deletions:
-      - 'teamConfig.{team}.services[].tlsPass'
