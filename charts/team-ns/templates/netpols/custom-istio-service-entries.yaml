@@ -47,7 +47,7 @@ metadata:
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   hosts:
-    - {{ $host }}
+    - {{ $host | quote }}
   {{- with .ruleType.egress.ports }}
   ports:
     {{- range . }}
