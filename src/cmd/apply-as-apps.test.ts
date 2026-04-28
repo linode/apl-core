@@ -6,12 +6,14 @@ import {
   removeGitOpsApps,
   calculateGitOpsAppsDiff,
   getArgocdGitopsManifest,
+  checkArgoCdController,
   ArgocdAppManifest,
 } from './apply-as-apps'
 import { glob } from 'glob'
 import { env } from '../common/envalid'
 import { statSync } from 'fs'
 import { ARGOCD_APP_PARAMS } from '../common/constants'
+import { getNames } from '../common/utils'
 
 jest.mock('glob')
 jest.mock('fs', () => ({
@@ -45,6 +47,20 @@ const mockGetArgocdGitopsManifest = jest.fn() as jest.MockedFunction<typeof getA
 const mockPatchNamespacedCustomObject = jest.fn()
 const mockDeleteNamespacedCustomObject = jest.fn()
 const mockListNamespacedCustomObject = jest.fn()
+const mockRestartStatefulSet = jest.fn()
+const mockArgoCdHasUnrecoverableErrors = jest.fn()
+const mockPatchContainerResourcesOfSts = jest.fn()
+const mockLoadYaml = jest.fn()
+
+const ARGOCD_BASE_MANIFEST: ArgocdAppManifest = {
+  apiVersion: 'argoproj.io/v1alpha1',
+  kind: 'Application',
+  metadata: {
+    name: '',
+    namespace: '',
+  },
+  spec: {},
+}
 
 jest.mock('../common/k8s', () => ({
   k8s: {
@@ -53,7 +69,17 @@ jest.mock('../common/k8s', () => ({
       deleteNamespacedCustomObject: (...args: any[]) => mockDeleteNamespacedCustomObject(...args),
       listNamespacedCustomObject: (...args: any[]) => mockListNamespacedCustomObject(...args),
     }),
+    app: () => ({}),
+    core: () => ({}),
   },
+  argoCdHasUnrecoverableErrors: (...args: any[]) => mockArgoCdHasUnrecoverableErrors(...args),
+  restartStatefulSet: (...args: any[]) => mockRestartStatefulSet(...args),
+  patchContainerResourcesOfSts: (...args: any[]) => mockPatchContainerResourcesOfSts(...args),
+}))
+
+jest.mock('../common/utils', () => ({
+  ...jest.requireActual('../common/utils'),
+  loadYaml: (...args: any[]) => mockLoadYaml(...args),
 }))
 
 describe('getArgocdGitopsManifest', () => {
@@ -71,8 +97,7 @@ describe('getArgocdGitopsManifest', () => {
     const manifest = getArgocdGitopsManifest(name)
 
     expect(manifest).toEqual({
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
+      ...ARGOCD_BASE_MANIFEST,
       metadata: {
         name: 'my-app',
         namespace: 'argocd',
@@ -117,8 +142,7 @@ describe('getArgocdGitopsManifest', () => {
     const manifest = getArgocdGitopsManifest(name, targetNamespace)
 
     expect(manifest).toEqual({
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
+      ...ARGOCD_BASE_MANIFEST,
       metadata: {
         name: 'my-app',
         namespace: 'argocd',
@@ -160,8 +184,7 @@ describe('getArgocdGitopsManifest', () => {
 
 describe('applyArgoCdApp', () => {
   const mockManifest: ArgocdAppManifest = {
-    apiVersion: 'argoproj.io/v1alpha1',
-    kind: 'Application',
+    ...ARGOCD_BASE_MANIFEST,
     metadata: {
       name: 'test-app',
       namespace: 'argocd',
@@ -215,7 +238,7 @@ describe('getApplications', () => {
     }
     mockListNamespacedCustomObject.mockResolvedValue(mockApps)
 
-    const result = await getApplications()
+    const result = getNames(await getApplications())
 
     expect(mockListNamespacedCustomObject).toHaveBeenCalledWith({
       ...ARGOCD_APP_PARAMS,
@@ -230,7 +253,7 @@ describe('getApplications', () => {
     }
     mockListNamespacedCustomObject.mockResolvedValue(mockApps)
 
-    const result = await getApplications('otomi.io/app=generic-gitops')
+    const result = getNames(await getApplications('otomi.io/app=generic-gitops'))
 
     expect(mockListNamespacedCustomObject).toHaveBeenCalledWith({
       ...ARGOCD_APP_PARAMS,
@@ -250,7 +273,7 @@ describe('getApplications', () => {
     }
     mockListNamespacedCustomObject.mockResolvedValue(mockApps)
 
-    const result = await getApplications()
+    const result = getNames(await getApplications())
 
     expect(result).toEqual(['app1', 'app2'])
   })
@@ -258,7 +281,7 @@ describe('getApplications', () => {
   it('should return empty array on error', async () => {
     mockListNamespacedCustomObject.mockRejectedValue(new Error('API error'))
 
-    const result = await getApplications()
+    const result = getNames(await getApplications())
 
     expect(result).toEqual([])
   })
@@ -285,7 +308,15 @@ describe('calculateGitOpsAppsDiff', () => {
 
   it('should identify apps to add when directories exist but apps do not', async () => {
     setupMockDirs(['a', 'b', 'c'])
-    mockGetApplications.mockResolvedValue(['gitops-ns-c'])
+    mockGetApplications.mockResolvedValue([
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: {
+          name: 'gitops-ns-c',
+          namespace: '',
+        },
+      },
+    ])
     mockStatSync.mockReturnValue({ isDirectory: () => true })
 
     const result = await calculateGitOpsAppsDiff(mockDeps)
@@ -296,7 +327,29 @@ describe('calculateGitOpsAppsDiff', () => {
   })
 
   it('should identify apps to remove when apps exist but directories do not', async () => {
-    mockGetApplications.mockResolvedValue(['gitops-ns-a', 'gitops-ns-b', 'gitops-ns-c'])
+    mockGetApplications.mockResolvedValue([
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: {
+          name: 'gitops-ns-a',
+          namespace: '',
+        },
+      },
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: {
+          name: 'gitops-ns-b',
+          namespace: '',
+        },
+      },
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: {
+          name: 'gitops-ns-c',
+          namespace: '',
+        },
+      },
+    ])
     setupMockDirs(['a'])
     mockStatSync.mockReturnValue(undefined)
 
@@ -318,7 +371,22 @@ describe('calculateGitOpsAppsDiff', () => {
   })
 
   it('should not remove global app even if directory does not exist', async () => {
-    mockGetApplications.mockResolvedValue(['gitops-global', 'gitops-ns-a'])
+    mockGetApplications.mockResolvedValue([
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: {
+          name: 'gitops-global',
+          namespace: '',
+        },
+      },
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: {
+          name: 'gitops-ns-a',
+          namespace: '',
+        },
+      },
+    ])
     setupMockDirs([])
     mockStatSync.mockReturnValue(undefined)
 
@@ -339,7 +407,29 @@ describe('calculateGitOpsAppsDiff', () => {
   })
 
   it('should handle no changes scenario', async () => {
-    mockGetApplications.mockResolvedValue(['gitops-global', 'gitops-ns-a', 'gitops-ns-b'])
+    mockGetApplications.mockResolvedValue([
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: {
+          name: 'gitops-global',
+          namespace: '',
+        },
+      },
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: {
+          name: 'gitops-ns-a',
+          namespace: '',
+        },
+      },
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: {
+          name: 'gitops-ns-b',
+          namespace: '',
+        },
+      },
+    ])
     setupMockDirs(['a', 'b'])
     mockStatSync.mockReturnValue({ isDirectory: () => true })
 
@@ -515,5 +605,82 @@ describe('removeGitOpsApps', () => {
     await removeGitOpsApps(new Set([]))
 
     expect(mockDeleteNamespacedCustomObject).not.toHaveBeenCalled()
+  })
+})
+
+describe('checkArgoCdController', () => {
+  const argocdRelease = {
+    name: 'argocd',
+    namespace: 'argocd',
+    enabled: true,
+    installed: true,
+    labels: '',
+    chart: 'charts/argocd',
+    version: '1.0.0',
+  }
+
+  const mockApplications: ArgocdAppManifest[] = [
+    { ...ARGOCD_BASE_MANIFEST, metadata: { name: 'argocd-argocd', namespace: 'argocd' } },
+  ]
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should restart the controller when unrecoverable errors are detected', async () => {
+    mockArgoCdHasUnrecoverableErrors.mockReturnValue('argocd-argocd')
+    mockRestartStatefulSet.mockResolvedValue(undefined)
+
+    await checkArgoCdController(mockApplications, [argocdRelease])
+
+    expect(mockRestartStatefulSet).toHaveBeenCalledWith('argocd-application-controller', 'argocd')
+    expect(mockPatchContainerResourcesOfSts).not.toHaveBeenCalled()
+  })
+
+  it('should patch argocd resources when no unrecoverable errors are detected', async () => {
+    mockArgoCdHasUnrecoverableErrors.mockReturnValue(null)
+    mockLoadYaml.mockResolvedValue({
+      controller: {
+        resources: {
+          limits: { cpu: '2', memory: '2Gi' },
+          requests: { cpu: '500m', memory: '512Mi' },
+        },
+      },
+    })
+    mockPatchContainerResourcesOfSts.mockResolvedValue(undefined)
+
+    await checkArgoCdController(mockApplications, [argocdRelease])
+
+    expect(mockRestartStatefulSet).not.toHaveBeenCalled()
+    expect(mockPatchContainerResourcesOfSts).toHaveBeenCalledWith(
+      'argocd-application-controller',
+      'argocd',
+      'application-controller',
+      {
+        limits: { cpu: '2', memory: '2Gi' },
+        requests: { cpu: '500m', memory: '512Mi' },
+      },
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+    )
+  })
+
+  it('should not patch resources when the argocd release is not in the releases list', async () => {
+    mockArgoCdHasUnrecoverableErrors.mockReturnValue(null)
+
+    await checkArgoCdController(mockApplications, [])
+
+    expect(mockRestartStatefulSet).not.toHaveBeenCalled()
+    expect(mockPatchContainerResourcesOfSts).not.toHaveBeenCalled()
+  })
+
+  it('should not throw when an internal error occurs', async () => {
+    mockArgoCdHasUnrecoverableErrors.mockImplementation(() => {
+      throw new Error('Unexpected error')
+    })
+
+    await expect(checkArgoCdController(mockApplications, [argocdRelease])).resolves.toBeUndefined()
+    expect(mockRestartStatefulSet).not.toHaveBeenCalled()
   })
 })
