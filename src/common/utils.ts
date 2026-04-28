@@ -12,6 +12,7 @@ import { $, ProcessOutput, within } from 'zx'
 import { operatorEnv } from '../operator/validators'
 import { terminal } from './debug'
 import { env } from './envalid'
+import { KubernetesObject } from '@kubernetes/client-node'
 
 const packagePath = process.cwd()
 
@@ -263,4 +264,10 @@ export async function hasFileDifference(filePathOne: string, filePathTwo: string
     d.error(`Error reading files: ${err}`)
     return true // If there's an error, assume files are different
   }
+}
+
+export function getNames(objects: KubernetesObject[]): string[] {
+  return objects
+    .filter((app: KubernetesObject) => app.metadata?.name && app.metadata.name !== '')
+    .map((obj) => obj.metadata!.name!)
 }
