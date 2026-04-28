@@ -25,16 +25,12 @@ async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
   }
 
   const gitRepository = new GitRepository({
-    authenticatedUrl: gitConfig.authenticatedUrl,
+    ...gitConfig,
     repoPath: env.ENV_DIR,
-    branch: gitConfig.branch,
-    username: gitConfig.username,
-    email: gitConfig.email,
   })
 
   return {
     gitRepo: gitRepository,
-    gitConfig,
     aplOps,
     pollIntervalMs: operatorEnv.POLL_INTERVAL_MS,
     reconcileIntervalMs: operatorEnv.RECONCILE_INTERVAL_MS,

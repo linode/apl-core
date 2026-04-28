@@ -3,11 +3,14 @@ import * as path from 'path'
 import simpleGit, { SimpleGit } from 'simple-git'
 import { setIdentity } from '../common/bootstrap'
 import { OtomiDebugger, terminal } from '../common/debug'
+import { GitRepoConfig } from '../common/git-config'
 import { OperatorError } from './errors'
 import { getErrorMessage } from './utils'
 
 export interface GitRepositoryConfig {
   authenticatedUrl: string // Full URL with credentials already embedded
+  repoUrl: string
+  password: string
   repoPath: string
   branch: string
   username?: string
@@ -18,21 +21,36 @@ export class GitRepository {
   private git: SimpleGit
   private _lastRevision = ''
   private d: OtomiDebugger
-  readonly authenticatedUrl: string
+  private _config: GitRepoConfig
   private readonly repoPath: string
-  private readonly branch: string
-  private readonly username: string
-  private readonly email: string
+  private branch: string
+  private username: string
+  private email: string
   private readonly skipMarker = '[ci skip]'
 
   constructor(config: GitRepositoryConfig) {
     this.d = terminal('operator:git-repository')
-    this.authenticatedUrl = config.authenticatedUrl
     this.repoPath = config.repoPath
     this.branch = config.branch
     this.username = config.username ?? 'otomi-admin'
     this.email = config.email
     this.git = simpleGit(this.repoPath)
+    this._config = {
+      repoUrl: config.repoUrl,
+      authenticatedUrl: config.authenticatedUrl,
+      branch: config.branch,
+      email: config.email,
+      username: config.username,
+      password: config.password,
+    }
+  }
+
+  get authenticatedUrl(): string {
+    return this._config.authenticatedUrl
+  }
+
+  get config(): GitRepoConfig {
+    return this._config
   }
 
   async setLastRevision(): Promise<void> {
@@ -57,7 +75,7 @@ export class GitRepository {
     } else {
       this.d.info(`Cloning repository to ${this.repoPath}`)
       try {
-        await this.git.clone(this.authenticatedUrl, this.repoPath, ['-b', this.branch])
+        await this.git.clone(this._config.authenticatedUrl, this.repoPath, ['-b', this.branch])
         this.d.info(`Repository cloned successfully`)
       } catch (error) {
         this.d.error('Failed to clone repository:', getErrorMessage(error))
@@ -74,14 +92,14 @@ export class GitRepository {
 
       if (!origin) {
         this.d.warn('Origin remote not found, adding it')
-        await this.git.remote(['add', 'origin', this.authenticatedUrl])
+        await this.git.remote(['add', 'origin', this._config.authenticatedUrl])
         this.d.info('Origin remote added successfully')
         return
       }
 
-      if (origin.refs.fetch !== this.authenticatedUrl) {
+      if (origin.refs.fetch !== this._config.authenticatedUrl) {
         this.d.warn('Origin remote URL mismatch detected, resetting to correct URL')
-        await this.git.remote(['set-url', 'origin', this.authenticatedUrl])
+        await this.git.remote(['set-url', 'origin', this._config.authenticatedUrl])
         this.d.info('Origin remote URL reset successfully')
       } else {
         this.d.debug('Origin remote URL is correct')
@@ -179,6 +197,21 @@ export class GitRepository {
       throw new OperatorError('Repository sync and analysis failed', error as Error)
     }
   }
+
+  async reloadConfig(config: GitRepoConfig): Promise<void> {
+    try {
+      await this.git.remote(['set-url', 'origin', config.authenticatedUrl])
+      this.branch = config.branch
+      this.username = config.username ?? 'otomi-admin'
+      this.email = config.email
+      this._config = config
+      await setIdentity(this.username, this.email, this.repoPath)
+    } catch (error) {
+      this.d.error('Failed to reload git config:', getErrorMessage(error))
+      throw new OperatorError('Git config reload failed', error as Error)
+    }
+  }
+
   public get lastRevision(): string {
     return this._lastRevision
   }
