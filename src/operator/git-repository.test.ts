@@ -362,8 +362,11 @@ describe('GitRepository', () => {
     test('should fetch from the configured branch', async () => {
       const customBranchRepo = new GitRepository({
         authenticatedUrl: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
+        repoUrl: 'https://github.com:443/testorg/testrepo.git',
+        password: 'testpass',
         repoPath: '/tmp/repo',
         branch: 'feature-branch',
+        username: 'testuser',
         email: 'test@example.com',
       })
 
