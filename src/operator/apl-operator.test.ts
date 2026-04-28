@@ -1,4 +1,4 @@
-import { GitRepoConfig, getStoredGitRepoConfig } from '../common/git-config'
+import { getStoredGitRepoConfig, GitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/gitea'
 import { AplOperations } from './apl-operations'
 import { AplOperator, AplOperatorConfig, ApplyTrigger } from './apl-operator'
@@ -329,7 +329,6 @@ describe('AplOperator', () => {
       ;(getStoredGitRepoConfig as jest.Mock).mockResolvedValueOnce({
         authenticatedUrl: 'https://username:newpassword@example.com:443/org/repo.git',
       } as GitRepoConfig)
-
       ;(aplOperator as any).isRunning = true
       ;(aplOperator as any).isApplying = false
 
@@ -350,7 +349,6 @@ describe('AplOperator', () => {
       } as GitRepoConfig
       mockGitRepo.syncAndAnalyzeChanges.mockRejectedValueOnce(new Error('Auth failed'))
       ;(getStoredGitRepoConfig as jest.Mock).mockResolvedValueOnce(newConfig)
-
       ;(aplOperator as any).isRunning = true
       ;(aplOperator as any).isApplying = false
 
@@ -369,7 +367,6 @@ describe('AplOperator', () => {
     test('should log warning when credential reload fails after poll error', async () => {
       mockGitRepo.syncAndAnalyzeChanges.mockRejectedValueOnce(new Error('Auth failed'))
       ;(getStoredGitRepoConfig as jest.Mock).mockRejectedValueOnce(new Error('K8s unavailable'))
-
       ;(aplOperator as any).isRunning = true
       ;(aplOperator as any).isApplying = false
 
