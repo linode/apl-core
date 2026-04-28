@@ -4,6 +4,7 @@ import { terminal } from './debug'
 import { deployEssential } from './hf'
 import { DeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
 import { RuntimeUpgradeContext, RuntimeUpgrades, runtimeUpgrades } from './runtime-upgrades/runtime-upgrades'
+import { getNames } from './utils'
 
 interface RuntimeUpgradeArgs {
   when: string
@@ -32,7 +33,7 @@ export async function runtimeUpgrade({ when, deploymentState }: RuntimeUpgradeAr
     throw new Error('Failed to update namespaces')
   }
 
-  const apps = await getApplications()
+  const apps = getNames(await getApplications())
   const filteredUpgrades = filterRuntimeUpgrades(deployedVersion, runtimeUpgrades, deploymentState.deployingVersion)
 
   if (filteredUpgrades.length === 0) {
