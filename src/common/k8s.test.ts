@@ -22,6 +22,7 @@ import { env } from './envalid'
 import * as k8s from './k8s'
 import {
   appRevisionMatches,
+  argoCdHasUnrecoverableErrors,
   checkArgoCDAppStatus,
   checkClusterIdentity,
   deleteStatefulSetPods,
@@ -31,6 +32,16 @@ import {
   patchContainerResourcesOfSts,
   patchStatefulSetResources,
 } from './k8s'
+
+const ARGOCD_BASE_MANIFEST = {
+  apiVersion: 'argoproj.io/v1alpha1',
+  kind: 'Application',
+  metadata: {
+    name: '',
+    namespace: '',
+  },
+  spec: {},
+}
 
 class MockApiException<T> extends ApiException<T> {
   code: number
@@ -63,7 +74,6 @@ jest.mock('crypto', () => ({
   X509Certificate: jest.fn(),
 }))
 
-const mockRetry = retry as jest.MockedFunction<typeof retry>
 const mockEnv = {
   RETRIES: 3,
   RANDOM: true,
@@ -581,6 +591,106 @@ describe('ArgoCD Application Tests', () => {
 
       await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')).rejects.toThrow('API call failed')
     })
+  })
+})
+
+describe('argoCdHasUnrecoverableErrors', () => {
+  const NIL_POINTER_MSG = 'runtime error: invalid memory address or nil pointer dereference'
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should return the application name when it has the specific Failed phase and message', () => {
+    const applications = [
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: { name: 'my-app-2', namespace: 'argocd' },
+        status: { operationState: { phase: 'Succeeded', message: '' } },
+      },
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: { name: 'my-app-2', namespace: 'argocd' },
+        status: { operationState: { phase: 'Failed', message: '' } },
+      },
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: { name: 'my-app', namespace: 'argocd' },
+        status: { operationState: { phase: 'Failed', message: NIL_POINTER_MSG } },
+      },
+    ]
+
+    expect(argoCdHasUnrecoverableErrors(applications)).toBe('my-app')
+  })
+
+  it('should return "unknown" when the failing application has no metadata name', () => {
+    const applications = [
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: { name: 'my-app-2', namespace: 'argocd' },
+        status: { operationState: { phase: 'Succeeded', message: '' } },
+      },
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        status: { operationState: { phase: 'Failed', message: NIL_POINTER_MSG } },
+      },
+    ]
+
+    expect(argoCdHasUnrecoverableErrors(applications)).toBe('unknown')
+  })
+
+  it('should return undefined when no application matches the specific failure message', () => {
+    const applications = [
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: { name: 'my-app', namespace: 'argocd' },
+        status: { operationState: { phase: 'Failed', message: 'some other error' } },
+      },
+    ]
+
+    expect(argoCdHasUnrecoverableErrors(applications)).toBeUndefined()
+  })
+
+  it('should return undefined when phase is not Failed even if message matches', () => {
+    const applications = [
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: { name: 'my-app', namespace: 'argocd' },
+        status: { operationState: { phase: 'Succeeded', message: NIL_POINTER_MSG } },
+      },
+    ]
+
+    expect(argoCdHasUnrecoverableErrors(applications)).toBeUndefined()
+  })
+
+  it('should return the first matching application name when multiple apps have the error', () => {
+    const applications = [
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: { name: 'app-1', namespace: 'argocd' },
+        status: { operationState: { phase: 'Failed', message: NIL_POINTER_MSG } },
+      },
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: { name: 'app-2', namespace: 'argocd' },
+        status: { operationState: { phase: 'Failed', message: NIL_POINTER_MSG } },
+      },
+    ]
+
+    expect(argoCdHasUnrecoverableErrors(applications)).toBe('app-1')
+  })
+
+  it('should return undefined for an empty applications array', () => {
+    expect(argoCdHasUnrecoverableErrors([])).toBeUndefined()
+  })
+
+  it('should return undefined when applications have no operationState', () => {
+    const applications = [
+      { metadata: { name: 'my-app', namespace: 'argocd' }, status: {} },
+      { metadata: { name: 'other-app', namespace: 'argocd' } },
+    ]
+
+    expect(argoCdHasUnrecoverableErrors(applications)).toBeUndefined()
   })
 })
 
