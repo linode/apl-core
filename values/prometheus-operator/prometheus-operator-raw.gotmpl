@@ -3,12 +3,13 @@
 {{- $a := $v.apps | get "alertmanager" }}
 {{- $k := $v.apps.keycloak }}
 {{- $obj := $v.obj.provider }}
-{{- $receivers := $v | get "alerts.receivers" (list "slack") }}
+{{- $receivers := $v.alerts.receivers }}
+{{- $hasReceivers := not (has "none" $receivers) }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 {{- $alertmanagerConfig := tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | toString }}
 resources:
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: grafana-admin-secret
@@ -31,7 +32,7 @@ resources:
           remoteRef:
             key: otomi-secrets
             property: adminPassword
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: grafana-oidc-secret
@@ -54,7 +55,7 @@ resources:
           remoteRef:
             key: keycloak-secrets
             property: idp_clientSecret
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: grafana-loki-datasource-secret
@@ -77,7 +78,7 @@ resources:
             key: loki-secrets
             property: adminPassword
   {{- if $p | get "remoteWrite.rwConfig.basicAuth.enabled" false }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       labels:
@@ -103,7 +104,8 @@ resources:
             property: remoteWrite_rwConfig_basicAuth_password
   {{- end }}
   {{- if $a.enabled }}
-  - apiVersion: external-secrets.io/v1beta1
+  {{- if $hasReceivers }}
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: alertmanager-platform-config
@@ -144,4 +146,14 @@ resources:
             key: alerts-secrets
             property: opsgenie_apiKey
         {{- end }}
-  {{- end }}
+  {{- else }}{{/* if $hasReceivers */}}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: alertmanager-platform-config
+      namespace: monitoring
+    type: Opaque
+    data:
+      alertmanager.yaml: {{ $alertmanagerConfig | b64enc }}
+  {{- end }}{{/* if $hasReceivers */}}
+  {{- end }}{{/* if $a.enabled */}}
