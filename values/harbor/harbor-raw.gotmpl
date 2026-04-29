@@ -34,7 +34,7 @@ resources:
     issuerRef:
       name: custom-ca
       kind: ClusterIssuer
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: harbor-admin-password
@@ -55,7 +55,7 @@ resources:
         remoteRef:
           key: otomi-secrets
           property: adminPassword
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: harbor-registry-credentials
@@ -86,7 +86,7 @@ resources:
         remoteRef:
           key: harbor-secrets
           property: registry_credentials_username
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: harbor-secret-key
@@ -107,7 +107,7 @@ resources:
         remoteRef:
           key: harbor-secrets
           property: secretKey
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: harbor-core-secret
@@ -128,7 +128,7 @@ resources:
         remoteRef:
           key: harbor-secrets
           property: core_secret
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: harbor-core-xsrf-secret
@@ -149,7 +149,7 @@ resources:
         remoteRef:
           key: harbor-secrets
           property: core_xsrfKey
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: harbor-jobservice-secret
@@ -170,7 +170,7 @@ resources:
         remoteRef:
           key: harbor-secrets
           property: jobservice_secret
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: harbor-registry-http
@@ -192,7 +192,7 @@ resources:
           key: harbor-secrets
           property: registry_secret
 {{- if eq $obj.type "linode" }}
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: linode-creds
@@ -214,7 +214,7 @@ resources:
         remoteRef:
           key: obj-secrets
           property: provider_linode_secretAccessKey
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: registry-storage-credentials
