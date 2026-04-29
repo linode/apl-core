@@ -154,7 +154,6 @@ resources:
       namespace: monitoring
     type: Opaque
     data:
-      alertmanager.yaml: |
-        {{- $alertmanagerConfig | nindent 8 }}
+      alertmanager.yaml: {{ $alertmanagerConfig | b64enc }}
   {{- end }}{{/* if $hasReceivers */}}
   {{- end }}{{/* if $a.enabled */}}
