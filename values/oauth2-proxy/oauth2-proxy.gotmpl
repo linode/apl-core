@@ -185,15 +185,16 @@ gatewayApi:
   {{- end }}
   {{- with $v.otomi.isPreInstalled }}
   rules:
-    - type: CORS
-      cors:
-        allowOrigins:
-          - "https://cloud.linode.com"
-          - "https://cloud.staging.linode.com"
-          - "https://cloud.dev.linode.com"
-        allowMethods:
-          - GET
-          - OPTIONS
+    - filters:
+      - type: CORS
+        cors:
+          allowOrigins:
+            - "https://cloud.linode.com"
+            - "https://cloud.staging.linode.com"
+            - "https://cloud.dev.linode.com"
+          allowMethods:
+            - GET
+            - OPTIONS
   {{- end }}
 
 extraObjects:
