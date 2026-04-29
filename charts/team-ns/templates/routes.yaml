@@ -17,7 +17,7 @@
 {{- $backendName := $s.svc | default $s.name }}
 {{- $backendPort := $s.port | default 80 }}
 {{- $useTrafficControl := dig "trafficControl" "enabled" false $s }}
-{{- $serviceName := print $s.name "-" $v.teamId }}
+{{- $serviceName := $s.name }}
 {{- $serviceLabel := $s.name }}
 {{- $defaultHostname := print $serviceName "." $v.domain }}
 {{- $headersRequestSet := dig "headers" "request" "set" nil $s }}
