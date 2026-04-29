@@ -1752,6 +1752,14 @@ properties:
             default: 'info'
           resources:
             $ref: '#/definitions/resources'
+      external-secrets:
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
       gitea:
         properties:
           _rawValues:
