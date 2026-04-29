@@ -13,7 +13,7 @@
 {{- end }}
 
 resources:
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: gitea-admin-secret
@@ -45,7 +45,7 @@ resources:
 {{- end }}
 # DB / app backup resources
 {{- if eq $obj.type "linode" }}
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: linode-creds
@@ -69,7 +69,7 @@ resources:
           property: provider_linode_secretAccessKey
 {{- end }}
 {{- with $v | get "smtp" nil }}
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: gitea-smtp-secret
