@@ -22,7 +22,7 @@
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 resources:
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: apl-keycloak-operator-secret
