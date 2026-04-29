@@ -4,7 +4,7 @@
 {{- $obj := $v.obj.provider }}
 {{- if $v.otomi.isMultitenant }}
 resources:
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       labels:
@@ -44,7 +44,7 @@ resources:
             property: settings_password
         {{- end }}
   {{- if eq $obj.type "linode" }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       labels:

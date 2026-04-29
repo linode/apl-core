@@ -58,6 +58,16 @@ async function renderKyvernoCrdTemplates(chartDir) {
   return true
 }
 
+async function renderEsoCrdTemplates(chartDir) {
+  console.log(`Rendering templates from ${chartDir}`)
+  const crdPath = `${chartDir}/crds`
+  const tempPath = await $`mktemp -d`
+  await $`helm template --set crds.createClusterExternalSecret=false --set crds.createClusterGenerator=false --set crds.createClusterPushSecret=false --set crds.createPushSecret=false --output-dir ${tempPath} ${chartDir}`
+  console.log(`Adding templates in ${crdPath}`)
+  await $`mv ${tempPath}/external-secrets/templates/crds ${crdPath}`
+  await $`rm -R ${tempPath}`
+  return true
+}
 
 async function renderOtelCrdTemplates(chartDir) {
   console.log(`Rendering templates from ${chartDir}`)
@@ -146,6 +156,7 @@ const CHART_POST_FUNCS = {
   'opentelemetry-operator': renderOtelCrdTemplates,
   'argocd-image-updater': renderArgoCdImageUpdaterCrd,
   'kserve-crd': copyKserveCrdTemplates,
+  'external-secrets': renderEsoCrdTemplates,
   'cloud-firewall-crd': copyLinodeCfwTemplates,
 }
 // List charts that are not represented in apps.yaml
