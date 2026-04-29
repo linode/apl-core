@@ -9,7 +9,7 @@ resources:
     name: custom-ca
   data:
     custom-ca.pem: {{ .Values._derived.caCert | b64enc }}
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: keycloak-initial-admin
@@ -33,7 +33,7 @@ resources:
           key: otomi-secrets
           property: adminPassword
 {{- if eq $obj.type "linode" }}
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: linode-creds
