@@ -18,6 +18,8 @@
 {{- $backendPort := $s.port | default 80 }}
 {{- $useTrafficControl := dig "trafficControl" "enabled" false $s }}
 {{- $serviceName := print $s.name "-" $v.teamId }}
+{{- $teamLabel := $v.teamId }}
+{{- $serviceLabel := $s.name }}
 {{- $defaultHostname := print $serviceName "." $v.domain }}
 {{- $headersRequestSet := dig "headers" "request" "set" nil $s }}
 {{- $headersResponseSet := dig "headers" "response" "set" nil $s }}
@@ -38,6 +40,8 @@ metadata:
     {{- . | toYaml | nindent 4 }}
   {{- end }}
   name: {{ $serviceName }}
+  labels:
+    otomi.io/app: {{ $serviceLabel }}
 spec:
   hostnames:
     - {{ $defaultHostname }}
