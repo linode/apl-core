@@ -19,7 +19,7 @@ resources:
     {{- $gpsUsername := . | get "username" "" }}
     {{- $gpsServer := . | get "server" "docker.io" }}
     {{- $gpsEmail := . | get "email" "not@val.id" }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: otomi-pullsecret-global
