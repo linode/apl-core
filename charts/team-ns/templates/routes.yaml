@@ -19,7 +19,7 @@
 {{- $useTrafficControl := dig "trafficControl" "enabled" false $s }}
 {{- $serviceName := $s.name }}
 {{- $serviceLabel := $s.name }}
-{{- $defaultHostname := print $serviceName "." $v.domain }}
+{{- $defaultHostname := print $serviceName "-" $v.teamId "." $v.domain }}
 {{- $headersRequestSet := dig "headers" "request" "set" nil $s }}
 {{- $headersResponseSet := dig "headers" "response" "set" nil $s }}
 {{- $headersRequestRemove := get $s "removeRequestHeaders" | default nil }}
