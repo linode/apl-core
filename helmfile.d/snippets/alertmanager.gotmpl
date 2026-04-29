@@ -1,5 +1,7 @@
 {{- $receivers := .instance | get "alerts.receivers" (.root | get "alerts.receivers" (list "slack")) }}
+{{- $hasReceivers := not (has "none" $receivers) }}
 {{- $suffix := (true | ternary "" ".monitoring.svc.cluster.local") }}
+{{- if $hasReceivers }}
 global:
 {{- if (has "slack" $receivers ) }}
   slack_api_url: {{ "{{ .slackUrl | toString }}" }}
@@ -17,6 +19,7 @@ global:
   smtp_auth_secret: '{{ "{{ .smtpAuthSecret | toString }}" }}'
   smtp_auth_identity: {{ .root | get "smtp.auth_identity" nil }}
 {{- end }}
+{{- end }}{{/* if $hasReceivers */}}
 route:
   receiver: "null"
   group_by: [alertname]
@@ -51,7 +54,7 @@ route:
       {{- end }}
 receivers:
   - name: "null"
-{{- if not (has "none" $receivers ) }}
+  {{- if $hasReceivers }}
   - name: default
     {{- if has "slack" $receivers  }}
     slack_configs:
@@ -79,9 +82,6 @@ receivers:
         send_resolved: true
     {{- end }}
   {{- end }}
-{{- end }}
-
-{{- if not (has "none" $receivers ) }}
   - name: critical
     {{- if has "slack" $receivers  }}
     slack_configs:
@@ -108,4 +108,4 @@ receivers:
         send_resolved: true
     {{- end }}
   {{- end }}
-{{- end }}
+  {{- end }}{{/* if $hasReceivers */}}

@@ -10,7 +10,7 @@ resources:
       custom-ca-certificates.crt: {{ .Values._derived.caCert | b64enc }}
 {{- end }}
 {{- if contains "gitea-http.gitea.svc.cluster.local" $v.otomi.git.repoUrl }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: argocd-repo-creds-gitea
@@ -38,7 +38,7 @@ resources:
           remoteRef:
             key: otomi-secrets
             property: git_password
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: argocd-repo-creds-gitea-internal
@@ -67,7 +67,7 @@ resources:
             key: otomi-secrets
             property: git_password
 {{- else }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: argocd-repo-creds-git
@@ -96,7 +96,7 @@ resources:
             key: otomi-secrets
             property: git_password
 {{- end }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: argocd-oidc-secret
@@ -114,7 +114,7 @@ resources:
           remoteRef:
             key: keycloak-secrets
             property: idp_clientSecret
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: argocd-redis-secret
