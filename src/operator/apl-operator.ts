@@ -165,7 +165,7 @@ export class AplOperator {
       this.d.info('Git credentials changed, validating new configuration before applying')
     }
 
-    const newConfig = getRepo(values)
+    const newConfig = await getRepo(values)
     await this.gitRepo.validateRepoAccess(newConfig.authenticatedUrl)
     if (urlChanged || branchChanged) {
       await this.gitRepo.pushToNewRepo(newConfig.authenticatedUrl, newConfig.branch)
