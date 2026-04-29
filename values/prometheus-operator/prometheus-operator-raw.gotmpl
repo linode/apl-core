@@ -3,7 +3,8 @@
 {{- $a := $v.apps | get "alertmanager" }}
 {{- $k := $v.apps.keycloak }}
 {{- $obj := $v.obj.provider }}
-{{- $receivers := $v | get "alerts.receivers" (list "slack") }}
+{{- $receivers := $v.alerts.receivers }}
+{{- $hasReceivers := not (has "none" $receivers) }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 {{- $alertmanagerConfig := tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | toString }}
@@ -103,6 +104,7 @@ resources:
             property: remoteWrite_rwConfig_basicAuth_password
   {{- end }}
   {{- if $a.enabled }}
+  {{- if $hasReceivers }}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
@@ -122,7 +124,6 @@ resources:
             alertmanager.yaml: |
               {{- $alertmanagerConfig | nindent 14 }}
       data:
-        {{- if or (has "slack" $receivers) (has "email" $receivers) (has "opsgenie" $receivers) }}
         {{- if has "slack" $receivers }}
         - secretKey: slackUrl
           remoteRef:
@@ -145,7 +146,15 @@ resources:
             key: alerts-secrets
             property: opsgenie_apiKey
         {{- end }}
-        {{- else }}
-        []
-        {{- end }}
-  {{- end }}
+  {{- else }}{{/* if $hasReceivers */}}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: alertmanager-platform-config
+      namespace: monitoring
+    type: Opaque
+    data:
+      alertmanager.yaml: |
+        {{- $alertmanagerConfig | nindent 8 }}
+  {{- end }}{{/* if $hasReceivers */}}
+  {{- end }}{{/* if $a.enabled */}}
