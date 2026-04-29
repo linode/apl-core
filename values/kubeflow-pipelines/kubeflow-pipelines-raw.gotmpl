@@ -3,7 +3,7 @@
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 {{- $hostname := print "kubeflow-pipelines." $v.cluster.domainSuffix }}
 resources:
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: kfp-mysql-secret
@@ -26,7 +26,7 @@ resources:
             key: kubeflow-pipelines-secrets
             property: rootPassword
   {{- if eq $obj.type "linode" }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: mlpipeline-obj-artifact
