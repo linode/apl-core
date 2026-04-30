@@ -953,13 +953,6 @@ environments:
                 limits:
                   cpu: 500m
                   memory: 512Mi
-              kubeRBACProxy:
-                requests:
-                  cpu: 50m
-                  memory: 32Mi
-                limits:
-                  cpu: 200m
-                  memory: 128Mi
             _rawValues: {}
           sealed-secrets:
             resources:
@@ -1177,4 +1170,4 @@ environments:
           aiEnabled: false
         users: []
         versions:
-          specVersion: 64
+          specVersion: 65
