@@ -14,16 +14,16 @@ annotations:
   artifacthub.io/operator: "false"
   artifacthub.io/prerelease: "false"
 apiVersion: v2
-appVersion: v1.17.1
+appVersion: v1.17.2
 dependencies:
 - condition: grafana.enabled
   name: grafana
   repository: ""
-  version: 3.7.1
+  version: 3.7.2
 - condition: crds.install
   name: crds
   repository: ""
-  version: 3.7.1
+  version: 3.7.2
 - condition: crds.install
   name: kyverno-api
   repository: https://kyverno.github.io/api
@@ -56,4 +56,4 @@ name: kyverno
 sources:
 - https://github.com/kyverno/kyverno
 type: application
-version: 3.7.1
+version: 3.7.2
