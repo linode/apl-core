@@ -3,7 +3,7 @@
 Policy Reporter watches for PolicyReport Resources.
 It creates Prometheus Metrics and can send rule validation events to different targets like Loki, Elasticsearch, Slack or Discord
 
-![Version: 3.7.3](https://img.shields.io/badge/Version-3.7.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.7.3](https://img.shields.io/badge/AppVersion-3.7.3-informational?style=flat-square)
+![Version: 3.7.4](https://img.shields.io/badge/Version-3.7.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.7.4](https://img.shields.io/badge/AppVersion-3.7.4-informational?style=flat-square)
 
 ## Documentation
 
@@ -492,7 +492,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.kyverno.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.kyverno.image.repository | string | `"kyverno/policy-reporter/kyverno-plugin"` | Image repository |
 | plugin.kyverno.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.kyverno.image.tag | string | `"0.5.3"` | Image tag |
+| plugin.kyverno.image.tag | string | `"0.6.0"` | Image tag |
 | plugin.kyverno.replicaCount | int | `1` | Deployment replica count |
 | plugin.kyverno.priorityClassName | string | `""` | Deployment priorityClassName |
 | plugin.kyverno.logging.api | bool | `false` | Enables external API request logging |
@@ -569,7 +569,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.trivy.cli.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.trivy.cli.image.repository | string | `"aquasecurity/trivy"` | Image repository |
 | plugin.trivy.cli.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.trivy.cli.image.tag | string | `"0.63.0"` | Image tag Defaults to `Chart.AppVersion` if omitted |
+| plugin.trivy.cli.image.tag | string | `"0.69.3"` | Image tag Defaults to `Chart.AppVersion` if omitted |
 | plugin.trivy.extraArgs | object | `{}` | Additional container args. |
 | plugin.trivy.cveawg.disable | bool | `false` | disable external CVEAWG API calls. |
 | plugin.trivy.github.disable | bool | `false` | disable GitHub API calls. |
