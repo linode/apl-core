@@ -479,3 +479,6 @@ changes:
   - version: 64
     mutations:
       - apps.cnpg.useBackupPlugin: true
+  - version: 65
+    deletions:
+      - 'apps.otel.resources.kubeRBACProxy'
