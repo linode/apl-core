@@ -37,7 +37,7 @@ resources:
             path: /var/lib/docker/containers
       config:
         receivers:
-          filelog:
+          file_log:
             include:
               - /var/log/pods/*/*/*.log
             exclude:
@@ -57,7 +57,7 @@ resources:
           batch:
             send_batch_size: 10000
             timeout: 10s
-          k8sattributes:
+          k8s_attributes:
             auth_type: serviceAccount
             passthrough: false
             filter:
@@ -157,10 +157,10 @@ resources:
           pipelines:
             logs/input:
               receivers:
-                - filelog
+                - file_log
               processors:
                 - memory_limiter
-                - k8sattributes
+                - k8s_attributes
                 - resource
                 - attributes
                 - batch
