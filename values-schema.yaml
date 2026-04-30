@@ -2507,8 +2507,6 @@ properties:
                 $ref: '#/definitions/resources'
               manager:
                 $ref: '#/definitions/resources'
-              kubeRBACProxy:
-                $ref: '#/definitions/resources'
     patternProperties:
       '^ingress-nginx-[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
         $ref: '#/definitions/ingressNginx'

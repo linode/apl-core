@@ -46,7 +46,7 @@ spec:
       containers:
         - args:
             - --metrics-addr=0.0.0.0:{{ .Values.manager.ports.metricsPort }}
-            - --metrics-secure=false
+            - --metrics-secure={{ .Values.manager.metrics.secure }}
             {{- if .Values.manager.leaderElection.enabled }}
             - --enable-leader-election
             {{- end }}
@@ -155,33 +155,6 @@ spec:
           {{- with .Values.manager.securityContext }}
           securityContext: {{ toYaml . | nindent 12 }}
           {{- end }}
-        {{ if .Values.kubeRBACProxy.enabled }}
-        - args:
-            - --secure-listen-address=0.0.0.0:{{ .Values.kubeRBACProxy.ports.proxyPort }}
-            - --upstream=http://127.0.0.1:{{ .Values.manager.ports.metricsPort }}/
-            - --v=0
-            {{-  if .Values.kubeRBACProxy.extraArgs  }}
-            {{- .Values.kubeRBACProxy.extraArgs | toYaml | nindent 12 }}
-            {{-  end  }}
-          image: "{{ .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}"
-          name: kube-rbac-proxy
-          ports:
-            - containerPort: {{ .Values.kubeRBACProxy.ports.proxyPort }}
-              name: https
-              protocol: TCP
-          {{- with .Values.kubeRBACProxy.resources }}
-          resources: {{ toYaml . | nindent 12 }}
-          {{- end }}
-          {{- with .Values.kubeRBACProxy.securityContext }}
-          securityContext: {{ toYaml . | nindent 12 }}
-          {{- end }}
-          {{- if $explicitMount }}
-          volumeMounts:
-            - name: access-token
-              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
-              readOnly: true
-          {{- end }}
-        {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}

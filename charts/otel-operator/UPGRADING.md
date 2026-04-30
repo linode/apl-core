@@ -1,5 +1,53 @@
 # Upgrade guidelines
 
+## 0.109.x to 0.110.0
+
+### Migration from kube-rbac-proxy to controller-runtime metrics
+
+The OpenTelemetry Operator (v0.142.0+) has removed its dependency on kube-rbac-proxy. Metrics authentication is now handled by controller-runtime's built-in implementation.
+
+**Breaking Change:** The `kubeRBACProxy` configuration section has been removed. Metrics configuration is now under `manager.metrics` and `manager.ports.metricsPort`.
+
+**Migration Guide:**
+
+If you were using the default configuration (`kubeRBACProxy.enabled: true`), no action is required. The new default (`manager.metrics.secure: true`) provides authenticated metrics on port 8443.
+
+If you need unauthenticated metrics access, update your values.yaml:
+
+```yaml
+# OLD (no longer supported)
+kubeRBACProxy:
+  enabled: true
+  ports:
+    proxyPort: 8443
+
+# NEW
+manager:
+  ports:
+    metricsPort: 8080
+  metrics:
+    secure: false
+```
+
+If you also have the ServiceMonitor enabled, you will need to override the default `metricsEndpoints` to use plain HTTP:
+
+```yaml
+manager:
+  serviceMonitor:
+    enabled: true
+    metricsEndpoints:
+      - port: metrics
+```
+
+**Key Changes:**
+- Deployment now has 1 container (manager only) instead of 2
+- Metrics port configured via `manager.ports.metricsPort` (default: 8443)
+- RBAC: ClusterRole for `/metrics` access only created when `manager.metrics.secure: true`
+- TLS certificates: Auto-generated if not provided when secure mode is enabled
+- ServiceMonitor defaults to HTTPS scraping with bearer token auth to match the secure default
+
+For more details, see [upstream PR #4576](https://github.com/open-telemetry/opentelemetry-operator/pull/4576).
+
 ## 0.86.4 to 0.87.0
 
 In the v0.123.1 Collector release we stopped pushing images to Dockerhub due to how their new rate limit changes affected our CI. If you're using the dockerhub repository (`otel/`) for the image you should switch to `ghcr.io/open-telemetry/opentelemetry-collector-releases/` instead. See https://github.com/open-telemetry/community/issues/2641 for more details.
