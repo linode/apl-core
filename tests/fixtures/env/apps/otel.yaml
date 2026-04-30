@@ -8,13 +8,6 @@ spec:
     operator:
         replicaCount: 1
     resources:
-        kubeRBACProxy:
-            limits:
-                cpu: 500m
-                memory: 128Mi
-            requests:
-                cpu: 5m
-                memory: 64Mi
         manager:
             limits:
                 cpu: 200m
