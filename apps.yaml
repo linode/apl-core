@@ -139,7 +139,7 @@ appsInfo:
     isAlpha: true
   kyverno:
     title: Kyverno
-    appVersion: 1.17.1
+    appVersion: 1.17.2
     repo: https://github.com/kyverno/kyverno
     maintainers: Nirmata
     relatedLinks:
