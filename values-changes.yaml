@@ -480,5 +480,8 @@ changes:
     mutations:
       - apps.cnpg.useBackupPlugin: true
   - version: 65
+    deletions:
+      - 'apps.otel.resources.kubeRBACProxy'
+  - version: 66
     additions:
       - 'apps.git-server.enabled': false
