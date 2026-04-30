@@ -3,5 +3,5 @@ metadata:
     name: policy-reporter
     labels: {}
 spec:
-    enabled: false
+    enabled: true
     _rawValues: {}
