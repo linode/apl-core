@@ -58,8 +58,8 @@ resources:
           type: Opaque
           data:
             type: git
-            url: {{ "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git" | quote }}
-            username: {{ $v.otomi.git.username }}
+            url: {{ $v.otomi.git.repoUrl | quote }}
+            username: {{ $v.otomi.git.username | quote }}
             password: '{{ "{{ .gitPassword | toString }}" }}'
       data:
         - secretKey: gitPassword
@@ -88,8 +88,8 @@ resources:
           type: Opaque
           data:
             type: git
-            url: {{ "http://git-server.git-server.svc.cluster.local/otomi/values.git" | quote }}
-            username: {{ $v.otomi.git.username }}
+            url: {{ $v.otomi.git.repoUrl | quote }}
+            username: {{ $v.otomi.git.username | quote }}
             password: '{{ "{{ .gitPassword | toString }}" }}'
       data:
         - secretKey: gitPassword
@@ -117,8 +117,8 @@ resources:
           type: Opaque
           data:
             type: git
-            url: {{ $v.otomi.git.repoUrl }}
-            username: {{ $v.otomi.git.username }}
+            url: {{ $v.otomi.git.repoUrl | quote }}
+            username: {{ $v.otomi.git.username | quote }}
             password: '{{ "{{ .gitPassword | toString }}" }}'
       data:
         - secretKey: gitPassword
