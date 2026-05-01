@@ -1,13 +1,13 @@
 import {
-  applyGitOpsApps,
-  getApplications,
-  applyArgocdApp,
   addGitOpsApps,
-  removeGitOpsApps,
-  calculateGitOpsAppsDiff,
+  applyArgocdApp,
+  applyGitOpsApps,
+  ArgocdAppManifest,
+  calculateGitOpsAppsSyncState,
+  getApplications,
   getArgocdGitopsManifest,
   checkArgoCdController,
-  ArgocdAppManifest,
+  removeGitOpsApps,
 } from './apply-as-apps'
 import { glob } from 'glob'
 import { env } from '../common/envalid'
@@ -24,6 +24,9 @@ jest.mock('fs', () => ({
   existsSync: jest.fn(),
 }))
 jest.mock('../common/envalid')
+jest.mock('../common/git-config', () => ({
+  getStoredGitRepoConfig: jest.fn().mockResolvedValue({ repoUrl: 'https://git.example.com/otomi/values.git' }),
+}))
 jest.mock('../common/debug', () => ({
   ...jest.requireActual('../common/debug'),
   terminal: jest.fn(() => ({
@@ -39,7 +42,7 @@ const mockGlob = glob as jest.MockedFunction<typeof glob>
 const mockStatSync = statSync as jest.MockedFunction<any>
 const mockGetApplications = jest.fn() as jest.MockedFunction<typeof getApplications>
 const mockApplyArgoCdApp = jest.fn() as jest.MockedFunction<typeof applyArgocdApp>
-const mockCalculateGitOpsAppsDiff = jest.fn() as jest.MockedFunction<typeof calculateGitOpsAppsDiff>
+const mockCalculateGitOpsAppsSyncState = jest.fn() as jest.MockedFunction<typeof calculateGitOpsAppsSyncState>
 const mockAddGitOpsApps = jest.fn() as jest.MockedFunction<typeof addGitOpsApps>
 const mockRemoveGitOpsApps = jest.fn() as jest.MockedFunction<typeof removeGitOpsApps>
 const mockGetArgocdGitopsManifest = jest.fn() as jest.MockedFunction<typeof getArgocdGitopsManifest>
@@ -83,18 +86,12 @@ jest.mock('../common/utils', () => ({
 }))
 
 describe('getArgocdGitopsManifest', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-    ;(env as any) = {
-      GIT_PROTOCOL: 'https',
-      GIT_URL: 'git.example.com',
-      GIT_PORT: '443',
-    }
-  })
+  const repoURL = 'https://git.example.com/otomi/values.git'
+  const branch = 'main'
 
   it('should create manifest with correct structure for global deployment', () => {
     const name = 'my-app'
-    const manifest = getArgocdGitopsManifest(name)
+    const manifest = getArgocdGitopsManifest(name, repoURL, branch)
 
     expect(manifest).toEqual({
       ...ARGOCD_BASE_MANIFEST,
@@ -121,8 +118,8 @@ describe('getArgocdGitopsManifest', () => {
         sources: [
           {
             path: 'env/manifests/global',
-            repoURL: 'https://git.example.com:443/otomi/values.git',
-            targetRevision: 'HEAD',
+            repoURL,
+            targetRevision: branch,
             directory: {
               recurse: true,
             },
@@ -139,7 +136,7 @@ describe('getArgocdGitopsManifest', () => {
   it('should create manifest with correct structure for namespaced deployment', () => {
     const name = 'my-app'
     const targetNamespace = 'my-namespace'
-    const manifest = getArgocdGitopsManifest(name, targetNamespace)
+    const manifest = getArgocdGitopsManifest(name, repoURL, branch, targetNamespace)
 
     expect(manifest).toEqual({
       ...ARGOCD_BASE_MANIFEST,
@@ -166,8 +163,8 @@ describe('getArgocdGitopsManifest', () => {
         sources: [
           {
             path: 'env/manifests/namespaces/my-namespace',
-            repoURL: 'https://git.example.com:443/otomi/values.git',
-            targetRevision: 'HEAD',
+            repoURL,
+            targetRevision: branch,
             directory: {
               recurse: true,
             },
@@ -287,7 +284,7 @@ describe('getApplications', () => {
   })
 })
 
-describe('calculateGitOpsAppsDiff', () => {
+describe('calculateGitOpsAppsSyncState', () => {
   const mockEnvDir = '/test'
   const mockDeps = {
     getApplications: mockGetApplications,
@@ -306,7 +303,7 @@ describe('calculateGitOpsAppsDiff', () => {
     mockGlob.mockResolvedValue(mockPaths)
   }
 
-  it('should identify apps to add when directories exist but apps do not', async () => {
+  it('should return required and stale apps when directories exist', async () => {
     setupMockDirs(['a', 'b', 'c'])
     mockGetApplications.mockResolvedValue([
       {
@@ -319,9 +316,9 @@ describe('calculateGitOpsAppsDiff', () => {
     ])
     mockStatSync.mockReturnValue({ isDirectory: () => true })
 
-    const result = await calculateGitOpsAppsDiff(mockDeps)
+    const result = await calculateGitOpsAppsSyncState(mockDeps)
 
-    expect(result.toAdd).toEqual(new Set(['gitops-global', 'gitops-ns-a', 'gitops-ns-b']))
+    expect(result.requiredGitOpsApps).toEqual(new Set(['gitops-global', 'gitops-ns-a', 'gitops-ns-b', 'gitops-ns-c']))
     expect(result.toRemove).toEqual(new Set())
     expect(result.namespaceDirs).toEqual(['a', 'b', 'c'])
   })
@@ -353,9 +350,9 @@ describe('calculateGitOpsAppsDiff', () => {
     setupMockDirs(['a'])
     mockStatSync.mockReturnValue(undefined)
 
-    const result = await calculateGitOpsAppsDiff(mockDeps)
+    const result = await calculateGitOpsAppsSyncState(mockDeps)
 
-    expect(result.toAdd).toEqual(new Set())
+    expect(result.requiredGitOpsApps).toEqual(new Set(['gitops-ns-a']))
     expect(result.toRemove).toEqual(new Set(['gitops-ns-b', 'gitops-ns-c']))
     expect(result.namespaceDirs).toEqual(['a'])
   })
@@ -365,9 +362,9 @@ describe('calculateGitOpsAppsDiff', () => {
     setupMockDirs([])
     mockStatSync.mockReturnValue({ isDirectory: () => true })
 
-    const result = await calculateGitOpsAppsDiff(mockDeps)
+    const result = await calculateGitOpsAppsSyncState(mockDeps)
 
-    expect(result.toAdd).toEqual(new Set(['gitops-global']))
+    expect(result.requiredGitOpsApps).toEqual(new Set(['gitops-global']))
   })
 
   it('should not remove global app even if directory does not exist', async () => {
@@ -390,7 +387,7 @@ describe('calculateGitOpsAppsDiff', () => {
     setupMockDirs([])
     mockStatSync.mockReturnValue(undefined)
 
-    const result = await calculateGitOpsAppsDiff(mockDeps)
+    const result = await calculateGitOpsAppsSyncState(mockDeps)
 
     expect(result.toRemove).toEqual(new Set(['gitops-ns-a']))
   })
@@ -400,10 +397,10 @@ describe('calculateGitOpsAppsDiff', () => {
     setupMockDirs(['a', 'b'], ['file.txt', 'README.md'])
     mockStatSync.mockReturnValue(undefined)
 
-    const result = await calculateGitOpsAppsDiff(mockDeps)
+    const result = await calculateGitOpsAppsSyncState(mockDeps)
 
     expect(result.namespaceDirs).toEqual(['a', 'b'])
-    expect(result.toAdd).toEqual(new Set(['gitops-ns-a', 'gitops-ns-b']))
+    expect(result.requiredGitOpsApps).toEqual(new Set(['gitops-ns-a', 'gitops-ns-b']))
   })
 
   it('should handle no changes scenario', async () => {
@@ -433,16 +430,16 @@ describe('calculateGitOpsAppsDiff', () => {
     setupMockDirs(['a', 'b'])
     mockStatSync.mockReturnValue({ isDirectory: () => true })
 
-    const result = await calculateGitOpsAppsDiff({ getApplications: mockGetApplications })
+    const result = await calculateGitOpsAppsSyncState({ getApplications: mockGetApplications })
 
-    expect(result.toAdd).toEqual(new Set())
     expect(result.toRemove).toEqual(new Set())
+    expect(result.requiredGitOpsApps).toEqual(new Set(['gitops-global', 'gitops-ns-a', 'gitops-ns-b']))
   })
 })
 
 describe('applyGitOpsApps', () => {
   const mockDeps = {
-    calculateGitOpsAppsDiff: mockCalculateGitOpsAppsDiff,
+    calculateGitOpsAppsSyncState: mockCalculateGitOpsAppsSyncState,
     addGitOpsApps: mockAddGitOpsApps,
     removeGitOpsApps: mockRemoveGitOpsApps,
   }
@@ -451,66 +448,72 @@ describe('applyGitOpsApps', () => {
     jest.clearAllMocks()
   })
 
-  it('should add apps when calculateGitOpsAppsDiff returns apps to add', async () => {
-    const toAdd = new Set(['gitops-global', 'gitops-ns-a'])
+  it('should apply all required apps', async () => {
+    const requiredGitOpsApps = new Set(['gitops-global', 'gitops-ns-a'])
     const toRemove = new Set<string>()
     const namespaceDirs = ['a']
 
-    mockCalculateGitOpsAppsDiff.mockResolvedValue({ toAdd, toRemove, namespaceDirs })
+    mockCalculateGitOpsAppsSyncState.mockResolvedValue({ toRemove, namespaceDirs, requiredGitOpsApps })
 
     await applyGitOpsApps(mockDeps)
 
-    expect(mockAddGitOpsApps).toHaveBeenCalledWith(toAdd, namespaceDirs)
+    expect(mockAddGitOpsApps).toHaveBeenCalledWith(requiredGitOpsApps, namespaceDirs)
     expect(mockRemoveGitOpsApps).not.toHaveBeenCalled()
   })
 
-  it('should remove apps when calculateGitOpsAppsDiff returns apps to remove', async () => {
-    const toAdd = new Set<string>()
+  it('should remove stale apps and still reconcile required apps', async () => {
+    const requiredGitOpsApps = new Set(['gitops-ns-a'])
     const toRemove = new Set(['gitops-ns-b', 'gitops-ns-c'])
     const namespaceDirs = ['a']
 
-    mockCalculateGitOpsAppsDiff.mockResolvedValue({ toAdd, toRemove, namespaceDirs })
+    mockCalculateGitOpsAppsSyncState.mockResolvedValue({ toRemove, namespaceDirs, requiredGitOpsApps })
 
     await applyGitOpsApps(mockDeps)
 
-    expect(mockAddGitOpsApps).not.toHaveBeenCalled()
+    expect(mockAddGitOpsApps).toHaveBeenCalledWith(requiredGitOpsApps, namespaceDirs)
     expect(mockRemoveGitOpsApps).toHaveBeenCalledWith(toRemove)
   })
 
-  it('should both add and remove apps when necessary', async () => {
-    const toAdd = new Set(['gitops-global', 'gitops-ns-c'])
+  it('should apply and remove when both are needed', async () => {
+    const requiredGitOpsApps = new Set(['gitops-global', 'gitops-ns-c'])
     const toRemove = new Set(['gitops-ns-a', 'gitops-ns-b'])
     const namespaceDirs = ['c', 'd']
 
-    mockCalculateGitOpsAppsDiff.mockResolvedValue({ toAdd, toRemove, namespaceDirs })
+    mockCalculateGitOpsAppsSyncState.mockResolvedValue({ toRemove, namespaceDirs, requiredGitOpsApps })
 
     await applyGitOpsApps(mockDeps)
 
-    expect(mockAddGitOpsApps).toHaveBeenCalledWith(toAdd, namespaceDirs)
+    expect(mockAddGitOpsApps).toHaveBeenCalledWith(requiredGitOpsApps, namespaceDirs)
     expect(mockRemoveGitOpsApps).toHaveBeenCalledWith(toRemove)
   })
 
-  it('should do nothing when there are no changes', async () => {
-    const toAdd = new Set<string>()
+  it('should re-apply existing apps even when nothing has changed', async () => {
+    const requiredGitOpsApps = new Set(['gitops-global', 'gitops-ns-a'])
     const toRemove = new Set<string>()
-    const namespaceDirs = ['a', 'b']
+    const namespaceDirs = ['a']
 
-    mockCalculateGitOpsAppsDiff.mockResolvedValue({ toAdd, toRemove, namespaceDirs })
+    mockCalculateGitOpsAppsSyncState.mockResolvedValue({ toRemove, namespaceDirs, requiredGitOpsApps })
 
     await applyGitOpsApps(mockDeps)
 
-    expect(mockAddGitOpsApps).not.toHaveBeenCalled()
+    expect(mockAddGitOpsApps).toHaveBeenCalledWith(requiredGitOpsApps, namespaceDirs)
     expect(mockRemoveGitOpsApps).not.toHaveBeenCalled()
   })
 })
 
 describe('addGitOpsApps', () => {
+  const repoUrl = 'https://git.example.com/otomi/values.git'
+  const branch = 'main'
+  const mockGetStoredGitRepoConfig = jest.fn().mockResolvedValue({ repoUrl, branch })
+
   beforeEach(() => {
     jest.clearAllMocks()
+    mockGetStoredGitRepoConfig.mockResolvedValue({ repoUrl, branch })
   })
   const mockDeps = {
     getArgocdGitopsManifest: mockGetArgocdGitopsManifest,
     applyArgocdApp: mockApplyArgoCdApp,
+    getStoredGitRepoConfig: mockGetStoredGitRepoConfig,
   }
 
   it('should create global app when included in appNames', async () => {
@@ -522,7 +525,7 @@ describe('addGitOpsApps', () => {
 
     await addGitOpsApps(appNames, namespaceDirs, mockDeps)
 
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global', repoUrl, branch)
     expect(mockApplyArgoCdApp).toHaveBeenCalledWith(mockManifest)
   })
 
@@ -532,9 +535,9 @@ describe('addGitOpsApps', () => {
 
     await addGitOpsApps(appNames, namespaceDirs, mockDeps)
 
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', 'a')
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', 'b')
-    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-ns-c', 'c')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', repoUrl, branch, 'a')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', repoUrl, branch, 'b')
+    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-ns-c', repoUrl, branch, 'c')
     expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(2)
   })
 
@@ -544,8 +547,8 @@ describe('addGitOpsApps', () => {
 
     await addGitOpsApps(appNames, namespaceDirs, mockDeps)
 
-    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-global')
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', 'a')
+    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-global', repoUrl, branch)
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', repoUrl, branch, 'a')
   })
 
   it('should continue processing when app creation fails', async () => {
@@ -560,9 +563,9 @@ describe('addGitOpsApps', () => {
     await addGitOpsApps(appNames, namespaceDirs, mockDeps)
 
     expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(3)
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global')
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', 'a')
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', 'b')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global', repoUrl, branch)
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', repoUrl, branch, 'a')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', repoUrl, branch, 'b')
   })
 
   it('should handle empty appNames set', async () => {
