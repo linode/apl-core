@@ -1,3 +1,5 @@
+import { setIdentity } from '../common/bootstrap'
+import { GitRepoConfig } from '../common/git-config'
 import { OperatorError } from './errors'
 import { GitRepository, GitRepositoryConfig } from './git-repository'
 
@@ -29,6 +31,10 @@ jest.mock('fs', () => ({
   existsSync: jest.fn(),
 }))
 
+jest.mock('../common/bootstrap', () => ({
+  setIdentity: jest.fn().mockResolvedValue(undefined),
+}))
+
 describe('GitRepository', () => {
   let mockGit
   let gitRepository: GitRepository
@@ -39,8 +45,12 @@ describe('GitRepository', () => {
 
     defaultConfig = {
       authenticatedUrl: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
+      repoUrl: 'https://github.com:443/testorg/testrepo.git',
+      password: 'testpass',
       repoPath: '/tmp/repo',
       branch: 'main',
+      username: 'testuser',
+      email: 'test@example.com',
     }
 
     const simpleGit = require('simple-git')
@@ -53,6 +63,17 @@ describe('GitRepository', () => {
   describe('constructor', () => {
     test('should store repository URL from config', () => {
       expect(gitRepository.authenticatedUrl).toBe('https://testuser:testpass@github.com:443/testorg/testrepo.git')
+    })
+
+    test('should expose full git config via config getter', () => {
+      expect(gitRepository.config).toEqual({
+        repoUrl: 'https://github.com:443/testorg/testrepo.git',
+        authenticatedUrl: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
+        branch: 'main',
+        username: 'testuser',
+        email: 'test@example.com',
+        password: 'testpass',
+      })
     })
   })
 
@@ -341,8 +362,12 @@ describe('GitRepository', () => {
     test('should fetch from the configured branch', async () => {
       const customBranchRepo = new GitRepository({
         authenticatedUrl: 'https://testuser:testpass@github.com:443/testorg/testrepo.git',
+        repoUrl: 'https://github.com:443/testorg/testrepo.git',
+        password: 'testpass',
         repoPath: '/tmp/repo',
         branch: 'feature-branch',
+        username: 'testuser',
+        email: 'test@example.com',
       })
 
       mockGit.fetch.mockResolvedValue(undefined)
@@ -375,6 +400,56 @@ describe('GitRepository', () => {
       })
 
       expect(gitRepository.lastRevision).toBe(revision)
+    })
+  })
+
+  describe('reloadConfig', () => {
+    const newConfig: GitRepoConfig = {
+      repoUrl: 'https://github.com:443/testorg/testrepo.git',
+      authenticatedUrl: 'https://newuser:newpass@github.com:443/testorg/testrepo.git',
+      branch: 'main',
+      username: 'newuser',
+      email: 'new@example.com',
+      password: 'newpass',
+    }
+
+    test('should update authenticatedUrl and set new git remote', async () => {
+      mockGit.remote.mockResolvedValue(undefined)
+
+      await gitRepository.reloadConfig(newConfig)
+
+      expect(gitRepository.authenticatedUrl).toBe(newConfig.authenticatedUrl)
+      expect(mockGit.remote).toHaveBeenCalledWith(['set-url', 'origin', newConfig.authenticatedUrl])
+    })
+
+    test('should update branch when it changes', async () => {
+      mockGit.remote.mockResolvedValue(undefined)
+
+      await gitRepository.reloadConfig({ ...newConfig, branch: 'new-branch' })
+
+      expect((gitRepository as any).branch).toBe('new-branch')
+    })
+
+    test('should call setIdentity with updated username and email', async () => {
+      mockGit.remote.mockResolvedValue(undefined)
+
+      await gitRepository.reloadConfig(newConfig)
+
+      expect(setIdentity).toHaveBeenCalledWith('newuser', 'new@example.com', '/tmp/repo')
+    })
+
+    test('should update the config getter after reload', async () => {
+      mockGit.remote.mockResolvedValue(undefined)
+
+      await gitRepository.reloadConfig(newConfig)
+
+      expect(gitRepository.config).toEqual(newConfig)
+    })
+
+    test('should throw OperatorError when git remote set-url fails', async () => {
+      mockGit.remote.mockRejectedValue(new Error('Remote update failed'))
+
+      await expect(gitRepository.reloadConfig(newConfig)).rejects.toBeInstanceOf(OperatorError)
     })
   })
 })

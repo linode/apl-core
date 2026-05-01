@@ -2,7 +2,7 @@ import { decrypt } from 'src/common/crypt'
 import { commit } from '../cmd/commit'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { GitRepoConfig } from '../common/git-config'
+import { getStoredGitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/gitea'
 import { hfValues } from '../common/hf'
 import { ensureManifestDirectories, ensureTeamGitOpsDirectories } from '../common/utils'
@@ -15,7 +15,6 @@ import { getErrorMessage } from './utils'
 
 export interface AplOperatorConfig {
   gitRepo: GitRepository
-  gitConfig: GitRepoConfig
   aplOps: AplOperations
   pollIntervalMs: number
   reconcileIntervalMs: number
@@ -40,17 +39,15 @@ export class AplOperator {
   readonly authenticatedUrl: string
   readonly pollInterval: number
   readonly reconcileInterval: number
-  readonly startupGitConfig: GitRepoConfig
 
   constructor(config: AplOperatorConfig) {
-    const { gitRepo, gitConfig, aplOps, pollIntervalMs, reconcileIntervalMs } = config
+    const { gitRepo, aplOps, pollIntervalMs, reconcileIntervalMs } = config
 
     this.pollInterval = pollIntervalMs
     this.reconcileInterval = reconcileIntervalMs
     this.gitRepo = gitRepo
     this.aplOps = aplOps
     this.authenticatedUrl = gitRepo.authenticatedUrl
-    this.startupGitConfig = gitConfig
 
     this.d.info(`Initializing APL Operator with repo URL: ${maskRepoUrl(gitRepo.authenticatedUrl)}`)
     this.d.debug(`Initializing APL Operator with repo URL: ${gitRepo.authenticatedUrl}`)
@@ -92,7 +89,7 @@ export class AplOperator {
       await ensureTeamGitOpsDirectories(env.ENV_DIR, values ?? {})
       await ensureManifestDirectories()
 
-      await commit(false, {} as HelmArguments, this.startupGitConfig) // Pass startup config to use frozen git credentials
+      await commit(false, {} as HelmArguments, this.gitRepo.config)
 
       if (applyTeamsOnly) {
         await this.aplOps.applyTeams()
@@ -162,12 +159,23 @@ export class AplOperator {
         }
       } catch (error) {
         this.d.error('Error during git polling cycle:', getErrorMessage(error))
+        await this.reloadGitCredentials()
       }
 
       await this.scheduleNextAttempt(this.pollInterval)
     }
 
     this.d.info('Git polling loop stopped')
+  }
+
+  private async reloadGitCredentials(): Promise<void> {
+    try {
+      const freshConfig = await getStoredGitRepoConfig()
+      await this.gitRepo.reloadConfig(freshConfig)
+      this.d.info('Git credentials reloaded successfully')
+    } catch (reloadError) {
+      this.d.warn('Failed to reload git credentials:', getErrorMessage(reloadError))
+    }
   }
 
   private async scheduleNextAttempt(interval: number) {
