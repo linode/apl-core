@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: git-server
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "git-server.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "git-server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "git-server.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 1001
+      initContainers:
+        - name: init-repo
+          securityContext:
+            runAsUser: 1001
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ "ALL" ]
+            seccompProfile:
+              type: RuntimeDefault
+          image: {{ .Values.initImage.git.repository }}:{{ .Values.initImage.git.tag }}
+          imagePullPolicy: {{ .Values.initImage.git.pullPolicy }}
+          command:
+            - sh
+            - -ec
+            - |
+              if [ ! -d /data/{{ .Values.repoName }} ]; then
+                mkdir -p /data/{{ dir .Values.repoName }}
+                git init --bare --initial-branch={{ .Values.branchName }} /data/{{ .Values.repoName }}
+              fi
+              git -C /data/{{ .Values.repoName }} config http.receivepack true
+              touch /data/{{ .Values.repoName }}/git-daemon-export-ok
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: git-server
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: PORT
+              value: {{ .Values.service.port | quote }}
+            - name: GIT_PROJECT_ROOT
+              value: /data
+            - name: GIT_HTPASSWD
+              valueFrom:
+                secretKeyRef:
+                  name: git-server-credentials
+                  key: htpasswd
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: git-server-data
+        - name: tmp
+          emptyDir: {}

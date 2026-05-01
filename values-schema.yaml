@@ -2369,6 +2369,18 @@ properties:
             properties:
               operator:
                 $ref: '#/definitions/resources'
+      git-server:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+          htpasswd:
+            type: string
+            x-secret: ''
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            $ref: '#/definitions/resources'
       prometheus:
         additionalProperties: false
         properties:
