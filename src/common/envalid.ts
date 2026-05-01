@@ -41,9 +41,6 @@ export const cliEnvSpec = {
     desc: 'The maximum amount of times to retry single post-installation steps',
     default: 5,
   }),
-  GIT_URL: str({ default: 'gitea-http.gitea.svc.cluster.local' }),
-  GIT_PORT: str({ default: '3000' }),
-  GIT_PROTOCOL: str({ default: 'http' }),
   APPS_REPO_URL: str({
     desc: 'Repository to set for ArgoCD applications',
     default: 'https://github.com/linode/apl-core.git',

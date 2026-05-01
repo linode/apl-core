@@ -101,7 +101,7 @@ export async function getStoredGitRepoConfig(): Promise<GitRepoConfig> {
   //TODO This should be removed after BYO Git has been released.
   if (!configData) {
     configData = {
-      repoUrl: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
+      repoUrl: 'http://git-server.git-server.svc.cluster.local/otomi/values.git',
       branch: 'main',
       email: 'pipeline@cluster.local',
     }
