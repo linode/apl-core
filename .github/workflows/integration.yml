@@ -352,7 +352,7 @@ jobs:
                 --docker-server=${{ env.CACHE_REGISTRY }} \
                 --docker-username=${{ env.BOT_USERNAME }} \
                 --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
-              install_args+=(--set imagePullSecretNames[0]=reg-otomi-github)
+              install_args+=(--set imageName=${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }} --set imagePullSecretNames[0]=reg-otomi-github)
             fi
           fi
 
