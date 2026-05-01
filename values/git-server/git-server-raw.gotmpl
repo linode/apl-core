@@ -3,22 +3,22 @@ resources:
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
-      name: otomi-api-git-credentials
-      namespace: otomi
+      name: git-server-credentials
+      namespace: git-server
     spec:
-      refreshInterval: 1m
+      refreshInterval: 1h
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
       target:
-        name: otomi-api-git-credentials
+        name: git-server-credentials
         creationPolicy: Owner
         template:
           type: Opaque
           data:
-            GIT_PASSWORD: '{{ "{{ .gitPassword | toString }}" }}'
+            htpasswd: '{{ "{{ .htpasswd | toString }}" }}'
       data:
-        - secretKey: gitPassword
+        - secretKey: htpasswd
           remoteRef:
-            key: otomi-secrets
-            property: git_password
+            key: git-server-secrets
+            property: htpasswd

@@ -1,5 +1,5 @@
 import retry from 'async-retry'
-import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
+import { bootstrapGit } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
 import {
   APL_OPERATOR_NS,
@@ -148,7 +148,7 @@ export const commit = async (
   await validateValues(overrideArgs)
   d.info('Preparing values')
   const values = (await hfValues()) as Record<string, any>
-  const { branch, authenticatedUrl: remote, username, email } = gitConfig ?? (await getRepo(values))
+  const { branch, authenticatedUrl: remote } = gitConfig ?? (await getRepo(values))
   if (initialInstall) {
     // we call this here again, as we might not have completed (happens upon first install):
     await bootstrapGit(values)
@@ -157,18 +157,15 @@ export const commit = async (
     // passwords because K8s secrets didn't exist yet. Now that secrets are decrypted,
     // we need to update the URL with the real credentials.
     await $git`git remote set-url origin ${remote}`.nothrow().quiet()
-  } else {
-    await setIdentity(username ?? 'otomi-admin', email, env.ENV_DIR)
-    // the url might need updating (e.g. if credentials changed)
-    await $git`git remote set-url origin ${remote}`
   }
-  // let's wait until the remote is ready
-  if (values?.apps!.gitea!.enabled ?? true) {
+
+  if (values?.otomi?.git?.repoUrl === 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git') {
+    // let's wait until the remote is ready
     await waitTillGitRepoAvailable(remote)
   }
   // continue
   await encrypt()
-  await commitAndPush(values, branch, initialInstall)
+  await commitAndPush(values, branch, initialInstall, gitConfig)
 }
 
 export async function initialSetupData(): Promise<InitialData> {
