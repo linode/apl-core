@@ -4,8 +4,6 @@ import { cleanEnv, num, str } from 'envalid'
 // Load environment variables from .env file
 dotenv.config()
 export const operatorEnv = cleanEnv(process.env, {
-  GIT_ORG: str({ desc: 'Git organisation', default: 'otomi' }),
-  GIT_REPO: str({ desc: 'Git repository', default: 'values' }),
   GITOPS_NS_MANIFESTS_RELATIVE_PATH: str({
     desc: 'Path to the gitops manifests namespace',
     default: 'env/manifests/namespaces',
