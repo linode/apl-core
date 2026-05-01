@@ -1,4 +1,4 @@
-import { GitRepoConfig } from '../common/git-config'
+import { getStoredGitRepoConfig, GitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/gitea'
 import { AplOperations } from './apl-operations'
 import { AplOperator, AplOperatorConfig, ApplyTrigger } from './apl-operator'
@@ -13,8 +13,10 @@ const mockDebugFn = jest.fn()
 const mockGitRepo = {
   clone: jest.fn().mockResolvedValue(undefined),
   syncAndAnalyzeChanges: jest.fn().mockResolvedValue({ hasChangesToApply: false, applyTeamsOnly: false }),
+  reloadConfig: jest.fn().mockResolvedValue(undefined),
   authenticatedUrl: 'https://username:password@example.com:443/org/repo.git',
   lastRevision: 'abc123',
+  config: { authenticatedUrl: 'https://username:password@example.com:443/org/repo.git' },
 }
 
 const mockAplOps = {
@@ -64,6 +66,10 @@ jest.mock('./git-repository', () => ({
   GitRepository: jest.fn().mockImplementation(() => mockGitRepo),
 }))
 
+jest.mock('../common/git-config', () => ({
+  getStoredGitRepoConfig: jest.fn(),
+}))
+
 jest.mock('./apl-operations', () => ({
   AplOperations: jest.fn().mockImplementation(() => mockAplOps),
 }))
@@ -76,7 +82,6 @@ describe('AplOperator', () => {
     jest.clearAllMocks()
 
     defaultConfig = {
-      gitConfig: {} as GitRepoConfig,
       gitRepo: mockGitRepo as unknown as GitRepository,
       aplOps: mockAplOps as unknown as AplOperations,
       pollIntervalMs: 1,
@@ -321,27 +326,60 @@ describe('AplOperator', () => {
 
     test('should log error if pull fails', async () => {
       mockGitRepo.syncAndAnalyzeChanges.mockRejectedValueOnce(new Error('Pull failed'))
+      ;(getStoredGitRepoConfig as jest.Mock).mockResolvedValueOnce({
+        authenticatedUrl: 'https://username:newpassword@example.com:443/org/repo.git',
+      } as GitRepoConfig)
+      ;(aplOperator as any).isRunning = true
+      ;(aplOperator as any).isApplying = false
 
-      Object.defineProperty(aplOperator as any, 'isRunning', {
-        value: true,
-        writable: true,
-      })
-
-      Object.defineProperty(aplOperator as any, 'isApplying', {
-        value: false,
-        writable: true,
-      })
-
-      const pollPromise = aplOperator.pollAndApplyGitChanges()
+      const pollPromise = aplOperator.pollAndApplyGitChanges(1)
 
       await Promise.resolve()
-      jest.advanceTimersByTime(defaultConfig.pollIntervalMs)
-
-      Object.defineProperty(aplOperator as any, 'isRunning', { value: false })
+      await jest.runOnlyPendingTimersAsync()
+      ;(aplOperator as any).isRunning = false
 
       await pollPromise
 
       expect(mockErrorFn).toHaveBeenCalledWith('Error during git polling cycle:', 'Pull failed')
+    })
+
+    test('should reload git credentials when poll cycle throws', async () => {
+      const newConfig = {
+        authenticatedUrl: 'https://username:newpassword@example.com:443/org/repo.git',
+      } as GitRepoConfig
+      mockGitRepo.syncAndAnalyzeChanges.mockRejectedValueOnce(new Error('Auth failed'))
+      ;(getStoredGitRepoConfig as jest.Mock).mockResolvedValueOnce(newConfig)
+      ;(aplOperator as any).isRunning = true
+      ;(aplOperator as any).isApplying = false
+
+      const pollPromise = aplOperator.pollAndApplyGitChanges(1)
+
+      await Promise.resolve()
+      await jest.runOnlyPendingTimersAsync()
+      ;(aplOperator as any).isRunning = false
+
+      await pollPromise
+
+      expect(getStoredGitRepoConfig).toHaveBeenCalled()
+      expect(mockGitRepo.reloadConfig).toHaveBeenCalledWith(newConfig)
+    })
+
+    test('should log warning when credential reload fails after poll error', async () => {
+      mockGitRepo.syncAndAnalyzeChanges.mockRejectedValueOnce(new Error('Auth failed'))
+      ;(getStoredGitRepoConfig as jest.Mock).mockRejectedValueOnce(new Error('K8s unavailable'))
+      ;(aplOperator as any).isRunning = true
+      ;(aplOperator as any).isApplying = false
+
+      const pollPromise = aplOperator.pollAndApplyGitChanges(1)
+
+      await Promise.resolve()
+      await jest.runOnlyPendingTimersAsync()
+      ;(aplOperator as any).isRunning = false
+
+      await pollPromise
+
+      expect(mockWarnFn).toHaveBeenCalledWith('Failed to reload git credentials:', 'K8s unavailable')
+      expect(mockGitRepo.reloadConfig).not.toHaveBeenCalled()
     })
   })
 
