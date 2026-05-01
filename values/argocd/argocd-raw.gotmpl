@@ -68,7 +68,7 @@ resources:
             property: git_password
 
 {{- else if contains "git-server.git-server.svc.cluster.local" $v.otomi.git.repoUrl }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: argocd-repo-creds-git-server
