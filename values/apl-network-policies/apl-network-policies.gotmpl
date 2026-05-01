@@ -5,6 +5,7 @@
 
 # Simple per-app network policy configuration
 netpols:
+  gitServer: {{ not ($a | get "git-server.enabled") }}
   gitea: {{ $a.gitea.networkPolicies.enabled}}
   otomiApi: {{ $oa.networkPolicies.enabled}}
 
