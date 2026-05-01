@@ -145,9 +145,19 @@ environments:
               requests:
                 memory: 64Mi
                 cpu: 10m
+          git-server:
+            _rawValues: { }
+            enabled: true
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 128Mi
           gitea:
             _rawValues: {}
-            enabled: true
+            enabled: false
             networkPolicies:
               enabled: true
             databaseMaxConnections: 28
@@ -1158,7 +1168,7 @@ environments:
         otomi:
           git:
             branch: main
-            repoUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git
+            repoUrl: http://git-server.git-server.svc.cluster.local/otomi/values.git
             username: otomi-admin
             email: pipeline@cluster.local
           hasExternalDNS: false
@@ -1170,4 +1180,4 @@ environments:
           aiEnabled: false
         users: []
         versions:
-          specVersion: 65
+          specVersion: 66

@@ -12,6 +12,15 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
+  - name: git-server
+    installed: {{ $a | get "git-server.enabled" }}
+    namespace: git-server
+    chart: ../charts/git-server
+    labels:
+      pkg: git-server
+      app: core
+    values:
+      - ../values/git-server/git-server.gotmpl
   - name: gitea-artifacts
     installed: {{ $a | get "gitea.enabled" }}
     namespace: gitea
