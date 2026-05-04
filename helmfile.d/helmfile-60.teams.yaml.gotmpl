@@ -24,8 +24,6 @@ releases:
   {{- $grafanaHostname := printf "grafana-%s.%s" $teamId $domain }}
   {{- $tektonHostname := printf "tekton-%s.%s" $teamId $domain }}
   {{- $teamApps := index $tc $teamId "apps" | default dict }}
-  {{- $teamReceivers := $teamSettings | get "alerts.receivers" ($v | get "alerts.receivers" (list "slack")) }}
-  {{- $teamAlertmanagerConfig := tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $teamSettings "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | toString }}
   - name: tekton-dashboard-{{ $teamId }}
     installed: {{ $a | get "tekton.enabled" }}
     namespace: team-{{ $teamId }}
