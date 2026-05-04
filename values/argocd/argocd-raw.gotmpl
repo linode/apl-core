@@ -96,36 +96,6 @@ resources:
           remoteRef:
             key: otomi-secrets
             property: git_password
-
-{{- else if contains "git-server.git-server.svc.cluster.local" $v.otomi.git.repoUrl }}
-  - apiVersion: external-secrets.io/v1beta1
-    kind: ExternalSecret
-    metadata:
-      name: argocd-repo-creds-git-server
-      namespace: argocd
-    spec:
-      refreshInterval: 1m
-      secretStoreRef:
-        name: core-secrets-store
-        kind: ClusterSecretStore
-      target:
-        name: argocd-repo-creds-git-server
-        creationPolicy: Owner
-        template:
-          metadata:
-            labels:
-              argocd.argoproj.io/secret-type: repo-creds
-          type: Opaque
-          data:
-            type: git
-            url: {{ "http://git-server.git-server.svc.cluster.local/otomi/values.git" | quote }}
-            username: {{ $v.otomi.git.username }}
-            password: '{{ "{{ .gitPassword | toString }}" }}'
-      data:
-        - secretKey: gitPassword
-          remoteRef:
-            key: otomi-secrets
-            property: git_password
 {{- else }}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
