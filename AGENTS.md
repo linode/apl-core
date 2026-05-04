@@ -200,7 +200,7 @@ Current schema version: **60** (see `versions.specVersion` in defaults.yaml)
 
 ## 3. Agent Definitions
 
-### Agent: Network Policy Definor
+### Agent: Network Policy Expert
 
 **Scope:** Create, modify, or troubleshoot Kubernetes NetworkPolicies for platform applications and teams.
 
@@ -286,15 +286,15 @@ Current schema version: **60** (see `versions.specVersion` in defaults.yaml)
 
 ---
 
-### Agent: Ingress Configurator
+### Agent: Ingress Expert
 
-**Scope:** Configure ingress routes, gateways, HTTPRoutes, OAuth2 authentication, and domain management.
+**Scope:** Configure gateways, HTTPRoutes, OAuth2 authentication, and domain management.
 
 **Key Files:**
 | File | Purpose |
 |------|---------|
-| `core.yaml` → `adminApps` | Admin app ingress definitions |
-| `core.yaml` → `teamApps` | Team app ingress definitions |
+| `core.yaml` → `adminApps` | Deprecated |
+| `core.yaml` → `teamApps` | Deprecated |
 | `helmfile.d/snippets/routes.gotmpl` | HTTPRoute template (parentRefs, auth rules) |
 | `helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl` | OAuth2 external auth policy template |
 | `helmfile.d/snippets/authpolicy-jwt.gotmpl` | JWT authentication policy template |
@@ -302,16 +302,16 @@ Current schema version: **60** (see `versions.specVersion` in defaults.yaml)
 | `helmfile.d/snippets/derived.gotmpl` | Computed domain names, gateway names, TLS |
 | `helmfile.d/snippets/domains.gotmpl` | Domain configuration helpers |
 | `charts/team-ns/templates/routes.yaml` | Team service route rendering |
-| `charts/team-ns/templates/ingress.yaml` | Team ingress resources |
+| `charts/team-ns/templates/ingress.yaml` | Deprecated |
 | `charts/kubernetes-gateways/` | Gateway API gateway definitions |
-| `charts/istio-gateway/` | Istio-specific gateway chart |
-| `charts/ingress-nginx/` | NGINX ingress controller chart |
-| `values/ingress-nginx/` | NGINX ingress values |
-| `values/istio-gateway/` | Istio gateway values |
+| `charts/istio-gateway/` | Deprecated |
+| `charts/ingress-nginx/` | Deprecated |
+| `values/ingress-nginx/` | Deprecated|
+| `values/istio-gateway/` | Deprecated |
 | `values/kubernetes-gateways/` | Gateway API values |
 | `values-schema.yaml` → `definitions.service` | Service/ingress schema |
 | `values-schema.yaml` → `definitions.ingressClassParameters` | Ingress class config |
-| `values-schema.yaml` → `properties.ingress` | Platform ingress schema |
+| `values-schema.yaml` → `properties.ingress` | Platform ingress class schema |
 
 **Concepts:**
 
@@ -374,7 +374,7 @@ apps:
 | Definition | Purpose |
 |------------|---------|
 | `resources` | CPU/memory requests+limits |
-| `rawValues` | Escape-hatch for unschema'd chart values |
+| `rawValues` | define collection of raw Kubernetes manifests |
 | `image` / `imageSimple` | Container image config |
 | `idName` | Lowercase DNS-safe name pattern |
 | `domain` | Domain pattern |
@@ -614,7 +614,7 @@ changes:
 
 ---
 
-### Agent: Monitoring Stack Configurator
+### Agent: Monitoring Stack Expert
 
 **Scope:** Configure Prometheus, Grafana, Alertmanager, Loki, and OpenTelemetry.
 

@@ -9,7 +9,7 @@ networking, security policies, and CI/CD (ArgoCD + Tekton) integration.
   - `_helpers.tpl`       — Label logic, domain math, Docker/volume config generation.
   - `rbac.yaml`          — Massive policy (SAs: team, kubectl, tekton; RoleBindings).
   - `routes.yaml`        — Gateway API `HTTPRoute` for team services.
-  - `ingress.yaml`       — Legacy/Standard Ingress resources.
+  - `ingress.yaml`       — Legacy/Standard Ingress resources. (Deprecated)
   - `limitrange.yaml`    — Container resource defaults.
   - `quota.yaml`         — Team resource constraints (skipped for `team-admin`).
   - `argocd/`            — Team Apps/Projects for GitOps lifecycle.
