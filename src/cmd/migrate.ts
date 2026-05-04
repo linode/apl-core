@@ -108,7 +108,6 @@ export const processDeletionEntry = (entry: string, values: Record<string, any>,
     const appName = appMatch[1]
     deps.deleteFile(`env/apps/${appName}.yaml`)
     deps.deleteFile(`env/apps/secrets.${appName}.yaml`)
-    deps.deleteFile(`env/apps/secrets.${appName}.yaml.dec`)
   }
 }
 
