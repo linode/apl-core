@@ -158,8 +158,9 @@ export const commit = async (
     // we need to update the URL with the real credentials.
     await $git`git remote set-url origin ${remote}`.nothrow().quiet()
   }
-  // let's wait until the remote is ready
-  if (values?.apps!.gitea!.enabled ?? true) {
+
+  if (values?.otomi?.git?.repoUrl === 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git') {
+    // let's wait until the remote is ready
     await waitTillGitRepoAvailable(remote)
   }
   // continue
