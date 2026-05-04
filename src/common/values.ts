@@ -8,7 +8,6 @@ import { $ } from 'zx'
 import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
-import { getRepo } from './git-config'
 import { hfValues } from './hf'
 import { saveValues } from './repo'
 import {
