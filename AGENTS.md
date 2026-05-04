@@ -1,6 +1,6 @@
 # APL Core — AI Agent Index
 
-> **Akamai App Platform (APL)** is a Kubernetes PaaS that integrates 30+ cloud-native applications into a cohesive, multi-tenant platform.
+> **App Platform (APL)** is a Kubernetes PaaS that integrates 30+ cloud-native applications into a cohesive, multi-tenant platform.
 > This index provides the context AI agents need to perform software development tasks efficiently.
 
 **Stack:** TypeScript CLI + Kubernetes Operator + Helmfile/Helm + Go Templates
