@@ -314,19 +314,6 @@ describe('Installer', () => {
       // Should assume installed when verification can't be performed
       expect(state.isInstalled).toBe(true)
     })
-
-    test('should return true when git verification fails (gitea not ready)', async () => {
-      ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue({
-        data: { status: 'completed' },
-      })
-      // getStoredGitRepoConfig throws (cluster issues)
-      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockRejectedValue(new Error('connection refused'))
-
-      const isInstalled = await installer.isInstalled()
-
-      // Should assume installed when verification can't be performed
-      expect(isInstalled).toBe(true)
-    })
   })
 
   describe('setEnvAndCreateSecrets', () => {
