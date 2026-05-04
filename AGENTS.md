@@ -52,8 +52,7 @@
 │   └── <app>/                  # Vendored upstream charts (ingress-nginx, keycloak, harbor, etc.)
 ├── values/                     # Go template value files per chart
 │   ├── <app>/<app>.gotmpl      # Primary values template
-│   ├── <app>/<app>-raw.gotmpl  # Raw K8s manifest templates
-│   └── jobs/<app>.gotmpl       # Job value templates
+│   └── <app>/<app>-raw.gotmpl  # Raw K8s manifest templates
 ├── values-schema.yaml          # JSON Schema for ALL user-configurable parameters
 ├── core.yaml                   # Namespace definitions + admin/team app ingress config
 ├── apps.yaml                   # App metadata (versions, descriptions, dependencies)
@@ -115,6 +114,30 @@ releases:
 
 ## 2. Key Concepts
 
+### APL operator modes
+
+Operation modes:
+
+- installer (src/installer.ts)
+- operator (src/operator/apl-operator.ts)
+
+In the installer mode:
+
+- kubernetes maniefts are rendered and applied by helmfile
+
+In the operator mode:
+
+- App deployment is delegated to ArgoCD controller
+- The operator only renders the values (using helmfile) and applies ArgoCD application manifests to the Kubernetes cluster
+- The operator perform upgrades
+
+Operation modes are set based on the status stored in the kubernetes config map (see `APL_OPERATOR_STATUS_CM` variable)
+
+### Secrets
+
+All secrets are stored as SealedSecrets in git repository. Platform secres are deployed to the apl-secrets namespace.
+The External Secrets Operator (ESO) is used to propagate platform secrets to the right namespace and expected format.
+
 ### App Enablement
 
 Apps are toggled via `apps.<name>.enabled` in user config. Defaults are in `helmfile.d/snippets/defaults.yaml`. Some apps are always enabled (derived in `derived.gotmpl`): `argocd`, `cert-manager`, `ingress-nginx`, `istio`, `keycloak`, `sealed-secrets`.
@@ -135,13 +158,8 @@ Team namespaces follow the pattern `team-<teamId>` and are managed by the `team-
 
 Admin apps are defined in `core.yaml` under `adminApps`. Team apps under `teamApps`. Each entry configures:
 
-- `ownHost` — Gets its own subdomain (e.g., `grafana.<cluster-domain>`)
-- `ingress[].svc/namespace/port` — Backend service details
-- `ingress[].type` — `public` or `private`
-- `ingress[].auth` — Enable OAuth2 proxy authentication
-- `isShared` — Shared across teams
-
-Ingress uses Gateway API (`HTTPRoute`) with Istio as the gateway implementation + nginx as the ingress controller.
+Ingress uses Gateway API (`HTTPRoute`) with Istio as the gateway implementation.
+HTTPRoute binding to Gateway is set either in the `values/<app>/app.gotmpl` (if the corresponding charts/<app> delivers predefined routes) or oin the `values/<app>/<app>-raw.gotmpl`.
 
 ### Multi-Tenancy
 
