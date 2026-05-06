@@ -1,5 +1,5 @@
-The APL installer was successfully deployed on the cluster.
+The App Platform Operator has been successfully deployed on the cluster.
 
 Please inspect the output of the apl-operator deployment (apl-operator/{{ include "apl-operator.fullname" . }}) for any feedback or errors.
 
-Also visit https://apl-docs.net for further instructions and reference documentation.
+Also visit https://techdocs.akamai.com/app-platform/ for further instructions and reference documentation.
