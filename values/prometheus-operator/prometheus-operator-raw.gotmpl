@@ -13,7 +13,7 @@ resources:
     kind: ExternalSecret
     metadata:
       name: grafana-admin-secret
-      namespace: monitoring
+      namespace: grafana
     spec:
       refreshInterval: 1h
       secretStoreRef:
@@ -36,7 +36,7 @@ resources:
     kind: ExternalSecret
     metadata:
       name: grafana-oidc-secret
-      namespace: monitoring
+      namespace: grafana
     spec:
       refreshInterval: 1h
       secretStoreRef:
@@ -59,7 +59,7 @@ resources:
     kind: ExternalSecret
     metadata:
       name: grafana-loki-datasource-secret
-      namespace: monitoring
+      namespace: grafana
     spec:
       refreshInterval: 1h
       secretStoreRef:
