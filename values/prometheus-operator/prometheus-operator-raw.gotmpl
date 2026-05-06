@@ -104,11 +104,19 @@ resources:
             property: remoteWrite_rwConfig_basicAuth_password
   {{- end }}
   {{- if $a.enabled }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: alertmanager-platform-config
+      namespace: monitoring
+    type: Opaque
+    data:
+      alertmanager.yaml: {{ $alertmanagerConfig | b64enc }}
   {{- if $hasReceivers }}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
-      name: alertmanager-platform-config
+      name: alertmanager-credentials
       namespace: monitoring
     spec:
       refreshInterval: 1h
@@ -116,13 +124,8 @@ resources:
         name: core-secrets-store
         kind: ClusterSecretStore
       target:
-        name: alertmanager-platform-config
+        name: alertmanager-credentials
         creationPolicy: Owner
-        template:
-          type: Opaque
-          data:
-            alertmanager.yaml: |
-              {{- $alertmanagerConfig | nindent 14 }}
       data:
         {{- if has "slack" $receivers }}
         - secretKey: slackUrl
@@ -146,14 +149,5 @@ resources:
             key: alerts-secrets
             property: opsgenie_apiKey
         {{- end }}
-  {{- else }}{{/* if $hasReceivers */}}
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: alertmanager-platform-config
-      namespace: monitoring
-    type: Opaque
-    data:
-      alertmanager.yaml: {{ $alertmanagerConfig | b64enc }}
   {{- end }}{{/* if $hasReceivers */}}
   {{- end }}{{/* if $a.enabled */}}
