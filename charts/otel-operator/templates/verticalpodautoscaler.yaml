@@ -34,7 +34,7 @@ spec:
   {{- if .Values.manager.verticalPodAutoscaler.updatePolicy }}
   updatePolicy:
     {{- if .Values.manager.verticalPodAutoscaler.updatePolicy.updateMode }}
-    updateMode: {{ .Values.manager.verticalPodAutoscaler.updatePolicy.updateMode }}
+    updateMode: {{ .Values.manager.verticalPodAutoscaler.updatePolicy.updateMode | quote }}
     {{- end }}
     {{- if .Values.manager.verticalPodAutoscaler.updatePolicy.minReplicas }}
     minReplicas: {{ .Values.manager.verticalPodAutoscaler.updatePolicy.minReplicas }}
