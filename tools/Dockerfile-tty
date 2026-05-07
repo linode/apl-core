@@ -18,8 +18,8 @@ ARG K9S_VERSION=0.50.18
 ARG K9S_CHECKSUM=sha256:0b697ed4aa80997f7de4deeed6f1fba73df191b28bf691b1f28d2f45fa2a9e9b
 
 # https://github.com/helm/helm/releases
-ARG HELM_VERSION=4.1.4
-ARG HELM_CHECKSUM=sha256:70b2c30a19da4db264dfd68c8a3664e05093a361cefd89572ffb36f8abfa3d09
+ARG HELM_VERSION=3.20.2
+ARG HELM_CHECKSUM=sha256:258e830a9e613c8a7a302d6059b4bb3b9758f2f3e1bb8ea0d707ce10a9a72fea
 
 # https://github.com/tektoncd/cli/releases
 ARG TKN_VERSION=0.44.1
