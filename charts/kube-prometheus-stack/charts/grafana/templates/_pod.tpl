@@ -1386,6 +1386,10 @@ containers:
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
       {{- end }}
+      {{- if .Values.shadowBundledPlugins }}
+      - name: shadow-bundled-plugins
+        mountPath: /usr/share/grafana/data/plugins-bundled
+      {{- end }}
     ports:
       - name: {{ .Values.podPortName }}
         containerPort: {{ .Values.service.targetPort }}
@@ -1450,6 +1454,11 @@ containers:
         {{- else }}
         value: {{ .Values.imageRenderer.grafanaProtocol }}://{{ include "grafana.fullname" . }}.{{ include "grafana.namespace" . }}:{{ .Values.service.port }}/{{ .Values.imageRenderer.grafanaSubPath }}
         {{- end }}
+      - name: GF_RENDERING_RENDERER_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: {{ .Values.imageRenderer.existingSecret | default (printf "%s-image-renderer" (include "grafana.imageRenderer.fullname" .)) }}
+            key: token
       {{- end }}
       - name: GF_PATHS_DATA
         value: {{ (get .Values "grafana.ini").paths.data }}
@@ -1713,6 +1722,10 @@ volumes:
   {{- end }}
   {{- range .Values.extraEmptyDirMounts }}
   - name: {{ .name }}
+    emptyDir: {}
+  {{- end }}
+  {{- if .Values.shadowBundledPlugins }}
+  - name: shadow-bundled-plugins
     emptyDir: {}
   {{- end }}
   {{- with .Values.extraContainerVolumes }}

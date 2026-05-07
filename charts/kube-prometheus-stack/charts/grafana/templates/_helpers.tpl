@@ -115,6 +115,19 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Looks if there's an existing secret and reuse its password. If not it generates
 new password and use it.
 */}}
+{{- define "grafana.imageRenderer.token" -}}
+{{- $secret := (lookup "v1" "Secret" (include "grafana.namespace" .) (printf "%s-image-renderer" (include "grafana.imageRenderer.fullname" .)) ) }}
+{{- if $secret }}
+{{- index $secret "data" "token" }}
+{{- else }}
+{{- (randAlphaNum 40) | b64enc | quote }}
+{{- end }}
+{{- end }}
+
+{{/*
+Looks if there's an existing secret and reuse its password. If not it generates
+new password and use it.
+*/}}
 {{- define "grafana.password" -}}
 {{- $secret := (lookup "v1" "Secret" (include "grafana.namespace" .) (include "grafana.fullname" .) ) }}
 {{- if $secret }}
@@ -152,8 +165,8 @@ Formats imagePullSecrets. Input is (dict "root" . "imagePullSecrets" .{specific 
 
 
 {{/*
- Checks whether or not the configSecret secret has to be created
- */}}
+  Checks whether or not the configSecret secret has to be created
+*/}}
 {{- define "grafana.shouldCreateConfigSecret" -}}
 {{- $secretFound := false -}}
 {{- range $key, $value := .Values.datasources }}
@@ -226,12 +239,12 @@ sensitiveKeys:
 {{- end -}}
 
 {{/*
- Sidecars health port
- */}}
+  Sidecars health port
+*/}}
 
 {{/*
- Give health port for alerts sidecar
- */}}
+  Give health port for alerts sidecar
+*/}}
 {{- define "grafana.sidecar.alerts.healthPort" -}}
 {{- $healthPort := 8081 -}}
 {{- if hasKey .Values.sidecar.alerts "startupProbe" -}}
@@ -245,8 +258,8 @@ sensitiveKeys:
 {{- end -}}
 
 {{/*
- Give health port for datasources sidecar
- */}}
+  Give health port for datasources sidecar
+*/}}
 {{- define "grafana.sidecar.datasources.healthPort" -}}
 {{- $healthPort := 8082 -}}
 {{- if hasKey .Values.sidecar.datasources "startupProbe" -}}
@@ -260,8 +273,8 @@ sensitiveKeys:
 {{- end -}}
 
 {{/*
- Give health port for notifiers sidecar
- */}}
+  Give health port for notifiers sidecar
+*/}}
 {{- define "grafana.sidecar.notifiers.healthPort" -}}
 {{- $healthPort := 8083 -}}
 {{- if hasKey .Values.sidecar.notifiers "startupProbe" -}}
@@ -275,8 +288,8 @@ sensitiveKeys:
 {{- end -}}
 
 {{/*
- Give health port for dashboards sidecar
- */}}
+  Give health port for dashboards sidecar
+*/}}
 {{- define "grafana.sidecar.dashboards.healthPort" -}}
 {{- $healthPort := 8084 -}}
 {{- if hasKey .Values.sidecar.dashboards "startupProbe" -}}
