@@ -72,24 +72,32 @@ spec:
             path: /api/v2.0/ping
             scheme: {{ include "harbor.component.scheme" . | upper }}
             port: {{ template "harbor.core.containerPort" . }}
-          failureThreshold: 360
           initialDelaySeconds: {{ .Values.core.startupProbe.initialDelaySeconds }}
-          periodSeconds: 10
+          periodSeconds: {{ .Values.core.startupProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.core.startupProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.core.startupProbe.failureThreshold }}
+          successThreshold: {{ .Values.core.startupProbe.successThreshold }}
         {{- end }}
         livenessProbe:
           httpGet:
             path: /api/v2.0/ping
             scheme: {{ include "harbor.component.scheme" . | upper }}
             port: {{ template "harbor.core.containerPort" . }}
-          failureThreshold: 2
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.core.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.core.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.core.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.core.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.core.livenessProbe.successThreshold }}
         readinessProbe:
           httpGet:
             path: /api/v2.0/ping
             scheme: {{ include "harbor.component.scheme" . | upper }}
             port: {{ template "harbor.core.containerPort" . }}
-          failureThreshold: 2
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.core.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.core.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.core.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.core.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.core.readinessProbe.successThreshold }}
         envFrom:
         - configMapRef:
             name: "{{ template "harbor.core" . }}"
