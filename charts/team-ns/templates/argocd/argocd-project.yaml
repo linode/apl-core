@@ -9,7 +9,7 @@
 {{- end }}
 {{- $urls = append $urls $v.gitOps.valuesRepoUrl }}
 {{- $urls = sortAlpha (uniq $urls) }}
-{{ $defaultArgocdAction := "*" }}
+{{ $resourceActions := "*" }}
 
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
@@ -56,12 +56,12 @@ spec:
   - name: team-member
     description: Team member privileges to team-{{ $v.teamId }}
     policies:
-    - p, proj:team-{{ $v.teamId }}:team-member, applications, {{ $defaultArgocdAction }}, team-{{ $v.teamId }}/*, allow
-    - p, proj:team-{{ $v.teamId }}:team-member, applicationsets, {{ $defaultArgocdAction }}, team-{{ $v.teamId }}/*, allow
-    - p, proj:team-{{ $v.teamId }}:team-member, repositories, {{ $defaultArgocdAction }}, team-{{ $v.teamId }}/*, allow
-    - p, proj:team-{{ $v.teamId }}:team-member, logs, {{ $defaultArgocdAction }}, team-{{ $v.teamId }}/*, allow
-    - p, proj:team-{{ $v.teamId }}:team-member, exec, {{ $defaultArgocdAction }}, team-{{ $v.teamId }}/*, allow
-    - p, proj:team-{{ $v.teamId }}:team-member, clusters, {{ $defaultArgocdAction }}, team-{{ $v.teamId }}/*, allow
+    - p, proj:team-{{ $v.teamId }}:team-member, applications, {{ $resourceActions }}, team-{{ $v.teamId }}/*, allow
+    - p, proj:team-{{ $v.teamId }}:team-member, applicationsets, {{ $resourceActions }}, team-{{ $v.teamId }}/*, allow
+    - p, proj:team-{{ $v.teamId }}:team-member, repositories, get, team-{{ $v.teamId }}/*, allow
+    - p, proj:team-{{ $v.teamId }}:team-member, logs, {{ $resourceActions }}, team-{{ $v.teamId }}/*, allow
+    - p, proj:team-{{ $v.teamId }}:team-member, exec, {{ $resourceActions }}, team-{{ $v.teamId }}/*, allow
+    - p, proj:team-{{ $v.teamId }}:team-member, clusters, get, team-{{ $v.teamId }}/*, allow
     groups:
     - team-{{ $v.teamId }}
 
