@@ -1,0 +1,13 @@
+kind: AplTeamNetworkControl
+metadata:
+    name: allow-egress-wildcard
+    labels:
+        apl.io/teamId: demo
+spec:
+    ruleType:
+        egress:
+            domain: "*.wikipedia.org"
+            ports:
+              - number: "443"
+                protocol: HTTPS
+        type: egress
