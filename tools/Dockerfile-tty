@@ -1,33 +1,33 @@
 # syntax=docker/dockerfile:1.6
 # The above is needed for the "--checksum" aurgument to work in the ADD instruction
 
-# Using ubuntu:noble base image
-FROM ubuntu:24.04
+# Using ubuntu:resolute base image
+FROM ubuntu:26.04
 
 # Version definitions and checksums
 # https://github.com/mikefarah/yq/releases
-ARG YQ_VERSION=4.48.1
-ARG YQ_CHECKSUM=sha256:99df6047f5b577a9d25f969f7c3823ada3488de2e2115b30a0abb10d9324fd9f
+ARG YQ_VERSION=4.53.2
+ARG YQ_CHECKSUM=sha256:d56bf5c6819e8e696340c312bd70f849dc1678a7cda9c2ad63eebd906371d56b
 
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=1.34.1
-ARG KUBECTL_CHECKSUM=sha256:7721f265e18709862655affba5343e85e1980639395d5754473dafaadcaa69e3
+ARG KUBECTL_VERSION=1.35.4
+ARG KUBECTL_CHECKSUM=sha256:b529430df69a688fd61b64ad2299edb5fd71cb58be2a4779dba624c7d3510efd
 
 # https://github.com/derailed/k9s/releases
-ARG K9S_VERSION=0.50.16
-ARG K9S_CHECKSUM=sha256:bda09dc030a08987fe2b3bed678b15b52f23d6705e872d561932d4ca07db7818
+ARG K9S_VERSION=0.50.18
+ARG K9S_CHECKSUM=sha256:0b697ed4aa80997f7de4deeed6f1fba73df191b28bf691b1f28d2f45fa2a9e9b
 
 # https://github.com/helm/helm/releases
-ARG HELM_VERSION=3.19.0
-ARG HELM_CHECKSUM=sha256:a7f81ce08007091b86d8bd696eb4d86b8d0f2e1b9f6c714be62f82f96a594496
+ARG HELM_VERSION=4.1.4
+ARG HELM_CHECKSUM=sha256:70b2c30a19da4db264dfd68c8a3664e05093a361cefd89572ffb36f8abfa3d09
 
 # https://github.com/tektoncd/cli/releases
-ARG TKN_VERSION=0.42.0
-ARG TKN_CHECKSUM=sha256:e21a96c454502457f1970d720da15153b8b0623b2de2c13598ff96fc98e69c44
+ARG TKN_VERSION=0.44.1
+ARG TKN_CHECKSUM=sha256:e18d287d9aabf6cf4e8281d2871a38e66b50ff6eb4d6d6c84d3e4d357bde1373
 
 # https://github.com/cloudnative-pg/cloudnative-pg/releases
-ARG CNPG_VERSION=1.26.2
-ARG CNPG_CHECKSUM=sha256:765007cea37dab728d09e681bcd00221bbe71252d30212e966f0fc62763f04ec
+ARG CNPG_VERSION=1.29.0
+ARG CNPG_CHECKSUM=sha256:81136dcbb1c64585f11b8742f6b7b3af87389e419b7f54c2430926060288e607
 
 
 # Installing curl, vim, wget, tmux ttyd and bash-completion
