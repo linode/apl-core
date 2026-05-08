@@ -27,6 +27,9 @@ spec:
   strategy:
     {{- toYaml . | trim | nindent 4 }}
   {{- end }}
+  {{- with .Values.imageRenderer.progressDeadlineSeconds }}
+  progressDeadlineSeconds: {{ . }}
+  {{- end }}
   template:
     metadata:
       labels:
@@ -91,6 +94,13 @@ spec:
           env:
             - name: HTTP_PORT
               value: {{ .Values.imageRenderer.service.targetPort | quote }}
+          {{- if .Values.imageRenderer.service.enabled }}
+            - name: AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.imageRenderer.existingSecret | default (printf "%s-image-renderer" (include "grafana.imageRenderer.fullname" .)) }}
+                  key: token
+          {{- end }}
           {{- if .Values.imageRenderer.serviceMonitor.enabled }}
             - name: ENABLE_METRICS
               value: "true"
