@@ -3,10 +3,10 @@
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $obj := $v.obj.provider }}
 {{- $giteaBackupConfig := $v.platformBackups.gitea }}
-{{- $rcloneVersion := "1.70.3" }}
-{{- $rcloneZipSha512 := "472165c3989671f4163242c67cdb9da4c3d3e4548cd1222015f552d6d2fda1cbd616b133ec45e78d8efb088368e18cc314bfeea764e253b6a5d6a693d67a11ef" }}
-{{- $rcloneBinSha512 := "b98a32f87cc1d0ac292829d12de45d1e827fd0a3f480d4b5a5242f1af0ecbc48e6ef6901c98f22289c77571adb4ee79e09af28750f031e8b038f55eeea40f910" }}
-{{- $kubectlTag := "v1.33.3" }}
+{{- $rcloneVersion := "1.74.0" }}
+{{- $rcloneZipSha512 := "4f73acc20e38773cc9c56639f405c775b4e6fca87127dae498a3f1cb032a896c106512f5ca1f5c48e6a9ac6f3e94ebeb0f130fff69e9260050da5beabe1ab1f6" }}
+{{- $rcloneBinSha512 := "58e35e0324769c1cb3df37f22086eefe8fb025990232f00e4b8548f15b749096e8c241fb572a7d89861b4ce7534b63a0f58b71b3663a5ee3bda6db5fb9bf440d" }}
+{{- $kubectlTag := "v1.35.4" }}
 {{- $kubectlImage := print "registry.k8s.io/kubectl:" $kubectlTag }}
 {{- if $v.otomi.linodeLkeImageRepository }}
 {{- $kubectlImage = print $v.otomi.linodeLkeImageRepository "/k8s/kubectl:" $kubectlTag }}
