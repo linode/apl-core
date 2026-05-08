@@ -77,6 +77,10 @@ podDisruptionBudget: {}
 deploymentStrategy:
   type: RollingUpdate
 
+## The maximum time in seconds for a Deployment to make progress before it is considered to be failed.
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds
+progressDeadlineSeconds: null
+
 readinessProbe:
   httpGet:
     path: /api/health
@@ -179,6 +183,14 @@ extraEmptyDirMounts: []
   # - name: provisioning-notifiers
   #   mountPath: /etc/grafana/provisioning/notifiers
 
+# Shadow `/usr/share/grafana/data/plugins-bundled` with an emptyDir so plugins
+# listed under `plugins:` install cleanly into `/var/lib/grafana/plugins` instead
+# of failing on the read-only bundled directory shipped in the Grafana image.
+# Required for plugins moved out of core in Grafana 13 (e.g. `elasticsearch`,
+# `cloudwatch`) when listed in `plugins:`. Side effect: any bundled plugin not
+# explicitly listed in `plugins:` will not be available.
+shadowBundledPlugins: false
+
 
 # Apply extra labels to common labels.
 extraLabels: {}
@@ -190,7 +202,7 @@ downloadDashboardsImage:
   # -- The Docker registry
   registry: docker.io
   repository: curlimages/curl
-  tag: 8.19.0
+  tag: 8.20.0
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -979,7 +991,7 @@ sidecar:
     # -- The Docker registry
     registry: quay.io
     repository: kiwigrid/k8s-sidecar
-    tag: 2.6.0
+    tag: 2.7.1
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}
@@ -1460,6 +1472,10 @@ revisionHistoryLimit: 10
 ## Add a separate remote image renderer deployment/service
 imageRenderer:
   deploymentStrategy: {}
+  ## The maximum time in seconds for the image renderer Deployment to make progress before it is
+  ## considered to be failed.
+  ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds
+  progressDeadlineSeconds: null
   # Enable the image-renderer deployment & service
   enabled: false
   replicas: 1
@@ -1474,6 +1490,10 @@ imageRenderer:
   serverURL: ""
   # The callback url of grafana instances if it is not in the same namespace with the remote image renderer
   renderingCallbackURL: ""
+  # Token used for authentication between Grafana and the remote image renderer.
+  token: ""
+  # Use an existing secret for the image renderer token. Must contain a key named "token".
+  existingSecret: ""
   image:
     # -- The Docker registry
     registry: docker.io
