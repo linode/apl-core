@@ -66,9 +66,6 @@ spec:
     - p, proj:{{ $projectName }}:{{ $argoRoleName }}, applicationsets, {{ $resourceActions }}, {{ $argoObjects }}, allow
     - p, proj:{{ $projectName }}:{{ $argoRoleName }}, logs, {{ $resourceActions }}, {{ $argoObjects }}, allow
     - p, proj:{{ $projectName }}:{{ $argoRoleName }}, exec, {{ $resourceActions }}, {{ $argoObjects }}, allow
-    - p, proj:{{ $projectName }}:{{ $argoRoleName }}, repositories, get, *, allow
-    - p, proj:{{ $projectName }}:{{ $argoRoleName }}, clusters, get, *, allow
-    - p, proj:{{ $projectName }}:{{ $argoRoleName }}, certificates, get, *, allow
     groups:
     - {{ $oidcGroup }}
 
