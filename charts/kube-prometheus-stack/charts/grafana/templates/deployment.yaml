@@ -25,6 +25,9 @@ spec:
   strategy:
     {{- toYaml . | trim | nindent 4 }}
   {{- end }}
+  {{- with .Values.progressDeadlineSeconds }}
+  progressDeadlineSeconds: {{ . }}
+  {{- end }}
   template:
     metadata:
       labels:
