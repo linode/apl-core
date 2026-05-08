@@ -97,6 +97,13 @@ releases:
                 otomi.io/auth-policy: monitoring-{{ $teamId }}
             useExistingSecret: true
             configSecret: alertmanager-team-{{ $teamId }}-config
+            {{- if $teamSettings | get "managedMonitoring.alertmanager" false }}
+            {{- $teamReceivers := $teamSettings | get "alerts.receivers" ($v | get "alerts.receivers" (list "slack")) }}
+            {{- if not (has "none" $teamReceivers) }}
+            secrets:
+              - alertmanager-credentials
+            {{- end }}
+            {{- end }}
           route:
             main:
               hostnames:
