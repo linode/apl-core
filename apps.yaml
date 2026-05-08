@@ -12,7 +12,7 @@ appsInfo:
     integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by App Platform to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: Argo CD
-    appVersion: 3.3.9
+    appVersion: 3.4.1
     repo: https://github.com/argoproj/argo-helm
     maintainers: Argo Project
     relatedLinks:
@@ -230,7 +230,7 @@ appsInfo:
     chartName: trivy-operator
   otel:
     title: OpenTelemetry Operator
-    appVersion: 0.149.0
+    appVersion: 0.150.0
     repo: https://github.com/open-telemetry/opentelemetry-operator
     maintainers: Grafana labs
     relatedLinks:
