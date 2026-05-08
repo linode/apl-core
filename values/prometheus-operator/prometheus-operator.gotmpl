@@ -6,6 +6,8 @@
 {{- $g := $apps | get "grafana" }}
 {{- $p := $apps | get "prometheus" }}
 {{- $pr := index $v.apps "policy-reporter" }}
+{{- $receivers := $v.alerts.receivers }}
+{{- $hasReceivers := not (has "none" $receivers) }}
 
 {{- $hasKeycloak := $k.enabled }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
@@ -236,6 +238,10 @@ alertmanager:
     externalUrl: https://{{ $alertmanagerDomain }}
     useExistingSecret: true
     configSecret: alertmanager-platform-config
+    {{- if $hasReceivers }}
+    secrets:
+      - alertmanager-credentials
+    {{- end }}
   route:
     main:
       enabled: true
