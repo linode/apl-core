@@ -956,7 +956,7 @@ alertmanager:
     image:
       registry: quay.io
       repository: prometheus/alertmanager
-      tag: v0.32.0
+      tag: v0.32.1
       sha: ""
       pullPolicy: IfNotPresent
 
@@ -1682,6 +1682,11 @@ kubeApiServer:
     ## defines the labels which are transferred from the associated Kubernetes Service object onto the ingested metrics.
     ## https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#servicemonitor
     targetLabels: []
+
+  ## Override the job label used for the apiserver.
+  ## This allows users who scrape apiserver metrics under a different job name (e.g. k3s-server via PushProx)
+  ## to align the recording rules and alerts with their actual job label.
+  jobNameOverride: ""
 
 ## Component scraping the kubelet and kubelet-hosted cAdvisor
 ##
@@ -2999,7 +3004,7 @@ prometheusOperator:
       image:
         registry: ghcr.io
         repository: jkroepke/kube-webhook-certgen
-        tag: 1.8.1
+        tag: 1.8.2
         sha: ""
         pullPolicy: IfNotPresent
       resources: {}
@@ -4154,7 +4159,7 @@ prometheus:
     image:
       registry: quay.io
       repository: prometheus/prometheus
-      tag: v3.11.2
+      tag: v3.11.3
       sha: ""
       pullPolicy: IfNotPresent
 
@@ -4645,6 +4650,7 @@ prometheus:
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#thanosspec
     ##
     thanos: {}
+      # image: quay.io/thanos/thanos
       # secretProviderClass:
       #   provider: gcp
       #   parameters:
