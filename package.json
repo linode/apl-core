@@ -87,7 +87,7 @@
     "jest": "^30.3.0",
     "json-schema-to-typescript": "15.0.4",
     "json2ts": "0.0.7",
-    "lint-staged": "16.4.0",
+    "lint-staged": "17.0.4",
     "npm-run-all": "4.1.5",
     "prettier": "3.8.3",
     "semantic-release": "^25.0.3",
