@@ -175,14 +175,4 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       await removeTektonDashboardApp(context)
     },
   },
-  {
-    version: '5.1.0',
-    applications: {
-      'knative-operator-knative-operator': {
-        post: async (context: RuntimeUpgradeContext) => {
-          await upgradeKnativeServing(context, ['1.22'])
-        },
-      },
-    },
-  },
 ]
