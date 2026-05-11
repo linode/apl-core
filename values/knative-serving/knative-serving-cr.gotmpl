@@ -1,9 +1,9 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.knative }}
-{{- $knativeServingVersion := "1.21" }}
-{{- $tag := "v1.21.1" }}
-{{- $netIstioTag := "v1.21.1" }}
-{{- $netGatewayTag := "v1.21.0" }}
+{{- $knativeServingVersion := "1.22" }}
+{{- $tag := "v1.22.0" }}
+{{- $netIstioTag := "v1.22.0" }}
+{{- $netGatewayTag := "v1.22.0" }}
 {{- $enableLegacyIngress := $v | get "apps.ingress-nginx-platform.enabled" }}
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
@@ -26,8 +26,6 @@ spec:
       net-gateway-api-controller/controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-gateway-api/cmd/controller:{{ $netGatewayTag }}"
       net-gateway-api-webhook/webhook: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-gateway-api/cmd/webhook:{{ $netGatewayTag }}"
   {{- end }}
-  additionalManifests:
-    - URL: https://github.com/knative-extensions/net-gateway-api/releases/download/knative-{{ $netGatewayTag }}/net-gateway-api.yaml
   version: "{{ $knativeServingVersion }}"
   {{- if $v._derived.untrustedCA }}
   controller-custom-certs:
@@ -97,8 +95,8 @@ spec:
     features:
       podspec-securitycontext: enabled
   ingress:
+    {{- if $enableLegacyIngress }}
     istio:
-      {{- if $enableLegacyIngress }}
       enabled: true
       knative-ingress-gateway:
         selector:
@@ -106,6 +104,9 @@ spec:
       knative-local-gateway:
         selector:
           istio: {{ $v._derived.defaultIngressGatewayLabel }}
-      {{- else }}
+    {{- else }}
+    gateway-api:
+      enabled: true
+    istio:
       enabled: false
-      {{- end }}
+    {{- end }}
