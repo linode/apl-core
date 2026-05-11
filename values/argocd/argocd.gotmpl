@@ -245,13 +245,7 @@ configs:
       # admin
       g, admin, role:admin
       g, platform-admin, role:admin
-    {{- if $v.otomi.isMultitenant }}
-    policy.default: ''
-    {{- else }}
-      # not multitenant, make platform-admin admin and keep global read-only
-      g, platform-admin, role:admin
-    policy.default: role:readonly
-    {{- end }}
+    policy.default: deny
 
 extraObjects:
   - apiVersion: gateway.networking.k8s.io/v1
