@@ -566,6 +566,9 @@ async function waitForPodsDeletion(namespace: string, labelSelector: string, tim
     if ((pods.items || []).length === 0) return
     await sleep(5000)
   }
+  throw new Error(
+    `Timed out waiting for pods with selector "${labelSelector}" in namespace "${namespace}" to be deleted`,
+  )
 }
 
 async function waitForStatefulSetDeletion(name: string, namespace: string, timeoutMs = 300000): Promise<void> {
@@ -575,6 +578,7 @@ async function waitForStatefulSetDeletion(name: string, namespace: string, timeo
     if (!exists) return
     await sleep(5000)
   }
+  throw new Error(`Timed out waiting for StatefulSet "${name}" in namespace "${namespace}" to be deleted`)
 }
 
 async function deletePvcsByLabel(namespace: string, labelSelector: string): Promise<void> {
@@ -603,13 +607,6 @@ async function migrateStatefulSetPvc(opts: {
   }
 
   try {
-    const app = await getArgoCdApp(opts.appName, k8s.custom())
-    if (app) {
-      await setArgoCdAppSync(opts.appName, false, k8s.custom())
-    } else {
-      opts.d.info(`Argo CD application ${opts.appName} not found. Skipping sync disable.`)
-    }
-
     await k8s.app().patchNamespacedStatefulSet(
       {
         name: opts.statefulSetName,
@@ -618,20 +615,31 @@ async function migrateStatefulSetPvc(opts: {
       },
       setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
     )
-
-    await waitForPodsDeletion(opts.namespace, opts.pvcLabelSelector)
-    await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
-
-    try {
-      await k8s.app().deleteNamespacedStatefulSet({ name: opts.statefulSetName, namespace: opts.namespace })
-    } catch (error) {
-      if (!(error instanceof ApiException && error.code === 404)) throw error
-    }
-
-    await waitForStatefulSetDeletion(opts.statefulSetName, opts.namespace)
   } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      opts.d.info(`StatefulSet ${opts.statefulSetName} not found — already deleted. Skipping migration.`)
+      return
+    }
     throw error
   }
+
+  const app = await getArgoCdApp(opts.appName, k8s.custom())
+  if (app) {
+    await setArgoCdAppSync(opts.appName, false, k8s.custom())
+  } else {
+    opts.d.info(`Argo CD application ${opts.appName} not found. Skipping sync disable.`)
+  }
+
+  await waitForPodsDeletion(opts.namespace, opts.pvcLabelSelector)
+  await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)
+
+  try {
+    await k8s.app().deleteNamespacedStatefulSet({ name: opts.statefulSetName, namespace: opts.namespace })
+  } catch (error) {
+    if (!(error instanceof ApiException && error.code === 404)) throw error
+  }
+
+  await waitForStatefulSetDeletion(opts.statefulSetName, opts.namespace)
 }
 
 export async function addAplOperator(): Promise<void> {
