@@ -6,12 +6,12 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/name: webhook
     app.kubernetes.io/part-of: tekton-pipelines
-    app.kubernetes.io/version: v1.9.2
+    app.kubernetes.io/version: v1.12.0
       {{- with .Values.webhook.deployment.labels }}
         {{- toYaml . | nindent 4 }}
       {{- end}}
-    pipeline.tekton.dev/release: v1.9.2
-    version: v1.9.2
+    pipeline.tekton.dev/release: v1.12.0
+    version: v1.12.0
   name: tekton-pipelines-webhook
 spec:
   selector:
@@ -28,12 +28,12 @@ spec:
         app.kubernetes.io/instance: default
         app.kubernetes.io/name: webhook
         app.kubernetes.io/part-of: tekton-pipelines
-        app.kubernetes.io/version: v1.9.2
+        app.kubernetes.io/version: v1.12.0
           {{- with .Values.webhook.pod.labels }}
             {{- toYaml . | nindent 8 }}
           {{- end}}
-        pipeline.tekton.dev/release: v1.9.2
-        version: v1.9.2
+        pipeline.tekton.dev/release: v1.12.0
+        version: v1.12.0
     spec:
       affinity:
           {{- with .Values.webhook.affinity }}
@@ -82,7 +82,6 @@ spec:
         - secretRef:
             name: '{{ .Values.webhook.envFromSecret }}'
             optional: true
-        image: {{ .Values.webhook.deployment.image }}
         livenessProbe:
           httpGet:
             path: /health
@@ -127,6 +126,7 @@ spec:
           runAsUser: 65532
           seccompProfile:
             type: RuntimeDefault
+        image: {{ .Values.webhook.deployment.image }}
       nodeSelector:
           {{- with .Values.webhook.nodeSelector }}
             {{- toYaml . |  nindent 8 }}
