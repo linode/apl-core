@@ -34,14 +34,12 @@ export const applyAll = async (): Promise<void> => {
   const argv: HelmArguments = getParsedArgs()
 
   const tag = await getImageTagFromValues()
-  const currentVersion = getPackageVersion()
-  const expectedVersion = env.APPS_REVISION || tag
-  const revisionUpdated = await updateOperatorApplication(expectedVersion)
-  if (revisionUpdated && tag.replace(/^v/, '') !== currentVersion) {
+  const revisionUpdated = await updateOperatorApplication(env.APPS_REVISION || tag)
+  if (revisionUpdated) {
     d.info('Operator has pending update to a different revision. Pausing until restart.')
     return
   }
-  const deployingVersion = currentVersion
+  const deployingVersion = getPackageVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion })
   const deploymentState = await getDeploymentState()
 
