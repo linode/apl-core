@@ -11,4 +11,7 @@ rules:
   - apiGroups: ["tekton.dev"]
     resources: ["tasks", "taskruns", "pipelines", "pipelineruns", "customruns"]
     verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
 {{- end }}
