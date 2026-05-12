@@ -12,28 +12,27 @@ namespace:
 controller:
   resources: {{- $t.resources.pipelinesController | toYaml | nindent 4 }}
   deployment:
-    image: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.9.2@sha256:a6833aa4bd352d33335d4a9329fce13e44407773c703d71099aa07d0f2846826"
+    image: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.12.0@sha256:8d5f900677386b8fe5371429e9c1461b25de47e5e34736c7f99e82e2c279ebbc"
   images:
-    entrypoint: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/entrypoint-bff0a22da108bc2f16c818c97641a296:v1.9.2@sha256:f9b98c1f7fc4a747dc0d118def8bbde58c81da31c5d80e2d70f7f67b2cf16982"
-    nop: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.9.2@sha256:5a125c13f79fe80d09eca799293efa775ba37aed1322a18a49f11052401dac21"
-    sidecarlogresults: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.9.2@sha256:0623a2085539a1aac38c2b89da59cc544839c7085684861e24737068a80acaa0"
-    workingdirinit: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.9.2@sha256:57f4e62abb27e460ec1cef38c911ab9b53ca5f3757b88828e8d2c24e5718112e"
-    shellImage: "{{ with $useLindodeRegistry }}{{ . }}/cgr{{ else }}cgr.dev{{ end }}/chainguard/busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791"
-    shellImageWin: "{{ with $useLindodeRegistry }}{{ . }}/microsoft{{ else }}mcr.microsoft.com{{ end }}/powershell:nanoserver@sha256:b6d5ff841b78bdf2dfed7550000fd4f3437385b8fa686ec0f010be24777654d6"
+    entrypoint: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/entrypoint-bff0a22da108bc2f16c818c97641a296:v1.12.0@sha256:3ec960b07abd85604242e146092e72f11be8787452c2a20d12a37fdee4a666e2"
+    nop: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.12.0@sha256:f89fb760b05fdef6895290e524d992b66ede72546622d5028b0406a9bea36d2f"
+    sidecarlogresults: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.12.0@sha256:8b61bdcad62a99e7b15f9dc92690ea39f49be2c5a1c9f428a0aac712f349543d"
+    workingdirinit: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.12.0@sha256:11031cbed2b8ddbb5af0947a5e0c997ba7cd3da5f309ddfa76e58f5418868d71"
+    shellImage: "{{ with $useLindodeRegistry }}{{ . }}/docker{{ else }}cgr.dev{{ end }}/chainguard/busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791"
 
 remoteresolver:
   resources: {{- $t.resources.pipelinesRemoteresolver | toYaml | nindent 4 }}
   deployment:
-    image: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.9.2@sha256:e83af2b69c5546ad6bfca67c2903ce92ef6012c1b3bcab54b5c7b38121228a58"
+    image: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.12.0@sha256:b1f06197342ed946b23efd1ce124d7c17d50678b461733a6cc0912b07a4943e7"
 
 eventscontroller:
   deployment:
-    image: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/events-a9042f7efb0cbade2a868a1ee5ddd52c:v1.9.2@sha256:3cfd35631998087b2eafb40705fe9e0fae115e5f3c4aaec56c942e179fd6c14e"
+    image: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/events-a9042f7efb0cbade2a868a1ee5ddd52c:v1.12.0@sha256:d5d5869215a58fea01ce627d605786090949a324969102ab1fd25716adde10e9"
 
 webhook:
   resources: {{- $t.resources.pipelinesWebhook | toYaml | nindent 4 }}
   deployment:
-    image: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.9.2@sha256:60189c3482571001d2be2f3cb5b9ca41a10b885fe12e743847ebe0f5ccfb788a"
+    image: "{{ with $useLindodeRegistry }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.12.0@sha256:1e4eded1773f6fa8ec67c9348f84bed0d39666a9698ebd1ffb4eaed88b38f7d4"
 
 configDefaults:
   default-pod-template: |
