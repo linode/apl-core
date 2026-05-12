@@ -26,7 +26,7 @@
     "fs-extra": "11.3.4",
     "generate-password": "1.7.1",
     "glob": "13.0.6",
-    "ignore-walk": "8.0.0",
+    "ignore-walk": "9.0.0",
     "jsonpath": "1.3.0",
     "lodash": "4.18.1",
     "minimatch": "^10.2.5",
