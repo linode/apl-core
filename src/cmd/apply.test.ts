@@ -383,17 +383,37 @@ describe('Apply command', () => {
   })
 
   describe('updateOperatorApplication return value', () => {
-    test('should return early when updateOperatorApplication returns true', async () => {
+    test('should return early when revision updated and operator tag differs', async () => {
       mockDeps.updateOperatorApplication.mockResolvedValue(true)
+      mockDeps.getPackageVersion.mockReturnValue('0.9.0')
 
       await applyAll()
 
       expect(mockDeps.setDeploymentState).not.toHaveBeenCalled()
       expect(mockDeps.getDeploymentState).not.toHaveBeenCalled()
       expect(mockDeps.runtimeUpgrade).not.toHaveBeenCalled()
-      expect(mockDeps.applyAsApps).toHaveBeenCalledTimes(1)
+      expect(mockDeps.applyAsApps).not.toHaveBeenCalled()
       expect(mockDeps.applyGitOpsApps).not.toHaveBeenCalled()
       expect(mockDeps.commit).not.toHaveBeenCalled()
+    })
+
+    test('should continue full deployment when revision updated but operator tag already matches', async () => {
+      mockDeps.updateOperatorApplication.mockResolvedValue(true)
+      // getPackageVersion returns '1.0.0', getImageTagFromValues returns 'v1.0.0' — same version
+      mockDeps.getPackageVersion.mockReturnValue('1.0.0')
+
+      const originalEnv = process.env.DISABLE_SYNC
+      process.env.DISABLE_SYNC = 'true'
+
+      await applyAll()
+
+      expect(mockDeps.setDeploymentState).toHaveBeenCalled()
+      expect(mockDeps.getDeploymentState).toHaveBeenCalled()
+      expect(mockDeps.runtimeUpgrade).toHaveBeenCalled()
+      expect(mockDeps.applyAsApps).toHaveBeenCalled()
+      expect(mockDeps.applyGitOpsApps).toHaveBeenCalled()
+
+      process.env.DISABLE_SYNC = originalEnv
     })
 
     test('should continue full deployment when updateOperatorApplication returns false', async () => {
