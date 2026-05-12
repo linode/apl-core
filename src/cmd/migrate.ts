@@ -592,29 +592,30 @@ async function migrateStatefulSetPvc(opts: {
     return
   }
 
-  try {
-    await k8s.app().patchNamespacedStatefulSet(
-      {
-        name: opts.statefulSetName,
-        namespace: opts.namespace,
-        body: { spec: { replicas: 0 } },
-      },
-      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
-    )
-  } catch (error) {
-    if (error instanceof ApiException && error.code === 404) {
-      opts.d.info(`StatefulSet ${opts.statefulSetName} not found — already deleted. Skipping migration.`)
-      return
-    }
-    throw error
+  const statefulSetExists = await checkExists(
+    async () => await k8s.app().readNamespacedStatefulSet({ name: opts.statefulSetName, namespace: opts.namespace }),
+  )
+  if (!statefulSetExists) {
+    opts.d.info(`StatefulSet ${opts.statefulSetName} not found — already deleted. Skipping migration.`)
+    return
   }
 
+  // Disable sync before scaling so ArgoCD cannot reconcile replicas back up during the window
   const app = await getArgoCdApp(opts.appName, k8s.custom())
   if (app) {
     await setArgoCdAppSync(opts.appName, false, k8s.custom())
   } else {
     opts.d.info(`Argo CD application ${opts.appName} not found. Skipping sync disable.`)
   }
+
+  await k8s.app().patchNamespacedStatefulSet(
+    {
+      name: opts.statefulSetName,
+      namespace: opts.namespace,
+      body: { spec: { replicas: 0 } },
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+  )
 
   await waitForPodsDeletion(opts.namespace, opts.pvcLabelSelector)
   await deletePvcsByLabel(opts.namespace, opts.pvcLabelSelector)

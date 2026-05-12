@@ -37,14 +37,6 @@ export const applyAll = async (): Promise<void> => {
   const revisionUpdated = await updateOperatorApplication(env.APPS_REVISION || tag)
   if (revisionUpdated) {
     d.info('Operator has pending update to a different revision. Pausing until restart.')
-    // Apply ArgoCD Application CRs so any sync policies disabled during migration
-    // (e.g. valkeyAndOauth2RedisPVCMigration) are restored before the operator restarts.
-    const params = cloneDeep(argv)
-    try {
-      await applyAsApps(params)
-    } catch (e) {
-      d.warn('Failed to apply ArgoCD Application CRs before operator restart:', e)
-    }
     return
   }
   const deployingVersion = getPackageVersion()

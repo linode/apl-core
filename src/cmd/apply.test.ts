@@ -391,7 +391,7 @@ describe('Apply command', () => {
       expect(mockDeps.setDeploymentState).not.toHaveBeenCalled()
       expect(mockDeps.getDeploymentState).not.toHaveBeenCalled()
       expect(mockDeps.runtimeUpgrade).not.toHaveBeenCalled()
-      expect(mockDeps.applyAsApps).toHaveBeenCalledTimes(1)
+      expect(mockDeps.applyAsApps).not.toHaveBeenCalled()
       expect(mockDeps.applyGitOpsApps).not.toHaveBeenCalled()
       expect(mockDeps.commit).not.toHaveBeenCalled()
     })
