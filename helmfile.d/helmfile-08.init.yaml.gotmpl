@@ -35,5 +35,5 @@ releases:
           - {{ tpl (readFile "snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" "monitoring" "gatewayName" $v.ingress.platformClass.className "hosts" $hosts) | nindent 12 }}
           - {{ tpl (readFile "snippets/authpolicy-jwt.gotmpl") (dict "name" "prometheus" "excludeNamespaces" (list "grafana" "monitoring" "team-*")) | nindent 12 }}
           - {{ tpl (readFile "snippets/authpolicy-jwt.gotmpl") (dict "name" "monitoring" "excludeAccount" "monitoring/po-prometheus") | nindent 12 }}
-          - {{ tpl (readFile "snippets/authpolicy-jwt.gotmpl") (dict "name" "monitoring" "namespace" "grafana" "excludeAccount" "monitoring/po-prometheus" "excludePaths" (list "/metrics")) | nindent 12 }}
+          - {{ tpl (readFile "snippets/authpolicy-jwt.gotmpl") (dict "name" "monitoring" "namespace" "grafana" "excludeAccount" "monitoring/po-prometheus") | nindent 12 }}
           - {{ tpl (readFile "snippets/serviceentry.gotmpl") (dict "name" "monitoring" "hosts" $hosts) | nindent 12 }}
