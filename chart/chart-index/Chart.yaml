@@ -64,7 +64,8 @@ dependencies:
   - name: kserve-crd
     version: v0.16.0
     repository: oci://ghcr.io/kserve/charts/kserve-crd
-  - name: kserve
+  - name: kserve-resources
+    alias: kserve
     version: v0.16.0
     repository: oci://ghcr.io/kserve/charts/kserve-resources
   - name: kube-prometheus-stack
