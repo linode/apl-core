@@ -319,7 +319,7 @@ monitoringQueriesConfigMap:
           END AS lag,
           pg_catalog.pg_is_in_recovery() AS in_recovery,
           EXISTS (TABLE pg_catalog.pg_stat_wal_receiver) AS is_wal_receiver_up,
-          (SELECT pg_catalog.count(*) FROM pg_catalog.pg_stat_replication) AS streaming_replicas"
+          (SELECT pg_catalog.count(*) FROM pg_catalog.pg_stat_replication) AS streaming_replicas
       metrics:
         - lag:
             usage: "GAUGE"

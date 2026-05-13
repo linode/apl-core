@@ -11,6 +11,11 @@ replicaCount: 1
 ##
 revisionHistoryLimit: 10
 
+## Minimum number of seconds for which a newly created pod should be ready
+## without any of its container crashing, for it to be considered available.
+##
+minReadySeconds: 0
+
 ## Provide a name in place of opentelemetry-operator (includes the chart's release name).
 ##
 nameOverride: ""
