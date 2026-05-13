@@ -1,0 +1,43 @@
+name: Refresh Tool Cache
+
+on:
+  workflow_dispatch: ~
+
+permissions:
+  contents: read
+
+jobs:
+  repopulate-tool-cache:
+    name: Clear and repopulate tool cache
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Clear existing tool cache
+        run: |
+          mv "${{ runner.tool_cache }}" "${{ runner.tool_cache }}.old"
+          mkdir -p "${{ runner.tool_cache }}"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Warm root npm cache
+        run: npm install
+
+      - name: Warm ci/ npm cache
+        working-directory: ci/
+        run: npm install
+
+      - name: Archive tool cache
+        run: |
+          cd "${{ runner.tool_cache }}"
+          tar -czf tool_cache.tar.gz *
+
+      - name: Upload tool cache artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tool-cache-ubuntu-latest
+          path: ${{ runner.tool_cache }}/tool_cache.tar.gz
