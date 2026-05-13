@@ -77,15 +77,21 @@ spec:
             path: /api/v1/stats
             scheme: {{ include "harbor.component.scheme" . | upper }}
             port: {{ template "harbor.jobservice.containerPort" . }}
-          initialDelaySeconds: 300
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.jobservice.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jobservice.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jobservice.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.jobservice.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.jobservice.livenessProbe.successThreshold }}
         readinessProbe:
           httpGet:
             path: /api/v1/stats
             scheme: {{ include "harbor.component.scheme" . | upper }}
             port: {{ template "harbor.jobservice.containerPort" . }}
-          initialDelaySeconds: 20
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.jobservice.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jobservice.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jobservice.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.jobservice.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.jobservice.readinessProbe.successThreshold }}
 {{- if .Values.jobservice.resources }}
         resources:
 {{ toYaml .Values.jobservice.resources | indent 10 }}
