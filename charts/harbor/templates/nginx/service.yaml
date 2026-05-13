@@ -38,6 +38,7 @@ spec:
 {{- else if eq .Values.expose.type "nodePort" }}
 {{- $nodePort := .Values.expose.nodePort }}
   name: {{ $nodePort.name }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
 {{- if .Values.expose.nodePort.labels }}
@@ -67,6 +68,7 @@ spec:
 {{- else if eq .Values.expose.type "loadBalancer" }}
 {{- $loadBalancer := .Values.expose.loadBalancer }}
   name: {{ $loadBalancer.name }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
 {{- if .Values.expose.loadBalancer.labels }}

@@ -79,15 +79,21 @@ spec:
             path: /
             scheme: {{ include "harbor.component.scheme" . | upper }}
             port: {{ template "harbor.portal.containerPort" . }}
-          initialDelaySeconds: 300
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.portal.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.portal.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.portal.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.portal.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.portal.livenessProbe.successThreshold }}
         readinessProbe:
           httpGet:
             path: /
             scheme: {{ include "harbor.component.scheme" . | upper }}
             port: {{ template "harbor.portal.containerPort" . }}
-          initialDelaySeconds: 1
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.portal.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.portal.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.portal.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.portal.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.portal.readinessProbe.successThreshold }}
         ports:
         - containerPort: {{ template "harbor.portal.containerPort" . }}
         volumeMounts:
