@@ -183,8 +183,6 @@ adminApps:
   - name: hello
     hide: true
     tags: [demo]
-  - name: ingress-nginx
-    tags: [ingress, auth]
   - name: istio
     tags: [ingress, egress, routing, security, tls, observability, policies]
   - name: keycloak
