@@ -75,6 +75,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: 'pr/.nvmrc'
+          check-latest: true
       - name: Install npm dependencies
         run: cd "$GITHUB_WORKSPACE/pr" && npm install --no-save && cd "$GITHUB_WORKSPACE/base" && npm install --no-save
       - name: Install Helm and Helmfile
