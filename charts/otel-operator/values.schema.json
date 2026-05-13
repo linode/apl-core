@@ -48,6 +48,16 @@
         1
       ]
     },
+    "minReadySeconds": {
+      "type": "integer",
+      "default": 0,
+      "minimum": 0,
+      "title": "The minReadySeconds Schema",
+      "examples": [
+        0,
+        30
+      ]
+    },
     "nameOverride": {
       "type": "string",
       "default": "",
