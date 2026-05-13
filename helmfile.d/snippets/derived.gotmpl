@@ -55,8 +55,6 @@
 {{- end }}
 
 # The following variables are referred to by the Helm chart.
-{{- $istioIngressPublicReleaseName := printf "istio-ingressgateway-%s-public" $istioCanaryRevision }}
-{{- $istioIngressPublicReleaseLabel := printf "ingressgateway-%s-public" $istioCanaryRevision }}
 {{- $istioEgressReleaseName := print "istio-egressgateway-" $istioCanaryRevision }}
 {{- $istioEgressReleaseLabel := print "egressgateway-" $istioCanaryRevision }}
 
@@ -221,8 +219,6 @@ environments:
             defaultRevision: {{ $istioDefaultRevision | quote }}
             release:
               revision: {{ $istioCanaryRevision | quote }}
-              ingressPublicName: {{ $istioIngressPublicReleaseName }}
-              ingressPublicLabel: {{ $istioIngressPublicReleaseLabel }}
               egressName: {{ $istioEgressReleaseName }}
               egressLabel: {{ $istioEgressReleaseLabel }}
           metrics-server:
