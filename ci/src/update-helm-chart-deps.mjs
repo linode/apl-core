@@ -145,7 +145,7 @@ async function getKubePromStackApps(chartDir) {
 // The first one is considered the main dependency.
 const CHART_GROUPS = {
   istio: ['base', 'istiod', 'gateway'],
-  kserve: ['kserve', 'kserve-crd'],
+  kserve: ['kserve-resources', 'kserve-crd'],
   'cloud-firewall': ['cloud-firewall-controller', 'cloud-firewall-crd'],
 }
 // Skip version check for some charts, that are not stored on their own.
