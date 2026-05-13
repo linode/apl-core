@@ -56,13 +56,19 @@ spec:
         livenessProbe:
           tcpSocket:
             port: 6379
-          initialDelaySeconds: 300
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.redis.internal.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.redis.internal.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.redis.internal.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.redis.internal.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.redis.internal.livenessProbe.successThreshold }}
         readinessProbe:
           tcpSocket:
             port: 6379
-          initialDelaySeconds: 1
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.redis.internal.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.redis.internal.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.redis.internal.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.redis.internal.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.redis.internal.readinessProbe.successThreshold }}
 {{- if .Values.redis.internal.resources }}
         resources:
 {{ toYaml .Values.redis.internal.resources | indent 10 }}
@@ -102,7 +108,7 @@ spec:
     {{- end }}
   {{- if and .Values.persistence.enabled (not $redis.existingClaim) }}
   volumeClaimTemplates:
-  - apiVersion: v1	
+  - apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:
       name: data

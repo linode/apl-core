@@ -11,6 +11,7 @@ data:
   REGISTRY_URL: "{{ template "harbor.registryURL" . }}"
   REGISTRY_CONTROLLER_URL: "{{ template "harbor.registryControllerURL" . }}"
   REGISTRY_CREDENTIAL_USERNAME: "{{ .Values.registry.credentials.username }}"
+  REGISTRY_HTTP_CLIENT_TIMEOUT: "{{ .Values.jobservice.registryHttpClientTimeout }}"
 
   JOBSERVICE_WEBHOOK_JOB_MAX_RETRY: "{{ .Values.jobservice.notification.webhook_job_max_retry }}"
   JOBSERVICE_WEBHOOK_JOB_HTTP_CLIENT_TIMEOUT: "{{ .Values.jobservice.notification.webhook_job_http_client_timeout }}"
