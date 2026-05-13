@@ -73,15 +73,21 @@ spec:
             scheme: {{ .scheme }}
             path: /
             port: {{ .port }}
-          initialDelaySeconds: 300
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.nginx.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.nginx.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.nginx.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.nginx.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.nginx.livenessProbe.successThreshold }}
         readinessProbe:
           httpGet:
             scheme: {{ .scheme }}
             path: /
             port: {{ .port }}
-          initialDelaySeconds: 1
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.nginx.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.nginx.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.nginx.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.nginx.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.nginx.readinessProbe.successThreshold }}
 {{- if .Values.nginx.resources }}
         resources:
 {{ toYaml .Values.nginx.resources | indent 10 }}

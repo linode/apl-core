@@ -80,15 +80,21 @@ spec:
             path: /
             scheme: {{ include "harbor.component.scheme" . | upper }}
             port: {{ template "harbor.registry.containerPort" . }}
-          initialDelaySeconds: 300
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.registry.registry.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.registry.registry.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.registry.registry.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.registry.registry.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.registry.registry.livenessProbe.successThreshold }}
         readinessProbe:
           httpGet:
             path: /
             scheme: {{ include "harbor.component.scheme" . | upper }}
             port: {{ template "harbor.registry.containerPort" . }}
-          initialDelaySeconds: 1
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.registry.registry.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.registry.registry.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.registry.registry.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.registry.registry.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.registry.registry.readinessProbe.successThreshold }}
 {{- if .Values.registry.registry.resources }}
         resources:
 {{ toYaml .Values.registry.registry.resources | indent 10 }}
@@ -128,13 +134,6 @@ spec:
           value: /etc/harbor/ssl/registry/tls.crt
         - name: INTERNAL_TLS_TRUST_CA_PATH
           value: /etc/harbor/ssl/registry/ca.crt
-        {{- end }}
-        {{- if .Values.redis.external.existingSecret }}
-        - name: REGISTRY_REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.redis.external.existingSecret }}
-              key: REDIS_PASSWORD
         {{- end }}
         {{- if .Values.persistence.imageChartStorage.azure.existingSecret }}
         - name: REGISTRY_STORAGE_AZURE_ACCOUNTKEY
@@ -218,15 +217,21 @@ spec:
             path: /api/health
             scheme: {{ include "harbor.component.scheme" . | upper }}
             port: {{ template "harbor.registryctl.containerPort" . }}
-          initialDelaySeconds: 300
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.registry.controller.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.registry.controller.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.registry.controller.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.registry.controller.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.registry.controller.livenessProbe.successThreshold }}
         readinessProbe:
           httpGet:
             path: /api/health
             scheme: {{ include "harbor.component.scheme" . | upper }}
             port: {{ template "harbor.registryctl.containerPort" . }}
-          initialDelaySeconds: 1
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.registry.controller.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.registry.controller.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.registry.controller.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.registry.controller.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.registry.controller.readinessProbe.successThreshold }}
 {{- if .Values.registry.controller.resources }}
         resources:
 {{ toYaml .Values.registry.controller.resources | indent 10 }}
@@ -284,13 +289,6 @@ spec:
           value: /etc/harbor/ssl/registry/tls.crt
         - name: INTERNAL_TLS_TRUST_CA_PATH
           value: /etc/harbor/ssl/registry/ca.crt
-        {{- end }}
-        {{- if .Values.redis.external.existingSecret }}
-        - name: REGISTRY_REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.redis.external.existingSecret }}
-              key: REDIS_PASSWORD
         {{- end }}
         {{- if .Values.persistence.imageChartStorage.azure.existingSecret }}
         - name: REGISTRY_STORAGE_AZURE_ACCOUNTKEY

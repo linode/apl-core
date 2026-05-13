@@ -1,0 +1,19 @@
+{{- if and .Values.nginx.podDisruptionBudget.enabled (gt (int .Values.nginx.replicas) 1) }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ template "harbor.nginx" . }}
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+spec:
+  {{- if .Values.nginx.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.nginx.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  {{- if .Values.nginx.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.nginx.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: nginx
+{{- end }}
