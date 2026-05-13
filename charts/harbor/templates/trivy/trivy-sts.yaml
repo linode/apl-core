@@ -160,19 +160,21 @@ spec:
               scheme: {{ include "harbor.component.scheme" . | upper }}
               path: /probe/healthy
               port: api-server
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            successThreshold: 1
-            failureThreshold: 10
+            initialDelaySeconds: {{ .Values.trivy.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.trivy.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.trivy.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.trivy.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.trivy.livenessProbe.successThreshold }}
           readinessProbe:
             httpGet:
               scheme: {{ include "harbor.component.scheme" . | upper }}
               path: /probe/ready
               port: api-server
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            successThreshold: 1
-            failureThreshold: 3
+            initialDelaySeconds: {{ .Values.trivy.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.trivy.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.trivy.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.trivy.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.trivy.readinessProbe.successThreshold }}
           resources:
 {{ toYaml .Values.trivy.resources | indent 12 }}
       {{- if or (or .Values.internalTLS.enabled .Values.caBundleSecretName) (or (not .Values.persistence.enabled) $trivy.existingClaim) }}
@@ -211,7 +213,7 @@ spec:
     {{- end }}
 {{- if and .Values.persistence.enabled (not $trivy.existingClaim) }}
   volumeClaimTemplates:
-  - apiVersion: v1	
+  - apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:
       name: data

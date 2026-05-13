@@ -193,14 +193,41 @@ app: "{{ template "harbor.name" . }}"
   {{- end -}}
 {{- end -}}
 
+{{- define "harbor.redis.usernameForRegistry" -}}
+  {{- with .Values.redis }}
+    {{- if eq .type "internal" }}
+      {{- "" -}}
+    {{- else if .external.existingSecret }}
+      {{- include "harbor.redis.usernamefromsecret" $ | trim -}}
+    {{- else }}
+      {{- .external.username | default "" -}}
+    {{- end }}
+  {{- end }}
+{{- end -}}
+
 {{- define "harbor.redis.pwdfromsecret" -}}
-  {{- (lookup "v1" "Secret"  .Release.Namespace (.Values.redis.external.existingSecret)).data.REDIS_PASSWORD  | b64dec }}
+  {{- $existingSecret := (lookup "v1" "Secret" .Release.Namespace (.Values.redis.external.existingSecret)) -}}
+  {{- if and (not (empty $existingSecret)) (hasKey $existingSecret.data "REDIS_PASSWORD") -}}
+    {{- printf "%s" ($existingSecret.data.REDIS_PASSWORD | b64dec | trim) -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.redis.passwordForRegistry" -}}
+  {{- with .Values.redis }}
+    {{- if eq .type "internal" }}
+      {{- "" -}}
+    {{- else if .external.existingSecret }}
+      {{- include "harbor.redis.pwdfromsecret" $ -}}
+    {{- else }}
+      {{- .external.password | default "" -}}
+    {{- end }}
+  {{- end }}
 {{- end -}}
 
 {{- define "harbor.redis.cred" -}}
   {{- with .Values.redis }}
     {{- if (and (eq .type "external" ) (.external.existingSecret)) }}
-      {{- printf "%s:%s@" (include "harbor.redis.usernamefromsecret" $) (include "harbor.redis.pwdfromsecret" $) -}}
+      {{- printf "%s:%s@" ((include "harbor.redis.usernamefromsecret" $) | urlquery) ((include "harbor.redis.pwdfromsecret" $) | urlquery) -}}
     {{- else }}
       {{- ternary (printf "%s:%s@" (.external.username | urlquery) (.external.password | urlquery)) "" (and (eq .type "external" ) (not (not .external.password))) }}
     {{- end }}

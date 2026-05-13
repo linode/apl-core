@@ -65,14 +65,20 @@ spec:
           httpGet:
             path: /
             port: {{ .Values.metrics.exporter.port }}
-          initialDelaySeconds: 300
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.exporter.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.exporter.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.exporter.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.exporter.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.exporter.livenessProbe.successThreshold }}
         readinessProbe:
           httpGet:
             path: /
             port: {{ .Values.metrics.exporter.port }}
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.exporter.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.exporter.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.exporter.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.exporter.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.exporter.readinessProbe.successThreshold }}
         args: ["-log-level", "{{ .Values.logLevel }}"]
         envFrom:
         - configMapRef:
