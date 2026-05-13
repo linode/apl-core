@@ -1,5 +1,5 @@
 expose:
-  # Set how to expose the service. Set the type as "ingress", "clusterIP", "nodePort" or "loadBalancer"
+  # Set how to expose the service. Set the type as "ingress", "clusterIP", "nodePort", "loadBalancer" or "route"
   # and fill the information in the corresponding section
   type: ingress
   tls:
@@ -51,14 +51,16 @@ expose:
   route:
     labels: {}
     annotations: {}
+    # References to the parent gateways
+    parentRefs: []
       # - name: envoy-internal
       #   namespace: networking
       #   sectionName: https
       #   group: gateway.networking.k8s.io
       #   kind: Gateway
-    parentRefs: {}
-      # - "harbor.example.com"
+    # The hostnames for the HTTPRoute
     hosts: []
+      # - "harbor.example.com"
   clusterIP:
     # The name of ClusterIP service
     name: harbor
@@ -498,13 +500,17 @@ containerSecurityContext:
 # If service exposed via "ingress", the Nginx will not be used
 nginx:
   image:
-    repository: goharbor/nginx-photon
-    tag: v2.14.3
+    repository: docker.io/goharbor/nginx-photon
+    tag: v2.15.0
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
   automountServiceAccountToken: false
   replicas: 1
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+    # maxUnavailable: 1
   revisionHistoryLimit: 10
   # resources:
   #  requests:
@@ -526,16 +532,34 @@ nginx:
   podLabels: {}
   ## The priority class to run the pod as
   priorityClassName:
+  ## Liveness probe values
+  livenessProbe:
+    initialDelaySeconds: 300
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+  ## Readiness probe values
+  readinessProbe:
+    initialDelaySeconds: 1
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
 
 portal:
   image:
-    repository: goharbor/harbor-portal
-    tag: v2.14.3
+    repository: docker.io/goharbor/harbor-portal
+    tag: v2.15.0
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
   automountServiceAccountToken: false
   replicas: 1
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+    # maxUnavailable: 1
   revisionHistoryLimit: 10
   # resources:
   #  requests:
@@ -559,6 +583,20 @@ portal:
   serviceAnnotations: {}
   ## The priority class to run the pod as
   priorityClassName:
+  ## Liveness probe values
+  livenessProbe:
+    initialDelaySeconds: 300
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+  ## Readiness probe values
+  readinessProbe:
+    initialDelaySeconds: 1
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
   # containers to be run before the controller's container starts.
   initContainers: []
   # Example:
@@ -569,18 +607,40 @@ portal:
 
 core:
   image:
-    repository: goharbor/harbor-core
-    tag: v2.14.3
+    repository: docker.io/goharbor/harbor-core
+    tag: v2.15.0
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
   automountServiceAccountToken: false
   replicas: 1
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+    # maxUnavailable: 1
   revisionHistoryLimit: 10
   ## Startup probe values
   startupProbe:
     enabled: true
     initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 360
+    successThreshold: 1
+  ## Liveness probe values
+  livenessProbe:
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 2
+    successThreshold: 1
+  ## Readiness probe values
+  readinessProbe:
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 2
+    successThreshold: 1
   # resources:
   #  requests:
   #    memory: 256Mi
@@ -658,18 +718,37 @@ core:
 
 jobservice:
   image:
-    repository: goharbor/harbor-jobservice
-    tag: v2.14.3
+    repository: docker.io/goharbor/harbor-jobservice
+    tag: v2.15.0
+  replicas: 1
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+    # maxUnavailable: 1
+  revisionHistoryLimit: 10
+
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
   automountServiceAccountToken: false
-  replicas: 1
-  revisionHistoryLimit: 10
   # resources:
   #   requests:
   #     memory: 256Mi
   #     cpu: 100m
+  ## Liveness probe values
+  livenessProbe:
+    initialDelaySeconds: 300
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+  ## Readiness probe values
+  readinessProbe:
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
   extraEnvVars: []
   nodeSelector: {}
   tolerations: []
@@ -717,31 +796,66 @@ jobservice:
   existingSecret: ""
   # Key within the existing secret for the job service secret
   existingSecretKey: JOBSERVICE_SECRET
+  # By default, the timeout is set to 30 minutes. This field only needs be re-configured if a longer request timeout is required. 
+  # the value assigned to timeout should be a number without min, e.g. registryHttpClientTimeout: 60 configures the timeout to 60 minutes
+  registryHttpClientTimeout: 30
 
 registry:
   registry:
     image:
-      repository: goharbor/registry-photon
-      tag: v2.14.3
+      repository: docker.io/goharbor/registry-photon
+      tag: v2.15.0
     # resources:
     #  requests:
     #    memory: 256Mi
     #    cpu: 100m
     extraEnvVars: []
+    ## Liveness probe values
+    livenessProbe:
+      initialDelaySeconds: 300
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+    ## Readiness probe values
+    readinessProbe:
+      initialDelaySeconds: 1
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
   controller:
     image:
-      repository: goharbor/harbor-registryctl
-      tag: v2.14.3
+      repository: docker.io/goharbor/harbor-registryctl
+      tag: v2.15.0
     # resources:
     #  requests:
     #    memory: 256Mi
     #    cpu: 100m
     extraEnvVars: []
+    ## Liveness probe values
+    livenessProbe:
+      initialDelaySeconds: 300
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+    ## Readiness probe values
+    readinessProbe:
+      initialDelaySeconds: 1
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
   automountServiceAccountToken: false
   replicas: 1
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+    # maxUnavailable: 1
   revisionHistoryLimit: 10
   nodeSelector: {}
   tolerations: []
@@ -783,7 +897,7 @@ registry:
     # If using existingSecret, the key must be REGISTRY_PASSWD and REGISTRY_HTPASSWD
     existingSecret: ""
     # Login and password in htpasswd string format. Excludes `registry.credentials.username`  and `registry.credentials.password`. May come in handy when integrating with tools like argocd or flux. This allows the same line to be generated each time the template is rendered, instead of the `htpasswd` function from helm, which generates different lines each time because of the salt.
-    # htpasswdString: $apr1$XLefHzeG$Xl4.s00sMSCCcMyJljSZb0 # example string
+    # htpasswdString: "harbor_registry_user:$2a$05$IPnI.TSgP8ek1/ESjkULVemA.A3nSXPdN80ljsmcun7FtE3ViSYUq" # example string, bcrypt is the only accepted hashing algorithm in htpasswd here.
     htpasswdString: ""
   middleware:
     enabled: false
@@ -810,15 +924,20 @@ trivy:
   enabled: true
   image:
     # repository the repository for Trivy adapter image
-    repository: goharbor/trivy-adapter-photon
+    repository: docker.io/goharbor/trivy-adapter-photon
     # tag the tag for Trivy adapter image
-    tag: v2.14.3
+    tag: v2.15.0
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
   automountServiceAccountToken: false
   # replicas the number of Pod replicas
   replicas: 1
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+    # maxUnavailable: 1
+
   resources:
     requests:
       cpu: 200m
@@ -826,6 +945,20 @@ trivy:
     limits:
       cpu: 1
       memory: 1Gi
+  ## Liveness probe values
+  livenessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 10
+    successThreshold: 1
+  ## Readiness probe values
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
   extraEnvVars: []
   nodeSelector: {}
   tolerations: []
@@ -915,8 +1048,8 @@ database:
   type: internal
   internal:
     image:
-      repository: goharbor/harbor-db
-      tag: v2.14.3
+      repository: docker.io/goharbor/harbor-db
+      tag: v2.15.0
     # set the service account to be used, default if left empty
     serviceAccountName: ""
     # mount the service account token
@@ -925,12 +1058,20 @@ database:
     #  requests:
     #    memory: 256Mi
     #    cpu: 100m
-    # The timeout used in livenessProbe; 1 to 5 seconds
+    ## Liveness probe values
     livenessProbe:
+      initialDelaySeconds: 300
+      periodSeconds: 10
       timeoutSeconds: 1
-    # The timeout used in readinessProbe; 1 to 5 seconds
+      failureThreshold: 3
+      successThreshold: 1
+    ## Readiness probe values
     readinessProbe:
+      initialDelaySeconds: 1
+      periodSeconds: 10
       timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
     extraEnvVars: []
     nodeSelector: {}
     tolerations: []
@@ -995,8 +1136,8 @@ redis:
   type: internal
   internal:
     image:
-      repository: goharbor/redis-photon
-      tag: v2.14.3
+      repository: docker.io/goharbor/redis-photon
+      tag: v2.15.0
     # set the service account to be used, default if left empty
     serviceAccountName: ""
     # mount the service account token
@@ -1005,6 +1146,20 @@ redis:
     #  requests:
     #    memory: 256Mi
     #    cpu: 100m
+    ## Liveness probe values
+    livenessProbe:
+      initialDelaySeconds: 300
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+    ## Readiness probe values
+    readinessProbe:
+      initialDelaySeconds: 1
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
     extraEnvVars: []
     nodeSelector: {}
     tolerations: []
@@ -1065,17 +1220,35 @@ redis:
 
 exporter:
   image:
-    repository: goharbor/harbor-exporter
-    tag: v2.14.3
+    repository: docker.io/goharbor/harbor-exporter
+    tag: v2.15.0
   serviceAccountName: ""
   # mount the service account token
   automountServiceAccountToken: false
   replicas: 1
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+    # maxUnavailable: 1
   revisionHistoryLimit: 10
   # resources:
   #  requests:
   #    memory: 256Mi
   #    cpu: 100m
+  ## Liveness probe values
+  livenessProbe:
+    initialDelaySeconds: 300
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+  ## Readiness probe values
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
   extraEnvVars: []
   podAnnotations: {}
   ## Additional deployment labels

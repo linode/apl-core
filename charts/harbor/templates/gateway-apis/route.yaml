@@ -24,7 +24,7 @@ metadata:
 spec:
   parentRefs:
   {{- toYaml $route.parentRefs | nindent 2 }}
-  hostnames: 
+  hostnames:
   {{- toYaml $route.hosts | nindent 2 }}
   rules:
   - matches:
@@ -43,6 +43,9 @@ spec:
     backendRefs:
     - name: {{ template "harbor.core" . }}
       namespace: {{ .Release.Namespace | quote }}
+      group: ""
+      kind: Service
+      weight: 1
       port: {{ template "harbor.core.servicePort" . }}
   - matches:
     - path:
@@ -51,5 +54,8 @@ spec:
     backendRefs:
     - name: {{ template "harbor.portal" . }}
       namespace: {{ .Release.Namespace | quote }}
+      group: ""
+      kind: Service
+      weight: 1
       port: {{ template "harbor.portal.servicePort" . }}
 {{- end }}
