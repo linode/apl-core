@@ -1,0 +1,19 @@
+{{- if and .Values.registry.podDisruptionBudget.enabled (gt (int .Values.registry.replicas) 1) }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ template "harbor.registry" . }}
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+spec:
+  {{- if .Values.registry.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.registry.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  {{- if .Values.registry.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.registry.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: registry
+{{- end }}
