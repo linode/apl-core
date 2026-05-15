@@ -30,12 +30,15 @@ global:
   proxy_init:
     resources: {{ $i.resources.proxy | toYaml | nindent 6 }}
   priorityClassName: otomi-critical
+  variant: distroless
 
 meshConfig:
   defaultConfig:
     holdApplicationUntilProxyStarts: true
     gatewayTopology:
       numTrustedProxies: 1
+    proxyMetadata:
+      ISTIO_META_ENABLE_HBONE: "true"
   accessLogFile: /dev/stdout
   tcpKeepalive:
     interval: 5s
@@ -66,10 +69,12 @@ meshConfig:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 
-env:
-  PILOT_ENABLE_ALPHA_GATEWAY_API: "true"
-  PILOT_JWT_PUB_KEY_REFRESH_INTERVAL: "1m"
-  PILOT_DEBOUNCE_MAX: "10s"
+pilot:
+  env:
+    PILOT_ENABLE_ALPHA_GATEWAY_API: "true"
+    PILOT_ENABLE_AMBIENT: "true"
+    PILOT_JWT_PUB_KEY_REFRESH_INTERVAL: "1m"
+    PILOT_DEBOUNCE_MAX: "10s"
 
 gatewayClasses:
   istio:

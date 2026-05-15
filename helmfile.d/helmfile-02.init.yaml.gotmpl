@@ -71,6 +71,20 @@ releases:
       pkg: istio
       app: core
     <<: *default
+  - name: istio-cni
+    installed: true
+    namespace: istio-system
+    labels:
+      pkg: istio
+      app: core
+    <<: *default
+  - name: ztunnel
+    installed: true
+    namespace: istio-system
+    labels:
+      pkg: istio
+      app: core
+    <<: *default
   - name: kubernetes-gateways-artifacts
     installed: true
     namespace: istio-system
