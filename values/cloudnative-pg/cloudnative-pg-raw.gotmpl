@@ -1,5 +1,9 @@
 {{- $v := .Values }}
 {{- $cnpg := $v.apps.cnpg }}
+{{- $imageRepo := "ghcr.io" }}
+{{- with $v.otomi.linodeLkeImageRepository }}
+  {{- $imageRepo = print . "/ghcr" }}
+{{- end }}
 
 resources:
   - apiVersion: postgresql.cnpg.io/v1
@@ -9,6 +13,8 @@ resources:
     spec:
       images:
         - major: 15
-          image: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/cloudnative-pg/postgresql:15.14{{ $cnpg.pgImageSuffix }}"
+          image: "{{ $imageRepo }}/cloudnative-pg/postgresql:15.17{{ $cnpg.pgImageSuffix }}"
         - major: 17
-          image: "{{ with $v.otomi.linodeLkeImageRepository }}{{ . }}/ghcr{{ else }}ghcr.io{{ end }}/cloudnative-pg/postgresql:17.6{{ $cnpg.pgImageSuffix }}"
+          image: "{{ $imageRepo }}/cloudnative-pg/postgresql:17.9{{ $cnpg.pgImageSuffix }}"
+        - major: 18
+          image: "{{ $imageRepo }}/cloudnative-pg/postgresql:18.3{{ $cnpg.pgImageSuffix }}"
