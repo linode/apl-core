@@ -65,7 +65,7 @@
   {{- $cnpgImageSuffix = "-standard-trixie" }}
 {{- end }}
 # Set default platform database image for CloudnativePG
-{{- $cnpgDefaultPlatformImage := print "cloudnative-pg/postgresql:15.14" $cnpgImageSuffix }}
+{{- $cnpgDefaultPlatformImage := print "cloudnative-pg/postgresql:15.17" $cnpgImageSuffix }}
 
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
