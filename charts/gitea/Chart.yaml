@@ -1,12 +1,22 @@
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: update https://github.com/crazy-max/ghaction-import-gpg action to v7 (#1038)
+      description: update lockfiles (#1079)
+    - kind: changed
+      description: upgrade to 1.26 and replace environment_to_ini_call with gitea config edit-ini (#1070)
+    - kind: changed
+      description: update lockfiles (#1075)
+    - kind: changed
+      description: update commitlint/commitlint docker tag to v20.5.3 (#1074)
+    - kind: changed
+      description: update workflow dependencies (minor & patch) (#1072)
+    - kind: changed
+      description: update dependency go-gitea/gitea to v1.26.1 (#1071)
   artifacthub.io/links: |
     - name: support
       url: https://gitea.com/gitea/helm-gitea/issues
 apiVersion: v2
-appVersion: 1.25.5
+appVersion: 1.26.1
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
@@ -46,4 +56,4 @@ sources:
 - https://github.com/go-gitea/gitea
 - https://docker.gitea.com/gitea
 type: application
-version: 12.5.3
+version: 12.6.0
