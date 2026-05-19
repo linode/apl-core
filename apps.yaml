@@ -220,7 +220,7 @@ appsInfo:
     chartName: trivy-operator
   otel:
     title: OpenTelemetry Operator
-    appVersion: 0.150.0
+    appVersion: 0.151.0
     repo: https://github.com/open-telemetry/opentelemetry-operator
     maintainers: Grafana labs
     relatedLinks:
