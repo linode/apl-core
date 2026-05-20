@@ -11,32 +11,6 @@ additionalServiceMonitors:
       - port: http
         interval: 30s
         path: /metrics
-  {{- if $v.apps | get "ingress-nginx-platform.enabled" }}
-  - name: istio-ingressgateway-public
-    namespace: istio-system
-    selector:
-      matchLabels:
-        istio: {{ $v._derived.defaultIngressGatewayLabel }}
-    namespaceSelector:
-      matchNames:
-        - istio-system
-    endpoints:
-      - targetPort: http-envoy-prom
-        path: /stats/prometheus
-  {{- with $v._derived.canaryIngressGatewayLabel }}
-  - name: istio-{{ . }}
-    namespace: istio-system
-    selector:
-      matchLabels:
-        istio: {{ . }}
-    namespaceSelector:
-      matchNames:
-        - istio-system
-    endpoints:
-      - targetPort: http-envoy-prom
-        path: /stats/prometheus
-  {{- end }}{{- /* with */}}
-  {{- end }}{{- /* if $v.apps | get "ingress-nginx-platform.enabled" */}}
   - name: istiod
     namespace: istio-system
     selector:
@@ -48,7 +22,6 @@ additionalServiceMonitors:
     endpoints:
       - port: http-monitoring
         interval: 15s
-  {{- if .apps | get "argocd.enabled" }}
   - name: argocd-metrics
     namespace: argocd
     selector:
@@ -59,4 +32,3 @@ additionalServiceMonitors:
         - argocd
     endpoints:
       - port: metrics
-  {{- end }}

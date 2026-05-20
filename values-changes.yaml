@@ -485,3 +485,9 @@ changes:
   - version: 66
     additions:
       - 'apps.git-server.enabled': false
+  - version: 67
+    customFunctions:
+      - removeIngressNginxValues
+    deletions:
+      - apps.istio.autoscaling.ingressgateway
+      - apps.istio.resources.ingressgateway
