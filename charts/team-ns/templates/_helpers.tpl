@@ -39,15 +39,6 @@ otomi.io/team: {{ .Values.teamId }}
 {{- default .Capabilities.KubeVersion.Version .Values.kubeVersionOverride -}}
 {{- end -}}
 
-{{- define "service.domain" -}}
-{{- $v := .dot.Values }}
-{{- $teamSuffix := (and .isKnativeService (printf "team-%s" $v.teamId)) | default $v.teamId }}
-{{- $shared := (and .s.isCore (eq $v.teamId "admin") (hasKey .s "isShared")) | default false -}}
-{{- $host := ($shared | ternary .s.name (printf "%s-%s" .s.name $teamSuffix )) -}}
-{{- $domain := (index .s "domain" | default (printf "%s.%s" $host $v.domain)) -}}
-{{- print $domain -}}
-{{- end -}}
-
 {{/* aggregate all the files and create a dict by dirname > list (filename content) */}}
 {{- define "file-volumes" }}
 {{- $vols := dict }}
@@ -61,7 +52,7 @@ otomi.io/team: {{ .Values.teamId }}
   {{- end }}
   {{- $files = append $files $fileContent }}
   {{- $vols = set $vols $dir $files }}
-{{- end }}  
+{{- end }}
 {{- range $dir, $files := $vols }}
 {{ $dir }}: {{- $files | toYaml | nindent 2 }}
 {{- end }}
