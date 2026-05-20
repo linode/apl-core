@@ -24,6 +24,8 @@ rbac:
   pspEnabled: false
   pspUseAppArmor: false
   namespaced: false
+  # Only has an effect if namespaced: true is set
+  namespaces: []
   extraRoleRules: []
   # - apiGroups: []
   #   resources: []
@@ -144,10 +146,10 @@ dnsPolicy: ~
 dnsConfig: {}
   # nameservers:
   #   - 8.8.8.8
-  #   options:
-  #   - name: ndots
-  #     value: "2"
-  #   - name: edns0
+  # options:
+  # - name: ndots
+  #   value: "2"
+  # - name: edns0
 
 hostUsers: ~
 securityContext:
@@ -991,7 +993,7 @@ sidecar:
     # -- The Docker registry
     registry: quay.io
     repository: kiwigrid/k8s-sidecar
-    tag: 2.7.1
+    tag: 2.7.3
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}
@@ -1507,6 +1509,14 @@ imageRenderer:
     pullSecrets: []
     # image-renderer ImagePullPolicy
     pullPolicy: Always
+  dnsPolicy: ~
+  dnsConfig: {}
+    # nameservers:
+    #   - 8.8.8.8
+    # options:
+    # - name: ndots
+    #   value: "2"
+    # - name: edns0
   # extra environment variables
   env:
     HTTP_HOST: "0.0.0.0"
