@@ -61,6 +61,13 @@ spec:
       hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.imageRenderer.dnsPolicy }}
+      dnsPolicy: {{ .Values.imageRenderer.dnsPolicy }}
+      {{- end }}
+      {{- with .Values.imageRenderer.dnsConfig }}
+      dnsConfig:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.imageRenderer.priorityClassName }}
       priorityClassName: {{ . }}
       {{- end }}
