@@ -119,22 +119,22 @@ async function copyLinodeCfwTemplates(chartDir) {
 async function getAppVersion(chartDir, defaultName) {
   console.log(`Extracting app version for ${defaultName} from ${chartDir}`)
   const dependencyChart = await loadYamlFile(`${chartDir}/Chart.yaml`)
-  const updatedAppVersion = dependencyChart?.appVersion || dependencyChart?.version
-  return Object.fromEntries([[defaultName, updatedAppVersion]])
+  const updatedAppVersion = semver.coerce(dependencyChart?.appVersion || dependencyChart?.version)
+  return Object.fromEntries([[defaultName, updatedAppVersion.toString()]])
 }
 
 async function getKubePromStackApps(chartDir) {
   console.log(`Extracting app versions from ${chartDir}`)
   try {
     const chartValues = await loadYamlFile(`${chartDir}/values.yaml`)
-    const alertManagerVersion = chartValues.alertmanager.alertmanagerSpec.image.tag
-    const prometheusVersion = chartValues.prometheus.prometheusSpec.image.tag
+    const alertManagerVersion = semver.coerce(chartValues.alertmanager.alertmanagerSpec.image.tag)
+    const prometheusVersion = semver.coerce(chartValues.prometheus.prometheusSpec.image.tag)
     const grafanaChart = await loadYamlFile(`${chartDir}/charts/grafana/Chart.yaml`)
-    const grafanaVersion = grafanaChart.appVersion
+    const grafanaVersion = semver.coerce(grafanaChart.appVersion)
     return {
-      alertmanager: alertManagerVersion,
-      prometheus: prometheusVersion,
-      grafana: grafanaVersion,
+      alertmanager: alertManagerVersion.toString(),
+      prometheus: prometheusVersion.toString(),
+      grafana: grafanaVersion.toString(),
     }
   } catch (e) {
     console.error('Field to extract version information from chart:', e)
