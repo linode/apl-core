@@ -14,18 +14,6 @@ linodeLkeImageRepository: "{{- $v.otomi.linodeLkeImageRepository }}"
 {{- end }}
 buildStorageClassName: {{ $v._derived.buildStorageClassName }}
 
-{{- $coreTeamServices := list }}
-{{- range $s := $v.teamApps }}
-  {{- if and (hasKey $s "ingress") $v.otomi.isMultitenant }}
-    {{- range $ing := $s.ingress }}
-      {{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
-      {{- $coreTeamServices = append $coreTeamServices $svc }}
-    {{- end }}
-  {{- end }}
-{{- end }}
-
-
-
 {{- $teamResourceQuotas := dict }}
 {{- range $team | get "settings.resourceQuota" list }}
 {{- $_ := set $teamResourceQuotas .name .value }}
@@ -44,7 +32,6 @@ apps:
     enabled: {{ $a.tekton.enabled }}
 
 aiEnabled: {{ $v.otomi.aiEnabled }}
-isMultitenant: {{ $v.otomi.isMultitenant }}
 globalPullSecret: {{ $v | get "otomi.globalPullSecret" nil }}
 domain: {{ $domain }}
 ingress: {{- $v.ingress | toYaml | nindent 2 }}
@@ -60,13 +47,8 @@ managedMonitoring: {{- $team | get "settings.managedMonitoring" dict | toYaml | 
 teamId: {{ $teamId }}
 teamApps: {{- toYaml $teamApps | nindent 2 }}
 teamIds: {{- toYaml (keys $v.teamConfig | sortAlpha) | nindent 2 }}
-services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 2 }}
+services: {{- toYaml $teamServices | nindent 2 }}
 resourceQuota: {{- $teamResourceQuotas | toYaml | nindent 2 }}
-ingressGatewayPrefix: {{ $v._derived.ingressGatewayPrefix }}
-ingressPublicGatewayName: {{ $v._derived.ingressPublicGatewayName }}
-defaultIngressGatewayLabel: {{ $v._derived.defaultIngressGatewayLabel }}
-canaryIngressGatewayLabel: {{ $v._derived.canaryIngressGatewayLabel | quote }}
-useLegacyIngress: {{ $a | get "ingress-nginx-platform.enabled" }}
 httpRouteAnnotations: {{- $httpRoute.annotations | toYaml | nindent 2 }}
 
 gitOps:

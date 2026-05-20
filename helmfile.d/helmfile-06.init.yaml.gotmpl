@@ -12,15 +12,6 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: istio-ingressgateway-public
-    installed: {{ $a | get "ingress-nginx-platform.enabled" }}
-    namespace: istio-system
-    labels:
-      pkg: istio
-      app: core
-    chart: ../charts/istio-gateway
-    values:
-      - ../values/istio-gateway/istio-ingressgateway.yaml.gotmpl
   - name: istio-egressgateway
     installed: {{ $a | get "istio.egressGateway.enabled" }}
     namespace: istio-system
