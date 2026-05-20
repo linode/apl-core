@@ -4,7 +4,6 @@
 {{- $tag := "v1.22.0" }}
 {{- $netIstioTag := "v1.22.0" }}
 {{- $netGatewayTag := "v1.22.0" }}
-{{- $enableLegacyIngress := $v | get "apps.ingress-nginx-platform.enabled" }}
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
@@ -73,10 +72,6 @@ spec:
       queue-sidecar-memory-limit: "{{ $k.resources.queueSidecar.limits.memory }}"
     domain:
       {{ $v.cluster.domainSuffix }}: ''
-    {{- if $enableLegacyIngress }}
-    istio:
-      gateway.knative-serving.knative-ingress-gateway: {{ $v._derived.ingressPublicGatewayName }}.istio-system.svc.cluster.local
-    {{- end }}
     gateway:
       external-gateways: |
         {{- range $ingress := $v.ingress.classes }}
@@ -95,18 +90,7 @@ spec:
     features:
       podspec-securitycontext: enabled
   ingress:
-    {{- if $enableLegacyIngress }}
-    istio:
-      enabled: true
-      knative-ingress-gateway:
-        selector:
-          istio: {{ $v._derived.defaultIngressGatewayLabel }}
-      knative-local-gateway:
-        selector:
-          istio: {{ $v._derived.defaultIngressGatewayLabel }}
-    {{- else }}
     gateway-api:
       enabled: true
     istio:
       enabled: false
-    {{- end }}

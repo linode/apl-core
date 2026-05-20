@@ -416,73 +416,6 @@ definitions:
       - tag
     type: object
     title: Container image
-  ingressNginx:
-    additionalProperties: false
-    properties:
-      _rawValues:
-        $ref: '#/definitions/rawValues'
-      enabled:
-        type: boolean
-      autoscaling:
-        additionalProperties: false
-        properties:
-          enabled:
-            default: true
-            type: boolean
-          maxReplicas:
-            type: integer
-            default: 10
-          minReplicas:
-            type: integer
-            default: 1
-          targetCPUUtilizationPercentage:
-            type: integer
-            default: 80
-          targetMemoryUtilizationPercentage:
-            type: integer
-            default: 80
-      maxBodySize:
-        type: string
-        default: 1024m
-      maxBodySizeBytes:
-        type: integer
-        minimum: 0
-        default: 1073741824
-        description: Needed for modsecurity. Should correspond to maxBodySize, but expressed in bytes.
-      modsecurity:
-        title: MOD Security
-        description: Enables MOD Security functionality.
-        properties:
-          block:
-            description: Makes nginx block requests that are marked as violating the modsec rules.
-            type: boolean
-            default: false
-          enabled:
-            type: boolean
-            default: false
-          owasp:
-            description: Turns on the default OWASP rule set for modsec. See
-            type: boolean
-            default: true
-        type: object
-      image:
-        properties:
-          tag:
-            $ref: '#/definitions/imageTag'
-            x-default: v1.0.5
-          pullPolicy:
-            $ref: '#/definitions/imagePullPolicy'
-      resources:
-        controller:
-          $ref: '#/definitions/resources'
-        opentelemetry:
-          $ref: '#/definitions/resources'
-        defaultBackend:
-          $ref: '#/definitions/resources'
-      service:
-        properties:
-          annotations:
-            $ref: '#/definitions/annotations'
   ingressClassParameters:
     type: object
     properties:
@@ -1888,8 +1821,6 @@ properties:
           secretKey:
             type: string
             x-secret: '{{ randAlpha 16 }}'
-      ingress-nginx-platform:
-        $ref: '#/definitions/ingressNginx'
       istio:
         properties:
           _rawValues:
@@ -2519,9 +2450,6 @@ properties:
                 $ref: '#/definitions/resources'
               manager:
                 $ref: '#/definitions/resources'
-    patternProperties:
-      '^ingress-nginx-[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
-        $ref: '#/definitions/ingressNginx'
   catalogs:
     type: object
     additionalProperties:

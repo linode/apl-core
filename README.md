@@ -75,7 +75,6 @@ Get instant access to the following pre-configured Kubernetes Apps:
 - [Argo CD](https://github.com/argoproj/argo-cd): Declarative Continuous Deployment.
 - [Keycloak](https://github.com/keycloak/keycloak): Identity and access management for modern applications and services.
 - [Cert-manager](https://github.com/cert-manager/cert-manager) - Bring your own wildcard certificate or request one from Let's Encrypt.
-- [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx): Ingress controller for Kubernetes.
 - [ExternalDNS](https://github.com/kubernetes-sigs/external-dns): Synchronize exposed ingresses with DNS providers.
 - [Tekton Pipeline](https://github.com/tektoncd/pipeline): K8s-style resources for declaring CI/CD pipelines.
 - [Tekton Triggers](https://github.com/tektoncd/triggers): Trigger pipelines from event payloads.
