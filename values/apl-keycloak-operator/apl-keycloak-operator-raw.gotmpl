@@ -1,26 +1,38 @@
 {{- $v := .Values }}
 {{- $oi := $v | get "oidc" dict }}
-{{- $teamNames := list }}
 {{- $teamsMapping := dict }}
 {{- $teamIds := list }}
 {{- range $name, $team := omit .Values.teamConfig "admin" }}
 {{- $teamIds = append $teamIds $name }}
-{{- $teamNames = print "team-" $name | append $teamNames }}
 {{- $teamSettings := $team.settings }}
 {{- if ($teamSettings | get "oidc.groupMapping" nil) }}
 {{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $teamSettings.oidc.groupMapping }}
 {{- end }}
 {{- end }}
 {{- $teamIds = sortAlpha $teamIds }}
-{{- $teamNames = sortAlpha $teamNames }}
 {{- $c := $v.apps }}
 {{- $cm := $c | get "cert-manager" }}
 {{- $o := $v.apps | get "apl-keycloak-operator" }}
 {{- $version := $v.versions.tasks }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $k := $c | get "keycloak" }}
-{{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
-{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
+
+{{- $domainSuffix := $v.cluster.domainSuffix }}
+{{- $redirectUrls := list }}
+{{- range $coreApp := $v.adminApps }}
+  {{- if $coreApp | get "ownHost" false }}
+    {{ $redirectUrls = append $redirectUrls (printf "https://%s.%s/*" $coreApp.name $domainSuffix) }}
+  {{- end }}
+{{- end }}
+{{- range $teamApp := $v.teamApps }}
+  {{- if $teamApp | get "ownHost" false }}
+    {{ range $teamId := $teamIds }}
+      {{ $redirectUrls = append $redirectUrls (printf "https://%s-%s.%s/*" $teamApp.name $teamId $domainSuffix) }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- $redirectUrls = sortAlpha $redirectUrls }}
+
 resources:
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
@@ -71,13 +83,13 @@ resources:
       namespace: apl-keycloak-operator
     data:
       FEAT_EXTERNAL_IDP: "{{ $v.otomi.hasExternalIDP | toString }}"
-      KEYCLOAK_HOSTNAME_URL: https://keycloak.{{ $v.cluster.domainSuffix }}
-      KEYCLOAK_HOSTNAME: keycloak.{{ $v.cluster.domainSuffix }}
+      KEYCLOAK_HOSTNAME_URL: https://keycloak.{{ $domainSuffix }}
+      KEYCLOAK_HOSTNAME: keycloak.{{ $domainSuffix }}
       KEYCLOAK_ADDRESS_INTERNAL: http://keycloak-keycloakx-http.keycloak.svc.cluster.local
       KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
       KEYCLOAK_REALM: 'master'
       KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
-      REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" (keys $doms | sortAlpha) "sep" "/*\",\"https://") }}/*"]'
+      REDIRECT_URIS: '{{ $redirectUrls | toJson}}'
       TEAM_IDS: '{{ $teamIds | toJson }}'
       WAIT_OPTIONS: '{"retries": "200"}'
       {{- if $v.otomi.hasExternalIDP }}
