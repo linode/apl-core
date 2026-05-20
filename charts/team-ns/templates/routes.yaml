@@ -8,9 +8,8 @@
 {{- end }}
 
 {{- range $s := $v.services }}
-{{- $isCoreService := $s.isCore | default false }}
 {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
-{{- if not (or $isCoreService $isKnativeService) }}
+{{- if not $isKnativeService }}
 {{- $cnameDomain := dig "cname" "domain" "" $s }}
 {{- $useCname := and ($s.useCname | default false) (ne $cnameDomain "") }}
 {{- $ingressClassName := $s.ingressClassName | default $defaultIngressClass }}
@@ -129,7 +128,7 @@ spec:
       name: https
       protocol: TLS
   resolution: DNS
-{{- end }}{{- /* $isCoreService or $isKnativeService */}}
+{{- end }}{{- /* $isKnativeService */}}
 {{- end }}{{- /* range services */}}
 
 {{- range $ingress := $v.ingress.classes }}
