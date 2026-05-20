@@ -3,7 +3,7 @@ import { encryptSecretItem } from '@linode/kubeseal-encrypt'
 import { randomBytes, randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'fs'
-import { cp, rename as fsRename, mkdir, readFile, writeFile } from 'fs/promises'
+import { cp, rename as fsRename, mkdir, readFile, writeFile, rm } from 'fs/promises'
 import { glob, globSync } from 'glob'
 import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
 import { basename, dirname, join } from 'path'
@@ -1202,6 +1202,18 @@ const removeIngressTracing = async (values: Record<string, any>) => {
   })
 }
 
+const removeIngressNginxValues = async (values: Record<string, any>) => {
+  const d = terminal('removeIngressNginxValues')
+  const apps: Record<string, any> = values?.apps ?? {}
+  const ingressApps = Object.keys(apps).filter((key) => key.startsWith('ingress-nginx-'))
+  for (let ingressAppName of ingressApps) {
+    const valuesFile = `${env.ENV_DIR}/env/apps/${ingressAppName}.yaml`
+    d.info(`Removing ${valuesFile}`)
+    unset(apps, ingressAppName)
+    await rm(valuesFile)
+  }
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   networkPoliciesMigration,
   teamSettingsMigration,
@@ -1219,6 +1231,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   setIngressDefault,
   addRedisSecretForArgoCD,
   removeIngressTracing,
+  removeIngressNginxValues,
 }
 
 /**
