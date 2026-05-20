@@ -267,9 +267,6 @@ environments:
               egressgateway:
                 minReplicas: 2
                 maxReplicas: 10
-              ingressgateway:
-                minReplicas: 2
-                maxReplicas: 10
               pilot:
                 minReplicas: 2
                 maxReplicas: 10
@@ -291,13 +288,6 @@ environments:
                   cpu: "1"
                   memory: 1Gi
               egressgateway:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: "1"
-                  memory: 256Mi
-              ingressgateway:
                 requests:
                   cpu: 100m
                   memory: 128Mi
@@ -1180,4 +1170,4 @@ environments:
           aiEnabled: false
         users: []
         versions:
-          specVersion: 66
+          specVersion: 67
