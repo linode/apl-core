@@ -4,7 +4,7 @@
 {{- $dirPath := printf "%s/env/teams" $ENV_DIR }}
 {{- $ingressFilePath := printf "%s/env/settings/ingress.yaml" $ENV_DIR }}
 {{ $ingress := dict }}
-{{- /* We load ingress class names in order to generate defaults for corresponding ingress-nginx instancies */}}
+{{- /* We load ingress class names in order to generate defaults for corresponding gateway instancies */}}
 {{- if (isFile $ingressFilePath) }}
 {{- $ingress = readFile $ingressFilePath | fromYaml }}
 {{- end }}
@@ -26,47 +26,6 @@ environments:
         argocd: {}
         kubeflow-pipelines: {}
         gitea: {}
-        {{- range $index, $ingressClassName := $ingressClassNames }}
-        ingress-nginx-{{ $ingressClassName }}:
-          {{- if eq $ingressClassName "platform" }}
-          enabled: false
-          {{- end }}
-          autoscaling:
-            enabled: true
-            minReplicas: 2
-            maxReplicas: 10
-            targetCPUUtilizationPercentage: 80
-            targetMemoryUtilizationPercentage: 80
-          modsecurity:
-            enabled: false
-            block: false
-            owasp: true
-          maxBodySize: 1024m
-          maxBodySizeBytes: 1073741824
-          resources:
-            controller:
-              requests:
-                cpu: 100m
-                memory: 384Mi
-              limits:
-                cpu: "2"
-                memory: 2Gi
-            opentelemetry:
-              requests:
-                cpu: 100m
-                memory: 65Mi
-              limits:
-                cpu: 500m
-                memory: 256Mi
-            defaultBackend:
-              limits:
-                cpu: 20m
-                memory: 20Mi
-              requests:
-                cpu: 10m
-                memory: 10Mi
-          _rawValues: {}
-        {{- end }}
       teamConfig:
       {{- range $index,$item := readDirEntries $dirPath }}
       {{- if $item.IsDir }}
