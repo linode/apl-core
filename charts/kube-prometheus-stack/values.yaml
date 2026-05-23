@@ -3015,7 +3015,7 @@ prometheusOperator:
       image:
         registry: ghcr.io
         repository: jkroepke/kube-webhook-certgen
-        tag: 1.8.2
+        tag: 1.8.3
         sha: ""
         pullPolicy: IfNotPresent
       resources: {}
@@ -5557,6 +5557,13 @@ thanosRuler:
     ## Containers allows injecting additional containers. This is meant to allow adding an authentication proxy to an ThanosRuler pod.
     ##
     containers: []
+
+    ## Additional environment variables to set on the ThanosRuler container.
+    ## This is rendered through the Prometheus Operator strategic merge patch.
+    ##
+    extraEnv: []
+    # - name: EXAMPLE
+    #   value: test
 
     # Additional volumes on the output StatefulSet definition.
     volumes: []
