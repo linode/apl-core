@@ -492,7 +492,7 @@ initChownData:
     # -- The Docker registry
     registry: docker.io
     repository: library/busybox
-    tag: "1.37.0"
+    tag: "1.38.0"
     sha: ""
     pullPolicy: IfNotPresent
 
