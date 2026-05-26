@@ -276,10 +276,11 @@ serviceMonitor:
   path: /metrics
   #  namespace: monitoring  (defaults to use the namespace this chart is deployed to)
   labels: {}
-  interval: 30s
+  # Set these to override the Prometheus global scrape interval/timeout.
+  # interval: 30s
+  # scrapeTimeout: 30s
   scheme: http
   tlsConfig: {}
-  scrapeTimeout: 30s
   relabelings: []
   metricRelabelings: []
   basicAuth: {}
@@ -492,7 +493,7 @@ initChownData:
     # -- The Docker registry
     registry: docker.io
     repository: library/busybox
-    tag: "1.37.0"
+    tag: "1.38.0"
     sha: ""
     pullPolicy: IfNotPresent
 
@@ -1582,10 +1583,11 @@ imageRenderer:
     path: /metrics
     #  namespace: monitoring  (defaults to use the namespace this chart is deployed to)
     labels: {}
-    interval: 1m
+    # Set these to override the Prometheus global scrape interval/timeout.
+    # interval: 1m
+    # scrapeTimeout: 30s
     scheme: http
     tlsConfig: {}
-    scrapeTimeout: 30s
     relabelings: []
     # See: https://doc.crds.dev/github.com/prometheus-operator/kube-prometheus/monitoring.coreos.com/ServiceMonitor/v1@v0.11.0#spec-targetLabels
     targetLabels: []
