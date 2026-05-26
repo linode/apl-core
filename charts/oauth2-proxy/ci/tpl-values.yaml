@@ -13,6 +13,16 @@ ingress:
         - "{{ $.Release.Name }}.local"
   annotations:
     test-annotations/test: "{{ $.Release.Name }}"
+  labels:
+    test-annotations/test: "{{ $.Release.Name }}"
+  extraPaths:
+    - path: /ping
+      pathType: Prefix
+      backend:
+        service:
+          name: '{{ include "oauth2-proxy.fullname" $ }}'
+          port:
+            name: '{{ $.Values.httpScheme }}'
 oauth2-proxy:
   checkDeprecation: false
   config:
@@ -47,6 +57,9 @@ config:
     test-annotations/test: "{{ $.Release.Name }}"
   cookieName: '{{ $.Release.Name }}'
 
+deploymentLabels:
+  test-deployment-label/test: "{{ $.Release.Name }}"
+
 deploymentAnnotations:
   test-annotations/test: "{{ $.Release.Name }}"
 
@@ -72,3 +85,7 @@ serviceMonitor:
 
 customLabels:
   test-labels/test: "{{ $.Release.Name }}"
+
+nodeOS: linux
+nodeSelector:
+  kubernetes.io/os: "{{ .Values.nodeOS }}"

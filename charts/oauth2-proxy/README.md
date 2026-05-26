@@ -190,6 +190,7 @@ The following table lists the configurable parameters of the oauth2-proxy chart 
 | `config.google.useApplicationDefaultCredentials`      | use the application-default credentials (i.e. Workload Identity on GKE) instead of providing a service account JSON                                                                                                                                              | `false`                                                                                              |
 | `containerPort`                                       | used to customize port on the deployment                                                                                                                                                                                                                         | `""`                                                                                                 |
 | `customLabels`                                        | Custom labels to add into metadata                                                                                                                                                                                                                               | `{}`                                                                                                 |
+| `deploymentLabels`                               | labels to add to the deployment                                                                                                                                                                                                                             | `{}`                                                                                                 |
 | `deploymentAnnotations`                               | annotations to add to the deployment                                                                                                                                                                                                                             | `{}`                                                                                                 |
 | `enableServiceLinks`                                  | configure deployment enableServiceLinks                                                                                                                                                                                                                          | `true`                                                                                               |
 | `extraArgs`                                           | Extra arguments to give the binary. Either as a map with key:value pairs or as a list type, which allows the same flag to be configured multiple times. (e.g. `["--allowed-role=CLIENT_ID:CLIENT_ROLE_NAME_A", "--allowed-role=CLIENT_ID:CLIENT_ROLE_NAME_B"]`). | `{}` or `[]`                                                                                         |
@@ -360,7 +361,8 @@ gatewayApi:
   hostnames:
     - oauth.example.com
   rules:
-    - matches:
+    - name: oauth2
+      matches:
         - path:
             type: PathPrefix
             value: /oauth2
@@ -378,6 +380,31 @@ gatewayApi:
 
 If you don't specify custom rules, the chart will create a default rule that matches all paths with `PathPrefix: /` and routes to the oauth2-proxy service.
 If you don't specify a sectionName, the rules will be applied to all listeners of the referenced Gateway.
+
+### Targeting Rules with Policies via `sectionName`
+
+The optional `name` field on each rule (e.g. `rules[].name: oauth2`) lets policies such as `SecurityPolicy`, `BackendTrafficPolicy`, or any other Gateway API policy that supports `sectionName` target a specific HTTPRoute rule rather than the entire route. Example:
+
+```yaml
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: oauth2-proxy-policy
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: oauth2-proxy
+      sectionName: oauth2          # matches rules[].name above
+  jwt:
+    providers:
+      - name: example
+        issuer: https://issuer.example.com
+        remoteJWKS:
+          uri: https://issuer.example.com/.well-known/jwks.json
+```
+
+Without a rule `name`, policies cannot target individual rules and must apply to the whole HTTPRoute.
 
 ## TLS Configuration
 
