@@ -36,6 +36,9 @@ global:
     #   path: /etc/pki/tls/ca-certificates.crt
     #   type: File
 
+  # -- Global priority class name for pod priority. Non-global values will override the global value.
+  priorityClassName: ''
+
   # -- Additional container environment variables to apply to all containers and init containers
   extraEnvVars: []
   # Example setting proxy
@@ -238,10 +241,21 @@ crds:
         memory: 64Mi
 
     serviceAccount:
-      # -- Toggle automounting of the ServiceAccount
+      # -- Toggle automounting of the ServiceAccount.
+      # When set to false, a projected service account token is used instead
+      # which provides time-limited and audience-bound tokens for improved security.
       automountServiceAccountToken: true
 
-# -- Scoped token injected into outbound APICall and CEL HTTP requests.
+      # -- Projected service account token configuration (only used when automountServiceAccountToken is false)
+      projectedServiceAccountToken:
+        # -- Token expiration time in seconds.
+        # The kubelet will request a new token before the token expires.
+        expirationSeconds: 3600
+        # -- Audience for the projected service account token.
+        # If not set, the token will have no audience restriction.
+        audience: ""
+
+# -- Scoped token injected into outbound APICall and CEL http requests.
 # This token carries a custom audience so that if leaked to an external service
 # it cannot be replayed against the Kubernetes API server.
 apiCallToken:
@@ -293,6 +307,14 @@ config:
 
   # -- Generate success events.
   generateSuccessEvents: false
+
+  # -- Comma-separated list of event actions for which success events should be generated.
+  # When set, only success events matching the specified actions are emitted.
+  # Requires `generateSuccessEvents` to be `true`.
+  # Valid values: "Resource Mutated", "Resource Passed", "Resource Generated", "Resource Cleaned Up".
+  # Example: "Resource Mutated" or "Resource Mutated,Resource Generated".
+  # @default -- "" (empty, all success events are emitted when generateSuccessEvents is true)
+  successEventActions: ""
 
   # -- Maximum cumulative size of context data during policy evaluation.
   # Supports Kubernetes quantity format (e.g., 100Mi, 2Gi) or plain bytes (e.g., 2097152).
@@ -548,7 +570,7 @@ test:
     repository: kyverno/readiness-checker
     # -- Image tag
     # Defaults to `latest` if omitted
-    tag: 'v0.1.0'
+    tag: ~
     # -- (string) Image pull policy
     # Defaults to image.pullPolicy if omitted
     pullPolicy: ~
@@ -581,8 +603,19 @@ test:
     seccompProfile:
       type: RuntimeDefault
 
-  # -- Toggle automounting of the ServiceAccount
+  # -- Toggle automounting of the ServiceAccount.
+  # When set to false, a projected service account token is used instead
+  # which provides time-limited and audience-bound tokens for improved security.
   automountServiceAccountToken: true
+
+  # -- Projected service account token configuration (only used when automountServiceAccountToken is false)
+  projectedServiceAccountToken:
+    # -- Token expiration time in seconds.
+    # The kubelet will request a new token before the token expires.
+    expirationSeconds: 3600
+    # -- Audience for the projected service account token.
+    # If not set, the token will have no audience restriction.
+    audience: ""
 
   # -- Node labels for pod assignment
   nodeSelector: {}
@@ -601,18 +634,14 @@ webhooksCleanup:
   # -- Create a helm pre-delete hook to cleanup webhooks.
   enabled: true
 
-  autoDeleteWebhooks:
-    # -- Allow webhooks controller to delete webhooks using finalizers
-    enabled: false
-
   image:
     # -- (string) Image registry
-    registry: registry.k8s.io
+    registry: ghcr.io
     # -- Image repository
-    repository: kubectl
+    repository: kyverno/readiness-checker
     # -- Image tag
     # Defaults to `latest` if omitted
-    tag: 'v1.34.3'
+    tag: ~
     # -- (string) Image pull policy
     # Defaults to image.pullPolicy if omitted
     pullPolicy: ~
@@ -669,8 +698,19 @@ webhooksCleanup:
       memory: 64Mi
 
   serviceAccount:
-    # -- Toggle automounting of the ServiceAccount
+    # -- Toggle automounting of the ServiceAccount.
+    # When set to false, a projected service account token is used instead
+    # which provides time-limited and audience-bound tokens for improved security.
     automountServiceAccountToken: true
+
+    # -- Projected service account token configuration (only used when automountServiceAccountToken is false)
+    projectedServiceAccountToken:
+      # -- Token expiration time in seconds.
+      # The kubelet will request a new token before the token expires.
+      expirationSeconds: 3600
+      # -- Audience for the projected service account token.
+      # If not set, the token will have no audience restriction.
+      audience: ""
 
 grafana:
   # -- Enable grafana dashboard creation.
@@ -766,6 +806,8 @@ features:
   globalContext:
     # -- Maximum allowed response size from API Calls. A value of 0 bypasses checks (not recommended)
     maxApiCallResponseLength: 2000000
+    # -- Timeout for HTTP API calls made by policies. A value of 0s means no timeout.
+    apiCallTimeout: 30s
   logging:
     # -- Logging format
     format: text
@@ -825,6 +867,9 @@ admissionController:
     # -- Target CPU utilization percentage
     targetCPUUtilizationPercentage: 80
 
+    # -- (int) Target memory utilization percentage
+    targetMemoryUtilizationPercentage: ~
+
     # -- Configurable scaling behavior
     behavior: {}
 
@@ -852,8 +897,19 @@ admissionController:
       annotations: {}
         # example.com/annotation: value
 
-      # -- Toggle automounting of the ServiceAccount
+      # -- Toggle automounting of the ServiceAccount.
+      # When set to false, a projected service account token is used instead
+      # which provides time-limited and audience-bound tokens for improved security.
       automountServiceAccountToken: true
+
+      # -- Projected service account token configuration (only used when automountServiceAccountToken is false)
+      projectedServiceAccountToken:
+        # -- Token expiration time in seconds.
+        # The kubelet will request a new token before the token expires.
+        expirationSeconds: 3600
+        # -- Audience for the projected service account token.
+        # If not set, the token will have no audience restriction.
+        audience: ""
 
     coreClusterRole:
       # -- Extra resource permissions to add in the core cluster role.
@@ -939,6 +995,9 @@ admissionController:
   # -- Additional annotations to add to each pod
   podAnnotations: {}
     # example.com/annotation: foo
+
+  # -- Deployment labels.
+  labels: {}
 
   # -- Deployment annotations.
   annotations: {}
@@ -1140,6 +1199,8 @@ admissionController:
 
     # -- Container security context
     securityContext:
+      runAsUser: 65534
+      runAsGroup: 65534
       runAsNonRoot: true
       privileged: false
       allowPrivilegeEscalation: false
@@ -1185,6 +1246,8 @@ admissionController:
 
     # -- Container security context
     securityContext:
+      runAsUser: 65534
+      runAsGroup: 65534
       runAsNonRoot: true
       privileged: false
       allowPrivilegeEscalation: false
@@ -1216,6 +1279,16 @@ admissionController:
     # - name: myapp-container
     #   image: busybox
     #   command: ['sh', '-c', 'echo Hello && sleep 3600']
+
+  # -- Additional volumes to be mounted in the pod
+  extraVolumes: []
+    # - name: my-volume
+    #   emptyDir: {}
+
+  # -- Additional volumeMounts to be mounted to the main container
+  extraVolumeMounts: []
+    # - name: my-volume
+    #   mountPath: /path/to/mount
 
   service:
     # -- Service port.
@@ -1294,6 +1367,11 @@ admissionController:
     config: prometheus
     # -- Prometheus endpoint port
     port: 8000
+    # -- Is TLS required for endpoint
+    secure: false
+    # -- Key algorithm for self-signed TLS certificates.
+    # Supported values: RSA, ECDSA, Ed25519
+    tlsKeyAlgorithm: RSA
     # -- Otel collector endpoint
     collector: ''
     # -- Otel collector credentials
@@ -1337,8 +1415,19 @@ backgroundController:
       annotations: {}
         # example.com/annotation: value
 
-      # -- Toggle automounting of the ServiceAccount
+      # -- Toggle automounting of the ServiceAccount.
+      # When set to false, a projected service account token is used instead
+      # which provides time-limited and audience-bound tokens for improved security.
       automountServiceAccountToken: true
+
+      # -- Projected service account token configuration (only used when automountServiceAccountToken is false)
+      projectedServiceAccountToken:
+        # -- Token expiration time in seconds.
+        # The kubelet will request a new token before the token expires.
+        expirationSeconds: 3600
+        # -- Audience for the projected service account token.
+        # If not set, the token will have no audience restriction.
+        audience: ""
 
     coreClusterRole:
       # -- Extra resource permissions to add in the core cluster role.
@@ -1434,6 +1523,9 @@ backgroundController:
   podAnnotations: {}
   # example.com/annotation: foo
 
+  # -- Deployment labels.
+  labels: {}
+
   # -- Deployment annotations.
   annotations: {}
 
@@ -1525,6 +1617,8 @@ backgroundController:
 
   # -- Security context for the containers
   securityContext:
+    runAsUser: 65534
+    runAsGroup: 65534
     runAsNonRoot: true
     privileged: false
     allowPrivilegeEscalation: false
@@ -1560,6 +1654,16 @@ backgroundController:
     # hostPath:
     #   path: /etc/pki/tls/ca-certificates.crt
     #   type: File
+
+  # -- Additional volumes to be mounted in the pod
+  extraVolumes: []
+    # - name: my-volume
+    #   emptyDir: {}
+
+  # -- Additional volumeMounts to be mounted to the main container
+  extraVolumeMounts: []
+    # - name: my-volume
+    #   mountPath: /path/to/mount
 
   metricsService:
     # -- Create service.
@@ -1626,6 +1730,11 @@ backgroundController:
     config: prometheus
     # -- Prometheus endpoint port
     port: 8000
+    # -- Is TLS required for endpoint
+    secure: false
+    # -- Key algorithm for self-signed TLS certificates.
+    # Supported values: RSA, ECDSA, Ed25519
+    tlsKeyAlgorithm: RSA
     # -- Otel collector endpoint
     collector: ''
     # -- Otel collector credentials
@@ -1668,8 +1777,19 @@ cleanupController:
       annotations: {}
         # example.com/annotation: value
 
-      # -- Toggle automounting of the ServiceAccount
+      # -- Toggle automounting of the ServiceAccount.
+      # When set to false, a projected service account token is used instead
+      # which provides time-limited and audience-bound tokens for improved security.
       automountServiceAccountToken: true
+
+      # -- Projected service account token configuration (only used when automountServiceAccountToken is false)
+      projectedServiceAccountToken:
+        # -- Token expiration time in seconds.
+        # The kubelet will request a new token before the token expires.
+        expirationSeconds: 3600
+        # -- Audience for the projected service account token.
+        # If not set, the token will have no audience restriction.
+        audience: ""
 
     clusterRole:
       # -- Extra resource permissions to add in the cluster role
@@ -1762,6 +1882,9 @@ cleanupController:
   # -- Additional annotations to add to each pod
   podAnnotations: {}
   # example.com/annotation: foo
+
+  # -- Deployment labels.
+  labels: {}
 
   # -- Deployment annotations.
   annotations: {}
@@ -1902,6 +2025,8 @@ cleanupController:
 
   # -- Security context for the containers
   securityContext:
+    runAsUser: 65534
+    runAsGroup: 65534
     runAsNonRoot: true
     privileged: false
     allowPrivilegeEscalation: false
@@ -1925,6 +2050,16 @@ cleanupController:
     # -- Unhealthy pod eviction policy to be used.
     # Possible values are `IfHealthyBudget` or `AlwaysAllow`.
     unhealthyPodEvictionPolicy:
+
+  # -- Additional volumes to be mounted in the pod
+  extraVolumes: []
+    # - name: my-volume
+    #   emptyDir: {}
+
+  # -- Additional volumeMounts to be mounted to the main container
+  extraVolumeMounts: []
+    # - name: my-volume
+    #   mountPath: /path/to/mount
 
   service:
     # -- Service port.
@@ -2005,6 +2140,11 @@ cleanupController:
     config: prometheus
     # -- Prometheus endpoint port
     port: 8000
+    # -- Is TLS required for endpoint
+    secure: false
+    # -- Key algorithm for self-signed TLS certificates.
+    # Supported values: RSA, ECDSA, Ed25519
+    tlsKeyAlgorithm: RSA
     # -- Otel collector endpoint
     collector: ''
     # -- Otel collector credentials
@@ -2048,8 +2188,19 @@ reportsController:
       annotations: {}
         # example.com/annotation: value
 
-      # -- Toggle automounting of the ServiceAccount
+      # -- Toggle automounting of the ServiceAccount.
+      # When set to false, a projected service account token is used instead
+      # which provides time-limited and audience-bound tokens for improved security.
       automountServiceAccountToken: true
+
+      # -- Projected service account token configuration (only used when automountServiceAccountToken is false)
+      projectedServiceAccountToken:
+        # -- Token expiration time in seconds.
+        # The kubelet will request a new token before the token expires.
+        expirationSeconds: 3600
+        # -- Audience for the projected service account token.
+        # If not set, the token will have no audience restriction.
+        audience: ""
 
     coreClusterRole:
       # -- Extra resource permissions to add in the core cluster role.
@@ -2097,6 +2248,9 @@ reportsController:
   # -- Additional annotations to add to each pod
   podAnnotations: {}
   # example.com/annotation: foo
+
+  # -- Deployment labels.
+  labels: {}
 
   # -- Deployment annotations.
   annotations: {}
@@ -2207,6 +2361,8 @@ reportsController:
 
   # -- Security context for the containers
   securityContext:
+    runAsUser: 65534
+    runAsGroup: 65534
     runAsNonRoot: true
     privileged: false
     allowPrivilegeEscalation: false
@@ -2250,6 +2406,15 @@ reportsController:
     #   path: /etc/pki/tls/ca-certificates.crt
     #   type: File
 
+  # -- Additional volumes to be mounted in the pod
+  extraVolumes: []
+    # - name: my-volume
+    #   emptyDir: {}
+
+  # -- Additional volumeMounts to be mounted to the main container
+  extraVolumeMounts: []
+    # - name: my-volume
+    #   mountPath: /path/to/mount
 
   metricsService:
     # -- Create service.
@@ -2316,6 +2481,11 @@ reportsController:
     config: prometheus
     # -- Prometheus endpoint port
     port: 8000
+    # -- Is TLS required for endpoint
+    secure: false
+    # -- Key algorithm for self-signed TLS certificates.
+    # Supported values: RSA, ECDSA, Ed25519
+    tlsKeyAlgorithm: RSA
     # -- (string) Otel collector endpoint
     collector: ~
     # -- (string) Otel collector credentials
