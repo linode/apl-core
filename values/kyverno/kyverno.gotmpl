@@ -1,35 +1,23 @@
-{{- $v := .Values -}}
-{{- $kv := $v.apps.kyverno -}}
+{{- $v := .Values }}
+{{- $kv := $v.apps.kyverno }}
 
 crds:
   # Do not use Helm subchart, but statically-rendered CRDs
   install: false
 
-{{- if $v.otomi.linodeLkeImageRepository }}
-test:
+{{- with $v.otomi.linodeLkeImageRepository }}
+global:
   image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-{{- end }}
-
-{{- if $v.otomi.linodeLkeImageRepository }}
-webhooksCleanup:
-  image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-    image: k8s/kubectl
+    registry: {{ . }}/ghcr
 {{- end }}
 
 admissionController:
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1
-  {{- end }}
-  {{- if eq $kv.mode "Prod" }}
+  {{- else if eq $kv.mode "Prod" }}
   replicas: 3
   {{- end }}
   initContainer:
-  {{- if $v.otomi.linodeLkeImageRepository }}
-    image:
-      registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr"
-  {{- end }}
     resources:
       limits:
         cpu: 1
@@ -38,34 +26,20 @@ admissionController:
     additionalLabels:
       prometheus: system
   container:
-  {{- if $v.otomi.linodeLkeImageRepository }}
-    image:
-      registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr"
-  {{- end }}
     resources: {{- $kv.resources.admissionController | toYaml | nindent 6 }}
 
 cleanupController:
-  {{- if $v.otomi.linodeLkeImageRepository }}
-  image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr"
-  {{- end }}
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1
-  {{- end }}
-  {{- if eq $kv.mode "Prod" }}
+  {{- else if eq $kv.mode "Prod" }}
   replicas: 3
   {{- end }}
   resources: {{- $kv.resources.cleanupController | toYaml | nindent 4 }}
 
 backgroundController:
-  {{- if $v.otomi.linodeLkeImageRepository }}
-  image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr"
-  {{- end }}
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1
-  {{- end }}
-  {{- if eq $kv.mode "Prod" }}
+  {{- else if eq $kv.mode "Prod" }}
   replicas: 2
   {{- end }}
   resources: {{- $kv.resources.backgroundController | toYaml | nindent 4 }}
@@ -75,14 +49,9 @@ backgroundController:
       prometheus: system
 
 reportsController:
-  {{- if $v.otomi.linodeLkeImageRepository }}
-  image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr"
-  {{- end }}
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1
-  {{- end }}
-  {{- if eq $kv.mode "Prod" }}
+  {{- else if eq $kv.mode "Prod" }}
   replicas: 2
   {{- end }}
   resources: {{- $kv.resources.reportsController | toYaml | nindent 4 }}
