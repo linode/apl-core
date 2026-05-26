@@ -1,0 +1,16 @@
+# Gateway API configuration with rule name
+gatewayApi:
+  enabled: true
+  gatewayRef:
+    name: test-gateway
+  rules:
+    - name: service
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+    - name: metrics
+      matches:
+        - path:
+            type: PathPrefix
+            value: /metrics

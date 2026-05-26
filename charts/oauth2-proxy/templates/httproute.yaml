@@ -30,7 +30,10 @@ spec:
   rules:
   {{- if .Values.gatewayApi.rules }}
   {{- range .Values.gatewayApi.rules }}
-  - matches:
+  - {{- if .name }}
+    name: {{ .name | quote }}
+    {{- end }}
+    matches:
     {{- if .matches }}
     {{- toYaml .matches | nindent 4 }}
     {{- else }}
