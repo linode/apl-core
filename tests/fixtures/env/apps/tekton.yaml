@@ -4,9 +4,9 @@ metadata:
     labels: {}
 spec:
     _rawValues:
-    serviceaccount:
-        annotations:
-            test: v1
+      serviceaccount:
+          annotations:
+              test: v1
     enabled: true
     resources:
         dashboard:
