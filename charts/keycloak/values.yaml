@@ -11,7 +11,7 @@ image:
   # The Keycloak image repository
   repository: quay.io/keycloak/keycloak
   # Overrides the Keycloak image tag whose default is the chart appVersion
-  tag: "26.5.6"
+  tag: "26.6.2"
   # Overrides the Keycloak image tag with a specific digest
   digest: ""
   # The Keycloak image pull policy
@@ -616,17 +616,17 @@ test:
   enabled: false
   image:
     # The image for the test Pod
-    repository: docker.io/seleniarm/standalone-chromium
+    repository: docker.io/selenium/standalone-chromium
     # The tag for the test Pod image
-    tag: "117.0"
+    tag: "147.0"
     # The image pull policy for the test Pod image
     pullPolicy: IfNotPresent
   # SecurityContext for the entire test Pod
   podSecurityContext:
-    fsGroup: 1000
+    fsGroup: 1200  # UID of seluser in selenium/standalone-chromium
   # SecurityContext for the test container
   securityContext:
-    runAsUser: 1000
+    runAsUser: 1200  # UID of seluser in selenium/standalone-chromium
     runAsNonRoot: true
   # See https://helm.sh/docs/topics/charts_hooks/#hook-deletion-policies
   deletionPolicy: before-hook-creation
