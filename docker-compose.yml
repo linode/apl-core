@@ -13,7 +13,6 @@ services:
       - ${PWD}/core.yaml:/etc/otomi/core.yaml
       - tmp:/tmp
     environment:
-      TOOLS_HOST: tools
       CLUSTER_ID: ${CLUSTER_ID:-google/dev}
       GIT_LOCAL_PATH: /tmp/otomi-values-core
       GIT_REPO_URL: ${GIT_REPO_URL:-github.com/redkubes/otomi-values.git}
@@ -23,23 +22,6 @@ services:
       GIT_PASSWORD: ${GIT_PASSWORD}
       CLUSTER_APISERVER: http://127.0.0.1:8080
 
-  tools:
-    container_name: tools
-    image: linode/apl-core:${TOOLS_TAG:-latest}
-    user: ${USER_ID}:${GROUP_ID}
-    command: npm run compile && node --no-warnings ./dist/src/otomi.js -- server
-    depends_on:
-      - api
-    expose:
-      - 17771
-    ports:
-      - 17771:192019
-    volumes:
-      - tmp:/tmp
-      - $PWD:/home/app/stack
-    environment:
-      ENV_DIR: /tmp/otomi-values-core
-      GCLOUD_SERVICE_KEY: ${GCLOUD_SERVICE_KEY}
 
   web:
     image: linode/apl-console:${WEB_TAG:-latest}
