@@ -28,10 +28,6 @@ releases:
     installed: {{ $a | get "prometheus.enabled" }}
     namespace: monitoring
     <<: *default
-  - name: promtail
-    installed: {{ and ($a | get "loki.enabled") (not ($a | get "loki.enableOpenTelemetry")) }}
-    namespace: monitoring
-    <<: *default
   - name: prometheus-msteams-artifacts
     installed: {{ has "msteams" ($v | get "alerts.receivers") }}
     namespace: monitoring
