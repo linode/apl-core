@@ -104,6 +104,7 @@ spec:
         annotations:
           sidecar.istio.io/inject: "false"
           argocd.argoproj.io/compare-options: IgnoreExtraneous
+          tekton.dev/auto-cleanup-pvc: "true"
       spec:
         pipelineRef:
           name: buildpacks-build-{{ .name }}
@@ -153,6 +154,7 @@ metadata:
     argocd.argoproj.io/compare-options: IgnoreExtraneous
     # ArgoCD sync wave annotation to ensure it's applied after the pipeline
     argocd.argoproj.io/sync-wave: "5"
+    tekton.dev/auto-cleanup-pvc: "true"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   pipelineRef:
