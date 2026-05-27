@@ -8,9 +8,6 @@
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 {{- $version := $v.versions | get "api" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
-{{- $coreVersion := $v.otomi.version }}
-{{- $coreIsSemver := regexMatch "^[0-9.]+" $coreVersion }}
-
 replicaCount: 1
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 resources: {{- $o.resources.api | toYaml | nindent 2 }}
@@ -21,18 +18,6 @@ image:
   {{- end }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
-
-tools:
-  image:
-    {{- if $v.otomi.linodeLkeImageRepository }}
-    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
-    {{- end }}
-    tag: {{ $coreVersion | quote }}
-    pullPolicy: {{ $coreIsSemver | ternary "IfNotPresent" "Always" }}
-  resources: {{- $o.resources.tools | toYaml | nindent 4 }}
-  env:
-    DEBUG: '*'
-    VERBOSITY: '1'
 
 secrets:
   GIT_USER: {{ $git.username | quote }}

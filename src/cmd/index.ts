@@ -18,7 +18,6 @@ import { module as migrateModule } from './migrate'
 import { module as playgroundModule } from './playground'
 import { module as pullModule } from './pull'
 import { module as scoreTemplatesModule } from './score-templates'
-import { module as serverModule } from './server'
 import { module as statusModule } from './status'
 import { module as syncModule } from './sync'
 import { module as templateModule } from './template'
@@ -47,7 +46,6 @@ export { module as lint } from './lint'
 export { module as migrate } from './migrate'
 export { module as pull } from './pull'
 export { module as scoreTemplates } from './score-templates'
-export { module as server } from './server'
 export { module as status } from './status'
 export { module as sync } from './sync'
 export { module as template } from './template'
@@ -77,7 +75,6 @@ export const commands: CommandModule[] = [
   playgroundModule,
   pullModule,
   scoreTemplatesModule,
-  serverModule,
   statusModule,
   syncModule,
   templateModule,
