@@ -100,9 +100,9 @@ spec:
         generateName: buildpacks-build-{{ .name }}-
         labels:
           tekton.dev/pipeline: buildpacks-build-{{ .name }}
+          sidecar.istio.io/inject: "false"
           {{- include "team-ns.chart-labels" $ | nindent 10 }}
         annotations:
-          sidecar.istio.io/inject: "false"
           argocd.argoproj.io/compare-options: IgnoreExtraneous
           tekton.dev/auto-cleanup-pvc: "true"
       spec:
@@ -150,12 +150,13 @@ kind: PipelineRun
 metadata:
   name: buildpacks-build-{{ .name }}
   annotations:
-    sidecar.istio.io/inject: "false"
     argocd.argoproj.io/compare-options: IgnoreExtraneous
     # ArgoCD sync wave annotation to ensure it's applied after the pipeline
     argocd.argoproj.io/sync-wave: "5"
     tekton.dev/auto-cleanup-pvc: "true"
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+  labels:
+    sidecar.istio.io/inject: "false"
+    {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   pipelineRef:
     name: buildpacks-build-{{ .name }}
