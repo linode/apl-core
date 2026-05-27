@@ -37,3 +37,6 @@ webhook:
 configDefaults:
   default-pod-template: |
     priorityClassName: tekton-low
+  default-affinity-assistant-pod-template: |
+    labels:
+      sidecar.istio.io/inject: "false"
