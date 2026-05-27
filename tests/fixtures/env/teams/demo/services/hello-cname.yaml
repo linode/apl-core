@@ -4,7 +4,6 @@ metadata:
     labels:
         apl.io/teamId: demo
 spec:
-    auth: true
     cname:
         domain: hello-demo.cname.com
         tlsSecretName: hello-cert

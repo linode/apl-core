@@ -496,6 +496,7 @@ changes:
       - apps.loki.enableOpenTelemetry
   - version: 69
     deletions:
+      - 'teamConfig.{team}.services[].auth'
       - 'teamConfig.{team}.services[].domain'
       - 'teamConfig.{team}.services[].forwardPath'
       - 'teamConfig.{team}.services[].hasCert'
