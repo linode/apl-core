@@ -185,9 +185,6 @@ loki:
                 - deployment
                 - namespace
                 - node_name
-      {{- if and $l.v13SchemaStartDate (not $l.enableOpenTelemetry) }}
-      allow_structured_metadata: false
-      {{- end }}
 
 gateway:
   {{- if $v.otomi.linodeLkeImageRepository }}
