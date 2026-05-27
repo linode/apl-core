@@ -37,20 +37,6 @@
       "cwd": "${workspaceRoot}"
     },
     {
-      "name": "Debug node server",
-      "type": "node",
-      "request": "launch",
-      "program": "${workspaceRoot}/node_modules/.bin/tsx",
-      "runtimeArgs": ["--nolazy"],
-      "args": ["src/server.ts"],
-      "envFile": ".env",
-      "console": "integratedTerminal",
-      "cwd": "${workspaceRoot}",
-      "internalConsoleOptions": "openOnSessionStart",
-      "skipFiles": ["<node_internals>/**", "node_modules/**"],
-      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
-    },
-    {
       "name": "Debug all tests",
       "type": "node",
       "request": "launch",
