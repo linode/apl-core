@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $o := $v.apps.otel }}
-{{- $lokiEnabled := and $v.apps.loki.enabled $v.apps.loki.enableOpenTelemetry }}
+{{- $lokiEnabled := $v.apps.loki.enabled }}
 resources:
   {{- if $lokiEnabled }}
   - apiVersion: opentelemetry.io/v1beta1
