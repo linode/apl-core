@@ -109,16 +109,3 @@ env:
 
 core: {}
 
-tools:
-  image:
-    repository: docker.io/linode/apl-core
-    tag: main
-    pullPolicy: IfNotPresent
-
-  resources: {}
-    # limits:
-    #   cpu: 500m
-    #   memory: 500Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 100Mi
