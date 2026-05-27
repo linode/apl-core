@@ -154,7 +154,6 @@
     "release:github": "github-release-from-changelog",
     "release:bump:minor": "standard-version --skip.changelog true --release-as minor",
     "score-templates": "binzx/otomi score-templates",
-    "server": "binzx/otomi server",
     "spellcheck": "cspell 'docs/**/*.md' 'values-schema.yaml' '*.md' '.values/README.md'",
     "tasks:copy-certs": "binzx/otomi task -n copyCerts",
     "test": "run-s test:ts lint validate-values validate-templates bootstrap-dev",
