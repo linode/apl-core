@@ -1,6 +1,9 @@
 {{- $v := .Values}}
 {{- if $v.apps.tekton.enabled }}
 {{- $t := $v.teamApps.tekton }}
+# use nonroot linux/amd64 image
+# current tag: v0.112.0-nonroot
+{{- $imageDigest := "sha256:f666817cbac2bee23cc78a433b4e739456ce221438c0c8ac6bdeaf7bc1a73839" }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -12,13 +15,13 @@ metadata:
     tekton.dev/categories: Security
     tekton.dev/tags: CLI, grype
     tekton.dev/displayName: "grype"
-    tekton.dev/platforms: "linux/amd64,linux/arm64,linux/ppc64le,linux/390x"
+    tekton.dev/platforms: "linux/amd64"
   labels:
     app.kubernetes.io/version: "0.1"
 spec:
   stepTemplate:
     computeResources:
-    {{- $t.resources.grypeTask | toYaml | nindent 6 }}
+      {{- $t.resources.grypeTask | toYaml | nindent 6 }}
   description: >-
     A vulnerability scanner for container images and filesystems.
     Works with Syft, the powerful SBOM (software bill of materials) tool for container images and filesystems.
@@ -30,10 +33,10 @@ spec:
       description: The Arguments to be passed to Grype command.
       type: array
     - name: GRYPE_IMAGE
-      {{- if $v.linodeLkeImageRepository }}
-      default: "{{- $v.linodeLkeImageRepository }}/docker/anchore/grype@sha256:0ca1a530362e8ef2a42bcf3ddcb17e656c7c268d7c6e26729d4bb1a80bbd9fe1"
+      {{- with $v.linodeLkeImageRepository }}
+      default: "{{ . }}/docker/anchore/grype@{{ $imageDigest }}"
       {{- else }}
-      default: docker.io/anchore/grype@sha256:0ca1a530362e8ef2a42bcf3ddcb17e656c7c268d7c6e26729d4bb1a80bbd9fe1  # v0.74.0
+      default: "docker.io/anchore/grype@{{ $imageDigest }}"
       {{- end }}
       description: Grype image to be used
       type: string
@@ -49,6 +52,17 @@ spec:
         capabilities:
           drop:
             - "ALL"
+        runAsUser: 65532
+        runAsGroup: 65532
+        runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
+      volumeMounts:
+        - name: cache-dir
+          mountPath: /.cache
+
+  volumes:
+    - name: cache-dir
+      emptyDir: {}
+
 {{- end }}
