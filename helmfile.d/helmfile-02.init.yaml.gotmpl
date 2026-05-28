@@ -50,14 +50,14 @@ releases:
       app: core
     <<: *default
   - name: istio-cni
-    installed: true
+    installed: {{ $a | get "istio.ambient" }}
     namespace: istio-system
     labels:
       pkg: istio
       app: core
     <<: *default
   - name: ztunnel
-    installed: true
+    installed: {{ $a | get "istio.ambient" }}
     namespace: istio-system
     labels:
       pkg: istio

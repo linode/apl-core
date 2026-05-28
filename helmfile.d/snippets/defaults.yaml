@@ -270,6 +270,7 @@ environments:
               pilot:
                 minReplicas: 2
                 maxReplicas: 10
+            ambient: false
             egressGateway:
               enabled: false
             resources:
