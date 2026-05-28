@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.1](https://github.com/linode/apl-core/compare/v5.0.0...v5.0.1) (2026-05-28)
+
+
+### Bug Fixes
+
+* add excludePaths to authpolicy-jwt for monitoring namespace ([#3236](https://github.com/linode/apl-core/issues/3236)) ([ffd5770](https://github.com/linode/apl-core/commit/ffd577070d980c29522a7083fc93c8ce8ad369be))
+* add excludePaths to authpolicy-jwt for monitoring team ([#3277](https://github.com/linode/apl-core/issues/3277)) ([8055d74](https://github.com/linode/apl-core/commit/8055d74adcdf1ab003eb68d1748265014e6b46bc))
+* failed connection between grafana and alertmanager ([#3222](https://github.com/linode/apl-core/issues/3222)) ([5201c9f](https://github.com/linode/apl-core/commit/5201c9fee30379fbc5f8c10fd7b84201340edb55))
+* include monitoring crds in chart for handling upgrades reliably ([#3219](https://github.com/linode/apl-core/issues/3219)) ([5fd6f18](https://github.com/linode/apl-core/commit/5fd6f18074d61c412ed6b4de2e913b34acd2737c))
+* pvc migration for the gitea-gitea-valkey ([#3234](https://github.com/linode/apl-core/issues/3234)) ([35a8615](https://github.com/linode/apl-core/commit/35a86150185b723b93b9bfd2564b78ddf98f909d))
+
+
+### Others
+
+* **chart-deps:** update knative-operator to version v1.22.1 ([#3225](https://github.com/linode/apl-core/issues/3225)) ([52a1709](https://github.com/linode/apl-core/commit/52a1709416abf2cb3e171092f24c79a97aa5e90e))
+
 ## [5.0.0](https://github.com/linode/apl-core/compare/v5.0.0...v4.15.3) (2026-05-01)
 
 ### Features
@@ -69,4 +85,3 @@ All notable changes to this project will be documented in this file. See [standa
 * update argocd-image-updater to version 1.1.4 ([#3080](https://github.com/linode/apl-core/issues/3080)) ([615a23c](https://github.com/linode/apl-core/commit/615a23c3bec11e02f01717de2a48444d7b113b72))
 * update cloudnative-pg to version 0.28.0 ([#3104](https://github.com/linode/apl-core/issues/3104)) ([d9a48ec](https://github.com/linode/apl-core/commit/d9a48ecd58442fae7c8690021799a012c15386f0))
 * bump helmfile/helmfile-action from 2.3.1 to 2.4.0 in the github-actions-dependencies group ([#3074](https://github.com/linode/apl-core/issues/3074)) ([ed513a6](https://github.com/linode/apl-core/commit/ed513a678665b452771b728781fadb9355985a0a))
-
