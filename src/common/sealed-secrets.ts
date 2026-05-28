@@ -1,9 +1,9 @@
 import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { encryptSecretItem } from '@linode/kubeseal-encrypt'
-import { X509Certificate } from 'crypto'
+import { createHash, X509Certificate } from 'crypto'
 import { existsSync } from 'fs'
-import { mkdir, readdir, readFile, writeFile } from 'fs/promises'
-import { cloneDeep, get, unset } from 'lodash'
+import { mkdir, readdir, readFile, unlink, writeFile } from 'fs/promises'
+import { cloneDeep, get, set, unset } from 'lodash'
 import { pki } from 'node-forge'
 import { join } from 'path'
 import { SEALED_SECRETS_NAMESPACE } from 'src/common/constants'
@@ -15,7 +15,7 @@ import { objectToYaml } from 'src/common/values'
 import { parse as parseYaml } from 'yaml'
 
 const cmdName = 'sealed-secrets'
-const SEALED_SECRETS_MANIFESTS_SUBDIR = 'env/manifests/namespaces'
+export const SEALED_SECRETS_MANIFESTS_SUBDIR = 'env/manifests/namespaces'
 
 /**
  * Strip ALL x-secret fields from values before writing to disk.
@@ -771,4 +771,150 @@ export const bootstrapSealedSecrets = async (
   await deps.writeSealedSecretManifests(manifests, envDir)
 
   d.info(`Bootstrapped ${manifests.length} sealed secret manifests`)
+}
+
+/**
+ * Read the 5 shared platform secrets + 1 per-team secret from the apl-secrets namespace in K8s.
+ * Returns an object shaped identically to the `allSecrets` parameter expected by
+ * `buildTeamNamespaceSealedSecretMappings()` so the operator can drive reconciliation
+ * from live cluster state rather than values-repo data.
+ *
+ * Individual secret reads are caught so one missing secret (e.g. loki not yet deployed)
+ * does not abort the entire reconcile — the relevant team secrets are simply skipped.
+ */
+export async function buildAllSecretsFromK8s(teams: string[], deps = { getK8sSecret }): Promise<Record<string, any>> {
+  const [keycloak, loki, alerts, smtp, otomi] = await Promise.all([
+    deps.getK8sSecret('keycloak-secrets', SEALED_SECRETS_NAMESPACE).catch(() => undefined),
+    deps.getK8sSecret('loki-secrets', SEALED_SECRETS_NAMESPACE).catch(() => undefined),
+    deps.getK8sSecret('alerts-secrets', SEALED_SECRETS_NAMESPACE).catch(() => undefined),
+    deps.getK8sSecret('smtp-secrets', SEALED_SECRETS_NAMESPACE).catch(() => undefined),
+    deps.getK8sSecret('otomi-secrets', SEALED_SECRETS_NAMESPACE).catch(() => undefined),
+  ])
+
+  const teamSecrets: Record<string, any> = {}
+  for (const teamId of teams) {
+    const ts = await deps
+      .getK8sSecret(`team-${teamId}-settings-secrets`, SEALED_SECRETS_NAMESPACE)
+      .catch(() => undefined)
+    set(teamSecrets, `${teamId}.settings.password`, ts?.settings_password ?? '')
+  }
+
+  return {
+    teamConfig: teamSecrets,
+    apps: {
+      keycloak: { idp: { clientSecret: keycloak?.idp_clientSecret ?? '' } },
+      loki: { adminPassword: loki?.adminPassword ?? '' },
+    },
+    alerts: {
+      slack: { url: alerts?.slack_url ?? '' },
+      opsgenie: { apiKey: alerts?.opsgenie_apiKey ?? '' },
+    },
+    smtp: {
+      auth_password: smtp?.auth_password ?? '',
+      auth_secret: smtp?.auth_secret ?? '',
+    },
+    otomi: {
+      globalPullSecret: { password: otomi?.globalPullSecret_password ?? '' },
+    },
+  }
+}
+
+/**
+ * Reconcile team-namespace SealedSecret manifests on every operator cycle.
+ *
+ * Flow: read K8s secrets → build expected mappings → hash-compare plaintext inputs
+ * → re-encrypt only when changed → write new manifests → delete stale files.
+ *
+ * Hash-based idempotency prevents git thrash: SealedSecret encryption is non-deterministic
+ * (random nonce), so comparing ciphertext always looks "changed". Instead we hash the
+ * plaintext inputs and store that hash as annotation `apl.io/secret-hash` in the manifest.
+ */
+export async function reconcileTeamSealedSecrets(
+  allValues: Record<string, any>,
+  envDir: string,
+  deps = {
+    buildAllSecretsFromK8s,
+    buildTeamNamespaceSealedSecretMappings,
+    createSealedSecretManifest,
+    writeSealedSecretManifests,
+    getOrCreateSealedSecretsPem,
+    encryptSecretItem,
+  },
+): Promise<void> {
+  const teams = Object.keys(get(allValues, 'teamConfig', {}) as Record<string, unknown>).filter((id) => id !== 'admin')
+
+  const d = terminal(`common:${cmdName}:reconcileTeamSealedSecrets`)
+
+  let pem: string
+  try {
+    pem = await deps.getOrCreateSealedSecretsPem()
+  } catch (e) {
+    d.warn(`Skipping team SealedSecret reconcile — sealed-secrets PEM unavailable: ${(e as Error).message}`)
+    return
+  }
+
+  const allSecrets = await deps.buildAllSecretsFromK8s(teams)
+  const mappings = deps.buildTeamNamespaceSealedSecretMappings(allSecrets, allValues, teams)
+
+  const expectedPaths = new Set<string>()
+  const toWrite: SealedSecretManifest[] = []
+
+  for (const mapping of mappings) {
+    const manifestPath = join(
+      envDir,
+      SEALED_SECRETS_MANIFESTS_SUBDIR,
+      mapping.namespace,
+      'sealedsecrets',
+      `${mapping.secretName}.yaml`,
+    )
+    expectedPaths.add(manifestPath)
+
+    const inputHash = createHash('sha256')
+      .update(JSON.stringify({ data: mapping.data, secretType: mapping.secretType ?? '' }))
+      .digest('hex')
+      .slice(0, 16)
+
+    let existingHash: string | undefined
+    try {
+      const raw = await readFile(manifestPath, 'utf8')
+      existingHash = (parseYaml(raw) as any)?.metadata?.annotations?.['apl.io/secret-hash']
+    } catch {
+      // File not found — will create
+    }
+
+    if (existingHash === inputHash) continue
+
+    const manifest = await deps.createSealedSecretManifest(pem, mapping, { encryptSecretItem: deps.encryptSecretItem })
+    manifest.metadata.annotations['apl.io/secret-hash'] = inputHash
+    toWrite.push(manifest)
+  }
+
+  if (toWrite.length > 0) {
+    await deps.writeSealedSecretManifests(toWrite, envDir)
+  }
+
+  // Delete stale files: SealedSecrets for disabled features or removed teams
+  const baseDir = join(envDir, SEALED_SECRETS_MANIFESTS_SUBDIR)
+  let teamDirs: string[] = []
+  try {
+    teamDirs = (await readdir(baseDir)).filter((dir) => dir.startsWith('team-'))
+  } catch {
+    // Directory doesn't exist yet — nothing to clean up
+  }
+
+  for (const teamDir of teamDirs) {
+    const ssDir = join(baseDir, teamDir, 'sealedsecrets')
+    let files: string[] = []
+    try {
+      files = await readdir(ssDir)
+    } catch {
+      continue
+    }
+    for (const file of files) {
+      const filePath = join(ssDir, file)
+      if (!expectedPaths.has(filePath)) {
+        await unlink(filePath)
+      }
+    }
+  }
 }

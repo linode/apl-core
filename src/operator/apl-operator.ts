@@ -5,6 +5,7 @@ import { env } from '../common/envalid'
 import { getStoredGitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/gitea'
 import { hfValues } from '../common/hf'
+import { reconcileTeamSealedSecrets } from '../common/sealed-secrets'
 import { ensureManifestDirectories, ensureTeamGitOpsDirectories } from '../common/utils'
 import { writeValues } from '../common/values'
 import { HelmArguments } from '../common/yargs'
@@ -86,6 +87,15 @@ export class AplOperator {
         await decrypt()
       }
       const values = await hfValues({}, env.ENV_DIR)
+
+      // Reconcile team namespace SealedSecrets — operator is source of truth for these manifests.
+      // Non-fatal: a missing K8s secret (e.g. loki not yet deployed) retries on next cycle.
+      try {
+        await reconcileTeamSealedSecrets(values ?? {}, env.ENV_DIR)
+      } catch (e) {
+        this.d.warn(`Team SealedSecret reconcile failed (will retry): ${(e as Error).message}`)
+      }
+
       await ensureTeamGitOpsDirectories(env.ENV_DIR, values ?? {})
       await ensureManifestDirectories()
 
