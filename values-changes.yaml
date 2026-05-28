@@ -491,3 +491,6 @@ changes:
     deletions:
       - apps.istio.autoscaling.ingressgateway
       - apps.istio.resources.ingressgateway
+  - version: 68
+    deletions:
+      - apps.loki.enableOpenTelemetry
