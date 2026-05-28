@@ -4,6 +4,7 @@ import {
   applySealedSecretManifests,
   bootstrapSealedSecrets,
   buildSecretToNamespaceMap,
+  buildTeamNamespaceSealedSecretMappings,
   createSealedSecretManifest,
   createSealedSecretsKeySecret,
   createUserSealedSecretManifests,
@@ -425,6 +426,7 @@ describe('sealed-secrets', () => {
         getPemFromCertificate: jest.fn().mockReturnValue('spki-pem'),
         createSealedSecretsKeySecret: jest.fn(),
         buildSecretToNamespaceMap: jest.fn().mockResolvedValue([mockMapping]),
+        buildTeamNamespaceSealedSecretMappings: jest.fn().mockReturnValue([]),
         createSealedSecretManifest: jest.fn().mockResolvedValue(mockManifest),
         writeSealedSecretManifests: jest.fn(),
         createUserSealedSecretManifests: jest.fn().mockResolvedValue([]),
@@ -457,6 +459,7 @@ describe('sealed-secrets', () => {
         getPemFromCertificate: jest.fn().mockReturnValue('existing-spki-pem'),
         createSealedSecretsKeySecret: jest.fn(),
         buildSecretToNamespaceMap: jest.fn().mockResolvedValue([mockMapping]),
+        buildTeamNamespaceSealedSecretMappings: jest.fn().mockReturnValue([]),
         createSealedSecretManifest: jest.fn().mockResolvedValue({}),
         writeSealedSecretManifests: jest.fn(),
         createUserSealedSecretManifests: jest.fn().mockResolvedValue([]),
@@ -489,6 +492,7 @@ describe('sealed-secrets', () => {
         getPemFromCertificate: jest.fn().mockReturnValue('pem'),
         createSealedSecretsKeySecret: jest.fn(),
         buildSecretToNamespaceMap: jest.fn().mockResolvedValue([]),
+        buildTeamNamespaceSealedSecretMappings: jest.fn().mockReturnValue([]),
         createSealedSecretManifest: jest.fn(),
         writeSealedSecretManifests: jest.fn(),
         createUserSealedSecretManifests: jest.fn().mockResolvedValue([]),
@@ -638,6 +642,232 @@ describe('sealed-secrets', () => {
       })
 
       expect(manifests).toHaveLength(0)
+    })
+  })
+
+  describe('buildTeamNamespaceSealedSecretMappings', () => {
+    const baseSecrets = {
+      apps: {
+        keycloak: { idp: { clientSecret: 'kc-secret' } },
+        loki: { adminPassword: 'loki-pass' },
+      },
+      alerts: { slack: { url: 'https://hooks.slack.com/test' } },
+      smtp: { auth_password: 'smtp-pass', auth_secret: 'smtp-secret' },
+    }
+
+    const baseValues = {
+      apps: { keycloak: { idp: { clientID: 'apl' } } },
+    }
+
+    it('should return empty array when no teams provided', () => {
+      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, baseValues, [])
+      expect(result).toEqual([])
+    })
+
+    it('should return empty array when grafana and alertmanager are both disabled', () => {
+      const allValues = {
+        ...baseValues,
+        teamConfig: { alpha: { settings: { managedMonitoring: { grafana: false, alertmanager: false } } } },
+      }
+      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, allValues, ['alpha'])
+      expect(result).toEqual([])
+    })
+
+    it('should create grafana secrets when grafana is enabled', () => {
+      const allSecrets = { ...baseSecrets, teamConfig: { alpha: { settings: { password: 'team-pass' } } } }
+      const allValues = {
+        ...baseValues,
+        teamConfig: { alpha: { settings: { managedMonitoring: { grafana: true } } } },
+      }
+
+      const result = buildTeamNamespaceSealedSecretMappings(allSecrets, allValues, ['alpha'])
+
+      expect(result).toHaveLength(3)
+      expect(result.find((m) => m.secretName === 'team-alpha-grafana-admin')).toMatchObject({
+        namespace: 'team-alpha',
+        secretName: 'team-alpha-grafana-admin',
+        data: { 'admin-user': 'alpha', 'admin-password': 'team-pass' },
+      })
+      expect(result.find((m) => m.secretName === 'grafana-oidc-secret')).toMatchObject({
+        namespace: 'team-alpha',
+        secretName: 'grafana-oidc-secret',
+        data: { client_id: 'apl', client_secret: 'kc-secret' },
+      })
+      expect(result.find((m) => m.secretName === 'grafana-loki-datasource-secret')).toMatchObject({
+        namespace: 'team-alpha',
+        secretName: 'grafana-loki-datasource-secret',
+        data: { password: 'loki-pass' },
+      })
+    })
+
+    it('should skip grafana-admin when team password is missing', () => {
+      const allSecrets = { ...baseSecrets } // no teamConfig password
+      const allValues = {
+        ...baseValues,
+        teamConfig: { alpha: { settings: { managedMonitoring: { grafana: true } } } },
+      }
+
+      const result = buildTeamNamespaceSealedSecretMappings(allSecrets, allValues, ['alpha'])
+
+      expect(result.find((m) => m.secretName === 'team-alpha-grafana-admin')).toBeUndefined()
+      // grafana-oidc and loki-datasource are still created
+      expect(result.find((m) => m.secretName === 'grafana-oidc-secret')).toBeDefined()
+      expect(result.find((m) => m.secretName === 'grafana-loki-datasource-secret')).toBeDefined()
+    })
+
+    it('should create alertmanager-credentials for slack receiver', () => {
+      const allValues = {
+        ...baseValues,
+        teamConfig: {
+          alpha: {
+            settings: {
+              managedMonitoring: { alertmanager: true },
+              alerts: { receivers: ['slack'] },
+            },
+          },
+        },
+      }
+
+      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, allValues, ['alpha'])
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({
+        namespace: 'team-alpha',
+        secretName: 'alertmanager-credentials',
+        data: { slackUrl: 'https://hooks.slack.com/test' },
+      })
+    })
+
+    it('should create alertmanager-credentials for email receiver', () => {
+      const allValues = {
+        ...baseValues,
+        teamConfig: {
+          alpha: {
+            settings: {
+              managedMonitoring: { alertmanager: true },
+              alerts: { receivers: ['email'] },
+            },
+          },
+        },
+      }
+
+      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, allValues, ['alpha'])
+
+      expect(result[0].data).toMatchObject({
+        smtpAuthPassword: 'smtp-pass',
+        smtpAuthSecret: 'smtp-secret',
+      })
+    })
+
+    it('should skip alertmanager-credentials when receivers is none', () => {
+      const allValues = {
+        ...baseValues,
+        teamConfig: {
+          alpha: {
+            settings: {
+              managedMonitoring: { alertmanager: true },
+              alerts: { receivers: ['none'] },
+            },
+          },
+        },
+      }
+
+      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, allValues, ['alpha'])
+      expect(result).toHaveLength(0)
+    })
+
+    it('should create otomi-pullsecret-global when globalPullSecret is configured', () => {
+      const allSecrets = { ...baseSecrets, otomi: { globalPullSecret: { password: 'reg-pass' } } }
+      const allValues = {
+        ...baseValues,
+        otomi: { globalPullSecret: { server: 'registry.example.com', username: 'user', email: 'user@example.com' } },
+        teamConfig: { alpha: { settings: {} } },
+      }
+
+      const result = buildTeamNamespaceSealedSecretMappings(allSecrets, allValues, ['alpha'])
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({
+        namespace: 'team-alpha',
+        secretName: 'otomi-pullsecret-global',
+        secretType: 'kubernetes.io/dockerconfigjson',
+      })
+      const dockerConfig = JSON.parse(result[0].data['.dockerconfigjson'])
+      expect(dockerConfig.auths['registry.example.com']).toMatchObject({
+        username: 'user',
+        password: 'reg-pass',
+        email: 'user@example.com',
+      })
+    })
+
+    it('should skip otomi-pullsecret-global when password is missing', () => {
+      const allValues = {
+        ...baseValues,
+        otomi: { globalPullSecret: { server: 'registry.example.com', username: 'user' } },
+        teamConfig: { alpha: { settings: {} } },
+      }
+
+      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, allValues, ['alpha'])
+      expect(result.find((m) => m.secretName === 'otomi-pullsecret-global')).toBeUndefined()
+    })
+
+    it('should use default docker.io server when not specified', () => {
+      const allSecrets = { ...baseSecrets, otomi: { globalPullSecret: { password: 'reg-pass' } } }
+      const allValues = {
+        ...baseValues,
+        otomi: { globalPullSecret: { username: 'user' } }, // no server
+        teamConfig: { alpha: { settings: {} } },
+      }
+
+      const result = buildTeamNamespaceSealedSecretMappings(allSecrets, allValues, ['alpha'])
+      const dockerConfig = JSON.parse(result[0].data['.dockerconfigjson'])
+      expect(dockerConfig.auths['docker.io']).toBeDefined()
+    })
+
+    it('should create mappings for multiple teams independently', () => {
+      const allSecrets = {
+        ...baseSecrets,
+        teamConfig: {
+          alpha: { settings: { password: 'alpha-pass' } },
+          beta: { settings: { password: 'beta-pass' } },
+        },
+      }
+      const allValues = {
+        ...baseValues,
+        teamConfig: {
+          alpha: { settings: { managedMonitoring: { grafana: true } } },
+          beta: { settings: { managedMonitoring: { grafana: true } } },
+        },
+      }
+
+      const result = buildTeamNamespaceSealedSecretMappings(allSecrets, allValues, ['alpha', 'beta'])
+
+      const alphaAdmin = result.find((m) => m.secretName === 'team-alpha-grafana-admin')
+      const betaAdmin = result.find((m) => m.secretName === 'team-beta-grafana-admin')
+
+      expect(alphaAdmin?.namespace).toBe('team-alpha')
+      expect(alphaAdmin?.data['admin-password']).toBe('alpha-pass')
+      expect(betaAdmin?.namespace).toBe('team-beta')
+      expect(betaAdmin?.data['admin-password']).toBe('beta-pass')
+    })
+
+    it('should use team-level receivers falling back to platform receivers', () => {
+      const allValues = {
+        ...baseValues,
+        alerts: { receivers: ['slack'] }, // platform-level default
+        teamConfig: {
+          alpha: {
+            settings: {
+              managedMonitoring: { alertmanager: true },
+              // No team-level receivers — should use platform default
+            },
+          },
+        },
+      }
+
+      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, allValues, ['alpha'])
+
+      expect(result[0].data).toHaveProperty('slackUrl')
     })
   })
 })

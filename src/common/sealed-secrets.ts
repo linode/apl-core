@@ -34,6 +34,8 @@ export interface SecretMapping {
   namespace: string
   secretName: string
   data: Record<string, string>
+  /** Optional Kubernetes secret type. Defaults to 'kubernetes.io/opaque'. */
+  secretType?: string
 }
 
 export interface SealedSecretManifest {
@@ -324,7 +326,7 @@ export const createSealedSecretManifest = async (
       template: {
         immutable: false,
         metadata: { name: mapping.secretName, namespace: mapping.namespace },
-        type: 'kubernetes.io/opaque',
+        type: mapping.secretType ?? 'kubernetes.io/opaque',
       },
     },
   }
@@ -572,6 +574,108 @@ export const createUserSealedSecretManifests = async (
 }
 
 /**
+ * Build SealedSecret mappings for team namespaces.
+ * These replace ExternalSecrets that previously allowed teams to read platform secrets
+ * via core-secrets-store ClusterSecretStore — a security hole where any team could
+ * read any secret in the apl-secrets namespace.
+ *
+ * Each mapping is encrypted for the specific team namespace, so platform secrets
+ * cannot be decrypted in any other namespace.
+ */
+export const buildTeamNamespaceSealedSecretMappings = (
+  allSecrets: Record<string, any>,
+  allValues: Record<string, any>,
+  teams: string[],
+): SecretMapping[] => {
+  const mappings: SecretMapping[] = []
+
+  for (const teamId of teams) {
+    const teamNs = `team-${teamId}`
+    const settings = get(allValues, `teamConfig.${teamId}.settings`, {}) as Record<string, any>
+    const grafanaEnabled = get(settings, 'managedMonitoring.grafana', false) as boolean
+    const alertmanagerEnabled = get(settings, 'managedMonitoring.alertmanager', false) as boolean
+    const teamReceivers = get(settings, 'alerts.receivers', get(allValues, 'alerts.receivers', ['slack'])) as string[]
+    const hasReceivers = !teamReceivers.includes('none')
+
+    if (grafanaEnabled) {
+      // team-<id>-grafana-admin: admin credentials for team's Grafana instance
+      const teamPassword = get(allSecrets, `teamConfig.${teamId}.settings.password`, '') as string
+      if (teamPassword) {
+        mappings.push({
+          namespace: teamNs,
+          secretName: `${teamNs}-grafana-admin`,
+          data: { 'admin-user': teamId, 'admin-password': teamPassword },
+        })
+      }
+
+      // grafana-oidc-secret: Keycloak OIDC credentials for Grafana SSO
+      const clientSecret = get(allSecrets, 'apps.keycloak.idp.clientSecret', '') as string
+      const clientId = get(allValues, 'apps.keycloak.idp.clientID', '') as string
+      if (clientSecret) {
+        mappings.push({
+          namespace: teamNs,
+          secretName: 'grafana-oidc-secret',
+          data: { client_id: clientId, client_secret: clientSecret },
+        })
+      }
+
+      // grafana-loki-datasource-secret: Loki admin password for Grafana datasource
+      const lokiPassword = get(allSecrets, 'apps.loki.adminPassword', '') as string
+      if (lokiPassword) {
+        mappings.push({
+          namespace: teamNs,
+          secretName: 'grafana-loki-datasource-secret',
+          data: { password: lokiPassword },
+        })
+      }
+    }
+
+    if (alertmanagerEnabled && hasReceivers) {
+      // alertmanager-credentials: notification channel credentials for team Alertmanager
+      const alertData: Record<string, string> = {}
+      if (teamReceivers.includes('slack')) {
+        const slackUrl = get(allSecrets, 'alerts.slack.url', '') as string
+        if (slackUrl) alertData.slackUrl = slackUrl
+      }
+      if (teamReceivers.includes('email')) {
+        // email receiver uses platform SMTP credentials
+        const smtpPassword = get(allSecrets, 'smtp.auth_password', '') as string
+        const smtpSecret = get(allSecrets, 'smtp.auth_secret', '') as string
+        if (smtpPassword) alertData.smtpAuthPassword = smtpPassword
+        if (smtpSecret) alertData.smtpAuthSecret = smtpSecret
+      }
+      if (teamReceivers.includes('opsgenie')) {
+        // Legacy receiver — kept for backwards compatibility
+        const opsgenieKey = get(allSecrets, 'alerts.opsgenie.apiKey', '') as string
+        if (opsgenieKey) alertData.opsgenieApiKey = opsgenieKey
+      }
+      if (Object.keys(alertData).length > 0) {
+        mappings.push({ namespace: teamNs, secretName: 'alertmanager-credentials', data: alertData })
+      }
+    }
+
+    // otomi-pullsecret-global: docker pull secret for global container registry
+    // Only created when otomi.globalPullSecret is configured
+    const pullSecretConfig = get(allValues, 'otomi.globalPullSecret', null) as Record<string, string> | null
+    const pullSecretPassword = get(allSecrets, 'otomi.globalPullSecret.password', '') as string
+    if (pullSecretConfig && pullSecretPassword) {
+      const server = get(pullSecretConfig, 'server', 'docker.io') as string
+      const username = get(pullSecretConfig, 'username', '') as string
+      const email = get(pullSecretConfig, 'email', 'not@val.id') as string
+      const dockerConfig = JSON.stringify({ auths: { [server]: { username, password: pullSecretPassword, email } } })
+      mappings.push({
+        namespace: teamNs,
+        secretName: 'otomi-pullsecret-global',
+        data: { '.dockerconfigjson': dockerConfig },
+        secretType: 'kubernetes.io/dockerconfigjson',
+      })
+    }
+  }
+
+  return mappings
+}
+
+/**
  * Get the PEM public key from the existing sealed-secrets certificate in the cluster,
  * or generate a new RSA key pair, store it in the cluster, and return its PEM.
  */
@@ -607,6 +711,7 @@ export const bootstrapSealedSecrets = async (
     createSealedSecretsKeySecret,
     getExistingSealedSecretsCert,
     buildSecretToNamespaceMap,
+    buildTeamNamespaceSealedSecretMappings,
     createSealedSecretManifest,
     writeSealedSecretManifests,
     createUserSealedSecretManifests,
@@ -625,11 +730,11 @@ export const bootstrapSealedSecrets = async (
     createSealedSecretsKeySecret: deps.createSealedSecretsKeySecret,
   })
 
-  // 5. Build secret-to-namespace mapping
+  // 2. Build secret-to-namespace mapping (platform secrets in apl-secrets namespace)
   const teams = Object.keys(get(secrets, 'teamConfig', {}) as Record<string, unknown>)
   const mappings = await deps.buildSecretToNamespaceMap(secrets, teams, allValues)
 
-  // 6. Create SealedSecret manifests
+  // 3. Create SealedSecret manifests for platform secrets (encrypted for apl-secrets namespace)
   const manifests: SealedSecretManifest[] = []
   for (const mapping of mappings) {
     const manifest = await deps.createSealedSecretManifest(pem, mapping, {
@@ -638,7 +743,19 @@ export const bootstrapSealedSecrets = async (
     manifests.push(manifest)
   }
 
-  // 7. Create individual user SealedSecrets in apl-users namespace
+  // 4. Create team-namespace SealedSecret manifests (replaces ExternalSecrets referencing core-secrets-store)
+  // These are encrypted for each team's namespace, so platform secrets cannot be decrypted elsewhere.
+  if (allValues) {
+    const teamMappings = deps.buildTeamNamespaceSealedSecretMappings(secrets, allValues, teams)
+    for (const mapping of teamMappings) {
+      const manifest = await deps.createSealedSecretManifest(pem, mapping, {
+        encryptSecretItem: deps.encryptSecretItem,
+      })
+      manifests.push(manifest)
+    }
+  }
+
+  // 5. Create individual user SealedSecrets in apl-users namespace
   const { users } = secrets
   if (Array.isArray(users) && users.length > 0) {
     const userManifests = await deps.createUserSealedSecretManifests(users, pem, {
@@ -648,7 +765,7 @@ export const bootstrapSealedSecrets = async (
     manifests.push(...userManifests)
   }
 
-  // 8. Write SealedSecret manifests to disk
+  // 6. Write all SealedSecret manifests to disk
   // Note: These manifests are applied later during install, after the sealed-secrets
   // controller is deployed and the SealedSecret CRD is available.
   await deps.writeSealedSecretManifests(manifests, envDir)
