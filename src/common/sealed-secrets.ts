@@ -839,6 +839,9 @@ export async function reconcileTeamSealedSecrets(
     writeSealedSecretManifests,
     getOrCreateSealedSecretsPem,
     encryptSecretItem,
+    readFile,
+    readdir,
+    unlink,
   },
 ): Promise<void> {
   const teams = Object.keys(get(allValues, 'teamConfig', {}) as Record<string, unknown>).filter((id) => id !== 'admin')
@@ -876,7 +879,7 @@ export async function reconcileTeamSealedSecrets(
 
     let existingHash: string | undefined
     try {
-      const raw = await readFile(manifestPath, 'utf8')
+      const raw = await deps.readFile(manifestPath, 'utf8')
       existingHash = (parseYaml(raw) as any)?.metadata?.annotations?.['apl.io/secret-hash']
     } catch {
       // File not found — will create
@@ -897,7 +900,7 @@ export async function reconcileTeamSealedSecrets(
   const baseDir = join(envDir, SEALED_SECRETS_MANIFESTS_SUBDIR)
   let teamDirs: string[] = []
   try {
-    teamDirs = (await readdir(baseDir)).filter((dir) => dir.startsWith('team-'))
+    teamDirs = (await deps.readdir(baseDir)).filter((dir) => dir.startsWith('team-'))
   } catch {
     // Directory doesn't exist yet — nothing to clean up
   }
@@ -906,14 +909,14 @@ export async function reconcileTeamSealedSecrets(
     const ssDir = join(baseDir, teamDir, 'sealedsecrets')
     let files: string[] = []
     try {
-      files = await readdir(ssDir)
+      files = await deps.readdir(ssDir)
     } catch {
       continue
     }
     for (const file of files) {
       const filePath = join(ssDir, file)
       if (!expectedPaths.has(filePath)) {
-        await unlink(filePath)
+        await deps.unlink(filePath)
       }
     }
   }
