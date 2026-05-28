@@ -575,10 +575,6 @@ export const createUserSealedSecretManifests = async (
 
 /**
  * Build SealedSecret mappings for team namespaces.
- * These replace ExternalSecrets that previously allowed teams to read platform secrets
- * via core-secrets-store ClusterSecretStore — a security hole where any team could
- * read any secret in the apl-secrets namespace.
- *
  * Each mapping is encrypted for the specific team namespace, so platform secrets
  * cannot be decrypted in any other namespace.
  */
@@ -598,7 +594,6 @@ export const buildTeamNamespaceSealedSecretMappings = (
     const hasReceivers = !teamReceivers.includes('none')
 
     if (grafanaEnabled) {
-      // team-<id>-grafana-admin: admin credentials for team's Grafana instance
       const teamPassword = get(allSecrets, `teamConfig.${teamId}.settings.password`, '') as string
       if (teamPassword) {
         mappings.push({
@@ -608,7 +603,6 @@ export const buildTeamNamespaceSealedSecretMappings = (
         })
       }
 
-      // grafana-oidc-secret: Keycloak OIDC credentials for Grafana SSO
       const clientSecret = get(allSecrets, 'apps.keycloak.idp.clientSecret', '') as string
       const clientId = get(allValues, 'apps.keycloak.idp.clientID', '') as string
       if (clientSecret) {
@@ -619,7 +613,6 @@ export const buildTeamNamespaceSealedSecretMappings = (
         })
       }
 
-      // grafana-loki-datasource-secret: Loki admin password for Grafana datasource
       const lokiPassword = get(allSecrets, 'apps.loki.adminPassword', '') as string
       if (lokiPassword) {
         mappings.push({
@@ -631,21 +624,18 @@ export const buildTeamNamespaceSealedSecretMappings = (
     }
 
     if (alertmanagerEnabled && hasReceivers) {
-      // alertmanager-credentials: notification channel credentials for team Alertmanager
       const alertData: Record<string, string> = {}
       if (teamReceivers.includes('slack')) {
         const slackUrl = get(allSecrets, 'alerts.slack.url', '') as string
         if (slackUrl) alertData.slackUrl = slackUrl
       }
       if (teamReceivers.includes('email')) {
-        // email receiver uses platform SMTP credentials
         const smtpPassword = get(allSecrets, 'smtp.auth_password', '') as string
         const smtpSecret = get(allSecrets, 'smtp.auth_secret', '') as string
         if (smtpPassword) alertData.smtpAuthPassword = smtpPassword
         if (smtpSecret) alertData.smtpAuthSecret = smtpSecret
       }
       if (teamReceivers.includes('opsgenie')) {
-        // Legacy receiver — kept for backwards compatibility
         const opsgenieKey = get(allSecrets, 'alerts.opsgenie.apiKey', '') as string
         if (opsgenieKey) alertData.opsgenieApiKey = opsgenieKey
       }
@@ -654,8 +644,6 @@ export const buildTeamNamespaceSealedSecretMappings = (
       }
     }
 
-    // otomi-pullsecret-global: docker pull secret for global container registry
-    // Only created when otomi.globalPullSecret is configured
     const pullSecretConfig = get(allValues, 'otomi.globalPullSecret', null) as Record<string, string> | null
     const pullSecretPassword = get(allSecrets, 'otomi.globalPullSecret.password', '') as string
     if (pullSecretConfig && pullSecretPassword) {
@@ -743,8 +731,7 @@ export const bootstrapSealedSecrets = async (
     manifests.push(manifest)
   }
 
-  // 4. Create team-namespace SealedSecret manifests (replaces ExternalSecrets referencing core-secrets-store)
-  // These are encrypted for each team's namespace, so platform secrets cannot be decrypted elsewhere.
+  // 4. Create team-namespace SealedSecret manifests (encrypted for each team namespace)
   if (allValues) {
     const teamMappings = deps.buildTeamNamespaceSealedSecretMappings(secrets, allValues, teams)
     for (const mapping of teamMappings) {
@@ -773,15 +760,7 @@ export const bootstrapSealedSecrets = async (
   d.info(`Bootstrapped ${manifests.length} sealed secret manifests`)
 }
 
-/**
- * Read the 5 shared platform secrets + 1 per-team secret from the apl-secrets namespace in K8s.
- * Returns an object shaped identically to the `allSecrets` parameter expected by
- * `buildTeamNamespaceSealedSecretMappings()` so the operator can drive reconciliation
- * from live cluster state rather than values-repo data.
- *
- * Individual secret reads are caught so one missing secret (e.g. loki not yet deployed)
- * does not abort the entire reconcile — the relevant team secrets are simply skipped.
- */
+// Individual reads are caught so one missing secret (e.g. loki not yet deployed) does not abort the entire reconcile.
 export async function buildAllSecretsFromK8s(teams: string[], deps = { getK8sSecret }): Promise<Record<string, any>> {
   const [keycloak, loki, alerts, smtp, otomi] = await Promise.all([
     deps.getK8sSecret('keycloak-secrets', SEALED_SECRETS_NAMESPACE).catch(() => undefined),
@@ -819,16 +798,9 @@ export async function buildAllSecretsFromK8s(teams: string[], deps = { getK8sSec
   }
 }
 
-/**
- * Reconcile team-namespace SealedSecret manifests on every operator cycle.
- *
- * Flow: read K8s secrets → build expected mappings → hash-compare plaintext inputs
- * → re-encrypt only when changed → write new manifests → delete stale files.
- *
- * Hash-based idempotency prevents git thrash: SealedSecret encryption is non-deterministic
- * (random nonce), so comparing ciphertext always looks "changed". Instead we hash the
- * plaintext inputs and store that hash as annotation `apl.io/secret-hash` in the manifest.
- */
+// Hash-based idempotency: SealedSecret encryption is non-deterministic (random nonce), so comparing
+// ciphertext always looks "changed". We hash plaintext inputs and store as `apl.io/secret-hash` annotation
+// to skip re-encryption when nothing actually changed, preventing a new git commit on every cycle.
 export async function reconcileTeamSealedSecrets(
   allValues: Record<string, any>,
   envDir: string,

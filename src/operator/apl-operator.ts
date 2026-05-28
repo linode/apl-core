@@ -88,8 +88,6 @@ export class AplOperator {
       }
       const values = await hfValues({}, env.ENV_DIR)
 
-      // Reconcile team namespace SealedSecrets — operator is source of truth for these manifests.
-      // Non-fatal: a missing K8s secret (e.g. loki not yet deployed) retries on next cycle.
       try {
         await reconcileTeamSealedSecrets(values ?? {}, env.ENV_DIR)
       } catch (e) {
