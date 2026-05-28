@@ -99,10 +99,11 @@ spec:
         generateName: docker-trigger-build-{{ .name }}-
         labels:
           tekton.dev/pipeline: docker-build-{{ .name }}
+          sidecar.istio.io/inject: "false"
           {{- include "team-ns.chart-labels" $ | nindent 10 }}
         annotations:
-          sidecar.istio.io/inject: "false"
           argocd.argoproj.io/compare-options: IgnoreExtraneous
+          tekton.dev/auto-cleanup-pvc: "true"
       spec:
         pipelineRef:
           name: docker-build-{{ .name }}
@@ -149,11 +150,13 @@ kind: PipelineRun
 metadata:
   name: docker-build-{{ .name }}
   annotations:
-    sidecar.istio.io/inject: "false"
     argocd.argoproj.io/compare-options: IgnoreExtraneous
     # ArgoCD sync wave annotation to ensure it's applied after the pipeline
     argocd.argoproj.io/sync-wave: "5"
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+    tekton.dev/auto-cleanup-pvc: "true"
+  labels:
+    sidecar.istio.io/inject: "false"
+    {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   pipelineRef:
     name: docker-build-{{ .name }}
