@@ -1,2 +1,4 @@
-# xdsAddress: "istiod-1-26-0.istio-system.svc:15012"
-revision: "1-26-0"
+{{- $v := .Values }}
+{{- if $v.apps.istio.defaultRevision }}
+revision: {{ $v.apps.istio.defaultRevision | quote }}
+{{- end }}
