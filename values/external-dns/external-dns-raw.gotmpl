@@ -111,7 +111,7 @@ resources:
           key: dns-secrets
           property: provider_cloudflare_apiToken
   {{- end }}
-  {{- with .apiSecret }}
+  {{- with . | get "apiSecret" nil }}
 resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
