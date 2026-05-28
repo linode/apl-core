@@ -19,13 +19,13 @@ resources:
       hasArgocd: "{{ $v.apps.argocd.enabled | toString }}"
       domainSuffix: "{{ $v.cluster.domainSuffix }}"
       teamConfig: {{ $teamConfig | toJson }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: apl-gitea-operator-secret
       namespace: apl-gitea-operator
     spec:
-      refreshInterval: 1h
+      refreshInterval: 1m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore

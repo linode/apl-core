@@ -18,14 +18,12 @@ import {
 } from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
 import { X509Certificate } from 'crypto'
-import { AnyAaaaRecord, AnyARecord } from 'dns'
-import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
-import { get, isEmpty, isEqual, map, mapValues } from 'lodash'
+import { get, isEqual, map, mapValues } from 'lodash'
 import { dirname, join } from 'path'
 import { Writable } from 'stream'
 import { parse, stringify } from 'yaml'
-import { $, sleep } from 'zx'
+import { $ } from 'zx'
 import {
   ARGOCD_APP_DEFAULT_SYNC_POLICY,
   ARGOCD_APP_PARAMS,
@@ -34,9 +32,6 @@ import {
 } from './constants'
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
-import { hfValues } from './hf'
-import { parser } from './yargs'
-import { askYesNo } from './zx-enhance'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
@@ -360,110 +355,6 @@ export const setDeploymentState = async (state: Record<string, any>): Promise<vo
   )}}`
   const res = await $`${cmdPatch.split(' ')} || ${cmdCreate.split(' ')}`.nothrow().quiet()
   if (res.stderr) d.error(res.stderr)
-}
-
-const fetchLoadBalancerIngressData = async (): Promise<string> => {
-  const d = terminal('common:k8s:fetchLoadBalancerIngressData')
-  let ingressDataString = ''
-  let count = 0
-  for (;;) {
-    ingressDataString = (
-      await $`kubectl get -n ingress svc ingress-nginx-platform-controller -o jsonpath="{.status.loadBalancer.ingress}"`
-    ).stdout.trim()
-    count += 1
-    if (ingressDataString) return ingressDataString
-    await sleep(1000)
-    d.debug(`Querying LoadBalancer IP information, trial #${count}`)
-  }
-}
-
-interface IngressRecord {
-  ip?: string
-  hostname?: string
-}
-export const getOtomiLoadBalancerIP = async (): Promise<string> => {
-  const d = terminal('common:k8s:getOtomiLoadBalancerIP')
-  d.debug('Find LoadBalancer IP or Hostname')
-
-  const ingressDataString = await fetchLoadBalancerIngressData()
-  const ingressDataList = JSON.parse(ingressDataString) as IngressRecord[]
-  // We sort by IP first, and order those, and then hostname and order them as well
-  const ingressDataListSorted = [
-    ...ingressDataList.filter((val) => !!val.ip).sort((a, b) => a.ip!.localeCompare(b.ip!)),
-    ...ingressDataList.filter((val) => !!val.hostname).sort((a, b) => a.hostname!.localeCompare(b.hostname!)),
-  ]
-
-  d.debug(ingressDataListSorted)
-  if (ingressDataListSorted.length === 0) throw new Error('No LoadBalancer Ingress definitions found')
-  /* A load balancer can have a hostname, ip or any list of those items. We select the first item, as we only need one.
-   * And we prefer IP over hostname, as it reduces the fact that we need to resolve & select an ip.
-   */
-  const [firstIngressData] = ingressDataListSorted
-
-  if (firstIngressData.ip) return firstIngressData.ip
-  if (firstIngressData.hostname) {
-    // Wait until DNS records are propagated to the cluster DNS
-    await waitTillAvailable(`https://${firstIngressData.hostname}`, {
-      skipSsl: true,
-      status: 404,
-      maxTimeout: 10 * 1000, // retry every max 10 seconds, so no exponential backoff
-      retries: 100, // we should have a LB within 100 * 10 secs (=14 minutes)
-    })
-    const resolveData = await resolveAny(firstIngressData.hostname)
-    const resolveDataFiltered = resolveData.filter((val) => val.type === 'A' || val.type === 'AAAA') as (
-      | AnyARecord
-      | AnyAaaaRecord
-    )[]
-    /* Sorting the filtered list
-     * Prefer IPv4 over IPv6; then sort by lowest address (basic string compare)
-     * This way we get always the same first IP back on a cluster
-     */
-    const resolveDataSorted = resolveDataFiltered.sort((a, b) => {
-      const typeCompare = a.type.localeCompare(b.type)
-      return !typeCompare ? typeCompare : a.address.localeCompare(b.address)
-    })
-
-    if (isEmpty(resolveDataSorted))
-      throw new Error(`No A or AAAA records found for ${firstIngressData.hostname} - could not determine IP`)
-    /* For consistency reasons, after sorting (and preferring the lowest numbered IPv4 address) we pick the first one
-     * As there can be multiple A or AAAA records, and we only need one
-     */
-    const firstIP = resolveDataSorted[0].address
-    return firstIP
-  }
-  throw new Error('LoadBalancer Ingress data did not container ip or hostname')
-}
-
-/**
- * Check whether the environment matches the configuration for the kubernetes context
- * @returns
- */
-export const checkKubeContext = async (): Promise<void> => {
-  const d = terminal('common:k8s:checkKubeContext')
-  d.info('Validating kube context')
-
-  const values = await hfValues()
-  const currentContext = (await $`kubectl config current-context`).stdout.trim()
-  const k8sContext = values?.cluster?.k8sContext
-  d.debug('currentContext: ', currentContext)
-  d.debug('k8sContext: ', k8sContext)
-
-  d.info(`Current kube context: ${currentContext}`)
-  if (!k8sContext) {
-    throw new Error('No value for cluster.k8sContext set!')
-  }
-  if (k8sContext !== currentContext) {
-    let fixContext = false
-    if (!parser.argv.setContext) {
-      fixContext = await askYesNo(
-        `Warning: Your current kubernetes context (${currentContext}) does not match cluster context: ${k8sContext}. Would you like to switch kube context to cluster first?`,
-        { defaultYes: true },
-      )
-    }
-    if (fixContext || parser.argv.setContext) {
-      await $`kubectl config use ${k8sContext}`
-    }
-  }
 }
 
 type WaitTillAvailableOptions = Options & {
@@ -833,6 +724,19 @@ export async function waitForArgoCDAppHealthy(
     },
     { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
   )
+}
+
+export function argoCdHasUnrecoverableErrors(applications: Record<string, any>[]): string | undefined {
+  for (const application of applications) {
+    const operationState = application.status?.operationState
+    if (
+      operationState?.phase === 'Failed' &&
+      operationState?.message === 'runtime error: invalid memory address or nil pointer dereference'
+    ) {
+      return application?.metadata?.name || 'unknown'
+    }
+  }
+  return undefined
 }
 
 export async function appRevisionMatches(appName: string, expectedRevision: string, customApi: CustomObjectsApi) {

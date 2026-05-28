@@ -7,7 +7,7 @@
 {{- $ingress :=  $v.ingress.platformClass }}
 
 resources:
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: oauth2-proxy-redis-password
@@ -28,7 +28,7 @@ resources:
           remoteRef:
             key: oauth2-proxy-redis-secrets
             property: password
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: oauth2-proxy-client-access
@@ -55,51 +55,6 @@ resources:
           remoteRef:
             key: oauth2-proxy-secrets
             property: config_cookieSecret
-  {{ if $v.apps | dig "ingress-nginx-platform" "enabled" false }}
-  - apiVersion: networking.k8s.io/v1
-    kind: Ingress
-    metadata:
-      annotations:
-        externaldns: "true"
-        {{- with $v.otomi.isPreInstalled }}
-        nginx.ingress.kubernetes.io/cors-allow-origin: "https://cloud.linode.com,https://cloud.staging.linode.com,https://cloud.dev.linode.com"
-        nginx.ingress.kubernetes.io/enable-cors: "true"
-        nginx.ingress.kubernetes.io/cors-allow-methods: "GET,OPTIONS"
-        {{- end }}
-        {{- with $v | get "dns.provider.linode" nil }}
-        # Check Linode Api documentation for allowed values in seconds: https://developers-linode.netlify.app/api/v4/domains
-        external-dns.alpha.kubernetes.io/ttl: "1h"
-        {{- end }}
-        nginx.ingress.kubernetes.io/ssl-redirect: "true"
-        {{- if and (eq $v.cluster.provider "custom") (hasKey $v.ingress.platformClass "entrypoint") (ne $ingress.entrypoint "") }}
-        external-dns.alpha.kubernetes.io/target: {{ $v.ingress.platformClass }}
-        {{- end }}
-        ingress.kubernetes.io/ssl-redirect: "true"
-        {{- if $v.apps.keycloak.enabled }}
-        nginx.ingress.kubernetes.io/auth-response-headers: Authorization
-        {{- end }}
-        {{- with $ingress | get "sourceIpAddressFiltering" nil }}
-        nginx.ingress.kubernetes.io/whitelist-source-range: "{{ . }}"
-        {{- end}}
-      name: oauth2-proxy
-    spec:
-      ingressClassName: {{ $ingress.className }}
-      rules:
-      - host: {{ $v._derived.authDomain | quote }}
-        http:
-          paths:
-          - backend:
-              service:
-                name: oauth2-proxy
-                port:
-                  number: 80
-            path: /
-            pathType: Prefix
-      tls:
-        - secretName: {{ $v._derived.tlsSecretName }}
-          hosts:
-            - {{ $v._derived.authDomain | quote }}
-  {{- end }}
   - apiVersion: v1
     kind: ConfigMap
     metadata:

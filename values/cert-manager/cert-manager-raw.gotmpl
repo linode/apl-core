@@ -6,7 +6,7 @@
 resources:
 
 {{- if and $v.otomi.hasExternalDNS (or (not (hasKey $p "aws")) ($p | get "aws.credentials.secretKey" nil)) }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: external-dns
@@ -76,7 +76,7 @@ resources:
         {{- end }}
 {{- end }}
 {{- if $cm | get "customRootCA" "" }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: custom-ca
@@ -215,7 +215,7 @@ resources:
               {{- end }}
 {{- end }}
 {{- if eq $cm.issuer "byo-wildcard-cert" }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: otomi-byo-wildcard-cert

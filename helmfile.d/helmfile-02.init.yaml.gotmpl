@@ -15,6 +15,14 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
+  - name: git-server-artifacts
+    installed: {{ $a | get "git-server.enabled" }}
+    namespace: git-server
+    labels:
+      pkg: git-server
+      app: core
+      stage: prep
+    <<: *raw
   - name: metrics-server
     installed: {{ $a | get "metrics-server.enabled" }}
     namespace: kube-system
@@ -27,28 +35,6 @@ releases:
       stage: prep
       pkg: kubernetes-gateways
     <<: *default
-  - name: ingress-nginx-artifacts
-    installed: {{ $a | get "ingress-nginx-platform.enabled" }}
-    namespace: ingress
-    labels:
-      tag: ingress
-      stage: prep
-    <<: *raw
-{{- range $index, $ingress := $v.ingress.classes }}
-  - name: ingress-nginx-{{ $ingress.className }}
-    installed: {{ $a | get "ingress-nginx-platform.enabled" }}
-    namespace: ingress
-    labels:
-      tag: ingress
-      stage: prep
-      class: {{ $ingress.className }}
-      index: {{ $index }}
-    missingFileHandler: Debug
-    chart: ../charts/ingress-nginx
-    values:
-      - ../values/ingress-nginx/ingress-nginx.gotmpl
-      - ./snippets/common.gotmpl
-{{- end }}
   - name: istio-base
     installed: true
     namespace: istio-system

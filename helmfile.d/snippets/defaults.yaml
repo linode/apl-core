@@ -134,7 +134,7 @@ environments:
               limits:
                 cpu: 100m
                 memory: 200Mi
-            useBackupPlugin: false
+            useBackupPlugin: true
             _rawValues: {}
           external-dns:
             logLevel: info
@@ -145,9 +145,19 @@ environments:
               requests:
                 memory: 64Mi
                 cpu: 10m
+          git-server:
+            _rawValues: { }
+            enabled: true
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 128Mi
           gitea:
             _rawValues: {}
-            enabled: true
+            enabled: false
             networkPolicies:
               enabled: true
             databaseMaxConnections: 28
@@ -257,9 +267,6 @@ environments:
               egressgateway:
                 minReplicas: 2
                 maxReplicas: 10
-              ingressgateway:
-                minReplicas: 2
-                maxReplicas: 10
               pilot:
                 minReplicas: 2
                 maxReplicas: 10
@@ -281,13 +288,6 @@ environments:
                   cpu: "1"
                   memory: 1Gi
               egressgateway:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: "1"
-                  memory: 256Mi
-              ingressgateway:
                 requests:
                   cpu: 100m
                   memory: 128Mi
@@ -744,7 +744,6 @@ environments:
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
             v13SchemaStartDate: ""
-            enableOpenTelemetry: true
             _rawValues: {}
           metrics-server:
             apiServer:
@@ -790,13 +789,6 @@ environments:
                   memory: 512Mi
                 requests:
                   cpu: 100m
-                  memory: 256Mi
-              tools:
-                limits:
-                  cpu: "1"
-                  memory: 1Gi
-                requests:
-                  cpu: 300m
                   memory: 256Mi
           otomi-console:
             _rawValues: {}
@@ -953,13 +945,6 @@ environments:
                 limits:
                   cpu: 500m
                   memory: 512Mi
-              kubeRBACProxy:
-                requests:
-                  cpu: 50m
-                  memory: 32Mi
-                limits:
-                  cpu: 200m
-                  memory: 128Mi
             _rawValues: {}
           sealed-secrets:
             resources:
@@ -1165,7 +1150,7 @@ environments:
         otomi:
           git:
             branch: main
-            repoUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git
+            repoUrl: http://git-server.git-server.svc.cluster.local/otomi/values.git
             username: otomi-admin
             email: pipeline@cluster.local
           hasExternalDNS: false
@@ -1177,4 +1162,4 @@ environments:
           aiEnabled: false
         users: []
         versions:
-          specVersion: 62
+          specVersion: 68

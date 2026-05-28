@@ -45,25 +45,16 @@
 {{- $istioDefaultRevision := ternary "" $istioCanaryRevision (eq $istioLegacyRevision "operator") }}
 
 # The following variables are used as reference for other components (ingress, gateway etc).
-{{- $ingressGatewayPrefix := "istio-ingressgateway" }}
-{{- $defaultIngressGatewayLabel := "ingressgateway-public" }}
-{{- $canaryIngressGatewayLabel := "" }}
 {{- $egressGatewayName := "istio-egressgateway" }}
 {{- $egressGatewayLabel := "egressgateway" }}
 {{- if $istioDefaultRevision }}
-{{- $ingressGatewayPrefix = print "istio-ingressgateway-" $istioDefaultRevision }}
-{{- $defaultIngressGatewayLabel = printf "ingressgateway-%s-public" $istioDefaultRevision }}
 {{- $egressGatewayName = print "istio-egressgateway-" $istioDefaultRevision }}
 {{- $egressGatewayLabel = print "egressgateway-" $istioDefaultRevision }}
 {{- end }}
 {{- if and $istioCanaryRevision (ne $istioDefaultRevision $istioCanaryRevision) }}
-{{- $canaryIngressGatewayLabel = printf "ingressgateway-%s-public" $istioCanaryRevision }}
 {{- end }}
-{{- $ingressPublicGatewayName := print $ingressGatewayPrefix "-public" }}
 
 # The following variables are referred to by the Helm chart.
-{{- $istioIngressPublicReleaseName := printf "istio-ingressgateway-%s-public" $istioCanaryRevision }}
-{{- $istioIngressPublicReleaseLabel := printf "ingressgateway-%s-public" $istioCanaryRevision }}
 {{- $istioEgressReleaseName := print "istio-egressgateway-" $istioCanaryRevision }}
 {{- $istioEgressReleaseLabel := print "egressgateway-" $istioCanaryRevision }}
 
@@ -74,7 +65,7 @@
   {{- $cnpgImageSuffix = "-standard-trixie" }}
 {{- end }}
 # Set default platform database image for CloudnativePG
-{{- $cnpgDefaultPlatformImage := print "cloudnative-pg/postgresql:15.14" $cnpgImageSuffix }}
+{{- $cnpgDefaultPlatformImage := print "cloudnative-pg/postgresql:15.17" $cnpgImageSuffix }}
 
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
@@ -204,10 +195,6 @@ environments:
           keycloakDomain: {{ printf "keycloak.%s" $domainSuffix }}
           harborDomain: {{ printf "harbor.%s" $domainSuffix }}
           tlsSecretName: {{ $tlsSecretName }}
-          ingressGatewayPrefix: {{ $ingressGatewayPrefix }}
-          ingressPublicGatewayName: {{ $ingressPublicGatewayName }}
-          defaultIngressGatewayLabel: {{ $defaultIngressGatewayLabel }}
-          canaryIngressGatewayLabel: {{ $canaryIngressGatewayLabel | quote }}
           egressGatewayName: {{ $egressGatewayName }}
           egressGatewayLabel: {{ $egressGatewayLabel }}
         apps:
@@ -227,15 +214,11 @@ environments:
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
-          ingress-nginx:
-            enabled: true
           istio:
             enabled: true
             defaultRevision: {{ $istioDefaultRevision | quote }}
             release:
               revision: {{ $istioCanaryRevision | quote }}
-              ingressPublicName: {{ $istioIngressPublicReleaseName }}
-              ingressPublicLabel: {{ $istioIngressPublicReleaseLabel }}
               egressName: {{ $istioEgressReleaseName }}
               egressLabel: {{ $istioEgressReleaseLabel }}
           metrics-server:

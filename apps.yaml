@@ -1,7 +1,7 @@
 appsInfo:
   alertmanager:
     title: Alertmanager
-    appVersion: 0.32.0
+    appVersion: 0.32.1
     repo: https://github.com/prometheus/alertmanager
     maintainers: Prometheus Community
     relatedLinks:
@@ -12,7 +12,7 @@ appsInfo:
     integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by App Platform to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: Argo CD
-    appVersion: 3.3.7
+    appVersion: 3.4.2
     repo: https://github.com/argoproj/argo-helm
     maintainers: Argo Project
     relatedLinks:
@@ -33,7 +33,7 @@ appsInfo:
     integration: Cert-manager is used by App Platform to automatically create and rotate TLS certificates for service endpoints. You may bring your own CA, or let App Platform create one for you (default). It is recommended to use Let's Encrypt for production certificates. Setting cert-manager to use Let's Encrypt requires DNS availability of the requesting domains, and forces App Platform to install external-dns. Because a lot of DNS settings are used by other App Platform contexts, most DNS configuration is found under settings/dns.
   cnpg:
     title: CloudNative PostgreSQL Operator
-    appVersion: 1.29.0
+    appVersion: 1.29.1
     repo: https://github.com/cloudnative-pg/cloudnative-pg
     maintainers: EDB
     relatedLinks:
@@ -45,7 +45,7 @@ appsInfo:
     chartName: cloudnative-pg
   external-dns:
     title: External DNS
-    appVersion: 0.20.0
+    appVersion: 0.21.0
     repo: https://github.com/kubernetes-sigs/external-dns
     maintainers: Kubernetes SIGs
     relatedLinks:
@@ -65,7 +65,7 @@ appsInfo:
     integration: App Platform uses Gitea as its default repository for App Platform configuration (values). Gitea can also be used by Teams to provide application code repositories. Access to Gitea is provided by the OIDC integration in App Platform. Members of the otomi-admin and team-admin group can seamlessly sign in to Gitea. When Argo CD is enabled, App Platform will automatically create a Gitops repository for each Team in Gitea.
   grafana:
     title: Grafana
-    appVersion: 12.4.2
+    appVersion: 13.0.1
     repo: https://github.com/grafana/grafana
     maintainers: Grafana Labs
     relatedLinks:
@@ -76,7 +76,7 @@ appsInfo:
     integration: App Platform uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
-    appVersion: 2.14.3
+    appVersion: 2.15.0
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
@@ -85,16 +85,6 @@ appsInfo:
     dependencies: None
     about: Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.
     integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. App Platform runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
-  ingress-nginx:
-    title: Ingress-NGINX
-    appVersion: 1.14.3
-    repo: https://github.com/kubernetes/ingress-nginx
-    maintainers: NGINX
-    relatedLinks:
-      - https://docs.nginx.com/nginx-ingress-controller
-    license: Apache 2.0
-    about: ingress-nginx is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer.
-    integration: App Platform integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
     appVersion: 1.29.2
@@ -107,7 +97,7 @@ appsInfo:
     integration: App Platform has security best practices built in, and is designed for intrusion. Istio is used by App Platform as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of App Platform and can not be disabled.
   keycloak:
     title: Keycloak
-    appVersion: 26.5.5
+    appVersion: 26.5.6
     repo: https://github.com/keycloak/keycloak
     maintainers: Keycloak
     relatedLinks:
@@ -117,7 +107,7 @@ appsInfo:
     integration: The SSO login page for App Platform is served by Keycloak. Keycloak is used as an identity broker or provider for all App Platform integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of App Platform and is always enabled.
   knative:
     title: Knative Operator
-    appVersion: 1.21.1
+    appVersion: 1.22.1
     repo: https://github.com/knative/serving
     maintainers: Knative
     relatedLinks:
@@ -139,7 +129,7 @@ appsInfo:
     isAlpha: true
   kyverno:
     title: Kyverno
-    appVersion: 1.17.1
+    appVersion: 1.18.1
     repo: https://github.com/kyverno/kyverno
     maintainers: Nirmata
     relatedLinks:
@@ -159,7 +149,7 @@ appsInfo:
     isAlpha: true
   tekton:
     title: Tekton Pipelines
-    appVersion: 1.9.1
+    appVersion: 1.12.0
     repo: https://github.com/tektoncd/pipeline
     maintainers: Tekton
     relatedLinks:
@@ -185,7 +175,7 @@ appsInfo:
     integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When App Platform is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. App Platform shortcuts can be used to provide selections of logs based on interest.
   prometheus:
     title: Prometheus
-    appVersion: 3.11.1
+    appVersion: 3.11.3
     repo: https://github.com/prometheus/prometheus
     maintainers: Prometheus
     relatedLinks:
@@ -230,7 +220,7 @@ appsInfo:
     chartName: trivy-operator
   otel:
     title: OpenTelemetry Operator
-    appVersion: 0.148.0
+    appVersion: 0.151.0
     repo: https://github.com/open-telemetry/opentelemetry-operator
     maintainers: Grafana labs
     relatedLinks:

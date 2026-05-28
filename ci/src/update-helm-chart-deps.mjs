@@ -58,6 +58,16 @@ async function renderKyvernoCrdTemplates(chartDir) {
   return true
 }
 
+async function renderEsoCrdTemplates(chartDir) {
+  console.log(`Rendering templates from ${chartDir}`)
+  const crdPath = `${chartDir}/crds`
+  const tempPath = await $`mktemp -d`
+  await $`helm template --set crds.createClusterExternalSecret=false --set crds.createClusterGenerator=false --set crds.createClusterPushSecret=false --set crds.createPushSecret=false --output-dir ${tempPath} ${chartDir}`
+  console.log(`Adding templates in ${crdPath}`)
+  await $`mv ${tempPath}/external-secrets/templates/crds ${crdPath}`
+  await $`rm -R ${tempPath}`
+  return true
+}
 
 async function renderOtelCrdTemplates(chartDir) {
   console.log(`Rendering templates from ${chartDir}`)
@@ -109,22 +119,22 @@ async function copyLinodeCfwTemplates(chartDir) {
 async function getAppVersion(chartDir, defaultName) {
   console.log(`Extracting app version for ${defaultName} from ${chartDir}`)
   const dependencyChart = await loadYamlFile(`${chartDir}/Chart.yaml`)
-  const updatedAppVersion = dependencyChart?.appVersion || dependencyChart?.version
-  return Object.fromEntries([[defaultName, updatedAppVersion]])
+  const updatedAppVersion = semver.coerce(dependencyChart?.appVersion || dependencyChart?.version)
+  return Object.fromEntries([[defaultName, updatedAppVersion.toString()]])
 }
 
 async function getKubePromStackApps(chartDir) {
   console.log(`Extracting app versions from ${chartDir}`)
   try {
     const chartValues = await loadYamlFile(`${chartDir}/values.yaml`)
-    const alertManagerVersion = chartValues.alertmanager.alertmanagerSpec.image.tag
-    const prometheusVersion = chartValues.prometheus.prometheusSpec.image.tag
+    const alertManagerVersion = semver.coerce(chartValues.alertmanager.alertmanagerSpec.image.tag)
+    const prometheusVersion = semver.coerce(chartValues.prometheus.prometheusSpec.image.tag)
     const grafanaChart = await loadYamlFile(`${chartDir}/charts/grafana/Chart.yaml`)
-    const grafanaVersion = grafanaChart.appVersion
+    const grafanaVersion = semver.coerce(grafanaChart.appVersion)
     return {
-      alertmanager: alertManagerVersion,
-      prometheus: prometheusVersion,
-      grafana: grafanaVersion,
+      alertmanager: alertManagerVersion.toString(),
+      prometheus: prometheusVersion.toString(),
+      grafana: grafanaVersion.toString(),
     }
   } catch (e) {
     console.error('Field to extract version information from chart:', e)
@@ -135,7 +145,7 @@ async function getKubePromStackApps(chartDir) {
 // The first one is considered the main dependency.
 const CHART_GROUPS = {
   istio: ['base', 'istiod', 'gateway'],
-  kserve: ['kserve', 'kserve-crd'],
+  kserve: ['kserve-resources', 'kserve-crd'],
   'cloud-firewall': ['cloud-firewall-controller', 'cloud-firewall-crd'],
 }
 // Skip version check for some charts, that are not stored on their own.
@@ -146,6 +156,7 @@ const CHART_POST_FUNCS = {
   'opentelemetry-operator': renderOtelCrdTemplates,
   'argocd-image-updater': renderArgoCdImageUpdaterCrd,
   'kserve-crd': copyKserveCrdTemplates,
+  'external-secrets': renderEsoCrdTemplates,
   'cloud-firewall-crd': copyLinodeCfwTemplates,
 }
 // List charts that are not represented in apps.yaml

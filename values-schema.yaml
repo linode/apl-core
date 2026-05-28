@@ -334,7 +334,10 @@ definitions:
     pattern: ^([1-9][0-9]*|([0]|[1-9]+)\\.[0-9]{1,3}|[1-9][0-9]*m)$
     type: string
   domain:
-    pattern: ^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))|([a-f0-9:]+:+)+[a-f0-9]+$
+    pattern: ^([a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?\.)*[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?$
+    type: string
+  wildcardDomainOrIp:
+    pattern: ^((\*\.)?([a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?\.)*[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?|([a-f0-9:]+:+)+[a-f0-9]+)$
     type: string
   duration:
     description: 'Prometheus duration (See: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#configuration-file)'
@@ -413,73 +416,6 @@ definitions:
       - tag
     type: object
     title: Container image
-  ingressNginx:
-    additionalProperties: false
-    properties:
-      _rawValues:
-        $ref: '#/definitions/rawValues'
-      enabled:
-        type: boolean
-      autoscaling:
-        additionalProperties: false
-        properties:
-          enabled:
-            default: true
-            type: boolean
-          maxReplicas:
-            type: integer
-            default: 10
-          minReplicas:
-            type: integer
-            default: 1
-          targetCPUUtilizationPercentage:
-            type: integer
-            default: 80
-          targetMemoryUtilizationPercentage:
-            type: integer
-            default: 80
-      maxBodySize:
-        type: string
-        default: 1024m
-      maxBodySizeBytes:
-        type: integer
-        minimum: 0
-        default: 1073741824
-        description: Needed for modsecurity. Should correspond to maxBodySize, but expressed in bytes.
-      modsecurity:
-        title: MOD Security
-        description: Enables MOD Security functionality.
-        properties:
-          block:
-            description: Makes nginx block requests that are marked as violating the modsec rules.
-            type: boolean
-            default: false
-          enabled:
-            type: boolean
-            default: false
-          owasp:
-            description: Turns on the default OWASP rule set for modsec. See
-            type: boolean
-            default: true
-        type: object
-      image:
-        properties:
-          tag:
-            $ref: '#/definitions/imageTag'
-            x-default: v1.0.5
-          pullPolicy:
-            $ref: '#/definitions/imagePullPolicy'
-      resources:
-        controller:
-          $ref: '#/definitions/resources'
-        opentelemetry:
-          $ref: '#/definitions/resources'
-        defaultBackend:
-          $ref: '#/definitions/resources'
-      service:
-        properties:
-          annotations:
-            $ref: '#/definitions/annotations'
   ingressClassParameters:
     type: object
     properties:
@@ -684,8 +620,8 @@ definitions:
           egress:
             properties:
               domain:
-                title: FQDN or IP address
-                $ref: '#/definitions/domain'
+                title: FQDN, Wildcard domain, or IP address
+                $ref: '#/definitions/wildcardDomainOrIp'
               ports:
                 properties:
                   number:
@@ -1059,10 +995,6 @@ definitions:
       svc:
         $ref: '#/definitions/idName'
         description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
-      tlsPass:
-        description: Will pass the request to the backing service without TLS termination.
-        type: boolean
-        default: false
       useCname:
         description: Will configure additional host(CNAME) for the service.
         type: boolean
@@ -1073,7 +1005,7 @@ definitions:
             description: CNAME of the service.
             type: string
           tlsSecretName:
-            description: Kubernetes secret name of type TLS (not required if the tlsPass flag is set to true).
+            description: Kubernetes secret name of type TLS.
             $ref: '#/definitions/idName'
       removeRequestHeaders:
         description: >-
@@ -1753,6 +1685,14 @@ properties:
             default: 'info'
           resources:
             $ref: '#/definitions/resources'
+      external-secrets:
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
       gitea:
         properties:
           _rawValues:
@@ -1881,8 +1821,6 @@ properties:
           secretKey:
             type: string
             x-secret: '{{ randAlpha 16 }}'
-      ingress-nginx-platform:
-        $ref: '#/definitions/ingressNginx'
       istio:
         properties:
           _rawValues:
@@ -2217,10 +2155,6 @@ properties:
             description: Automatically set to a date in the future in case of an upgrade
             title: Schema v13 start date
             type: string
-          enableOpenTelemetry:
-            description: Use OpenTelemetry for logs instead of Promtail. True by default, but must be manually set after v13SchemaStartDate in case of an upgrade
-            title: Enable OpenTelemetry for logs
-            type: boolean
         required:
           - adminPassword
       metrics-server:
@@ -2362,6 +2296,18 @@ properties:
             properties:
               operator:
                 $ref: '#/definitions/resources'
+      git-server:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+          htpasswd:
+            type: string
+            x-secret: ''
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            $ref: '#/definitions/resources'
       prometheus:
         additionalProperties: false
         properties:
@@ -2500,11 +2446,6 @@ properties:
                 $ref: '#/definitions/resources'
               manager:
                 $ref: '#/definitions/resources'
-              kubeRBACProxy:
-                $ref: '#/definitions/resources'
-    patternProperties:
-      '^ingress-nginx-[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
-        $ref: '#/definitions/ingressNginx'
   catalogs:
     type: object
     additionalProperties:

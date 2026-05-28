@@ -4,18 +4,17 @@
     "url": "https://github.com/linode/apl-core/issues"
   },
   "dependencies": {
-    "ajv": "8.17.1",
+    "ajv": "^8.18.0",
     "dotenv": "^16.4.7",
     "envalid": "8.0.0",
     "js-yaml": "^4.1.0",
     "semver": "^7.6.3",
-    "yaml": "2.3.0-5",
+    "yaml": "^2.8.3",
     "zx": "^8.2.2"
   },
   "description": "CI scripts",
   "engines": {
-    "node": ">=20 <21",
-    "npm": "^10"
+    "node": ">=24 <25"
   },
   "homepage": "https://github.com/linode/apl-core#readme",
   "license": "Apache-2.0",
@@ -26,7 +25,8 @@
     "url": "git+https://github.com/linode/apl-core.git"
   },
   "scripts": {
-    "update-helm-chart-deps": "src/update-helm-chart-deps.mjs"
+    "update-helm-chart-deps": "src/update-helm-chart-deps.mjs",
+    "check-schema-versions": "src/check-schema-versions.mjs"
   },
   "type": "commonjs",
   "version": "1.0.0"

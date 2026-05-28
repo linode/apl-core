@@ -8,16 +8,16 @@
 {{- range $teamId, $team := $v.teamConfig }}
 {{- $teamNamespaces = append $teamNamespaces $teamId }}
 {{- end }}
-{{- $teamNamespaces := $teamNamespaces | sortAlpha | toJson }}
+{{- $teamNamespaces = $teamNamespaces | sortAlpha | toJson }}
 
 resources:
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: apl-harbor-operator-secret
       namespace: apl-harbor-operator
     spec:
-      refreshInterval: 1h
+      refreshInterval: 1m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore

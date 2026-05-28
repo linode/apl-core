@@ -89,7 +89,10 @@ releases:
     namespace: tekton-pipelines
     labels:
       pkg: tekton-pipelines
-    <<: *default
+    chart: ../charts/tekton-pipelines
+    values:
+      - ../values/tekton-pipelines/tekton-pipelines.gotmpl
+      - {{- $a | get "tekton._rawValues" dict | toYaml | nindent 8 }}
   - name: tekton-pipelines-artifacts
     installed: {{ $a | get "tekton.enabled" }}
     namespace: tekton-pipelines

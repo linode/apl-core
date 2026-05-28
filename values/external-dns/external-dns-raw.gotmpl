@@ -3,7 +3,7 @@
 
 {{- with $d.provider | get "akamai" nil }}
 resources:
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: akamai-dns
@@ -38,7 +38,7 @@ resources:
 
 {{- with $d.provider | get "linode" nil }}
 resources:
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: linode-dns-api-token
@@ -63,7 +63,7 @@ resources:
 
 {{- with $d.provider | get "digitalocean" nil }}
 resources:
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: do-token
@@ -89,7 +89,7 @@ resources:
 {{- with $d.provider | get "cloudflare" nil }}
   {{- with .apiToken  }}
 resources:
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: cloudflare-api-key
@@ -113,7 +113,7 @@ resources:
   {{- end }}
   {{- with . | get "apiSecret" nil }}
 resources:
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: cloudflare-api-key
@@ -141,7 +141,7 @@ resources:
 {{- with $d.provider | get "aws" nil }}
   {{- with .credentials }}
 resources:
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: aws-dns-credentials
@@ -172,7 +172,7 @@ resources:
 
 {{- with $d.provider | get "azure" nil }}
 resources:
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: azure-dns
@@ -201,7 +201,7 @@ resources:
 
 {{- with $d.provider | get "azure-private-dns" nil }}
 resources:
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: azure-private-dns
@@ -230,7 +230,7 @@ resources:
 
 {{- with $d.provider | get "google" nil }}
 resources:
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: google-dns

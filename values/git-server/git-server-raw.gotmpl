@@ -1,0 +1,24 @@
+{{- $v := .Values }}
+resources:
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: git-server-credentials
+      namespace: git-server
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: git-server-credentials
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            htpasswd: '{{ "{{ .htpasswd | toString }}" }}'
+      data:
+        - secretKey: htpasswd
+          remoteRef:
+            key: git-server-secrets
+            property: htpasswd

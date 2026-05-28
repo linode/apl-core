@@ -463,13 +463,34 @@ changes:
       - addRedisSecretForArgoCD
   - version: 61
     deletions:
+      - 'teamConfig.{team}.services[].tlsPass'
+  - version: 62
+    deletions:
       - 'kms.sops'
     customFunctions:
       - sopsMigration
-  - version: 62
+  - version: 63
     customFunctions:
       - removeIngressTracing
     deletions:
       - 'apps.istio.tracing'
       - 'apps.otel.otlpCollector'
       - 'apps.otel.resources.otlpCollector'
+  - version: 64
+    mutations:
+      - apps.cnpg.useBackupPlugin: true
+  - version: 65
+    deletions:
+      - 'apps.otel.resources.kubeRBACProxy'
+  - version: 66
+    additions:
+      - 'apps.git-server.enabled': false
+  - version: 67
+    customFunctions:
+      - removeIngressNginxValues
+    deletions:
+      - apps.istio.autoscaling.ingressgateway
+      - apps.istio.resources.ingressgateway
+  - version: 68
+    deletions:
+      - apps.loki.enableOpenTelemetry

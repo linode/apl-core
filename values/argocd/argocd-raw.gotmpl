@@ -10,13 +10,13 @@ resources:
       custom-ca-certificates.crt: {{ .Values._derived.caCert | b64enc }}
 {{- end }}
 {{- if contains "gitea-http.gitea.svc.cluster.local" $v.otomi.git.repoUrl }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: argocd-repo-creds-gitea
       namespace: argocd
     spec:
-      refreshInterval: 1h
+      refreshInterval: 1m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -38,13 +38,13 @@ resources:
           remoteRef:
             key: otomi-secrets
             property: git_password
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: argocd-repo-creds-gitea-internal
       namespace: argocd
     spec:
-      refreshInterval: 1h
+      refreshInterval: 1m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -58,8 +58,38 @@ resources:
           type: Opaque
           data:
             type: git
-            url: {{ "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git" | quote }}
-            username: {{ $v.otomi.git.username }}
+            url: {{ $v.otomi.git.repoUrl | quote }}
+            username: {{ $v.otomi.git.username | quote }}
+            password: '{{ "{{ .gitPassword | toString }}" }}'
+      data:
+        - secretKey: gitPassword
+          remoteRef:
+            key: otomi-secrets
+            property: git_password
+
+{{- else if contains "git-server.git-server.svc.cluster.local" $v.otomi.git.repoUrl }}
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: argocd-repo-creds-git-server
+      namespace: argocd
+    spec:
+      refreshInterval: 1m
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: argocd-repo-creds-git-server
+        creationPolicy: Owner
+        template:
+          metadata:
+            labels:
+              argocd.argoproj.io/secret-type: repo-creds
+          type: Opaque
+          data:
+            type: git
+            url: {{ $v.otomi.git.repoUrl | quote }}
+            username: {{ $v.otomi.git.username | quote }}
             password: '{{ "{{ .gitPassword | toString }}" }}'
       data:
         - secretKey: gitPassword
@@ -67,13 +97,13 @@ resources:
             key: otomi-secrets
             property: git_password
 {{- else }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: argocd-repo-creds-git
       namespace: argocd
     spec:
-      refreshInterval: 1h
+      refreshInterval: 1m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -87,8 +117,8 @@ resources:
           type: Opaque
           data:
             type: git
-            url: {{ $v.otomi.git.repoUrl }}
-            username: {{ $v.otomi.git.username }}
+            url: {{ $v.otomi.git.repoUrl | quote }}
+            username: {{ $v.otomi.git.username | quote }}
             password: '{{ "{{ .gitPassword | toString }}" }}'
       data:
         - secretKey: gitPassword
@@ -96,7 +126,7 @@ resources:
             key: otomi-secrets
             property: git_password
 {{- end }}
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: argocd-oidc-secret
@@ -114,7 +144,7 @@ resources:
           remoteRef:
             key: keycloak-secrets
             property: idp_clientSecret
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: argocd-redis-secret

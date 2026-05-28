@@ -75,10 +75,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: 'pr/.nvmrc'
+          check-latest: true
       - name: Install npm dependencies
         run: cd "$GITHUB_WORKSPACE/pr" && npm install --no-save && cd "$GITHUB_WORKSPACE/base" && npm install --no-save
       - name: Install Helm and Helmfile
-        uses: helmfile/helmfile-action@v2.4.2
+        uses: helmfile/helmfile-action@v2.4.4
         with:
           helmfile-args: version  # In this step, we only want these tools to be installed
           helm-plugins: >

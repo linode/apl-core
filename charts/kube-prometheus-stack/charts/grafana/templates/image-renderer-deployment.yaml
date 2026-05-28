@@ -27,6 +27,9 @@ spec:
   strategy:
     {{- toYaml . | trim | nindent 4 }}
   {{- end }}
+  {{- with .Values.imageRenderer.progressDeadlineSeconds }}
+  progressDeadlineSeconds: {{ . }}
+  {{- end }}
   template:
     metadata:
       labels:
@@ -56,6 +59,13 @@ spec:
       {{- end }}
       {{- with .Values.imageRenderer.hostAliases }}
       hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.imageRenderer.dnsPolicy }}
+      dnsPolicy: {{ .Values.imageRenderer.dnsPolicy }}
+      {{- end }}
+      {{- with .Values.imageRenderer.dnsConfig }}
+      dnsConfig:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.imageRenderer.priorityClassName }}
@@ -91,6 +101,13 @@ spec:
           env:
             - name: HTTP_PORT
               value: {{ .Values.imageRenderer.service.targetPort | quote }}
+          {{- if .Values.imageRenderer.service.enabled }}
+            - name: AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.imageRenderer.existingSecret | default (printf "%s-image-renderer" (include "grafana.imageRenderer.fullname" .)) }}
+                  key: token
+          {{- end }}
           {{- if .Values.imageRenderer.serviceMonitor.enabled }}
             - name: ENABLE_METRICS
               value: "true"

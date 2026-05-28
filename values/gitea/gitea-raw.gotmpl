@@ -3,22 +3,22 @@
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $obj := $v.obj.provider }}
 {{- $giteaBackupConfig := $v.platformBackups.gitea }}
-{{- $rcloneVersion := "1.70.3" }}
-{{- $rcloneZipSha512 := "472165c3989671f4163242c67cdb9da4c3d3e4548cd1222015f552d6d2fda1cbd616b133ec45e78d8efb088368e18cc314bfeea764e253b6a5d6a693d67a11ef" }}
-{{- $rcloneBinSha512 := "b98a32f87cc1d0ac292829d12de45d1e827fd0a3f480d4b5a5242f1af0ecbc48e6ef6901c98f22289c77571adb4ee79e09af28750f031e8b038f55eeea40f910" }}
-{{- $kubectlTag := "v1.33.3" }}
+{{- $rcloneVersion := "1.74.0" }}
+{{- $rcloneZipSha512 := "deaf15bf8227ebeb5ead6ab033d34f0c21dca0bec272614958e0590ee85a4fd72abe8aa30c3fe8099b8632e18d999e1083cb119a1b1a56f6fff094ab027f8813" }}
+{{- $rcloneBinSha512 := "8e6fa97a3916715952ddc4f41a7962aeb2c18e74580ed157e4830f6cec453d66f327f5fe91599690f25be3c7ac21e1587382caa3a039498871b48f9f8e06f105" }}
+{{- $kubectlTag := "v1.35.4" }}
 {{- $kubectlImage := print "registry.k8s.io/kubectl:" $kubectlTag }}
 {{- if $v.otomi.linodeLkeImageRepository }}
 {{- $kubectlImage = print $v.otomi.linodeLkeImageRepository "/k8s/kubectl:" $kubectlTag }}
 {{- end }}
 
 resources:
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: gitea-admin-secret
   spec:
-    refreshInterval: 1h
+    refreshInterval: 1m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -45,7 +45,7 @@ resources:
 {{- end }}
 # DB / app backup resources
 {{- if eq $obj.type "linode" }}
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: linode-creds
@@ -69,7 +69,7 @@ resources:
           property: provider_linode_secretAccessKey
 {{- end }}
 {{- with $v | get "smtp" nil }}
-- apiVersion: external-secrets.io/v1beta1
+- apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: gitea-smtp-secret

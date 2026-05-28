@@ -1,25 +1,27 @@
-import {
-  ApiException,
-  KubernetesObject,
-  PatchStrategy,
-  setHeaderOptions,
-  V1ResourceRequirements,
-} from '@kubernetes/client-node'
-import { existsSync, mkdirSync, rmSync, statSync } from 'fs'
+import { ApiException, PatchStrategy, setHeaderOptions, V1ResourceRequirements } from '@kubernetes/client-node'
+import { mkdirSync, rmSync, statSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { glob } from 'glob'
 import { appPatches, genericPatch } from 'src/applicationPatches.json'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
-import { appRevisionMatches, k8s, patchArgoCdApp, patchContainerResourcesOfSts } from 'src/common/k8s'
-import { getFilename, loadYaml } from 'src/common/utils'
+import {
+  appRevisionMatches,
+  argoCdHasUnrecoverableErrors,
+  k8s,
+  patchArgoCdApp,
+  patchContainerResourcesOfSts,
+  restartStatefulSet,
+} from 'src/common/k8s'
+import { getFilename, getNames, loadYaml } from 'src/common/utils'
 import { getImageTagFromValues, objectToYaml } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { operatorEnv } from 'src/operator/validators'
 import { Argv, CommandModule } from 'yargs'
 import { ARGOCD_APP_DEFAULT_SYNC_POLICY, ARGOCD_APP_PARAMS } from '../common/constants'
 import { env } from '../common/envalid'
+import { getStoredGitRepoConfig } from '../common/git-config'
 
 export const ARGOCD_APP_DEFAULT_LABEL = 'managed'
 export const ARGOCD_APP_GITOPS_LABEL = 'generic-gitops'
@@ -54,8 +56,8 @@ interface HelmRelease {
 }
 
 export interface ArgocdAppManifest {
-  apiVersion: string
-  kind: string
+  apiVersion: 'argoproj.io/v1alpha1'
+  kind: 'Application'
   metadata: {
     name: string
     namespace: string
@@ -139,7 +141,7 @@ const getArgocdCoreAppManifest = (
   })
 }
 
-export const getArgocdGitopsManifest = (name: string, targetNamespace?: string) => {
+export const getArgocdGitopsManifest = (name: string, repoURL: string, branch: string, targetNamespace?: string) => {
   const syncPolicy = {
     automated: {
       selfHeal: true,
@@ -151,7 +153,6 @@ export const getArgocdGitopsManifest = (name: string, targetNamespace?: string) 
     syncPolicy.automated.prune = true
     syncPolicy.syncOptions.push('CreateNamespace=true')
   }
-  const repoURL = `${env.GIT_PROTOCOL}://${env.GIT_URL}:${env.GIT_PORT}/otomi/values.git`
   const path = targetNamespace
     ? `${operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_PATH}/${targetNamespace}`
     : operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH
@@ -162,7 +163,7 @@ export const getArgocdGitopsManifest = (name: string, targetNamespace?: string) 
       {
         path,
         repoURL,
-        targetRevision: 'HEAD',
+        targetRevision: branch,
         directory: {
           recurse: true,
         },
@@ -252,50 +253,43 @@ function getResources(values: Record<string, any>) {
   return resources
 }
 
-async function patchArgocdResources(release: HelmRelease, values: Record<string, any>) {
-  if (release.name === 'argocd') {
-    const resources = getResources(values)
-    await patchContainerResourcesOfSts(
-      'argocd-application-controller',
-      'argocd',
-      'application-controller',
-      resources,
-      k8s.app(),
-      k8s.core(),
-      d,
-    )
-  }
+async function patchArgocdResources(values: Record<string, any>) {
+  const resources = getResources(values)
+  await patchContainerResourcesOfSts(
+    'argocd-application-controller',
+    'argocd',
+    'application-controller',
+    resources,
+    k8s.app(),
+    k8s.core(),
+    d,
+  )
 }
 
 export const getApplications = async (
   labelSelector: string | undefined = `otomi.io/app=${ARGOCD_APP_DEFAULT_LABEL}`,
-): Promise<string[]> => {
+): Promise<ArgocdAppManifest[]> => {
   try {
     const response = await getCustomApi().listNamespacedCustomObject({
       ...ARGOCD_APP_PARAMS,
       labelSelector,
     })
-    const apps = response.items || []
-    return apps
-      .filter((app: KubernetesObject) => app.metadata?.name && app.metadata.name !== '')
-      .map((app: KubernetesObject) => app.metadata!.name!)
+    return response.items || []
   } catch (error) {
     d.error(`Failed to list applications: ${error}`)
     return []
   }
 }
 
-const createArgocdAppManifest = async (release: HelmRelease, otomiVersion: string): Promise<ArgocdAppManifest> => {
+const readAppValues = async (release: HelmRelease): Promise<Record<string, any>> => {
   const appName = `${release.namespace}-${release.name}`
   const valuesPath = `${valuesDir}/${appName}.yaml`
-  let values = {}
+  return (await loadYaml(valuesPath, { noError: true })) || {}
+}
 
-  if (existsSync(valuesPath)) values = (await loadYaml(valuesPath)) || {}
-  const manifest = getArgocdCoreAppManifest(release, values, otomiVersion)
-
-  await patchArgocdResources(release, values)
-
-  return manifest
+const createArgocdAppManifest = async (release: HelmRelease, otomiVersion: string): Promise<ArgocdAppManifest> => {
+  const values = await readAppValues(release)
+  return getArgocdCoreAppManifest(release, values, otomiVersion)
 }
 
 const getAplOperatorValues = async (): Promise<string> => {
@@ -334,6 +328,29 @@ export const updateOperatorApplication = async (expectedRevision: string): Promi
   }
 }
 
+export const checkArgoCdController = async (
+  applications: ArgocdAppManifest[],
+  releases: HelmRelease[],
+): Promise<void> => {
+  try {
+    const argoCdErrorApp = argoCdHasUnrecoverableErrors(applications)
+    if (argoCdErrorApp) {
+      d.info(`Unrecoverable error condition detected in application ${argoCdErrorApp}. Restarting controller...`)
+      await restartStatefulSet('argocd-application-controller', 'argocd')
+    } else {
+      const argoCdRelease = releases.find((release: HelmRelease) => release.name === 'argocd')
+      if (argoCdRelease) {
+        const argoCdValues = await readAppValues(argoCdRelease)
+        if (argoCdValues) {
+          await patchArgocdResources(argoCdValues)
+        }
+      }
+    }
+  } catch (error) {
+    d.warn(error)
+  }
+}
+
 export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
@@ -358,6 +375,9 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   // Generate JSON object with all helmfile releases defined in helmfile.d
   const releases: [] = JSON.parse(res.stdout.toString())
   const currentApplications = await getApplications()
+  const currentApplicationNames = getNames(currentApplications)
+
+  await checkArgoCdController(currentApplications, releases)
 
   const manifestsToApply: ArgocdAppManifest[] = []
 
@@ -375,7 +395,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
           manifestsToApply.push(manifest)
         } else {
           const appName = getAppName(release)
-          if (currentApplications.includes(appName)) {
+          if (currentApplicationNames.includes(appName)) {
             await removeApplication(appName)
           }
         }
@@ -414,12 +434,13 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
 export const addGitOpsApps = async (
   appNames: Set<string>,
   namespaceDirs: string[],
-  deps = { getArgocdGitopsManifest, applyArgocdApp },
+  deps = { getArgocdGitopsManifest, applyArgocdApp, getStoredGitRepoConfig },
 ): Promise<void> => {
   d.info(`Adding GitOps apps: ${Array.from(appNames).join(', ')}`)
+  const { repoUrl, branch } = await deps.getStoredGitRepoConfig()
   if (appNames.has(ARGOCD_APP_GITOPS_GLOBAL_NAME)) {
     d.debug('Creating GitOps apps for cluster resources')
-    const appManifest = deps.getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME)
+    const appManifest = deps.getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME, repoUrl, branch)
     try {
       await deps.applyArgocdApp(appManifest)
     } catch (e) {
@@ -431,7 +452,7 @@ export const addGitOpsApps = async (
       const appName = `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`
       if (appNames.has(appName)) {
         d.debug(`Creating GitOps app for ${dirName}`)
-        const appManifest = deps.getArgocdGitopsManifest(appName, dirName)
+        const appManifest = deps.getArgocdGitopsManifest(appName, repoUrl, branch, dirName)
         try {
           await deps.applyArgocdApp(appManifest)
         } catch (e) {
@@ -459,17 +480,16 @@ export const removeGitOpsApps = async (appNames: Set<string>) => {
   )
 }
 
-export const calculateGitOpsAppsDiff = async (
+export const calculateGitOpsAppsSyncState = async (
   deps = { getApplications },
-): Promise<{ toAdd: Set<string>; toRemove: Set<string>; namespaceDirs: string[] }> => {
+): Promise<{ toRemove: Set<string>; namespaceDirs: string[]; requiredGitOpsApps: Set<string> }> => {
   const envDir = env.ENV_DIR
   const namespaceListing = await glob(`${envDir}/${operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_PATH}/*`, {
     withFileTypes: true,
   })
   const namespaceDirs = namespaceListing.filter((path) => path.isDirectory()).map((path) => path.name)
-  const existingGitOpsApps = new Set(await deps.getApplications(`otomi.io/app=${ARGOCD_APP_GITOPS_LABEL}`))
+  const existingGitOpsApps = new Set(getNames(await deps.getApplications(`otomi.io/app=${ARGOCD_APP_GITOPS_LABEL}`)))
 
-  // First create sets of Applications to be updated
   const requiredGitOpsApps = new Set(namespaceDirs.map((dirName) => `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`))
   const globalPath = statSync(`${envDir}/${operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH}`, {
     throwIfNoEntry: false,
@@ -477,9 +497,8 @@ export const calculateGitOpsAppsDiff = async (
   if (globalPath && globalPath.isDirectory()) {
     requiredGitOpsApps.add(ARGOCD_APP_GITOPS_GLOBAL_NAME)
   }
-  const toAdd = requiredGitOpsApps.difference(existingGitOpsApps)
   const toRemove = existingGitOpsApps.difference(requiredGitOpsApps)
-  // Always create global resources app, but never remove it
+  // Never remove the global app — warn instead if its directory is gone
   const globalAppExists = toRemove.delete(ARGOCD_APP_GITOPS_GLOBAL_NAME)
   if (globalAppExists) {
     d.warn(
@@ -488,21 +507,18 @@ export const calculateGitOpsAppsDiff = async (
     )
   }
   return {
-    toAdd,
     toRemove,
     namespaceDirs,
+    requiredGitOpsApps,
   }
 }
 
 export const applyGitOpsApps = async (
-  deps = { calculateGitOpsAppsDiff, addGitOpsApps, removeGitOpsApps },
+  deps = { calculateGitOpsAppsSyncState, addGitOpsApps, removeGitOpsApps },
 ): Promise<void> => {
   d.info('Applying GitOps apps')
-  const { toAdd, toRemove, namespaceDirs } = await deps.calculateGitOpsAppsDiff()
-  if (toAdd.size > 0) {
-    // namespaceDirs includes all existing directory names, function checks addGitOpsApps set if they must be created
-    await deps.addGitOpsApps(toAdd, namespaceDirs)
-  }
+  const { toRemove, namespaceDirs, requiredGitOpsApps } = await deps.calculateGitOpsAppsSyncState()
+  await deps.addGitOpsApps(requiredGitOpsApps, namespaceDirs)
   if (toRemove.size > 0) {
     await deps.removeGitOpsApps(toRemove)
   }

@@ -24,6 +24,8 @@ rbac:
   pspEnabled: false
   pspUseAppArmor: false
   namespaced: false
+  # Only has an effect if namespaced: true is set
+  namespaces: []
   extraRoleRules: []
   # - apiGroups: []
   #   resources: []
@@ -76,6 +78,10 @@ podDisruptionBudget: {}
 ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
 deploymentStrategy:
   type: RollingUpdate
+
+## The maximum time in seconds for a Deployment to make progress before it is considered to be failed.
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds
+progressDeadlineSeconds: null
 
 readinessProbe:
   httpGet:
@@ -140,10 +146,10 @@ dnsPolicy: ~
 dnsConfig: {}
   # nameservers:
   #   - 8.8.8.8
-  #   options:
-  #   - name: ndots
-  #     value: "2"
-  #   - name: edns0
+  # options:
+  # - name: ndots
+  #   value: "2"
+  # - name: edns0
 
 hostUsers: ~
 securityContext:
@@ -179,6 +185,14 @@ extraEmptyDirMounts: []
   # - name: provisioning-notifiers
   #   mountPath: /etc/grafana/provisioning/notifiers
 
+# Shadow `/usr/share/grafana/data/plugins-bundled` with an emptyDir so plugins
+# listed under `plugins:` install cleanly into `/var/lib/grafana/plugins` instead
+# of failing on the read-only bundled directory shipped in the Grafana image.
+# Required for plugins moved out of core in Grafana 13 (e.g. `elasticsearch`,
+# `cloudwatch`) when listed in `plugins:`. Side effect: any bundled plugin not
+# explicitly listed in `plugins:` will not be available.
+shadowBundledPlugins: false
+
 
 # Apply extra labels to common labels.
 extraLabels: {}
@@ -190,7 +204,7 @@ downloadDashboardsImage:
   # -- The Docker registry
   registry: docker.io
   repository: curlimages/curl
-  tag: 8.19.0
+  tag: 8.20.0
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -262,10 +276,11 @@ serviceMonitor:
   path: /metrics
   #  namespace: monitoring  (defaults to use the namespace this chart is deployed to)
   labels: {}
-  interval: 30s
+  # Set these to override the Prometheus global scrape interval/timeout.
+  # interval: 30s
+  # scrapeTimeout: 30s
   scheme: http
   tlsConfig: {}
-  scrapeTimeout: 30s
   relabelings: []
   metricRelabelings: []
   basicAuth: {}
@@ -478,7 +493,7 @@ initChownData:
     # -- The Docker registry
     registry: docker.io
     repository: library/busybox
-    tag: "1.37.0"
+    tag: "1.38.0"
     sha: ""
     pullPolicy: IfNotPresent
 
@@ -979,7 +994,7 @@ sidecar:
     # -- The Docker registry
     registry: quay.io
     repository: kiwigrid/k8s-sidecar
-    tag: 2.6.0
+    tag: 2.7.3
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}
@@ -1460,6 +1475,10 @@ revisionHistoryLimit: 10
 ## Add a separate remote image renderer deployment/service
 imageRenderer:
   deploymentStrategy: {}
+  ## The maximum time in seconds for the image renderer Deployment to make progress before it is
+  ## considered to be failed.
+  ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds
+  progressDeadlineSeconds: null
   # Enable the image-renderer deployment & service
   enabled: false
   replicas: 1
@@ -1474,6 +1493,10 @@ imageRenderer:
   serverURL: ""
   # The callback url of grafana instances if it is not in the same namespace with the remote image renderer
   renderingCallbackURL: ""
+  # Token used for authentication between Grafana and the remote image renderer.
+  token: ""
+  # Use an existing secret for the image renderer token. Must contain a key named "token".
+  existingSecret: ""
   image:
     # -- The Docker registry
     registry: docker.io
@@ -1487,6 +1510,14 @@ imageRenderer:
     pullSecrets: []
     # image-renderer ImagePullPolicy
     pullPolicy: Always
+  dnsPolicy: ~
+  dnsConfig: {}
+    # nameservers:
+    #   - 8.8.8.8
+    # options:
+    # - name: ndots
+    #   value: "2"
+    # - name: edns0
   # extra environment variables
   env:
     HTTP_HOST: "0.0.0.0"
@@ -1552,10 +1583,11 @@ imageRenderer:
     path: /metrics
     #  namespace: monitoring  (defaults to use the namespace this chart is deployed to)
     labels: {}
-    interval: 1m
+    # Set these to override the Prometheus global scrape interval/timeout.
+    # interval: 1m
+    # scrapeTimeout: 30s
     scheme: http
     tlsConfig: {}
-    scrapeTimeout: 30s
     relabelings: []
     # See: https://doc.crds.dev/github.com/prometheus-operator/kube-prometheus/monitoring.coreos.com/ServiceMonitor/v1@v0.11.0#spec-targetLabels
     targetLabels: []

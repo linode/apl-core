@@ -227,7 +227,21 @@ rules:
     resources:
       - events
     verbs:
+      - create
       - list
+      - patch
+      - watch
+  - apiGroups:
+      - gateway.networking.k8s.io
+    resources:
+      - httproutes
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
       - watch
   - apiGroups:
       - monitoring.coreos.com
@@ -385,13 +399,19 @@ rules:
       - patch
       - delete
   - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
       - authorization.k8s.io
     resources:
       - subjectaccessreviews
     verbs:
       - create
 
-{{ if .Values.kubeRBACProxy.enabled }}
+{{ if .Values.manager.metrics.secure }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -405,20 +425,5 @@ rules:
       - /metrics
     verbs:
       - get
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  labels:
-    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
-    app.kubernetes.io/component: controller-manager
-  name: {{ template "opentelemetry-operator.fullname" . }}-proxy
-rules:
-  - apiGroups:
-      - authentication.k8s.io
-    resources:
-      - tokenreviews
-    verbs:
-      - create
 {{- end }}
 {{ end }}

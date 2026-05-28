@@ -304,6 +304,14 @@ defaultRules:
   ## Prefix for runbook URLs. Use this to override the first part of the runbookURLs that is common to all rules.
   runbookUrl: "https://runbooks.prometheus-operator.dev/runbooks"
 
+  ## Thresholds for kubelet certificate expiration alerts (in seconds)
+  kubeletServerCertificateExpiration:
+    warning: 604800     # 7 days
+    critical: 86400     # 1 day
+  kubeletClientCertificateExpiration:
+    warning: 604800     # 7 days
+    critical: 86400     # 1 day
+
   node:
     fsSelector: 'fstype!=""'
     # fsSelector: 'fstype=~"ext[234]|btrfs|xfs|zfs"'
@@ -701,6 +709,14 @@ alertmanager:
       ## Filters define the filters that are applied to requests that match this rule.
       filters: []
 
+      ## Session persistence configuration for the route rule.
+      sessionPersistence: {}
+      # sessionName: route
+      # type: Cookie
+      # absoluteTimeout: 12h
+      # cookieConfig:
+      #   lifetimeType: Permanent
+
       ## Additional custom rules that can be added to the route
       additionalRules: []
 
@@ -948,7 +964,7 @@ alertmanager:
     image:
       registry: quay.io
       repository: prometheus/alertmanager
-      tag: v0.32.0
+      tag: v0.32.1
       sha: ""
       pullPolicy: IfNotPresent
 
@@ -1179,7 +1195,7 @@ alertmanager:
     containers: []
     # containers:
     # - name: oauth-proxy
-    #   image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.1
+    #   image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.2
     #   args:
     #   - --upstream=http://127.0.0.1:9093
     #   - --http-address=0.0.0.0:8081
@@ -1566,24 +1582,23 @@ grafana:
 
     # Path to use for scraping metrics. Might be different if server.root_url is set
     # in grafana.ini
-    path: "/metrics"
+    # path: /metrics
 
     #  namespace: monitoring  (defaults to use the namespace this chart is deployed to)
 
     # labels for the ServiceMonitor
-    labels: {}
+    # labels: {}
 
-    # Scrape interval. If not set, the Prometheus default scrape interval is used.
-    #
-    interval: ""
-    scheme: http
-    tlsConfig: {}
-    scrapeTimeout: 30s
+    # Extra scrape settings.
+    # interval: ""
+    # scheme: http
+    # tlsConfig: {}
+    # scrapeTimeout: 30s
 
     ## RelabelConfigs to apply to samples before scraping
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#relabelconfig
     ##
-    relabelings: []
+    # relabelings: []
     # - sourceLabels: [__meta_kubernetes_pod_node_name]
     #   separator: ;
     #   regex: ^(.*)$
@@ -1674,6 +1689,11 @@ kubeApiServer:
     ## defines the labels which are transferred from the associated Kubernetes Service object onto the ingested metrics.
     ## https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#servicemonitor
     targetLabels: []
+
+  ## Override the job label used for the apiserver.
+  ## This allows users who scrape apiserver metrics under a different job name (e.g. k3s-server via PushProx)
+  ## to align the recording rules and alerts with their actual job label.
+  jobNameOverride: ""
 
 ## Component scraping the kubelet and kubelet-hosted cAdvisor
 ##
@@ -2615,6 +2635,9 @@ prometheus-node-exporter:
     labels:
       jobLabel: node-exporter
 
+  image:
+    distroless: true
+
   prometheus:
     monitor:
       enabled: true
@@ -2991,7 +3014,7 @@ prometheusOperator:
       image:
         registry: ghcr.io
         repository: jkroepke/kube-webhook-certgen
-        tag: 1.8.0
+        tag: 1.8.3
         sha: ""
         pullPolicy: IfNotPresent
       resources: {}
@@ -3894,6 +3917,14 @@ prometheus:
       ## Filters define the filters that are applied to requests that match this rule.
       filters: []
 
+      ## Session persistence configuration for the route rule.
+      sessionPersistence: {}
+      # sessionName: route
+      # type: Cookie
+      # absoluteTimeout: 12h
+      # cookieConfig:
+      #   lifetimeType: Permanent
+
       ## Additional custom rules that can be added to the route
       additionalRules: []
 
@@ -4138,7 +4169,7 @@ prometheus:
     image:
       registry: quay.io
       repository: prometheus/prometheus
-      tag: v3.11.1
+      tag: v3.11.3-distroless
       sha: ""
       pullPolicy: IfNotPresent
 
@@ -4629,6 +4660,7 @@ prometheus:
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#thanosspec
     ##
     thanos: {}
+      # image: quay.io/thanos/thanos
       # secretProviderClass:
       #   provider: gcp
       #   parameters:
@@ -4658,7 +4690,7 @@ prometheus:
     containers: []
     # containers:
     # - name: oauth-proxy
-    #   image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.1
+    #   image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.2
     #   args:
     #   - --upstream=http://127.0.0.1:9090
     #   - --http-address=0.0.0.0:8081
@@ -5130,6 +5162,14 @@ thanosRuler:
       ## Filters define the filters that are applied to requests that match this rule.
       filters: []
 
+      ## Session persistence configuration for the route rule.
+      sessionPersistence: {}
+      # sessionName: route
+      # type: Cookie
+      # absoluteTimeout: 12h
+      # cookieConfig:
+      #   lifetimeType: Permanent
+
       ## Additional custom rules that can be added to the route
       additionalRules: []
 
@@ -5516,6 +5556,13 @@ thanosRuler:
     ## Containers allows injecting additional containers. This is meant to allow adding an authentication proxy to an ThanosRuler pod.
     ##
     containers: []
+
+    ## Additional environment variables to set on the ThanosRuler container.
+    ## This is rendered through the Prometheus Operator strategic merge patch.
+    ##
+    extraEnv: []
+    # - name: EXAMPLE
+    #   value: test
 
     # Additional volumes on the output StatefulSet definition.
     volumes: []

@@ -1,11 +1,13 @@
 {{- $receivers := .instance | get "alerts.receivers" (.root | get "alerts.receivers" (list "slack")) }}
+{{- $hasReceivers := not (has "none" $receivers) }}
 {{- $suffix := (true | ternary "" ".monitoring.svc.cluster.local") }}
+{{- if $hasReceivers }}
 global:
 {{- if (has "slack" $receivers ) }}
-  slack_api_url: {{ "{{ .slackUrl | toString }}" }}
+  slack_api_url_file: /etc/alertmanager/secrets/alertmanager-credentials/slackUrl
 {{- end }}
 {{- if (has "opsgenie" $receivers ) }}
-  opsgenie_api_key: {{ "{{ .opsgenieApiKey | toString }}" }}
+  opsgenie_api_key_file: /etc/alertmanager/secrets/alertmanager-credentials/opsgenieApiKey
   opsgenie_api_url: {{ .instance | get "alerts.opsgenie.url" (.root | get "alerts.opsgenie.url" (.root | get "home.opsgenie.url" nil)) }}
 {{- end }}
 {{- if or (has "email" $receivers) }}
@@ -13,10 +15,11 @@ global:
   smtp_hello: {{ .root | get "smtp.hello" .root.cluster.domainSuffix }}
   smtp_from: {{ .root | get "smtp.from" (print "alerts@" .root.cluster.domainSuffix) }}
   smtp_auth_username: {{ .root | get "smtp.auth_username" nil }}
-  smtp_auth_password: '{{ "{{ .smtpAuthPassword | toString }}" }}'
-  smtp_auth_secret: '{{ "{{ .smtpAuthSecret | toString }}" }}'
+  smtp_auth_password_file: /etc/alertmanager/secrets/alertmanager-credentials/smtpAuthPassword
+  smtp_auth_secret_file: /etc/alertmanager/secrets/alertmanager-credentials/smtpAuthSecret
   smtp_auth_identity: {{ .root | get "smtp.auth_identity" nil }}
 {{- end }}
+{{- end }}{{/* if $hasReceivers */}}
 route:
   receiver: "null"
   group_by: [alertname]
@@ -44,7 +47,7 @@ route:
       {{- end }}
 receivers:
   - name: "null"
-{{- if not (has "none" $receivers ) }}
+  {{- if $hasReceivers }}
   - name: default
     {{- if has "slack" $receivers  }}
     slack_configs:
@@ -72,9 +75,6 @@ receivers:
         send_resolved: true
     {{- end }}
   {{- end }}
-{{- end }}
-
-{{- if not (has "none" $receivers ) }}
   - name: critical
     {{- if has "slack" $receivers  }}
     slack_configs:
@@ -101,4 +101,4 @@ receivers:
         send_resolved: true
     {{- end }}
   {{- end }}
-{{- end }}
+  {{- end }}{{/* if $hasReceivers */}}
