@@ -799,7 +799,7 @@ export async function buildAllSecretsFromK8s(teams: string[], deps = { getK8sSec
 }
 
 // Hash-based idempotency: SealedSecret encryption is non-deterministic (random nonce), so comparing
-// ciphertext always looks "changed". We hash plaintext inputs and store as `apl.io/secret-hash` annotation
+// ciphertext always looks "changed". We hash plaintext inputs and store as `otomi.io/secret-hash` annotation
 // to skip re-encryption when nothing actually changed, preventing a new git commit on every cycle.
 export async function reconcileTeamSealedSecrets(
   allValues: Record<string, any>,
@@ -852,7 +852,7 @@ export async function reconcileTeamSealedSecrets(
     let existingHash: string | undefined
     try {
       const raw = await deps.readFile(manifestPath, 'utf8')
-      existingHash = (parseYaml(raw) as any)?.metadata?.annotations?.['apl.io/secret-hash']
+      existingHash = (parseYaml(raw) as any)?.metadata?.annotations?.['otomi.io/secret-hash']
     } catch {
       // File not found — will create
     }
@@ -860,7 +860,7 @@ export async function reconcileTeamSealedSecrets(
     if (existingHash === inputHash) continue
 
     const manifest = await deps.createSealedSecretManifest(pem, mapping, { encryptSecretItem: deps.encryptSecretItem })
-    manifest.metadata.annotations['apl.io/secret-hash'] = inputHash
+    manifest.metadata.annotations['otomi.io/secret-hash'] = inputHash
     toWrite.push(manifest)
   }
 

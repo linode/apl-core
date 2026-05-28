@@ -987,7 +987,7 @@ describe('sealed-secrets', () => {
       )
     })
 
-    it('adds apl.io/secret-hash annotation to written manifests', async () => {
+    it('adds otomi.io/secret-hash annotation to written manifests', async () => {
       const captured: SealedSecretManifest[] = []
       const deps = makeDeps({
         writeSealedSecretManifests: jest.fn().mockImplementation(async (manifests: SealedSecretManifest[]) => {
@@ -998,8 +998,8 @@ describe('sealed-secrets', () => {
       await reconcileTeamSealedSecrets(testValues, '/test', deps)
 
       expect(captured).toHaveLength(1)
-      expect(captured[0].metadata.annotations['apl.io/secret-hash']).toBeDefined()
-      expect(captured[0].metadata.annotations['apl.io/secret-hash']).toHaveLength(16)
+      expect(captured[0].metadata.annotations['otomi.io/secret-hash']).toBeDefined()
+      expect(captured[0].metadata.annotations['otomi.io/secret-hash']).toHaveLength(16)
     })
 
     it('skips re-encryption when hash matches existing file', async () => {
@@ -1007,7 +1007,7 @@ describe('sealed-secrets', () => {
         .update(JSON.stringify({ data: testMapping.data, secretType: '' }))
         .digest('hex')
         .slice(0, 16)
-      const existingYaml = stringifyYaml({ metadata: { annotations: { 'apl.io/secret-hash': inputHash } } })
+      const existingYaml = stringifyYaml({ metadata: { annotations: { 'otomi.io/secret-hash': inputHash } } })
 
       const deps = makeDeps({ readFile: jest.fn().mockResolvedValue(existingYaml) })
 
@@ -1018,7 +1018,7 @@ describe('sealed-secrets', () => {
     })
 
     it('re-encrypts when hash differs from existing file', async () => {
-      const existingYaml = stringifyYaml({ metadata: { annotations: { 'apl.io/secret-hash': 'outdatedhash000' } } })
+      const existingYaml = stringifyYaml({ metadata: { annotations: { 'otomi.io/secret-hash': 'outdatedhash000' } } })
 
       const deps = makeDeps({ readFile: jest.fn().mockResolvedValue(existingYaml) })
 

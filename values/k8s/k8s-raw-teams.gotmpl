@@ -10,7 +10,7 @@ resources:
       labels:
         name: {{ $ns }}
         type: team
-        apl.io/team: "true"
+        otomi.io/team: "true"
         {{- if $v.apps.istio.defaultRevision }}
         istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
         {{- else }}
