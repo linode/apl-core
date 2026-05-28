@@ -500,5 +500,4 @@ changes:
       - 'teamConfig.{team}.services[].domain'
       - 'teamConfig.{team}.services[].forwardPath'
       - 'teamConfig.{team}.services[].hasCert'
-      - 'teamConfig.{team}.services[].namespace'
       - 'teamConfig.{team}.services[].ownHost'

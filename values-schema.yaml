@@ -920,6 +920,9 @@ definitions:
       name:
         $ref: '#/definitions/idName'
         description: Short name. Will be used for generation of knative service name, as well as service URL.
+      namespace:
+        $ref: '#/definitions/idName'
+        description: A kubernetes namespace. Only used by core services, so should be disallowed for non-admins.
       paths:
         items:
           description: |
