@@ -6,7 +6,7 @@ metadata:
 spec:
     cname:
         domain: hello-demo.cname.com
-        tlsSecretName: ""
+        tlsSecretName: "hello-crt"
     headers:
         response:
             set:
