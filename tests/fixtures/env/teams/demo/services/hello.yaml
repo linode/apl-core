@@ -22,3 +22,4 @@ spec:
         weightV1: 70
         weightV2: 30
     useCname: true
+    namespace: should-be-ignored
