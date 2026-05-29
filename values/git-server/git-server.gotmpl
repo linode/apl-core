@@ -1,5 +1,8 @@
 {{- $v := .Values }}
 {{- $g := $v.apps | get "git-server" dict }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+{{- $hostname := print "git." $v.cluster.domainSuffix }}
+
 {{- if $v.otomi.linodeLkeImageRepository }}
 # image:
 #   repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-http-git-server"
@@ -16,3 +19,15 @@ persistence:
 {{- end }}
 resources:
   {{- $g | get "resources" dict | toYaml | nindent 2 }}
+{{- if $g.enableRoute }}
+httproute:
+  enabled: true
+  {{ with $httpRoute.annotations }}
+  annotations:
+    {{ . | toYaml | nindent 6 }}
+  {{- end }}
+  parentRefs:
+    {{- $httpRoute.parentRefs | toYaml | nindent 6 }}
+  hostnames:
+    - {{ $hostname }}
+{{- end }}

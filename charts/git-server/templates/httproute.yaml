@@ -1,0 +1,50 @@
+{{- if .Values.httproute.enabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: git-server
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "git-server.labels" . | nindent 4 }}
+    {{- with .Values.httproute.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.httproute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- with .Values.httproute.parentRefs }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.httproute.hostnames }}
+  hostnames:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+  {{- range .Values.httproute.rules }}
+    {{- with .backendRefs }}
+      {{- toYaml . | nindent 6 }}
+    {{- else }}
+    - backendRefs:
+        - group: ''
+          kind: Service
+          name: git-server
+          port: {{ .Values.service.port }}
+          weight: 1
+    {{- end }}
+    {{- with .filters }}
+      filters:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .matches }}
+      matches:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .timeouts }}
+      timeouts:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+  {{- end }}
+{{- end }}
