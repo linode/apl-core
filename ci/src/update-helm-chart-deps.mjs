@@ -16,7 +16,7 @@ function isVersionApplicable(currentVersion, version, allowedUpgradeType, isExtr
   if (isExtra && semver.eq(version, currentVersion)) {
     return true // For extra dependencies (e.g. CRDs) the version may be identical
   }
-  if (semver.lte(version, currentVersion)) {
+  if (allowedUpgradeType !== 'init' && semver.lte(version, currentVersion)) {
     return false // Ignore versions that are <= current version
   }
   if (allowedUpgradeType === 'prerelease') {
@@ -144,7 +144,7 @@ async function getKubePromStackApps(chartDir) {
 // Charts that need to be processed together in one PR.
 // The first one is considered the main dependency.
 const CHART_GROUPS = {
-  istio: ['base', 'istiod', 'gateway'],
+  istio: ['base', 'istiod', 'gateway', 'cni', 'ztunnel'],
   kserve: ['kserve-resources', 'kserve-crd'],
   'cloud-firewall': ['cloud-firewall-controller', 'cloud-firewall-crd'],
 }
@@ -217,7 +217,7 @@ async function checkDependencyUpdates(dependency, allowedUpgradeType, isExtra) {
   const latestVersion = filteredVersions.sort(semver.rcompare)[0]
 
   if (latestVersion === currentVersion) {
-    if (isExtra) {
+    if (allowedUpgradeType === 'init' || isExtra) {
       console.log(`${dependency.name} will be merged using same version.`)
     } else {
       console.log(`${dependency.name} is already up to date.`)
