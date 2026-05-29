@@ -23,28 +23,32 @@ spec:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   rules:
-  {{- range .Values.httproute.rules }}
-    {{- with .backendRefs }}
-      {{- toYaml . | nindent 6 }}
-    {{- else }}
     - backendRefs:
-        - group: ''
-          kind: Service
-          name: git-server
-          port: {{ .Values.service.port }}
-          weight: 1
-    {{- end }}
-    {{- with .filters }}
+      - group: ''
+        kind: Service
+        name: git-server
+        port: {{ .Values.service.port }}
+        weight: 1
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
+    {{- range .Values.httproute.additionalRules }}
+    - {{- with .backendRefs }}
+      backendRefs:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .filters }}
       filters:
         {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .matches }}
+      {{- end }}
+      {{- with .matches }}
       matches:
         {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .timeouts }}
+      {{- end }}
+      {{- with .timeouts }}
       timeouts:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
     {{- end }}
-  {{- end }}
 {{- end }}
