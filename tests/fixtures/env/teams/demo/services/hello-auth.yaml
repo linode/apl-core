@@ -4,9 +4,7 @@ metadata:
     labels:
         apl.io/teamId: demo
 spec:
-    domain: tlspass.dev.linode-apl.net
     ksvc:
         predeployed: true
-    ownHost: true
     paths: []
     port: 80
