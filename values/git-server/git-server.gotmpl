@@ -1,5 +1,7 @@
 {{- $v := .Values }}
 {{- $g := $v.apps | get "git-server" dict }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+{{- $hostname := print "git." $v.cluster.domainSuffix }}
 {{- with $v.otomi.linodeLkeImageRepository }}
 image:
   repository: "{{ . }}/docker/linode/apl-http-git-server"
