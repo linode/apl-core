@@ -44,12 +44,19 @@ dependencies:
     alias: istio-base
     version: 1.30.0
     repository: https://istio-release.storage.googleapis.com/charts
+  - name: cni
+    alias: istio-cni
+    version: 1.29.2
+    repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
     version: 1.30.0
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
     version: 1.30.0
+    repository: https://istio-release.storage.googleapis.com/charts
+  - name: ztunnel
+    version: 1.29.2
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
