@@ -14,7 +14,7 @@ ENV DISABLE_SYNC='1'
 ENV NODE_PATH='dist'
 
 # Install dependencies before copying the source code to take advantage of Docker layer caching
-COPY --chown=app  package*.json ./
+COPY --chown=app package*.json ./
 RUN npm config set update-notifier false
 RUN npm ci --ignore-scripts
 
