@@ -49,6 +49,20 @@ releases:
       pkg: istio
       app: core
     <<: *default
+  - name: istio-cni
+    installed: {{ $a | get "istio.ambient" }}
+    namespace: istio-system
+    labels:
+      pkg: istio
+      app: core
+    <<: *default
+  - name: ztunnel
+    installed: {{ $a | get "istio.ambient" }}
+    namespace: istio-system
+    labels:
+      pkg: istio
+      app: core
+    <<: *default
   - name: kubernetes-gateways-artifacts
     installed: true
     namespace: istio-system
