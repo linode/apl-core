@@ -2257,7 +2257,7 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
-          enableRoute:
+          createHttpRoute:
             type: boolean
       prometheus:
         additionalProperties: false

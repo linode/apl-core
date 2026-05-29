@@ -15,7 +15,7 @@ persistence:
 {{- end }}
 resources:
   {{- $g | get "resources" dict | toYaml | nindent 2 }}
-{{- if $g.enableRoute }}
+{{- if $g.createHttpRoute }}
 httproute:
   enabled: true
   {{ with $httpRoute.annotations }}
