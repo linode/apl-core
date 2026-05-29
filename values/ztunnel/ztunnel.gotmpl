@@ -1,0 +1,4 @@
+{{- $v := .Values }}
+{{- if $v.apps.istio.defaultRevision }}
+revision: {{ $v.apps.istio.defaultRevision | quote }}
+{{- end }}

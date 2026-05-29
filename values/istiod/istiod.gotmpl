@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $i := $v.apps.istio }}
+{{- $isAmbientMode := $i.ambient }}
 
 autoscaleMin: {{ $i.autoscaling.pilot.minReplicas }}
 autoscaleMax: {{ $i.autoscaling.pilot.maxReplicas }}
@@ -30,12 +31,17 @@ global:
   proxy_init:
     resources: {{ $i.resources.proxy | toYaml | nindent 6 }}
   priorityClassName: otomi-critical
+  variant: distroless
 
 meshConfig:
   defaultConfig:
     holdApplicationUntilProxyStarts: true
     gatewayTopology:
       numTrustedProxies: 1
+    {{- if $isAmbientMode }}
+    proxyMetadata:
+      ISTIO_META_ENABLE_HBONE: "true"
+    {{- end }}
   accessLogFile: /dev/stdout
   tcpKeepalive:
     interval: 5s
@@ -66,10 +72,14 @@ meshConfig:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 
-env:
-  PILOT_ENABLE_ALPHA_GATEWAY_API: "true"
-  PILOT_JWT_PUB_KEY_REFRESH_INTERVAL: "1m"
-  PILOT_DEBOUNCE_MAX: "10s"
+pilot:
+  env:
+    PILOT_ENABLE_ALPHA_GATEWAY_API: "true"
+    {{- if $isAmbientMode }}
+    PILOT_ENABLE_AMBIENT: "true"
+    {{- end }}
+    PILOT_JWT_PUB_KEY_REFRESH_INTERVAL: "1m"
+    PILOT_DEBOUNCE_MAX: "10s"
 
 gatewayClasses:
   istio:
