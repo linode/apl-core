@@ -168,6 +168,21 @@ export const commit = async (
   await commitAndPush(values, branch, initialInstall, gitConfig)
 }
 
+async function getPlatformAdminPasswordFromAplUsers(defaultEmail: string): Promise<string> {
+  const response = await k8s.core().listNamespacedSecret({ namespace: 'apl-users' })
+  for (const item of response.items ?? []) {
+    if (!item.data) continue
+    const decoded: Record<string, string> = {}
+    for (const [key, value] of Object.entries(item.data)) {
+      decoded[key] = Buffer.from(value, 'base64').toString('utf-8')
+    }
+    if (decoded.email === defaultEmail && decoded.initialPassword) {
+      return decoded.initialPassword
+    }
+  }
+  return ''
+}
+
 export async function initialSetupData(): Promise<InitialData> {
   const d = terminal(`cmd:${cmdName}:initialSetupData`)
   const values = (await hfValues()) as Record<string, any>
@@ -176,21 +191,42 @@ export async function initialSetupData(): Promise<InitialData> {
   const secretName = hasExternalIDP ? 'root-credentials' : 'platform-admin-initial-credentials'
 
   if (!hasExternalIDP) {
-    // Read the platform admin's initialPassword from the generated passwords secret
+    const defaultEmail = `platform-admin@${domainSuffix}`
     let platformAdminPassword = ''
     try {
+      // getK8sSecret returns undefined for 404 (no exception); this catch only fires for
+      // unexpected errors such as network failures or permission issues.
       const secretData = await getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, OTOMI_NAMESPACE)
       const allSecrets = secretData?.[DEPLOYMENT_PASSWORDS_SECRET]
       const users = allSecrets?.users || []
-      const defaultEmail = `platform-admin@${domainSuffix}`
       const platformAdmin = users.find((u: any) => u.email === defaultEmail)
       platformAdminPassword = platformAdmin?.initialPassword || ''
     } catch (error) {
-      d.warn(`Failed to read platform admin credentials: ${error instanceof Error ? error.message : error}`)
+      d.warn(
+        `Unexpected error reading ${DEPLOYMENT_PASSWORDS_SECRET}: ${error instanceof Error ? error.message : error}`,
+      )
+    }
+    if (!platformAdminPassword) {
+      // Recovery mode: processValues() was not called (initialize() phase is skipped in recovery),
+      // so otomi-generated-passwords was never created. The platform admin's initialPassword lives
+      // in the per-user K8s Secret in apl-users, decrypted from the SealedSecret restored from
+      // the BYO git repo.
+      try {
+        platformAdminPassword = await getPlatformAdminPasswordFromAplUsers(defaultEmail)
+      } catch (error) {
+        d.warn(
+          `Failed to read platform admin from apl-users namespace: ${error instanceof Error ? error.message : error}`,
+        )
+      }
+    }
+    if (!platformAdminPassword) {
+      throw new Error(
+        `Could not resolve platform admin password for ${defaultEmail} from ${OTOMI_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET} or apl-users namespace`,
+      )
     }
     return {
       domainSuffix,
-      username: `platform-admin@${domainSuffix}`,
+      username: defaultEmail,
       password: platformAdminPassword,
       secretName,
     }
