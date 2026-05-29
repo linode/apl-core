@@ -22,6 +22,7 @@ controller:
     nop: "{{ $tektonRegistry }}/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.12.0@sha256:f89fb760b05fdef6895290e524d992b66ede72546622d5028b0406a9bea36d2f"
     sidecarlogresults: "{{ $tektonRegistry }}/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.12.0@sha256:8b61bdcad62a99e7b15f9dc92690ea39f49be2c5a1c9f428a0aac712f349543d"
     workingdirinit: "{{ $tektonRegistry }}/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.12.0@sha256:11031cbed2b8ddbb5af0947a5e0c997ba7cd3da5f309ddfa76e58f5418868d71"
+    {{- /* Note the image digest for Busybox differs from the upstream chart, as the old version used there is not available on Docker Hub */}}
     shellImage: "{{ $shellRegistry }}/chainguard/busybox@sha256:972a590ee3f5f636860c5a9e40121ce30ad07deff5c91a035469b0e70c3a4dcf"
 
 remoteresolver:
