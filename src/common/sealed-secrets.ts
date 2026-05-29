@@ -34,8 +34,6 @@ export interface SecretMapping {
   namespace: string
   secretName: string
   data: Record<string, string>
-  /** Optional Kubernetes secret type. Defaults to 'kubernetes.io/opaque'. */
-  secretType?: string
 }
 
 export interface SealedSecretManifest {
@@ -326,7 +324,7 @@ export const createSealedSecretManifest = async (
       template: {
         immutable: false,
         metadata: { name: mapping.secretName, namespace: mapping.namespace },
-        type: mapping.secretType ?? 'kubernetes.io/opaque',
+        type: 'kubernetes.io/opaque',
       },
     },
   }
