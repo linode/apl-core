@@ -4,6 +4,5 @@ metadata:
     labels:
         apl.io/teamId: demo
 spec:
-    hasCert: true
     paths:
         - /jeho
