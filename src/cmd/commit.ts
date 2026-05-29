@@ -220,7 +220,7 @@ export async function initialSetupData(): Promise<InitialData> {
       }
     }
     if (!platformAdminPassword) {
-      throw new Error(
+      d.warn(
         `Could not resolve platform admin password for ${defaultEmail} from ${OTOMI_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET} or apl-users namespace`,
       )
     }

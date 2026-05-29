@@ -131,18 +131,20 @@ describe('initialSetupData', () => {
       expect(result.password).toBe('correct-pass')
     })
 
-    it('throws when neither source has a password', async () => {
+    it('returns empty password when neither source has a password', async () => {
       mockGetK8sSecret.mockResolvedValue(undefined)
       mockListNamespacedSecret.mockResolvedValue({ items: [] })
 
-      await expect(initialSetupData()).rejects.toThrow(DEFAULT_EMAIL)
+      const result = await initialSetupData()
+      expect(result.password).toBe('')
     })
 
-    it('throws when platform-admin is found in apl-users but initialPassword is empty', async () => {
+    it('returns empty password when platform-admin is found in apl-users but initialPassword is empty', async () => {
       mockGetK8sSecret.mockResolvedValue(undefined)
       mockListNamespacedSecret.mockResolvedValue({ items: [makeAplUserItem(DEFAULT_EMAIL, '')] })
 
-      await expect(initialSetupData()).rejects.toThrow(DEFAULT_EMAIL)
+      const result = await initialSetupData()
+      expect(result.password).toBe('')
     })
   })
 
