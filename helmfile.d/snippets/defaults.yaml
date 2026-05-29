@@ -1162,4 +1162,4 @@ environments:
           aiEnabled: false
         users: []
         versions:
-          specVersion: 68
+          specVersion: 69
