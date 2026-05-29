@@ -4,7 +4,4 @@ metadata:
     labels:
         apl.io/teamId: admin
 spec:
-    auth: true
-    domain: hello.team-admin.dev.linode-apl.net
-    ownHost: true
     port: 80

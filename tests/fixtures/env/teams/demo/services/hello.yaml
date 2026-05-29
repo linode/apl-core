@@ -4,11 +4,9 @@ metadata:
     labels:
         apl.io/teamId: demo
 spec:
-    auth: true
     cname:
         domain: hello-demo.cname.com
-        tslSecretName: ''
-    domain: hello-demo.dev.linode-apl.net
+        tlsSecretName: "hello-crt"
     headers:
         response:
             set:
@@ -18,7 +16,6 @@ spec:
                   value: same-origin
     ksvc:
         predeployed: true
-    ownHost: true
     port: 80
     trafficControl:
         enabled: true
