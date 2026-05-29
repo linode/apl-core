@@ -867,16 +867,6 @@ definitions:
   service:
     additionalProperties: false
     properties:
-      authz:
-        additionalProperties: false
-        description: Identifies a workload to authorize.
-        properties:
-          forwardOriginalToken:
-            default: false
-            description: If true istio will forward the bearer token instead of removing it from the headers.
-            type: boolean
-          workload:
-            $ref: '#/definitions/labelsAnnotations'
       trafficControl:
         title: Traffic Control
         description: Split traffic between multiple services (blue/green, canary)
@@ -890,21 +880,6 @@ definitions:
           weightV2:
             type: integer
             default: 10
-      certName:
-        description: The name of a TLS secret known to exist in the team namespace.
-        example: www-example-com
-        type: string
-      domain:
-        description: A custom service domain name (max 64 bytes).
-        maxLength: 64
-        $ref: '#/definitions/wordCharacterPattern'
-      forwardPath:
-        default: false
-        description: Whether to forward the path into the service, or 'terminate' it.
-        type: boolean
-      hasCert:
-        description: Select when a certificate exists and should not be generated.
-        type: boolean
       headers:
         properties:
           response:
@@ -935,21 +910,6 @@ definitions:
                   required:
                     - name
                     - value
-      hide:
-        description: Used by otomi console to determine wether to render it on screen or not. Only used by core services.
-        type: boolean
-      host:
-        description: Reference to another core service name. Used by otomi console to show a variation of a core service with a different path (i.e. Loki). Only used by core services.
-        $ref: '#/definitions/wordCharacterPattern'
-      id:
-        description: Unique identifier created by and used in API. Optional.
-        type: string
-      auth:
-        description: Available only for core apps.
-        type: boolean
-      isShared:
-        description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
-        type: boolean
       ksvc:
         type: object
         properties:
@@ -957,26 +917,12 @@ definitions:
             description: Set this flag it the service is managed by knative service
             type: boolean
             default: false
-      logo:
-        description: Used by otomi-console as an override mechanism to display another logo.
-        properties:
-          name:
-            type: string
-        required:
-          - name
       name:
         $ref: '#/definitions/idName'
         description: Short name. Will be used for generation of knative service name, as well as service URL.
       namespace:
         $ref: '#/definitions/idName'
         description: A kubernetes namespace. Only used by core services, so should be disallowed for non-admins.
-      ownHost:
-        default: true
-        description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.
-        type: boolean
-      path:
-        description: Used by otomi-console to render a path for the app. Only used by core services.
-        $ref: '#/definitions/wordCharacterPattern'
       paths:
         items:
           description: |
