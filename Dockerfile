@@ -13,13 +13,13 @@ ENV VERBOSITY='2'
 ENV DISABLE_SYNC='1'
 ENV NODE_PATH='dist'
 
+# Install dependencies before copying the source code to take advantage of Docker layer caching
+COPY --chown=app  package*.json ./
+RUN npm config set update-notifier false
+RUN npm ci --ignore-scripts
+
 COPY --chown=app . .
-
-RUN set -e && \
-    npm config set update-notifier false && \
-    npm ci --ignore-scripts && \
-    npm run compile
-
+RUN npm run compile
 # Run tests with the CI-specific script that has proper Jest flags
 RUN set -e && \
     if [ "$SKIP_TESTS" = 'false' ]; then \
