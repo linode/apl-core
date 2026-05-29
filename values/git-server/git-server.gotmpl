@@ -1,12 +1,11 @@
 {{- $v := .Values }}
 {{- $g := $v.apps | get "git-server" dict }}
-{{- if $v.otomi.linodeLkeImageRepository }}
-# image:
-#   repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-http-git-server"
-# Enable this once ORCS PR is merged: https://bits.linode.com/CNS/orcs/pull/123
-#initImage:
-#  git:
-#    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/alpine/git"
+{{- with $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: "{{ . }}/docker/linode/apl-http-git-server"
+initImage:
+  git:
+    repository: "{{ . }}/docker/alpine/git"
 {{- end }}
 repoName: otomi/values.git
 branchName: {{ $v.otomi.git.branch | quote }}
