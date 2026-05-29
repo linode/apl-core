@@ -1798,6 +1798,9 @@ properties:
               type: object
           image:
             $ref: '#/definitions/imageSimple'
+          ambient:
+            description: Enable Istio ambient mesh
+            type: boolean
           resources:
             properties:
               egressgateway:
