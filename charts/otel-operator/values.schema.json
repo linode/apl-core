@@ -709,6 +709,14 @@
               "examples": [
                 8081
               ]
+            },
+            "pprofPort": {
+              "type": "integer",
+              "default": 0,
+              "title": "The pprofPort Schema",
+              "examples": [
+                6060
+              ]
             }
           },
           "examples": [
