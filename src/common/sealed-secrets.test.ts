@@ -1,18 +1,14 @@
-import { createHash } from 'crypto'
 import { pki } from 'node-forge'
 import stubs from 'src/test-stubs'
-import { stringify as stringifyYaml } from 'yaml'
 import {
   applySealedSecretManifests,
   bootstrapSealedSecrets,
   buildSecretToNamespaceMap,
-  buildTeamNamespaceSealedSecretMappings,
   createSealedSecretManifest,
   createSealedSecretsKeySecret,
   createUserSealedSecretManifests,
   generateSealedSecretsKeyPair,
   getPemFromCertificate,
-  reconcileTeamSealedSecrets,
   restartSealedSecretsController,
   SealedSecretManifest,
   stripAllSecrets,
@@ -429,7 +425,6 @@ describe('sealed-secrets', () => {
         getPemFromCertificate: jest.fn().mockReturnValue('spki-pem'),
         createSealedSecretsKeySecret: jest.fn(),
         buildSecretToNamespaceMap: jest.fn().mockResolvedValue([mockMapping]),
-        buildTeamNamespaceSealedSecretMappings: jest.fn().mockReturnValue([]),
         createSealedSecretManifest: jest.fn().mockResolvedValue(mockManifest),
         writeSealedSecretManifests: jest.fn(),
         createUserSealedSecretManifests: jest.fn().mockResolvedValue([]),
@@ -462,7 +457,6 @@ describe('sealed-secrets', () => {
         getPemFromCertificate: jest.fn().mockReturnValue('existing-spki-pem'),
         createSealedSecretsKeySecret: jest.fn(),
         buildSecretToNamespaceMap: jest.fn().mockResolvedValue([mockMapping]),
-        buildTeamNamespaceSealedSecretMappings: jest.fn().mockReturnValue([]),
         createSealedSecretManifest: jest.fn().mockResolvedValue({}),
         writeSealedSecretManifests: jest.fn(),
         createUserSealedSecretManifests: jest.fn().mockResolvedValue([]),
@@ -495,7 +489,6 @@ describe('sealed-secrets', () => {
         getPemFromCertificate: jest.fn().mockReturnValue('pem'),
         createSealedSecretsKeySecret: jest.fn(),
         buildSecretToNamespaceMap: jest.fn().mockResolvedValue([]),
-        buildTeamNamespaceSealedSecretMappings: jest.fn().mockReturnValue([]),
         createSealedSecretManifest: jest.fn(),
         writeSealedSecretManifests: jest.fn(),
         createUserSealedSecretManifests: jest.fn().mockResolvedValue([]),
@@ -505,51 +498,6 @@ describe('sealed-secrets', () => {
       await bootstrapSealedSecrets(secrets, '/test', undefined, deps)
 
       expect(deps.buildSecretToNamespaceMap).toHaveBeenCalledWith(secrets, ['alpha', 'beta'], undefined)
-    })
-
-    it('should include team namespace manifests in writeSealedSecretManifests when allValues provided', async () => {
-      const secrets = {
-        teamConfig: { alpha: { settings: { password: 'alpha-pass' } } },
-        apps: { keycloak: { idp: { clientSecret: 'kc-secret' } }, loki: { adminPassword: 'loki-pass' } },
-      }
-      const allValues = {
-        teamConfig: { alpha: { settings: { managedMonitoring: { grafana: true } } } },
-        apps: { keycloak: { idp: { clientID: 'apl' } } },
-      }
-      const mockManifest = (name: string, namespace: string) => ({
-        apiVersion: 'bitnami.com/v1alpha1',
-        kind: 'SealedSecret',
-        metadata: { name, namespace, annotations: {} },
-        spec: {
-          encryptedData: {},
-          template: { immutable: false, metadata: { name, namespace }, type: 'kubernetes.io/opaque' },
-        },
-      })
-
-      const deps = {
-        terminal,
-        getExistingSealedSecretsCert: jest.fn().mockResolvedValue(undefined),
-        generateSealedSecretsKeyPair: jest.fn().mockReturnValue({ certificate: 'cert', privateKey: 'key' }),
-        getPemFromCertificate: jest.fn().mockReturnValue('pem'),
-        createSealedSecretsKeySecret: jest.fn(),
-        buildSecretToNamespaceMap: jest.fn().mockResolvedValue([]),
-        buildTeamNamespaceSealedSecretMappings, // real function
-        createSealedSecretManifest: jest
-          .fn()
-          .mockImplementation(async (_pem, mapping) => mockManifest(mapping.secretName, mapping.namespace)),
-        writeSealedSecretManifests: jest.fn(),
-        createUserSealedSecretManifests: jest.fn().mockResolvedValue([]),
-        encryptSecretItem: jest.fn().mockResolvedValue('enc'),
-      }
-
-      await bootstrapSealedSecrets(secrets, '/test', allValues, deps)
-
-      const written: SealedSecretManifest[] = deps.writeSealedSecretManifests.mock.calls[0][0]
-      const namespaces = written.map((m) => m.metadata.namespace)
-      expect(namespaces).toContain('team-alpha')
-      const names = written.map((m) => m.metadata.name)
-      expect(names).toContain('grafana-oidc-secret')
-      expect(names).toContain('team-alpha-grafana-admin')
     })
   })
 
@@ -690,379 +638,6 @@ describe('sealed-secrets', () => {
       })
 
       expect(manifests).toHaveLength(0)
-    })
-  })
-
-  describe('buildTeamNamespaceSealedSecretMappings', () => {
-    const baseSecrets = {
-      apps: {
-        keycloak: { idp: { clientSecret: 'kc-secret' } },
-        loki: { adminPassword: 'loki-pass' },
-      },
-      alerts: { slack: { url: 'https://hooks.slack.com/test' } },
-      smtp: { auth_password: 'smtp-pass', auth_secret: 'smtp-secret' },
-    }
-
-    const baseValues = {
-      apps: { keycloak: { idp: { clientID: 'apl' } } },
-    }
-
-    it('should return empty array when no teams provided', () => {
-      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, baseValues, [])
-      expect(result).toEqual([])
-    })
-
-    it('should return empty array when grafana and alertmanager are both disabled', () => {
-      const allValues = {
-        ...baseValues,
-        teamConfig: { alpha: { settings: { managedMonitoring: { grafana: false, alertmanager: false } } } },
-      }
-      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, allValues, ['alpha'])
-      expect(result).toEqual([])
-    })
-
-    it('should create grafana secrets when grafana is enabled', () => {
-      const allSecrets = { ...baseSecrets, teamConfig: { alpha: { settings: { password: 'team-pass' } } } }
-      const allValues = {
-        ...baseValues,
-        teamConfig: { alpha: { settings: { managedMonitoring: { grafana: true } } } },
-      }
-
-      const result = buildTeamNamespaceSealedSecretMappings(allSecrets, allValues, ['alpha'])
-
-      expect(result).toHaveLength(3)
-      expect(result.find((m) => m.secretName === 'team-alpha-grafana-admin')).toMatchObject({
-        namespace: 'team-alpha',
-        secretName: 'team-alpha-grafana-admin',
-        data: { 'admin-user': 'alpha', 'admin-password': 'team-pass' },
-      })
-      expect(result.find((m) => m.secretName === 'grafana-oidc-secret')).toMatchObject({
-        namespace: 'team-alpha',
-        secretName: 'grafana-oidc-secret',
-        data: { client_id: 'apl', client_secret: 'kc-secret' },
-      })
-      expect(result.find((m) => m.secretName === 'grafana-loki-datasource-secret')).toMatchObject({
-        namespace: 'team-alpha',
-        secretName: 'grafana-loki-datasource-secret',
-        data: { password: 'loki-pass' },
-      })
-    })
-
-    it('should skip grafana-admin when team password is missing', () => {
-      const allSecrets = { ...baseSecrets } // no teamConfig password
-      const allValues = {
-        ...baseValues,
-        teamConfig: { alpha: { settings: { managedMonitoring: { grafana: true } } } },
-      }
-
-      const result = buildTeamNamespaceSealedSecretMappings(allSecrets, allValues, ['alpha'])
-
-      expect(result.find((m) => m.secretName === 'team-alpha-grafana-admin')).toBeUndefined()
-      // grafana-oidc and loki-datasource are still created
-      expect(result.find((m) => m.secretName === 'grafana-oidc-secret')).toBeDefined()
-      expect(result.find((m) => m.secretName === 'grafana-loki-datasource-secret')).toBeDefined()
-    })
-
-    it('should create alertmanager-credentials for slack receiver', () => {
-      const allValues = {
-        ...baseValues,
-        teamConfig: {
-          alpha: {
-            settings: {
-              managedMonitoring: { alertmanager: true },
-              alerts: { receivers: ['slack'] },
-            },
-          },
-        },
-      }
-
-      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, allValues, ['alpha'])
-
-      expect(result).toHaveLength(1)
-      expect(result[0]).toMatchObject({
-        namespace: 'team-alpha',
-        secretName: 'alertmanager-credentials',
-        data: { slackUrl: 'https://hooks.slack.com/test' },
-      })
-    })
-
-    it('should create alertmanager-credentials for email receiver', () => {
-      const allValues = {
-        ...baseValues,
-        teamConfig: {
-          alpha: {
-            settings: {
-              managedMonitoring: { alertmanager: true },
-              alerts: { receivers: ['email'] },
-            },
-          },
-        },
-      }
-
-      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, allValues, ['alpha'])
-
-      expect(result[0].data).toMatchObject({
-        smtpAuthPassword: 'smtp-pass',
-        smtpAuthSecret: 'smtp-secret',
-      })
-    })
-
-    it('should skip alertmanager-credentials when receivers is none', () => {
-      const allValues = {
-        ...baseValues,
-        teamConfig: {
-          alpha: {
-            settings: {
-              managedMonitoring: { alertmanager: true },
-              alerts: { receivers: ['none'] },
-            },
-          },
-        },
-      }
-
-      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, allValues, ['alpha'])
-      expect(result).toHaveLength(0)
-    })
-
-    it('should create otomi-pullsecret-global when globalPullSecret is configured', () => {
-      const allSecrets = { ...baseSecrets, otomi: { globalPullSecret: { password: 'reg-pass' } } }
-      const allValues = {
-        ...baseValues,
-        otomi: { globalPullSecret: { server: 'registry.example.com', username: 'user', email: 'user@example.com' } },
-        teamConfig: { alpha: { settings: {} } },
-      }
-
-      const result = buildTeamNamespaceSealedSecretMappings(allSecrets, allValues, ['alpha'])
-
-      expect(result).toHaveLength(1)
-      expect(result[0]).toMatchObject({
-        namespace: 'team-alpha',
-        secretName: 'otomi-pullsecret-global',
-        secretType: 'kubernetes.io/dockerconfigjson',
-      })
-      const dockerConfig = JSON.parse(result[0].data['.dockerconfigjson'])
-      expect(dockerConfig.auths['registry.example.com']).toMatchObject({
-        username: 'user',
-        password: 'reg-pass',
-        email: 'user@example.com',
-      })
-    })
-
-    it('should skip otomi-pullsecret-global when password is missing', () => {
-      const allValues = {
-        ...baseValues,
-        otomi: { globalPullSecret: { server: 'registry.example.com', username: 'user' } },
-        teamConfig: { alpha: { settings: {} } },
-      }
-
-      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, allValues, ['alpha'])
-      expect(result.find((m) => m.secretName === 'otomi-pullsecret-global')).toBeUndefined()
-    })
-
-    it('should use default docker.io server when not specified', () => {
-      const allSecrets = { ...baseSecrets, otomi: { globalPullSecret: { password: 'reg-pass' } } }
-      const allValues = {
-        ...baseValues,
-        otomi: { globalPullSecret: { username: 'user' } }, // no server
-        teamConfig: { alpha: { settings: {} } },
-      }
-
-      const result = buildTeamNamespaceSealedSecretMappings(allSecrets, allValues, ['alpha'])
-      const dockerConfig = JSON.parse(result[0].data['.dockerconfigjson'])
-      expect(dockerConfig.auths['docker.io']).toBeDefined()
-    })
-
-    it('should create mappings for multiple teams independently', () => {
-      const allSecrets = {
-        ...baseSecrets,
-        teamConfig: {
-          alpha: { settings: { password: 'alpha-pass' } },
-          beta: { settings: { password: 'beta-pass' } },
-        },
-      }
-      const allValues = {
-        ...baseValues,
-        teamConfig: {
-          alpha: { settings: { managedMonitoring: { grafana: true } } },
-          beta: { settings: { managedMonitoring: { grafana: true } } },
-        },
-      }
-
-      const result = buildTeamNamespaceSealedSecretMappings(allSecrets, allValues, ['alpha', 'beta'])
-
-      const alphaAdmin = result.find((m) => m.secretName === 'team-alpha-grafana-admin')
-      const betaAdmin = result.find((m) => m.secretName === 'team-beta-grafana-admin')
-
-      expect(alphaAdmin?.namespace).toBe('team-alpha')
-      expect(alphaAdmin?.data['admin-password']).toBe('alpha-pass')
-      expect(betaAdmin?.namespace).toBe('team-beta')
-      expect(betaAdmin?.data['admin-password']).toBe('beta-pass')
-    })
-
-    it('should use team-level receivers falling back to platform receivers', () => {
-      const allValues = {
-        ...baseValues,
-        alerts: { receivers: ['slack'] }, // platform-level default
-        teamConfig: {
-          alpha: {
-            settings: {
-              managedMonitoring: { alertmanager: true },
-              // No team-level receivers — should use platform default
-            },
-          },
-        },
-      }
-
-      const result = buildTeamNamespaceSealedSecretMappings(baseSecrets, allValues, ['alpha'])
-
-      expect(result[0].data).toHaveProperty('slackUrl')
-    })
-  })
-
-  describe('reconcileTeamSealedSecrets', () => {
-    const FAKE_PEM = 'mock-pem'
-
-    const testValues = {
-      teamConfig: {
-        alpha: {
-          settings: {
-            managedMonitoring: { grafana: true, alertmanager: false },
-            alerts: { receivers: ['none'] },
-          },
-        },
-      },
-      otomi: { globalPullSecret: null },
-      apps: { keycloak: { idp: { clientID: 'grafana-client' } } },
-    }
-
-    const testMapping = {
-      namespace: 'team-alpha',
-      secretName: 'grafana-oidc-secret',
-      data: { client_id: 'grafana-client', client_secret: 'kc-secret' },
-    }
-
-    const mockManifest = (): SealedSecretManifest => ({
-      apiVersion: 'bitnami.com/v1alpha1',
-      kind: 'SealedSecret',
-      metadata: { name: testMapping.secretName, namespace: testMapping.namespace, annotations: {} },
-      spec: {
-        encryptedData: { client_secret: 'enc' },
-        template: {
-          immutable: false,
-          metadata: { name: testMapping.secretName, namespace: testMapping.namespace },
-          type: 'kubernetes.io/opaque',
-        },
-      },
-    })
-
-    function makeDeps(overrides: Record<string, any> = {}) {
-      return {
-        buildAllSecretsFromK8s: jest.fn().mockResolvedValue({
-          teamConfig: { alpha: { settings: { password: 'alpha-pass' } } },
-          apps: { keycloak: { idp: { clientSecret: 'kc-secret' } }, loki: { adminPassword: 'loki-pass' } },
-          alerts: { slack: { url: '' }, opsgenie: { apiKey: '' } },
-          smtp: { auth_password: '', auth_secret: '' },
-          otomi: { globalPullSecret: { password: '' } },
-        }),
-        buildTeamNamespaceSealedSecretMappings: jest.fn().mockReturnValue([testMapping]),
-        createSealedSecretManifest: jest.fn().mockResolvedValue(mockManifest()),
-        writeSealedSecretManifests: jest.fn().mockResolvedValue(undefined),
-        getOrCreateSealedSecretsPem: jest.fn().mockResolvedValue(FAKE_PEM),
-        encryptSecretItem: jest.fn().mockResolvedValue('enc'),
-        readFile: jest.fn().mockRejectedValue(Object.assign(new Error('ENOENT'), { code: 'ENOENT' })),
-        readdir: jest.fn().mockResolvedValue([]),
-        unlink: jest.fn().mockResolvedValue(undefined),
-        ...overrides,
-      }
-    }
-
-    it('calls writeSealedSecretManifests on first run when no existing file', async () => {
-      const deps = makeDeps()
-      await reconcileTeamSealedSecrets(testValues, '/test', deps)
-      expect(deps.writeSealedSecretManifests).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({ metadata: expect.objectContaining({ name: 'grafana-oidc-secret' }) }),
-        ]),
-        '/test',
-      )
-    })
-
-    it('adds otomi.io/secret-hash annotation to written manifests', async () => {
-      const captured: SealedSecretManifest[] = []
-      const deps = makeDeps({
-        writeSealedSecretManifests: jest.fn().mockImplementation(async (manifests: SealedSecretManifest[]) => {
-          captured.push(...manifests)
-        }),
-      })
-
-      await reconcileTeamSealedSecrets(testValues, '/test', deps)
-
-      expect(captured).toHaveLength(1)
-      expect(captured[0].metadata.annotations['otomi.io/secret-hash']).toBeDefined()
-      expect(captured[0].metadata.annotations['otomi.io/secret-hash']).toHaveLength(16)
-    })
-
-    it('skips re-encryption when hash matches existing file', async () => {
-      const inputHash = createHash('sha256')
-        .update(JSON.stringify({ data: testMapping.data, secretType: '' }))
-        .digest('hex')
-        .slice(0, 16)
-      const existingYaml = stringifyYaml({ metadata: { annotations: { 'otomi.io/secret-hash': inputHash } } })
-
-      const deps = makeDeps({ readFile: jest.fn().mockResolvedValue(existingYaml) })
-
-      await reconcileTeamSealedSecrets(testValues, '/test', deps)
-
-      expect(deps.createSealedSecretManifest).not.toHaveBeenCalled()
-      expect(deps.writeSealedSecretManifests).not.toHaveBeenCalled()
-    })
-
-    it('re-encrypts when hash differs from existing file', async () => {
-      const existingYaml = stringifyYaml({ metadata: { annotations: { 'otomi.io/secret-hash': 'outdatedhash000' } } })
-
-      const deps = makeDeps({ readFile: jest.fn().mockResolvedValue(existingYaml) })
-
-      await reconcileTeamSealedSecrets(testValues, '/test', deps)
-
-      expect(deps.createSealedSecretManifest).toHaveBeenCalled()
-      expect(deps.writeSealedSecretManifests).toHaveBeenCalled()
-    })
-
-    it('skips gracefully when PEM is unavailable', async () => {
-      const deps = makeDeps({
-        getOrCreateSealedSecretsPem: jest.fn().mockRejectedValue(new Error('not in cluster')),
-      })
-
-      await expect(reconcileTeamSealedSecrets(testValues, '/test', deps)).resolves.toBeUndefined()
-      expect(deps.writeSealedSecretManifests).not.toHaveBeenCalled()
-    })
-
-    it('calls unlink for stale files and not for expected files', async () => {
-      const expectedFile = `${testMapping.secretName}.yaml`
-      const staleFile = 'stale-secret.yaml'
-
-      const deps = makeDeps({
-        readdir: jest
-          .fn()
-          .mockResolvedValueOnce(['team-alpha']) // team dirs
-          .mockResolvedValueOnce([expectedFile, staleFile]), // files in sealedsecrets/
-      })
-
-      await reconcileTeamSealedSecrets(testValues, '/test', deps)
-
-      const unlinkedPaths: string[] = deps.unlink.mock.calls.map((c: string[]) => c[0])
-      expect(unlinkedPaths.some((p) => p.endsWith(staleFile))).toBe(true)
-      expect(unlinkedPaths.some((p) => p.endsWith(expectedFile))).toBe(false)
-    })
-
-    it('does not call writeSealedSecretManifests when teamConfig is empty', async () => {
-      const deps = makeDeps({
-        buildTeamNamespaceSealedSecretMappings: jest.fn().mockReturnValue([]),
-      })
-
-      await reconcileTeamSealedSecrets({ teamConfig: {} }, '/test', deps)
-
-      expect(deps.writeSealedSecretManifests).not.toHaveBeenCalled()
     })
   })
 })

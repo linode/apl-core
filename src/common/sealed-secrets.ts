@@ -1,9 +1,9 @@
 import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { encryptSecretItem } from '@linode/kubeseal-encrypt'
-import { createHash, X509Certificate } from 'crypto'
+import { X509Certificate } from 'crypto'
 import { existsSync } from 'fs'
-import { mkdir, readdir, readFile, unlink, writeFile } from 'fs/promises'
-import { cloneDeep, get, set, unset } from 'lodash'
+import { mkdir, readdir, readFile, writeFile } from 'fs/promises'
+import { cloneDeep, get, unset } from 'lodash'
 import { pki } from 'node-forge'
 import { join } from 'path'
 import { SEALED_SECRETS_NAMESPACE } from 'src/common/constants'
@@ -15,7 +15,7 @@ import { objectToYaml } from 'src/common/values'
 import { parse as parseYaml } from 'yaml'
 
 const cmdName = 'sealed-secrets'
-export const SEALED_SECRETS_MANIFESTS_SUBDIR = 'env/manifests/namespaces'
+const SEALED_SECRETS_MANIFESTS_SUBDIR = 'env/manifests/namespaces'
 
 /**
  * Strip ALL x-secret fields from values before writing to disk.
@@ -574,96 +574,6 @@ export const createUserSealedSecretManifests = async (
 }
 
 /**
- * Build SealedSecret mappings for team namespaces.
- * Each mapping is encrypted for the specific team namespace, so platform secrets
- * cannot be decrypted in any other namespace.
- */
-export const buildTeamNamespaceSealedSecretMappings = (
-  allSecrets: Record<string, any>,
-  allValues: Record<string, any>,
-  teams: string[],
-): SecretMapping[] => {
-  const mappings: SecretMapping[] = []
-
-  for (const teamId of teams) {
-    const teamNs = `team-${teamId}`
-    const settings = get(allValues, `teamConfig.${teamId}.settings`, {}) as Record<string, any>
-    const grafanaEnabled = get(settings, 'managedMonitoring.grafana', false) as boolean
-    const alertmanagerEnabled = get(settings, 'managedMonitoring.alertmanager', false) as boolean
-    const teamReceivers = get(settings, 'alerts.receivers', get(allValues, 'alerts.receivers', ['slack'])) as string[]
-    const hasReceivers = !teamReceivers.includes('none')
-
-    if (grafanaEnabled) {
-      const teamPassword = get(allSecrets, `teamConfig.${teamId}.settings.password`, '') as string
-      if (teamPassword) {
-        mappings.push({
-          namespace: teamNs,
-          secretName: `${teamNs}-grafana-admin`,
-          data: { 'admin-user': teamId, 'admin-password': teamPassword },
-        })
-      }
-
-      const clientSecret = get(allSecrets, 'apps.keycloak.idp.clientSecret', '') as string
-      const clientId = get(allValues, 'apps.keycloak.idp.clientID', '') as string
-      if (clientSecret) {
-        mappings.push({
-          namespace: teamNs,
-          secretName: 'grafana-oidc-secret',
-          data: { client_id: clientId, client_secret: clientSecret },
-        })
-      }
-
-      const lokiPassword = get(allSecrets, 'apps.loki.adminPassword', '') as string
-      if (lokiPassword) {
-        mappings.push({
-          namespace: teamNs,
-          secretName: 'grafana-loki-datasource-secret',
-          data: { password: lokiPassword },
-        })
-      }
-    }
-
-    if (alertmanagerEnabled && hasReceivers) {
-      const alertData: Record<string, string> = {}
-      if (teamReceivers.includes('slack')) {
-        const slackUrl = get(allSecrets, 'alerts.slack.url', '') as string
-        if (slackUrl) alertData.slackUrl = slackUrl
-      }
-      if (teamReceivers.includes('email')) {
-        const smtpPassword = get(allSecrets, 'smtp.auth_password', '') as string
-        const smtpSecret = get(allSecrets, 'smtp.auth_secret', '') as string
-        if (smtpPassword) alertData.smtpAuthPassword = smtpPassword
-        if (smtpSecret) alertData.smtpAuthSecret = smtpSecret
-      }
-      if (teamReceivers.includes('opsgenie')) {
-        const opsgenieKey = get(allSecrets, 'alerts.opsgenie.apiKey', '') as string
-        if (opsgenieKey) alertData.opsgenieApiKey = opsgenieKey
-      }
-      if (Object.keys(alertData).length > 0) {
-        mappings.push({ namespace: teamNs, secretName: 'alertmanager-credentials', data: alertData })
-      }
-    }
-
-    const pullSecretConfig = get(allValues, 'otomi.globalPullSecret', null) as Record<string, string> | null
-    const pullSecretPassword = get(allSecrets, 'otomi.globalPullSecret.password', '') as string
-    if (pullSecretConfig && pullSecretPassword) {
-      const server = get(pullSecretConfig, 'server', 'docker.io') as string
-      const username = get(pullSecretConfig, 'username', '') as string
-      const email = get(pullSecretConfig, 'email', 'not@val.id') as string
-      const dockerConfig = JSON.stringify({ auths: { [server]: { username, password: pullSecretPassword, email } } })
-      mappings.push({
-        namespace: teamNs,
-        secretName: 'otomi-pullsecret-global',
-        data: { '.dockerconfigjson': dockerConfig },
-        secretType: 'kubernetes.io/dockerconfigjson',
-      })
-    }
-  }
-
-  return mappings
-}
-
-/**
  * Get the PEM public key from the existing sealed-secrets certificate in the cluster,
  * or generate a new RSA key pair, store it in the cluster, and return its PEM.
  */
@@ -699,7 +609,6 @@ export const bootstrapSealedSecrets = async (
     createSealedSecretsKeySecret,
     getExistingSealedSecretsCert,
     buildSecretToNamespaceMap,
-    buildTeamNamespaceSealedSecretMappings,
     createSealedSecretManifest,
     writeSealedSecretManifests,
     createUserSealedSecretManifests,
@@ -718,11 +627,11 @@ export const bootstrapSealedSecrets = async (
     createSealedSecretsKeySecret: deps.createSealedSecretsKeySecret,
   })
 
-  // 2. Build secret-to-namespace mapping (platform secrets in apl-secrets namespace)
+  // 5. Build secret-to-namespace mapping
   const teams = Object.keys(get(secrets, 'teamConfig', {}) as Record<string, unknown>)
   const mappings = await deps.buildSecretToNamespaceMap(secrets, teams, allValues)
 
-  // 3. Create SealedSecret manifests for platform secrets (encrypted for apl-secrets namespace)
+  // 6. Create SealedSecret manifests
   const manifests: SealedSecretManifest[] = []
   for (const mapping of mappings) {
     const manifest = await deps.createSealedSecretManifest(pem, mapping, {
@@ -731,18 +640,7 @@ export const bootstrapSealedSecrets = async (
     manifests.push(manifest)
   }
 
-  // 4. Create team-namespace SealedSecret manifests (encrypted for each team namespace)
-  if (allValues) {
-    const teamMappings = deps.buildTeamNamespaceSealedSecretMappings(secrets, allValues, teams)
-    for (const mapping of teamMappings) {
-      const manifest = await deps.createSealedSecretManifest(pem, mapping, {
-        encryptSecretItem: deps.encryptSecretItem,
-      })
-      manifests.push(manifest)
-    }
-  }
-
-  // 5. Create individual user SealedSecrets in apl-users namespace
+  // 7. Create individual user SealedSecrets in apl-users namespace
   const { users } = secrets
   if (Array.isArray(users) && users.length > 0) {
     const userManifests = await deps.createUserSealedSecretManifests(users, pem, {
@@ -752,144 +650,10 @@ export const bootstrapSealedSecrets = async (
     manifests.push(...userManifests)
   }
 
-  // 6. Write all SealedSecret manifests to disk
+  // 8. Write SealedSecret manifests to disk
   // Note: These manifests are applied later during install, after the sealed-secrets
   // controller is deployed and the SealedSecret CRD is available.
   await deps.writeSealedSecretManifests(manifests, envDir)
 
   d.info(`Bootstrapped ${manifests.length} sealed secret manifests`)
-}
-
-// Individual reads are caught so one missing secret (e.g. loki not yet deployed) does not abort the entire reconcile.
-export async function buildAllSecretsFromK8s(teams: string[], deps = { getK8sSecret }): Promise<Record<string, any>> {
-  const [keycloak, loki, alerts, smtp, otomi] = await Promise.all([
-    deps.getK8sSecret('keycloak-secrets', SEALED_SECRETS_NAMESPACE).catch(() => undefined),
-    deps.getK8sSecret('loki-secrets', SEALED_SECRETS_NAMESPACE).catch(() => undefined),
-    deps.getK8sSecret('alerts-secrets', SEALED_SECRETS_NAMESPACE).catch(() => undefined),
-    deps.getK8sSecret('smtp-secrets', SEALED_SECRETS_NAMESPACE).catch(() => undefined),
-    deps.getK8sSecret('otomi-secrets', SEALED_SECRETS_NAMESPACE).catch(() => undefined),
-  ])
-
-  const teamSecrets: Record<string, any> = {}
-  for (const teamId of teams) {
-    const ts = await deps
-      .getK8sSecret(`team-${teamId}-settings-secrets`, SEALED_SECRETS_NAMESPACE)
-      .catch(() => undefined)
-    set(teamSecrets, `${teamId}.settings.password`, ts?.settings_password ?? '')
-  }
-
-  return {
-    teamConfig: teamSecrets,
-    apps: {
-      keycloak: { idp: { clientSecret: keycloak?.idp_clientSecret ?? '' } },
-      loki: { adminPassword: loki?.adminPassword ?? '' },
-    },
-    alerts: {
-      slack: { url: alerts?.slack_url ?? '' },
-      opsgenie: { apiKey: alerts?.opsgenie_apiKey ?? '' },
-    },
-    smtp: {
-      auth_password: smtp?.auth_password ?? '',
-      auth_secret: smtp?.auth_secret ?? '',
-    },
-    otomi: {
-      globalPullSecret: { password: otomi?.globalPullSecret_password ?? '' },
-    },
-  }
-}
-
-// Hash-based idempotency: SealedSecret encryption is non-deterministic (random nonce), so comparing
-// ciphertext always looks "changed". We hash plaintext inputs and store as `otomi.io/secret-hash` annotation
-// to skip re-encryption when nothing actually changed, preventing a new git commit on every cycle.
-export async function reconcileTeamSealedSecrets(
-  allValues: Record<string, any>,
-  envDir: string,
-  deps = {
-    buildAllSecretsFromK8s,
-    buildTeamNamespaceSealedSecretMappings,
-    createSealedSecretManifest,
-    writeSealedSecretManifests,
-    getOrCreateSealedSecretsPem,
-    encryptSecretItem,
-    readFile,
-    readdir,
-    unlink,
-  },
-): Promise<void> {
-  const teams = Object.keys(get(allValues, 'teamConfig', {}) as Record<string, unknown>).filter((id) => id !== 'admin')
-
-  const d = terminal(`common:${cmdName}:reconcileTeamSealedSecrets`)
-
-  let pem: string
-  try {
-    pem = await deps.getOrCreateSealedSecretsPem()
-  } catch (e) {
-    d.warn(`Skipping team SealedSecret reconcile — sealed-secrets PEM unavailable: ${(e as Error).message}`)
-    return
-  }
-
-  const allSecrets = await deps.buildAllSecretsFromK8s(teams)
-  const mappings = deps.buildTeamNamespaceSealedSecretMappings(allSecrets, allValues, teams)
-
-  const expectedPaths = new Set<string>()
-  const toWrite: SealedSecretManifest[] = []
-
-  for (const mapping of mappings) {
-    const manifestPath = join(
-      envDir,
-      SEALED_SECRETS_MANIFESTS_SUBDIR,
-      mapping.namespace,
-      'sealedsecrets',
-      `${mapping.secretName}.yaml`,
-    )
-    expectedPaths.add(manifestPath)
-
-    const inputHash = createHash('sha256')
-      .update(JSON.stringify({ data: mapping.data, secretType: mapping.secretType ?? '' }))
-      .digest('hex')
-      .slice(0, 16)
-
-    let existingHash: string | undefined
-    try {
-      const raw = await deps.readFile(manifestPath, 'utf8')
-      existingHash = (parseYaml(raw) as any)?.metadata?.annotations?.['otomi.io/secret-hash']
-    } catch {
-      // File not found — will create
-    }
-
-    if (existingHash === inputHash) continue
-
-    const manifest = await deps.createSealedSecretManifest(pem, mapping, { encryptSecretItem: deps.encryptSecretItem })
-    manifest.metadata.annotations['otomi.io/secret-hash'] = inputHash
-    toWrite.push(manifest)
-  }
-
-  if (toWrite.length > 0) {
-    await deps.writeSealedSecretManifests(toWrite, envDir)
-  }
-
-  // Delete stale files: SealedSecrets for disabled features or removed teams
-  const baseDir = join(envDir, SEALED_SECRETS_MANIFESTS_SUBDIR)
-  let teamDirs: string[] = []
-  try {
-    teamDirs = (await deps.readdir(baseDir)).filter((dir) => dir.startsWith('team-'))
-  } catch {
-    // Directory doesn't exist yet — nothing to clean up
-  }
-
-  for (const teamDir of teamDirs) {
-    const ssDir = join(baseDir, teamDir, 'sealedsecrets')
-    let files: string[] = []
-    try {
-      files = await deps.readdir(ssDir)
-    } catch {
-      continue
-    }
-    for (const file of files) {
-      const filePath = join(ssDir, file)
-      if (!expectedPaths.has(filePath)) {
-        await deps.unlink(filePath)
-      }
-    }
-  }
 }

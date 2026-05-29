@@ -57,10 +57,6 @@ jest.mock('../cmd/commit', () => ({
   commit: jest.fn().mockResolvedValue(undefined),
 }))
 
-jest.mock('../common/sealed-secrets', () => ({
-  reconcileTeamSealedSecrets: jest.fn().mockResolvedValue(undefined),
-}))
-
 jest.mock('./k8s', () => ({
   updateApplyState: jest.fn().mockResolvedValue(undefined),
   appRevisionMatches: jest.fn().mockResolvedValue(true),
