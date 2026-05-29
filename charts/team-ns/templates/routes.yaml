@@ -19,6 +19,8 @@
 {{- $useTrafficControl := dig "trafficControl" "enabled" false $s }}
 {{- $serviceName := $s.name }}
 {{- $serviceLabel := $s.name }}
+{{- /* Setting the namespace is only valid for the admin team */}}
+{{- $serviceNamespace := ternary (get $s "namespace") nil (eq $v.teamId "admin") }}
 {{- $defaultHostname := print $serviceName "-" $v.teamId "." $v.domain }}
 {{- $headersRequestSet := dig "headers" "request" "set" nil $s }}
 {{- $headersResponseSet := dig "headers" "response" "set" nil $s }}
@@ -27,7 +29,7 @@
 {{- /* Add specific listener configurations for each cname */}}
 {{- if $useCname }}
   {{- $l := get $extraListeners $ingressClassName }}
-  {{- $l = append $l (dict "name" $serviceName "hostname" $cnameDomain "secretName" (dig "cname" "tlsSecretName" "" $s)) }}
+  {{- $l = append $l (dict "name" $serviceName "namespace" $serviceNamespace "hostname" $cnameDomain "secretName" (dig "cname" "tlsSecretName" "" $s)) }}
   {{- $_ := set $extraListeners $ingressClassName $l }}
 {{- end }}
 ---
@@ -39,6 +41,9 @@ metadata:
     {{- . | toYaml | nindent 4 }}
   {{- end }}
   name: {{ $serviceName }}
+  {{- with $serviceNamespace }}
+  namespace: {{ . }}
+  {{- end }}
   labels:
     otomi.io/app: {{ $serviceLabel }}
 spec:
@@ -114,6 +119,9 @@ apiVersion: networking.istio.io/v1
 kind: ServiceEntry
 metadata:
   name: {{ $serviceName }}-internal
+  {{- with $serviceNamespace }}
+  namespace: {{ . }}
+  {{- end }}
 spec:
   hosts:
     - {{ $defaultHostname }}
@@ -166,7 +174,11 @@ spec:
           - name: {{ $listener.secretName | quote }}
       allowedRoutes:
         namespaces:
+          {{- if $listener.namespace }}
+          from: All
+          {{- else }}
           from: Same
+          {{- end }}
   {{- end }}
 {{- range $httpRedirects }}
 ---
