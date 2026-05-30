@@ -6,7 +6,7 @@ import { mkdir, readdir, readFile, writeFile } from 'fs/promises'
 import { cloneDeep, get, unset } from 'lodash'
 import { pki } from 'node-forge'
 import { join } from 'path'
-import { SEALED_SECRETS_NAMESPACE } from 'src/common/constants'
+import { OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from 'src/common/constants'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { b64enc, ensureNamespaceExists, getK8sSecret, k8s } from 'src/common/k8s'
@@ -594,6 +594,51 @@ export const getOrCreateSealedSecretsPem = async (
   const { certificate, privateKey } = deps.generateSealedSecretsKeyPair()
   await deps.createSealedSecretsKeySecret(certificate, privateKey)
   return deps.getPemFromCertificate(certificate)
+}
+
+// Updates otomi-secrets SealedSecret with a new git_password, preserving all other fields.
+export async function resealGitPassword(newGitPassword: string, envDir: string): Promise<void> {
+  const d = terminal(`common:${cmdName}:resealGitPassword`)
+
+  const cert = await getExistingSealedSecretsCert()
+  if (!cert) {
+    d.warn('No sealed-secrets cert found — skipping git password re-seal')
+    return
+  }
+  const pem = getPemFromCertificate(cert)
+
+  const existingSecret = await getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
+  if (!existingSecret) {
+    d.warn(`${OTOMI_SECRETS} secret not found — skipping git password re-seal`)
+    return
+  }
+
+  const secretData = { ...existingSecret, git_password: newGitPassword }
+  const encryptedData: Record<string, string> = {}
+  for (const [key, value] of Object.entries(secretData)) {
+    encryptedData[key] = await encryptSecretItem(pem, SEALED_SECRETS_NAMESPACE, String(value))
+  }
+
+  const manifest: SealedSecretManifest = {
+    apiVersion: 'bitnami.com/v1alpha1',
+    kind: 'SealedSecret',
+    metadata: {
+      annotations: { 'sealedsecrets.bitnami.com/namespace-wide': 'true' },
+      name: OTOMI_SECRETS,
+      namespace: SEALED_SECRETS_NAMESPACE,
+    },
+    spec: {
+      encryptedData,
+      template: {
+        immutable: false,
+        metadata: { name: OTOMI_SECRETS, namespace: SEALED_SECRETS_NAMESPACE },
+        type: 'kubernetes.io/opaque',
+      },
+    },
+  }
+
+  await writeSealedSecretManifests([manifest], envDir)
+  d.info('Updated otomi-secrets SealedSecret manifest with fresh git password')
 }
 
 export const bootstrapSealedSecrets = async (
