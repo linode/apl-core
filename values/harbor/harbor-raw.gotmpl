@@ -39,7 +39,7 @@ resources:
   metadata:
     name: harbor-admin-password
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -60,7 +60,7 @@ resources:
   metadata:
     name: harbor-registry-credentials
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -91,7 +91,7 @@ resources:
   metadata:
     name: harbor-secret-key
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -112,7 +112,7 @@ resources:
   metadata:
     name: harbor-core-secret
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -133,7 +133,7 @@ resources:
   metadata:
     name: harbor-core-xsrf-secret
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -154,7 +154,7 @@ resources:
   metadata:
     name: harbor-jobservice-secret
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -175,7 +175,7 @@ resources:
   metadata:
     name: harbor-registry-http
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -197,7 +197,7 @@ resources:
   metadata:
     name: linode-creds
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -219,7 +219,7 @@ resources:
   metadata:
     name: registry-storage-credentials
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
