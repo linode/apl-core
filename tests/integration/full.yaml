@@ -108,7 +108,6 @@ teamConfig:
           securityContext:
             runAsUser: 1002
         name: hello
-        ownHost: true
         paths: []
         port: 80
     secrets:
