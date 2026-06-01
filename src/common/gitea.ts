@@ -25,10 +25,11 @@ export async function resetGiteaPasswordValidity() {
   }
 }
 
-export const waitTillGitRepoAvailable = async (repoUrl: string): Promise<void> => {
+export const waitTillGitRepoAvailable = async (repoUrlOrGetter: string | (() => Promise<string>)): Promise<void> => {
   const d = terminal('common:gitea:waitTillGitRepoAvailable')
   await retry(
     async () => {
+      const repoUrl = typeof repoUrlOrGetter === 'function' ? await repoUrlOrGetter() : repoUrlOrGetter
       const $git = $({ cwd: env.ENV_DIR })
       try {
         // the ls-remote exists with zero even if repo is empty
