@@ -8,7 +8,7 @@ resources:
   metadata:
     name: akamai-dns
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -43,7 +43,7 @@ resources:
   metadata:
     name: linode-dns-api-token
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -68,7 +68,7 @@ resources:
   metadata:
     name: do-token
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -94,7 +94,7 @@ resources:
   metadata:
     name: cloudflare-api-key
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -118,7 +118,7 @@ resources:
   metadata:
     name: cloudflare-api-key
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -146,7 +146,7 @@ resources:
   metadata:
     name: aws-dns-credentials
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -177,7 +177,7 @@ resources:
   metadata:
     name: azure-dns
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -206,7 +206,7 @@ resources:
   metadata:
     name: azure-private-dns
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -235,7 +235,7 @@ resources:
   metadata:
     name: google-dns
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
