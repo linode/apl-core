@@ -10,6 +10,7 @@ set -ex
 #   X.Y.Z-local - relative references, useful to avoid the network dependency
 
 declare -a K8S_VERSIONS=(
+  v1.36.1
   v1.35.0
   v1.34.0
   v1.33.0
