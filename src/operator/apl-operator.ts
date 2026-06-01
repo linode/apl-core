@@ -192,7 +192,13 @@ export class AplOperator {
     this.d.info('Starting APL operator')
 
     try {
-      await waitTillGitRepoAvailable(this.authenticatedUrl)
+      // Reload credentials on every retry so that an ESO sync that happens
+      // after construction (e.g. during a git-provider switch) is picked up
+      // automatically without requiring a manual pod restart.
+      await waitTillGitRepoAvailable(async () => {
+        await this.reloadGitCredentials()
+        return this.gitRepo.authenticatedUrl
+      })
       await this.gitRepo.clone()
       this.d.info('APL operator started successfully')
     } catch (error) {

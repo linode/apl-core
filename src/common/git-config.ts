@@ -83,6 +83,23 @@ export async function getGitConfigData(): Promise<GitConfigData | undefined> {
 export async function getStoredGitRepoConfig(): Promise<GitRepoConfig> {
   let [configData, credentials] = await Promise.all([getGitConfigData(), getGitCredentials()])
 
+  // Try the canonical secret populated by SealedSecrets/ESO (same source as getRepo())
+  // This covers the window after a git provider switch where apl-git-credentials is not yet
+  // populated by ESO but otomi-secrets already has the real token.
+  if (!credentials) {
+    try {
+      const otomiSecrets = await getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
+      if (otomiSecrets?.git_password) {
+        credentials = {
+          password: String(otomiSecrets.git_password),
+        }
+        d.info('Read git credentials from otomi-secrets')
+      }
+    } catch {
+      d.debug('Could not read git credentials from otomi-secrets')
+    }
+  }
+
   //TODO This can be removed after BYO Git has been released
   if (!credentials) {
     credentials = await getOldGitCredentials()
