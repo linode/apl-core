@@ -15,7 +15,8 @@
     "sourceMap": true,
     "strict": false,
     "strictNullChecks": true,
-    "target": "esnext"
+    "target": "esnext",
+    "types": ["jest", "node"]
   },
   "exclude": ["node_modules", "dist"],
   "include": ["src", "jest.config.ts"],
