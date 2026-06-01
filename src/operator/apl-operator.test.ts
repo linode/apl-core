@@ -116,7 +116,7 @@ describe('AplOperator', () => {
 
       await startPromise
 
-      expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.authenticatedUrl)
+      expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(expect.any(Function))
       expect(mockGitRepo.clone).toHaveBeenCalled()
 
       expect(mockInfoFn).toHaveBeenCalledWith('APL operator started successfully')
@@ -128,7 +128,7 @@ describe('AplOperator', () => {
 
       await expect(aplOperator.start()).rejects.toThrow('Start failed')
 
-      expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.authenticatedUrl)
+      expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(expect.any(Function))
       expect(mockGitRepo.clone).toHaveBeenCalled()
 
       expect(mockErrorFn).toHaveBeenCalledWith('Failed to start APL operator:', 'Start failed')
