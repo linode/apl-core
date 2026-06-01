@@ -167,7 +167,7 @@ describe('git-config', () => {
       })
     })
 
-    it('should fall back to old credentials when new secret is missing', async () => {
+    it('should use otomi-secrets when apl-git-credentials has no password', async () => {
       mockGetK8sConfigMap.mockResolvedValue({
         data: {
           repoUrl: 'https://github.com/org/repo.git',
@@ -176,7 +176,31 @@ describe('git-config', () => {
         },
       })
       mockGetK8sSecret
-        .mockResolvedValueOnce(undefined) // getGitCredentials
+        .mockResolvedValueOnce(undefined) // getGitCredentials (apl-git-credentials empty)
+        .mockResolvedValueOnce({ git_password: 'github-token' }) // otomi-secrets fallback
+
+      const result = await getStoredGitRepoConfig()
+      expect(result).toEqual({
+        repoUrl: 'https://github.com/org/repo.git',
+        authenticatedUrl: 'https://github-token@github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+        username: undefined,
+        password: 'github-token',
+      })
+    })
+
+    it('should fall back to old credentials when both new secrets are missing', async () => {
+      mockGetK8sConfigMap.mockResolvedValue({
+        data: {
+          repoUrl: 'https://github.com/org/repo.git',
+          branch: 'main',
+          email: 'pipeline@cluster.local',
+        },
+      })
+      mockGetK8sSecret
+        .mockResolvedValueOnce(undefined) // getGitCredentials (apl-git-credentials empty)
+        .mockResolvedValueOnce(undefined) // otomi-secrets empty
         .mockResolvedValueOnce({ GIT_USERNAME: 'otomi-admin', GIT_PASSWORD: 'oldpass' }) // getOldGitCredentials
 
       const result = await getStoredGitRepoConfig()
