@@ -11,7 +11,7 @@ resources:
     metadata:
       name: external-dns
     spec:
-      refreshInterval: 1h
+      refreshInterval: 5m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -81,7 +81,7 @@ resources:
     metadata:
       name: custom-ca
     spec:
-      refreshInterval: 1h
+      refreshInterval: 5m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -221,7 +221,7 @@ resources:
       name: otomi-byo-wildcard-cert
       namespace: istio-system
     spec:
-      refreshInterval: 1h
+      refreshInterval: 5m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore

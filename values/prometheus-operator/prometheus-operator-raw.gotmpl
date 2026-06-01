@@ -15,7 +15,7 @@ resources:
       name: grafana-admin-secret
       namespace: grafana
     spec:
-      refreshInterval: 1h
+      refreshInterval: 5m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -38,7 +38,7 @@ resources:
       name: grafana-oidc-secret
       namespace: grafana
     spec:
-      refreshInterval: 1h
+      refreshInterval: 5m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -61,7 +61,7 @@ resources:
       name: grafana-loki-datasource-secret
       namespace: grafana
     spec:
-      refreshInterval: 1h
+      refreshInterval: 5m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -85,7 +85,7 @@ resources:
         app: prometheus
       name: prometheus-remote-write-basic-auth
     spec:
-      refreshInterval: 1h
+      refreshInterval: 5m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -119,7 +119,7 @@ resources:
       name: alertmanager-credentials
       namespace: monitoring
     spec:
-      refreshInterval: 1h
+      refreshInterval: 5m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
