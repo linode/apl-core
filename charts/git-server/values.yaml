@@ -26,3 +26,10 @@ resources:
 
 service:
   port: 80
+
+httproute:
+  enabled: false
+  labels: {}
+  parentRefs: []
+  hostnames: []
+  additionalRules: []
