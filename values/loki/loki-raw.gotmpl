@@ -11,7 +11,7 @@ resources:
         app: loki
       name: reverse-proxy-auth-config
     spec:
-      refreshInterval: 1h
+      refreshInterval: 5m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -51,7 +51,7 @@ resources:
         app: loki
       name: loki-s3-linode-credentials
     spec:
-      refreshInterval: 1h
+      refreshInterval: 5m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore

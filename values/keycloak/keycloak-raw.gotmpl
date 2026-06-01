@@ -15,7 +15,7 @@ resources:
     name: keycloak-initial-admin
     namespace: keycloak
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
@@ -38,7 +38,7 @@ resources:
   metadata:
     name: linode-creds
   spec:
-    refreshInterval: 1h
+    refreshInterval: 5m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
