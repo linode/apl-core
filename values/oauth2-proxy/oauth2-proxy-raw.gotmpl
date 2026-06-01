@@ -12,7 +12,7 @@ resources:
     metadata:
       name: oauth2-proxy-redis-password
     spec:
-      refreshInterval: 1h
+      refreshInterval: 5m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -33,7 +33,7 @@ resources:
     metadata:
       name: oauth2-proxy-client-access
     spec:
-      refreshInterval: 1h
+      refreshInterval: 5m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
