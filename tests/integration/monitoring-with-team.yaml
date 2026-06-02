@@ -64,7 +64,6 @@ apps:
     tracing:
       enabled: true
       samplingRatio: '100'
-
 teamConfig:
   demo:
     settings:
@@ -75,44 +74,116 @@ teamConfig:
           - ingress
       managedMonitoring:
         grafana: true
-        prometheus: true
         alertmanager: true
       networkPolicy:
-        egressPublic: false
-        ingressPrivate: false
+        egressPublic: true
+        ingressPrivate: true
+    builds:
+      - name: nodejs-hello-world-v0-0-1
+        imageName: nodejs-hello-world
+        tag: v0.0.1
+        trigger: false
+        mode:
+          docker:
+            repoUrl: https://github.com/linode/apl-nodejs-helloworld
+            revision: HEAD
+            path: ./Dockerfile
+          type: docker
+      - name: demo-java-maven-v0-0-1
+        imageName: demo-java-maven
+        tag: v0.0.1
+        trigger: false
+        mode:
+          buildpacks:
+            repoUrl: https://github.com/buildpacks/samples
+            revision: HEAD
+            path: apps/java-maven
+          type: buildpacks
     services:
-      - ingressClassName: platform
+      - id: a106eb22-8c06-41b6-ab15-97aafb0888b5
+        ingressClassName: platform
+        name: nginx-deployment
+        paths: []
+        port: 80
+      - id: 91f6af98-ad8e-4111-b916-cf1b5bdcafb0
+        ingressClassName: platform
         ksvc:
-          predeployed: false
-        name: petclinic
-        networkPolicy:
-          ingressPrivate:
-            mode: DenyAll
+          predeployed: true
+        name: nginx-ksvc
+        paths: []
         port: 80
     workloads:
-      - name: petclinic
-        path: otomi-deployment
-        revision: b65583f614c800cb215b8418febbb42abbad5883
-        selectedChart: custom
-        url: https://github.com/linode/apl-charts
+      - name: nodejs-helloworld
+        url: https://github.com/linode/apl-nodejs-helloworld.git
+        path: chart/hello-world
+        revision: HEAD
+      - name: nginx-deployment
+        path: k8s-deployment
+        revision: main
+        selectedChart: k8s-deployment
+        url: https://github.com/linode/apl-charts.git
+      - name: nginx-ksvc
+        path: knative-service
+        revision: main
+        selectedChart: knative-service
+        url: https://github.com/linode/apl-charts.git
   admin:
     services: []
-    workloads: []
-
+    workloads:
+      - name: nodejs-helloworld
+        url: https://github.com/linode/apl-nodejs-helloworld.git
+        path: chart/hello-world
+        revision: HEAD
 files:
-  env/teams/demo/workloadValues/petclinic.yaml: |
-    values: |
-      image:
-          repository: springcommunity/spring-framework-petclinic
-          tag: latest
-      autoscaling:
-          enabled: true
-          minReplicas: 2
-          maxReplicas: 3
-      instrumentation:
-          enabled: true
-          language: java
-      containerPorts:
-        - name: http
-          containerPort: 8080
-          protocol: TCP
+  env/teams/demo/workloadValues/nodejs-helloworld.yaml: |
+    image:
+      repository: linode/apl-nodejs-helloworld
+      tag: v1.5.1
+  env/teams/demo/workloadValues/nodejs-helloworld.managed.yaml: |
+    {}
+  env/teams/demo/workloadValues/nginx-deployment.yaml: |
+    fullnameOverride: nginx-deployment
+    image:
+      repository: nginxinc/nginx-unprivileged
+      tag: stable
+    containerPorts:
+      - containerPort: 8080
+        protocol: TCP
+        name: http
+    resources:
+      requests:
+        cpu: 200m
+        memory: 32Mi
+    autoscaling:
+      minReplicas: 2
+      maxReplicas: 10
+  env/teams/demo/workloadValues/nginx-deployment.managed.yaml: |
+    {}
+  env/teams/demo/workloadValues/nginx-ksvc.yaml: |
+    fullnameOverride: nginx-ksvc
+    image:
+      repository: nginxinc/nginx-unprivileged
+      tag: stable
+    containerPorts:
+      - containerPort: 8080
+        name: http1
+        protocol: TCP
+    readinessProbe:
+        httpGet:
+            path: /
+            port: http1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 32Mi
+    autoscaling:
+      minReplicas: 0
+      maxReplicas: 10
+  env/teams/demo/workloadValues/nginx-ksvc.managed.yaml: |
+    {}
+  env/teams/admin/workloadValues/nodejs-helloworld.yaml: |
+    image:
+      repository: linode/apl-nodejs-helloworld
+      tag: v1.5.1
+  env/teams/admin/workloadValues/nodejs-helloworld.managed.yaml: |
+    {}
