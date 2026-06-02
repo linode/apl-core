@@ -108,6 +108,8 @@ webhooks:
   # -- Enable the rollout-operator webhooks. See https://github.com/grafana/rollout-operator/#webhooks.
   # Note that the webhooks require custom resource definitions. If upgrading, manually apply the files in the `crds` directory.
   enabled: true
+  # -- Timeout in seconds for the prepare-downscale mutating webhook. Must be between 1 and 30.
+  timeoutSeconds: 10
   # -- Validating and mutating webhook failure policy. `Ignore` or `Fail`.
   failurePolicy: "Fail"
   # -- Secret resource name for the TLS certificate to be used with the webhooks
@@ -125,13 +127,36 @@ webhooks:
   #         values:
   #           - production
 
+# -- Namespace selector applied to all webhooks. Defaults to restricting to the release namespace.
+# See https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-namespaceselector
 namespaceSelector:
-  # -- Namespace selector to filter which namespaces the webhooks apply to.
-  # See https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-namespaceselector
-  # Example:
+  # Example 1 - matchExpressions only: merged with the default release namespace matchLabels.
+  #   values.yaml:
   #     matchExpressions:
   #       - key: team
   #         operator: NotIn
-  #         values:
-  #           - team-a
+  #         values: [team-a]
+  #   renders:
+  #     namespaceSelector:
+  #       matchLabels:
+  #         kubernetes.io/metadata.name: <release-namespace>
+  #       matchExpressions:
+  #         - key: team
+  #           operator: NotIn
+  #           values: [team-a]
+  #
+  # Example 2 - matchLabels set: full selector is user-controlled (matchExpressions also supported).
+  #   values.yaml:
+  #     matchLabels:
+  #       kubernetes.io/metadata.name: logging
+  #   renders:
+  #     namespaceSelector:
+  #       matchLabels:
+  #         kubernetes.io/metadata.name: logging
+  #
+  # Example 3 - set to null: omits namespaceSelector entirely (e.g. when objectSelector alone is sufficient).
+  #   values.yaml:
+  #     namespaceSelector: null
+  #   renders:
+  #     (nothing)
   matchExpressions: []
