@@ -1,7 +1,7 @@
 import semver from 'semver'
 
 const VERSION_RE = /^\d+\.\d+\.\d+(-rc\.\d+)?$/
-const MINOR_VERSION_RE = /^\d+\.\d+$/
+const MINOR_VERSION_RE = /^v\d+\.\d+$/
 
 export function validateVersion(version: string): boolean {
   return VERSION_RE.test(version)
@@ -9,6 +9,10 @@ export function validateVersion(version: string): boolean {
 
 export function validateMinorVersion(minorVersion: string): boolean {
   return MINOR_VERSION_RE.test(minorVersion)
+}
+
+export function stripV(minorVersion: string): string {
+  return minorVersion.replace(/^v/, '')
 }
 
 export function cycleStartVersion(minorVersion: string): string {

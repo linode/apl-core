@@ -1,12 +1,12 @@
 import { execSync } from 'child_process'
 import path from 'path'
-import { cycleStartVersion } from './version'
+import { cycleStartVersion, stripV } from './version'
 
 const minorVersion = process.env.MINOR_VERSION!
 const repoRoot = process.env.REPO_ROOT ?? path.resolve(__dirname, '../../..')
 const dryRun = process.env.DRY_RUN === 'true'
 
-const version = cycleStartVersion(minorVersion)
+const version = cycleStartVersion(stripV(minorVersion))
 
 if (dryRun) {
   console.log(`[dry-run] Would run: npm version ${version} --no-git-tag-version`)
