@@ -76,6 +76,7 @@ on:
         options:
           - minimal
           - minimal-with-team
+          - monitoring-with-team
           - full
           - no-apl
       domain_zone:
