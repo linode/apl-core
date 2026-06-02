@@ -1,5 +1,7 @@
 import {
   validateVersion,
+  validateMinorVersion,
+  cycleStartVersion,
   releaseBranchName,
   incrementRc,
   promoteToStable,
@@ -28,6 +30,31 @@ describe('validateVersion', () => {
     ['1.4.0-rc.1.2', false],
   ])('validateVersion(%s) → %s', (version, expected) => {
     expect(validateVersion(version)).toBe(expected)
+  })
+})
+
+describe('validateMinorVersion', () => {
+  it.each([
+    ['1.4', true],
+    ['6.0', true],
+    ['10.12', true],
+    ['1.4.0', false],
+    ['1.4.0-rc.1', false],
+    ['1', false],
+    ['v1.4', false],
+    ['', false],
+  ])('validateMinorVersion(%s) → %s', (v, expected) => {
+    expect(validateMinorVersion(v)).toBe(expected)
+  })
+})
+
+describe('cycleStartVersion', () => {
+  it.each([
+    ['1.4', '1.4.0-rc.1'],
+    ['6.0', '6.0.0-rc.1'],
+    ['10.12', '10.12.0-rc.1'],
+  ])('cycleStartVersion(%s) → %s', (minorVersion, expected) => {
+    expect(cycleStartVersion(minorVersion)).toBe(expected)
   })
 })
 

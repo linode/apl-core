@@ -1,9 +1,18 @@
 import semver from 'semver'
 
 const VERSION_RE = /^\d+\.\d+\.\d+(-rc\.\d+)?$/
+const MINOR_VERSION_RE = /^\d+\.\d+$/
 
 export function validateVersion(version: string): boolean {
   return VERSION_RE.test(version)
+}
+
+export function validateMinorVersion(minorVersion: string): boolean {
+  return MINOR_VERSION_RE.test(minorVersion)
+}
+
+export function cycleStartVersion(minorVersion: string): string {
+  return `${minorVersion}.0-rc.1`
 }
 
 export function releaseBranchName(version: string): string {

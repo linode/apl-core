@@ -2,7 +2,7 @@ import { execSync } from 'child_process'
 import { writeFileSync, unlinkSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { releaseBranchName } from './version'
+import { releaseBranchName, cycleStartVersion } from './version'
 
 export function buildPrBody(version: string): string {
   const isRc = version.includes('-rc.')
@@ -22,11 +22,12 @@ export function buildPrBody(version: string): string {
 }
 
 async function main() {
-  const version = process.env.VERSION!
+  const minorVersion = process.env.MINOR_VERSION!
   const baseBranch = process.env.BASE_BRANCH!
   const dryRun = process.env.DRY_RUN === 'true'
+  const version = cycleStartVersion(minorVersion)
   const branch = releaseBranchName(version)
-  const title = `release: v${version}`
+  const title = `release: v${minorVersion}`
   const body = buildPrBody(version)
 
   if (dryRun) {

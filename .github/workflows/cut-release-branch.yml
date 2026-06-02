@@ -3,8 +3,8 @@ name: Cut Release Branch
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to release (e.g. 1.4.0 or 1.4.0-rc.1)'
+      minor_version:
+        description: 'Major.minor version to release (e.g. 1.4)'
         required: true
         type: string
       base_branch:
@@ -53,13 +53,13 @@ jobs:
         working-directory: ci
         run: npm run release:validate-version
         env:
-          VERSION: ${{ inputs.version }}
+          MINOR_VERSION: ${{ inputs.minor_version }}
 
       - name: Check release branch does not already exist
         working-directory: ci
         run: npm run release:check-branch-not-exists
         env:
-          VERSION: ${{ inputs.version }}
+          MINOR_VERSION: ${{ inputs.minor_version }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -79,10 +79,7 @@ jobs:
 
       - name: Create release branch
         run: |
-          VERSION="${{ inputs.version }}"
-          MAJOR=$(echo "$VERSION" | cut -d. -f1)
-          MINOR=$(echo "$VERSION" | cut -d. -f2)
-          BRANCH="release/v${MAJOR}.${MINOR}"
+          BRANCH="release/v${{ inputs.minor_version }}"
           echo "RELEASE_BRANCH=$BRANCH" >> "$GITHUB_ENV"
           git checkout -b "$BRANCH"
 
@@ -90,7 +87,7 @@ jobs:
         working-directory: ci
         run: npm run release:bump-version
         env:
-          VERSION: ${{ inputs.version }}
+          MINOR_VERSION: ${{ inputs.minor_version }}
           REPO_ROOT: ${{ github.workspace }}
           DRY_RUN: ${{ inputs.dry_run }}
 
@@ -98,14 +95,14 @@ jobs:
         if: ${{ inputs.dry_run == 'false' }}
         run: |
           git add package.json package-lock.json
-          git commit -m "chore(release): bump to v${{ inputs.version }}"
+          git commit -m "chore(release): bump to v${{ inputs.minor_version }}.0-rc.1"
           git push -u origin "$RELEASE_BRANCH"
 
       - name: Open release PR
         working-directory: ci
         run: npm run release:open-release-pr
         env:
-          VERSION: ${{ inputs.version }}
+          MINOR_VERSION: ${{ inputs.minor_version }}
           BASE_BRANCH: ${{ inputs.base_branch }}
           DRY_RUN: ${{ inputs.dry_run }}
 
@@ -113,7 +110,7 @@ jobs:
         working-directory: ci
         run: npm run release:open-main-bump-pr
         env:
-          VERSION: ${{ inputs.version }}
+          MINOR_VERSION: ${{ inputs.minor_version }}
           BASE_BRANCH: ${{ inputs.base_branch }}
           REPO_ROOT: ${{ github.workspace }}
           DRY_RUN: ${{ inputs.dry_run }}

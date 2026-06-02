@@ -3,18 +3,18 @@ import { writeFileSync, unlinkSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import path from 'path'
-import { nextMainVersion } from './version'
+import { nextMainVersion, cycleStartVersion } from './version'
 
 async function main() {
-  const version = process.env.VERSION!
+  const minorVersion = process.env.MINOR_VERSION!
   const baseBranch = process.env.BASE_BRANCH!
   const dryRun = process.env.DRY_RUN === 'true'
   const repoRoot = process.env.REPO_ROOT ?? path.resolve(__dirname, '../../..')
 
-  const nextVersion = nextMainVersion(version)
+  const nextVersion = nextMainVersion(cycleStartVersion(minorVersion))
   const bumpBranch = `chore/bump-main-v${nextVersion}`
-  const title = `chore: bump main to v${nextVersion} after cutting release/v${version.split('.').slice(0, 2).join('.')}`
-  const body = `Automated version bump after cutting the \`release/v${version.split('.').slice(0, 2).join('.')}\` release cycle branch.\n\n- Bumps \`package.json\` to \`${nextVersion}\``
+  const title = `chore: bump main to v${nextVersion} after cutting release/v${minorVersion}`
+  const body = `Automated version bump after cutting the \`release/v${minorVersion}\` release cycle branch.\n\n- Bumps \`package.json\` to \`${nextVersion}\``
 
   if (dryRun) {
     console.log('[dry-run] Would create main bump PR:')

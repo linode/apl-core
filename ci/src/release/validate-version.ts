@@ -1,10 +1,10 @@
-import { validateVersion } from './version'
+import { validateMinorVersion } from './version'
 
-const version = process.env.VERSION ?? ''
+const minorVersion = process.env.MINOR_VERSION ?? ''
 
-if (!validateVersion(version)) {
-  console.error(`Invalid version: "${version}". Expected format: 1.4.0 or 1.4.0-rc.1`)
+if (!validateMinorVersion(minorVersion)) {
+  console.error(`Invalid minor version: "${minorVersion}". Expected format: 1.4`)
   process.exit(1)
 }
 
-console.log(`Version "${version}" is valid`)
+console.log(`Minor version "${minorVersion}" is valid`)
