@@ -8,6 +8,8 @@ import {
   versionMatchesBranch,
   previousStableTag,
   isHighestStableTag,
+  previousRcTag,
+  previousStableTagBefore,
 } from './version'
 
 describe('validateVersion', () => {
@@ -106,6 +108,49 @@ describe('previousStableTag', () => {
   it('returns null when fewer than two stable tags exist', () => {
     expect(previousStableTag(['v1.4.0', 'v1.4.0-rc.1'])).toBeNull()
     expect(previousStableTag([])).toBeNull()
+  })
+})
+
+describe('previousRcTag', () => {
+  it('returns the previous RC tag in the same major.minor series', () => {
+    const tags = ['v1.4.0-rc.2', 'v1.4.0-rc.1', 'v1.4.0-rc.0', 'v1.3.5']
+    expect(previousRcTag('v1.4.0-rc.2', tags)).toBe('v1.4.0-rc.1')
+  })
+
+  it('excludes the current tag from consideration', () => {
+    const tags = ['v1.4.0-rc.1', 'v1.4.0-rc.0']
+    expect(previousRcTag('v1.4.0-rc.1', tags)).toBe('v1.4.0-rc.0')
+  })
+
+  it('ignores RC tags from other major.minor series', () => {
+    const tags = ['v1.4.0-rc.1', 'v1.3.0-rc.2']
+    expect(previousRcTag('v1.4.0-rc.1', tags)).toBeNull()
+  })
+
+  it('returns null when no previous RC tag exists', () => {
+    expect(previousRcTag('v1.4.0-rc.0', ['v1.4.0-rc.0'])).toBeNull()
+  })
+})
+
+describe('previousStableTagBefore', () => {
+  it('returns the highest stable tag strictly before the given tag', () => {
+    const tags = ['v1.4.0', 'v1.3.5', 'v1.3.4']
+    expect(previousStableTagBefore('v1.4.0', tags)).toBe('v1.3.5')
+  })
+
+  it('handles backport patches correctly', () => {
+    // releasing v1.3.6 when v1.4.0 already exists — should return v1.3.5, not v1.4.0
+    const tags = ['v1.4.0', 'v1.3.6', 'v1.3.5']
+    expect(previousStableTagBefore('v1.3.6', tags)).toBe('v1.3.5')
+  })
+
+  it('ignores RC tags', () => {
+    const tags = ['v1.4.0', 'v1.3.5', 'v1.4.0-rc.2']
+    expect(previousStableTagBefore('v1.4.0', tags)).toBe('v1.3.5')
+  })
+
+  it('returns null when no previous stable tag exists', () => {
+    expect(previousStableTagBefore('v1.4.0', ['v1.4.0'])).toBeNull()
   })
 })
 

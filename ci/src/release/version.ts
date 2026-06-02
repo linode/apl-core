@@ -42,6 +42,29 @@ export function previousStableTag(tags: string[]): string | null {
   return stable.length >= 2 ? stable[1] : null
 }
 
+export function previousStableTagBefore(newTag: string, tags: string[]): string | null {
+  const stable = tags
+    .filter((t) => !t.includes('-rc.'))
+    .filter((t) => semver.lt(t, newTag))
+    .sort((a, b) => semver.rcompare(a, b))
+  return stable.length > 0 ? stable[0] : null
+}
+
+export function previousRcTag(currentTag: string, tags: string[]): string | null {
+  const [majorMinorPatch] = currentTag.replace('v', '').split('-rc.')
+  const [major, minor] = majorMinorPatch.split('.')
+  const sameSeries = tags
+    .filter((t) => t !== currentTag)
+    .filter((t) => t.includes('-rc.'))
+    .filter((t) => {
+      const bare = t.replace('v', '').split('-rc.')[0]
+      const [m, n] = bare.split('.')
+      return m === major && n === minor
+    })
+    .sort((a, b) => semver.rcompare(a, b))
+  return sameSeries.length > 0 ? sameSeries[0] : null
+}
+
 export function isHighestStableTag(newTag: string, existingTags: string[]): boolean {
   const stableTags = existingTags.filter((t) => !t.includes('-rc.'))
   return stableTags.every((t) => semver.gt(newTag, t))
