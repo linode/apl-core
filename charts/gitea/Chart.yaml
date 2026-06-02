@@ -16,7 +16,7 @@ annotations:
     - name: support
       url: https://gitea.com/gitea/helm-gitea/issues
 apiVersion: v2
-appVersion: 1.26.1
+appVersion: 1.26.2
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
