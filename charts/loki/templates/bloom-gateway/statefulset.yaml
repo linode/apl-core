@@ -1,0 +1,61 @@
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if (and $isDistributed (gt (int .Values.bloomGateway.replicas) 0)) -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "loki.bloomGatewayFullname" . }}
+  namespace: {{ include "loki.namespace" . }}
+  labels:
+    {{- include "loki.bloomGatewayLabels" . | nindent 4 }}
+  {{- with .Values.loki.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.bloomGateway.replicas }}
+  podManagementPolicy: Parallel
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+  serviceName: {{ include "loki.bloomGatewayFullname" . }}-headless
+  revisionHistoryLimit: {{ .Values.loki.revisionHistoryLimit }}
+  {{- if and (.Values.bloomGateway.persistence.enableStatefulSetAutoDeletePVC)  }}
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: {{ .Values.bloomGateway.persistence.whenDeleted }}
+    whenScaled: {{ .Values.bloomGateway.persistence.whenScaled }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "loki.bloomGatewaySelectorLabels" . | nindent 6 }}
+  template:
+    {{- include "loki.podTemplate" (dict "target" "bloom-gateway" "component" .Values.bloomGateway "ctx" .) | nindent 4 }}
+  {{- if .Values.bloomGateway.persistence.enabled }}
+  volumeClaimTemplates:
+  {{- range .Values.bloomGateway.persistence.claims }}
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: {{ .name }}
+        {{- with .annotations }}
+        annotations:
+          {{- . | toYaml | nindent 10 }}
+        {{- end }}
+        {{- with .labels }}
+        labels:
+          {{- . | toYaml | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{- toYaml .accessModes | nindent 10 }}
+        {{- with .storageClass }}
+        storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+        {{- end }}
+        {{- with .volumeAttributesClassName }}
+        volumeAttributesClassName: {{ . }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .size | quote }}
+  {{- end }}
+  {{- end }}
+{{- end -}}

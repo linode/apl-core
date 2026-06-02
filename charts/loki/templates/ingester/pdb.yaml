@@ -1,0 +1,9 @@
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if and $isDistributed (or (not .Values.ingester.zoneAwareReplication.enabled) .Values.ingester.zoneAwareReplication.migration.enabled) }}
+{{- $extraMatchExpressions := list (dict
+  "key" "rollout-group"
+  "operator" "NotIn"
+  "values" (list (printf "%singester" (include "loki.prefixRolloutGroup" .)))
+) -}}
+{{- include "loki.pdb" (dict "target" "ingester" "component" .Values.ingester "ctx" . "extraMatchExpressions" $extraMatchExpressions) }}
+{{- end }}
