@@ -22,8 +22,6 @@ on:
           - 'false'
 
 env:
-  CACHE_REGISTRY: ghcr.io
-  CACHE_REPO: linode/apl-core
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
 
@@ -65,13 +63,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ env.CACHE_REGISTRY }}
-          username: ${{ env.BOT_USERNAME }}
-          password: ${{ secrets.BOT_TOKEN }}
 
       - name: Run tests in Docker (test gate)
         uses: docker/build-push-action@v7

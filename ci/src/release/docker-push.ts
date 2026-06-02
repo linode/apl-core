@@ -5,7 +5,6 @@ async function main() {
   const tag = process.env.RELEASE_TAG!
   const cacheImage = process.env.CACHE_IMAGE!
   const dockerRepo = process.env.DOCKER_REPO ?? 'linode/apl-core'
-  const cacheRegistry = process.env.CACHE_REGISTRY ?? 'ghcr.io/linode/apl-core'
   const dryRun = process.env.DRY_RUN === 'true'
   const isRc = tag.includes('-rc.')
 
@@ -25,11 +24,8 @@ async function main() {
     execSync(cmd, { stdio: 'inherit' })
   }
 
-  run(`docker pull "${cacheImage}"`)
   run(`docker tag "${cacheImage}" "${dockerRepo}:${tag}"`)
   run(`docker push "${dockerRepo}:${tag}"`)
-  run(`docker tag "${cacheImage}" "${cacheRegistry}:${tag}"`)
-  run(`docker push "${cacheRegistry}:${tag}"`)
 
   if (shouldPushLatest) {
     run(`docker tag "${cacheImage}" "${dockerRepo}:latest"`)
