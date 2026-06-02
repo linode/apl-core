@@ -26,6 +26,7 @@ on:
 
 env:
   REPO: linode/apl-core
+  LOCAL_CACHE_IMAGE: apl-core:ci-build
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
   DOCKER_USERNAME: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
@@ -72,7 +73,7 @@ jobs:
           load: true
           context: .
           build-args: SKIP_TESTS=false
-          tags: notused
+          tags: ${{ env.LOCAL_CACHE_IMAGE }}
 
       - name: Compute release tag
         id: compute-tag
@@ -135,7 +136,7 @@ jobs:
         run: npm run release:docker-push
         env:
           RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
-          CACHE_IMAGE: notused
+          CACHE_IMAGE: ${{ env.LOCAL_CACHE_IMAGE }}
           DOCKER_REPO: ${{ env.REPO }}
           DRY_RUN: ${{ inputs.dry_run }}
 

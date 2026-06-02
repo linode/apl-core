@@ -3,7 +3,7 @@ import { isHighestStableTag } from './version'
 
 async function main() {
   const tag = process.env.RELEASE_TAG!
-  const cacheImage = process.env.CACHE_IMAGE!
+  const cacheImage = process.env.LOCAL_CACHE_IMAGE!
   const dockerRepo = process.env.DOCKER_REPO ?? 'linode/apl-core'
   const dryRun = process.env.DRY_RUN === 'true'
   const isRc = tag.includes('-rc.')
