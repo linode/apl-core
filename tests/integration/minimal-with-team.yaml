@@ -61,7 +61,6 @@ teamConfig:
           - ingress
       managedMonitoring:
         grafana: false
-        prometheus: false
         alertmanager: false
       networkPolicy:
         egressPublic: true
