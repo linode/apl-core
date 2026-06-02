@@ -43,6 +43,7 @@
     "release:open-release-pr": "tsx src/release/open-release-pr.ts",
     "release:open-main-bump-pr": "tsx src/release/open-main-bump-pr.ts",
     "release:check-version-matches-branch": "tsx src/release/check-version-matches-branch.ts",
+    "release:check-versions-yaml": "tsx src/release/check-versions-yaml.ts",
     "release:compute-tag": "tsx src/release/compute-tag.ts",
     "release:check-tag-not-exists": "tsx src/release/check-tag-not-exists.ts",
     "release:auto-bump": "tsx src/release/auto-bump.ts",

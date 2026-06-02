@@ -63,6 +63,13 @@ jobs:
           RELEASE_BRANCH: ${{ inputs.release_branch }}
           REPO_ROOT: ${{ github.workspace }}
 
+      - name: Check versions.yaml entries are semver-compatible
+        working-directory: ci
+        run: npm run release:check-versions-yaml
+        env:
+          REPO_ROOT: ${{ github.workspace }}
+          STABLE: ${{ inputs.promote_to_stable }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
