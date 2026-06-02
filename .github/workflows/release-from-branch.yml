@@ -146,6 +146,10 @@ jobs:
           BOT_USERNAME: ${{ vars.BOT_USERNAME }}
         run: ci/scripts/prepare_chart_for_release.sh
 
+      # chart-releaser-action has no RC awareness — it publishes whatever version
+      # prepare_chart_for_release.sh stamps into Chart.yaml (e.g. 1.4.0-rc.1).
+      # mark_as_latest: false prevents RC charts from becoming the default in
+      # `helm search repo`, which is the closest Helm equivalent to a prerelease flag.
       - name: Publish Helm chart
         if: ${{ inputs.dry_run == 'false' }}
         uses: helm/chart-releaser-action@v1.7.0
