@@ -54,8 +54,6 @@ apps:
     enabled: true
   harbor:
     enabled: true
-  hello:
-    enabled: true
   knative:
     enabled: true
   loki:
@@ -76,19 +74,20 @@ apps:
     enabled: true
   tekton:
     enabled: true
-  fabric8:
-    enabled: true
 teamConfig:
   demo:
     settings:
       password: somesecretvalue
       id: demo
-      networkPolicy:
-        egressPublic: true
-        ingressPrivate: true
       selfService:
         service:
           - ingress
+      managedMonitoring:
+        grafana: true
+        alertmanager: true
+      networkPolicy:
+        egressPublic: true
+        ingressPrivate: true
     services:
       - id: cb5149c4-8ea5-4c5a-be04-a37258658bd3
         ksvc:
