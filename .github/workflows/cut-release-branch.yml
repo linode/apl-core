@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       minor_version:
-        description: 'Major.minor version to release (e.g. 1.4)'
+        description: 'Major.minor version to release, with v prefix (e.g. v1.4)'
         required: true
         type: string
       base_branch:
@@ -79,7 +79,7 @@ jobs:
 
       - name: Create release branch
         run: |
-          BRANCH="release/v${{ inputs.minor_version }}"
+          BRANCH="release/${{ inputs.minor_version }}"
           echo "RELEASE_BRANCH=$BRANCH" >> "$GITHUB_ENV"
           git checkout -b "$BRANCH"
 
@@ -95,7 +95,7 @@ jobs:
         if: ${{ inputs.dry_run == 'false' }}
         run: |
           git add package.json package-lock.json
-          git commit -m "chore(release): bump to v${{ inputs.minor_version }}.0-rc.1"
+          git commit -m "chore(release): bump to ${{ inputs.minor_version }}.0-rc.1"
           git push -u origin "$RELEASE_BRANCH"
 
       - name: Open release PR
