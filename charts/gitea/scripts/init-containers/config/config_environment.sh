@@ -78,7 +78,6 @@ function env2ini::reload_preset_envs() {
   rm $TMP_EXISTING_ENVS_FILE
 }
 
-
 function env2ini::process_config_file() {
   local config_file="${1}"
   local section="$(basename "${config_file}")"
@@ -151,4 +150,4 @@ if [ -f ${GITEA_APP_INI} ]; then
   unset GITEA__SERVER__LFS_JWT_SECRET
 fi
 
-environment-to-ini -o $GITEA_APP_INI
+gitea config edit-ini --apply-env --config "$GITEA_APP_INI" --out "$GITEA_APP_INI"
