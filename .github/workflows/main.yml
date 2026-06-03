@@ -1,8 +1,8 @@
 name: Build and publish Docker
 on:
   push:
-    branches:
-      - '**'
+    branches-ignore:
+      - 'releases/**'
     tags-ignore:
       - '*'
   workflow_dispatch: ~
