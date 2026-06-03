@@ -35,7 +35,7 @@ dependencies:
     version: 2.4.1
     repository: https://charts.external-secrets.io
   - name: gitea
-    version: 12.5.3
+    version: 12.6.0
     repository: https://dl.gitea.io/charts
   - name: harbor
     version: 1.19.1
