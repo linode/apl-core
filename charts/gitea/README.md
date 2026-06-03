@@ -412,7 +412,7 @@ gitea:
 ```
 
 This would mount the two additional volumes (`oauth` and `some-additionals`) from different sources to the init container where the _app.ini_ gets updated.
-All files mounted that way will be read and converted to environment variables and then added to the _app.ini_ using [environment-to-ini](https://github.com/go-gitea/gitea/tree/main/contrib/environment-to-ini).
+All files mounted that way will be read and converted to environment variables and then added to the _app.ini_ using [Gitea config edit-ini](https://docs.gitea.com/administration/config-cheat-sheet#use-environment-variables-to-setup-gitea).
 
 The key of such additional source represents the section inside the _app.ini_.
 The value for each key can be multiline ini-like definitions.
@@ -453,10 +453,10 @@ Users are able to define their own environment variables, which are loaded into 
 We also support to directly interact with the generated _app.ini_.
 
 To inject self defined variables into the _app.ini_ a certain format needs to be honored.
-This is described in detail on the [env-to-ini](https://github.com/go-gitea/gitea/tree/main/contrib/environment-to-ini) page.
+This is described in detail on the [Gitea config edit-ini](https://docs.gitea.com/administration/config-cheat-sheet#use-environment-variables-to-setup-gitea) page.
 
 Prior to Gitea 1.20 and Chart 9.0.0 the helm chart had a custom prefix `ENV_TO_INI`.
-After the support for a custom prefix was removed in Gite core, the prefix was changed to `GITEA`.
+After the support for a custom prefix was removed in Gitea core, the prefix was changed to `GITEA`.
 
 For example a database setting needs to have the following format:
 
@@ -1577,7 +1577,7 @@ mariadb:
 
 ### App.ini generation <!-- omit from toc -->
 
-The app.ini generation has changed and now utilizes the environment-to-ini script provided by newer Gitea versions.
+The app.ini generation has changed and now uses the `gitea config edit-ini` subcommand introduced in Gitea 1.26.
 This change ensures, that the app.ini is now persistent.
 
 ### Secret Key generation <!-- omit from toc -->
