@@ -79,15 +79,6 @@ describe('git-config', () => {
       const result = await getGitCredentials()
       expect(result).toBeUndefined()
     })
-
-    it('should return undefined when password is a sealed-secret placeholder', async () => {
-      mockGetK8sSecret.mockResolvedValue({
-        username: 'admin',
-        password: 'sealed:apl-secrets/otomi-secrets/git_password',
-      })
-      const result = await getGitCredentials()
-      expect(result).toBeUndefined()
-    })
   })
 
   describe('getOldGitCredentials', () => {
@@ -432,26 +423,6 @@ describe('git-config', () => {
       const result = await getRepo(values)
       expect(result.repoUrl).toBe('http://localhost:3000/dev/repo.git')
       expect(result.authenticatedUrl).toBe('http://admin:s3cret@localhost:3000/dev/repo.git')
-    })
-
-    it('should fallback to K8s secret when password is a sealed placeholder', async () => {
-      const secretMock = jest.fn().mockResolvedValue({ git_password: 'real-password' })
-      const values = {
-        otomi: {
-          git: {
-            repoUrl: 'https://github.com/org/repo.git',
-            username: 'admin',
-            password: 'sealed:apl-secrets/otomi-secrets/git_password',
-            branch: 'main',
-            email: 'pipeline@cluster.local',
-          },
-        },
-      }
-
-      const result = await getRepo(values, { getK8sSecret: secretMock })
-      expect(secretMock).toHaveBeenCalledWith('otomi-secrets', 'apl-secrets')
-      expect(result.password).toBe('real-password')
-      expect(result.authenticatedUrl).toContain('real-password')
     })
 
     it('should fallback to K8s secret when password is empty', async () => {

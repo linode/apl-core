@@ -57,11 +57,6 @@ export async function getGitCredentials(): Promise<GitCredentials | undefined> {
     return undefined
   }
 
-  // Reject unresolved sealed-secret placeholders (e.g. during first deploy before secrets are decrypted)
-  if (typeof secretData.password === 'string' && secretData.password.startsWith('sealed:')) {
-    return undefined
-  }
-
   return {
     username: secretData.username,
     password: secretData.password,
@@ -183,7 +178,9 @@ export async function setGitConfig(config: Partial<GitConfigData>, coreV1Api?: C
 
 /**
  * Gets repository configuration from values, constructing the authenticated URL with embedded credentials.
- * Password priority: deploy-time VALUES_INPUT > K8s secret (ESO/otomi-secrets) > resolved values.
+ * Password priority: deploy-time VALUES_INPUT > K8s secret (otomi-secrets via ESO) > values fallback.
+ * Secrets are stripped from disk values by stripAllSecrets() — the values fallback exists only for
+ * edge cases (e.g. non-secret git passwords set explicitly in values).
  */
 export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret }): Promise<GitRepoConfig> => {
   const otomiGit = values?.otomi?.git
@@ -215,10 +212,7 @@ export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret
   }
 
   if (!password) {
-    const valuesPassword = otomiGit?.password ?? ''
-    if (valuesPassword && !(typeof valuesPassword === 'string' && valuesPassword.startsWith('sealed:'))) {
-      password = valuesPassword
-    }
+    password = otomiGit?.password ?? ''
   }
 
   const repoUrl = otomiGit?.repoUrl as string
