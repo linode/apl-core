@@ -1,0 +1,49 @@
+name: Release from Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_branch:
+        description: 'Release cycle branch (e.g. release/v1.4)'
+        required: true
+        type: string
+      promote_to_stable:
+        description: 'Promote to stable — strips RC suffix and cuts stable tag'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      dry_run:
+        description: 'Dry run — skip all writes (tag, release, Docker push, Helm)'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+env:
+  RELEASE_BRANCH: ${{ inputs.release_branch }}
+  REPO: linode/apl-core
+  LOCAL_CACHE_IMAGE: apl-core:ci-build
+  BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+  BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+  DOCKER_USERNAME: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
+
+jobs:
+  release-from-branch:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.release_branch }}
+          fetch-depth: 0
+          token: ${{ secrets.BOT_TOKEN }}
