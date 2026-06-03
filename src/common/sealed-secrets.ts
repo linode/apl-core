@@ -597,26 +597,45 @@ export const getOrCreateSealedSecretsPem = async (
 }
 
 // Updates otomi-secrets SealedSecret with a new git_password, preserving all other fields.
-export async function resealGitPassword(newGitPassword: string, envDir: string): Promise<void> {
-  const d = terminal(`common:${cmdName}:resealGitPassword`)
+// Uses k8s client directly (not getK8sSecret) to avoid YAML-parse corruption of non-string values.
+export async function resealGitPassword(
+  newGitPassword: string,
+  envDir: string,
+  deps = { terminal, k8s, getExistingSealedSecretsCert },
+): Promise<void> {
+  const d = deps.terminal(`common:${cmdName}:resealGitPassword`)
 
-  const cert = await getExistingSealedSecretsCert()
+  const cert = await deps.getExistingSealedSecretsCert()
   if (!cert) {
     d.warn('No sealed-secrets cert found — skipping git password re-seal')
     return
   }
   const pem = getPemFromCertificate(cert)
 
-  const existingSecret = await getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
-  if (!existingSecret) {
-    d.warn(`${OTOMI_SECRETS} secret not found — skipping git password re-seal`)
-    return
+  let existingData: Record<string, string>
+  try {
+    const rawSecret = await deps.k8s
+      .core()
+      .readNamespacedSecret({ name: OTOMI_SECRETS, namespace: SEALED_SECRETS_NAMESPACE })
+    if (!rawSecret?.data) {
+      d.warn(`${OTOMI_SECRETS} secret not found — skipping git password re-seal`)
+      return
+    }
+    existingData = Object.fromEntries(
+      Object.entries(rawSecret.data).map(([key, value]) => [key, Buffer.from(value, 'base64').toString('utf-8')]),
+    )
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      d.warn(`${OTOMI_SECRETS} secret not found — skipping git password re-seal`)
+      return
+    }
+    throw error
   }
 
-  const secretData = { ...existingSecret, git_password: newGitPassword }
+  const secretData = { ...existingData, git_password: newGitPassword }
   const encryptedData: Record<string, string> = {}
   for (const [key, value] of Object.entries(secretData)) {
-    encryptedData[key] = await encryptSecretItem(pem, SEALED_SECRETS_NAMESPACE, String(value))
+    encryptedData[key] = await encryptSecretItem(pem, SEALED_SECRETS_NAMESPACE, value)
   }
 
   const manifest: SealedSecretManifest = {

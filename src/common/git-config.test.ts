@@ -10,6 +10,7 @@ import {
 const mockGetK8sSecret = jest.fn()
 const mockGetK8sConfigMap = jest.fn()
 const mockCreateUpdateConfigMap = jest.fn()
+const mockLoadYaml = jest.fn()
 const mockCoreApi = {}
 
 jest.mock('./k8s', () => ({
@@ -28,11 +29,22 @@ jest.mock('./debug', () => ({
   })),
 }))
 
+jest.mock('./envalid', () => ({
+  env: { VALUES_INPUT: undefined },
+}))
+
+jest.mock('./utils', () => ({
+  ...jest.requireActual('./utils'),
+  loadYaml: (...args: any[]) => mockLoadYaml(...args),
+}))
+
 describe('git-config', () => {
+  const mockedEnvalid = jest.requireMock('./envalid') as { env: { VALUES_INPUT: string | undefined } }
   const originalEnv = process.env
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockedEnvalid.env.VALUES_INPUT = undefined
     process.env = { ...originalEnv }
     delete process.env.NODE_ENV
     delete process.env.GIT_REPO_URL
@@ -476,6 +488,45 @@ describe('git-config', () => {
 
       const result = await getRepo(values, { getK8sSecret: secretMock })
       expect(result.password).toBe('')
+    })
+
+    it('should use VALUES_INPUT password when set and not a placeholder', async () => {
+      mockedEnvalid.env.VALUES_INPUT = '/test/values.yaml'
+      mockLoadYaml.mockResolvedValue({ otomi: { git: { password: 'input-token' } } })
+      const secretMock = jest.fn().mockResolvedValue({ git_password: 'old-token' })
+      const values = {
+        otomi: {
+          git: {
+            repoUrl: 'https://github.com/org/repo.git',
+            branch: 'main',
+            email: 'pipeline@cluster.local',
+            password: 'old-token',
+          },
+        },
+      }
+
+      const result = await getRepo(values, { getK8sSecret: secretMock })
+
+      expect(result.password).toBe('input-token')
+      expect(mockLoadYaml).toHaveBeenCalledWith('/test/values.yaml')
+    })
+
+    it('should not read VALUES_INPUT when env.VALUES_INPUT is unset', async () => {
+      // mockedEnvalid.env.VALUES_INPUT is undefined (set in beforeEach)
+      const secretMock = jest.fn().mockResolvedValue({ git_password: 'k8s-token' })
+      const values = {
+        otomi: {
+          git: {
+            repoUrl: 'https://github.com/org/repo.git',
+            branch: 'main',
+            email: 'pipeline@cluster.local',
+          },
+        },
+      }
+
+      await getRepo(values, { getK8sSecret: secretMock })
+
+      expect(mockLoadYaml).not.toHaveBeenCalled()
     })
   })
 })

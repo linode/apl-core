@@ -284,7 +284,7 @@ export const installAll = async () => {
       try {
         const inputValues = (await loadYaml(env.VALUES_INPUT)) as Record<string, any>
         const gitPassword = String(inputValues?.otomi?.git?.password ?? '')
-        if (gitPassword && !gitPassword.startsWith('sealed:')) {
+        if (gitPassword) {
           const existing = await getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
           if (gitPassword !== existing?.git_password) {
             await resealGitPassword(gitPassword, env.ENV_DIR)

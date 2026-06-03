@@ -1,18 +1,19 @@
 import type { CoreV1Api } from '@kubernetes/client-node'
 import { APL_OPERATOR_NS, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from './constants'
 import { terminal } from './debug'
+import { env } from './envalid'
 import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
 import { loadYaml } from './utils'
 
 const d = terminal('common:git-config')
 
-// Returns the plaintext git password from VALUES_INPUT, or undefined if absent/placeholder.
+// Returns the plaintext git password from VALUES_INPUT, or undefined if absent/missing.
 async function getGitPasswordFromValuesInput(): Promise<string | undefined> {
-  if (!process.env.VALUES_INPUT) return undefined
+  if (!env.VALUES_INPUT) return undefined
   try {
-    const inputValues = (await loadYaml(process.env.VALUES_INPUT)) as Record<string, any>
-    const p = String(inputValues?.otomi?.git?.password ?? '')
-    return p && !p.startsWith('sealed:') ? p : undefined
+    const inputValues = (await loadYaml(env.VALUES_INPUT)) as Record<string, any>
+    const password = String(inputValues?.otomi?.git?.password ?? '')
+    return password || undefined
   } catch {
     return undefined
   }
@@ -182,8 +183,7 @@ export async function setGitConfig(config: Partial<GitConfigData>, coreV1Api?: C
 
 /**
  * Gets repository configuration from values, constructing the authenticated URL with embedded credentials.
- * If password is missing or is an unresolved sealed-secret placeholder, falls back to reading
- * the real password from the K8s secret (populated by ESO from SealedSecrets).
+ * Password priority: deploy-time VALUES_INPUT > K8s secret (ESO/otomi-secrets) > resolved values.
  */
 export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret }): Promise<GitRepoConfig> => {
   const otomiGit = values?.otomi?.git
