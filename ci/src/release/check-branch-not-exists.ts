@@ -1,7 +1,6 @@
 import { execSync } from 'child_process'
 
-const minorVersion = process.env.MINOR_VERSION!
-const branch = `release/${minorVersion}`
+const branch = process.env.RELEASE_BRANCH!
 
 try {
   execSync(`git ls-remote --exit-code origin refs/heads/${branch}`, { stdio: 'pipe' })

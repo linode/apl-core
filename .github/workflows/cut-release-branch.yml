@@ -22,6 +22,7 @@ on:
           - 'false'
 
 env:
+  RELEASE_BRANCH: release/${{ inputs.minor_version }}
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
 
@@ -58,8 +59,6 @@ jobs:
       - name: Check release branch does not already exist
         working-directory: ci
         run: npm run release:check-branch-not-exists
-        env:
-          MINOR_VERSION: ${{ inputs.minor_version }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -73,15 +72,12 @@ jobs:
           build-args: SKIP_TESTS=false
 
       - name: Configure git bot identity
-        run: |
-          git config --global user.email "$BOT_EMAIL"
-          git config --global user.name "$BOT_USERNAME"
+        working-directory: ci
+        run: npm run release:configure-git
 
       - name: Create release branch
-        run: |
-          BRANCH="release/${{ inputs.minor_version }}"
-          echo "RELEASE_BRANCH=$BRANCH" >> "$GITHUB_ENV"
-          git checkout -b "$BRANCH"
+        working-directory: ci
+        run: npm run release:create-release-branch
 
       - name: Bump package.json to target version
         working-directory: ci
@@ -92,18 +88,18 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run }}
 
       - name: Commit and push release branch
-        if: ${{ inputs.dry_run == 'false' }}
-        run: |
-          git add package.json package-lock.json
-          git commit -m "chore(release): bump to ${{ inputs.minor_version }}.0-rc.1"
-          git push -u origin "$RELEASE_BRANCH"
+        working-directory: ci
+        run: npm run release:commit-release-branch
+        env:
+          REPO_ROOT: ${{ github.workspace }}
+          DRY_RUN: ${{ inputs.dry_run }}
 
       - name: Open release PR
         working-directory: ci
         run: npm run release:open-release-pr
         env:
-          MINOR_VERSION: ${{ inputs.minor_version }}
           BASE_BRANCH: ${{ inputs.base_branch }}
+          REPO_ROOT: ${{ github.workspace }}
           DRY_RUN: ${{ inputs.dry_run }}
 
       - name: Open main version bump PR

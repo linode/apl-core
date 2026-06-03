@@ -1,8 +1,8 @@
 import { execSync } from 'child_process'
-import { writeFileSync, unlinkSync } from 'fs'
+import { readFileSync, writeFileSync, unlinkSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { releaseBranchName, cycleStartVersion, stripV } from './version'
+import path from 'path'
 
 export function buildPrBody(version: string): string {
   const isRc = version.includes('-rc.')
@@ -22,18 +22,20 @@ export function buildPrBody(version: string): string {
 }
 
 async function main() {
-  const minorVersion = process.env.MINOR_VERSION!
+  const releaseBranch = process.env.RELEASE_BRANCH!
   const baseBranch = process.env.BASE_BRANCH!
   const dryRun = process.env.DRY_RUN === 'true'
-  const version = cycleStartVersion(stripV(minorVersion))
-  const branch = releaseBranchName(version)
-  const title = `release: ${minorVersion}`
+  const repoRoot = process.env.REPO_ROOT ?? path.resolve(__dirname, '../../..')
+
+  const pkg = JSON.parse(readFileSync(path.join(repoRoot, 'package.json'), 'utf8'))
+  const version: string = pkg.version
+  const title = `release: ${releaseBranch.replace('release/', '')}`
   const body = buildPrBody(version)
 
   if (dryRun) {
     console.log('[dry-run] Would open PR:')
     console.log(`  title: ${title}`)
-    console.log(`  head:  ${branch} → ${baseBranch}`)
+    console.log(`  head:  ${releaseBranch} → ${baseBranch}`)
     console.log(`  body:\n${body}`)
     return
   }
@@ -41,7 +43,7 @@ async function main() {
   const bodyFile = join(tmpdir(), `pr-body-${Date.now()}.md`)
   writeFileSync(bodyFile, body)
   try {
-    execSync(`gh pr create --title "${title}" --body-file "${bodyFile}" --base "${baseBranch}" --head "${branch}"`, {
+    execSync(`gh pr create --title "${title}" --body-file "${bodyFile}" --base "${baseBranch}" --head "${releaseBranch}"`, {
       stdio: 'inherit',
     })
   } finally {

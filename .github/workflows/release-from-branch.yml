@@ -25,6 +25,7 @@ on:
           - 'false'
 
 env:
+  RELEASE_BRANCH: ${{ inputs.release_branch }}
   REPO: linode/apl-core
   LOCAL_CACHE_IMAGE: apl-core:ci-build
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
@@ -60,7 +61,6 @@ jobs:
         working-directory: ci
         run: npm run release:check-version-matches-branch
         env:
-          RELEASE_BRANCH: ${{ inputs.release_branch }}
           REPO_ROOT: ${{ github.workspace }}
 
       - name: Check versions.yaml entries are semver-compatible
@@ -97,23 +97,24 @@ jobs:
           RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
 
       - name: Configure git bot identity
-        run: |
-          git config --global user.email "$BOT_EMAIL"
-          git config --global user.name "$BOT_USERNAME"
+        working-directory: ci
+        run: npm run release:configure-git
 
       - name: Promote package.json to stable (if applicable)
-        if: ${{ inputs.promote_to_stable == 'true' && inputs.dry_run == 'false' }}
-        run: |
-          npm version "${{ steps.compute-tag.outputs.tag }}" --no-git-tag-version
-          git add package.json package-lock.json
-          git commit -m "chore(release): promote to ${{ steps.compute-tag.outputs.tag }}"
-          git push
+        working-directory: ci
+        run: npm run release:promote-package-version
+        env:
+          RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
+          PROMOTE_TO_STABLE: ${{ inputs.promote_to_stable }}
+          REPO_ROOT: ${{ github.workspace }}
+          DRY_RUN: ${{ inputs.dry_run }}
 
       - name: Create and push git tag
-        if: ${{ inputs.dry_run == 'false' }}
-        run: |
-          git tag -a "${{ steps.compute-tag.outputs.tag }}" -m "Release ${{ steps.compute-tag.outputs.tag }}"
-          git push --follow-tags
+        working-directory: ci
+        run: npm run release:tag-release
+        env:
+          RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
+          DRY_RUN: ${{ inputs.dry_run }}
 
       - name: Auto-bump version for next iteration
         working-directory: ci
