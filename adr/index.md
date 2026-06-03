@@ -17,6 +17,8 @@ This log lists the architectural decisions for apl-core.
 - [ADR-2022-06-07](2022-06-07-ingress-classes.md) - Ingress classes
 - [ADR-2022-07-02](2022-07-02-node-affinity.md) - Node affinity
 - [ADR-2022-08-26](2022-08-26-other-dns-provider.md) - Other DNS provider
+- [ADR-2026-06-02](2026-06-02-release-automation.md) - Release automation: explicit versioning, one branch per release cycle
+- [ADR-2026-06-02](2026-06-02-release-branch-per-cycle.md) - One release branch per major.minor cycle
 
 <!-- adrlogstop -->
 

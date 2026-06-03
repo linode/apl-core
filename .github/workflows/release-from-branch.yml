@@ -1,0 +1,167 @@
+name: Release from Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_branch:
+        description: 'Release cycle branch (e.g. release/v1.4)'
+        required: true
+        type: string
+      promote_to_stable:
+        description: 'Promote to stable — strips RC suffix and cuts stable tag'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      dry_run:
+        description: 'Dry run — skip all writes (tag, release, Docker push, Helm)'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+env:
+  RELEASE_BRANCH: ${{ inputs.release_branch }}
+  REPO: linode/apl-core
+  LOCAL_CACHE_IMAGE: apl-core:ci-build
+  BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+  BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+  DOCKER_USERNAME: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
+
+jobs:
+  release-from-branch:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.release_branch }}
+          fetch-depth: 0
+          token: ${{ secrets.BOT_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install CI dependencies
+        working-directory: ci
+        run: npm ci
+
+      - name: Check package.json version matches release branch
+        working-directory: ci
+        run: npm run release:check-version-matches-branch
+        env:
+          REPO_ROOT: ${{ github.workspace }}
+
+      - name: Check versions.yaml entries are semver-compatible
+        working-directory: ci
+        run: npm run release:check-versions-yaml
+        env:
+          REPO_ROOT: ${{ github.workspace }}
+          STABLE: ${{ inputs.promote_to_stable }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Run tests in Docker (test gate)
+        uses: docker/build-push-action@v7
+        with:
+          push: false
+          load: true
+          context: .
+          build-args: SKIP_TESTS=false
+          tags: ${{ env.LOCAL_CACHE_IMAGE }}
+
+      - name: Compute release tag
+        id: compute-tag
+        working-directory: ci
+        run: npm run release:compute-tag
+        env:
+          PROMOTE_TO_STABLE: ${{ inputs.promote_to_stable }}
+          REPO_ROOT: ${{ github.workspace }}
+
+      - name: Check tag does not already exist
+        working-directory: ci
+        run: npm run release:check-tag-not-exists
+        env:
+          RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
+
+      - name: Configure git bot identity
+        working-directory: ci
+        run: npm run release:configure-git
+
+      - name: Promote package.json to stable (if applicable)
+        working-directory: ci
+        run: npm run release:promote-package-version
+        env:
+          RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
+          PROMOTE_TO_STABLE: ${{ inputs.promote_to_stable }}
+          REPO_ROOT: ${{ github.workspace }}
+          DRY_RUN: ${{ inputs.dry_run }}
+
+      - name: Create and push git tag
+        working-directory: ci
+        run: npm run release:tag-release
+        env:
+          RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
+          DRY_RUN: ${{ inputs.dry_run }}
+
+      - name: Auto-bump version for next iteration
+        working-directory: ci
+        run: npm run release:auto-bump
+        env:
+          REPO_ROOT: ${{ github.workspace }}
+          DRY_RUN: ${{ inputs.dry_run }}
+
+      - name: Create GitHub Release
+        working-directory: ci
+        run: npm run release:create-github-release
+        env:
+          RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
+          IS_PRERELEASE: ${{ steps.compute-tag.outputs.is_prerelease }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Docker Hub
+        if: ${{ inputs.dry_run == 'false' }}
+        uses: docker/login-action@v4
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: Push Docker image with release tag
+        working-directory: ci
+        run: npm run release:docker-push
+        env:
+          RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
+          CACHE_IMAGE: ${{ env.LOCAL_CACHE_IMAGE }}
+          DOCKER_REPO: ${{ env.REPO }}
+          DRY_RUN: ${{ inputs.dry_run }}
+
+      - name: Prepare Helm chart
+        if: ${{ inputs.dry_run == 'false' }}
+        run: ci/scripts/prepare_chart_for_release.sh
+
+      # chart-releaser-action has no RC awareness — it publishes whatever version
+      # prepare_chart_for_release.sh stamps into Chart.yaml (e.g. 1.4.0-rc.1).
+      # mark_as_latest: false prevents RC charts from becoming the default in
+      # `helm search repo`, which is the closest Helm equivalent to a prerelease flag.
+      - name: Publish Helm chart
+        if: ${{ inputs.dry_run == 'false' }}
+        uses: helm/chart-releaser-action@v1.7.0
+        with:
+          charts_dir: chart
+          skip_existing: true
+          mark_as_latest: false
+        env:
+          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}

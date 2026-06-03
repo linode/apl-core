@@ -1,0 +1,112 @@
+name: Cut Release Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      minor_version:
+        description: 'Major.minor version to release, with v prefix (e.g. v1.4)'
+        required: true
+        type: string
+      base_branch:
+        description: 'Branch to cut from'
+        required: true
+        default: 'main'
+        type: string
+      dry_run:
+        description: 'Dry run — skip all writes (git push, PRs)'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+env:
+  RELEASE_BRANCH: releases/${{ inputs.minor_version }}
+  BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+  BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+
+jobs:
+  cut-release-branch:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.base_branch }}
+          fetch-depth: 0
+          token: ${{ secrets.BOT_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install CI dependencies
+        working-directory: ci
+        run: npm ci
+
+      - name: Validate version input
+        working-directory: ci
+        run: npm run release:validate-version
+        env:
+          MINOR_VERSION: ${{ inputs.minor_version }}
+
+      - name: Check release branch does not already exist
+        working-directory: ci
+        run: npm run release:check-branch-not-exists
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Run tests in Docker (test gate)
+        uses: docker/build-push-action@v7
+        with:
+          push: false
+          load: true
+          context: .
+          build-args: SKIP_TESTS=false
+
+      - name: Configure git bot identity
+        working-directory: ci
+        run: npm run release:configure-git
+
+      - name: Create release branch
+        working-directory: ci
+        run: npm run release:create-release-branch
+
+      - name: Bump package.json to target version
+        working-directory: ci
+        run: npm run release:bump-version
+        env:
+          MINOR_VERSION: ${{ inputs.minor_version }}
+          REPO_ROOT: ${{ github.workspace }}
+          DRY_RUN: ${{ inputs.dry_run }}
+
+      - name: Commit and push release branch
+        working-directory: ci
+        run: npm run release:commit-release-branch
+        env:
+          REPO_ROOT: ${{ github.workspace }}
+          DRY_RUN: ${{ inputs.dry_run }}
+
+      - name: Open release PR
+        working-directory: ci
+        run: npm run release:open-release-pr
+        env:
+          BASE_BRANCH: ${{ inputs.base_branch }}
+          REPO_ROOT: ${{ github.workspace }}
+          DRY_RUN: ${{ inputs.dry_run }}
+
+      - name: Open main version bump PR
+        working-directory: ci
+        run: npm run release:open-main-bump-pr
+        env:
+          MINOR_VERSION: ${{ inputs.minor_version }}
+          BASE_BRANCH: ${{ inputs.base_branch }}
+          REPO_ROOT: ${{ github.workspace }}
+          DRY_RUN: ${{ inputs.dry_run }}
