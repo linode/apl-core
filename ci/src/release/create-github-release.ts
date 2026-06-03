@@ -35,8 +35,7 @@ async function main() {
     `--title "Release ${tag}"`,
     `--generate-notes`,
     notesStartFlag,
-    prereleaseFlag,
-    rcBanner ? `--notes-prepend "${rcBanner}"` : '',
+    prereleaseFlag
   ].filter(Boolean).join(' ')
 
   execSync(notesCmd, { stdio: 'inherit' })
