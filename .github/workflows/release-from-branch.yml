@@ -117,13 +117,6 @@ jobs:
           RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
           DRY_RUN: ${{ inputs.dry_run }}
 
-      - name: Auto-bump version for next iteration
-        working-directory: ci
-        run: npm run release:auto-bump
-        env:
-          REPO_ROOT: ${{ github.workspace }}
-          DRY_RUN: ${{ inputs.dry_run }}
-
       - name: Create GitHub Release
         working-directory: ci
         run: npm run release:create-github-release
@@ -166,3 +159,10 @@ jobs:
           mark_as_latest: false
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Auto-bump version for next iteration
+      #   working-directory: ci
+      #   run: npm run release:auto-bump
+      #   env:
+      #     REPO_ROOT: ${{ github.workspace }}
+      #     DRY_RUN: ${{ inputs.dry_run }}
