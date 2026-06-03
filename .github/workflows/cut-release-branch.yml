@@ -22,7 +22,7 @@ on:
           - 'false'
 
 env:
-  RELEASE_BRANCH: release/${{ inputs.minor_version }}
+  RELEASE_BRANCH: releases/${{ inputs.minor_version }}
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
 

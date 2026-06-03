@@ -1,8 +1,7 @@
 import { execSync } from 'child_process'
-import { readFileSync, writeFileSync, unlinkSync } from 'fs'
+import { readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
-import { join } from 'path'
-import path from 'path'
+import path, { join } from 'path'
 
 export function buildPrBody(version: string): string {
   const isRc = version.includes('-rc.')
@@ -29,7 +28,7 @@ async function main() {
 
   const pkg = JSON.parse(readFileSync(path.join(repoRoot, 'package.json'), 'utf8'))
   const version: string = pkg.version
-  const title = `release: ${releaseBranch.replace('release/', '')}`
+  const title = `release: ${releaseBranch.replace('releases/', '')}`
   const body = buildPrBody(version)
 
   if (dryRun) {

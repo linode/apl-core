@@ -1,9 +1,8 @@
 import { execSync } from 'child_process'
-import { writeFileSync, unlinkSync } from 'fs'
+import { unlinkSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
-import { join } from 'path'
-import path from 'path'
-import { nextMainVersion, cycleStartVersion, stripV } from './version'
+import path, { join } from 'path'
+import { cycleStartVersion, nextMainVersion, stripV } from './version'
 
 async function main() {
   const minorVersion = process.env.MINOR_VERSION!
@@ -13,8 +12,8 @@ async function main() {
 
   const nextVersion = nextMainVersion(cycleStartVersion(stripV(minorVersion)))
   const bumpBranch = `chore/bump-main-${minorVersion}`
-  const title = `chore: bump main after cutting release/${minorVersion}`
-  const body = `Automated version bump after cutting the \`release/${minorVersion}\` release cycle branch.\n\n- Bumps \`package.json\` to \`${nextVersion}\``
+  const title = `chore: bump main after cutting releases/${minorVersion}`
+  const body = `Automated version bump after cutting the \`releases/${minorVersion}\` release cycle branch.\n\n- Bumps \`package.json\` to \`${nextVersion}\``
 
   if (dryRun) {
     console.log('[dry-run] Would create main bump PR:')

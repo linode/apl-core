@@ -11,7 +11,7 @@ const version: string = pkg.version
 if (!versionMatchesBranch(version, releaseBranch)) {
   console.error(
     `Version mismatch: package.json is at "${version}" but branch is "${releaseBranch}". ` +
-    `Expected major.minor to be "${releaseBranch.replace('release/v', '')}".`,
+    `Expected major.minor to be "${releaseBranch.replace('releases/v', '')}".`,
   )
   process.exit(1)
 }

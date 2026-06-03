@@ -1,4 +1,4 @@
-import { parseVersionsYaml, findInvalidVersions, findRcVersions } from './check-versions-yaml'
+import { findInvalidVersions, findRcVersions, parseVersionsYaml } from './check-versions-yaml'
 
 describe('parseVersionsYaml', () => {
   it('parses all key-value pairs', () => {
@@ -31,9 +31,9 @@ describe('findInvalidVersions', () => {
   })
 
   it('rejects branch names and non-semver strings', () => {
-    const versions = { api: 'release/v1.4', console: 'v1.4.0', tasks: 'main' }
+    const versions = { api: 'releases/v1.4', console: 'v1.4.0', tasks: 'main' }
     expect(findInvalidVersions(versions)).toEqual([
-      { key: 'api', value: 'release/v1.4' },
+      { key: 'api', value: 'releases/v1.4' },
       { key: 'console', value: 'v1.4.0' },
       { key: 'tasks', value: 'main' },
     ])

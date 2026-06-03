@@ -21,7 +21,7 @@ export function cycleStartVersion(minorVersion: string): string {
 
 export function releaseBranchName(version: string): string {
   const [major, minor] = version.split('.')
-  return `release/v${major}.${minor}`
+  return `releases/v${major}.${minor}`
 }
 
 export function incrementRc(version: string): string {

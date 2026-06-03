@@ -1,18 +1,18 @@
 import {
-  validateVersion,
-  validateMinorVersion,
-  stripV,
-  cycleStartVersion,
-  releaseBranchName,
-  incrementRc,
-  promoteToStable,
-  nextPatchRc,
-  nextMainVersion,
-  versionMatchesBranch,
-  previousStableTag,
-  isHighestStableTag,
-  previousRcTag,
-  previousStableTagBefore,
+    cycleStartVersion,
+    incrementRc,
+    isHighestStableTag,
+    nextMainVersion,
+    nextPatchRc,
+    previousRcTag,
+    previousStableTag,
+    previousStableTagBefore,
+    promoteToStable,
+    releaseBranchName,
+    stripV,
+    validateMinorVersion,
+    validateVersion,
+    versionMatchesBranch,
 } from './version'
 
 describe('validateVersion', () => {
@@ -72,10 +72,10 @@ describe('cycleStartVersion', () => {
 
 describe('releaseBranchName', () => {
   it.each([
-    ['1.4.0-rc.1', 'release/v1.4'],
-    ['1.4.0', 'release/v1.4'],
-    ['6.0.0-rc.0', 'release/v6.0'],
-    ['1.4.1', 'release/v1.4'],
+    ['1.4.0-rc.1', 'releases/v1.4'],
+    ['1.4.0', 'releases/v1.4'],
+    ['6.0.0-rc.0', 'releases/v6.0'],
+    ['1.4.1', 'releases/v1.4'],
   ])('releaseBranchName(%s) → %s', (version, expected) => {
     expect(releaseBranchName(version)).toBe(expected)
   })
@@ -123,11 +123,11 @@ describe('nextMainVersion', () => {
 
 describe('versionMatchesBranch', () => {
   it.each([
-    ['1.4.0-rc.2', 'release/v1.4', true],
-    ['1.4.0', 'release/v1.4', true],
-    ['1.4.1-rc.1', 'release/v1.4', true],
-    ['1.5.0-rc.1', 'release/v1.4', false],
-    ['1.4.0-rc.1', 'release/v1.5', false],
+    ['1.4.0-rc.2', 'releases/v1.4', true],
+    ['1.4.0', 'releases/v1.4', true],
+    ['1.4.1-rc.1', 'releases/v1.4', true],
+    ['1.5.0-rc.1', 'releases/v1.4', false],
+    ['1.4.0-rc.1', 'releases/v1.5', false],
   ])('versionMatchesBranch(%s, %s) → %s', (version, branch, expected) => {
     expect(versionMatchesBranch(version, branch)).toBe(expected)
   })
