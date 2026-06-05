@@ -1,6 +1,5 @@
 {{- $v := .Values }}
 {{- $apps := $v.apps }}
-{{- $k := $apps.keycloak }}
 {{- $a := $apps | get "alertmanager" }}
 {{- $g := $apps | get "grafana" }}
 {{- $p := $apps | get "prometheus" }}
@@ -13,8 +12,6 @@
 {{- $alertmanagerHostname := printf "alertmanager-%s.%s" $teamId $domain }}
 {{- $grafanaHostname := printf "grafana-%s.%s" $teamId $domain }}
 {{- $teamApps := index $teamConfig "apps" | default dict }}
-{{- $grafanaIniBase := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrl "untrustedCA" $v._derived.untrustedCA "keycloak" (dict "clientID" ($k | get "idp.clientID" "otomi"))) | fromYaml }}
-{{- $grafanaIni := mergeOverwrite (deepCopy $grafanaIniBase) (dict "auth.generic_oauth" (dict "role_attribute_path" (printf "contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'platform-admin') && 'Admin' || contains(groups[*], 'team-%s') && 'Editor'" $teamId)) "server" (dict "root_url" (printf "https://%s" $grafanaHostname)) "analytics" (dict "reporting_enabled" false) "security" (dict "allow_embedding" true)) }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 
 {{- define "prometheus-operator.common-route-opts" }}
@@ -240,7 +237,41 @@ grafana:
       secretKeyRef:
         name: grafana-loki-datasource-secret
         key: password
-  grafana.ini: {{- $grafanaIni | toYaml | nindent 4 }}
+  grafana.ini:
+    analytics:
+      check_for_updates: false
+      check_for_plugin_updates: false
+      feedback_links_enabled: false
+      reporting_enabled: false
+    auth.generic_oauth:
+      tls_skip_verify_insecure: {{ $v._derived.untrustedCA }}
+      enabled: true
+      name: OAuth
+      org_role: Admin
+      allow_sign_up: true
+      oauth_auto_login: true
+      client_id: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_ID}
+      client_secret: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
+      scopes: email profile openid
+      email_attribute_path: email
+      login_attribute_path: username
+      name_attribute_path: full_name
+      use_refresh_token: true
+      auth_url: {{ printf "%s/protocol/openid-connect/auth" $v._derived.oidcBaseUrl }}
+      token_url: {{ printf "%s/protocol/openid-connect/token" $v._derived.oidcBaseUrl }}
+      api_url: {{ printf "%s/protocol/openid-connect/userinfo" $v._derived.oidcBaseUrl }}
+      role_attribute_path: "contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'platform-admin') && 'Admin' || contains(groups[*], 'team-{{ $teamId }}') && 'Editor'"
+      role_attribute_strict: true
+    log:
+      level: error
+    security:
+      allow_embedding: true
+    server:
+      root_url: https://{{ $grafanaHostname }}
+    users:
+      allow_sign_up: false
+      auto_assign_org: true
+      auto_assign_org_role: Viewer
   route:
     main:
       enabled: true
