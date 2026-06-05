@@ -11,7 +11,7 @@ import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/co
 import { Argv, CommandModule } from 'yargs'
 import { cd } from 'zx'
 import { runtimeUpgrade } from '../common/runtime-upgrade'
-import { applyAsApps, applyGitOpsApps } from './apply-as-apps'
+import { applyAsApps, applyGitOpsApps, updateOperatorApplication } from './apply-as-apps'
 import { applyTeams } from './apply-teams'
 import { commit } from './commit'
 
@@ -29,18 +29,24 @@ const setup = (): void => {
   mkdirSync(dir, { recursive: true })
 }
 
-export const applyAll = async () => {
+export const applyAll = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
-  const prevState = await getDeploymentState()
   const argv: HelmArguments = getParsedArgs()
 
-  await runtimeUpgrade({ when: 'pre' })
-
-  d.info('Start apply all')
-  d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTagFromValues()
+  const revisionUpdated = await updateOperatorApplication(env.APPS_REVISION || tag)
+  if (revisionUpdated) {
+    d.info('Operator has pending update to a different revision. Pausing until restart.')
+    return
+  }
   const deployingVersion = getPackageVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion })
+  const deploymentState = await getDeploymentState()
+
+  await runtimeUpgrade({ when: 'pre', deploymentState })
+
+  d.info('Start apply all')
+  d.info(`Deployment state: ${JSON.stringify(deploymentState)}`)
 
   // We still need to deploy all teams because some settings depend on platform apps.
   const teamsApplyCompleted = await applyTeams()
@@ -49,24 +55,16 @@ export const applyAll = async () => {
   }
   // Note that team-ns-admin contains ingress for platform apps.
   const params = cloneDeep(argv)
-  const appsApplyCompleted = await applyAsApps(params)
+  await applyAsApps(params)
 
-  if (appsApplyCompleted) {
-    await runtimeUpgrade({ when: 'post' })
-  } else {
-    d.info('Apps apply step not completed, skipping upgrade checks')
-  }
+  await runtimeUpgrade({ when: 'post', deploymentState })
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(false)
   }
   await applyGitOpsApps()
-  if (appsApplyCompleted) {
-    await setDeploymentState({ status: 'deployed', version: deployingVersion })
-    d.info('Deployment completed')
-  } else {
-    d.info('Deployment finished with actions pending')
-  }
+  await setDeploymentState({ status: 'deployed', version: deployingVersion })
+  d.info('Deployment completed')
 }
 
 export const apply = async (): Promise<void> => {
