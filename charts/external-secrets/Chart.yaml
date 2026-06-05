@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: v2.4.1
+appVersion: v2.5.0
 dependencies:
 - condition: bitwarden-sdk-server.enabled
   name: bitwarden-sdk-server
@@ -17,4 +17,4 @@ maintainers:
   name: mcavoyk
 name: external-secrets
 type: application
-version: 2.4.1
+version: 2.5.0
