@@ -1,5 +1,5 @@
 import Ajv, { ValidateFunction } from 'ajv'
-import { cloneDeep, difference, unset } from 'lodash'
+import { cloneDeep, difference, set, unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
@@ -14,15 +14,9 @@ const cmdName = getFilename(__filename)
 const internalPaths: string[] = ['k8s', 'adminApps', 'teamApps']
 
 /**
- * Remove x-secret properties from `required` arrays throughout the schema.
+ * Recursively remove x-secret properties from `required` arrays throughout the schema.
  * Disk values have secrets stripped, so requiring them would always fail validation.
  */
-export function removeSecretRequirements(schema: Record<string, any>): Record<string, any> {
-  const cleaned = cloneDeep(schema)
-  removeSecretsInPlace(cleaned)
-  return cleaned
-}
-
 function removeSecretsInPlace(node: any): void {
   if (!node || typeof node !== 'object') return
   if (node.properties && Array.isArray(node.required)) {
@@ -41,6 +35,37 @@ function removeSecretsInPlace(node: any): void {
     if (Array.isArray(value)) value.forEach(removeSecretsInPlace)
     else if (value && typeof value === 'object') removeSecretsInPlace(value)
   }
+}
+
+/**
+ * Recursively reset all `additionalProperties: false` on object types.
+ * Such errors should be handled by API instead and do not cause any harm in Core.
+ */
+function permitAdditionalProperties(node: Record<string, any>): void {
+  for (const property of Object.values(node)) {
+    if (property.type === undefined || property.type === 'object') {
+      if (property.additionalProperties === false) {
+        unset(property, 'additionalProperties')
+      }
+      if (property.properties) {
+        permitAdditionalProperties(property.properties)
+      }
+      if (property.definitions) {
+        permitAdditionalProperties(property.definitions)
+      }
+    }
+  }
+}
+
+async function loadValidatingSchema(strictAdditional: boolean = false): Promise<Record<string, any>> {
+  const valuesSchema = (await loadYaml(`${rootDir}/values-schema.yaml`)) as Record<string, any>
+  // Disk values have secrets stripped — remove x-secret fields from required arrays
+  removeSecretsInPlace(valuesSchema)
+  if (!strictAdditional) {
+    permitAdditionalProperties(valuesSchema.properties)
+    permitAdditionalProperties(valuesSchema.definitions)
+  }
+  return valuesSchema
 }
 
 // TODO: Accept json path to validate - on empty, validate all
@@ -62,15 +87,15 @@ export const validateValues = async (argv: HelmArguments = getParsedArgs(), envD
   }
 
   d.info('Loading values-schema.yaml')
-  const valuesSchema = (await loadYaml(`${rootDir}/values-schema.yaml`)) as Record<string, any>
-  // Disk values have secrets stripped — remove x-secret fields from required arrays
-  const adjustedSchema = removeSecretRequirements(valuesSchema)
+
+  const strictAdditional = (argv.strictAdditional || false) as boolean
+  const validationSchema = await loadValidatingSchema(strictAdditional)
   d.debug('Initializing Ajv')
   const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
   d.debug('Compiling Ajv validation')
   let validate: ValidateFunction<unknown>
   try {
-    validate = ajv.compile(adjustedSchema)
+    validate = ajv.compile(validationSchema)
   } catch (error) {
     throw new Error(`Schema is invalid: ${chalk.italic(error.message)}`)
   }
