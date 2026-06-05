@@ -1,6 +1,14 @@
 {{- $v := .Values }}
 {{- $a := $v.apps | get "alertmanager" }}
 {{- $g := $v.apps | get "grafana" }}
+{{- $domain := ($v.cluster | get "domainSuffix" nil) }}
+{{- $gatewayName := $v.ingress.platformClass.className }}
+{{- $teamId := .Release.Labels.team }}
+{{- $teamSettings := index $v.teamConfig .Release.Labels.team }}
+{{- $alertmanagerHostname := printf "alertmanager-%s.%s" $teamId $domain }}
+{{- $grafanaHostname := printf "grafana-%s.%s" $teamId $domain }}
+{{- $tektonHostname := printf "tekton-%s.%s" $teamId $domain }}
+{{- $teamApps := index $teamSettings "apps" | default dict }}
 
 kubeApiServer:
   enabled: false
@@ -55,6 +63,70 @@ defaultRules:
 
 additionalPrometheusRules: null
 grafana:
+  enabled: {{ $teamSettings | get "managedMonitoring.grafana" false }}
+  admin:
+    existingSecret: team-{{ $teamId }}-grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  resources:
+    {{- $teamApps.grafana.resources.grafana | toYaml | nindent 12 }}
+  namespaceOverride: null # team-{{ $teamId }}
+  nameOverride: {{ $teamId }}-po-grafana
+  fullnameOverride: {{ $teamId }}-po-grafana
+  grafana.ini:
+    "auth.generic_oauth":
+      role_attribute_path: >-
+        contains(groups[*], 'admin') && 'Admin' ||
+        contains(groups[*], 'platform-admin') && 'Admin' ||
+        contains(groups[*], 'team-{{ $teamId }}') && 'Editor'
+    server:
+      root_url: https://{{ $grafanaHostname }}
+    analytics:
+      reporting_enabled: false
+  route:
+    main:
+      hostnames:
+        - {{ $grafanaHostname }}
+  sidecar:
+    datasources:
+      defaultDatasourceEnabled: false
+    dashboards:
+      enabled: true
+      label: release
+      labelValue: grafana-dashboards-{{ $teamId }}
+    resources:
+      {{- $teamApps.grafana.resources.sidecar | toYaml | nindent 14 }}
+  additionalDataSources:
+    - name: Prometheus-platform
+      editable: false
+      uid: prometheus-platform
+      isDefault: true
+      type: prometheus
+      access: proxy
+      url: http://po-prometheus.monitoring:9090
+      jsonData:
+        httpMethod: GET
+    - name: Loki
+      editable: false
+      uid: loki
+      type: loki
+      access: proxy
+      {{- if eq $v.obj.provider.type "linode" }}
+      url: http://loki-query-frontend-headless.monitoring:3101
+      {{- else }}
+      url: http://loki-headless.monitoring:3101
+      {{- end }}
+      basicAuth: true
+      basicAuthUser: {{ $teamId }}
+      secureJsonData:
+        basicAuthPassword: $__env{GF_LOKI_BASIC_AUTH_PASSWORD}
+  envValueFrom:
+    GF_LOKI_BASIC_AUTH_PASSWORD:
+      secretKeyRef:
+        name: grafana-loki-datasource-secret
+        key: password
+  podLabels:
+    otomi.io/auth-policy: monitoring-{{ $teamId }}
   serviceMonitor:
     enabled: false
   defaultDashboardsEnabled: false
@@ -87,3 +159,40 @@ alertmanager:
       limits:
         cpu: 200m
         memory: 256Mi
+
+
+nameOverride: {{ $teamId }}-po
+fullnameOverride: {{ $teamId }}-po
+alertmanager:
+  enabled: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}
+  namespaceOverride: null
+  alertmanagerSpec:
+    externalUrl: "https://{{ $alertmanagerHostname }}"
+    resources:
+      {{- $teamApps.alertmanager.resources | toYaml | nindent 14 }}
+    podMetadata:
+      labels:
+        otomi.io/auth-policy: monitoring-{{ $teamId }}
+    useExistingSecret: true
+    configSecret: alertmanager-team-{{ $teamId }}-config
+    {{- if $teamSettings | get "managedMonitoring.alertmanager" false }}
+    {{- $teamReceivers := $teamSettings | get "alerts.receivers" ($v | get "alerts.receivers" (list "slack")) }}
+    {{- if not (has "none" $teamReceivers) }}
+    secrets:
+      - alertmanager-credentials
+    {{- end }}
+    {{- end }}
+  route:
+    main:
+      hostnames:
+        - {{ $alertmanagerHostname }}
+commonLabels:
+  prometheus: team-{{ $teamId }}
+prometheus:
+  enabled: false
+  prometheusSpec: {}
+
+extraManifests:
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" (print "monitoring-" $teamId) "gatewayName" $gatewayName "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" (print "monitoring-" $teamId) "excludeNamespace" (print "team-" $teamId) "excludeAccount" "monitoring/po-prometheus" "excludePaths" (list "/metrics")) | nindent 12 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" (print "monitoring-" $teamId) "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}
