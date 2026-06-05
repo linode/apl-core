@@ -1,14 +1,15 @@
+{{- $teamId := .Release.Labels.team }}
 {{- $v := .Values }}
 {{- $a := $v.apps | get "alertmanager" }}
 {{- $g := $v.apps | get "grafana" }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $gatewayName := $v.ingress.platformClass.className }}
-{{- $teamId := .Release.Labels.team }}
-{{- $teamSettings := index $v.teamConfig .Release.Labels.team }}
+{{- $teamConfig := index $v.teamConfig $teamId }}
+{{- $teamSettings := $teamConfig.settings }}
 {{- $alertmanagerHostname := printf "alertmanager-%s.%s" $teamId $domain }}
 {{- $grafanaHostname := printf "grafana-%s.%s" $teamId $domain }}
 {{- $tektonHostname := printf "tekton-%s.%s" $teamId $domain }}
-{{- $teamApps := index $teamSettings "apps" | default dict }}
+{{- $teamApps := index $teamConfig "apps" | default dict }}
 
 kubeApiServer:
   enabled: false

@@ -96,6 +96,7 @@ releases:
       team: {{ $teamId }}
       pipeline: otomi-task-teams
     values:
+      - ../values/prometheus-operator/prometheus-operator.gotmpl
       - ../values/prometheus-operator/prometheus-operator-team.gotmpl
     {{- if has "msteams" ($teamSettings | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
