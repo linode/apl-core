@@ -16,10 +16,6 @@
 {{- $grafanaIniBase := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrl "untrustedCA" $v._derived.untrustedCA "keycloak" (dict "clientID" ($k | get "idp.clientID" "otomi"))) | fromYaml }}
 {{- $grafanaIni := mergeOverwrite (deepCopy $grafanaIniBase) (dict "auth.generic_oauth" (dict "role_attribute_path" (printf "contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'platform-admin') && 'Admin' || contains(groups[*], 'team-%s') && 'Editor'" $teamId)) "server" (dict "root_url" (printf "https://%s" $grafanaHostname)) "analytics" (dict "reporting_enabled" false) "security" (dict "allow_embedding" true)) }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
-{{- $hasServices := false }}
-{{- range $tid, $team := $v.teamConfig }}
-  {{- if gt (len ($team | get "services" list)) 0 }}{{ $hasServices = true }}{{ end }}
-{{- end }}
 
 {{- define "prometheus-operator.common-route-opts" }}
 {{ with .annotations }}
@@ -30,7 +26,7 @@ parentRefs:
   {{- .parentRefs | toYaml | nindent 2 }}
 additionalRules:
   {{- .authRules | toYaml | nindent 2 }}
-{{- end }}
+{{- end }} {{/* define "prometheus-operator.common-route-opts" */}}
 
 nameOverride: {{ $teamId }}-po
 fullnameOverride: {{ $teamId }}-po
