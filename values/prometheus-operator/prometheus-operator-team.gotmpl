@@ -1,39 +1,51 @@
-{{- $teamId := .Release.Labels.team }}
 {{- $v := .Values }}
-{{- $a := $v.apps | get "alertmanager" }}
-{{- $g := $v.apps | get "grafana" }}
+{{- $apps := $v.apps }}
+{{- $k := $apps.keycloak }}
+{{- $a := $apps | get "alertmanager" }}
+{{- $g := $apps | get "grafana" }}
+{{- $p := $apps | get "prometheus" }}
+{{- $pr := index $v.apps "policy-reporter" }}
+{{- $teamId := .Release.Labels.team }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $gatewayName := $v.ingress.platformClass.className }}
 {{- $teamConfig := index $v.teamConfig $teamId }}
 {{- $teamSettings := $teamConfig.settings }}
 {{- $alertmanagerHostname := printf "alertmanager-%s.%s" $teamId $domain }}
 {{- $grafanaHostname := printf "grafana-%s.%s" $teamId $domain }}
-{{- $tektonHostname := printf "tekton-%s.%s" $teamId $domain }}
 {{- $teamApps := index $teamConfig "apps" | default dict }}
+{{- $grafanaIniBase := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrl "untrustedCA" $v._derived.untrustedCA "keycloak" (dict "clientID" ($k | get "idp.clientID" "otomi"))) | fromYaml }}
+{{- $grafanaIni := mergeOverwrite (deepCopy $grafanaIniBase) (dict "auth.generic_oauth" (dict "role_attribute_path" (printf "contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'platform-admin') && 'Admin' || contains(groups[*], 'team-%s') && 'Editor'" $teamId)) "server" (dict "root_url" (printf "https://%s" $grafanaHostname)) "analytics" (dict "reporting_enabled" false) "security" (dict "allow_embedding" true)) }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+{{- $hasServices := false }}
+{{- range $tid, $team := $v.teamConfig }}
+  {{- if gt (len ($team | get "services" list)) 0 }}{{ $hasServices = true }}{{ end }}
+{{- end }}
 
-kubeApiServer:
-  enabled: false
-coreDns:
-  enabled: false
-kubeEtcd:
-  enabled: false
-kubeControllerManager:
-  enabled: false
-kubeScheduler:
-  enabled: false
-kubeProxy:
-  enabled: false
-kubelet:
-  enabled: false
-kubeStateMetrics:
-  enabled: false
-nodeExporter:
-  enabled: false
-prometheusOperator:
-  enabled: false
+{{- define "prometheus-operator.common-route-opts" }}
+{{ with .annotations }}
+annotations:
+  {{ . | toYaml | nindent 2 }}
+{{- end }}
+parentRefs:
+  {{- .parentRefs | toYaml | nindent 2 }}
+additionalRules:
+  {{- .authRules | toYaml | nindent 2 }}
+{{- end }}
+
+nameOverride: {{ $teamId }}-po
+fullnameOverride: {{ $teamId }}-po
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+global:
+  imagePullSecrets:
+    - name: otomi-pullsecret-global
+{{- end }}
 
 defaultRules:
   create: false
+  disabled:
+    {{- range $p.disabledRules }}
+    {{ . }}: true
+    {{- end }}
   rules:
     alertmanager: false
     configReloaders: false
@@ -62,41 +74,248 @@ defaultRules:
     prometheus: false
     prometheusOperator: false
 
-additionalPrometheusRules: null
-grafana:
-  enabled: {{ $teamSettings | get "managedMonitoring.grafana" false }}
-  admin:
-    existingSecret: team-{{ $teamId }}-grafana-admin
-    userKey: admin-user
-    passwordKey: admin-password
-  resources:
-    {{- $teamApps.grafana.resources.grafana | toYaml | nindent 12 }}
-  namespaceOverride: null # team-{{ $teamId }}
-  nameOverride: {{ $teamId }}-po-grafana
-  fullnameOverride: {{ $teamId }}-po-grafana
-  grafana.ini:
-    "auth.generic_oauth":
-      role_attribute_path: >-
-        contains(groups[*], 'admin') && 'Admin' ||
-        contains(groups[*], 'platform-admin') && 'Admin' ||
-        contains(groups[*], 'team-{{ $teamId }}') && 'Editor'
-    server:
-      root_url: https://{{ $grafanaHostname }}
-    analytics:
-      reporting_enabled: false
+prometheusOperator:
+  enabled: false
+  resources: {{- $p.resources.prometheusOperator | toYaml | nindent 4 }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+  {{- end }}
+  admissionWebhooks:
+    enabled: true
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    deployment:
+      image:
+        registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    patch:
+      image:
+        registry: "{{- $v.otomi.linodeLkeImageRepository }}/k8s"
+    {{- end }}
+    certManager:
+      enabled: true
+      issuerRef:
+        name: custom-ca
+        kind: ClusterIssuer
+  priorityClassName: otomi-critical
+  prometheusConfigReloader:
+    resources: {{- $p.resources.prometheusConfigReloader | toYaml | nindent 6 }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image:
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    {{- end }}
+
+commonLabels:
+  prometheus: team-{{ $teamId }}
+
+crds:
+  enabled: false
+
+prometheus:
+  enabled: false
+  prometheusSpec:
+    {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
+    {{ $selType }}Selector:
+      matchLabels:
+        prometheus: system
+    {{- end }}
+    replicas: {{ $p.replicas }}
+    scrapeInterval: {{ $p.scrapeInterval }}
+    podAntiAffinity: hard
+    image:
+      {{- if $v.otomi.linodeLkeImageRepository }}
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+      {{- end }}
+      {{- with $g | get "image.prometheus.tag" nil }}
+      tag: {{ . }}
+      {{- end }}
+      pullPolicy: {{ $g | get "image.prometheus.pullPolicy" "IfNotPresent" }}
+    podMetadata:
+      labels:
+        otomi.io/auth: platform
+        otomi.io/auth-policy: prometheus
+        {{- if $v.apps.istio.defaultRevision }}
+        istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
+        {{- else }}
+        sidecar.istio.io/inject: "true"
+        {{- end }}
+    resources: {{- $p.resources.prometheus | toYaml | nindent 6 }}
+    # all team alert managers that will get alerts
+    alertingEndpoints:
+    - name: po-alertmanager
+      namespace: monitoring
+      port: http-web
+      scheme: http
+      apiVersion: v2
+      relabelings:
+        - targetLabel: __address__
+          replacement: po-alertmanager.monitoring.svc.cluster.local:9093
+    {{- range $id, $team := (omit $v.teamConfig "admin") }}
+    {{- if ($team | get "settings.managedMonitoring.alertmanager" false) }}
+    - name: '{{ $id }}-po-alertmanager'
+      namespace: 'team-{{ $id }}'
+      port: http-web
+      scheme: http
+      apiVersion: v2
+      relabelings:
+        - targetLabel: __address__
+          replacement: {{ $id }}-po-alertmanager.team-{{ $id }}.svc.cluster.local:9093
+    {{- end }}
+    {{- end }}
+    priorityClassName: otomi-critical
+    externalLabels:
+      cluster: "{{ $v.cluster.domainSuffix }}"
+    replicaExternalLabelName: __replica__
+    retention: {{ $p | get "retention" }}
+    retentionSize: {{ $p | get "retentionSize" }}
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          {{- with $v.cluster.defaultStorageClass }}
+          storageClassName: {{ . }}
+          {{- end }}
+          resources:
+            requests:
+              storage: {{ $p | get "storageSize" }}
+    enableAdminAPI: true
+    externalUrl: https://{{ printf "prometheus.%s" $domain }}
+    {{- if $hasServices }}
+    additionalScrapeConfigs:
+    {{- range $teamId, $team := $v.teamConfig }}
+    {{- $teamServices := ($team | get "services" list) }}
+    {{- $domain := $v.cluster.domainSuffix }}
+    {{- tpl (readFile "../../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "services" $teamServices "domain" $domain) | nindent 6 }}
+    {{- end }}
+    {{- end }}
+    {{- if $p.remoteWrite.enabled }}
+    remoteWrite:
+    - url: "{{ $p.remoteWrite.rwConfig.target }}"
+      {{- if $p.remoteWrite.rwConfig.basicAuth.enabled }}
+      basicAuth:
+        username:
+          name: prometheus-remote-write-basic-auth
+          key: username
+        password:
+          name: prometheus-remote-write-basic-auth
+          key: password
+      {{- end }}
+      tlsConfig:
+        insecureSkipVerify: {{ $p.remoteWrite.rwConfig.insecureSkipVerify }}
+      {{- with $p | get "remoteWrite.rwConfig.customConfig" nil }}
+      {{- . | nindent 6 }}
+      {{- end }}
+    {{- end }}
   route:
     main:
+      enabled: true
       hostnames:
-        - {{ $grafanaHostname }}
+        - {{ printf "prometheus.%s" $domain }}
+      {{- include "prometheus-operator.common-route-opts" $httpRoute | nindent 6 }}
+  additionalPodMonitors:
+    {{- range $m := (tpl (readFile "pod-monitors.gotmpl") $v | fromYaml) | get "additionalPodMonitors" }}
+    - {{- toYaml $m | nindent 6 }}
+      additionalLabels:
+        prometheus: system
+    {{- end }}
+  additionalServiceMonitors:
+    {{- range $m := (tpl (readFile "service-monitors.gotmpl") $v | fromYaml) | get "additionalServiceMonitors" }}
+    - {{- toYaml $m | nindent 6 }}
+    {{- end }}
+
+additionalPrometheusRules: null
+
+alertmanager:
+  enabled: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}
+  alertmanagerSpec:
+    podMetadata:
+      labels:
+        prometheus: system
+        otomi.io/auth: platform
+        otomi.io/auth-policy: monitoring-{{ $teamId }}
+        {{- if $v.apps.istio.defaultRevision }}
+        istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
+        {{- else }}
+        sidecar.istio.io/inject: "true"
+        {{- end }}
+    image:
+      {{- if $v.otomi.linodeLkeImageRepository }}
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+      {{- end }}
+      {{- with $a | get "image.tag" nil }}
+      tag: {{ . }}
+      {{- end }}
+      pullPolicy: {{ $a | get "image.pullPolicy" "IfNotPresent" }}
+    priorityClassName: otomi-critical
+    resources: {{- $teamApps.alertmanager.resources | toYaml | nindent 6 }}
+    externalUrl: "https://{{ $alertmanagerHostname }}"
+    useExistingSecret: true
+    configSecret: alertmanager-team-{{ $teamId }}-config
+    {{- if $teamSettings | get "managedMonitoring.alertmanager" false }}
+    {{- $teamReceivers := $teamSettings | get "alerts.receivers" ($v | get "alerts.receivers" (list "slack")) }}
+    {{- if not (has "none" $teamReceivers) }}
+    secrets:
+      - alertmanager-credentials
+    {{- end }}
+    {{- end }}
+  route:
+    main:
+      enabled: true
+      hostnames:
+        - {{ $alertmanagerHostname }}
+      {{- include "prometheus-operator.common-route-opts" $httpRoute | nindent 6 }}
+  serviceMonitor:
+    relabelings:
+      - sourceLabels: [__address__]
+        regex: '(\d+)\.(\d+)\.(\d+)\.(\d+):(\d+)'
+        replacement: '$5'
+        targetLabel: __tmp_pod_ip_port
+      - sourceLabels: [service, __meta_kubernetes_namespace]
+        separator: "."
+        replacement: '$1.svc.cluster.local'
+        targetLabel: __tmp_service_namespace
+      - sourceLabels: [__tmp_service_namespace, __tmp_pod_ip_port]
+        separator: ":"
+        targetLabel: __address__
+    selfMonitor: false
+  namespaceOverride: null
+
+grafana:
+  enabled: {{ $teamSettings | get "managedMonitoring.grafana" false }}
+  defaultDashboardsEnabled: false
+  nameOverride: {{ $teamId }}-po-grafana
+  fullnameOverride: {{ $teamId }}-po-grafana
+  namespaceOverride: null
+  defaultDashboardsTimezone: browser
+  assertNoLeakedSecrets: false
+  image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+    {{- end }}
+    {{- with $g | get "image.tag" nil }}
+    tag: {{ . }}
+    {{- end }}
+    pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
+  resources: {{- $teamApps.grafana.resources.grafana | toYaml | nindent 4 }}
   sidecar:
-    datasources:
-      defaultDatasourceEnabled: false
+    resources: {{- $teamApps.grafana.resources.sidecar | toYaml | nindent 6 }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image:
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    {{- end }}
     dashboards:
       enabled: true
       label: release
       labelValue: grafana-dashboards-{{ $teamId }}
-    resources:
-      {{- $teamApps.grafana.resources.sidecar | toYaml | nindent 14 }}
+    datasources:
+      defaultDatasourceEnabled: false
+  serviceMonitor:
+    enabled: false
+    labels:
+      prometheus: system
+    relabelings:
+      - targetLabel: __address__
+        replacement: po-grafana.grafana.svc.cluster.local:80
+  testFramework:
+    enabled: false
   additionalDataSources:
     - name: Prometheus-platform
       editable: false
@@ -121,51 +340,102 @@ grafana:
       basicAuthUser: {{ $teamId }}
       secureJsonData:
         basicAuthPassword: $__env{GF_LOKI_BASIC_AUTH_PASSWORD}
+  admin:
+    existingSecret: team-{{ $teamId }}-grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
   envValueFrom:
+    GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
+      secretKeyRef:
+        name: grafana-oidc-secret
+        key: client_id
+    GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
+      secretKeyRef:
+        name: grafana-oidc-secret
+        key: client_secret
     GF_LOKI_BASIC_AUTH_PASSWORD:
       secretKeyRef:
         name: grafana-loki-datasource-secret
         key: password
-  podLabels:
-    otomi.io/auth-policy: monitoring-{{ $teamId }}
-  serviceMonitor:
-    enabled: false
-  defaultDashboardsEnabled: false
-  assertNoLeakedSecrets: false
-  plugins: []
-
-nameOverride: {{ $teamId }}-po
-fullnameOverride: {{ $teamId }}-po
-alertmanager:
-  enabled: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}
-  serviceMonitor:
-    selfMonitor: false
-  namespaceOverride: null
-  alertmanagerSpec:
-    externalUrl: "https://{{ $alertmanagerHostname }}"
-    resources:
-      {{- $teamApps.alertmanager.resources | toYaml | nindent 14 }}
-    podMetadata:
-      labels:
-        otomi.io/auth-policy: monitoring-{{ $teamId }}
-    useExistingSecret: true
-    configSecret: alertmanager-team-{{ $teamId }}-config
-    {{- if $teamSettings | get "managedMonitoring.alertmanager" false }}
-    {{- $teamReceivers := $teamSettings | get "alerts.receivers" ($v | get "alerts.receivers" (list "slack")) }}
-    {{- if not (has "none" $teamReceivers) }}
-    secrets:
-      - alertmanager-credentials
-    {{- end }}
-    {{- end }}
+  grafana.ini: {{- $grafanaIni | toYaml | nindent 4 }}
   route:
     main:
+      enabled: true
       hostnames:
-        - {{ $alertmanagerHostname }}
-commonLabels:
-  prometheus: team-{{ $teamId }}
-prometheus:
+        - {{ $grafanaHostname }}
+      {{- include "prometheus-operator.common-route-opts" $httpRoute | nindent 6 }}
+  podLabels:
+    otomi.io/auth: platform
+    otomi.io/auth-policy: monitoring-{{ $teamId }}
+  plugins: []
+
+kubernetesServiceMonitors:
+  enabled: {{ $p.enabled }}
+
+kubeStateMetrics:
   enabled: false
-  prometheusSpec: {}
+
+kube-state-metrics:
+  prometheus:
+    monitor:
+      additionalLabels:
+        prometheus: system
+  image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/k8s"
+    {{- end }}
+    {{- with $p | get "image.kube-state-metrics.tag" nil }}
+    tag: {{  . }}
+    {{- end }}
+    pullPolicy: {{ $p | get "image.kube-state-metrics.pullPolicy" "IfNotPresent" }}
+  resources:
+    {{- with $p | get "resources.kube-state-metrics" nil }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+nodeExporter:
+  enabled: false
+
+prometheus-node-exporter:
+  prometheus:
+    monitor:
+      additionalLabels:
+        prometheus: system
+  image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    {{- end }}
+    {{- with $p | get "image.node-exporter.tag" nil }}
+    tag: {{ . }}
+    {{- end }}
+    pullPolicy: {{ $p | get "image.node-exporter.pullPolicy" "IfNotPresent" }}
+  resources:
+    {{- with $p | get "resources.node-exporter" nil }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  priorityClassName: otomi-critical
+
+kubeProxy:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeApiServer:
+  enabled: false
+coreDns:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubelet:
+  enabled: false
+
+{{- if eq $v.cluster.linode.tier "enterprise" }}
+coreDns:
+  service:
+    selector:
+      k8s-app: coredns
+{{- end }}
 
 extraManifests:
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" (print "monitoring-" $teamId) "gatewayName" $gatewayName "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}
