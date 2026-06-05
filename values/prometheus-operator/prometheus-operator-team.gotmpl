@@ -3,7 +3,6 @@
 {{- $a := $apps | get "alertmanager" }}
 {{- $g := $apps | get "grafana" }}
 {{- $p := $apps | get "prometheus" }}
-{{- $pr := index $v.apps "policy-reporter" }}
 {{- $teamId := .Release.Labels.team }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $gatewayName := $v.ingress.platformClass.className }}
@@ -33,69 +32,8 @@ global:
     - name: otomi-pullsecret-global
 {{- end }}
 
-defaultRules:
-  create: false
-  disabled:
-    {{- range $p.disabledRules }}
-    {{ . }}: true
-    {{- end }}
-  rules:
-    alertmanager: false
-    configReloaders: false
-    etcd: false
-    general: false
-    k8s: false
-    kubeApiserver: false
-    kubeApiserverAvailability: false
-    kubeApiserverBurnrate: true
-    kubeApiserverHistogram: false
-    kubeApiserverSlos: false
-    kubelet: false
-    kubePrometheusGeneral: false
-    kubePrometheusNodeRecording: false
-    kubeProxy: false
-    kubernetesApps: false
-    kubernetesResources: false
-    kubernetesStorage: false
-    kubernetesSystem: false
-    kubeScheduler: false
-    kubeStateMetrics: false
-    network: false
-    node: false
-    nodeExporterAlerting: false
-    nodeExporterRecording: false
-    prometheus: false
-    prometheusOperator: false
-
 prometheusOperator:
   enabled: false
-  resources: {{- $p.resources.prometheusOperator | toYaml | nindent 4 }}
-  {{- if $v.otomi.linodeLkeImageRepository }}
-  image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
-  {{- end }}
-  admissionWebhooks:
-    enabled: true
-    {{- if $v.otomi.linodeLkeImageRepository }}
-    deployment:
-      image:
-        registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
-    patch:
-      image:
-        registry: "{{- $v.otomi.linodeLkeImageRepository }}/k8s"
-    {{- end }}
-    certManager:
-      enabled: true
-      issuerRef:
-        name: custom-ca
-        kind: ClusterIssuer
-  priorityClassName: otomi-critical
-  prometheusConfigReloader:
-    resources: {{- $p.resources.prometheusConfigReloader | toYaml | nindent 6 }}
-    {{- if $v.otomi.linodeLkeImageRepository }}
-    image:
-      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
-    {{- end }}
 
 commonLabels:
   prometheus: team-{{ $teamId }}
@@ -284,14 +222,11 @@ grafana:
   plugins: []
 
 kubernetesServiceMonitors:
-  enabled: {{ $p.enabled }}
-
+  enabled: false
 kubeStateMetrics:
   enabled: false
-
 nodeExporter:
   enabled: false
-
 kubeProxy:
   enabled: false
 kubeScheduler:
