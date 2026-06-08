@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.15.4](https://github.com/linode/apl-core/compare/v4.15.3...v4.15.4) (2026-06-08)
+
+
+### Bug Fixes
+
+* upgrades prior to 5.x ([#3309](https://github.com/linode/apl-core/issues/3309)) ([b18941e](https://github.com/linode/apl-core/commit/b18941effe1828b89f3d73446cccf29251f3b119))
+
 ### [4.15.3](https://github.com/linode/apl-core/compare/v4.15.2...v4.15.3) (2026-04-13)
 
 
