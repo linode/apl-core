@@ -730,7 +730,8 @@ export function argoCdHasUnrecoverableErrors(applications: Record<string, any>[]
   for (const application of applications) {
     const operationState = application.status?.operationState
     if (
-      operationState?.phase === 'Failed' &&
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      ['Failed', 'Error'].includes(operationState?.phase) &&
       operationState?.message === 'runtime error: invalid memory address or nil pointer dereference'
     ) {
       return application?.metadata?.name || 'unknown'
