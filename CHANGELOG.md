@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.1.0](https://github.com/linode/apl-core/compare/v5.0.1...v5.1.0) (2026-06-08)
+
+
+### Features
+
+* add support for Kubernetes v1.36 ([#3301](https://github.com/linode/apl-core/issues/3301)) ([cf85ab2](https://github.com/linode/apl-core/commit/cf85ab2d05435f0010c4a826e9bdad9a0bed218a))
+* use default serviceentry resolution on wildcard ([#3183](https://github.com/linode/apl-core/issues/3183)) ([b77b417](https://github.com/linode/apl-core/commit/b77b4170e5636a54199fa45f86c9bf2ac4ba0614))
+
+
+### Bug Fixes
+
+* do not attempt to re-install ([#3170](https://github.com/linode/apl-core/issues/3170)) ([617cf62](https://github.com/linode/apl-core/commit/617cf622fc24933a24360eafa8a801c1fcf66903))
+* enforce jwt pub key update to sidecars ([#3217](https://github.com/linode/apl-core/issues/3217)) ([4e117c6](https://github.com/linode/apl-core/commit/4e117c638528377be79a23bdf4dcdb4222f7caf2))
+* expand AppProject RBAC policy wildcards to explicit resource types ([#3215](https://github.com/linode/apl-core/issues/3215)) ([4ff54e4](https://github.com/linode/apl-core/commit/4ff54e455b2387c3b45ec513a50f25de8a118847))
+* load raw values from tekton app values ([#3261](https://github.com/linode/apl-core/issues/3261)) ([a481f8b](https://github.com/linode/apl-core/commit/a481f8b5a7827018413ae560b85b8dcef7828147))
+* making the deleteFile function synchronous ([#3129](https://github.com/linode/apl-core/issues/3129)) ([a7e3739](https://github.com/linode/apl-core/commit/a7e373992a431f53008892c97c836db267a8bdd3))
+* setting namespace in team-admin services ([#3286](https://github.com/linode/apl-core/issues/3286)) ([327b84d](https://github.com/linode/apl-core/commit/327b84d0af2dc4a67d4d7024afc665060f932ff1))
+* update Grype to more recent image for fixing db updates ([#3280](https://github.com/linode/apl-core/issues/3280)) ([f945d7b](https://github.com/linode/apl-core/commit/f945d7b979146d81e45a35ddf9db902a047377d2))
+
+
+### CI
+
+* add acl on cluster creation ([#3139](https://github.com/linode/apl-core/issues/3139)) ([c8e139b](https://github.com/linode/apl-core/commit/c8e139b7badfac4c5be40dc061b0e747f0b6f280))
+* added job filter to avoid pending jobs ([#3152](https://github.com/linode/apl-core/issues/3152)) ([591fbe7](https://github.com/linode/apl-core/commit/591fbe75bb7165037f5fe6403c9f624c736d1099))
+* adjust name for kserve chart in index and script ([#3245](https://github.com/linode/apl-core/issues/3245)) ([201bf37](https://github.com/linode/apl-core/commit/201bf3718830fb789e19ac33aa085ec3015a0414))
+* check availability of Kubernetes API before attempting Helm install ([#3151](https://github.com/linode/apl-core/issues/3151)) ([4a97250](https://github.com/linode/apl-core/commit/4a97250c57515d2788a5c49fec6e12f334a4b2cb))
+* do not install wiz without APL ([#3244](https://github.com/linode/apl-core/issues/3244)) ([38e6e93](https://github.com/linode/apl-core/commit/38e6e936aa30e08dd4b7188478190b950999155f))
+* fix stale node cache and remove refresh workflow ([#3243](https://github.com/linode/apl-core/issues/3243)) ([ef051f6](https://github.com/linode/apl-core/commit/ef051f68a6056b88f76b64104624aa0ba03faf49))
+* optimize docke cache usage ([#3289](https://github.com/linode/apl-core/issues/3289)) ([89075e5](https://github.com/linode/apl-core/commit/89075e52d07f7f1138608547adb4a8fb60d03a51))
+* refresh tool cache ([#3241](https://github.com/linode/apl-core/issues/3241)) ([6ba7d83](https://github.com/linode/apl-core/commit/6ba7d8391ad49c69a1e5bda240b9bb7f25bb6b59))
+
+
+### Others
+
+* **release:** 5.1.0-rc.0 ([908bf2b](https://github.com/linode/apl-core/commit/908bf2b459d84f2eaf5d1a82dcce6ae501478725))
+
 ### [5.0.1](https://github.com/linode/apl-core/compare/v5.0.0...v5.0.1) (2026-05-28)
 
 
