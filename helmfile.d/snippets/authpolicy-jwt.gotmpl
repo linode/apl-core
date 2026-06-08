@@ -53,5 +53,6 @@ spec:
     {{- with $allowGroups }}
     - when:
         - key: request.auth.claims[groups]
-          values: {{ $allowGroups | toJson }}
+          values:
+            {{- toYaml . | nindent 12 }}
     {{- end }}
