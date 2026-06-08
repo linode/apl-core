@@ -621,6 +621,18 @@ describe('argoCdHasUnrecoverableErrors', () => {
     expect(argoCdHasUnrecoverableErrors(applications)).toBe('my-app')
   })
 
+  it('should return the application name when it has the specific Error phase and message', () => {
+    const applications = [
+      {
+        ...ARGOCD_BASE_MANIFEST,
+        metadata: { name: 'my-app', namespace: 'argocd' },
+        status: { operationState: { phase: 'Error', message: NIL_POINTER_MSG } },
+      },
+    ]
+
+    expect(argoCdHasUnrecoverableErrors(applications)).toBe('my-app')
+  })
+
   it('should return "unknown" when the failing application has no metadata name', () => {
     const applications = [
       {
