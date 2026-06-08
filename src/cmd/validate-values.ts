@@ -89,7 +89,7 @@ export const validateValues = async (argv: HelmArguments = getParsedArgs(), envD
 
   d.info('Loading values-schema.yaml')
 
-  const strictAdditional = (argv.strictAdditional || false) as boolean
+  const strictAdditional = argv.strictAdditional === true || argv.strictAdditional === 'true'
   const validationSchema = await loadValidatingSchema(strictAdditional)
   d.debug('Initializing Ajv')
   const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
