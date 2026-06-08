@@ -47,11 +47,12 @@ function permitAdditionalProperties(node: Record<string, any>): void {
       if (property.additionalProperties === false) {
         unset(property, 'additionalProperties')
       }
-      if (property.properties) {
-        permitAdditionalProperties(property.properties)
-      }
-      if (property.definitions) {
-        permitAdditionalProperties(property.definitions)
+      for (const nestedName of ['properties', 'definitions', 'items']) {
+        const nestedItem = property[nestedName]
+        if (nestedItem) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          permitAdditionalProperties(nestedItem)
+        }
       }
     }
   }
