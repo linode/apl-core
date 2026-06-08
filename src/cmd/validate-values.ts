@@ -1,5 +1,5 @@
 import Ajv, { ValidateFunction } from 'ajv'
-import { cloneDeep, difference, set, unset } from 'lodash'
+import { difference, unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
