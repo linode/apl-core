@@ -156,7 +156,7 @@ resources:
         kind: ClusterSecretStore
       target:
         name: argocd-redis
-        creationPolicy: Merge
+        creationPolicy: Owner
         template:
           data:
             auth: '{{ "{{ .redisPassword | toString }}" }}'
