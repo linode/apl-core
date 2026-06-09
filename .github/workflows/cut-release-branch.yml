@@ -29,6 +29,7 @@ env:
 jobs:
   cut-release-branch:
     runs-on: ubuntu-22.04
+    environment: release
     permissions:
       contents: write
       pull-requests: write
