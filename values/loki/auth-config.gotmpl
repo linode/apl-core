@@ -1,9 +1,0 @@
-users:
-  - username: otomi-admin
-    password: {{ .adminPassword | quote }}
-    orgid: admins
-  {{- range $id, $team := .teams }}
-  - username: {{ $id }}
-    password: {{ $team.settings.password | quote }}
-    orgid: {{ $id }}
-  {{- end }}
