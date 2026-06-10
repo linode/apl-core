@@ -148,6 +148,9 @@ loki:
   {{- end }}
   structuredConfig:
     limits_config:
+      {{- if not $useObjectStorage }}
+      volume_enabled: true
+      {{- end }}
       discover_service_name:
         # Added
         - app
