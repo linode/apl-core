@@ -1,89 +1,256 @@
 {{- $v := .Values }}
-{{- $a := $v.apps | get "alertmanager" }}
-{{- $g := $v.apps | get "grafana" }}
+{{- $apps := $v.apps }}
+{{- $a := $apps | get "alertmanager" }}
+{{- $g := $apps | get "grafana" }}
+{{- $p := $apps | get "prometheus" }}
+{{- $teamId := .Release.Labels.team }}
+{{- $domain := ($v.cluster | get "domainSuffix" nil) }}
+{{- $gatewayName := $v.ingress.platformClass.className }}
+{{- $teamConfig := index $v.teamConfig $teamId }}
+{{- $teamSettings := $teamConfig.settings }}
+{{- $alertmanagerHostname := printf "alertmanager-%s.%s" $teamId $domain }}
+{{- $grafanaHostname := printf "grafana-%s.%s" $teamId $domain }}
+{{- $teamApps := index $teamConfig "apps" | default dict }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 
+{{- define "prometheus-operator.common-route-opts" }}
+{{ with .annotations }}
+annotations:
+  {{ . | toYaml | nindent 2 }}
+{{- end }}
+parentRefs:
+  {{- .parentRefs | toYaml | nindent 2 }}
+additionalRules:
+  {{- .authRules | toYaml | nindent 2 }}
+{{- end }} {{/* define "prometheus-operator.common-route-opts" */}}
+
+nameOverride: {{ $teamId }}-po
+fullnameOverride: {{ $teamId }}-po
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+global:
+  imagePullSecrets:
+    - name: otomi-pullsecret-global
+{{- end }}
+
+prometheusOperator:
+  enabled: false
+
+commonLabels:
+  prometheus: team-{{ $teamId }}
+
+crds:
+  enabled: false
+
+prometheus:
+  enabled: false
+defaultRules:
+  create: false
+additionalPrometheusRules: null
+
+alertmanager:
+  enabled: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}
+  alertmanagerSpec:
+    podMetadata:
+      labels:
+        prometheus: system
+        otomi.io/auth: platform
+        otomi.io/auth-policy: monitoring-{{ $teamId }}
+        {{- if $v.apps.istio.defaultRevision }}
+        istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
+        {{- else }}
+        sidecar.istio.io/inject: "true"
+        {{- end }}
+    image:
+      {{- if $v.otomi.linodeLkeImageRepository }}
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+      {{- end }}
+      {{- with $a | get "image.tag" nil }}
+      tag: {{ . }}
+      {{- end }}
+      pullPolicy: {{ $a | get "image.pullPolicy" "IfNotPresent" }}
+    priorityClassName: otomi-critical
+    resources: {{- $teamApps.alertmanager.resources | toYaml | nindent 6 }}
+    externalUrl: "https://{{ $alertmanagerHostname }}"
+    useExistingSecret: true
+    configSecret: alertmanager-team-{{ $teamId }}-config
+    {{- if $teamSettings | get "managedMonitoring.alertmanager" false }}
+    {{- $teamReceivers := $teamSettings | get "alerts.receivers" ($v | get "alerts.receivers" (list "slack")) }}
+    {{- if not (has "none" $teamReceivers) }}
+    secrets:
+      - alertmanager-credentials
+    {{- end }}
+    {{- end }}
+  route:
+    main:
+      enabled: true
+      hostnames:
+        - {{ $alertmanagerHostname }}
+      {{- include "prometheus-operator.common-route-opts" $httpRoute | nindent 6 }}
+  serviceMonitor:
+    relabelings:
+      - sourceLabels: [__address__]
+        regex: '(\d+)\.(\d+)\.(\d+)\.(\d+):(\d+)'
+        replacement: '$5'
+        targetLabel: __tmp_pod_ip_port
+      - sourceLabels: [service, __meta_kubernetes_namespace]
+        separator: "."
+        replacement: '$1.svc.cluster.local'
+        targetLabel: __tmp_service_namespace
+      - sourceLabels: [__tmp_service_namespace, __tmp_pod_ip_port]
+        separator: ":"
+        targetLabel: __address__
+    selfMonitor: false
+  namespaceOverride: null
+
+grafana:
+  enabled: {{ $teamSettings | get "managedMonitoring.grafana" false }}
+  defaultDashboardsEnabled: false
+  nameOverride: {{ $teamId }}-po-grafana
+  fullnameOverride: {{ $teamId }}-po-grafana
+  namespaceOverride: null
+  defaultDashboardsTimezone: browser
+  assertNoLeakedSecrets: false
+  image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+    {{- end }}
+    {{- with $g | get "image.tag" nil }}
+    tag: {{ . }}
+    {{- end }}
+    pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
+  resources: {{- $teamApps.grafana.resources.grafana | toYaml | nindent 4 }}
+  sidecar:
+    resources: {{- $teamApps.grafana.resources.sidecar | toYaml | nindent 6 }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image:
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    {{- end }}
+    dashboards:
+      enabled: true
+      label: release
+      labelValue: grafana-dashboards-{{ $teamId }}
+    datasources:
+      defaultDatasourceEnabled: false
+  serviceMonitor:
+    enabled: false
+  testFramework:
+    enabled: false
+  additionalDataSources:
+    - name: Prometheus-platform
+      editable: false
+      uid: prometheus-platform
+      isDefault: true
+      type: prometheus
+      access: proxy
+      url: http://po-prometheus.monitoring:9090
+      jsonData:
+        httpMethod: GET
+    - name: Loki
+      editable: false
+      uid: loki
+      type: loki
+      access: proxy
+      {{- if eq $v.obj.provider.type "linode" }}
+      url: http://loki-query-frontend-headless.monitoring:3101
+      {{- else }}
+      url: http://loki-headless.monitoring:3101
+      {{- end }}
+      basicAuth: true
+      basicAuthUser: {{ $teamId }}
+      secureJsonData:
+        basicAuthPassword: $__env{GF_LOKI_BASIC_AUTH_PASSWORD}
+  admin:
+    existingSecret: team-{{ $teamId }}-grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  envValueFrom:
+    GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
+      secretKeyRef:
+        name: grafana-oidc-secret
+        key: client_id
+    GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
+      secretKeyRef:
+        name: grafana-oidc-secret
+        key: client_secret
+    GF_LOKI_BASIC_AUTH_PASSWORD:
+      secretKeyRef:
+        name: grafana-loki-datasource-secret
+        key: password
+  grafana.ini:
+    analytics:
+      check_for_updates: false
+      check_for_plugin_updates: false
+      feedback_links_enabled: false
+      reporting_enabled: false
+    auth.generic_oauth:
+      tls_skip_verify_insecure: {{ $v._derived.untrustedCA }}
+      enabled: true
+      name: OAuth
+      org_role: Admin
+      allow_sign_up: true
+      oauth_auto_login: true
+      client_id: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_ID}
+      client_secret: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
+      scopes: email profile openid
+      email_attribute_path: email
+      login_attribute_path: username
+      name_attribute_path: full_name
+      use_refresh_token: true
+      auth_url: {{ printf "%s/protocol/openid-connect/auth" $v._derived.oidcBaseUrl }}
+      token_url: {{ printf "%s/protocol/openid-connect/token" $v._derived.oidcBaseUrl }}
+      api_url: {{ printf "%s/protocol/openid-connect/userinfo" $v._derived.oidcBaseUrl }}
+      role_attribute_path: "contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'platform-admin') && 'Admin' || contains(groups[*], 'team-{{ $teamId }}') && 'Editor'"
+      role_attribute_strict: true
+    log:
+      level: error
+    security:
+      allow_embedding: true
+    server:
+      root_url: https://{{ $grafanaHostname }}
+    users:
+      allow_sign_up: false
+      auto_assign_org: true
+      auto_assign_org_role: Viewer
+  route:
+    main:
+      enabled: true
+      hostnames:
+        - {{ $grafanaHostname }}
+      {{- include "prometheus-operator.common-route-opts" $httpRoute | nindent 6 }}
+  podLabels:
+    otomi.io/auth: platform
+    otomi.io/auth-policy: monitoring-{{ $teamId }}
+  plugins: []
+
+kubernetesServiceMonitors:
+  enabled: false
+kubeStateMetrics:
+  enabled: false
+nodeExporter:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
 kubeApiServer:
   enabled: false
 coreDns:
   enabled: false
 kubeEtcd:
   enabled: false
-kubeControllerManager:
-  enabled: false
-kubeScheduler:
-  enabled: false
-kubeProxy:
-  enabled: false
 kubelet:
   enabled: false
-kubeStateMetrics:
-  enabled: false
-nodeExporter:
-  enabled: false
-prometheusOperator:
-  enabled: false
 
-defaultRules:
-  create: false
-  rules:
-    alertmanager: false
-    configReloaders: false
-    etcd: false
-    general: false
-    k8s: false
-    kubeApiserver: false
-    kubeApiserverAvailability: false
-    kubeApiserverBurnrate: true
-    kubeApiserverHistogram: false
-    kubeApiserverSlos: false
-    kubelet: false
-    kubePrometheusGeneral: false
-    kubePrometheusNodeRecording: false
-    kubeProxy: false
-    kubernetesApps: false
-    kubernetesResources: false
-    kubernetesStorage: false
-    kubernetesSystem: false
-    kubeScheduler: false
-    kubeStateMetrics: false
-    network: false
-    node: false
-    nodeExporterAlerting: false
-    nodeExporterRecording: false
-    prometheus: false
-    prometheusOperator: false
+{{- if eq $v.cluster.linode.tier "enterprise" }}
+coreDns:
+  service:
+    selector:
+      k8s-app: coredns
+{{- end }}
 
-additionalPrometheusRules: null
-grafana:
-  serviceMonitor:
-    enabled: false
-  defaultDashboardsEnabled: false
-  assertNoLeakedSecrets: false
-  plugins: []
-  resources:
-    requests:
-      cpu: 10m
-      memory: 128Mi
-    limits:
-      cpu: "1"
-      memory: 1Gi
-  sidecar:
-    resources:
-      limits:
-        cpu: 500m
-        memory: 256Mi
-      requests:
-        cpu: 10m
-        memory: 128Mi
-
-alertmanager:
-  serviceMonitor:
-    selfMonitor: false
-  alertmanagerSpec:
-    resources:
-      requests:
-        cpu: 10m
-        memory: 64Mi
-      limits:
-        cpu: 200m
-        memory: 256Mi
+extraManifests:
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" (print "monitoring-" $teamId) "gatewayName" $gatewayName "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" (print "monitoring-" $teamId) "excludeNamespace" (print "team-" $teamId) "excludeAccount" "monitoring/po-prometheus" "excludePaths" (list "/metrics")) | nindent 12 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" (print "monitoring-" $teamId) "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}
