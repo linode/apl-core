@@ -3,6 +3,7 @@
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $obj := $v.obj.provider }}
 {{- if $v.otomi.isMultitenant }}
+{{- $teamNames := sortAlpha (keys $v.teamConfig) }}
 resources:
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
@@ -22,14 +23,14 @@ resources:
           type: Opaque
           data:
             authn.yaml: |
-              {{ "{{ " }}$adminPassword := .adminPassword | toString{{ " }}" }}
               users:
                 - username: otomi-admin
-                  password: {{ "\"{{ $adminPassword }}\"" }}
+                  password: '{{ "{{ .adminPassword }}" }}'
                   orgid: admins
-              {{- range $id, $team := $v.teamConfig }}
+              {{- range $id := $teamNames }}
+              {{- $passwordVar := printf "{{ .team_%s }}" (sha1sum $id) }}
                 - username: {{ $id }}
-                  password: {{ printf "\"{{ .team_%s_password | toString }}\"" $id }}
+                  password: {{ $passwordVar }}
                   orgid: {{ $id }}
               {{- end }}
       data:
@@ -37,8 +38,8 @@ resources:
           remoteRef:
             key: loki-secrets
             property: adminPassword
-        {{- range $id, $team := $v.teamConfig }}
-        - secretKey: team_{{ $id }}_password
+        {{- range $id := $teamNames }}
+        - secretKey: team_{{ sha1sum $id }}
           remoteRef:
             key: team-{{ $id }}-settings-secrets
             property: settings_password
