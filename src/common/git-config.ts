@@ -89,7 +89,7 @@ export async function getGitConfigData(): Promise<GitConfigData | undefined> {
  * Reconstructs GitRepoConfig from stored ConfigMap + Secret.
  * This avoids calling hfValues() in operator startup path.
  */
-export async function getStoredGitRepoConfig(): Promise<GitRepoConfig> {
+export async function getStoredGitRepoConfig(preferInternal = false): Promise<GitRepoConfig> {
   let [configData, credentials] = await Promise.all([getGitConfigData(), getGitCredentials()])
 
   // Try the canonical secret populated by SealedSecrets/ESO (same source as getRepo())
@@ -133,7 +133,7 @@ export async function getStoredGitRepoConfig(): Promise<GitRepoConfig> {
       email: 'pipeline@cluster.local',
     }
   }
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development' && !preferInternal) {
     configData.repoUrl = process.env.GIT_REPO_URL
   }
   const { username, password } = credentials
