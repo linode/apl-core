@@ -11,6 +11,7 @@
 {{- with $v | get "allowGroup" nil }}
 {{- $allowGroups = append $allowGroups . }}
 {{- end }}
+{{- $onlyAuthenticate := not $allowGroups }}
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
@@ -24,10 +25,10 @@ spec:
     matchLabels:
       otomi.io/auth-policy: {{ $v.name }}
   rules:
-    {{- if or (not $allowGroups) $excludeNamespaces $excludeAccounts }}
+    {{- if or $onlyAuthenticate $excludeNamespaces $excludeAccounts }}
     - from:
-        {{- if not $allowGroups }}
-        {{- /* Allow requests with a valid JWT token, which can be provided by OAuth2-Proxy */}}
+        {{- if $onlyAuthenticate }}
+        {{- /* Allow requests with any valid JWT token, which can be provided by OAuth2-Proxy */}}
         - source:
             requestPrincipals: ["*"]
         {{- end }}
