@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
+    controller-gen.kubebuilder.io/version: v0.21.0
     helm.sh/resource-policy: keep
   name: objectstores.barmancloud.cnpg.io
 spec:
@@ -145,10 +145,11 @@ spec:
                         description: |-
                           Compress a backup file (a tar file per tablespace) while streaming it
                           to the object store. Available options are empty string (no
-                          compression, default), `gzip`, `bzip2`, and `snappy`.
+                          compression, default), `gzip`, `bzip2`, `lz4`, and `snappy`.
                         enum:
                         - bzip2
                         - gzip
+                        - lz4
                         - snappy
                         type: string
                       encryption:
@@ -176,6 +177,25 @@ spec:
                         format: int32
                         minimum: 1
                         type: integer
+                      restoreAdditionalCommandArgs:
+                        description: |-
+                          Additional arguments that can be appended to the 'barman-cloud-restore'
+                          command-line invocation. These arguments provide flexibility to customize
+                          the data restore process further, according to specific requirements or
+                          configurations.
+
+                          Example:
+                          In a scenario where specialized restore options are required, such as setting
+                          a specific read timeout or defining custom behavior, users can use this field
+                          to specify additional command arguments.
+
+                          Note:
+                          It's essential to ensure that the provided arguments are valid and supported
+                          by the 'barman-cloud-restore' command, to avoid potential errors or unintended
+                          behavior during execution.
+                        items:
+                          type: string
+                        type: array
                     type: object
                   destinationPath:
                     description: |-
