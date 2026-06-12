@@ -7,6 +7,11 @@
 {{- with $v | get "excludeAccount" nil }}
 {{- $excludeAccounts = append $excludeAccounts . }}
 {{- end }}
+{{- $allowGroups := $v | get "allowGroups" list }}
+{{- with $v | get "allowGroup" nil }}
+{{- $allowGroups = append $allowGroups . }}
+{{- end }}
+{{- $onlyAuthenticate := not $allowGroups }}
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
@@ -20,10 +25,13 @@ spec:
     matchLabels:
       otomi.io/auth-policy: {{ $v.name }}
   rules:
+    {{- if or $onlyAuthenticate $excludeNamespaces $excludeAccounts }}
     - from:
-        {{- /* Allow requests with a valid JWT token, which can be provided by OAuth2-Proxy */}}
+        {{- if $onlyAuthenticate }}
+        {{- /* Allow requests with any valid JWT token, which can be provided by OAuth2-Proxy */}}
         - source:
             requestPrincipals: ["*"]
+        {{- end }}
         {{- /* Optionally in addition allow requests from select namespaces */}}
         {{- with $excludeNamespaces }}
         - source:
@@ -35,10 +43,17 @@ spec:
             serviceAccounts:
               {{- toYaml . | nindent 14 }}
         {{- end }}
+    {{- end }}
     {{- with $v | get "excludePaths" list }}
     - to:
         {{- /* Optionally exempt certain paths from checks */}}
         - operation:
             paths:
               {{- toYaml . | nindent 14 }}
+    {{- end }}
+    {{- with $allowGroups }}
+    - when:
+        - key: request.auth.claims[groups]
+          values:
+            {{- toYaml . | nindent 12 }}
     {{- end }}
