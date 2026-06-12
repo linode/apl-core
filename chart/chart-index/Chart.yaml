@@ -82,7 +82,7 @@ dependencies:
     version: 6.55.0
     repository: https://grafana.github.io/helm-charts
   - name: metrics-server
-    version: 3.13.0
+    version: 3.13.1
     repository: https://kubernetes-sigs.github.io/metrics-server
   - name: oauth2-proxy
     version: 10.6.0
