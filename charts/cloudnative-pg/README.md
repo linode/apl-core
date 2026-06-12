@@ -1,16 +1,103 @@
 # cloudnative-pg
 
-![Version: 0.28.2](https://img.shields.io/badge/Version-0.28.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.29.1](https://img.shields.io/badge/AppVersion-1.29.1-informational?style=flat-square)
+![Version: 0.28.3](https://img.shields.io/badge/Version-0.28.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.29.1](https://img.shields.io/badge/AppVersion-1.29.1-informational?style=flat-square)
 
 CloudNativePG Operator Helm Chart
 
 **Homepage:** <https://cloudnative-pg.io>
 
-## Maintainers
+About this chart
+----------------
 
-| Name | Email | Url |
-| ---- | ------ | --- |
-| phisco | <p.scorsolini@gmail.com> |  |
+Helm chart to install the [CloudNativePG operator](https://cloudnative-pg.io), originally created and sponsored
+by [EDB](https://www.enterprisedb.com/) to manage PostgreSQL workloads on any supported Kubernetes cluster
+running in private, public, or hybrid cloud environments.
+
+**NOTE**: this chart supports only the latest point release of the CloudNativePG operator.
+
+The chart installs only the operator (controller manager, webhooks, RBAC and CRDs). To provision a PostgreSQL
+`Cluster` resource, use the companion [`cluster`](https://github.com/cloudnative-pg/charts/tree/main/charts/cluster) chart
+(see the [Cluster chart README](https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/README.md) for details)
+or apply your own `Cluster` manifest.
+
+Getting Started
+---------------
+
+### Add the chart repository
+
+```console
+helm repo add cnpg https://cloudnative-pg.github.io/charts
+helm repo update
+```
+
+### Install the operator
+
+```console
+helm upgrade --install cnpg \
+  --namespace cnpg-system \
+  --create-namespace \
+  cnpg/cloudnative-pg
+```
+
+### Install with custom parameters
+
+You can override individual chart values from the command line with `--set`.
+For example, to enable the Prometheus `PodMonitor`:
+
+```console
+helm upgrade --install cnpg \
+  --namespace cnpg-system \
+  --create-namespace \
+  --set monitoring.podMonitorEnabled=true \
+  cnpg/cloudnative-pg
+```
+
+> **Note**
+> Enabling the `PodMonitor` requires the Prometheus Operator CRDs to be installed in the cluster.
+> Without them the install fails with `no matches for kind "PodMonitor"`.
+
+See the [Values](#values) section below for the full list of configurable parameters.
+
+### Verify the installation
+
+```console
+kubectl -n cnpg-system get deploy
+kubectl -n cnpg-system rollout status deploy/cnpg-cloudnative-pg
+```
+
+Single namespace installation
+-----------------------------
+
+It is possible to limit the operator's capabilities to solely the namespace in which it has been installed.
+With this restriction, the cluster-level permissions required by the operator will be substantially reduced,
+and the security profile of the installation will be enhanced.
+
+You can install the operator in single-namespace mode by setting the `config.clusterWide` flag to `false`,
+as in the following example:
+
+```console
+helm upgrade --install cnpg \
+  --namespace cnpg-system \
+  --create-namespace \
+  --set config.clusterWide=false \
+  cnpg/cloudnative-pg
+```
+
+**IMPORTANT**: the single-namespace installation mode can't coexist with the cluster-wide operator. Otherwise
+there would be collisions when managing the resources in the namespace watched by the single-namespace
+operator. It is up to the user to ensure there is no collision between operators.
+
+Uninstalling
+------------
+
+```console
+helm uninstall cnpg --namespace cnpg-system
+```
+
+> **Warning**
+> Uninstalling the chart does not remove the CRDs. Deleting them cascade-deletes every `Cluster` (and other
+> CloudNativePG) resource across the whole cluster, together with the PostgreSQL data stored in their PVCs.
+> This is irreversible, so only delete the CRDs if you intend to permanently remove all managed databases.
 
 ## Source Code
 
@@ -29,7 +116,7 @@ Kubernetes: `>=1.29.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | additionalArgs | list | `[]` | Additional arguments to be added to the operator's args list. |
-| additionalEnv | list | `[]` | Array containing extra environment variables which can be templated. For example:  - name: RELEASE_NAME    value: "{{ .Release.Name }}"  - name: MY_VAR    value: "mySpecialKey" |
+| additionalEnv | list | `[]` | Array containing extra environment variables which can be templated. |
 | affinity | object | `{}` | Affinity for the operator to be installed. |
 | commonAnnotations | object | `{}` | Annotations to be added to all other resources. |
 | config.clusterWide | bool | `true` | This option determines if the operator is responsible for observing events across the entire Kubernetes cluster or if its focus should be narrowed down to the specific namespace within which it has been deployed. |
@@ -52,8 +139,8 @@ Kubernetes: `>=1.29.0-0`
 | monitoring.grafanaDashboard.create | bool | `false` |  |
 | monitoring.grafanaDashboard.labels | object | `{}` | Labels that ConfigMaps should have to get configured in Grafana. |
 | monitoring.grafanaDashboard.namespace | string | `""` | Allows overriding the namespace where the ConfigMap will be created, defaulting to the same one as the Release. |
-| monitoring.grafanaDashboard.sidecarLabel | string | `"grafana_dashboard"` | Label that ConfigMaps should have to be loaded as dashboards.  DEPRECATED: Use labels instead. |
-| monitoring.grafanaDashboard.sidecarLabelValue | string | `"1"` | Label value that ConfigMaps should have to be loaded as dashboards.  DEPRECATED: Use labels instead. |
+| monitoring.grafanaDashboard.sidecarLabel | string | `"grafana_dashboard"` | Label that ConfigMaps should have to be loaded as dashboards. DEPRECATED: Use labels instead. |
+| monitoring.grafanaDashboard.sidecarLabelValue | string | `"1"` | Label value that ConfigMaps should have to be loaded as dashboards. DEPRECATED: Use labels instead. |
 | monitoring.podMonitorAdditionalLabels | object | `{}` | Additional labels for the podMonitor |
 | monitoring.podMonitorEnabled | bool | `false` | Specifies whether the monitoring should be enabled. Requires Prometheus Operator CRDs. |
 | monitoring.podMonitorMetricRelabelings | list | `[]` | Metrics relabel configurations to apply to samples before ingestion. |
@@ -73,12 +160,29 @@ Kubernetes: `>=1.29.0-0`
 | resources | object | `{}` |  |
 | service.ipFamilies | list | `[]` | Sets the families that should be supported and the order in which they should be applied to ClusterIP as well. Can be IPv4 and/or IPv6. |
 | service.ipFamilyPolicy | string | `""` | Set the ip family policy to configure dual-stack see [Configure dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services) |
-| service.name | string | `"cnpg-webhook-service"` | DO NOT CHANGE THE SERVICE NAME as it is currently used to generate the certificate and can not be configured |
+| service.name | string | `"cnpg-webhook-service"` | The name of the Webhook Service. |
 | service.port | int | `443` |  |
 | service.type | string | `"ClusterIP"` |  |
 | serviceAccount.create | bool | `true` | Specifies whether the service account should be created. |
 | serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template. |
 | tolerations | list | `[]` | Tolerations for the operator to be installed. |
 | topologySpreadConstraints | list | `[]` | Topology Spread Constraints for the operator to be installed. |
-| updateStrategy | object | `{}` | Update strategy for the operator. ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy For example:  type: RollingUpdate  rollingUpdate:    maxSurge: 25%    maxUnavailable: 25% |
+| updateStrategy | object | `{}` | Update strategy for the operator. ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy |
 | webhook | object | `{"livenessProbe":{"initialDelaySeconds":3},"mutating":{"create":true,"failurePolicy":"Fail"},"port":9443,"readinessProbe":{"initialDelaySeconds":3},"startupProbe":{"failureThreshold":6,"periodSeconds":5},"validating":{"create":true,"failurePolicy":"Fail"}}` | The webhook configuration. |
+
+## Maintainers
+
+| Name | Email | Url |
+| ---- | ------ | --- |
+| phisco | <p.scorsolini@gmail.com> |  |
+
+Contributing
+------------
+
+Please read the [code of conduct](https://github.com/cloudnative-pg/charts/blob/main/CODE-OF-CONDUCT.md) and the
+[guidelines](https://github.com/cloudnative-pg/charts/blob/main/CONTRIBUTING.md) to contribute to the project.
+
+Copyright
+---------
+
+Helm charts for CloudNativePG are distributed under [Apache License 2.0](./LICENSE).
