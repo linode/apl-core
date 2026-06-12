@@ -90,7 +90,15 @@ resources:
                   {{- end }}
   {{- end }}
   {{- end }}
+  {{- /* Generic AuthorizationPolicy that allows access by any authenticated user */}}
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" "platform") | nindent 4 }}
+  {{- /* Generic AuthorizationPolicy that only allows access by platform-admin group */}}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" "platform-admin" "allowGroup" "platform-admin") | nindent 4 }}
+  {{- /* Generic AuthorizationPolicy that only allows access by each team and platform-admin group */}}
+  {{- range $teamId := (keys (omit $v.teamConfig "admin") | sortAlpha) }}
+  {{- $groupName := print "team-" $teamId }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" "platform-team" "namespace" $groupName "allowGroups" (list "platform-admin" $groupName)) | nindent 4 }}
+  {{- end }}
   - apiVersion: security.istio.io/v1
     kind: RequestAuthentication
     metadata:
