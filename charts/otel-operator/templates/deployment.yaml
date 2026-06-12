@@ -54,6 +54,9 @@ spec:
             - --enable-leader-election
             {{- end }}
             - --health-probe-addr=:{{ .Values.manager.ports.healthzPort }}
+            {{- if .Values.manager.ports.pprofPort }}
+            - --pprof-addr=:{{ .Values.manager.ports.pprofPort }}
+            {{- end }}
             {{- if or .Values.admissionWebhooks.create .Values.admissionWebhooks.secretName }}
             - --webhook-port={{ .Values.manager.ports.webhookPort }}
             {{- end }}
@@ -121,6 +124,11 @@ spec:
           name: manager
           imagePullPolicy: {{ .Values.manager.image.imagePullPolicy }}
           ports:
+            {{- if .Values.manager.ports.pprofPort }}
+            - containerPort: {{ .Values.manager.ports.pprofPort }}
+              name: pprof
+              protocol: TCP
+            {{- end }}
             - containerPort: {{ .Values.manager.ports.metricsPort }}
               name: metrics
               protocol: TCP
