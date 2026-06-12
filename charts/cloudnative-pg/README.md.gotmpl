@@ -1,0 +1,139 @@
+{{ template "chart.header" . }}
+
+
+{{ template "chart.deprecationWarning" . }}
+
+
+{{ template "chart.badgesSection" . }}
+
+
+{{ template "chart.description" . }}
+
+
+{{ template "chart.homepageLine" . }}
+
+
+About this chart
+----------------
+
+Helm chart to install the [CloudNativePG operator](https://cloudnative-pg.io), originally created and sponsored
+by [EDB](https://www.enterprisedb.com/) to manage PostgreSQL workloads on any supported Kubernetes cluster
+running in private, public, or hybrid cloud environments.
+
+**NOTE**: this chart supports only the latest point release of the CloudNativePG operator.
+
+The chart installs only the operator (controller manager, webhooks, RBAC and CRDs). To provision a PostgreSQL
+`Cluster` resource, use the companion [`cluster`](https://github.com/cloudnative-pg/charts/tree/main/charts/cluster) chart
+(see the [Cluster chart README](https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/README.md) for details)
+or apply your own `Cluster` manifest.
+
+
+Getting Started
+---------------
+
+### Add the chart repository
+
+```console
+helm repo add cnpg https://cloudnative-pg.github.io/charts
+helm repo update
+```
+
+### Install the operator
+
+```console
+helm upgrade --install cnpg \
+  --namespace cnpg-system \
+  --create-namespace \
+  cnpg/cloudnative-pg
+```
+
+### Install with custom parameters
+
+You can override individual chart values from the command line with `--set`.
+For example, to enable the Prometheus `PodMonitor`:
+
+```console
+helm upgrade --install cnpg \
+  --namespace cnpg-system \
+  --create-namespace \
+  --set monitoring.podMonitorEnabled=true \
+  cnpg/cloudnative-pg
+```
+
+> **Note**
+> Enabling the `PodMonitor` requires the Prometheus Operator CRDs to be installed in the cluster.
+> Without them the install fails with `no matches for kind "PodMonitor"`.
+
+See the [Values](#values) section below for the full list of configurable parameters.
+
+### Verify the installation
+
+```console
+kubectl -n cnpg-system get deploy
+kubectl -n cnpg-system rollout status deploy/cnpg-cloudnative-pg
+```
+
+
+Single namespace installation
+-----------------------------
+
+It is possible to limit the operator's capabilities to solely the namespace in which it has been installed.
+With this restriction, the cluster-level permissions required by the operator will be substantially reduced,
+and the security profile of the installation will be enhanced.
+
+You can install the operator in single-namespace mode by setting the `config.clusterWide` flag to `false`,
+as in the following example:
+
+```console
+helm upgrade --install cnpg \
+  --namespace cnpg-system \
+  --create-namespace \
+  --set config.clusterWide=false \
+  cnpg/cloudnative-pg
+```
+
+**IMPORTANT**: the single-namespace installation mode can't coexist with the cluster-wide operator. Otherwise
+there would be collisions when managing the resources in the namespace watched by the single-namespace
+operator. It is up to the user to ensure there is no collision between operators.
+
+
+Uninstalling
+------------
+
+```console
+helm uninstall cnpg --namespace cnpg-system
+```
+
+> **Warning**
+> Uninstalling the chart does not remove the CRDs. Deleting them cascade-deletes every `Cluster` (and other
+> CloudNativePG) resource across the whole cluster, together with the PostgreSQL data stored in their PVCs.
+> This is irreversible, so only delete the CRDs if you intend to permanently remove all managed databases.
+
+
+{{ template "chart.sourcesSection" . }}
+
+
+{{ template "chart.requirementsSection" . }}
+
+
+{{ template "chart.valuesSection" . }}
+
+
+{{ template "chart.maintainersSection" . }}
+
+Contributing
+------------
+
+Please read the [code of conduct](https://github.com/cloudnative-pg/charts/blob/main/CODE-OF-CONDUCT.md) and the
+[guidelines](https://github.com/cloudnative-pg/charts/blob/main/CONTRIBUTING.md) to contribute to the project.
+
+
+Copyright
+---------
+
+Helm charts for CloudNativePG are distributed under [Apache License 2.0](./LICENSE).
+
+
+{{- if not .SkipVersionFooter }}
+{{ template "helm-docs.versionFooter" . }}
+{{- end }}
