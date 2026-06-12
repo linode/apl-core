@@ -17,7 +17,15 @@ metadata:
   namespace: {{ .namespace | default (include "loki.namespace" $) }}
 spec:
   groups:
-  {{- include "loki.ruleGroupToYaml" (tpl ($.Files.Get "src/rules.yaml.tpl") $ | fromYaml).groups | indent 4 }}
-  {{- include "loki.ruleGroupToYaml" .additionalGroups | indent 4 }}
+    {{- range (tpl ($.Files.Get "src/rules.yaml.tpl") $ | fromYaml).groups }}
+    - name: {{ .name }}
+      rules:
+        {{- toYaml .rules | nindent 8 }}
+    {{- end }}
+    {{- range .additionalGroups }}
+    - name: {{ .name }}
+      rules:
+        {{- toYaml .rules | nindent 8 }}
+    {{- end }}
 {{- end }}
 {{- end }}
