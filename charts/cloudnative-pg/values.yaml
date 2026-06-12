@@ -38,12 +38,12 @@ dnsPolicy: ""
 
 # -- Update strategy for the operator.
 # ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+updateStrategy: {}
 # For example:
 #  type: RollingUpdate
 #  rollingUpdate:
 #    maxSurge: 25%
 #    maxUnavailable: 25%
-updateStrategy: {}
 
 crds:
   # -- Specifies whether the CRDs should be created when installing the chart.
@@ -85,6 +85,7 @@ config:
   # INHERITED_ANNOTATIONS: categories
   # INHERITED_LABELS: environment, workload, app
   # WATCH_NAMESPACE: namespace-a,namespace-b
+
   # -- The maximum number of concurrent reconciles. Defaults to 10.
   maxConcurrentReconciles: 10
 
@@ -92,12 +93,12 @@ config:
 additionalArgs: []
 
 # -- Array containing extra environment variables which can be templated.
+additionalEnv: []
 # For example:
 #  - name: RELEASE_NAME
 #    value: "{{ .Release.Name }}"
 #  - name: MY_VAR
 #    value: "mySpecialKey"
-additionalEnv: []
 
 serviceAccount:
   # -- Specifies whether the service account should be created.
@@ -144,9 +145,11 @@ priorityClassName: ""
 
 service:
   type: ClusterIP
-  # -- DO NOT CHANGE THE SERVICE NAME as it is currently used to generate the certificate
-  # and can not be configured
+  # -- The name of the Webhook Service.
   name: cnpg-webhook-service
+  # DO NOT CHANGE THE SERVICE NAME as it is currently used to generate the certificate
+  # and can not be configured
+
   port: 443
   # -- Set the ip family policy to configure dual-stack see [Configure dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services)
   ipFamilyPolicy: ""
@@ -193,9 +196,9 @@ monitoring:
     namespace: ""
     # -- The name of the ConfigMap containing the dashboard.
     configMapName: "cnpg-grafana-dashboard"
-    # -- Label that ConfigMaps should have to be loaded as dashboards.  DEPRECATED: Use labels instead.
+    # -- Label that ConfigMaps should have to be loaded as dashboards. DEPRECATED: Use labels instead.
     sidecarLabel: "grafana_dashboard"
-    # -- Label value that ConfigMaps should have to be loaded as dashboards.  DEPRECATED: Use labels instead.
+    # -- Label value that ConfigMaps should have to be loaded as dashboards. DEPRECATED: Use labels instead.
     sidecarLabelValue: "1"
     # -- Labels that ConfigMaps should have to get configured in Grafana.
     labels: {}
