@@ -104,6 +104,7 @@ async function copyKserveCrdTemplates(chartDir) {
   console.log(`Adding CRDs to ${crdPath}`)
   await fs.rm(crdPath, { force: true, recursive: true })
   await $`mv ${chartDir}/templates ${crdPath}`
+  await $`mv ${chartDir}/files/* ${crdPath}/`
   return false
 }
 
