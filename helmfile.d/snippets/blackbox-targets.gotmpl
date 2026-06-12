@@ -1,13 +1,19 @@
+{{- $v := . }}
 {{- $registry := list }}
-{{- range $s := .services }}
-  {{- if (not ($s | get "ksvc.scaleToZero" false)) }}
-    {{- $host := (printf "%s-%s" $s.name $.teamId) }}
-    {{- $svcDomain := ($s | get "domain" (printf "%s.%s" $host $.domain)) }}
-    {{- $paths:= $s | get "paths" list }}
+{{- range $s := $v.services }}
+  {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
+  {{- $canScaleToZero := and $isKnativeService (dig "ksvc" "scaleToZero" false $s) }}
+  {{- if not $canScaleToZero }}
+    {{- $serviceName := $s.name }}
+    {{- $cnameDomain := dig "cname" "domain" "" $s }}
+    {{- $useCname := and ($s | get "useCname" false) (ne $cnameDomain "") }}
+    {{- $svcNameSeparator := ternary "-team-" "-" $isKnativeService }}
+    {{- $defaultHostname := print $serviceName $svcNameSeparator $v.teamId "." $v.domain }}
+    {{- $paths := $s | get "paths" list }}
     {{- $path := ternary "/" (first $paths) (empty $paths) }}
-    {{- $url := printf "%s%s" $svcDomain $path }}
-    {{- if not (has $url $registry) }}
-      {{- $registry = append $registry $url }}
+    {{- $registry = append $registry (print "https://" $defaultHostname $path) }}
+    {{- if $useCname }}
+      {{- $registry = append $registry (print "https://" $cnameDomain $path) }}
     {{- end }}
   {{- end }}
 {{- end }}
@@ -17,10 +23,8 @@
   params:
     module: [http_2xx]  # Look for a HTTP 200 response.
   static_configs:
-    - targets: 
-{{- range $url := $registry }}
-      - https://{{ $url }}
-{{- end }}
+    - targets:
+        {{ toYaml $registry | nindent 8 }}
       labels:
         namespace: team-{{ .teamId }}
   relabel_configs:
