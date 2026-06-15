@@ -161,6 +161,7 @@ environments:
             enabled: false
             networkPolicies:
               enabled: true
+            adminUsername: otomi-admin
             databaseMaxConnections: 28
             databaseMaxIdleConnections: 6
             resources:
