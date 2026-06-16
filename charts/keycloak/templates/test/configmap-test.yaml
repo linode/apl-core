@@ -14,23 +14,14 @@ data:
     #!/usr/bin/env bash
     set -eu
 
-    if ! python3 -c 'import selenium' &> /dev/null
-    then
-      if ! command -v pip3 &> /dev/null
-      then
-        echo 'Installing pip3...'
-        export PATH="$PATH:$HOME/.local/bin"
-        mkdir -p "$HOME/.config/pip"
-        echo -e '[global]\nbreak-system-packages = true' > "$HOME/.config/pip/pip.conf"
-        wget -q -P "$HOME" https://bootstrap.pypa.io/get-pip.py
-        python3 "$HOME/get-pip.py" --user 1> /dev/null
-      fi
-
+    if ! python3 -c 'import selenium' &> /dev/null; then
       echo 'Installing selenium module...'
-      pip3 -q install selenium
+      python3 -m venv /tmp/test-venv
+      /tmp/test-venv/bin/pip install -q selenium
+      exec /tmp/test-venv/bin/python "$(dirname "$0")/test.py"
     fi
 
-    python3 "$(dirname $0)/test.py"
+    python3 "$(dirname "$0")/test.py"
   test.py: |
     import os
     from selenium import webdriver
