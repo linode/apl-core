@@ -1,0 +1,9 @@
+{{- if .Values.gateway.enabled -}}
+{{- range $name, $route := .Values.gateway.route -}}
+{{- if $route.enabled -}}
+{{- $routeName := ternary (include "loki.gatewayFullname" $) (printf "%s-%s" (include "loki.gatewayFullname" $) $name) (eq $name "main") -}}
+{{- $rules := include "loki.route.gatewayRule" (dict "ctx" $ "route" $route "serviceName" (include "loki.gatewayFullname" $) "port" $.Values.gateway.service.port) -}}
+{{- include "loki.route" (dict "ctx" $ "route" $route "name" $routeName "rules" $rules "labelsTemplate" "loki.gatewayLabels") }}
+{{- end -}}
+{{- end -}}
+{{- end -}}

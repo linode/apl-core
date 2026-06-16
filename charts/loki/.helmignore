@@ -10,23 +10,23 @@
 .hg/
 .hgignore
 .svn/
-
 # Common backup files
 *.swp
 *.bak
 *.tmp
 *.orig
 *~
-
 # Various IDEs
 .project
 .idea/
 *.tmproj
 .vscode/
-
-# Other
-doc.yaml
-README.tpl
-README.md.gotmpl
-ci
-CHANGELOG.md
+# Helm plugin tooling
+ci/
+tests/
+*.gotmpl
+# pre-fork content - to be removed
+test/
+scenarios/
+docs/
+*-values.yaml

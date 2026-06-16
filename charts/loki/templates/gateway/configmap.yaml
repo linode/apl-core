@@ -1,0 +1,201 @@
+{{- if .Values.gateway.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "loki.gatewayFullname" . }}
+  namespace: {{ include "loki.namespace" . }}
+  labels:
+    {{- include "loki.gatewayLabels" . | nindent 4 }}
+data:
+  nginx.conf: |
+    {{- tpl .Values.gateway.nginxConfig.file . | nindent 4 }}
+  {{- if .Values.gateway.metrics.enabled }}
+  access-log-exporter.yaml: |
+    presets:
+      loki:
+        metrics:
+          - name: "http_requests_total"
+            type: "counter"
+            help: "The total number of client requests."
+            labels:
+              - name: "host"
+                lineIndex: 0
+              - name: "method"
+                lineIndex: 1
+              - name: "status"
+                lineIndex: 2
+              - name: "path"
+                lineIndex: 11
+                replacements:
+                  - regexp: "^$"
+                    replacement: "/"
+                  - regexp: "^(.+)\\?.+"
+                    replacement: "$1"
+
+          - name: "http_requests_completed_total"
+            type: "counter"
+            help: "The total number of completed requests."
+            valueIndex: 3
+            replacements:
+              - string: "OK"
+                replacement: "1"
+            labels:
+              - name: "host"
+                lineIndex: 0
+              - name: "method"
+                lineIndex: 1
+              - name: "status"
+                lineIndex: 2
+              - name: "path"
+                lineIndex: 11
+                replacements:
+                  - regexp: "^$"
+                    replacement: "/"
+                  - regexp: "^(.+)\\?.+"
+                    replacement: "$1"
+
+          - name: "http_request_size_bytes"
+            type: "histogram"
+            buckets: [ 10,1000,100000,1000000,5000000,50000000,200000000 ]
+            help: "The request length (including request line, header, and request body)"
+            valueIndex: 5
+            labels:
+              - name: "host"
+                lineIndex: 0
+              - name: "method"
+                lineIndex: 1
+              - name: "status"
+                lineIndex: 2
+              - name: "path"
+                lineIndex: 11
+                replacements:
+                  - regexp: "^$"
+                    replacement: "/"
+                  - regexp: "^(.+)\\?.+"
+                    replacement: "$1"
+
+          - name: "http_response_size_bytes"
+            type: "histogram"
+            buckets: [ 10,1000,100000,1000000,5000000,50000000,200000000 ]
+            help: "The response length (including request line, header, and request body)"
+            valueIndex: 6
+            labels:
+              - name: "host"
+                lineIndex: 0
+              - name: "method"
+                lineIndex: 1
+              - name: "status"
+                lineIndex: 2
+              - name: "path"
+                lineIndex: 11
+                replacements:
+                  - regexp: "^$"
+                    replacement: "/"
+                  - regexp: "^(.+)\\?.+"
+                    replacement: "$1"
+
+          - name: "http_request_duration_seconds"
+            type: "histogram"
+            buckets: [ .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10 ]
+            help: "The time spent on receiving and response the response to the client"
+            valueIndex: 4
+            math:
+              enabled: true
+              div: 1000
+            labels:
+              - name: "host"
+                lineIndex: 0
+              - name: "method"
+                lineIndex: 1
+              - name: "status"
+                lineIndex: 2
+              - name: "path"
+                lineIndex: 11
+                replacements:
+                  - regexp: "^$"
+                    replacement: "/"
+                  - regexp: "^(.+)\\?.+"
+                    replacement: "$1"
+
+          - name: "http_upstream_connect_duration_seconds"
+            type: "histogram"
+            buckets: [ .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10 ]
+            help: "The time spent on establishing a connection with the upstream server"
+            valueIndex: 8
+            math:
+              enabled: true
+              div: 1000
+            upstream:
+              enabled: true
+              addrLineIndex: 7
+              excludes: []
+            labels:
+              - name: "host"
+                lineIndex: 0
+              - name: "method"
+                lineIndex: 1
+              - name: "status"
+                lineIndex: 2
+              - name: "path"
+                lineIndex: 11
+                replacements:
+                  - regexp: "^$"
+                    replacement: "/"
+                  - regexp: "^(.+)\\?.+"
+                    replacement: "$1"
+
+          - name: "http_upstream_header_duration_seconds"
+            type: "histogram"
+            help: "The time spent on receiving the response header from the upstream server"
+            buckets: [ .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10 ]
+            valueIndex: 9
+            math:
+              enabled: true
+              div: 1000
+            upstream:
+              enabled: true
+              addrLineIndex: 7
+              excludes: []
+            labels:
+              - name: "host"
+                lineIndex: 0
+              - name: "method"
+                lineIndex: 1
+              - name: "status"
+                lineIndex: 2
+              - name: "path"
+                lineIndex: 11
+                replacements:
+                  - regexp: "^$"
+                    replacement: "/"
+                  - regexp: "^(.+)\\?.+"
+                    replacement: "$1"
+
+          - name: "http_upstream_request_duration_seconds"
+            type: "histogram"
+            help: "The time spent on receiving the response from the upstream server"
+            buckets: [ .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10 ]
+            valueIndex: 10
+            math:
+              enabled: true
+              div: 1000
+            upstream:
+              enabled: true
+              addrLineIndex: 7
+              excludes: []
+            labels:
+              - name: "host"
+                lineIndex: 0
+              - name: "method"
+                lineIndex: 1
+              - name: "status"
+                lineIndex: 2
+              - name: "path"
+                lineIndex: 11
+                replacements:
+                  - regexp: "^$"
+                    replacement: "/"
+                  - regexp: "^(.+)\\?.+"
+                    replacement: "$1"
+  {{- end }}
+{{- end }}
