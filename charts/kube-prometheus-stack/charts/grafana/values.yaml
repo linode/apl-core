@@ -516,6 +516,7 @@ initChownData:
     capabilities:
       add:
         - CHOWN
+        - DAC_OVERRIDE
       drop:
         - ALL
 
@@ -1011,7 +1012,7 @@ sidecar:
       - ALL
     seccompProfile:
       type: RuntimeDefault
-  # skipTlsVerify Set to true to skip tls verification for kube api calls
+  # Set to true to skip tls verification for kube api calls. Can be overridden per sidecar
   # skipTlsVerify: true
   enableUniqueFilenames: false
   readinessProbe: {}
@@ -1037,6 +1038,8 @@ sidecar:
     #      key: value_key
     # Do not reprocess already processed unchanged resources on k8s API reconnect.
     # ignoreAlreadyProcessed: true
+    # Set to true to skip tls verification for kube api calls. Overrides sidecar.skipTlsVerify
+    # skipTlsVerify: true
     # label that the configmaps with alert are marked with (can be templated)
     label: grafana_alert
     # value of label that the configmaps with alert are set to (can be templated)
@@ -1128,6 +1131,8 @@ sidecar:
     #      key: value_key
     # Do not reprocess already processed unchanged resources on k8s API reconnect.
     # ignoreAlreadyProcessed: true
+    # Set to true to skip tls verification for kube api calls. Overrides sidecar.skipTlsVerify
+    # skipTlsVerify: true
     SCProvider: true
     # label that the configmaps with dashboards are marked with (can be templated)
     label: grafana_dashboard
@@ -1245,6 +1250,8 @@ sidecar:
     #      key: value_key
     # Do not reprocess already processed unchanged resources on k8s API reconnect.
     # ignoreAlreadyProcessed: true
+    # Set to true to skip tls verification for kube api calls. Overrides sidecar.skipTlsVerify
+    # skipTlsVerify: true
     # label that the configmaps with datasources are marked with (can be templated)
     label: grafana_datasource
     # value of label that the configmaps with datasources are set to (can be templated)
@@ -1323,6 +1330,8 @@ sidecar:
     env: {}
     # Do not reprocess already processed unchanged resources on k8s API reconnect.
     # ignoreAlreadyProcessed: true
+    # Set to true to skip tls verification for kube api calls. Overrides sidecar.skipTlsVerify
+    # skipTlsVerify: true
     # label that the configmaps with plugins are marked with (can be templated)
     label: grafana_plugin
     # value of label that the configmaps with plugins are set to (can be templated)
@@ -1391,6 +1400,8 @@ sidecar:
     env: {}
     # Do not reprocess already processed unchanged resources on k8s API reconnect.
     # ignoreAlreadyProcessed: true
+    # Set to true to skip tls verification for kube api calls. Overrides sidecar.skipTlsVerify
+    # skipTlsVerify: true
     # label that the configmaps with notifiers are marked with (can be templated)
     label: grafana_notifier
     # value of label that the configmaps with notifiers are set to (can be templated)
