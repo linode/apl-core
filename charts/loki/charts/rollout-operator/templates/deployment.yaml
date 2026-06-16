@@ -58,6 +58,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
           - -kubernetes.namespace={{ .Release.Namespace }}
+          - -zpdb.pod-ready-annotation-patch-timeout=5s
           {{- if .Values.webhooks.enabled }}
           - -server-tls.enabled=true
           - -server-tls.self-signed-cert.secret-name={{ .Values.webhooks.selfSignedCertSecretName }}
