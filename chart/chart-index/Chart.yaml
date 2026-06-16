@@ -82,7 +82,7 @@ dependencies:
     version: 17.4.3
     repository: oci://ghcr.io/grafana-community/helm-charts/loki
   - name: metrics-server
-    version: 3.13.0
+    version: 3.13.1
     repository: https://kubernetes-sigs.github.io/metrics-server
   - name: oauth2-proxy
     version: 10.6.0
