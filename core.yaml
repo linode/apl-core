@@ -165,7 +165,6 @@ adminApps:
     ownHost: true
   - name: sealed-secrets
     tags: [secrets, security, observability]
-    ownHost: true
   - name: otel
     tags: [logging, tracing]
   - name: trivy
