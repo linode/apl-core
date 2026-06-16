@@ -630,10 +630,10 @@
           "title": "The featureGates Schema",
           "additionalProperties": false,
           "properties": {
-            "operator.targetallocator.mtls": {
+            "operator.clusterobservability": {
               "type": "boolean",
               "default": false,
-              "title": "Whether to enable MTLS for Target Allocator communication",
+              "title": "Whether to enable the ClusterObservability controller",
               "examples": [
                 false
               ]
@@ -646,14 +646,6 @@
                 false
               ]
             },
-            "operator.collector.targetallocatorcr": {
-              "type": "boolean",
-              "default": false,
-              "title": "Whether to create TargetAllocator custom resource",
-              "examples": [
-                false
-              ]
-            },
             "operator.golang.flags": {
               "type": "boolean",
               "default": false,
@@ -662,10 +654,18 @@
                 false
               ]
             },
-            "operator.collector.default.config": {
+            "operand.networkpolicy": {
               "type": "boolean",
               "default": false,
-              "title": "Set default endpoints for known components",
+              "title": "Adds a network policy to the collector to allow traffic to all collector receivers and egress traffic from the collector pod",
+              "examples": [
+                false
+              ]
+            },
+            "operator.networkpolicy": {
+              "type": "boolean",
+              "default": false,
+              "title": "Creates a NetworkPolicy to restrict access to the operator pod",
               "examples": [
                 false
               ]
@@ -708,6 +708,14 @@
               "title": "The healthzPort Schema",
               "examples": [
                 8081
+              ]
+            },
+            "pprofPort": {
+              "type": "integer",
+              "default": 0,
+              "title": "The pprofPort Schema",
+              "examples": [
+                6060
               ]
             }
           },
