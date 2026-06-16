@@ -189,6 +189,8 @@ gateway:
   replicas: 1
   resources: {{ $l.resources.gateway | toYaml | nindent 4 }}
   autoscaling: {{ $l.autoscaling.gateway | toYaml | nindent 4 }}
+  metrics:
+    enabled: false
 
 {{- if $useObjectStorage }}
 {{- $s3SecretName := "loki-s3-linode-credentials" }}
