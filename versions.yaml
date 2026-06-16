@@ -1,6 +1,6 @@
 api: v5.0.0
-console: 5.0.1
-consoleLogin: 5.0.1
+console: v5.0.1
+consoleLogin: v5.0.1
 tasks: v4.0.0
 tools: v2.11.2
 aplCharts: v1.5.0
