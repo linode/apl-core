@@ -1,0 +1,12 @@
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if $isDistributed }}
+{{- $args := list }}
+{{- if .Values.ingester.zoneAwareReplication.enabled }}
+  {{- if and (.Values.ingester.zoneAwareReplication.migration.enabled) (not .Values.ingester.zoneAwareReplication.migration.writePath) }}
+    {{- $args = list "-distributor.zone-awareness-enabled=false" }}
+  {{- else }}
+    {{- $args = list "-distributor.zone-awareness-enabled=true" }}
+  {{- end }}
+{{- end }}
+{{- include "loki.component" (dict "ctx" . "component" .Values.distributor "target" "distributor" "args" $args) }}
+{{- end }}

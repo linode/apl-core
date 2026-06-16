@@ -39,8 +39,14 @@ It is not a highly available application and runs as a single pod.
 
 Starting with v0.33.0 of the rollout-operator chart, the rollout-operator webhooks are enabled. See https://github.com/grafana/rollout-operator/#webhooks.
 
-Before upgrading to this version, make sure that the CustomResourceDefinitions (CRDs) in the `crds` directory are applied to your cluster.
+Before upgrading to this version, make sure that the CustomResourceDefinitions (CRDs) shipped with the chart are applied to your cluster.
 
 Manually applying these CRDs is only required if upgrading from a chart <= v0.32.0.
+
+### Custom Resource Definitions (CRDs)
+
+Starting with v0.48.0 the rollout-operator CRDs (`ReplicaTemplate` and `NoDownscale`) are shipped via a bundled `crds` subchart at `charts/rollout-operator/charts/crds/`. They are installed by default on `helm install` and follow Helm's standard CRD handling (the files in the subchart's `crds/` directory are not templated and are skipped on upgrade — see https://helm.sh/docs/chart_best_practices/custom_resource_definitions/).
+
+The operator always requires its CRDs to be present in the cluster, so the chart installs them by default. Set `crds.enabled=false` only when CRDs are managed out of band — for example a single shared rollout-operator instance owns the CRDs cluster-wide, a GitOps controller / umbrella chart reconciles them, or cluster RBAC prevents the release from creating CRDs. In those cases you are responsible for ensuring the CRDs exist before installing or upgrading this chart; the YAMLs are available under `charts/rollout-operator/charts/crds/crds/` for manual application.
 
 {{ template "chart.valuesSection" . }}
