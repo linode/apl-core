@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_branch:
-        description: 'Release cycle branch (e.g. release/v1.4)'
+        description: 'Release cycle branch (e.g. releases/v1.4)'
         required: true
         type: string
       promote_to_stable:
@@ -41,6 +41,13 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Validate release branch
+        run: |
+          if [[ "${{ inputs.release_branch }}" != releases/* ]]; then
+            echo "::error::release_from_branch may only run on releases/* branches. Got: ${{ inputs.release_branch }}"
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v6
         with:
@@ -57,12 +64,6 @@ jobs:
         working-directory: ci
         run: npm ci
 
-      - name: Check package.json version matches release branch
-        working-directory: ci
-        run: npm run release:check-version-matches-branch
-        env:
-          REPO_ROOT: ${{ github.workspace }}
-
       - name: Check versions.yaml entries are semver-compatible
         working-directory: ci
         run: npm run release:check-versions-yaml
@@ -70,6 +71,19 @@ jobs:
           REPO_ROOT: ${{ github.workspace }}
           STABLE: ${{ inputs.promote_to_stable }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute release tag
+        id: compute-tag
+        working-directory: ci
+        run: npm run release:compute-tag
+        env:
+          PROMOTE_TO_STABLE: ${{ inputs.promote_to_stable }}
+
+      - name: Check tag does not already exist
+        working-directory: ci
+        run: npm run release:check-tag-not-exists
+        env:
+          RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -80,35 +94,14 @@ jobs:
           push: false
           load: true
           context: .
-          build-args: SKIP_TESTS=false
+          build-args: |
+            SKIP_TESTS=false
+            VERSION=${{ steps.compute-tag.outputs.tag }}
           tags: ${{ env.LOCAL_CACHE_IMAGE }}
-
-      - name: Compute release tag
-        id: compute-tag
-        working-directory: ci
-        run: npm run release:compute-tag
-        env:
-          PROMOTE_TO_STABLE: ${{ inputs.promote_to_stable }}
-          REPO_ROOT: ${{ github.workspace }}
-
-      - name: Check tag does not already exist
-        working-directory: ci
-        run: npm run release:check-tag-not-exists
-        env:
-          RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
 
       - name: Configure git bot identity
         working-directory: ci
         run: npm run release:configure-git
-
-      - name: Promote package.json to stable (if applicable)
-        working-directory: ci
-        run: npm run release:promote-package-version
-        env:
-          RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
-          PROMOTE_TO_STABLE: ${{ inputs.promote_to_stable }}
-          REPO_ROOT: ${{ github.workspace }}
-          DRY_RUN: ${{ inputs.dry_run }}
 
       - name: Create and push git tag
         working-directory: ci
@@ -145,11 +138,9 @@ jobs:
       - name: Prepare Helm chart
         if: ${{ inputs.dry_run == 'false' }}
         run: ci/scripts/prepare_chart_for_release.sh
+        env:
+          RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
 
-      # chart-releaser-action has no RC awareness — it publishes whatever version
-      # prepare_chart_for_release.sh stamps into Chart.yaml (e.g. 1.4.0-rc.1).
-      # mark_as_latest: false prevents RC charts from becoming the default in
-      # `helm search repo`, which is the closest Helm equivalent to a prerelease flag.
       - name: Publish Helm chart
         if: ${{ inputs.dry_run == 'false' }}
         uses: helm/chart-releaser-action@v1.7.0
@@ -159,10 +150,3 @@ jobs:
           mark_as_latest: false
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Auto-bump version for next iteration
-      #   working-directory: ci
-      #   run: npm run release:auto-bump
-      #   env:
-      #     REPO_ROOT: ${{ github.workspace }}
-      #     DRY_RUN: ${{ inputs.dry_run }}

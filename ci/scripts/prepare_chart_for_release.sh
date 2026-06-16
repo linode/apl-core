@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# Retrieve the app version from package.json
-app_version=$(jq -r '.version' package.json)
+# Retrieve the app version from the RELEASE_TAG env var (e.g. v6.0.0-rc.9 → 6.0.0-rc.9)
+app_version="${RELEASE_TAG#v}"
 
 # Update Chart.yaml and values.yaml with the new app version
 sed -i "s/0.0.0-chart-version/$app_version/g" chart/apl/Chart.yaml

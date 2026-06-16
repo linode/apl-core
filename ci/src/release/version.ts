@@ -78,7 +78,47 @@ export function previousRcTag(currentTag: string, tags: string[]): string | null
   return sameSeries.length > 0 ? sameSeries[0] : null
 }
 
+export function computeStableTag(branchTags: string[]): string {
+  const rcs = branchTags.filter((t) => t.includes('-rc.')).sort((a, b) => semver.rcompare(a, b))
+  if (rcs.length === 0) throw new Error('No RC tags on branch — cannot promote to stable without a prior RC')
+  return `v${promoteToStable(stripV(rcs[0]))}`
+}
+
+export function computeNextRcTag(branchTags: string[], branchName: string): string {
+  const [major, minor] = stripV(branchName.replace('releases/', '')).split('.')
+  const seriesRcs = branchTags
+    .filter((t) => t.includes('-rc.'))
+    .filter((t) => {
+      const [m, n] = stripV(t).split('-rc.')[0].split('.')
+      return m === major && n === minor
+    })
+    .sort((a, b) => semver.rcompare(a, b))
+  if (seriesRcs.length === 0) return `v${major}.${minor}.0-rc.1`
+  return `v${incrementRc(stripV(seriesRcs[0]))}`
+}
+
+export function computeDevVersion(highestTag: string, shortSha: string): string {
+  const [major, minor, patch] = promoteToStable(stripV(highestTag)).split('.').map(Number)
+  return `${major}.${minor}.${patch + 1}-dev.${shortSha}`
+}
+
+export function highestTag(tags: string[]): string | null {
+  const valid = tags.filter((t) => semver.valid(t)).sort((a, b) => semver.rcompare(a, b))
+  return valid.length > 0 ? valid[0] : null
+}
+
+export function highestStableTag(tags: string[]): string | null {
+  const stable = tags.filter((t) => !t.includes('-rc.')).sort((a, b) => semver.rcompare(a, b))
+  return stable.length > 0 ? stable[0] : null
+}
+
 export function isHighestStableTag(newTag: string, existingTags: string[]): boolean {
   const stableTags = existingTags.filter((t) => !t.includes('-rc.'))
   return stableTags.every((t) => semver.gt(newTag, t))
+}
+
+export function computeReleaseBranchName(tag: string, bumpType: 'minor' | 'major'): string {
+  const [major, minor] = stripV(tag).split('.').map(Number)
+  const [newMajor, newMinor] = bumpType === 'major' ? [major + 1, 0] : [major, minor + 1]
+  return `releases/v${newMajor}.${newMinor}`
 }

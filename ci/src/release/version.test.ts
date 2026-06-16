@@ -1,4 +1,10 @@
 import {
+    computeDevVersion,
+    computeNextRcTag,
+    computeReleaseBranchName,
+    computeStableTag,
+    highestStableTag,
+    highestTag,
     cycleStartVersion,
     incrementRc,
     isHighestStableTag,
@@ -209,5 +215,105 @@ describe('isHighestStableTag', () => {
   it('returns true when no existing stable tags exist', () => {
     expect(isHighestStableTag('v1.4.0', [])).toBe(true)
     expect(isHighestStableTag('v1.4.0', ['v1.4.0-rc.1'])).toBe(true)
+  })
+})
+
+describe('computeStableTag', () => {
+  it('promotes the highest RC tag to stable', () => {
+    expect(computeStableTag(['v6.1.0-rc.3', 'v6.1.0-rc.2', 'v6.1.0-rc.1'])).toBe('v6.1.0')
+  })
+
+  it('handles a single RC tag', () => {
+    expect(computeStableTag(['v6.1.1-rc.1'])).toBe('v6.1.1')
+  })
+
+  it('ignores stable tags when finding the RC to promote', () => {
+    expect(computeStableTag(['v6.1.0', 'v6.1.1-rc.1'])).toBe('v6.1.1')
+  })
+
+  it('throws when no RC tags exist', () => {
+    expect(() => computeStableTag([])).toThrow()
+    expect(() => computeStableTag(['v6.1.0'])).toThrow()
+  })
+})
+
+describe('computeNextRcTag', () => {
+  it('increments the RC counter when RC tags exist on the branch', () => {
+    const tags = ['v6.1.0-rc.1', 'v6.1.0-rc.2', 'v5.1.0']
+    expect(computeNextRcTag(tags, 'releases/v6.1')).toBe('v6.1.0-rc.3')
+  })
+
+  it('starts at rc.1 when no tags exist at all', () => {
+    expect(computeNextRcTag([], 'releases/v6.1')).toBe('v6.1.0-rc.1')
+  })
+
+  it('starts at rc.1 when branch has no tags in its own series', () => {
+    const tags = ['v5.1.0', 'v6.0.0-rc.8']
+    expect(computeNextRcTag(tags, 'releases/v6.1')).toBe('v6.1.0-rc.1')
+  })
+
+  it('handles patch-level RC after a stable has been cut', () => {
+    const tags = ['v6.1.0', 'v6.1.1-rc.1']
+    expect(computeNextRcTag(tags, 'releases/v6.1')).toBe('v6.1.1-rc.2')
+  })
+
+  it('ignores RC tags from other series on the same branch', () => {
+    const tags = ['v6.1.0-rc.3', 'v6.0.0-rc.8']
+    expect(computeNextRcTag(tags, 'releases/v6.1')).toBe('v6.1.0-rc.4')
+  })
+})
+
+describe('computeDevVersion', () => {
+  it.each([
+    ['v6.0.0-rc.8', 'abc1234', '6.0.1-dev.abc1234'],
+    ['v6.0.0',      'abc1234', '6.0.1-dev.abc1234'],
+    ['v5.1.0',      'deadbee', '5.1.1-dev.deadbee'],
+    ['v4.15.4',     'cafe000', '4.15.5-dev.cafe000'],
+  ] as const)('computeDevVersion(%s, %s) → %s', (tag, sha, expected) => {
+    expect(computeDevVersion(tag, sha)).toBe(expected)
+  })
+})
+
+describe('highestTag', () => {
+  it('returns the highest tag including RCs', () => {
+    expect(highestTag(['v5.1.0', 'v6.0.0-rc.8', 'v6.0.0-rc.1'])).toBe('v6.0.0-rc.8')
+  })
+
+  it('returns a stable tag when it is the highest overall', () => {
+    expect(highestTag(['v6.0.0', 'v5.1.0', 'v6.0.0-rc.8'])).toBe('v6.0.0')
+  })
+
+  it('returns null on empty list', () => {
+    expect(highestTag([])).toBeNull()
+  })
+})
+
+describe('highestStableTag', () => {
+  it('returns the highest stable tag ignoring RCs', () => {
+    expect(highestStableTag(['v5.1.0', 'v5.0.1', 'v6.0.0-rc.8'])).toBe('v5.1.0')
+  })
+
+  it('returns null when only RC tags exist', () => {
+    expect(highestStableTag(['v6.0.0-rc.8', 'v6.0.0-rc.1'])).toBeNull()
+  })
+
+  it('returns null on empty list', () => {
+    expect(highestStableTag([])).toBeNull()
+  })
+
+  it('handles a single stable tag', () => {
+    expect(highestStableTag(['v1.0.0'])).toBe('v1.0.0')
+  })
+})
+
+describe('computeReleaseBranchName', () => {
+  it.each([
+    ['v5.1.0', 'minor', 'releases/v5.2'],
+    ['v5.1.0', 'major', 'releases/v6.0'],
+    ['v6.0.0', 'minor', 'releases/v6.1'],
+    ['v4.15.4', 'minor', 'releases/v4.16'],
+    ['v4.15.4', 'major', 'releases/v5.0'],
+  ] as const)('computeReleaseBranchName(%s, %s) → %s', (tag, bump, expected) => {
+    expect(computeReleaseBranchName(tag, bump)).toBe(expected)
   })
 })

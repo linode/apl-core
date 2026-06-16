@@ -38,6 +38,24 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install CI dependencies
+        working-directory: ci
+        run: npm ci
+
+      - name: Compute dev version
+        id: dev-version
+        working-directory: ci
+        run: npm run release:compute-dev-version
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       - name: Login to Github Packages
@@ -52,6 +70,7 @@ jobs:
           push: true
           build-args: |
             APPS_REVISION=${{ env.APPS_REVISION }}
+            VERSION=${{ steps.dev-version.outputs.version }}
           context: .
           tags: |
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}

@@ -1,13 +1,19 @@
 import { computeTag } from './compute-tag'
 
 describe('computeTag', () => {
-  it('returns the version as-is when not promoting to stable', () => {
-    expect(computeTag('1.4.0-rc.1', false)).toBe('v1.4.0-rc.1')
-    expect(computeTag('1.4.0-rc.9', false)).toBe('v1.4.0-rc.9')
+  it('returns next RC when branch has existing RC tags', () => {
+    expect(computeTag(['v6.1.0-rc.2', 'v6.1.0-rc.1'], 'releases/v6.1', false)).toBe('v6.1.0-rc.3')
   })
 
-  it('strips the RC suffix when promoting to stable', () => {
-    expect(computeTag('1.4.0-rc.3', true)).toBe('v1.4.0')
-    expect(computeTag('6.0.0-rc.0', true)).toBe('v6.0.0')
+  it('starts at rc.1 from branch name when no tags on branch', () => {
+    expect(computeTag([], 'releases/v6.1', false)).toBe('v6.1.0-rc.1')
+  })
+
+  it('promotes highest RC to stable', () => {
+    expect(computeTag(['v6.1.0-rc.3', 'v6.1.0-rc.2'], 'releases/v6.1', true)).toBe('v6.1.0')
+  })
+
+  it('throws when promoting to stable with no RC tags', () => {
+    expect(() => computeTag([], 'releases/v6.1', true)).toThrow()
   })
 })

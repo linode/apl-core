@@ -1,27 +1,23 @@
 import { appendFileSync } from 'fs'
-import { readFileSync } from 'fs'
-import path from 'path'
-import { promoteToStable } from './version'
+import { execSync } from 'child_process'
+import { computeNextRcTag, computeStableTag } from './version'
 
-export function computeTag(version: string, promote: boolean): string {
-  return `v${promote ? promoteToStable(version) : version}`
+export function computeTag(branchTags: string[], branchName: string, promote: boolean): string {
+  return promote ? computeStableTag(branchTags) : computeNextRcTag(branchTags, branchName)
 }
 
-async function main() {
-  const repoRoot = process.env.REPO_ROOT ?? path.resolve(__dirname, '../../..')
-  const pkg = JSON.parse(readFileSync(path.join(repoRoot, 'package.json'), 'utf8'))
-  const version: string = pkg.version
+if (require.main === module) {
   const promote = process.env.PROMOTE_TO_STABLE === 'true'
-  const tag = computeTag(version, promote)
+  const branchName = process.env.RELEASE_BRANCH!
 
+  const tagsRaw = execSync('git tag --merged HEAD', { encoding: 'utf8' })
+  const branchTags = tagsRaw.trim().split('\n').filter(Boolean)
+
+  const tag = computeTag(branchTags, branchName, promote)
   console.log(`Computed tag: ${tag}`)
 
   if (process.env.GITHUB_OUTPUT) {
     appendFileSync(process.env.GITHUB_OUTPUT, `tag=${tag}\n`)
     appendFileSync(process.env.GITHUB_OUTPUT, `is_prerelease=${tag.includes('-rc.')}\n`)
   }
-}
-
-if (require.main === module) {
-  main().catch((err) => { console.error(err.message); process.exit(1) })
 }
