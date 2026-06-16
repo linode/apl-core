@@ -1,4 +1,4 @@
-import { findInvalidVersions, findRcVersions, parseVersionsYaml } from './check-versions-yaml'
+import { findInvalidVersions, findMissingGithubTags, findMissingImages, findRcVersions, githubRepoForEntry, imageRefForEntry, parseVersionsYaml } from './check-versions-yaml'
 
 describe('parseVersionsYaml', () => {
   it('parses all key-value pairs', () => {
@@ -30,11 +30,15 @@ describe('findInvalidVersions', () => {
     expect(findInvalidVersions(versions)).toEqual([])
   })
 
+  it('accepts v-prefixed semver (Docker tag format)', () => {
+    const versions = { api: 'v5.0.0', console: 'v1.4.0-rc.1' }
+    expect(findInvalidVersions(versions)).toEqual([])
+  })
+
   it('rejects branch names and non-semver strings', () => {
-    const versions = { api: 'releases/v1.4', console: 'v1.4.0', tasks: 'main' }
+    const versions = { api: 'releases/v1.4', tasks: 'main' }
     expect(findInvalidVersions(versions)).toEqual([
       { key: 'api', value: 'releases/v1.4' },
-      { key: 'console', value: 'v1.4.0' },
       { key: 'tasks', value: 'main' },
     ])
   })
@@ -63,4 +67,87 @@ describe('findRcVersions', () => {
     const versions = { api: '1.0.0-rc.1', console: '2.0.0-rc.2', tools: '3.0.0-rc.3' }
     expect(findRcVersions(versions)).toHaveLength(3)
   })
+})
+
+describe('imageRefForEntry', () => {
+  it.each([
+    ['api',          'v5.0.0', 'linode/apl-api:v5.0.0'],
+    ['console',      'v5.0.0', 'linode/apl-console:v5.0.0'],
+    ['consoleLogin', 'v5.0.0', 'linode/apl-console:v5.0.0'],
+    ['tasks',        'v4.0.0', 'linode/apl-tasks:v4.0.0'],
+    ['tools',        'v2.11.2','linode/apl-tools:v2.11.2'],
+  ])('imageRefForEntry(%s, %s) → %s', (key, version, expected) => {
+    expect(imageRefForEntry(key, version)).toBe(expected)
+  })
+
+  it('returns null for aplCharts', () => {
+    expect(imageRefForEntry('aplCharts', 'v1.5.0')).toBeNull()
+  })
+
+  it('returns null for unknown keys', () => {
+    expect(imageRefForEntry('unknown', 'v1.0.0')).toBeNull()
+  })
+})
+
+describe('findMissingImages', () => {
+  it('returns empty array when all images exist', () => {
+    const versions = { api: 'v5.0.0', console: 'v5.0.0' }
+    expect(findMissingImages(versions, () => true)).toEqual([])
+  })
+
+  it('returns the ref for a missing image', () => {
+    const versions = { api: 'v5.0.0' }
+    expect(findMissingImages(versions, () => false)).toEqual(['linode/apl-api:v5.0.0'])
+  })
+
+  it('skips aplCharts — it has no container image', () => {
+    const versions = { aplCharts: 'v1.5.0' }
+    expect(findMissingImages(versions, () => false)).toEqual([])
+  })
+
+  it('reports all missing images, not just the first', () => {
+    const versions = { api: 'v5.0.0', tasks: 'v4.0.0', tools: 'v2.11.2' }
+    expect(findMissingImages(versions, () => false)).toHaveLength(3)
+  })
+})
+
+describe('githubRepoForEntry', () => {
+  it.each([
+    ['api',          'linode/apl-api'],
+    ['console',      'linode/apl-console'],
+    ['consoleLogin', 'linode/apl-console'],
+    ['tasks',        'linode/apl-tasks'],
+    ['aplCharts',    'linode/apl-charts'],
+  ])('githubRepoForEntry(%s) → %s', (key, expected) => {
+    expect(githubRepoForEntry(key)).toBe(expected)
+  })
+
+  it('returns null for tools', () => {
+    expect(githubRepoForEntry('tools')).toBeNull()
+  })
+
+  it('returns null for unknown keys', () => {
+    expect(githubRepoForEntry('unknown')).toBeNull()
+  })
+})
+
+describe('findMissingGithubTags', () => {
+  it('returns empty array when tag exists', () => {
+    const versions = { aplCharts: 'v1.5.0' }
+    expect(findMissingGithubTags(versions, () => true)).toEqual([])
+  })
+
+  it('returns a descriptor when the tag is missing', () => {
+    const versions = { aplCharts: 'v1.5.0' }
+    expect(findMissingGithubTags(versions, () => false)).toEqual(['linode/apl-charts@v1.5.0'])
+  })
+
+  it('checks all known entries including container image components', () => {
+    const versions = { api: 'v5.0.0', console: 'v5.0.0' }
+    expect(findMissingGithubTags(versions, () => false)).toEqual([
+      'linode/apl-api@v5.0.0',
+      'linode/apl-console@v5.0.0',
+    ])
+  })
+
 })

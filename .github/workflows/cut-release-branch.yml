@@ -94,13 +94,13 @@ jobs:
           REPO_ROOT: ${{ github.workspace }}
           DRY_RUN: ${{ inputs.dry_run }}
 
-      - name: Open release PR
-        working-directory: ci
-        run: npm run release:open-release-pr
-        env:
-          BASE_BRANCH: ${{ inputs.base_branch }}
-          REPO_ROOT: ${{ github.workspace }}
-          DRY_RUN: ${{ inputs.dry_run }}
+      # - name: Open release PR
+      #   working-directory: ci
+      #   run: npm run release:open-release-pr
+      #   env:
+      #     BASE_BRANCH: ${{ inputs.base_branch }}
+      #     REPO_ROOT: ${{ github.workspace }}
+      #     DRY_RUN: ${{ inputs.dry_run }}
 
       - name: Open main version bump PR
         working-directory: ci
