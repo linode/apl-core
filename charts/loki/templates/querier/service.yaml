@@ -1,0 +1,4 @@
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if $isDistributed -}}
+{{- include "loki.service" (dict "target" "querier" "component" .Values.querier "ctx" .) }}
+{{- end -}}

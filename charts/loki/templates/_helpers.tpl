@@ -7,10 +7,38 @@ See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#sy
 {{- end }}
 
 {{/*
+Safely convert a value to int with fallback.
+
+Accepts int, float64 (e.g. 15.0), or numeric strings (e.g. "15").
+Falls back to default for invalid values (e.g. "abc", nil).
+
+Usage:
+  {{ include "loki.safeInt" (dict "value" $v "default" 30) }}
+
+Args:
+  value: input value to convert
+  default: fallback integer if value is invalid
+*/}}
+{{- define "loki.safeInt" -}}
+{{- $v := index . "value" -}}
+{{- $default := index . "default" -}}
+
+{{- if or
+  (kindIs "int" $v)
+  (kindIs "float64" $v)
+  (and (kindIs "string" $v) (eq (toString (toString $v | int)) $v))
+}}
+  {{- toString $v | int -}}
+{{- else -}}
+  {{- $default -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "loki.name" -}}
-{{- $name := ternary "enterprise-logs" "loki" .Values.enterprise.enabled }}
+{{- $name := .Chart.Name }}
 {{- if .Values.nameOverride }}
 {{- $name = (tpl .Values.nameOverride $) }}
 {{- end }}
@@ -29,19 +57,16 @@ Allow the release namespace to be overridden for multi-namespace deployments in 
 {{- end -}}
 
 {{/*
-singleBinary fullname
+Resource workload name template
+Params:
+  ctx = . context
+  componentValues = component values
+  component = component name (optional)
+  rolloutZoneName = rollout zone name (optional)
+  suffix = component suffix (optional)
 */}}
-{{- define "loki.singleBinaryFullname" -}}
-{{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := (include "loki.name" $) -}}
-{{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
+{{- define "loki.workloadResourceName" -}}
+{{- (tpl (.componentValues.fullnameOverride | default "") .ctx) | default (include "loki.resourceName" .) }}
 {{- end -}}
 
 {{/*
@@ -58,22 +83,21 @@ Params:
 {{- if and (not .component) .rolloutZoneName -}}{{- printf "Component name cannot be empty if rolloutZoneName (%s) is set" .rolloutZoneName | fail -}}{{- end -}}
 {{- if .rolloutZoneName -}}{{- $resourceName = printf "%s-%s" $resourceName .rolloutZoneName -}}{{- end -}}
 {{- if .suffix -}}{{- $resourceName = printf "%s-%s" $resourceName .suffix -}}{{- end -}}
-{{- if gt (len $resourceName) 253 -}}{{- printf "Resource name (%s) exceeds kubernetes limit of 253 character. To fix: shorten release name if this will be a fresh install, shorten zone names (e.g. \"a\" instead of \"zone-a\") if using zone-awareness or suffix if used for component." $resourceName | fail -}}{{- end -}}
-{{- $resourceName -}}
+{{- $resourceName | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
 Return if deployment mode is simple scalable
 */}}
 {{- define "loki.deployment.isScalable" -}}
-  {{- and (eq (include "loki.isUsingObjectStorage" . ) "true") (or (eq .Values.deploymentMode "SingleBinary<->SimpleScalable") (eq .Values.deploymentMode "SimpleScalable") (eq .Values.deploymentMode "SimpleScalable<->Distributed")) }}
+  {{- and (eq (include "loki.isUsingObjectStorage" . ) "true") (or (eq .Values.deploymentMode "SingleBinary<->SimpleScalable")  (eq .Values.deploymentMode "Monolithic<->SimpleScalable") (eq .Values.deploymentMode "SimpleScalable") (eq .Values.deploymentMode "SimpleScalable<->Distributed")) }}
 {{- end -}}
 
 {{/*
 Return if deployment mode is single binary
 */}}
-{{- define "loki.deployment.isSingleBinary" -}}
-  {{- or (eq .Values.deploymentMode "SingleBinary") (eq .Values.deploymentMode "SingleBinary<->SimpleScalable") }}
+{{- define "loki.deployment.isMonolithic" -}}
+  {{- or (eq .Values.deploymentMode "SingleBinary") (eq .Values.deploymentMode "Monolithic") (eq .Values.deploymentMode "SingleBinary<->SimpleScalable") (eq .Values.deploymentMode "Monolithic<->SimpleScalable") }}
 {{- end -}}
 
 {{/*
@@ -106,20 +130,7 @@ If release name contains chart name it will be used as a full name.
 Cluster label for rules and alerts.
 */}}
 {{- define "loki.clusterLabel" -}}
-{{- if .Values.clusterLabelOverride }}
-{{- .Values.clusterLabelOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := include "loki.name" . }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-{{- end }}
-{{- end }}
+{{- .Values.clusterLabelOverride | default (include "loki.fullname" .) | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -152,13 +163,22 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Create the name of the service account to use
+Create the name of the service account to use.
+
+Input parameters:
+  ctx = root context for looking up values
+  component = component name
+  target = target context
 */}}
 {{- define "loki.serviceAccountName" -}}
-{{- if .Values.serviceAccount.name }}
-  {{- tpl .Values.serviceAccount.name $ }}
-{{- else if .Values.serviceAccount.create -}}
-  {{- include "loki.fullname" . }}
+{{- if .component.serviceAccount.name }}
+  {{- tpl .component.serviceAccount.name .ctx }}
+{{- else if .component.serviceAccount.create -}}
+  {{- include "loki.resourceName" (dict "ctx" .ctx "component" .target) }}
+{{- else if .ctx.Values.serviceAccount.name }}
+  {{- tpl .ctx.Values.serviceAccount.name .ctx }}
+{{- else if .ctx.Values.serviceAccount.create -}}
+  {{- include "loki.fullname" .ctx }}
 {{- else -}}
   {{- "default" }}
 {{- end -}}
@@ -166,47 +186,45 @@ Create the name of the service account to use
 
 {{/*
 Base template for building docker image reference
-Determines the final image name, respecting the global registry if defined, unless the local repository
-already contains a full registry (indicated by a dot '.') for backwards-compatibility.
+Always prepends the registry when one is configured (global or service-level).
 It also respects `.digest` as well as `.sha` (deprecated).
+
+Parameters:
+  ctx = . root context
+  component = component name (optional)
+  defaultVersion = default version to use if tag is not defined (optional)
+  default = default image config to use if component config is not defined (optional)
 */}}
-{{- define "loki.baseImage" }}
-{{- $registry := .global.imageRegistry | default ((.global.image).registry) | default .global.registry | default .service.registry | default "" -}}
-{{- $repository := .service.repository | default "" -}}
-{{- $sha := and .service.sha (printf "@sha256:%s" .service.sha) | default "" -}}
-{{- $digest := and .service.digest (printf "@%s" .service.digest) | default $sha -}}
-{{- $ref := ternary (printf ":%s" (.service.tag | default .defaultVersion | toString)) ($digest) (empty $digest) -}}
+{{- define "loki.image" -}}
+{{- $ctx := .ctx -}}
+{{- $component := .component | default .service | default dict -}}
+{{- $defaultVersion := .defaultVersion -}}
+{{- $default := .default | default dict -}}
+{{- $global := dict -}}
+{{- if $ctx -}}
+{{- $global = $ctx.Values.global | default dict -}}
+{{- else -}}
+{{- $global = .global | default dict -}}
+{{- end -}}
+
+{{- /* Resolve image source values with clear precedence. */ -}}
+{{- $registry := coalesce $global.imageRegistry $global.image.registry $global.registry $component.registry $default.registry "" -}}
+{{- $repository := coalesce $component.repository $default.repository "" -}}
+
+{{- /* Prefer digest over tag, and support deprecated sha fallback. */ -}}
+{{- $sha := coalesce $component.sha $default.sha "" -}}
+{{- $shaRef := ternary (printf "@sha256:%s" $sha) "" (not (empty $sha)) -}}
+{{- $digest := coalesce $component.digest $default.digest "" -}}
+{{- $digestRef := ternary (printf "@%s" $digest) $shaRef (not (empty $digest)) -}}
+{{- $tagRef := printf ":%s" (coalesce $component.tag $default.tag $defaultVersion | toString) -}}
+{{- $ref := ternary $tagRef $digestRef (empty $digestRef) -}}
 
 {{- $prefix := "" -}}
-{{- $firstSegment := (split "/" $repository)._0 -}}
-{{- if and $registry (not (contains "." $firstSegment)) -}}
+{{- if $registry -}}
 {{- $prefix = printf "%s/" $registry -}}
 {{- end -}}
 
 {{- printf "%s%s%s" $prefix $repository $ref -}}
-{{- end -}}
-
-{{/*
-Docker image name for Loki
-*/}}
-{{- define "loki.lokiImage" -}}
-{{- $dict := dict "service" .Values.loki.image "global" .Values.global "defaultVersion" .Chart.AppVersion -}}
-{{- include "loki.baseImage" $dict -}}
-{{- end -}}
-
-{{/*
-Docker image name for enterprise logs
-*/}}
-{{- define "loki.enterpriseImage" -}}
-{{- $dict := dict "service" .Values.enterprise.image "global" .Values.global "defaultVersion" .Values.enterprise.version -}}
-{{- include "loki.baseImage" $dict -}}
-{{- end -}}
-
-{{/*
-Docker image name
-*/}}
-{{- define "loki.image" -}}
-{{- if .Values.enterprise.enabled -}}{{- include "loki.enterpriseImage" . -}}{{- else -}}{{- include "loki.lokiImage" . -}}{{- end -}}
 {{- end -}}
 
 {{/*
@@ -277,7 +295,7 @@ alibabacloud:
   {{- toYaml (mergeOverwrite dict
     (dict
       "bucket" $bucketName
-      "access_key_id" .secretAccessKey
+      "access_key_id" .accessKeyId
       "secret_access_key" .secretAccessKey
     )
     (omit . "bucket" "accessKeyId" "secretAccessKey")
@@ -418,85 +436,6 @@ ruler:
 {{- end }}
 {{- end }}
 
-{{/* Enterprise Logs Admin API storage config */}}
-{{- define "enterprise-logs.adminAPIStorageConfig" }}
-storage:
-  {{- if .Values.loki.storage.use_thanos_objstore }}
-  backend: {{ .Values.loki.storage.object_store.type }}
-    {{- include "loki.thanosStorageConfig" (dict "ctx" . "bucketName" .Values.loki.storage.bucketNames.admin) | nindent 2 }}
-  {{- else if .Values.minio.enabled }}
-  backend: "s3"
-  s3:
-    bucket_name: admin
-  {{- else if eq .Values.loki.storage.type "s3" -}}
-  {{- with .Values.loki.storage.s3 }}
-  backend: "s3"
-  s3:
-    bucket_name: {{ $.Values.loki.storage.bucketNames.admin }}
-  {{- end -}}
-  {{- else if eq .Values.loki.storage.type "gcs" -}}
-  {{- with .Values.loki.storage.gcs }}
-  backend: "gcs"
-  gcs:
-    bucket_name: {{ $.Values.loki.storage.bucketNames.admin }}
-  {{- end -}}
-  {{- else if eq .Values.loki.storage.type "azure" -}}
-  {{- with .Values.loki.storage.azure }}
-  backend: "azure"
-  azure:
-    account_name: {{ .accountName }}
-    {{- with .accountKey }}
-    account_key: {{ . }}
-    {{- end }}
-    {{- with .connectionString }}
-    connection_string: {{ . }}
-    {{- end }}
-    container_name: {{ $.Values.loki.storage.bucketNames.admin }}
-    {{- with .endpointSuffix }}
-    endpoint_suffix: {{ . }}
-    {{- end }}
-  {{- end -}}
-  {{- else if eq .Values.loki.storage.type "swift" -}}
-  {{- with .Values.loki.storage.swift }}
-  backend: "swift"
-  swift:
-    {{- with .auth_version }}
-    auth_version: {{ . }}
-    {{- end }}
-    auth_url: {{ .auth_url }}
-    {{- with .internal }}
-    internal: {{ . }}
-    {{- end }}
-    username: {{ .username }}
-    user_domain_name: {{ .user_domain_name }}
-    {{- with .user_domain_id }}
-    user_domain_id: {{ . }}
-    {{- end }}
-    {{- with .user_id }}
-    user_id: {{ . }}
-    {{- end }}
-    password: {{ .password }}
-    {{- with .domain_id }}
-    domain_id: {{ . }}
-    {{- end }}
-    domain_name: {{ .domain_name }}
-    project_id: {{ .project_id }}
-    project_name: {{ .project_name }}
-    project_domain_id: {{ .project_domain_id }}
-    project_domain_name: {{ .project_domain_name }}
-    region_name: {{ .region_name }}
-    container_name: {{ .container_name }}
-    max_retries: {{ .max_retries | default 3 }}
-    connect_timeout: {{ .connect_timeout | default "10s" }}
-    request_timeout: {{ .request_timeout | default "5s" }}
-  {{- end -}}
-  {{- else }}
-  backend: "filesystem"
-  filesystem:
-    dir: {{ .Values.loki.storage.filesystem.admin_api_directory }}
-  {{- end -}}
-{{- end }}
-
 {{/*
 Calculate the config from structured and unstructured text input
 */}}
@@ -520,25 +459,6 @@ configMap:
 {{- end -}}
 {{- end -}}
 
-{{/*
-Memcached Docker image
-*/}}
-{{- define "loki.memcachedImage" -}}
-{{- $dict := dict "service" .Values.memcached.image "global" .Values.global -}}
-{{- include "loki.image" $dict -}}
-{{- end }}
-
-{{/*
-Memcached Exporter Docker image
-*/}}
-{{- define "loki.memcachedExporterImage" -}}
-{{- $dict := dict "service" .Values.memcachedExporter.image "global" .Values.global -}}
-{{- include "loki.image" $dict -}}
-{{- end }}
-
-{{/*
-Memcached Exporter Docker image
-*/}}
 {{- define "loki.memcached.suffix" -}}
 {{- $suffix := default "" . -}}
 {{ if ne $suffix "" }}-{{ $suffix }}{{ end }}
@@ -550,51 +470,15 @@ Memcached Exporter Docker image
 {{- end -}}
 
 {{/*
-Return the appropriate apiVersion for ingress.
-*/}}
-{{- define "loki.ingress.apiVersion" -}}
-  {{- if and (.Capabilities.APIVersions.Has "networking.k8s.io/v1") (semverCompare ">= 1.19-0" (include "loki.kubeVersion" .)) -}}
-      {{- print "networking.k8s.io/v1" -}}
-  {{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" -}}
-    {{- print "networking.k8s.io/v1beta1" -}}
-  {{- else -}}
-    {{- print "extensions/v1beta1" -}}
-  {{- end -}}
-{{- end -}}
-
-{{/*
-Return if ingress is stable.
-*/}}
-{{- define "loki.ingress.isStable" -}}
-  {{- eq (include "loki.ingress.apiVersion" .) "networking.k8s.io/v1" -}}
-{{- end -}}
-
-{{/*
-Return if ingress supports ingressClassName.
-*/}}
-{{- define "loki.ingress.supportsIngressClassName" -}}
-  {{- or (eq (include "loki.ingress.isStable" .) "true") (and (eq (include "loki.ingress.apiVersion" .) "networking.k8s.io/v1beta1") (semverCompare ">= 1.18-0" (include "loki.kubeVersion" .))) -}}
-{{- end -}}
-
-{{/*
-Return if ingress supports pathType.
-*/}}
-{{- define "loki.ingress.supportsPathType" -}}
-  {{- or (eq (include "loki.ingress.isStable" .) "true") (and (eq (include "loki.ingress.apiVersion" .) "networking.k8s.io/v1beta1") (semverCompare ">= 1.18-0" (include "loki.kubeVersion" .))) -}}
-{{- end -}}
-
-{{/*
 Generate list of ingress service paths based on deployment type
 */}}
 {{- define "loki.ingress.servicePaths" -}}
-{{- if (eq (include "loki.deployment.isSingleBinary" .) "true") -}}
-{{- include "loki.ingress.singleBinaryServicePaths" . }}
+{{- if (eq (include "loki.deployment.isMonolithic" .) "true") -}}
+{{- include "loki.ingress.monolithicServicePaths" . }}
 {{- else if (eq (include "loki.deployment.isDistributed" .) "true") -}}
 {{- include "loki.ingress.distributedServicePaths" . }}
-{{- else if and (eq (include "loki.deployment.isScalable" .) "true") (not .Values.read.legacyReadTarget ) -}}
+{{- else if (eq (include "loki.deployment.isScalable" .) "true") -}}
 {{- include "loki.ingress.scalableServicePaths" . }}
-{{- else -}}
-{{- include "loki.ingress.legacyScalableServicePaths" . }}
 {{- end -}}
 {{- end -}}
 
@@ -602,46 +486,34 @@ Generate list of ingress service paths based on deployment type
 Ingress service paths for distributed deployment
 */}}
 {{- define "loki.ingress.distributedServicePaths" -}}
-{{- $distributorServiceName := include "loki.distributorFullname" . }}
+{{- $distributorServiceName := include "loki.resourceName" (dict "ctx" . "component" "distributor") }}
 {{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $distributorServiceName "paths" .Values.ingress.paths.distributor )}}
-{{- $queryFrontendServiceName := include "loki.queryFrontendFullname" . }}
+{{- $queryFrontendServiceName := include "loki.resourceName" (dict "ctx" . "component" "query-frontend") }}
 {{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $queryFrontendServiceName "paths" .Values.ingress.paths.queryFrontend )}}
-{{- $rulerServiceName := include "loki.rulerFullname" . }}
+{{- $rulerServiceName := include "loki.resourceName" (dict "ctx" . "component" "ruler") }}
 {{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $rulerServiceName "paths" .Values.ingress.paths.ruler)}}
-{{- $compactorServiceName := include "loki.compactorFullname" . }}
+{{- $compactorServiceName := include "loki.resourceName" (dict "ctx" . "component" "compactor") }}
 {{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $compactorServiceName "paths" .Values.ingress.paths.compactor)}}
 {{- end -}}
 
 {{/*
-Ingress service paths for legacy simple scalable deployment when backend components were part of read component.
+Ingress service paths for simple scalable deployment when backend components were part of read component.
 */}}
 {{- define "loki.ingress.scalableServicePaths" -}}
-{{- $readServiceName := include "loki.readFullname" . }}
+{{- $readServiceName := include "loki.resourceName" (dict "ctx" . "component" "read") }}
 {{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $readServiceName "paths" .Values.ingress.paths.queryFrontend )}}
-{{- $writeServiceName := include "loki.writeFullname" . }}
+{{- $writeServiceName := include "loki.resourceName" (dict "ctx" . "component" "write") }}
 {{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $writeServiceName "paths" .Values.ingress.paths.distributor )}}
-{{- $backendServiceName := include "loki.backendFullname" . }}
+{{- $backendServiceName := include "loki.resourceName" (dict "ctx" . "component" "backend") }}
 {{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $backendServiceName "paths" .Values.ingress.paths.ruler )}}
 {{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $backendServiceName "paths" .Values.ingress.paths.compactor )}}
 {{- end -}}
 
 {{/*
-Ingress service paths for legacy simple scalable deployment
-*/}}
-{{- define "loki.ingress.legacyScalableServicePaths" -}}
-{{- $readServiceName := include "loki.readFullname" . }}
-{{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $readServiceName "paths" .Values.ingress.paths.queryFrontend )}}
-{{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $readServiceName "paths" .Values.ingress.paths.ruler )}}
-{{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $readServiceName "paths" .Values.ingress.paths.compactor )}}
-{{- $writeServiceName := include "loki.writeFullname" . }}
-{{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $writeServiceName "paths" .Values.ingress.paths.distributor )}}
-{{- end -}}
-
-{{/*
 Ingress service paths for single binary deployment
 */}}
-{{- define "loki.ingress.singleBinaryServicePaths" -}}
-{{- $serviceName := include "loki.singleBinaryFullname" . }}
+{{- define "loki.ingress.monolithicServicePaths" -}}
+{{- $serviceName := include "loki.fullname" . }}
 {{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $serviceName "paths" .Values.ingress.paths.distributor )}}
 {{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $serviceName "paths" .Values.ingress.paths.queryFrontend )}}
 {{- include "loki.ingress.servicePath" (dict "ctx" . "serviceName" $serviceName "paths" .Values.ingress.paths.ruler )}}
@@ -656,23 +528,14 @@ Params:
   paths = list of url paths to allow ingress for
 */}}
 {{- define "loki.ingress.servicePath" -}}
-{{- $ingressApiIsStable := eq (include "loki.ingress.isStable" .ctx) "true" -}}
-{{- $ingressSupportsPathType := eq (include "loki.ingress.supportsPathType" .ctx) "true" -}}
 {{- range .paths }}
 - path: {{ . }}
-  {{- if $ingressSupportsPathType }}
   pathType: Prefix
-  {{- end }}
   backend:
-    {{- if $ingressApiIsStable }}
     service:
       name: {{ $.serviceName }}
       port:
         number: {{ $.ctx.Values.loki.server.http_listen_port }}
-    {{- else }}
-    serviceName: {{ $.serviceName }}
-    servicePort: {{ $.ctx.Values.loki.server.http_listen_port }}
-    {{- end -}}
 {{- end -}}
 {{- end -}}
 
@@ -693,7 +556,7 @@ Create the service endpoint including port for MinIO.
 {{/* Configure the correct name for the memberlist service */}}
 {{- define "loki.memberlist" -}}
 {{- if .Values.memberlist.service.name }}
-{{- tpl .Values.memberlist.service.name $ }}
+{{- tpl .Values.memberlist.service.name . }}
 {{- else }}
 {{- include "loki.fullname" . }}-memberlist
 {{- end -}}
@@ -701,15 +564,15 @@ Create the service endpoint including port for MinIO.
 
 {{/* Configure the correct name for the runtime config */}}
 {{- define "loki.runtime.name" -}}
-{{ include "loki.fullname" . }}-runtime
+{{- include "loki.fullname" . }}-runtime
 {{- end -}}
 
 {{/* Determine the public host for the Loki cluster */}}
 {{- define "loki.host" -}}
-{{- $isSingleBinary := eq (include "loki.deployment.isSingleBinary" .) "true" -}}
-{{- $url := printf "%s.%s.svc.%s.:%s" (include "loki.gatewayFullname" .) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.gateway.service.port | toString)  }}
-{{- if and $isSingleBinary (not .Values.gateway.enabled)  }}
-  {{- $url = printf "%s.%s.svc.%s.:%s" (include "loki.singleBinaryFullname" .) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
+{{- $isMonolithic := eq (include "loki.deployment.isMonolithic" .) "true" -}}
+{{- $url := printf "%s.%s.svc.%s.:%s" (include "loki.resourceName" (dict "ctx" . "component" "gateway")) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.gateway.service.port | toString)  }}
+{{- if and $isMonolithic (not .Values.gateway.enabled)  }}
+  {{- $url = printf "%s.%s.svc.%s.:%s" (include "loki.fullname" .) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
 {{- end }}
 {{- printf "%s" $url -}}
 {{- end -}}
@@ -717,27 +580,6 @@ Create the service endpoint including port for MinIO.
 {{/* Determine the public endpoint for the Loki cluster */}}
 {{- define "loki.address" -}}
 {{- printf "http://%s" (include "loki.host" . ) -}}
-{{- end -}}
-
-{{/* Name of the cluster */}}
-{{- define "loki.clusterName" -}}
-{{- $name := .Values.enterprise.cluster_name | default .Release.Name }}
-{{- printf "%s" $name -}}
-{{- end -}}
-
-{{/* Name of kubernetes secret to persist GEL admin token to */}}
-{{- define "enterprise-logs.adminTokenSecret" }}
-{{- .Values.enterprise.adminToken.secret | default (printf "%s-admin-token" (include "loki.name" . )) -}}
-{{- end -}}
-
-{{/* Prefix for provisioned secrets created for each provisioned tenant */}}
-{{- define "enterprise-logs.provisionedSecretPrefix" }}
-{{- .Values.enterprise.provisioner.provisionedSecretPrefix | default (printf "%s-provisioned" (include "loki.name" . )) -}}
-{{- end -}}
-
-{{/* Name of kubernetes secret to persist canary credentials in */}}
-{{- define "enterprise-logs.selfMonitoringTenantSecret" }}
-{{- .Values.enterprise.canarySecret | default (printf "%s-%s" (include "enterprise-logs.provisionedSecretPrefix" . ) .Values.monitoring.selfMonitoring.tenant.name) -}}
 {{- end -}}
 
 {{/* Snippet for the nginx file used by gateway */}}
@@ -769,6 +611,19 @@ http {
   default_type application/octet-stream;
   log_format   {{ .Values.gateway.nginxConfig.logFormat }}
 
+  {{- if .Values.gateway.metrics.enabled }}
+  # Exclude specific requests from logging
+  map $request_uri $track {
+    default 1;
+    ~^/$ 0;
+    ~^/health 0;
+    ~^/metrics 0;
+  }
+
+  # simple_upstream preset
+  log_format access_log_exporter '$http_host\t$request_method\t$status\t$request_completion\t$request_time\t$request_length\t$bytes_sent\t$upstream_addr\t$upstream_connect_time\t$upstream_header_time\t$upstream_response_time\t$request_uri';
+  access_log syslog:server=127.0.0.1:8514,nohostname access_log_exporter if=$track;
+  {{- end }}
   {{- if .Values.gateway.verboseLogging }}
   access_log   /dev/stderr  main;
   {{- else }}
@@ -824,17 +679,22 @@ http {
       auth_basic off;
     }
 
+    location = /stub_status {
+      stub_status on;
+      satisfy any;
+      access_log off;
+      allow 127.0.0.1;
+      deny all;
+      server_tokens on;  # expose nginx version
+    }
+
     ########################################################
     # Configure backend targets
 
     {{- $namespace := include "loki.namespace" . }}
-    {{- $backendHost := include "loki.backendFullname" . }}
-    {{- $readHost := include "loki.readFullname" . }}
-    {{- $writeHost := include "loki.writeFullname" . }}
-
-    {{- if .Values.read.legacyReadTarget }}
-    {{- $backendHost = include "loki.readFullname" . }}
-    {{- end }}
+    {{- $backendHost := include "loki.resourceName" (dict "ctx" . "component" "backend") }}
+    {{- $readHost := include "loki.resourceName" (dict "ctx" . "component" "read") }}
+    {{- $writeHost := include "loki.resourceName" (dict "ctx" . "component" "write") }}
 
     {{- $httpSchema := .Values.gateway.nginxConfig.schema }}
 
@@ -852,17 +712,17 @@ http {
     {{- $backendUrl = .Values.gateway.nginxConfig.customBackendUrl }}
     {{- end }}
 
-    {{- $singleBinaryHost := include "loki.singleBinaryFullname" . }}
-    {{- $singleBinaryUrl  := printf "%s://%s.%s.svc.%s:%s" $httpSchema $singleBinaryHost $namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
+    {{- $monolithicHost := include "loki.fullname" . }}
+    {{- $monolithicUrl  := printf "%s://%s.%s.svc.%s:%s" $httpSchema $monolithicHost $namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
 
-    {{- $distributorHost := include "loki.distributorFullname" .}}
-    {{- $ingesterHost := include "loki.ingesterFullname" .}}
-    {{- $queryFrontendHost := include "loki.queryFrontendFullname" .}}
-    {{- $indexGatewayHost := include "loki.indexGatewayFullname" .}}
-    {{- $rulerHost := include "loki.rulerFullname" .}}
-    {{- $compactorHost := include "loki.compactorFullname" .}}
-    {{- $schedulerHost := include "loki.querySchedulerFullname" .}}
-    {{- $querierHost := include "loki.querierFullname" .}}
+    {{- $distributorHost := include "loki.resourceName" (dict "ctx" . "component" "distributor") }}
+    {{- $ingesterHost := include "loki.resourceName" (dict "ctx" . "component" "ingester") }}
+    {{- $queryFrontendHost := include "loki.resourceName" (dict "ctx" . "component" "query-frontend") }}
+    {{- $indexGatewayHost := include "loki.resourceName" (dict "ctx" . "component" "index-gateway") }}
+    {{- $rulerHost := include "loki.resourceName" (dict "ctx" . "component" "ruler") }}
+    {{- $compactorHost := include "loki.resourceName" (dict "ctx" . "component" "compactor") }}
+    {{- $querySchedulerHost := include "loki.resourceName" (dict "ctx" . "component" "query-scheduler") }}
+    {{- $querierHost := include "loki.resourceName" (dict "ctx" . "component" "querier") }}
 
     {{- $distributorUrl := printf "%s://%s.%s.svc.%s:%s" $httpSchema $distributorHost $namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) -}}
     {{- $ingesterUrl := printf "%s://%s.%s.svc.%s:%s" $httpSchema $ingesterHost $namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
@@ -870,18 +730,18 @@ http {
     {{- $indexGatewayUrl := printf "%s://%s.%s.svc.%s:%s" $httpSchema $indexGatewayHost $namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
     {{- $rulerUrl := printf "%s://%s.%s.svc.%s:%s" $httpSchema $rulerHost $namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
     {{- $compactorUrl := printf "%s://%s.%s.svc.%s:%s" $httpSchema $compactorHost $namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
-    {{- $schedulerUrl := printf "%s://%s.%s.svc.%s:%s" $httpSchema $schedulerHost $namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
+    {{- $querySchedulerUrl := printf "%s://%s.%s.svc.%s:%s" $httpSchema $querySchedulerHost $namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
     {{- $querierUrl := printf "%s://%s.%s.svc.%s:%s" $httpSchema $querierHost $namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
 
-    {{- if eq (include "loki.deployment.isSingleBinary" .) "true"}}
-    {{- $distributorUrl = $singleBinaryUrl }}
-    {{- $ingesterUrl = $singleBinaryUrl }}
-    {{- $queryFrontendUrl = $singleBinaryUrl }}
-    {{- $indexGatewayUrl = $singleBinaryUrl }}
-    {{- $rulerUrl = $singleBinaryUrl }}
-    {{- $compactorUrl = $singleBinaryUrl }}
-    {{- $schedulerUrl = $singleBinaryUrl }}
-    {{- $querierUrl = $singleBinaryUrl }}
+    {{- if eq (include "loki.deployment.isMonolithic" .) "true"}}
+    {{- $distributorUrl = $monolithicUrl }}
+    {{- $ingesterUrl = $monolithicUrl }}
+    {{- $queryFrontendUrl = $monolithicUrl }}
+    {{- $indexGatewayUrl = $monolithicUrl }}
+    {{- $rulerUrl = $monolithicUrl }}
+    {{- $compactorUrl = $monolithicUrl }}
+    {{- $querySchedulerUrl = $monolithicUrl }}
+    {{- $querierUrl = $monolithicUrl }}
     {{- else if eq (include "loki.deployment.isScalable" .) "true"}}
     {{- $distributorUrl = $writeUrl }}
     {{- $ingesterUrl = $writeUrl }}
@@ -890,7 +750,7 @@ http {
     {{- $indexGatewayUrl = $backendUrl }}
     {{- $rulerUrl = $backendUrl }}
     {{- $compactorUrl = $backendUrl }}
-    {{- $schedulerUrl = $backendUrl }}
+    {{- $querySchedulerUrl = $backendUrl }}
     {{- end -}}
 
     {{- if .Values.loki.ui.gateway.enabled }}
@@ -898,7 +758,8 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $querierUrl }}$request_uri;
+      set $backend     "{{ $querierUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     {{- end }}
 
@@ -907,25 +768,29 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $distributorUrl }}$request_uri;
+      set $backend     "{{ $distributorUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location = /loki/api/v1/push {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $distributorUrl }}$request_uri;
+      set $backend     "{{ $distributorUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location = /distributor/ring {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $distributorUrl }}$request_uri;
+      set $backend     "{{ $distributorUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location = /otlp/v1/logs {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $distributorUrl }}$request_uri;
+      set $backend     "{{ $distributorUrl }}";
+      proxy_pass       $backend$request_uri;
     }
 
     # Ingester
@@ -933,13 +798,15 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $ingesterUrl }}$request_uri;
+      set $backend     "{{ $ingesterUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location ^~ /ingester/ {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $ingesterUrl }}$request_uri;
+      set $backend     "{{ $ingesterUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location = /ingester {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
@@ -953,7 +820,8 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $ingesterUrl }}$request_uri;
+      set $backend     "{{ $ingesterUrl }}";
+      proxy_pass       $backend$request_uri;
     }
 
     # MemberListKV
@@ -961,7 +829,8 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $ingesterUrl }}$request_uri;
+      set $backend     "{{ $ingesterUrl }}";
+      proxy_pass       $backend$request_uri;
     }
 
     # Ruler
@@ -969,43 +838,50 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $rulerUrl }}$request_uri;
+      set $backend     "{{ $rulerUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location = /api/prom/rules {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $rulerUrl }}$request_uri;
+      set $backend     "{{ $rulerUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location ^~ /api/prom/rules/ {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $rulerUrl }}$request_uri;
+      set $backend     "{{ $rulerUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location = /loki/api/v1/rules {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $rulerUrl }}$request_uri;
+      set $backend     "{{ $rulerUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location ^~ /loki/api/v1/rules/ {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $rulerUrl }}$request_uri;
+      set $backend     "{{ $rulerUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location = /prometheus/api/v1/alerts {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $rulerUrl }}$request_uri;
+      set $backend     "{{ $rulerUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location = /prometheus/api/v1/rules {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $rulerUrl }}$request_uri;
+      set $backend     "{{ $rulerUrl }}";
+      proxy_pass       $backend$request_uri;
     }
 
     # Compactor
@@ -1013,19 +889,22 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $compactorUrl }}$request_uri;
+      set $backend     "{{ $compactorUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location = /loki/api/v1/delete {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $compactorUrl }}$request_uri;
+      set $backend     "{{ $compactorUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location = /loki/api/v1/cache/generation_numbers {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $compactorUrl }}$request_uri;
+      set $backend     "{{ $compactorUrl }}";
+      proxy_pass       $backend$request_uri;
     }
 
     # IndexGateway
@@ -1033,7 +912,8 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $indexGatewayUrl }}$request_uri;
+      set $backend     "{{ $indexGatewayUrl }}";
+      proxy_pass       $backend$request_uri;
     }
 
     # QueryScheduler
@@ -1041,7 +921,8 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $schedulerUrl }}$request_uri;
+      set $backend     "{{ $querySchedulerUrl }}";
+      proxy_pass       $backend$request_uri;
     }
 
     # Config
@@ -1049,25 +930,9 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $ingesterUrl }}$request_uri;
+      set $backend     "{{ $ingesterUrl }}";
+      proxy_pass       $backend$request_uri;
     }
-
-    {{- if and .Values.enterprise.enabled .Values.enterprise.adminApi.enabled }}
-    # Admin API
-    location ^~ /admin/api/ {
-      {{- with .Values.gateway.nginxConfig.locationSnippet }}
-      {{- tpl . $ | nindent 6 }}
-      {{- end }}
-      proxy_pass       {{ $backendUrl }}$request_uri;
-    }
-    location = /admin/api {
-      {{- with .Values.gateway.nginxConfig.locationSnippet }}
-      {{- tpl . $ | nindent 6 }}
-      {{- end }}
-      internal;        # to suppress 301
-    }
-    {{- end }}
-
 
     # QueryFrontend, Querier
     location = /api/prom/tail {
@@ -1076,7 +941,8 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $queryFrontendUrl }}$request_uri;
+      set $backend     "{{ $queryFrontendUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location = /loki/api/v1/tail {
       proxy_set_header Upgrade $http_upgrade;
@@ -1084,13 +950,15 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $queryFrontendUrl }}$request_uri;
+      set $backend     "{{ $queryFrontendUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location ^~ /api/prom/ {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $queryFrontendUrl }}$request_uri;
+      set $backend     "{{ $queryFrontendUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location = /api/prom {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
@@ -1104,7 +972,8 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
-      proxy_pass       {{ $queryFrontendUrl }}$request_uri;
+      set $backend     "{{ $queryFrontendUrl }}";
+      proxy_pass       $backend$request_uri;
     }
     location = /loki/api/v1 {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
@@ -1120,14 +989,20 @@ http {
 }
 {{- end }}
 
-{{/* Configure enableServiceLinks in pod */}}
+{{/*
+Resolve enableServiceLinks for a component using three-level cascade.
+Accepts (dict "component" ... "ctx" .).
+Returns "enableServiceLinks: <bool>" or empty string when unset at all levels.
+*/}}
 {{- define "loki.enableServiceLinks" -}}
-{{- if semverCompare ">=1.13-0" (include "loki.kubeVersion" .) -}}
-{{- if or (.Values.loki.enableServiceLinks) (ne .Values.loki.enableServiceLinks false) -}}
-enableServiceLinks: true
-{{- else -}}
-enableServiceLinks: false
-{{- end -}}
+{{- $component := .component -}}
+{{- $ctx := .ctx -}}
+{{- if (kindIs "bool" $component.enableServiceLinks) -}}
+enableServiceLinks: {{ $component.enableServiceLinks }}
+{{- else if (kindIs "bool" $ctx.Values.defaults.enableServiceLinks) -}}
+enableServiceLinks: {{ $ctx.Values.defaults.enableServiceLinks }}
+{{- else if (kindIs "bool" $ctx.Values.loki.enableServiceLinks) -}}
+enableServiceLinks: {{ $ctx.Values.loki.enableServiceLinks }}
 {{- end -}}
 {{- end -}}
 
@@ -1135,29 +1010,26 @@ enableServiceLinks: false
 {{- define "loki.compactorAddress" -}}
 {{- $isSimpleScalable := eq (include "loki.deployment.isScalable" .) "true" -}}
 {{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
-{{- $isSingleBinary := eq (include "loki.deployment.isSingleBinary" .) "true" -}}
-{{- $compactorAddress := include "loki.backendFullname" . -}}
-{{- if and $isSimpleScalable .Values.read.legacyReadTarget -}}
-{{/* 2 target configuration */}}
-{{- $compactorAddress = include "loki.readFullname" . -}}
-{{- else if $isSingleBinary -}}
+{{- $isMonolithic := eq (include "loki.deployment.isMonolithic" .) "true" -}}
+{{- $compactorAddress := include "loki.resourceName" (dict "ctx" . "component" "backend") -}}
+{{- if $isMonolithic -}}
 {{/* single binary */}}
-{{- $compactorAddress = include "loki.singleBinaryFullname" . -}}
+{{- $compactorAddress = include "loki.fullname" . -}}
 {{/* distributed */}}
 {{- else if $isDistributed -}}
-{{- $compactorAddress = include "loki.compactorFullname" . -}}
+{{- $compactorAddress = include "loki.resourceName" (dict "ctx" . "component" "compactor") -}}
 {{- end -}}
-{{- printf "%s.%s.svc.%s:%s" $compactorAddress .Release.Namespace .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) }}
+{{- printf "%s.%s.svc.%s:%s" $compactorAddress (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) }}
 {{- end }}
 
 {{/* Determine query-scheduler address */}}
 {{- define "loki.querySchedulerAddress" -}}
-{{- $schedulerAddress := ""}}
+{{- $querySchedulerAddress := ""}}
 {{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
 {{- if $isDistributed -}}
-{{- $schedulerAddress = printf "%s.%s.svc.%s:%s" (include "loki.querySchedulerFullname" .) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) -}}
+{{- $querySchedulerAddress = printf "%s-headless.%s.svc.%s:%s" (include "loki.resourceName" (dict "ctx" . "component" "query-scheduler")) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) -}}
 {{- end -}}
-{{- printf "%s" $schedulerAddress }}
+{{- printf "%s" $querySchedulerAddress }}
 {{- end }}
 
 {{/* Determine querier address */}}
@@ -1165,8 +1037,8 @@ enableServiceLinks: false
 {{- $querierAddress := "" }}
 {{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
 {{- if $isDistributed -}}
-{{- $querierHost := include "loki.querierFullname" .}}
-{{- $querierUrl := printf "http://%s.%s.svc.%s:3100" $querierHost (include "loki.namespace" .) .Values.global.clusterDomain }}
+{{- $querierHost := include "loki.resourceName" (dict "ctx" . "component" "querier")}}
+{{- $querierUrl := printf "http://%s.%s.svc.%s:%s" $querierHost (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
 {{- $querierAddress = $querierUrl }}
 {{- end -}}
 {{- printf "%s" $querierAddress }}
@@ -1178,10 +1050,10 @@ enableServiceLinks: false
 {{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
 {{- $isScalable := eq (include "loki.deployment.isScalable" .) "true" -}}
 {{- if $isDistributed -}}
-{{- $idxGatewayAddress = printf "dns+%s-headless.%s.svc.%s:%s" (include "loki.indexGatewayFullname" .) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) -}}
+{{- $idxGatewayAddress = printf "dns+%s-headless.%s.svc.%s:%s" (include "loki.resourceName" (dict "ctx" . "component" "index-gateway")) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) -}}
 {{- end -}}
 {{- if $isScalable -}}
-{{- $idxGatewayAddress = printf "dns+%s-headless.%s.svc.%s:%s" (include "loki.backendFullname" .) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) -}}
+{{- $idxGatewayAddress = printf "dns+%s-headless.%s.svc.%s:%s" (include "loki.resourceName" (dict "ctx" . "component" "backend")) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) -}}
 {{- end -}}
 {{- printf "%s" $idxGatewayAddress }}
 {{- end }}
@@ -1192,10 +1064,10 @@ enableServiceLinks: false
 {{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
 {{- $isScalable := eq (include "loki.deployment.isScalable" .) "true" -}}
 {{- if $isDistributed -}}
-{{- $bloomPlannerAddress = printf "%s-headless.%s.svc.%s:%s" (include "loki.bloomPlannerFullname" .) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) -}}
+{{- $bloomPlannerAddress = printf "%s-headless.%s.svc.%s:%s" (include "loki.resourceName" (dict "ctx" . "component" "bloom-planner")) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) -}}
 {{- end -}}
 {{- if $isScalable -}}
-{{- $bloomPlannerAddress = printf "%s-headless.%s.svc.%s:%s" (include "loki.backendFullname" .) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) -}}
+{{- $bloomPlannerAddress = printf "%s-headless.%s.svc.%s:%s" (include "loki.resourceName" (dict "ctx" . "component" "backend")) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) -}}
 {{- end -}}
 {{- printf "%s" $bloomPlannerAddress}}
 {{- end }}
@@ -1206,10 +1078,10 @@ enableServiceLinks: false
 {{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
 {{- $isScalable := eq (include "loki.deployment.isScalable" .) "true" -}}
 {{- if $isDistributed -}}
-{{- $bloomGatewayAddresses = printf "dnssrvnoa+_grpc._tcp.%s-headless.%s.svc.%s" (include "loki.bloomGatewayFullname" .) (include "loki.namespace" .) .Values.global.clusterDomain -}}
+{{- $bloomGatewayAddresses = printf "dnssrvnoa+_grpc._tcp.%s-headless.%s.svc.%s" (include "loki.resourceName" (dict "ctx" . "component" "bloom-gateway")) (include "loki.namespace" .) .Values.global.clusterDomain -}}
 {{- end -}}
 {{- if $isScalable -}}
-{{- $bloomGatewayAddresses = printf "dnssrvnoa+_grpc._tcp.%s-headless.%s.svc.%s" (include "loki.backendFullname" .) (include "loki.namespace" .) .Values.global.clusterDomain -}}
+{{- $bloomGatewayAddresses = printf "dnssrvnoa+_grpc._tcp.%s-headless.%s.svc.%s" (include "loki.resourceName" (dict "ctx" . "component" "backend")) (include "loki.namespace" .) .Values.global.clusterDomain -}}
 {{- end -}}
 {{- printf "%s" $bloomGatewayAddresses}}
 {{- end }}
@@ -1218,16 +1090,6 @@ enableServiceLinks: false
 checksum/config: {{ include "loki.configMapOrSecretContentHash" (dict "ctx" . "name" "/config.yaml") }}
 {{- end -}}
 
-{{/*
-Return the appropriate apiVersion for PodDisruptionBudget.
-*/}}
-{{- define "loki.pdb.apiVersion" -}}
-  {{- if and (.Capabilities.APIVersions.Has "policy/v1") (semverCompare ">=1.21-0" (include "loki.kubeVersion" .)) -}}
-    {{- print "policy/v1" -}}
-  {{- else -}}
-    {{- print "policy/v1beta1" -}}
-  {{- end -}}
-{{- end -}}
 
 {{/*
 Return the object store type for use with the test schema.
@@ -1237,19 +1099,6 @@ Return the object store type for use with the test schema.
     s3
   {{- else -}}
     filesystem
-  {{- end -}}
-{{- end -}}
-
-{{/*
-Return the appropriate apiVersion for HorizontalPodAutoscaler.
-*/}}
-{{- define "loki.hpa.apiVersion" -}}
-  {{- if and (.Capabilities.APIVersions.Has "autoscaling/v2") (semverCompare ">= 1.19-0" (include "loki.kubeVersion" .)) -}}
-      {{- print "autoscaling/v2" -}}
-  {{- else if .Capabilities.APIVersions.Has "autoscaling/v2beta2" -}}
-    {{- print "autoscaling/v2beta2" -}}
-  {{- else -}}
-    {{- print "autoscaling/v2beta1" -}}
   {{- end -}}
 {{- end -}}
 
@@ -1286,9 +1135,87 @@ storage_prefix: {{ .storage_prefix }}
 Pod security context
 */}}
 {{- define "loki.podSecurityContext" -}}
-{{- if semverCompare ">=1.23-0" $.Capabilities.KubeVersion.GitVersion }}
 {{- toYaml .Values.loki.podSecurityContext }}
-{{- else }}
-{{- toYaml (omit .Values.loki.podSecurityContext "fsGroupChangePolicy")  }}
-{{- end }}
 {{- end -}}
+
+{{- define "loki.memoryToMiB" -}}
+{{- $mem := . | toString -}}
+{{- if hasSuffix "Ti" $mem -}}
+  {{- mulf ((trimSuffix "Ti" $mem) | float64) 1048576 | int -}}
+{{- else if hasSuffix "Gi" $mem -}}
+  {{- mulf ((trimSuffix "Gi" $mem) | float64) 1024 | int -}}
+{{- else if hasSuffix "Mi" $mem -}}
+  {{- (trimSuffix "Mi" $mem) | int -}}
+{{- else if hasSuffix "Ki" $mem -}}
+  {{- divf ((trimSuffix "Ki" $mem) | float64) 1024 | int -}}
+{{- else if hasSuffix "T" $mem -}}
+  {{- mulf ((trimSuffix "T" $mem) | float64) 953674.3164 | int -}}
+{{- else if hasSuffix "G" $mem -}}
+  {{- mulf ((trimSuffix "G" $mem) | float64) 953.6743164 | int -}}
+{{- else if hasSuffix "M" $mem -}}
+  {{- mulf ((trimSuffix "M" $mem) | float64) 0.9536743164 | int -}}
+{{- else -}}
+  {{- divf ($mem | float64) 1048576 | int -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Build the env block for a Loki component, auto-injecting GOMEMLIMIT and GOGC.
+
+Arguments (passed as a dict):
+  extraEnv  - already-concatenated extraEnv list for this component
+  resources - the component's resources block (.Values.<component>.resources)
+  factor    - fraction of memory limit for GOMEMLIMIT (default 0.85)
+  gogc      - value for GOGC env var (default 80)
+
+When the memory limit is not set, or GOMEMLIMIT is already defined in extraEnv,
+the list is returned unchanged so users retain full control.
+*/}}
+{{- define "loki.componentEnv" -}}
+{{- $envList := .extraEnv | default list -}}
+{{- $resources := .resources | default dict -}}
+{{- $factor := .factor | default 0.85 | float64 -}}
+{{- $gogc := .gogc | default 80 | int -}}
+{{- $hasGomemlimit := false -}}
+{{- $hasGogc := false -}}
+{{- range $envList -}}
+  {{- if eq .name "GOMEMLIMIT" -}}{{- $hasGomemlimit = true -}}{{- end -}}
+  {{- if eq .name "GOGC" -}}{{- $hasGogc = true -}}{{- end -}}
+{{- end -}}
+{{- $memLimit := dig "limits" "memory" "" $resources -}}
+{{- if and (not $hasGomemlimit) $memLimit -}}
+  {{- $mib := include "loki.memoryToMiB" $memLimit | int -}}
+  {{- $goMemMib := mulf ($mib | float64) $factor | int -}}
+  {{- $envList = append $envList (dict "name" "GOMEMLIMIT" "value" (printf "%dMiB" $goMemMib)) -}}
+{{- end -}}
+{{- if not $hasGogc -}}
+  {{- $envList = append $envList (dict "name" "GOGC" "value" ($gogc | toString)) -}}
+{{- end -}}
+env:
+  {{- with $envList | uniq }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+  - name: POD_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
+{{- end -}}
+
+{{/*
+format rules dir
+*/}}
+{{- define "loki.rulerRulesDirName" -}}
+rules-{{ . | replace "_" "-" | trimSuffix "-" | lower }}
+{{- end }}
+
+{{/*
+monolithic replicas calculation
+*/}}
+{{- define "loki.monolithicReplicas" -}}
+{{- $replicas := 1 }}
+{{- $usingObjectStorage := eq (include "loki.isUsingObjectStorage" .) "true" }}
+{{- if and $usingObjectStorage (gt (int .Values.singleBinary.replicas) 1)}}
+{{- $replicas = int .Values.singleBinary.replicas -}}
+{{- end }}
+{{- printf "%d" $replicas }}
+{{- end }}
