@@ -23,7 +23,7 @@ apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
 metadata:
   name: {{ include "grafana.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "grafana.namespace" . }}
   labels:
     {{- include "grafana.labels" . | nindent 4 }}
 spec:
