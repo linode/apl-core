@@ -12,7 +12,7 @@ metadata:
 {{- end }}
 subjects:
   - kind: ServiceAccount
-    name: {{ template "loki.serviceAccountName" . }}
+    name: {{ include "loki.serviceAccountName" (dict "ctx" . "component" .Values.backend "target" "backend" ) }}
     namespace: {{ include "loki.namespace" . }}
 roleRef:
   kind: ClusterRole

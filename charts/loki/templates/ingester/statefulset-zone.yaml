@@ -1,0 +1,80 @@
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- $replicas := (include "loki.ingester.replicaCount" .) -}}
+{{- if and $isDistributed .Values.ingester.zoneAwareReplication.enabled }}
+{{- range $zone := list "zone-a" "zone-b" "zone-c" }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "loki.ingesterFullname" $ }}-{{ $zone }}
+  namespace: {{ include "loki.namespace" $ }}
+  labels:
+    {{- include "loki.ingesterLabels" $ | nindent 4 }}
+    app.kubernetes.io/part-of: memberlist
+    name: {{ include "loki.prefixIngesterName" $ }}ingester-{{ $zone }}
+    rollout-group: {{ include "loki.prefixRolloutGroup" $ }}ingester
+    {{- with $.Values.ingester.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    rollout-max-unavailable: "{{ include "loki.ingester.maxUnavailable" (dict "ctx" $ "replicas" $replicas)}}"
+    {{- with $.Values.loki.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with (dig "zoneAwareReplication" (printf "zone%s" (upper (splitList "-" $zone | last))) "annotations" nil $.Values.ingester) }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+{{- if and (not $.Values.ingester.autoscaling.enabled) (not $.Values.ingester.kedaAutoscaling.enabled) (not (kindIs "invalid" $.Values.ingester.replicas)) }}
+  replicas: {{ $replicas }}
+{{- end }}
+  podManagementPolicy: Parallel
+  serviceName: {{ include "loki.ingesterFullname" $ }}-{{ $zone }}-headless
+  revisionHistoryLimit: {{ $.Values.loki.revisionHistoryLimit }}
+  {{- if and ($.Values.ingester.persistence.enableStatefulSetAutoDeletePVC)  }}
+  {{/*
+    Data on the read nodes is easy to replace, so we want to always delete PVCs to make
+    operation easier, and will rely on re-fetching data when needed.
+  */}}
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: {{ $.Values.ingester.persistence.whenDeleted }}
+    whenScaled: {{ $.Values.ingester.persistence.whenScaled }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "loki.ingesterSelectorLabels" $ | nindent 6 }}
+      name: {{ include "loki.prefixIngesterName" $ }}ingester-{{ $zone }}
+      rollout-group: {{ include "loki.prefixRolloutGroup" $ }}ingester
+{{- with $.Values.ingester.updateStrategy }}
+  updateStrategy:
+    {{- tpl (. | toYaml) $ | nindent 4 }}
+{{- end }}
+  template:
+    {{- include "loki.podTemplate" (dict "target" "ingester" "component" $.Values.ingester "ctx" $ "rolloutZoneName" $zone "args" (list (print "-ingester.availability-zone=" $zone) "-ingester.unregister-on-shutdown=false" "-ingester.tokens-file-path=/var/loki/ring-tokens")) | nindent 4 }}
+  {{- if $.Values.ingester.persistence.enabled }}
+  volumeClaimTemplates:
+  {{- range $.Values.ingester.persistence.claims }}
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: {{ .name }}
+        {{- with .annotations }}
+        annotations:
+          {{- . | toYaml | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{- toYaml .accessModes | nindent 10 }}
+        {{- with .storageClass }}
+        storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+        {{- end }}
+        {{- with .volumeAttributesClassName }}
+        volumeAttributesClassName: {{ . }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .size | quote }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

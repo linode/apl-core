@@ -1,0 +1,4 @@
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if $isDistributed }}
+{{- include "loki.keda" (dict "target" "querier" "component" .Values.querier "ctx" . "kind" "Deployment") }}
+{{- end }}

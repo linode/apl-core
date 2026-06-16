@@ -41,6 +41,31 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+## CRD management.
+## rollout-operator always requires its CRDs (ReplicaTemplate, NoDownscale) to
+## be present in the cluster — the operator will not start without them. This
+## flag controls only whether *this chart* installs them via the bundled
+## `crds` subchart.
+##
+## Leave `enabled: true` (default) for standalone installs.
+##
+## Set `enabled: false` only when CRDs are managed out of band, for example:
+##   * a single shared rollout-operator instance owns the CRDs cluster-wide
+##     and other releases should not contend with them;
+##   * CRDs are reconciled by a GitOps controller, an umbrella chart, or a
+##     separate Helm release dedicated to CRDs;
+##   * cluster RBAC forbids the release's service account from creating CRDs.
+## In all of these cases you are responsible for ensuring the CRDs exist
+## before installing/upgrading this chart.
+crds:
+  # -- Install CRDs as part of the chart (via the bundled `crds` subchart).
+  # Set to `false` only when CRDs are managed out of band — see the comment
+  # above for guidance.
+  enabled: true
+
+# -- Additional annotations to add to the deployment
+annotations: {}
+
 # -- Pod Annotations
 podAnnotations: {}
 
@@ -108,6 +133,8 @@ webhooks:
   # -- Enable the rollout-operator webhooks. See https://github.com/grafana/rollout-operator/#webhooks.
   # Note that the webhooks require custom resource definitions. If upgrading, manually apply the files in the `crds` directory.
   enabled: true
+  # -- Timeout in seconds for the prepare-downscale mutating webhook. Must be between 1 and 30.
+  timeoutSeconds: 10
   # -- Validating and mutating webhook failure policy. `Ignore` or `Fail`.
   failurePolicy: "Fail"
   # -- Secret resource name for the TLS certificate to be used with the webhooks
@@ -125,13 +152,36 @@ webhooks:
   #         values:
   #           - production
 
+# -- Namespace selector applied to all webhooks. Defaults to restricting to the release namespace.
+# See https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-namespaceselector
 namespaceSelector:
-  # -- Namespace selector to filter which namespaces the webhooks apply to.
-  # See https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-namespaceselector
-  # Example:
+  # Example 1 - matchExpressions only: merged with the default release namespace matchLabels.
+  #   values.yaml:
   #     matchExpressions:
   #       - key: team
   #         operator: NotIn
-  #         values:
-  #           - team-a
+  #         values: [team-a]
+  #   renders:
+  #     namespaceSelector:
+  #       matchLabels:
+  #         kubernetes.io/metadata.name: <release-namespace>
+  #       matchExpressions:
+  #         - key: team
+  #           operator: NotIn
+  #           values: [team-a]
+  #
+  # Example 2 - matchLabels set: full selector is user-controlled (matchExpressions also supported).
+  #   values.yaml:
+  #     matchLabels:
+  #       kubernetes.io/metadata.name: logging
+  #   renders:
+  #     namespaceSelector:
+  #       matchLabels:
+  #         kubernetes.io/metadata.name: logging
+  #
+  # Example 3 - set to null: omits namespaceSelector entirely (e.g. when objectSelector alone is sufficient).
+  #   values.yaml:
+  #     namespaceSelector: null
+  #   renders:
+  #     (nothing)
   matchExpressions: []
