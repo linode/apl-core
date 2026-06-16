@@ -1,0 +1,9 @@
+{{- range $name, $route := .Values.route -}}
+{{- if $route.enabled -}}
+{{- $routeName := ternary (include "loki.fullname" $) (printf "%s-%s" (include "loki.fullname" $) $name) (eq $name "main") -}}
+{{- $kind := $route.kind | default "HTTPRoute" -}}
+{{- $port := $route.backendPort | default (ternary $.Values.loki.server.grpc_listen_port $.Values.loki.server.http_listen_port (eq $kind "GRPCRoute")) -}}
+{{- $rules := include "loki.route.rules" (dict "ctx" $ "paths" $route.paths "port" $port) -}}
+{{- include "loki.route" (dict "ctx" $ "route" $route "name" $routeName "rules" $rules) }}
+{{- end -}}
+{{- end -}}

@@ -1,82 +1,96 @@
-{{- with .Values.lokiCanary -}}
-{{- if .enabled -}}
+{{- if .Values.lokiCanary.enabled -}}
 ---
 apiVersion: apps/v1
-kind: {{ .kind }}
+kind: {{ .Values.lokiCanary.kind }}
 metadata:
-  name: {{ include "loki-canary.fullname" $ }}
+  name: {{ include "loki.resourceName" (dict "ctx" . "component" "canary") }}
   namespace: {{ include "loki.namespace" $ }}
   labels:
-    {{- include "loki-canary.labels" $ | nindent 4 }}
+    {{- include "loki.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: canary
+    {{- with .Values.lokiCanary.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.lokiCanary.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   selector:
     matchLabels:
-      {{- include "loki-canary.selectorLabels" $ | nindent 6 }}
-  {{- if eq .kind "Deployment" }}
-  replicas: {{ .replicas }}
+      {{- include "loki.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: canary
+  {{- if eq .Values.lokiCanary.kind "Deployment" }}
+  replicas: {{ .Values.lokiCanary.replicas }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 1
-  revisionHistoryLimit: {{ $.Values.loki.revisionHistoryLimit }}
+  revisionHistoryLimit: {{ .Values.lokiCanary.revisionHistoryLimit }}
   {{- else }}
-  {{- with .updateStrategy }}
+  {{- with .Values.lokiCanary.updateStrategy }}
   updateStrategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
   template:
     metadata:
-      {{- with .annotations }}
+      {{- with .Values.lokiCanary.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "loki-canary.selectorLabels" $ | nindent 8 }}
-        {{- with .podLabels }}
+        {{- include "loki.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: canary
+        {{- with .Values.lokiCanary.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      serviceAccountName: {{ include "loki-canary.fullname" $ }}
+      serviceAccountName: {{ include "loki.serviceAccountName" (dict "ctx" . "component" .Values.lokiCanary "target" "canary") }}
+      {{- if (kindIs "bool" .Values.lokiCanary.automountServiceAccountToken) }}
+      automountServiceAccountToken: {{ .Values.lokiCanary.automountServiceAccountToken }}
+      {{- end }}
       {{- with $.Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- include "loki-canary.priorityClassName" $ | nindent 6 }}
-      {{- if and (semverCompare ">=1.33-0" (include "loki.kubeVersion" $)) (kindIs "bool" .hostUsers) }}
-      hostUsers: {{ .hostUsers }}
+      {{- with .Values.lokiCanary.priorityClassName }}
+      priorityClassName: {{ . }}
       {{- end }}
+      {{- if (kindIs "bool" .Values.lokiCanary.hostUsers) }}
+      hostUsers: {{ .Values.lokiCanary.hostUsers }}
+      {{- end }}
+      {{- with .Values.lokiCanary.podSecurityContext }}
       securityContext:
-        {{- include "loki.podSecurityContext" $ | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
-        - name: loki-canary
-          image: {{ include "loki-canary.image" $ }}
-          imagePullPolicy: {{ $.Values.loki.image.pullPolicy }}
+        - name: canary
+          image: {{ include "loki.image" (dict "ctx" $ "component" $.Values.lokiCanary.image "defaultVersion" $.Chart.AppVersion) }}
+          imagePullPolicy: {{ $.Values.lokiCanary.image.pullPolicy }}
           args:
-            - -addr={{- default (include "loki.host" $) .lokiurl }}
-            - -labelname={{ .labelname }}
+            - -addr={{- default (include "loki.host" $) .Values.lokiCanary.lokiurl }}
+            - -labelname={{ .Values.lokiCanary.labelname }}
             - -labelvalue=$(POD_NAME)
-            {{- if $.Values.enterprise.enabled }}
-            - -user=$(USER)
-            - -tenant-id=$(USER)
-            - -pass=$(PASS)
-            {{- else if $.Values.loki.auth_enabled }}
-            - -user={{ $.Values.monitoring.selfMonitoring.tenant.name }}
-            - -tenant-id={{ $.Values.monitoring.selfMonitoring.tenant.name }}
-            - -pass={{ $.Values.monitoring.selfMonitoring.tenant.password }}
+            {{- if $.Values.loki.auth_enabled }}
+            - -user={{ dig "selfMonitoring" "tenant" "name" $.Values.lokiCanary.tenant.name $.Values.monitoring }}
+            - -tenant-id={{ dig "selfMonitoring" "tenant" "name" $.Values.lokiCanary.tenant.name $.Values.monitoring }}
+            - -pass={{ dig "selfMonitoring" "tenant" "password" $.Values.lokiCanary.tenant.password $.Values.monitoring }}
             {{- end }}
-            {{- if .push }}
+            {{- if .Values.lokiCanary.push }}
             - -push=true
             {{- end }}
-            {{- with .extraArgs }}
+            {{- with .Values.lokiCanary.extraArgs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+          {{- with .Values.lokiCanary.containerSecurityContext }}
           securityContext:
-            {{- toYaml $.Values.loki.containerSecurityContext | nindent 12 }}
-          volumeMounts:
-            {{- with $.Values.lokiCanary.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
-            {{- end }}
+          {{- end }}
+          {{- with .Values.lokiCanary.extraVolumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http-metrics
               containerPort: 3500
@@ -86,60 +100,47 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            {{ if $.Values.enterprise.enabled }}
-            - name: USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "enterprise-logs.selfMonitoringTenantSecret" $ }}
-                  key: username
-            - name: PASS
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "enterprise-logs.selfMonitoringTenantSecret" $ }}
-                  key: password
-            {{- end -}}
-            {{- with .extraEnv }}
+            {{- with .Values.lokiCanary.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-          {{- with .extraEnvFrom }}
+          {{- with .Values.lokiCanary.extraEnvFrom }}
           envFrom:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .livenessProbe }}
+          {{- with .Values.lokiCanary.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .readinessProbe }}
+          {{- with .Values.lokiCanary.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .startupProbe }}
+          {{- with .Values.lokiCanary.startupProbe }}
           startupProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .resources}}
+          {{- with .Values.lokiCanary.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with .dnsConfig | default $.Values.loki.dnsConfig }}
+      {{- with .Values.lokiCanary.dnsConfig }}
       dnsConfig:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .nodeSelector }}
+      {{- with .Values.lokiCanary.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .tolerations }}
+      {{- with .Values.lokiCanary.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .affinity }}
+      {{- with .Values.lokiCanary.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.lokiCanary.extraVolumes }}
       volumes:
-      {{- with $.Values.lokiCanary.extraVolumes }}
-      {{- toYaml . | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
-{{- end }}
 {{- end }}

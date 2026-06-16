@@ -1,0 +1,4 @@
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if and $isDistributed .Values.ruler.enabled }}
+{{- include "loki.service" (dict "target" "ruler" "component" .Values.ruler "ctx" .) }}
+{{- end }}

@@ -17,10 +17,7 @@ If pods are taking too long to schedule make sure pod affinity can be fulfilled 
 Installed components:
 ***********************************************************************
 
-{{- if .Values.monitoring.selfMonitoring.enabled }}
-* grafana-agent-operator
-{{- end }}
-{{- if eq (include "loki.deployment.isSingleBinary" .) "true" }}
+{{- if eq (include "loki.deployment.isMonolithic" .) "true" }}
 * loki
 {{- else -}}
 {{- if .Values.gateway.enabled }}
@@ -32,9 +29,7 @@ Installed components:
 {{- if eq (include "loki.deployment.isScalable" .) "true" }}
 * read
 * write
-{{- if not .Values.read.legacyReadTarget }}
 * backend
-{{- end }}
 {{- else }}
 * compactor
 * index gateway
@@ -48,7 +43,7 @@ Installed components:
 {{- end }}
 
 
-{{- if eq (include "loki.deployment.isSingleBinary" .) "true" }}
+{{- if eq (include "loki.deployment.isMonolithic" .) "true" }}
 
 Loki has been deployed as a single binary.
 This means a single pod is handling reads and writes. You can scale that pod vertically by adding more CPU and memory resources.
@@ -70,22 +65,22 @@ You can send logs from inside the cluster using the cluster DNS:
 
 {{- if .Values.gateway.enabled }}
 
-http://{{ include "loki.gatewayFullname" . }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}/loki/api/v1/push
+http://{{ include "loki.resourceName" (dict "ctx" . "component" "gateway") }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}/loki/api/v1/push
 
 {{- else }}
-{{- if eq (include "loki.deployment.isSingleBinary" .) "true" }}
+{{- if eq (include "loki.deployment.isMonolithic" .) "true" }}
 
-http://{{ include "loki.singleBinaryFullname" . }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}:{{ .Values.loki.server.http_listen_port }}/loki/api/v1/push
+http://{{ include "loki.fullname" . }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}:{{ .Values.loki.server.http_listen_port }}/loki/api/v1/push
 
 {{- end}}
 {{- if eq (include "loki.deployment.isScalable" .) "true" }}
 
-http://{{ include "loki.writeFullname" . }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}:{{ .Values.loki.server.http_listen_port }}/loki/api/v1/push
+http://{{ include "loki.resourceName" (dict "ctx" . "component" "write") }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}:{{ .Values.loki.server.http_listen_port }}/loki/api/v1/push
 
 {{- end }}
 {{- if eq (include "loki.deployment.isDistributed" .) "true" }}
 
-http://{{ include "loki.distributorFullname" . }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}:3100/loki/api/v1/push
+http://{{ include "loki.resourceName" (dict "ctx" . "component" "distributor") }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}:3100/loki/api/v1/push
 
 {{- end }}
 {{- end }}
@@ -93,22 +88,22 @@ http://{{ include "loki.distributorFullname" . }}.{{ include "loki.namespace" . 
 You can test to send data from outside the cluster by port-forwarding the gateway to your local machine:
 {{- if .Values.gateway.enabled }}
 
-  kubectl port-forward --namespace {{ include "loki.namespace" $ }} svc/{{ include "loki.gatewayFullname" . }} 3100:{{ .Values.gateway.service.port }} &
+  kubectl port-forward --namespace {{ include "loki.namespace" $ }} svc/{{ include "loki.resourceName" (dict "ctx" . "component" "gateway") }} 3100:{{ .Values.gateway.service.port }} &
 
 {{- else }}
-{{- if eq (include "loki.deployment.isSingleBinary" .) "true" }}
+{{- if eq (include "loki.deployment.isMonolithic" .) "true" }}
 
-  kubectl port-forward --namespace {{ include "loki.namespace" $ }} svc/{{ include "loki.singleBinaryFullname" . }} 3100:{{ .Values.loki.server.http_listen_port }} &
+  kubectl port-forward --namespace {{ include "loki.namespace" $ }} svc/{{ include "loki.fullname" . }} 3100:{{ .Values.loki.server.http_listen_port }} &
 
-{{- end}}
+{{- end }}
 {{- if eq (include "loki.deployment.isScalable" .) "true" }}
 
-  kubectl port-forward --namespace {{ include "loki.namespace" $ }} svc/{{ include "loki.writeFullname" . }} 3100:{{ .Values.loki.server.http_listen_port }} &
+  kubectl port-forward --namespace {{ include "loki.namespace" $ }} svc/{{ include "loki.resourceName" (dict "ctx" . "component" "write") }} 3100:{{ .Values.loki.server.http_listen_port }} &
 
 {{- end }}
 {{- if eq (include "loki.deployment.isDistributed" .) "true" }}
 
-  kubectl port-forward --namespace {{ include "loki.namespace" $ }} svc/{{ include "loki.distributorFullname" . }} 3100:3100 &
+  kubectl port-forward --namespace {{ include "loki.namespace" $ }} svc/{{ include "loki.resourceName" (dict "ctx" . "component" "distributor") }} 3100:3100 &
 
 {{- end }}
 {{- end }}
@@ -137,49 +132,24 @@ If Grafana operates within the cluster, you'll set up a new Loki datasource by u
 
 {{- if .Values.gateway.enabled }}
 
-http://{{ include "loki.gatewayFullname" . }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}/
+http://{{ include "loki.resourceName" (dict "ctx" . "component" "gateway") }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}/
 
 {{- else }}
-{{- if eq (include "loki.deployment.isSingleBinary" .) "true" }}
+{{- if eq (include "loki.deployment.isMonolithic" .) "true" }}
 
-http://{{ include "loki.singleBinaryFullname" . }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}:{{ .Values.loki.server.http_listen_port }}/
+http://{{ include "loki.fullname" . }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}:{{ .Values.loki.server.http_listen_port }}/
 
 {{- end}}
 {{- if eq (include "loki.deployment.isScalable" .) "true" }}
 
-http://{{ include "loki.readFullname" . }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}:{{ .Values.loki.server.http_listen_port }}/
+http://{{ include "loki.resourceName" (dict "ctx" . "component" "read") }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}:{{ .Values.loki.server.http_listen_port }}/
 
 {{- end }}
 {{- if eq (include "loki.deployment.isDistributed" .) "true" }}
 
-http://{{ include "loki.queryFrontendFullname" . }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}:3100/
+http://{{ include "loki.resourceName" (dict "ctx" . "component" "query-frontend") }}.{{ include "loki.namespace" . }}.svc.{{ .Values.global.clusterDomain }}:3100/
 
 {{- end }}
-{{- end }}
-
-{{- if and .Values.enterprise.enabled .Values.enterprise.provisioner.enabled }}
-
-***********************************************************************
-Enterprise Provisioner
-***********************************************************************
-
-The provisioner job requires an admin token secret to be created manually.
-
-1. Generate an admin token using the Loki CLI:
-   docker run grafana/loki:{{ .Chart.AppVersion }} -target=tokengen -tokengen.token-file=/tmp/token
-   
-2. Create the admin token secret:
-   kubectl create secret generic {{ .Values.enterprise.adminToken.secret | default (printf "%s-admin-token" (include "loki.name" . )) }} \
-     --from-literal=token=<generated-token> -n {{ $.Release.Namespace }}
-
-3. After the provisioner job completes, retrieve tenant tokens from the logs:
-   kubectl logs -l job-name={{ include "enterprise-logs.provisionerFullname" . }} -n {{ $.Release.Namespace }}
-
-4. Create tenant secrets manually using the tokens from the provisioner output:
-   kubectl create secret generic <tenant-name> \
-     --from-literal=token-write=<write-token> \
-     --from-literal=token-read=<read-token>
-
 {{- end }}
 
 {{- if .Values.loki.auth_enabled }}

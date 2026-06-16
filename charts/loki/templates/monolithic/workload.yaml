@@ -1,0 +1,8 @@
+{{- $isMonolithic := eq (include "loki.deployment.isMonolithic" .) "true" -}}
+{{- if $isMonolithic }}
+{{ $component := .Values.singleBinary }}
+{{- if .Values.singleBinary.persistence.enabled }}
+{{ $component = set .Values.singleBinary "podAnnotations" (mergeOverwrite (dict "storage/size" .Values.singleBinary.persistence.size) .Values.singleBinary.podAnnotations) }}
+{{- end }}
+{{- include "loki.component" (dict "ctx" . "component" $component "target" "single-binary" "name" (include "loki.resourceName" (dict "ctx" .)) "headlessName" (include "loki.resourceName" (dict "ctx" . "suffix" "headless"))) }}
+{{- end }}

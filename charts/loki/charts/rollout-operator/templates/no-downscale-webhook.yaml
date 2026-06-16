@@ -28,13 +28,24 @@ webhooks:
         scope: Namespaced
     admissionReviewVersions:
       - v1
+    {{- if not (kindIs "invalid" .Values.namespaceSelector) }}
     namespaceSelector:
+      {{- if .Values.namespaceSelector.matchLabels }}
+      matchLabels:
+        {{- toYaml .Values.namespaceSelector.matchLabels | nindent 8 }}
+      {{- with .Values.namespaceSelector.matchExpressions }}
+      matchExpressions:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- else }}
       matchLabels:
         kubernetes.io/metadata.name: {{ .Release.Namespace | quote }}
       {{- with .Values.namespaceSelector.matchExpressions }}
       matchExpressions:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- end }}
+    {{- end }}
     {{- with .Values.webhooks.objectSelector }}
     objectSelector:
       {{- toYaml . | nindent 6 }}

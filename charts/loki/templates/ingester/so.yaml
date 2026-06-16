@@ -1,0 +1,8 @@
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if and $isDistributed (or (not .Values.ingester.zoneAwareReplication.enabled) .Values.ingester.zoneAwareReplication.migration.enabled) }}
+{{- include "loki.keda" (dict "target" "ingester" "component" .Values.ingester "ctx" .) }}
+{{- else if and $isDistributed .Values.ingester.zoneAwareReplication.enabled }}
+  {{- range $zone := list "zone-a" "zone-b" "zone-c" }}
+{{- include "loki.keda" (dict "target" "ingester" "component" $.Values.ingester "ctx" $ "suffix" $zone) }}
+  {{- end }}
+{{- end }}

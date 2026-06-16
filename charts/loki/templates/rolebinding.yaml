@@ -1,4 +1,4 @@
-{{- if or (or .Values.rbac.pspEnabled .Values.rbac.sccEnabled) (and .Values.rbac.namespaced .Values.sidecar.rules.enabled) }}
+{{- if or .Values.rbac.sccEnabled (and .Values.rbac.namespaced .Values.sidecar.rules.enabled) }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -12,6 +12,6 @@ roleRef:
   name: {{ include "loki.name" . }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "loki.serviceAccountName" . }}
+    name: {{ include "loki.serviceAccountName" (dict "ctx" . "component" .Values "target" "") }}
     namespace: {{ include "loki.namespace" $ }}
 {{- end }}
