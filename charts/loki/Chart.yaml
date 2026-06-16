@@ -10,7 +10,7 @@ dependencies:
   condition: rollout_operator.enabled
   name: rollout-operator
   repository: https://grafana.github.io/helm-charts
-  version: 0.49.0
+  version: 0.50.0
 description: Helm chart for Grafana Loki supporting monolithic, simple scalable, and
   microservices modes.
 home: https://grafana-community.github.io/helm-charts
@@ -32,4 +32,4 @@ sources:
 - https://grafana.com/oss/loki/
 - https://grafana.com/docs/loki/latest/
 type: application
-version: 17.1.6
+version: 17.4.3

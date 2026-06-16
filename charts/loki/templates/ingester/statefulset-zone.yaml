@@ -52,6 +52,7 @@ spec:
   template:
     {{- include "loki.podTemplate" (dict "target" "ingester" "component" $.Values.ingester "ctx" $ "rolloutZoneName" $zone "args" (list (print "-ingester.availability-zone=" $zone) "-ingester.unregister-on-shutdown=false" "-ingester.tokens-file-path=/var/loki/ring-tokens")) | nindent 4 }}
   {{- if $.Values.ingester.persistence.enabled }}
+  {{- $zoneStorageClass := dig "zoneAwareReplication" (printf "zone%s" (upper (splitList "-" $zone | last))) "persistence" "storageClass" nil $.Values.ingester }}
   volumeClaimTemplates:
   {{- range $.Values.ingester.persistence.claims }}
     - apiVersion: v1
@@ -65,7 +66,8 @@ spec:
       spec:
         accessModes:
           {{- toYaml .accessModes | nindent 10 }}
-        {{- with .storageClass }}
+        {{- $storageClass := default .storageClass $zoneStorageClass }}
+        {{- with $storageClass }}
         storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
         {{- end }}
         {{- with .volumeAttributesClassName }}
