@@ -1,0 +1,4 @@
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if $isDistributed }}
+{{- include "loki.component" (dict "ctx" . "component" .Values.compactor "target" "compactor") }}
+{{- end }}
