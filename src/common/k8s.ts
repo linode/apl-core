@@ -158,7 +158,7 @@ export const deleteSecretForHelmRelease = async (releaseName: string, namespace:
     await coreClient.deleteNamespacedSecret({ name: `sh.helm.release.v1.${releaseName}.v${revision}`, namespace })
     d.debug(`Deleted secret for Helm release ${releaseName} revision ${revision} in namespace ${namespace}`)
   } catch (error) {
-    if (error?.response?.statusCode !== 404) {
+    if (!(error instanceof ApiException && error.code === 404)) {
       throw error
     }
   }
@@ -730,7 +730,8 @@ export function argoCdHasUnrecoverableErrors(applications: Record<string, any>[]
   for (const application of applications) {
     const operationState = application.status?.operationState
     if (
-      operationState?.phase === 'Failed' &&
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      ['Failed', 'Error'].includes(operationState?.phase) &&
       operationState?.message === 'runtime error: invalid memory address or nil pointer dereference'
     ) {
       return application?.metadata?.name || 'unknown'

@@ -437,7 +437,7 @@ export const addGitOpsApps = async (
   deps = { getArgocdGitopsManifest, applyArgocdApp, getStoredGitRepoConfig },
 ): Promise<void> => {
   d.info(`Adding GitOps apps: ${Array.from(appNames).join(', ')}`)
-  const { repoUrl, branch } = await deps.getStoredGitRepoConfig()
+  const { repoUrl, branch } = await deps.getStoredGitRepoConfig(true)
   if (appNames.has(ARGOCD_APP_GITOPS_GLOBAL_NAME)) {
     d.debug('Creating GitOps apps for cluster resources')
     const appManifest = deps.getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME, repoUrl, branch)

@@ -1,7 +1,7 @@
 appsInfo:
   alertmanager:
     title: Alertmanager
-    appVersion: 0.32.1
+    appVersion: 0.33.0
     repo: https://github.com/prometheus/alertmanager
     maintainers: Prometheus Community
     relatedLinks:
@@ -65,7 +65,7 @@ appsInfo:
     integration: App Platform uses Gitea as its default repository for App Platform configuration (values). Gitea can also be used by Teams to provide application code repositories. Access to Gitea is provided by the OIDC integration in App Platform. Members of the otomi-admin and team-admin group can seamlessly sign in to Gitea. When Argo CD is enabled, App Platform will automatically create a Gitops repository for each Team in Gitea.
   grafana:
     title: Grafana
-    appVersion: 13.0.1
+    appVersion: 13.0.2
     repo: https://github.com/grafana/grafana
     maintainers: Grafana Labs
     relatedLinks:
@@ -97,7 +97,7 @@ appsInfo:
     integration: App Platform has security best practices built in, and is designed for intrusion. Istio is used by App Platform as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of App Platform and can not be disabled.
   keycloak:
     title: Keycloak
-    appVersion: 26.5.6
+    appVersion: 26.6.2
     repo: https://github.com/keycloak/keycloak
     maintainers: Keycloak
     relatedLinks:
@@ -118,7 +118,7 @@ appsInfo:
     chartName: knative-operator
   kserve:
     title: Kserve
-    appVersion: 0.16.0
+    appVersion: 0.18.0
     repo: http://github.com/kserve/kserve
     maintainers: Kserve
     relatedLinks:
@@ -164,7 +164,7 @@ appsInfo:
     chartName: tekton-pipelines
   loki:
     title: Loki
-    appVersion: 3.6.7
+    appVersion: 3.7.2
     repo: https://github.com/grafana/loki
     maintainers: Grafana Labs
     relatedLinks:
@@ -175,7 +175,7 @@ appsInfo:
     integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When App Platform is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. App Platform shortcuts can be used to provide selections of logs based on interest.
   prometheus:
     title: Prometheus
-    appVersion: 3.11.3
+    appVersion: 3.12.0
     repo: https://github.com/prometheus/prometheus
     maintainers: Prometheus
     relatedLinks:
@@ -198,7 +198,7 @@ appsInfo:
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
-    appVersion: 0.36.6
+    appVersion: 0.37.0
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:
@@ -220,7 +220,7 @@ appsInfo:
     chartName: trivy-operator
   otel:
     title: OpenTelemetry Operator
-    appVersion: 0.151.0
+    appVersion: 0.153.0
     repo: https://github.com/open-telemetry/opentelemetry-operator
     maintainers: Grafana labs
     relatedLinks:

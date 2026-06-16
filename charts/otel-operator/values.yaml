@@ -55,7 +55,7 @@ manager:
     imagePullPolicy: IfNotPresent
   collectorImage:
     repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
-    tag: 0.151.0
+    tag: 0.153.0
   opampBridgeImage:
     repository: ""
     tag: ""
@@ -103,15 +103,17 @@ manager:
   # The featureGatesMap will enable or disable specific feature gates in the operator as well as deploy any prerequisites for the feature gate.
   # If this property is not an empty map, the featureGates property will be ignored.
   featureGatesMap: {}
-  # operator.targetallocator.mtls: false
+  # operator.clusterobservability: false
   # operator.targetallocator.fallbackstrategy: false
-  # operator.collector.targetallocatorcr: false
   # operator.golang.flags: false
-  # operator.collector.default.config: false
+  # operand.networkpolicy: false
+  # operator.networkpolicy: false
   ports:
     metricsPort: 8443
     webhookPort: 9443
     healthzPort: 8081
+  # Expose optionally a port for pprof profiling
+  #  pprofPort: 6060
   ## Metrics server configuration
   ## The operator uses controller-runtime built-in auth for the metrics server
   metrics:

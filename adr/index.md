@@ -19,6 +19,7 @@ This log lists the architectural decisions for apl-core.
 - [ADR-2022-08-26](2022-08-26-other-dns-provider.md) - Other DNS provider
 - [ADR-2026-06-02](2026-06-02-release-automation.md) - Release automation: explicit versioning, one branch per release cycle
 - [ADR-2026-06-02](2026-06-02-release-branch-per-cycle.md) - One release branch per major.minor cycle
+- [ADR-2026-06-12](2026-06-12-auth-policy-pod-label.md) - Auth policy pod label (`otomi.io/auth-policy`)
 
 <!-- adrlogstop -->
 

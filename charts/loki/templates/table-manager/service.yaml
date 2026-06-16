@@ -1,0 +1,3 @@
+{{- if .Values.tableManager.enabled }}
+{{- include "loki.service" (dict "target" "table-manager" "component" .Values.tableManager "ctx" .) }}
+{{- end }}
