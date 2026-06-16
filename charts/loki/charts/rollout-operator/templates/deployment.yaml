@@ -3,6 +3,10 @@ kind: Deployment
 metadata:
   name: {{ include "rollout-operator.fullname" . }}
   namespace: {{ .Release.Namespace | quote }}
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "rollout-operator.labels" . | nindent 4 }}
 spec:

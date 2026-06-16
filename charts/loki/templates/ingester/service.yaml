@@ -1,0 +1,10 @@
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if $isDistributed }}
+{{- include "loki.service" (dict "target" "ingester" "component" .Values.ingester "ctx" .) }}
+{{- if .Values.ingester.zoneAwareReplication.enabled }}
+{{- range $zone := list "zone-a" "zone-b" "zone-c" }}
+---
+{{- include "loki.service" (dict "target" "ingester" "component" $.Values.ingester "ctx" $ "rolloutZoneName" $zone "serviceEnabled" false "publishNotReadyAddresses" false) }}
+{{- end }}
+{{- end }}
+{{- end -}}
