@@ -1,0 +1,4 @@
+{{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
+{{- if and $isDistributed .Values.overridesExporter.enabled }}
+{{- include "loki.service" (dict "target" "overrides-exporter" "component" .Values.overridesExporter "ctx" .) }}
+{{- end -}}

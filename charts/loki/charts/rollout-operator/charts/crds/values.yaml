@@ -1,0 +1,8 @@
+# This subchart ships the CustomResourceDefinitions that rollout-operator
+# requires to function. The CRDs live under crds/ and are installed by Helm
+# without templating, per Helm's CRD best practice
+# (https://helm.sh/docs/chart_best_practices/custom_resource_definitions/).
+#
+# The subchart has no values of its own; toggling whether it is installed is
+# done from the parent chart via `crds.enabled`. See the parent chart's
+# values.yaml for guidance on when to disable it.
