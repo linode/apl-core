@@ -1,0 +1,1 @@
+{{- include "loki.keda" (dict "target" "gateway" "component" .Values.gateway "ctx" . "kind" "Deployment") }}
