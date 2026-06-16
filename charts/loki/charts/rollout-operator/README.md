@@ -4,7 +4,7 @@ Helm chart for deploying [Grafana rollout-operator](https://github.com/grafana/r
 
 # rollout-operator
 
-![Version: 0.49.0](https://img.shields.io/badge/Version-0.49.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.36.2](https://img.shields.io/badge/AppVersion-v0.36.2-informational?style=flat-square)
+![Version: 0.50.0](https://img.shields.io/badge/Version-0.50.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.38.0](https://img.shields.io/badge/AppVersion-v0.38.0-informational?style=flat-square)
 
 Grafana rollout-operator
 
@@ -14,7 +14,7 @@ Kubernetes: `^1.10.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-|  | crds | 0.0.0 |
+|  | crds | 0.1.0 |
 
 ## Installation
 
@@ -39,7 +39,17 @@ helm install  -n <namespace> <release> grafana/rollout-operator
 The Grafana rollout-operator should be installed in the same namespace as the statefulsets it is operating upon.
 It is not a highly available application and runs as a single pod.
 
-### Upgrade of Grafana Rollout Operator
+### Upgrade of Grafana Rollout Operator <= v0.38.0
+
+v0.38.0 of the rollout-operator introduced a new option for enforcing a "fixed delay" in partition aware PDB evictions.
+
+This requires an updated CRD and an additional role for the rollout-operator to patch pods.
+
+***Before upgrading to this version, make sure that the CustomResourceDefinitions (CRDs) shipped with the chart are applied to your cluster.***
+
+Additionally, make sure that the updated roles have been assigned.
+
+### Upgrade of Grafana Rollout Operator <= v0.32.0
 
 Starting with v0.33.0 of the rollout-operator chart, the rollout-operator webhooks are enabled. See https://github.com/grafana/rollout-operator/#webhooks.
 

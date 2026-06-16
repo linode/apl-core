@@ -35,7 +35,17 @@ helm install  -n <namespace> <release> grafana/rollout-operator
 The Grafana rollout-operator should be installed in the same namespace as the statefulsets it is operating upon.
 It is not a highly available application and runs as a single pod.
 
-### Upgrade of Grafana Rollout Operator
+### Upgrade of Grafana Rollout Operator <= v0.38.0
+
+v0.38.0 of the rollout-operator introduced a new option for enforcing a "fixed delay" in partition aware PDB evictions.
+
+This requires an updated CRD and an additional role for the rollout-operator to patch pods.
+
+***Before upgrading to this version, make sure that the CustomResourceDefinitions (CRDs) shipped with the chart are applied to your cluster.***
+
+Additionally, make sure that the updated roles have been assigned.
+
+### Upgrade of Grafana Rollout Operator <= v0.32.0
 
 Starting with v0.33.0 of the rollout-operator chart, the rollout-operator webhooks are enabled. See https://github.com/grafana/rollout-operator/#webhooks.
 
