@@ -5,7 +5,7 @@ groups:
 {{- with .Values.monitoring.rules }}
 {{- $additionalAnnotations := .additionalRuleAnnotations }}
 {{- $additionalLabels := .additionalRuleLabels }}
-{{- if and (not .disabled.LokiRequestErrors) .configs.LokiRequestErrors.enabled }}
+{{- if .configs.LokiRequestErrors.enabled }}
       {{- with .configs.LokiRequestErrors }}
       - alert: "LokiRequestErrors"
         annotations:
@@ -28,7 +28,7 @@ groups:
       {{- end }}
 {{- end }}
 
-{{- if and (not .disabled.LokiRequestPanics) .configs.LokiRequestPanics.enabled }}
+{{- if .configs.LokiRequestPanics.enabled }}
       {{- with .configs.LokiRequestPanics }}
       - alert: "LokiRequestPanics"
         annotations:
@@ -47,7 +47,7 @@ groups:
       {{- end }}
 {{- end }}
 
-{{- if and (not .disabled.LokiRequestLatency) .configs.LokiRequestLatency.enabled }}
+{{- if .configs.LokiRequestLatency.enabled }}
       {{- with .configs.LokiRequestLatency }}
       - alert: "LokiRequestLatency"
         annotations:
@@ -67,7 +67,7 @@ groups:
       {{- end }}
 {{- end }}
 
-{{- if and (not .disabled.LokiTooManyCompactorsRunning) .configs.LokiTooManyCompactorsRunning.enabled }}
+{{- if .configs.LokiTooManyCompactorsRunning.enabled }}
       {{- with .configs.LokiTooManyCompactorsRunning }}
       - alert: "LokiTooManyCompactorsRunning"
         annotations:
@@ -87,7 +87,7 @@ groups:
       {{- end }}
 {{- end }}
 
-{{- if and (not .disabled.LokiCanaryLatency) .configs.LokiCanaryLatency.enabled }}
+{{- if .configs.LokiCanaryLatency.enabled }}
   {{- with .configs.LokiCanaryLatency }}
   - name: "loki_canaries_alerts"
     rules:

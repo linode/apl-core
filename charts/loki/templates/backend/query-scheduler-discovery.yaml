@@ -1,13 +1,14 @@
 {{- $isSimpleScalable := eq (include "loki.deployment.isScalable" .) "true" -}}
-{{- if and $isSimpleScalable (not .Values.read.legacyReadTarget ) }}
+{{- if $isSimpleScalable }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "loki.querySchedulerFullname" . }}-discovery
+  name: {{ include "loki.resourceName" (dict "ctx" . "component" "query-scheduler" "suffix" "discovery") }}
   namespace: {{ include "loki.namespace" . }}
   labels:
-    {{- include "loki.backendSelectorLabels" . | nindent 4 }}
+    {{- include "loki.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
     prometheus.io/service-monitor: "false"
   annotations:
     {{- with .Values.loki.serviceAnnotations }}
@@ -30,5 +31,6 @@ spec:
       targetPort: grpc
       protocol: TCP
   selector:
-    {{- include "loki.backendSelectorLabels" . | nindent 4 }}
+    {{- include "loki.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
 {{- end }}

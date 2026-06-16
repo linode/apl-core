@@ -62,7 +62,7 @@ spec:
       {{- include "loki.selectorLabels" . | nindent 6 }}
   ingress:
   - toPorts:
-    - ports: 
+    - ports:
       - port: http
         protocol: TCP
   {{- if .Values.networkPolicy.ingress.namespaceSelector }}
@@ -88,10 +88,10 @@ spec:
       {{- include "loki.selectorLabels" . | nindent 6 }}
   ingress:
   - toPorts:
-    - ports: 
+    - ports:
       - port: http-metrics
         protocol: TCP
-  {{- if .Values.networkPolicy.metrics.cidrs }}
+  {{- if or .Values.networkPolicy.metrics.cidrs .Values.networkPolicy.metrics.namespaceSelector }}
     {{- range $cidr := .Values.networkPolicy.metrics.cidrs }}
     toCIDR:
     - {{ $cidr }}
@@ -117,10 +117,11 @@ metadata:
 spec:
   endpointSelector:
     matchLabels:
-      {{- include "loki.backendSelectorLabels" . | nindent 6 }}
+      {{- include "loki.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
   egress:
   - toPorts:
-    - ports: 
+    - ports:
       - port: "{{ .Values.networkPolicy.alertmanager.port }}"
         protocol: TCP
   {{- if .Values.networkPolicy.alertmanager.namespaceSelector }}
@@ -148,7 +149,7 @@ spec:
   egress:
   - toPorts:
     - ports:
-      {{- range $port := .Values.networkPolicy.externalStorage.ports }} 
+      {{- range $port := .Values.networkPolicy.externalStorage.ports }}
       - port: "{{ $port }}"
         protocol: TCP
       {{- end }}
@@ -177,14 +178,15 @@ metadata:
 spec:
   endpointSelector:
     matchLabels:
+      {{- include "loki.selectorLabels" . | nindent 6 }}
       {{- if eq $component "read" }}
-      {{- include "loki.readSelectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: read
       {{- else if eq $component "write" }}
-      {{- include "loki.writeSelectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: write
       {{- else if eq $component "table-manager" }}
-      {{- include "loki.tableManagerSelectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: table-manager
       {{- else }}
-      {{- include "loki.backendSelectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
       {{- end }}
   egress:
   - toEntities:
@@ -203,7 +205,8 @@ metadata:
 spec:
   endpointSelector:
     matchLabels:
-      {{- include "loki.backendSelectorLabels" . | nindent 6 }}
+      {{- include "loki.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
   egress:
   - toEntities:
     - kube-apiserver
@@ -226,7 +229,7 @@ spec:
       {{- include "loki.selectorLabels" . | nindent 6 }}
   egress:
   - toPorts:
-    - ports: 
+    - ports:
       - port: "{{ .Values.networkPolicy.discovery.port }}"
         protocol: TCP
   {{- if .Values.networkPolicy.discovery.namespaceSelector }}

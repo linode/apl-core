@@ -1,0 +1,5 @@
+{{- $isMonolithic := eq (include "loki.deployment.isMonolithic" .) "true" -}}
+{{- $usingObjectStorage := eq (include "loki.isUsingObjectStorage" .) "true" }}
+{{- if and $isMonolithic $usingObjectStorage }}
+{{- include "loki.hpa" (dict "target" "single-binary" "component" .Values.singleBinary "ctx" .) }}
+{{- end }}

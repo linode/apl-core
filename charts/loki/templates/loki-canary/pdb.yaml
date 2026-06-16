@@ -1,0 +1,3 @@
+{{- if and .Values.lokiCanary.enabled (eq .Values.lokiCanary.kind "Deployment") }}
+{{- include "loki.pdb" (dict "target" "canary" "component" .Values.lokiCanary "ctx" .) }}
+{{- end }}
