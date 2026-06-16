@@ -21,7 +21,11 @@ PDB helper
     {{- $_ := set $podDisruptionBudget "maxUnavailable" $component.maxUnavailable }}
     {{- end }}
     {{- end }}
-    {{- $_ := mergeOverwrite $podDisruptionBudget (omit ($component.podDisruptionBudget | default dict) "enabled" "labels" "annotations") }}
+    {{- range $key, $value := omit ($component.podDisruptionBudget | default dict) "enabled" "labels" "annotations" }}
+    {{- if not (kindIs "invalid" $value) }}
+    {{- $_ := set $podDisruptionBudget $key $value }}
+    {{- end }}
+    {{- end }}
     {{- if (omit $podDisruptionBudget "selector") }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -39,7 +43,11 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-  {{- toYaml (omit $podDisruptionBudget "selector") | nindent 2 }}
+  {{- range $key, $value := omit $podDisruptionBudget "selector" }}
+  {{- if not (kindIs "invalid" $value) }}
+  {{ $key }}: {{ $value | toYaml | trim }}
+  {{- end }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "loki.selectorLabels" $ctx | nindent 6 }}
