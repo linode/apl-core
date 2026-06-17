@@ -4,7 +4,12 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from 'src/common/constants'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { getGitCredentials, getStoredGitRepoConfig, GitConfigData, setGitConfig } from 'src/common/git-config'
+import {
+  createRepoConfig,
+  getGitCredentials,
+  GitRepoConfig,
+  setGitConfig,
+} from 'src/common/git-config'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS, hfValues } from 'src/common/hf'
 import {
   applyServerSide,
@@ -21,10 +26,9 @@ import {
 import {
   AppliedSecret,
   applySealedSecretManifestsFromDir,
-  resealGitPassword,
   restartSealedSecretsController,
 } from 'src/common/sealed-secrets'
-import { getFilename, loadYaml, rootDir } from 'src/common/utils'
+import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { getErrorMessage } from 'src/operator/utils'
@@ -277,10 +281,16 @@ export const installAll = async () => {
   )
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
-    const values = (await hfValues()) as Record<string, any>
-    const gitConfig = await setGitConfig(values?.otomi?.git as Record<string, any>)
+    let gitConfig: GitRepoConfig
+    let gitConfigData = await getGitCredentials()
+    if (gitConfigData) {
+      gitConfig = createRepoConfig(gitConfigData)
+    } else {
+      const values = (await hfValues()) as Record<string, any>
+      gitConfig = await setGitConfig(values?.otomi?.git as Record<string, any>)
+    }
     const { branch: gitBranch } = gitConfig
-    await commit(gitConfig, values)
+    await commit(gitConfig, true)
 
     // Verify the git push actually succeeded by checking the remote branch exists
     d.info('Verifying git push succeeded')

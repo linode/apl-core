@@ -50,6 +50,10 @@ jest.mock('src/common/git-config', () => ({
     password: 'test',
     authenticatedUrl: 'http://otomi-admin:test@git-server.git-server.svc.cluster.local/otomi/values.git',
   }),
+  getGitCredentials: jest.fn().mockResolvedValue({
+    password: 'test',
+  }),
+  createRepoConfig: jest.fn().mockResolvedValue({}),
 }))
 
 jest.mock('zx', () => {
