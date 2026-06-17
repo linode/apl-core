@@ -362,6 +362,10 @@
                         "null"
                     ]
                 },
+                "resizePolicy": {
+                    "description": "Container resize policy for the backend Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
+                },
                 "resources": {
                     "description": "Resource requests and limits for the backend",
                     "type": "object",
@@ -865,6 +869,10 @@
                         "null"
                     ]
                 },
+                "resizePolicy": {
+                    "description": "Container resize policy for the bloom-builder Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
+                },
                 "resources": {
                     "description": "Resource requests and limits for the bloom-builder",
                     "type": "object",
@@ -1273,6 +1281,10 @@
                     "description": "Number of replicas for the bloom-gateway",
                     "type": "integer"
                 },
+                "resizePolicy": {
+                    "description": "Container resize policy for the bloom-gateway Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
+                },
                 "resources": {
                     "description": "Resource requests and limits for the bloom-gateway",
                     "type": "object",
@@ -1671,6 +1683,10 @@
                 "replicas": {
                     "description": "Number of replicas for the bloom-planner",
                     "type": "integer"
+                },
+                "resizePolicy": {
+                    "description": "Container resize policy for the bloom-planner Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
                 },
                 "resources": {
                     "description": "Resource requests and limits for the bloom-planner",
@@ -2092,6 +2108,10 @@
                             "description": "Total number of chunks-cache-l2 replicas",
                             "type": "integer"
                         },
+                        "resizePolicy": {
+                            "description": "Container resize policy for the chunks-cache-l2 Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                            "type": "array"
+                        },
                         "resources": {
                             "description": "Resource requests and limits for the chunks-cache-l2 By default a safe memory limit will be requested based on allocatedMemory value (floor (* 1.2 allocatedMemory)).",
                             "type": "object",
@@ -2292,6 +2312,10 @@
                 "replicas": {
                     "description": "Total number of chunks-cache replicas",
                     "type": "integer"
+                },
+                "resizePolicy": {
+                    "description": "Container resize policy for the chunks-cache Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
                 },
                 "resources": {
                     "description": "Resource requests and limits for the chunks-cache By default a safe memory limit will be requested based on allocatedMemory value (floor (* 1.2 allocatedMemory)).",
@@ -2666,6 +2690,10 @@
                         "integer",
                         "null"
                     ]
+                },
+                "resizePolicy": {
+                    "description": "Container resize policy for the compactor Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
                 },
                 "resources": {
                     "description": "Resource requests and limits for the compactor",
@@ -3366,6 +3394,10 @@
                         "null"
                     ]
                 },
+                "resizePolicy": {
+                    "description": "Container resize policy for the distributor Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
+                },
                 "resources": {
                     "description": "Resource requests and limits for the distributor",
                     "type": "object",
@@ -3871,6 +3903,10 @@
                             "type": "object",
                             "additionalProperties": true
                         },
+                        "resizePolicy": {
+                            "description": "Container resize policy for the gateway metrics exporter Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                            "type": "array"
+                        },
                         "resources": {
                             "type": "object",
                             "properties": {
@@ -4057,6 +4093,10 @@
                 "replicas": {
                     "description": "Number of replicas for the gateway",
                     "type": "integer"
+                },
+                "resizePolicy": {
+                    "description": "Container resize policy for the gateway Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
                 },
                 "resources": {
                     "description": "Resource requests and limits for the gateway",
@@ -4635,6 +4675,10 @@
                         "null"
                     ]
                 },
+                "resizePolicy": {
+                    "description": "Container resize policy for the index-gateway Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
+                },
                 "resources": {
                     "description": "Resource requests and limits for the index-gateway",
                     "type": "object",
@@ -5173,6 +5217,10 @@
                         "integer",
                         "null"
                     ]
+                },
+                "resizePolicy": {
+                    "description": "Container resize policy for the ingester Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
                 },
                 "resources": {
                     "description": "Resource requests and limits for the ingester",
@@ -6123,6 +6171,10 @@
                     "description": "Replicas for `loki-canary` when using a Deployment",
                     "type": "integer"
                 },
+                "resizePolicy": {
+                    "description": "Container resize policy for the canary Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
+                },
                 "resources": {
                     "description": "Resource requests and limits for the canary",
                     "type": "object",
@@ -6392,6 +6444,10 @@
                     "description": "Readiness probe for memcached exporter",
                     "type": "object",
                     "additionalProperties": true
+                },
+                "resizePolicy": {
+                    "description": "Container resize policy for the memcached exporter Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
                 },
                 "resources": {
                     "type": "object",
@@ -6995,6 +7051,10 @@
                         "null"
                     ]
                 },
+                "resizePolicy": {
+                    "description": "Container resize policy for the overrides-exporter Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
+                },
                 "resources": {
                     "description": "Resource requests and limits for the overrides-exporter",
                     "type": "object",
@@ -7432,6 +7492,10 @@
                         "null"
                     ]
                 },
+                "resizePolicy": {
+                    "description": "Container resize policy for the pattern ingester Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
+                },
                 "resources": {
                     "description": "Resource requests and limits for the pattern ingester",
                     "type": "object",
@@ -7866,6 +7930,10 @@
                         "integer",
                         "null"
                     ]
+                },
+                "resizePolicy": {
+                    "description": "Container resize policy for the querier Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
                 },
                 "resources": {
                     "description": "Resource requests and limits for the querier",
@@ -8352,6 +8420,10 @@
                         "null"
                     ]
                 },
+                "resizePolicy": {
+                    "description": "Container resize policy for the query-frontend Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
+                },
                 "resources": {
                     "description": "Resource requests and limits for the query-frontend",
                     "type": "object",
@@ -8707,6 +8779,10 @@
                         "integer",
                         "null"
                     ]
+                },
+                "resizePolicy": {
+                    "description": "Container resize policy for the query-scheduler Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
                 },
                 "resources": {
                     "description": "Resource requests and limits for the query-scheduler",
@@ -9160,6 +9236,10 @@
                         "null"
                     ]
                 },
+                "resizePolicy": {
+                    "description": "Container resize policy for the read Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
+                },
                 "resources": {
                     "description": "Resource requests and limits for the read",
                     "type": "object",
@@ -9509,6 +9589,10 @@
                 "replicas": {
                     "description": "Total number of results-cache replicas",
                     "type": "integer"
+                },
+                "resizePolicy": {
+                    "description": "Container resize policy for the results-cache Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
                 },
                 "resources": {
                     "description": "Resource requests and limits for the results-cache By default a safe memory limit will be requested based on allocatedMemory value (floor (* 1.2 allocatedMemory)).",
@@ -9930,6 +10014,10 @@
                         "null"
                     ]
                 },
+                "resizePolicy": {
+                    "description": "Container resize policy for the ruler Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
+                },
                 "resources": {
                     "description": "Resource requests and limits for the ruler",
                     "type": "object",
@@ -10170,6 +10258,10 @@
                     "description": "Readiness probe definition.",
                     "type": "object",
                     "additionalProperties": true
+                },
+                "resizePolicy": {
+                    "description": "Container resize policy for the sidecar Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
                 },
                 "resources": {
                     "description": "Resource requests and limits for the sidecar",
@@ -10592,6 +10684,10 @@
                         "null"
                     ]
                 },
+                "resizePolicy": {
+                    "description": "Container resize policy for the single binary Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
+                },
                 "resources": {
                     "description": "Resource requests and limits for the single binary",
                     "type": "object",
@@ -10815,6 +10911,10 @@
                         "string",
                         "null"
                     ]
+                },
+                "resizePolicy": {
+                    "description": "Container resize policy for the table-manager Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
                 },
                 "resources": {
                     "description": "Resource requests and limits for the table-manager",
@@ -11359,6 +11459,10 @@
                         "integer",
                         "null"
                     ]
+                },
+                "resizePolicy": {
+                    "description": "Container resize policy for the write Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                    "type": "array"
                 },
                 "resources": {
                     "description": "Resource requests and limits for the write",
