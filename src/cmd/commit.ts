@@ -11,7 +11,7 @@ import {
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { getRepo, getStoredGitRepoConfig, GitRepoConfig } from 'src/common/git-config'
+import { getStoredGitRepoConfig, GitRepoConfig } from 'src/common/git-config'
 import { waitTillGitRepoAvailable } from 'src/common/gitea'
 import { hfValues } from 'src/common/hf'
 import { createUpdateConfigMap, createUpdateGenericSecret, getK8sSecret, k8s } from 'src/common/k8s'
@@ -133,14 +133,12 @@ const commitAndPush = async (gitConfig: GitRepoConfig, initialInstall = false): 
   d.log('Successfully pushed the updated values')
 }
 
-export const commit = async (gitConfig: GitRepoConfig, initialValues?: Record<string, any>): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:commit`)
+export const commit = async (gitConfig: GitRepoConfig, initialInstall = false): Promise<void> => {
   await validateValues()
   const { authenticatedUrl: remote, repoUrl } = gitConfig
-  const initialInstall = Boolean(initialValues)
   if (initialInstall) {
     // we call this here again, as we might not have completed (happens upon first install):
-    await bootstrapGit(initialValues)
+    await bootstrapGit()
     // Always update the remote URL after bootstrap - the initial bootstrapGit() (called during
     // the bootstrap phase before install) may have set the URL with unresolved placeholder
     // passwords because K8s secrets didn't exist yet. Now that secrets are decrypted,
