@@ -6,7 +6,7 @@ import { getFilename } from 'src/common/utils'
 import { HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { getRepo } from '../common/git-config'
+import { getStoredGitRepoConfig } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 
@@ -17,7 +17,7 @@ export const pull = async (): Promise<void> => {
     d.error('No values found, skipping git pull')
     return
   }
-  const gitRepo = await getRepo(allValues)
+  const gitRepo = await getStoredGitRepoConfig()
   const { branch } = gitRepo
   d.info('Pulling latest values')
   const $git = $({ cwd: env.ENV_DIR })
