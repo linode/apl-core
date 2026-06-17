@@ -116,6 +116,10 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.gateway.resizePolicy }}
+          resizePolicy:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       {{- if .Values.gateway.metrics.enabled }}
         - name: exporter
           image: {{ include "loki.image" (dict "ctx" . "component" .Values.gateway.metrics.image) }}
@@ -135,6 +139,10 @@ spec:
             {{- end }}
           {{- with .Values.gateway.metrics.resources }}
           resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.gateway.metrics.resizePolicy }}
+          resizePolicy:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.gateway.metrics.containerSecurityContext }}
