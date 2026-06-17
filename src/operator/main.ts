@@ -27,6 +27,7 @@ async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
   const gitRepository = new GitRepository({
     ...gitConfig,
     repoPath: env.ENV_DIR,
+    gitTimeoutMs: operatorEnv.GIT_TIMEOUT_MS,
   })
 
   return {
