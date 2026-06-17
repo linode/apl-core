@@ -2723,6 +2723,39 @@ properties:
         required:
           - username
           - password
+      git:
+        type: object
+        title: Git Configuration
+        description: |
+          Git configuration for APL values repository.
+        additionalProperties: true
+        properties:
+          repoUrl:
+            type: string
+            description: |
+              The base URL of the Git repository (without credentials). Auto-derived for internal Gitea.
+            pattern: '^https?://.+'
+            x-secret: ''
+          username:
+            type: string
+            description: |
+              Username for authenticating with the Git repository.
+              Defaults to 'otomi-admin' for internal Gitea.
+            x-secret: ''
+          password:
+            type: string
+            description: Password or token for authenticating with the Git repository
+            x-secret: ''
+          email:
+            type: string
+            description: |
+              Email address to use for Git commits.
+              Defaults to 'pipeline@cluster.local' for internal Gitea.
+            x-secret: ''
+          branch:
+            type: string
+            description: The branch to use in the Git repository
+            x-secret: ''
       hasExternalDNS:
         description: Set this to true when an external dns zone is available to manage dns records. (Expects required `dns:` fields to be set.)
         default: false
