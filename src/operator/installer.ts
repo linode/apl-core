@@ -5,7 +5,7 @@ import { recoverFromGit } from 'src/common/bootstrap'
 import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { getStoredGitRepoConfig, GIT_CONFIG_NAMESPACE } from '../common/git-config'
+import { getInitialGitConfig, getStoredGitRepoConfig, GIT_CONFIG_NAMESPACE, setGitConfig } from '../common/git-config'
 import {
   createUpdateConfigMap,
   deletePendingHelmReleases,

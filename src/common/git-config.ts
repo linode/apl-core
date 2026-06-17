@@ -4,6 +4,7 @@ import { terminal } from './debug'
 import { env } from './envalid'
 import { createUpdateGenericSecret, getK8sSecret, k8s } from './k8s'
 import { loadYaml } from './utils'
+import { generate as generatePassword } from 'generate-password'
 
 const d = terminal('common:git-config')
 
@@ -135,7 +136,44 @@ export async function getStoredGitRepoConfig(preferInternal = false): Promise<Gi
 }
 
 /**
- * Creates or updates the Git configuration ConfigMap
+ * Reads provided Git configuration from VALUES_INPUT. If not provided, checks for config
+ * stored earlier in the cluster. If none is given, generates a new Git password.
+ * To be used in initialization phase of the Operator only, where the Secret may not
+ * yet exist.
+ */
+export async function getInitialGitConfig(): Promise<{ config: Record<string, any>; isInitial: boolean }> {
+  const inputValues = (await loadYaml(env.VALUES_INPUT)) as Record<string, any>
+  if (inputValues && inputValues.otomi?.git?.password) {
+    d.info('Using Git credentials from VALUES_INPUT')
+    return { config: inputValues.otomi.git, isInitial: true }
+  }
+  const storedValues = await getGitCredentials()
+  if (storedValues) {
+    d.info('Using Git credentials from apl-secrets namespace')
+    return { config: storedValues, isInitial: false }
+  }
+  const oldCredentials = await getOldGitCredentials()
+  if (oldCredentials) {
+    d.info('Using Gitea credentials')
+    return { config: oldCredentials, isInitial: false }
+  }
+  d.info('Git credentials not set. Generating.')
+  const initialPassword = generatePassword({
+    length: 24,
+    numbers: true,
+    symbols: '!@#$%&*',
+    strict: true,
+  })
+  return {
+    config: {
+      password: initialPassword,
+    },
+    isInitial: true,
+  }
+}
+
+/**
+ * Creates or updates the Git configuration Secret
  */
 export async function setGitConfig(config: Record<string, any>, coreV1Api?: CoreV1Api): Promise<GitRepoConfig> {
   const api = coreV1Api ?? k8s.core()

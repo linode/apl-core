@@ -1,15 +1,10 @@
 import retry from 'async-retry'
 import { mkdirSync, rmSync } from 'fs'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
-import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from 'src/common/constants'
+import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import {
-  createRepoConfig,
-  getGitCredentials,
-  GitRepoConfig,
-  setGitConfig,
-} from 'src/common/git-config'
+import { createRepoConfig, getGitCredentials, getStoredGitRepoConfig, GitRepoConfig, setGitConfig } from 'src/common/git-config'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS, hfValues } from 'src/common/hf'
 import {
   applyServerSide,
@@ -281,14 +276,7 @@ export const installAll = async () => {
   )
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
-    let gitConfig: GitRepoConfig
-    let gitConfigData = await getGitCredentials()
-    if (gitConfigData) {
-      gitConfig = createRepoConfig(gitConfigData)
-    } else {
-      const values = (await hfValues()) as Record<string, any>
-      gitConfig = await setGitConfig(values?.otomi?.git as Record<string, any>)
-    }
+    const gitConfig = await getStoredGitRepoConfig()
     const { branch: gitBranch } = gitConfig
     await commit(gitConfig, true)
 
