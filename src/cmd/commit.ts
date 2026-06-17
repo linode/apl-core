@@ -11,7 +11,7 @@ import {
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { getRepo, GitRepoConfig } from 'src/common/git-config'
+import { getRepo, getStoredGitRepoConfig, GitRepoConfig } from 'src/common/git-config'
 import { waitTillGitRepoAvailable } from 'src/common/gitea'
 import { hfValues } from 'src/common/hf'
 import { createUpdateConfigMap, createUpdateGenericSecret, getK8sSecret, k8s } from 'src/common/k8s'
@@ -60,16 +60,11 @@ const cleanupGitState = async (d: any): Promise<void> => {
   }
 }
 
-const commitAndPush = async (
-  values: Record<string, any>,
-  branch: string,
-  initialInstall = false,
-  gitConfig?: GitRepoConfig,
-): Promise<void> => {
+const commitAndPush = async (gitConfig: GitRepoConfig, initialInstall = false): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const message = initialInstall ? 'otomi commit' : 'updated values [ci skip]'
-  const { password } = gitConfig ?? (await getRepo(values))
+  const { password, branch } = gitConfig
   try {
     try {
       await $git`git rev-list HEAD --count`.quiet()
@@ -94,7 +89,6 @@ const commitAndPush = async (
     d.error(errorMsg)
     throw new Error(errorMsg)
   }
-  if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
   await retry(
     async () => {
       try {
@@ -139,19 +133,14 @@ const commitAndPush = async (
   d.log('Successfully pushed the updated values')
 }
 
-export const commit = async (
-  initialInstall: boolean,
-  overrideArgs?: HelmArguments,
-  gitConfig?: GitRepoConfig,
-): Promise<void> => {
+export const commit = async (gitConfig: GitRepoConfig, initialValues?: Record<string, any>): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
-  await validateValues(overrideArgs)
-  d.info('Preparing values')
-  const values = (await hfValues()) as Record<string, any>
-  const { branch, authenticatedUrl: remote } = gitConfig ?? (await getRepo(values))
+  await validateValues()
+  const { authenticatedUrl: remote, repoUrl } = gitConfig
+  const initialInstall = Boolean(initialValues)
   if (initialInstall) {
     // we call this here again, as we might not have completed (happens upon first install):
-    await bootstrapGit(values)
+    await bootstrapGit(initialValues)
     // Always update the remote URL after bootstrap - the initial bootstrapGit() (called during
     // the bootstrap phase before install) may have set the URL with unresolved placeholder
     // passwords because K8s secrets didn't exist yet. Now that secrets are decrypted,
@@ -159,13 +148,13 @@ export const commit = async (
     await $git`git remote set-url origin ${remote}`.nothrow().quiet()
   }
 
-  if (values?.otomi?.git?.repoUrl === 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git') {
+  if (repoUrl === 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git') {
     // let's wait until the remote is ready
     await waitTillGitRepoAvailable(remote)
   }
   // continue
   await encrypt()
-  await commitAndPush(values, branch, initialInstall, gitConfig)
+  await commitAndPush(gitConfig, initialInstall)
 }
 
 async function getPlatformAdminPasswordFromAplUsers(defaultEmail: string): Promise<string> {
@@ -294,6 +283,7 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await commit(true, argv)
+    const gitConfig = await getStoredGitRepoConfig()
+    await commit(gitConfig)
   },
 }

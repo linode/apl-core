@@ -20,6 +20,16 @@ jest.mock('src/common/k8s', () => ({
   },
 }))
 
+jest.mock('src/common/git-config', () => ({
+  getStoredGitRepoConfig: jest.fn().mockResolvedValue({
+    repoUrl: 'http://git-server.git-server.svc.cluster.local/otomi/values.git',
+    branch: 'main',
+    email: 'pipeline@cluster.local',
+    password: 'test',
+    authenticatedUrl: 'http://otomi-admin:test@git-server.git-server.svc.cluster.local/otomi/values.git',
+  }),
+}))
+
 jest.mock('src/common/values', () => ({
   getImageTagFromValues: jest.fn(),
   getPackageVersion: jest.fn(),
@@ -211,7 +221,13 @@ describe('Apply command', () => {
 
       await applyAll()
 
-      expect(mockDeps.commit).toHaveBeenCalledWith(false)
+      expect(mockDeps.commit).toHaveBeenCalledWith({
+        repoUrl: 'http://git-server.git-server.svc.cluster.local/otomi/values.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+        password: 'test',
+        authenticatedUrl: 'http://otomi-admin:test@git-server.git-server.svc.cluster.local/otomi/values.git',
+      })
 
       process.env.DISABLE_SYNC = originalEnv
     })
@@ -375,7 +391,13 @@ describe('Apply command', () => {
 
       await applyAll()
 
-      expect(mockDeps.commit).toHaveBeenCalledWith(false)
+      expect(mockDeps.commit).toHaveBeenCalledWith({
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+        password: 'test',
+        repoUrl: 'http://git-server.git-server.svc.cluster.local/otomi/values.git',
+        authenticatedUrl: 'http://otomi-admin:test@git-server.git-server.svc.cluster.local/otomi/values.git',
+      })
 
       process.env.DISABLE_SYNC = originalEnv
       process.env.NODE_ENV = originalIsDev

@@ -2,7 +2,7 @@ import { decrypt } from 'src/common/crypt'
 import { commit } from '../cmd/commit'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { getStoredGitRepoConfig } from '../common/git-config'
+import { getStoredGitRepoConfig, GitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/gitea'
 import { hfValues } from '../common/hf'
 import { ensureManifestDirectories, ensureTeamGitOpsDirectories } from '../common/utils'
@@ -89,7 +89,7 @@ export class AplOperator {
       await ensureTeamGitOpsDirectories(env.ENV_DIR, values ?? {})
       await ensureManifestDirectories()
 
-      await commit(false, {} as HelmArguments, this.gitRepo.config)
+      await commit(this.gitRepo.config)
 
       if (applyTeamsOnly) {
         await this.aplOps.applyTeams()
