@@ -295,6 +295,10 @@ spec:
       resources:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with $component.resizePolicy }}
+      resizePolicy:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- if and $component.sidecar .Values.sidecar.rules.enabled }}
     {{- include "loki.rulesSidecar" . | nindent 4 }}
       {{- end }}
@@ -325,6 +329,10 @@ rules sidecar
   {{- end }}
   {{- with .Values.sidecar.resources }}
   resources:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.sidecar.resizePolicy }}
+  resizePolicy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with .Values.sidecar.securityContext }}
