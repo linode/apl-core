@@ -62,6 +62,13 @@ commandArgs: []
 
 env: {}
 
+operator:
+  pollIntervalMs: 15000
+  reconcileIntervalMs: 300000
+  gitOpTimeout: 10000
+  installRetries: 1000
+  installMaxTimeoutMs: 10000
+
 kms: {}
 # example:
 #  sops:

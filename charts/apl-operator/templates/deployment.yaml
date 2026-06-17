@@ -46,6 +46,16 @@ spec:
           env:
             - name: CI
               value: "true"
+            - name: POLL_INTERVAL_MS
+              value: {{ .Values.operator.pollIntervalMs | quote }}
+            - name: RECONCILE_INTERVAL_MS
+              value: {{ .Values.operator.reconcileIntervalMs | quote }}
+            - name: GIT_OP_TIMEOUT
+              value: {{ .Values.operator.gitOpTimeout | quote }}
+            - name: INSTALL_RETRIES
+              value: {{ .Values.operator.installRetries | quote }}
+            - name: INSTALL_MAX_TIMEOUT_MS
+              value: {{ .Values.operator.installMaxTimeoutMs | quote }}
           envFrom:
             - secretRef:
                 name: apl-sops-secrets
