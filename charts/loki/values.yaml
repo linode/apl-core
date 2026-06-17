@@ -969,6 +969,14 @@ lokiCanary:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the canary
   resources: {}
+  # -- Container resize policy for the canary
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema additionalProperties:true
   # -- DNS config for canary pods
   dnsConfig: {}
@@ -1327,6 +1335,14 @@ gateway:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the gateway
   resources: {}
+  # -- Container resize policy for the gateway
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[array, null]
   # -- Containers to add to the gateway pods
   extraContainers: []
@@ -1602,6 +1618,14 @@ gateway:
     resources:
       requests: {}
       limits: {}
+    # -- Container resize policy for the gateway metrics exporter
+    # Example:
+    # resizePolicy:
+    #   - resourceName: cpu
+    #     restartPolicy: NotRequired
+    #   - resourceName: memory
+    #     restartPolicy: RestartContainer
+    resizePolicy: []
     # @schema skipProperties:true;additionalProperties:true
     # -- The SecurityContext for memcached exporter containers
     containerSecurityContext:
@@ -2017,6 +2041,14 @@ singleBinary:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the single binary
   resources: {}
+  # -- Container resize policy for the single binary
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # -- Grace period to allow the single binary to shutdown before it is killed
   terminationGracePeriodSeconds: 30
   # @schema type:[boolean, null]
@@ -2245,6 +2277,14 @@ write:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the write
   resources: {}
+  # -- Container resize policy for the write
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # -- Grace period to allow the write to shutdown before it is killed. Especially for the ingester,
   # this must be increased. It must be long enough so writes can be gracefully shutdown flushing/transferring
   # all data and to successfully leave the member ring on shutdown.
@@ -2503,6 +2543,14 @@ read:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the read
   resources: {}
+  # -- Container resize policy for the read
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema skipProperties:true;additionalProperties:true
   # -- liveness probe settings for read pods. If empty, applies no livenessProbe
   livenessProbe: {}
@@ -2732,6 +2780,14 @@ backend:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the backend
   resources: {}
+  # -- Container resize policy for the backend
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # -- Grace period to allow the backend to shutdown before it is killed. Especially for the ingester,
   # this must be increased. It must be long enough so backends can be gracefully shutdown flushing/transferring
   # all data and to successfully leave the member ring on shutdown.
@@ -3024,6 +3080,14 @@ ingester:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the ingester
   resources: {}
+  # -- Container resize policy for the ingester
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- Containers to add to the ingester pods
   extraContainers: []
@@ -3421,6 +3485,14 @@ distributor:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the distributor
   resources: {}
+  # -- Container resize policy for the distributor
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- Init containers to add to the distributor pods
   initContainers: []
@@ -3675,6 +3747,14 @@ querier:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the querier
   resources: {}
+  # -- Container resize policy for the querier
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- Containers to add to the querier pods
   extraContainers: []
@@ -3933,6 +4013,14 @@ queryFrontend:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the query-frontend
   resources: {}
+  # -- Container resize policy for the query-frontend
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- init containers to add to the query-frontend pods
   initContainers: []
@@ -4126,6 +4214,14 @@ queryScheduler:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the query-scheduler
   resources: {}
+  # -- Container resize policy for the query-scheduler
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- init containers to add to the query-scheduler pods
   initContainers: []
@@ -4307,6 +4403,14 @@ indexGateway:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the index-gateway
   resources: {}
+  # -- Container resize policy for the index-gateway
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- Containers to add to the index-gateway pods
   extraContainers: []
@@ -4563,6 +4667,14 @@ compactor:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the compactor
   resources: {}
+  # -- Container resize policy for the compactor
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- Containers to add to the compactor pods
   extraContainers: []
@@ -4773,6 +4885,14 @@ bloomGateway:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the bloom-gateway
   resources: {}
+  # -- Container resize policy for the bloom-gateway
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- Containers to add to the bloom-gateway pods
   extraContainers: []
@@ -4971,6 +5091,14 @@ bloomPlanner:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the bloom-planner
   resources: {}
+  # -- Container resize policy for the bloom-planner
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- Containers to add to the bloom-planner pods
   extraContainers: []
@@ -5217,6 +5345,14 @@ bloomBuilder:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the bloom-builder
   resources: {}
+  # -- Container resize policy for the bloom-builder
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- Init containers to add to the bloom-builder pods
   initContainers: []
@@ -5426,6 +5562,14 @@ patternIngester:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the pattern ingester
   resources: {}
+  # -- Container resize policy for the pattern ingester
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- Containers to add to the pattern ingester pods
   extraContainers: []
@@ -5626,6 +5770,14 @@ ruler:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the ruler
   resources: {}
+  # -- Container resize policy for the ruler
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- Containers to add to the ruler pods
   extraContainers: []
@@ -5894,6 +6046,14 @@ overridesExporter:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the overrides-exporter
   resources: {}
+  # -- Container resize policy for the overrides-exporter
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- Containers to add to the overrides-exporter pods
   extraContainers: []
@@ -6057,6 +6217,14 @@ memcachedExporter:
   resources:
     requests: {}
     limits: {}
+  # -- Container resize policy for the memcached exporter
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema skipProperties:true;additionalProperties:true
   # -- The SecurityContext for memcached exporter containers
   containerSecurityContext:
@@ -6220,6 +6388,14 @@ resultsCache:
   # -- Resource requests and limits for the results-cache
   # By default a safe memory limit will be requested based on allocatedMemory value (floor (* 1.2 allocatedMemory)).
   resources: {}
+  # -- Container resize policy for the results-cache
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # -- Service annotations and labels
   service:
     # @schema additionalProperties:{"type":"string"}
@@ -6374,6 +6550,14 @@ chunksCache:
   # -- Resource requests and limits for the chunks-cache
   # By default a safe memory limit will be requested based on allocatedMemory value (floor (* 1.2 allocatedMemory)).
   resources: {}
+  # -- Container resize policy for the chunks-cache
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # -- Service annotations and labels
   service:
     # @schema additionalProperties:{"type":"string"}
@@ -6524,6 +6708,14 @@ chunksCache:
     # -- Resource requests and limits for the chunks-cache-l2
     # By default a safe memory limit will be requested based on allocatedMemory value (floor (* 1.2 allocatedMemory)).
     resources: {}
+    # -- Container resize policy for the chunks-cache-l2
+    # Example:
+    # resizePolicy:
+    #   - resourceName: cpu
+    #     restartPolicy: NotRequired
+    #   - resourceName: memory
+    #     restartPolicy: RestartContainer
+    resizePolicy: []
     # -- Service annotations and labels
     service:
       # @schema additionalProperties:{"type":"string"}
@@ -6688,6 +6880,14 @@ sidecar:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the sidecar
   resources: {}
+  # -- Container resize policy for the sidecar
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   #   limits:
   #     cpu: 100m
   #     memory: 100Mi
@@ -6965,6 +7165,14 @@ tableManager:
   # @schema additionalProperties:true
   # -- Resource requests and limits for the table-manager
   resources: {}
+  # -- Container resize policy for the table-manager
+  # Example:
+  # resizePolicy:
+  #   - resourceName: cpu
+  #     restartPolicy: NotRequired
+  #   - resourceName: memory
+  #     restartPolicy: RestartContainer
+  resizePolicy: []
   # @schema type:[string, array, null]
   # -- Containers to add to the table-manager pods
   extraContainers: []
