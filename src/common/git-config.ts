@@ -1,8 +1,8 @@
 import type { CoreV1Api } from '@kubernetes/client-node'
-import { APL_OPERATOR_NS, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from './constants'
+import { OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from './constants'
 import { terminal } from './debug'
 import { env } from './envalid'
-import { createUpdateConfigMap, createUpdateGenericSecret, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
+import { createUpdateGenericSecret, getK8sSecret, k8s } from './k8s'
 import { loadYaml } from './utils'
 
 const d = terminal('common:git-config')
