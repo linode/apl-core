@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto'
 import { existsSync } from 'fs'
 import { copyFile, cp, mkdir, writeFile } from 'fs/promises'
 import { generate as generatePassword } from 'generate-password'
-import { cloneDeep, get, merge, set } from 'lodash'
+import { cloneDeep, get, merge, set, unset } from 'lodash'
 import { pki } from 'node-forge'
 import path from 'path'
 import { bootstrapGit } from 'src/common/bootstrap'
@@ -180,6 +180,8 @@ export const processValues = async (
   const { VALUES_INPUT } = env
   d.log(`Loading app values from ${VALUES_INPUT}`)
   const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
+  // This part should be stored in a secret by initializeGitConfig
+  unset(originalValues, 'otomi.git')
   const storedSecrets: Record<string, any> = (await deps.getStoredClusterSecrets()) || {}
   const originalInput: Record<string, any> = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues))
   // generate all secrets (does not diff against previous so generates all new secrets every time)

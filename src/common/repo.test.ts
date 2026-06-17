@@ -13,10 +13,15 @@ import {
   saveResourceGroupToFiles,
   sortTeamConfigArraysByName,
   sortUserArraysByName,
+  attachGitConfig,
 } from 'src/common/repo'
 import stubs from 'src/test-stubs'
 
 const { terminal } = stubs
+
+jest.mock('../common/git-config', () => ({
+  getStoredGitRepoConfig: jest.fn().mockResolvedValue({ repoUrl: 'test-repo' }),
+}))
 
 describe('getUniqueIdentifierFromFilePath', () => {
   it('should get user name from .dec file', () => {
@@ -834,5 +839,39 @@ describe('AplCatalog', () => {
 
       expect(writeValuesToFile).not.toHaveBeenCalled()
     })
+  })
+})
+
+describe('attachGitConfig', () => {
+  const { getStoredGitRepoConfig } = require('../common/git-config')
+
+  it('should set otomi.git from stored git config', async () => {
+    const spec = {}
+    await attachGitConfig(spec)
+    expect((spec as any).otomi.git).toEqual({ repoUrl: 'test-repo', username: undefined, branch: undefined })
+  })
+
+  it('should return the same spec object (mutates in place)', async () => {
+    const spec = { existing: 'value' }
+    const result = await attachGitConfig(spec)
+    expect(result).toBe(spec)
+  })
+
+  it('should preserve existing otomi keys outside of git', async () => {
+    const spec = { otomi: { adminPassword: 'secret', git: { repoUrl: 'old' } } }
+    await attachGitConfig(spec)
+    expect((spec as any).otomi.adminPassword).toBe('secret')
+    expect((spec as any).otomi.git.repoUrl).toBe('test-repo')
+  })
+
+  it('should attach all fields returned by getStoredGitRepoConfig', async () => {
+    getStoredGitRepoConfig.mockResolvedValueOnce({
+      repoUrl: 'https://git.example.com',
+      username: 'admin',
+      branch: 'main',
+    })
+    const spec = {}
+    await attachGitConfig(spec)
+    expect((spec as any).otomi.git).toEqual({ repoUrl: 'https://git.example.com', username: 'admin', branch: 'main' })
   })
 })
