@@ -1,10 +1,4 @@
-import {
-  getGitCredentials,
-  getOldGitCredentials,
-  getRepo,
-  getStoredGitRepoConfig,
-  setGitConfig,
-} from './git-config'
+import { getGitCredentials, getOldGitCredentials, getRepo, getStoredGitRepoConfig, setGitConfig } from './git-config'
 
 const mockGetK8sSecret = jest.fn()
 const mockCreateUpdateGenericSecret = jest.fn()

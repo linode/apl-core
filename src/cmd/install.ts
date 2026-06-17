@@ -4,7 +4,7 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { createRepoConfig, getGitCredentials, getStoredGitRepoConfig, GitRepoConfig, setGitConfig } from 'src/common/git-config'
+import { getStoredGitRepoConfig } from 'src/common/git-config'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS, hfValues } from 'src/common/hf'
 import {
   applyServerSide,
