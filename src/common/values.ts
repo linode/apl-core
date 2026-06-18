@@ -21,7 +21,7 @@ import {
   removeBlankAttributes,
 } from './utils'
 import { HelmArguments } from './yargs'
-import { getGitCredentials } from './git-config'
+import { getGitCredentials, getInitialGitConfig } from './git-config'
 
 export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 200): string => {
   return isEmpty(obj) ? '' : stringify(obj, { indent, lineWidth })
@@ -132,10 +132,6 @@ export const deriveSecrets = async (values: Record<string, any> = {}): Promise<R
   ).stdout.trim()
 
   set(secrets, 'apps.harbor.registry.credentials.htpasswd', htpasswd)
-
-  const { username, password } = (await getGitCredentials()) || {} // Should never be empty at this point
-  const gitHtpasswd = (await $`htpasswd -nbB ${username ?? 'otomi-admin'} ${password}`).stdout.trim()
-  set(secrets, 'apps.git-server.htpasswd', gitHtpasswd)
   return secrets
 }
 /**

@@ -5,6 +5,7 @@ import { env } from './envalid'
 import { createUpdateGenericSecret, getK8sSecret, k8s } from './k8s'
 import { loadYaml } from './utils'
 import { generate as generatePassword } from 'generate-password'
+import { $ } from 'zx'
 
 const d = terminal('common:git-config')
 
@@ -23,6 +24,8 @@ async function getGitPasswordFromValuesInput(): Promise<string | undefined> {
 // Constants
 export const GIT_CONFIG_SECRET_NAME = 'apl-git-config'
 export const GIT_CONFIG_NAMESPACE = 'apl-secrets'
+export const GIT_SERVER_SECRET_NAME = 'git-server-credentials'
+export const GIT_SERVER_NAMESPACE = 'git-server'
 export const GIT_LEGACY_CONFIG = {
   repoUrl: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
 }
@@ -170,6 +173,16 @@ export async function getInitialGitConfig(): Promise<{ config: Record<string, an
     },
     isInitial: true,
   }
+}
+
+/**
+ * Creates the Git Server config for an initial installation
+ */
+export async function setGitServerConfig(config: GitRepoConfig): Promise<void> {
+  const api = k8s.core()
+  const { username, password } = config
+  const htpasswd = (await $`htpasswd -nbB ${username} ${password}`).stdout.trim()
+  await createUpdateGenericSecret(api, GIT_SERVER_SECRET_NAME, GIT_SERVER_NAMESPACE, { htpasswd })
 }
 
 /**

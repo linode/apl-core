@@ -5,7 +5,13 @@ import { recoverFromGit } from 'src/common/bootstrap'
 import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { getInitialGitConfig, getStoredGitRepoConfig, GIT_CONFIG_NAMESPACE, setGitConfig } from '../common/git-config'
+import {
+  getInitialGitConfig,
+  getStoredGitRepoConfig,
+  GIT_CONFIG_NAMESPACE,
+  setGitConfig,
+  setGitServerConfig,
+} from '../common/git-config'
 import {
   createUpdateConfigMap,
   deletePendingHelmReleases,
@@ -51,9 +57,10 @@ export class Installer {
   }
 
   public async initializeGitConfig(): Promise<void> {
-    const { config, isInitial } = await getInitialGitConfig()
+    const { config: data, isInitial } = await getInitialGitConfig()
     if (isInitial) {
-      await setGitConfig(config)
+      const config = await setGitConfig(data)
+      await setGitServerConfig(config)
     }
   }
 

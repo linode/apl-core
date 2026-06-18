@@ -35,10 +35,10 @@ export const recoverFromGit = async (gitConfig: GitRepoConfig): Promise<void> =>
  * - It might be a fresh empty folder that needs init and files added
  * - It might have a remote with commits: clone it first and add files back in that don't exist yet
  */
-export const bootstrapGit = async (): Promise<void> => {
+export const bootstrapGit = async (gitConfig: GitRepoConfig): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   // inValues indicates that there is no values repo file structure that helmfile expects
-  const { authenticatedUrl: remote, branch, email, username, password } = await getStoredGitRepoConfig()
+  const { authenticatedUrl: remote, branch, email, username, password } = gitConfig
   cd(env.ENV_DIR)
   if (existsSync(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped, setting identity just in case`)

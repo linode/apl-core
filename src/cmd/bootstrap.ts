@@ -26,6 +26,7 @@ import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { migrate } from './migrate'
+import { createRepoConfig, getStoredGitRepoConfig, GIT_DEFAULT_CONFIG } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 
@@ -328,8 +329,12 @@ export const module = {
     }),
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
+    const gitConfig =
+      process.env.NODE_ENV === 'test'
+        ? createRepoConfig({ ...GIT_DEFAULT_CONFIG, password: 'temp-initial' })
+        : await getStoredGitRepoConfig()
     await prepareEnvironment({ skipAllPreChecks: true })
     await bootstrap()
-    await bootstrapGit()
+    await bootstrapGit(gitConfig)
   },
 }
