@@ -2,7 +2,7 @@ import type { CoreV1Api } from '@kubernetes/client-node'
 import { OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from './constants'
 import { terminal } from './debug'
 import { env } from './envalid'
-import { createUpdateGenericSecret, getK8sSecret, k8s } from './k8s'
+import { createUpdateGenericSecret, ensureNamespaceExists, getK8sSecret, k8s } from './k8s'
 import { loadYaml } from './utils'
 import { generate as generatePassword } from 'generate-password'
 import { $ } from 'zx'
@@ -182,6 +182,7 @@ export async function setGitServerConfig(config: GitRepoConfig): Promise<void> {
   const api = k8s.core()
   const { username, password } = config
   const htpasswd = (await $`htpasswd -nbB ${username} ${password}`).stdout.trim()
+  await ensureNamespaceExists(GIT_SERVER_NAMESPACE)
   await createUpdateGenericSecret(api, GIT_SERVER_SECRET_NAME, GIT_SERVER_NAMESPACE, { htpasswd })
 }
 
