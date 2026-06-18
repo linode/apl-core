@@ -53,10 +53,11 @@ operator:
   gitOrg: "otomi"
   # Git repository name (will be configured during installation)
   gitRepo: "values"
-  # Polling interval for git changes (milliseconds)
-  pollIntervalMs: 1000
-  # Reconcile interval for applying changes (milliseconds)
+  pollIntervalMs: 15000
   reconcileIntervalMs: 300000
+  gitOpTimeoutMs: 10000
+  installRetries: 1000
+  installMaxTimeoutMs: 10000
 
 nodeSelector: {}
 
@@ -70,12 +71,7 @@ commandArgs: []
 
 env: {}
 
-operator:
-  pollIntervalMs: 15000
-  reconcileIntervalMs: 300000
-  gitOpTimeoutMs: 10000
-  installRetries: 1000
-  installMaxTimeoutMs: 10000
+
 
 kms: {}
 # example:
