@@ -50,6 +50,13 @@ export class Installer {
     return { installationMode, isInstalled }
   }
 
+  public async initializeGitConfig(): Promise<void> {
+    const { config, isInitial } = await getInitialGitConfig()
+    if (isInitial) {
+      await setGitConfig(config)
+    }
+  }
+
   public async recoverFromGit(): Promise<void> {
     while (true) {
       try {
@@ -68,6 +75,7 @@ export class Installer {
   public async initialize(): Promise<void> {
     while (true) {
       try {
+        await this.initializeGitConfig()
         await this.aplOps.validateCluster()
         await this.aplOps.bootstrap()
         return

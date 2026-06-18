@@ -21,10 +21,6 @@ jest.mock('src/common/envalid', () => ({
   },
 }))
 
-jest.mock('../common/git-config', () => ({
-  getStoredGitRepoConfig: jest.fn(),
-}))
-
 describe('Bootstrapping values', () => {
   const values = {
     apps: { 'cert-manager': { issuer: 'custom-ca' } },
@@ -50,7 +46,6 @@ describe('Bootstrapping values', () => {
       migrate: jest.fn(),
       pathExists: jest.fn(),
       processValues: jest.fn(),
-      initializeGitConfig: jest.fn(),
       terminal,
       writeValues: jest.fn(),
     }
@@ -58,7 +53,6 @@ describe('Bootstrapping values', () => {
   it('should call relevant sub routines', async () => {
     deps.processValues.mockReturnValue({ originalInput: values, allSecrets: {} })
     await bootstrap(deps)
-    expect(deps.initializeGitConfig).toHaveBeenCalled()
     expect(deps.copyBasicFiles).toHaveBeenCalled()
     expect(deps.bootstrapSealedSecrets).toHaveBeenCalled()
   })

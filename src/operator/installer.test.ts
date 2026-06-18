@@ -1,5 +1,4 @@
 import { ApiException } from '@kubernetes/client-node'
-import * as gitConfig from '../common/git-config'
 import * as k8s from '../common/k8s'
 import * as utils from '../common/utils'
 import { AplOperations } from './apl-operations'
@@ -37,6 +36,8 @@ jest.mock('../common/envalid', () => ({
 
 jest.mock('../common/git-config', () => ({
   getStoredGitRepoConfig: jest.fn(),
+  getInitialGitConfig: jest.fn().mockResolvedValue({ config: {}, initial: true }),
+  setGitConfig: jest.fn(),
 }))
 
 jest.mock('src/common/bootstrap', () => ({
@@ -55,6 +56,7 @@ describe('Installer', () => {
   let installer: Installer
   let mockAplOps: jest.Mocked<AplOperations>
   let mockCoreApi: any
+  const { getStoredGitRepoConfig, getInitialGitConfig } = require('../common/git-config')
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -94,6 +96,7 @@ describe('Installer', () => {
     test('should run validation and bootstrap', async () => {
       await installer.initialize()
 
+      expect(getInitialGitConfig).toHaveBeenCalledTimes(1)
       expect(mockAplOps.validateCluster).toHaveBeenCalledTimes(1)
       expect(mockAplOps.bootstrap).toHaveBeenCalledTimes(1)
     })
@@ -307,7 +310,7 @@ describe('Installer', () => {
         data: { status: 'completed' },
       })
       // getStoredGitRepoConfig throws (cluster issues)
-      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockRejectedValue(new Error('connection refused'))
+      getStoredGitRepoConfig.mockRejectedValue(new Error('connection refused'))
 
       const state = await installer.getInstallationState()
 
@@ -501,7 +504,7 @@ describe('Installer', () => {
 
   describe('ensureRecoveryPrerequisites', () => {
     test('should succeed without SOPS secret', async () => {
-      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockResolvedValue({
+      getStoredGitRepoConfig.mockResolvedValue({
         authenticatedUrl: 'https://user:pass@github.com/org/repo.git',
       })
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(undefined)
@@ -510,7 +513,7 @@ describe('Installer', () => {
     })
 
     test('should succeed with SOPS secret', async () => {
-      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockResolvedValue({
+      getStoredGitRepoConfig.mockResolvedValue({
         authenticatedUrl: 'https://user:pass@github.com/org/repo.git',
       })
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ SOPS_AGE_KEY: 'AGE-SECRET-KEY-1ABC' })
@@ -519,7 +522,7 @@ describe('Installer', () => {
     })
 
     test('should succeed with empty SOPS secret', async () => {
-      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockResolvedValue({
+      getStoredGitRepoConfig.mockResolvedValue({
         authenticatedUrl: 'https://user:pass@github.com/org/repo.git',
       })
       ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({})
@@ -528,7 +531,7 @@ describe('Installer', () => {
     })
 
     test('should throw when git config is missing', async () => {
-      ;(gitConfig.getStoredGitRepoConfig as jest.Mock).mockRejectedValue(new Error('Git config not found'))
+      getStoredGitRepoConfig.mockRejectedValue(new Error('Git config not found'))
 
       await expect(installer.ensureRecoveryPrerequisites()).rejects.toThrow('Git config not found')
     })

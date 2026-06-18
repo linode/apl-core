@@ -26,7 +26,6 @@ import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { migrate } from './migrate'
-import { getInitialGitConfig, setGitConfig } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 
@@ -146,18 +145,6 @@ export const copyBasicFiles = async (
 
   // copy these files from core
   await Promise.allSettled(['core.yaml'].map((val) => deps.copyFile(`${rootDir}/${val}`, `${ENV_DIR}/${val}`)))
-}
-
-export const initializeGitConfig = async (
-  deps = {
-    getInitialGitConfig,
-    setGitConfig,
-  },
-) => {
-  const { config, isInitial } = await deps.getInitialGitConfig()
-  if (isInitial) {
-    await deps.setGitConfig(config)
-  }
 }
 
 // retrieves input values from either VALUES_INPUT or ENV_DIR
@@ -302,7 +289,6 @@ export const bootstrap = async (
   deps = {
     pathExists: existsSync,
     terminal,
-    initializeGitConfig,
     copyBasicFiles,
     processValues,
     bootstrapSealedSecrets,
@@ -318,7 +304,6 @@ export const bootstrap = async (
     d.error('VALUES_INPUT is required for bootstrap')
     process.exit(1)
   }
-  await deps.initializeGitConfig()
   await deps.copyBasicFiles()
   await deps.migrate()
   const { originalInput, allSecrets } = await deps.processValues()
