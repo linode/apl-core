@@ -49,8 +49,6 @@ spec:
             - secretRef:
                 name: apl-sops-secrets
                 optional: true
-            - secretRef:
-                name: apl-git-credentials
           livenessProbe:
             exec:
               command:
