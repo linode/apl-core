@@ -57,8 +57,9 @@ RUN curl -LO "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq
 COPY --from=mikefarah/yq:4 /usr/bin/yq /usr/bin/yq
 
 RUN mkdir -p /home/app
-RUN groupadd -r app && \
-  useradd -r -g app -d /home/app -s /sbin/nologin -c "Docker image user" app
+RUN groupadd -u 1001 app && \
+  useradd -u 1001 -g app -d /home/app -s /sbin/nologin -c "Docker image user" app && \
+  groupadd -u 2000 appfsgroup && \
 ENV HOME=/home/app
 ENV APP_HOME=/home/app/tools
 RUN mkdir $APP_HOME
