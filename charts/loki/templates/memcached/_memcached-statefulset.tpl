@@ -103,6 +103,10 @@ spec:
               cpu: {{ .allocatedCPU }}
               memory: {{ $requestMemory }}Mi
           {{- end }}
+          {{- with .resizePolicy }}
+          resizePolicy:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - containerPort: {{ .port }}
               name: client
@@ -166,6 +170,10 @@ spec:
             {{- end }}
           resources:
             {{- toYaml $.ctx.Values.memcachedExporter.resources | nindent 12 }}
+          {{- with $.ctx.Values.memcachedExporter.resizePolicy }}
+          resizePolicy:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           securityContext:
             {{- toYaml $.ctx.Values.memcachedExporter.containerSecurityContext | nindent 12 }}
           {{- with $.ctx.Values.memcachedExporter.readinessProbe }}
