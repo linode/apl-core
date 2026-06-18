@@ -21,7 +21,6 @@ import {
   removeBlankAttributes,
 } from './utils'
 import { HelmArguments } from './yargs'
-import { getGitCredentials, getInitialGitConfig } from './git-config'
 
 export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 200): string => {
   return isEmpty(obj) ? '' : stringify(obj, { indent, lineWidth })
