@@ -50,8 +50,8 @@ spec:
               value: {{ .Values.operator.pollIntervalMs | quote }}
             - name: RECONCILE_INTERVAL_MS
               value: {{ .Values.operator.reconcileIntervalMs | quote }}
-            - name: GIT_OP_TIMEOUT
-              value: {{ .Values.operator.gitOpTimeout | quote }}
+            - name: GIT_OP_TIMEOUT_MS
+              value: {{ .Values.operator.gitOpTimeoutMs | quote }}
             - name: INSTALL_RETRIES
               value: {{ .Values.operator.installRetries | quote }}
             - name: INSTALL_MAX_TIMEOUT_MS

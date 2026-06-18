@@ -74,9 +74,15 @@ spec:
             - name: GIT_REPO
               value: {{ .Values.operator.gitRepo | default "values" | quote }}
             - name: POLL_INTERVAL_MS
-              value: {{ .Values.operator.pollIntervalMs | default "30000" | quote }}
+              value: {{ .Values.operator.pollIntervalMs | quote }}
             - name: RECONCILE_INTERVAL_MS
-              value: {{ .Values.operator.reconcileIntervalMs | default "300000" | quote }}
+              value: {{ .Values.operator.reconcileIntervalMs | quote }}
+            - name: GIT_OP_TIMEOUT_MS
+              value: {{ .Values.operator.gitOpTimeoutMs | quote }}
+            - name: INSTALL_RETRIES
+              value: {{ .Values.operator.installRetries | quote }}
+            - name: INSTALL_MAX_TIMEOUT_MS
+              value: {{ .Values.operator.installMaxTimeoutMs | quote }}
           envFrom:
             - secretRef:
                 name: apl-git-credentials
