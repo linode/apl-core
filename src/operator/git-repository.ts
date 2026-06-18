@@ -37,7 +37,7 @@ export class GitRepository {
     this.email = config.email
     this.git = simpleGit({
       baseDir: this.repoPath,
-      ...{ timeout: { block: config.gitOpTimeoutMs } },
+      timeout: { block: config.gitOpTimeoutMs },
     })
     this._config = {
       repoUrl: config.repoUrl,
