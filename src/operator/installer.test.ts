@@ -36,8 +36,9 @@ jest.mock('../common/envalid', () => ({
 
 jest.mock('../common/git-config', () => ({
   getStoredGitRepoConfig: jest.fn(),
-  getInitialGitConfig: jest.fn().mockResolvedValue({ config: {}, initial: true }),
+  getInitialGitConfig: jest.fn().mockResolvedValue({ config: {}, isInitial: true }),
   setGitConfig: jest.fn(),
+  setGitServerConfig: jest.fn(),
 }))
 
 jest.mock('src/common/bootstrap', () => ({
@@ -56,7 +57,12 @@ describe('Installer', () => {
   let installer: Installer
   let mockAplOps: jest.Mocked<AplOperations>
   let mockCoreApi: any
-  const { getStoredGitRepoConfig, getInitialGitConfig } = require('../common/git-config')
+  const {
+    getStoredGitRepoConfig,
+    getInitialGitConfig,
+    setGitConfig,
+    setGitServerConfig,
+  } = require('../common/git-config')
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -97,6 +103,8 @@ describe('Installer', () => {
       await installer.initialize()
 
       expect(getInitialGitConfig).toHaveBeenCalledTimes(1)
+      expect(setGitConfig).toHaveBeenCalledTimes(1)
+      expect(setGitServerConfig).toHaveBeenCalledTimes(1)
       expect(mockAplOps.validateCluster).toHaveBeenCalledTimes(1)
       expect(mockAplOps.bootstrap).toHaveBeenCalledTimes(1)
     })
