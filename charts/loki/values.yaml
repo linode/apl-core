@@ -1006,10 +1006,10 @@ lokiCanary:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -1073,7 +1073,7 @@ lokiCanary:
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
-      # @schema type:[number, null]
+      # @schema type:[string, integer, null]
       # -- Pod Disruption Budget maxUnavailable
       maxUnavailable: 1
   # -- Replicas for `loki-canary` when using a Deployment
@@ -1162,12 +1162,13 @@ networkPolicy:
     # -- Specifies the namespaces which are allowed to access the http port
     namespaceSelector: {}
   alertmanager:
-    # -- Specify the alertmanager port used for alerting
+    # @schema type:[string, integer]
+    # -- Specify the Alertmanager port used for alerting
     port: 9093
-    # -- Specifies the alertmanager Pods.
+    # -- Specifies the Alertmanager Pods.
     # As this is cross-namespace communication, you also need the namespaceSelector.
     podSelector: {}
-    # -- Specifies the namespace the alertmanager is running in
+    # -- Specifies the namespace the Alertmanager is running in
     namespaceSelector: {}
   externalStorage:
     # -- Specify the port used for external storage, e.g. AWS S3
@@ -1175,7 +1176,7 @@ networkPolicy:
     # -- Specifies specific network CIDRs you want to limit access to
     cidrs: []
   discovery:
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- (int) Specify the port used for discovery
     port: null
     # -- Specifies the Pods labels used for discovery.
@@ -1224,10 +1225,10 @@ gateway:
     minReplicas: 1
     # -- Maximum autoscaling replicas for the gateway
     maxReplicas: 3
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target CPU utilisation percentage for the gateway
     targetCPUUtilizationPercentage: 60
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target memory utilisation percentage for the gateway
     targetMemoryUtilizationPercentage: null
     # @schema skipProperties:true;additionalProperties:true
@@ -1250,14 +1251,14 @@ gateway:
   kedaAutoscaling:
     # -- Enable KEDA autoscaling for the gateway. Mutually exclusive with autoscaling.enabled
     enabled: false
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.
     pollingInterval: null
     # -- Minimum replicas for KEDA autoscaling
     minReplicas: 1
     # -- Maximum replicas for KEDA autoscaling
     maxReplicas: 3
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds).
     # Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.
     cooldownPeriod: null
@@ -1358,10 +1359,10 @@ gateway:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -1402,7 +1403,7 @@ gateway:
     # @schema type:[string, null]
     # -- ClusterIP of the gateway service
     clusterIP: null
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- (int) Node port if service type is NodePort
     nodePort: null
     # @schema type:[string, null]
@@ -1780,7 +1781,7 @@ route:
     # so any HTTPRoute/GRPCRoute rule shape is accepted — including filter-only rules
     # with no backendRefs (e.g. RequestRedirect, URLRewrite).
     additionalRules: []
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Backend port override for all generated rules.
     # When unset, GRPCRoute automatically uses loki.server.grpc_listen_port (default 9095)
     # and all other kinds use loki.server.http_listen_port (default 3100).
@@ -1898,10 +1899,10 @@ singleBinary:
     minReplicas: 1
     # -- Maximum autoscaling replicas for the single binary
     maxReplicas: 3
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target CPU utilisation percentage for the single binary
     targetCPUUtilizationPercentage: 60
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target memory utilisation percentage for the single binary
     targetMemoryUtilizationPercentage: null
     # -- Allows one to define custom metrics using the HPA/v2 schema (for example, Pods, Object or External metrics)
@@ -1925,14 +1926,14 @@ singleBinary:
   kedaAutoscaling:
     # -- Enable KEDA autoscaling for the single binary. Mutually exclusive with autoscaling.enabled
     enabled: false
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.
     pollingInterval: null
     # -- Minimum replicas for KEDA autoscaling
     minReplicas: 1
     # -- Maximum replicas for KEDA autoscaling
     maxReplicas: 3
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds).
     # Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.
     cooldownPeriod: null
@@ -1985,10 +1986,10 @@ singleBinary:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -2154,10 +2155,10 @@ write:
     minReplicas: 2
     # -- Maximum autoscaling replicas for the write.
     maxReplicas: 6
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target CPU utilisation percentage for the write.
     targetCPUUtilizationPercentage: 60
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target memory utilization percentage for the write.
     targetMemoryUtilizationPercentage: null
     # @schema skipProperties:true;additionalProperties:true
@@ -2178,14 +2179,14 @@ write:
   kedaAutoscaling:
     # -- Enable KEDA autoscaling for the write. Mutually exclusive with autoscaling.enabled
     enabled: false
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.
     pollingInterval: null
     # -- Minimum replicas for KEDA autoscaling
     minReplicas: 2
     # -- Maximum replicas for KEDA autoscaling
     maxReplicas: 6
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds).
     # Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.
     cooldownPeriod: null
@@ -2308,7 +2309,7 @@ write:
   # @schema additionalProperties:true
   # -- DNS config for write pods
   dnsConfig: {}
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: 1
@@ -2322,10 +2323,10 @@ write:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -2412,7 +2413,7 @@ read:
   strategy:
     rollingUpdate:
       maxSurge: 0
-      # @schema type:[number, null]
+      # @schema type:[string, integer, null]
       # -- Pod Disruption Budget maxUnavailable
       maxUnavailable: 1
   autoscaling:
@@ -2422,10 +2423,10 @@ read:
     minReplicas: 2
     # -- Maximum autoscaling replicas for the read
     maxReplicas: 6
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target CPU utilisation percentage for the read
     targetCPUUtilizationPercentage: 60
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target memory utilisation percentage for the read
     targetMemoryUtilizationPercentage: null
     # @schema skipProperties:true;additionalProperties:true
@@ -2446,14 +2447,14 @@ read:
   kedaAutoscaling:
     # -- Enable KEDA autoscaling for the read. Mutually exclusive with autoscaling.enabled
     enabled: false
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.
     pollingInterval: null
     # -- Minimum replicas for KEDA autoscaling
     minReplicas: 2
     # -- Maximum replicas for KEDA autoscaling
     maxReplicas: 6
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds).
     # Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.
     cooldownPeriod: null
@@ -2578,7 +2579,7 @@ read:
   # @schema additionalProperties:true
   # -- DNS config for read pods
   dnsConfig: {}
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: 1
@@ -2592,10 +2593,10 @@ read:
     # -- Labels for read Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -2661,10 +2662,10 @@ backend:
     minReplicas: 3
     # -- Maximum autoscaling replicas for the backend.
     maxReplicas: 6
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target CPU utilization percentage for the backend.
     targetCPUUtilizationPercentage: 60
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target memory utilization percentage for the backend.
     targetMemoryUtilizationPercentage: null
     # @schema skipProperties:true;additionalProperties:true
@@ -2685,14 +2686,14 @@ backend:
   kedaAutoscaling:
     # -- Enable KEDA autoscaling for the backend. Mutually exclusive with autoscaling.enabled
     enabled: false
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.
     pollingInterval: null
     # -- Minimum replicas for KEDA autoscaling
     minReplicas: 3
     # -- Maximum replicas for KEDA autoscaling
     maxReplicas: 6
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds).
     # Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.
     cooldownPeriod: null
@@ -2811,7 +2812,7 @@ backend:
   # @schema additionalProperties:true
   # -- DNS config for backend pods
   dnsConfig: {}
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: 1
@@ -2825,10 +2826,10 @@ backend:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -2952,10 +2953,10 @@ ingester:
     minReplicas: 1
     # -- Maximum autoscaling replicas for the ingester
     maxReplicas: 3
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target CPU utilisation percentage for the ingester
     targetCPUUtilizationPercentage: 60
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target memory utilisation percentage for the ingester
     targetMemoryUtilizationPercentage: null
     # -- Allows one to define custom metrics using the HPA/v2 schema (for example, Pods, Object or External metrics)
@@ -2979,14 +2980,14 @@ ingester:
   kedaAutoscaling:
     # -- Enable KEDA autoscaling for the ingester. Mutually exclusive with autoscaling.enabled
     enabled: false
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.
     pollingInterval: null
     # -- Minimum replicas for KEDA autoscaling
     minReplicas: 1
     # -- Maximum replicas for KEDA autoscaling
     maxReplicas: 3
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds).
     # Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.
     cooldownPeriod: null
@@ -3126,7 +3127,7 @@ ingester:
               app.kubernetes.io/name: '{{ include "loki.name" . }}'
               app.kubernetes.io/instance: '{{ .Release.Name }}'
           topologyKey: kubernetes.io/hostname
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: 1
@@ -3140,10 +3141,10 @@ ingester:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -3336,7 +3337,7 @@ distributor:
   strategy:
     rollingUpdate:
       maxSurge: 0
-      # @schema type:[number, null]
+      # @schema type:[string, integer, null]
       # -- Pod Disruption Budget maxUnavailable
       maxUnavailable: 1
   # -- hostAliases to add
@@ -3357,10 +3358,10 @@ distributor:
     minReplicas: 1
     # -- Maximum autoscaling replicas for the distributor
     maxReplicas: 3
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target CPU utilisation percentage for the distributor
     targetCPUUtilizationPercentage: 60
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target memory utilisation percentage for the distributor
     targetMemoryUtilizationPercentage: null
     # -- Allows one to define custom metrics using the HPA/v2 schema (for example, Pods, Object or External metrics)
@@ -3384,14 +3385,14 @@ distributor:
   kedaAutoscaling:
     # -- Enable KEDA autoscaling for the distributor. Mutually exclusive with autoscaling.enabled
     enabled: false
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.
     pollingInterval: null
     # -- Minimum replicas for KEDA autoscaling
     minReplicas: 1
     # -- Maximum replicas for KEDA autoscaling
     maxReplicas: 3
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds).
     # Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.
     cooldownPeriod: null
@@ -3511,10 +3512,10 @@ distributor:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -3533,7 +3534,7 @@ distributor:
               app.kubernetes.io/name: '{{ include "loki.name" . }}'
               app.kubernetes.io/instance: '{{ .Release.Name }}'
           topologyKey: kubernetes.io/hostname
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: null
@@ -3592,7 +3593,7 @@ querier:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 0
-      # @schema type:[number, null]
+      # @schema type:[string, integer, null]
       # -- Pod Disruption Budget maxUnavailable
       maxUnavailable: 1
   # -- hostAliases to add
@@ -3610,10 +3611,10 @@ querier:
     minReplicas: 1
     # -- Maximum autoscaling replicas for the querier
     maxReplicas: 3
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target CPU utilisation percentage for the querier
     targetCPUUtilizationPercentage: 60
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target memory utilisation percentage for the querier
     targetMemoryUtilizationPercentage: null
     # -- Allows one to define custom metrics using the HPA/v2 schema (for example, Pods, Object or External metrics)
@@ -3637,14 +3638,14 @@ querier:
   kedaAutoscaling:
     # -- Enable KEDA autoscaling for the querier. Mutually exclusive with autoscaling.enabled
     enabled: false
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.
     pollingInterval: null
     # -- Minimum replicas for KEDA autoscaling
     minReplicas: 1
     # -- Maximum replicas for KEDA autoscaling
     maxReplicas: 10
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds).
     # Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.
     cooldownPeriod: null
@@ -3773,10 +3774,10 @@ querier:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -3808,7 +3809,7 @@ querier:
               app.kubernetes.io/name: '{{ include "loki.name" . }}'
               app.kubernetes.io/instance: '{{ .Release.Name }}'
           topologyKey: kubernetes.io/hostname
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: null
@@ -3867,7 +3868,7 @@ queryFrontend:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 0
-      # @schema type:[number, null]
+      # @schema type:[string, integer, null]
       # -- Pod Disruption Budget maxUnavailable
       maxUnavailable: 1
   # -- hostAliases to add
@@ -3885,10 +3886,10 @@ queryFrontend:
     minReplicas: 1
     # -- Maximum autoscaling replicas for the query-frontend
     maxReplicas: 3
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target CPU utilisation percentage for the query-frontend
     targetCPUUtilizationPercentage: 60
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target memory utilisation percentage for the query-frontend
     targetMemoryUtilizationPercentage: null
     # -- Allows one to define custom metrics using the HPA/v2 schema (for example, Pods, Object or External metrics)
@@ -3912,14 +3913,14 @@ queryFrontend:
   kedaAutoscaling:
     # -- Enable KEDA autoscaling for the query-frontend. Mutually exclusive with autoscaling.enabled
     enabled: false
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.
     pollingInterval: null
     # -- Minimum replicas for KEDA autoscaling
     minReplicas: 1
     # -- Maximum replicas for KEDA autoscaling
     maxReplicas: 3
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds).
     # Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.
     cooldownPeriod: null
@@ -4039,10 +4040,10 @@ queryFrontend:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -4061,7 +4062,7 @@ queryFrontend:
               app.kubernetes.io/name: '{{ include "loki.name" . }}'
               app.kubernetes.io/instance: '{{ .Release.Name }}'
           topologyKey: kubernetes.io/hostname
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: null
@@ -4124,7 +4125,7 @@ queryScheduler:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 0
-      # @schema type:[number, null]
+      # @schema type:[string, integer, null]
       # -- Pod Disruption Budget maxUnavailable
       maxUnavailable: 1
   # @schema additionalProperties:true
@@ -4243,7 +4244,7 @@ queryScheduler:
               app.kubernetes.io/name: '{{ include "loki.name" . }}'
               app.kubernetes.io/instance: '{{ .Release.Name }}'
           topologyKey: kubernetes.io/hostname
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: 1
@@ -4257,10 +4258,10 @@ queryScheduler:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -4429,10 +4430,10 @@ indexGateway:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -4453,7 +4454,7 @@ indexGateway:
               app.kubernetes.io/name: '{{ include "loki.name" . }}'
               app.kubernetes.io/instance: '{{ .Release.Name }}'
           topologyKey: kubernetes.io/hostname
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: null
@@ -4911,10 +4912,10 @@ bloomGateway:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -5117,10 +5118,10 @@ bloomPlanner:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -5221,10 +5222,10 @@ bloomBuilder:
     minReplicas: 1
     # -- Maximum autoscaling replicas for the bloom-builder
     maxReplicas: 3
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target CPU utilisation percentage for the bloom-builder
     targetCPUUtilizationPercentage: 60
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Target memory utilisation percentage for the bloom-builder
     targetMemoryUtilizationPercentage: null
     # -- Allows one to define custom metrics using the HPA/v2 schema (for example, Pods, Object or External metrics)
@@ -5248,14 +5249,14 @@ bloomBuilder:
   kedaAutoscaling:
     # -- Enable KEDA autoscaling for the bloom-builder. Mutually exclusive with autoscaling.enabled
     enabled: false
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.
     pollingInterval: null
     # -- Minimum replicas for KEDA autoscaling
     minReplicas: 1
     # -- Maximum replicas for KEDA autoscaling
     maxReplicas: 3
-    # @schema type:[number, null]
+    # @schema type:[integer, null]
     # -- Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds).
     # Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.
     cooldownPeriod: null
@@ -5371,10 +5372,10 @@ bloomBuilder:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -5393,7 +5394,7 @@ bloomBuilder:
               app.kubernetes.io/name: '{{ include "loki.name" . }}'
               app.kubernetes.io/instance: '{{ .Release.Name }}'
           topologyKey: kubernetes.io/hostname
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: null
@@ -5413,7 +5414,7 @@ bloomBuilder:
   strategy:
     rollingUpdate:
       maxSurge: 0
-      # @schema type:[number, null]
+      # @schema type:[string, integer, null]
       # -- Pod Disruption Budget maxUnavailable
       maxUnavailable: 1
   persistence:
@@ -5536,7 +5537,7 @@ patternIngester:
               app.kubernetes.io/name: '{{ include "loki.name" . }}'
               app.kubernetes.io/instance: '{{ .Release.Name }}'
           topologyKey: kubernetes.io/hostname
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: null
@@ -5588,10 +5589,10 @@ patternIngester:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -5796,10 +5797,10 @@ ruler:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -5818,7 +5819,7 @@ ruler:
               app.kubernetes.io/name: '{{ include "loki.name" . }}'
               app.kubernetes.io/instance: '{{ .Release.Name }}'
           topologyKey: kubernetes.io/hostname
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: null
@@ -6072,10 +6073,10 @@ overridesExporter:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -6094,7 +6095,7 @@ overridesExporter:
               app.kubernetes.io/name: '{{ include "loki.name" . }}'
               app.kubernetes.io/instance: '{{ .Release.Name }}'
           topologyKey: kubernetes.io/hostname
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: null
@@ -6315,7 +6316,7 @@ resultsCache:
   #  whenUnsatisfiable: ScheduleAnyway
   # -- Tolerations for results-cache pods
   tolerations: []
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: 1
@@ -6329,10 +6330,10 @@ resultsCache:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -6477,7 +6478,7 @@ chunksCache:
   #  whenUnsatisfiable: ScheduleAnyway
   # -- Tolerations for chunks-cache pods
   tolerations: []
-  # @schema type:[number, null];deprecated:true
+  # @schema type:[string, integer, null];deprecated:true
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: 1
@@ -6491,10 +6492,10 @@ chunksCache:
     # -- Labels for Pod Disruption Budget
     labels: {}
 
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget minAvailable
     minAvailable: null
-    # @schema type:[number, null]
+    # @schema type:[string, integer, null]
     # -- Pod Disruption Budget maxUnavailable
     maxUnavailable: null
     # @schema type:[string, null]
@@ -6642,7 +6643,7 @@ chunksCache:
     #  whenUnsatisfiable: ScheduleAnyway
     # -- Tolerations for chunks-cache-l2 pods
     tolerations: []
-    # @schema type:[number, null];deprecated:true
+    # @schema type:[string, integer, null];deprecated:true
     # -- Pod Disruption Budget maxUnavailable
     # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
     maxUnavailable: 1
