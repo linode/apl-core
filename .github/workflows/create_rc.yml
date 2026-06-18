@@ -30,9 +30,11 @@ jobs:
 
       - name: Determine commit from where to create the RC
         id: determine_commit
+        env:
+          RC_COMMIT_SHA: ${{ github.event.inputs.rc_commit_sha }}
         run: |
-          if [ -n "${{ github.event.inputs.rc_commit_sha }}" ]; then
-            commit_sha="${{ github.event.inputs.rc_commit_sha }}"
+          if [ -n "$RC_COMMIT_SHA" ]; then
+            commit_sha="$RC_COMMIT_SHA"
             echo "Using provided commit sha: $commit_sha"
             echo "commit_sha=$commit_sha" >> $GITHUB_ENV
           else
