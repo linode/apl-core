@@ -49,6 +49,16 @@ resources: {}
   #   memory: 128Mi
 
 
+## APL Operator configuration
+operator:
+  # Git organization/user name (will be configured during installation)
+  gitOrg: "otomi"
+  # Git repository name (will be configured during installation)
+  gitRepo: "values"
+  # Polling interval for git changes (milliseconds)
+  pollIntervalMs: 1000
+  # Reconcile interval for applying changes (milliseconds)
+  reconcileIntervalMs: 300000
 
 nodeSelector: {}
 
