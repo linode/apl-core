@@ -14,6 +14,8 @@ spec:
   replicas: 1
   selector:
     matchLabels: {{- include "apl-operator.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: Recreate
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -58,9 +60,6 @@ spec:
               cpu: '1'
               memory: '1Gi'
           workingDir: /home/app/stack
-          command:
-            - node
-            - dist/src/operator/main.js
           env:
             - name: VERBOSITY
               value: '1'
