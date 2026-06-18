@@ -143,7 +143,7 @@
     "lint:apl-chart": "npm run gen:chart-schema && helm lint chart/apl -f tests/bootstrap/input-local-minimal.yaml",
     "lint-staged": "lint-staged",
     "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml' && npm run lint:ts:fix",
-    "lint:hf": "ENV_DIR=$PWD/tests/fixtures NODE_ENV=test binzx/otomi lint",
+    "lint:hf": "ENV_DIR=$PWD/tests/fixtures NODE_ENV=test tsx src/otomi.ts -- lint",
     "lint:ts": "eslint --ext ts src",
     "lint:ts:fix": "eslint --fix --ext ts src",
     "lint:types": "tsc --noEmit",

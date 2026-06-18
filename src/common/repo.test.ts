@@ -20,7 +20,9 @@ import stubs from 'src/test-stubs'
 const { terminal } = stubs
 
 jest.mock('../common/git-config', () => ({
-  getStoredGitRepoConfig: jest.fn().mockResolvedValue({ repoUrl: 'test-repo' }),
+  GIT_DEFAULT_CONFIG: jest.requireActual('../common/git-config').GIT_DEFAULT_CONFIG,
+  getGitCredentials: jest.fn().mockResolvedValue({ repoUrl: 'test-repo' }),
+  getOldGitCredentials: jest.fn(),
 }))
 
 describe('getUniqueIdentifierFromFilePath', () => {
@@ -843,12 +845,12 @@ describe('AplCatalog', () => {
 })
 
 describe('attachGitConfig', () => {
-  const { getStoredGitRepoConfig } = require('../common/git-config')
+  const { getGitCredentials, getOldGitCredentials } = require('../common/git-config')
 
-  it('should set otomi.git from stored git config', async () => {
+  it('should set otomi.git from stored git config, with added defaults', async () => {
     const spec = {}
     await attachGitConfig(spec)
-    expect((spec as any).otomi.git).toEqual({ repoUrl: 'test-repo', username: undefined, branch: undefined })
+    expect((spec as any).otomi.git).toEqual({ repoUrl: 'test-repo', branch: 'main', email: 'pipeline@cluster.local' })
   })
 
   it('should return the same spec object (mutates in place)', async () => {
@@ -864,14 +866,54 @@ describe('attachGitConfig', () => {
     expect((spec as any).otomi.git.repoUrl).toBe('test-repo')
   })
 
-  it('should attach all fields returned by getStoredGitRepoConfig', async () => {
-    getStoredGitRepoConfig.mockResolvedValueOnce({
+  it('should preserve current values in offline mode', async () => {
+    const spec = { otomi: { adminPassword: 'secret', git: { repoUrl: 'old' } } }
+    await attachGitConfig(spec, true)
+    expect((spec as any).otomi.adminPassword).toBe('secret')
+    expect((spec as any).otomi.git.repoUrl).toBe('old')
+  })
+
+  it('should only set defaults in offline mode', async () => {
+    const spec = { otomi: { adminPassword: 'secret' } }
+    await attachGitConfig(spec, true)
+    expect((spec as any).otomi.git).toEqual({
+      repoUrl: 'http://git-server.git-server.svc.cluster.local/otomi/values.git',
+      branch: 'main',
+      email: 'pipeline@cluster.local',
+      username: 'otomi-admin',
+    })
+  })
+
+  it('should attach all fields returned by getGitCredentials', async () => {
+    getGitCredentials.mockResolvedValueOnce({
       repoUrl: 'https://git.example.com',
       username: 'admin',
       branch: 'main',
     })
     const spec = {}
     await attachGitConfig(spec)
-    expect((spec as any).otomi.git).toEqual({ repoUrl: 'https://git.example.com', username: 'admin', branch: 'main' })
+    expect((spec as any).otomi.git).toEqual({
+      repoUrl: 'https://git.example.com',
+      username: 'admin',
+      branch: 'main',
+      email: 'pipeline@cluster.local',
+    })
+  })
+
+  it('should fall back to getOldGitCredentials if getGitCredentials is not available', async () => {
+    getGitCredentials.mockResolvedValueOnce(undefined)
+    getOldGitCredentials.mockResolvedValueOnce({
+      repoUrl: 'https://gitea.example.com',
+      username: 'admin',
+      branch: 'main',
+    })
+    const spec = {}
+    await attachGitConfig(spec)
+    expect((spec as any).otomi.git).toEqual({
+      repoUrl: 'https://gitea.example.com',
+      username: 'admin',
+      branch: 'main',
+      email: 'pipeline@cluster.local',
+    })
   })
 })

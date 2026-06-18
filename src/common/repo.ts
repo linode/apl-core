@@ -6,7 +6,7 @@ import { cloneDeep, get, merge, omit, set, unset } from 'lodash'
 import path from 'path'
 import { getDirNames, loadYaml } from './utils'
 import { objectToYaml, writeValuesToFile } from './values'
-import { getStoredGitRepoConfig } from './git-config'
+import { getGitCredentials, getOldGitCredentials, GIT_DEFAULT_CONFIG } from './git-config'
 
 export async function getTeamNames(envDir: string): Promise<Array<string>> {
   const teamsDir = path.join(envDir, 'env', 'teams')
@@ -543,22 +543,30 @@ export function sortTeamConfigArraysByName(spec: Record<string, any>): Record<st
  * Adds non-sensitive fields of the Git configuration which are stored in a Secret resource, but used
  * in templates as if they were part of the values.
  */
-export async function attachGitConfig(spec: Record<string, any>): Promise<Record<string, any>> {
-  const { repoUrl, username, branch } = await getStoredGitRepoConfig()
-  set(spec, 'otomi.git', {
-    repoUrl,
-    username,
-    branch,
-  })
+export async function attachGitConfig(spec: Record<string, any>, offline = false): Promise<Record<string, any>> {
+  if (offline) {
+    if (!spec.otomi.git) {
+      // Do not read from cluster, instead use defaults
+      set(spec, 'otomi.git', { ...GIT_DEFAULT_CONFIG, username: 'otomi-admin' })
+    }
+  } else {
+    const gitConfig = (await getGitCredentials()) || (await getOldGitCredentials())
+    const { repoUrl, username, branch, email } = {
+      ...GIT_DEFAULT_CONFIG,
+      ...gitConfig,
+    }
+    set(spec, 'otomi.git', { repoUrl, username, branch, email })
+  }
   return spec
 }
 
 export async function setValuesFile(
   envDir: string,
+  offline = false,
   deps = { pathExists: existsSync, loadValues, writeFile },
 ): Promise<string> {
   const valuesPath = path.join(envDir, 'values-repo.yaml')
-  const allValues = await deps.loadValues(envDir)
+  const allValues = await deps.loadValues(envDir, offline)
   await deps.writeFile(valuesPath, objectToYaml(allValues))
   return valuesPath
 }
@@ -575,7 +583,7 @@ export function unsetValuesFileSync(envDir: string): string {
   return valuesPath
 }
 
-export async function loadValues(envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> {
+export async function loadValues(envDir: string, offline = false, deps = { loadToSpec }): Promise<Record<string, any>> {
   const fileMaps = getFileMaps(envDir).filter((map) => map.loadToSpec === true)
   const spec = {}
 
@@ -586,7 +594,7 @@ export async function loadValues(envDir: string, deps = { loadToSpec }): Promise
   )
   sortTeamConfigArraysByName(spec)
   sortUserArraysByName(spec)
-  await attachGitConfig(spec)
+  await attachGitConfig(spec, offline)
   return spec
 }
 
