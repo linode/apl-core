@@ -5,7 +5,7 @@ import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { getStoredGitRepoConfig } from 'src/common/git-config'
-import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS, hfValues } from 'src/common/hf'
+import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS } from 'src/common/hf'
 import {
   applyServerSide,
   createArgoCdRedisSecret,
