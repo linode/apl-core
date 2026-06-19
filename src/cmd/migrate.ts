@@ -39,6 +39,7 @@ import {
   SealedSecretManifest,
   writeSealedSecretManifests,
 } from '../common/sealed-secrets'
+import { setGitConfig } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 const sealedSecretManifestsGlob = `${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`
@@ -589,6 +590,7 @@ export const sopsMigration = async (
     getK8sSecret,
     getSchemaSecretsPaths,
     removeSopsArtifacts,
+    setGitConfig,
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:sopsMigration`)
@@ -628,6 +630,13 @@ export const sopsMigration = async (
     generateSealedSecretsKeyPair: deps.generateSealedSecretsKeyPair,
     createSealedSecretsKeySecret: deps.createSealedSecretsKeySecret,
   })
+
+  // Write Git credentials to cluster instead
+  const gitConfig = values.otomi?.git
+  if (gitConfig) {
+    await deps.setGitConfig(gitConfig)
+    unset(values, 'otomi.git')
+  }
 
   // Build secret-to-namespace mappings
   const teams = Object.keys((values.teamConfig as Record<string, any>) || {})

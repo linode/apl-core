@@ -189,6 +189,7 @@ describe('sopsMigration', () => {
   const mockGetK8sSecret = jest.fn().mockResolvedValue(undefined)
   const mockGetSchemaSecretsPaths = jest.fn()
   const mockRemoveSopsArtifacts = jest.fn()
+  const mockSetGitConfig = jest.fn()
 
   const makeDeps = () => ({
     existsSync: mockExistsSync,
@@ -214,6 +215,7 @@ describe('sopsMigration', () => {
     getK8sSecret: mockGetK8sSecret,
     getSchemaSecretsPaths: mockGetSchemaSecretsPaths,
     removeSopsArtifacts: mockRemoveSopsArtifacts,
+    setGitConfig: mockSetGitConfig,
   })
 
   beforeEach(() => {
