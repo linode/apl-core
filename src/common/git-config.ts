@@ -70,8 +70,13 @@ export async function getGitCredentials(): Promise<Partial<GitConfigData> | unde
 }
 
 export async function getOldGitCredentials(): Promise<Partial<GitConfigData> | undefined> {
-  const secretData = await getK8sSecret('gitea-credentials', 'apl-operator')
-  if (!secretData || !secretData?.GIT_PASSWORD) return undefined
+  let secretData = await getK8sSecret('gitea-credentials', 'apl-operator')
+  if (!secretData || !secretData?.GIT_PASSWORD) {
+    secretData = await getK8sSecret('gitea-admin-secret', 'gitea')
+  }
+  if (!secretData || !secretData?.GIT_PASSWORD) {
+    return undefined
+  }
 
   return {
     ...GIT_LEGACY_CONFIG,
