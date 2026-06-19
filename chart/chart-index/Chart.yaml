@@ -79,7 +79,7 @@ dependencies:
     version: 3.8.1
     repository: https://kyverno.github.io/kyverno/
   - name: loki
-    version: 17.4.4
+    version: 17.4.7
     repository: oci://ghcr.io/grafana-community/helm-charts/loki
   - name: metrics-server
     version: 3.13.1
