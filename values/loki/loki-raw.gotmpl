@@ -2,7 +2,6 @@
 {{- $l := $v.apps | get "loki" }}
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $obj := $v.obj.provider }}
-{{- if $v.otomi.isMultitenant }}
 {{- $teamNames := without (sortAlpha (keys $v.teamConfig)) "admin" }}
 resources:
   - apiVersion: external-secrets.io/v1
@@ -70,4 +69,4 @@ resources:
             key: obj-secrets
             property: provider_linode_secretAccessKey
   {{- end }}
-  {{- end }}
+

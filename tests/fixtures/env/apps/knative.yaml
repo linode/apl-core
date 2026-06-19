@@ -1,7 +1,6 @@
 kind: AplApp
 metadata:
     name: knative
-    labels: {}
 spec:
     enabled: true
     resources:
@@ -14,42 +13,42 @@ spec:
                 memory: 32Mi
         autoscaler:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 50m
                 memory: 64Mi
         autoscalerHpa:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 50m
                 memory: 64Mi
         controller:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 50m
                 memory: 64Mi
         operator:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 50m
                 memory: 64Mi
         operatorWebhook:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 50m
                 memory: 64Mi
         queueSidecar:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 512Mi
             requests:
                 cpu: 25m

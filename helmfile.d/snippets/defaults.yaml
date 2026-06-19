@@ -1158,11 +1158,10 @@ environments:
             email: pipeline@cluster.local
           hasExternalDNS: false
           hasExternalIDP: false
-          isMultitenant: true
           nodeSelector: {}
           isPreInstalled: false
           useORCS: true
           aiEnabled: false
         users: []
         versions:
-          specVersion: 69
+          specVersion: 70

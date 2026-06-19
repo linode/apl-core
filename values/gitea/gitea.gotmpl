@@ -83,8 +83,8 @@ gitea:
     service:
       ALLOW_ONLY_EXTERNAL_REGISTRATION: true
       DEFAULT_ALLOW_CREATE_ORGANIZATION: false
-      DEFAULT_ORG_MEMBER_VISIBLE: {{ not $v.otomi.isMultitenant }}
-      DEFAULT_USER_IS_RESTRICTED: {{ $v.otomi.isMultitenant }}
+      DEFAULT_ORG_MEMBER_VISIBLE: false
+      DEFAULT_USER_IS_RESTRICTED: true
       # basic auth can't be turned off because it nukes otomi commit
       # TODO: create token on initial deploy and store in values
       # ENABLE_BASIC_AUTHENTICATION: false

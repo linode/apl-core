@@ -1,8 +1,10 @@
 kind: AplApp
 metadata:
     name: argocd
-    labels: {}
 spec:
+    _rawValues: {}
+    applicationSet:
+        replicas: 1
     autoscaling:
         repoServer:
             enabled: true
@@ -16,60 +18,57 @@ spec:
             minReplicas: 1
             targetCPUUtilizationPercentage: 80
             targetMemoryUtilizationPercentage: 80
+    controller:
+        replicas: 1
+    controllerOperationProcessors: 10
+    controllerStatusProcessors: 20
     resources:
         applicationSet:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 100m
                 memory: 256M
         controller:
             limits:
-                cpu: '2'
+                cpu: "2"
                 memory: 2Gi
             requests:
                 cpu: 500m
                 memory: 1Gi
         imageUpdater:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 50m
                 memory: 50Mi
         notifications:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 100m
                 memory: 64M
         redis:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 50m
                 memory: 64Mi
         repo:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 100m
                 memory: 512M
         server:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 50m
                 memory: 256M
-    _rawValues: {}
-    applicationSet:
-        replicas: 1
-    controller:
-        replicas: 1
-    controllerOperationProcessors: 10
-    controllerStatusProcessors: 20

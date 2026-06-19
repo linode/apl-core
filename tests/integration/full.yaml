@@ -3,7 +3,6 @@ cluster:
   name: CLUSTER_NAME_PLACEHOLDER
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
-  isMultitenant: true
   version: 'OTOMI_VERSION_PLACEHOLDER'
   adminPassword: welcomeotomi
 apps:

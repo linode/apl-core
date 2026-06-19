@@ -2756,10 +2756,6 @@ properties:
         default: false
         description: Set this to true when bringing your own external IDP such as Azure AD. (Expects required `oidc:` fields to be set.)
         type: boolean
-      isMultitenant:
-        default: true
-        description: Whether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
-        type: boolean
       nodeSelector:
         $ref: '#/definitions/labelsAnnotations'
         description: 'One or more "label: value" pairs that must exist on one or more nodes, which will force all otomi platform workloads to be scheduled there.'
