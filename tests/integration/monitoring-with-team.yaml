@@ -64,6 +64,8 @@ apps:
     tracing:
       enabled: true
       samplingRatio: '100'
+  tekton:
+    enabled: true
 teamConfig:
   demo:
     settings:
