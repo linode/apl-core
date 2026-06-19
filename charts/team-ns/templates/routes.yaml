@@ -1,10 +1,10 @@
 {{- $v := .Values }}
-{{- $defaultIngressClass := $v.ingress.platformClass.className }}
+{{- $defaultIngressClass := $v.defaultIngressClassName }}
 
 {{- $extraListeners := dict }}
 {{- /* Create empty list per ingress class */}}
-{{- range $ingress := $v.ingress.classes }}
-  {{- $_ := set $extraListeners $ingress.className list }}
+{{- range $name := $v.ingressClassNames }}
+  {{- $_ := set $extraListeners $name list }}
 {{- end }}
 
 {{- range $s := $v.services }}
@@ -27,7 +27,7 @@
 
 {{- /* Add specific listener configurations for each cname */}}
 {{- if $useCname }}
-  {{- $l := get $extraListeners $ingressClassName }}
+  {{- $l := (get $extraListeners $ingressClassName) | default list }}
   {{- $l = append $l (dict "name" $serviceName "namespace" $serviceNamespace "hostname" $cnameDomain "secretName" (dig "cname" "tlsSecretName" "" $s)) }}
   {{- $_ := set $extraListeners $ingressClassName $l }}
 {{- end }}
@@ -139,18 +139,20 @@ spec:
 {{- end }}{{- /* $isKnativeService */}}
 {{- end }}{{- /* range services */}}
 
-{{- range $ingress := $v.ingress.classes }}
-{{- with get $extraListeners $ingress.className }}
+
+{{- range $name := $v.ingressClassNames }}
+
+{{- with get $extraListeners $name }}
 {{- /* Collect CNAME hostnames for HTTP-HTTPS redirect */}}
 {{- $httpRedirects := list }}
 ---
 apiVersion: gateway.networking.x-k8s.io/v1alpha1
 kind: XListenerSet
 metadata:
-  name: {{ $ingress.className }}-workloads
+  name: {{ $name }}-workloads
 spec:
   parentRef:
-    name: {{ $ingress.className }}
+    name: {{ $name }}
     namespace: istio-system
     kind: Gateway
     group: gateway.networking.k8s.io
@@ -184,14 +186,14 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: {{ $ingress.className }}-http-https-redirect
+  name: {{ $name }}-http-https-redirect
 spec:
   hostnames:
     - {{ .hostname }}
   parentRefs:
     - group: gateway.networking.x-k8s.io
       kind: XListenerSet
-      name: {{ $ingress.className }}-workloads
+      name: {{ $name }}-workloads
       sectionName: http-cname-{{ .name }}
   rules:
     - filters:
