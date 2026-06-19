@@ -3,7 +3,7 @@
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $obj := $v.obj.provider }}
 {{- if $v.otomi.isMultitenant }}
-{{- $teamNames := sortAlpha (keys $v.teamConfig) }}
+{{- $teamNames := without (sortAlpha (keys $v.teamConfig)) "admin" }}
 resources:
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
