@@ -93,13 +93,7 @@ affinity: {}
   #               - "core"
   #       topologyKey: kubernetes.io/hostname
 
-secrets:
-  GIT_USER:
-  GIT_EMAIL:
-
 env:
-  GIT_REPO_URL:
-  GIT_BRANCH:
   ENV_DIR: /tmp/otomi/values/main
   GIT_LOCAL_PATH: /tmp/otomi/values/main
   GOOGLE_APPLICATION_CREDENTIALS: '/tmp/key.json'
