@@ -1,14 +1,13 @@
 kind: AplCluster
 metadata:
     name: cluster
-    labels: {}
 spec:
-    name: demo
     apiServer: https://1.1.1.1:8443
+    defaultStorageClass: ""
     domainSuffix: dev.linode-apl.net
     k8sContext: linode-dev
-    owner: akamai
-    provider: linode
     linode:
         tier: standard
-    defaultStorageClass: ''
+    name: demo
+    owner: akamai
+    provider: linode
