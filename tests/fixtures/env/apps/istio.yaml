@@ -1,7 +1,6 @@
 kind: AplApp
 metadata:
     name: istio
-    labels: {}
 spec:
     _rawValues: {}
     autoscaling:

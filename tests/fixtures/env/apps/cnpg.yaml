@@ -1,8 +1,15 @@
 kind: AplApp
 metadata:
     name: cnpg
-    labels: {}
 spec:
+    _rawValues: {}
+    barmanPluginResources:
+        limits:
+            cpu: 100m
+            memory: 200Mi
+        requests:
+            cpu: 100m
+            memory: 100Mi
     resources:
         limits:
             cpu: 1000m
@@ -10,12 +17,4 @@ spec:
         requests:
             cpu: 100m
             memory: 200Mi
-    barmanPluginResources:
-        requests:
-            cpu: 100m
-            memory: 100Mi
-        limits:
-            cpu: 100m
-            memory: 200Mi
-    _rawValues: {}
     useBackupPlugin: true
