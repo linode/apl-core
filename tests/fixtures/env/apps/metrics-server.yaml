@@ -1,8 +1,10 @@
 kind: AplApp
 metadata:
     name: metrics-server
-    labels: {}
 spec:
+    _rawValues: {}
+    apiServer:
+        create: true
     extraArgs:
         - --test-extra-arg=true
     resources:
@@ -12,6 +14,3 @@ spec:
         requests:
             cpu: 100m
             memory: 64Mi
-    _rawValues: {}
-    apiServer:
-        create: true

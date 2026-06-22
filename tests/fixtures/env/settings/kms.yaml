@@ -1,7 +1,6 @@
 kind: AplKms
 metadata:
     name: kms
-    labels: {}
 spec:
     sops:
         azure:

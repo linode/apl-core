@@ -1,7 +1,6 @@
 kind: AplDatabase
 metadata:
     name: harbor
-    labels: {}
 spec:
     coreDatabase: registry
     externalClusters: []
