@@ -144,6 +144,7 @@ export class AplOperator {
     this.d.info('Starting git polling loop')
 
     for (let i = 0; this.isRunning && i < maxIterations; i++) {
+      await this.reloadGitCredentials()
       if (this.isApplying) {
         this.d.debug('Skipping polling cycle, apply process is in progress')
         await this.scheduleNextAttempt(this.pollInterval)
@@ -158,7 +159,6 @@ export class AplOperator {
         }
       } catch (error) {
         this.d.error('Error during git polling cycle:', getErrorMessage(error))
-        await this.reloadGitCredentials()
       }
 
       await this.scheduleNextAttempt(this.pollInterval)
@@ -191,9 +191,7 @@ export class AplOperator {
     this.d.info('Starting APL operator')
 
     try {
-      // Reload credentials on every retry so that an ESO sync that happens
-      // after construction (e.g. during a git-provider switch) is picked up
-      // automatically without requiring a manual pod restart.
+      // Reload credentials on every retry to consider potential credential update.
       await waitTillGitRepoAvailable(async () => {
         await this.reloadGitCredentials()
         return this.gitRepo.authenticatedUrl
