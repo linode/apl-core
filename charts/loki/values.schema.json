@@ -46,14 +46,14 @@
                         "targetCPUUtilizationPercentage": {
                             "description": "Target CPU utilization percentage for the backend.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
                         "targetMemoryUtilizationPercentage": {
                             "description": "Target memory utilization percentage for the backend.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         }
@@ -152,7 +152,7 @@
                         "cooldownPeriod": {
                             "description": "Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds). Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -176,7 +176,7 @@
                         "pollingInterval": {
                             "description": "Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -201,7 +201,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -317,14 +318,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -567,14 +570,14 @@
                         "targetCPUUtilizationPercentage": {
                             "description": "Target CPU utilisation percentage for the bloom-builder",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
                         "targetMemoryUtilizationPercentage": {
                             "description": "Target memory utilisation percentage for the bloom-builder",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         }
@@ -680,7 +683,7 @@
                         "cooldownPeriod": {
                             "description": "Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds). Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -704,7 +707,7 @@
                         "pollingInterval": {
                             "description": "Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -729,7 +732,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -828,14 +832,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -1238,14 +1244,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -1641,14 +1649,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -2001,7 +2011,8 @@
                             "description": "Pod Disruption Budget maxUnavailable",
                             "deprecated": true,
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -2185,7 +2196,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -2267,14 +2279,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -3147,14 +3161,14 @@
                         "targetCPUUtilizationPercentage": {
                             "description": "Target CPU utilisation percentage for the distributor",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
                         "targetMemoryUtilizationPercentage": {
                             "description": "Target memory utilisation percentage for the distributor",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         }
@@ -3260,7 +3274,7 @@
                         "cooldownPeriod": {
                             "description": "Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds). Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -3284,7 +3298,7 @@
                         "pollingInterval": {
                             "description": "Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -3313,7 +3327,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -3353,14 +3368,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -3603,14 +3620,14 @@
                         "targetCPUUtilizationPercentage": {
                             "description": "Target CPU utilisation percentage for the gateway",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
                         "targetMemoryUtilizationPercentage": {
                             "description": "Target memory utilisation percentage for the gateway",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         }
@@ -3817,7 +3834,7 @@
                         "cooldownPeriod": {
                             "description": "Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds). Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -3841,7 +3858,7 @@
                         "pollingInterval": {
                             "description": "Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -4047,14 +4064,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -4222,7 +4241,7 @@
                         "nodePort": {
                             "description": "Node port if service type is NodePort",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -4531,7 +4550,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -4634,14 +4654,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -4898,14 +4920,14 @@
                         "targetCPUUtilizationPercentage": {
                             "description": "Target CPU utilisation percentage for the ingester",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
                         "targetMemoryUtilizationPercentage": {
                             "description": "Target memory utilisation percentage for the ingester",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         }
@@ -5011,7 +5033,7 @@
                         "cooldownPeriod": {
                             "description": "Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds). Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -5035,7 +5057,7 @@
                         "pollingInterval": {
                             "description": "Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -5069,7 +5091,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -5168,14 +5191,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -6119,14 +6144,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -6757,16 +6784,19 @@
                     "type": "object",
                     "properties": {
                         "namespaceSelector": {
-                            "description": "Specifies the namespace the alertmanager is running in",
+                            "description": "Specifies the namespace the Alertmanager is running in",
                             "type": "object"
                         },
                         "podSelector": {
-                            "description": "Specifies the alertmanager Pods. As this is cross-namespace communication, you also need the namespaceSelector.",
+                            "description": "Specifies the Alertmanager Pods. As this is cross-namespace communication, you also need the namespaceSelector.",
                             "type": "object"
                         },
                         "port": {
-                            "description": "Specify the alertmanager port used for alerting",
-                            "type": "integer"
+                            "description": "Specify the Alertmanager port used for alerting",
+                            "type": [
+                                "string",
+                                "integer"
+                            ]
                         }
                     }
                 },
@@ -6784,7 +6814,8 @@
                         "port": {
                             "description": "Specify the port used for discovery",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         }
@@ -6970,7 +7001,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -7010,14 +7042,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -7326,7 +7360,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -7446,14 +7481,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -7647,14 +7684,14 @@
                         "targetCPUUtilizationPercentage": {
                             "description": "Target CPU utilisation percentage for the querier",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
                         "targetMemoryUtilizationPercentage": {
                             "description": "Target memory utilisation percentage for the querier",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         }
@@ -7760,7 +7797,7 @@
                         "cooldownPeriod": {
                             "description": "Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds). Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -7784,7 +7821,7 @@
                         "pollingInterval": {
                             "description": "Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -7850,7 +7887,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -7890,14 +7928,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -8173,14 +8213,14 @@
                         "targetCPUUtilizationPercentage": {
                             "description": "Target CPU utilisation percentage for the query-frontend",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
                         "targetMemoryUtilizationPercentage": {
                             "description": "Target memory utilisation percentage for the query-frontend",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         }
@@ -8281,7 +8321,7 @@
                         "cooldownPeriod": {
                             "description": "Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds). Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -8305,7 +8345,7 @@
                         "pollingInterval": {
                             "description": "Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -8339,7 +8379,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -8379,14 +8420,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -8699,7 +8742,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -8739,14 +8783,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -8991,14 +9037,14 @@
                         "targetCPUUtilizationPercentage": {
                             "description": "Target CPU utilisation percentage for the read",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
                         "targetMemoryUtilizationPercentage": {
                             "description": "Target memory utilisation percentage for the read",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         }
@@ -9097,7 +9143,7 @@
                         "cooldownPeriod": {
                             "description": "Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds). Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -9121,7 +9167,7 @@
                         "pollingInterval": {
                             "description": "Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -9155,7 +9201,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -9195,14 +9242,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -9465,7 +9514,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -9544,14 +9594,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -9685,7 +9737,7 @@
                         "backendPort": {
                             "description": "Backend port override for all generated rules. When unset, GRPCRoute automatically uses loki.server.grpc_listen_port (default 9095) and all other kinds use loki.server.http_listen_port (default 3100).",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -9885,7 +9937,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -9973,14 +10026,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -10392,14 +10447,14 @@
                         "targetCPUUtilizationPercentage": {
                             "description": "Target CPU utilisation percentage for the single binary",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
                         "targetMemoryUtilizationPercentage": {
                             "description": "Target memory utilisation percentage for the single binary",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         }
@@ -10493,7 +10548,7 @@
                         "cooldownPeriod": {
                             "description": "Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds). Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -10517,7 +10572,7 @@
                         "pollingInterval": {
                             "description": "Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -10639,14 +10694,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -10927,7 +10984,10 @@
                 },
                 "retention_period": {
                     "description": "Set retention period",
-                    "type": "integer"
+                    "type": [
+                        "string",
+                        "integer"
+                    ]
                 },
                 "service": {
                     "type": "object",
@@ -11148,14 +11208,14 @@
                         "targetCPUUtilizationPercentage": {
                             "description": "Target CPU utilisation percentage for the write.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
                         "targetMemoryUtilizationPercentage": {
                             "description": "Target memory utilization percentage for the write.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         }
@@ -11258,7 +11318,7 @@
                         "cooldownPeriod": {
                             "description": "Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds). Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -11282,7 +11342,7 @@
                         "pollingInterval": {
                             "description": "Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.",
                             "type": [
-                                "number",
+                                "integer",
                                 "null"
                             ]
                         },
@@ -11311,7 +11371,8 @@
                     "description": "Pod Disruption Budget maxUnavailable",
                     "deprecated": true,
                     "type": [
-                        "number",
+                        "string",
+                        "integer",
                         "null"
                     ]
                 },
@@ -11415,14 +11476,16 @@
                         "maxUnavailable": {
                             "description": "Pod Disruption Budget maxUnavailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
                         "minAvailable": {
                             "description": "Pod Disruption Budget minAvailable",
                             "type": [
-                                "number",
+                                "string",
+                                "integer",
                                 "null"
                             ]
                         },
