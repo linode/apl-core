@@ -1,11 +1,10 @@
 kind: AplDns
 metadata:
     name: dns
-    labels: {}
 spec:
     domainFilters:
         - otomi.cloud
+    policy: upsert-only
     provider:
         linode: {}
     zoneIdFilters: []
-    policy: upsert-only
