@@ -1,7 +1,6 @@
 kind: AplApp
 metadata:
     name: redis-shared
-    labels: {}
 spec:
     enabled: false
     password: wrrpCKuVJmiqHSylAdtpvbxb

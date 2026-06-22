@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "apl-operator.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.scale.replicas | default 1 }}
   selector:
     matchLabels:
       {{- include "apl-operator.selectorLabels" . | nindent 6 }}
