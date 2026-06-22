@@ -1,4 +1,4 @@
-import { getGitCredentials, getOldGitCredentials, getRepo, getStoredGitRepoConfig, setGitConfig } from './git-config'
+import { getGitCredentials, getOldGitCredentials, getStoredGitRepoConfig, setGitConfig } from './git-config'
 
 const mockGetK8sSecret = jest.fn()
 const mockCreateUpdateGenericSecret = jest.fn()
@@ -269,87 +269,6 @@ describe('git-config', () => {
 
     it('should throw error if password is not set', async () => {
       await expect(setGitConfig({})).rejects.toThrow('Git password must be provided')
-    })
-  })
-
-  describe('getRepo', () => {
-    it('should use basic auth when username is provided', async () => {
-      const values = {
-        otomi: {
-          git: {
-            repoUrl: 'https://github.com/org/repo.git',
-            username: 'admin',
-            password: 's3cret',
-            branch: 'main',
-            email: 'pipeline@cluster.local',
-          },
-        },
-      }
-
-      const result = await getRepo(values)
-      expect(result).toEqual({
-        repoUrl: 'https://github.com/org/repo.git',
-        authenticatedUrl: 'https://admin:s3cret@github.com/org/repo.git',
-        branch: 'main',
-        email: 'pipeline@cluster.local',
-        username: 'admin',
-        password: 's3cret',
-      })
-    })
-
-    it('should use PAT auth (token only) when username is not provided', async () => {
-      const values = {
-        otomi: {
-          git: {
-            repoUrl: 'https://github.com/org/repo.git',
-            password: 's3cret',
-            branch: 'main',
-            email: 'pipeline@cluster.local',
-          },
-        },
-      }
-
-      const result = await getRepo(values)
-      expect(result).toEqual({
-        repoUrl: 'https://github.com/org/repo.git',
-        authenticatedUrl: 'https://s3cret@github.com/org/repo.git',
-        branch: 'main',
-        email: 'pipeline@cluster.local',
-        username: undefined,
-        password: 's3cret',
-      })
-    })
-    it('should throw when repoUrl is missing', async () => {
-      await expect(getRepo({ otomi: { git: {} } })).rejects.toThrow('No otomi.git.repoUrl config was given.')
-    })
-
-    it('should throw when otomi.git is missing', async () => {
-      await expect(getRepo({ otomi: {} })).rejects.toThrow('No otomi.git.repoUrl config was given.')
-    })
-
-    it('should throw when values is empty', async () => {
-      await expect(getRepo({})).rejects.toThrow('No otomi.git.repoUrl config was given.')
-    })
-
-    it('should use GIT_REPO_URL env var in development mode', async () => {
-      process.env.NODE_ENV = 'development'
-      process.env.GIT_REPO_URL = 'http://localhost:3000/dev/repo.git'
-
-      const values = {
-        otomi: {
-          git: {
-            repoUrl: 'https://github.com/org/repo.git',
-            username: 'admin',
-            password: 's3cret',
-            branch: 'main',
-            email: 'pipeline@cluster.local',
-          },
-        },
-      }
-
-      const result = await getRepo(values)
-      expect(result.repoUrl).toBe('http://localhost:3000/dev/repo.git')
-      expect(result.authenticatedUrl).toBe('http://admin:s3cret@localhost:3000/dev/repo.git')
     })
   })
 })
