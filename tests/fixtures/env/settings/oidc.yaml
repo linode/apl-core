@@ -1,7 +1,6 @@
 kind: AplIdentityProvider
 metadata:
     name: oidc
-    labels: {}
 spec:
     allTeamsAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clientID: someClientID

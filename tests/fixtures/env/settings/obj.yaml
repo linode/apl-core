@@ -1,7 +1,6 @@
 kind: AplObjectStorage
 metadata:
     name: obj
-    labels: {}
 spec:
     provider:
         linode:
@@ -10,7 +9,7 @@ spec:
                 cnpg: my-clusterid-cnpg
                 gitea: my-clusterid-gitea
                 harbor: my-clusterid-harbor
-                loki: my-clusterid-loki
                 kubeflow-pipelines: my-clusterid-kubeflow-pipelines
+                loki: my-clusterid-loki
             region: nl-ams-1
         type: linode
