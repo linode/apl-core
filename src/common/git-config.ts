@@ -1,5 +1,5 @@
 import type { CoreV1Api } from '@kubernetes/client-node'
-import { GIT_CONFIG_NAMESPACE, GIT_CONFIG_SECRET_NAME, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from './constants'
+import { GIT_CONFIG_NAMESPACE, GIT_CONFIG_SECRET_NAME } from './constants'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { createUpdateGenericSecret, ensureNamespaceExists, getK8sSecret, k8s } from './k8s'
@@ -8,18 +8,6 @@ import { generate as generatePassword } from 'generate-password'
 import { $ } from 'zx'
 
 const d = terminal('common:git-config')
-
-// Returns the plaintext git password from VALUES_INPUT, or undefined if absent/missing.
-async function getGitPasswordFromValuesInput(): Promise<string | undefined> {
-  if (!env.VALUES_INPUT) return undefined
-  try {
-    const inputValues = (await loadYaml(env.VALUES_INPUT)) as Record<string, any>
-    const password = String(inputValues?.otomi?.git?.password ?? '')
-    return password || undefined
-  } catch {
-    return undefined
-  }
-}
 
 // Constants
 export const GIT_SERVER_SECRET_NAME = 'git-server-credentials'
