@@ -1492,8 +1492,8 @@ containers:
           {{- tpl (toYaml $value) $ | nindent 10 }}
       {{- end }}
       {{- range $key, $value := .Values.env }}
-      - name: "{{ tpl $key $ }}"
-        value: "{{ tpl (print $value) $ }}"
+      - name: {{ tpl $key $ | quote }}
+        value: {{ tpl (print $value) $ | quote }}
       {{- end }}
     {{- if or .Values.envFromSecret (or .Values.envRenderSecret .Values.envFromSecrets) .Values.envFromConfigMaps }}
     envFrom:
