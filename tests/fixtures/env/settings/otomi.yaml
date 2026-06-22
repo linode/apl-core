@@ -1,21 +1,20 @@
 kind: AplCapabilitySet
 metadata:
     name: otomi
-    labels: {}
 spec:
+    aiEnabled: true
+    git:
+        branch: test-branch
+        email: pipeline@cluster.local
+        repoUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git
+        username: otomi-admin
     globalPullSecret:
         username: otomi
     hasExternalDNS: true
     hasExternalIDP: false
-    nodeSelector:
-        otomi: otomi-sys
-    version: main
     isMultitenant: true
     isPreInstalled: false
+    nodeSelector:
+        otomi: otomi-sys
     useORCS: false
-    aiEnabled: true
-    git:
-        branch: test-branch
-        repoUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git
-        username: otomi-admin
-        email: pipeline@cluster.local
+    version: main
