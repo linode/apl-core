@@ -3,7 +3,7 @@
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $obj := $v.obj.provider }}
 {{- if $v.otomi.isMultitenant }}
-{{- $teamNames := sortAlpha (keys $v.teamConfig) }}
+{{- $teamNames := without (sortAlpha (keys $v.teamConfig)) "admin" }}
 resources:
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
@@ -38,11 +38,11 @@ resources:
           remoteRef:
             key: loki-secrets
             property: adminPassword
-        {{- range $id := $teamNames }}
-        - secretKey: team_{{ sha1sum $id }}
+        {{- range $teamId := $teamNames }}
+        - secretKey: team_{{ sha1sum $teamId }}
           remoteRef:
-            key: team-{{ $id }}-settings-secrets
-            property: settings_password
+            key: team-{{ $teamId }}-loki-password
+            property: password
         {{- end }}
   {{- if eq $obj.type "linode" }}
   - apiVersion: external-secrets.io/v1
