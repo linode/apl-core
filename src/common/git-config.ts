@@ -71,18 +71,22 @@ export async function getGitCredentials(): Promise<Partial<GitConfigData> | unde
 
 export async function getOldGitCredentials(): Promise<Partial<GitConfigData> | undefined> {
   let secretData = await getK8sSecret('gitea-credentials', 'apl-operator')
-  if (!secretData || !secretData?.GIT_PASSWORD) {
-    secretData = await getK8sSecret('gitea-admin-secret', 'gitea')
+  if (secretData?.GIT_PASSWORD) {
+    return {
+      ...GIT_LEGACY_CONFIG,
+      username: secretData.GIT_USERNAME,
+      password: secretData.GIT_PASSWORD,
+    }
   }
-  if (!secretData || !secretData?.GIT_PASSWORD) {
-    return undefined
+  secretData = await getK8sSecret('gitea-admin-secret', 'gitea')
+  if (secretData?.password) {
+    return {
+      ...GIT_LEGACY_CONFIG,
+      username: secretData.username,
+      password: secretData.password,
+    }
   }
-
-  return {
-    ...GIT_LEGACY_CONFIG,
-    username: secretData?.GIT_USERNAME,
-    password: secretData?.GIT_PASSWORD,
-  }
+  return undefined
 }
 
 export function createRepoConfig(data: Partial<GitConfigData>, preferInternal = false): GitRepoConfig {
