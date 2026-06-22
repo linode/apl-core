@@ -1,7 +1,6 @@
 kind: AplCatalog
 metadata:
     name: default
-    labels: {}
 spec:
     branch: main
     enabled: true

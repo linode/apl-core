@@ -1,10 +1,9 @@
 kind: AplAlertSet
 metadata:
     name: alerts
-    labels: {}
 spec:
+    msteams: {}
     receivers:
         - slack
         - msteams
-    msteams: {}
     slack: {}
