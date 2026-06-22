@@ -501,3 +501,6 @@ changes:
       - 'teamConfig.{team}.services[].forwardPath'
       - 'teamConfig.{team}.services[].hasCert'
       - 'teamConfig.{team}.services[].ownHost'
+  - version: 70
+    deletions:
+      - 'teamConfig.{team}.password'

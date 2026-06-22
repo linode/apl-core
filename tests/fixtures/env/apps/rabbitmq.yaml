@@ -1,8 +1,8 @@
 kind: AplApp
 metadata:
     name: rabbitmq
-    labels: {}
 spec:
+    _rawValues: {}
     enabled: true
     resources:
         clusterOperator:
@@ -19,4 +19,3 @@ spec:
             requests:
                 cpu: 100m
                 memory: 128Mi
-    _rawValues: {}
