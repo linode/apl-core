@@ -65,3 +65,8 @@ kms: {}
 #  sops:
 #    age:
 #      privateKey: "AGE-SECRET-KEY-EXAMPLExxxxxxxxxxxxxxxxxxxxxxxx"
+
+
+scale:
+  # Allowed values are 0 or 1. Setting to 0 will disable the operator deployment.
+  replicas: 1
