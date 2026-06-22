@@ -35,6 +35,14 @@
   {{- $tlsSecretName = "otomi-byo-wildcard-cert" }}
 {{- end -}}
 
+
+
+{{- $ingressClasses := $v.ingress.classes | default list }}
+{{- $ingressClassNames := list $v.ingress.platformClass.className }}
+{{- range $ingressClasses }}
+  {{- $ingressClassNames = append $ingressClassNames .className }}
+{{- end }}
+
 # Istio component variables
 
 # During initial install of APL, legacyRevision is set to "operator". In that particular case, the
@@ -197,6 +205,7 @@ environments:
           tlsSecretName: {{ $tlsSecretName }}
           egressGatewayName: {{ $egressGatewayName }}
           egressGatewayLabel: {{ $egressGatewayLabel }}
+          ingressClassNames: {{- $ingressClassNames | toYaml | nindent 12 }}
         apps:
           argocd:
             enabled: true
