@@ -1,16 +1,15 @@
 kind: AplApp
 metadata:
     name: harbor
-    labels: {}
 spec:
+    _rawValues: {}
     core: {}
     enabled: true
     jobservice: {}
-    registry:
-        credentials: {}
-    _rawValues: {}
     oidcAutoOnboard: true
     oidcUserClaim: email
+    registry:
+        credentials: {}
     resources:
         core:
             limits:
@@ -63,7 +62,7 @@ spec:
                 memory: 32Mi
         trivy:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 100m

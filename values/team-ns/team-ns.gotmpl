@@ -35,6 +35,8 @@ aiEnabled: {{ $v.otomi.aiEnabled }}
 globalPullSecret: {{ $v | get "otomi.globalPullSecret" nil }}
 domain: {{ $domain }}
 ingress: {{- $v.ingress | toYaml | nindent 2 }}
+ingressClassNames: {{ $v._derived.ingressClassNames | toYaml | nindent 2 }}
+defaultIngressClassName: {{ $v.ingress.platformClass.className }}
 dns: {{- $v.dns | toYaml | nindent 2 }}
 secrets: {{- $team  | get "secrets" list | toYaml | nindent 2 }}
 workloads: {{- $team | get "workloads" list | toYaml | nindent 2 }}
