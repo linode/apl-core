@@ -9,7 +9,6 @@ import {
 } from 'src/cmd/migrate'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { getFileMap } from '../common/repo'
 
 // Mock external dependencies at the top level - BEFORE imports
 jest.mock('uuid', () => ({
@@ -190,6 +189,7 @@ describe('sopsMigration', () => {
   const mockGetSchemaSecretsPaths = jest.fn()
   const mockRemoveSopsArtifacts = jest.fn()
   const mockSetGitConfig = jest.fn()
+  const mockGetOldGitConfig = jest.fn().mockResolvedValue({ username: 'otomi-admin', password: 'otomi-password' })
 
   const makeDeps = () => ({
     existsSync: mockExistsSync,
@@ -216,6 +216,7 @@ describe('sopsMigration', () => {
     getSchemaSecretsPaths: mockGetSchemaSecretsPaths,
     removeSopsArtifacts: mockRemoveSopsArtifacts,
     setGitConfig: mockSetGitConfig,
+    getOldGitCredentials: mockGetOldGitConfig,
   })
 
   beforeEach(() => {
@@ -286,6 +287,8 @@ describe('sopsMigration', () => {
 
     await sopsMigration(values, makeDeps())
 
+    expect(mockGetOldGitConfig).toHaveBeenCalled()
+    expect(mockSetGitConfig).toHaveBeenCalledWith({ username: 'otomi-admin', password: 'otomi-password' })
     expect(mockGenerateSealedSecretsKeyPair).toHaveBeenCalled()
     expect(mockCreateSealedSecretsKeySecret).toHaveBeenCalledWith('cert-pem', 'key-pem')
     expect(mockBuildSecretToNamespaceMap).toHaveBeenCalled()
