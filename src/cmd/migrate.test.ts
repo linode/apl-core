@@ -190,6 +190,7 @@ describe('sopsMigration', () => {
   const mockRemoveSopsArtifacts = jest.fn()
   const mockSetGitConfig = jest.fn()
   const mockGetOldGitConfig = jest.fn().mockResolvedValue({ username: 'otomi-admin', password: 'otomi-password' })
+  const mockEnsureNamespaceExists = jest.fn()
 
   const makeDeps = () => ({
     existsSync: mockExistsSync,
@@ -217,6 +218,7 @@ describe('sopsMigration', () => {
     removeSopsArtifacts: mockRemoveSopsArtifacts,
     setGitConfig: mockSetGitConfig,
     getOldGitCredentials: mockGetOldGitConfig,
+    ensureNamespaceExists: mockEnsureNamespaceExists,
   })
 
   beforeEach(() => {
@@ -288,6 +290,7 @@ describe('sopsMigration', () => {
     await sopsMigration(values, makeDeps())
 
     expect(mockGetOldGitConfig).toHaveBeenCalled()
+    expect(mockEnsureNamespaceExists).toHaveBeenCalled()
     expect(mockSetGitConfig).toHaveBeenCalledWith({ username: 'otomi-admin', password: 'otomi-password' })
     expect(mockGenerateSealedSecretsKeyPair).toHaveBeenCalled()
     expect(mockCreateSealedSecretsKeySecret).toHaveBeenCalledWith('cert-pem', 'key-pem')

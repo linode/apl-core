@@ -15,9 +15,10 @@ import { writeValues } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { cd, sleep } from 'zx'
-import { OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
+import { GIT_CONFIG_NAMESPACE, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
 import {
   createArgoCdRedisSecret,
+  ensureNamespaceExists,
   getArgoCdApp,
   getK8sSecret,
   k8s,
@@ -590,6 +591,7 @@ export const sopsMigration = async (
     getK8sSecret,
     getSchemaSecretsPaths,
     removeSopsArtifacts,
+    ensureNamespaceExists,
     setGitConfig,
     getOldGitCredentials,
   },
@@ -636,6 +638,7 @@ export const sopsMigration = async (
   const gitValues = values?.git || {}
   const gitConfig = await deps.getOldGitCredentials()
   if (gitConfig) {
+    await deps.ensureNamespaceExists(GIT_CONFIG_NAMESPACE)
     await deps.setGitConfig({
       ...gitConfig,
       ...gitValues,

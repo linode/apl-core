@@ -1,5 +1,5 @@
 import type { CoreV1Api } from '@kubernetes/client-node'
-import { OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from './constants'
+import { GIT_CONFIG_NAMESPACE, GIT_CONFIG_SECRET_NAME, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from './constants'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { createUpdateGenericSecret, ensureNamespaceExists, getK8sSecret, k8s } from './k8s'
@@ -22,8 +22,6 @@ async function getGitPasswordFromValuesInput(): Promise<string | undefined> {
 }
 
 // Constants
-export const GIT_CONFIG_SECRET_NAME = 'apl-git-config'
-export const GIT_CONFIG_NAMESPACE = 'apl-secrets'
 export const GIT_SERVER_SECRET_NAME = 'git-server-credentials'
 export const GIT_SERVER_NAMESPACE = 'git-server'
 export const GIT_LEGACY_CONFIG = {
