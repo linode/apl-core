@@ -1,7 +1,6 @@
 kind: AplDatabase
 metadata:
     name: keycloak
-    labels: {}
 spec:
     externalClusters: []
     imported: false

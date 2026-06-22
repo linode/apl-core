@@ -1,8 +1,8 @@
 kind: AplApp
 metadata:
     name: cert-manager
-    labels: {}
 spec:
+    _rawValues: {}
     customRootCA: |
         -----BEGIN CERTIFICATE-----
         MIIDdDCCAlygAwIBAgIBATANBgkqhkiG9w0BAQUFADBuMRUwEwYDVQQDEwxyZWRr
@@ -27,7 +27,6 @@ spec:
         -----END CERTIFICATE-----
     externallyManagedTlsSecretName: mysecret
     issuer: externally-managed-tls-secret
-    _rawValues: {}
     resources:
         cainjector:
             limits:
@@ -38,7 +37,7 @@ spec:
                 memory: 384Mi
         certManager:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 512Mi
             requests:
                 cpu: 50m
