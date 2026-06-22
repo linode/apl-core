@@ -1,12 +1,11 @@
 kind: AplApp
 metadata:
     name: tekton
-    labels: {}
 spec:
     _rawValues:
-      serviceaccount:
-          annotations:
-              test: v1
+        serviceaccount:
+            annotations:
+                test: v1
     enabled: true
     resources:
         dashboard:
@@ -18,28 +17,28 @@ spec:
                 memory: 64Mi
         pipelinesController:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 100m
                 memory: 128Mi
         pipelinesEvents:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 100m
                 memory: 128Mi
         pipelinesRemoteresolver:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 100m
                 memory: 128Mi
         pipelinesWebhook:
             limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
             requests:
                 cpu: 100m

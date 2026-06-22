@@ -1,7 +1,6 @@
 kind: AplIngress
 metadata:
     name: ingress
-    labels: {}
 spec:
     classes:
         - annotations:
@@ -12,13 +11,13 @@ spec:
           loadBalancerIP: 11.0.0.1
           sourceIpAddressFiltering: 10.0.0.0/24
     platformClass:
-        entrypoint: ''
         className: platform
+        entrypoint: ""
         gateway:
-          resources:
-            requests:
-              cpu: 200m
-              memory: 256Mi
-            limits:
-              cpu: 2000m
-              memory: 2048Mi
+            resources:
+                limits:
+                    cpu: 2000m
+                    memory: 2048Mi
+                requests:
+                    cpu: 200m
+                    memory: 256Mi

@@ -1,8 +1,9 @@
 kind: AplApp
 metadata:
     name: keycloak
-    labels: {}
 spec:
+    _rawValues: {}
+    adminUsername: otomi-admin
     idp:
         alias: redkubes-azure
         clientID: otomi
@@ -22,5 +23,3 @@ spec:
                 cpu: 100m
                 memory: 256Mi
     theme: otomi
-    _rawValues: {}
-    adminUsername: otomi-admin

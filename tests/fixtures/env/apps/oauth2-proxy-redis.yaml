@@ -1,9 +1,10 @@
 kind: AplApp
 metadata:
     name: oauth2-proxy-redis
-    labels: {}
 spec:
     _rawValues: {}
+    persistentVolumeSize: 1Gi
+    replicas: 1
     resources:
         master:
             limits:
@@ -19,5 +20,3 @@ spec:
             requests:
                 cpu: 200m
                 memory: 64Mi
-    replicas: 1
-    persistentVolumeSize: 1Gi
