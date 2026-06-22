@@ -1,6 +1,5 @@
 kind: AplVersion
 metadata:
     name: versions
-    labels: {}
 spec:
-    specVersion: 69
+    specVersion: 70
