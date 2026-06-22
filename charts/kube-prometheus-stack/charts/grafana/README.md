@@ -117,7 +117,6 @@ extraVolumeMounts:
     readOnly: false
   - name: dashboards
     mountPath: /var/lib/grafana/dashboards
-    hostPath: /usr/shared/grafana/dashboards
     readOnly: false
 
 extraVolumes:
