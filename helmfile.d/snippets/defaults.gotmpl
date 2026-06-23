@@ -1,7 +1,7 @@
 {{- /* Only dynamic defaults */}}
 {{- $versions := (readFile "../versions.yaml" | fromYaml) }}
 {{- $ENV_DIR := env "ENV_DIR" | default "../env" }}
-{{- $dirPath := printf "%s/env/teams" $ENV_DIR }}
+{{- $teamsDirPath := printf "%s/env/teams" $ENV_DIR }}
 {{- $ingressFilePath := printf "%s/env/settings/ingress.yaml" $ENV_DIR }}
 {{ $ingress := dict }}
 {{- /* We load ingress class names in order to generate defaults for corresponding gateway instancies */}}
@@ -18,6 +18,15 @@
 {{- end }}
 {{ $clusterProvider := $cluster | get "spec.provider" "linode" }}
 {{- $tier := $cluster | get "spec.linode.tier" "" }}
+{{- $teamNames := list "admin" }}
+{{- if isDir $teamsDirPath }}
+  {{- range $index,$item := readDirEntries $teamsDirPath }}
+  {{- if and $item.IsDir (ne $item.Name "admin") }}
+    {{- $teamNames = append $teamNames $item.Name }}
+  {{- end }}
+  {{- end }}
+  {{ $teamNames = sortAlpha $teamNames }}
+{{- end }}
 
 environments:
   default:
@@ -27,9 +36,8 @@ environments:
         kubeflow-pipelines: {}
         gitea: {}
       teamConfig:
-      {{- range $index,$item := readDirEntries $dirPath }}
-      {{- if $item.IsDir }}
-        {{ $item.Name }}:
+      {{- range $teamName := $teamNames }}
+        {{ $teamName }}:
           apps:
             alertmanager:
               resources:
@@ -197,7 +205,7 @@ environments:
                       - secret
                   severity: medium
           settings:
-            id: {{ $item.Name }}
+            id: {{ $teamName }}
             managedMonitoring:
               grafana: true
               alertmanager: false
@@ -228,7 +236,6 @@ environments:
                 useCloudShell: true
                 downloadKubeconfig: true
                 downloadDockerLogin: true
-      {{- end }}
       {{- end }}
       otomi: {}
       catalogs:
