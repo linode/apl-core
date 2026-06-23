@@ -2,7 +2,7 @@
 {{- $a := .Values.apps }}
 {{- $teamId := .Release.Labels.team }}
 {{- $team := index $v.teamConfig .Release.Labels.team }}
-{{- $teamApps := $team.apps | default dict }}
+{{- $teamApps := $team | get "apps" dict }}
 {{- $teamServices := ($team | get "services" list) }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
