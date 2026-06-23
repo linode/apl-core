@@ -170,8 +170,8 @@ export class AplOperator {
   private async reloadGitCredentials(): Promise<void> {
     try {
       const freshConfig = await getStoredGitRepoConfig()
+      this.d.debug('Git credentials reloaded successfully')
       await this.gitRepo.reloadConfig(freshConfig)
-      this.d.info('Git credentials reloaded successfully')
     } catch (reloadError) {
       this.d.warn('Failed to reload git credentials:', getErrorMessage(reloadError))
     }
