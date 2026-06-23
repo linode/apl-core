@@ -221,12 +221,18 @@ describe('git-config', () => {
         password: 'test-token',
       })
 
-      expect(mockCreateUpdateGenericSecret).toHaveBeenCalledWith(mockCoreApi, 'apl-git-config', 'apl-secrets', {
-        repoUrl: 'https://github.com/org/repo.git',
-        branch: 'main',
-        email: 'test@test.com',
-        password: 'test-token',
-      })
+      expect(mockCreateUpdateGenericSecret).toHaveBeenCalledWith(
+        mockCoreApi,
+        'apl-git-config',
+        'apl-secrets',
+        {
+          repoUrl: 'https://github.com/org/repo.git',
+          branch: 'main',
+          email: 'test@test.com',
+          password: 'test-token',
+        },
+        false,
+      )
       expect(config).toEqual({
         repoUrl: 'https://github.com/org/repo.git',
         branch: 'main',
@@ -244,10 +250,16 @@ describe('git-config', () => {
         password: 's3cret',
       })
 
-      expect(mockCreateUpdateGenericSecret).toHaveBeenCalledWith(mockCoreApi, 'apl-git-config', 'apl-secrets', {
-        repoUrl: 'https://github.com/org/repo.git',
-        password: 's3cret',
-      })
+      expect(mockCreateUpdateGenericSecret).toHaveBeenCalledWith(
+        mockCoreApi,
+        'apl-git-config',
+        'apl-secrets',
+        {
+          repoUrl: 'https://github.com/org/repo.git',
+          password: 's3cret',
+        },
+        false,
+      )
       expect(config).toEqual({
         repoUrl: 'https://github.com/org/repo.git',
         branch: 'main',
@@ -261,10 +273,16 @@ describe('git-config', () => {
       const customApi = { custom: true } as any
       await setGitConfig({ branch: 'develop', password: 'test' }, customApi)
 
-      expect(mockCreateUpdateGenericSecret).toHaveBeenCalledWith(customApi, 'apl-git-config', 'apl-secrets', {
-        branch: 'develop',
-        password: 'test',
-      })
+      expect(mockCreateUpdateGenericSecret).toHaveBeenCalledWith(
+        customApi,
+        'apl-git-config',
+        'apl-secrets',
+        {
+          branch: 'develop',
+          password: 'test',
+        },
+        false,
+      )
     })
 
     it('should throw error if password is not set', async () => {
