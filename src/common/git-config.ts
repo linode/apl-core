@@ -178,7 +178,7 @@ export async function setGitServerConfig(config: GitRepoConfig): Promise<void> {
   const { username, password } = config
   const htpasswd = (await $`htpasswd -nbB ${username} ${password}`).stdout.trim()
   await ensureNamespaceExists(GIT_SERVER_NAMESPACE)
-  await createUpdateGenericSecret(api, GIT_SERVER_SECRET_NAME, GIT_SERVER_NAMESPACE, { htpasswd })
+  await createUpdateGenericSecret(api, GIT_SERVER_SECRET_NAME, GIT_SERVER_NAMESPACE, { htpasswd }, false)
 }
 
 /**
@@ -198,6 +198,6 @@ export async function setGitConfig(config: Record<string, any>, coreV1Api?: Core
     throw new Error('Git password must be provided')
   }
 
-  await createUpdateGenericSecret(api, GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE, secretData)
+  await createUpdateGenericSecret(api, GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE, secretData, false)
   return createRepoConfig(secretData)
 }

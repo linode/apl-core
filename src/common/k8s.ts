@@ -412,6 +412,7 @@ export async function createUpdateGenericSecret(
   name: string,
   namespace: string,
   secretData: Record<string, string>,
+  patch = true,
 ): Promise<V1Secret> {
   const encodedData = mapValues(secretData, b64enc)
 
@@ -428,10 +429,14 @@ export async function createUpdateGenericSecret(
     return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
   } catch (error) {
     if (error instanceof ApiException && error.code === 409) {
-      return await coreV1Api.patchNamespacedSecret(
-        { name, namespace, body: secret },
-        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
-      )
+      if (patch) {
+        return await coreV1Api.patchNamespacedSecret(
+          { name, namespace, body: secret },
+          setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+        )
+      } else {
+        return await coreV1Api.replaceNamespacedSecret({ name, namespace, body: secret })
+      }
     } else {
       throw error
     }
