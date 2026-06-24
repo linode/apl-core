@@ -58,7 +58,7 @@ export const getStoredClusterSecrets = async (
 ): Promise<Record<string, any> | undefined> => {
   const d = deps.terminal(`cmd:${cmdName}:getStoredClusterSecrets`)
   d.info(`Checking if ${secretId} already pathExists`)
-  if (env.isDev && env.DISABLE_SYNC) return undefined
+  if ((env.isDev && env.DISABLE_SYNC) || process.env.NODE_ENV === 'test') return undefined
   // we might need to create the 'otomi' namespace if we are in CLI mode
   if (isCli) await deps.$`kubectl create ns otomi &> /dev/null`.nothrow().quiet()
   try {
@@ -206,7 +206,9 @@ export const processValues = async (
   await deps.writeValues(valuesForDisk)
   // and do some context dependent post processing:
   // to support potential failing chart install we store secrets on cluster
-  if (!(env.isDev && env.DISABLE_SYNC)) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
+  if (!(env.isDev && env.DISABLE_SYNC) && process.env.NODE_ENV !== 'test') {
+    await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
+  }
   return { originalInput: newInput, allSecrets }
 }
 

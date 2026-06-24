@@ -44,6 +44,16 @@ describe('initializeGitConfig', () => {
 })
 
 describe('Bootstrapping values', () => {
+  const originalNodeEnv = process.env.NODE_ENV
+
+  beforeEach(async () => {
+    process.env.NODE_ENV = 'production'
+  })
+
+  afterEach(async () => {
+    process.env.NODE_ENV = originalNodeEnv
+  })
+
   const values = {
     apps: { 'cert-manager': { issuer: 'custom-ca' } },
     cluster: { name: 'bla', provider: 'dida' },

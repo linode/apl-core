@@ -165,6 +165,11 @@ export const createSealedSecretsKeySecret = async (
 ): Promise<void> => {
   const d = deps.terminal(`common:${cmdName}:createSealedSecretsKeySecret`)
 
+  if (process.env.NODE_ENV === 'test') {
+    d.info('Skipping SealedSecrets key lookup in test run')
+    return
+  }
+
   try {
     await ensureNamespaceExists('sealed-secrets')
 
@@ -585,7 +590,7 @@ export const getOrCreateSealedSecretsPem = async (
   },
 ): Promise<string> => {
   const d = deps.terminal(`common:${cmdName}:getOrCreateSealedSecretsPem`)
-  const existingCert = await deps.getExistingSealedSecretsCert()
+  const existingCert = process.env.NODE_ENV !== 'test' ? await deps.getExistingSealedSecretsCert() : undefined
   if (existingCert) {
     d.info('Using existing sealed-secrets certificate')
     return deps.getPemFromCertificate(existingCert)
