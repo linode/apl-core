@@ -846,6 +846,15 @@ describe('AplCatalog', () => {
 
 describe('attachGitConfig', () => {
   const { getGitCredentials, getOldGitCredentials } = require('../common/git-config')
+  const originalNodeEnv = process.env.NODE_ENV
+
+  beforeEach(async () => {
+    process.env.NODE_ENV = 'production'
+  })
+
+  afterEach(async () => {
+    process.env.NODE_ENV = originalNodeEnv
+  })
 
   it('should set otomi.git from stored git config, with added defaults', async () => {
     const spec = {}
@@ -866,16 +875,18 @@ describe('attachGitConfig', () => {
     expect((spec as any).otomi.git.repoUrl).toBe('test-repo')
   })
 
-  it('should preserve current values in offline mode', async () => {
+  it('should preserve current values in test mode', async () => {
+    process.env.NODE_ENV = 'test'
     const spec = { otomi: { adminPassword: 'secret', git: { repoUrl: 'old' } } }
-    await attachGitConfig(spec, true)
+    await attachGitConfig(spec)
     expect((spec as any).otomi.adminPassword).toBe('secret')
     expect((spec as any).otomi.git.repoUrl).toBe('old')
   })
 
-  it('should only set defaults in offline mode', async () => {
+  it('should only set defaults in test mode', async () => {
+    process.env.NODE_ENV = 'test'
     const spec = { otomi: { adminPassword: 'secret' } }
-    await attachGitConfig(spec, true)
+    await attachGitConfig(spec)
     expect((spec as any).otomi.git).toEqual({
       repoUrl: 'http://git-server.git-server.svc.cluster.local/otomi/values.git',
       branch: 'main',

@@ -543,9 +543,9 @@ export function sortTeamConfigArraysByName(spec: Record<string, any>): Record<st
  * Adds non-sensitive fields of the Git configuration which are stored in a Secret resource, but used
  * in templates as if they were part of the values.
  */
-export async function attachGitConfig(spec: Record<string, any>, offline = false): Promise<Record<string, any>> {
-  if (offline) {
-    if (!spec.otomi.git) {
+export async function attachGitConfig(spec: Record<string, any>): Promise<Record<string, any>> {
+  if (process.env.NODE_ENV === 'test') {
+    if (!spec.otomi?.git) {
       // Do not read from cluster, instead use defaults
       set(spec, 'otomi.git', { ...GIT_DEFAULT_CONFIG, username: 'otomi-admin' })
     }
@@ -562,11 +562,10 @@ export async function attachGitConfig(spec: Record<string, any>, offline = false
 
 export async function setValuesFile(
   envDir: string,
-  offline = false,
   deps = { pathExists: existsSync, loadValues, writeFile },
 ): Promise<string> {
   const valuesPath = path.join(envDir, 'values-repo.yaml')
-  const allValues = await deps.loadValues(envDir, offline)
+  const allValues = await deps.loadValues(envDir)
   await deps.writeFile(valuesPath, objectToYaml(allValues))
   return valuesPath
 }
@@ -583,7 +582,7 @@ export function unsetValuesFileSync(envDir: string): string {
   return valuesPath
 }
 
-export async function loadValues(envDir: string, offline = false, deps = { loadToSpec }): Promise<Record<string, any>> {
+export async function loadValues(envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> {
   const fileMaps = getFileMaps(envDir).filter((map) => map.loadToSpec === true)
   const spec = {}
 
@@ -594,7 +593,7 @@ export async function loadValues(envDir: string, offline = false, deps = { loadT
   )
   sortTeamConfigArraysByName(spec)
   sortUserArraysByName(spec)
-  await attachGitConfig(spec, offline)
+  await attachGitConfig(spec)
   return spec
 }
 
