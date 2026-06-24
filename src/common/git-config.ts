@@ -140,7 +140,7 @@ export async function getStoredGitRepoConfig(preferInternal = false): Promise<Gi
  * yet exist.
  */
 export async function getInitialGitConfig(): Promise<{ config: Record<string, any>; isInitial: boolean }> {
-  const inputValues = (await loadYaml(env.VALUES_INPUT)) as Record<string, any>
+  const inputValues = (await loadYaml(env.VALUES_INPUT, { noError: true })) as Record<string, any>
   if (inputValues && inputValues.otomi?.git?.password) {
     d.info('Using Git credentials from VALUES_INPUT')
     return { config: inputValues.otomi.git, isInitial: true }
