@@ -166,7 +166,6 @@
         "opampBridgeImage",
         "targetAllocatorImage",
         "autoInstrumentationImage",
-        "featureGates",
         "ports",
         "env",
         "extraEnvs",
@@ -183,6 +182,7 @@
         "rolling",
         "securityContext",
         "ignoreMissingCollectorCRDs",
+        "config",
         "autoInstrumentation",
         "metrics"
       ],
@@ -618,11 +618,6 @@
               }
             }
           ]
-        },
-        "featureGates": {
-          "type": "string",
-          "default": "",
-          "title": "The featureGates to enable"
         },
         "featureGatesMap": {
           "type": "object",
@@ -1267,6 +1262,17 @@
             false
           ]
         },
+        "config": {
+          "type": "object",
+          "default": {},
+          "title": "The config Schema",
+          "required": [],
+          "additionalProperties": true,
+          "description": "OpenTelemetry Operator manager configuration rendered as a ConfigMap and mounted with --config-file. The operator applies file configuration before CLI flags, so chart-rendered CLI flags take precedence over the same fields set here. The chart always sets the manager metrics address, metrics security, and health probe address with CLI flags. It also sets leader election, pprof, and webhook port flags when those chart values are enabled.",
+          "examples": [
+            {}
+          ]
+        },
         "autoInstrumentation": {
           "type": "object",
           "default": {},
@@ -1396,7 +1402,6 @@
               "tag": ""
             }
           },
-          "featureGates": "",
           "ports": {
             "metricsPort": 8443,
             "webhookPort": 9443,
@@ -1458,6 +1463,7 @@
           },
           "rolling": false,
           "securityContext": {},
+          "config": {},
           "metrics": {
             "secure": true,
             "tls": {
@@ -2088,7 +2094,6 @@
             "tag": ""
           }
         },
-        "featureGates": "",
         "ports": {
           "metricsPort": 8443,
           "webhookPort": 9443,
@@ -2149,7 +2154,8 @@
           }
         },
         "rolling": false,
-        "securityContext": {}
+        "securityContext": {},
+        "config": {}
       },
       "admissionWebhooks": {
         "create": true,

@@ -1,0 +1,9 @@
+admissionWebhooks:
+  certManager:
+    enabled: false
+
+manager:
+  collectorImage:
+    repository: "otel/opentelemetry-collector-k8s"
+  config:
+    ignore-missing-collector-crds: true
