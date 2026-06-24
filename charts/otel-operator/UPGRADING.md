@@ -1,5 +1,22 @@
 # Upgrade guidelines
 
+## 0.115.x to 0.116.0
+
+The deprecated `manager.featureGates` value has been removed. It was replaced by `manager.featureGatesMap` back in 0.72.1, and setting it now fails schema validation.
+
+If you still rely on `manager.featureGates`, move each gate into `manager.featureGatesMap` before upgrading:
+
+```yaml
+# before
+manager:
+  featureGates: "operator.golang.flags"
+
+# after
+manager:
+  featureGatesMap:
+    operator.golang.flags: true
+```
+
 ## 0.109.x to 0.110.0
 
 ### Migration from kube-rbac-proxy to controller-runtime metrics
