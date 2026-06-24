@@ -274,6 +274,9 @@ rules:
     resources:
       - instrumentations
     verbs:
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
+      - create
+      {{- end}}
       - get
       - list
       - patch
@@ -282,6 +285,9 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
+      - clusterobservabilities
+      {{- end}}
       - opampbridges
     verbs:
       - create
@@ -294,12 +300,18 @@ rules:
   - apiGroups:
       - opentelemetry.io
     resources:
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
+      - clusterobservabilities/finalizers
+      {{- end}}
       - opampbridges/finalizers
     verbs:
       - update
   - apiGroups:
       - opentelemetry.io
     resources:
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
+      - clusterobservabilities/status
+      {{- end}}
       - opampbridges/status
     verbs:
       - get
@@ -310,6 +322,9 @@ rules:
     resources:
       - opentelemetrycollectors
     verbs:
+      {{- if get .Values.manager.featureGatesMap "operator.clusterobservability" }}
+      - create
+      {{- end}}
       - get
       - list
       - patch
