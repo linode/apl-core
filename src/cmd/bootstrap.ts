@@ -26,7 +26,13 @@ import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { migrate } from './migrate'
-import { createRepoConfig, getStoredGitRepoConfig, GIT_DEFAULT_CONFIG } from '../common/git-config'
+import {
+  createRepoConfig,
+  getInitialGitConfig,
+  GitRepoConfig,
+  setGitConfig,
+  setGitServerConfig,
+} from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 
@@ -286,6 +292,26 @@ export const createCustomCA = (deps = { terminal, pki, writeValues }): Record<st
   }
 }
 
+export const initializeGitConfig = async (
+  deps = {
+    getInitialGitConfig,
+    setGitConfig,
+    setGitServerConfig,
+    createRepoConfig,
+  },
+): Promise<GitRepoConfig> => {
+  // In test (CI), getInitialGitConfig only considers VALUES_INPUT but does not attempt read from cluster
+  const isTest = process.env.NODE_ENV === 'test'
+  const { config: data, isInitial } = await deps.getInitialGitConfig()
+  if (isInitial && !isTest) {
+    const config = await deps.setGitConfig(data)
+    await deps.setGitServerConfig(config)
+    return config
+  } else {
+    return deps.createRepoConfig(data)
+  }
+}
+
 export const bootstrap = async (
   deps = {
     pathExists: existsSync,
@@ -329,10 +355,7 @@ export const module = {
     }),
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    const gitConfig =
-      process.env.NODE_ENV === 'test'
-        ? createRepoConfig({ ...GIT_DEFAULT_CONFIG, password: 'temp-initial' })
-        : await getStoredGitRepoConfig()
+    const gitConfig = await initializeGitConfig()
     await prepareEnvironment({ skipAllPreChecks: true })
     await bootstrap()
     await bootstrapGit(gitConfig)

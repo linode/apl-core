@@ -7,6 +7,7 @@ import {
   createCustomCA,
   getStoredClusterSecrets,
   handleFileEntry,
+  initializeGitConfig,
   processValues,
 } from './bootstrap'
 
@@ -20,6 +21,27 @@ jest.mock('src/common/envalid', () => ({
     ENV_DIR: '/test',
   },
 }))
+
+describe('initializeGitConfig', () => {
+  test('should call getInitialGitConfig, setGitConfig and setGitServerConfig when isInitial', async () => {
+    const originalNodeEnv = process.env.NODE_ENV
+    process.env.NODE_ENV = 'production'
+    const deps = {
+      getInitialGitConfig: jest.fn().mockResolvedValue({ config: {}, isInitial: true }),
+      setGitConfig: jest.fn().mockResolvedValue({}),
+      setGitServerConfig: jest.fn(),
+      createRepoConfig: jest.fn().mockReturnValue({}),
+    }
+    try {
+      await initializeGitConfig(deps)
+    } finally {
+      process.env.NODE_ENV = originalNodeEnv
+    }
+    expect(deps.getInitialGitConfig).toHaveBeenCalledTimes(1)
+    expect(deps.setGitConfig).toHaveBeenCalledTimes(1)
+    expect(deps.setGitServerConfig).toHaveBeenCalledTimes(1)
+  })
+})
 
 describe('Bootstrapping values', () => {
   const values = {

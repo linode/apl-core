@@ -5,7 +5,7 @@ import { recoverFromGit } from 'src/common/bootstrap'
 import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { getInitialGitConfig, getStoredGitRepoConfig, setGitConfig, setGitServerConfig } from '../common/git-config'
+import { getStoredGitRepoConfig } from '../common/git-config'
 import {
   createUpdateConfigMap,
   deletePendingHelmReleases,
@@ -50,14 +50,6 @@ export class Installer {
     return { installationMode, isInstalled }
   }
 
-  public async initializeGitConfig(): Promise<void> {
-    const { config: data, isInitial } = await getInitialGitConfig()
-    if (isInitial) {
-      const config = await setGitConfig(data)
-      await setGitServerConfig(config)
-    }
-  }
-
   public async recoverFromGit(): Promise<void> {
     while (true) {
       try {
@@ -76,7 +68,6 @@ export class Installer {
   public async initialize(): Promise<void> {
     while (true) {
       try {
-        await this.initializeGitConfig()
         await this.aplOps.validateCluster()
         await this.aplOps.bootstrap()
         return

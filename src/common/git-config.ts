@@ -145,15 +145,18 @@ export async function getInitialGitConfig(): Promise<{ config: Record<string, an
     d.info('Using Git credentials from VALUES_INPUT')
     return { config: inputValues.otomi.git, isInitial: true }
   }
-  const storedValues = await getGitCredentials()
-  if (storedValues) {
-    d.info('Using Git credentials from apl-secrets namespace')
-    return { config: storedValues, isInitial: false }
-  }
-  const oldCredentials = await getOldGitCredentials()
-  if (oldCredentials) {
-    d.info('Using Gitea credentials')
-    return { config: oldCredentials, isInitial: false }
+  if (process.env.NODE_ENV !== 'test') {
+    // In test / CI environment, do not retrieve from cluster
+    const storedValues = await getGitCredentials()
+    if (storedValues) {
+      d.info('Using Git credentials from apl-secrets namespace')
+      return { config: storedValues, isInitial: false }
+    }
+    const oldCredentials = await getOldGitCredentials()
+    if (oldCredentials) {
+      d.info('Using Gitea credentials')
+      return { config: oldCredentials, isInitial: false }
+    }
   }
   d.info('Git credentials not set. Generating.')
   const initialPassword = generatePassword({
