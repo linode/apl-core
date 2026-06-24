@@ -144,6 +144,33 @@ resources:
           remoteRef:
             key: keycloak-secrets
             property: idp_clientSecret
+  - apiVersion: generators.external-secrets.io/v1alpha1
+    kind: Password
+    metadata:
+      name: argocd-redis-password-gen
+      namespace: apl-secrets
+    spec:
+      length: 32
+      digits: 10
+      symbols: 0
+      allowRepeat: false
+      noUpper: false
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: argocd-redis-password
+      namespace: apl-secrets
+    spec:
+      refreshInterval: "0"
+      target:
+        name: argocd-redis-password
+        creationPolicy: Owner
+      dataFrom:
+        - sourceRef:
+            generatorRef:
+              apiVersion: generators.external-secrets.io/v1alpha1
+              kind: Password
+              name: argocd-redis-password-gen
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
@@ -159,12 +186,61 @@ resources:
         creationPolicy: Owner
         template:
           data:
-            auth: '{{ "{{ .redisPassword | toString }}" }}'
+            auth: '{{ "{{ .password | toString }}" }}'
       data:
-        - secretKey: redisPassword
+        - secretKey: password
           remoteRef:
-            key: argocd-secrets
-            property: redisPassword
+            key: argocd-redis-password
+            property: password
+  - apiVersion: generators.external-secrets.io/v1alpha1
+    kind: Password
+    metadata:
+      name: argocd-admin-password-gen
+      namespace: apl-secrets
+    spec:
+      length: 32
+      digits: 10
+      symbols: 0
+      allowRepeat: false
+      noUpper: false
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: argocd-admin-password
+      namespace: apl-secrets
+    spec:
+      refreshInterval: "0"
+      target:
+        name: argocd-admin-password
+        creationPolicy: Owner
+      dataFrom:
+        - sourceRef:
+            generatorRef:
+              apiVersion: generators.external-secrets.io/v1alpha1
+              kind: Password
+              name: argocd-admin-password-gen
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: argocd-admin-secret
+      namespace: argocd
+    spec:
+      refreshInterval: "0"
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: argocd-secret
+        creationPolicy: Merge
+        template:
+          data:
+            admin.password: '{{ "{{ .password | bcrypt }}" }}'
+            admin.passwordMtime: "2025-01-01T00:00:00Z"
+      data:
+        - secretKey: password
+          remoteRef:
+            key: argocd-admin-password
+            property: password
   - apiVersion: v1
     kind: Secret
     metadata:

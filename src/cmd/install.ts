@@ -8,7 +8,6 @@ import { setGitConfig } from 'src/common/git-config'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS, hfValues } from 'src/common/hf'
 import {
   applyServerSide,
-  createArgoCdRedisSecret,
   createUpdateConfigMap,
   getDeploymentState,
   getHelmReleases,
@@ -195,17 +194,6 @@ export const installAll = async () => {
   } else {
     d.info('No sealed secret manifests found, skipping controller restart')
   }
-
-  // Ensure ArgoCD Redis Secret exists and has Helm ownership metadata before Helm applies ArgoCD.
-  // redisPassword is an x-secret field and sealed in apl-secrets/argocd-secrets (decrypted just above),
-  // so we read it directly from K8s rather than from values.
-  d.info('Creating argocd-redis secret from sealed secret')
-  const argocdSealedSecret = await getK8sSecret('argocd-secrets', 'apl-secrets').catch(() => undefined)
-  await createArgoCdRedisSecret({ apps: { argocd: { redisPassword: argocdSealedSecret?.redisPassword } } }).catch(
-    (error) => {
-      d.warn('Could not pre-create argocd-redis secret:', getErrorMessage(error))
-    },
-  )
 
   // Deploy ESO (External Secrets Operator)
   d.info('Deploying external-secrets operator')

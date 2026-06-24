@@ -12,13 +12,6 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: argocd-artifacts
-    installed: {{ $a | get "argocd.enabled" }}
-    namespace: argocd
-    labels:
-      pkg: argocd
-      app: core
-    <<: *raw
   - name: argocd-image-updater
     installed: {{ $a | get "argocd.enabled" }}
     namespace: argocd

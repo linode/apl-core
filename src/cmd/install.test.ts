@@ -20,7 +20,6 @@ jest.mock('src/common/k8s', () => ({
   restartOtomiApiDeployment: jest.fn(),
   waitForCRD: jest.fn(),
   getK8sSecret: jest.fn().mockResolvedValue({ password: 'test', username: 'test' }),
-  createArgoCdRedisSecret: jest.fn().mockResolvedValue(undefined),
   k8s: {
     app: jest.fn(),
     core: jest.fn(),
