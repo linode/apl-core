@@ -3538,6 +3538,7 @@ distributor:
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: null
+  # @schema type:[string, integer]
   # -- Max Surge for distributor pods
   maxSurge: 0
   # @schema additionalProperties:true
@@ -3813,6 +3814,7 @@ querier:
   # -- Pod Disruption Budget maxUnavailable
   # @deprecated -- This is deprecated in favor of `podDisruptionBudget.maxUnavailable`.
   maxUnavailable: null
+  # @schema type:[string, integer]
   # -- Max Surge for querier pods
   maxSurge: 0
   # @schema additionalProperties:true
