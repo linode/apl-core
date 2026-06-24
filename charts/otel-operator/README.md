@@ -122,6 +122,29 @@ The OpenTelemetry Collector requires specific RBAC permissions to function corre
 
 For detailed instructions and examples on configuring RBAC permissions, please refer to the [official documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/k8sattributesprocessor/README.md).
 
+### Manager Configuration File
+
+The OpenTelemetry Operator manager supports loading configuration from a file. To configure the manager with a file, set `manager.config`.
+The chart renders this value as a ConfigMap, mounts it into the manager container, and passes the mounted file path with `--config-file`.
+The operator applies file configuration before CLI flags, so chart-rendered CLI flags take precedence over the same fields set in `manager.config`. The chart always sets the manager metrics address, metrics security, and health probe address with CLI flags. It also sets leader election, pprof, and webhook port flags when those chart values are enabled.
+
+```yaml
+manager:
+  config:
+    enable-instrumentation-crds: false
+    enable-multi-instrumentation: false
+    instrumentations:
+      spec:
+        exporter:
+          endpoint: http://collector.default.svc:4318
+        propagators:
+          - tracecontext
+          - baggage
+          - b3
+        java:
+          image: java-autoinstrumentation:dev
+```
+
 ## Install OpenTelemetry Collector
 
 _See [OpenTelemetry website](https://opentelemetry.io/docs/collector/) for more details about the Collector_
