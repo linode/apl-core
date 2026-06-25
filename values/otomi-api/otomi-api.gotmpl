@@ -19,23 +19,10 @@ image:
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
 
-secrets:
-  GIT_USER: {{ $git.username | quote }}
-  GIT_EMAIL: {{ $git.email | quote }}
-gitConfig:
-  existingSecret: otomi-api-git-credentials
-
 env:
   DEFAULT_PLATFORM_ADMIN_EMAIL: {{ $defaultPlatformAdminEmail }}
   DEBUG: 'otomi:*,-otomi:authz,-otomi:repo'
   VERBOSITY: '1'
-  GIT_REPO_URL: {{ $git.repoUrl }}
-  {{- if contains "gitea-http.gitea.svc.cluster.local" $git.repoUrl }}
-  GIT_REPO_PUBLIC_URL: {{ $giteaValuesPublicUrl }}
-  {{- else }}
-  GIT_REPO_PUBLIC_URL: {{ $git.repoUrl }}
-  {{- end }}
-  GIT_BRANCH: {{ $git.branch }}
   VERSIONS: |
     {{ $v.versions | toJson | nindent 4}}
   {{- if $v._derived.untrustedCA }}

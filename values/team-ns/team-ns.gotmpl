@@ -2,7 +2,7 @@
 {{- $a := .Values.apps }}
 {{- $teamId := .Release.Labels.team }}
 {{- $team := index $v.teamConfig .Release.Labels.team }}
-{{- $teamApps := $team.apps | default dict }}
+{{- $teamApps := $team | get "apps" dict }}
 {{- $teamServices := ($team | get "services" list) }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
@@ -35,6 +35,8 @@ aiEnabled: {{ $v.otomi.aiEnabled }}
 globalPullSecret: {{ $v | get "otomi.globalPullSecret" nil }}
 domain: {{ $domain }}
 ingress: {{- $v.ingress | toYaml | nindent 2 }}
+ingressClassNames: {{ $v._derived.ingressClassNames | toYaml | nindent 2 }}
+defaultIngressClassName: {{ $v.ingress.platformClass.className }}
 dns: {{- $v.dns | toYaml | nindent 2 }}
 secrets: {{- $team  | get "secrets" list | toYaml | nindent 2 }}
 workloads: {{- $team | get "workloads" list | toYaml | nindent 2 }}

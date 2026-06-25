@@ -3,7 +3,7 @@ import { get } from 'lodash'
 import { decrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
-import { getRepo, GitRepoConfig } from 'src/common/git-config'
+import { GitRepoConfig } from 'src/common/git-config'
 import { hfValues } from 'src/common/hf'
 import { stripAllSecrets } from 'src/common/sealed-secrets'
 import { getFilename, getSchemaSecretsPaths } from 'src/common/utils'
@@ -35,11 +35,10 @@ export const recoverFromGit = async (gitConfig: GitRepoConfig): Promise<void> =>
  * - It might be a fresh empty folder that needs init and files added
  * - It might have a remote with commits: clone it first and add files back in that don't exist yet
  */
-export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void> => {
+export const bootstrapGit = async (gitConfig: GitRepoConfig): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   // inValues indicates that there is no values repo file structure that helmfile expects
-  const values = inValues ?? ((await hfValues()) as Record<string, any>)
-  const { authenticatedUrl: remote, branch, email, username, password } = await getRepo(values)
+  const { authenticatedUrl: remote, branch, email, username, password } = gitConfig
   cd(env.ENV_DIR)
   if (existsSync(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped, setting identity just in case`)

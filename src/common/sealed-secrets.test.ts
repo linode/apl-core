@@ -139,6 +139,16 @@ describe('sealed-secrets', () => {
   })
 
   describe('createSealedSecretsKeySecret', () => {
+    const originalNodeEnv = process.env.NODE_ENV
+
+    beforeEach(async () => {
+      process.env.NODE_ENV = 'production'
+    })
+
+    afterEach(async () => {
+      process.env.NODE_ENV = originalNodeEnv
+    })
+
     it('should create secret if it does not exist', async () => {
       const mockGetK8sSecret = jest.fn().mockResolvedValue(undefined)
       const deps = {
@@ -388,6 +398,16 @@ describe('sealed-secrets', () => {
   })
 
   describe('bootstrapSealedSecrets', () => {
+    const originalNodeEnv = process.env.NODE_ENV
+
+    beforeEach(async () => {
+      process.env.NODE_ENV = 'production'
+    })
+
+    afterEach(async () => {
+      process.env.NODE_ENV = originalNodeEnv
+    })
+
     it('should generate new key pair when no existing cert found', async () => {
       const secrets = {
         apps: { harbor: { adminPassword: 'pass' } },

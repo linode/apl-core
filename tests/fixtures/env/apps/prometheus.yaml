@@ -1,8 +1,8 @@
 kind: AplApp
 metadata:
     name: prometheus
-    labels: {}
 spec:
+    _rawValues: {}
     disabledRules:
         - InfoInhibitor
         - PrometheusOperatorListErrors
@@ -31,9 +31,8 @@ spec:
                   capacity: 18000
                   maxShards: 100
                   maxSamplesPerSend: 6000
-            target: https://remote.target.io/api/v1/push
             insecureSkipVerify: false
-    _rawValues: {}
+            target: https://remote.target.io/api/v1/push
     replicas: 1
     resources:
         kube-state-metrics:
@@ -52,7 +51,7 @@ spec:
                 memory: 32Mi
         prometheus:
             limits:
-                cpu: '3'
+                cpu: "3"
                 memory: 3Gi
             requests:
                 cpu: 100m

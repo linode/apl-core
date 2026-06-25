@@ -28,8 +28,6 @@ releases:
       - ../values/team-ns/team-ns.gotmpl
       - name: admin
         teamId: admin
-        otomi: {{- $v.otomi | toYaml | nindent 10 }}
-        services: {{- $tc.admin | get "services" list | toYaml | nindent 10 }}
         networkPolicy: null
         resourceQuota: null
 {{- range $teamId, $team := omit $tc "admin" }}
