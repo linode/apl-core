@@ -71,6 +71,14 @@ export const cliEnvSpec = {
     desc: 'Polling interval in milliseconds for sealed secrets readiness checks',
     default: 3000,
   }),
+  GIT_CONFIG_SECRET_NAME: str({
+    desc: 'Name of Secret resource with access credentials to the Git values store',
+    default: 'apl-git-config',
+  }),
+  GIT_CONFIG_SECRET_NAMESPACE: str({
+    desc: 'Namespace of Secret resource with access credentials to the Git values store',
+    default: 'apl-secrets',
+  }),
 }
 
 export function cleanEnv<T>(spec: { [K in keyof T]: ValidatorSpec<T[K]> }, options?: CleanOptions<T>) {
