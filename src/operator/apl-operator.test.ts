@@ -309,16 +309,23 @@ describe('AplOperator', () => {
         value: true,
         writable: true,
       })
+      const newConfig = {
+        authenticatedUrl: 'https://username:newpassword@example.com:443/org/repo.git',
+      } as GitRepoConfig
+      ;(getStoredGitRepoConfig as jest.Mock).mockResolvedValue(newConfig)
 
       const pollPromise = aplOperator.pollAndApplyGitChanges()
 
       await Promise.resolve()
+      await jest.runOnlyPendingTimersAsync()
       jest.advanceTimersByTime(defaultConfig.pollIntervalMs)
 
       Object.defineProperty(aplOperator as any, 'isRunning', { value: false })
 
       await pollPromise
 
+      expect(getStoredGitRepoConfig).toHaveBeenCalled()
+      expect(mockGitRepo.reloadConfig).toHaveBeenCalledWith(newConfig)
       expect(mockGitRepo.syncAndAnalyzeChanges).not.toHaveBeenCalled()
       expect(mockDebugFn).toHaveBeenCalledWith('Skipping polling cycle, apply process is in progress')
       expect(mockInfoFn).toHaveBeenCalledWith('Git polling loop stopped')
@@ -341,27 +348,6 @@ describe('AplOperator', () => {
       await pollPromise
 
       expect(mockErrorFn).toHaveBeenCalledWith('Error during git polling cycle:', 'Pull failed')
-    })
-
-    test('should reload git credentials when poll cycle throws', async () => {
-      const newConfig = {
-        authenticatedUrl: 'https://username:newpassword@example.com:443/org/repo.git',
-      } as GitRepoConfig
-      mockGitRepo.syncAndAnalyzeChanges.mockRejectedValueOnce(new Error('Auth failed'))
-      ;(getStoredGitRepoConfig as jest.Mock).mockResolvedValueOnce(newConfig)
-      ;(aplOperator as any).isRunning = true
-      ;(aplOperator as any).isApplying = false
-
-      const pollPromise = aplOperator.pollAndApplyGitChanges(1)
-
-      await Promise.resolve()
-      await jest.runOnlyPendingTimersAsync()
-      ;(aplOperator as any).isRunning = false
-
-      await pollPromise
-
-      expect(getStoredGitRepoConfig).toHaveBeenCalled()
-      expect(mockGitRepo.reloadConfig).toHaveBeenCalledWith(newConfig)
     })
 
     test('should log warning when credential reload fails after poll error', async () => {

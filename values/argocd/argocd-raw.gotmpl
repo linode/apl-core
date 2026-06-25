@@ -36,8 +36,8 @@ resources:
       data:
         - secretKey: gitPassword
           remoteRef:
-            key: otomi-secrets
-            property: git_password
+            key: apl-git-config
+            property: password
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
@@ -64,8 +64,8 @@ resources:
       data:
         - secretKey: gitPassword
           remoteRef:
-            key: otomi-secrets
-            property: git_password
+            key: apl-git-config
+            property: password
 
 {{- else if contains "git-server.git-server.svc.cluster.local" $v.otomi.git.repoUrl }}
   - apiVersion: external-secrets.io/v1
@@ -94,8 +94,8 @@ resources:
       data:
         - secretKey: gitPassword
           remoteRef:
-            key: otomi-secrets
-            property: git_password
+            key: apl-git-config
+            property: password
 {{- else }}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
@@ -123,8 +123,8 @@ resources:
       data:
         - secretKey: gitPassword
           remoteRef:
-            key: otomi-secrets
-            property: git_password
+            key: apl-git-config
+            property: password
 {{- end }}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
