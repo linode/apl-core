@@ -7,7 +7,6 @@ import { waitTillGitRepoAvailable } from '../common/gitea'
 import { hfValues } from '../common/hf'
 import { ensureManifestDirectories, ensureTeamGitOpsDirectories } from '../common/utils'
 import { writeValues } from '../common/values'
-import { HelmArguments } from '../common/yargs'
 import { AplOperations } from './apl-operations'
 import { GitRepository } from './git-repository'
 import { updateApplyState } from './k8s'
@@ -89,7 +88,7 @@ export class AplOperator {
       await ensureTeamGitOpsDirectories(env.ENV_DIR, values ?? {})
       await ensureManifestDirectories()
 
-      await commit(false, {} as HelmArguments, this.gitRepo.config)
+      await commit(this.gitRepo.config)
 
       if (applyTeamsOnly) {
         await this.aplOps.applyTeams()
@@ -145,6 +144,7 @@ export class AplOperator {
     this.d.info('Starting git polling loop')
 
     for (let i = 0; this.isRunning && i < maxIterations; i++) {
+      await this.reloadGitCredentials()
       if (this.isApplying) {
         this.d.debug('Skipping polling cycle, apply process is in progress')
         await this.scheduleNextAttempt(this.pollInterval)
@@ -159,7 +159,6 @@ export class AplOperator {
         }
       } catch (error) {
         this.d.error('Error during git polling cycle:', getErrorMessage(error))
-        await this.reloadGitCredentials()
       }
 
       await this.scheduleNextAttempt(this.pollInterval)
@@ -171,8 +170,8 @@ export class AplOperator {
   private async reloadGitCredentials(): Promise<void> {
     try {
       const freshConfig = await getStoredGitRepoConfig()
+      this.d.debug('Git credentials reloaded successfully')
       await this.gitRepo.reloadConfig(freshConfig)
-      this.d.info('Git credentials reloaded successfully')
     } catch (reloadError) {
       this.d.warn('Failed to reload git credentials:', getErrorMessage(reloadError))
     }
@@ -192,9 +191,7 @@ export class AplOperator {
     this.d.info('Starting APL operator')
 
     try {
-      // Reload credentials on every retry so that an ESO sync that happens
-      // after construction (e.g. during a git-provider switch) is picked up
-      // automatically without requiring a manual pod restart.
+      // Reload credentials on every retry to consider potential credential update.
       await waitTillGitRepoAvailable(async () => {
         await this.reloadGitCredentials()
         return this.gitRepo.authenticatedUrl
