@@ -19,6 +19,7 @@ This log lists the architectural decisions for apl-core.
 - [ADR-2022-08-26](2022-08-26-other-dns-provider.md) - Other DNS provider
 - [ADR-2026-06-12](2026-06-12-auth-policy-pod-label.md) - Auth policy pod label (`otomi.io/auth-policy`)
 - [ADR-2026-06-25](2026-06-25-manifests-directory.md) - Manifests directory in the values repo
+- [ADR-2026-06-25](2026-06-25-git-server-as-default-values-repo.md) - git-server as the default values repository backend
 
 <!-- adrlogstop -->
 
