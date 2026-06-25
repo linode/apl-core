@@ -15,14 +15,6 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: git-server-artifacts
-    installed: {{ $a | get "git-server.enabled" }}
-    namespace: git-server
-    labels:
-      pkg: git-server
-      app: core
-      stage: prep
-    <<: *raw
   - name: metrics-server
     installed: {{ $a | get "metrics-server.enabled" }}
     namespace: kube-system

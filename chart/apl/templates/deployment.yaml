@@ -76,9 +76,6 @@ spec:
               value: {{ .Values.operator.pollIntervalMs | default "30000" | quote }}
             - name: RECONCILE_INTERVAL_MS
               value: {{ .Values.operator.reconcileIntervalMs | default "300000" | quote }}
-          envFrom:
-            - secretRef:
-                name: apl-git-credentials
           volumeMounts:
             - name: otomi-values
               mountPath: /home/app/stack/env
