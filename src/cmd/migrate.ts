@@ -18,6 +18,7 @@ import { cd, sleep } from 'zx'
 import { OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
 import {
   createArgoCdRedisSecret,
+  ensureNamespaceExists,
   getArgoCdApp,
   getK8sSecret,
   k8s,
@@ -39,6 +40,7 @@ import {
   SealedSecretManifest,
   writeSealedSecretManifests,
 } from '../common/sealed-secrets'
+import { getOldGitCredentials, setGitConfig } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 const sealedSecretManifestsGlob = `${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`
@@ -589,6 +591,9 @@ export const sopsMigration = async (
     getK8sSecret,
     getSchemaSecretsPaths,
     removeSopsArtifacts,
+    ensureNamespaceExists,
+    setGitConfig,
+    getOldGitCredentials,
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:sopsMigration`)
@@ -628,6 +633,18 @@ export const sopsMigration = async (
     generateSealedSecretsKeyPair: deps.generateSealedSecretsKeyPair,
     createSealedSecretsKeySecret: deps.createSealedSecretsKeySecret,
   })
+
+  // Write Git credentials to cluster and remove from values
+  const gitValues = values?.git || {}
+  const gitConfig = await deps.getOldGitCredentials()
+  if (gitConfig) {
+    await deps.ensureNamespaceExists(env.GIT_CONFIG_SECRET_NAMESPACE)
+    await deps.setGitConfig({
+      ...gitConfig,
+      ...gitValues,
+    })
+    unset(values, 'otomi.git')
+  }
 
   // Build secret-to-namespace mappings
   const teams = Object.keys((values.teamConfig as Record<string, any>) || {})
