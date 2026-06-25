@@ -5,6 +5,7 @@ import { createUpdateGenericSecret, ensureNamespaceExists, getK8sSecret, k8s } f
 import { loadYaml } from './utils'
 import { generate as generatePassword } from 'generate-password'
 import { $ } from 'zx'
+import { get } from 'lodash'
 
 const d = terminal('common:git-config')
 
@@ -37,6 +38,7 @@ export interface GitRepoConfig {
 
 export interface GitConfigData {
   repoUrl: string
+  publicRepoUrl?: string
   branch: string
   email: string
   username?: string
@@ -164,10 +166,17 @@ export async function getInitialGitConfig(): Promise<{ config: Record<string, an
     symbols: '!@#$%&*',
     strict: true,
   })
+  const defaultConfig: GitConfigData = {
+    ...GIT_DEFAULT_CONFIG,
+    username: 'otomi-admin',
+    password: initialPassword,
+  }
+  const domainSuffix = get(inputValues, 'cluster.domainSuffix')
+  if (domainSuffix && typeof domainSuffix === 'string') {
+    defaultConfig.publicRepoUrl = `https://git.${domainSuffix}/otomi/values.git`
+  }
   return {
-    config: {
-      password: initialPassword,
-    },
+    config: defaultConfig,
     isInitial: true,
   }
 }
