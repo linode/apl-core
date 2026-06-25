@@ -82,9 +82,6 @@ spec:
               value: {{ .Values.operator.installRetries | quote }}
             - name: INSTALL_MAX_TIMEOUT_MS
               value: {{ .Values.operator.installMaxTimeoutMs | quote }}
-          envFrom:
-            - secretRef:
-                name: apl-git-credentials
           volumeMounts:
             - name: otomi-values
               mountPath: /home/app/stack/env

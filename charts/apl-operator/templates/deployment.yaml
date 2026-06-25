@@ -13,13 +13,10 @@ spec:
     type: Recreate
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
       annotations:
-        # Restart pod when git credentials or config changes (important for migration)
-        checksum/git-credentials: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
-        checksum/git-config: {{ include (print $.Template.BasePath "/git-config.yaml") . | sha256sum }}
-        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-        {{- end }}
+      {{- end }}
       labels:
         {{- include "apl-operator.selectorLabels" . | nindent 8 }}
     spec:
@@ -62,8 +59,6 @@ spec:
             - secretRef:
                 name: apl-sops-secrets
                 optional: true
-            - secretRef:
-                name: apl-git-credentials
           livenessProbe:
             exec:
               command:

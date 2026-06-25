@@ -6,6 +6,7 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { GitRepoConfig } from '../common/git-config'
 import { OperatorError } from './errors'
 import { getErrorMessage } from './utils'
+import { isEqual } from 'lodash'
 
 export interface GitRepositoryConfig {
   authenticatedUrl: string // Full URL with credentials already embedded
@@ -203,6 +204,9 @@ export class GitRepository {
   }
 
   async reloadConfig(config: GitRepoConfig): Promise<void> {
+    if (isEqual(config, this._config)) {
+      return
+    }
     try {
       await this.git.remote(['set-url', 'origin', config.authenticatedUrl])
       this.branch = config.branch
@@ -210,6 +214,7 @@ export class GitRepository {
       this.email = config.email
       this._config = config
       await setIdentity(this.username, this.email, this.repoPath)
+      this.d.info('Git config reloaded successfully')
     } catch (error) {
       this.d.error('Failed to reload git config:', getErrorMessage(error))
       throw new OperatorError('Git config reload failed', error as Error)
