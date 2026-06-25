@@ -37,8 +37,6 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
-            - secretRef:
-                name: {{ include "otomi-api.fullname" . }}
             - configMapRef:
                 name: {{ include "otomi-api.fullname" . }}
           livenessProbe:
