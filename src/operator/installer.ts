@@ -5,7 +5,7 @@ import { recoverFromGit } from 'src/common/bootstrap'
 import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { getStoredGitRepoConfig, GIT_CONFIG_NAMESPACE } from '../common/git-config'
+import { getStoredGitRepoConfig } from '../common/git-config'
 import {
   createUpdateConfigMap,
   deletePendingHelmReleases,
@@ -83,7 +83,7 @@ export class Installer {
   public async ensureRecoveryPrerequisites(): Promise<void> {
     await getStoredGitRepoConfig()
     // SOPS is optional — sealed-secrets clusters don't have it
-    const sopsSecret = await getK8sSecret('apl-sops-secrets', GIT_CONFIG_NAMESPACE)
+    const sopsSecret = await getK8sSecret('apl-sops-secrets', APL_OPERATOR_NS)
     if (sopsSecret && Object.keys(sopsSecret).length > 0) {
       this.d.info('SOPS configuration found for recovery')
     } else {
