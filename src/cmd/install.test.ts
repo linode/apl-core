@@ -42,7 +42,14 @@ jest.mock('src/common/hf', () => ({
 }))
 
 jest.mock('src/common/git-config', () => ({
-  setGitConfig: jest.fn(),
+  getStoredGitRepoConfig: jest.fn().mockResolvedValue({
+    repoUrl: 'http://git-server.git-server.svc.cluster.local/otomi/values.git',
+    branch: 'main',
+    email: 'pipeline@cluster.local',
+    username: 'otomi-admin',
+    password: 'test',
+    authenticatedUrl: 'http://otomi-admin:test@git-server.git-server.svc.cluster.local/otomi/values.git',
+  }),
 }))
 
 jest.mock('zx', () => {
@@ -283,51 +290,6 @@ describe('Install command', () => {
       })
 
       process.env.DISABLE_SYNC = originalEnv
-    })
-  })
-
-  describe('re-seal git password branch', () => {
-    const mockedEnvalid = jest.requireMock('src/common/envalid') as {
-      env: { ENV_DIR: string; isDev: boolean; DISABLE_SYNC: boolean; VALUES_INPUT: string | undefined }
-    }
-    const mockResealGitPassword = jest.mocked(require('src/common/sealed-secrets').resealGitPassword)
-    const mockLoadYaml = jest.mocked(require('src/common/utils').loadYaml)
-    const mockGetK8sSecret = jest.mocked(require('src/common/k8s').getK8sSecret)
-    const mockHfValues = jest.mocked(require('src/common/hf').hfValues)
-
-    beforeEach(() => {
-      mockedEnvalid.env.VALUES_INPUT = '/test/values.yaml'
-      mockHfValues.mockResolvedValue({ otomi: { git: { branch: 'main' } } })
-    })
-
-    afterEach(() => {
-      mockedEnvalid.env.VALUES_INPUT = undefined
-    })
-
-    test('should call resealGitPassword when VALUES_INPUT token differs from cluster secret', async () => {
-      mockLoadYaml.mockResolvedValue({ otomi: { git: { password: 'new-token' } } })
-      mockGetK8sSecret.mockResolvedValue({ git_password: 'old-token' })
-
-      await installAll()
-
-      expect(mockResealGitPassword).toHaveBeenCalledWith('new-token', '/test/env')
-    })
-
-    test('should skip reseal when token matches cluster secret', async () => {
-      mockLoadYaml.mockResolvedValue({ otomi: { git: { password: 'same-token' } } })
-      mockGetK8sSecret.mockResolvedValue({ git_password: 'same-token' })
-
-      await installAll()
-
-      expect(mockResealGitPassword).not.toHaveBeenCalled()
-    })
-
-    test('should skip reseal when VALUES_INPUT is not set', async () => {
-      mockedEnvalid.env.VALUES_INPUT = undefined
-
-      await installAll()
-
-      expect(mockResealGitPassword).not.toHaveBeenCalled()
     })
   })
 
