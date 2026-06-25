@@ -18,11 +18,3 @@ imagePullSecrets:
 resources: {{- toYaml $o.resources.operator | nindent 2 }}
 
 kms: {{- $kms | toYaml | nindent 2 }}
-
-git:
-  repoUrl: {{ $v.otomi.git.repoUrl | quote }}
-  branch: {{ $v.otomi.git.branch | default "main" | quote }}
-  email: {{ $v.otomi.git.email | default "pipeline@cluster.local" | quote }}
-  username: {{ $v.otomi.git.username | default "otomi-admin" | quote }}
-  # Password intentionally empty — operator reads git credentials from K8s secret (apl-git-credentials)
-  password: ""
