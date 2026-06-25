@@ -200,7 +200,7 @@ export async function setGitConfig(config: Record<string, any>, coreV1Api?: Core
 
   const secretData: Partial<GitConfigData> = {}
   // Extract data in valid fields that has non-empty values input
-  for (const fieldName of ['repoUrl', 'branch', 'email', 'username', 'password']) {
+  for (const fieldName of ['repoUrl', 'publicRepoUrl', 'branch', 'email', 'username', 'password']) {
     if (config[fieldName]) {
       secretData[fieldName] = String(config[fieldName])
     }
