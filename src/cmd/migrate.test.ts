@@ -9,7 +9,6 @@ import {
 } from 'src/cmd/migrate'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { getFileMap } from '../common/repo'
 
 // Mock external dependencies at the top level - BEFORE imports
 jest.mock('uuid', () => ({
@@ -189,6 +188,9 @@ describe('sopsMigration', () => {
   const mockGetK8sSecret = jest.fn().mockResolvedValue(undefined)
   const mockGetSchemaSecretsPaths = jest.fn()
   const mockRemoveSopsArtifacts = jest.fn()
+  const mockSetGitConfig = jest.fn()
+  const mockGetOldGitConfig = jest.fn().mockResolvedValue({ username: 'otomi-admin', password: 'otomi-password' })
+  const mockEnsureNamespaceExists = jest.fn()
 
   const makeDeps = () => ({
     existsSync: mockExistsSync,
@@ -214,6 +216,9 @@ describe('sopsMigration', () => {
     getK8sSecret: mockGetK8sSecret,
     getSchemaSecretsPaths: mockGetSchemaSecretsPaths,
     removeSopsArtifacts: mockRemoveSopsArtifacts,
+    setGitConfig: mockSetGitConfig,
+    getOldGitCredentials: mockGetOldGitConfig,
+    ensureNamespaceExists: mockEnsureNamespaceExists,
   })
 
   beforeEach(() => {
@@ -247,7 +252,7 @@ describe('sopsMigration', () => {
   it('should skip re-apply when manifests exist and K8s Secrets already exist', async () => {
     mockExistsSync.mockReturnValue(false)
     mockGlobSync.mockReturnValue(['/env/manifests/namespaces/apl-secrets/sealedsecrets/otomi-secrets.yaml'])
-    mockGetK8sSecret.mockResolvedValue({ git_password: 'somepassword' }) // Secret exists
+    mockGetK8sSecret.mockResolvedValue({ adminPassword: 'somepassword' }) // Secret exists
 
     await sopsMigration({ teamConfig: {}, versions: { specVersion: 55 } }, makeDeps())
 
@@ -284,6 +289,9 @@ describe('sopsMigration', () => {
 
     await sopsMigration(values, makeDeps())
 
+    expect(mockGetOldGitConfig).toHaveBeenCalled()
+    expect(mockEnsureNamespaceExists).toHaveBeenCalled()
+    expect(mockSetGitConfig).toHaveBeenCalledWith({ username: 'otomi-admin', password: 'otomi-password' })
     expect(mockGenerateSealedSecretsKeyPair).toHaveBeenCalled()
     expect(mockCreateSealedSecretsKeySecret).toHaveBeenCalledWith('cert-pem', 'key-pem')
     expect(mockBuildSecretToNamespaceMap).toHaveBeenCalled()

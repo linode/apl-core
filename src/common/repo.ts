@@ -2,10 +2,11 @@ import { existsSync, rmSync } from 'fs'
 import { rm, writeFile } from 'fs/promises'
 import { globSync } from 'glob'
 import jsonpath from 'jsonpath'
-import { cloneDeep, get, merge, omit, set } from 'lodash'
+import { cloneDeep, get, merge, omit, set, unset } from 'lodash'
 import path from 'path'
 import { getDirNames, loadYaml } from './utils'
 import { objectToYaml, writeValuesToFile } from './values'
+import { getGitCredentials, getOldGitCredentials, GIT_DEFAULT_CONFIG } from './git-config'
 
 export async function getTeamNames(envDir: string): Promise<Array<string>> {
   const teamsDir = path.join(envDir, 'env', 'teams')
@@ -429,6 +430,7 @@ export async function saveValues(
   deps = { saveResourceGroupToFiles },
 ): Promise<void> {
   const fileMaps = getFileMaps(envDir).filter((map) => map.loadToSpec === true)
+  unset(valuesPublic, 'otomi.git') // Ensure these are never written back, also not during migrations
   await Promise.all(
     fileMaps.map(async (fileMap) => {
       await deps.saveResourceGroupToFiles(fileMap, valuesPublic, valuesSecrets)
@@ -537,6 +539,27 @@ export function sortTeamConfigArraysByName(spec: Record<string, any>): Record<st
   return spec
 }
 
+/**
+ * Adds non-sensitive fields of the Git configuration which are stored in a Secret resource, but used
+ * in templates as if they were part of the values.
+ */
+export async function attachGitConfig(spec: Record<string, any>): Promise<Record<string, any>> {
+  if (process.env.NODE_ENV === 'test') {
+    if (!spec.otomi?.git) {
+      // Do not read from cluster, instead use defaults
+      set(spec, 'otomi.git', { ...GIT_DEFAULT_CONFIG, username: 'otomi-admin' })
+    }
+  } else {
+    const gitConfig = (await getGitCredentials()) || (await getOldGitCredentials())
+    const { repoUrl, username, branch, email } = {
+      ...GIT_DEFAULT_CONFIG,
+      ...gitConfig,
+    }
+    set(spec, 'otomi.git', { repoUrl, username, branch, email })
+  }
+  return spec
+}
+
 export async function setValuesFile(
   envDir: string,
   deps = { pathExists: existsSync, loadValues, writeFile },
@@ -570,6 +593,7 @@ export async function loadValues(envDir: string, deps = { loadToSpec }): Promise
   )
   sortTeamConfigArraysByName(spec)
   sortUserArraysByName(spec)
+  await attachGitConfig(spec)
   return spec
 }
 

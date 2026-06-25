@@ -1,28 +1,24 @@
 import type { CoreV1Api } from '@kubernetes/client-node'
-import { APL_OPERATOR_NS, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from './constants'
 import { terminal } from './debug'
 import { env } from './envalid'
-import { createUpdateConfigMap, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
+import { createUpdateGenericSecret, ensureNamespaceExists, getK8sSecret, k8s } from './k8s'
 import { loadYaml } from './utils'
+import { generate as generatePassword } from 'generate-password'
+import { $ } from 'zx'
 
 const d = terminal('common:git-config')
 
-// Returns the plaintext git password from VALUES_INPUT, or undefined if absent/missing.
-async function getGitPasswordFromValuesInput(): Promise<string | undefined> {
-  if (!env.VALUES_INPUT) return undefined
-  try {
-    const inputValues = (await loadYaml(env.VALUES_INPUT)) as Record<string, any>
-    const password = String(inputValues?.otomi?.git?.password ?? '')
-    return password || undefined
-  } catch {
-    return undefined
-  }
-}
-
 // Constants
-export const GIT_CONFIG_CONFIGMAP_NAME = 'apl-git-config'
-export const GIT_CONFIG_SECRET_NAME = 'apl-git-credentials'
-export const GIT_CONFIG_NAMESPACE = APL_OPERATOR_NS
+export const GIT_SERVER_SECRET_NAME = 'git-server-credentials'
+export const GIT_SERVER_NAMESPACE = 'git-server'
+export const GIT_LEGACY_CONFIG = {
+  repoUrl: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
+}
+export const GIT_DEFAULT_CONFIG = {
+  repoUrl: 'http://git-server.git-server.svc.cluster.local/otomi/values.git',
+  branch: 'main',
+  email: 'pipeline@cluster.local',
+}
 
 /**
  * Unified Git repository configuration with credentials.
@@ -40,49 +36,80 @@ export interface GitRepoConfig {
 }
 
 export interface GitConfigData {
-  repoUrl?: string
-  branch?: string
-  email?: string
-}
-
-export interface GitCredentials {
+  repoUrl: string
+  branch: string
+  email: string
   username?: string
   password: string
 }
 
-export async function getGitCredentials(): Promise<GitCredentials | undefined> {
-  const secretData = await getK8sSecret(GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE)
+export async function getGitCredentials(): Promise<Partial<GitConfigData> | undefined> {
+  const secretData = await getK8sSecret(env.GIT_CONFIG_SECRET_NAME, env.GIT_CONFIG_SECRET_NAMESPACE)
 
+  // Need to contain the password for being useful
   if (!secretData?.password) {
     return undefined
   }
 
-  return {
-    username: secretData.username,
-    password: secretData.password,
-  }
-}
-export async function getOldGitCredentials(): Promise<GitCredentials | undefined> {
-  const secretData = await getK8sSecret('gitea-credentials', GIT_CONFIG_NAMESPACE)
-
-  return {
-    username: secretData?.GIT_USERNAME,
-    password: secretData?.GIT_PASSWORD,
-  }
+  return secretData as Partial<GitConfigData>
 }
 
-export async function getGitConfigData(): Promise<GitConfigData | undefined> {
-  const configMap = await getK8sConfigMap(GIT_CONFIG_NAMESPACE, GIT_CONFIG_CONFIGMAP_NAME, k8s.core())
-  if (!configMap?.data) return undefined
+export async function getOldGitCredentials(): Promise<Partial<GitConfigData> | undefined> {
+  let secretData = await getK8sSecret('gitea-credentials', 'apl-operator')
+  if (secretData?.GIT_PASSWORD) {
+    return {
+      ...GIT_LEGACY_CONFIG,
+      username: secretData.GIT_USERNAME,
+      password: secretData.GIT_PASSWORD,
+    }
+  }
+  secretData = await getK8sSecret('gitea-admin-secret', 'gitea')
+  if (secretData?.password) {
+    return {
+      ...GIT_LEGACY_CONFIG,
+      username: secretData.username,
+      password: secretData.password,
+    }
+  }
+  return undefined
+}
 
-  const { data } = configMap
-  const config: GitConfigData = {
-    repoUrl: data.repoUrl,
-    branch: data.branch,
-    email: data.email,
+export function createRepoConfig(data: Partial<GitConfigData>, preferInternal = false): GitRepoConfig {
+  const credentials = {
+    ...GIT_DEFAULT_CONFIG,
+    ...data,
+  }
+  if ([GIT_DEFAULT_CONFIG.repoUrl, GIT_LEGACY_CONFIG.repoUrl].includes(credentials.repoUrl) && !credentials.username) {
+    // On legacy (Gitea) and default configurations, assume otomi-admin login
+    credentials.username = 'otomi-admin'
   }
 
-  return config
+  const { branch, email, username, password } = credentials
+  let { repoUrl } = credentials
+  if (process.env.NODE_ENV === 'development' && !preferInternal && process.env.GIT_REPO_URL) {
+    repoUrl = process.env.GIT_REPO_URL
+  }
+
+  if (!repoUrl) {
+    throw new Error(`Git repository URL is empty in ${env.GIT_CONFIG_SECRET_NAME} secret`)
+  }
+  if (!password) {
+    throw new Error(`Git password/token is empty in ${env.GIT_CONFIG_SECRET_NAME} secret`)
+  }
+  if (!branch || !email) {
+    throw new Error(`Git branch or email is empty in ${env.GIT_CONFIG_SECRET_NAME} secret`)
+  }
+  const url = new URL(repoUrl)
+  if (username) {
+    url.username = username
+    url.password = password
+  } else {
+    url.username = password
+    url.password = ''
+  }
+  const authenticatedUrl = url.toString()
+
+  return { ...credentials, repoUrl, authenticatedUrl } as GitRepoConfig
 }
 
 /**
@@ -90,141 +117,89 @@ export async function getGitConfigData(): Promise<GitConfigData | undefined> {
  * This avoids calling hfValues() in operator startup path.
  */
 export async function getStoredGitRepoConfig(preferInternal = false): Promise<GitRepoConfig> {
-  let [configData, credentials] = await Promise.all([getGitConfigData(), getGitCredentials()])
-
-  // Try the canonical secret populated by SealedSecrets/ESO (same source as getRepo())
-  // This covers the window after a git provider switch where apl-git-credentials is not yet
-  // populated by ESO but otomi-secrets already has the real token.
+  let credentials = await getGitCredentials()
   if (!credentials) {
-    try {
-      const otomiSecrets = await getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
-      if (otomiSecrets?.git_password) {
-        credentials = {
-          password: String(otomiSecrets.git_password),
-        }
-        d.info('Read git credentials from otomi-secrets')
-      }
-    } catch {
-      d.debug('Could not read git credentials from otomi-secrets')
-    }
-  }
-
-  //TODO This can be removed after BYO Git has been released
-  if (!credentials) {
+    d.debug('Could not read git credentials from apl-secrets')
+    // Fallback before migration
     credentials = await getOldGitCredentials()
-  }
-
-  // Deploy-time token takes priority over whatever is stored (may be stale after token rotation).
-  const inputPassword = await getGitPasswordFromValuesInput()
-  if (inputPassword) {
-    credentials = { username: credentials?.username, password: inputPassword }
-  }
-
-  if (!credentials) {
-    throw new Error(`Git password/token not found in ${GIT_CONFIG_SECRET_NAME} or gitea-credentials secret`)
-  }
-
-  // We cannot do hfValues because the env dir does not exist yet.
-  //TODO This should be removed after BYO Git has been released.
-  if (!configData) {
-    configData = {
-      repoUrl: 'http://git-server.git-server.svc.cluster.local/otomi/values.git',
-      branch: 'main',
-      email: 'pipeline@cluster.local',
+    if (credentials) {
+      d.debug('Fallback credentials read for Gitea')
     }
   }
-  if (process.env.NODE_ENV === 'development' && !preferInternal) {
-    configData.repoUrl = process.env.GIT_REPO_URL
+  if (!credentials) {
+    throw new Error(`Git password/token not found in ${env.GIT_CONFIG_SECRET_NAME} or gitea-credentials secret`)
   }
-  const { username, password } = credentials
-  const { branch, email, repoUrl } = configData
-
-  if (!repoUrl) {
-    throw new Error(`Git repository URL is missing in ${GIT_CONFIG_CONFIGMAP_NAME} config`)
-  }
-  if (!password) {
-    throw new Error(`Git password/token is missing in ${GIT_CONFIG_SECRET_NAME} secret`)
-  }
-  if (!branch || !email) {
-    throw new Error(`Git branch or email is missing in ${GIT_CONFIG_CONFIGMAP_NAME} config`)
-  }
-  const url = new URL(repoUrl)
-  if (username) {
-    url.username = username
-    url.password = password
-  } else {
-    url.username = password
-    url.password = ''
-  }
-  const authenticatedUrl = url.toString()
-
-  return { repoUrl, authenticatedUrl, branch, email, username, password } as GitRepoConfig
+  return createRepoConfig(credentials, preferInternal)
 }
 
 /**
- * Creates or updates the Git configuration ConfigMap
+ * Reads provided Git configuration from VALUES_INPUT. If not provided, checks for config
+ * stored earlier in the cluster. If none is given, generates a new Git password.
+ * To be used in initialization phase of the Operator only, where the Secret may not
+ * yet exist.
  */
-export async function setGitConfig(config: Partial<GitConfigData>, coreV1Api?: CoreV1Api): Promise<void> {
+export async function getInitialGitConfig(): Promise<{ config: Record<string, any>; isInitial: boolean }> {
+  const inputValues = (await loadYaml(env.VALUES_INPUT, { noError: true })) as Record<string, any>
+  if (inputValues && inputValues.otomi?.git?.password) {
+    d.info('Using Git credentials from VALUES_INPUT')
+    return { config: inputValues.otomi.git, isInitial: true }
+  }
+  if (process.env.NODE_ENV !== 'test') {
+    // In test / CI environment, do not retrieve from cluster
+    const storedValues = await getGitCredentials()
+    if (storedValues) {
+      d.info('Using Git credentials from apl-secrets namespace')
+      return { config: storedValues, isInitial: false }
+    }
+    const oldCredentials = await getOldGitCredentials()
+    if (oldCredentials) {
+      d.info('Using Gitea credentials')
+      return { config: oldCredentials, isInitial: false }
+    }
+  }
+  d.info('Git credentials not set. Generating.')
+  const initialPassword = generatePassword({
+    length: 24,
+    numbers: true,
+    symbols: '!@#$%&*',
+    strict: true,
+  })
+  return {
+    config: {
+      password: initialPassword,
+    },
+    isInitial: true,
+  }
+}
+
+/**
+ * Creates the Git Server config for an initial installation
+ */
+export async function setGitServerConfig(config: GitRepoConfig): Promise<void> {
+  const api = k8s.core()
+  const { username, password } = config
+  const htpasswd = (await $`htpasswd -nbB ${username} ${password}`).stdout.trim()
+  await ensureNamespaceExists(GIT_SERVER_NAMESPACE)
+  await createUpdateGenericSecret(api, GIT_SERVER_SECRET_NAME, GIT_SERVER_NAMESPACE, { htpasswd }, false)
+}
+
+/**
+ * Creates or updates the Git configuration Secret
+ */
+export async function setGitConfig(config: Record<string, any>, coreV1Api?: CoreV1Api): Promise<GitRepoConfig> {
   const api = coreV1Api ?? k8s.core()
 
-  const data: Record<string, string> = {}
-
-  if (config.repoUrl !== undefined) data.repoUrl = config.repoUrl
-  if (config.branch !== undefined) data.branch = config.branch
-  if (config.email !== undefined) data.email = config.email
-
-  await createUpdateConfigMap(api, GIT_CONFIG_CONFIGMAP_NAME, GIT_CONFIG_NAMESPACE, data)
-}
-
-/**
- * Gets repository configuration from values, constructing the authenticated URL with embedded credentials.
- * Password priority: deploy-time VALUES_INPUT > K8s secret (otomi-secrets via ESO) > values fallback.
- * Secrets are stripped from disk values by stripAllSecrets() — the values fallback exists only for
- * edge cases (e.g. non-secret git passwords set explicitly in values).
- */
-export const getRepo = async (values: Record<string, any>, deps = { getK8sSecret }): Promise<GitRepoConfig> => {
-  const otomiGit = values?.otomi?.git
-
-  if (!otomiGit?.repoUrl) {
-    throw new Error('No otomi.git.repoUrl config was given.')
-  }
-  if (process.env.NODE_ENV === 'development') {
-    otomiGit.repoUrl = process.env.GIT_REPO_URL
-  }
-  const username: string | undefined = otomiGit?.username
-  let password = ''
-  const email = otomiGit?.email
-  const branch = otomiGit?.branch
-
-  // Deploy-time token takes priority; fall back to K8s secret, then resolved values.
-  password = (await getGitPasswordFromValuesInput()) ?? ''
-
-  if (!password) {
-    try {
-      const secret = await deps.getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
-      if (secret?.git_password) {
-        password = String(secret.git_password)
-        d.debug('Read git password from K8s secret (ESO)')
-      }
-    } catch {
-      d.debug('Could not read git password from K8s secret')
+  const secretData: Partial<GitConfigData> = {}
+  // Extract data in valid fields that has non-empty values input
+  for (const fieldName of ['repoUrl', 'branch', 'email', 'username', 'password']) {
+    if (config[fieldName]) {
+      secretData[fieldName] = String(config[fieldName])
     }
   }
-
-  if (!password) {
-    password = otomiGit?.password ?? ''
+  if (!secretData.password) {
+    throw new Error('Git password must be provided')
   }
 
-  const repoUrl = otomiGit?.repoUrl as string
-  const url = new URL(repoUrl)
-  if (username) {
-    url.username = username
-    url.password = password
-  } else {
-    url.username = password
-    url.password = ''
-  }
-  const authenticatedUrl = url.toString()
-
-  return { repoUrl, authenticatedUrl, branch, email, username, password } as GitRepoConfig
+  await createUpdateGenericSecret(api, env.GIT_CONFIG_SECRET_NAME, env.GIT_CONFIG_SECRET_NAMESPACE, secretData, false)
+  return createRepoConfig(secretData)
 }
