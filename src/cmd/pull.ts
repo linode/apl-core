@@ -1,23 +1,21 @@
 import { prepareEnvironment, scriptName } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { hfValues } from 'src/common/hf'
 import { getFilename } from 'src/common/utils'
 import { HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { getRepo } from '../common/git-config'
+import { getStoredGitRepoConfig } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 
 export const pull = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:pull`)
-  const allValues = await hfValues()
-  if (!allValues) {
-    d.error('No values found, skipping git pull')
+  const gitRepo = await getStoredGitRepoConfig()
+  if (!gitRepo) {
+    d.error('No Git credendials found, skipping git pull')
     return
   }
-  const gitRepo = await getRepo(allValues)
   const { branch } = gitRepo
   d.info('Pulling latest values')
   const $git = $({ cwd: env.ENV_DIR })

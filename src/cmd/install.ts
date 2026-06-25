@@ -1,11 +1,11 @@
 import retry from 'async-retry'
 import { mkdirSync, rmSync } from 'fs'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
-import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from 'src/common/constants'
+import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { setGitConfig } from 'src/common/git-config'
-import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS, hfValues } from 'src/common/hf'
+import { getStoredGitRepoConfig } from 'src/common/git-config'
+import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS } from 'src/common/hf'
 import {
   applyServerSide,
   createArgoCdRedisSecret,
@@ -21,10 +21,9 @@ import {
 import {
   AppliedSecret,
   applySealedSecretManifestsFromDir,
-  resealGitPassword,
   restartSealedSecretsController,
 } from 'src/common/sealed-secrets'
-import { getFilename, loadYaml, rootDir } from 'src/common/utils'
+import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { getErrorMessage } from 'src/operator/utils'
@@ -277,32 +276,9 @@ export const installAll = async () => {
   )
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
-    const values = (await hfValues()) as Record<string, any>
-
-    // Re-seal otomi-secrets if the deploy-time token differs from what the cluster has.
-    if (env.VALUES_INPUT) {
-      try {
-        const inputValues = (await loadYaml(env.VALUES_INPUT)) as Record<string, any>
-        const gitPassword = String(inputValues?.otomi?.git?.password ?? '')
-        if (gitPassword) {
-          const existing = await getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
-          if (gitPassword !== existing?.git_password) {
-            await resealGitPassword(gitPassword, env.ENV_DIR)
-          }
-        }
-      } catch (resealError) {
-        d.warn('Could not re-seal git password:', getErrorMessage(resealError))
-      }
-    }
-
-    await commit(true)
-
-    const gitBranch = values?.otomi?.git?.branch ?? 'main'
-    await setGitConfig({
-      repoUrl: values?.otomi?.git?.repoUrl,
-      branch: gitBranch,
-      email: values?.otomi?.git?.email,
-    })
+    const gitConfig = await getStoredGitRepoConfig()
+    const { branch: gitBranch } = gitConfig
+    await commit(gitConfig, true)
 
     // Verify the git push actually succeeded by checking the remote branch exists
     d.info('Verifying git push succeeded')
