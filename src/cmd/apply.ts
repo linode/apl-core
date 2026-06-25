@@ -14,6 +14,7 @@ import { runtimeUpgrade } from '../common/runtime-upgrade'
 import { applyAsApps, applyGitOpsApps, updateOperatorApplication } from './apply-as-apps'
 import { applyTeams } from './apply-teams'
 import { commit } from './commit'
+import { getStoredGitRepoConfig } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -60,7 +61,8 @@ export const applyAll = async (): Promise<void> => {
   await runtimeUpgrade({ when: 'post', deploymentState })
 
   if (!(env.isDev && env.DISABLE_SYNC)) {
-    await commit(false)
+    const gitConfig = await getStoredGitRepoConfig()
+    await commit(gitConfig)
   }
   await applyGitOpsApps()
   await setDeploymentState({ status: 'deployed', version: deployingVersion })
