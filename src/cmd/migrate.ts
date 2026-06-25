@@ -15,7 +15,7 @@ import { writeValues } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { cd, sleep } from 'zx'
-import { GIT_CONFIG_NAMESPACE, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
+import { OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
 import {
   createArgoCdRedisSecret,
   ensureNamespaceExists,
@@ -638,7 +638,7 @@ export const sopsMigration = async (
   const gitValues = values?.git || {}
   const gitConfig = await deps.getOldGitCredentials()
   if (gitConfig) {
-    await deps.ensureNamespaceExists(GIT_CONFIG_NAMESPACE)
+    await deps.ensureNamespaceExists(env.GIT_CONFIG_SECRET_NAMESPACE)
     await deps.setGitConfig({
       ...gitConfig,
       ...gitValues,

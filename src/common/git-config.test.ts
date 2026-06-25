@@ -22,7 +22,11 @@ jest.mock('./debug', () => ({
 }))
 
 jest.mock('./envalid', () => ({
-  env: { VALUES_INPUT: undefined },
+  env: {
+    VALUES_INPUT: undefined,
+    GIT_CONFIG_SECRET_NAME: 'apl-git-config',
+    GIT_CONFIG_SECRET_NAMESPACE: 'apl-secrets',
+  },
 }))
 
 jest.mock('./utils', () => ({

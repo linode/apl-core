@@ -1,5 +1,4 @@
 import type { CoreV1Api } from '@kubernetes/client-node'
-import { GIT_CONFIG_NAMESPACE, GIT_CONFIG_SECRET_NAME } from './constants'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { createUpdateGenericSecret, ensureNamespaceExists, getK8sSecret, k8s } from './k8s'
@@ -45,7 +44,7 @@ export interface GitConfigData {
 }
 
 export async function getGitCredentials(): Promise<Partial<GitConfigData> | undefined> {
-  const secretData = await getK8sSecret(GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE)
+  const secretData = await getK8sSecret(env.GIT_CONFIG_SECRET_NAME, env.GIT_CONFIG_SECRET_NAMESPACE)
 
   // Need to contain the password for being useful
   if (!secretData?.password) {
@@ -92,13 +91,13 @@ export function createRepoConfig(data: Partial<GitConfigData>, preferInternal = 
   }
 
   if (!repoUrl) {
-    throw new Error(`Git repository URL is empty in ${GIT_CONFIG_SECRET_NAME} secret`)
+    throw new Error(`Git repository URL is empty in ${env.GIT_CONFIG_SECRET_NAME} secret`)
   }
   if (!password) {
-    throw new Error(`Git password/token is empty in ${GIT_CONFIG_SECRET_NAME} secret`)
+    throw new Error(`Git password/token is empty in ${env.GIT_CONFIG_SECRET_NAME} secret`)
   }
   if (!branch || !email) {
-    throw new Error(`Git branch or email is empty in ${GIT_CONFIG_SECRET_NAME} secret`)
+    throw new Error(`Git branch or email is empty in ${env.GIT_CONFIG_SECRET_NAME} secret`)
   }
   const url = new URL(repoUrl)
   if (username) {
@@ -128,7 +127,7 @@ export async function getStoredGitRepoConfig(preferInternal = false): Promise<Gi
     }
   }
   if (!credentials) {
-    throw new Error(`Git password/token not found in ${GIT_CONFIG_SECRET_NAME} or gitea-credentials secret`)
+    throw new Error(`Git password/token not found in ${env.GIT_CONFIG_SECRET_NAME} or gitea-credentials secret`)
   }
   return createRepoConfig(credentials, preferInternal)
 }
@@ -201,6 +200,6 @@ export async function setGitConfig(config: Record<string, any>, coreV1Api?: Core
     throw new Error('Git password must be provided')
   }
 
-  await createUpdateGenericSecret(api, GIT_CONFIG_SECRET_NAME, GIT_CONFIG_NAMESPACE, secretData, false)
+  await createUpdateGenericSecret(api, env.GIT_CONFIG_SECRET_NAME, env.GIT_CONFIG_SECRET_NAMESPACE, secretData, false)
   return createRepoConfig(secretData)
 }
