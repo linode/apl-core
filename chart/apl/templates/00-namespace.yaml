@@ -13,3 +13,11 @@ metadata:
   labels:
     kubernetes.io/metadata.name: otomi
     name: otomi
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: apl-secrets
+  labels:
+    kubernetes.io/metadata.name: apl-secrets
+    name: apl-secrets
