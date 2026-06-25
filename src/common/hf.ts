@@ -86,7 +86,6 @@ type HFOptions = {
 }
 
 export const hf = async (args: HFParams, opts?: HFOptions, envDir = env.ENV_DIR): Promise<ProcessOutputTrimmed> => {
-  const cmdArgs = args.args
   await setValuesFile(env.ENV_DIR)
   const proc: ProcessPromise = hfCore(args, envDir)
   if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
