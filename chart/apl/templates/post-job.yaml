@@ -1,7 +1,5 @@
-{{- $kms := .Values.kms | default dict }}
-{{- $imageName := .Values.imageName | default "linode/apl-core" }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
-{{- $useORCS := .Values.otomi.useORCS }}
+
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -32,11 +30,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: destroy
-          {{- if $useORCS }}
-          image: "mirror.registry.linodelke.net/docker/{{ $imageName }}:{{ $version }}"
-          {{- else }}
-          image: "{{ $imageName }}:{{ $version }}"
-          {{- end }}
+          image: "{{ .Values.operator.image.repository }}:{{ $version }}"
           imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }}
           securityContext:
             allowPrivilegeEscalation: false
@@ -62,11 +56,6 @@ spec:
               value: /home/app/stack/env
             - name: VALUES_INPUT
               value: /secret/values.yaml
-          {{- if hasKey $kms "sops" }}
-          envFrom:
-            - secretRef:
-                name: {{ include "apl-operator.fullname" . }}-sops-secrets
-          {{- end }}
           volumeMounts:
             - name: otomi-values
               mountPath: /home/app/stack/env
