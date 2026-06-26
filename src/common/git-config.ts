@@ -38,7 +38,6 @@ export interface GitRepoConfig {
 
 export interface GitConfigData {
   repoUrl: string
-  publicRepoUrl?: string
   branch: string
   email: string
   username?: string
@@ -77,30 +76,13 @@ export async function getOldGitCredentials(): Promise<Partial<GitConfigData> | u
   return undefined
 }
 
-export function createRepoConfig(data: Partial<GitConfigData>, preferInternal = false): GitRepoConfig {
-  const credentials = {
-    ...GIT_DEFAULT_CONFIG,
-    ...data,
+export function getAuthUrlFromGitConfig(credentials: Partial<GitConfigData>): string | undefined {
+  if (!credentials) {
+    return undefined
   }
-  if ([GIT_DEFAULT_CONFIG.repoUrl, GIT_LEGACY_CONFIG.repoUrl].includes(credentials.repoUrl) && !credentials.username) {
-    // On legacy (Gitea) and default configurations, assume otomi-admin login
-    credentials.username = 'otomi-admin'
-  }
-
-  const { branch, email, username, password } = credentials
-  let { repoUrl } = credentials
-  if (process.env.NODE_ENV === 'development' && !preferInternal && process.env.GIT_REPO_URL) {
-    repoUrl = process.env.GIT_REPO_URL
-  }
-
-  if (!repoUrl) {
-    throw new Error(`Git repository URL is empty in ${env.GIT_CONFIG_SECRET_NAME} secret`)
-  }
-  if (!password) {
-    throw new Error(`Git password/token is empty in ${env.GIT_CONFIG_SECRET_NAME} secret`)
-  }
-  if (!branch || !email) {
-    throw new Error(`Git branch or email is empty in ${env.GIT_CONFIG_SECRET_NAME} secret`)
+  const { repoUrl, username, password } = credentials
+  if (!repoUrl || !password) {
+    return undefined
   }
   const url = new URL(repoUrl)
   if (username) {
@@ -110,9 +92,37 @@ export function createRepoConfig(data: Partial<GitConfigData>, preferInternal = 
     url.username = password
     url.password = ''
   }
-  const authenticatedUrl = url.toString()
+  return url.toString()
+}
 
-  return { ...credentials, repoUrl, authenticatedUrl } as GitRepoConfig
+export function createRepoConfig(data: Partial<GitConfigData>, preferInternal = false): GitRepoConfig {
+  const credentials: Partial<GitConfigData> = {
+    ...GIT_DEFAULT_CONFIG,
+    ...data,
+  }
+  if ([GIT_DEFAULT_CONFIG.repoUrl, GIT_LEGACY_CONFIG.repoUrl].includes(credentials.repoUrl!) && !credentials.username) {
+    // On legacy (Gitea) and default configurations, assume otomi-admin login
+    credentials.username = 'otomi-admin'
+  }
+
+  if (process.env.NODE_ENV === 'development' && !preferInternal && process.env.GIT_REPO_URL) {
+    credentials.repoUrl = process.env.GIT_REPO_URL
+  }
+
+  if (!credentials.repoUrl) {
+    throw new Error(`Git repository URL is empty in ${env.GIT_CONFIG_SECRET_NAME} secret`)
+  }
+  if (!credentials.password) {
+    throw new Error(`Git password/token is empty in ${env.GIT_CONFIG_SECRET_NAME} secret`)
+  }
+  if (!credentials.branch || !credentials.email) {
+    throw new Error(`Git branch or email is empty in ${env.GIT_CONFIG_SECRET_NAME} secret`)
+  }
+
+  const authenticatedUrl = getAuthUrlFromGitConfig(credentials) // Validate URL and credentials, but ignore the result since we reconstruct it below
+
+  credentials.repoUrl = credentials.repoUrl.trim()
+  return { ...credentials, authenticatedUrl } as GitRepoConfig
 }
 
 /**
@@ -173,10 +183,9 @@ export async function getInitialGitConfig(): Promise<{ config: Record<string, an
     password: initialPassword,
   }
   const domainSuffix = get(inputValues, 'cluster.domainSuffix')
-  if (domainSuffix && typeof domainSuffix === 'string') {
-    defaultConfig.publicRepoUrl = `https://git.${domainSuffix}/otomi/values.git`
-    defaultConfig.gitCloneCmd = `git clone https://${defaultConfig.username}:${defaultConfig.password}@${defaultConfig.publicRepoUrl}`
-  }
+  const publicRepoUrl = `https://git.${domainSuffix}/otomi/values.git`
+  defaultConfig.gitCloneCmd = getAuthUrlFromGitConfig({ ...defaultConfig, repoUrl: publicRepoUrl })
+
   return {
     config: defaultConfig,
     isInitial: true,
@@ -202,7 +211,7 @@ export async function setGitConfig(config: Record<string, any>, coreV1Api?: Core
 
   const secretData: Partial<GitConfigData> = {}
   // Extract data in valid fields that has non-empty values input
-  for (const fieldName of ['repoUrl', 'gitCloneCmd', 'publicRepoUrl', 'branch', 'email', 'username', 'password']) {
+  for (const fieldName of ['repoUrl', 'gitCloneCmd', 'branch', 'email', 'username', 'password']) {
     if (config[fieldName]) {
       secretData[fieldName] = String(config[fieldName])
     }

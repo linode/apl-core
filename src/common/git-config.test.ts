@@ -1,4 +1,4 @@
-import { getGitCredentials, getOldGitCredentials, getStoredGitRepoConfig, setGitConfig } from './git-config'
+import { getAuthUrlFromGitConfig, getGitCredentials, getOldGitCredentials, getStoredGitRepoConfig, setGitConfig } from './git-config'
 
 const mockGetK8sSecret = jest.fn()
 const mockCreateUpdateGenericSecret = jest.fn()
@@ -48,6 +48,45 @@ describe('git-config', () => {
 
   afterAll(() => {
     process.env = originalEnv
+  })
+
+  describe('getAuthUrlFromGitConfig', () => {
+    it('should return undefined when repoUrl is missing', () => {
+      expect(getAuthUrlFromGitConfig({ password: 'token' })).toBeUndefined()
+    })
+
+    it('should return undefined when password is missing', () => {
+      expect(getAuthUrlFromGitConfig({ repoUrl: 'https://github.com/org/repo.git' })).toBeUndefined()
+    })
+
+    it('should return URL with username and password when username is provided', () => {
+      const result = getAuthUrlFromGitConfig({
+        repoUrl: 'https://github.com/org/repo.git',
+        username: 'admin',
+        password: 's3cret',
+      })
+
+      expect(result).toBe('https://admin:s3cret@github.com/org/repo.git')
+    })
+
+    it('should return token-only URL when username is not provided', () => {
+      const result = getAuthUrlFromGitConfig({
+        repoUrl: 'https://github.com/org/repo.git',
+        password: 'token',
+      })
+
+      expect(result).toBe('https://token@github.com/org/repo.git')
+    })
+
+    it('should URL-encode special characters in username and password', () => {
+      const result = getAuthUrlFromGitConfig({
+        repoUrl: 'https://github.com/org/repo.git',
+        username: 'user@org',
+        password: 'p@ss:word/123',
+      })
+
+      expect(result).toBe('https://user%40org:p%40ss%3Aword%2F123@github.com/org/repo.git')
+    })
   })
 
   describe('getGitCredentials', () => {
