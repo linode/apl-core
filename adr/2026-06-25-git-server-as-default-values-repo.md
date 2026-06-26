@@ -34,7 +34,7 @@ Gitea provides features that go beyond storing the values repo — repository br
 
 ### External git for production environments
 
-Teams operating in production typically already have a managed Git service. Pointing APL at an existing GitHub or GitLab repository avoids running any in-cluster git storage. The `otomi.git.repoUrl`, `otomi.git.username`, and `otomi.git.password` Helm values configure the external repository at install time. These values are consumed once during bootstrap to populate `apl-git-config` and `apl-git-credentials` in the operator namespace; they are not persisted in the values repo itself and do not need to be supplied on subsequent upgrades.
+Teams operating in production typically already have a managed Git service. Pointing APL at an existing GitHub or GitLab repository avoids running any in-cluster git storage. The `otomi.git.repoUrl`, `otomi.git.username`, and `otomi.git.password` (optionally also `branch` and `email`) Helm values configure the external repository at install time. These values are consumed once during bootstrap to populate `apl-git-config` in the `apl-secrets` namespace; they are not persisted in the values repo itself and do not need to be supplied on subsequent upgrades.
 
 ### Positive consequences
 
