@@ -130,7 +130,7 @@ operator:
   # Reconcile interval for applying changes (milliseconds)
   reconcileIntervalMs: 300000
   image:
-    repository: "mirror.registry.linodelke.net/docker/linode/apl-operator"
+    repository: "mirror.registry.linodelke.net/docker/linode/apl-core"
 
 installation:
   mode: standard

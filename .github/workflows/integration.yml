@@ -328,7 +328,7 @@ jobs:
             --set otomi.adminPassword=$adminPassword \
             --set otomi.version=${GITHUB_REF##*/} \
             --set apps.linode-cfw.enabled=true \
-            --set operator.image.repository=docker.io/linode/apl-operator
+            --set operator.image.repository=docker.io/linode/apl-core
           )
 
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
