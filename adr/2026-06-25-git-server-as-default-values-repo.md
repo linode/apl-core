@@ -59,7 +59,7 @@ Credentials are stored in the `apl-git-credentials` Secret in the operator names
 
 ```sh
 HOST=$(kubectl get httproute -n git-server git-server -o jsonpath='{.spec.hostnames[0]}')
-PASSWORD=$(kubectl get secret apl-git-credentials -n apl-operator -o jsonpath='{.data.password}' | base64 -d)
+PASSWORD=$(kubectl get secret -n apl-secrets apl-git-config -ojsonpath="{.data.password}" | jq -Rr '@base64d|@uri')
 git clone https://otomi-admin:${PASSWORD}@${HOST}/otomi/values.git
 ```
 
