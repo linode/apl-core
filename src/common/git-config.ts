@@ -1,11 +1,11 @@
 import type { CoreV1Api } from '@kubernetes/client-node'
+import { generate as generatePassword } from 'generate-password'
+import { get } from 'lodash'
+import { $ } from 'zx'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { createUpdateGenericSecret, ensureNamespaceExists, getK8sSecret, k8s } from './k8s'
 import { loadYaml } from './utils'
-import { generate as generatePassword } from 'generate-password'
-import { $ } from 'zx'
-import { get } from 'lodash'
 
 const d = terminal('common:git-config')
 
@@ -43,6 +43,7 @@ export interface GitConfigData {
   email: string
   username?: string
   password: string
+  gitCloneCmd?: string
 }
 
 export async function getGitCredentials(): Promise<Partial<GitConfigData> | undefined> {
@@ -174,6 +175,7 @@ export async function getInitialGitConfig(): Promise<{ config: Record<string, an
   const domainSuffix = get(inputValues, 'cluster.domainSuffix')
   if (domainSuffix && typeof domainSuffix === 'string') {
     defaultConfig.publicRepoUrl = `https://git.${domainSuffix}/otomi/values.git`
+    defaultConfig.gitCloneCmd = `git clone https://${defaultConfig.username}:${defaultConfig.password}@${defaultConfig.publicRepoUrl}`
   }
   return {
     config: defaultConfig,
