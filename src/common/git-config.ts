@@ -1,11 +1,11 @@
 import type { CoreV1Api } from '@kubernetes/client-node'
 import { generate as generatePassword } from 'generate-password'
-import { get } from 'lodash'
 import { $ } from 'zx'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { createUpdateGenericSecret, ensureNamespaceExists, getK8sSecret, k8s } from './k8s'
 import { loadYaml } from './utils'
+import { get } from 'lodash'
 
 const d = terminal('common:git-config')
 

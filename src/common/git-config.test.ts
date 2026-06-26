@@ -1,4 +1,10 @@
-import { getAuthUrlFromGitConfig, getGitCredentials, getOldGitCredentials, getStoredGitRepoConfig, setGitConfig } from './git-config'
+import {
+  getAuthUrlFromGitConfig,
+  getGitCredentials,
+  getOldGitCredentials,
+  getStoredGitRepoConfig,
+  setGitConfig,
+} from './git-config'
 
 const mockGetK8sSecret = jest.fn()
 const mockCreateUpdateGenericSecret = jest.fn()
