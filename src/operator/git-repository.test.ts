@@ -51,7 +51,6 @@ describe('GitRepository', () => {
       branch: 'main',
       username: 'testuser',
       email: 'test@example.com',
-      gitOpTimeoutMs: 10000,
     }
 
     const simpleGit = require('simple-git')
@@ -369,7 +368,6 @@ describe('GitRepository', () => {
         branch: 'feature-branch',
         username: 'testuser',
         email: 'test@example.com',
-        gitOpTimeoutMs: 10000,
       })
 
       mockGit.fetch.mockResolvedValue(undefined)

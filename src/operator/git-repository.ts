@@ -16,7 +16,6 @@ export interface GitRepositoryConfig {
   branch: string
   username?: string
   email: string
-  gitOpTimeoutMs: number
 }
 
 export class GitRepository {
@@ -36,10 +35,7 @@ export class GitRepository {
     this.branch = config.branch
     this.username = config.username ?? 'otomi-admin'
     this.email = config.email
-    this.git = simpleGit({
-      baseDir: this.repoPath,
-      timeout: { block: config.gitOpTimeoutMs },
-    })
+    this.git = simpleGit(this.repoPath)
     this._config = {
       repoUrl: config.repoUrl,
       authenticatedUrl: config.authenticatedUrl,

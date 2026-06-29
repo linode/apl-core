@@ -2,7 +2,6 @@ import * as dotenv from 'dotenv'
 import fs from 'fs'
 import process from 'node:process'
 import path from 'path'
-import { retryInstallStep } from '../cmd/install'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { getStoredGitRepoConfig } from '../common/git-config'
@@ -12,6 +11,7 @@ import { GitRepository } from './git-repository'
 import { Installer } from './installer'
 import { getErrorMessage } from './utils'
 import { operatorEnv } from './validators'
+import { retryInstallStep } from '../cmd/install'
 
 dotenv.config()
 
@@ -27,7 +27,6 @@ async function loadConfig(aplOps: AplOperations): Promise<AplOperatorConfig> {
   const gitRepository = new GitRepository({
     ...gitConfig,
     repoPath: env.ENV_DIR,
-    gitOpTimeoutMs: operatorEnv.GIT_OP_TIMEOUT_MS,
   })
 
   return {

@@ -122,13 +122,9 @@ serviceAccount:
 ## APL Operator configuration
 operator:
   # Polling interval for git changes (milliseconds)
-  pollIntervalMs: 30000
+  pollIntervalMs: 1000
   # Reconcile interval for applying changes (milliseconds)
   reconcileIntervalMs: 300000
-  gitOpTimeoutMs: 10000
-  installRetries: 1000
-  installMaxTimeoutMs: 10000
-
   image:
     repository: "mirror.registry.linodelke.net/docker/linode/apl-core"
 

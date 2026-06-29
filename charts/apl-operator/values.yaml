@@ -47,17 +47,6 @@ resources: {}
   #   memory: 128Mi
 
 
-## APL Operator configuration
-operator:
-  # Git organization/user name (will be configured during installation)
-  gitOrg: "otomi"
-  # Git repository name (will be configured during installation)
-  gitRepo: "values"
-  pollIntervalMs: 15000
-  reconcileIntervalMs: 300000
-  gitOpTimeoutMs: 10000
-  installRetries: 1000
-  installMaxTimeoutMs: 10000
 
 nodeSelector: {}
 
@@ -70,8 +59,6 @@ command: []
 commandArgs: []
 
 env: {}
-
-
 
 kms: {}
 # example:
