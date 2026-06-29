@@ -96,25 +96,6 @@ otomi:
 #       apiSecret: ''
 #       email: ''
 #       proxied: # true|false (default is true)
-# KMS for encrypting values
-# kms:
-#   sops:
-#   # provider can be one of aws|azure|google
-#     provider: ''
-#     aws:
-#       keys: ''
-#       accessKey: ''
-#       secretKey: ''
-#       region: ''
-#     azure:
-#       keys: ''
-#       tenantID: ''
-#       clientID: ''
-#       clientSecret: ''
-#     google:
-#       keys: ''
-#       accountJson: ''
-#       project: ''
 # Bring your own IDP, or leave commented out to use keycloak as IDP
 # oidc:
 #   clientID: ''
@@ -152,6 +133,8 @@ operator:
   installRetries: 1000
   installMaxTimeoutMs: 10000
 
+  image:
+    repository: "mirror.registry.linodelke.net/docker/linode/apl-core"
 
 installation:
   mode: standard
