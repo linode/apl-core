@@ -86,10 +86,10 @@ export function getAuthUrlFromGitConfig(credentials: Partial<GitConfigData>): st
   }
   const url = new URL(repoUrl)
   if (username) {
-    url.username = username
-    url.password = password
+    url.username = encodeURIComponent(username)
+    url.password = encodeURIComponent(password)
   } else {
-    url.username = password
+    url.username = encodeURIComponent(password)
     url.password = ''
   }
   return url.toString()
