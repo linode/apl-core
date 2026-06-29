@@ -55,7 +55,7 @@ The values repo is publicly accessible at:
 https://git.<domainSuffix>/otomi/values.git
 ```
 
-Credentials are stored in the `apl-git-credentials` Secret in the operator namespace. Retrieve the hostname and credentials, then clone with:
+Credentials are stored in the `apl-git-config` Secret in the `apl-secrets` namespace. Retrieve the hostname and credentials, then clone with:
 
 ```sh
 HOST=$(kubectl get httproute -n git-server git-server -o jsonpath='{.spec.hostnames[0]}')
