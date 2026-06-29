@@ -22,10 +22,6 @@ on:
         description: 'Select Domain Zone'
         type: string
         default: DNS-Integration
-      kms:
-        description: 'Should APL encrypt secrets in values repo (DNS or KMS is turned on)?'
-        type: string
-        default: age
       certificate:
         description: 'Select certificate issuer'
         type: string
@@ -89,13 +85,7 @@ on:
           - Zone-2
           - Random
           - DNS-Integration
-      kms:
-        type: choice
-        description: Should APL encrypt secrets in values repo (DNS or KMS is turned on)?
-        options:
-          - age
-          - no_kms
-        default: no_kms
+        default: Random
       certificate:
         type: choice
         description: Select certificate issuer
@@ -145,7 +135,6 @@ jobs:
           echo 'install_profile: ${{ inputs.install_profile }}'
           echo 'lke_tier: ${{ inputs.lke_tier }}'
           echo 'kubernetes_version: ${{ inputs.kubernetes_version }}'
-          echo 'kms: ${{ inputs.kms }}'
           echo 'domain_zone: ${{ inputs.domain_zone }}'
           echo 'certificate: ${{ inputs.certificate }}'
           echo 'is_pre_installed: ${{ inputs.is_pre_installed }}'
@@ -321,7 +310,6 @@ jobs:
           LKE_APL_FIREWALL_INBOUND_RULES: ${{ secrets.LKE_APL_FIREWALL_INBOUND_RULES }}
         run: |
           touch values.yaml
-
           adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
 
           install_args=(otomi chart/apl --wait --wait-for-jobs --timeout 90m0s \
@@ -340,11 +328,12 @@ jobs:
             --set otomi.hasExternalDNS=true \
             --set otomi.adminPassword=$adminPassword \
             --set otomi.version=${GITHUB_REF##*/} \
-            --set apps.linode-cfw.enabled=true)
+            --set apps.linode-cfw.enabled=true \
+            --set operator.image.repository=docker.io/linode/apl-core
+          )
 
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
-          [[ '${{ inputs.kms }}' == 'age' ]] && install_args+=(--set kms.sops.provider=age)
           [[ '${{ inputs.is_pre_installed }}' == 'true' ]] && install_args+=(--set otomi.isPreInstalled=true)
           if [[ '${{ inputs.disableORCS }}' == 'true' ]]; then
             install_args+=(--set otomi.useORCS=false)
