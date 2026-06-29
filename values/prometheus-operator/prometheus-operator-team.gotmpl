@@ -244,13 +244,6 @@ kubeEtcd:
 kubelet:
   enabled: false
 
-{{- if eq $v.cluster.linode.tier "enterprise" }}
-coreDns:
-  service:
-    selector:
-      k8s-app: coredns
-{{- end }}
-
 extraManifests:
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" (print "monitoring-" $teamId) "gatewayName" $gatewayName "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" (print "monitoring-" $teamId) "allowGroups" (list "platform-admin" $teamGroupName) "excludeNamespace" $teamGroupName "excludeAccount" "monitoring/po-prometheus" "excludePaths" (list "/metrics")) | nindent 12 }}
