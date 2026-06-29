@@ -61,11 +61,6 @@ spec:
               value: /home/app/stack/env
             - name: VALUES_INPUT
               value: /secret/values.yaml
-            # Git configuration for operator (will be set after installation)
-            - name: GIT_ORG
-              value: {{ .Values.operator.gitOrg | default "apl" | quote }}
-            - name: GIT_REPO
-              value: {{ .Values.operator.gitRepo | default "values" | quote }}
             - name: POLL_INTERVAL_MS
               value: {{ .Values.operator.pollIntervalMs | quote }}
             - name: RECONCILE_INTERVAL_MS
