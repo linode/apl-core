@@ -81,9 +81,12 @@ const commitAndPush = async (gitConfig: GitRepoConfig, initialInstall = false): 
     const filesChangedCount = statusOutput.split('\n').length - 1
     if (filesChangedCount === 0) {
       d.log('Nothing to commit')
-      return
+      if (!initialInstall) {
+        return
+      }
+    } else {
+      await $git`git commit -m ${message} --no-verify`.quiet()
     }
-    await $git`git commit -m ${message} --no-verify`.quiet()
   } catch (e) {
     const errorMsg = `commitAndPush error: ${e?.message?.replace(password, '****')}`
     d.error(errorMsg)
