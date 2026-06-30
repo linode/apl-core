@@ -1,18 +1,75 @@
 # plugin-barman-cloud
 
-![Version: 0.6.0](https://img.shields.io/badge/Version-0.6.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.12.0](https://img.shields.io/badge/AppVersion-v0.12.0-informational?style=flat-square)
+![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.13.0](https://img.shields.io/badge/AppVersion-v0.13.0-informational?style=flat-square)
 
 Helm Chart for CloudNativePG's CNPG-I backup plugin using Barman Cloud
 
 **Homepage:** <https://cloudnative-pg.io>
 
-## Maintainers
+About this chart
+----------------
 
-| Name | Email | Url |
-| ---- | ------ | --- |
-| itay-grudev | <itay@verito.digital> |  |
-| quantumenigmaa | <thibaud.vaisseau@gmail.com> |  |
-| quentinbisson | <quentin.bisson@gmail.com> |  |
+Helm chart to install the [CNPG-I Barman Cloud Plugin](https://github.com/cloudnative-pg/plugin-barman-cloud),
+the [CloudNativePG](https://cloudnative-pg.io) plugin that adds backup and restore capabilities to PostgreSQL
+`Cluster` resources via [Barman Cloud](https://pgbarman.org/).
+
+**NOTE**: this chart supports only the latest point release of the plugin.
+
+**IMPORTANT**: this chart requires a working installation of [cert-manager](https://cert-manager.io/).
+Please refer to the cert-manager
+[installation page](https://cert-manager.io/docs/installation/helm/) for more information.
+
+The chart deploys the plugin only. It does **not** install the CloudNativePG operator (use the companion
+[`cloudnative-pg`](https://github.com/cloudnative-pg/charts/tree/main/charts/cloudnative-pg) chart for that),
+and it does not create any `Cluster` resource. To provision a PostgreSQL cluster that uses this plugin, use
+the [`cluster`](https://github.com/cloudnative-pg/charts/tree/main/charts/cluster) chart
+(see the [Cluster chart README](https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/README.md) for details)
+or apply your own `Cluster` manifest.
+
+Getting Started
+---------------
+
+### Prerequisites
+
+This chart requires [cert-manager](https://cert-manager.io/) to issue the plugin's TLS certificates.
+Install it and wait until it is ready **before** installing this chart, otherwise the install fails because
+the certificates cannot be issued.
+
+### Add the chart repository
+
+```console
+helm repo add cnpg https://cloudnative-pg.github.io/charts
+helm repo update
+```
+
+### Install the plugin
+
+```console
+helm upgrade --install plugin-barman-cloud \
+  --namespace cnpg-system \
+  cnpg/plugin-barman-cloud
+```
+
+See the [Values](#values) section below for the full list of configurable parameters.
+
+### Verify the installation
+
+```console
+kubectl -n cnpg-system get deploy
+kubectl -n cnpg-system rollout status deploy/plugin-barman-cloud
+```
+
+Uninstalling
+------------
+
+```console
+helm uninstall plugin-barman-cloud --namespace cnpg-system
+```
+
+> **Warning**
+> Uninstalling the chart does not remove the plugin's CRDs (for example `ObjectStore`). Deleting them removes
+> every `ObjectStore` resource and the backup configuration it holds, so only delete the CRDs if you are sure
+> no resource depends on them.
 
 ## Source Code
 
@@ -27,7 +84,7 @@ Kubernetes: `>=1.29.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | additionalArgs | list | `[]` | Additional arguments to be added to the operator's args list. |
-| additionalEnv | list | `[]` | Array containing extra environment variables which can be templated. For example:  - name: RELEASE_NAME    value: "{{ .Release.Name }}"  - name: MY_VAR    value: "mySpecialKey" |
+| additionalEnv | list | `[]` | Array containing extra environment variables which can be templated. |
 | affinity | object | `{}` | Affinity for the operator to be installed. |
 | certificate.createClientCertificate | bool | `true` | Specifies whether the client certificate should be created. |
 | certificate.createServerCertificate | bool | `true` | Specifies whether the server certificate should be created. |
@@ -66,4 +123,23 @@ Kubernetes: `>=1.29.0-0`
 | sidecarImage.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | tolerations | list | `[]` | Tolerations for the operator to be installed. |
 | topologySpreadConstraints | list | `[]` | Topology Spread Constraints for the operator to be installed. |
-| updateStrategy | object | `{}` | Update strategy for the operator. ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy For example:  type: RollingUpdate  rollingUpdate:    maxSurge: 25%    maxUnavailable: 25%  WARNING: the RollingUpdate strategy is not supported by the operator yet so it can currently only use the Recreate strategy. |
+| updateStrategy | object | `{}` | Update strategy for the operator. ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy |
+
+## Maintainers
+
+| Name | Email | Url |
+| ---- | ------ | --- |
+| itay-grudev | <itay@verito.digital> |  |
+| quantumenigmaa | <thibaud.vaisseau@gmail.com> |  |
+| quentinbisson | <quentin.bisson@gmail.com> |  |
+
+Contributing
+------------
+
+Please read the [code of conduct](https://github.com/cloudnative-pg/charts/blob/main/CODE-OF-CONDUCT.md) and the
+[guidelines](https://github.com/cloudnative-pg/charts/blob/main/CONTRIBUTING.md) to contribute to the project.
+
+Copyright
+---------
+
+Helm charts for CloudNativePG are distributed under [Apache License 2.0](./LICENSE).
