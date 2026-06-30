@@ -42,7 +42,7 @@
   },
   "description": "Otomi Core is an opinionated stack of Kubernetes apps and configurations. Part of Otomi Container Platform.",
   "devDependencies": {
-    "@babel/core": "^7.29.7",
+    "@babel/core": "^8.0.1",
     "@babel/preset-env": "^7.29.7",
     "@babel/preset-typescript": "^7.29.7",
     "@commitlint/cli": "21.0.2",
