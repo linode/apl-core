@@ -13,13 +13,15 @@ if (!promoteToStable) {
   process.exit(0)
 }
 
+execSync(`npm version ${releaseTag} --no-git-tag-version`, { cwd: repoRoot, stdio: 'inherit' })
+
 if (dryRun) {
   console.log(`[dry-run] Would promote package.json to ${releaseTag} and push`)
   process.exit(0)
 }
 
-execSync(`npm version ${releaseTag} --no-git-tag-version`, { cwd: repoRoot, stdio: 'inherit' })
-execSync(`git add package.json package-lock.json`, { cwd: repoRoot, stdio: 'inherit' })
-execSync(`git commit -m "chore(release): promote to ${releaseTag}"`, { cwd: repoRoot, stdio: 'inherit' })
-execSync(`git push`, { cwd: repoRoot, stdio: 'inherit' })
+// execSync(`git add package.json package-lock.json`, { cwd: repoRoot, stdio: 'inherit' })
+// execSync(`git commit -m "chore(release): promote to ${releaseTag}"`, { cwd: repoRoot, stdio: 'inherit' })
+// execSync(`git push`, { cwd: repoRoot, stdio: 'inherit' })
+// console.log(`Promoted package.json to ${releaseTag} and pushed`)
 console.log(`Promoted package.json to ${releaseTag} and pushed`)
