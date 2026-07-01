@@ -1,7 +1,10 @@
 import { execSync } from 'child_process'
+import { config } from 'dotenv'
 import { readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import path, { join } from 'path'
+
+
 
 export function buildPrBody(version: string): string {
   const isRc = version.includes('-rc.')
@@ -51,5 +54,6 @@ async function main() {
 }
 
 if (require.main === module) {
+  config()
   main().catch((err) => { console.error(err.message); process.exit(1) })
 }

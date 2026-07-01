@@ -1,10 +1,12 @@
 import { execSync } from 'child_process'
+import { config } from 'dotenv'
 import { unlinkSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import path, { join } from 'path'
 import { cycleStartVersion, nextMainVersion, stripV } from './version'
 
 async function main() {
+
   const minorVersion = process.env.MINOR_VERSION!
   const baseBranch = process.env.BASE_BRANCH!
   const dryRun = process.env.DRY_RUN === 'true'
@@ -43,4 +45,5 @@ async function main() {
   }
 }
 
+config()
 main().catch((err) => { console.error(err.message); process.exit(1) })

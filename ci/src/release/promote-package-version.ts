@@ -1,6 +1,8 @@
 import { execSync } from 'child_process'
+import { config } from 'dotenv'
 import path from 'path'
 
+config()
 const releaseTag = process.env.RELEASE_TAG!
 const promoteToStable = process.env.PROMOTE_TO_STABLE === 'true'
 const dryRun = process.env.DRY_RUN === 'true'

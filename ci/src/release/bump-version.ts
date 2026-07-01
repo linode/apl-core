@@ -1,6 +1,9 @@
 import { execSync } from 'child_process'
 import path from 'path'
 import { cycleStartVersion, stripV } from './version'
+import { config } from 'dotenv'
+
+config()
 
 const minorVersion = process.env.MINOR_VERSION!
 const repoRoot = process.env.REPO_ROOT ?? path.resolve(__dirname, '../../..')

@@ -1,6 +1,9 @@
+import { config } from 'dotenv'
 import { readFileSync } from 'fs'
 import path from 'path'
 import { versionMatchesBranch } from './version'
+
+config()
 
 const releaseBranch = process.env.RELEASE_BRANCH!
 const repoRoot = process.env.REPO_ROOT ?? path.resolve(__dirname, '../../..')

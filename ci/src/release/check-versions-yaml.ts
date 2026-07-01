@@ -1,7 +1,7 @@
 import { execSync } from 'child_process'
 import { readFileSync } from 'fs'
-import path from 'path'
 import { load } from 'js-yaml'
+import path from 'path'
 import { validateVersion } from './version'
 
 const IMAGE_MAP: Record<string, string> = {

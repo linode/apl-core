@@ -1,4 +1,7 @@
 import { execSync } from 'child_process'
+import { config } from 'dotenv'
+
+config()
 
 const tag = process.env.RELEASE_TAG!
 

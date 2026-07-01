@@ -1,4 +1,7 @@
 import { validateMinorVersion } from './version'
+import { config } from 'dotenv'
+
+config()
 
 const minorVersion = process.env.MINOR_VERSION ?? ''
 

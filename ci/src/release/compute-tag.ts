@@ -1,7 +1,9 @@
-import { appendFileSync } from 'fs'
-import { readFileSync } from 'fs'
+import { config } from 'dotenv'
+import { appendFileSync, readFileSync } from 'fs'
 import path from 'path'
 import { promoteToStable } from './version'
+
+
 
 export function computeTag(version: string, promote: boolean): string {
   return `v${promote ? promoteToStable(version) : version}`
@@ -23,5 +25,6 @@ async function main() {
 }
 
 if (require.main === module) {
+  config()
   main().catch((err) => { console.error(err.message); process.exit(1) })
 }

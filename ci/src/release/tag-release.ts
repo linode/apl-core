@@ -1,4 +1,7 @@
 import { execSync } from 'child_process'
+import { config } from 'dotenv'
+
+config()
 
 const releaseTag = process.env.RELEASE_TAG!
 const dryRun = process.env.DRY_RUN === 'true'

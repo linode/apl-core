@@ -1,6 +1,9 @@
 import { execSync } from 'child_process'
+import { config } from 'dotenv'
 import { readFileSync } from 'fs'
 import path from 'path'
+
+config()
 
 const branch = process.env.RELEASE_BRANCH!
 const dryRun = process.env.DRY_RUN === 'true'

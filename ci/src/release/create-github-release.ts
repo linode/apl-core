@@ -1,4 +1,5 @@
 import { execSync } from 'child_process'
+import { config } from 'dotenv'
 import { previousRcTag, previousStableTagBefore } from './version'
 
 async function main() {
@@ -9,7 +10,7 @@ async function main() {
   const allTags = execSync('git tag --sort=-v:refname', { encoding: 'utf8' })
     .trim()
     .split('\n')
-    .filter(Boolean)
+    .filter((t) => t.startsWith('v'))
 
   const previousTag = isPrerelease
     ? previousRcTag(tag, allTags)
@@ -41,4 +42,5 @@ async function main() {
   execSync(notesCmd, { stdio: 'inherit' })
 }
 
+config()
 main().catch((err) => { console.error(err.message); process.exit(1) })

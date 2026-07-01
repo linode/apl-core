@@ -2,6 +2,9 @@ import { execSync } from 'child_process'
 import { readFileSync } from 'fs'
 import path from 'path'
 import { incrementRc, nextPatchRc } from './version'
+import { config } from 'dotenv'
+
+config()
 
 const repoRoot = process.env.REPO_ROOT ?? path.resolve(__dirname, '../../..')
 const dryRun = process.env.DRY_RUN === 'true'
