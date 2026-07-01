@@ -1,7 +1,9 @@
 import { execSync } from 'child_process'
+import { config } from 'dotenv'
 import { isHighestStableTag } from './version'
 
 async function main() {
+
   const tag = process.env.RELEASE_TAG!
   const cacheImage = process.env.LOCAL_CACHE_IMAGE!
   const dockerRepo = process.env.DOCKER_REPO ?? 'linode/apl-core'
@@ -11,7 +13,7 @@ async function main() {
   const allTags = execSync('git tag --sort=-v:refname', { encoding: 'utf8' })
     .trim()
     .split('\n')
-    .filter(Boolean)
+    .filter((t) => t.startsWith('v'))
 
   const shouldPushLatest = !isRc && isHighestStableTag(tag, allTags)
 
@@ -33,4 +35,5 @@ async function main() {
   }
 }
 
+config()
 main().catch((err) => { console.error(err.message); process.exit(1) })

@@ -1,4 +1,5 @@
 import { execSync } from 'child_process'
+import { config } from 'dotenv'
 
 const branch = process.env.RELEASE_BRANCH!
 

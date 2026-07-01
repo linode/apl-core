@@ -1,4 +1,7 @@
 import { execSync } from 'child_process'
+import { config } from 'dotenv'
+
+config()
 
 const email = process.env.BOT_EMAIL!
 const username = process.env.BOT_USERNAME!

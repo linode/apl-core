@@ -1,5 +1,6 @@
-import { appendFileSync } from 'fs'
 import { execSync } from 'child_process'
+import { config } from 'dotenv'
+import { appendFileSync } from 'fs'
 import { computeNextRcTag, computeStableTag } from './version'
 
 export function computeTag(branchTags: string[], branchName: string, promote: boolean): string {
@@ -7,6 +8,7 @@ export function computeTag(branchTags: string[], branchName: string, promote: bo
 }
 
 if (require.main === module) {
+  config()
   const promote = process.env.PROMOTE_TO_STABLE === 'true'
   const branchName = process.env.RELEASE_BRANCH!
 
