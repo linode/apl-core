@@ -71,18 +71,6 @@ jobs:
           STABLE: ${{ inputs.promote_to_stable }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Run tests in Docker (test gate)
-        uses: docker/build-push-action@v7
-        with:
-          push: false
-          load: true
-          context: .
-          build-args: SKIP_TESTS=false
-          tags: ${{ env.LOCAL_CACHE_IMAGE }}
-
       - name: Compute release tag
         id: compute-tag
         working-directory: ci
@@ -110,21 +98,24 @@ jobs:
           REPO_ROOT: ${{ github.workspace }}
           DRY_RUN: ${{ inputs.dry_run }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Run tests in Docker (test gate)
+        uses: docker/build-push-action@v7
+        with:
+          push: false
+          load: true
+          context: .
+          build-args: SKIP_TESTS=false
+          tags: ${{ env.LOCAL_CACHE_IMAGE }}
+
       - name: Create and push git tag
         working-directory: ci
         run: npm run release:tag-release
         env:
           RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
           DRY_RUN: ${{ inputs.dry_run }}
-
-      - name: Create GitHub Release
-        working-directory: ci
-        run: npm run release:create-github-release
-        env:
-          RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
-          IS_PRERELEASE: ${{ steps.compute-tag.outputs.is_prerelease }}
-          DRY_RUN: ${{ inputs.dry_run }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Login to Docker Hub
         if: ${{ inputs.dry_run == 'false' }}
@@ -160,6 +151,14 @@ jobs:
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create GitHub Release
+        working-directory: ci
+        run: npm run release:create-github-release
+        env:
+          RELEASE_TAG: ${{ steps.compute-tag.outputs.tag }}
+          IS_PRERELEASE: ${{ steps.compute-tag.outputs.is_prerelease }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # - name: Auto-bump version for next iteration
       #   working-directory: ci
       #   run: npm run release:auto-bump
