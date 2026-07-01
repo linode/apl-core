@@ -3,8 +3,6 @@ import { appendFileSync, readFileSync } from 'fs'
 import path from 'path'
 import { promoteToStable } from './version'
 
-
-
 export function computeTag(version: string, promote: boolean): string {
   return `v${promote ? promoteToStable(version) : version}`
 }
