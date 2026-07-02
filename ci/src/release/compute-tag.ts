@@ -8,7 +8,7 @@ export function computeTag(branchTags: string[], branchName: string, promote: bo
 }
 
 function main() {
-  const promote = process.env.PROMOTE_TO_STABLE === 'true'
+  const promote = process.env.IS_PRERELEASE !== 'true'
   const branchName = process.env.RELEASE_BRANCH!
 
   const tagsRaw = execSync('git tag --merged HEAD', { encoding: 'utf8' })

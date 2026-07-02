@@ -70,7 +70,7 @@ export function findMissingImages(
 
 function main() {
   const repoRoot = process.env.REPO_ROOT ?? path.resolve(__dirname, '../../..')
-  const stable = process.env.STABLE === 'true'
+  const stable = process.env.IS_PRERELEASE !== 'true'
   const content = readFileSync(path.join(repoRoot, 'versions.yaml'), 'utf8')
   const versions = parseVersionsYaml(content)
 
