@@ -35,5 +35,7 @@ async function main() {
   }
 }
 
-config()
-main().catch((err) => { console.error(err.message); process.exit(1) })
+if (require.main === module) {
+  config()
+  main().catch((err) => { console.error(err.message); process.exit(1) })
+}

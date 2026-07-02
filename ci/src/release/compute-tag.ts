@@ -7,8 +7,7 @@ export function computeTag(branchTags: string[], branchName: string, promote: bo
   return promote ? computeStableTag(branchTags) : computeNextRcTag(branchTags, branchName)
 }
 
-if (require.main === module) {
-  config()
+function main() {
   const promote = process.env.PROMOTE_TO_STABLE === 'true'
   const branchName = process.env.RELEASE_BRANCH!
 
@@ -22,4 +21,9 @@ if (require.main === module) {
     appendFileSync(process.env.GITHUB_OUTPUT, `tag=${tag}\n`)
     appendFileSync(process.env.GITHUB_OUTPUT, `is_prerelease=${tag.includes('-rc.')}\n`)
   }
+}
+
+if (require.main === module) {
+  config()
+  main()
 }

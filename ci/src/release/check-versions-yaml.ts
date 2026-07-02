@@ -1,4 +1,5 @@
 import { execSync } from 'child_process'
+import { config } from 'dotenv'
 import { readFileSync } from 'fs'
 import { load } from 'js-yaml'
 import path from 'path'
@@ -67,7 +68,7 @@ export function findMissingImages(
     })
 }
 
-if (require.main === module) {
+function main() {
   const repoRoot = process.env.REPO_ROOT ?? path.resolve(__dirname, '../../..')
   const stable = process.env.STABLE === 'true'
   const content = readFileSync(path.join(repoRoot, 'versions.yaml'), 'utf8')
@@ -131,4 +132,9 @@ if (require.main === module) {
   }
 
   console.log(`versions.yaml: all ${Object.keys(versions).length} entries are semver-compatible, images exist, and GitHub tags exist`)
+}
+
+if (require.main === module) {
+  config()
+  main()
 }

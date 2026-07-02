@@ -1,8 +1,14 @@
 import { execSync } from 'child_process'
 import { config } from 'dotenv'
 
-config()
-const branch = process.env.RELEASE_BRANCH!
+function main() {
+  const branch = process.env.RELEASE_BRANCH!
 
-execSync(`git checkout -b "${branch}"`, { stdio: 'inherit' })
-console.log(`Created branch: ${branch}`)
+  execSync(`git checkout -b "${branch}"`, { stdio: 'inherit' })
+  console.log(`Created branch: ${branch}`)
+}
+
+if (require.main === module) {
+  config()
+  main()
+}
