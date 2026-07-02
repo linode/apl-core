@@ -1,6 +1,5 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { Readable } from 'stream'
 import simpleGit, { SimpleGit } from 'simple-git'
 import { setIdentity } from '../common/bootstrap'
 import { OtomiDebugger, terminal } from '../common/debug'
@@ -21,6 +20,7 @@ export interface GitRepositoryConfig {
 }
 
 export class GitRepository {
+  private git: SimpleGit
   private _lastRevision = ''
   private d: OtomiDebugger
   private _config: GitRepoConfig
@@ -29,7 +29,6 @@ export class GitRepository {
   private username: string
   private email: string
   private readonly skipMarker = '[ci skip]'
-  private readonly gitTimeoutMs: number
 
   constructor(config: GitRepositoryConfig) {
     this.d = terminal('operator:git-repository')
@@ -51,24 +50,6 @@ export class GitRepository {
     }
   }
 
-  // Creates a fresh simpleGit instance per call and explicitly destroys the
-  // stdio pipe handles (stdout + stderr) after the operation completes.
-  // Without this, each spawned git process leaves libuv handles alive that
-  // accumulate over time and eventually exhaust the OS thread limit.
-  private async withGit<T>(op: (git: SimpleGit) => Promise<T>): Promise<T> {
-    const handles: Readable[] = []
-    const git = simpleGit(this.repoPath, { timeout: { block: this.gitTimeoutMs } }).outputHandler(
-      (_cmd, stdout, stderr) => {
-        handles.push(stdout as unknown as Readable, stderr as unknown as Readable)
-      },
-    )
-    try {
-      return await op(git)
-    } finally {
-      for (const s of handles) if (!s.destroyed) s.destroy()
-    }
-  }
-
   get authenticatedUrl(): string {
     return this._config.authenticatedUrl
   }
@@ -79,7 +60,7 @@ export class GitRepository {
 
   async setLastRevision(): Promise<void> {
     try {
-      const logs = await this.withGit((git) => git.log({ maxCount: 1 }))
+      const logs = await this.git.log({ maxCount: 1 })
       const hasCommits = logs.latest !== undefined && logs.total > 0
       if (hasCommits) {
         this._lastRevision = logs.latest?.hash || ''
@@ -91,6 +72,7 @@ export class GitRepository {
   }
 
   async clone(): Promise<void> {
+    // Check if the repository already exists locally
     const gitPath = path.join(this.repoPath, '.git')
     if (fs.existsSync(gitPath)) {
       this.d.info(`Repository already exists at ${this.repoPath}, skipping clone`)
@@ -98,7 +80,7 @@ export class GitRepository {
     } else {
       this.d.info(`Cloning repository to ${this.repoPath}`)
       try {
-        await this.withGit((git) => git.clone(this._config.authenticatedUrl, this.repoPath, ['-b', this.branch]))
+        await this.git.clone(this._config.authenticatedUrl, this.repoPath, ['-b', this.branch])
         this.d.info(`Repository cloned successfully`)
       } catch (error) {
         this.d.error('Failed to clone repository:', getErrorMessage(error))
@@ -110,19 +92,19 @@ export class GitRepository {
 
   private async verifyAndFixOriginRemote(): Promise<void> {
     try {
-      const remotes = await this.withGit((git) => git.getRemotes(true))
+      const remotes = await this.git.getRemotes(true)
       const origin = remotes.find((r) => r.name === 'origin')
 
       if (!origin) {
         this.d.warn('Origin remote not found, adding it')
-        await this.withGit((git) => git.remote(['add', 'origin', this._config.authenticatedUrl]))
+        await this.git.remote(['add', 'origin', this._config.authenticatedUrl])
         this.d.info('Origin remote added successfully')
         return
       }
 
       if (origin.refs.fetch !== this._config.authenticatedUrl) {
         this.d.warn('Origin remote URL mismatch detected, resetting to correct URL')
-        await this.withGit((git) => git.remote(['set-url', 'origin', this._config.authenticatedUrl]))
+        await this.git.remote(['set-url', 'origin', this._config.authenticatedUrl])
         this.d.info('Origin remote URL reset successfully')
       } else {
         this.d.debug('Origin remote URL is correct')
@@ -134,7 +116,7 @@ export class GitRepository {
   }
 
   private async getChangedFiles(fromRevision: string, toRevision: string): Promise<string[]> {
-    const diffResult = await this.withGit((git) => git.diff([`${fromRevision}..${toRevision}`, '--name-only']))
+    const diffResult = await this.git.diff([`${fromRevision}..${toRevision}`, '--name-only'])
     return diffResult.split('\n').filter((file) => file.trim().length > 0)
   }
 
@@ -146,23 +128,31 @@ export class GitRepository {
   }
 
   private async shouldSkipCommits(fromRevision: string, toRevision: string): Promise<boolean> {
-    const logResult = await this.withGit((git) => git.log({ from: fromRevision, to: toRevision }))
+    const logResult = await this.git.log({
+      from: fromRevision,
+      to: toRevision,
+    })
+
     return logResult.all.every((commit) => commit.message.includes(this.skipMarker))
   }
 
   private async pull(): Promise<string> {
     try {
-      return await this.withGit(async (git) => {
-        await git.clean('f', ['-X'])
-        await git.fetch('origin', this.branch)
-        await git.reset(['--hard', `origin/${this.branch}`])
-        const logs = await git.log({ maxCount: 1 })
-        return logs.latest?.hash || ''
-      })
+      // to avoid re-creating deleted teams and users
+      // and to clean-up the untracked files
+      await this.git.clean('f', ['-X'])
+      await this.git.fetch('origin', this.branch)
+      await this.git.reset(['--hard', `origin/${this.branch}`])
+      return this.getCurrentRevision()
     } catch (error) {
       this.d.error('Failed to pull repository:', getErrorMessage(error))
       throw new OperatorError('Repository pull failed', error as Error)
     }
+  }
+
+  private async getCurrentRevision(): Promise<string> {
+    const logs = await this.git.log({ maxCount: 1 })
+    return logs.latest?.hash || ''
   }
 
   async syncAndAnalyzeChanges(): Promise<{ hasChangesToApply: boolean; applyTeamsOnly: boolean }> {
@@ -218,7 +208,7 @@ export class GitRepository {
       return
     }
     try {
-      await this.withGit((git) => git.remote(['set-url', 'origin', config.authenticatedUrl]))
+      await this.git.remote(['set-url', 'origin', config.authenticatedUrl])
       this.branch = config.branch
       this.username = config.username ?? 'otomi-admin'
       this.email = config.email

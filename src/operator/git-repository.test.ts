@@ -14,7 +14,6 @@ jest.mock('simple-git', () => {
     clean: jest.fn(),
     getRemotes: jest.fn(),
     remote: jest.fn(),
-    outputHandler: jest.fn().mockReturnThis(),
   }
   return jest.fn().mockImplementation(() => mockGit)
 })
