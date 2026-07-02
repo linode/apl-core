@@ -143,7 +143,7 @@
     "lint:apl-chart": "npm run gen:chart-schema && helm lint chart/apl -f tests/bootstrap/input-local-minimal.yaml",
     "lint-staged": "lint-staged",
     "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml' && npm run lint:ts:fix",
-    "lint:hf": "ENV_DIR=$PWD/tests/fixtures NODE_ENV=test binzx/otomi lint",
+    "lint:hf": "ENV_DIR=$PWD/tests/fixtures NODE_ENV=test tsx src/otomi.ts -- lint",
     "lint:ts": "eslint --ext ts src",
     "lint:ts:fix": "eslint --fix --ext ts src",
     "lint:types": "tsc --noEmit",
@@ -162,7 +162,7 @@
     "validate-templates": "ENV_DIR=$PWD/tests/fixtures NODE_ENV=test binzx/otomi validate-templates",
     "validate-templates:all": "set -e; i=32; while [ $i -le 35 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
     "validate-values": "ENV_DIR=$PWD/tests/fixtures NODE_ENV=test tsx src/otomi.ts -- validate-values --strict-additional",
-    "bootstrap-dev": "rm -rf /tmp/otomi-bootstrap-dev; VALUES_INPUT=$PWD/tests/bootstrap/input-local-dev.yaml ENV_DIR=/tmp/otomi-bootstrap-dev binzx/otomi bootstrap"
+    "bootstrap-dev": "rm -rf /tmp/otomi-bootstrap-dev; VALUES_INPUT=$PWD/tests/bootstrap/input-local-dev.yaml ENV_DIR=/tmp/otomi-bootstrap-dev NODE_ENV=test tsx src/otomi.ts -- bootstrap"
   },
   "standard-version": {
     "skip": {

@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto'
 import { existsSync } from 'fs'
 import { copyFile, cp, mkdir, writeFile } from 'fs/promises'
 import { generate as generatePassword } from 'generate-password'
-import { cloneDeep, get, merge, set } from 'lodash'
+import { cloneDeep, get, merge, set, unset } from 'lodash'
 import { pki } from 'node-forge'
 import path from 'path'
 import { bootstrapGit } from 'src/common/bootstrap'
@@ -26,6 +26,13 @@ import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { migrate } from './migrate'
+import {
+  createRepoConfig,
+  getInitialGitConfig,
+  GitRepoConfig,
+  setGitConfig,
+  setGitServerConfig,
+} from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 
@@ -51,7 +58,7 @@ export const getStoredClusterSecrets = async (
 ): Promise<Record<string, any> | undefined> => {
   const d = deps.terminal(`cmd:${cmdName}:getStoredClusterSecrets`)
   d.info(`Checking if ${secretId} already pathExists`)
-  if (env.isDev && env.DISABLE_SYNC) return undefined
+  if ((env.isDev && env.DISABLE_SYNC) || process.env.NODE_ENV === 'test') return undefined
   // we might need to create the 'otomi' namespace if we are in CLI mode
   if (isCli) await deps.$`kubectl create ns otomi &> /dev/null`.nothrow().quiet()
   try {
@@ -167,6 +174,8 @@ export const processValues = async (
   const { VALUES_INPUT } = env
   d.log(`Loading app values from ${VALUES_INPUT}`)
   const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
+  // This part should be stored in a secret by initializeGitConfig
+  unset(originalValues, 'otomi.git')
   const storedSecrets: Record<string, any> = (await deps.getStoredClusterSecrets()) || {}
   const originalInput: Record<string, any> = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues))
   // generate all secrets (does not diff against previous so generates all new secrets every time)
@@ -197,7 +206,9 @@ export const processValues = async (
   await deps.writeValues(valuesForDisk)
   // and do some context dependent post processing:
   // to support potential failing chart install we store secrets on cluster
-  if (!(env.isDev && env.DISABLE_SYNC)) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
+  if (!(env.isDev && env.DISABLE_SYNC) && process.env.NODE_ENV !== 'test') {
+    await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
+  }
   return { originalInput: newInput, allSecrets }
 }
 
@@ -283,6 +294,26 @@ export const createCustomCA = (deps = { terminal, pki, writeValues }): Record<st
   }
 }
 
+export const initializeGitConfig = async (
+  deps = {
+    getInitialGitConfig,
+    setGitConfig,
+    setGitServerConfig,
+    createRepoConfig,
+  },
+): Promise<GitRepoConfig> => {
+  // In test (CI), getInitialGitConfig only considers VALUES_INPUT but does not attempt read from cluster
+  const isTest = process.env.NODE_ENV === 'test'
+  const { config: data, isInitial } = await deps.getInitialGitConfig()
+  if (isInitial && !isTest) {
+    const config = await deps.setGitConfig(data)
+    await deps.setGitServerConfig(config)
+    return config
+  } else {
+    return deps.createRepoConfig(data)
+  }
+}
+
 export const bootstrap = async (
   deps = {
     pathExists: existsSync,
@@ -326,8 +357,9 @@ export const module = {
     }),
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
+    const gitConfig = await initializeGitConfig()
     await prepareEnvironment({ skipAllPreChecks: true })
     await bootstrap()
-    await bootstrapGit()
+    await bootstrapGit(gitConfig)
   },
 }

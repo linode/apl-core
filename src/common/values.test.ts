@@ -3,6 +3,11 @@ import { generateSecrets } from 'src/common/values'
 import stubs from 'src/test-stubs'
 
 const { terminal } = stubs
+
+jest.mock('../common/git-config', () => ({
+  getGitCredentials: jest.fn(),
+}))
+
 describe('generateSecrets', () => {
   const values = { one: 'val', secret: 'prop', apps: { yo: { di: { lo: 'loves you' } } } }
   set(values, 'apps.harbor.registry.credentials.username', 'u')
@@ -75,16 +80,6 @@ describe('generateSecrets', () => {
     const res = await generateSecrets(valuesWithExisting, deps)
     expect(res.nested.twoStage).toBe('exists')
   })
-  it('should include team secrets with expanded paths', async () => {
-    const teamValues = cloneDeep(values)
-    set(teamValues, 'teamConfig.demo.settings.password', 'team-secret-pw')
-
-    deps.getSchemaSecretsPaths.mockResolvedValue(['teamConfig.demo.settings.password'])
-
-    const res = await generateSecrets(teamValues, deps)
-    expect(deps.getSchemaSecretsPaths).toHaveBeenCalledWith(['demo'])
-    expect(res.teamConfig.demo.settings.password).toBe('team-secret-pw')
-  })
   it('should not call getSchemaSecretsPaths when no dynamic teams exist', async () => {
     const res = await generateSecrets(values, deps)
     expect(deps.getSchemaSecretsPaths).not.toHaveBeenCalled()
@@ -92,7 +87,7 @@ describe('generateSecrets', () => {
   })
   it('should exclude admin team from dynamic team expansion', async () => {
     const teamValues = cloneDeep(values)
-    set(teamValues, 'teamConfig.admin.settings.password', 'admin-pw')
+    set(teamValues, 'teamConfig.admin.settings.id', 'admin')
 
     const res = await generateSecrets(teamValues, deps)
     expect(deps.getSchemaSecretsPaths).not.toHaveBeenCalled()

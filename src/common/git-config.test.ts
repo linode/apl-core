@@ -1,22 +1,20 @@
 import {
-  getGitConfigData,
+  getAuthUrlFromGitConfig,
   getGitCredentials,
   getOldGitCredentials,
-  getRepo,
   getStoredGitRepoConfig,
   setGitConfig,
 } from './git-config'
 
 const mockGetK8sSecret = jest.fn()
+const mockCreateUpdateGenericSecret = jest.fn()
 const mockGetK8sConfigMap = jest.fn()
-const mockCreateUpdateConfigMap = jest.fn()
 const mockLoadYaml = jest.fn()
 const mockCoreApi = {}
 
 jest.mock('./k8s', () => ({
   getK8sSecret: (...args: any[]) => mockGetK8sSecret(...args),
-  getK8sConfigMap: (...args: any[]) => mockGetK8sConfigMap(...args),
-  createUpdateConfigMap: (...args: any[]) => mockCreateUpdateConfigMap(...args),
+  createUpdateGenericSecret: (...args: any[]) => mockCreateUpdateGenericSecret(...args),
   k8s: { core: () => mockCoreApi },
 }))
 
@@ -30,7 +28,11 @@ jest.mock('./debug', () => ({
 }))
 
 jest.mock('./envalid', () => ({
-  env: { VALUES_INPUT: undefined },
+  env: {
+    VALUES_INPUT: undefined,
+    GIT_CONFIG_SECRET_NAME: 'apl-git-config',
+    GIT_CONFIG_SECRET_NAMESPACE: 'apl-secrets',
+  },
 }))
 
 jest.mock('./utils', () => ({
@@ -54,12 +56,51 @@ describe('git-config', () => {
     process.env = originalEnv
   })
 
+  describe('getAuthUrlFromGitConfig', () => {
+    it('should return undefined when repoUrl is missing', () => {
+      expect(getAuthUrlFromGitConfig({ password: 'token' })).toBeUndefined()
+    })
+
+    it('should return undefined when password is missing', () => {
+      expect(getAuthUrlFromGitConfig({ repoUrl: 'https://github.com/org/repo.git' })).toBeUndefined()
+    })
+
+    it('should return URL with username and password when username is provided', () => {
+      const result = getAuthUrlFromGitConfig({
+        repoUrl: 'https://github.com/org/repo.git',
+        username: 'admin',
+        password: 's3cret',
+      })
+
+      expect(result).toBe('https://admin:s3cret@github.com/org/repo.git')
+    })
+
+    it('should return token-only URL when username is not provided', () => {
+      const result = getAuthUrlFromGitConfig({
+        repoUrl: 'https://github.com/org/repo.git',
+        password: 'token',
+      })
+
+      expect(result).toBe('https://token@github.com/org/repo.git')
+    })
+
+    it('should URL-encode special characters in username and password', () => {
+      const result = getAuthUrlFromGitConfig({
+        repoUrl: 'https://github.com/org/repo.git',
+        username: 'user@org',
+        password: 'p@ss:word/123',
+      })
+
+      expect(result).toBe('https://user%40org:p%40ss%3Aword%2F123@github.com/org/repo.git')
+    })
+  })
+
   describe('getGitCredentials', () => {
     it('should return credentials when secret exists', async () => {
       mockGetK8sSecret.mockResolvedValue({ username: 'admin', password: 's3cret' })
       const result = await getGitCredentials()
       expect(result).toEqual({ username: 'admin', password: 's3cret' })
-      expect(mockGetK8sSecret).toHaveBeenCalledWith('apl-git-credentials', 'apl-operator')
+      expect(mockGetK8sSecret).toHaveBeenCalledWith('apl-git-config', 'apl-secrets')
     })
 
     it('should return undefined when secret does not exist', async () => {
@@ -85,58 +126,30 @@ describe('git-config', () => {
     it('should return credentials from old gitea-credentials secret', async () => {
       mockGetK8sSecret.mockResolvedValue({ GIT_USERNAME: 'otomi-admin', GIT_PASSWORD: 'oldpass' })
       const result = await getOldGitCredentials()
-      expect(result).toEqual({ username: 'otomi-admin', password: 'oldpass' })
+      expect(result).toEqual({
+        repoUrl: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
+        username: 'otomi-admin',
+        password: 'oldpass',
+      })
       expect(mockGetK8sSecret).toHaveBeenCalledWith('gitea-credentials', 'apl-operator')
     })
 
-    it('should return undefined fields when secret does not exist', async () => {
+    it('should return undefined when secret does not exist', async () => {
       mockGetK8sSecret.mockResolvedValue(undefined)
       const result = await getOldGitCredentials()
-      expect(result).toEqual({ username: undefined, password: undefined })
-    })
-  })
-
-  describe('getGitConfigData', () => {
-    it('should return config data from configmap', async () => {
-      mockGetK8sConfigMap.mockResolvedValue({
-        data: {
-          repoUrl: 'https://github.com/org/repo.git',
-          branch: 'main',
-          email: 'pipeline@cluster.local',
-        },
-      })
-      const result = await getGitConfigData()
-      expect(result).toEqual({
-        repoUrl: 'https://github.com/org/repo.git',
-        branch: 'main',
-        email: 'pipeline@cluster.local',
-      })
-      expect(mockGetK8sConfigMap).toHaveBeenCalledWith('apl-operator', 'apl-git-config', mockCoreApi)
-    })
-
-    it('should return undefined when configmap does not exist', async () => {
-      mockGetK8sConfigMap.mockResolvedValue(undefined)
-      const result = await getGitConfigData()
-      expect(result).toBeUndefined()
-    })
-
-    it('should return undefined when configmap has no data', async () => {
-      mockGetK8sConfigMap.mockResolvedValue({ data: undefined })
-      const result = await getGitConfigData()
-      expect(result).toBeUndefined()
+      expect(result).toEqual(undefined)
     })
   })
 
   describe('getStoredGitRepoConfig', () => {
     it('should use basic auth when username is provided', async () => {
-      mockGetK8sConfigMap.mockResolvedValue({
-        data: {
-          repoUrl: 'https://github.com/org/repo.git',
-          branch: 'main',
-          email: 'pipeline@cluster.local',
-        },
+      mockGetK8sSecret.mockResolvedValue({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+        username: 'admin',
+        password: 's3cret',
       })
-      mockGetK8sSecret.mockResolvedValue({ username: 'admin', password: 's3cret' })
 
       const result = await getStoredGitRepoConfig()
       expect(result).toEqual({
@@ -150,14 +163,12 @@ describe('git-config', () => {
     })
 
     it('should use PAT auth (token only) when username is not provided', async () => {
-      mockGetK8sConfigMap.mockResolvedValue({
-        data: {
-          repoUrl: 'https://github.com/org/repo.git',
-          branch: 'main',
-          email: 'pipeline@cluster.local',
-        },
+      mockGetK8sSecret.mockResolvedValue({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+        password: 's3cret',
       })
-      mockGetK8sSecret.mockResolvedValue({ password: 's3cret' })
 
       const result = await getStoredGitRepoConfig()
       expect(result).toEqual({
@@ -170,46 +181,15 @@ describe('git-config', () => {
       })
     })
 
-    it('should use otomi-secrets when apl-git-credentials has no password', async () => {
-      mockGetK8sConfigMap.mockResolvedValue({
-        data: {
-          repoUrl: 'https://github.com/org/repo.git',
-          branch: 'main',
-          email: 'pipeline@cluster.local',
-        },
-      })
-      mockGetK8sSecret
-        .mockResolvedValueOnce(undefined) // getGitCredentials (apl-git-credentials empty)
-        .mockResolvedValueOnce({ git_password: 'github-token' }) // otomi-secrets fallback
-
-      const result = await getStoredGitRepoConfig()
-      expect(result).toEqual({
-        repoUrl: 'https://github.com/org/repo.git',
-        authenticatedUrl: 'https://github-token@github.com/org/repo.git',
-        branch: 'main',
-        email: 'pipeline@cluster.local',
-        username: undefined,
-        password: 'github-token',
-      })
-    })
-
     it('should fall back to old credentials when both new secrets are missing', async () => {
-      mockGetK8sConfigMap.mockResolvedValue({
-        data: {
-          repoUrl: 'https://github.com/org/repo.git',
-          branch: 'main',
-          email: 'pipeline@cluster.local',
-        },
-      })
       mockGetK8sSecret
         .mockResolvedValueOnce(undefined) // getGitCredentials (apl-git-credentials empty)
-        .mockResolvedValueOnce(undefined) // otomi-secrets empty
         .mockResolvedValueOnce({ GIT_USERNAME: 'otomi-admin', GIT_PASSWORD: 'oldpass' }) // getOldGitCredentials
 
       const result = await getStoredGitRepoConfig()
       expect(result).toEqual({
-        repoUrl: 'https://github.com/org/repo.git',
-        authenticatedUrl: 'https://otomi-admin:oldpass@github.com/org/repo.git',
+        repoUrl: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
+        authenticatedUrl: 'http://otomi-admin:oldpass@gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
         branch: 'main',
         email: 'pipeline@cluster.local',
         username: 'otomi-admin',
@@ -217,73 +197,48 @@ describe('git-config', () => {
       })
     })
 
-    it('should fall back to default gitea config when configmap is missing', async () => {
-      mockGetK8sConfigMap.mockResolvedValue(undefined)
-      mockGetK8sSecret.mockResolvedValue({ username: 'admin', password: 's3cret' })
-
-      const result = await getStoredGitRepoConfig()
-      expect(result).toEqual({
-        repoUrl: 'http://git-server.git-server.svc.cluster.local/otomi/values.git',
-        authenticatedUrl: 'http://admin:s3cret@git-server.git-server.svc.cluster.local/otomi/values.git',
-        branch: 'main',
-        email: 'pipeline@cluster.local',
-        username: 'admin',
-        password: 's3cret',
-      })
-    })
-
     it('should throw when no credentials are found at all', async () => {
-      mockGetK8sConfigMap.mockResolvedValue({
-        data: { repoUrl: 'https://github.com/org/repo.git', branch: 'main', email: 'test@test.com' },
-      })
-      mockGetK8sSecret.mockResolvedValue(undefined) // both calls return undefined
+      mockGetK8sSecret.mockResolvedValue({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'test@test.com',
+      }) // Partial insufficient data
 
-      // getOldGitCredentials returns { username: undefined, password: undefined }
-      // which passes the !credentials check but fails the !password check
+      // getOldGitCredentials returns undefined
       await expect(getStoredGitRepoConfig()).rejects.toThrow(
-        'Git password/token is missing in apl-git-credentials secret',
+        'Git password/token not found in apl-git-config or gitea-credentials secret',
       )
     })
 
-    it('should throw when repoUrl is missing', async () => {
-      mockGetK8sConfigMap.mockResolvedValue({
-        data: { branch: 'main', email: 'test@test.com' },
-      })
-      mockGetK8sSecret.mockResolvedValue({ username: 'admin', password: 's3cret' })
+    it('should throw when repoUrl is empty', async () => {
+      mockGetK8sSecret.mockResolvedValue({ repoUrl: '', username: 'admin', password: 's3cret' })
 
-      await expect(getStoredGitRepoConfig()).rejects.toThrow('Git repository URL is missing')
+      await expect(getStoredGitRepoConfig()).rejects.toThrow('Git repository URL is empty')
     })
 
     it('should throw when branch is missing', async () => {
-      mockGetK8sConfigMap.mockResolvedValue({
-        data: { repoUrl: 'https://github.com/org/repo.git', email: 'test@test.com' },
-      })
-      mockGetK8sSecret.mockResolvedValue({ username: 'admin', password: 's3cret' })
+      mockGetK8sSecret.mockResolvedValue({ branch: '', username: 'admin', password: 's3cret' })
 
-      await expect(getStoredGitRepoConfig()).rejects.toThrow('Git branch or email is missing')
+      await expect(getStoredGitRepoConfig()).rejects.toThrow('Git branch or email is empty')
     })
 
-    it('should throw when email is missing', async () => {
-      mockGetK8sConfigMap.mockResolvedValue({
-        data: { repoUrl: 'https://github.com/org/repo.git', branch: 'main' },
-      })
-      mockGetK8sSecret.mockResolvedValue({ username: 'admin', password: 's3cret' })
+    it('should throw when email is empty', async () => {
+      mockGetK8sSecret.mockResolvedValue({ email: '', username: 'admin', password: 's3cret' })
 
-      await expect(getStoredGitRepoConfig()).rejects.toThrow('Git branch or email is missing')
+      await expect(getStoredGitRepoConfig()).rejects.toThrow('Git branch or email is empty')
     })
 
     it('should use GIT_REPO_URL env var in development mode', async () => {
       process.env.NODE_ENV = 'development'
       process.env.GIT_REPO_URL = 'http://localhost:3000/dev/repo.git'
 
-      mockGetK8sConfigMap.mockResolvedValue({
-        data: {
-          repoUrl: 'https://github.com/org/repo.git',
-          branch: 'main',
-          email: 'pipeline@cluster.local',
-        },
+      mockGetK8sSecret.mockResolvedValue({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+        username: 'admin',
+        password: 's3cret',
       })
-      mockGetK8sSecret.mockResolvedValue({ username: 'admin', password: 's3cret' })
 
       const result = await getStoredGitRepoConfig()
       expect(result!.repoUrl).toBe('http://localhost:3000/dev/repo.git')
@@ -307,197 +262,80 @@ describe('git-config', () => {
   })
 
   describe('setGitConfig', () => {
-    it('should create configmap with all fields', async () => {
-      await setGitConfig({
+    it('should create secret with all fields', async () => {
+      const config = await setGitConfig({
         repoUrl: 'https://github.com/org/repo.git',
         branch: 'main',
         email: 'test@test.com',
+        password: 'test-token',
       })
 
-      expect(mockCreateUpdateConfigMap).toHaveBeenCalledWith(mockCoreApi, 'apl-git-config', 'apl-operator', {
+      expect(mockCreateUpdateGenericSecret).toHaveBeenCalledWith(
+        mockCoreApi,
+        'apl-git-config',
+        'apl-secrets',
+        {
+          repoUrl: 'https://github.com/org/repo.git',
+          branch: 'main',
+          email: 'test@test.com',
+          password: 'test-token',
+        },
+        false,
+      )
+      expect(config).toEqual({
         repoUrl: 'https://github.com/org/repo.git',
         branch: 'main',
         email: 'test@test.com',
+        authenticatedUrl: 'https://test-token@github.com/org/repo.git',
+        password: 'test-token',
       })
     })
 
     it('should only include defined fields', async () => {
-      await setGitConfig({ repoUrl: 'https://github.com/org/repo.git' })
-
-      expect(mockCreateUpdateConfigMap).toHaveBeenCalledWith(mockCoreApi, 'apl-git-config', 'apl-operator', {
+      const config = await setGitConfig({
         repoUrl: 'https://github.com/org/repo.git',
+        branch: '',
+        username: undefined,
+        password: 's3cret',
+      })
+
+      expect(mockCreateUpdateGenericSecret).toHaveBeenCalledWith(
+        mockCoreApi,
+        'apl-git-config',
+        'apl-secrets',
+        {
+          repoUrl: 'https://github.com/org/repo.git',
+          password: 's3cret',
+        },
+        false,
+      )
+      expect(config).toEqual({
+        repoUrl: 'https://github.com/org/repo.git',
+        branch: 'main',
+        email: 'pipeline@cluster.local',
+        authenticatedUrl: 'https://s3cret@github.com/org/repo.git',
+        password: 's3cret',
       })
     })
 
     it('should use provided coreV1Api', async () => {
       const customApi = { custom: true } as any
-      await setGitConfig({ branch: 'develop' }, customApi)
+      await setGitConfig({ branch: 'develop', password: 'test' }, customApi)
 
-      expect(mockCreateUpdateConfigMap).toHaveBeenCalledWith(customApi, 'apl-git-config', 'apl-operator', {
-        branch: 'develop',
-      })
-    })
-
-    it('should pass empty data when no fields provided', async () => {
-      await setGitConfig({})
-
-      expect(mockCreateUpdateConfigMap).toHaveBeenCalledWith(mockCoreApi, 'apl-git-config', 'apl-operator', {})
-    })
-  })
-
-  describe('getRepo', () => {
-    it('should use basic auth when username is provided', async () => {
-      const values = {
-        otomi: {
-          git: {
-            repoUrl: 'https://github.com/org/repo.git',
-            username: 'admin',
-            password: 's3cret',
-            branch: 'main',
-            email: 'pipeline@cluster.local',
-          },
+      expect(mockCreateUpdateGenericSecret).toHaveBeenCalledWith(
+        customApi,
+        'apl-git-config',
+        'apl-secrets',
+        {
+          branch: 'develop',
+          password: 'test',
         },
-      }
-
-      const result = await getRepo(values)
-      expect(result).toEqual({
-        repoUrl: 'https://github.com/org/repo.git',
-        authenticatedUrl: 'https://admin:s3cret@github.com/org/repo.git',
-        branch: 'main',
-        email: 'pipeline@cluster.local',
-        username: 'admin',
-        password: 's3cret',
-      })
+        false,
+      )
     })
 
-    it('should use PAT auth (token only) when username is not provided', async () => {
-      const values = {
-        otomi: {
-          git: {
-            repoUrl: 'https://github.com/org/repo.git',
-            password: 's3cret',
-            branch: 'main',
-            email: 'pipeline@cluster.local',
-          },
-        },
-      }
-
-      const result = await getRepo(values)
-      expect(result).toEqual({
-        repoUrl: 'https://github.com/org/repo.git',
-        authenticatedUrl: 'https://s3cret@github.com/org/repo.git',
-        branch: 'main',
-        email: 'pipeline@cluster.local',
-        username: undefined,
-        password: 's3cret',
-      })
-    })
-    it('should throw when repoUrl is missing', async () => {
-      await expect(getRepo({ otomi: { git: {} } })).rejects.toThrow('No otomi.git.repoUrl config was given.')
-    })
-
-    it('should throw when otomi.git is missing', async () => {
-      await expect(getRepo({ otomi: {} })).rejects.toThrow('No otomi.git.repoUrl config was given.')
-    })
-
-    it('should throw when values is empty', async () => {
-      await expect(getRepo({})).rejects.toThrow('No otomi.git.repoUrl config was given.')
-    })
-
-    it('should use GIT_REPO_URL env var in development mode', async () => {
-      process.env.NODE_ENV = 'development'
-      process.env.GIT_REPO_URL = 'http://localhost:3000/dev/repo.git'
-
-      const values = {
-        otomi: {
-          git: {
-            repoUrl: 'https://github.com/org/repo.git',
-            username: 'admin',
-            password: 's3cret',
-            branch: 'main',
-            email: 'pipeline@cluster.local',
-          },
-        },
-      }
-
-      const result = await getRepo(values)
-      expect(result.repoUrl).toBe('http://localhost:3000/dev/repo.git')
-      expect(result.authenticatedUrl).toBe('http://admin:s3cret@localhost:3000/dev/repo.git')
-    })
-
-    it('should fallback to K8s secret when password is empty', async () => {
-      const secretMock = jest.fn().mockResolvedValue({ git_password: 'from-k8s' })
-      const values = {
-        otomi: {
-          git: {
-            repoUrl: 'https://github.com/org/repo.git',
-            username: 'admin',
-            password: '',
-            branch: 'main',
-            email: 'pipeline@cluster.local',
-          },
-        },
-      }
-
-      const result = await getRepo(values, { getK8sSecret: secretMock })
-      expect(result.password).toBe('from-k8s')
-    })
-
-    it('should keep empty password when K8s secret also has no password', async () => {
-      const secretMock = jest.fn().mockResolvedValue(null)
-      const values = {
-        otomi: {
-          git: {
-            repoUrl: 'https://github.com/org/repo.git',
-            username: 'admin',
-            password: '',
-            branch: 'main',
-            email: 'pipeline@cluster.local',
-          },
-        },
-      }
-
-      const result = await getRepo(values, { getK8sSecret: secretMock })
-      expect(result.password).toBe('')
-    })
-
-    it('should use VALUES_INPUT password when set and not a placeholder', async () => {
-      mockedEnvalid.env.VALUES_INPUT = '/test/values.yaml'
-      mockLoadYaml.mockResolvedValue({ otomi: { git: { password: 'input-token' } } })
-      const secretMock = jest.fn().mockResolvedValue({ git_password: 'old-token' })
-      const values = {
-        otomi: {
-          git: {
-            repoUrl: 'https://github.com/org/repo.git',
-            branch: 'main',
-            email: 'pipeline@cluster.local',
-            password: 'old-token',
-          },
-        },
-      }
-
-      const result = await getRepo(values, { getK8sSecret: secretMock })
-
-      expect(result.password).toBe('input-token')
-      expect(mockLoadYaml).toHaveBeenCalledWith('/test/values.yaml')
-    })
-
-    it('should not read VALUES_INPUT when env.VALUES_INPUT is unset', async () => {
-      // mockedEnvalid.env.VALUES_INPUT is undefined (set in beforeEach)
-      const secretMock = jest.fn().mockResolvedValue({ git_password: 'k8s-token' })
-      const values = {
-        otomi: {
-          git: {
-            repoUrl: 'https://github.com/org/repo.git',
-            branch: 'main',
-            email: 'pipeline@cluster.local',
-          },
-        },
-      }
-
-      await getRepo(values, { getK8sSecret: secretMock })
-
-      expect(mockLoadYaml).not.toHaveBeenCalled()
+    it('should throw error if password is not set', async () => {
+      await expect(setGitConfig({})).rejects.toThrow('Git password must be provided')
     })
   })
 })

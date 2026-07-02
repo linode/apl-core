@@ -96,25 +96,6 @@ otomi:
 #       apiSecret: ''
 #       email: ''
 #       proxied: # true|false (default is true)
-# KMS for encrypting values
-# kms:
-#   sops:
-#   # provider can be one of aws|azure|google
-#     provider: ''
-#     aws:
-#       keys: ''
-#       accessKey: ''
-#       secretKey: ''
-#       region: ''
-#     azure:
-#       keys: ''
-#       tenantID: ''
-#       clientID: ''
-#       clientSecret: ''
-#     google:
-#       keys: ''
-#       accountJson: ''
-#       project: ''
 # Bring your own IDP, or leave commented out to use keycloak as IDP
 # oidc:
 #   clientID: ''
@@ -140,14 +121,16 @@ serviceAccount:
 
 ## APL Operator configuration
 operator:
-  # Git organization/user name (will be configured during installation)
-  gitOrg: "otomi"
-  # Git repository name (will be configured during installation)
-  gitRepo: "values"
   # Polling interval for git changes (milliseconds)
-  pollIntervalMs: 1000
+  pollIntervalMs: 30000
   # Reconcile interval for applying changes (milliseconds)
   reconcileIntervalMs: 300000
+  gitOpTimeoutMs: 10000
+  installRetries: 1000
+  installMaxTimeoutMs: 10000
+
+  image:
+    repository: "mirror.registry.linodelke.net/docker/linode/apl-core"
 
 installation:
   mode: standard

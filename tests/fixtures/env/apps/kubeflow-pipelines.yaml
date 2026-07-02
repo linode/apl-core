@@ -1,10 +1,9 @@
 kind: AplApp
 metadata:
     name: kubeflow-pipelines
-    labels: {}
 spec:
+    _rawValues: {}
     enabled: true
     persistence:
         mysql:
             size: 20Gi
-    _rawValues: {}

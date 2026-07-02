@@ -122,7 +122,11 @@ export const isResourcePresent = async (type: string, name: string, namespace: s
   return true
 }
 
-export const getK8sSecret = async (name: string, namespace: string): Promise<Record<string, any> | undefined> => {
+export const getK8sSecret = async (
+  name: string,
+  namespace: string,
+  parseValues = false,
+): Promise<Record<string, any> | undefined> => {
   try {
     const secret = await k8s.core().readNamespacedSecret({ name, namespace })
 
@@ -134,10 +138,10 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
     const decodedData: Record<string, any> = {}
     for (const [key, value] of Object.entries(secret.data)) {
       const decoded = Buffer.from(value, 'base64').toString('utf-8')
-      // Try to parse as YAML/JSON, otherwise use as string
-      try {
+      // Optionally parse as YAML/JSON, otherwise use as string
+      if (parseValues) {
         decodedData[key] = parse(decoded)
-      } catch {
+      } else {
         decodedData[key] = decoded
       }
     }
@@ -408,6 +412,7 @@ export async function createUpdateGenericSecret(
   name: string,
   namespace: string,
   secretData: Record<string, string>,
+  patch = true,
 ): Promise<V1Secret> {
   const encodedData = mapValues(secretData, b64enc)
 
@@ -424,10 +429,14 @@ export async function createUpdateGenericSecret(
     return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
   } catch (error) {
     if (error instanceof ApiException && error.code === 409) {
-      return await coreV1Api.patchNamespacedSecret(
-        { name, namespace, body: secret },
-        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
-      )
+      if (patch) {
+        return await coreV1Api.patchNamespacedSecret(
+          { name, namespace, body: secret },
+          setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+        )
+      } else {
+        return await coreV1Api.replaceNamespacedSecret({ name, namespace, body: secret })
+      }
     } else {
       throw error
     }

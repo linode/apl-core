@@ -1,7 +1,5 @@
 {{- $kms := .Values.kms | default dict }}
-{{- $imageName := .Values.imageName | default "linode/apl-core" }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
-{{- $useORCS := .Values.otomi.useORCS }}
 {{- $skipDeployment := .Values.installation.skipOperatorDeployment }}
 {{- if not $skipDeployment }}
 apiVersion: apps/v1
@@ -38,11 +36,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: apl-operator
-          {{- if $useORCS }}
-          image: "mirror.registry.linodelke.net/docker/{{ $imageName }}:{{ $version }}"
-          {{- else }}
-          image: "docker.io/{{ $imageName }}:{{ $version }}"
-          {{- end }}
+          image: "{{ .Values.operator.image.repository }}:{{ $version }}"
           imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }}
           securityContext:
             allowPrivilegeEscalation: false
@@ -67,18 +61,16 @@ spec:
               value: /home/app/stack/env
             - name: VALUES_INPUT
               value: /secret/values.yaml
-            # Git configuration for operator (will be set after installation)
-            - name: GIT_ORG
-              value: {{ .Values.operator.gitOrg | default "apl" | quote }}
-            - name: GIT_REPO
-              value: {{ .Values.operator.gitRepo | default "values" | quote }}
             - name: POLL_INTERVAL_MS
-              value: {{ .Values.operator.pollIntervalMs | default "30000" | quote }}
+              value: {{ .Values.operator.pollIntervalMs | quote }}
             - name: RECONCILE_INTERVAL_MS
-              value: {{ .Values.operator.reconcileIntervalMs | default "300000" | quote }}
-          envFrom:
-            - secretRef:
-                name: apl-git-credentials
+              value: {{ .Values.operator.reconcileIntervalMs | quote }}
+            - name: GIT_OP_TIMEOUT_MS
+              value: {{ .Values.operator.gitOpTimeoutMs | quote }}
+            - name: INSTALL_RETRIES
+              value: {{ .Values.operator.installRetries | quote }}
+            - name: INSTALL_MAX_TIMEOUT_MS
+              value: {{ .Values.operator.installMaxTimeoutMs | quote }}
           volumeMounts:
             - name: otomi-values
               mountPath: /home/app/stack/env
