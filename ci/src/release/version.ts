@@ -48,15 +48,19 @@ export function versionMatchesBranch(version: string, branch: string): boolean {
   return releaseBranchName(version) === branch
 }
 
+function filterSemver(tags: string[]): string[] {
+  return tags.filter((t) => semver.valid(t))
+}
+
 export function previousStableTag(tags: string[]): string | null {
-  const stable = tags
+  const stable = filterSemver(tags)
     .filter((t) => !t.includes('-rc.'))
     .sort((a, b) => semver.rcompare(a, b))
   return stable.length >= 2 ? stable[1] : null
 }
 
 export function previousStableTagBefore(newTag: string, tags: string[]): string | null {
-  const stable = tags
+  const stable = filterSemver(tags)
     .filter((t) => !t.includes('-rc.'))
     .filter((t) => semver.lt(t, newTag))
     .sort((a, b) => semver.rcompare(a, b))
@@ -66,7 +70,7 @@ export function previousStableTagBefore(newTag: string, tags: string[]): string 
 export function previousRcTag(currentTag: string, tags: string[]): string | null {
   const [majorMinorPatch] = currentTag.replace('v', '').split('-rc.')
   const [major, minor] = majorMinorPatch.split('.')
-  const sameSeries = tags
+  const sameSeries = filterSemver(tags)
     .filter((t) => t !== currentTag)
     .filter((t) => t.includes('-rc.'))
     .filter((t) => {
@@ -79,14 +83,14 @@ export function previousRcTag(currentTag: string, tags: string[]): string | null
 }
 
 export function computeStableTag(branchTags: string[]): string {
-  const rcs = branchTags.filter((t) => t.includes('-rc.')).sort((a, b) => semver.rcompare(a, b))
+  const rcs = filterSemver(branchTags).filter((t) => t.includes('-rc.')).sort((a, b) => semver.rcompare(a, b))
   if (rcs.length === 0) throw new Error('No RC tags on branch — cannot promote to stable without a prior RC')
   return `v${promoteToStable(stripV(rcs[0]))}`
 }
 
 export function computeNextRcTag(branchTags: string[], branchName: string): string {
   const [major, minor] = stripV(branchName.replace('releases/', '')).split('.')
-  const seriesRcs = branchTags
+  const seriesRcs = filterSemver(branchTags)
     .filter((t) => t.includes('-rc.'))
     .filter((t) => {
       const [m, n] = stripV(t).split('-rc.')[0].split('.')
@@ -108,12 +112,12 @@ export function highestTag(tags: string[]): string | null {
 }
 
 export function highestStableTag(tags: string[]): string | null {
-  const stable = tags.filter((t) => !t.includes('-rc.')).sort((a, b) => semver.rcompare(a, b))
+  const stable = filterSemver(tags).filter((t) => !t.includes('-rc.')).sort((a, b) => semver.rcompare(a, b))
   return stable.length > 0 ? stable[0] : null
 }
 
 export function isHighestStableTag(newTag: string, existingTags: string[]): boolean {
-  const stableTags = existingTags.filter((t) => !t.includes('-rc.'))
+  const stableTags = filterSemver(existingTags).filter((t) => !t.includes('-rc.'))
   return stableTags.every((t) => semver.gt(newTag, t))
 }
 
