@@ -12,22 +12,42 @@
     "yaml": "^2.8.3",
     "zx": "^8.2.2"
   },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "24.12.4",
+    "@types/semver": "^7.5.8",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
+    "tsx": "^4.19.4",
+    "typescript": "5.9.3"
+  },
   "description": "CI scripts",
   "engines": {
     "node": ">=24 <25"
   },
   "homepage": "https://github.com/linode/apl-core#readme",
   "license": "Apache-2.0",
-  "name": "apl-core",
+  "name": "apl-core-ci",
   "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/linode/apl-core.git"
   },
   "scripts": {
-    "update-helm-chart-deps": "src/update-helm-chart-deps.mjs",
-    "check-schema-versions": "src/check-schema-versions.mjs"
+    "update-helm-chart-deps": "node src/update-helm-chart-deps.mjs",
+    "check-schema-versions": "node src/check-schema-versions.mjs",
+    "test": "jest",
+    "release:configure-git": "tsx src/release/configure-git.ts",
+    "release:derive-release-branch": "tsx src/release/derive-release-branch.ts",
+    "release:check-branch-not-exists": "tsx src/release/check-branch-not-exists.ts",
+    "release:create-release-branch": "tsx src/release/create-release-branch.ts",
+    "release:check-versions-yaml": "tsx src/release/check-versions-yaml.ts",
+    "release:compute-tag": "tsx src/release/compute-tag.ts",
+    "release:compute-dev-version": "tsx src/release/compute-dev-version.ts",
+    "release:check-tag-not-exists": "tsx src/release/check-tag-not-exists.ts",
+    "release:tag-release": "tsx src/release/tag-release.ts",
+    "release:create-github-release": "tsx src/release/create-github-release.ts",
+    "release:docker-push": "tsx src/release/docker-push.ts"
   },
-  "type": "commonjs",
   "version": "1.0.0"
 }

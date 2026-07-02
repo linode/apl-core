@@ -3,17 +3,20 @@ name: Cut Release Branch
 on:
   workflow_dispatch:
     inputs:
-      minor_version:
-        description: 'Major.minor version to release, with v prefix (e.g. v1.4)'
+      bump_type:
+        description: 'Version bump type'
         required: true
-        type: string
+        type: choice
+        options:
+          - minor
+          - major
       base_branch:
         description: 'Branch to cut from'
         required: true
         default: 'main'
         type: string
       dry_run:
-        description: 'Dry run — skip all writes (git push, PRs)'
+        description: 'Dry run — skip all writes (git push)'
         required: true
         default: 'true'
         type: choice
@@ -22,7 +25,6 @@ on:
           - 'false'
 
 env:
-  RELEASE_BRANCH: releases/${{ inputs.minor_version }}
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
 
@@ -31,7 +33,6 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
-      pull-requests: write
 
     steps:
       - name: Checkout
@@ -40,3 +41,47 @@ jobs:
           ref: ${{ inputs.base_branch }}
           fetch-depth: 0
           token: ${{ secrets.BOT_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install CI dependencies
+        working-directory: ci
+        run: npm ci
+
+      - name: Derive release branch from highest stable tag
+        id: derive-branch
+        working-directory: ci
+        run: npm run release:derive-release-branch
+        env:
+          BUMP_TYPE: ${{ inputs.bump_type }}
+
+      - name: Check release branch does not already exist
+        working-directory: ci
+        run: npm run release:check-branch-not-exists
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Run tests in Docker (test gate)
+        uses: docker/build-push-action@v7
+        with:
+          push: false
+          load: true
+          context: .
+          build-args: SKIP_TESTS=false
+
+      - name: Configure git bot identity
+        working-directory: ci
+        run: npm run release:configure-git
+
+      - name: Create release branch
+        if: ${{ inputs.dry_run == 'false' }}
+        working-directory: ci
+        run: npm run release:create-release-branch
+
+      - name: Push release branch
+        if: ${{ inputs.dry_run == 'false' }}
+        run: git push origin "$RELEASE_BRANCH"
