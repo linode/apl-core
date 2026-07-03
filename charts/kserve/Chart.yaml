@@ -1,7 +1,7 @@
 annotations:
   category: AI/Machine Learning
 apiVersion: v2
-appVersion: v0.18.0
+appVersion: v0.19.0
 description: Helm chart for deploying kserve resources
 home: https://kserve.github.io/website/
 icon: https://raw.githubusercontent.com/kserve/website/main/docs/images/logo.png
@@ -18,4 +18,4 @@ name: kserve-resources
 sources:
 - https://github.com/kserve/kserve
 type: application
-version: v0.18.0
+version: v0.19.0
