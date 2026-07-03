@@ -54,8 +54,8 @@ spec:
   parentRefs:
     {{- if $useCname }}
     - name: {{ $s.ingressClassName | default $defaultIngressClass }}-workloads
-      kind: XListenerSet
-      group: gateway.networking.x-k8s.io
+      kind: ListenerSet
+      group: gateway.networking.k8s.io
     {{- end }}
     - name: {{ $s.ingressClassName | default $defaultIngressClass }}
       namespace: istio-system
@@ -146,8 +146,8 @@ spec:
 {{- /* Collect CNAME hostnames for HTTP-HTTPS redirect */}}
 {{- $httpRedirects := list }}
 ---
-apiVersion: gateway.networking.x-k8s.io/v1alpha1
-kind: XListenerSet
+apiVersion: gateway.networking.k8s.io/v1
+kind: ListenerSet
 metadata:
   name: {{ $name }}-workloads
 spec:
@@ -191,8 +191,8 @@ spec:
   hostnames:
     - {{ .hostname }}
   parentRefs:
-    - group: gateway.networking.x-k8s.io
-      kind: XListenerSet
+    - group: gateway.networking.k8s.io
+      kind: ListenerSet
       name: {{ $name }}-workloads
       sectionName: http-cname-{{ .name }}
   rules:
