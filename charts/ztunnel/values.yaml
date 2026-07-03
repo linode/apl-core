@@ -2,9 +2,9 @@
 # For instance, instead of `--set _internal_defaults_do_not_set.foo=bar``, just set `--set foo=bar`.
 _internal_defaults_do_not_set:
   # Hub to pull from. Image will be `Hub/Image:Tag-Variant`
-  hub: docker.io/istio
+  hub: registry.istio.io/release
   # Tag to pull from. Image will be `Hub/Image:Tag-Variant`
-  tag: 1.29.2
+  tag: 1.30.2
   # Variant to pull. Options are "debug" or "distroless". Unset will use the default for the given version.
   variant: ""
 
@@ -144,3 +144,11 @@ _internal_defaults_do_not_set:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+
+  # DNS policy for the ztunnel pod
+  # https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy
+  dnsPolicy: ""
+
+  # DNS config for the ztunnel pod
+  # https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config
+  dnsConfig: {}
