@@ -164,9 +164,49 @@ metricsServer:
 {{- end -}}
 
 {{/*
-If `config.forceLegacyConfig=false`, the chart ignores both the `config.configFile` and `config.existingConfig` overrides and only generates a minimal necessary legacy config.
-If `config.existingConfig` is set and `config.forceLegacyConfig=true`, the external ConfigMap is mounted into the mounted file.
-If `config.configFile` is set and `config.forceLegacyConfig=true`, the chart renders that inline content into the mounted file.
+Alpha config source resolution:
+- disabled: alphaConfig.enabled=false
+- existing-configmap: alphaConfig.existingConfig is set
+- existing-secret: alphaConfig.existingSecret is set
+- generated: alphaConfig enabled with no external source
+*/}}
+{{- define "oauth2-proxy.alpha-config.source" -}}
+{{- if not .Values.alphaConfig.enabled -}}
+disabled
+{{- else if .Values.alphaConfig.existingConfig -}}
+existing-configmap
+{{- else if .Values.alphaConfig.existingSecret -}}
+existing-secret
+{{- else -}}
+generated
+{{- end -}}
+{{- end -}}
+
+{{- define "oauth2-proxy.alpha-config.name" -}}
+{{- $source := include "oauth2-proxy.alpha-config.source" . -}}
+{{- if eq $source "existing-configmap" -}}
+{{- .Values.alphaConfig.existingConfig -}}
+{{- else if eq $source "existing-secret" -}}
+{{- .Values.alphaConfig.existingSecret -}}
+{{- else if eq $source "generated" -}}
+{{- printf "%s-alpha" (include "oauth2-proxy.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Legacy config mode resolution:
+- alphaConfig.enabled=true + forceLegacyConfig=false
+    → generated-alpha-compatible (minimal legacy config; config.existingConfig and config.configFile are ignored)
+- config.existingConfig is set (only when NOT in alphaConfig.enabled + !forceLegacyConfig path)
+    → existing-configmap (external ConfigMap)
+- config.configFile is set (only when NOT in alphaConfig.enabled + !forceLegacyConfig path)
+    → inline-custom (user-provided content)
+- alphaConfig.enabled=true + forceLegacyConfig=true (no existingConfig/configFile)
+    → generated-alpha-compatible
+- alphaConfig.enabled=false + forceLegacyConfig=false + no configFile/existingConfig
+    → no-config (nothing generated/mounted)
+- Default
+    → generated-legacy (full legacy config with emailDomains + upstreams)
 */}}
 {{- define "oauth2-proxy.legacy-config.mode" -}}
 {{- if and .Values.alphaConfig.enabled (not .Values.config.forceLegacyConfig) -}}
@@ -177,6 +217,8 @@ existing-configmap
 inline-custom
 {{- else if .Values.alphaConfig.enabled -}}
 generated-alpha-compatible
+{{- else if not .Values.config.forceLegacyConfig -}}
+no-config
 {{- else -}}
 generated-legacy
 {{- end -}}
