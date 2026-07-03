@@ -124,7 +124,7 @@ grafana:
     resources: {{- $teamApps.grafana.resources.sidecar | toYaml | nindent 6 }}
     {{- if $v.otomi.linodeLkeImageRepository }}
     image:
-      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+      registry: {{- printf "%s/quay" $v.otomi.linodeLkeImageRepository | quote }}
     {{- end }}
     dashboards:
       enabled: true
