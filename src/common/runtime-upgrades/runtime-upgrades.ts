@@ -156,11 +156,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           await migrateGitConfig(context)
         },
       },
-      'istio-system-istiod': {
-        post: async () => {
-          await detectAndRestartOutdatedIstioSidecars(k8s.core())
-        },
-      },
       'knative-operator-knative-operator': {
         post: async (context: RuntimeUpgradeContext) => {
           await deleteKnativeServingCR(context)
@@ -173,6 +168,16 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     pre: async (context: RuntimeUpgradeContext) => {
       await syncIngressNginxService(context)
       await removeTektonDashboardApp(context)
+    },
+  },
+  {
+    version: '5.1.1',
+    applications: {
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
     },
   },
 ]
