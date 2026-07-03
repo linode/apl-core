@@ -64,6 +64,11 @@ config:
   #    generates a minimal legacy config from emailDomains only.
   # 3. If configFile is empty/not set, the config is auto-generated
   #    from emailDomains and, when alphaConfig is disabled, upstreams.
+  # 4. When alphaConfig.enabled=false and forceLegacyConfig=false,
+  #    and neither config.configFile nor config.existingConfig are set,
+  #    no ConfigMap is generated or mounted. Use this when you manage
+  #    oauth2-proxy configuration entirely via external means (e.g.,
+  #    CSI SecretStore Driver, extraVolumes, etc.).
   configFile: ""
   # Email domains allowed to authenticate when the chart generates
   # the main oauth2_proxy.cfg.
@@ -77,9 +82,12 @@ config:
   upstreams: ["file:///dev/null"]
   # Behavior when using alphaConfig together with a custom config file
   #
-  # This flag only has an effect when:
-  #   - alphaConfig.enabled is true, AND
-  #   - you provide a custom config.configFile or config.existingConfig.
+  # This flag has an effect when:
+  #   - alphaConfig.enabled is true AND you provide a custom
+  #     config.configFile or config.existingConfig, OR
+  #   - alphaConfig.enabled is false AND no configFile/existingConfig
+  #     is provided (setting forceLegacyConfig=false disables config
+  #     generation entirely — see "no-config mode" below).
   #
   # Auto-generated config when alphaConfig.enabled=true is always a
   # minimal legacy config (no upstreams), regardless of this flag.
@@ -109,6 +117,12 @@ config:
   #      instead (see examples below).
   #    - Move any other relevant settings into alphaConfig and/or
   #      flags rather than relying on a custom legacy configFile.
+  #
+  # no-config mode:
+  # If forceLegacyConfig and alphaConfig.enabled are both false,
+  # and no configFile or existingConfig is provided, no ConfigMap
+  # is generated or mounted. This is useful when managing config
+  # externally (e.g., CSI SecretStore Driver).
   forceLegacyConfig: true
   #
   # Custom configuration file: oauth2_proxy.cfg (overrides
@@ -165,9 +179,13 @@ alphaConfig:
   # Arbitrary configuration to append
   # This is treated as a Go template and rendered with the root context
   configFile: ""
-  # Use an existing config map (see secret-alpha.yaml for required fields)
+  # Use an existing config map (see secret-alpha.yaml for required fields).
+  # Mutually exclusive with existingSecret and all generated alpha config
+  # content options (serverConfigData, metricsConfigData, configData, configFile).
   existingConfig: ~
-  # Use an existing secret
+  # Use an existing secret.
+  # Mutually exclusive with existingConfig and all generated alpha config
+  # content options (serverConfigData, metricsConfigData, configData, configFile).
   existingSecret: ~
   #
   # NOTE: When using alphaConfig with external secrets (e.g., Azure
