@@ -3,6 +3,7 @@ import { parse } from 'yaml'
 
 interface Dependency {
   name: string
+  alias?: string
   version: string
 }
 
@@ -35,7 +36,7 @@ function loadChartAtTag(tag: string): Map<string, string> {
 export function buildDepMap(chart: ChartYaml): Map<string, string> {
   const map = new Map<string, string>()
   for (const dep of chart.dependencies ?? []) {
-    map.set(dep.name, dep.version)
+    map.set(dep.alias ?? dep.name, dep.version)
   }
   return map
 }

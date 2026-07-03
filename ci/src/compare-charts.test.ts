@@ -6,6 +6,12 @@ describe('buildDepMap', () => {
     expect(result.get('cert-manager')).toBe('v1.0.0')
   })
 
+  it('uses alias as key when present', () => {
+    const result = buildDepMap({ dependencies: [{ name: 'keycloakx', alias: 'keycloak', version: '7.2.0' }] })
+    expect(result.has('keycloakx')).toBe(false)
+    expect(result.get('keycloak')).toBe('7.2.0')
+  })
+
   it('handles empty dependencies', () => {
     expect(buildDepMap({ dependencies: [] }).size).toBe(0)
   })
