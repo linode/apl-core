@@ -47,7 +47,8 @@
     "release:check-tag-not-exists": "tsx src/release/check-tag-not-exists.ts",
     "release:tag-release": "tsx src/release/tag-release.ts",
     "release:create-github-release": "tsx src/release/create-github-release.ts",
-    "release:docker-push": "tsx src/release/docker-push.ts"
+    "release:docker-push": "tsx src/release/docker-push.ts",
+    "compare-charts": "tsx src/compare-charts.ts"
   },
   "version": "1.0.0"
 }
