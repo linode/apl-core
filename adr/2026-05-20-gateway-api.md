@@ -44,7 +44,6 @@ Chosen option: **Kubernetes Gateway API with Istio**, because it eliminates the 
 - Good, because it removes the unstable two-controller chain.
 - Good, because `HTTPRoute` is a first-class Kubernetes API resource with rich, extensible semantics.
 - Good, because Istio is the `GatewayClass` implementation, so the mesh and the ingress layer are the same system.
-- Bad, because CNAME listener support relies on the experimental `XListenerSet` resource (see Negative Consequences above).
 
 ## Links
 
