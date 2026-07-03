@@ -1,4 +1,4 @@
-{{- if ne (include "oauth2-proxy.legacy-config.mode" .) "existing-configmap" }}
+{{- if not (has (include "oauth2-proxy.legacy-config.mode" .) (list "existing-configmap" "no-config")) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
