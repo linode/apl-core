@@ -73,7 +73,7 @@ extraInitContainers: |
   # Akamai branding init container
   - name: init-container-theme-copy
     {{- if $v.otomi.linodeLkeImageRepository }}
-    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-console:{{ printf "%s%s" ($isSemver | ternary "v" "") $consoleLoginVersion }}"
+    image: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-console:{{ printf "%s%s" ($isSemver | ternary "v" "") $consoleLoginVersion }}"
     {{- else }}
     image: docker.io/linode/apl-console:{{ printf "%s%s" ($isSemver | ternary "v" "") $consoleLoginVersion }}
     {{- end }}

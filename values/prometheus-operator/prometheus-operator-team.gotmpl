@@ -63,7 +63,7 @@ alertmanager:
         {{- end }}
     image:
       {{- if $v.otomi.linodeLkeImageRepository }}
-      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+      registry: "{{ $v.otomi.linodeLkeImageRepository }}/quay"
       {{- end }}
       {{- with $a | get "image.tag" nil }}
       tag: {{ . }}
@@ -113,7 +113,7 @@ grafana:
   assertNoLeakedSecrets: false
   image:
     {{- if $v.otomi.linodeLkeImageRepository }}
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+    registry: "{{ $v.otomi.linodeLkeImageRepository }}/docker"
     {{- end }}
     {{- with $g | get "image.tag" nil }}
     tag: {{ . }}
@@ -124,7 +124,7 @@ grafana:
     resources: {{- $teamApps.grafana.resources.sidecar | toYaml | nindent 6 }}
     {{- if $v.otomi.linodeLkeImageRepository }}
     image:
-      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+      registry: "{{ $v.otomi.linodeLkeImageRepository }}/quay"
     {{- end }}
     dashboards:
       enabled: true
