@@ -1,0 +1,13 @@
+# Test: no legacy config generation (external config management)
+# Expected: No ConfigMap generated, no --config flag, no config volume mount.
+# Use case: config managed externally via CSI SecretStore Driver or similar.
+#
+# Since no config file is mounted, the minimum required settings
+# (email-domain, upstream) must be provided via extraArgs.
+
+config:
+  forceLegacyConfig: false
+
+extraArgs:
+  email-domain: "*"
+  upstream: "file:///dev/null"
