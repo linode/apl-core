@@ -1,5 +1,7 @@
 # Ingress classes
 
+- Status: superseded by [ADR-2026-05-20](2026-05-20-gateway-api.md)
+
 Jehoszafat:
 
 To allow network segmentation of the ingress a user can define new ingress classes.
