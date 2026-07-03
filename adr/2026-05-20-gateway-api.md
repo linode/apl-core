@@ -30,10 +30,6 @@ Chosen option: **Kubernetes Gateway API with Istio**, because it eliminates the 
 - Alignment with the Kubernetes ecosystem: Gateway API is the endorsed successor to `Ingress` and is implemented natively by Istio.
 - The `kubernetes-gateways` chart bundles Gateway API CRDs, making the dependency explicit and version-controlled.
 
-### Negative Consequences
-
-- CNAME / custom-hostname listeners require `XListenerSet` (`gateway.networking.x-k8s.io/v1alpha1`) — an experimental, pre-standard resource outside the stable `gateway.networking.k8s.io` group. If this resource is renamed or removed upstream, the CNAME feature will break and require migration.
-
 ## Pros and Cons of the Options
 
 ### Keep ingress-nginx + Istio VirtualService
