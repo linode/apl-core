@@ -1,12 +1,17 @@
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Added name attribute for HTTPRoute rules
+      description: Add alpha-config.source and alpha-config.name helpers for centralized alpha config resolution
       links:
         - name: GitHub PR
-          url: https://github.com/oauth2-proxy/manifests/pull/407
+          url: https://github.com/oauth2-proxy/manifests/pull/405
+    - kind: added
+      description: Add deprecation guards for invalid alphaConfig combinations
+      links:
+        - name: GitHub PR
+          url: https://github.com/oauth2-proxy/manifests/pull/405
 apiVersion: v2
-appVersion: 7.15.2
+appVersion: 7.15.3
 dependencies:
 - condition: redis-ha.enabled
   name: redis-ha
@@ -35,4 +40,4 @@ name: oauth2-proxy
 sources:
 - https://github.com/oauth2-proxy/oauth2-proxy
 - https://github.com/oauth2-proxy/manifests
-version: 10.6.0
+version: 10.7.0
