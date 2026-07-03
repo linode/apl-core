@@ -63,7 +63,7 @@ alertmanager:
         {{- end }}
     image:
       {{- if $v.otomi.linodeLkeImageRepository }}
-      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+      registry: {{ printf "%s/quay" $v.otomi.linodeLkeImageRepository | quote }}
       {{- end }}
       {{- with $a | get "image.tag" nil }}
       tag: {{ . }}
