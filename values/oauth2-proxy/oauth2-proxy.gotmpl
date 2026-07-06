@@ -76,7 +76,7 @@ extraVolumeMounts:
 extraInitContainers:
   - name: wait-for-keycloak
     {{- if $v.otomi.linodeLkeImageRepository }}
-    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/curlimages/curl:latest"
+    image: "{{ $v.otomi.linodeLkeImageRepository }}/docker/curlimages/curl:latest"
     {{- else }}
     image: curlimages/curl:latest
     {{- end }}
@@ -87,7 +87,7 @@ extraInitContainers:
 initContainers:
   waitForRedis:
     image:
-      repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/alpine"
+      repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/alpine"
 {{- end }}
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
@@ -113,7 +113,7 @@ redis-ha:
     priorityClassName: otomi-critical
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/redis"
+    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/redis"
   {{- end }}
   enabled: true
   existingSecret: oauth2-proxy-redis-password
