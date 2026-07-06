@@ -21,7 +21,7 @@ core:
   priorityClassName: otomi-critical
     {{- if $v.otomi.linodeLkeImageRepository }}
   image:
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-core"
+    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-core"
     {{- end }}
 
   resources: {{- $h.resources.core | toYaml | nindent 4 }}
@@ -51,7 +51,7 @@ exporter:
   priorityClassName: otomi-critical
     {{- if $v.otomi.linodeLkeImageRepository }}
   image:
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-exporter"
+    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-exporter"
     {{- end }}
 
 expose:
@@ -72,7 +72,7 @@ jobservice:
   priorityClassName: otomi-critical
     {{- if $v.otomi.linodeLkeImageRepository }}
   image:
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-jobservice"
+    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-jobservice"
     {{- end }}
 
   jobLoggers:
@@ -96,7 +96,7 @@ nginx:
   resources: {{- $h.resources.nginx | toYaml | nindent 4 }}
     {{- if $v.otomi.linodeLkeImageRepository }}
   image:
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/nginx-photon"
+    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/goharbor/nginx-photon"
     {{- end }}
 
 persistence:
@@ -163,7 +163,7 @@ portal:
   priorityClassName: otomi-critical
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-portal"
+    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-portal"
   {{- end }}
   resources: {{- $h.resources.portal | toYaml | nindent 4 }}
   podLabels:
@@ -175,7 +175,7 @@ redis:
     priorityClassName: otomi-critical
     {{- if $v.otomi.linodeLkeImageRepository }}
     image:
-      repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/redis-photon"
+      repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/goharbor/redis-photon"
     {{- end }}
     resources: {{- $h.resources.redis | toYaml | nindent 6 }}
 
@@ -186,13 +186,13 @@ registry:
   registry:
       {{- if $v.otomi.linodeLkeImageRepository }}
     image:
-      repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/registry-photon"
+      repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/goharbor/registry-photon"
       {{- end }}
     resources: {{- $h.resources.registry | toYaml | nindent 6 }}
   controller:
       {{- if $v.otomi.linodeLkeImageRepository }}
     image:
-      repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-registryctl"
+      repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-registryctl"
       {{- end }}
     resources: {{- $h.resources.registryController | toYaml | nindent 6 }}
   relativeurls: false
@@ -205,7 +205,7 @@ trivy:
 
     {{- if $v.otomi.linodeLkeImageRepository }}
   image:
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/trivy-adapter-photon"
+    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/goharbor/trivy-adapter-photon"
     {{- end }}
   resources:
     {{- $h.resources.trivy | toYaml  | nindent 4 }}

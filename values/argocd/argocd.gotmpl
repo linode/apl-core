@@ -6,7 +6,7 @@
 global:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/argoproj/argocd"
+    repository: "{{ $v.otomi.linodeLkeImageRepository }}/quay/argoproj/argocd"
   {{- end }}
   domain: {{ $hostname }}
   {{- with $v.otomi | get "nodeSelector" nil }}
@@ -54,7 +54,7 @@ redis:
   resources: {{- $a.resources.redis | toYaml | nindent 4 }}
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/redis"
+    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/redis"
   {{- end }}
 repoServer:
   autoscaling:
