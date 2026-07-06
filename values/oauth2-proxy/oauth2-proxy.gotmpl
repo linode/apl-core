@@ -153,12 +153,16 @@ redis-ha:
   {{- end }}
 
   persistentVolume:
-    {{- if $r.persistentVolumeSize }}
+  {{- if $r.persistentVolumeSize }}
     size: {{ $r.persistentVolumeSize }}
-    storageClass: {{ if eq $v.cluster.provider "linode" }}linode-block-storage{{ else }}{{ $v.cluster.defaultStorageClass | default "" }}{{ end }}
-    {{- else }}
-    enabled: false
+    storageClass: {{ $v.cluster.defaultStorageClass | default (ternary "linode-block-storage" "" (eq $v.cluster.provider "linode")) }}
+    {{- with $v.cluster | get "defaultStorageClass" nil }}
+    storageClass: {{ . | quote }}
     {{- end }}
+  {{- else }}
+    enabled: false
+  {{- end }}
+
 
   sentinel:
     resources: {{- $r.resources.sentinel | toYaml | nindent 6 }}
