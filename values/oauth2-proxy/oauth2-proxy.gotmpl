@@ -6,6 +6,7 @@
 {{- $o := $v | get "oidc" dict }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+{{- $persistentStorageEnabled := hasKey $r "persistentVolumeSize" }}
 
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list (print "." $domainSuffix) "oauth2-proxy.istio-system.svc.cluster.local" }}
@@ -153,15 +154,11 @@ redis-ha:
   {{- end }}
 
   persistentVolume:
-  {{- if $r.persistentVolumeSize }}
+    enabled: {{ $persistentStorageEnabled }}
     size: {{ $r.persistentVolumeSize }}
-    storageClass: {{ $v.cluster.defaultStorageClass | default (ternary "linode-block-storage" "" (eq $v.cluster.provider "linode")) }}
     {{- with $v.cluster | get "defaultStorageClass" nil }}
     storageClass: {{ . | quote }}
     {{- end }}
-  {{- else }}
-    enabled: false
-  {{- end }}
 
 
   sentinel:
