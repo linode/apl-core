@@ -32,7 +32,7 @@ dependencies:
     version: 1.21.1
     repository: https://kubernetes-sigs.github.io/external-dns
   - name: external-secrets
-    version: 2.6.0
+    version: 2.7.0
     repository: https://charts.external-secrets.io
   - name: gitea
     version: 12.6.0
@@ -42,21 +42,21 @@ dependencies:
     repository: https://helm.goharbor.io
   - name: base
     alias: istio-base
-    version: 1.29.2
+    version: 1.30.2
     repository: https://istio-release.storage.googleapis.com/charts
   - name: cni
     alias: istio-cni
-    version: 1.29.2
+    version: 1.30.2
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
-    version: 1.29.2
+    version: 1.30.2
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
-    version: 1.29.2
+    version: 1.30.2
     repository: https://istio-release.storage.googleapis.com/charts
   - name: ztunnel
-    version: 1.29.2
+    version: 1.30.2
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
