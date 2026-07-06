@@ -7,7 +7,7 @@ teamId: {{ $teamId }}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 image:
-  repository: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard"
+  repository: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard"
 {{- end }}
 
 podLabels:
