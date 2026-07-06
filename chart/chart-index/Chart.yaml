@@ -32,7 +32,7 @@ dependencies:
     version: 1.21.1
     repository: https://kubernetes-sigs.github.io/external-dns
   - name: external-secrets
-    version: 2.6.0
+    version: 2.7.0
     repository: https://charts.external-secrets.io
   - name: gitea
     version: 12.6.0
