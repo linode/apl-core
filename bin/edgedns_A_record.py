@@ -43,6 +43,7 @@ def create_dns_record(session, domain, ip):
     except HTTPError as e:
         response_json = json.loads(e.response.text)
         print(f"Failed to create DNS record: {response_json['title']} ")
+        print(f"Data: {json.dumps(data, indent=2)}")
         sys.exit(1)
 
 # Function to delete DNS record
@@ -56,6 +57,7 @@ def delete_dns_record(session, domain):
     except HTTPError as e:
         response_json = json.loads(e.response.text)
         print(f"Failed to delete DNS record: {response_json['title']}")
+        print(f"Data: {json.dumps({'name': domain}, indent=2)}")
         sys.exit(1)
 
 # Function to list A records
