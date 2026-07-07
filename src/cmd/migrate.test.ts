@@ -452,7 +452,7 @@ describe('preservePvcStorageClassInRawValues', () => {
     ...overrides,
   })
 
-  it('should set _rawValues overrides when pvc storageClass differs from cluster default', async () => {
+  it('should set app _rawValues and databases.storageClass when pvc storageClass differs from cluster default', async () => {
     const values: Record<string, any> = {
       cluster: { defaultStorageClass: 'linode-block-storage' },
       databases: {
@@ -547,5 +547,37 @@ describe('preservePvcStorageClassInRawValues', () => {
     expect(values.databases.gitea).toEqual({})
     expect(values.databases.harbor).toEqual({})
     expect(values.databases.keycloak).toEqual({})
+  })
+
+  it('should keep existing databases.storageClass overrides', async () => {
+    const values: Record<string, any> = {
+      cluster: { defaultStorageClass: 'linode-block-storage' },
+      databases: {
+        gitea: { storageClass: 'preset-db-sc' },
+        harbor: { storageClass: 'preset-db-sc' },
+        keycloak: { storageClass: 'preset-db-sc' },
+      },
+    }
+
+    const listPvcs = jest.fn(async (namespace: string, labelSelector: string) => {
+      const bySelector: Record<string, any[]> = {
+        'gitea/cnpg.io/cluster=gitea-db': [
+          { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_DATA' } }, spec: { storageClassName: 'legacy-sc' } },
+        ],
+        'harbor/cnpg.io/cluster=harbor-otomi-db': [
+          { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_DATA' } }, spec: { storageClassName: 'legacy-sc' } },
+        ],
+        'keycloak/cnpg.io/cluster=keycloak-db': [
+          { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_DATA' } }, spec: { storageClassName: 'legacy-sc' } },
+        ],
+      }
+      return bySelector[`${namespace}/${labelSelector}`] || []
+    })
+
+    await preservePvcStorageClassInRawValues(values, makeDeps({ listPvcs }))
+
+    expect(values.databases.gitea.storageClass).toBe('preset-db-sc')
+    expect(values.databases.harbor.storageClass).toBe('preset-db-sc')
+    expect(values.databases.keycloak.storageClass).toBe('preset-db-sc')
   })
 })
