@@ -1,8 +1,8 @@
-import { globSync } from 'glob'
 import {
   applyChanges,
   Changes,
   filterChanges,
+  preservePvcStorageClassInRawValues,
   processDeletionEntry,
   removeSopsArtifacts,
   sopsMigration,
@@ -440,5 +440,112 @@ describe('processDeletionEntry', () => {
     const values: any = { apps: { myApp: { nested: 'value' } } }
     processDeletionEntry('apps.myApp.nested', values, deps)
     expect(mockDeleteFile).not.toHaveBeenCalled()
+  })
+})
+
+describe('preservePvcStorageClassInRawValues', () => {
+  const makeDeps = (overrides: Partial<any> = {}) => ({
+    readPvc: jest.fn(async () => undefined),
+    listPvcs: jest.fn(async () => []),
+    getParsedArgs: jest.fn(() => ({ dryRun: false, local: false })),
+    terminal,
+    ...overrides,
+  })
+
+  it('should set _rawValues overrides when pvc storageClass differs from cluster default', async () => {
+    const values: Record<string, any> = {
+      cluster: { defaultStorageClass: 'linode-block-storage' },
+      databases: {
+        gitea: {},
+        harbor: {},
+        keycloak: {},
+      },
+      apps: {
+        gitea: { _rawValues: {} },
+        harbor: { _rawValues: {} },
+        keycloak: { _rawValues: {} },
+        prometheus: { _rawValues: {} },
+        'kubeflow-pipelines': { _rawValues: {} },
+        'git-server': { _rawValues: {} },
+      },
+    }
+
+    const readPvc = jest.fn(async (namespace: string, name: string) => {
+      const byName: Record<string, any> = {
+        'git-server/git-server-data': { spec: { storageClassName: 'legacy-sc' } },
+        'gitea/data-gitea-0': { spec: { storageClassName: 'legacy-sc' } },
+        'gitea/gitea-backup': { spec: { storageClassName: 'legacy-sc' } },
+        'kfp/mysql-pv-claim': { spec: { storageClassName: 'legacy-sc' } },
+      }
+      return byName[`${namespace}/${name}`]
+    })
+
+    const listPvcs = jest.fn(async (namespace: string, labelSelector: string) => {
+      const bySelector: Record<string, any[]> = {
+        'gitea/cnpg.io/cluster=gitea-db': [
+          { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_DATA' } }, spec: { storageClassName: 'legacy-sc' } },
+          { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_WAL' } }, spec: { storageClassName: 'legacy-wal-sc' } },
+        ],
+        'harbor/app.kubernetes.io/instance=harbor,component=redis': [{ spec: { storageClassName: 'legacy-sc' } }],
+        'harbor/app.kubernetes.io/instance=harbor,component=trivy': [{ spec: { storageClassName: 'legacy-sc' } }],
+        'harbor/cnpg.io/cluster=harbor-otomi-db': [
+          { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_DATA' } }, spec: { storageClassName: 'legacy-sc' } },
+        ],
+        'keycloak/cnpg.io/cluster=keycloak-db': [
+          { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_DATA' } }, spec: { storageClassName: 'legacy-sc' } },
+        ],
+        'monitoring/operator.prometheus.io/name=po-prometheus': [{ spec: { storageClassName: 'legacy-sc' } }],
+      }
+      return bySelector[`${namespace}/${labelSelector}`] || []
+    })
+
+    await preservePvcStorageClassInRawValues(values, makeDeps({ readPvc, listPvcs }))
+
+    expect(values.apps['git-server']._rawValues.persistence.storageClass).toBe('legacy-sc')
+    expect(values.apps.gitea._rawValues.global.storageClass).toBe('legacy-sc')
+    expect(values.apps.gitea._rawValues.giteaBackup.storageClassName).toBe('legacy-sc')
+    expect(values.databases.gitea.storageClass).toBe('legacy-sc')
+    expect(values.apps.harbor._rawValues.persistence.persistentVolumeClaim.redis.storageClass).toBe('legacy-sc')
+    expect(values.apps.harbor._rawValues.persistence.persistentVolumeClaim.trivy.storageClass).toBe('legacy-sc')
+    expect(values.databases.harbor.storageClass).toBe('legacy-sc')
+    expect(values.databases.keycloak.storageClass).toBe('legacy-sc')
+    expect(values.apps['kubeflow-pipelines']._rawValues.mysql.storage.storageClass).toBe('legacy-sc')
+    expect(
+      values.apps.prometheus._rawValues.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName,
+    ).toBe('legacy-sc')
+  })
+
+  it('should not set overrides when pvc storageClass equals cluster default', async () => {
+    const values: Record<string, any> = {
+      cluster: { defaultStorageClass: 'linode-block-storage' },
+      databases: {
+        gitea: {},
+        harbor: {},
+        keycloak: {},
+      },
+      apps: {
+        gitea: { _rawValues: {} },
+        harbor: { _rawValues: {} },
+        keycloak: { _rawValues: {} },
+        prometheus: { _rawValues: {} },
+        'kubeflow-pipelines': { _rawValues: {} },
+        'git-server': { _rawValues: {} },
+      },
+    }
+
+    const readPvc = jest.fn(async () => ({ spec: { storageClassName: 'linode-block-storage' } }))
+    const listPvcs = jest.fn(async () => [{ spec: { storageClassName: 'linode-block-storage' } }])
+
+    await preservePvcStorageClassInRawValues(values, makeDeps({ readPvc, listPvcs }))
+
+    expect(values.apps['git-server']._rawValues).toEqual({})
+    expect(values.apps.gitea._rawValues).toEqual({})
+    expect(values.apps.harbor._rawValues).toEqual({})
+    expect(values.apps.keycloak._rawValues).toEqual({})
+    expect(values.apps['kubeflow-pipelines']._rawValues).toEqual({})
+    expect(values.apps.prometheus._rawValues).toEqual({})
+    expect(values.databases.gitea).toEqual({})
+    expect(values.databases.harbor).toEqual({})
+    expect(values.databases.keycloak).toEqual({})
   })
 })

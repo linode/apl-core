@@ -1,16 +1,16 @@
 {{- $v := .Values }}
-{{- $k := $v.apps.keycloak }}
 {{- $cnpg := $v.apps.cnpg }}
 {{- $kdb := $v.databases.keycloak }}
 {{- $obj := $v.obj.provider }}
 {{- $b := $v.platformBackups.database.keycloak }}
+{{- $dbStorageClass := $kdb | get "storageClass" $v.cluster.defaultStorageClass }}
 
 name: keycloak-db
 storage:
-  storageClass: {{ $v.cluster.defaultStorageClass }}
+  storageClass: {{ $dbStorageClass }}
   size: {{ $kdb.size }}
 walStorage:
-  storageClass: {{ $v.cluster.defaultStorageClass }}
+  storageClass: {{ $dbStorageClass }}
   size: {{ $kdb.walStorageSize }}
 instances: {{ $kdb.replicas }}
 

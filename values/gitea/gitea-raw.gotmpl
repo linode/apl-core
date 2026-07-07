@@ -2,6 +2,7 @@
 {{- $g := $v.apps.gitea }}
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $obj := $v.obj.provider }}
+{{- $giteaBackupStorageClass := $g | get "_rawValues.giteaBackup.storageClassName" $v.cluster.defaultStorageClass }}
 {{- $giteaBackupConfig := $v.platformBackups.gitea }}
 {{- $rcloneVersion := "1.74.0" }}
 {{- $rcloneZipSha512 := "deaf15bf8227ebeb5ead6ab033d34f0c21dca0bec272614958e0590ee85a4fd72abe8aa30c3fe8099b8632e18d999e1083cb119a1b1a56f6fff094ab027f8813" }}
@@ -103,8 +104,8 @@ resources:
     resources:
       requests:
         storage: 1Gi
-    {{- if $v.cluster.defaultStorageClass }}
-    storageClassName: {{ $v.cluster.defaultStorageClass }}
+    {{- if $giteaBackupStorageClass }}
+    storageClassName: {{ $giteaBackupStorageClass }}
     {{- end }}
 {{- end }}
 {{- if $giteaBackupConfig.enabled }}
