@@ -23,6 +23,7 @@ This log lists the architectural decisions for apl-core.
 - [ADR-2026-06-25](2026-06-25-git-server-as-default-values-repo.md) - git-server as the default values repository backend
 - [ADR-2026-05-20](2026-05-20-gateway-api.md) - Kubernetes Gateway API replaces Ingress CR and Istio IngressGateway
 - [ADR-2026-06-25](2026-06-25-git-credential-management.md) - Git credential management via Kubernetes Secret
+- [ADR-2026-07-07](2026-07-07-apl-addons-argocd-project.md) - apl-addons ArgoCD project for platform-admin addon deployments
 
 <!-- adrlogstop -->
 
