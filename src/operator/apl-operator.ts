@@ -6,7 +6,7 @@ import { getStoredGitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/gitea'
 import { hfValues } from '../common/hf'
 import { ensureManifestDirectories, ensureTeamGitOpsDirectories } from '../common/utils'
-import { writeValues } from '../common/values'
+import { getDefaultValues, writeValues } from '../common/values'
 import { AplOperations } from './apl-operations'
 import { GitRepository } from './git-repository'
 import { updateApplyState } from './k8s'
@@ -71,7 +71,7 @@ export class AplOperator {
     })
 
     try {
-      const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
+      const defaultValues = await getDefaultValues()
       this.d.info('Write default values to env repo')
       await writeValues(defaultValues)
 
