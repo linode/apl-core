@@ -643,6 +643,7 @@ export const sopsMigration = async (
       ...gitConfig,
       ...gitValues,
     })
+    set(values, 'apps.gitea.adminPassword', gitConfig.password)
     unset(values, 'otomi.git')
   }
 
