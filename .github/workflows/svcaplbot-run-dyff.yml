@@ -97,6 +97,7 @@ jobs:
         id: run_script
         env:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+          HUSKY: '0'
         run: |
           cd "$GITHUB_WORKSPACE/pr"
           mkdir -p tmp

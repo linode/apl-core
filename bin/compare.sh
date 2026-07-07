@@ -45,7 +45,7 @@ readonly script_dir=$(dirname "$0")
 
 cleanup() {
   if [ -n "${tmpWorktreeA}" ] && [ -d "${tmpWorktreeA}" ]; then
-    git worktree remove --force "${tmpWorktreeA}" >/dev/null 2>&1 || true
+    git -c core.hooksPath=/dev/null worktree remove --force "${tmpWorktreeA}" >/dev/null 2>&1 || true
     rm -rf "${tmpWorktreeA}" || true
   fi
 }
@@ -80,7 +80,7 @@ if [ -z "$srcDirA" ]; then
   generate_helm_templates "$targetDirB" "$PWD"
 
   tmpWorktreeA="$PWD/tmp/worktree-${branchA}-$$"
-  git worktree add --detach "$tmpWorktreeA" "$branchA" >/dev/null
+  git -c core.hooksPath=/dev/null worktree add --detach "$tmpWorktreeA" "$branchA" >/dev/null
   export ENV_DIR="$tmpWorktreeA/tests/fixtures"
   generate_helm_templates "$targetDirA" "$tmpWorktreeA"
 else
