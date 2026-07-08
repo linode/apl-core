@@ -3,7 +3,6 @@ import { mkdir, unlink, writeFile } from 'fs/promises'
 import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, pick, set } from 'lodash'
 import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
-import { stringify } from 'yaml'
 import { $ } from 'zx'
 import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
@@ -17,15 +16,12 @@ import {
   getValuesSchema,
   gucci,
   loadYaml,
+  objectToYaml,
   pkg,
   removeBlankAttributes,
 } from './utils'
 import { HelmArguments } from './yargs'
 import { stripAllSecrets } from './sealed-secrets'
-
-export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 200): string => {
-  return isEmpty(obj) ? '' : stringify(obj, { indent, lineWidth })
-}
 
 let otomiK8sVersion: string
 /**
