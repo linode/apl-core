@@ -245,6 +245,9 @@
       "nameOverride": {
         "type": "string"
       },
+      "namespaceOverride": {
+        "type": "string"
+      },
       "nodeSelector": {
         "type": "object"
       },
@@ -476,6 +479,9 @@
             "type": "string"
           },
           "loadBalancerIP": {
+            "type": "string"
+          },
+          "internalTrafficPolicy": {
             "type": "string"
           },
           "sessionAffinity": {

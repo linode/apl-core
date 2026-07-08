@@ -4,7 +4,7 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: {{ include "keycloak.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "keycloak.namespace" . }}
   {{- with $route.annotations }}
   annotations:
     {{- range $key, $value := . }}

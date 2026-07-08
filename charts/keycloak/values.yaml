@@ -4,6 +4,10 @@ fullnameOverride: ""
 # Optionally override the name
 nameOverride: ""
 
+# Optionally override the namespace for all resources. Useful for umbrella charts that
+# deploy multiple aliased keycloak instances each into their own namespace.
+namespaceOverride: ""
+
 # The number of replicas to create (has no effect if autoscaling enabled)
 replicas: 1
 
@@ -11,7 +15,7 @@ image:
   # The Keycloak image repository
   repository: quay.io/keycloak/keycloak
   # Overrides the Keycloak image tag whose default is the chart appVersion
-  tag: "26.6.3"
+  tag: "26.6.4"
   # Overrides the Keycloak image tag with a specific digest
   digest: ""
   # The Keycloak image pull policy
@@ -271,6 +275,9 @@ service:
   # by changing the default (Cluster) to be Local.
   # See https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
   externalTrafficPolicy: "Cluster"
+  # Controls how traffic from internal sources is routed. Valid values: Cluster, Local.
+  # See https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/
+  internalTrafficPolicy: ""
   # Session affinity
   # See https://kubernetes.io/docs/concepts/services-networking/service/#proxy-mode-userspace
   sessionAffinity: ""

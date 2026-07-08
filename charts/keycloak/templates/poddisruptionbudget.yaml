@@ -3,7 +3,7 @@ apiVersion: {{ ternary "policy/v1" "policy/v1beta1" (semverCompare ">=1.21.0-0" 
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "keycloak.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "keycloak.namespace" . }}
   labels:
     {{- include "keycloak.labels" . | nindent 4 }}
 spec:

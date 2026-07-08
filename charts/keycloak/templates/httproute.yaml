@@ -4,7 +4,7 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: {{ include "keycloak.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "keycloak.namespace" . }}
   labels:
     {{- include "keycloak.labels" . | nindent 4 }}
     {{- range $key, $value := $httpRoute.labels }}
@@ -47,12 +47,12 @@ spec:
     {{- end }}
 {{- end }}
 ---
-{{- if $httpRoute.console.enabled -}}
+{{- if $httpRoute.console.enabled }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: {{ include "keycloak.fullname" . }}-console
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "keycloak.namespace" . }}
   labels:
     {{- include "keycloak.labels" . | nindent 4 }}
     {{- range $key, $value := $httpRoute.labels }}
