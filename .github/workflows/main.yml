@@ -37,7 +37,7 @@ jobs:
           git config --global user.name $BOT_USERNAME
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -97,7 +97,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Install the Linode CLI
         uses: linode/action-linode-cli@v1
         with:
