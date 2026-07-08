@@ -1,12 +1,9 @@
 import { existsSync } from 'fs'
-import { get } from 'lodash'
 import { decrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
 import { GitRepoConfig } from 'src/common/git-config'
-import { hfValues } from 'src/common/hf'
-import { stripAllSecrets } from 'src/common/sealed-secrets'
-import { getFilename, getSchemaSecretsPaths } from 'src/common/utils'
+import { getFilename } from 'src/common/utils'
 import { getDefaultValues, writeValues } from 'src/common/values'
 import { $, cd } from 'zx'
 
