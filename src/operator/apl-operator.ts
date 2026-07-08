@@ -197,7 +197,6 @@ export class AplOperator {
         return this.gitRepo.authenticatedUrl
       })
       await this.gitRepo.clone()
-      await decrypt()
       this.d.info('APL operator started successfully')
     } catch (error) {
       this.isRunning = false
