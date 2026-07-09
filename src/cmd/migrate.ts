@@ -486,24 +486,6 @@ const listPvcs = async (namespace: string, labelSelector: string): Promise<PvcRe
   return pvcList?.items || []
 }
 
-const maybeSetRawValue = (
-  values: Record<string, any>,
-  d: ReturnType<typeof terminal>,
-  path: string,
-  pvcStorageClass: string | undefined,
-  clusterDefaultStorageClass: string,
-): void => {
-  if (!pvcStorageClass) return
-  if (pvcStorageClass === clusterDefaultStorageClass) return
-  const existing = get(values, path)
-  if (existing !== undefined) {
-    d.info(`Keeping existing override at ${path}`)
-    return
-  }
-  set(values, path, pvcStorageClass)
-  d.info(`Set ${path}=${pvcStorageClass} to preserve existing PVC storageClass`)
-}
-
 export const preservePvcStorageClassInRawValues = async (
   values: Record<string, any>,
   deps: PreservePvcStorageClassDeps = {
@@ -521,71 +503,55 @@ export const preservePvcStorageClassInRawValues = async (
   }
 
   const clusterDefaultStorageClass = values?.cluster?.defaultStorageClass ?? ''
+  const maybeSetRawValue = (path: string, pvcStorageClass?: string): void => {
+    if (!pvcStorageClass) return
+    if (pvcStorageClass === clusterDefaultStorageClass) return
+    const existing = get(values, path)
+    if (existing !== undefined) {
+      d.info(`Keeping existing override at ${path}`)
+      return
+    }
+    set(values, path, pvcStorageClass)
+    d.info(`Set ${path}=${pvcStorageClass} to preserve existing PVC storageClass`)
+  }
 
   const gitServerPvc = await deps.readPvc('git-server', 'git-server-data')
-  maybeSetRawValue(
-    values,
-    d,
-    'apps.git-server._rawValues.persistence.storageClass',
-    gitServerPvc?.spec?.storageClassName,
-    clusterDefaultStorageClass,
-  )
+  maybeSetRawValue('apps.git-server._rawValues.persistence.storageClass', gitServerPvc?.spec?.storageClassName)
 
   const giteaPvc = await deps.readPvc('gitea', 'data-gitea-0')
-  maybeSetRawValue(values, d, 'apps.gitea._rawValues.global.storageClass', giteaPvc?.spec?.storageClassName, clusterDefaultStorageClass)
+  maybeSetRawValue('apps.gitea._rawValues.global.storageClass', giteaPvc?.spec?.storageClassName)
 
   const giteaBackupPvc = await deps.readPvc('gitea', 'gitea-backup')
-  maybeSetRawValue(
-    values,
-    d,
-    'apps.gitea._rawValues.giteaBackup.storageClassName',
-    giteaBackupPvc?.spec?.storageClassName,
-    clusterDefaultStorageClass,
-  )
+  maybeSetRawValue('apps.gitea._rawValues.giteaBackup.storageClassName', giteaBackupPvc?.spec?.storageClassName)
 
   const giteaDbPvcs = await deps.listPvcs('gitea', 'cnpg.io/cluster=gitea-db,cnpg.io/pvcRole=PG_DATA')
-  maybeSetRawValue(values, d, 'databases.gitea.storageClass', giteaDbPvcs[0]?.spec?.storageClassName, clusterDefaultStorageClass)
+  maybeSetRawValue('databases.gitea.storageClass', giteaDbPvcs[0]?.spec?.storageClassName)
 
   const harborRedisPvcs = await deps.listPvcs('harbor', 'app.kubernetes.io/instance=harbor,component=redis')
   maybeSetRawValue(
-    values,
-    d,
     'apps.harbor._rawValues.persistence.persistentVolumeClaim.redis.storageClass',
     harborRedisPvcs[0]?.spec?.storageClassName,
-    clusterDefaultStorageClass,
   )
 
   const harborTrivyPvcs = await deps.listPvcs('harbor', 'app.kubernetes.io/instance=harbor,component=trivy')
   maybeSetRawValue(
-    values,
-    d,
     'apps.harbor._rawValues.persistence.persistentVolumeClaim.trivy.storageClass',
     harborTrivyPvcs[0]?.spec?.storageClassName,
-    clusterDefaultStorageClass,
   )
 
   const harborDbPvcs = await deps.listPvcs('harbor', 'cnpg.io/cluster=harbor-otomi-db,cnpg.io/pvcRole=PG_DATA')
-  maybeSetRawValue(values, d, 'databases.harbor.storageClass', harborDbPvcs[0]?.spec?.storageClassName, clusterDefaultStorageClass)
+  maybeSetRawValue('databases.harbor.storageClass', harborDbPvcs[0]?.spec?.storageClassName)
 
   const keycloakDbDataPvc = await deps.listPvcs('keycloak', 'cnpg.io/cluster=keycloak-db,cnpg.io/pvcRole=PG_DATA')
-  maybeSetRawValue(values, d, 'databases.keycloak.storageClass', keycloakDbDataPvc[0]?.spec?.storageClassName, clusterDefaultStorageClass)
+  maybeSetRawValue('databases.keycloak.storageClass', keycloakDbDataPvc[0]?.spec?.storageClassName)
 
   const kubeflowPvc = await deps.readPvc('kfp', 'mysql-pv-claim')
-  maybeSetRawValue(
-    values,
-    d,
-    'apps.kubeflow-pipelines._rawValues.mysql.storage.storageClass',
-    kubeflowPvc?.spec?.storageClassName,
-    clusterDefaultStorageClass,
-  )
+  maybeSetRawValue('apps.kubeflow-pipelines._rawValues.mysql.storage.storageClass', kubeflowPvc?.spec?.storageClassName)
 
   const prometheusPvcs = await deps.listPvcs('monitoring', 'operator.prometheus.io/name=po-prometheus')
   maybeSetRawValue(
-    values,
-    d,
     'apps.prometheus._rawValues.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName',
     prometheusPvcs[0]?.spec?.storageClassName,
-    clusterDefaultStorageClass,
   )
 }
 
