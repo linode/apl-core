@@ -110,7 +110,7 @@ on:
         type: boolean
         default: true
       BYO_GIT:
-        description: 'Check the box to use a custom git repository (requires BYO_GIT_PAT and BYO_GIT_URL secrets)'
+        description: 'Use external values repo instead of the default'
         type: boolean
         default: false
 
