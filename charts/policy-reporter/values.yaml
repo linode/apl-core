@@ -1003,7 +1003,7 @@ ui:
     # -- (string) Image PullPolicy
     pullPolicy: IfNotPresent
     # -- (string) Image tag
-    tag: "2.5.1"
+    tag: "2.6.1"
 
   crds:
     # -- Install UI CustomBoard CRDs
@@ -1383,7 +1383,7 @@ plugin:
       # -- (string) Image PullPolicy
       pullPolicy: IfNotPresent
       # -- (string) Image tag
-      tag: "0.6.0"
+      tag: "0.6.2"
 
     # -- Deployment replica count
     replicaCount: 1
@@ -1633,7 +1633,7 @@ plugin:
       pullPolicy: IfNotPresent
         # -- (string) Image tag
         # Defaults to `Chart.AppVersion` if omitted
-      tag: "0.4.12"
+      tag: "0.4.15"
 
     cli:
       image:
@@ -1645,7 +1645,7 @@ plugin:
         pullPolicy: IfNotPresent
           # -- (string) Image tag
           # Defaults to `Chart.AppVersion` if omitted
-        tag: "0.69.3"
+        tag: "0.72.0"
 
     # -- Additional container args.
     extraArgs: {}
@@ -1870,6 +1870,7 @@ monitoring:
   annotations: {}
 
   serviceMonitor:
+    enabled: true
     # -- HonorLabels chooses the metrics labels on collisions with target labels
     honorLabels: false
     # -- Allow to override the namespace for serviceMonitor
