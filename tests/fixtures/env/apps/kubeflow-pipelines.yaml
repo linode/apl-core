@@ -2,7 +2,10 @@ kind: AplApp
 metadata:
     name: kubeflow-pipelines
 spec:
-    _rawValues: {}
+    _rawValues:
+        mysql:
+            storage:
+                storageClass: linode-block-storage-retain
     enabled: true
     persistence:
         mysql:
