@@ -44,6 +44,7 @@ jest.mock('../common/hf', () => ({
   hfValues: jest.fn().mockResolvedValue(undefined),
 }))
 jest.mock('../common/values', () => ({
+  getDefaultValues: jest.fn().mockResolvedValue(undefined),
   writeValues: jest.fn().mockResolvedValue(undefined),
 }))
 jest.mock('../common/crypt', () => ({
