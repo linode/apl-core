@@ -482,16 +482,15 @@ describe('preservePvcStorageClassInRawValues', () => {
 
     const listPvcs = jest.fn(async (namespace: string, labelSelector: string) => {
       const bySelector: Record<string, any[]> = {
-        'gitea/cnpg.io/cluster=gitea-db': [
+        'gitea/cnpg.io/cluster=gitea-db,cnpg.io/pvcRole=PG_DATA': [
           { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_DATA' } }, spec: { storageClassName: 'legacy-sc' } },
-          { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_WAL' } }, spec: { storageClassName: 'legacy-wal-sc' } },
         ],
         'harbor/app.kubernetes.io/instance=harbor,component=redis': [{ spec: { storageClassName: 'legacy-sc' } }],
         'harbor/app.kubernetes.io/instance=harbor,component=trivy': [{ spec: { storageClassName: 'legacy-sc' } }],
-        'harbor/cnpg.io/cluster=harbor-otomi-db': [
+        'harbor/cnpg.io/cluster=harbor-otomi-db,cnpg.io/pvcRole=PG_DATA': [
           { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_DATA' } }, spec: { storageClassName: 'legacy-sc' } },
         ],
-        'keycloak/cnpg.io/cluster=keycloak-db': [
+        'keycloak/cnpg.io/cluster=keycloak-db,cnpg.io/pvcRole=PG_DATA': [
           { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_DATA' } }, spec: { storageClassName: 'legacy-sc' } },
         ],
         'monitoring/operator.prometheus.io/name=po-prometheus': [{ spec: { storageClassName: 'legacy-sc' } }],
@@ -561,13 +560,13 @@ describe('preservePvcStorageClassInRawValues', () => {
 
     const listPvcs = jest.fn(async (namespace: string, labelSelector: string) => {
       const bySelector: Record<string, any[]> = {
-        'gitea/cnpg.io/cluster=gitea-db': [
+        'gitea/cnpg.io/cluster=gitea-db,cnpg.io/pvcRole=PG_DATA': [
           { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_DATA' } }, spec: { storageClassName: 'legacy-sc' } },
         ],
-        'harbor/cnpg.io/cluster=harbor-otomi-db': [
+        'harbor/cnpg.io/cluster=harbor-otomi-db,cnpg.io/pvcRole=PG_DATA': [
           { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_DATA' } }, spec: { storageClassName: 'legacy-sc' } },
         ],
-        'keycloak/cnpg.io/cluster=keycloak-db': [
+        'keycloak/cnpg.io/cluster=keycloak-db,cnpg.io/pvcRole=PG_DATA': [
           { metadata: { labels: { 'cnpg.io/pvcRole': 'PG_DATA' } }, spec: { storageClassName: 'legacy-sc' } },
         ],
       }
