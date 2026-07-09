@@ -14,8 +14,8 @@ import {
   patchContainerResourcesOfSts,
   restartStatefulSet,
 } from 'src/common/k8s'
-import { getFilename, getNames, loadYaml } from 'src/common/utils'
-import { getImageTagFromValues, objectToYaml } from 'src/common/values'
+import { getFilename, getNames, loadYaml, objectToYaml } from 'src/common/utils'
+import { getImageTagFromValues } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { operatorEnv } from 'src/operator/validators'
 import { Argv, CommandModule } from 'yargs'
