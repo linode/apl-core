@@ -4,8 +4,8 @@ import { globSync } from 'glob'
 import jsonpath from 'jsonpath'
 import { cloneDeep, get, merge, omit, set, unset } from 'lodash'
 import path from 'path'
-import { getDirNames, loadYaml } from './utils'
-import { objectToYaml, writeValuesToFile } from './values'
+import { getDirNames, loadYaml, objectToYaml } from './utils'
+import { writeValuesToFile } from './values'
 import { getGitCredentials, getOldGitCredentials, GIT_DEFAULT_CONFIG } from './git-config'
 
 export async function getTeamNames(envDir: string): Promise<Array<string>> {
