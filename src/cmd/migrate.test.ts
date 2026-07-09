@@ -447,7 +447,7 @@ describe('preservePvcStorageClassInRawValues', () => {
   const makeDeps = (overrides: Partial<any> = {}) => ({
     readPvc: jest.fn(async () => undefined),
     listPvcs: jest.fn(async () => []),
-    getParsedArgs: jest.fn(() => ({ dryRun: false, local: false })),
+    getParsedArgs: jest.fn(() => ({ _: [], $0: 'test', dryRun: false, local: false })),
     terminal,
     ...overrides,
   })
