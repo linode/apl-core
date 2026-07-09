@@ -3,7 +3,6 @@ import { mkdir, unlink, writeFile } from 'fs/promises'
 import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, pick, set } from 'lodash'
 import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
-import { stringify } from 'yaml'
 import { $ } from 'zx'
 import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
@@ -17,14 +16,12 @@ import {
   getValuesSchema,
   gucci,
   loadYaml,
+  objectToYaml,
   pkg,
   removeBlankAttributes,
 } from './utils'
 import { HelmArguments } from './yargs'
-
-export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 200): string => {
-  return isEmpty(obj) ? '' : stringify(obj, { indent, lineWidth })
-}
+import { stripAllSecrets } from './sealed-secrets'
 
 let otomiK8sVersion: string
 /**
@@ -109,6 +106,13 @@ export const writeValuesToFile = async (
   d.debug('mergeResult: ', JSON.stringify(useValues, null, 2))
   await writeFile(targetPath + suffix, objectToYaml(useValues))
   d.debug(`Values were written to ${targetPath}${suffix}`)
+}
+
+export const getDefaultValues = async (): Promise<Record<string, any>> => {
+  const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
+  // Strip all secrets before writing to disk
+  const secretPaths = await getSchemaSecretsPaths(Object.keys(get(defaultValues, 'teamConfig', {})))
+  return stripAllSecrets(defaultValues, secretPaths)
 }
 
 /**
