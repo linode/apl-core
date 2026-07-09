@@ -1,4 +1,3 @@
-import { globSync } from 'glob'
 import {
   applyChanges,
   Changes,
@@ -448,8 +447,10 @@ describe('needsMigration', () => {
   const makeLoadYaml =
     (repoSpecVersion: number | undefined, defaultSpecVersion: number | undefined) =>
     async (path: string, _opts?: any): Promise<any> => {
-      if (path.includes('versions.yaml')) return repoSpecVersion !== undefined ? { spec: { specVersion: repoSpecVersion } } : undefined
-      if (path.includes('defaults.yaml')) return defaultSpecVersion !== undefined ? { versions: { specVersion: defaultSpecVersion } } : undefined
+      if (path.includes('versions.yaml'))
+        return repoSpecVersion !== undefined ? { spec: { specVersion: repoSpecVersion } } : undefined
+      if (path.includes('defaults.yaml'))
+        return defaultSpecVersion !== undefined ? { versions: { specVersion: defaultSpecVersion } } : undefined
       return undefined
     }
 
