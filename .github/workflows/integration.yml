@@ -110,7 +110,7 @@ on:
         type: boolean
         default: true
       BYO_GIT:
-        description: 'Use external values repo instead of the default'
+        description: 'BYO git. Use predefined external values repo with branch named after the cluster.domainSuffix'
         type: boolean
         default: false
 
