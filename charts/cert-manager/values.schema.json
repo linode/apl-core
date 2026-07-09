@@ -144,6 +144,9 @@
         "resources": {
           "$ref": "#/$defs/helm-values.resources"
         },
+        "runtimeClassName": {
+          "$ref": "#/$defs/helm-values.runtimeClassName"
+        },
         "securityContext": {
           "$ref": "#/$defs/helm-values.securityContext"
         },
@@ -191,6 +194,9 @@
       "properties": {
         "image": {
           "$ref": "#/$defs/helm-values.acmesolver.image"
+        },
+        "runtimeClassName": {
+          "$ref": "#/$defs/helm-values.acmesolver.runtimeClassName"
         }
       },
       "type": "object"
@@ -244,6 +250,11 @@
     },
     "helm-values.acmesolver.image.tag": {
       "description": "Override the image tag to deploy by setting this variable. If no value is set, the chart's appVersion is used.",
+      "type": "string"
+    },
+    "helm-values.acmesolver.runtimeClassName": {
+      "default": "",
+      "description": "A Kubernetes Runtime Class to apply to ACME HTTP01 solver pods, if required. For more information, see [Runtime Class](https://kubernetes.io/docs/concepts/containers/).\n\nFor example:\nruntimeClassName: gvisor",
       "type": "string"
     },
     "helm-values.affinity": {
@@ -320,6 +331,9 @@
         },
         "resources": {
           "$ref": "#/$defs/helm-values.cainjector.resources"
+        },
+        "runtimeClassName": {
+          "$ref": "#/$defs/helm-values.cainjector.runtimeClassName"
         },
         "securityContext": {
           "$ref": "#/$defs/helm-values.cainjector.securityContext"
@@ -585,6 +599,11 @@
       "description": "Resources to provide to the cert-manager cainjector pod.\n\nFor example:\nrequests:\n  cpu: 10m\n  memory: 32Mi\nFor more information, see [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).",
       "type": "object"
     },
+    "helm-values.cainjector.runtimeClassName": {
+      "default": "",
+      "description": "A Kubernetes Runtime Class to apply to ACME HTTP01 solver pods, if required. For more information, see [Runtime Class](https://kubernetes.io/docs/concepts/containers/).\n\nFor example:\nruntimeClassName: gvisor",
+      "type": "string"
+    },
     "helm-values.cainjector.securityContext": {
       "default": {
         "runAsNonRoot": true,
@@ -683,7 +702,7 @@
     },
     "helm-values.config": {
       "default": {},
-      "description": "This property is used to configure options for the controller pod. This allows setting options that would usually be provided using flags.\n\nIf `apiVersion` and `kind` are unspecified they default to the current latest version (currently `controller.config.cert-manager.io/v1alpha1`). You can pin the version by specifying the `apiVersion` yourself.\n\nFor example:\nconfig:\n  apiVersion: controller.config.cert-manager.io/v1alpha1\n  kind: ControllerConfiguration\n  logging:\n    verbosity: 2\n    format: text\n  leaderElectionConfig:\n    namespace: kube-system\n  kubernetesAPIQPS: 9000\n  kubernetesAPIBurst: 9000\n  numberOfConcurrentWorkers: 200\n  enableGatewayAPI: true\n  # Feature gates as of v1.20.0. Listed with their default values.\n  # See https://cert-manager.io/docs/cli/controller/\n  featureGates:\n    AllAlpha: false # ALPHA - default=false\n    AllBeta: false # BETA - default=false\n    ACMEHTTP01IngressPathTypeExact: true # BETA - default=true\n    ExperimentalCertificateSigningRequestControllers: false # ALPHA - default=false\n    ExperimentalGatewayAPISupport: true # BETA - default=true\n    LiteralCertificateSubject: true # BETA - default=true\n    NameConstraints: true # BETA - default=true\n    OtherNames: true # BETA - default=true\n    SecretsFilteredCaching: true # BETA - default=true\n    ServerSideApply: false # ALPHA - default=false\n    StableCertificateRequestName: true # BETA - default=true\n    UseCertificateRequestBasicConstraints: false # ALPHA - default=false\n  # Configure the metrics server for TLS\n  # See https://cert-manager.io/docs/devops-tips/prometheus-metrics/#tls\n  metricsTLSConfig:\n    dynamic:\n      secretNamespace: \"cert-manager\"\n      secretName: \"cert-manager-metrics-ca\"\n      dnsNames:\n      - cert-manager-metrics\n  # Configure PEM size limits for certificate validation\n  # Useful for certificates with many DNS names (e.g., Istio gateways with 100+ DNS names)\n  pemSizeLimitsConfig:\n    maxCertificateSize: 36500     # Maximum size in bytes for individual certificates (default: 36500)\n    maxPrivateKeySize: 13000      # Maximum size in bytes for private keys (default: 13000)\n    maxChainLength: 95000         # Maximum size in bytes for certificate chains (default: 95000)\n    maxBundleSize: 330000         # Maximum size in bytes for certificate bundles (default: 330000)",
+      "description": "This property is used to configure options for the controller pod. This allows setting options that would usually be provided using flags.\n\nIf `apiVersion` and `kind` are unspecified they default to the current latest version (currently `controller.config.cert-manager.io/v1alpha1`). You can pin the version by specifying the `apiVersion` yourself.\n\nFor example:\nconfig:\n  apiVersion: controller.config.cert-manager.io/v1alpha1\n  kind: ControllerConfiguration\n  logging:\n    verbosity: 2\n    format: text\n  leaderElectionConfig:\n    namespace: kube-system\n  kubernetesAPIQPS: 9000\n  kubernetesAPIBurst: 9000\n  numberOfConcurrentWorkers: 200\n  gatewayAPI:\n    enable: true\n  # Feature gates as of v1.20.0. Listed with their default values.\n  # See https://cert-manager.io/docs/cli/controller/\n  featureGates:\n    AllAlpha: false # ALPHA - default=false\n    AllBeta: false # BETA - default=false\n    ACMEHTTP01IngressPathTypeExact: true # BETA - default=true\n    ExperimentalCertificateSigningRequestControllers: false # ALPHA - default=false\n    ExperimentalGatewayAPISupport: true # BETA - default=true\n    LiteralCertificateSubject: true # BETA - default=true\n    NameConstraints: true # BETA - default=true\n    OtherNames: true # BETA - default=true\n    SecretsFilteredCaching: true # BETA - default=true\n    ServerSideApply: false # ALPHA - default=false\n    StableCertificateRequestName: true # BETA - default=true\n    UseCertificateRequestBasicConstraints: false # ALPHA - default=false\n  # Configure the metrics server for TLS\n  # See https://cert-manager.io/docs/devops-tips/prometheus-metrics/#tls\n  metricsTLSConfig:\n    dynamic:\n      secretNamespace: \"cert-manager\"\n      secretName: \"cert-manager-metrics-ca\"\n      dnsNames:\n      - cert-manager-metrics\n  # Configure PEM size limits for certificate validation\n  # Useful for certificates with many DNS names (e.g., Istio gateways with 100+ DNS names)\n  pemSizeLimitsConfig:\n    maxCertificateSize: 36500     # Maximum size in bytes for individual certificates (default: 36500)\n    maxPrivateKeySize: 13000      # Maximum size in bytes for private keys (default: 13000)\n    maxChainLength: 95000         # Maximum size in bytes for certificate chains (default: 95000)\n    maxBundleSize: 330000         # Maximum size in bytes for certificate bundles (default: 330000)\n  # Configure certificate request backoff durations\n  certificateRequestMinimumBackoffDuration: 1h\n  certificateRequestMaximumBackoffDuration: 32h",
       "type": "object"
     },
     "helm-values.containerSecurityContext": {
@@ -825,13 +844,16 @@
         },
         "revisionHistoryLimit": {
           "$ref": "#/$defs/helm-values.global.revisionHistoryLimit"
+        },
+        "runtimeClassName": {
+          "$ref": "#/$defs/helm-values.global.runtimeClassName"
         }
       },
       "type": "object"
     },
     "helm-values.global.commonLabels": {
       "default": {},
-      "description": "Labels to apply to all resources.\nPlease note that this does not add labels to the resources created dynamically by the controllers. For these resources, you have to add the labels in the template in the cert-manager custom resource: For example, podTemplate/ ingressTemplate in ACMEChallengeSolverHTTP01Ingress. For more information, see the [cert-manager documentation](https://cert-manager.io/docs/reference/api-docs/#acme.cert-manager.io/v1.ACMEChallengeSolverHTTP01Ingress).\nFor example, secretTemplate in CertificateSpec\nFor more information, see the [cert-manager documentation](https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.CertificateSpec).",
+      "description": "Labels to apply to all resources.\nThese labels are also applied to dynamically-created ACME HTTP01 solver resources\n(pods, services, ingresses, or Gateway API HTTPRoutes).\nThe following ACME identity label keys are reserved and will be silently ignored on dynamically-created resources: acme.cert-manager.io/http-domain, acme.cert-manager.io/http-token, acme.cert-manager.io/http01-solver. For per-Issuer-specific labels, use the HTTP01 ingress solver podTemplate and ingressTemplate fields for pod/ingress resources, or the gatewayHTTPRoute solver labels field for Gateway API HTTPRoute resources.",
       "type": "object"
     },
     "helm-values.global.hostUsers": {
@@ -938,6 +960,11 @@
     "helm-values.global.revisionHistoryLimit": {
       "description": "The number of old ReplicaSets to retain to allow rollback (if not set, the default Kubernetes value is set to 10).",
       "type": "number"
+    },
+    "helm-values.global.runtimeClassName": {
+      "default": "",
+      "description": "A Kubernetes Runtime Class to apply to ACME HTTP01 solver pods, if required. For more information, see [Runtime Class](https://kubernetes.io/docs/concepts/containers/).\n\nFor example:\nruntimeClassName: gvisor",
+      "type": "string"
     },
     "helm-values.hostAliases": {
       "default": [],
@@ -1247,9 +1274,6 @@
         "namespace": {
           "$ref": "#/$defs/helm-values.prometheus.podmonitor.namespace"
         },
-        "path": {
-          "$ref": "#/$defs/helm-values.prometheus.podmonitor.path"
-        },
         "prometheusInstance": {
           "$ref": "#/$defs/helm-values.prometheus.podmonitor.prometheusInstance"
         },
@@ -1293,11 +1317,6 @@
       "description": "The namespace that the pod monitor should live in, defaults to the cert-manager namespace.",
       "type": "string"
     },
-    "helm-values.prometheus.podmonitor.path": {
-      "default": "/metrics",
-      "description": "The path to scrape for metrics.",
-      "type": "string"
-    },
     "helm-values.prometheus.podmonitor.prometheusInstance": {
       "default": "default",
       "description": "Specifies the `prometheus` label on the created PodMonitor. This is used when different Prometheus instances have label selectors matching different PodMonitors.",
@@ -1332,17 +1351,11 @@
         "namespace": {
           "$ref": "#/$defs/helm-values.prometheus.servicemonitor.namespace"
         },
-        "path": {
-          "$ref": "#/$defs/helm-values.prometheus.servicemonitor.path"
-        },
         "prometheusInstance": {
           "$ref": "#/$defs/helm-values.prometheus.servicemonitor.prometheusInstance"
         },
         "scrapeTimeout": {
           "$ref": "#/$defs/helm-values.prometheus.servicemonitor.scrapeTimeout"
-        },
-        "targetPort": {
-          "$ref": "#/$defs/helm-values.prometheus.servicemonitor.targetPort"
         }
       },
       "type": "object"
@@ -1381,11 +1394,6 @@
       "description": "The namespace that the service monitor should live in, defaults to the cert-manager namespace.",
       "type": "string"
     },
-    "helm-values.prometheus.servicemonitor.path": {
-      "default": "/metrics",
-      "description": "The path to scrape for metrics.",
-      "type": "string"
-    },
     "helm-values.prometheus.servicemonitor.prometheusInstance": {
       "default": "default",
       "description": "Specifies the `prometheus` label on the created ServiceMonitor. This is used when different Prometheus instances have label selectors matching different ServiceMonitors.",
@@ -1396,10 +1404,6 @@
       "description": "The timeout before a metrics scrape fails.",
       "type": "string"
     },
-    "helm-values.prometheus.servicemonitor.targetPort": {
-      "default": "http-metrics",
-      "description": "The target port to set on the ServiceMonitor. This must match the port that the cert-manager controller is listening on for metrics."
-    },
     "helm-values.replicaCount": {
       "default": 1,
       "description": "The number of replicas of the cert-manager controller to run.\n\nThe default is 1, but in production set this to 2 or 3 to provide high availability.\n\nIf `replicas > 1`, consider setting `podDisruptionBudget.enabled=true`.\n\nNote that cert-manager uses leader election to ensure that there can only be a single instance active at a time.",
@@ -1409,6 +1413,11 @@
       "default": {},
       "description": "Resources to provide to the cert-manager controller pod.\n\nFor example:\nrequests:\n  cpu: 10m\n  memory: 32Mi\nFor more information, see [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).",
       "type": "object"
+    },
+    "helm-values.runtimeClassName": {
+      "default": "",
+      "description": "A Kubernetes Runtime Class to apply to ACME HTTP01 solver pods, if required. For more information, see [Runtime Class](https://kubernetes.io/docs/concepts/containers/).\n\nFor example:\nruntimeClassName: gvisor",
+      "type": "string"
     },
     "helm-values.securityContext": {
       "default": {
@@ -1528,6 +1537,9 @@
         "resources": {
           "$ref": "#/$defs/helm-values.startupapicheck.resources"
         },
+        "runtimeClassName": {
+          "$ref": "#/$defs/helm-values.startupapicheck.runtimeClassName"
+        },
         "securityContext": {
           "$ref": "#/$defs/helm-values.startupapicheck.securityContext"
         },
@@ -1539,6 +1551,9 @@
         },
         "tolerations": {
           "$ref": "#/$defs/helm-values.startupapicheck.tolerations"
+        },
+        "ttlSecondsAfterFinished": {
+          "$ref": "#/$defs/helm-values.startupapicheck.ttlSecondsAfterFinished"
         },
         "volumeMounts": {
           "$ref": "#/$defs/helm-values.startupapicheck.volumeMounts"
@@ -1696,8 +1711,13 @@
     },
     "helm-values.startupapicheck.resources": {
       "default": {},
-      "description": "Resources to provide to the cert-manager controller pod.\n\nFor example:\nrequests:\n  cpu: 10m\n  memory: 32Mi\nFor more information, see [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).",
+      "description": "Resources to provide to the cert-manager startupapicheck pod.\n\nFor example:\nrequests:\n  cpu: 10m\n  memory: 32Mi\nFor more information, see [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).",
       "type": "object"
+    },
+    "helm-values.startupapicheck.runtimeClassName": {
+      "default": "",
+      "description": "A Kubernetes Runtime Class to apply to ACME HTTP01 solver pods, if required. For more information, see [Runtime Class](https://kubernetes.io/docs/concepts/containers/).\n\nFor example:\nruntimeClassName: gvisor",
+      "type": "string"
     },
     "helm-values.startupapicheck.securityContext": {
       "default": {
@@ -1767,6 +1787,9 @@
       "description": "A list of Kubernetes Tolerations, if required. For more information, see [Toleration v1 core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core).\n\nFor example:\ntolerations:\n- key: foo.bar.com/role\n  operator: Equal\n  value: master\n  effect: NoSchedule",
       "items": {},
       "type": "array"
+    },
+    "helm-values.startupapicheck.ttlSecondsAfterFinished": {
+      "description": "Limits the lifetime of a Job that has finished execution (either Complete or Failed). If this field is set, once the Job finishes, it will be automatically cleaned up after ttlSecondsAfterFinished seconds. This is disabled by default (field is not set) to preserve backward compatibility and avoid issues with GitOps tools (e.g. Argo CD) that may attempt to reconcile or recreate Jobs after they are automatically deleted. For more information, see [Automatic Cleanup for Finished Jobs](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/)."
     },
     "helm-values.startupapicheck.volumeMounts": {
       "default": [],
@@ -1889,6 +1912,9 @@
         },
         "resources": {
           "$ref": "#/$defs/helm-values.webhook.resources"
+        },
+        "runtimeClassName": {
+          "$ref": "#/$defs/helm-values.webhook.runtimeClassName"
         },
         "securePort": {
           "$ref": "#/$defs/helm-values.webhook.securePort"
@@ -2244,6 +2270,11 @@
       "default": {},
       "description": "Resources to provide to the cert-manager webhook pod.\n\nFor example:\nrequests:\n  cpu: 10m\n  memory: 32Mi\nFor more information, see [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).",
       "type": "object"
+    },
+    "helm-values.webhook.runtimeClassName": {
+      "default": "",
+      "description": "A Kubernetes Runtime Class to apply to ACME HTTP01 solver pods, if required. For more information, see [Runtime Class](https://kubernetes.io/docs/concepts/containers/).\n\nFor example:\nruntimeClassName: gvisor",
+      "type": "string"
     },
     "helm-values.webhook.securePort": {
       "default": 10250,
