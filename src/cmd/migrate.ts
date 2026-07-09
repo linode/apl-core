@@ -850,6 +850,15 @@ export const setAtPath = (path: string, values: Record<string, any>, value: stri
   paths.forEach((p) => set(values, p, Array.isArray(value) ? [...value] : value))
 }
 
+export const needsMigration = async (deps = { loadYaml }): Promise<boolean> => {
+  const defaults = await deps.loadYaml(`${rootDir}/helmfile.d/snippets/defaults.yaml`, { noError: true })
+  const defaultSpecVersion: number = defaults?.versions?.specVersion
+  const versions = await deps.loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
+  const repoSpecVersion: number = versions?.spec?.specVersion
+  if (!repoSpecVersion || !defaultSpecVersion) return false
+  return repoSpecVersion !== defaultSpecVersion
+}
+
 export const migrate = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
