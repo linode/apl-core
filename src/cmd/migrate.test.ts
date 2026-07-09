@@ -444,10 +444,12 @@ describe('processDeletionEntry', () => {
 })
 
 describe('preservePvcStorageClassInRawValues', () => {
-  const makeDeps = (overrides: Partial<any> = {}) => ({
-    readPvc: jest.fn(async () => undefined),
-    listPvcs: jest.fn(async () => []),
-    getParsedArgs: jest.fn(() => ({ _: [], $0: 'test', dryRun: false, local: false })),
+  type PreservePvcStorageClassDeps = NonNullable<Parameters<typeof preservePvcStorageClassInRawValues>[1]>
+
+  const makeDeps = (overrides: Partial<PreservePvcStorageClassDeps> = {}): PreservePvcStorageClassDeps => ({
+    readPvc: jest.fn(async (_namespace: string, _name: string) => undefined),
+    listPvcs: jest.fn(async (_namespace: string, _labelSelector: string) => []),
+    getParsedArgs: jest.fn(() => ({ _: [], $0: 'otomi', dryRun: false, local: false })),
     terminal,
     ...overrides,
   })
@@ -500,17 +502,18 @@ describe('preservePvcStorageClassInRawValues', () => {
 
     await preservePvcStorageClassInRawValues(values, makeDeps({ readPvc, listPvcs }))
 
-    expect(values.apps['git-server']._rawValues.persistence.storageClass).toBe('legacy-sc')
-    expect(values.apps.gitea._rawValues.global.storageClass).toBe('legacy-sc')
-    expect(values.apps.gitea._rawValues.giteaBackup.storageClassName).toBe('legacy-sc')
-    expect(values.databases.gitea.storageClass).toBe('legacy-sc')
-    expect(values.apps.harbor._rawValues.persistence.persistentVolumeClaim.redis.storageClass).toBe('legacy-sc')
-    expect(values.apps.harbor._rawValues.persistence.persistentVolumeClaim.trivy.storageClass).toBe('legacy-sc')
-    expect(values.databases.harbor.storageClass).toBe('legacy-sc')
-    expect(values.databases.keycloak.storageClass).toBe('legacy-sc')
-    expect(values.apps['kubeflow-pipelines']._rawValues.mysql.storage.storageClass).toBe('legacy-sc')
+    expect(values.apps['git-server']._rawValues?.persistence?.storageClass).toBe('legacy-sc')
+    expect(values.apps.gitea._rawValues?.global?.storageClass).toBe('legacy-sc')
+    expect(values.apps.gitea._rawValues?.giteaBackup?.storageClassName).toBe('legacy-sc')
+    expect(values.databases.gitea?.storageClass).toBe('legacy-sc')
+    expect(values.apps.harbor._rawValues?.persistence?.persistentVolumeClaim?.redis?.storageClass).toBe('legacy-sc')
+    expect(values.apps.harbor._rawValues?.persistence?.persistentVolumeClaim?.trivy?.storageClass).toBe('legacy-sc')
+    expect(values.databases.harbor?.storageClass).toBe('legacy-sc')
+    expect(values.databases.keycloak?.storageClass).toBe('legacy-sc')
+    expect(values.apps['kubeflow-pipelines']._rawValues?.mysql?.storage?.storageClass).toBe('legacy-sc')
     expect(
-      values.apps.prometheus._rawValues.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName,
+      values.apps.prometheus._rawValues?.prometheus?.prometheusSpec?.storageSpec?.volumeClaimTemplate?.spec
+        ?.storageClassName,
     ).toBe('legacy-sc')
   })
 
