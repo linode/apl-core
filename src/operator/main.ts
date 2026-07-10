@@ -2,8 +2,8 @@ import * as dotenv from 'dotenv'
 import fs from 'fs'
 import process from 'node:process'
 import path from 'path'
-import { retryInstallStep } from '../cmd/install'
 import { commit } from '../cmd/commit'
+import { retryInstallStep } from '../cmd/install'
 import { needsMigration } from '../cmd/migrate'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
@@ -82,7 +82,8 @@ async function main(): Promise<void> {
       await installer.ensureRecoveryPrerequisites()
       await installer.applyRecoveryManifests()
       await installer.recoverFromGit()
-      if (await needsMigration()) {
+      const migrationNeeded = await needsMigration()
+      if (migrationNeeded) {
         d.info('specVersion mismatch detected, running migration before install')
         const defaultValues = await getDefaultValues()
         await writeValues(defaultValues)
