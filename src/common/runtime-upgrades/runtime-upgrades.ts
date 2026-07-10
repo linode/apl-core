@@ -33,7 +33,7 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
-      apl: {
+      'apl-operator-apl-operator': {
         post: async () => {
           await deleteAplOperatorDeployemnt(k8s.app())
         },
