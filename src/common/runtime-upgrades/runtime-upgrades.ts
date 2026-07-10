@@ -1,6 +1,6 @@
 import { OtomiDebugger } from '../debug'
 import { k8s } from '../k8s'
-import { deleteAplOperatorDeployemnt, detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
+import { deleteAplOperatorDeployment, detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -35,7 +35,7 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       },
       'apl-operator-apl-operator': {
         post: async () => {
-          await deleteAplOperatorDeployemnt(k8s.app())
+          await deleteAplOperatorDeployment(k8s.app())
         },
       },
     },

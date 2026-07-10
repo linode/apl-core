@@ -62,9 +62,9 @@ export async function getIstioVersionFromDeployment(): Promise<string | null> {
   return null
 }
 
-export async function deleteAplOperatorDeployemnt(appApi: AppsV1Api): Promise<void> {
+export async function deleteAplOperatorDeployment(appApi: AppsV1Api): Promise<void> {
   // Due to update of the immutable Deployment field. spec.upgradeStrategy.
-  const d = terminal('deleteAplOperatorDeployemnt')
+  const d = terminal('deleteAplOperatorDeployment')
   try {
     await appApi.deleteNamespacedDeployment({ name: 'apl-operator', namespace: 'apl-operator' })
     d.info('Deleted apl-operator deployment in apl-operator namespace')
