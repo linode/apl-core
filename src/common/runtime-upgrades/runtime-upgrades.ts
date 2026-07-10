@@ -1,6 +1,6 @@
 import { OtomiDebugger } from '../debug'
-import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { k8s } from '../k8s'
+import { deleteAplOperatorDeployemnt, detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -31,6 +31,11 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       'istio-system-istiod': {
         post: async () => {
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
+      apl: {
+        post: async () => {
+          await deleteAplOperatorDeployemnt(k8s.app())
         },
       },
     },
