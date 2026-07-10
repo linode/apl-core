@@ -116,6 +116,10 @@ on:
         description: 'Check the box to enable Wiz integration'
         type: boolean
         default: true
+      BYO_GIT:
+        description: 'BYO git. Use predefined external values repo with branch named after the cluster.domainSuffix'
+        type: boolean
+        default: false
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -147,6 +151,18 @@ jobs:
           echo 'certificate: ${{ inputs.certificate }}'
           echo 'is_pre_installed: ${{ inputs.is_pre_installed }}'
           echo 'disableORCS: ${{ inputs.disableORCS }}'
+          echo 'BYO_GIT: ${{ inputs.BYO_GIT }}'
+
+      - name: Validate BYO_GIT secrets
+        if: ${{ inputs.BYO_GIT }}
+        env:
+          BYO_GIT_PAT: ${{ secrets.BYO_GIT_PAT }}
+          BYO_GIT_URL: ${{ secrets.BYO_GIT_URL }}
+        run: |
+          if [[ -z "$BYO_GIT_PAT" ]] || [[ -z "$BYO_GIT_URL" ]]; then
+            echo "BYO_GIT is enabled but BYO_GIT_PAT or BYO_GIT_URL secrets are not set."
+            exit 1
+          fi
 
   preprocess-linode-input:
     needs: preprocess-input
@@ -316,6 +332,8 @@ jobs:
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
           LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
           LKE_APL_FIREWALL_INBOUND_RULES: ${{ secrets.LKE_APL_FIREWALL_INBOUND_RULES }}
+          BYO_GIT_PAT: ${{ secrets.BYO_GIT_PAT }}
+          BYO_GIT_URL: ${{ secrets.BYO_GIT_URL }}
         run: |
           touch values.yaml
 
@@ -354,6 +372,12 @@ jobs:
                 --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
               install_args+=(--set imageName=${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }} --set imagePullSecretNames[0]=reg-otomi-github)
             fi
+          fi
+
+          if [[ '${{ inputs.BYO_GIT }}' == 'true' ]]; then
+            install_args+=(--set otomi.git.repoUrl="$BYO_GIT_URL")
+            install_args+=(--set otomi.git.password="$BYO_GIT_PAT")
+            install_args+=(--set otomi.git.branch="$DOMAIN")
           fi
 
           if [[ -n '${{ env.LKE_APL_FIREWALL_INBOUND_RULES }}' ]]; then
