@@ -57,7 +57,11 @@ export async function getGitCredentials(): Promise<Partial<GitConfigData> | unde
 }
 
 export async function getOldGitCredentials(): Promise<Partial<GitConfigData> | undefined> {
-  const secretData = await getK8sSecret('argocd-repo-creds-git', 'argocd')
+  let secretData = await getK8sSecret('argocd-repo-creds-git', 'argocd')
+  if (!secretData) {
+    secretData = await getK8sSecret('argocd-repo-creds-gitea', 'argocd')
+  }
+
   if (!secretData?.password) {
     return undefined
   }
