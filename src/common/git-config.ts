@@ -58,11 +58,11 @@ export async function getGitCredentials(): Promise<Partial<GitConfigData> | unde
 
 export async function getOldGitCredentials(): Promise<Partial<GitConfigData> | undefined> {
   let secretData = await getK8sSecret('argocd-repo-creds-git', 'argocd')
-  // With BYO url contains full repo URL, otherwise fallback to legacy gitea secret
-  const repoUrl = secretData?.url || GIT_LEGACY_CONFIG.repoUrl
   if (!secretData) {
     secretData = await getK8sSecret('argocd-repo-creds-gitea', 'argocd')
   }
+  // With BYO, `url` contains the full repo URL; otherwise fall back to the legacy Gitea URL
+  const repoUrl = secretData?.url || GIT_LEGACY_CONFIG.repoUrl
 
   if (!secretData?.password) {
     return undefined
