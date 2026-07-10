@@ -465,13 +465,6 @@ export const addRedisSecretForArgoCD = async (values: Record<string, any>): Prom
 
 type PvcReadResult = { spec?: { storageClassName?: string }; metadata?: { labels?: Record<string, string> } }
 
-interface PreservePvcStorageClassDeps {
-  readPvc: (namespace: string, name: string) => Promise<PvcReadResult | undefined>
-  listPvcs: (namespace: string, labelSelector: string) => Promise<PvcReadResult[]>
-  getParsedArgs: typeof getParsedArgs
-  terminal: typeof terminal
-}
-
 const readPvc = async (namespace: string, name: string): Promise<PvcReadResult | undefined> => {
   try {
     return await k8s.core().readNamespacedPersistentVolumeClaim({ namespace, name })
@@ -488,19 +481,12 @@ const listPvcs = async (namespace: string, labelSelector: string): Promise<PvcRe
 
 export const preservePvcStorageClassInRawValues = async (
   values: Record<string, any>,
-  deps: PreservePvcStorageClassDeps = {
+  deps = {
     readPvc,
     listPvcs,
-    getParsedArgs,
-    terminal,
   },
 ): Promise<void> => {
-  const d = deps.terminal('preservePvcStorageClassInRawValues')
-  const parsedArgs = deps.getParsedArgs()
-  if (parsedArgs?.dryRun || parsedArgs?.local || env.DISABLE_SYNC) {
-    d.info('Skipping PVC storageClass preservation in dry-run/local/dev mode')
-    return
-  }
+  const d = terminal('preservePvcStorageClassInRawValues')
 
   const clusterDefaultStorageClass = values?.cluster?.defaultStorageClass ?? ''
   const maybeSetRawValue = (path: string, pvcStorageClass?: string): void => {
