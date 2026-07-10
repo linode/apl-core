@@ -57,16 +57,19 @@ export async function getGitCredentials(): Promise<Partial<GitConfigData> | unde
 }
 
 export async function getOldGitCredentials(): Promise<Partial<GitConfigData> | undefined> {
-  const cm = await getK8sConfigMap('otomi', 'otomi-api', k8s.core())
   const secretData = await getK8sSecret('argocd-repo-creds-git', 'argocd')
+  if (!secretData?.password) {
+    return undefined
+  }
+
+  const cm = await getK8sConfigMap('otomi', 'otomi-api', k8s.core())
   const gitBranch = cm?.data?.GIT_BRANCH || GIT_DEFAULT_CONFIG.branch
-  if (secretData?.GIT_PASSWORD) {
-    return {
-      ...GIT_LEGACY_CONFIG,
-      branch: gitBranch,
-      username: secretData.GIT_USERNAME,
-      password: secretData.GIT_PASSWORD,
-    }
+
+  return {
+    repoUrl: secretData.url || GIT_LEGACY_CONFIG.repoUrl,
+    branch: gitBranch,
+    username: secretData.username,
+    password: secretData.password,
   }
   return undefined
 }
