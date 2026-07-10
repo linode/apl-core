@@ -46,7 +46,10 @@ describe('git-config', () => {
   const originalEnv = process.env
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    mockGetK8sSecret.mockReset()
+    mockCreateUpdateGenericSecret.mockReset()
+    mockGetK8sConfigMap.mockReset()
+    mockLoadYaml.mockReset()
     mockedEnvalid.env.VALUES_INPUT = undefined
     process.env = { ...originalEnv }
     delete process.env.NODE_ENV
@@ -143,6 +146,25 @@ describe('git-config', () => {
       expect(mockGetK8sConfigMap).toHaveBeenCalledWith('otomi', 'otomi-api', mockCoreApi)
     })
 
+    it('should fall back to legacy gitea secret when git secret is missing', async () => {
+      mockGetK8sSecret.mockResolvedValueOnce(undefined).mockResolvedValueOnce({
+        url: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
+        username: 'otomi-admin',
+        password: 'oldpass',
+      })
+      mockGetK8sConfigMap.mockResolvedValue({ data: { GIT_BRANCH: 'main' } })
+
+      const result = await getOldGitCredentials()
+      expect(result).toEqual({
+        repoUrl: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
+        username: 'otomi-admin',
+        password: 'oldpass',
+        branch: 'main',
+      })
+      expect(mockGetK8sSecret).toHaveBeenNthCalledWith(1, 'argocd-repo-creds-git', 'argocd')
+      expect(mockGetK8sSecret).toHaveBeenNthCalledWith(2, 'argocd-repo-creds-gitea', 'argocd')
+    })
+
     it('should use default branch when configmap does not have GIT_BRANCH', async () => {
       mockGetK8sSecret.mockResolvedValue({
         url: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
@@ -159,6 +181,8 @@ describe('git-config', () => {
       mockGetK8sSecret.mockResolvedValue(undefined)
       const result = await getOldGitCredentials()
       expect(result).toEqual(undefined)
+      expect(mockGetK8sSecret).toHaveBeenNthCalledWith(1, 'argocd-repo-creds-git', 'argocd')
+      expect(mockGetK8sSecret).toHaveBeenNthCalledWith(2, 'argocd-repo-creds-gitea', 'argocd')
     })
 
     it('should return undefined when password is missing', async () => {
@@ -239,7 +263,8 @@ describe('git-config', () => {
           branch: 'main',
           email: 'test@test.com',
         }) // getGitCredentials - no password
-        .mockResolvedValueOnce(undefined) // getOldGitCredentials returns undefined
+        .mockResolvedValueOnce(undefined) // getOldGitCredentials: argocd-repo-creds-git
+        .mockResolvedValueOnce(undefined) // getOldGitCredentials: argocd-repo-creds-gitea
 
       await expect(getStoredGitRepoConfig()).rejects.toThrow(
         'Git password/token not found in apl-git-config or gitea-credentials secret',
