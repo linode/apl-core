@@ -66,12 +66,12 @@ export async function getOldGitCredentials(): Promise<Partial<GitConfigData> | u
   const gitBranch = cm?.data?.GIT_BRANCH || GIT_DEFAULT_CONFIG.branch
 
   return {
-    repoUrl: secretData.url || GIT_LEGACY_CONFIG.repoUrl,
+    ...GIT_LEGACY_CONFIG,
+    repoUrl: secretData.url,
     branch: gitBranch,
     username: secretData.username,
     password: secretData.password,
   }
-  return undefined
 }
 
 export function getAuthUrlFromGitConfig(credentials: Partial<GitConfigData>): string | undefined {
