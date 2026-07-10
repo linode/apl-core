@@ -1,11 +1,11 @@
 import type { CoreV1Api } from '@kubernetes/client-node'
 import { generate as generatePassword } from 'generate-password'
+import { get } from 'lodash'
 import { $ } from 'zx'
 import { terminal } from './debug'
 import { env } from './envalid'
-import { createUpdateGenericSecret, ensureNamespaceExists, getK8sSecret, k8s } from './k8s'
+import { createUpdateGenericSecret, ensureNamespaceExists, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
 import { loadYaml } from './utils'
-import { get } from 'lodash'
 
 const d = terminal('common:git-config')
 
@@ -57,20 +57,15 @@ export async function getGitCredentials(): Promise<Partial<GitConfigData> | unde
 }
 
 export async function getOldGitCredentials(): Promise<Partial<GitConfigData> | undefined> {
-  let secretData = await getK8sSecret('gitea-credentials', 'apl-operator')
+  const cm = await getK8sConfigMap('otomi', 'otomi-api', k8s.core())
+  const secretData = await getK8sSecret('argocd-repo-creds-git', 'argocd')
+  const gitBranch = cm?.data?.GIT_BRANCH || GIT_DEFAULT_CONFIG.branch
   if (secretData?.GIT_PASSWORD) {
     return {
       ...GIT_LEGACY_CONFIG,
+      branch: gitBranch,
       username: secretData.GIT_USERNAME,
       password: secretData.GIT_PASSWORD,
-    }
-  }
-  secretData = await getK8sSecret('gitea-admin-secret', 'gitea')
-  if (secretData?.password) {
-    return {
-      ...GIT_LEGACY_CONFIG,
-      username: secretData.username,
-      password: secretData.password,
     }
   }
   return undefined
