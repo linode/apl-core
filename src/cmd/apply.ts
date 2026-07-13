@@ -10,11 +10,11 @@ import { getImageTagFromValues, getPackageVersion } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { cd } from 'zx'
+import { getStoredGitRepoConfig } from '../common/git-config'
 import { runtimeUpgrade } from '../common/runtime-upgrade'
 import { applyAsApps, applyGitOpsApps, updateOperatorApplication } from './apply-as-apps'
 import { applyTeams } from './apply-teams'
 import { commit } from './commit'
-import { getStoredGitRepoConfig } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
