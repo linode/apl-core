@@ -14,6 +14,7 @@ const mockCoreApi = {}
 
 jest.mock('./k8s', () => ({
   getK8sSecret: (...args: any[]) => mockGetK8sSecret(...args),
+  getK8sConfigMap: (...args: any[]) => mockGetK8sConfigMap(...args),
   createUpdateGenericSecret: (...args: any[]) => mockCreateUpdateGenericSecret(...args),
   k8s: { core: () => mockCoreApi },
 }))
@@ -45,7 +46,10 @@ describe('git-config', () => {
   const originalEnv = process.env
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    mockGetK8sSecret.mockReset()
+    mockCreateUpdateGenericSecret.mockReset()
+    mockGetK8sConfigMap.mockReset()
+    mockLoadYaml.mockReset()
     mockedEnvalid.env.VALUES_INPUT = undefined
     process.env = { ...originalEnv }
     delete process.env.NODE_ENV
@@ -123,19 +127,69 @@ describe('git-config', () => {
   })
 
   describe('getOldGitCredentials', () => {
-    it('should return credentials from old gitea-credentials secret', async () => {
-      mockGetK8sSecret.mockResolvedValue({ GIT_USERNAME: 'otomi-admin', GIT_PASSWORD: 'oldpass' })
+    it('should return credentials from old argocd secret', async () => {
+      mockGetK8sSecret.mockResolvedValue({
+        url: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
+        username: 'otomi-admin',
+        password: 'oldpass',
+      })
+      mockGetK8sConfigMap.mockResolvedValue({ data: { GIT_BRANCH: 'develop' } })
+
       const result = await getOldGitCredentials()
       expect(result).toEqual({
         repoUrl: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
         username: 'otomi-admin',
         password: 'oldpass',
+        branch: 'develop',
       })
-      expect(mockGetK8sSecret).toHaveBeenCalledWith('gitea-credentials', 'apl-operator')
+      expect(mockGetK8sSecret).toHaveBeenCalledWith('argocd-repo-creds-git', 'argocd')
+      expect(mockGetK8sConfigMap).toHaveBeenCalledWith('otomi', 'otomi-api', mockCoreApi)
+    })
+
+    it('should fall back to legacy gitea secret when git secret is missing', async () => {
+      mockGetK8sSecret.mockResolvedValueOnce(undefined).mockResolvedValueOnce({
+        url: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
+        username: 'otomi-admin',
+        password: 'oldpass',
+      })
+      mockGetK8sConfigMap.mockResolvedValue({ data: { GIT_BRANCH: 'main' } })
+
+      const result = await getOldGitCredentials()
+      expect(result).toEqual({
+        repoUrl: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
+        username: 'otomi-admin',
+        password: 'oldpass',
+        branch: 'main',
+      })
+      expect(mockGetK8sSecret).toHaveBeenNthCalledWith(1, 'argocd-repo-creds-git', 'argocd')
+      expect(mockGetK8sSecret).toHaveBeenNthCalledWith(2, 'argocd-repo-creds-gitea', 'argocd')
+    })
+
+    it('should use default branch when configmap does not have GIT_BRANCH', async () => {
+      mockGetK8sSecret.mockResolvedValue({
+        url: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
+        username: 'otomi-admin',
+        password: 'oldpass',
+      })
+      mockGetK8sConfigMap.mockResolvedValue({ data: {} })
+
+      const result = await getOldGitCredentials()
+      expect(result?.branch).toBe('main')
     })
 
     it('should return undefined when secret does not exist', async () => {
       mockGetK8sSecret.mockResolvedValue(undefined)
+      const result = await getOldGitCredentials()
+      expect(result).toEqual(undefined)
+      expect(mockGetK8sSecret).toHaveBeenNthCalledWith(1, 'argocd-repo-creds-git', 'argocd')
+      expect(mockGetK8sSecret).toHaveBeenNthCalledWith(2, 'argocd-repo-creds-gitea', 'argocd')
+    })
+
+    it('should return undefined when password is missing', async () => {
+      mockGetK8sSecret.mockResolvedValue({
+        url: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
+        username: 'otomi-admin',
+      })
       const result = await getOldGitCredentials()
       expect(result).toEqual(undefined)
     })
@@ -184,7 +238,12 @@ describe('git-config', () => {
     it('should fall back to old credentials when both new secrets are missing', async () => {
       mockGetK8sSecret
         .mockResolvedValueOnce(undefined) // getGitCredentials (apl-git-credentials empty)
-        .mockResolvedValueOnce({ GIT_USERNAME: 'otomi-admin', GIT_PASSWORD: 'oldpass' }) // getOldGitCredentials
+        .mockResolvedValueOnce({
+          url: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git',
+          username: 'otomi-admin',
+          password: 'oldpass',
+        }) // getOldGitCredentials
+      mockGetK8sConfigMap.mockResolvedValueOnce({ data: {} }) // getOldGitCredentials
 
       const result = await getStoredGitRepoConfig()
       expect(result).toEqual({
@@ -198,13 +257,15 @@ describe('git-config', () => {
     })
 
     it('should throw when no credentials are found at all', async () => {
-      mockGetK8sSecret.mockResolvedValue({
-        repoUrl: 'https://github.com/org/repo.git',
-        branch: 'main',
-        email: 'test@test.com',
-      }) // Partial insufficient data
+      mockGetK8sSecret
+        .mockResolvedValueOnce({
+          repoUrl: 'https://github.com/org/repo.git',
+          branch: 'main',
+          email: 'test@test.com',
+        }) // getGitCredentials - no password
+        .mockResolvedValueOnce(undefined) // getOldGitCredentials: argocd-repo-creds-git
+        .mockResolvedValueOnce(undefined) // getOldGitCredentials: argocd-repo-creds-gitea
 
-      // getOldGitCredentials returns undefined
       await expect(getStoredGitRepoConfig()).rejects.toThrow(
         'Git password/token not found in apl-git-config or gitea-credentials secret',
       )
