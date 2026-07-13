@@ -355,6 +355,7 @@ export async function ensureK8sDeploymentSync(appApi: AppsV1Api, appName: string
     group?: string
     kind?: string
     name?: string
+    status?: string
     namespace?: string
   }> = []
 
@@ -364,6 +365,7 @@ export async function ensureK8sDeploymentSync(appApi: AppsV1Api, appName: string
       name: appName,
     })
     const argoApp = response.body as any
+
     syncResources = argoApp?.status?.operationState?.syncResult?.resources || []
   } catch (error) {
     d.info(`Skipping deployment deletion for app ${appName}: could not read Argo CD application sync status`)
@@ -372,7 +374,12 @@ export async function ensureK8sDeploymentSync(appApi: AppsV1Api, appName: string
   }
 
   const deploymentTargets = syncResources.filter(
-    (resource) => resource.group === 'apps' && resource.kind === 'Deployment' && resource.name && resource.namespace,
+    (resource) =>
+      resource.group === 'apps' &&
+      resource.kind === 'Deployment' &&
+      resource?.status === 'SyncFailed' &&
+      resource.name &&
+      resource.namespace,
   )
 
   if (deploymentTargets.length === 0) {
