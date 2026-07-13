@@ -62,7 +62,7 @@ export async function getOldGitCredentials(): Promise<Partial<GitConfigData> | u
     secretData = await getK8sSecret('argocd-repo-creds-gitea', 'argocd')
   }
   // With BYO, `url` contains the full repo URL; otherwise fall back to the legacy Gitea URL
-  const repoUrl = secretData?.url || GIT_LEGACY_CONFIG.repoUrl
+  const repoUrl = `${secretData?.url}/otomi/values.git` || GIT_LEGACY_CONFIG.repoUrl
 
   if (!secretData?.password) {
     return undefined
