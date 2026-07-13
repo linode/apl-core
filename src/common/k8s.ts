@@ -347,65 +347,6 @@ export const getK8sHelmReleases = async (): Promise<Record<string, HelmRelease>>
   }
 }
 
-export async function ensureK8sDeploymentSync(appApi: AppsV1Api, appName: string): Promise<void> {
-  // Due to update of the immutable Deployment field (.spec.strategy)
-  const d = terminal('ensureK8sDeploymentSync')
-
-  let syncResources: Array<{
-    group?: string
-    kind?: string
-    name?: string
-    status?: string
-    namespace?: string
-  }> = []
-
-  try {
-    const response = await k8s.custom().getNamespacedCustomObject({
-      ...ARGOCD_APP_PARAMS,
-      name: appName,
-    })
-    const argoApp = response.body as any
-
-    syncResources = argoApp?.status?.operationState?.syncResult?.resources || []
-  } catch (error) {
-    d.info(`Skipping deployment deletion for app ${appName}: could not read Argo CD application sync status`)
-    d.debug('Argo CD application status read error:', error)
-    return
-  }
-
-  const deploymentTargets = syncResources.filter(
-    (resource) =>
-      resource.group === 'apps' &&
-      resource.kind === 'Deployment' &&
-      resource?.status === 'SyncFailed' &&
-      resource.name &&
-      resource.namespace,
-  )
-
-  if (deploymentTargets.length === 0) {
-    d.info(
-      `Skipping deployment deletion for app ${appName}: no SyncFailed deployment resources found in Argo CD sync status`,
-    )
-    return
-  }
-
-  const uniqueTargets = Array.from(
-    new Map(deploymentTargets.map((resource) => [`${resource.namespace}/${resource.name}`, resource])).values(),
-  )
-
-  for (const resource of uniqueTargets) {
-    const { name, namespace } = resource
-    if (!name || !namespace) continue
-
-    try {
-      d.info(`Deleting deployment ${name} in namespace ${namespace} (from Argo CD app ${appName} sync status)`)
-      await appApi.deleteNamespacedDeployment({ name, namespace })
-    } catch (error) {
-      d.error(`Error deleting deployment ${name} in namespace ${namespace}:`, error)
-    }
-  }
-}
-
 export const setDeploymentState = async (state: Record<string, any>): Promise<void> => {
   if (env.isDev && env.DISABLE_SYNC) return
   const d = terminal('common:k8s:setDeploymentState')
