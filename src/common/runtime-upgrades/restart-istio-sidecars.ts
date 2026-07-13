@@ -1,4 +1,4 @@
-import { AppsV1Api, CoreV1Api, PatchStrategy, setHeaderOptions, V1OwnerReference, V1Pod } from '@kubernetes/client-node'
+import { CoreV1Api, PatchStrategy, setHeaderOptions, V1OwnerReference, V1Pod } from '@kubernetes/client-node'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../debug'
 import { getDeploymentState, k8s } from '../k8s'
@@ -60,17 +60,6 @@ export async function getIstioVersionFromDeployment(): Promise<string | null> {
   }
 
   return null
-}
-
-export async function deleteAplOperatorDeployment(appApi: AppsV1Api): Promise<void> {
-  // Due to update of the immutable Deployment field. spec.upgradeStrategy.
-  const d = terminal('deleteAplOperatorDeployment')
-  try {
-    await appApi.deleteNamespacedDeployment({ name: 'apl-operator', namespace: 'apl-operator' })
-    d.info('Deleted apl-operator deployment in apl-operator namespace')
-  } catch (error) {
-    d.error('Error deleting apl-operator deployment:', error)
-  }
 }
 
 export async function detectAndRestartOutdatedIstioSidecars(

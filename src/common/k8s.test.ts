@@ -14,7 +14,6 @@ import {
   V1StatefulSet,
   V1Status,
 } from '@kubernetes/client-node'
-import retry from 'async-retry'
 import { X509Certificate } from 'crypto'
 import { ARGOCD_APP_PARAMS } from './constants'
 import { terminal } from './debug'
@@ -25,6 +24,7 @@ import {
   argoCdHasUnrecoverableErrors,
   checkArgoCDAppStatus,
   deleteStatefulSetPods,
+  ensureK8sDeploymentSync,
   getSealedSecretsPEM,
   patchArgoCdApp,
   patchContainerResourcesOfSts,
@@ -505,6 +505,81 @@ describe('ArgoCD Application Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+  })
+
+  describe('ensureK8sDeploymentSync', () => {
+    let mockAppApi: jest.Mocked<AppsV1Api>
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      mockAppApi = {
+        deleteNamespacedDeployment: jest.fn().mockResolvedValue({}),
+      } as unknown as jest.Mocked<AppsV1Api>
+
+      jest.spyOn(k8s.k8s, 'custom').mockReturnValue(mockCustomApi)
+    })
+
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
+    it('should delete all deployments from app sync status across namespaces', async () => {
+      mockCustomApi.getNamespacedCustomObject.mockResolvedValue({
+        body: {
+          status: {
+            operationState: {
+              syncResult: {
+                resources: [
+                  { group: 'apps', kind: 'Deployment', name: 'dep-a', namespace: 'ns-a', status: 'SyncFailed' },
+                  { group: 'apps', kind: 'Deployment', name: 'dep-b', namespace: 'ns-b', status: 'Synced' },
+                  { group: 'apps', kind: 'StatefulSet', name: 'sts-a', namespace: 'ns-a', status: 'SyncFailed' },
+                ],
+              },
+            },
+          },
+        },
+      } as any)
+
+      await ensureK8sDeploymentSync(mockAppApi, 'apl-operator-apl-operator')
+
+      expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
+        ...ARGOCD_APP_PARAMS,
+        name: 'apl-operator-apl-operator',
+      })
+      expect(mockAppApi.deleteNamespacedDeployment).toHaveBeenCalledTimes(2)
+      expect(mockAppApi.deleteNamespacedDeployment).toHaveBeenCalledWith({ name: 'dep-a', namespace: 'ns-a' })
+      expect(mockAppApi.deleteNamespacedDeployment).toHaveBeenCalledWith({ name: 'dep-b', namespace: 'ns-b' })
+    })
+
+    it('should deduplicate deployment targets by namespace/name', async () => {
+      mockCustomApi.getNamespacedCustomObject.mockResolvedValue({
+        body: {
+          status: {
+            operationState: {
+              syncResult: {
+                resources: [
+                  { group: 'apps', kind: 'Deployment', name: 'dep-a', namespace: 'ns-a' },
+                  { group: 'apps', kind: 'Deployment', name: 'dep-a', namespace: 'ns-a' },
+                ],
+              },
+            },
+          },
+        },
+      } as any)
+
+      await ensureK8sDeploymentSync(mockAppApi, 'apl-operator-apl-operator')
+
+      expect(mockAppApi.deleteNamespacedDeployment).toHaveBeenCalledTimes(1)
+      expect(mockAppApi.deleteNamespacedDeployment).toHaveBeenCalledWith({ name: 'dep-a', namespace: 'ns-a' })
+    })
+
+    it('should skip deployment deletion when app status cannot be read', async () => {
+      mockCustomApi.getNamespacedCustomObject.mockRejectedValue(new Error('api failed'))
+
+      await ensureK8sDeploymentSync(mockAppApi, 'apl-operator-apl-operator')
+
+      expect(mockAppApi.deleteNamespacedDeployment).not.toHaveBeenCalled()
+    })
   })
 
   describe('checkArgoCDAppStatus', () => {

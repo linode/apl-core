@@ -4,17 +4,23 @@ import { cloneDeep } from 'lodash'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { deletePendingHelmReleases, getDeploymentState, setDeploymentState } from 'src/common/k8s'
+import {
+  deletePendingHelmReleases,
+  ensureK8sDeploymentSync,
+  getDeploymentState,
+  k8s,
+  setDeploymentState,
+} from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { cd } from 'zx'
+import { getStoredGitRepoConfig } from '../common/git-config'
 import { runtimeUpgrade } from '../common/runtime-upgrade'
 import { applyAsApps, applyGitOpsApps, updateOperatorApplication } from './apply-as-apps'
 import { applyTeams } from './apply-teams'
 import { commit } from './commit'
-import { getStoredGitRepoConfig } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -34,6 +40,7 @@ export const applyAll = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
   const argv: HelmArguments = getParsedArgs()
 
+  await ensureK8sDeploymentSync(k8s.app(), 'apl-operator-apl-operator')
   const tag = await getImageTagFromValues()
   const revisionUpdated = await updateOperatorApplication(env.APPS_REVISION || tag)
   if (revisionUpdated) {

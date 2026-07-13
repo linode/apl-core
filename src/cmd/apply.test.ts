@@ -12,6 +12,7 @@ jest.mock('fs', () => ({
 
 jest.mock('src/common/k8s', () => ({
   deletePendingHelmReleases: jest.fn(),
+  ensureK8sDeploymentSync: jest.fn(),
   getDeploymentState: jest.fn(),
   setDeploymentState: jest.fn(),
   restartOtomiApiDeployment: jest.fn(),
@@ -101,6 +102,7 @@ describe('Apply command', () => {
     mockDeps = {
       getDeploymentState: require('src/common/k8s').getDeploymentState,
       setDeploymentState: require('src/common/k8s').setDeploymentState,
+      ensureK8sDeploymentSync: require('src/common/k8s').ensureK8sDeploymentSync,
       getImageTagFromValues: require('src/common/values').getImageTagFromValues,
       getPackageVersion: require('src/common/values').getPackageVersion,
       applyAsApps: require('./apply-as-apps').applyAsApps,
@@ -115,6 +117,7 @@ describe('Apply command', () => {
 
     // Set up default mock return values
     mockDeps.getDeploymentState.mockResolvedValue({ status: 'deployed', deployingVersion: '1.0.0' })
+    mockDeps.ensureK8sDeploymentSync.mockResolvedValue(undefined)
     mockDeps.getImageTagFromValues.mockResolvedValue('v1.0.0')
     mockDeps.getPackageVersion.mockReturnValue('1.0.0')
     mockDeps.applyAsApps.mockResolvedValue(true)
