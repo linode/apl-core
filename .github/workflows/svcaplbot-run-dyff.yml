@@ -80,7 +80,7 @@ jobs:
           base_ref="${{ github.event.pull_request.base.ref || 'main' }}"
           git fetch --no-tags --prune origin "$base_ref:$base_ref"
       - name: Install Helm and Helmfile
-        uses: helmfile/helmfile-action@v2.4.6
+        uses: helmfile/helmfile-action@v2.4.7
         with:
           helmfile-args: version # In this step, we only want these tools to be installed
           helm-plugins: >
