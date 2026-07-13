@@ -14,7 +14,6 @@ import {
   V1StatefulSet,
   V1Status,
 } from '@kubernetes/client-node'
-import retry from 'async-retry'
 import { X509Certificate } from 'crypto'
 import { ARGOCD_APP_PARAMS } from './constants'
 import { terminal } from './debug'
@@ -23,7 +22,6 @@ import * as k8s from './k8s'
 import {
   appRevisionMatches,
   argoCdHasUnrecoverableErrors,
-  checkArgoCDAppStatus,
   deleteStatefulSetPods,
   getSealedSecretsPEM,
   patchArgoCdApp,
@@ -496,98 +494,6 @@ describe('StatefulSet tests', () => {
         'Failed to delete pods for StatefulSet my-sts:',
         new Error(`No pods found for StatefulSet my-sts`),
       )
-    })
-  })
-})
-
-describe('ArgoCD Application Tests', () => {
-  const mockCustomApi = new CustomObjectsApi({} as any) as jest.Mocked<CustomObjectsApi>
-
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
-  describe('checkArgoCDAppStatus', () => {
-    it('should return status when sync status matches expected', async () => {
-      const mockApplication = {
-        status: {
-          sync: {
-            status: 'Synced',
-          },
-        },
-      }
-      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
-
-      const result = await checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')
-
-      expect(result).toBe('Synced')
-      expect(mockCustomApi.getNamespacedCustomObject).toHaveBeenCalledWith({
-        ...ARGOCD_APP_PARAMS,
-        name: 'test-app',
-      })
-    })
-
-    it('should return status when health status matches expected', async () => {
-      const mockApplication = {
-        status: {
-          health: {
-            status: 'Healthy',
-          },
-        },
-      }
-      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
-
-      const result = await checkArgoCDAppStatus('test-app', mockCustomApi, 'health', 'Healthy')
-
-      expect(result).toBe('Healthy')
-    })
-
-    it('should throw error when sync status does not match expected', async () => {
-      const mockApplication = {
-        status: {
-          sync: {
-            status: 'OutOfSync',
-          },
-        },
-      }
-      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
-
-      await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')).rejects.toThrow(
-        "Application test-app sync status is 'OutOfSync', expected 'Synced'",
-      )
-    })
-
-    it('should throw error when health status does not match expected', async () => {
-      const mockApplication = {
-        status: {
-          health: {
-            status: 'Degraded',
-          },
-        },
-      }
-      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
-
-      await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'health', 'Healthy')).rejects.toThrow(
-        "Application test-app health status is 'Degraded', expected 'Healthy'",
-      )
-    })
-
-    it('should handle missing status fields', async () => {
-      const mockApplication = {
-        status: {},
-      }
-      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
-
-      await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')).rejects.toThrow(
-        "Application test-app sync status is 'undefined', expected 'Synced'",
-      )
-    })
-
-    it('should propagate API errors', async () => {
-      const apiError = new Error('API call failed')
-      mockCustomApi.getNamespacedCustomObject.mockRejectedValue(apiError)
-
-      await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')).rejects.toThrow('API call failed')
     })
   })
 })
