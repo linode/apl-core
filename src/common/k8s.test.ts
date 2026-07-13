@@ -531,7 +531,7 @@ describe('ArgoCD Application Tests', () => {
               syncResult: {
                 resources: [
                   { group: 'apps', kind: 'Deployment', name: 'dep-a', namespace: 'ns-a', status: 'SyncFailed' },
-                  { group: 'apps', kind: 'Deployment', name: 'dep-b', namespace: 'ns-b', status: 'Synced' },
+                  { group: 'apps', kind: 'Deployment', name: 'dep-b', namespace: 'ns-b', status: 'SyncFailed' },
                   { group: 'apps', kind: 'StatefulSet', name: 'sts-a', namespace: 'ns-a', status: 'SyncFailed' },
                 ],
               },
@@ -558,8 +558,8 @@ describe('ArgoCD Application Tests', () => {
             operationState: {
               syncResult: {
                 resources: [
-                  { group: 'apps', kind: 'Deployment', name: 'dep-a', namespace: 'ns-a' },
-                  { group: 'apps', kind: 'Deployment', name: 'dep-a', namespace: 'ns-a' },
+                  { group: 'apps', kind: 'Deployment', name: 'dep-a', namespace: 'ns-a', status: 'SyncFailed' },
+                  { group: 'apps', kind: 'Deployment', name: 'dep-a', namespace: 'ns-a', status: 'SyncFailed' },
                 ],
               },
             },
