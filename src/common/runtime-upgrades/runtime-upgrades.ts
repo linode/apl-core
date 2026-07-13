@@ -1,6 +1,6 @@
 import { OtomiDebugger } from '../debug'
-import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { k8s } from '../k8s'
+import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
