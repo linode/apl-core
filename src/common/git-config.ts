@@ -68,8 +68,13 @@ export async function getOldGitCredentials(): Promise<Partial<GitConfigData> | u
     return undefined
   }
 
-  const cm = await getK8sConfigMap('otomi', 'otomi-api', k8s.core())
-  const gitBranch = cm?.data?.GIT_BRANCH || GIT_DEFAULT_CONFIG.branch
+  let gitBranch = GIT_DEFAULT_CONFIG.branch
+  try {
+    const cm = await getK8sConfigMap('otomi', 'otomi-api', k8s.core())
+    gitBranch = cm?.data?.GIT_BRANCH || gitBranch
+  } catch (error) {
+    d.debug('Could not read otomi-api ConfigMap for GIT_BRANCH; using default branch', error)
+  }
   return {
     ...GIT_LEGACY_CONFIG,
     repoUrl,
