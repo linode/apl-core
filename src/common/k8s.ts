@@ -383,7 +383,9 @@ export async function ensureK8sDeploymentSync(appApi: AppsV1Api, appName: string
   )
 
   if (deploymentTargets.length === 0) {
-  d.info(`Skipping deployment deletion for app ${appName}: no SyncFailed deployment resources found in Argo CD sync status`)
+    d.info(
+      `Skipping deployment deletion for app ${appName}: no SyncFailed deployment resources found in Argo CD sync status`,
+    )
     return
   }
 
