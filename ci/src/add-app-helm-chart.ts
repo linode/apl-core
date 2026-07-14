@@ -120,7 +120,8 @@ function findHighestHelmfileNumber(helmfileDir: string): number {
 
 function hasReleaseNameInHelmfiles(helmfileDir: string, releaseName: string): boolean {
   const files = fs.readdirSync(helmfileDir).filter((f) => f.endsWith('.yaml') || f.endsWith('.gotmpl'))
-  const rx = new RegExp(`^\\s*-\\s+name:\\s+${releaseName}\\s*$`, 'm')
+  const escapedReleaseName = releaseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const rx = new RegExp(`^\\s*-\\s+name:\\s+${escapedReleaseName}\\s*$`, 'm')
   for (const file of files) {
     const content = fs.readFileSync(path.join(helmfileDir, file), 'utf8')
     if (rx.test(content)) return true
