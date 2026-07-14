@@ -1,6 +1,6 @@
 ---
 name: add-app-ingress
-description: Configure public exposure for a selected app by updating core namespace/admin app configuration and optionally scaffolding HTTPRoute + Istio authn/authz resources.
+description: Configure public exposure for a selected app by updating core namespace/admin app configuration and optionally scaffolding HTTPRoute auth-redirects plus authentication/authorization resources.
 argument-hint: <name> [--configure-public-security true|false]
 ---
 
@@ -9,7 +9,7 @@ argument-hint: <name> [--configure-public-security true|false]
 ## Quick start
 
 1. Ask for required input: app name.
-2. Ask if HTTPRoute + Istio authn/authz scaffolding should be created.
+2. Ask if HTTPRoute auth-redirects + authentication/authorization scaffolding should be created.
 3. Run:
 
 ```bash
@@ -29,7 +29,8 @@ Checklist:
 - [ ] Ensure namespace is configured for public exposure in core.yaml.
 - [ ] Ensure adminApps entry exists in core.yaml.
 - [ ] If security scaffolding is enabled, add `<name>-artifacts` release in the app Helmfile.
-- [ ] If security scaffolding is enabled, create values/<name>/<name>-raw.gotmpl.
+- [ ] If security scaffolding is enabled, create values/<name>/<name>-raw.gotmpl with an HTTPRoute named `<name>-auth-redirects`.
+- [ ] If security scaffolding is enabled, ensure values/<name>/<name>.gotmpl defines podLabels with `otomi.io/auth: platform` and `otomi.io/auth-policy: platform`.
 - [ ] Run validation and template-diff checks.
 - [ ] Summarize touched files and rendered diffs.
 

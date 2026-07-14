@@ -12,7 +12,7 @@ function usage(): never {
   process.exit(2)
 }
 
-function parseBool(value: string, flag: string): boolean {
+export function parseBool(value: string, flag: string): boolean {
   if (value === 'true') return true
   if (value === 'false') return false
   throw new Error(`Invalid value for ${flag}: ${value}. Expected true|false.`)
@@ -227,7 +227,7 @@ function ensureAdminApp(corePath: string, name: string): void {
   console.log(`Added adminApps public entry for ${name} in core.yaml`)
 }
 
-function ensureRawValuesFile(rawValuesFile: string, name: string): void {
+export function ensureRawValuesFile(rawValuesFile: string, name: string): void {
   fs.mkdirSync(path.dirname(rawValuesFile), { recursive: true })
   if (fs.existsSync(rawValuesFile)) {
     console.log(`raw values file already exists: values/${name}/${name}-raw.gotmpl`)
@@ -237,6 +237,21 @@ function ensureRawValuesFile(rawValuesFile: string, name: string): void {
   const content = `{{- $v := .Values }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 resources:
+  - apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    metadata:
+      name: ${name}-auth-redirects
+      {{ with $httpRoute.annotations }}
+      annotations:
+        {{ . | toYaml | nindent 8 }}
+      {{- end }}
+    spec:
+      parentRefs:
+        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
+      hostnames:
+        - {{ printf "${name}.%s" $v.cluster.domainSuffix }}
+      rules:
+        {{- $httpRoute.authRules | toYaml | nindent 8 }}
   - apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
     metadata:
@@ -251,7 +266,6 @@ resources:
       hostnames:
         - {{ printf "${name}.%s" $v.cluster.domainSuffix }}
       rules:
-        {{- $httpRoute.authRules | toYaml | nindent 8 }}
         - matches:
             - path:
                 type: PathPrefix
@@ -295,6 +309,60 @@ resources:
   console.log(`Created values/${name}/${name}-raw.gotmpl for public route + auth scaffolding`)
 }
 
+export function ensurePodAuthLabels(valuesFile: string, name: string): void {
+  if (!fs.existsSync(valuesFile)) {
+    throw new Error(`Missing values file for ${name}: ${valuesFile}`)
+  }
+
+  const content = fs.readFileSync(valuesFile, 'utf8')
+  if (content.includes('otomi.io/auth:') && content.includes('otomi.io/auth-policy:')) {
+    console.log(`values/${name}/${name}.gotmpl already contains auth pod labels`)
+    return
+  }
+
+  const labelsBlock = ['podLabels:', '  otomi.io/auth: platform', '  otomi.io/auth-policy: platform']
+  const trimmed = content.trim()
+
+  if (trimmed === '' || trimmed === '{}') {
+    fs.writeFileSync(valuesFile, `${labelsBlock.join('\n')}\n`, 'utf8')
+    console.log(`Set auth pod labels in values/${name}/${name}.gotmpl`)
+    return
+  }
+
+  const lines = readLines(valuesFile)
+  const podLabelsIdx = lines.findIndex((line) => /^podLabels:\s*$/.test(line))
+  if (podLabelsIdx >= 0) {
+    const insertAt = (() => {
+      for (let i = podLabelsIdx + 1; i < lines.length; i += 1) {
+        const line = lines[i]
+        if (line.trim() === '') continue
+        if (!line.startsWith('  ')) return i
+      }
+      return lines.length
+    })()
+
+    const hasAuth = lines.slice(podLabelsIdx + 1, insertAt).some((line) => line.trim().startsWith('otomi.io/auth:'))
+    const hasAuthPolicy = lines.slice(podLabelsIdx + 1, insertAt).some((line) => line.trim().startsWith('otomi.io/auth-policy:'))
+
+    const toInsert: string[] = []
+    if (!hasAuth) toInsert.push('  otomi.io/auth: platform')
+    if (!hasAuthPolicy) toInsert.push('  otomi.io/auth-policy: platform')
+
+    if (toInsert.length === 0) {
+      console.log(`values/${name}/${name}.gotmpl already contains auth pod labels`)
+      return
+    }
+
+    lines.splice(insertAt, 0, ...toInsert)
+    writeLines(valuesFile, lines)
+    console.log(`Updated podLabels auth entries in values/${name}/${name}.gotmpl`)
+    return
+  }
+
+  fs.writeFileSync(valuesFile, `${content.replace(/\s*$/, '')}\n\n${labelsBlock.join('\n')}\n`, 'utf8')
+  console.log(`Appended auth pod labels to values/${name}/${name}.gotmpl`)
+}
+
 export async function main(): Promise<void> {
   const opts = await parseArgs(process.argv.slice(2))
 
@@ -302,6 +370,7 @@ export async function main(): Promise<void> {
   const coreFile = path.join(root, 'core.yaml')
   const helmfileDir = path.join(root, 'helmfile.d')
   const rawValuesFile = path.join(root, 'values', opts.name, `${opts.name}-raw.gotmpl`)
+  const valuesFile = path.join(root, 'values', opts.name, `${opts.name}.gotmpl`)
 
   if (!fs.existsSync(coreFile)) throw new Error(`Missing required file: ${coreFile}`)
   if (!fs.existsSync(helmfileDir)) throw new Error(`Missing required directory: ${helmfileDir}`)
@@ -313,6 +382,7 @@ export async function main(): Promise<void> {
     const helmfilePath = findHelmfileForRelease(helmfileDir, opts.name)
     ensureArtifactsRelease(helmfilePath, opts.name)
     ensureRawValuesFile(rawValuesFile, opts.name)
+    ensurePodAuthLabels(valuesFile, opts.name)
   }
 
   console.log('Done. Next: npm run validate-values')
