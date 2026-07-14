@@ -23,6 +23,7 @@ export type RuntimeDeps = {
 
 const defaultRunCommand: CommandRunner = (command, options = {}) => {
   const result = execSync(command, options)
+  if (result === null) return ''
   return typeof result === 'string' ? result : result.toString('utf8')
 }
 
