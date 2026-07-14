@@ -2,15 +2,11 @@ import type { ExecSyncOptions } from 'node:child_process'
 import { execSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import readline from 'node:readline/promises'
 import semver from 'semver'
 
 type Opts = {
   name: string
   repository: string
-  public: boolean
-  configurePublicSecurity: boolean
-  runCompare: boolean
 }
 
 export type CommandRunner = (command: string, options?: ExecSyncOptions) => string
@@ -34,79 +30,19 @@ const defaultDeps: RuntimeDeps = {
 }
 
 function usage(): never {
-  console.error(
-    'Usage: npx tsx ci/src/add-helm-chart.ts <name> <repository> [--public true|false] [--configure-public-security true|false] [--run-compare true|false]',
-  )
+  console.error('Usage: npx tsx ci/src/add-app-helm-chart.ts <name> <repository>')
   process.exit(2)
 }
 
-function parseBool(value: string, flag: string): boolean {
-  if (value === 'true') return true
-  if (value === 'false') return false
-  throw new Error(`Invalid value for ${flag}: ${value}. Expected true|false.`)
-}
-
 async function parseArgs(argv: string[]): Promise<Opts> {
-  if (argv.length < 2) usage()
+  if (argv.length !== 2) usage()
 
   const name = argv[0]
   const repository = argv[1]
 
-  let isPublic: boolean | undefined
-  let configurePublicSecurity: boolean | undefined
-  let runCompare = true
-
-  for (let i = 2; i < argv.length; i += 1) {
-    const arg = argv[i]
-    if (arg === '--public') {
-      const value = argv[i + 1]
-      if (!value) usage()
-      isPublic = parseBool(value, '--public')
-      i += 1
-      continue
-    }
-    if (arg === '--configure-public-security') {
-      const value = argv[i + 1]
-      if (!value) usage()
-      configurePublicSecurity = parseBool(value, '--configure-public-security')
-      i += 1
-      continue
-    }
-    if (arg === '--run-compare') {
-      const value = argv[i + 1]
-      if (!value) usage()
-      runCompare = parseBool(value, '--run-compare')
-      i += 1
-      continue
-    }
-    throw new Error(`Unknown argument: ${arg}`)
-  }
-
-  if (isPublic === undefined && process.stdin.isTTY) {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-    const ans = await rl.question('Expose app publicly? (true/false) [false]: ')
-    rl.close()
-    isPublic = ans.trim() === '' ? false : parseBool(ans.trim(), '--public')
-  }
-  if (isPublic === undefined) isPublic = false
-
-  if (configurePublicSecurity === undefined) {
-    if (isPublic && process.stdin.isTTY) {
-      const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-      const ans = await rl.question('Scaffold HTTPRoute + Istio authn/authz resources? (true/false) [true]: ')
-      rl.close()
-      configurePublicSecurity = ans.trim() === '' ? true : parseBool(ans.trim(), '--configure-public-security')
-    } else {
-      configurePublicSecurity = false
-    }
-  }
-
   return {
     name,
     repository,
-    public: isPublic,
-    configurePublicSecurity,
-    runCompare,
   }
 }
 
@@ -283,7 +219,7 @@ function vendorChart(root: string, name: string, version: string, repository: st
   console.log(`Vendored chart into charts/${name}`)
 }
 
-function createHelmfile(root: string, name: string, isPublic: boolean, configurePublicSecurity: boolean): string {
+function createHelmfile(root: string, name: string): string {
   const next = findHighestHelmfileNumber(path.join(root, 'helmfile.d')) + 1
   const padded = String(next).padStart(2, '0')
   const relPath = `helmfile.d/helmfile-${padded}.${name}.yaml.gotmpl`
@@ -306,18 +242,6 @@ function createHelmfile(root: string, name: string, isPublic: boolean, configure
     'releases:',
   ]
 
-  if (isPublic && configurePublicSecurity) {
-    parts.push(
-      `  - name: ${name}-artifacts`,
-      `    installed: {{ $a | get "${name}.enabled" }}`,
-      `    namespace: ${name}`,
-      '    labels:',
-      `      pkg: ${name}`,
-      '      app: core',
-      '    <<: *raw',
-    )
-  }
-
   parts.push(
     `  - name: ${name}`,
     `    installed: {{ $a | get "${name}.enabled" }}`,
@@ -334,7 +258,7 @@ function createHelmfile(root: string, name: string, isPublic: boolean, configure
   return relPath
 }
 
-function ensureCoreNamespace(corePath: string, name: string, isPublic: boolean): void {
+function ensureCoreNamespace(corePath: string, name: string): void {
   const lines = readLines(corePath)
   if (lines.some((line) => line === `    - name: ${name}`)) {
     console.log(`core.yaml already contains namespace ${name}`)
@@ -348,47 +272,11 @@ function ensureCoreNamespace(corePath: string, name: string, isPublic: boolean):
     (line) => line === 'adminApps:',
     (m) => m[1],
     name,
-    () => {
-      const block = [`    - name: ${name}`, `      app: ${name}`]
-      if (!isPublic) block.push('      disableIstioInjection: true')
-      return block
-    },
+    () => [`    - name: ${name}`, `      app: ${name}`, '      disableIstioInjection: true'],
   )
 
   writeLines(corePath, next)
   console.log(`Added namespace ${name} to core.yaml`)
-}
-
-function ensureAdminApp(corePath: string, name: string): void {
-  const lines = readLines(corePath)
-
-  let inAdmin = false
-  for (const line of lines) {
-    if (line === 'adminApps:') {
-      inAdmin = true
-      continue
-    }
-    if (line === 'teamApps:') {
-      inAdmin = false
-    }
-    if (inAdmin && line === `  - name: ${name}`) {
-      console.log(`core.yaml already contains adminApps entry for ${name}`)
-      return
-    }
-  }
-
-  const next = insertSortedBlock(
-    lines,
-    (line) => line === 'adminApps:',
-    (line) => line.match(/^  - name: (.+)$/),
-    (line) => line === 'teamApps:',
-    (m) => m[1],
-    name,
-    () => [`  - name: ${name}`, '    tags: [custom]', '    ownHost: true'],
-  )
-
-  writeLines(corePath, next)
-  console.log(`Added adminApps public entry for ${name} in core.yaml`)
 }
 
 function ensureDefaultsEntry(defaultsPath: string, name: string): void {
@@ -422,72 +310,6 @@ function ensureValuesFile(valuesFile: string, name: string): void {
   console.log(`Created values/${name}/${name}.gotmpl`)
 }
 
-function ensureRawValuesFile(rawValuesFile: string, name: string): void {
-  if (fs.existsSync(rawValuesFile)) {
-    console.log(`raw values file already exists: values/${name}/${name}-raw.gotmpl`)
-    return
-  }
-
-  const content = `{{- $v := .Values }}
-{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
-resources:
-  - apiVersion: gateway.networking.k8s.io/v1
-    kind: HTTPRoute
-    metadata:
-      name: ${name}
-      {{ with $httpRoute.annotations }}
-      annotations:
-        {{ . | toYaml | nindent 8 }}
-      {{- end }}
-    spec:
-      parentRefs:
-        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
-      hostnames:
-        - {{ printf "${name}.%s" $v.cluster.domainSuffix }}
-      rules:
-        {{- $httpRoute.authRules | toYaml | nindent 8 }}
-        - matches:
-            - path:
-                type: PathPrefix
-                value: /
-          backendRefs:
-            - kind: Service
-              name: ${name}
-              port: 80
-  - apiVersion: security.istio.io/v1
-    kind: RequestAuthentication
-    metadata:
-      name: ${name}-auth
-      namespace: ${name}
-    spec:
-      selector:
-        matchLabels:
-          app.kubernetes.io/name: ${name}
-      jwtRules:
-        - issuer: {{ $v._derived.oidcBaseUrl }}
-          jwksUri: {{ $v._derived.oidcBaseUrlBackchannel }}/protocol/openid-connect/certs
-          fromHeaders:
-            - name: Authorization
-              prefix: "Bearer "
-  - apiVersion: security.istio.io/v1
-    kind: AuthorizationPolicy
-    metadata:
-      name: ${name}-authz
-      namespace: ${name}
-    spec:
-      action: ALLOW
-      selector:
-        matchLabels:
-          app.kubernetes.io/name: ${name}
-      rules:
-        - from:
-            - source:
-                requestPrincipals: ["*"]
-`
-
-  fs.writeFileSync(rawValuesFile, content, 'utf8')
-  console.log(`Created values/${name}/${name}-raw.gotmpl for public route + auth scaffolding`)
-}
 
 function ensureFixtureAppFile(fixturePath: string, name: string): void {
   if (fs.existsSync(fixturePath)) {
@@ -532,14 +354,6 @@ function ensureIntegrationEntries(integrationDir: string, name: string): void {
   }
 }
 
-function runCompareIfNeeded(root: string, runCompare: boolean, deps: RuntimeDeps = defaultDeps): void {
-  if (!runCompare) return
-  const env = { ...process.env }
-  if (!env.ENV_DIR) env.ENV_DIR = path.join(root, 'tests/fixtures')
-  console.log('Running bin/compare.sh to confirm rendering with new files...')
-  deps.runCommand(path.join(root, 'bin/compare.sh'), { stdio: 'inherit', env })
-}
-
 export async function main(deps: RuntimeDeps = defaultDeps): Promise<void> {
   const opts = await parseArgs(process.argv.slice(2))
 
@@ -549,7 +363,6 @@ export async function main(deps: RuntimeDeps = defaultDeps): Promise<void> {
   const coreFile = path.join(root, 'core.yaml')
   const helmfileDir = path.join(root, 'helmfile.d')
   const valuesFile = path.join(root, 'values', opts.name, `${opts.name}.gotmpl`)
-  const rawValuesFile = path.join(root, 'values', opts.name, `${opts.name}-raw.gotmpl`)
   const fixtureAppFile = path.join(root, 'tests/fixtures/env/apps', `${opts.name}.yaml`)
   const integrationDir = path.join(root, 'tests/integration')
 
@@ -566,15 +379,12 @@ export async function main(deps: RuntimeDeps = defaultDeps): Promise<void> {
 
   ensureChartDependency(chartIndex, opts.name, resolvedVersion, opts.repository)
   vendorChart(root, opts.name, resolvedVersion, opts.repository, deps)
-  createHelmfile(root, opts.name, opts.public, opts.configurePublicSecurity)
-  ensureCoreNamespace(coreFile, opts.name, opts.public)
-  if (opts.public) ensureAdminApp(coreFile, opts.name)
+  createHelmfile(root, opts.name)
+  ensureCoreNamespace(coreFile, opts.name)
   ensureDefaultsEntry(defaultsFile, opts.name)
   ensureValuesFile(valuesFile, opts.name)
-  if (opts.public && opts.configurePublicSecurity) ensureRawValuesFile(rawValuesFile, opts.name)
   ensureFixtureAppFile(fixtureAppFile, opts.name)
   ensureIntegrationEntries(integrationDir, opts.name)
-  runCompareIfNeeded(root, opts.runCompare, deps)
 
   deps.log('Done. Next: npm run validate-values')
 }

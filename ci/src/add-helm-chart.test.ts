@@ -1,6 +1,6 @@
-import { parseStableSemver, resolveLatestOfficialSemver, type RuntimeDeps } from './add-helm-chart'
+import { parseStableSemver, resolveLatestOfficialSemver, type RuntimeDeps } from './add-app-helm-chart'
 
-describe('add-helm-chart semver resolution', () => {
+describe('add-app-helm-chart semver resolution', () => {
   const makeDeps = (runCommand: RuntimeDeps['runCommand']): RuntimeDeps => ({
     runCommand,
     pid: 4242,
