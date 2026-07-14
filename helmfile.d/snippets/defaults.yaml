@@ -264,6 +264,9 @@ environments:
                   memory: 512Mi
                   cpu: 200m
             _rawValues: {}
+          headlamp:
+            enabled: false
+            _rawValues: {}
           istio:
             autoscaling:
               egressgateway:
@@ -1166,3 +1169,4 @@ environments:
         users: []
         versions:
           specVersion: 70
+
