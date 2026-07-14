@@ -229,6 +229,8 @@ function createHelmfile(root: string, name: string): string {
     'bases:',
     '  - snippets/defaults.yaml',
     '---',
+    '  - snippets/defaults.gotmpl',
+    '---',
     'bases:',
     '  - snippets/env.gotmpl',
     '---',
