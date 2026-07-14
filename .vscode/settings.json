@@ -60,5 +60,9 @@
   },
   "[dockerfile]": {
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
+  "chat.tools.terminal.autoApprove": {
+    "npx tsx add-app-helm-chart.ts": true,
+    "npx tsx configure-public-exposure.ts": true
   }
 }
