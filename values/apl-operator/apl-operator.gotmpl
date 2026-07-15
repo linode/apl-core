@@ -17,4 +17,7 @@ imagePullSecrets:
 
 resources: {{- toYaml $o.resources.operator | nindent 2 }}
 
+deploymentAnnotations:
+  argocd.argoproj.io/sync-options: Force=true,Replace=true
+
 kms: {{- $kms | toYaml | nindent 2 }}
