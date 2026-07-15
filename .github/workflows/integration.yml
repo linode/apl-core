@@ -6,6 +6,10 @@ on:
         description: 'Linode Kubernetes Engine Tier'
         type: string
         default: standard
+      ha_control_plane:
+        description: 'Enable HA control plane for LKE Standard tier (ignored for enterprise)'
+        type: boolean
+        default: true
       kubernetes_version:
         description: 'Kubernetes version'
         type: string
@@ -43,6 +47,10 @@ on:
         options:
           - standard
           - enterprise
+      ha_control_plane:
+        description: 'Enable HA control plane for LKE Standard tier (ignored for enterprise)'
+        type: boolean
+        default: true
       kubernetes_version:
         description: 'Kubernetes version (select version compatible with lke_tier)'
         type: choice
@@ -126,6 +134,7 @@ env:
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
   DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
   LKE_TIER: ${{ inputs.lke_tier }}
+  HA_CONTROL_PLANE: ${{ inputs.ha_control_plane }}
   LKE_VERSION: ${{ inputs.kubernetes_version }}
 
 jobs:
@@ -138,6 +147,7 @@ jobs:
           echo "ref: $COMMIT_REF"
           echo 'install_profile: ${{ inputs.install_profile }}'
           echo 'lke_tier: ${{ inputs.lke_tier }}'
+          echo 'ha_control_plane: ${{ inputs.ha_control_plane }}'
           echo 'kubernetes_version: ${{ inputs.kubernetes_version }}'
           echo 'domain_zone: ${{ inputs.domain_zone }}'
           echo 'certificate: ${{ inputs.certificate }}'
@@ -232,7 +242,7 @@ jobs:
             export LINODE_CLI_API_VERSION=v4beta
             args+=(--tier enterprise)
           else
-            args+=(--control_plane.high_availability true)
+            args+=(--control_plane.high_availability "$HA_CONTROL_PLANE")
           fi
 
           CURRENT_IP=$(curl -sS https://ipv4.whatismyip.akamai.com/)
