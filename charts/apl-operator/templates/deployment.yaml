@@ -4,10 +4,10 @@ metadata:
   name: {{ include "apl-operator.fullname" . }}
   labels:
     {{- include "apl-operator.labels" . | nindent 4 }}
+{{- with .Values.deploymentAnnotations }}
   annotations:
-    {{- with .Values.deploymentAnnotations }}
     {{- toYaml . | nindent 4 }}
-    {{- end }}
+{{- end }}
 spec:
   replicas: {{ .Values.scale.replicas | default 1 }}
   selector:
