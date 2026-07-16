@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ include "opentelemetry-operator.fullname" . }}-metrics"
+  name: "{{ include "opentelemetry-operator.fullname" . }}-metrics-test"
   namespace: {{ template "opentelemetry-operator.namespace" . }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
@@ -24,11 +24,17 @@ spec:
         # The following shell script tests if the controller-manager-metrics-service is up.
         # If the service is up, when we try to wget its exposed port, we will get an HTTP error 400.
         - |
-          wget_output=$(wget -q "$MANAGER_METRICS_SERVICE_CLUSTERIP:$MANAGER_METRICS_SERVICE_PORT")
-          if wget_output=="wget: server returned error: HTTP/1.0 400 Bad Request"
-          then exit 0
-          else exit 1
-          fi
+          i=0
+          while [ "$i" -lt 30 ]; do
+            wget_output=$(wget -q "$MANAGER_METRICS_SERVICE_CLUSTERIP:$MANAGER_METRICS_SERVICE_PORT" 2>&1 || true)
+            if [ "$wget_output" = "wget: server returned error: HTTP/1.0 400 Bad Request" ]; then
+              exit 0
+            fi
+            i=$((i + 1))
+            sleep 2
+          done
+          echo "$wget_output"
+          exit 1
       {{- with .Values.testFramework.securityContext }}
       securityContext: {{ toYaml . | nindent 12 }}
       {{- end }}
@@ -55,7 +61,7 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ include "opentelemetry-operator.fullname" . }}-webhook"
+  name: "{{ include "opentelemetry-operator.fullname" . }}-webhook-test"
   namespace: {{ template "opentelemetry-operator.namespace" . }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
@@ -77,11 +83,17 @@ spec:
         # The following shell script tests if the webhook service is up. If the service is up, when we try
         # to wget its exposed port, we will get an HTTP error 400.
         - |
-          wget_output=$(wget -q "$WEBHOOK_SERVICE_CLUSTERIP:$WEBHOOK_SERVICE_PORT")
-          if wget_output=="wget: server returned error: HTTP/1.0 400 Bad Request"
-          then exit 0
-          else exit 1
-          fi
+          i=0
+          while [ "$i" -lt 30 ]; do
+            wget_output=$(wget -q "$WEBHOOK_SERVICE_CLUSTERIP:$WEBHOOK_SERVICE_PORT" 2>&1 || true)
+            if [ "$wget_output" = "wget: server returned error: HTTP/1.0 400 Bad Request" ]; then
+              exit 0
+            fi
+            i=$((i + 1))
+            sleep 2
+          done
+          echo "$wget_output"
+          exit 1
       {{- with .Values.testFramework.securityContext }}
       securityContext: {{ toYaml . | nindent 12 }}
       {{- end }}
