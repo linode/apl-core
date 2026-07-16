@@ -57,25 +57,24 @@ export async function getGitCredentials(): Promise<Partial<GitConfigData> | unde
 }
 
 export async function getOldGitCredentials(): Promise<Partial<GitConfigData> | undefined> {
+  let { repoUrl } = GIT_LEGACY_CONFIG
+  let gitBranch = GIT_DEFAULT_CONFIG.branch
+  // argocd-repo-creds-git contaion full repo URL
   let secretData = await getK8sSecret('argocd-repo-creds-git', 'argocd')
-  if (!secretData) {
+
+  if (secretData) {
+    repoUrl = secretData?.url
+  } else {
+    // argocd-repo-creds-gitea contains only the base URL
     secretData = await getK8sSecret('argocd-repo-creds-gitea', 'argocd')
   }
-  // With BYO, `url` may already be the full repo URL; otherwise treat it as a base URL and append the repo path
-  const url = secretData?.url
-  const repoUrl = url
-    ? url.endsWith('.git')
-      ? url
-      : `${url.replace(/\/$/, '')}/otomi/values.git`
-    : GIT_LEGACY_CONFIG.repoUrl
   if (!secretData?.password) {
     return undefined
   }
 
-  let gitBranch = GIT_DEFAULT_CONFIG.branch
   try {
     const cm = await getK8sConfigMap('otomi', 'otomi-api', k8s.core())
-    gitBranch = cm?.data?.GIT_BRANCH || gitBranch
+    gitBranch = cm?.data?.GIT_BRANCH || GIT_DEFAULT_CONFIG.branch
   } catch (error) {
     d.debug('Could not read otomi-api ConfigMap for GIT_BRANCH; using default branch', error)
   }
