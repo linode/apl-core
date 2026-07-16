@@ -25,8 +25,8 @@ environments:
               replicas: 1
             autoscaling:
               repoServer:
-                enabled: true
-                minReplicas: 2
+                enabled: false
+                minReplicas: 1
                 maxReplicas: 5
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
@@ -53,10 +53,10 @@ environments:
                   memory: 1Gi
               repo:
                 requests:
-                  cpu: 100m
-                  memory: 640Mi
+                  cpu: 250m
+                  memory: 256Mi
                 limits:
-                  cpu: "1"
+                  cpu: "500m"
                   memory: 1Gi
               redis:
                 requests:
