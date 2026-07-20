@@ -247,6 +247,8 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- define "gitea.public_hostname" -}}
 {{- if and .Values.route.enabled .Values.route.host -}}
 {{ tpl .Values.route.host . }}
+{{- else if and .Values.gatewayAPI.enabled .Values.gatewayAPI.core.httpRoute.enabled (gt (len .Values.gatewayAPI.core.httpRoute.hostnames) 0) -}}
+{{ tpl (index .Values.gatewayAPI.core.httpRoute.hostnames 0) $ }}
 {{- else if gt (len .Values.ingress.hosts) 0 -}}
 {{ tpl (index .Values.ingress.hosts 0).host $ }}
 {{- else -}}
@@ -307,6 +309,8 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if and .Values.route.enabled .Values.route.tls.termination -}}
 https
 {{- else if and .Values.ingress.enabled (gt (len .Values.ingress.tls) 0) -}}
+https
+{{- else if and .Values.gatewayAPI.enabled .Values.gatewayAPI.core.httpRoute.enabled .Values.gatewayAPI.core.httpRoute.tls -}}
 https
 {{- else -}}
 {{ .Values.gitea.config.server.PROTOCOL }}
