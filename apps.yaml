@@ -12,7 +12,7 @@ appsInfo:
     integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by App Platform to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: Argo CD
-    appVersion: 3.4.3
+    appVersion: 3.4.4
     repo: https://github.com/argoproj/argo-helm
     maintainers: Argo Project
     relatedLinks:
@@ -23,7 +23,7 @@ appsInfo:
     integration: Argo CD is configured by App Platform to use the SSO provided by keycloak, and maps App Platform groups to Argo CD roles. The otomi-admin role is made super admin within Argo CD. The team-admin role has access to Argo CD and is admin of all team projects. Members of team roles are only allowed to administer their own projects. All Teams will automatically get access to a Git repo, and Argo CD is configured to listen to this repo. All a team has to do is to fill their repo with intended state, commit, and automation takes care of the rest.
   cert-manager:
     title: Cert-manager
-    appVersion: 1.20.2
+    appVersion: 1.20.3
     repo: https://github.com/cert-manager/cert-manager
     maintainers: The Linux Foundation
     relatedLinks:
@@ -87,7 +87,7 @@ appsInfo:
     integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. App Platform runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
   istio:
     title: Istio
-    appVersion: 1.29.2
+    appVersion: 1.30.2
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -107,7 +107,7 @@ appsInfo:
     integration: The SSO login page for App Platform is served by Keycloak. Keycloak is used as an identity broker or provider for all App Platform integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of App Platform and is always enabled.
   knative:
     title: Knative Operator
-    appVersion: 1.22.1
+    appVersion: 1.22.2
     repo: https://github.com/knative/serving
     maintainers: Knative
     relatedLinks:
@@ -118,7 +118,7 @@ appsInfo:
     chartName: knative-operator
   kserve:
     title: Kserve
-    appVersion: 0.18.0
+    appVersion: 0.19.0
     repo: http://github.com/kserve/kserve
     maintainers: Kserve
     relatedLinks:
