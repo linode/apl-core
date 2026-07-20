@@ -20,7 +20,7 @@ RUN npm ci --ignore-scripts
 
 COPY --chown=app . .
 ARG VERSION=0.0.0
-RUN npm version $VERSION --no-git-tag-version
+RUN npm version "$VERSION" --no-git-tag-version --allow-same-version
 RUN npm run compile
 # Run tests with the CI-specific script that has proper Jest flags
 RUN set -e && \
