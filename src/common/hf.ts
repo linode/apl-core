@@ -19,7 +19,7 @@ export const HF_DEFAULT_SYNC_ARGS = [
   '--concurrency=1',
   '--sync-args',
   // These two need to be in same string as is passed as single argument to --sync-args
-  '--disable-openapi-validation --qps=20',
+  '--disable-openapi-validation --qps=20 --serverSide=true',
 ]
 
 export const HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS = [
@@ -28,7 +28,7 @@ export const HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS = [
   '--concurrency=1',
   '--sync-args',
   // These two need to be in same string as is passed as single argument to --sync-args
-  '--disable-openapi-validation --qps=20',
+  '--disable-openapi-validation --qps=20 --serverSide=true',
 ]
 
 type HFParams = {
