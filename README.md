@@ -102,6 +102,8 @@ One-click activation of the following Kubernetes Apps:
 
 Check out the [App Platform documentation](https://techdocs.akamai.com/app-platform/docs/getting-started) on Akamai Techdocs.
 
+Maintainers can find the repository release process in [Release.md](Release.md).
+
 ## License
 
 App Platform is licensed under the [Apache 2.0 License](https://github.com/linode/apl-core/blob/main/LICENSE).

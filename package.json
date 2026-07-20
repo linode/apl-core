@@ -151,9 +151,6 @@
     "migrate-values": "ENV_DIR=$PWD/tests/fixtures binzx/otomi migrate -ni",
     "migrate-values:ci": "ENV_DIR=/tmp/otomi-bootstrap-dev binzx/otomi migrate -ni",
     "prepare": "husky",
-    "release": "standard-version",
-    "release:github": "github-release-from-changelog",
-    "release:bump:minor": "standard-version --skip.changelog true --release-as minor",
     "score-templates": "binzx/otomi score-templates",
     "spellcheck": "cspell 'docs/**/*.md' 'values-schema.yaml' '*.md' '.values/README.md'",
     "tasks:copy-certs": "binzx/otomi task -n copyCerts",
@@ -174,5 +171,5 @@
     }
   },
   "type": "commonjs",
-  "version": "6.0.0"
+  "version": "0.0.0"
 }
