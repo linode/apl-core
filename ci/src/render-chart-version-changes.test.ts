@@ -1,4 +1,4 @@
-import { buildDepMap, diffCharts, renderTable } from './compare-charts'
+import { buildDepMap, diffCharts, renderTable } from './render-chart-version-changes'
 
 describe('buildDepMap', () => {
   it('maps name to version', () => {

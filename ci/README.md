@@ -43,16 +43,16 @@ Charts that must move together (e.g. Istio components, KServe CRDs) are handled 
 
 ---
 
-## `compare-charts`
+## `render-chart-version-changes`
 
 Compares `chart/chart-index/Chart.yaml` between two git tags and prints a Markdown table of dependency changes to stdout.
 
 **Usage:**
 
 ```sh
-npm run compare-charts -- <old-tag> <new-tag>
+npm run render-chart-version-changes -- <old-tag> <new-tag>
 # or directly:
-npx tsx src/compare-charts.ts <old-tag> <new-tag>
+npx tsx src/render-chart-version-changes.ts <old-tag> <new-tag>
 ```
 
 **Output columns:** App Name · Old Version · New Version · Notes (`New` / `Removed` / `Updated`)

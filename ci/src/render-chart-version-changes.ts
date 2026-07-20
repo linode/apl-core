@@ -80,7 +80,7 @@ function main() {
   const [oldTag, newTag] = process.argv.slice(2)
 
   if (!oldTag || !newTag) {
-    console.error('Usage: tsx src/compare-charts.ts <old-tag> <new-tag>')
+    console.error('Usage: tsx src/render-chart-version-changes.ts <old-tag> <new-tag>')
     process.exit(1)
   }
 

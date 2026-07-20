@@ -37,7 +37,7 @@
     "update-helm-chart-deps": "node src/update-helm-chart-deps.mjs",
     "check-schema-versions": "node src/check-schema-versions.mjs",
     "test": "jest",
-    "compare-charts": "tsx src/compare-charts.ts"
+    "render-chart-version-changes": "tsx src/render-chart-version-changes.ts"
   },
   "version": "1.0.0"
 }
