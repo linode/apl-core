@@ -31,8 +31,8 @@ The branch is created once by "Cut Release Branch". All subsequent RC tags, the 
 
 ### Negative Consequences
 
-- The branch name (`release/v1.4`) does not encode the current patch level; the authoritative version is always `package.json`, not the branch name
-- "Release from Branch" must validate that the major.minor in `package.json` matches the branch suffix, rather than doing an exact version match
+- The branch name (`releases/v1.4`) does not encode the current patch level; the authoritative version is always the git tag history, not the branch name.
+- "Release from Branch" must validate that it is running on a `releases/v<major.minor>` branch (and derive tags from reachable git tags), rather than relying on `package.json` for version state.
 
 ## Pros and Cons of the Options
 
