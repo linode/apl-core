@@ -147,10 +147,6 @@ const getAppName = (release: HelmRelease): string => {
   return `${release.namespace}-${release.name}`
 }
 
-export const mergeSyncOptions = (base: string[], patch?: string[]): string[] => {
-  return [...new Set([...base, ...(patch ?? [])])]
-}
-
 const getArgoCdAppManifest = (name: string, appLabel: string, spec: Record<string, any>): ArgocdAppManifest => {
   return {
     apiVersion: 'argoproj.io/v1alpha1',
@@ -176,14 +172,10 @@ export const getArgocdCoreAppManifest = (
   otomiVersion: string,
 ): ArgocdAppManifest => {
   const name = getAppName(release)
-  const { syncPolicy: patchSyncPolicy, ...restPatch } = (appPatches[name] || genericPatch) as Record<string, any>
-  const syncPolicy = {
-    ...ARGOCD_APP_DEFAULT_SYNC_POLICY,
-    ...patchSyncPolicy,
-    syncOptions: mergeSyncOptions(ARGOCD_APP_DEFAULT_SYNC_POLICY.syncOptions, patchSyncPolicy?.syncOptions),
-  }
+  const patch = (appPatches[name] || genericPatch) as Record<string, any>
+
   return getArgoCdAppManifest(name, ARGOCD_APP_DEFAULT_LABEL, {
-    syncPolicy,
+    syncPolicy: ARGOCD_APP_DEFAULT_SYNC_POLICY,
     project: 'default',
     revisionHistoryLimit: 2,
     source: {
@@ -199,7 +191,7 @@ export const getArgocdCoreAppManifest = (
       server: 'https://kubernetes.default.svc',
       namespace: release.namespace,
     },
-    ...restPatch,
+    ...patch,
   })
 }
 
