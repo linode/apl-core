@@ -51,9 +51,9 @@ jobs:
         working-directory: ci
         run: npm ci
 
-      - name: Compute next minor tag
-        id: compute-tag
-        uses: linode/apl-gh-actions/actions/release-get-next-minor@main
+      - name: Compute next minor semver version
+        id: compute-version
+        uses: linode/apl-gh-actions/actions/release-get-next-minor-version@main
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       - name: Login to Github Packages
@@ -68,7 +68,7 @@ jobs:
           push: true
           build-args: |
             APPS_REVISION=${{ env.APPS_REVISION }}
-            VERSION=${{ steps.compute-tag.outputs.version }}
+            VERSION=${{ steps.compute-version.outputs.version }}
           context: .
           tags: |
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
