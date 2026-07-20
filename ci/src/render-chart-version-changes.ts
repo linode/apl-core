@@ -19,8 +19,9 @@ export interface ChartRow {
 }
 
 function tagExists(tag: string): boolean {
+  const ref = `refs/tags/${tag}`
   try {
-    execSync(`git rev-parse --verify "refs/tags/${tag}"`, { stdio: 'ignore' })
+    execSync(`git rev-parse --verify ${JSON.stringify(ref)}`, { stdio: 'ignore' })
     return true
   } catch {
     return false
