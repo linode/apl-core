@@ -53,6 +53,9 @@ WORKDIR $APP_HOME
 COPY --from=ci /home/app/stack/dist /home/app/stack/dist
 COPY --from=clean /home/app/stack/node_modules /home/app/stack/node_modules
 COPY --chown=app . .
+ARG VERSION="0.0.0"
+RUN npm version "$VERSION" --no-git-tag-version --allow-same-version
+
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["node", "dist/src/operator/main.js"]
