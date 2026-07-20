@@ -19,7 +19,7 @@ When cutting a release, should each individual version (including each RC) get i
 
 ## Decision Outcome
 
-Chosen option: "one branch per major.minor cycle", because it eliminates cross-branch cherry-picks within a release cycle and matches the existing `rc/v<major.minor>` convention already used in this repo.
+Chosen option: "one branch per major.minor cycle", because it eliminates cross-branch cherry-picks within a release cycle and matches the `releases/v<major.minor>` branch convention used by the release workflows.
 
 The branch is created once by "Cut Release Branch". All subsequent RC tags, the stable cut, and patch RCs are produced by running "Release from Branch" against the same branch. The "Cut Release Branch" guard (branch must not already exist) correctly prevents accidental cycle restarts.
 
@@ -31,8 +31,8 @@ The branch is created once by "Cut Release Branch". All subsequent RC tags, the 
 
 ### Negative Consequences
 
-- The branch name (`releases/v1.4`) does not encode the current patch level; the authoritative version is always `package.json`, not the branch name
-- "Release from Branch" must validate that the major.minor in `package.json` matches the branch suffix, rather than doing an exact version match
+- The branch name (`releases/v1.4`) does not encode the current patch level; the authoritative version is always the git tag history, not the branch name.
+- "Release from Branch" must validate that it is running on a `releases/v<major.minor>` branch (and derive tags from reachable git tags), rather than relying on `package.json` for version state.
 
 ## Pros and Cons of the Options
 

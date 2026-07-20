@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execFileSync } from 'child_process'
 import { parse } from 'yaml'
 
 interface Dependency {
@@ -19,8 +19,9 @@ export interface ChartRow {
 }
 
 function tagExists(tag: string): boolean {
+  const ref = `refs/tags/${tag}`
   try {
-    execSync(`git rev-parse --verify "refs/tags/${tag}"`, { stdio: 'ignore' })
+    execSync(`git rev-parse --verify ${JSON.stringify(ref)}`, { stdio: 'ignore' })
     return true
   } catch {
     return false
@@ -28,7 +29,8 @@ function tagExists(tag: string): boolean {
 }
 
 function loadChartAtTag(tag: string): Map<string, string> {
-  const raw = execSync(`git show "${tag}:chart/chart-index/Chart.yaml"`, { encoding: 'utf8' })
+  const spec = `${tag}:chart/chart-index/Chart.yaml`
+  const raw = execSync(`git show ${JSON.stringify(spec)}`, { encoding: 'utf8' })
   const chart = parse(raw) as ChartYaml
   return buildDepMap(chart)
 }
