@@ -37,20 +37,18 @@ The workflow validates dependencies and publishes the Git tag, GitHub release, c
 
 ## Version examples
 
-| Event | Result |
-| --- | --- |
+| Event                             | Result          |
+| --------------------------------- | --------------- |
 | Cut a minor branch after `v5.1.0` | `releases/v5.2` |
-| First RC on `releases/v5.2` | `v5.2.0-rc.1` |
-| Next RC | `v5.2.0-rc.2` |
-| Stable promotion | `v5.2.0` |
-| First patch RC | `v5.2.1-rc.1` |
-| Stable patch promotion | `v5.2.1` |
+| First RC on `releases/v5.2`       | `v5.2.0-rc.1`   |
+| Next RC                           | `v5.2.0-rc.2`   |
+| Stable promotion                  | `v5.2.0`        |
+| First patch RC                    | `v5.2.1-rc.1`   |
+| Stable patch promotion            | `v5.2.1`        |
 
 ## Development versions
 
-Images built from `main` or feature branches use a development version. The build takes the highest repository tag, removes any RC suffix, increments the patch version, and appends `-dev.<short_sha>`.
-
-For example, with `v6.0.0-rc.8` as the highest tag, commit `abc1234` receives version `6.0.1-dev.abc1234`. Development versions are not pushed as Git tags.
+Images built from `main` or feature branches use a development version. The build tag follows the branch name and the VERSION build argument is set to next minor version.
 
 ## Workflow definitions
 
