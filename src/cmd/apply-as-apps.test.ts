@@ -1,19 +1,22 @@
+import { statSync } from 'fs'
+import { glob } from 'glob'
+import { ARGOCD_APP_PARAMS } from '../common/constants'
+import { env } from '../common/envalid'
+import { getNames } from '../common/utils'
 import {
   addGitOpsApps,
   applyArgocdApp,
   applyGitOpsApps,
   ArgocdAppManifest,
   calculateGitOpsAppsSyncState,
-  getApplications,
-  getArgocdGitopsManifest,
   checkArgoCdController,
+  getApplications,
+  getArgocdCoreAppManifest,
+  getArgocdGitopsManifest,
+  mergeSyncOptions,
   removeGitOpsApps,
+  stripOversizedLastAppliedAnnotations,
 } from './apply-as-apps'
-import { glob } from 'glob'
-import { env } from '../common/envalid'
-import { statSync } from 'fs'
-import { ARGOCD_APP_PARAMS } from '../common/constants'
-import { getNames } from '../common/utils'
 
 jest.mock('glob')
 jest.mock('fs', () => ({
@@ -685,5 +688,126 @@ describe('checkArgoCdController', () => {
 
     await expect(checkArgoCdController(mockApplications, [argocdRelease])).resolves.toBeUndefined()
     expect(mockRestartStatefulSet).not.toHaveBeenCalled()
+  })
+})
+
+describe('mergeSyncOptions', () => {
+  it('returns base options unchanged when patch provides none', () => {
+    expect(mergeSyncOptions(['ServerSideApply=true'])).toEqual(['ServerSideApply=true'])
+  })
+
+  it('preserves ServerSideApply=true when patch provides only different options', () => {
+    const result = mergeSyncOptions(['ServerSideApply=true'], ['CreateNamespace=true'])
+
+    expect(result).toContain('ServerSideApply=true')
+    expect(result).toContain('CreateNamespace=true')
+  })
+
+  it('deduplicates options that appear in both base and patch', () => {
+    const result = mergeSyncOptions(['ServerSideApply=true'], ['ServerSideApply=true', 'CreateNamespace=true'])
+
+    expect(result.filter((o) => o === 'ServerSideApply=true')).toHaveLength(1)
+  })
+})
+
+describe('getArgocdCoreAppManifest', () => {
+  const release = {
+    name: 'kyverno',
+    namespace: 'kyverno',
+    enabled: true,
+    installed: true,
+    labels: '',
+    chart: '../charts/kyverno',
+    version: '1.0.0',
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    ;(env as any).APPS_REPO_URL = 'https://charts.example.com'
+    ;(env as any).APPS_REVISION = undefined
+  })
+
+  it('should include ServerSideApply=true in syncOptions', () => {
+    const manifest = getArgocdCoreAppManifest(release, {}, '1.0.0')
+
+    expect(manifest.spec.syncPolicy.syncOptions).toContain('ServerSideApply=true')
+  })
+
+  it('should preserve ServerSideApply=true when app has a patch with only ignoreDifferences', () => {
+    const istioBase = { ...release, name: 'istio-base', namespace: 'istio-system' }
+    const manifest = getArgocdCoreAppManifest(istioBase, {}, '1.0.0')
+
+    expect(manifest.spec.syncPolicy.syncOptions).toContain('ServerSideApply=true')
+  })
+})
+
+describe('stripOversizedLastAppliedAnnotations', () => {
+  const annotation = 'kubectl.kubernetes.io/last-applied-configuration'
+  const oversizedValue = 'x'.repeat(262145)
+  const undersizedValue = 'x'.repeat(100)
+
+  const mockListCRDs = jest.fn()
+  const mockPatchCRD = jest.fn()
+  const mockListConfigMaps = jest.fn()
+  const mockPatchConfigMap = jest.fn()
+
+  const mockDeps = {
+    getCrdApi: () => ({ listCustomResourceDefinition: mockListCRDs, patchCustomResourceDefinition: mockPatchCRD }),
+    getCoreApi: () => ({
+      listConfigMapForAllNamespaces: mockListConfigMaps,
+      patchNamespacedConfigMap: mockPatchConfigMap,
+    }),
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockListCRDs.mockResolvedValue({ items: [] })
+    mockListConfigMaps.mockResolvedValue({ items: [] })
+    mockPatchCRD.mockResolvedValue({})
+    mockPatchConfigMap.mockResolvedValue({})
+  })
+
+  it('removes last-applied-configuration from a CRD whose annotation exceeds the limit', async () => {
+    mockListCRDs.mockResolvedValue({
+      items: [{ metadata: { name: 'clusterpolicies.kyverno.io', annotations: { [annotation]: oversizedValue } } }],
+    })
+
+    await stripOversizedLastAppliedAnnotations(mockDeps as any)
+
+    expect(mockPatchCRD).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'clusterpolicies.kyverno.io' }),
+      expect.anything(),
+    )
+  })
+
+  it('removes last-applied-configuration from a ConfigMap whose annotation exceeds the limit', async () => {
+    mockListConfigMaps.mockResolvedValue({
+      items: [
+        {
+          metadata: {
+            name: 'grafana-dashboards-k8s-admin',
+            namespace: 'grafana',
+            annotations: { [annotation]: oversizedValue },
+          },
+        },
+      ],
+    })
+
+    await stripOversizedLastAppliedAnnotations(mockDeps as any)
+
+    expect(mockPatchConfigMap).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'grafana-dashboards-k8s-admin', namespace: 'grafana' }),
+      expect.anything(),
+    )
+  })
+
+  it('does not patch a ConfigMap without the annotation', async () => {
+    mockListConfigMaps.mockResolvedValue({
+      items: [{ metadata: { name: 'some-config', namespace: 'default', annotations: {} } }],
+    })
+
+    await stripOversizedLastAppliedAnnotations(mockDeps as any)
+
+    expect(mockPatchConfigMap).not.toHaveBeenCalled()
   })
 })
