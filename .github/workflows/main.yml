@@ -11,7 +11,7 @@ env:
   CACHE_REPO: linode/apl-core
   REPO: linode/apl-core
   DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
-  DOCKER_USERNAME: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
+  DOCKER_USERNAME: ${{ secrets.DOCKERHUB_LINODEBOT_USERNAME }}
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
   COMMIT_SHA: ${{ github.sha }}
@@ -53,7 +53,7 @@ jobs:
 
       - name: Compute next minor semver version
         id: compute-version
-        uses: linode/apl-gh-actions/actions/release-get-next-minor-version@main
+        uses: linode/apl-gh-actions/actions/release-get-next-minor-version@v0.1.1
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       - name: Login to Github Packages
