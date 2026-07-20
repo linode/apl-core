@@ -15,18 +15,6 @@ Runs all Jest unit tests under `src/`.
 
 ---
 
-## `check-schema-versions`
-
-Validates that schema versions are consistent across three files:
-
-- `values-changes.yaml` — must have sequential, non-duplicate version numbers
-- `helmfile.d/snippets/defaults.yaml` — `specVersion` must match the latest version in `values-changes.yaml`
-- `tests/fixtures/env/settings/versions.yaml` — `spec.specVersion` must match
-
-Exits non-zero on any mismatch.
-
----
-
 ## `update-helm-chart-deps`
 
 Scans every dependency in `chart/chart-index/Chart.yaml`, checks for newer Helm chart versions, downloads updates, runs per-chart post-processing (CRD extraction/copying), and optionally commits, pushes, and opens a GitHub PR per update.
