@@ -12,22 +12,31 @@
     "yaml": "^2.8.3",
     "zx": "^8.2.2"
   },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "24.12.4",
+    "@types/semver": "^7.5.8",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
+    "tsx": "^4.19.4",
+    "typescript": "5.9.3"
+  },
   "description": "CI scripts",
   "engines": {
     "node": ">=24 <25"
   },
   "homepage": "https://github.com/linode/apl-core#readme",
   "license": "Apache-2.0",
-  "name": "apl-core",
+  "name": "apl-core-ci",
   "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/linode/apl-core.git"
   },
   "scripts": {
-    "update-helm-chart-deps": "src/update-helm-chart-deps.mjs",
-    "check-schema-versions": "src/check-schema-versions.mjs"
+    "update-helm-chart-deps": "node src/update-helm-chart-deps.mjs",
+    "test": "jest",
+    "render-chart-version-changes": "tsx src/render-chart-version-changes.ts"
   },
-  "type": "commonjs",
   "version": "1.0.0"
 }
