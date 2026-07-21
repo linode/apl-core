@@ -20,6 +20,7 @@ Images built from `main` or feature branches use a development version. The buil
 | Stable promotion                  | `v6.2.0`        |
 | First patch RC                    | `v6.2.1-rc.1`   |
 | Stable patch promotion            | `v6.2.1`        |
+| main or feature branch            | `v6.3.0`        |
 
 # GitHub actions
 
