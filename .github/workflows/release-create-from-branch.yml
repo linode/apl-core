@@ -18,7 +18,7 @@ jobs:
   release-get-tag:
     permissions:
       contents: read
-    uses: linode/apl-gh-actions/.github/workflows/release-get-tag.yml@v0.1.1
+    uses: linode/apl-gh-actions/.github/workflows/release-get-tag.yml@v0.2.1
     with:
       release_branch: ${{ github.ref_name }}
       is_prerelease: ${{ inputs.is_prerelease }}
@@ -27,7 +27,7 @@ jobs:
     needs: release-get-tag
     permissions:
       contents: read
-    uses: linode/apl-gh-actions/.github/workflows/validate-deps.yml@v0.1.1
+    uses: linode/apl-gh-actions/.github/workflows/validate-deps.yml@v0.2.1
     with:
       release_branch: ${{ github.ref_name }}
       is_prerelease: ${{ inputs.is_prerelease }}
@@ -38,7 +38,7 @@ jobs:
       - validate-deps
     permissions:
       contents: write
-    uses: linode/apl-gh-actions/.github/workflows/release-software.yml@v0.1.1
+    uses: linode/apl-gh-actions/.github/workflows/release-software.yml@v0.2.1
     with:
       release_branch: ${{ github.ref_name }}
       is_prerelease: ${{ inputs.is_prerelease }}
@@ -55,7 +55,7 @@ jobs:
       - release-from-branch
     permissions:
       contents: write
-    uses: linode/apl-gh-actions/.github/workflows/release-helm-chart.yml@v0.1.1
+    uses: linode/apl-gh-actions/.github/workflows/release-helm-chart.yml@v0.2.1
     with:
       release_tag: ${{ needs.release-get-tag.outputs.release_tag }}
       dry_run: ${{ inputs.dry_run }}
