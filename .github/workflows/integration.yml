@@ -231,7 +231,7 @@ jobs:
         id: determine-domain
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
+          EDGEDNS_ZONE: ${{ vars.EDGEDNS_ZONE }}
           DOMAIN_ZONE: ${{ inputs.domain_zone }}
           DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
           ACTOR: ${{ github.actor }}
@@ -471,7 +471,7 @@ jobs:
           EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
           EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
           EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
+          EDGEDNS_ZONE: ${{ vars.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
           DOMAIN: ${{ steps.determine-domain.outputs.apl-dns-domain }}
           PUB_IP: ${{ steps.get-public-ip.outputs.apl-public-ip }}
