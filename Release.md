@@ -14,13 +14,13 @@ Images built from `main` or feature branches use a development version. The buil
 
 | Event                             | Result          |
 | --------------------------------- | --------------- |
-| Cut a minor branch after `v5.1.0` | `releases/v6.1` |
-| First RC on `releases/v6.1`       | `v6.2.0-rc.1`   |
-| Next RC                           | `v6.2.0-rc.2`   |
-| Stable promotion                  | `v6.2.0`        |
-| First patch RC                    | `v6.2.1-rc.1`   |
-| Stable patch promotion            | `v6.2.1`        |
-| main or feature branch            | `v6.3.0`        |
+| Cut a minor branch after `v6.0.0` | `releases/v6.1` |
+| First RC on `releases/v6.1`       | `v6.1.0-rc.1`   |
+| Next RC                           | `v6.1.0-rc.2`   |
+| Stable promotion                  | `v6.1.0`        |
+| First patch RC                    | `v6.1.1-rc.1`   |
+| Stable patch promotion            | `v6.1.1`        |
+| main or feature branch            | `v6.2.0`        |
 
 # GitHub actions
 
