@@ -53,7 +53,7 @@ jobs:
 
       - name: Compute next minor semver version
         id: compute-version
-        uses: linode/apl-gh-actions/actions/release-get-next-minor-version@v0.2.4
+        uses: linode/apl-gh-actions/actions/release-get-next-minor-version@v0.2.5
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       - name: Login to Github Packages

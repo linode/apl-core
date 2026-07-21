@@ -34,7 +34,7 @@ jobs:
   release-create-branch:
     permissions:
       contents: write
-    uses: linode/apl-gh-actions/.github/workflows/release-create-branch.yml@v0.2.4
+    uses: linode/apl-gh-actions/.github/workflows/release-create-branch.yml@v0.2.5
     with:
       bump_type: ${{ inputs.bump_type }}
       base_branch: ${{ inputs.base_branch }}
