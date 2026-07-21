@@ -2,28 +2,6 @@ apiVersion: v1
 entries:
   apl:
   - apiVersion: v2
-    appVersion: v6.1.0-rc.4
-    created: "2026-07-21T08:57:21.860655209Z"
-    description: A Helm chart for installing APL in Kubernetes
-    digest: 4fdeb94dba89164667e8c193f8dfaee8b391cdfc206b1962033dae9a54bb9762
-    home: https://techdocs.akamai.com/app-platform/docs/welcome
-    keywords:
-    - linode
-    - lke
-    - multi-tenancy
-    - continuous-delivery
-    - continuous-integration
-    - continuous-integration
-    - observability
-    - security
-    name: apl
-    sources:
-    - https://github.com/linode/apl-core
-    type: application
-    urls:
-    - https://github.com/linode/apl-core/releases/download/apl-6.1.0/apl-6.1.0.tgz
-    version: 6.1.0
-  - apiVersion: v2
     appVersion: v6.0.0
     created: "2026-07-01T16:00:59.664422686Z"
     description: A Helm chart for installing APL in Kubernetes
