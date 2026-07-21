@@ -1,6 +1,6 @@
-api: main
-console: main
-consoleLogin: main
-tasks: main
-tools: main
-aplCharts: main
+api: v5.1.0
+console: v5.1.0
+consoleLogin: v5.1.0
+tasks: v4.0.0
+tools: v2.11.2
+aplCharts: v1.5.0
