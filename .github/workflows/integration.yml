@@ -444,7 +444,6 @@ jobs:
               fi
           done
 
-          echo "helm install ${install_args[@]}"
           helm install "${install_args[@]}"
 
       - name: Get public IP address
