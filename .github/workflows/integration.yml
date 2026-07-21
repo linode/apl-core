@@ -268,13 +268,19 @@ jobs:
             --no-defaults \
             "${args[@]}"
       - name: Retrieve cluster id
-        run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
+        id: retrieve-cluster-id
+        run: |
+          LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')
+          echo "LINODE_CLUSTER_ID=$LINODE_CLUSTER_ID" >> $GITHUB_ENV
+          echo "::set-output name=linode-cluster-id::$LINODE_CLUSTER_ID"
       - name: Wait for cluster to be ready
+        env:
+          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
         run: |
           echo "Waiting for the cluster to be active..."
 
           while :; do
-            rawOutput=$(linode-cli lke pools-list ${{ env.LINODE_CLUSTER_ID }} --json)
+            rawOutput=$(linode-cli lke pools-list "$LINODE_CLUSTER_ID" --json)
 
             allReady=$(echo "$rawOutput" | jq -r 'map(.nodes[] | .status == "ready") | all')
             echo "All nodes ready: $allReady"
@@ -301,11 +307,13 @@ jobs:
         uses: actions/checkout@v6
       - name: Set up Wiz
         if: ${{ inputs.install_profile != 'no-apl' && inputs.enableWiz }}
+        env:
+          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
         run: |
 
           # Use cluster information from environment variables
           CLUSTER_NAME="${{ env.LINODE_CLUSTER_NAME }}"
-          CLUSTER_ID="${{ env.LINODE_CLUSTER_ID }}"
+          CLUSTER_ID="$LINODE_CLUSTER_ID"
 
           echo "Setting up Wiz for cluster: $CLUSTER_NAME (ID: $CLUSTER_ID)"
 
@@ -334,6 +342,7 @@ jobs:
           BYO_GIT_PAT: ${{ secrets.BYO_GIT_PAT }}
           BYO_GIT_URL: ${{ secrets.BYO_GIT_URL }}
           DOMAIN: ${{ steps.determine-domain.outputs.apl-dns-domain }}
+          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
         run: |
           touch values.yaml
           adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
@@ -343,7 +352,7 @@ jobs:
             --values values.yaml \
             --set cluster.provider=linode \
             --set cluster.linode.tier=${{ env.LKE_TIER }} \
-            --set cluster.name=aplinstall${{ env.LINODE_CLUSTER_ID }} \
+            --set cluster.name=aplinstall${LINODE_CLUSTER_ID} \
             --set cluster.k8sContext=${{ env.LINODE_CLUSTER_CONTEXT }} \
             --set cluster.domainSuffix=${{ env.DOMAIN }} \
             --set dns.domainFilters[0]=${{ env.DOMAIN }} \
@@ -437,10 +446,11 @@ jobs:
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
           LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
+          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
         run: |
           if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
             echo "Resetting ACL to internal IPs"
-            cluster_patch_args=(${{ env.LINODE_CLUSTER_ID }} --control_plane.acl.enabled true)
+            cluster_patch_args=($LINODE_CLUSTER_ID --control_plane.acl.enabled true)
             IFS=',' read -ra acl_ips <<< '${{ env.LKE_CP_ACL_IPV4 }}'
             for acl_ip in "${acl_ips[@]}"; do
               cluster_patch_args+=(--control_plane.acl.addresses.ipv4 "$acl_ip")
@@ -461,8 +471,10 @@ jobs:
           kubectl logs -l app.kubernetes.io/name=apl-operator -n apl-operator --tail 150
       - name: Remove the test cluster
         if: ${{ always() && inputs.domain_zone == 'DNS-Integration' }}
+        env:
+          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
         run: |
-          linode-cli lke cluster-delete ${{ env.LINODE_CLUSTER_ID }}
+          linode-cli lke cluster-delete "$LINODE_CLUSTER_ID"
       - name: Delete Domain
         if: ${{ always() && inputs.domain_zone == 'DNS-Integration' }}
         env:
