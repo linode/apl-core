@@ -456,21 +456,25 @@ jobs:
 
           helm install "${install_args[@]}" &
           HELM_PID=$!
-          sleep 120
-
+          wait $HELM_PID
+      - name: Get public IP address
+        id: get-public-ip
+        if: ${{ inputs.install_profile != 'no-apl' }}
+        env:
+          LINODE_CLUSTER_CONTEXT: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
+        run: |
+          kubectl config use-context "$LINODE_CLUSTER_CONTEXT"
           # While helm is installing we can crete the wildcard dns record
           while true; do
+              sleep 30
               PUB_IP=$(kubectl get svc platform-istio -n istio-system -ojson | jq '.status.loadBalancer.ingress[0].ip' -r)
               if [[ -n "$PUB_IP" ]]; then
                 echo "apl-public-ip=$PUB_IP" >> "$GITHUB_OUTPUT"
                 break
               else
                 echo "Waiting for platform-istio IP..."
-                sleep 5
               fi
           done
-
-          wait $HELM_PID
       - name: Create DNS A record for wildcard domain
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
@@ -480,7 +484,7 @@ jobs:
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
           DOMAIN: ${{ steps.determine-domain.outputs.apl-dns-domain || steps.determine-domain-manual.outputs.apl-dns-domain }}
-          PUB_IP: ${{ steps.apl-install.outputs.apl-public-ip }}
+          PUB_IP: ${{ steps.get-public-ip.outputs.apl-public-ip }}
         run: |
           pip3 install edgegrid-python requests
           python3 bin/edgedns_A_record.py create "*.${DOMAIN}" "$PUB_IP" || \
