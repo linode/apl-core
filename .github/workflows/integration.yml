@@ -211,6 +211,7 @@ jobs:
           [[ ${{ inputs.install_profile }} == 'no-apl' ]] && LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME-no-apl
           echo LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME >> $GITHUB_ENV
       - name: Determine domain name to use for scheduled integration test
+        id: determine-domain
         env:
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
         if: ${{ inputs.domain_zone == 'DNS-Integration' && inputs.install_profile != 'no-apl'}}
@@ -219,6 +220,7 @@ jobs:
           DOMAIN="integration-${RAND}.${EDGEDNS_ZONE}"
           echo "::add-mask::$DOMAIN"
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
+          echo "::set-output name=apl-dns-domain::$DOMAIN"
       - name: Determine domain name
         if: ${{ inputs.domain_zone != 'DNS-Integration' && inputs.install_profile != 'no-apl' }}
         env:
@@ -323,19 +325,15 @@ jobs:
 
           echo "✅ Wiz deployment for cluster $CLUSTER_NAME completed."
       - name: APL install
+        id: apl-install
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
-          EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
-          EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
-          EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
-          EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
-          LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
           LKE_APL_FIREWALL_INBOUND_RULES: ${{ secrets.LKE_APL_FIREWALL_INBOUND_RULES }}
           BYO_GIT_PAT: ${{ secrets.BYO_GIT_PAT }}
           BYO_GIT_URL: ${{ secrets.BYO_GIT_URL }}
+          DOMAIN: ${{ steps.determine-domain.outputs.apl-dns-domain }}
         run: |
           touch values.yaml
           adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
@@ -409,6 +407,7 @@ jobs:
               if [[ -n "$PUB_IP" ]]; then
                 echo "::add-mask::$PUB_IP"
                 echo PUB_IP=$PUB_IP >> $GITHUB_ENV
+                echo "::set-output name=apl-public-ip::$PUB_IP"
                 break
               else
                 echo "Waiting for platform-istio IP..."
@@ -416,15 +415,29 @@ jobs:
               fi
           done
 
+          wait $HELM_PID
+      - name: Create DNS A record for wildcard domain
+        if: ${{ inputs.install_profile != 'no-apl' }}
+        env:
+          EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
+          EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
+          EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
+          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
+          EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
+          DOMAIN: ${{ steps.determine-domain.outputs.apl-dns-domain }}
+          PUB_IP: ${{ steps.apl-install.outputs.apl-public-ip }}
+        run: |
           pip3 install edgegrid-python requests
           python3 bin/edgedns_A_record.py create "*.${DOMAIN}" $PUB_IP || \
             (echo "Will try to recreate it" && \
             python3 bin/edgedns_A_record.py delete "*.${DOMAIN}" && \
             python3 bin/edgedns_A_record.py create "*.${DOMAIN}" $PUB_IP)
 
-
-          wait $HELM_PID
-
+      - name: Set control plane ACL to internal IPs
+        if: ${{ inputs.install_profile != 'no-apl' }}
+        env:
+          LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
+        run: |
           if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
             echo "Resetting ACL to internal IPs"
             cluster_patch_args=(${{ env.LINODE_CLUSTER_ID }} --control_plane.acl.enabled true)
