@@ -201,6 +201,7 @@ jobs:
         with:
           token: ${{ secrets.LINODE_TOKEN }}
       - name: Set k8s cluster name
+        id: set-k8s-cluster-name
         run: |
           case "${{ inputs.domain_zone }}" in
             "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
@@ -209,7 +210,8 @@ jobs:
             "DNS-Integration") LINODE_CLUSTER_NAME=apl-test-${{ inputs.install_profile }} ;;
           esac
           [[ ${{ inputs.install_profile }} == 'no-apl' ]] && LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME-no-apl
-          echo LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME >> $GITHUB_ENV
+          echo "LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME" >> $GITHUB_ENV
+          echo "::set-output name=linode-cluster-name::$LINODE_CLUSTER_NAME"
       - name: Determine domain name to use for scheduled integration test
         id: determine-domain
         env:
@@ -238,6 +240,7 @@ jobs:
       - name: Create k8s cluster for testing
         env:
           LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
+          LINODE_CLUSTER_NAME: ${{ steps.set-k8s-cluster-name.outputs.linode-cluster-name }}
         run: |
           args=()
           if [[ '${{ env.LKE_TIER }}' == 'enterprise' ]]; then
@@ -259,7 +262,7 @@ jobs:
           args+=(--control_plane.acl.addresses.ipv4 "$CURRENT_IP")
 
           linode-cli lke cluster-create \
-            --label ${{ env.LINODE_CLUSTER_NAME }} \
+            --label "$LINODE_CLUSTER_NAME" \
             --region nl-ams \
             --k8s_version ${{ env.LKE_VERSION }} \
             --node_pools.type ${{ inputs.linode_types }} \
@@ -269,8 +272,10 @@ jobs:
             "${args[@]}"
       - name: Retrieve cluster id
         id: retrieve-cluster-id
+        env:
+          LINODE_CLUSTER_NAME: ${{ steps.set-k8s-cluster-name.outputs.linode-cluster-name }}
         run: |
-          LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')
+          LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("'"$LINODE_CLUSTER_NAME"'")) | .id')
           echo "LINODE_CLUSTER_ID=$LINODE_CLUSTER_ID" >> $GITHUB_ENV
           echo "::set-output name=linode-cluster-id::$LINODE_CLUSTER_ID"
       - name: Wait for cluster to be ready
@@ -294,10 +299,12 @@ jobs:
           done
       - name: Save kubectl config with auth token
         if: ${{ inputs.install_profile != 'no-apl' }}
+        env:
+          LINODE_CLUSTER_NAME: ${{ steps.set-k8s-cluster-name.outputs.linode-cluster-name }}
         run: |
           echo "Waiting for kubeconfig..."
           while :; do
-            linode-cli get-kubeconfig --label "${{ env.LINODE_CLUSTER_NAME }}" 2> /dev/null && break
+            linode-cli get-kubeconfig --label "$LINODE_CLUSTER_NAME" 2> /dev/null && break
             echo "still waiting..."
             sleep 10
           done
@@ -308,11 +315,12 @@ jobs:
       - name: Set up Wiz
         if: ${{ inputs.install_profile != 'no-apl' && inputs.enableWiz }}
         env:
+          LINODE_CLUSTER_NAME: ${{ steps.set-k8s-cluster-name.outputs.linode-cluster-name }}
           LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
         run: |
 
           # Use cluster information from environment variables
-          CLUSTER_NAME="${{ env.LINODE_CLUSTER_NAME }}"
+          CLUSTER_NAME="$LINODE_CLUSTER_NAME"
           CLUSTER_ID="$LINODE_CLUSTER_ID"
 
           echo "Setting up Wiz for cluster: $CLUSTER_NAME (ID: $CLUSTER_ID)"
