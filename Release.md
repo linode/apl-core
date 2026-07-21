@@ -8,9 +8,25 @@ A release cycle uses one `releases/v<major.minor>` branch, such as `releases/v1.
 
 Git tags are the source of truth for versions. `package.json` remains at `0.0.0`; release workflows derive versions from tags, and builds receive the version through the Dockerfile `VERSION` build argument.
 
-## Cut a release branch
+Images built from `main` or feature branches use a development version. The build tag follows the branch name and the VERSION build argument is set to next minor version.
 
-Run the **Release cut branch** workflow from the branch that should start the release cycle, normally `main`.
+## Version examples
+
+| Event                             | Result          |
+| --------------------------------- | --------------- |
+| Cut a minor branch after `v5.1.0` | `releases/v6.1` |
+| First RC on `releases/v6.1`       | `v6.2.0-rc.1`   |
+| Next RC                           | `v6.2.0-rc.2`   |
+| Stable promotion                  | `v6.2.0`        |
+| First patch RC                    | `v6.2.1-rc.1`   |
+| Stable patch promotion            | `v6.2.1`        |
+
+# GitHub actions
+
+## Release cut branch
+
+Run the [Release cut branch](.github/workflows/release-cut-branch.yml) workflow from the branch that should start the release cycle, normally `main`.
+The workflow finds the highest stable tag in the repository, applies the requested version bump, runs the release checks, and creates the new release branch. It does not create a release tag or publish artifacts.
 
 1. Open **Actions > Release cut branch > Run workflow**.
 2. Choose a `bump_type` of `minor` or `major`.
@@ -37,11 +53,13 @@ gh workflow run release-cut-branch.yml --ref main \
 	-f dry_run=false
 ```
 
-The workflow finds the highest stable tag in the repository, applies the requested version bump, runs the release checks, and creates the new release branch. It does not create a release tag or publish artifacts.
+## Release create from branch
 
-## Create a release
+Run the [Release create from branch](.github/workflows/release-create-from-branch.yml) workflow from an existing `releases/*` branch.
 
-Run the **Release create from branch** workflow from an existing `releases/*` branch.
+For a release candidate, the workflow increments the highest RC tag on the branch. If the branch has no tags, it derives the initial version from the branch name and starts at `rc.1`. For a stable release, it removes the RC suffix from the highest release candidate tag.
+
+The workflow validates dependencies and publishes the Git tag, GitHub release, container image, and Helm chart. The same release branch is used for later patch release candidates and stable patch releases.
 
 1. Open **Actions > Release create from branch > Run workflow**.
 2. Select the release branch in the branch selector.
@@ -49,16 +67,16 @@ Run the **Release create from branch** workflow from an existing `releases/*` br
 4. Run once with `dry_run` enabled.
 5. Review the computed tag and validation jobs, then run again with `dry_run` disabled.
 
-Equivalent GitHub CLI commands for an RC on `releases/v5.2`:
+Equivalent GitHub CLI commands for an RC on `releases/v6.1`:
 
 ```bash
 # Dry run
-gh workflow run release-create-from-branch.yml --ref releases/v5.2 \
+gh workflow run release-create-from-branch.yml --ref releases/v6.1 \
 	-f is_prerelease=true \
 	-f dry_run=true
 
 # Publish the RC after reviewing the dry run
-gh workflow run release-create-from-branch.yml --ref releases/v5.2 \
+gh workflow run release-create-from-branch.yml --ref releases/v6.1 \
 	-f is_prerelease=true \
 	-f dry_run=false
 ```
@@ -67,36 +85,12 @@ To promote the current RC to stable, use the same release branch with `is_prerel
 
 ```bash
 # Dry run
-gh workflow run release-create-from-branch.yml --ref releases/v5.2 \
+gh workflow run release-create-from-branch.yml --ref releases/v6.1 \
 	-f is_prerelease=false \
 	-f dry_run=true
 
 # Publish the stable release after reviewing the dry run
-gh workflow run release-create-from-branch.yml --ref releases/v5.2 \
+gh workflow run release-create-from-branch.yml --ref releases/v6.1 \
 	-f is_prerelease=false \
 	-f dry_run=false
 ```
-
-For a release candidate, the workflow increments the highest RC tag on the branch. If the branch has no tags, it derives the initial version from the branch name and starts at `rc.1`. For a stable release, it removes the RC suffix from the highest release candidate tag.
-
-The workflow validates dependencies and publishes the Git tag, GitHub release, container image, and Helm chart. The same release branch is used for later patch release candidates and stable patch releases.
-
-## Version examples
-
-| Event                             | Result          |
-| --------------------------------- | --------------- |
-| Cut a minor branch after `v5.1.0` | `releases/v5.2` |
-| First RC on `releases/v5.2`       | `v5.2.0-rc.1`   |
-| Next RC                           | `v5.2.0-rc.2`   |
-| Stable promotion                  | `v5.2.0`        |
-| First patch RC                    | `v5.2.1-rc.1`   |
-| Stable patch promotion            | `v5.2.1`        |
-
-## Development versions
-
-Images built from `main` or feature branches use a development version. The build tag follows the branch name and the VERSION build argument is set to next minor version.
-
-## Workflow definitions
-
-- [Release cut branch](.github/workflows/release-cut-branch.yml)
-- [Release create from branch](.github/workflows/release-create-from-branch.yml)
