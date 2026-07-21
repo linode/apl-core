@@ -22,9 +22,9 @@ Images built from `main` or feature branches use a development version. The buil
 | Stable patch promotion            | `v6.1.1`        |
 | main or feature branch            | `v6.2.0`        |
 
-# GitHub actions
+## GitHub actions
 
-## Release cut branch
+### Release cut branch
 
 Run the [Release cut branch](.github/workflows/release-cut-branch.yml) workflow from the branch that should start the release cycle, normally `main`.
 The workflow finds the highest stable tag in the repository, applies the requested version bump, runs the release checks, and creates the new release branch. It does not create a release tag or publish artifacts.
@@ -54,7 +54,7 @@ gh workflow run release-cut-branch.yml --ref main \
 	-f dry_run=false
 ```
 
-## Release create from branch
+### Release create from branch
 
 Run the [Release create from branch](.github/workflows/release-create-from-branch.yml) workflow from an existing `releases/*` branch.
 
