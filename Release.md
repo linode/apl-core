@@ -19,6 +19,24 @@ Run the **Release cut branch** workflow from the branch that should start the re
 5. Run once with `dry_run` enabled.
 6. Review the run, then run again with `dry_run` disabled.
 
+Equivalent GitHub CLI commands for a minor release cycle from `main`:
+
+```bash
+# Dry run
+gh workflow run release-cut-branch.yml --ref main \
+	-f bump_type=minor \
+	-f base_branch=main \
+	-f release_branch_prefix=releases/ \
+	-f dry_run=true
+
+# Create the branch after reviewing the dry run
+gh workflow run release-cut-branch.yml --ref main \
+	-f bump_type=minor \
+	-f base_branch=main \
+	-f release_branch_prefix=releases/ \
+	-f dry_run=false
+```
+
 The workflow finds the highest stable tag in the repository, applies the requested version bump, runs the release checks, and creates the new release branch. It does not create a release tag or publish artifacts.
 
 ## Create a release
@@ -30,6 +48,34 @@ Run the **Release create from branch** workflow from an existing `releases/*` br
 3. Leave `is_prerelease` enabled to create the next release candidate, or disable it to promote the current release candidate to stable.
 4. Run once with `dry_run` enabled.
 5. Review the computed tag and validation jobs, then run again with `dry_run` disabled.
+
+Equivalent GitHub CLI commands for an RC on `releases/v5.2`:
+
+```bash
+# Dry run
+gh workflow run release-create-from-branch.yml --ref releases/v5.2 \
+	-f is_prerelease=true \
+	-f dry_run=true
+
+# Publish the RC after reviewing the dry run
+gh workflow run release-create-from-branch.yml --ref releases/v5.2 \
+	-f is_prerelease=true \
+	-f dry_run=false
+```
+
+To promote the current RC to stable, use the same release branch with `is_prerelease=false`:
+
+```bash
+# Dry run
+gh workflow run release-create-from-branch.yml --ref releases/v5.2 \
+	-f is_prerelease=false \
+	-f dry_run=true
+
+# Publish the stable release after reviewing the dry run
+gh workflow run release-create-from-branch.yml --ref releases/v5.2 \
+	-f is_prerelease=false \
+	-f dry_run=false
+```
 
 For a release candidate, the workflow increments the highest RC tag on the branch. If the branch has no tags, it derives the initial version from the branch name and starts at `rc.1`. For a stable release, it removes the RC suffix from the highest release candidate tag.
 
