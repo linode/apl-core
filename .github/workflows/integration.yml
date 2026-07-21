@@ -25,7 +25,7 @@ on:
       domain_zone:
         description: 'Select Domain Zone'
         type: string
-        default: DNS-Integration
+        default: Random
       certificate:
         description: 'Select certificate issuer'
         type: string
@@ -92,7 +92,6 @@ on:
           - Zone-1
           - Zone-2
           - Random
-          - DNS-Integration
         default: Random
       certificate:
         type: choice
@@ -196,7 +195,6 @@ jobs:
             "Zone-1") LINODE_CLUSTER_NAME=$ACTOR-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=$ACTOR-2 ;;
             "Random") LINODE_CLUSTER_NAME=$ACTOR-$RANDOM ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=apl-test-$INSTALL_PROFILE ;;
           esac
           [[ "$INSTALL_PROFILE" == 'no-apl' ]] && LINODE_CLUSTER_NAME="$LINODE_CLUSTER_NAME-no-apl"
           if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == "true" ]]; then
@@ -226,22 +224,12 @@ jobs:
             "Zone-1") LINODE_CLUSTER_NAME=$ACTOR-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=$ACTOR-2 ;;
             "Random") LINODE_CLUSTER_NAME=$ACTOR-$RANDOM ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=apl-test-$INSTALL_PROFILE ;;
           esac
           [[ "$INSTALL_PROFILE" == 'no-apl' ]] && LINODE_CLUSTER_NAME="$LINODE_CLUSTER_NAME-no-apl"
           echo "linode-cluster-name=$LINODE_CLUSTER_NAME" >> "$GITHUB_OUTPUT"
-      - name: Determine domain name to use for scheduled integration test
-        id: determine-domain
-        env:
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
-        if: ${{ inputs.domain_zone == 'DNS-Integration' && inputs.install_profile != 'no-apl'}}
-        run: |
-          RAND=$(openssl rand -hex 4)
-          DOMAIN="integration-${RAND}.${EDGEDNS_ZONE}"
-          echo "apl-dns-domain=$DOMAIN" >> "$GITHUB_OUTPUT"
       - name: Determine domain name
-        id: determine-domain-manual
-        if: ${{ inputs.domain_zone != 'DNS-Integration' && inputs.install_profile != 'no-apl' }}
+        id: determine-domain
+        if: ${{ inputs.install_profile != 'no-apl' }}
         env:
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
           DOMAIN_ZONE: ${{ inputs.domain_zone }}
@@ -378,7 +366,7 @@ jobs:
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
           BYO_GIT_PAT: ${{ secrets.BYO_GIT_PAT }}
           BYO_GIT_URL: ${{ secrets.BYO_GIT_URL }}
-          DOMAIN: ${{ steps.determine-domain.outputs.apl-dns-domain || steps.determine-domain-manual.outputs.apl-dns-domain }}
+          DOMAIN: ${{ steps.determine-domain.outputs.apl-dns-domain }}
           LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
           LINODE_CLUSTER_CONTEXT: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
           LKE_TIER: ${{ inputs.lke_tier }}
@@ -483,7 +471,7 @@ jobs:
           EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
-          DOMAIN: ${{ steps.determine-domain.outputs.apl-dns-domain || steps.determine-domain-manual.outputs.apl-dns-domain }}
+          DOMAIN: ${{ steps.determine-domain.outputs.apl-dns-domain }}
           PUB_IP: ${{ steps.get-public-ip.outputs.apl-public-ip }}
         run: |
           pip3 install edgegrid-python requests
@@ -519,20 +507,3 @@ jobs:
         if: failure()
         run: |
           kubectl logs -l app.kubernetes.io/name=apl-operator -n apl-operator --tail 150
-      - name: Remove the test cluster
-        if: ${{ always() && inputs.domain_zone == 'DNS-Integration' }}
-        env:
-          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
-        run: |
-          linode-cli lke cluster-delete "$LINODE_CLUSTER_ID"
-      - name: Delete Domain
-        if: ${{ always() && inputs.domain_zone == 'DNS-Integration' }}
-        env:
-          EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
-          EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
-          EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
-          EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
-          DOMAIN: ${{ steps.determine-domain.outputs.apl-dns-domain || steps.determine-domain-manual.outputs.apl-dns-domain }}
-        run: |
-          python3 bin/edgedns_A_record.py delete "*.${DOMAIN}"
