@@ -59,3 +59,5 @@ jobs:
     with:
       release_tag: ${{ needs.release-get-tag.outputs.release_tag }}
       dry_run: ${{ inputs.dry_run }}
+      chart_name: 'apl'
+      charts_dir: 'chart'
