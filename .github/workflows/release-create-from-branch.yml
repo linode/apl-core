@@ -55,7 +55,7 @@ jobs:
       - release-from-branch
     permissions:
       contents: write
-    uses: linode/apl-gh-actions/.github/workflows/release-helm-chart.yml@main
+    uses: linode/apl-gh-actions/.github/workflows/release-helm-chart.yml@v0.2.5
     with:
       release_tag: ${{ needs.release-get-tag.outputs.release_tag }}
       dry_run: ${{ inputs.dry_run }}
