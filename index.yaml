@@ -2,28 +2,6 @@ apiVersion: v1
 entries:
   apl:
   - apiVersion: v2
-    appVersion: v6.1.0-rc.5
-    created: "2026-07-21T09:31:55.872943839Z"
-    description: A Helm chart for installing APL in Kubernetes
-    digest: 4c81fef0d9c1a678499864485cbbf3f5d31688a71c63f02e74a3786b7ddb10e8
-    home: https://techdocs.akamai.com/app-platform/docs/welcome
-    keywords:
-    - linode
-    - lke
-    - multi-tenancy
-    - continuous-delivery
-    - continuous-integration
-    - continuous-integration
-    - observability
-    - security
-    name: apl
-    sources:
-    - https://github.com/linode/apl-core
-    type: application
-    urls:
-    - https://github.com/linode/apl-core/releases/download/apl-6.1.0/apl-6.1.0.tgz
-    version: 6.1.0
-  - apiVersion: v2
     appVersion: v6.0.0
     created: "2026-07-01T16:00:59.664422686Z"
     description: A Helm chart for installing APL in Kubernetes
@@ -4022,4 +4000,4 @@ entries:
     urls:
     - https://github.com/linode/apl-core/releases/download/otomi-0.5.1/otomi-0.5.1.tgz
     version: 0.5.1
-generated: "2026-07-21T09:31:55.873198125Z"
+generated: "2026-07-21T08:57:21.861186141Z"
