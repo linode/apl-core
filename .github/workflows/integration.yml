@@ -382,6 +382,8 @@ jobs:
         run: |
           touch values.yaml
           adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
+          # Treat the admin password as sensitive information and mask it in the logs
+          echo "::add-mask::$adminPassword"
 
           install_args=(
             "otomi" "chart/apl" "--wait" "--wait-for-jobs" "--timeout" "90m0s"
