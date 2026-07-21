@@ -209,9 +209,9 @@ jobs:
             "Random") LINODE_CLUSTER_NAME=${{ github.actor }}-$RANDOM ;;
             "DNS-Integration") LINODE_CLUSTER_NAME=apl-test-${{ inputs.install_profile }} ;;
           esac
-          [[ ${{ inputs.install_profile }} == 'no-apl' ]] && LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME-no-apl
-          echo "LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME" >> $GITHUB_ENV
-          echo "::set-output name=linode-cluster-name::$LINODE_CLUSTER_NAME"
+          [[ "${{ inputs.install_profile }}" == 'no-apl' ]] && LINODE_CLUSTER_NAME="$LINODE_CLUSTER_NAME-no-apl"
+          echo "LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME" >> "$GITHUB_ENV"
+          echo "linode-cluster-name=$LINODE_CLUSTER_NAME" >> "$GITHUB_OUTPUT"
       - name: Determine domain name to use for scheduled integration test
         id: determine-domain
         env:
@@ -221,8 +221,8 @@ jobs:
           RAND=$(openssl rand -hex 4)
           DOMAIN="integration-${RAND}.${EDGEDNS_ZONE}"
           echo "::add-mask::$DOMAIN"
-          echo DOMAIN=$DOMAIN >> $GITHUB_ENV
-          echo "::set-output name=apl-dns-domain::$DOMAIN"
+          echo "DOMAIN=$DOMAIN" >> "$GITHUB_ENV"
+          echo "apl-dns-domain=$DOMAIN" >> "$GITHUB_OUTPUT"
       - name: Determine domain name
         if: ${{ inputs.domain_zone != 'DNS-Integration' && inputs.install_profile != 'no-apl' }}
         env:
@@ -230,13 +230,13 @@ jobs:
         run: |
           # Mapping of domain_zone to domain names
           case "${{ inputs.domain_zone }}" in
-            "Zone-1") DOMAIN=$(jq -r '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
-            "Zone-2") DOMAIN=$(jq -r '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Zone-1") DOMAIN=$(jq -r '."${{ github.actor }}"[0]' <<< "${{ env.DEV_DOMAINS }}") ;;
+            "Zone-2") DOMAIN=$(jq -r '."${{ github.actor }}"[1]' <<< "${{ env.DEV_DOMAINS }}") ;;
             "Random") DOMAIN="$(openssl rand -hex 4)$(date +"%d%m%y").${EDGEDNS_ZONE}" ;;
           esac
 
           echo "::add-mask::$DOMAIN"
-          echo DOMAIN=$DOMAIN >> $GITHUB_ENV
+          echo "DOMAIN=$DOMAIN" >> "$GITHUB_ENV"
       - name: Create k8s cluster for testing
         env:
           LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
@@ -275,9 +275,9 @@ jobs:
         env:
           LINODE_CLUSTER_NAME: ${{ steps.set-k8s-cluster-name.outputs.linode-cluster-name }}
         run: |
-          LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("'"$LINODE_CLUSTER_NAME"'")) | .id')
-          echo "LINODE_CLUSTER_ID=$LINODE_CLUSTER_ID" >> $GITHUB_ENV
-          echo "::set-output name=linode-cluster-id::$LINODE_CLUSTER_ID"
+          LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce --arg cluster_name "$LINODE_CLUSTER_NAME" '.[] | select(.label | startswith($cluster_name)) | .id')
+          echo "LINODE_CLUSTER_ID=$LINODE_CLUSTER_ID" >> "$GITHUB_ENV"
+          echo "linode-cluster-id=$LINODE_CLUSTER_ID" >> "$GITHUB_OUTPUT"
       - name: Wait for cluster to be ready
         env:
           LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
@@ -308,7 +308,8 @@ jobs:
             echo "still waiting..."
             sleep 10
           done
-          echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
+          linode_cluster_context=$(kubectl config current-context)
+          echo "LINODE_CLUSTER_CONTEXT=$linode_cluster_context" >> "$GITHUB_ENV"
       - name: Checkout
         if: ${{ inputs.install_profile != 'no-apl' }}
         uses: actions/checkout@v6
@@ -355,24 +356,25 @@ jobs:
           touch values.yaml
           adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
 
-          install_args=(otomi chart/apl --wait --wait-for-jobs --timeout 90m0s \
-            --values tests/integration/${{ inputs.install_profile }}.yaml \
-            --values values.yaml \
-            --set cluster.provider=linode \
-            --set cluster.linode.tier=${{ env.LKE_TIER }} \
-            --set cluster.name=aplinstall${LINODE_CLUSTER_ID} \
-            --set cluster.k8sContext=${{ env.LINODE_CLUSTER_CONTEXT }} \
-            --set cluster.domainSuffix=${{ env.DOMAIN }} \
-            --set dns.domainFilters[0]=${{ env.DOMAIN }} \
-            --set dns.provider.akamai.clientSecret=${EDGEDNS_CLIENT_SECRET} \
-            --set dns.provider.akamai.host=${EDGEDNS_HOST} \
-            --set dns.provider.akamai.accessToken=${EDGEDNS_ACCESS_TOKEN} \
-            --set dns.provider.akamai.clientToken=${EDGEDNS_CLIENT_TOKEN} \
-            --set otomi.hasExternalDNS=true \
-            --set otomi.adminPassword=$adminPassword \
-            --set otomi.version=${GITHUB_REF##*/} \
-            --set apps.linode-cfw.enabled=true \
-            --set operator.image.repository=docker.io/linode/apl-core
+          install_args=(
+            "otomi" "chart/apl" "--wait" "--wait-for-jobs" "--timeout" "90m0s"
+            "--values" "tests/integration/${{ inputs.install_profile }}.yaml"
+            "--values" "values.yaml"
+            "--set" "cluster.provider=linode"
+            "--set" "cluster.linode.tier=${{ env.LKE_TIER }}"
+            "--set" "cluster.name=aplinstall${LINODE_CLUSTER_ID}"
+            "--set" "cluster.k8sContext=${{ env.LINODE_CLUSTER_CONTEXT }}"
+            "--set" "cluster.domainSuffix=${{ env.DOMAIN }}"
+            "--set" "dns.domainFilters[0]=${{ env.DOMAIN }}"
+            "--set" "dns.provider.akamai.clientSecret=${EDGEDNS_CLIENT_SECRET}"
+            "--set" "dns.provider.akamai.host=${EDGEDNS_HOST}"
+            "--set" "dns.provider.akamai.accessToken=${EDGEDNS_ACCESS_TOKEN}"
+            "--set" "dns.provider.akamai.clientToken=${EDGEDNS_CLIENT_TOKEN}"
+            "--set" "otomi.hasExternalDNS=true"
+            "--set" "otomi.adminPassword=$adminPassword"
+            "--set" "otomi.version=${GITHUB_REF##*/}"
+            "--set" "apps.linode-cfw.enabled=true"
+            "--set" "operator.image.repository=docker.io/linode/apl-core"
           )
 
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
@@ -387,7 +389,7 @@ jobs:
                 --docker-server=${{ env.CACHE_REGISTRY }} \
                 --docker-username=${{ env.BOT_USERNAME }} \
                 --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
-              install_args+=(--set imageName=${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }} --set imagePullSecretNames[0]=reg-otomi-github)
+              install_args+=("--set" "imageName=${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}" "--set" "imagePullSecretNames[0]=reg-otomi-github")
             fi
           fi
 
@@ -398,19 +400,18 @@ jobs:
           fi
 
           if [[ -n '${{ env.LKE_APL_FIREWALL_INBOUND_RULES }}' ]]; then
-            install_args+=(--set-json apps.linode-cfw._rawValues.firewall.inbound='${{ env.LKE_APL_FIREWALL_INBOUND_RULES }}')
+            install_args+=("--set-json" "apps.linode-cfw._rawValues.firewall.inbound=${{ env.LKE_APL_FIREWALL_INBOUND_RULES }}")
           fi
 
           # Wait for KubeAPI to respond before attempting install
           echo "Checking Kubernetes API availability..."
           while true; do
-              kubectl get pods 2> /dev/null
-              if [[ "$?" = 0 ]]; then
-                 echo "Ok."
-                 break
+              if kubectl get pods 2> /dev/null; then
+                echo "Ok."
+                break
               else
-                 echo "Retrying in 5 seconds"
-                 sleep 5
+                echo "Retrying in 5 seconds"
+                sleep 5
               fi
           done
 
@@ -423,8 +424,8 @@ jobs:
               PUB_IP=$(kubectl get svc platform-istio -n istio-system -ojson | jq '.status.loadBalancer.ingress[0].ip' -r)
               if [[ -n "$PUB_IP" ]]; then
                 echo "::add-mask::$PUB_IP"
-                echo PUB_IP=$PUB_IP >> $GITHUB_ENV
-                echo "::set-output name=apl-public-ip::$PUB_IP"
+                echo "PUB_IP=$PUB_IP" >> "$GITHUB_ENV"
+                echo "apl-public-ip=$PUB_IP" >> "$GITHUB_OUTPUT"
                 break
               else
                 echo "Waiting for platform-istio IP..."
@@ -445,10 +446,10 @@ jobs:
           PUB_IP: ${{ steps.apl-install.outputs.apl-public-ip }}
         run: |
           pip3 install edgegrid-python requests
-          python3 bin/edgedns_A_record.py create "*.${DOMAIN}" $PUB_IP || \
+          python3 bin/edgedns_A_record.py create "*.${DOMAIN}" "$PUB_IP" || \
             (echo "Will try to recreate it" && \
             python3 bin/edgedns_A_record.py delete "*.${DOMAIN}" && \
-            python3 bin/edgedns_A_record.py create "*.${DOMAIN}" $PUB_IP)
+            python3 bin/edgedns_A_record.py create "*.${DOMAIN}" "$PUB_IP")
 
       - name: Set control plane ACL to internal IPs
         if: ${{ inputs.install_profile != 'no-apl' }}
@@ -458,7 +459,7 @@ jobs:
         run: |
           if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
             echo "Resetting ACL to internal IPs"
-            cluster_patch_args=($LINODE_CLUSTER_ID --control_plane.acl.enabled true)
+            cluster_patch_args=("$LINODE_CLUSTER_ID" --control_plane.acl.enabled true)
             IFS=',' read -ra acl_ips <<< '${{ env.LKE_CP_ACL_IPV4 }}'
             for acl_ip in "${acl_ips[@]}"; do
               cluster_patch_args+=(--control_plane.acl.addresses.ipv4 "$acl_ip")
