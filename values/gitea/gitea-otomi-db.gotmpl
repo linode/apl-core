@@ -1,16 +1,16 @@
 {{- $v := .Values }}
-{{- $k := $v.apps.gitea }}
 {{- $cnpg := $v.apps.cnpg }}
 {{- $gdb := $v.databases.gitea }}
 {{- $obj := $v.obj.provider }}
 {{- $b := $v.platformBackups.database.gitea }}
+{{- $dbStorageClass := $gdb | get "storageClass" $v.cluster.defaultStorageClass }}
 
 name: gitea-db
 storage:
-  storageClass: {{ $v.cluster.defaultStorageClass }}
+  storageClass: {{ $dbStorageClass }}
   size: {{ $gdb.size }}
 walStorage:
-  storageClass: {{ $v.cluster.defaultStorageClass }}
+  storageClass: {{ $dbStorageClass }}
   size: {{ $gdb.walStorageSize }}
 instances: {{ $gdb.replicas }}
 

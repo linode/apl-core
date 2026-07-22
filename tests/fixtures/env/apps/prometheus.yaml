@@ -2,7 +2,13 @@ kind: AplApp
 metadata:
     name: prometheus
 spec:
-    _rawValues: {}
+    _rawValues:
+        prometheus:
+            prometheusSpec:
+                storageSpec:
+                    volumeClaimTemplate:
+                        spec:
+                            storageClassName: linode-block-storage-retain
     disabledRules:
         - InfoInhibitor
         - PrometheusOperatorListErrors

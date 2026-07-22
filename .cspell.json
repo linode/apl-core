@@ -8,6 +8,7 @@
   "ignoreWords": [
     "adrs",
     "trivy",
+    "dyff",
     "grype",
     "KUBECFG",
     "cainjector",

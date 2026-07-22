@@ -14,3 +14,4 @@ spec:
             cpu: 200m
             memory: 192Mi
     size: 5Gi
+    storageClass: linode-block-storage-retain

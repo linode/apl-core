@@ -16,6 +16,7 @@ import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { cd, sleep } from 'zx'
 import { OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
+import { getOldGitCredentials, setGitConfig } from '../common/git-config'
 import {
   createArgoCdRedisSecret,
   ensureNamespaceExists,
@@ -40,7 +41,6 @@ import {
   SealedSecretManifest,
   writeSealedSecretManifests,
 } from '../common/sealed-secrets'
-import { getOldGitCredentials, setGitConfig } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 const sealedSecretManifestsGlob = `${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`
@@ -463,6 +463,84 @@ export const addRedisSecretForArgoCD = async (values: Record<string, any>): Prom
   }
 }
 
+type PvcReadResult = { spec?: { storageClassName?: string }; metadata?: { labels?: Record<string, string> } }
+
+const readPvc = async (namespace: string, name: string): Promise<PvcReadResult | undefined> => {
+  try {
+    return await k8s.core().readNamespacedPersistentVolumeClaim({ namespace, name })
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) return undefined
+    throw error
+  }
+}
+
+const listPvcs = async (namespace: string, labelSelector: string): Promise<PvcReadResult[]> => {
+  const pvcList = await k8s.core().listNamespacedPersistentVolumeClaim({ namespace, labelSelector })
+  return pvcList?.items || []
+}
+
+export const preservePvcStorageClassInRawValues = async (
+  values: Record<string, any>,
+  deps = {
+    readPvc,
+    listPvcs,
+  },
+): Promise<void> => {
+  const d = terminal('preservePvcStorageClassInRawValues')
+
+  const clusterDefaultStorageClass = values?.cluster?.defaultStorageClass ?? ''
+  const maybeSetRawValue = (path: string, pvcStorageClass?: string): void => {
+    if (!pvcStorageClass) return
+    if (pvcStorageClass === clusterDefaultStorageClass) return
+    const existing = get(values, path)
+    if (existing !== undefined) {
+      d.info(`Keeping existing override at ${path}`)
+      return
+    }
+    set(values, path, pvcStorageClass)
+    d.info(`Set ${path}=${pvcStorageClass} to preserve existing PVC storageClass`)
+  }
+
+  const gitServerPvc = await deps.readPvc('git-server', 'git-server-data')
+  maybeSetRawValue('apps.git-server._rawValues.persistence.storageClass', gitServerPvc?.spec?.storageClassName)
+
+  const giteaPvc = await deps.readPvc('gitea', 'data-gitea-0')
+  maybeSetRawValue('apps.gitea._rawValues.global.storageClass', giteaPvc?.spec?.storageClassName)
+
+  const giteaBackupPvc = await deps.readPvc('gitea', 'gitea-backup')
+  maybeSetRawValue('apps.gitea._rawValues.giteaBackup.storageClassName', giteaBackupPvc?.spec?.storageClassName)
+
+  const giteaDbPvcs = await deps.listPvcs('gitea', 'cnpg.io/cluster=gitea-db,cnpg.io/pvcRole=PG_DATA')
+  maybeSetRawValue('databases.gitea.storageClass', giteaDbPvcs[0]?.spec?.storageClassName)
+
+  const harborRedisPvcs = await deps.listPvcs('harbor', 'app.kubernetes.io/instance=harbor,component=redis')
+  maybeSetRawValue(
+    'apps.harbor._rawValues.persistence.persistentVolumeClaim.redis.storageClass',
+    harborRedisPvcs[0]?.spec?.storageClassName,
+  )
+
+  const harborTrivyPvcs = await deps.listPvcs('harbor', 'app.kubernetes.io/instance=harbor,component=trivy')
+  maybeSetRawValue(
+    'apps.harbor._rawValues.persistence.persistentVolumeClaim.trivy.storageClass',
+    harborTrivyPvcs[0]?.spec?.storageClassName,
+  )
+
+  const harborDbPvcs = await deps.listPvcs('harbor', 'cnpg.io/cluster=harbor-otomi-db,cnpg.io/pvcRole=PG_DATA')
+  maybeSetRawValue('databases.harbor.storageClass', harborDbPvcs[0]?.spec?.storageClassName)
+
+  const keycloakDbDataPvc = await deps.listPvcs('keycloak', 'cnpg.io/cluster=keycloak-db,cnpg.io/pvcRole=PG_DATA')
+  maybeSetRawValue('databases.keycloak.storageClass', keycloakDbDataPvc[0]?.spec?.storageClassName)
+
+  const kubeflowPvc = await deps.readPvc('kfp', 'mysql-pv-claim')
+  maybeSetRawValue('apps.kubeflow-pipelines._rawValues.mysql.storage.storageClass', kubeflowPvc?.spec?.storageClassName)
+
+  const prometheusPvcs = await deps.listPvcs('monitoring', 'operator.prometheus.io/name=po-prometheus')
+  maybeSetRawValue(
+    'apps.prometheus._rawValues.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName',
+    prometheusPvcs[0]?.spec?.storageClassName,
+  )
+}
+
 const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('addLinodeNBAnnotations')
   if (values?.cluster?.provider !== 'linode') {
@@ -725,6 +803,7 @@ const removeIngressNginxValues = async (values: Record<string, any>) => {
 
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   valkeyAndOauth2RedisPVCMigration,
+  preservePvcStorageClassInRawValues,
   addLinodeNBAnnotations,
   sopsMigration,
   setIngressDefault,

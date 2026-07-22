@@ -1,9 +1,11 @@
 {{- $v := .Values }}
 
 global:
-  defaultStorageClass: {{ if eq $v.cluster.provider "linode" }}linode-block-storage{{ else }}{{ $v.cluster.defaultStorageClass | default "" }}{{ end }}
   security:
     allowInsecureImages: true
+  {{- with $v.cluster | get "defaultStorageClass" nil }}
+  defaultStorageClass: {{ . | quote }}
+  {{- end }}
 
 image:
 {{- if $v.otomi.linodeLkeImageRepository }}

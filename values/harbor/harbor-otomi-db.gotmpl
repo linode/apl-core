@@ -3,13 +3,14 @@
 {{- $cnpg := $v.apps.cnpg }}
 {{- $obj := $v.obj.provider }}
 {{- $b := $v.platformBackups.database.harbor }}
+{{- $dbStorageClass := $hdb | get "storageClass" $v.cluster.defaultStorageClass }}
 
 name: harbor-otomi-db
 storage:
-  storageClass: {{ $v.cluster.defaultStorageClass }}
+  storageClass: {{ $dbStorageClass }}
   size: {{ $hdb.size }}
 walStorage:
-  storageClass: {{ $v.cluster.defaultStorageClass }}
+  storageClass: {{ $dbStorageClass }}
   size: {{ $hdb.walStorageSize }}
 instances: {{ $hdb.replicas }}
 

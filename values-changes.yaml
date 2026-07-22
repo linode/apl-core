@@ -504,3 +504,6 @@ changes:
   - version: 70
     deletions:
       - 'teamConfig.{team}.password'
+  - version: 71
+    customFunctions:
+      - preservePvcStorageClassInRawValues
