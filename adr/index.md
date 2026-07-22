@@ -25,6 +25,7 @@ This log lists the architectural decisions for apl-core.
 - [ADR-2026-06-25](2026-06-25-manifests-directory.md) - Manifests directory in the values repo
 - [ADR-2026-06-25](2026-06-25-git-server-as-default-values-repo.md) - Lightweight git-server as the default values repository backend
 - [ADR-2026-06-25](2026-06-25-git-credential-management.md) - Git credential management via Kubernetes Secret
+- [ADR-2026-07-07](2026-07-07-apl-addons-argocd-project.md) - apl-addons ArgoCD project for platform-admin addon deployments
 
 <!-- adrlogstop -->
 
