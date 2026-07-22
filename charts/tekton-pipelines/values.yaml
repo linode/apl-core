@@ -25,13 +25,13 @@ serviceaccount:
 # Values for tekton-pipelines-controller
 controller:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.12.0@sha256:8d5f900677386b8fe5371429e9c1461b25de47e5e34736c7f99e82e2c279ebbc
+    image: ghcr.io/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.14.0@sha256:5209c1969c407d36d9c2c5217a8b0700a9fb52b3068b6fbdce0d88ead397ea75
     labels: {}
   images:
-    entrypoint: "ghcr.io/tektoncd/pipeline/entrypoint-bff0a22da108bc2f16c818c97641a296:v1.12.0@sha256:3ec960b07abd85604242e146092e72f11be8787452c2a20d12a37fdee4a666e2"
-    nop: "ghcr.io/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.12.0@sha256:f89fb760b05fdef6895290e524d992b66ede72546622d5028b0406a9bea36d2f"
-    sidecarlogresults: "ghcr.io/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.12.0@sha256:8b61bdcad62a99e7b15f9dc92690ea39f49be2c5a1c9f428a0aac712f349543d"
-    workingdirinit: "ghcr.io/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.12.0@sha256:11031cbed2b8ddbb5af0947a5e0c997ba7cd3da5f309ddfa76e58f5418868d71"
+    entrypoint: "ghcr.io/tektoncd/pipeline/entrypoint-bff0a22da108bc2f16c818c97641a296:v1.14.0@sha256:e3e7a41a23f8d8cafac7b964187d414d5fcbe503b34d50e2b579ce2a36cfa522"
+    nop: "ghcr.io/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.14.0@sha256:4768edf4d3ccaa7b0e590a7840176a1d12af4cd9ed4fcdccf46a7aa57b80649f"
+    sidecarlogresults: "ghcr.io/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.14.0@sha256:db616ab753d84dd2e27dac8c4bafe50b81b638d92933390cfaa2cff0169c26f4"
+    workingdirinit: "ghcr.io/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.14.0@sha256:7f9394bf30aa055e03a81b1c2882152b9df947353ffd17c681e205488fd7762d"
     shellImage: "cgr.dev/chainguard/busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791"
     shellImageWin: "mcr.microsoft.com/powershell:nanoserver@sha256:b6d5ff841b78bdf2dfed7550000fd4f3437385b8fa686ec0f010be24777654d6"
   pod:
@@ -52,10 +52,13 @@ controller:
   tolerations: []
   nodeSelector: {}
   resources: {}
+  # Secrets used to pull the controller image from a private registry.
+  imagePullSecrets: []
+  # - name: my-registry-secret
 # Values for tekton-pipelines-webhook
 webhook:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.12.0@sha256:1e4eded1773f6fa8ec67c9348f84bed0d39666a9698ebd1ffb4eaed88b38f7d4
+    image: ghcr.io/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.14.0@sha256:dab27b10a60e56cbeb444d84356835b145c3d8491a7afe77353b1b999eb3a867
     labels: {}
   pod:
     labels: {}
@@ -73,10 +76,13 @@ webhook:
                   - windows
   tolerations: []
   nodeSelector: {}
+  # Secrets used to pull the webhook image from a private registry.
+  imagePullSecrets: []
+  # - name: my-registry-secret
 # Values to amend tekton-pipelines-remote-resolvers
 remoteresolver:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.12.0@sha256:b1f06197342ed946b23efd1ce124d7c17d50678b461733a6cc0912b07a4943e7
+    image: ghcr.io/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.14.0@sha256:7516b1750c7147fbe2e48e8d334acff74a02aad68696c9cf2f32a2790bc4dbf9
   affinity: {}
   tolerations: []
   nodeSelector: {}
@@ -87,10 +93,16 @@ remoteresolver:
     limits:
       cpu: 1000m
       memory: 4Gi
+  # Secrets used to pull the resolvers image from a private registry.
+  imagePullSecrets: []
+  # - name: my-registry-secret
 # Values for tekton-events-controller
 eventscontroller:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/events-a9042f7efb0cbade2a868a1ee5ddd52c:v1.12.0@sha256:d5d5869215a58fea01ce627d605786090949a324969102ab1fd25716adde10e9
+    image: ghcr.io/tektoncd/pipeline/events-a9042f7efb0cbade2a868a1ee5ddd52c:v1.14.0@sha256:7ccdab7772fc5aa74987b53a5246e5c6863a653d13484bf535a3a15d96e3cd21
+  # Secrets used to pull the events controller image from a private registry.
+  imagePullSecrets: []
+  # - name: my-registry-secret
 # configuration to put in the config-defaults ConfigMap
 configDefaults:
   _example: |
@@ -169,10 +181,12 @@ configDefaults:
     # Possible values include "1m", "5m", "10s", "1h", etc.
     # Example: default-maximum-resolution-timeout: "1m"
 
-    # default-container-resource-requirements allow users to update default resource requirements
-    # to a init-containers and containers of a pods create by the controller
-    # Onet: All the resource requirements are applied to init-containers and containers
-    # only if the existing resource requirements are empty.
+    # default-container-resource-requirements allow users to configure default resource
+    # requirements for init containers and containers in pods created by the controller.
+    # No resource requirements are applied by default when this key is unset.
+    # Note: All the resource requirements are applied to init-containers and containers
+    # only if the existing resource requirements are empty, except Tekton internal
+    # containers can be overridden by named entries such as prepare or place-scripts.
     # default-container-resource-requirements: |
     #   place-scripts: # updates resource requirements of a 'place-scripts' container
     #     requests:
@@ -381,3 +395,10 @@ featureFlags:
   # If set to "false", exponential backoff will be disabled.
   # For advanced tuning of backoff parameters, update the 'wait-exponential-backoff' ConfigMap.
   enable-wait-exponential-backoff: "false"
+  # Setting this flag to "true" will compress termination messages with flate
+  # to fit more results in the 4KB Kubernetes termination message limit.
+  # Only applies when results-from is set to "termination-message" (the default);
+  # ignored when results-from is "sidecar-logs".
+  # Alpha feature — this is a short-term measure. External result storage
+  # (TEP-0164) will address the underlying 4KB limitation.
+  enable-termination-message-compression: "false"
