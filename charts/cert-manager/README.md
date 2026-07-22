@@ -8,7 +8,9 @@ cert-manager can obtain certificates from a [variety of certificate authorities]
 
 ## Prerequisites
 
-- Kubernetes 1.22+
+Make sure you are using a version of Kubernetes that is supported by
+cert-manager. For more information, see the [Supported Releases
+page](https://cert-manager.io/docs/releases/).
 
 ## Installing the Chart
 
@@ -18,15 +20,11 @@ functionality in cert-manager can be found in the [installation docs](https://ce
 To install the chart with the release name `cert-manager`:
 
 ```console
-# Add the Jetstack Helm repository
-helm repo add jetstack https://charts.jetstack.io --force-update
-
-# Install the cert-manager helm chart
 helm install \
-  cert-manager jetstack/cert-manager \
+  cert-manager oci://quay.io/jetstack/charts/cert-manager \
   --namespace cert-manager \
   --create-namespace \
-  --version v1.20.3 \
+  --version v1.21.0 \
   --set crds.enabled=true
 ```
 
@@ -112,9 +110,9 @@ If a component-specific nodeSelector is also set, it will be merged and take pre
 > ```
 
 Labels to apply to all resources.  
-Please note that this does not add labels to the resources created dynamically by the controllers. For these resources, you have to add the labels in the template in the cert-manager custom resource: For example, podTemplate/ ingressTemplate in ACMEChallengeSolverHTTP01Ingress. For more information, see the [cert-manager documentation](https://cert-manager.io/docs/reference/api-docs/#acme.cert-manager.io/v1.ACMEChallengeSolverHTTP01Ingress).  
-For example, secretTemplate in CertificateSpec  
-For more information, see the [cert-manager documentation](https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.CertificateSpec).
+These labels are also applied to dynamically-created ACME HTTP01 solver resources  
+(pods, services, ingresses, or Gateway API HTTPRoutes).  
+The following ACME identity label keys are reserved and will be silently ignored on dynamically-created resources: acme.cert-manager.io/http-domain, acme.cert-manager.io/http-token, acme.cert-manager.io/http01-solver. For per-Issuer-specific labels, use the HTTP01 ingress solver podTemplate and ingressTemplate fields for pod/ingress resources, or the gatewayHTTPRoute solver labels field for Gateway API HTTPRoute resources.
 #### **global.revisionHistoryLimit** ~ `number`
 
 The number of old ReplicaSets to retain to allow rollback (if not set, the default Kubernetes value is set to 10).
@@ -193,6 +191,20 @@ The interval between attempts by the acting master to renew a leadership slot be
 #### **global.leaderElection.retryPeriod** ~ `string`
 
 The duration the clients should wait between attempting acquisition and renewal of a leadership.
+
+#### **global.runtimeClassName** ~ `string`
+> Default value:
+> ```yaml
+> ""
+> ```
+
+A Kubernetes Runtime Class to apply to ACME HTTP01 solver pods, if required. For more information, see [Runtime Class](https://kubernetes.io/docs/concepts/containers/).  
+  
+For example:
+
+```yaml
+runtimeClassName: gvisor
+```
 
 #### **installCRDs** ~ `bool`
 > Default value:
@@ -439,7 +451,8 @@ config:
   kubernetesAPIQPS: 9000
   kubernetesAPIBurst: 9000
   numberOfConcurrentWorkers: 200
-  enableGatewayAPI: true
+  gatewayAPI:
+    enable: true
   # Feature gates as of v1.20.0. Listed with their default values.
   # See https://cert-manager.io/docs/cli/controller/
   featureGates:
@@ -470,6 +483,9 @@ config:
     maxPrivateKeySize: 13000      # Maximum size in bytes for private keys (default: 13000)
     maxChainLength: 95000         # Maximum size in bytes for certificate chains (default: 95000)
     maxBundleSize: 330000         # Maximum size in bytes for certificate bundles (default: 330000)
+  # Configure certificate request backoff durations
+  certificateRequestMinimumBackoffDuration: 1h
+  certificateRequestMaximumBackoffDuration: 32h
 ```
 #### **dns01RecursiveNameservers** ~ `string`
 > Default value:
@@ -764,6 +780,20 @@ affinity:
          values:
          - master
 ```
+#### **runtimeClassName** ~ `string`
+> Default value:
+> ```yaml
+> ""
+> ```
+
+A Kubernetes Runtime Class to apply to ACME HTTP01 solver pods, if required. For more information, see [Runtime Class](https://kubernetes.io/docs/concepts/containers/).  
+  
+For example:
+
+```yaml
+runtimeClassName: gvisor
+```
+
 #### **tolerations** ~ `array`
 > Default value:
 > ```yaml
@@ -853,21 +883,6 @@ The namespace that the service monitor should live in, defaults to the cert-mana
 > ```
 
 Specifies the `prometheus` label on the created ServiceMonitor. This is used when different Prometheus instances have label selectors matching different ServiceMonitors.
-#### **prometheus.servicemonitor.targetPort** ~ `string,integer`
-> Default value:
-> ```yaml
-> http-metrics
-> ```
-
-The target port to set on the ServiceMonitor. This must match the port that the cert-manager controller is listening on for metrics.
-
-#### **prometheus.servicemonitor.path** ~ `string`
-> Default value:
-> ```yaml
-> /metrics
-> ```
-
-The path to scrape for metrics.
 #### **prometheus.servicemonitor.interval** ~ `string`
 > Default value:
 > ```yaml
@@ -942,13 +957,6 @@ The namespace that the pod monitor should live in, defaults to the cert-manager 
 > ```
 
 Specifies the `prometheus` label on the created PodMonitor. This is used when different Prometheus instances have label selectors matching different PodMonitors.
-#### **prometheus.podmonitor.path** ~ `string`
-> Default value:
-> ```yaml
-> /metrics
-> ```
-
-The path to scrape for metrics.
 #### **prometheus.podmonitor.interval** ~ `string`
 > Default value:
 > ```yaml
@@ -1277,6 +1285,20 @@ affinity:
          values:
          - master
 ```
+#### **webhook.runtimeClassName** ~ `string`
+> Default value:
+> ```yaml
+> ""
+> ```
+
+A Kubernetes Runtime Class to apply to ACME HTTP01 solver pods, if required. For more information, see [Runtime Class](https://kubernetes.io/docs/concepts/containers/).  
+  
+For example:
+
+```yaml
+runtimeClassName: gvisor
+```
+
 #### **webhook.tolerations** ~ `array`
 > Default value:
 > ```yaml
@@ -1776,6 +1798,20 @@ affinity:
          values:
          - master
 ```
+#### **cainjector.runtimeClassName** ~ `string`
+> Default value:
+> ```yaml
+> ""
+> ```
+
+A Kubernetes Runtime Class to apply to ACME HTTP01 solver pods, if required. For more information, see [Runtime Class](https://kubernetes.io/docs/concepts/containers/).  
+  
+For example:
+
+```yaml
+runtimeClassName: gvisor
+```
+
 #### **cainjector.tolerations** ~ `array`
 > Default value:
 > ```yaml
@@ -1961,6 +1997,20 @@ Setting a digest pins the image. If a tag is also set, the rendered reference wi
 > ```
 
 Kubernetes imagePullPolicy on Deployment.
+#### **acmesolver.runtimeClassName** ~ `string`
+> Default value:
+> ```yaml
+> ""
+> ```
+
+A Kubernetes Runtime Class to apply to ACME HTTP01 solver pods, if required. For more information, see [Runtime Class](https://kubernetes.io/docs/concepts/containers/).  
+  
+For example:
+
+```yaml
+runtimeClassName: gvisor
+```
+
 ### Startup API Check
 
 
@@ -2008,6 +2058,11 @@ Timeout for 'kubectl check api' command.
 > ```
 
 Job backoffLimit
+#### **startupapicheck.ttlSecondsAfterFinished** ~ `integer`
+
+Limits the lifetime of a Job that has finished execution (either Complete or Failed). If this field is set, once the Job finishes, it will be automatically cleaned up after ttlSecondsAfterFinished seconds. This is disabled by default (field is not set) to preserve backward compatibility and avoid issues with GitOps tools (e.g. Argo CD) that may attempt to reconcile or recreate Jobs after they are automatically deleted. For more information, see [Automatic Cleanup for Finished Jobs](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/).
+
+
 #### **startupapicheck.jobAnnotations** ~ `object`
 > Default value:
 > ```yaml
@@ -2052,7 +2107,7 @@ extraEnv:
 > {}
 > ```
 
-Resources to provide to the cert-manager controller pod.  
+Resources to provide to the cert-manager startupapicheck pod.  
   
 For example:
 
@@ -2093,6 +2148,20 @@ affinity:
          values:
          - master
 ```
+#### **startupapicheck.runtimeClassName** ~ `string`
+> Default value:
+> ```yaml
+> ""
+> ```
+
+A Kubernetes Runtime Class to apply to ACME HTTP01 solver pods, if required. For more information, see [Runtime Class](https://kubernetes.io/docs/concepts/containers/).  
+  
+For example:
+
+```yaml
+runtimeClassName: gvisor
+```
+
 #### **startupapicheck.tolerations** ~ `array`
 > Default value:
 > ```yaml
