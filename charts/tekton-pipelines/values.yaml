@@ -25,13 +25,13 @@ serviceaccount:
 # Values for tekton-pipelines-controller
 controller:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.12.0@sha256:8d5f900677386b8fe5371429e9c1461b25de47e5e34736c7f99e82e2c279ebbc
+    image: ghcr.io/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.12.2@sha256:76728a24a606d6f2205ae50e31bb08a1b185b60a2456fe7d9c73c175047ce5aa
     labels: {}
   images:
-    entrypoint: "ghcr.io/tektoncd/pipeline/entrypoint-bff0a22da108bc2f16c818c97641a296:v1.12.0@sha256:3ec960b07abd85604242e146092e72f11be8787452c2a20d12a37fdee4a666e2"
-    nop: "ghcr.io/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.12.0@sha256:f89fb760b05fdef6895290e524d992b66ede72546622d5028b0406a9bea36d2f"
-    sidecarlogresults: "ghcr.io/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.12.0@sha256:8b61bdcad62a99e7b15f9dc92690ea39f49be2c5a1c9f428a0aac712f349543d"
-    workingdirinit: "ghcr.io/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.12.0@sha256:11031cbed2b8ddbb5af0947a5e0c997ba7cd3da5f309ddfa76e58f5418868d71"
+    entrypoint: "ghcr.io/tektoncd/pipeline/entrypoint-bff0a22da108bc2f16c818c97641a296:v1.12.2@sha256:7def477fc1d36ab1d38f2872dfeaf62cc43c0ebacf117eed62caa39fea0c7db2"
+    nop: "ghcr.io/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.12.2@sha256:23a7308656c90b9ef73b01ddc03ab19a80282a66a9cd505f97540e75213e4f9b"
+    sidecarlogresults: "ghcr.io/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.12.2@sha256:20f72f06804a52ba851f41fc06644d750871769c3e94e0b99e940a0f837a1368"
+    workingdirinit: "ghcr.io/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.12.2@sha256:fd8aeb5a1a73757ee36713880bd712b3d8a6c5f94f963e34193a7fbd32c77c65"
     shellImage: "cgr.dev/chainguard/busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791"
     shellImageWin: "mcr.microsoft.com/powershell:nanoserver@sha256:b6d5ff841b78bdf2dfed7550000fd4f3437385b8fa686ec0f010be24777654d6"
   pod:
@@ -55,7 +55,7 @@ controller:
 # Values for tekton-pipelines-webhook
 webhook:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.12.0@sha256:1e4eded1773f6fa8ec67c9348f84bed0d39666a9698ebd1ffb4eaed88b38f7d4
+    image: ghcr.io/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.12.2@sha256:12d542c81d166c26546b0cad60fa1e2a7d5c4b5dc9ad30612d3feb939ce1d12c
     labels: {}
   pod:
     labels: {}
@@ -76,7 +76,7 @@ webhook:
 # Values to amend tekton-pipelines-remote-resolvers
 remoteresolver:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.12.0@sha256:b1f06197342ed946b23efd1ce124d7c17d50678b461733a6cc0912b07a4943e7
+    image: ghcr.io/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.12.2@sha256:6047be2af74b86129eb22b76ca908754c932208573e0a62a5f498da99b552e6a
   affinity: {}
   tolerations: []
   nodeSelector: {}
@@ -90,7 +90,7 @@ remoteresolver:
 # Values for tekton-events-controller
 eventscontroller:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/events-a9042f7efb0cbade2a868a1ee5ddd52c:v1.12.0@sha256:d5d5869215a58fea01ce627d605786090949a324969102ab1fd25716adde10e9
+    image: ghcr.io/tektoncd/pipeline/events-a9042f7efb0cbade2a868a1ee5ddd52c:v1.12.2@sha256:facd8325f8cf78f63d5e687faaed5cc2c0d4111da72464083ceff00a7e0b3c56
 # configuration to put in the config-defaults ConfigMap
 configDefaults:
   _example: |
