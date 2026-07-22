@@ -220,12 +220,13 @@ jobs:
           DOMAIN_ZONE: ${{ inputs.domain_zone }}
           DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
           ACTOR: ${{ github.actor }}
+          LINODE_CLUSTER_NAME: ${{ steps.determine-cluster-name.outputs.linode-cluster-name }}
         run: |
           # Mapping of domain_zone to domain names
           case "$DOMAIN_ZONE" in
             "Zone-1") DOMAIN=$(jq -r --arg actor "$ACTOR" '.[$actor][0]' <<< "$DEV_DOMAINS") ;;
             "Zone-2") DOMAIN=$(jq -r --arg actor "$ACTOR" '.[$actor][1]' <<< "$DEV_DOMAINS") ;;
-            "Random") DOMAIN="$(openssl rand -hex 4)$(date +"%d%m%y").${EDGEDNS_ZONE}" ;;
+            "Random") DOMAIN="${LINODE_CLUSTER_NAME}.${EDGEDNS_ZONE}" ;;
           esac
           echo "apl-dns-domain=$DOMAIN" >> "$GITHUB_OUTPUT"
 
