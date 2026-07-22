@@ -3,7 +3,7 @@
 Policy Reporter watches for PolicyReport Resources.
 It creates Prometheus Metrics and can send rule validation events to different targets like Loki, Elasticsearch, Slack or Discord
 
-![Version: 3.7.4](https://img.shields.io/badge/Version-3.7.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.7.4](https://img.shields.io/badge/AppVersion-3.7.4-informational?style=flat-square)
+![Version: 3.8.1](https://img.shields.io/badge/Version-3.8.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.8.1](https://img.shields.io/badge/AppVersion-3.8.1-informational?style=flat-square)
 
 ## Documentation
 
@@ -396,7 +396,7 @@ Open `http://localhost:8082/` in your browser.
 | ui.image.registry | string | `"ghcr.io"` | Image registry |
 | ui.image.repository | string | `"kyverno/policy-reporter-ui"` | Image repository |
 | ui.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| ui.image.tag | string | `"2.5.1"` | Image tag |
+| ui.image.tag | string | `"2.6.1"` | Image tag |
 | ui.crds.customBoard | bool | `false` | Install UI CustomBoard CRDs |
 | ui.replicaCount | int | `1` | Deployment replica count |
 | ui.priorityClassName | string | `""` | Deployment priorityClassName |
@@ -492,7 +492,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.kyverno.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.kyverno.image.repository | string | `"kyverno/policy-reporter/kyverno-plugin"` | Image repository |
 | plugin.kyverno.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.kyverno.image.tag | string | `"0.6.0"` | Image tag |
+| plugin.kyverno.image.tag | string | `"0.6.2"` | Image tag |
 | plugin.kyverno.replicaCount | int | `1` | Deployment replica count |
 | plugin.kyverno.priorityClassName | string | `""` | Deployment priorityClassName |
 | plugin.kyverno.logging.api | bool | `false` | Enables external API request logging |
@@ -565,11 +565,11 @@ Open `http://localhost:8082/` in your browser.
 | plugin.trivy.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.trivy.image.repository | string | `"kyverno/policy-reporter/trivy-plugin"` | Image repository |
 | plugin.trivy.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.trivy.image.tag | string | `"0.4.12"` | Image tag Defaults to `Chart.AppVersion` if omitted |
+| plugin.trivy.image.tag | string | `"0.4.15"` | Image tag Defaults to `Chart.AppVersion` if omitted |
 | plugin.trivy.cli.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.trivy.cli.image.repository | string | `"aquasecurity/trivy"` | Image repository |
 | plugin.trivy.cli.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.trivy.cli.image.tag | string | `"0.69.3"` | Image tag Defaults to `Chart.AppVersion` if omitted |
+| plugin.trivy.cli.image.tag | string | `"0.72.0"` | Image tag Defaults to `Chart.AppVersion` if omitted |
 | plugin.trivy.extraArgs | object | `{}` | Additional container args. |
 | plugin.trivy.cveawg.disable | bool | `false` | disable external CVEAWG API calls. |
 | plugin.trivy.github.disable | bool | `false` | disable GitHub API calls. |
@@ -633,6 +633,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.trivy.extraConfig | object | `{}` | Extra configuration options appended to trivy plugin settings |
 | monitoring.enabled | bool | `false` | Enables the Prometheus Operator integration |
 | monitoring.annotations | object | `{}` | Key/value pairs that are attached to all resources. |
+| monitoring.serviceMonitor.enabled | bool | `true` |  |
 | monitoring.serviceMonitor.honorLabels | bool | `false` | HonorLabels chooses the metrics labels on collisions with target labels |
 | monitoring.serviceMonitor.namespace | string | `nil` | Allow to override the namespace for serviceMonitor |
 | monitoring.serviceMonitor.labels | object | `{}` | Labels to match the serviceMonitorSelector of the Prometheus Resource |
