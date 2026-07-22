@@ -1,0 +1,30 @@
+{{- if eq (include "gitea.clientSettingsPolicies.enabled" .) "true" -}}
+{{- if not (keys .Values.gatewayAPI.nginx.clientSettingsPolicies.body) }}
+{{- fail "gatewayAPI.nginx.clientSettingsPolicies.body is required" }}
+{{- end }}
+---
+apiVersion: gateway.nginx.org/v1alpha1
+kind: ClientSettingsPolicy
+metadata:
+  {{- with (include "gitea.clientSettingsPolicies.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+  {{- with (include "gitea.clientSettingsPolicies.labels" .) }}
+  labels:
+    {{- . | nindent 4 }}
+  {{- end }}
+  name: {{ include "gitea.fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+spec:
+  targetRef:
+    {{- if .Values.gatewayAPI.nginx.clientSettingsPolicies.targetRef }}
+    {{- toYaml .Values.gatewayAPI.nginx.clientSettingsPolicies.targetRef | nindent 4 }}
+    {{- else }}
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: {{ include "gitea.fullname" . }}
+    {{- end }}
+  body:
+    {{- toYaml .Values.gatewayAPI.nginx.clientSettingsPolicies.body | nindent 4 }}
+{{- end }}
