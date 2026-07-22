@@ -180,41 +180,16 @@ jobs:
     needs: preprocess-input
     name: Preprocess input variables for linode
     runs-on: ubuntu-latest
+    outputs:
+      linode-cluster-name: ${{ steps.determine-cluster-name.outputs.linode-cluster-name }}
+      apl-dns-domain: ${{ steps.determine-domain.outputs.apl-dns-domain }}
     steps:
       - name: Install the Linode CLI
         uses: linode/action-linode-cli@v1
         with:
           token: ${{ secrets.LINODE_TOKEN }}
-      - name: Check if cluster is running
-        env:
-          DOMAIN_ZONE: ${{ inputs.domain_zone }}
-          INSTALL_PROFILE: ${{ inputs.install_profile }}
-          ACTOR: ${{ github.actor }}
-        run: |
-          case "$DOMAIN_ZONE" in
-            "Zone-1") LINODE_CLUSTER_NAME=$ACTOR-1 ;;
-            "Zone-2") LINODE_CLUSTER_NAME=$ACTOR-2 ;;
-            "Random") LINODE_CLUSTER_NAME=$ACTOR-$RANDOM ;;
-          esac
-          [[ "$INSTALL_PROFILE" == 'no-apl' ]] && LINODE_CLUSTER_NAME="$LINODE_CLUSTER_NAME-no-apl"
-          if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == "true" ]]; then
-            echo "An LKE cluster with the same name ($LINODE_CLUSTER_NAME) already exists."
-            echo "Visit https://cloud.linode.com/kubernetes/clusters to delete your cluster"
-            echo "Exiting workflow..."
-            exit 1
-          fi
-
-  run-integration-test-linode:
-    name: Run integration test on linode cluster
-    needs: preprocess-linode-input
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install the Linode CLI
-        uses: linode/action-linode-cli@v1
-        with:
-          token: ${{ secrets.LINODE_TOKEN }}
-      - name: Set k8s cluster name
-        id: set-k8s-cluster-name
+      - name: Determine cluster name
+        id: determine-cluster-name
         env:
           DOMAIN_ZONE: ${{ inputs.domain_zone }}
           INSTALL_PROFILE: ${{ inputs.install_profile }}
@@ -227,6 +202,16 @@ jobs:
           esac
           [[ "$INSTALL_PROFILE" == 'no-apl' ]] && LINODE_CLUSTER_NAME="$LINODE_CLUSTER_NAME-no-apl"
           echo "linode-cluster-name=$LINODE_CLUSTER_NAME" >> "$GITHUB_OUTPUT"
+      - name: Check if cluster is running
+        env:
+          LINODE_CLUSTER_NAME: ${{ steps.determine-cluster-name.outputs.linode-cluster-name }}
+        run: |
+          if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == "true" ]]; then
+            echo "An LKE cluster with the same name ($LINODE_CLUSTER_NAME) already exists."
+            echo "Visit https://cloud.linode.com/kubernetes/clusters to delete your cluster"
+            echo "Exiting workflow..."
+            exit 1
+          fi
       - name: Determine domain name
         id: determine-domain
         if: ${{ inputs.install_profile != 'no-apl' }}
@@ -243,10 +228,20 @@ jobs:
             "Random") DOMAIN="$(openssl rand -hex 4)$(date +"%d%m%y").${EDGEDNS_ZONE}" ;;
           esac
           echo "apl-dns-domain=$DOMAIN" >> "$GITHUB_OUTPUT"
+
+  run-integration-test-linode:
+    name: Run integration test on linode cluster
+    needs: preprocess-linode-input
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install the Linode CLI
+        uses: linode/action-linode-cli@v1
+        with:
+          token: ${{ secrets.LINODE_TOKEN }}
       - name: Create k8s cluster for testing
         env:
           LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
-          LINODE_CLUSTER_NAME: ${{ steps.set-k8s-cluster-name.outputs.linode-cluster-name }}
+          LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
           LKE_TIER: ${{ inputs.lke_tier }}
           HA_CONTROL_PLANE: ${{ inputs.ha_control_plane }}
           LKE_VERSION: ${{ inputs.kubernetes_version }}
@@ -283,7 +278,7 @@ jobs:
       - name: Retrieve cluster id
         id: retrieve-cluster-id
         env:
-          LINODE_CLUSTER_NAME: ${{ steps.set-k8s-cluster-name.outputs.linode-cluster-name }}
+          LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
         run: |
           LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -re --arg cluster_name "$LINODE_CLUSTER_NAME" 'map(select(.label == $cluster_name) | .id) | .[0]')
           echo "linode-cluster-id=$LINODE_CLUSTER_ID" >> "$GITHUB_OUTPUT"
@@ -310,7 +305,7 @@ jobs:
         id: save-kubectl-config
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
-          LINODE_CLUSTER_NAME: ${{ steps.set-k8s-cluster-name.outputs.linode-cluster-name }}
+          LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
         run: |
           echo "Waiting for kubeconfig..."
           while :; do
@@ -326,7 +321,7 @@ jobs:
       - name: Set up Wiz
         if: ${{ inputs.install_profile != 'no-apl' && inputs.enableWiz }}
         env:
-          LINODE_CLUSTER_NAME: ${{ steps.set-k8s-cluster-name.outputs.linode-cluster-name }}
+          LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
           LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
           WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
           WIZ_CLIENT_TOKEN: ${{ secrets.WIZ_CLIENT_TOKEN }}
@@ -366,7 +361,7 @@ jobs:
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
           BYO_GIT_PAT: ${{ secrets.BYO_GIT_PAT }}
           BYO_GIT_URL: ${{ secrets.BYO_GIT_URL }}
-          DOMAIN: ${{ steps.determine-domain.outputs.apl-dns-domain }}
+          DOMAIN: ${{ needs.preprocess-linode-input.outputs.apl-dns-domain }}
           LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
           LINODE_CLUSTER_CONTEXT: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
           LKE_TIER: ${{ inputs.lke_tier }}
@@ -472,7 +467,7 @@ jobs:
           EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
           EDGEDNS_ZONE: ${{ vars.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
-          DOMAIN: ${{ steps.determine-domain.outputs.apl-dns-domain }}
+          DOMAIN: ${{ needs.preprocess-linode-input.outputs.apl-dns-domain }}
           PUB_IP: ${{ steps.get-public-ip.outputs.apl-public-ip }}
         run: |
           pip3 install edgegrid-python requests
