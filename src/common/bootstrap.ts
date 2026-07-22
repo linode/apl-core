@@ -19,7 +19,7 @@ export const recoverFromGit = async (gitConfig: GitRepoConfig): Promise<void> =>
   const d = terminal(`cmd:${cmdName}:recoverFromGit`)
   d.info(`Attempting to clone git repository from: ${gitConfig.repoUrl}`)
   cd(env.ENV_DIR)
-  await $`timeout 10 git clone ${gitConfig.authenticatedUrl} ${env.ENV_DIR}`
+  await $`git clone ${gitConfig.authenticatedUrl} ${env.ENV_DIR}`
   await setIdentity(gitConfig.username ?? 'otomi-admin', gitConfig.email)
   await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {

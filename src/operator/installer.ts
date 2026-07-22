@@ -92,6 +92,11 @@ export class Installer {
   }
 
   public async applyRecoveryManifests(): Promise<void> {
+    if (!env.VALUES_INPUT) {
+      throw new Error(
+        'VALUES_INPUT environment variable is not set. Please provide a valid path to the values.yaml file.',
+      )
+    }
     const values = (await loadYaml(env.VALUES_INPUT)) as Record<string, any>
     const items = values?.installation?.recovery?.manifests?.items
     if (!Array.isArray(items) || items.length === 0) {

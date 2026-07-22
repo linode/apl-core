@@ -1,8 +1,8 @@
-import { globSync } from 'glob'
 import {
   applyChanges,
   Changes,
   filterChanges,
+  needsMigration,
   processDeletionEntry,
   removeSopsArtifacts,
   sopsMigration,
@@ -440,5 +440,37 @@ describe('processDeletionEntry', () => {
     const values: any = { apps: { myApp: { nested: 'value' } } }
     processDeletionEntry('apps.myApp.nested', values, deps)
     expect(mockDeleteFile).not.toHaveBeenCalled()
+  })
+})
+
+describe('needsMigration', () => {
+  const makeLoadYaml =
+    (repoSpecVersion: number | undefined, defaultSpecVersion: number | undefined) =>
+    async (path: string, _opts?: any): Promise<any> => {
+      if (path.includes('versions.yaml'))
+        return repoSpecVersion !== undefined ? { spec: { specVersion: repoSpecVersion } } : undefined
+      if (path.includes('defaults.yaml'))
+        return defaultSpecVersion !== undefined ? { versions: { specVersion: defaultSpecVersion } } : undefined
+      return undefined
+    }
+
+  it('returns true when repo specVersion differs from defaults specVersion', async () => {
+    const result = await needsMigration({ loadYaml: makeLoadYaml(69, 70) })
+    expect(result).toBe(true)
+  })
+
+  it('returns false when repo specVersion matches defaults specVersion', async () => {
+    const result = await needsMigration({ loadYaml: makeLoadYaml(70, 70) })
+    expect(result).toBe(false)
+  })
+
+  it('returns false when versions.yaml is missing', async () => {
+    const result = await needsMigration({ loadYaml: makeLoadYaml(undefined, 70) })
+    expect(result).toBe(false)
+  })
+
+  it('returns false when defaults.yaml is missing', async () => {
+    const result = await needsMigration({ loadYaml: makeLoadYaml(69, undefined) })
+    expect(result).toBe(false)
   })
 })

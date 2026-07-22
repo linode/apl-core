@@ -16,6 +16,7 @@ import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { cd, sleep } from 'zx'
 import { OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
+import { getOldGitCredentials, setGitConfig } from '../common/git-config'
 import {
   createArgoCdRedisSecret,
   ensureNamespaceExists,
@@ -40,7 +41,6 @@ import {
   SealedSecretManifest,
   writeSealedSecretManifests,
 } from '../common/sealed-secrets'
-import { getOldGitCredentials, setGitConfig } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 const sealedSecretManifestsGlob = `${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`
@@ -848,6 +848,15 @@ export const unsetAtPath = (path: string, values: Record<string, any>): void => 
 export const setAtPath = (path: string, values: Record<string, any>, value: string): void => {
   const paths = unparsePaths(path, values)
   paths.forEach((p) => set(values, p, Array.isArray(value) ? [...value] : value))
+}
+
+export const needsMigration = async (deps = { loadYaml }): Promise<boolean> => {
+  const defaults = await deps.loadYaml(`${rootDir}/helmfile.d/snippets/defaults.yaml`, { noError: true })
+  const defaultSpecVersion: number = defaults?.environments?.default?.values[0]?.versions?.specVersion
+  const versions = await deps.loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
+  const repoSpecVersion: number = versions?.spec?.specVersion
+  if (!repoSpecVersion || !defaultSpecVersion) return false
+  return repoSpecVersion < defaultSpecVersion
 }
 
 export const migrate = async (): Promise<boolean> => {
