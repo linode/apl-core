@@ -285,7 +285,7 @@ jobs:
         env:
           LINODE_CLUSTER_NAME: ${{ steps.set-k8s-cluster-name.outputs.linode-cluster-name }}
         run: |
-          LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce --arg cluster_name "$LINODE_CLUSTER_NAME" '.[] | select(.label | startswith($cluster_name)) | .id')
+          LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -re --arg cluster_name "$LINODE_CLUSTER_NAME" 'map(select(.label == $cluster_name) | .id) | .[0]')
           echo "linode-cluster-id=$LINODE_CLUSTER_ID" >> "$GITHUB_OUTPUT"
       - name: Wait for cluster to be ready
         env:
