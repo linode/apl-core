@@ -15,7 +15,7 @@ spec:
       image: "{{ .Values.testFramework.image.repository }}:{{ .Values.testFramework.image.tag }}"
       env:
         - name: CERT_MANAGER_CLUSTERIP
-          value: "cert-manager-webhook"
+          value: "cert-manager-webhook.cert-manager"
         - name: CERT_MANAGER_PORT
           value: "443"
       command:
@@ -24,11 +24,17 @@ spec:
         # The following shell script tests if the cert-manager service is up. If the service is up, when we try
         # to wget its exposed port, we will get an HTTP error 400.
         - |
-          wget_output=$(wget -q "$CERT_MANAGER_CLUSTERIP:$CERT_MANAGER_PORT")
-          if wget_output=="wget: server returned error: HTTP/1.0 400 Bad Request"
-          then exit 0
-          else exit 1
-          fi
+          i=0
+          while [ "$i" -lt 30 ]; do
+            wget_output=$(wget -q "$CERT_MANAGER_CLUSTERIP:$CERT_MANAGER_PORT" 2>&1 || true)
+            if [ "$wget_output" = "wget: server returned error: HTTP/1.0 400 Bad Request" ]; then
+              exit 0
+            fi
+            i=$((i + 1))
+            sleep 2
+          done
+          echo "$wget_output"
+          exit 1
       {{- with .Values.testFramework.securityContext }}
       securityContext: {{ toYaml . | nindent 12 }}
       {{- end }}
