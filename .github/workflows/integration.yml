@@ -445,7 +445,7 @@ jobs:
           LINODE_CLUSTER_CONTEXT: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
         run: |
           kubectl config use-context "$LINODE_CLUSTER_CONTEXT"
-          # While helm is installing we can crete the wildcard dns record
+          # Wait for platform-istio service to receive an external IP
           while true; do
               sleep 30
               PUB_IP=$(kubectl get svc platform-istio -n istio-system -ojson | jq '.status.loadBalancer.ingress[0].ip' -r)
