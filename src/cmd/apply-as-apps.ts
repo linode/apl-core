@@ -1,4 +1,11 @@
-import { ApiException, PatchStrategy, setHeaderOptions, V1ResourceRequirements } from '@kubernetes/client-node'
+import {
+  ApiException,
+  ApiextensionsV1Api,
+  CoreV1Api,
+  PatchStrategy,
+  setHeaderOptions,
+  V1ResourceRequirements,
+} from '@kubernetes/client-node'
 import { mkdirSync, rmSync, statSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { glob } from 'glob'
@@ -27,6 +34,52 @@ export const ARGOCD_APP_DEFAULT_LABEL = 'managed'
 export const ARGOCD_APP_GITOPS_LABEL = 'generic-gitops'
 export const ARGOCD_APP_GITOPS_NS_PREFIX = 'gitops-ns'
 export const ARGOCD_APP_GITOPS_GLOBAL_NAME = 'gitops-global'
+
+const LAST_APPLIED_ANNOTATION = 'kubectl.kubernetes.io/last-applied-configuration'
+// JSON Patch requires '/' in key names to be escaped as '~1'
+const LAST_APPLIED_PATCH_PATH = '/metadata/annotations/kubectl.kubernetes.io~1last-applied-configuration'
+
+export const stripOversizedLastAppliedAnnotations = async (
+  deps = {
+    getCrdApi: (): ApiextensionsV1Api => k8s.kc().makeApiClient(ApiextensionsV1Api),
+    getCoreApi: (): CoreV1Api => k8s.core(),
+  },
+): Promise<void> => {
+  const log = terminal('cmd:apply-as-apps:stripOversized')
+  const patchHeaders = setHeaderOptions('Content-Type', PatchStrategy.JsonPatch)
+  const removePatch = [{ op: 'remove', path: LAST_APPLIED_PATCH_PATH }]
+
+  const crdApi = deps.getCrdApi()
+  const { items: crds } = await crdApi.listCustomResourceDefinition()
+  await Promise.allSettled(
+    crds
+      .filter((crd) => {
+        const value = crd.metadata?.annotations?.[LAST_APPLIED_ANNOTATION]
+        return value !== undefined
+      })
+      .map(async (crd) => {
+        const name = crd.metadata!.name!
+        log.info(`Stripping oversized last-applied-configuration from CRD ${name}`)
+        await crdApi.patchCustomResourceDefinition({ name, body: removePatch }, patchHeaders)
+      }),
+  )
+
+  const coreApi = deps.getCoreApi()
+  const { items: configMaps } = await coreApi.listConfigMapForAllNamespaces()
+  await Promise.allSettled(
+    configMaps
+      .filter((cm) => {
+        const value = cm.metadata?.annotations?.[LAST_APPLIED_ANNOTATION]
+        return value !== undefined
+      })
+      .map(async (cm) => {
+        const name = cm.metadata!.name!
+        const namespace = cm.metadata!.namespace!
+        log.info(`Stripping oversized last-applied-configuration from ConfigMap ${namespace}/${name}`)
+        await coreApi.patchNamespacedConfigMap({ name, namespace, body: removePatch }, patchHeaders)
+      }),
+  )
+}
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -113,13 +166,14 @@ const getArgoCdAppManifest = (name: string, appLabel: string, spec: Record<strin
   }
 }
 
-const getArgocdCoreAppManifest = (
+export const getArgocdCoreAppManifest = (
   release: HelmRelease,
   values: Record<string, any>,
   otomiVersion: string,
 ): ArgocdAppManifest => {
   const name = getAppName(release)
   const patch = (appPatches[name] || genericPatch) as Record<string, any>
+
   return getArgoCdAppManifest(name, ARGOCD_APP_DEFAULT_LABEL, {
     syncPolicy: ARGOCD_APP_DEFAULT_SYNC_POLICY,
     project: 'default',
@@ -355,6 +409,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
   setup()
+  await stripOversizedLastAppliedAnnotations().catch((e) => d.warn('Failed to strip oversized annotations:', e))
   const otomiVersion = await getImageTagFromValues()
   const res = await hf({
     fileOpts: argv.file,
