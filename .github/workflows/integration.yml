@@ -196,7 +196,7 @@ jobs:
           case "$DOMAIN_ZONE" in
             "Zone-1") LINODE_CLUSTER_NAME=$ACTOR-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=$ACTOR-2 ;;
-            "Random") LINODE_CLUSTER_NAME=RUN_NUMBER-$RUN_ATTEMPT ;;
+            "Random") LINODE_CLUSTER_NAME=$RUN_NUMBER-$RUN_ATTEMPT ;;
           esac
           [[ "$INSTALL_PROFILE" == 'no-apl' ]] && LINODE_CLUSTER_NAME="$LINODE_CLUSTER_NAME-no-apl"
           echo "linode-cluster-name=$LINODE_CLUSTER_NAME" >> "$GITHUB_OUTPUT"
