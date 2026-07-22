@@ -198,6 +198,7 @@ jobs:
           esac
           [[ "$INSTALL_PROFILE" == 'no-apl' ]] && LINODE_CLUSTER_NAME="$LINODE_CLUSTER_NAME-no-apl"
           echo "linode-cluster-name=$LINODE_CLUSTER_NAME" >> "$GITHUB_OUTPUT"
+          echo "LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME"
       - name: Determine domain name
         id: determine-domain
         if: ${{ inputs.install_profile != 'no-apl' }}
@@ -215,6 +216,7 @@ jobs:
             "Random") DOMAIN="${LINODE_CLUSTER_NAME}.${EDGEDNS_ZONE}" ;;
           esac
           echo "apl-dns-domain=$DOMAIN" >> "$GITHUB_OUTPUT"
+          echo "DOMAIN=$DOMAIN"
 
   deploy-apl:
     name: Run integration test on linode cluster
