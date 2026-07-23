@@ -1,0 +1,42 @@
+name: Release cut branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - minor
+          - major
+      base_branch:
+        description: 'Branch to cut from'
+        required: true
+        default: 'main'
+        type: string
+      release_branch_prefix:
+        description: 'Prefix for release branches'
+        required: true
+        default: 'releases/'
+        type: string
+      dry_run:
+        description: 'Dry run — skip all writes (git push)'
+        required: true
+        default: true
+        type: boolean
+
+env:
+  RELEASE_BRANCH_PREFIX: ${{ inputs.release_branch_prefix }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  release-create-branch:
+    permissions:
+      contents: write
+    uses: linode/apl-gh-actions/.github/workflows/release-create-branch.yml@v0.2.5
+    with:
+      bump_type: ${{ inputs.bump_type }}
+      base_branch: ${{ inputs.base_branch }}
+      release_branch_prefix: ${{ inputs.release_branch_prefix }}
+      dry_run: ${{ inputs.dry_run }}
