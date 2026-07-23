@@ -26,6 +26,10 @@ on:
         description: 'Select Domain Zone'
         type: string
         default: Random
+      kms:
+        description: 'Should APL encrypt secrets in values repo (DNS or KMS is turned on)?'
+        type: string
+        default: age
       certificate:
         description: 'Select certificate issuer'
         type: string
@@ -93,6 +97,13 @@ on:
           - Zone-2
           - Random
         default: Random
+      kms:
+        type: choice
+        description: Should APL encrypt secrets in values repo (DNS or KMS is turned on)?
+        options:
+          - age
+          - no_kms
+        default: age
       certificate:
         type: choice
         description: Select certificate issuer
@@ -149,6 +160,7 @@ jobs:
           HA_CONTROL_PLANE: ${{ inputs.ha_control_plane }}
           KUBERNETES_VERSION: ${{ inputs.kubernetes_version }}
           DOMAIN_ZONE: ${{ inputs.domain_zone }}
+          KMS: ${{ inputs.kms }}
           CERTIFICATE: ${{ inputs.certificate }}
           IS_PRE_INSTALLED: ${{ inputs.is_pre_installed }}
           DISABLE_ORCS: ${{ inputs.disableORCS }}
@@ -160,6 +172,7 @@ jobs:
           echo "ha_control_plane: $HA_CONTROL_PLANE"
           echo "kubernetes_version: $KUBERNETES_VERSION"
           echo "domain_zone: $DOMAIN_ZONE"
+          echo "kms: $KMS"
           echo "certificate: $CERTIFICATE"
           echo "is_pre_installed: $IS_PRE_INSTALLED"
           echo "disableORCS: $DISABLE_ORCS"
@@ -367,6 +380,7 @@ jobs:
           LINODE_CLUSTER_CONTEXT: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
           LKE_TIER: ${{ inputs.lke_tier }}
           INSTALL_PROFILE: ${{ inputs.install_profile }}
+          KMS: ${{ inputs.kms }}
           CERTIFICATE: ${{ inputs.certificate }}
           IS_PRE_INSTALLED: ${{ inputs.is_pre_installed }}
           DISABLE_ORCS: ${{ inputs.disableORCS }}
@@ -404,6 +418,7 @@ jobs:
 
           [[ "$CERTIFICATE" == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ "$CERTIFICATE" == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
+          [[ "$KMS" == 'age' ]] && install_args+=(--set kms.sops.provider=age)
           [[ "$IS_PRE_INSTALLED" == 'true' ]] && install_args+=(--set otomi.isPreInstalled=true)
           if [[ "$DISABLE_ORCS" == 'true' ]]; then
             install_args+=(--set otomi.useORCS=false)
