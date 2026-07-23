@@ -5,10 +5,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
-      - "charts/**"
-      - "values/**"
-      - "tests/fixtures/**"
-      - "helmfile.d/**"
+      - 'charts/**'
+      - 'values/**'
+      - 'tests/fixtures/**'
+      - 'helmfile.d/**'
 
 permissions:
   contents: read
@@ -64,30 +64,31 @@ jobs:
       - name: Checkout PR branch
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
           path: pr
-      - name: Checkout base branch
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.base.ref || 'main' }}
-          path: base
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version-file: 'pr/.nvmrc'
           check-latest: true
       - name: Install npm dependencies
-        run: cd "$GITHUB_WORKSPACE/pr" && npm install --no-save && cd "$GITHUB_WORKSPACE/base" && npm install --no-save
+        run: cd "$GITHUB_WORKSPACE/pr" && npm install --no-save
+      - name: Prepare base branch ref for worktree
+        run: |
+          cd "$GITHUB_WORKSPACE/pr"
+          base_ref="${{ github.event.pull_request.base.ref || 'main' }}"
+          git fetch --no-tags --prune origin "$base_ref:$base_ref"
       - name: Install Helm and Helmfile
-        uses: helmfile/helmfile-action@v2.4.4
+        uses: helmfile/helmfile-action@v2.4.6
         with:
-          helmfile-args: version  # In this step, we only want these tools to be installed
+          helmfile-args: version # In this step, we only want these tools to be installed
           helm-plugins: >
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
       - name: Install dyff
         run: |
-          DYFF_VERSION="1.10.3"
+          DYFF_VERSION="1.12.0"
           wget https://github.com/homeport/dyff/releases/download/v${DYFF_VERSION}/dyff_${DYFF_VERSION}_linux_amd64.tar.gz
           tar -xzf dyff_${DYFF_VERSION}_linux_amd64.tar.gz
           sudo mv dyff /usr/local/bin/
@@ -96,12 +97,16 @@ jobs:
         id: run_script
         env:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+          HUSKY: '0'
         run: |
+          cd "$GITHUB_WORKSPACE/pr"
           mkdir -p tmp
-          "$GITHUB_WORKSPACE/pr/bin/compare.sh" "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/pr" --diff-output tmp/diff-output.txt
-          comment_file="$PWD/tmp/pr-comment.txt"
+          ./bin/compare.sh --diff-output tmp/diff-output.txt
+          comment_file="$GITHUB_WORKSPACE/pr/tmp/pr-comment.txt"
           echo "Comparison of Helm chart templating output:" > "$comment_file"
           echo '```diff' >> "$comment_file"
-          cat tmp/diff-output.txt >> "$comment_file"
+          cat "$GITHUB_WORKSPACE/pr/tmp/diff-output.txt" >> "$comment_file"
           echo '```' >> "$comment_file"
-          cd "$GITHUB_WORKSPACE/pr" && gh pr comment ${{ github.event.pull_request.number }} --body-file "$comment_file" --create-if-none --edit-last
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gh pr comment ${{ github.event.pull_request.number }} --body-file "$comment_file" --create-if-none --edit-last
+          fi
