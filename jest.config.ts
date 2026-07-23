@@ -2,7 +2,7 @@ import type { Config } from '@jest/types'
 
 const config: Config.InitialOptions = {
   preset: 'ts-jest',
-  roots: ['<rootDir>/src'],
+  roots: ['<rootDir>/src', '<rootDir>/ci/src'],
   setupFilesAfterEnv: ['<rootDir>/src/test-init.ts'],
   moduleDirectories: ['node_modules', __dirname],
   modulePathIgnorePatterns: ['src/cmd/test.ts'],

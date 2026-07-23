@@ -60,5 +60,13 @@
   },
   "[dockerfile]": {
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
+  "chat.tools.terminal.autoApprove": {
+    "npx tsx ci/src/configure-public-exposure.ts headlamp": true,
+    "npx tsx ci/src/add-app-helm-chart.ts headlamp": true,
+    "export ENV_DIR=$PWD/tests/fixtures": true,
+    "bin/compare.sh": true,
+    "npm run validate-values": true,
+    "npm run validate-templates": true
   }
 }
