@@ -28,6 +28,14 @@ jest.mock('fs', () => ({
   writeFileSync: jest.fn(),
 }))
 
+jest.mock('src/common/envalid', () => ({
+  env: {
+    isDev: false,
+    DISABLE_SYNC: false,
+    ENV_DIR: '/test/env',
+  },
+}))
+
 describe('Upgrading values', () => {
   const oldVersion = 1
   const mockValues = {
