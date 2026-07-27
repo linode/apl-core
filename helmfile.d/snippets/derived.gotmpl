@@ -240,11 +240,11 @@ environments:
             enabled: true
         databases:
           keycloak:
-            storageClass: {{ $v.databases.keycloak.storageClass | default $v.cluster.defaultStorageClass }}
+            storageClass: {{ $v.databases.keycloak | get "storageClass" "" | default $v.cluster.defaultStorageClass }}
           harbor:
-            storageClass: {{ $v.databases.harbor.storageClass | default $v.cluster.defaultStorageClass }}
+            storageClass: {{ $v.databases.harbor | get "storageClass" "" | default $v.cluster.defaultStorageClass }}
           gitea:
-            storageClass: {{ $v.databases.gitea.storageClass | default $v.cluster.defaultStorageClass }}
+            storageClass: {{ $v.databases.gitea | get "storageClass" "" | default $v.cluster.defaultStorageClass }}
         oidc: {}
         ingress:
           classes:
