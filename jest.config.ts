@@ -20,7 +20,7 @@ const config: Config.InitialOptions = {
   ],
   silent: false,
   testMatch: ['**/*.test.ts'],
-  verbose: true,
+  verbose: false,
 }
 
 export default config
