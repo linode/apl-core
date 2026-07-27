@@ -2,4 +2,4 @@ kind: AplVersion
 metadata:
     name: versions
 spec:
-    specVersion: 70
+    specVersion: 71
