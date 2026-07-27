@@ -3,7 +3,7 @@
 {{- $gdb := $v.databases.gitea }}
 {{- $obj := $v.obj.provider }}
 {{- $b := $v.platformBackups.database.gitea }}
-{{- $dbStorageClass := $gdb | get "storageClass" $v.cluster.defaultStorageClass }}
+{{- $dbStorageClass := $gdb.storageClass }}
 
 name: gitea-db
 storage:

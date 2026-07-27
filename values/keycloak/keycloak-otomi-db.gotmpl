@@ -3,7 +3,7 @@
 {{- $kdb := $v.databases.keycloak }}
 {{- $obj := $v.obj.provider }}
 {{- $b := $v.platformBackups.database.keycloak }}
-{{- $dbStorageClass := $kdb | get "storageClass" $v.cluster.defaultStorageClass }}
+{{- $dbStorageClass := $kdb.storageClass }}
 
 name: keycloak-db
 storage:

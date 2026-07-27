@@ -488,6 +488,12 @@ export const preservePvcStorageClassInRawValues = async (
 ): Promise<void> => {
   const d = terminal('preservePvcStorageClassInRawValues')
 
+  const parsedArgs = getParsedArgs()
+  if (parsedArgs?.dryRun || parsedArgs?.local || env.DISABLE_SYNC) {
+    d.info('Skipping PVC storageClass preservation in dry-run/local/dev mode')
+    return
+  }
+
   const clusterDefaultStorageClass = values?.cluster?.defaultStorageClass ?? ''
   const maybeSetRawValue = (path: string, pvcStorageClass?: string): void => {
     if (!pvcStorageClass) return
