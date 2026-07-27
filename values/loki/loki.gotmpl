@@ -276,6 +276,11 @@ deploymentMode: SingleBinary
 singleBinary:
   replicas: 1
 
+  {{- with $v.cluster | get "defaultStorageClass" nil }}
+  persistence:
+    storageClass: {{ . | quote }}
+  {{- end }}
+
   resources: {{ $l.resources.singleBinary | toYaml | nindent 4 }}
 
   podAnnotations:
