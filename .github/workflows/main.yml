@@ -67,7 +67,7 @@ jobs:
           build-args: |
             APPS_REVISION=${{ steps.establish-versions.outputs.APPS_REVISION }}
             VERSION=${{ steps.compute-version.outputs.version }}
-          tags: ${{ steps.establish-versions.outputs.TAG }}
+          tags: ${{ env.REPO }}:${{ steps.establish-versions.outputs.TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
