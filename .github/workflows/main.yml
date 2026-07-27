@@ -30,16 +30,16 @@ jobs:
         run: |
           tag=${GITHUB_REF##*/}
           echo "Creating tag: $tag"
-          echo "TAG=$tag" >> $GITHUB_OUTPUT
+          echo "TAG=$tag" >> "$GITHUB_OUTPUT"
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             revision=${{ env.COMMIT_SHA }}
             echo "Setting apps revision to: $revision"
-            echo "APPS_REVISION=$revision" >> $GITHUB_OUTPUT
+            echo "APPS_REVISION=$revision" >> "$GITHUB_OUTPUT"
           else
             echo "Leaving apps revision empty"
           fi
-          git config --global user.email $BOT_EMAIL
-          git config --global user.name $BOT_USERNAME
+          git config --global user.email "$BOT_EMAIL"
+          git config --global user.name "$BOT_USERNAME"
 
       - name: Checkout
         uses: actions/checkout@v6
