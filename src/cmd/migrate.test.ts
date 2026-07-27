@@ -446,6 +446,14 @@ describe('processDeletionEntry', () => {
 describe('preservePvcStorageClassInRawValues', () => {
   type PreservePvcStorageClassDeps = NonNullable<Parameters<typeof preservePvcStorageClassInRawValues>[1]>
 
+  const originalDisableSync = env.DISABLE_SYNC
+  beforeEach(() => {
+    env.DISABLE_SYNC = false
+  })
+  afterAll(() => {
+    env.DISABLE_SYNC = originalDisableSync
+  })
+
   const makeDeps = (overrides: Partial<PreservePvcStorageClassDeps> = {}): PreservePvcStorageClassDeps => ({
     readPvc: jest.fn(async (_namespace: string, _name: string) => undefined),
     listPvcs: jest.fn(async (_namespace: string, _labelSelector: string) => []),
