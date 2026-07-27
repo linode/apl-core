@@ -2,7 +2,13 @@ kind: AplApp
 metadata:
     name: prometheus
 spec:
-    _rawValues: {}
+    # _rawValues:
+    #     prometheus:
+    #         prometheusSpec:
+    #             storageSpec:
+    #                 volumeClaimTemplate:
+    #                     spec:
+    #                         storageClassName: linode-block-storage-retain
     disabledRules:
         - InfoInhibitor
         - PrometheusOperatorListErrors
@@ -51,7 +57,7 @@ spec:
                 memory: 32Mi
         prometheus:
             limits:
-                cpu: "3"
+                cpu: '3'
                 memory: 3Gi
             requests:
                 cpu: 100m
