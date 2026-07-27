@@ -1011,7 +1011,6 @@ environments:
           keycloak:
             imageName: null
             size: 5Gi
-            storageClass: ''
             walStorageSize: 5Gi
             replicas: 2
             recovery: {}
@@ -1040,7 +1039,6 @@ environments:
           harbor:
             imageName: null
             size: 5Gi
-            storageClass: ''
             walStorageSize: 5Gi
             replicas: 2
             coreDatabase: registry
@@ -1070,7 +1068,6 @@ environments:
           gitea:
             imageName: null
             size: 5Gi
-            storageClass: ''
             walStorageSize: 5Gi
             replicas: 2
             recovery: {}
