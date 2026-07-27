@@ -3,6 +3,11 @@ metadata:
     name: otomi
 spec:
     aiEnabled: true
+    git:
+        branch: test-branch
+        email: pipeline@cluster.local
+        repoUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git
+        username: otomi-admin
     globalPullSecret:
         username: otomi
     hasExternalDNS: true
