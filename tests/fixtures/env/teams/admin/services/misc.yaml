@@ -1,0 +1,12 @@
+kind: AplTeamService
+metadata:
+    name: misc
+    labels:
+        apl.io/teamId: admin
+spec:
+    cname:
+        domain: misc-admin.cname.com
+        tlsSecretName: hello-cert
+    namespace: misc
+    port: 80
+    useCname: true
