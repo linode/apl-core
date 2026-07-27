@@ -13,7 +13,6 @@ import {
   getApplications,
   getArgocdCoreAppManifest,
   getArgocdGitopsManifest,
-  mergeSyncOptions,
   removeGitOpsApps,
   stripOversizedLastAppliedAnnotations,
 } from './apply-as-apps'
@@ -688,25 +687,6 @@ describe('checkArgoCdController', () => {
 
     await expect(checkArgoCdController(mockApplications, [argocdRelease])).resolves.toBeUndefined()
     expect(mockRestartStatefulSet).not.toHaveBeenCalled()
-  })
-})
-
-describe('mergeSyncOptions', () => {
-  it('returns base options unchanged when patch provides none', () => {
-    expect(mergeSyncOptions(['ServerSideApply=true'])).toEqual(['ServerSideApply=true'])
-  })
-
-  it('preserves ServerSideApply=true when patch provides only different options', () => {
-    const result = mergeSyncOptions(['ServerSideApply=true'], ['CreateNamespace=true'])
-
-    expect(result).toContain('ServerSideApply=true')
-    expect(result).toContain('CreateNamespace=true')
-  })
-
-  it('deduplicates options that appear in both base and patch', () => {
-    const result = mergeSyncOptions(['ServerSideApply=true'], ['ServerSideApply=true', 'CreateNamespace=true'])
-
-    expect(result.filter((o) => o === 'ServerSideApply=true')).toHaveLength(1)
   })
 })
 
