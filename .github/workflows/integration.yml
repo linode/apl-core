@@ -25,7 +25,7 @@ on:
       domain_zone:
         description: 'Select Domain Zone'
         type: string
-        default: DNS-Integration
+        default: Random
       certificate:
         description: 'Select certificate issuer'
         type: string
@@ -92,7 +92,6 @@ on:
           - Zone-1
           - Zone-2
           - Random
-          - DNS-Integration
         default: Random
       certificate:
         type: choice
@@ -143,17 +142,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Print user input
+        env:
+          COMMIT_REF: ${{ github.event.pull_request.head.ref || github.ref }}
+          INSTALL_PROFILE: ${{ inputs.install_profile }}
+          LKE_TIER: ${{ inputs.lke_tier }}
+          HA_CONTROL_PLANE: ${{ inputs.ha_control_plane }}
+          KUBERNETES_VERSION: ${{ inputs.kubernetes_version }}
+          DOMAIN_ZONE: ${{ inputs.domain_zone }}
+          CERTIFICATE: ${{ inputs.certificate }}
+          IS_PRE_INSTALLED: ${{ inputs.is_pre_installed }}
+          DISABLE_ORCS: ${{ inputs.disableORCS }}
+          BYO_GIT: ${{ inputs.BYO_GIT }}
         run: |
           echo "ref: $COMMIT_REF"
-          echo 'install_profile: ${{ inputs.install_profile }}'
-          echo 'lke_tier: ${{ inputs.lke_tier }}'
-          echo 'ha_control_plane: ${{ inputs.ha_control_plane }}'
-          echo 'kubernetes_version: ${{ inputs.kubernetes_version }}'
-          echo 'domain_zone: ${{ inputs.domain_zone }}'
-          echo 'certificate: ${{ inputs.certificate }}'
-          echo 'is_pre_installed: ${{ inputs.is_pre_installed }}'
-          echo 'disableORCS: ${{ inputs.disableORCS }}'
-          echo 'BYO_GIT: ${{ inputs.BYO_GIT }}'
+          echo "install_profile: $INSTALL_PROFILE"
+          echo "lke_tier: $LKE_TIER"
+          echo "ha_control_plane: $HA_CONTROL_PLANE"
+          echo "kubernetes_version: $KUBERNETES_VERSION"
+          echo "domain_zone: $DOMAIN_ZONE"
+          echo "certificate: $CERTIFICATE"
+          echo "is_pre_installed: $IS_PRE_INSTALLED"
+          echo "disableORCS: $DISABLE_ORCS"
+          echo "BYO_GIT: $BYO_GIT"
 
       - name: Validate BYO_GIT secrets
         if: ${{ inputs.BYO_GIT }}
@@ -170,28 +180,47 @@ jobs:
     needs: preprocess-input
     name: Preprocess input variables for linode
     runs-on: ubuntu-latest
+    outputs:
+      linode-cluster-name: ${{ steps.determine-cluster-name.outputs.linode-cluster-name }}
+      apl-dns-domain: ${{ steps.determine-domain.outputs.apl-dns-domain }}
     steps:
-      - name: Install the Linode CLI
-        uses: linode/action-linode-cli@v1
-        with:
-          token: ${{ secrets.LINODE_TOKEN }}
-      - name: Check if cluster is running
+      - name: Determine cluster name
+        id: determine-cluster-name
+        env:
+          DOMAIN_ZONE: ${{ inputs.domain_zone }}
+          INSTALL_PROFILE: ${{ inputs.install_profile }}
+          ACTOR: ${{ github.actor }}
+          RUN_NUMBER: ${{ github.run_number }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
         run: |
-          case "${{ inputs.domain_zone }}" in
-            "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
-            "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
-            "Random") LINODE_CLUSTER_NAME=${{ github.actor }}-$RANDOM ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=apl-test-${{ inputs.install_profile }} ;;
+          case "$DOMAIN_ZONE" in
+            "Zone-1") LINODE_CLUSTER_NAME=$ACTOR-1 ;;
+            "Zone-2") LINODE_CLUSTER_NAME=$ACTOR-2 ;;
+            "Random") LINODE_CLUSTER_NAME=$ACTOR-$RUN_NUMBER-$RUN_ATTEMPT ;;
           esac
-          [[ ${{ inputs.install_profile }} == 'no-apl' ]] && LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME-no-apl
-          if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == "true" ]]; then
-            echo "An LKE cluster with the same name ($LINODE_CLUSTER_NAME) already exists."
-            echo "Visit https://cloud.linode.com/kubernetes/clusters to delete your cluster"
-            echo "Exiting workflow..."
-            exit 1
-          fi
+          [[ "$INSTALL_PROFILE" == 'no-apl' ]] && LINODE_CLUSTER_NAME="$LINODE_CLUSTER_NAME-no-apl"
+          echo "linode-cluster-name=$LINODE_CLUSTER_NAME" >> "$GITHUB_OUTPUT"
+          echo "LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME"
+      - name: Determine domain name
+        id: determine-domain
+        if: ${{ inputs.install_profile != 'no-apl' }}
+        env:
+          EDGEDNS_ZONE: ${{ vars.EDGEDNS_ZONE }}
+          DOMAIN_ZONE: ${{ inputs.domain_zone }}
+          DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
+          ACTOR: ${{ github.actor }}
+          LINODE_CLUSTER_NAME: ${{ steps.determine-cluster-name.outputs.linode-cluster-name }}
+        run: |
+          # Mapping of domain_zone to domain names
+          case "$DOMAIN_ZONE" in
+            "Zone-1") DOMAIN=$(jq -r --arg actor "$ACTOR" '.[$actor][0]' <<< "$DEV_DOMAINS") ;;
+            "Zone-2") DOMAIN=$(jq -r --arg actor "$ACTOR" '.[$actor][1]' <<< "$DEV_DOMAINS") ;;
+            "Random") DOMAIN="${LINODE_CLUSTER_NAME}.${EDGEDNS_ZONE}" ;;
+          esac
+          echo "apl-dns-domain=$DOMAIN" >> "$GITHUB_OUTPUT"
+          echo "DOMAIN=$DOMAIN"
 
-  run-integration-test-linode:
+  deploy-apl:
     name: Run integration test on linode cluster
     needs: preprocess-linode-input
     runs-on: ubuntu-latest
@@ -200,45 +229,27 @@ jobs:
         uses: linode/action-linode-cli@v1
         with:
           token: ${{ secrets.LINODE_TOKEN }}
-      - name: Set k8s cluster name
-        run: |
-          case "${{ inputs.domain_zone }}" in
-            "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
-            "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
-            "Random") LINODE_CLUSTER_NAME=${{ github.actor }}-$RANDOM ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=apl-test-${{ inputs.install_profile }} ;;
-          esac
-          [[ ${{ inputs.install_profile }} == 'no-apl' ]] && LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME-no-apl
-          echo LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME >> $GITHUB_ENV
-      - name: Determine domain name to use for scheduled integration test
+      - name: Check if cluster is running
         env:
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
-        if: ${{ inputs.domain_zone == 'DNS-Integration' && inputs.install_profile != 'no-apl'}}
+          LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
         run: |
-          RAND=$(openssl rand -hex 4)
-          DOMAIN="integration-${RAND}.${EDGEDNS_ZONE}"
-          echo "::add-mask::$DOMAIN"
-          echo DOMAIN=$DOMAIN >> $GITHUB_ENV
-      - name: Determine domain name
-        if: ${{ inputs.domain_zone != 'DNS-Integration' && inputs.install_profile != 'no-apl' }}
-        env:
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
-        run: |
-          # Mapping of domain_zone to domain names
-          case "${{ inputs.domain_zone }}" in
-            "Zone-1") DOMAIN=$(jq -r '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
-            "Zone-2") DOMAIN=$(jq -r '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
-            "Random") DOMAIN="$(openssl rand -hex 4)$(date +"%d%m%y").${EDGEDNS_ZONE}" ;;
-          esac
-
-          echo "::add-mask::$DOMAIN"
-          echo DOMAIN=$DOMAIN >> $GITHUB_ENV
+          if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == "true" ]]; then
+            echo "An LKE cluster with the same name ($LINODE_CLUSTER_NAME) already exists."
+            echo "Visit https://cloud.linode.com/kubernetes/clusters to delete your cluster"
+            echo "Exiting workflow..."
+            exit 1
+          fi
       - name: Create k8s cluster for testing
         env:
           LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
+          LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
+          LKE_TIER: ${{ inputs.lke_tier }}
+          HA_CONTROL_PLANE: ${{ inputs.ha_control_plane }}
+          LKE_VERSION: ${{ inputs.kubernetes_version }}
+          LINODE_TYPE: ${{ inputs.linode_types }}
         run: |
           args=()
-          if [[ '${{ env.LKE_TIER }}' == 'enterprise' ]]; then
+          if [[ "$LKE_TIER" == 'enterprise' ]]; then
             export LINODE_CLI_API_VERSION=v4beta
             args+=(--tier enterprise)
           else
@@ -248,8 +259,8 @@ jobs:
           CURRENT_IP=$(curl -sS https://ipv4.whatismyip.akamai.com/)
           echo "Current IP: $CURRENT_IP"
           args+=(--control_plane.acl.enabled true)
-          if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
-            IFS=',' read -ra acl_ips <<< '${{ env.LKE_CP_ACL_IPV4 }}'
+          if [[ -n "$LKE_CP_ACL_IPV4" ]]; then
+            IFS=',' read -ra acl_ips <<< "$LKE_CP_ACL_IPV4"
             for acl_ip in "${acl_ips[@]}"; do
               args+=(--control_plane.acl.addresses.ipv4 "$acl_ip")
             done
@@ -257,22 +268,29 @@ jobs:
           args+=(--control_plane.acl.addresses.ipv4 "$CURRENT_IP")
 
           linode-cli lke cluster-create \
-            --label ${{ env.LINODE_CLUSTER_NAME }} \
+            --label "$LINODE_CLUSTER_NAME" \
             --region nl-ams \
-            --k8s_version ${{ env.LKE_VERSION }} \
-            --node_pools.type ${{ inputs.linode_types }} \
+            --k8s_version "$LKE_VERSION" \
+            --node_pools.type "$LINODE_TYPE" \
             --node_pools.count 3 \
             --tags testing \
             --no-defaults \
             "${args[@]}"
       - name: Retrieve cluster id
-        run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
+        id: retrieve-cluster-id
+        env:
+          LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
+        run: |
+          LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -re --arg cluster_name "$LINODE_CLUSTER_NAME" 'map(select(.label == $cluster_name) | .id) | .[0]')
+          echo "linode-cluster-id=$LINODE_CLUSTER_ID" >> "$GITHUB_OUTPUT"
       - name: Wait for cluster to be ready
+        env:
+          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
         run: |
           echo "Waiting for the cluster to be active..."
 
           while :; do
-            rawOutput=$(linode-cli lke pools-list ${{ env.LINODE_CLUSTER_ID }} --json)
+            rawOutput=$(linode-cli lke pools-list "$LINODE_CLUSTER_ID" --json)
 
             allReady=$(echo "$rawOutput" | jq -r 'map(.nodes[] | .status == "ready") | all')
             echo "All nodes ready: $allReady"
@@ -285,31 +303,40 @@ jobs:
             sleep 30
           done
       - name: Save kubectl config with auth token
+        id: save-kubectl-config
         if: ${{ inputs.install_profile != 'no-apl' }}
+        env:
+          LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
         run: |
           echo "Waiting for kubeconfig..."
           while :; do
-            linode-cli get-kubeconfig --label "${{ env.LINODE_CLUSTER_NAME }}" 2> /dev/null && break
+            linode-cli get-kubeconfig --label "$LINODE_CLUSTER_NAME" 2> /dev/null && break
             echo "still waiting..."
             sleep 10
           done
-          echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
+          linode_cluster_context=$(kubectl config current-context)
+          echo "linode-cluster-context=$linode_cluster_context" >> "$GITHUB_OUTPUT"
       - name: Checkout
         if: ${{ inputs.install_profile != 'no-apl' }}
         uses: actions/checkout@v6
       - name: Set up Wiz
         if: ${{ inputs.install_profile != 'no-apl' && inputs.enableWiz }}
+        env:
+          LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
+          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
+          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+          WIZ_CLIENT_TOKEN: ${{ secrets.WIZ_CLIENT_TOKEN }}
         run: |
 
           # Use cluster information from environment variables
-          CLUSTER_NAME="${{ env.LINODE_CLUSTER_NAME }}"
-          CLUSTER_ID="${{ env.LINODE_CLUSTER_ID }}"
+          CLUSTER_NAME="$LINODE_CLUSTER_NAME"
+          CLUSTER_ID="$LINODE_CLUSTER_ID"
 
           echo "Setting up Wiz for cluster: $CLUSTER_NAME (ID: $CLUSTER_ID)"
 
           # Create YAML configuration files from templates
           KUB_INTEGRATION_PATH="./${CLUSTER_NAME}_kub_integration.yaml"
-          sed "s/__WIZ_CLIENT_ID__/${{ secrets.WIZ_CLIENT_ID }}/g; s/__WIZ_CLIENT_TOKEN__/${{ secrets.WIZ_CLIENT_TOKEN }}/g; s/<connectorName>/${CLUSTER_NAME}/g; s/<clusterExternalId>/${CLUSTER_ID}/g" .github/templates/wiz-kubernetes-integration.yaml > "$KUB_INTEGRATION_PATH"
+          sed "s/__WIZ_CLIENT_ID__/${WIZ_CLIENT_ID}/g; s/__WIZ_CLIENT_TOKEN__/${WIZ_CLIENT_TOKEN}/g; s/<connectorName>/${CLUSTER_NAME}/g; s/<clusterExternalId>/${CLUSTER_ID}/g" .github/templates/wiz-kubernetes-integration.yaml > "$KUB_INTEGRATION_PATH"
 
           NAMESPACE="wiz"
           # Add Helm repo for Wiz
@@ -323,112 +350,143 @@ jobs:
 
           echo "✅ Wiz deployment for cluster $CLUSTER_NAME completed."
       - name: APL install
+        id: apl-install
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
+          LKE_APL_FIREWALL_INBOUND_RULES: ${{ secrets.LKE_APL_FIREWALL_INBOUND_RULES }}
           EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
           EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
           EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
-          LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
-          LKE_APL_FIREWALL_INBOUND_RULES: ${{ secrets.LKE_APL_FIREWALL_INBOUND_RULES }}
           BYO_GIT_PAT: ${{ secrets.BYO_GIT_PAT }}
           BYO_GIT_URL: ${{ secrets.BYO_GIT_URL }}
+          DOMAIN: ${{ needs.preprocess-linode-input.outputs.apl-dns-domain }}
+          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
+          LINODE_CLUSTER_CONTEXT: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
+          LKE_TIER: ${{ inputs.lke_tier }}
+          INSTALL_PROFILE: ${{ inputs.install_profile }}
+          CERTIFICATE: ${{ inputs.certificate }}
+          IS_PRE_INSTALLED: ${{ inputs.is_pre_installed }}
+          DISABLE_ORCS: ${{ inputs.disableORCS }}
+          BYO_GIT: ${{ inputs.BYO_GIT }}
+          CACHE_REGISTRY: ${{ env.CACHE_REGISTRY }}
+          CACHE_REPO: ${{ env.CACHE_REPO }}
+          BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+          BOT_PULL_TOKEN: ${{ secrets.BOT_PULL_TOKEN }}
         run: |
           touch values.yaml
           adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
+          # Treat the admin password as sensitive information and mask it in the logs
+          echo "::add-mask::$adminPassword"
 
-          install_args=(otomi chart/apl --wait --wait-for-jobs --timeout 90m0s \
-            --values tests/integration/${{ inputs.install_profile }}.yaml \
-            --values values.yaml \
-            --set cluster.provider=linode \
-            --set cluster.linode.tier=${{ env.LKE_TIER }} \
-            --set cluster.name=aplinstall${{ env.LINODE_CLUSTER_ID }} \
-            --set cluster.k8sContext=${{ env.LINODE_CLUSTER_CONTEXT }} \
-            --set cluster.domainSuffix=${{ env.DOMAIN }} \
-            --set dns.domainFilters[0]=${{ env.DOMAIN }} \
-            --set dns.provider.akamai.clientSecret=${EDGEDNS_CLIENT_SECRET} \
-            --set dns.provider.akamai.host=${EDGEDNS_HOST} \
-            --set dns.provider.akamai.accessToken=${EDGEDNS_ACCESS_TOKEN} \
-            --set dns.provider.akamai.clientToken=${EDGEDNS_CLIENT_TOKEN} \
-            --set otomi.hasExternalDNS=true \
-            --set otomi.adminPassword=$adminPassword \
-            --set otomi.version=${GITHUB_REF##*/} \
-            --set apps.linode-cfw.enabled=true \
-            --set operator.image.repository=docker.io/linode/apl-core
+          install_args=(
+            "otomi" "chart/apl" "--wait" "--wait-for-jobs" "--timeout" "90m0s"
+            "--values" "tests/integration/${INSTALL_PROFILE}.yaml"
+            "--values" "values.yaml"
+            "--set" "cluster.provider=linode"
+            "--set" "cluster.linode.tier=${LKE_TIER}"
+            "--set" "cluster.name=aplinstall${LINODE_CLUSTER_ID}"
+            "--set" "cluster.k8sContext=${LINODE_CLUSTER_CONTEXT}"
+            "--set" "cluster.domainSuffix=${DOMAIN}"
+            "--set" "dns.domainFilters[0]=${DOMAIN}"
+            "--set" "dns.provider.akamai.clientSecret=${EDGEDNS_CLIENT_SECRET}"
+            "--set" "dns.provider.akamai.host=${EDGEDNS_HOST}"
+            "--set" "dns.provider.akamai.accessToken=${EDGEDNS_ACCESS_TOKEN}"
+            "--set" "dns.provider.akamai.clientToken=${EDGEDNS_CLIENT_TOKEN}"
+            "--set" "otomi.hasExternalDNS=true"
+            "--set" "otomi.adminPassword=$adminPassword"
+            "--set" "otomi.version=${GITHUB_REF##*/}"
+            "--set" "apps.linode-cfw.enabled=true"
+            "--set" "operator.image.repository=docker.io/linode/apl-core"
           )
 
-          [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
-          [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
-          [[ '${{ inputs.is_pre_installed }}' == 'true' ]] && install_args+=(--set otomi.isPreInstalled=true)
-          if [[ '${{ inputs.disableORCS }}' == 'true' ]]; then
+          [[ "$CERTIFICATE" == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
+          [[ "$CERTIFICATE" == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
+          [[ "$IS_PRE_INSTALLED" == 'true' ]] && install_args+=(--set otomi.isPreInstalled=true)
+          if [[ "$DISABLE_ORCS" == 'true' ]]; then
             install_args+=(--set otomi.useORCS=false)
             if [[ ! ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]]; then
               # If a pipeline installs APL from the semver tag then pull container image from DockerHub
               # Use cache registry otherwise
               kubectl create secret docker-registry reg-otomi-github \
-                --docker-server=${{ env.CACHE_REGISTRY }} \
-                --docker-username=${{ env.BOT_USERNAME }} \
-                --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
-              install_args+=(--set imageName=${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }} --set imagePullSecretNames[0]=reg-otomi-github)
+                --docker-server="$CACHE_REGISTRY" \
+                --docker-username="$BOT_USERNAME" \
+                --docker-password="$BOT_PULL_TOKEN"
+              install_args+=("--set" "imageName=${CACHE_REGISTRY}/${CACHE_REPO}" "--set" "imagePullSecretNames[0]=reg-otomi-github")
             fi
           fi
 
-          if [[ '${{ inputs.BYO_GIT }}' == 'true' ]]; then
+          if [[ "$BYO_GIT" == 'true' ]]; then
             install_args+=(--set otomi.git.repoUrl="$BYO_GIT_URL")
             install_args+=(--set otomi.git.password="$BYO_GIT_PAT")
             install_args+=(--set otomi.git.branch="$DOMAIN")
           fi
 
-          if [[ -n '${{ env.LKE_APL_FIREWALL_INBOUND_RULES }}' ]]; then
-            install_args+=(--set-json apps.linode-cfw._rawValues.firewall.inbound='${{ env.LKE_APL_FIREWALL_INBOUND_RULES }}')
+          if [[ -n "$LKE_APL_FIREWALL_INBOUND_RULES" ]]; then
+            install_args+=("--set-json" "apps.linode-cfw._rawValues.firewall.inbound=${LKE_APL_FIREWALL_INBOUND_RULES}")
           fi
 
           # Wait for KubeAPI to respond before attempting install
           echo "Checking Kubernetes API availability..."
           while true; do
-              kubectl get pods 2> /dev/null
-              if [[ "$?" = 0 ]]; then
-                 echo "Ok."
-                 break
-              else
-                 echo "Retrying in 5 seconds"
-                 sleep 5
-              fi
-          done
-
-          helm install "${install_args[@]}" &
-          HELM_PID=$!
-          sleep 120
-
-          # While helm is installing we can crete the wildcard dns record
-          while true; do
-              PUB_IP=$(kubectl get svc platform-istio -n istio-system -ojson | jq '.status.loadBalancer.ingress[0].ip' -r)
-              if [[ -n "$PUB_IP" ]]; then
-                echo "::add-mask::$PUB_IP"
-                echo PUB_IP=$PUB_IP >> $GITHUB_ENV
+              if kubectl get pods 2> /dev/null; then
+                echo "Ok."
                 break
               else
-                echo "Waiting for platform-istio IP..."
+                echo "Retrying in 5 seconds"
                 sleep 5
               fi
           done
 
+          helm install "${install_args[@]}"
+
+      - name: Get public IP address
+        id: get-public-ip
+        if: ${{ inputs.install_profile != 'no-apl' }}
+        env:
+          LINODE_CLUSTER_CONTEXT: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
+        run: |
+          kubectl config use-context "$LINODE_CLUSTER_CONTEXT"
+          # Wait for platform-istio service to receive an external IP
+          while true; do
+              sleep 30
+              PUB_IP=$(kubectl get svc platform-istio -n istio-system -ojson | jq '.status.loadBalancer.ingress[0].ip' -r)
+              if [[ -n "$PUB_IP" ]]; then
+                echo "apl-public-ip=$PUB_IP" >> "$GITHUB_OUTPUT"
+                break
+              else
+                echo "Waiting for platform-istio IP..."
+              fi
+          done
+      - name: Create DNS A record for wildcard domain
+        if: ${{ inputs.install_profile != 'no-apl' }}
+        env:
+          EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
+          EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
+          EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
+          EDGEDNS_ZONE: ${{ vars.EDGEDNS_ZONE }}
+          EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
+          DOMAIN: ${{ needs.preprocess-linode-input.outputs.apl-dns-domain }}
+          PUB_IP: ${{ steps.get-public-ip.outputs.apl-public-ip }}
+        run: |
           pip3 install edgegrid-python requests
-          python3 bin/edgedns_A_record.py create "*.${DOMAIN}" $PUB_IP || \
+          python3 bin/edgedns_A_record.py create "*.${DOMAIN}" "$PUB_IP" || \
             (echo "Will try to recreate it" && \
             python3 bin/edgedns_A_record.py delete "*.${DOMAIN}" && \
-            python3 bin/edgedns_A_record.py create "*.${DOMAIN}" $PUB_IP)
+            python3 bin/edgedns_A_record.py create "*.${DOMAIN}" "$PUB_IP")
 
-
-          wait $HELM_PID
-
-          if [[ -n '${{ env.LKE_CP_ACL_IPV4 }}' ]]; then
+      - name: Set control plane ACL to internal IPs
+        if: ${{ inputs.install_profile != 'no-apl' }}
+        env:
+          LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
+          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
+        run: |
+          if [[ -n "$LKE_CP_ACL_IPV4" ]]; then
             echo "Resetting ACL to internal IPs"
-            cluster_patch_args=(${{ env.LINODE_CLUSTER_ID }} --control_plane.acl.enabled true)
-            IFS=',' read -ra acl_ips <<< '${{ env.LKE_CP_ACL_IPV4 }}'
+            cluster_patch_args=("$LINODE_CLUSTER_ID" --control_plane.acl.enabled true)
+            IFS=',' read -ra acl_ips <<< "$LKE_CP_ACL_IPV4"
             for acl_ip in "${acl_ips[@]}"; do
               cluster_patch_args+=(--control_plane.acl.addresses.ipv4 "$acl_ip")
             done
@@ -446,17 +504,3 @@ jobs:
         if: failure()
         run: |
           kubectl logs -l app.kubernetes.io/name=apl-operator -n apl-operator --tail 150
-      - name: Remove the test cluster
-        if: ${{ always() && inputs.domain_zone == 'DNS-Integration' }}
-        run: |
-          linode-cli lke cluster-delete ${{ env.LINODE_CLUSTER_ID }}
-      - name: Delete Domain
-        if: ${{ always() && inputs.domain_zone == 'DNS-Integration' }}
-        env:
-          EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
-          EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
-          EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
-          EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
-        run: |
-          python3 bin/edgedns_A_record.py delete "*.${DOMAIN}"
