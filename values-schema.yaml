@@ -2943,6 +2943,8 @@ properties:
         properties:
           size:
             type: string
+          storageClass:
+            type: string
           walStorageSize:
             type: string
           resources:
@@ -2972,6 +2974,8 @@ properties:
         properties:
           size:
             type: string
+          storageClass:
+            type: string
           walStorageSize:
             type: string
           resources:
@@ -3000,6 +3004,8 @@ properties:
         title: gitea
         properties:
           size:
+            type: string
+          storageClass:
             type: string
           walStorageSize:
             type: string

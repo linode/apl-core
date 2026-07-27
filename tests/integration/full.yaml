@@ -50,6 +50,8 @@ apps:
     enabled: true
   cert-manager:
     issuer: custom-ca
+  gitea:
+    enabled: true
   grafana:
     enabled: true
   harbor:
@@ -71,6 +73,8 @@ apps:
   trivy:
     enabled: true
   kyverno:
+    enabled: true
+  kserve:
     enabled: true
   tekton:
     enabled: true
