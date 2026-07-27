@@ -238,13 +238,7 @@ environments:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           sealed-secrets:
             enabled: true
-        databases:
-          keycloak:
-            storageClass: {{ $v.databases.keycloak | get "storageClass" "" | default $v.cluster.defaultStorageClass }}
-          harbor:
-            storageClass: {{ $v.databases.harbor | get "storageClass" "" | default $v.cluster.defaultStorageClass }}
-          gitea:
-            storageClass: {{ $v.databases.gitea | get "storageClass" "" | default $v.cluster.defaultStorageClass }}
+
         oidc: {}
         ingress:
           classes:
