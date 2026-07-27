@@ -5,6 +5,11 @@ on:
       - 'releases/**'
     tags-ignore:
       - '*'
+    paths-ignore:
+      - 'docs/**'
+      - 'adr/**'
+      - '.vscode/**'
+      - '**.md'
   workflow_dispatch: ~
 env:
   REPO: linode/apl-core
