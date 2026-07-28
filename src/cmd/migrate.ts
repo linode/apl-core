@@ -808,9 +808,119 @@ const removeIngressNginxValues = async (values: Record<string, any>) => {
   }
 }
 
+const LAST_APPLIED_ANNOTATION = 'kubectl.kubernetes.io/last-applied-configuration'
+// The apiserver caps metadata.annotations at 262144 bytes in total. Anything holding a
+// last-applied-configuration this large is one CRD schema bump away from tipping over it, after
+// which *every* patch to that object fails. Well under the cap, well above an ordinary annotation.
+const LAST_APPLIED_SIZE_THRESHOLD = 100 * 1024
+
+const CRD_PARAMS = { group: 'apiextensions.k8s.io', version: 'v1', plural: 'customresourcedefinitions' }
+
+type AnnotatedObject = { metadata?: { name?: string; namespace?: string; annotations?: Record<string, string> } }
+type ObjectPage = { items?: AnnotatedObject[]; metadata?: { _continue?: string } }
+
+const listCrdPage = async (cont?: string): Promise<ObjectPage> =>
+  (await k8s.custom().listClusterCustomObject({ ...CRD_PARAMS, limit: 100, _continue: cont })) as ObjectPage
+
+const listConfigMapPage = async (cont?: string): Promise<ObjectPage> =>
+  (await k8s.core().listConfigMapForAllNamespaces({ limit: 100, _continue: cont })) as ObjectPage
+
+const removeCrdLastApplied = async (name: string): Promise<void> => {
+  await k8s.custom().patchClusterCustomObject(
+    {
+      ...CRD_PARAMS,
+      name,
+      body: [{ op: 'remove', path: `/metadata/annotations/${escapeJsonPointer(LAST_APPLIED_ANNOTATION)}` }],
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.JsonPatch),
+  )
+}
+
+const removeConfigMapLastApplied = async (namespace: string, name: string): Promise<void> => {
+  await k8s.core().patchNamespacedConfigMap(
+    {
+      namespace,
+      name,
+      body: [{ op: 'remove', path: `/metadata/annotations/${escapeJsonPointer(LAST_APPLIED_ANNOTATION)}` }],
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.JsonPatch),
+  )
+}
+
+// RFC 6901: '~' -> '~0', '/' -> '~1'. The annotation key contains slashes.
+export const escapeJsonPointer = (token: string): string => token.replace(/~/g, '~0').replace(/\//g, '~1')
+
+export const isOversized = (object: AnnotatedObject): boolean =>
+  (object.metadata?.annotations?.[LAST_APPLIED_ANNOTATION]?.length ?? 0) > LAST_APPLIED_SIZE_THRESHOLD
+
+/**
+ * Client-side apply writes the whole object into the last-applied-configuration annotation. For an
+ * object with a large embedded schema — kyverno/ESO/cnpg CRDs, grafana dashboard ConfigMaps — that
+ * runs 150-250KB and tips past the 262144-byte annotations cap, after which every subsequent patch
+ * to the object fails and the owning Application never reaches Synced.
+ *
+ * Core Applications sync with ServerSideApply, which never writes the annotation, so on those
+ * objects it is inert leftovers from before — but leftovers that still consume the budget. Strip
+ * them so clusters carrying the annotation from an earlier client-side apply stop wedging.
+ */
+export const stripOversizedLastAppliedConfiguration = async (
+  _values: Record<string, any>,
+  deps = {
+    listCrdPage,
+    listConfigMapPage,
+    removeCrdLastApplied,
+    removeConfigMapLastApplied,
+  },
+): Promise<void> => {
+  const d = terminal('stripOversizedLastAppliedConfiguration')
+
+  const parsedArgs = getParsedArgs()
+  if (parsedArgs?.dryRun || parsedArgs?.local || env.DISABLE_SYNC) {
+    d.info('Skipping last-applied-configuration cleanup in dry-run/local/dev mode')
+    return
+  }
+
+  let stripped = 0
+
+  const sweep = async (
+    kind: string,
+    listPage: (cont?: string) => Promise<ObjectPage>,
+    strip: (object: AnnotatedObject) => Promise<void>,
+  ): Promise<void> => {
+    let cont: string | undefined
+    do {
+      const page = await listPage(cont)
+      for (const object of page.items || []) {
+        if (!isOversized(object)) continue
+        const name = [object.metadata?.namespace, object.metadata?.name].filter(Boolean).join('/')
+        try {
+          await strip(object)
+          stripped += 1
+          d.info(`Removed oversized ${LAST_APPLIED_ANNOTATION} from ${kind} ${name}`)
+        } catch (error) {
+          // A 404/422 here means someone else already removed it — never fail the migration over it.
+          if (error instanceof ApiException && (error.code === 404 || error.code === 422)) continue
+          d.error(`Could not strip ${LAST_APPLIED_ANNOTATION} from ${kind} ${name}: ${error}`)
+        }
+      }
+      cont = page.metadata?._continue || undefined
+    } while (cont)
+  }
+
+  await sweep('CustomResourceDefinition', deps.listCrdPage, (object) =>
+    deps.removeCrdLastApplied(object.metadata!.name!),
+  )
+  await sweep('ConfigMap', deps.listConfigMapPage, (object) =>
+    deps.removeConfigMapLastApplied(object.metadata!.namespace!, object.metadata!.name!),
+  )
+
+  d.info(`Stripped ${stripped} oversized ${LAST_APPLIED_ANNOTATION} annotation(s)`)
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   valkeyAndOauth2RedisPVCMigration,
   preservePvcStorageClassInRawValues,
+  stripOversizedLastAppliedConfiguration,
   addLinodeNBAnnotations,
   sopsMigration,
   setIngressDefault,

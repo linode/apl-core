@@ -1,11 +1,13 @@
 import {
   applyChanges,
   Changes,
+  escapeJsonPointer,
   filterChanges,
   preservePvcStorageClassInRawValues,
   processDeletionEntry,
   removeSopsArtifacts,
   sopsMigration,
+  stripOversizedLastAppliedConfiguration,
 } from 'src/cmd/migrate'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
@@ -587,5 +589,94 @@ describe('preservePvcStorageClassInRawValues', () => {
     expect(values.databases.gitea.storageClass).toBe('preset-db-sc')
     expect(values.databases.harbor.storageClass).toBe('preset-db-sc')
     expect(values.databases.keycloak.storageClass).toBe('preset-db-sc')
+  })
+})
+
+describe('stripOversizedLastAppliedConfiguration', () => {
+  type StripDeps = NonNullable<Parameters<typeof stripOversizedLastAppliedConfiguration>[1]>
+
+  const annotation = 'kubectl.kubernetes.io/last-applied-configuration'
+  const oversized = { [annotation]: 'x'.repeat(200 * 1024) }
+  const small = { [annotation]: 'x'.repeat(1024) }
+
+  const makeDeps = (overrides: Partial<StripDeps> = {}): StripDeps => ({
+    listCrdPage: jest.fn(async () => ({ items: [] })),
+    listConfigMapPage: jest.fn(async () => ({ items: [] })),
+    removeCrdLastApplied: jest.fn(async () => {}),
+    removeConfigMapLastApplied: jest.fn(async () => {}),
+    ...overrides,
+  })
+
+  it('should strip the annotation only from objects over the threshold', async () => {
+    const deps = makeDeps({
+      listCrdPage: jest.fn(async () => ({
+        items: [
+          { metadata: { name: 'clusterpolicies.kyverno.io', annotations: oversized } },
+          { metadata: { name: 'small.example.io', annotations: small } },
+          { metadata: { name: 'unannotated.example.io' } },
+        ],
+      })),
+      listConfigMapPage: jest.fn(async () => ({
+        items: [
+          { metadata: { name: 'grafana-dashboards-k8s-admin', namespace: 'grafana', annotations: oversized } },
+          { metadata: { name: 'ordinary', namespace: 'grafana', annotations: small } },
+        ],
+      })),
+    })
+
+    await stripOversizedLastAppliedConfiguration({}, deps)
+
+    expect(deps.removeCrdLastApplied).toHaveBeenCalledTimes(1)
+    expect(deps.removeCrdLastApplied).toHaveBeenCalledWith('clusterpolicies.kyverno.io')
+    expect(deps.removeConfigMapLastApplied).toHaveBeenCalledTimes(1)
+    expect(deps.removeConfigMapLastApplied).toHaveBeenCalledWith('grafana', 'grafana-dashboards-k8s-admin')
+  })
+
+  it('should follow pagination until the continue token is exhausted', async () => {
+    const listCrdPage = jest.fn(async (cont?: string) =>
+      cont === 'page-2'
+        ? { items: [{ metadata: { name: 'second.example.io', annotations: oversized } }] }
+        : {
+            items: [{ metadata: { name: 'first.example.io', annotations: oversized } }],
+            metadata: { _continue: 'page-2' },
+          },
+    )
+
+    const deps = makeDeps({ listCrdPage })
+    await stripOversizedLastAppliedConfiguration({}, deps)
+
+    expect(listCrdPage).toHaveBeenCalledTimes(2)
+    expect(deps.removeCrdLastApplied).toHaveBeenCalledWith('first.example.io')
+    expect(deps.removeCrdLastApplied).toHaveBeenCalledWith('second.example.io')
+  })
+
+  it('should keep sweeping when one object cannot be patched', async () => {
+    const deps = makeDeps({
+      listCrdPage: jest.fn(async () => ({
+        items: [
+          { metadata: { name: 'fails.example.io', annotations: oversized } },
+          { metadata: { name: 'succeeds.example.io', annotations: oversized } },
+        ],
+      })),
+      removeCrdLastApplied: jest.fn(async (name: string) => {
+        if (name === 'fails.example.io') throw new Error('boom')
+      }),
+    })
+
+    await expect(stripOversizedLastAppliedConfiguration({}, deps)).resolves.toBeUndefined()
+
+    expect(deps.removeCrdLastApplied).toHaveBeenCalledWith('succeeds.example.io')
+  })
+})
+
+describe('escapeJsonPointer', () => {
+  it('should escape the slashes in the annotation key per RFC 6901', () => {
+    expect(escapeJsonPointer('kubectl.kubernetes.io/last-applied-configuration')).toBe(
+      'kubectl.kubernetes.io~1last-applied-configuration',
+    )
+  })
+
+  it('should escape tildes before slashes', () => {
+    expect(escapeJsonPointer('a~b/c')).toBe('a~0b~1c')
   })
 })
