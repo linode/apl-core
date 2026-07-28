@@ -1,6 +1,8 @@
 {{- $kms := .Values.kms | default dict }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
 {{- $skipDeployment := .Values.installation.skipOperatorDeployment }}
+{{- $readiness := .Values.operator.readiness | default dict }}
+{{- $gateOnInstall := ne $readiness.gateOnInstallationComplete false }}
 {{- if not $skipDeployment }}
 apiVersion: apps/v1
 kind: Deployment
@@ -10,6 +12,11 @@ metadata:
   labels: {{- include "apl-operator.labels" . | nindent 4 }}
 spec:
   replicas: 1
+  # Installing the platform takes considerably longer than the 600s default, and
+  # with the readinessProbe gated on convergence the rollout stays Progressing
+  # for that whole window. Without this, `kubectl rollout status` reports
+  # ProgressDeadlineExceeded on a perfectly healthy first install.
+  progressDeadlineSeconds: {{ $readiness.progressDeadlineSeconds | default 3600 }}
   selector:
     matchLabels: {{- include "apl-operator.selectorLabels" . | nindent 6 }}
   strategy:
@@ -90,11 +97,25 @@ spec:
             failureThreshold: 3
           readinessProbe:
             exec:
+              {{- if $gateOnInstall }}
+              # Convergence signal: /tmp/ready is written by the operator once the
+              # platform installation reaches the 'completed' state, so the
+              # Deployment only goes Available when the helmfile pipeline has
+              # actually converged. This is what makes `helm install --wait` and
+              # `kubectl wait --for=condition=Available` usable as bootstrap gates.
+              # NOTE: a first install takes 10-15 minutes — size --timeout accordingly.
+              command: ["/bin/sh", "-c", "test -f /tmp/ready"]
+              {{- else }}
+              # Liveness-equivalent readiness: reports Ready as soon as the operator
+              # process is up, long before the platform has converged.
               command: ["/bin/sh", "-c", "pgrep -f 'apl-operator' > /dev/null"]
+              {{- end }}
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
-            failureThreshold: 3
+            # Readiness latches once installation completes; a transient probe
+            # failure should not take the Deployment out of Available.
+            failureThreshold: {{ $readiness.failureThreshold | default 3 }}
       volumes:
         - name: values-secret
           secret:

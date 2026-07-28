@@ -39,6 +39,40 @@ export function updateHeartbeatFile(): void {
   writeFileSync('/tmp/heartbeat', '')
 }
 
+/**
+ * Marker file that signals platform installation has completed. The operator
+ * readinessProbe gates on its existence, so the apl-operator Deployment only
+ * becomes Available once the helmfile pipeline has actually converged — not
+ * merely once the operator process is up. That makes `helm install --wait` and
+ * `kubectl wait --for=condition=Available deployment/apl-operator` meaningful
+ * gates for bootstrap automation.
+ *
+ * The marker lives on the pod's /tmp emptyDir, so it is cleared on every
+ * restart and re-created as soon as the operator re-confirms the installation
+ * status from the apl-installation-status ConfigMap.
+ */
+export const READINESS_FILE = '/tmp/ready'
+
+/**
+ * Writes the readiness marker. Called once installation has reached the
+ * 'completed' state — including on restarts of an already-installed cluster.
+ * Readiness latches: it is intentionally NOT cleared while a subsequent apply
+ * runs, because steady-state reconcile loops must not flap the Deployment's
+ * Available condition. Per-apply status lives in the apl-operator-state
+ * ConfigMap instead.
+ */
+export function markInstallationComplete(filePath: string = READINESS_FILE): void {
+  const d = terminal('operator:k8s:markInstallationComplete')
+  try {
+    writeFileSync(filePath, new Date().toISOString())
+    d.info(`Installation complete, wrote readiness marker ${filePath}`)
+  } catch (error) {
+    // Deliberately non-fatal: a missing marker keeps the pod NotReady, which is
+    // the safe direction — it never reports convergence that did not happen.
+    d.warn(`Failed to write readiness marker ${filePath}:`, getErrorMessage(error))
+  }
+}
+
 export async function updateApplyState(
   state: ApplyState,
   namespace: string = APL_OPERATOR_NS,

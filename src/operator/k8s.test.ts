@@ -1,5 +1,8 @@
-import { ApplyState, updateApplyState } from './k8s'
+import { ApplyState, markInstallationComplete, READINESS_FILE, updateApplyState } from './k8s'
 import { CoreV1Api, ApiException } from '@kubernetes/client-node'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
 
 jest.mock('@kubernetes/client-node', () => {
   const mocks = {
@@ -38,6 +41,7 @@ jest.mock('../common/debug', () => ({
   terminal: jest.fn().mockImplementation(() => ({
     info: jest.fn(),
     error: jest.fn(),
+    warn: jest.fn(),
   })),
 }))
 
@@ -171,5 +175,46 @@ describe('updateApplyState', () => {
     await updateApplyState(testState, testNamespace, testConfigMapName)
 
     expect(mockCoreV1Api.createNamespacedConfigMap).not.toHaveBeenCalled()
+  })
+})
+
+describe('markInstallationComplete', () => {
+  let workDir: string
+
+  beforeEach(() => {
+    workDir = mkdtempSync(join(tmpdir(), 'apl-readiness-'))
+  })
+
+  afterEach(() => {
+    rmSync(workDir, { recursive: true, force: true })
+  })
+
+  test('defaults to the path the readinessProbe checks', () => {
+    expect(READINESS_FILE).toBe('/tmp/ready')
+  })
+
+  test('writes the readiness marker with a timestamp', () => {
+    const marker = join(workDir, 'ready')
+
+    markInstallationComplete(marker)
+
+    expect(existsSync(marker)).toBe(true)
+    expect(Date.parse(readFileSync(marker, 'utf8'))).not.toBeNaN()
+  })
+
+  test('is idempotent — a restart of an installed cluster re-marks readiness', () => {
+    const marker = join(workDir, 'ready')
+
+    markInstallationComplete(marker)
+    markInstallationComplete(marker)
+
+    expect(existsSync(marker)).toBe(true)
+  })
+
+  test('never throws when the marker cannot be written, leaving the pod NotReady', () => {
+    const unwritable = join(workDir, 'does', 'not', 'exist', 'ready')
+
+    expect(() => markInstallationComplete(unwritable)).not.toThrow()
+    expect(existsSync(unwritable)).toBe(false)
   })
 })

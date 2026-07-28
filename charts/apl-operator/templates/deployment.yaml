@@ -73,6 +73,22 @@ spec:
             periodSeconds: 60
             failureThreshold: 3
             timeoutSeconds: 10
+          {{- if ne (.Values.operator.readiness | default dict).gateOnInstallationComplete false }}
+          # /tmp/ready is written by the operator once the platform installation
+          # reaches the 'completed' state — the Deployment reports Available only
+          # after the helmfile pipeline has converged, not merely once the process
+          # is up. Readiness latches, so steady-state reconciles do not flap it.
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test -f /tmp/ready"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:

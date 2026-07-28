@@ -473,6 +473,71 @@ Shared by both loops with trigger-specific variations:
 8. Update apply state to 'succeeded' or 'failed'
 9. Release lock (`isApplying = false`)
 
+## Readiness and Convergence Contract
+
+Bootstrap automation needs a machine-checkable answer to "is the platform installed
+yet?". The operator exposes it through the readiness of its own Deployment.
+
+### The gate
+
+The operator writes `/tmp/ready` (`markInstallationComplete()`) at exactly one point:
+after the installation phase resolves to `completed` — whether that came from a fresh
+install, a recovery install, or a restart on an already-installed cluster. The
+`readinessProbe` on the apl-operator Deployment tests for that file, so:
+
+```bash
+# blocks until the helmfile pipeline has actually converged
+kubectl wait --for=condition=Available deployment/apl-operator -n apl-operator --timeout=30m
+
+# same signal, via helm
+helm install apl … --wait --timeout 30m
+```
+
+Three properties are deliberate:
+
+- **It latches.** Readiness is never cleared while a later apply runs. The reconcile
+  loop applies every ~5 minutes in steady state; flipping the Deployment out of
+  `Available` on each pass would make the condition useless as a gate. Per-apply
+  status is reported through the `apl-operator-state` ConfigMap instead (below).
+- **It fails closed.** If the marker cannot be written, or installation keeps
+  retrying, the pod stays NotReady. The signal never claims a convergence that did
+  not happen — `--wait` times out loudly rather than returning early.
+- **A first install takes 10-15 minutes.** Size `--timeout` accordingly; the
+  Deployment's `progressDeadlineSeconds` is raised to 3600 so `kubectl rollout
+  status` does not report `ProgressDeadlineExceeded` on a healthy install.
+
+Set `operator.readiness.gateOnInstallationComplete=false` to restore the previous
+behaviour, where readiness only reflected that the operator process was running.
+
+### Introspection
+
+For phase detail rather than a binary gate, read the ConfigMaps in the table below:
+
+```bash
+# installation phase: pending | in-progress | completed | failed (+ attempt, timestamp)
+kubectl get cm apl-installation-status -n apl-operator -o jsonpath='{.data.status}'
+
+# last apply: commitHash, status, timestamp, trigger, errorMessage
+kubectl get cm apl-operator-state -n apl-operator -o jsonpath='{.data.state}'
+```
+
+`apl-operator-state.commitHash` is the answer to "did the operator apply *my* commit
+yet?" — poll for `status: succeeded` at the revision you pushed.
+
+### What this is not
+
+The Deployment gate covers the operator's own pipeline: essential manifests, CRDs,
+`stage=prep`, `app=core`, and the ArgoCD Applications for the remaining apps. Apps
+that ArgoCD syncs afterwards report health through ArgoCD, not through this gate.
+
+An end-to-end smoke check that the platform is externally serving is
+`https://auth.<domainSuffix>/ready` (oauth2-proxy behind the ingress). It exercises
+DNS, ingress-nginx, the TLS certificate and the auth chain, which the in-cluster
+gate does not. It is complementary, not a substitute: it needs public DNS and a
+trusted certificate, it cannot tell you *which* revision of your values converged,
+and a non-200 cannot distinguish "platform not ready" from a DNS or certificate
+problem.
+
 ## Kubernetes Resources
 
 ### ConfigMaps
