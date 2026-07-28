@@ -82,7 +82,10 @@ extraInitContainers:
     image: curlimages/curl:latest
     {{- end }}
     command: ["/bin/sh","-c"]
-    args: ["while [ $(curl -sw '%{http_code}' {{ $v._derived.oidcBaseUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak OIDC Issuer URL'; done"]
+    # Polls the backchannel URL, not the public issuer: this container is sidecar-less, so it can
+    # neither resolve the keycloak ServiceEntry host nor trust an Otomi-issued cert. Both reach the
+    # same realm, so the gate is unchanged — only the route is.
+    args: ["while [ $(curl -sw '%{http_code}' {{ $v._derived.oidcBaseUrlBackchannel }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak OIDC Issuer URL'; done"]
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 initContainers:
