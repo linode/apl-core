@@ -819,7 +819,45 @@ export async function setArgoCdAppSync(
   )
 }
 
-export const createArgoCdRedisSecret = async (values: Record<string, any>): Promise<void> => {
+// argocd-redis runs `redis-server --requirepass $(REDIS_PASSWORD)`, so the password is baked into
+// the process at pod start and never re-read. Its clients (repo-server, application-controller,
+// server) read the same Secret key into an env var, also at their own start. Rewriting the Secret
+// under a running redis pod therefore splits the two: redis keeps requiring the old password while
+// any client that restarts afterwards presents the new one, and every Application flips to
+// Unknown/ComparisonError (WRONGPASS) until redis is restarted by hand.
+export const ARGOCD_REDIS_RESTART_TARGETS: Array<{ kind: 'deployment' | 'statefulset'; name: string }> = [
+  { kind: 'deployment', name: 'argocd-redis' },
+  { kind: 'deployment', name: 'argocd-server' },
+  { kind: 'deployment', name: 'argocd-repo-server' },
+  { kind: 'statefulset', name: 'argocd-application-controller' },
+  { kind: 'deployment', name: 'argocd-application-controller' },
+]
+
+export const restartArgoCdRedisConsumers = async (
+  namespace: string,
+  deps = { restartDeployment, restartStatefulSet },
+): Promise<void> => {
+  const d = terminal('common:k8s:restartArgoCdRedisConsumers')
+  for (const target of ARGOCD_REDIS_RESTART_TARGETS) {
+    try {
+      if (target.kind === 'deployment') await deps.restartDeployment(target.name, namespace)
+      else await deps.restartStatefulSet(target.name, namespace)
+      d.info(`Restarted ${target.kind}/${target.name} after redis password change`)
+    } catch (error) {
+      // Not every target exists in every topology — a missing one is not a failure.
+      if (error instanceof ApiException && error.code === 404) {
+        d.debug(`Could not restart ${target.kind}/${target.name}: not found`)
+        continue
+      }
+      d.warn(`Could not restart ${target.kind}/${target.name}:`, error)
+    }
+  }
+}
+
+export const createArgoCdRedisSecret = async (
+  values: Record<string, any>,
+  deps = { getK8sSecret, restartArgoCdRedisConsumers },
+): Promise<void> => {
   const d = terminal('common:k8s:createArgoCdRedisSecret')
   const argocdNamespace = 'argocd'
   const secretName = 'argocd-redis'
@@ -830,6 +868,11 @@ export const createArgoCdRedisSecret = async (values: Record<string, any>): Prom
     d.warn('apps.argocd.redisPassword is missing, skipping argocd-redis reconciliation')
     return
   }
+
+  // Read before writing so the restart below is limited to an actual rotation. This runs on every
+  // install, and restarting the whole Argo stack on an unchanged password would be its own outage.
+  const existingSecret = await deps.getK8sSecret(secretName, argocdNamespace).catch(() => undefined)
+  const passwordChanged = existingSecret !== undefined && existingSecret.auth !== redisPassword
 
   try {
     await k8s.object().patch(
@@ -878,6 +921,11 @@ export const createArgoCdRedisSecret = async (values: Record<string, any>): Prom
     if (!(error instanceof ApiException && error.code === 409)) throw error
     d.error(`Failed to patch Secret ${secretName} with server-side apply:`, error)
     throw error
+  }
+
+  if (passwordChanged) {
+    d.info(`Password of Secret ${secretName} changed, restarting redis and its consumers`)
+    await deps.restartArgoCdRedisConsumers(argocdNamespace)
   }
 }
 
