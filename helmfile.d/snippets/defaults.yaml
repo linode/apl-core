@@ -960,6 +960,8 @@ environments:
                   memory: 1Gi
             _rawValues: {}
           external-secrets:
+            networkPolicies:
+              enabled: false
             resources:
               operator:
                 requests:
