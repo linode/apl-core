@@ -2897,6 +2897,7 @@ properties:
                 type: string
                 description: The ID of the access key
                 $ref: '#/definitions/wordCharacterPattern'
+                x-secret: ''
               secretAccessKey:
                 type: string
                 description: The secret of the access key
