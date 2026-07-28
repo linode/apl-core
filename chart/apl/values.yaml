@@ -136,3 +136,12 @@ installation:
   mode: standard
   # Skip deployment of the operator
   skipOperatorDeployment: false
+  ## Create the namespaces the platform needs (apl-operator, otomi, apl-secrets).
+  ## Set to false when they are created out-of-band — bootstrap tooling often has to create them
+  ## first to land CRDs, StorageClasses or NetworkPolicies ahead of the operator, and helm refuses
+  ## to adopt a namespace it does not already own ("invalid ownership metadata").
+  ## When disabling this, create the namespaces with the labels this chart would have set:
+  ##   kubernetes.io/metadata.name: <name>
+  ##   name: <name>
+  ## The platform's NetworkPolicies select namespaces by the `name` label.
+  createNamespaces: true
