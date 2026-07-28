@@ -2,7 +2,6 @@
 import { fixupPluginRules } from '@eslint/compat'
 import pluginTs from '@typescript-eslint/eslint-plugin'
 import parserTs from '@typescript-eslint/parser'
-import pluginImport from 'eslint-plugin-import'
 import pluginUnused from 'eslint-plugin-unused-imports'
 import pluginPrettier from 'eslint-plugin-prettier'
 import globals from 'globals'
@@ -34,18 +33,8 @@ export default defineConfig([
     },
     plugins: {
       '@typescript-eslint': fixupPluginRules(pluginTs),
-      import: fixupPluginRules(pluginImport),
       'unused-imports': fixupPluginRules(pluginUnused),
       prettier: fixupPluginRules(pluginPrettier),
-    },
-    settings: {
-      'import/resolver': {
-        node: {
-          extensions: ['.js', '.ts'],
-          paths: ['src'],
-        },
-        typescript: {},
-      },
     },
     rules: {
       // TypeScript rules
@@ -73,14 +62,11 @@ export default defineConfig([
         },
       ],
       '@typescript-eslint/no-use-before-define': 'off',
+      '@typescript-eslint/no-require-imports': 'error',
       '@typescript-eslint/restrict-template-expressions': 'off',
 
       // General rules
       'func-names': 'off',
-      'import/no-commonjs': 'error',
-      'import/no-extraneous-dependencies': 'off',
-      'import/extensions': 'off',
-      'import/prefer-default-export': 'off',
       'eol-last': ['error', 'always'],
       'func-style': ['off', 'expression'],
       'no-console': 'off',
@@ -109,6 +95,7 @@ export default defineConfig([
   {
     files: ['**/*.test.ts', '**/stubs/**/*.ts'],
     rules: {
+      '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
