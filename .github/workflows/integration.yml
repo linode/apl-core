@@ -318,7 +318,7 @@ jobs:
           echo "linode-cluster-context=$linode_cluster_context" >> "$GITHUB_OUTPUT"
       - name: Checkout
         if: ${{ inputs.install_profile != 'no-apl' }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up Wiz
         if: ${{ inputs.install_profile != 'no-apl' && inputs.enableWiz }}
         env:
