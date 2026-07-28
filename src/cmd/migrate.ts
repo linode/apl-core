@@ -246,6 +246,7 @@ export const setDeep = async (obj: Record<string, any>, path: string, tmplStr: s
 }
 
 const bulkAddition = (path: string, values: any, filePath: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const val = require(filePath)
   setAtPath(path, values, val)
 }
