@@ -1,0 +1,47 @@
+{{- if .Values.netpols.harborDb }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: harbor-db-platform-policy
+  namespace: harbor
+  labels:
+    {{- include "apl-network-policies.labels" . | nindent 4 }}
+    app: harbor
+spec:
+  # Scoped to the Harbor CloudNativePG instances rather than the whole harbor namespace: Harbor has
+  # a wide component surface (core, jobservice, registry, trivy, exporter, redis) and a
+  # namespace-wide Ingress policy would have to enumerate all of it correctly or take the registry
+  # down. The database is where the documented default-deny gap actually is.
+  podSelector:
+    matchLabels:
+      cnpg.io/cluster: harbor-otomi-db
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow the CloudNativePG operator to poll instance status (8000) and metrics (9187).
+    # Without this the operator cannot read instance status, the Harbor Postgres replica never
+    # starts, and the stack stalls on Instance Status Extraction Error → ClusterIsNotReady →
+    # Degraded — with nothing in the symptom pointing at a NetworkPolicy.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: cnpg-system
+    # Allow the Harbor components (core, jobservice, registry, exporter, trivy) to reach Postgres,
+    # and the instances to reach each other for replication.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: harbor
+    # Allow monitoring access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: po-prometheus
+      ports:
+        - protocol: TCP
+          port: 9187
+{{- end }}
