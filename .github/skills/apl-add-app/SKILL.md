@@ -33,8 +33,8 @@ Checklist:
 - [ ] Always add namespace entry in core.yaml.
 - [ ] Add empty defaults entry in helmfile.d/snippets/defaults.yaml in alphabetical order.
 - [ ] Create values/<name>/<name>.gotmpl.
-- [ ] Add tests fixture app file in tests/fixtures/env/apps/<name>.yaml.
-- [ ] Add corresponding app entries in tests/integration/\*.yaml.
+- [ ] Add tests fixture app file in tests/fixtures/env/apps/<name>.yaml with enabled: true.
+- [ ] Add corresponding app entries in tests/integration/\*.yaml with enabled: false.
 - [ ] If public exposure is needed, run the apl-add-app-ingressskill afterward.
 - [ ] Run schema and template-diff checks.
 - [ ] Summarize generated diffs and touched files.
