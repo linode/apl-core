@@ -28,6 +28,7 @@ jest.mock('../common/debug', () => ({
 }))
 
 jest.mock('fs', () => ({
+  ...jest.requireActual('fs'),
   existsSync: jest.fn(),
 }))
 
