@@ -43,8 +43,8 @@
   "description": "Otomi Core is an opinionated stack of Kubernetes apps and configurations. Part of Otomi Container Platform.",
   "devDependencies": {
     "@babel/core": "^8.0.1",
-    "@babel/preset-env": "^7.29.7",
-    "@babel/preset-typescript": "^7.29.7",
+    "@babel/preset-env": "^8.0.2",
+    "@babel/preset-typescript": "^8.0.1",
     "@commitlint/cli": "21.2.1",
     "@commitlint/config-conventional": "21.2.0",
     "@eslint/compat": "^2.1.0",
@@ -92,7 +92,6 @@
     "prettier": "3.9.6",
     "semantic-release": "^25.0.8",
     "standard-version": "9.5.0",
-    "ts-jest": "^29.4.12",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.9.1",
     "tsconfig-paths": "4.2.0",
