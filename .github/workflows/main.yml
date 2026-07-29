@@ -34,10 +34,11 @@ jobs:
       - name: Set env
         id: establish-versions
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            tag="pr-${{ github.event.pull_request.number }}"
+          if [[ "$SHOULD_PUSH" == "true" ]]; then
+            # Docker tags allow only [a-zA-Z0-9_.-]; branch names (e.g. "feature/foo") may not, so sanitize.
+            tag=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9_.-]/-/g')
           else
-            tag="${{ github.ref_name }}"
+            tag="pr-${{ github.event.pull_request.number }}"
           fi
           echo "Creating tag: $tag"
           echo "TAG=$tag" >> "$GITHUB_OUTPUT"
