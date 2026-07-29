@@ -108,9 +108,10 @@ function insertSortedBlock(
   return out
 }
 
-function findHelmfileForRelease(helmfileDir: string, releaseName: string): string {
+export function findHelmfileForRelease(helmfileDir: string, releaseName: string): string {
   const files = fs.readdirSync(helmfileDir).filter((f) => f.endsWith('.yaml') || f.endsWith('.gotmpl'))
-  const rx = new RegExp(`^\\s*-\\s+name:\\s+${releaseName}\\s*$`, 'm')
+  const escapedReleaseName = releaseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const rx = new RegExp(`^\\s*-\\s+name:\\s+${escapedReleaseName}\\s*$`, 'm')
   const matches = files.filter((file) => rx.test(fs.readFileSync(path.join(helmfileDir, file), 'utf8')))
 
   if (matches.length === 0) {
@@ -315,10 +316,6 @@ export function ensurePodAuthLabels(valuesFile: string, name: string): void {
   }
 
   const content = fs.readFileSync(valuesFile, 'utf8')
-  if (content.includes('otomi.io/auth:') && content.includes('otomi.io/auth-policy:')) {
-    console.log(`values/${name}/${name}.gotmpl already contains auth pod labels`)
-    return
-  }
 
   const labelsBlock = ['podLabels:', '  otomi.io/auth: platform', '  otomi.io/auth-policy: platform']
   const trimmed = content.trim()
@@ -341,19 +338,32 @@ export function ensurePodAuthLabels(valuesFile: string, name: string): void {
       return lines.length
     })()
 
-    const hasAuth = lines.slice(podLabelsIdx + 1, insertAt).some((line) => line.trim().startsWith('otomi.io/auth:'))
-    const hasAuthPolicy = lines.slice(podLabelsIdx + 1, insertAt).some((line) => line.trim().startsWith('otomi.io/auth-policy:'))
+    const blockLines = lines.slice(podLabelsIdx + 1, insertAt)
+    const authIdx = blockLines.findIndex((line) => line.trim().startsWith('otomi.io/auth:'))
+    const authPolicyIdx = blockLines.findIndex((line) => line.trim().startsWith('otomi.io/auth-policy:'))
 
-    const toInsert: string[] = []
-    if (!hasAuth) toInsert.push('  otomi.io/auth: platform')
-    if (!hasAuthPolicy) toInsert.push('  otomi.io/auth-policy: platform')
+    const authCorrect = authIdx >= 0 && blockLines[authIdx].trim() === 'otomi.io/auth: platform'
+    const authPolicyCorrect = authPolicyIdx >= 0 && blockLines[authPolicyIdx].trim() === 'otomi.io/auth-policy: platform'
 
-    if (toInsert.length === 0) {
+    if (authCorrect && authPolicyCorrect) {
       console.log(`values/${name}/${name}.gotmpl already contains auth pod labels`)
       return
     }
 
-    lines.splice(insertAt, 0, ...toInsert)
+    const updatedBlock = [...blockLines]
+    if (authIdx >= 0) {
+      updatedBlock[authIdx] = '  otomi.io/auth: platform'
+    } else {
+      updatedBlock.push('  otomi.io/auth: platform')
+    }
+    const updatedAuthPolicyIdx = updatedBlock.findIndex((line) => line.trim().startsWith('otomi.io/auth-policy:'))
+    if (updatedAuthPolicyIdx >= 0) {
+      updatedBlock[updatedAuthPolicyIdx] = '  otomi.io/auth-policy: platform'
+    } else {
+      updatedBlock.push('  otomi.io/auth-policy: platform')
+    }
+
+    lines.splice(podLabelsIdx + 1, insertAt - (podLabelsIdx + 1), ...updatedBlock)
     writeLines(valuesFile, lines)
     console.log(`Updated podLabels auth entries in values/${name}/${name}.gotmpl`)
     return

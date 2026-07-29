@@ -220,7 +220,7 @@ function vendorChart(root: string, name: string, version: string, repository: st
   console.log(`Vendored chart into charts/${name}`)
 }
 
-function createHelmfile(root: string, name: string): string {
+export function createHelmfile(root: string, name: string): string {
   const next = findHighestHelmfileNumber(path.join(root, 'helmfile.d')) + 1
   const padded = String(next).padStart(2, '0')
   const relPath = `helmfile.d/helmfile-${padded}.${name}.yaml.gotmpl`
@@ -230,6 +230,7 @@ function createHelmfile(root: string, name: string): string {
     'bases:',
     '  - snippets/defaults.yaml',
     '---',
+    'bases:',
     '  - snippets/defaults.gotmpl',
     '---',
     'bases:',

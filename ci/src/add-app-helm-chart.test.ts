@@ -1,4 +1,39 @@
-import { parseStableSemver, resolveLatestOfficialSemver, type RuntimeDeps } from './add-app-helm-chart'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+
+import { createHelmfile, parseStableSemver, resolveLatestOfficialSemver, type RuntimeDeps } from './add-app-helm-chart'
+
+describe('createHelmfile', () => {
+  let tmpDir: string
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'add-app-helm-chart-'))
+    fs.mkdirSync(path.join(tmpDir, 'helmfile.d'))
+  })
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true })
+  })
+
+  it('generates a helmfile with four valid bases documents before releases', () => {
+    const relPath = createHelmfile(tmpDir, 'myapp')
+    const content = fs.readFileSync(path.join(tmpDir, relPath), 'utf8')
+    const docs = content.split(/^---$/m).map((d) => d.trim())
+
+    expect(docs[0]).toBe('bases:\n  - snippets/defaults.yaml')
+    expect(docs[1]).toBe('bases:\n  - snippets/defaults.gotmpl')
+    expect(docs[2]).toBe('bases:\n  - snippets/env.gotmpl')
+    expect(docs[3]).toBe('bases:\n  - snippets/derived.gotmpl')
+    expect(docs[4]).toContain('releases:')
+  })
+
+  it('names the file using the next helmfile sequence number', () => {
+    fs.writeFileSync(path.join(tmpDir, 'helmfile.d', 'helmfile-92.other.yaml.gotmpl'), '')
+    const relPath = createHelmfile(tmpDir, 'myapp')
+    expect(path.basename(relPath)).toBe('helmfile-93.myapp.yaml.gotmpl')
+  })
+})
 
 describe('add-app-helm-chart semver resolution', () => {
   const makeDeps = (runCommand: RuntimeDeps['runCommand']): RuntimeDeps => ({
