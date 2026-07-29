@@ -35,7 +35,7 @@ Checklist:
 - [ ] Create values/<name>/<name>.gotmpl.
 - [ ] Add tests fixture app file in tests/fixtures/env/apps/<name>.yaml.
 - [ ] Add corresponding app entries in tests/integration/\*.yaml.
-- [ ] If public exposure is needed, run the configure-public-app-exposure skill afterward.
+- [ ] If public exposure is needed, run the apl-add-app-ingressskill afterward.
 - [ ] Run schema and template-diff checks.
 - [ ] Summarize generated diffs and touched files.
 
