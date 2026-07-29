@@ -1,5 +1,5 @@
 ---
-name: add-app-helm-chart
+name: apl-add-app
 description: Add and wire a new Helm chart into APL Core by updating chart index, vendoring the chart, scaffolding Helmfile/defaults/values files, and running required validation checks. Use when adding a new app chart and the user provides or asks for name and repository; the script resolves the latest official stable semver chart version automatically.
 argument-hint: <name> <repository>
 ---
@@ -47,5 +47,5 @@ Checklist:
 - If chart source is OCI, repository should be oci://... (script pulls from <repository>/<name>).
 - Chart version is auto-selected as latest stable semver; pre-release versions are ignored.
 - Main implementation is in ci/src/add-app-helm-chart.ts.
-- .github/skills/add-app-helm-chart/scripts/add-app-helm-chart.sh is a compatibility wrapper.
+- .github/skills/apl-add-app/scripts/add-app-helm-chart.sh is a compatibility wrapper.
 - Script confirms rendering path by running bin/compare.sh.
