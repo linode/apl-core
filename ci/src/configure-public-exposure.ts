@@ -237,22 +237,8 @@ export function ensureRawValuesFile(rawValuesFile: string, name: string): void {
 
   const content = `{{- $v := .Values }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+{{- $domain := printf "${name}.%s" $v.cluster.domainSuffix -}}
 resources:
-  - apiVersion: gateway.networking.k8s.io/v1
-    kind: HTTPRoute
-    metadata:
-      name: ${name}-auth-redirects
-      {{ with $httpRoute.annotations }}
-      annotations:
-        {{ . | toYaml | nindent 8 }}
-      {{- end }}
-    spec:
-      parentRefs:
-        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
-      hostnames:
-        - {{ printf "${name}.%s" $v.cluster.domainSuffix }}
-      rules:
-        {{- $httpRoute.authRules | toYaml | nindent 8 }}
   - apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
     metadata:
@@ -275,35 +261,23 @@ resources:
             - kind: Service
               name: ${name}
               port: 80
-  - apiVersion: security.istio.io/v1
-    kind: RequestAuthentication
+  - apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
     metadata:
-      name: ${name}-auth
-      namespace: ${name}
+      name: ${name}-auth-redirects
+      {{ with $httpRoute.annotations }}
+      annotations:
+        {{ . | toYaml | nindent 8 }}
+      {{- end }}
     spec:
-      selector:
-        matchLabels:
-          app.kubernetes.io/name: ${name}
-      jwtRules:
-        - issuer: {{ $v._derived.oidcBaseUrl }}
-          jwksUri: {{ $v._derived.oidcBaseUrlBackchannel }}/protocol/openid-connect/certs
-          fromHeaders:
-            - name: Authorization
-              prefix: "Bearer "
-  - apiVersion: security.istio.io/v1
-    kind: AuthorizationPolicy
-    metadata:
-      name: ${name}-authz
-      namespace: ${name}
-    spec:
-      action: ALLOW
-      selector:
-        matchLabels:
-          app.kubernetes.io/name: ${name}
+      parentRefs:
+        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
+      hostnames:
+        - {{ printf "${name}.%s" $v.cluster.domainSuffix }}
       rules:
-        - from:
-            - source:
-                requestPrincipals: ["*"]
+        {{- $httpRoute.authRules | toYaml | nindent 8 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" "${name}" "gatewayName" $v.ingress.platformClass.className "host" $domain "excludePaths" (list "")) | nindent 2 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "${name}" "host" $domain) | nindent 2 }}
 `
 
   fs.writeFileSync(rawValuesFile, content, 'utf8')
