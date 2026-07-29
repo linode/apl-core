@@ -689,31 +689,30 @@ describe('patchArgoCdApp', () => {
 
 describe('helm operations in progress check', () => {
   it('should get pending helm releases', async () => {
-    const mockGetK8sHelmReleases = jest.spyOn(k8s, 'getK8sHelmReleases').mockResolvedValue({
-      'release-1:ns-1': {
-        name: 'release-1',
-        namespace: 'ns-1',
-        revision: 2,
-        status: 'pending-upgrade',
-        labelName: 'test-label',
-        app_version: '',
-        first_deployed: '',
-        last_deployed: '',
-      },
-      'release-2:ns-2': {
-        name: 'release-2',
-        namespace: 'ns-2',
-        revision: 1,
-        status: 'deployed',
-        labelName: 'test-label',
-        app_version: '',
-        first_deployed: '',
-        last_deployed: '',
-      },
-    })
+    const mockCoreApi = new CoreV1Api({} as any) as jest.Mocked<CoreV1Api>
+    mockCoreApi.listSecretForAllNamespaces.mockResolvedValue({
+      items: [
+        {
+          metadata: {
+            name: 'sh.helm.release.v1.release-1.v2',
+            namespace: 'ns-1',
+            labels: { status: 'pending-upgrade', name: 'test-label', app_version: '', modifiedAt: '' },
+            creationTimestamp: '',
+          },
+        },
+        {
+          metadata: {
+            name: 'sh.helm.release.v1.release-2.v1',
+            namespace: 'ns-2',
+            labels: { status: 'deployed', name: 'test-label', app_version: '', modifiedAt: '' },
+            creationTimestamp: '',
+          },
+        },
+      ],
+    } as any)
+    jest.spyOn(k8s.k8s, 'core').mockReturnValue(mockCoreApi)
 
     const pendingReleases = await k8s.getPendingHelmReleases()
-    expect(mockGetK8sHelmReleases).toHaveBeenCalled()
     expect(pendingReleases).toEqual([
       {
         name: 'release-1',
@@ -735,34 +734,37 @@ describe('helm operations in progress check', () => {
   })
 
   it('should delete secrets for pending releases', async () => {
-    const mockDeleteSecretForHelmRelease = jest.spyOn(k8s, 'deleteSecretForHelmRelease').mockResolvedValue()
-    const mockGetPendingHelmReleases = jest.spyOn(k8s, 'getPendingHelmReleases').mockResolvedValue([
-      {
-        name: 'release-1',
-        namespace: 'ns-1',
-        revision: 2,
-        status: 'pending-upgrade',
-        app_version: '',
-        labelName: 'test-label',
-        first_deployed: '',
-        last_deployed: '',
-      },
-      {
-        name: 'release-2',
-        namespace: 'ns-2',
-        revision: 1,
-        status: 'pending-install',
-        app_version: '',
-        labelName: 'test-label',
-        first_deployed: '',
-        last_deployed: '',
-      },
-    ])
+    const mockCoreApi = new CoreV1Api({} as any) as jest.Mocked<CoreV1Api>
+    mockCoreApi.listSecretForAllNamespaces.mockResolvedValue({
+      items: [
+        {
+          metadata: {
+            name: 'sh.helm.release.v1.release-1.v2',
+            namespace: 'ns-1',
+            labels: { status: 'pending-upgrade', name: 'test-label', app_version: '' },
+          },
+        },
+        {
+          metadata: {
+            name: 'sh.helm.release.v1.release-2.v1',
+            namespace: 'ns-2',
+            labels: { status: 'pending-install', name: 'test-label', app_version: '' },
+          },
+        },
+      ],
+    } as any)
+    mockCoreApi.deleteNamespacedSecret.mockResolvedValue({} as any)
+    jest.spyOn(k8s.k8s, 'core').mockReturnValue(mockCoreApi)
 
     await k8s.deletePendingHelmReleases()
-    expect(mockGetPendingHelmReleases).toHaveBeenCalled()
-    expect(mockDeleteSecretForHelmRelease).toHaveBeenNthCalledWith(2, 'release-1', 'ns-1', 2)
-    expect(mockDeleteSecretForHelmRelease).toHaveBeenNthCalledWith(3, 'release-2', 'ns-2', 1)
+    expect(mockCoreApi.deleteNamespacedSecret).toHaveBeenCalledWith({
+      name: 'sh.helm.release.v1.release-1.v2',
+      namespace: 'ns-1',
+    })
+    expect(mockCoreApi.deleteNamespacedSecret).toHaveBeenCalledWith({
+      name: 'sh.helm.release.v1.release-2.v1',
+      namespace: 'ns-2',
+    })
   })
 })
 
