@@ -159,7 +159,7 @@ export const deleteSecretForHelmRelease = async (releaseName: string, namespace:
   const d = terminal('common:k8s:deleteSecretForHelmRelease')
   d.info(`Deleting secret for Helm release ${releaseName} revision ${revision} in namespace ${namespace}`)
   try {
-    await coreClient.deleteNamespacedSecret({ name: `sh.helm.release.v1.${releaseName}.v${revision}`, namespace })
+    await k8s.core().deleteNamespacedSecret({ name: `sh.helm.release.v1.${releaseName}.v${revision}`, namespace })
     d.debug(`Deleted secret for Helm release ${releaseName} revision ${revision} in namespace ${namespace}`)
   } catch (error) {
     if (!(error instanceof ApiException && error.code === 404)) {
