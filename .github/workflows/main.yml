@@ -1,9 +1,6 @@
 name: Build and publish Docker
 on:
   pull_request:
-    types:
-      - opened
-      - ready_for_review
     paths-ignore:
       - 'docs/**'
       - 'adr/**'
