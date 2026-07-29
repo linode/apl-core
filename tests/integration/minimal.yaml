@@ -5,6 +5,8 @@ cluster:
 otomi:
   version: 'OTOMI_VERSION_PLACEHOLDER'
 apps:
+  headlamp:
+    enabled: false
   otomi-api:
     _rawValues:
       image:
@@ -44,3 +46,4 @@ apps:
       image:
         repository: docker.io/linode/apl-core
         imagePullPolicy: Always
+

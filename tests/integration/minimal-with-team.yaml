@@ -6,6 +6,8 @@ otomi:
   version: 'OTOMI_VERSION_PLACEHOLDER'
   adminPassword: welcomeotomi
 apps:
+  headlamp:
+    enabled: false
   otomi-api:
     _rawValues:
       image:
@@ -174,3 +176,4 @@ files:
       tag: v1.5.1
   env/teams/admin/workloadValues/nodejs-helloworld.managed.yaml: |
     {}
+

@@ -17,6 +17,9 @@ dependencies:
   - name: cloudnative-pg
     version: 0.28.3
     repository: https://cloudnative-pg.github.io/charts
+  - name: headlamp
+    version: 0.44.0
+    repository: https://kubernetes-sigs.github.io/headlamp/
   - name: plugin-barman-cloud
     alias: cloudnative-pg-plugin-barman-cloud
     version: 0.6.0
@@ -114,3 +117,4 @@ dependencies:
   - name: trivy-operator
     version: 0.32.1
     repository: https://aquasecurity.github.io/helm-charts/
+
