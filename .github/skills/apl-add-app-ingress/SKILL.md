@@ -1,5 +1,5 @@
 ---
-name: add-app-ingress
+name: apl-add-app-ingress
 description: Configure public exposure for a selected app by updating core namespace/admin app configuration and optionally scaffolding HTTPRoute auth-redirects plus authentication/authorization resources.
 argument-hint: <name> [--configure-public-security true|false]
 ---
