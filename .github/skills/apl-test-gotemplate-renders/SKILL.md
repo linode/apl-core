@@ -1,5 +1,5 @@
 ---
-name: test-gotemplate-renders
+name: apl-test-gotemplate-renders
 description: Enforces rendered Go template comparison before and after templating-related changes using bin/compare.sh.
 ---
 

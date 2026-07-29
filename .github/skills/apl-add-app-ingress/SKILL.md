@@ -18,7 +18,7 @@ npx tsx ci/src/configure-public-exposure.ts <name> [--configure-public-security 
 
 4. Validate:
 
-Use `/test-gotemplate-renders` skill to validate Go template rendering.
+Use `/apl-test-gotemplate-renders` skill to validate Go template rendering.
 
 ## Workflow
 

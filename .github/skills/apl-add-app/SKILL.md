@@ -17,7 +17,7 @@ npx tsx ci/src/add-app-helm-chart.ts <name> <repository>
 
 3. Validate:
 
-Use `/test-gotemplate-renders` skill to validate Go template rendering.
+Use `/apl-test-gotemplate-renders` skill to validate Go template rendering.
 
 ## Workflow
 
