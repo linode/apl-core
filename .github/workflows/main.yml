@@ -35,8 +35,15 @@ jobs:
         id: establish-versions
         run: |
           if [[ "$SHOULD_PUSH" == "true" ]]; then
-            # Docker tags allow only [a-zA-Z0-9_.-]; branch names (e.g. "feature/foo") may not, so sanitize.
-            tag=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9_.-]/-/g')
+            # github.ref_name is the merge ref (e.g. "50/merge") on pull_request events, not the
+            # actual branch name, so use head_ref there; ref_name is correct for branch/tag pushes.
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              ref_name="${{ github.head_ref }}"
+            else
+              ref_name="${{ github.ref_name }}"
+            fi
+            # Docker tags allow only [a-zA-Z0-9_.-]; branch/tag names (e.g. "feature/foo") may not, so sanitize.
+            tag=$(echo "$ref_name" | sed 's/[^a-zA-Z0-9_.-]/-/g')
           else
             tag="pr-${{ github.event.pull_request.number }}"
           fi
