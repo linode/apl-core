@@ -142,7 +142,6 @@ function ensureArtifactsRelease(helmfilePath: string, name: string): void {
     `    namespace: ${name}`,
     '    labels:',
     `      pkg: ${name}`,
-    '      app: core',
     '    <<: *raw',
   ]
 
