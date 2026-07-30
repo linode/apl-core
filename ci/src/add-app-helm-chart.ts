@@ -252,7 +252,6 @@ export function createHelmfile(root: string, name: string): string {
     `    namespace: ${name}`,
     '    labels:',
     `      pkg: ${name}`,
-    '      app: core',
     '    <<: *default',
     '',
   )
