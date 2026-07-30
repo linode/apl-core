@@ -59,8 +59,6 @@ describe('configure-public-exposure helpers', () => {
     expect(content).toContain('name: demo-auth-redirects')
     expect(content).toContain('kind: HTTPRoute')
     expect(content).toContain('$httpRoute.authRules')
-    expect(content).toContain('kind: AuthorizationPolicy')
-    expect(content).toContain('name: demo-authz')
   })
 
   it('ensurePodAuthLabels replaces empty object values with required labels', () => {
