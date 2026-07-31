@@ -1,10 +1,14 @@
 name: Build and publish Docker
 on:
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'adr/**'
+      - '.vscode/**'
+      - '**.md'
   push:
-    branches-ignore:
-      - 'releases/**'
-    tags-ignore:
-      - '*'
+    branches:
+      - main
     paths-ignore:
       - 'docs/**'
       - 'adr/**'
@@ -24,11 +28,25 @@ jobs:
   build-test-cache:
     if: (!contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/') && !github.event.act && github.repository == 'linode/apl-core')
     runs-on: ubuntu-22.04
+    env:
+      SHOULD_PUSH: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
     steps:
       - name: Set env
         id: establish-versions
         run: |
-          tag=${GITHUB_REF##*/}
+          if [[ "$SHOULD_PUSH" == "true" ]]; then
+            # github.ref_name is the merge ref (e.g. "50/merge") on pull_request events, not the
+            # actual branch name, so use head_ref there; ref_name is correct for branch/tag pushes.
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              ref_name="${{ github.head_ref }}"
+            else
+              ref_name="${{ github.ref_name }}"
+            fi
+            # Docker tags allow only [a-zA-Z0-9_.-]; branch/tag names (e.g. "feature/foo") may not, so sanitize.
+            tag=$(echo "$ref_name" | sed 's/[^a-zA-Z0-9_.-]/-/g')
+          else
+            tag="pr-${{ github.event.pull_request.number }}"
+          fi
           echo "Creating tag: $tag"
           echo "TAG=$tag" >> "$GITHUB_OUTPUT"
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
@@ -42,7 +60,7 @@ jobs:
           git config --global user.name "$BOT_USERNAME"
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -53,6 +71,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       - name: Login to Docker Hub
+        if: env.SHOULD_PUSH == 'true'
         uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
@@ -61,7 +80,7 @@ jobs:
       - name: Build, test, push
         uses: docker/build-push-action@v7
         with:
-          push: true
+          push: ${{ env.SHOULD_PUSH == 'true' }}
           load: true
           context: .
           build-args: |
@@ -77,7 +96,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Install the Linode CLI
         uses: linode/action-linode-cli@v1
         with:
