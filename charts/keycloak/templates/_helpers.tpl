@@ -62,7 +62,14 @@ Create the name of the service account to use
 Create the service DNS name.
 */}}
 {{- define "keycloak.serviceDnsName" -}}
-{{ include "keycloak.fullname" . }}-headless.{{ .Release.Namespace }}.svc.{{ .Values.clusterDomain }}
+{{ include "keycloak.fullname" . }}-headless.{{ include "keycloak.namespace" . }}.svc.{{ .Values.clusterDomain }}
+{{- end }}
+
+{{/*
+Namespace for all resources. Callers can override via .Values.namespaceOverride.
+*/}}
+{{- define "keycloak.namespace" -}}
+{{- default .Release.Namespace .Values.namespaceOverride -}}
 {{- end }}
 
 {{- define "keycloak.databasePasswordEnv" -}}
