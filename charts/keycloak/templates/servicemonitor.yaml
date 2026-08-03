@@ -9,7 +9,7 @@ metadata:
   {{- with .namespace }}
   namespace: {{ . }}
   {{- else }}
-  namespace: {{ $.Release.Namespace }}
+  namespace: {{ include "keycloak.namespace" $ }}
   {{- end }}
   {{- with .annotations }}
   annotations:
