@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "keycloak.fullname" . }}-http
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "keycloak.namespace" . }}
   {{- with .Values.service.annotations }}
   annotations:
     {{- range $key, $value := . }}
@@ -26,6 +26,9 @@ spec:
   {{- end }}
   {{- if or (eq "LoadBalancer" .Values.service.type) (eq "NodePort" .Values.service.type) }}
   externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
+  {{- end }}
+  {{- if .Values.service.internalTrafficPolicy }}
+  internalTrafficPolicy: {{ .Values.service.internalTrafficPolicy }}
   {{- end }}
   {{- if .Values.service.sessionAffinity }}
   sessionAffinity: {{ .Values.service.sessionAffinity }}
