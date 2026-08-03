@@ -94,7 +94,7 @@
     "tsc-alias": "^1.9.1",
     "tsconfig-paths": "4.2.0",
     "tsx": "^4.23.1",
-    "typescript": "5.9.3"
+    "typescript": "7.0.2"
   },
   "engines": {
     "node": ">=24 <25"
