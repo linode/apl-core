@@ -6,7 +6,7 @@ apiVersion: {{ $apiVersion }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "keycloak.namespace" . }}
   {{- with $ingress.annotations }}
   annotations:
     {{- range $key, $value := . }}
@@ -55,7 +55,7 @@ apiVersion: {{ $apiVersion }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}-console
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "keycloak.namespace" . }}
   {{- with $ingress.console.annotations }}
   annotations:
     {{- range $key, $value := . }}
