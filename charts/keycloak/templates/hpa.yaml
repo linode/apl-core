@@ -3,7 +3,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "keycloak.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "keycloak.namespace" . }}
   labels:
     {{- include "keycloak.labels" . | nindent 4 }}
     {{- range $key, $value := .Values.autoscaling.labels }}
