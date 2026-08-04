@@ -12,10 +12,10 @@ dependencies:
     version: 1.2.4
     repository: oci://ghcr.io/argoproj/argo-helm/argocd-image-updater
   - name: cert-manager
-    version: v1.20.3
+    version: v1.21.1
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
-    version: 0.28.3
+    version: 0.29.0
     repository: https://cloudnative-pg.github.io/charts
   - name: plugin-barman-cloud
     alias: cloudnative-pg-plugin-barman-cloud
@@ -42,25 +42,25 @@ dependencies:
     repository: https://helm.goharbor.io
   - name: base
     alias: istio-base
-    version: 1.30.2
+    version: 1.30.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: cni
     alias: istio-cni
-    version: 1.30.2
+    version: 1.30.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
-    version: 1.30.2
+    version: 1.30.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
-    version: 1.30.2
+    version: 1.30.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: ztunnel
-    version: 1.30.2
+    version: 1.30.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
-    version: 7.2.0
+    version: 7.2.2
     repository: https://codecentric.github.io/helm-charts
   - name: knative-operator
     version: v1.22.2
