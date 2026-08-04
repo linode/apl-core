@@ -105,8 +105,13 @@ export async function markPlatformAuthPodsRestarted(
   namespace: string = APL_OPERATOR_NS,
   configMapName: string = 'apl-platform-auth-restart-state',
 ): Promise<void> {
-  await k8s.core().createNamespacedConfigMap({
-    namespace,
-    body: { metadata: { name: configMapName } },
-  })
+  try {
+    await k8s.core().createNamespacedConfigMap({
+      namespace,
+      body: { metadata: { name: configMapName } },
+    })
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 409) return
+    throw error
+  }
 }
