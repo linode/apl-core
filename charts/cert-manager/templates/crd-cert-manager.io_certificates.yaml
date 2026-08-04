@@ -286,10 +286,16 @@ spec:
                             `Modern2023`: Secure algorithm. Use this option in case you have to always use secure algorithms
                             (e.g., because of company policy). Please note that the security of the algorithm is not that important
                             in reality, because the unencrypted certificate and private key are also stored in the Secret.
+                            `Modern2026`: Encodes PKCS#12 files using algorithms that are considered modern as of 2026.
+                            Private keys and certificates are encrypted using PBES2 with PBKDF2-HMAC-SHA-256 and AES-256-CBC.
+                            The MAC algorithm is PBMAC1 with PBKDF2-HMAC-SHA-256 and HMAC-SHA256.
+                            Files produced with this profile can be read by OpenSSL 3.4.0 and higher, Java 26 and higher,
+                            or with Java using compatible versions of Bouncy Castle. Meets FIPS 140-3 requirements.
                           enum:
                             - LegacyRC2
                             - LegacyDES
                             - Modern2023
+                            - Modern2026
                           type: string
                       required:
                         - create
@@ -502,6 +508,53 @@ spec:
                     Cannot be set if the `renewBefore` field is set.
                   format: int32
                   type: integer
+                renewal:
+                  description: |-
+                    `renewal` allows configuration of how your certificate is renewed. If the policy mentioned is
+                    `RenewBefore` then the controller respects `renewBefore` and `renewBeforePercentage`.
+                  properties:
+                    policy:
+                      description: '`policy` must be one of `Disabled`, `RenewBefore`.'
+                      enum:
+                        - RenewBefore
+                        - Disabled
+                      type: string
+                    windows:
+                      description: '`windows` mentions the behavior of when the renewal must happen.'
+                      items:
+                        description: CertificateRenewalWindows is the definition for renewal windows
+                        properties:
+                          cron:
+                            description: |-
+                              `cron` is a cron compliant string to allow when the renewal should be allowed. Format is as shown below:
+                              * * * * *
+                              | | | | |
+                              | | | | day of the week (0–6) (Sunday to Saturday;
+                              | | | month (1–12)             7 is also Sunday on some systems)
+                              | | day of the month (1–31)
+                              | hour (0–23)
+                              minute (0–59)
+                            minLength: 1
+                            type: string
+                          timezone:
+                            description: |-
+                              `timezone` is IANA compliant timezone. For example America/Denver.
+                              If this field is not set, timezone is treated as UTC.
+                            minLength: 1
+                            type: string
+                          windowDuration:
+                            description: |-
+                              `windowDuration` is how long the cron definition is active for.
+                              Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration.
+                            pattern: ^([0-9]+(\.[0-9]+)?(s|m|h))+$
+                            type: string
+                        required:
+                          - cron
+                          - windowDuration
+                        type: object
+                      type: array
+                      x-kubernetes-list-type: atomic
+                  type: object
                 revisionHistoryLimit:
                   description: |-
                     The maximum number of CertificateRequest revisions that are maintained in
@@ -692,6 +745,47 @@ spec:
                 Read-only.
                 More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
               properties:
+                acme:
+                  description: ACME stores information that is fetched from the ACME CA server.
+                  properties:
+                    ari:
+                      description: |-
+                        ARI stores the ACME Renewal Information that is fetched from the ACME server
+                        in accordance with RFC 9773. This is only populated if the ARI feature gate is enabled.
+                      properties:
+                        explanationURL:
+                          description: |-
+                            ExplanationURL is a human-readable URL that may explain why the suggested window
+                            has its current value.
+                          type: string
+                        lastChecked:
+                          description: LastChecked is the time at which the ACME server was last checked for renewal information.
+                          format: date-time
+                          type: string
+                        lastError:
+                          description: LastError is the last error encountered when checking the ACME server for renewal information, if any.
+                          type: string
+                        nextCheck:
+                          description: NextCheck is the time at which the ACME server will next be checked for renewal information.
+                          format: date-time
+                          type: string
+                        suggestedWindow:
+                          description: SuggestedWindow is the suggested renewal window as returned by the ACME server in accordance with RFC 9773.
+                          properties:
+                            end:
+                              description: End is the end of the suggested renewal window.
+                              format: date-time
+                              type: string
+                            start:
+                              description: Start is the start of the suggested renewal window.
+                              format: date-time
+                              type: string
+                          required:
+                            - end
+                            - start
+                          type: object
+                      type: object
+                  type: object
                 conditions:
                   description: |-
                     List of status conditions to indicate the status of certificates.
