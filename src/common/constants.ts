@@ -5,6 +5,7 @@ export const APL_OPERATOR_STATUS_CM = 'apl-installation-status'
 export const OTOMI_NAMESPACE = 'otomi'
 export const SEALED_SECRETS_NAMESPACE = 'apl-secrets'
 export const OTOMI_SECRETS = 'otomi-secrets'
+export const APL_PLATFORM_AUTH_RESTART_STATE_CM = 'apl-platform-auth-restart-state'
 export const ARGOCD_APP_PARAMS = {
   group: 'argoproj.io',
   version: 'v1alpha1',
