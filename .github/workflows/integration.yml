@@ -193,10 +193,12 @@ jobs:
           RUN_NUMBER: ${{ github.run_number }}
           RUN_ATTEMPT: ${{ github.run_attempt }}
         run: |
+
+          user=$(echo "$ACTOR" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]-')
           case "$DOMAIN_ZONE" in
-            "Zone-1") LINODE_CLUSTER_NAME=$ACTOR-1 ;;
-            "Zone-2") LINODE_CLUSTER_NAME=$ACTOR-2 ;;
-            "Random") LINODE_CLUSTER_NAME=$ACTOR-$RUN_NUMBER-$RUN_ATTEMPT ;;
+            "Zone-1") LINODE_CLUSTER_NAME=$user-1 ;;
+            "Zone-2") LINODE_CLUSTER_NAME=$user-2 ;;
+            "Random") LINODE_CLUSTER_NAME=$user-$RUN_NUMBER-$RUN_ATTEMPT ;;
           esac
           [[ "$INSTALL_PROFILE" == 'no-apl' ]] && LINODE_CLUSTER_NAME="$LINODE_CLUSTER_NAME-no-apl"
           echo "linode-cluster-name=$LINODE_CLUSTER_NAME" >> "$GITHUB_OUTPUT"

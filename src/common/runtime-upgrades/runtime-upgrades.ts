@@ -26,7 +26,7 @@ export type RuntimeUpgrades = Array<RuntimeUpgrade>
  */
 export const runtimeUpgrades: RuntimeUpgrades = [
   {
-    version: '6.0.1',
+    version: '6.1.1',
     applications: {
       'istio-system-istiod': {
         post: async () => {
