@@ -68,7 +68,7 @@ jobs:
           fetch-depth: 0
           path: pr
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: 'pr/.nvmrc'
           check-latest: true
