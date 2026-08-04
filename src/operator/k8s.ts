@@ -87,3 +87,26 @@ export async function updateApplyState(
     d.error('Failed to update apply state:', getErrorMessage(error))
   }
 }
+
+export async function hasPlatformAuthPodsRestarted(
+  namespace: string = APL_OPERATOR_NS,
+  configMapName: string = 'apl-platform-auth-restart-state',
+): Promise<boolean> {
+  try {
+    await k8s.core().readNamespacedConfigMap({ name: configMapName, namespace })
+    return true
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) return false
+    throw error
+  }
+}
+
+export async function markPlatformAuthPodsRestarted(
+  namespace: string = APL_OPERATOR_NS,
+  configMapName: string = 'apl-platform-auth-restart-state',
+): Promise<void> {
+  await k8s.core().createNamespacedConfigMap({
+    namespace,
+    body: { metadata: { name: configMapName } },
+  })
+}
