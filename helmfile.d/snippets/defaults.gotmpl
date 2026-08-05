@@ -29,8 +29,8 @@
 {{- end }}
 
 
-{{- $defaultStorageClass := "" }}
-{{- if eq $clusterProvider "linode" }}
+{{- $defaultStorageClass := $cluster | get "spec.defaultStorageClass" "" }}
+{{- if and (eq $clusterProvider "linode") (eq $defaultStorageClass "") }}
   {{- $defaultStorageClass = "linode-block-storage" }}
 {{- end }}
 
