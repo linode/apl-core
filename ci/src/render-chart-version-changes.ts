@@ -29,7 +29,7 @@ function tagExists(tag: string): boolean {
 }
 
 function loadChartAtTag(tag: string): Map<string, string> {
-  const spec = `${tag}:chart/chart-index/Chart.yaml`
+  const spec = `${tag}:charts/dependencies.yaml`
   const raw = execSync(`git show ${JSON.stringify(spec)}`, { encoding: 'utf8' })
   const chart = parse(raw) as ChartYaml
   return buildDepMap(chart)
