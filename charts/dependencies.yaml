@@ -1,8 +1,5 @@
-apiVersion: v2
-name: chart-index
-description: APL chart index
-type: library
-version: 0.1.0
+name: chart-dependencies
+description: APL Helm chart dependencies
 dependencies:
   - name: argo-cd
     alias: argocd
