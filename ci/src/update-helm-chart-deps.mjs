@@ -7,8 +7,8 @@ import yaml from 'js-yaml'
 import semver from 'semver'
 import { $ } from 'zx'
 
-// Path to the Chart.yaml file
-const CHART_FILE = '../chart/chart-index/Chart.yaml'
+// Path to the chart dependencies file
+const CHART_FILE = '../charts/dependencies.yaml'
 const CHARTS_DIR = '../charts'
 const APPS_FILE = '../apps.yaml'
 
@@ -193,9 +193,11 @@ async function checkDependencyUpdates(dependency, allowedUpgradeType, isExtra) {
     // Get all available versions for the dependency
     allVersions = await $`helm search repo ${dependency.name}/${dependency.name} -l -o json`
       .then((output) => JSON.parse(output.stdout))
-      .then((results) => results
-        .filter((entry) => semver.valid(entry.version) && entry.name === `${dependency.name}/${dependency.name}`)
-        .map((entry) => entry.version))
+      .then((results) =>
+        results
+          .filter((entry) => semver.valid(entry.version) && entry.name === `${dependency.name}/${dependency.name}`)
+          .map((entry) => entry.version),
+      )
   }
 
   if (!allVersions.length) {
@@ -314,7 +316,8 @@ async function updateDependency(
     let appsVersionPending = !SKIP_APP_VERSION.includes(groupName)
     if (appsVersionPending) {
       try {
-        const appVersionFunc = CHART_VERSION_FUNCS[groupName] || (chartApps.hasOwnProperty(groupName) ? getAppVersion : undefined)
+        const appVersionFunc =
+          CHART_VERSION_FUNCS[groupName] || (chartApps.hasOwnProperty(groupName) ? getAppVersion : undefined)
         if (appVersionFunc) {
           const updatedVersions = await appVersionFunc(`${CHARTS_DIR}/${dirName}`, groupName)
           if (updatedVersions) {
@@ -442,13 +445,12 @@ async function main() {
   const baseBranch = env.CI_GIT_BASELINE_BRANCH
 
   try {
-    // Read the Chart.yaml file
     const chart = await loadYamlFile(CHART_FILE)
     const dependencyErrors = {}
     const fixedChartVersions = {}
 
     if (!Array.isArray(chart.dependencies) || chart.dependencies.length === 0) {
-      console.error('No dependencies found in Chart.yaml')
+      console.error(`No dependencies found in ${CHART_FILE}`)
       process.exit(1)
     }
 
@@ -537,7 +539,6 @@ async function main() {
           dependency.version = fixedVersion
         }
       }
-      // Write the updated Chart.yaml file
       await writeYamlFile(CHART_FILE, chart)
     }
   } catch (error) {
