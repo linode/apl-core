@@ -7,8 +7,8 @@ import yaml from 'js-yaml'
 import semver from 'semver'
 import { $ } from 'zx'
 
-// Path to the Chart.yaml file
-const CHART_FILE = '../chart/chart-index/Chart.yaml'
+// Path to the chart dependencies file
+const CHART_FILE = '../charts/dependencies.yaml'
 const CHARTS_DIR = '../charts'
 const APPS_FILE = '../apps.yaml'
 
