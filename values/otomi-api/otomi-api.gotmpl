@@ -33,7 +33,7 @@ env:
   {{- end }}
   EDITOR_INACTIVITY_TIMEOUT: {{ $o.editorInactivityTimeout }}
   SSO_ISSUER: {{ $v._derived.oidcBaseUrl }}
-  SSO_JWKS_URI: {{ $v._derived.oidcBaseUrl }}/protocol/openid-connect/certs
+  SSO_JWKS_URI: {{ $v._derived.oidcJwksUrl }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}

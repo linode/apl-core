@@ -28,6 +28,14 @@
 {{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
 {{- $oidcBaseUrlBackchannel := "http://keycloak-keycloakx-http.keycloak:8080/realms/otomi" }}
 {{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
+# Fully-formed OIDC endpoints. Consumers must use these verbatim and never append paths to
+# a base URL, because endpoint paths are specific to the issuer implementation.
+{{- $oidcAuthUrl := printf "%s/protocol/openid-connect/auth" $oidcBaseUrl }}
+{{- $oidcTokenUrl := printf "%s/protocol/openid-connect/token" $oidcBaseUrl }}
+{{- $oidcUserInfoUrl := printf "%s/protocol/openid-connect/userinfo" $oidcBaseUrl }}
+{{- $oidcJwksUrl := printf "%s/protocol/openid-connect/certs" $oidcBaseUrl }}
+{{- $oidcJwksUrlBackchannel := printf "%s/protocol/openid-connect/certs" $oidcBaseUrlBackchannel }}
+{{- $oidcLogoutUrl := printf "%s/protocol/openid-connect/logout" $oidcBaseUrl }}
 {{- $tlsSecretName := "otomi-cert-manager-wildcard-cert" }}
 {{- if eq $cm.issuer "externally-managed-tls-secret" }}
   {{- $tlsSecretName = $cm.externallyManagedTlsSecretName }}
@@ -194,6 +202,12 @@ environments:
           oidcBaseUrlBackchannel: {{ $oidcBaseUrlBackchannel}}
           oidcWellKnownUrl: {{ $oidcWellKnownUrl }}
           oidcWellKnownUrlBackchannel: {{ $oidcWellKnownBackchannel}}
+          oidcAuthUrl: {{ $oidcAuthUrl }}
+          oidcTokenUrl: {{ $oidcTokenUrl }}
+          oidcUserInfoUrl: {{ $oidcUserInfoUrl }}
+          oidcJwksUrl: {{ $oidcJwksUrl }}
+          oidcJwksUrlBackchannel: {{ $oidcJwksUrlBackchannel }}
+          oidcLogoutUrl: {{ $oidcLogoutUrl }}
           authDomain: {{ printf "auth.%s" $domainSuffix }}
           apiDomain: {{ print "api." $domainSuffix }}
           ttyDomain: {{ print "tty." $domainSuffix }}

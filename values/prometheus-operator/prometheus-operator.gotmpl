@@ -14,7 +14,7 @@
 {{- $alertmanagerDomain := printf "alertmanager.%s" $domain }}
 {{- $prometheusDomain := printf "prometheus.%s" $domain }}
 {{- $grafanaDomain := printf "grafana.%s" $domain }}
-{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrl "untrustedCA" $v._derived.untrustedCA "keycloak" (dict "clientID" ($k | get "idp.clientID" "otomi"))) | toString }}
+{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "oidcAuthUrl" $v._derived.oidcAuthUrl "oidcTokenUrl" $v._derived.oidcTokenUrl "oidcUserInfoUrl" $v._derived.oidcUserInfoUrl "untrustedCA" $v._derived.untrustedCA "keycloak" (dict "clientID" ($k | get "idp.clientID" "otomi"))) | toString }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 {{- $hasServices := false }}
 {{- range $teamId, $team := $v.teamConfig }}
