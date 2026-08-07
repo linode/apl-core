@@ -60,10 +60,6 @@ operator:
   gitOpTimeoutMs: 10000
   installRetries: 1000
   installMaxTimeoutMs: 10000
-  readiness:
-    # When true (default), the operator reports Ready only after the platform
-    # installation has completed. Set to false to drop the readinessProbe.
-    gateOnInstallationComplete: true
 
 nodeSelector: {}
 

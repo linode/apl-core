@@ -10,7 +10,6 @@ import { AplOperations } from './apl-operations'
 import { AplOperator, AplOperatorConfig } from './apl-operator'
 import { GitRepository } from './git-repository'
 import { Installer } from './installer'
-import { markInstallationComplete } from './k8s'
 import { getErrorMessage } from './utils'
 import { operatorEnv } from './validators'
 
@@ -88,11 +87,6 @@ async function main(): Promise<void> {
       await installer.initialize()
       await installer.reconcileInstall()
     }
-
-    // Every branch above only falls through once the installation has reached
-    // the 'completed' state, so this is the single point where the platform is
-    // known to be installed. Signal it to the readinessProbe.
-    markInstallationComplete()
 
     // Set up SOPS environment if applicable (no-op when SealedSecrets + ESO is in use)
     await installer.setEnvAndCreateSecrets()

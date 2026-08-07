@@ -1,4 +1,4 @@
-import { ApplyState, markInstallationComplete, READINESS_FILE, updateApplyState } from './k8s'
+import { ApplyState, markOperatorReady, READINESS_FILE, updateApplyState } from './k8s'
 import { CoreV1Api, ApiException } from '@kubernetes/client-node'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'fs'
 import { tmpdir } from 'os'
@@ -178,7 +178,7 @@ describe('updateApplyState', () => {
   })
 })
 
-describe('markInstallationComplete', () => {
+describe('markOperatorReady', () => {
   let workDir: string
 
   beforeEach(() => {
@@ -196,17 +196,17 @@ describe('markInstallationComplete', () => {
   test('writes the readiness marker with a timestamp', () => {
     const marker = join(workDir, 'ready')
 
-    markInstallationComplete(marker)
+    markOperatorReady(marker)
 
     expect(existsSync(marker)).toBe(true)
     expect(Date.parse(readFileSync(marker, 'utf8'))).not.toBeNaN()
   })
 
-  test('is idempotent — a restart of an installed cluster re-marks readiness', () => {
+  test('is idempotent — every apply run re-marks readiness', () => {
     const marker = join(workDir, 'ready')
 
-    markInstallationComplete(marker)
-    markInstallationComplete(marker)
+    markOperatorReady(marker)
+    markOperatorReady(marker)
 
     expect(existsSync(marker)).toBe(true)
   })
@@ -214,7 +214,7 @@ describe('markInstallationComplete', () => {
   test('never throws when the marker cannot be written, leaving the pod NotReady', () => {
     const unwritable = join(workDir, 'does', 'not', 'exist', 'ready')
 
-    expect(() => markInstallationComplete(unwritable)).not.toThrow()
+    expect(() => markOperatorReady(unwritable)).not.toThrow()
     expect(existsSync(unwritable)).toBe(false)
   })
 })

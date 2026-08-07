@@ -9,7 +9,7 @@ import { ensureManifestDirectories, ensureTeamGitOpsDirectories } from '../commo
 import { getDefaultValues, writeValues } from '../common/values'
 import { AplOperations } from './apl-operations'
 import { GitRepository } from './git-repository'
-import { updateApplyState } from './k8s'
+import { markOperatorReady, updateApplyState } from './k8s'
 import { getErrorMessage } from './utils'
 
 export interface AplOperatorConfig {
@@ -98,6 +98,11 @@ export class AplOperator {
       }
 
       this.d.info(`[${trigger}] Apply process completed`)
+
+      // The apply run above is what creates the ArgoCD Applications, so from here on the
+      // platform can heal itself through ArgoCD. That — not the end of the helmfile install
+      // — is what the operator being 'ready' means.
+      markOperatorReady()
 
       await updateApplyState({
         commitHash,

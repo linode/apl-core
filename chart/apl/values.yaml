@@ -130,18 +130,8 @@ operator:
   installMaxTimeoutMs: 10000
 
   readiness:
-    # When true (default), the operator only reports Ready once the platform
-    # installation has completed, making the apl-operator Deployment a truthful
-    # "platform converged" signal for `helm install --wait` and `kubectl wait`.
-    # A first install takes 10-15 minutes, so size `helm --timeout` accordingly
-    # (e.g. `--wait --timeout 30m`).
-    # Set to false to restore the previous process-liveness readiness, which
-    # reports Ready within a minute regardless of installation progress.
-    gateOnInstallationComplete: true
-    # Rollout budget for the install window. Only relevant when the readiness
-    # gate is on — `kubectl rollout status` fails once it is exceeded.
-    progressDeadlineSeconds: 3600
-    failureThreshold: 3
+    # 30 minutes. If the operator has not installed the platform by then, something is off.
+    progressDeadlineSeconds: 1800
 
   image:
     repository: "mirror.registry.linodelke.net/docker/linode/apl-core"

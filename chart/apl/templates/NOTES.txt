@@ -1,7 +1,7 @@
 The App Platform Operator has been successfully deployed on the cluster.
 
 Please inspect the output of the apl-operator deployment (apl-operator/{{ include "apl-operator.fullname" . }}) for any feedback or errors.
-{{ if ne ((.Values.operator.readiness | default dict).gateOnInstallationComplete) false }}
+
 Installing the platform takes 10-15 minutes. The operator reports Ready only once
 installation has completed, so you can wait for it:
 
@@ -10,6 +10,5 @@ installation has completed, so you can wait for it:
 Progress is readable at any time from:
 
   kubectl get cm apl-installation-status -n apl-operator -o jsonpath='{.data.status}'
-{{ end }}
 
 Also visit https://techdocs.akamai.com/app-platform/ for further instructions and reference documentation.

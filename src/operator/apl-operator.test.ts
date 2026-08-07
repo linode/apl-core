@@ -3,7 +3,7 @@ import { waitTillGitRepoAvailable } from '../common/gitea'
 import { AplOperations } from './apl-operations'
 import { AplOperator, AplOperatorConfig, ApplyTrigger } from './apl-operator'
 import { GitRepository } from './git-repository'
-import { updateApplyState } from './k8s'
+import { markOperatorReady, updateApplyState } from './k8s'
 
 const mockInfoFn = jest.fn()
 const mockWarnFn = jest.fn()
@@ -61,6 +61,7 @@ jest.mock('../cmd/commit', () => ({
 jest.mock('./k8s', () => ({
   updateApplyState: jest.fn().mockResolvedValue(undefined),
   appRevisionMatches: jest.fn().mockResolvedValue(true),
+  markOperatorReady: jest.fn(),
 }))
 
 jest.mock('./git-repository', () => ({
@@ -210,6 +211,7 @@ describe('AplOperator', () => {
         }),
       )
 
+      expect(markOperatorReady).toHaveBeenCalled()
       expect((aplOperator as any).isApplying).toBe(false)
     })
 
@@ -261,6 +263,8 @@ describe('AplOperator', () => {
         }),
       )
 
+      // A failed apply leaves the ArgoCD Applications unaccounted for — the pod must stay NotReady.
+      expect(markOperatorReady).not.toHaveBeenCalled()
       expect((aplOperator as any).isApplying).toBe(false)
 
       expect(mockErrorFn).toHaveBeenCalledWith('[poll] Apply process failed', 'Apply failed')
