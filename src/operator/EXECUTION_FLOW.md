@@ -500,10 +500,13 @@ belongs to ArgoCD.
 
 Three properties are deliberate:
 
-- **It latches.** Readiness is never cleared by a later apply. The reconcile loop
-  applies every ~5 minutes in steady state; flipping the Deployment out of `Available`
-  on each pass would make the condition useless as a gate. Per-apply status is
-  reported through the `apl-operator-state` ConfigMap instead (below).
+- **It latches, for the life of the pod.** Readiness is never cleared by a later apply.
+  The reconcile loop applies every ~5 minutes in steady state; flipping the Deployment
+  out of `Available` on each pass would make the condition useless as a gate. Per-apply
+  status is reported through the `apl-operator-state` ConfigMap instead (below). The
+  marker lives on the pod's `/tmp` emptyDir, so it survives a container restart within
+  the pod and is only cleared when the pod itself is recreated — a rescheduled or
+  rolled-out pod goes NotReady until it completes an apply of its own.
 - **It fails closed.** If the marker cannot be written, or the apply keeps failing,
   the pod stays NotReady. The signal never claims progress that did not happen —
   `--wait` times out loudly rather than returning early.

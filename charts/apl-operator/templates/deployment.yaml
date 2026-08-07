@@ -10,6 +10,8 @@ metadata:
 {{- end }}
 spec:
   replicas: {{ .Values.scale.replicas | default 1 }}
+  # The rollout stays Progressing until the operator is ready, which is longer than the 600s default.
+  progressDeadlineSeconds: 1800
   selector:
     matchLabels:
       {{- include "apl-operator.selectorLabels" . | nindent 6 }}
