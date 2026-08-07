@@ -838,7 +838,25 @@ export const restartArgoCdRedisConsumers = async (
   deps = { restartDeployment, restartStatefulSet },
 ): Promise<void> => {
   const d = terminal('common:k8s:restartArgoCdRedisConsumers')
-  for (const target of ARGOCD_REDIS_RESTART_TARGETS) {
+  const [redis, ...consumers] = ARGOCD_REDIS_RESTART_TARGETS
+
+  // Redis has to come back on the new password before anything is pointed at it. If it does not
+  // restart, restarting the clients is worse than doing nothing: they would pick up the new
+  // password while redis still requires the old one, which is the split this function exists to
+  // prevent. So redis, and only redis, is allowed to stop the sequence.
+  try {
+    await deps.restartDeployment(redis.name, namespace)
+    d.info(`Restarted ${redis.kind}/${redis.name} after redis password change`)
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) {
+      d.debug(`Could not restart ${redis.kind}/${redis.name}: not found — leaving its clients alone`)
+      return
+    }
+    d.error(`Could not restart ${redis.kind}/${redis.name}, not restarting its clients:`, error)
+    throw error
+  }
+
+  for (const target of consumers) {
     try {
       if (target.kind === 'deployment') await deps.restartDeployment(target.name, namespace)
       else await deps.restartStatefulSet(target.name, namespace)
@@ -871,8 +889,17 @@ export const createArgoCdRedisSecret = async (
 
   // Read before writing so the restart below is limited to an actual rotation. This runs on every
   // install, and restarting the whole Argo stack on an unchanged password would be its own outage.
-  const existingSecret = await deps.getK8sSecret(secretName, argocdNamespace).catch(() => undefined)
-  const passwordChanged = existingSecret !== undefined && existingSecret.auth !== redisPassword
+  // getK8sSecret already maps 404 to undefined (first install — nothing to restart), so anything
+  // that throws here is a real read failure and leaves us unable to tell. Assume it rotated: a
+  // redundant restart costs seconds, a missed one leaves redis and its clients split on WRONGPASS.
+  let passwordChanged: boolean
+  try {
+    const existingSecret = await deps.getK8sSecret(secretName, argocdNamespace)
+    passwordChanged = existingSecret !== undefined && existingSecret.auth !== redisPassword
+  } catch (error) {
+    d.warn(`Could not read Secret ${secretName} to detect a password change, assuming it rotated:`, error)
+    passwordChanged = true
+  }
 
   try {
     await k8s.object().patch(

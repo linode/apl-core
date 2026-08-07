@@ -1081,6 +1081,19 @@ describe('createArgoCdRedisSecret', () => {
     expect(deps.restartArgoCdRedisConsumers).not.toHaveBeenCalled()
   })
 
+  it('should restart when the existing secret cannot be read at all', async () => {
+    const deps = makeDeps({
+      getK8sSecret: jest.fn(async () => {
+        throw new Error('forbidden')
+      }),
+    })
+
+    await k8s.createArgoCdRedisSecret({ apps: { argocd: { redisPassword: password } } }, deps as any)
+
+    expect(objectApi.patch).toHaveBeenCalled()
+    expect(deps.restartArgoCdRedisConsumers).toHaveBeenCalledWith('argocd')
+  })
+
   it('should skip reconciliation entirely when no password is supplied', async () => {
     const deps = makeDeps()
 
@@ -1120,5 +1133,33 @@ describe('restartArgoCdRedisConsumers', () => {
     await expect(k8s.restartArgoCdRedisConsumers('argocd', deps as any)).resolves.toBeUndefined()
 
     expect(deps.restartDeployment).toHaveBeenCalledWith('argocd-repo-server', 'argocd')
+  })
+
+  it('should not restart the clients when redis itself fails to restart', async () => {
+    const deps = makeDeps({
+      restartDeployment: jest.fn(async (name: string) => {
+        if (name === 'argocd-redis') throw new Error('boom')
+      }),
+    })
+
+    await expect(k8s.restartArgoCdRedisConsumers('argocd', deps as any)).rejects.toThrow('boom')
+
+    expect(deps.restartDeployment).toHaveBeenCalledTimes(1)
+    expect(deps.restartDeployment).toHaveBeenCalledWith('argocd-redis', 'argocd')
+    expect(deps.restartStatefulSet).not.toHaveBeenCalled()
+  })
+
+  it('should leave the clients alone when redis is not present at all', async () => {
+    const notFound = new MockApiException(404, 'not found', {}, {})
+    const deps = makeDeps({
+      restartDeployment: jest.fn(async (name: string) => {
+        if (name === 'argocd-redis') throw notFound
+      }),
+    })
+
+    await expect(k8s.restartArgoCdRedisConsumers('argocd', deps as any)).resolves.toBeUndefined()
+
+    expect(deps.restartDeployment).toHaveBeenCalledTimes(1)
+    expect(deps.restartStatefulSet).not.toHaveBeenCalled()
   })
 })
