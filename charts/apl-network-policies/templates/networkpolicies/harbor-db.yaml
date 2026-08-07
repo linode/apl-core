@@ -19,20 +19,31 @@ spec:
   policyTypes:
     - Ingress
   ingress:
-    # Allow the CloudNativePG operator to poll instance status (8000) and metrics (9187).
-    # Without this the operator cannot read instance status, the Harbor Postgres replica never
-    # starts, and the stack stalls on Instance Status Extraction Error → ClusterIsNotReady →
-    # Degraded — with nothing in the symptom pointing at a NetworkPolicy.
+    # Allow the CloudNativePG operator to reach the instance manager status endpoint (8000), the
+    # metrics endpoint (9187) and Postgres itself (5432, for declarative role/database
+    # reconciliation). Without this the operator cannot read instance status, the Harbor Postgres
+    # replica never starts, and the stack stalls on Instance Status Extraction Error →
+    # ClusterIsNotReady → Degraded — with nothing in the symptom pointing at a NetworkPolicy.
     - from:
         - namespaceSelector:
             matchLabels:
               name: cnpg-system
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9187
+        - protocol: TCP
+          port: 5432
     # Allow the Harbor components (core, jobservice, registry, exporter, trivy) to reach Postgres,
-    # and the instances to reach each other for replication.
+    # and the instances to reach each other for replication — both on 5432.
     - from:
         - namespaceSelector:
             matchLabels:
               name: harbor
+      ports:
+        - protocol: TCP
+          port: 5432
     # Allow monitoring access
     - from:
         - namespaceSelector:
