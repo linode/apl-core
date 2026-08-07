@@ -664,6 +664,14 @@
               "examples": [
                 false
               ]
+            },
+            "operator.collector.usedefaulttelemetryshape": {
+              "type": "boolean",
+              "default": false,
+              "title": "Use collector defaults for injected Prometheus telemetry metric names",
+              "examples": [
+                false
+              ]
             }
           },
           "examples": [
@@ -1811,6 +1819,19 @@
           "title": "Create CRDs",
           "examples": [
             true
+          ]
+        },
+        "annotations": {
+          "type": "object",
+          "default": {},
+          "title": "CRD Annotations",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "examples": [
+            {
+              "example.com/managed-by": "opentelemetry-operator-chart"
+            }
           ]
         }
       },
