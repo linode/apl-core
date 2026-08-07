@@ -632,13 +632,14 @@ describe('stripOversizedLastAppliedConfiguration', () => {
     expect(deps.removeConfigMapLastApplied).toHaveBeenCalledWith('grafana', 'grafana-dashboards-k8s-admin')
   })
 
-  it('should follow pagination until the continue token is exhausted', async () => {
+  // CustomObjectsApi deserializes as "any", so a CRD page keeps the raw `continue` key.
+  it('should follow CRD pagination on the raw continue token', async () => {
     const listCrdPage = jest.fn(async (cont?: string) =>
       cont === 'page-2'
         ? { items: [{ metadata: { name: 'second.example.io', annotations: oversized } }] }
         : {
             items: [{ metadata: { name: 'first.example.io', annotations: oversized } }],
-            metadata: { _continue: 'page-2' },
+            metadata: { continue: 'page-2' },
           },
     )
 
@@ -648,6 +649,39 @@ describe('stripOversizedLastAppliedConfiguration', () => {
     expect(listCrdPage).toHaveBeenCalledTimes(2)
     expect(deps.removeCrdLastApplied).toHaveBeenCalledWith('first.example.io')
     expect(deps.removeCrdLastApplied).toHaveBeenCalledWith('second.example.io')
+  })
+
+  // Typed list models rename `continue` to `_continue` via the generated attributeTypeMap.
+  it('should follow ConfigMap pagination on the renamed _continue token', async () => {
+    const listConfigMapPage = jest.fn(async (cont?: string) =>
+      cont === 'page-2'
+        ? { items: [{ metadata: { name: 'second', namespace: 'grafana', annotations: oversized } }] }
+        : {
+            items: [{ metadata: { name: 'first', namespace: 'grafana', annotations: oversized } }],
+            metadata: { _continue: 'page-2' },
+          },
+    )
+
+    const deps = makeDeps({ listConfigMapPage })
+    await stripOversizedLastAppliedConfiguration({}, deps)
+
+    expect(listConfigMapPage).toHaveBeenCalledTimes(2)
+    expect(deps.removeConfigMapLastApplied).toHaveBeenCalledWith('grafana', 'first')
+    expect(deps.removeConfigMapLastApplied).toHaveBeenCalledWith('grafana', 'second')
+  })
+
+  it('should size the annotation in bytes, not UTF-16 code units', async () => {
+    // 60k multi-byte characters: 60k UTF-16 units (under the 100KiB threshold) but 180k bytes.
+    const multiByte = { [annotation]: '€'.repeat(60 * 1024) }
+    const deps = makeDeps({
+      listCrdPage: jest.fn(async () => ({
+        items: [{ metadata: { name: 'unicode.example.io', annotations: multiByte } }],
+      })),
+    })
+
+    await stripOversizedLastAppliedConfiguration({}, deps)
+
+    expect(deps.removeCrdLastApplied).toHaveBeenCalledWith('unicode.example.io')
   })
 
   it('should keep sweeping when one object cannot be patched', async () => {

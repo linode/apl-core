@@ -817,7 +817,14 @@ const LAST_APPLIED_SIZE_THRESHOLD = 100 * 1024
 const CRD_PARAMS = { group: 'apiextensions.k8s.io', version: 'v1', plural: 'customresourcedefinitions' }
 
 type AnnotatedObject = { metadata?: { name?: string; namespace?: string; annotations?: Record<string, string> } }
-type ObjectPage = { items?: AnnotatedObject[]; metadata?: { _continue?: string } }
+// Typed list models (V1ConfigMapList) are deserialized through the generated attributeTypeMap,
+// which renames the reserved word `continue` to `_continue`. CustomObjectsApi deserializes as
+// "any", so a CRD page arrives as raw JSON and keeps `continue`. Read both or CRD pagination stops
+// after the first page — and a cluster carrying this annotation has well over 100 CRDs.
+type ObjectPage = { items?: AnnotatedObject[]; metadata?: { _continue?: string; continue?: string } }
+
+const continueToken = (page: ObjectPage): string | undefined =>
+  page.metadata?._continue || page.metadata?.continue || undefined
 
 const listCrdPage = async (cont?: string): Promise<ObjectPage> =>
   (await k8s.custom().listClusterCustomObject({ ...CRD_PARAMS, limit: 100, _continue: cont })) as ObjectPage
@@ -850,8 +857,12 @@ const removeConfigMapLastApplied = async (namespace: string, name: string): Prom
 // RFC 6901: '~' -> '~0', '/' -> '~1'. The annotation key contains slashes.
 export const escapeJsonPointer = (token: string): string => token.replace(/~/g, '~0').replace(/\//g, '~1')
 
-export const isOversized = (object: AnnotatedObject): boolean =>
-  (object.metadata?.annotations?.[LAST_APPLIED_ANNOTATION]?.length ?? 0) > LAST_APPLIED_SIZE_THRESHOLD
+// Byte length, not String.length — the apiserver cap is in bytes, and a CRD schema full of
+// non-ASCII descriptions would otherwise be undercounted and skipped.
+export const isOversized = (object: AnnotatedObject): boolean => {
+  const annotation = object.metadata?.annotations?.[LAST_APPLIED_ANNOTATION]
+  return annotation !== undefined && Buffer.byteLength(annotation, 'utf8') > LAST_APPLIED_SIZE_THRESHOLD
+}
 
 /**
  * Client-side apply writes the whole object into the last-applied-configuration annotation. For an
@@ -900,10 +911,10 @@ export const stripOversizedLastAppliedConfiguration = async (
         } catch (error) {
           // A 404/422 here means someone else already removed it — never fail the migration over it.
           if (error instanceof ApiException && (error.code === 404 || error.code === 422)) continue
-          d.error(`Could not strip ${LAST_APPLIED_ANNOTATION} from ${kind} ${name}: ${error}`)
+          d.error(`Could not strip ${LAST_APPLIED_ANNOTATION} from ${kind} ${name}:`, error)
         }
       }
-      cont = page.metadata?._continue || undefined
+      cont = continueToken(page)
     } while (cont)
   }
 
