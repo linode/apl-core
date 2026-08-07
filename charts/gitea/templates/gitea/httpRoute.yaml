@@ -1,0 +1,42 @@
+{{- if eq (include "gitea.httpRoute.enabled" .) "true" -}}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  {{- with (include "gitea.httpRoute.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+  {{- with (include "gitea.httpRoute.labels" .) }}
+  labels:
+    {{- . | nindent 4 }}
+  {{- end }}
+  name: {{ include "gitea.fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+spec:
+  parentRefs:
+    {{- if .Values.gatewayAPI.core.httpRoute.parentRefs }}
+    {{- toYaml .Values.gatewayAPI.core.httpRoute.parentRefs | nindent 4 }}
+    {{- else }}
+    {{- fail "gatewayAPI.core.httpRoute.parentRefs is required" }}
+    {{- end }}
+  {{- with .Values.gatewayAPI.core.httpRoute.hostnames }}
+  hostnames:
+    {{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- if .Values.gatewayAPI.core.httpRoute.rules }}
+    {{- tpl (toYaml .Values.gatewayAPI.core.httpRoute.rules) $ | nindent 4 }}
+    {{- else }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: {{ include "gitea.service.http.name" . }}
+          port: {{ .Values.service.http.port }}
+          weight: 1
+    {{- end }}
+{{- end }}

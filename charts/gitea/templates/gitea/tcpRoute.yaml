@@ -1,0 +1,34 @@
+{{- if eq (include "gitea.tcpRoute.enabled" .) "true" -}}
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
+metadata:
+  {{- with (include "gitea.tcpRoute.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+  {{- with (include "gitea.tcpRoute.labels" .) }}
+  labels:
+    {{- . | nindent 4 }}
+  {{- end }}
+  name: {{ include "gitea.fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+spec:
+  parentRefs:
+    {{- if .Values.gatewayAPI.core.tcpRoute.parentRefs }}
+    {{- toYaml .Values.gatewayAPI.core.tcpRoute.parentRefs | nindent 4 }}
+    {{- else }}
+    {{- fail "gatewayAPI.core.tcpRoute.parentRefs is required" }}
+    {{- end }}
+  rules:
+    {{- if .Values.gatewayAPI.core.tcpRoute.rules }}
+    {{- tpl (toYaml .Values.gatewayAPI.core.tcpRoute.rules) $ | nindent 4 }}
+    {{- else }}
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: {{ include "gitea.service.ssh.name" . }}
+          port: {{ .Values.service.ssh.port }}
+          weight: 1
+    {{- end }}
+{{- end }}

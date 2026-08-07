@@ -1,0 +1,30 @@
+{{- if eq (include "gitea.backendTLSPolicy.enabled" .) "true" -}}
+{{- if not (keys .Values.gatewayAPI.core.backendTLSPolicy.validation) }}
+{{- fail "gatewayAPI.core.backendTLSPolicy.validation is required" }}
+{{- end }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  {{- with (include "gitea.backendTLSPolicy.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+  {{- with (include "gitea.backendTLSPolicy.labels" .) }}
+  labels:
+    {{- . | nindent 4 }}
+  {{- end }}
+  name: {{ include "gitea.fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+spec:
+  targetRefs:
+    {{- if .Values.gatewayAPI.core.backendTLSPolicy.targetRefs }}
+    {{- toYaml .Values.gatewayAPI.core.backendTLSPolicy.targetRefs | nindent 4 }}
+    {{- else }}
+    - group: ""
+      kind: Service
+      name: {{ include "gitea.service.http.name" . }}
+    {{- end }}
+  validation:
+    {{- toYaml .Values.gatewayAPI.core.backendTLSPolicy.validation | nindent 4 }}
+{{- end }}

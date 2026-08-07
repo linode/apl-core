@@ -22,6 +22,6 @@ spec:
         {{- $testContainerSecurityContext | nindent 8 }}
       {{- end }}
       command: ['wget']
-      args:  ['{{ include "gitea.fullname" . }}-http:{{ .Values.service.http.port }}']
+      args: ['{{ include "gitea.service.http.name" . }}:{{ .Values.service.http.port }}']
   restartPolicy: Never
 {{- end }}
