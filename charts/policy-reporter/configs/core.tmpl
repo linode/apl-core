@@ -209,6 +209,11 @@ periodicSync:
   {{- toYaml . | nindent 2 }}
 {{- end }}
 
+{{- with .Values.autoMemoryLimit }}
+autoMemoryLimit:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+
 {{- with .Values.extraConfig }}
 {{- toYaml . | nindent 0 }}
 {{- end }}

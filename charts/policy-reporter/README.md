@@ -3,7 +3,7 @@
 Policy Reporter watches for PolicyReport Resources.
 It creates Prometheus Metrics and can send rule validation events to different targets like Loki, Elasticsearch, Slack or Discord
 
-![Version: 3.7.4](https://img.shields.io/badge/Version-3.7.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.7.4](https://img.shields.io/badge/AppVersion-3.7.4-informational?style=flat-square)
+![Version: 3.9.1](https://img.shields.io/badge/Version-3.9.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.9.0](https://img.shields.io/badge/AppVersion-3.9.0-informational?style=flat-square)
 
 ## Documentation
 
@@ -110,7 +110,7 @@ Open `http://localhost:8082/` in your browser.
 | sourceFilters[0].selector.sources | list | `["kyverno","KyvernoValidatingPolicy","KyvernoImageValidatingPolicy"]` | select Report by source |
 | sourceFilters[0].uncontrolledOnly | bool | `true` | Filter out Reports of controlled Pods and Jobs, only works for Reports with scope resource |
 | sourceFilters[0].disableClusterReports | bool | `false` | Filter out cluster scoped Reports |
-| sourceFilters[0].kinds | object | `{"exclude":["ReplicaSet"]}` | Filter out Reports based on the scope resource kind |
+| sourceFilters[0].kinds | object | `{"exclude":[]}` | Filter out Reports based on the scope resource kind |
 | global.labels | object | `{}` | additional labels added on each resource |
 | basicAuth.username | string | `""` | HTTP BasicAuth username |
 | basicAuth.password | string | `""` | HTTP BasicAuth password |
@@ -127,6 +127,17 @@ Open `http://localhost:8082/` in your browser.
 | emailReports.smtp.encryption | string | `""` | SMTP Encryption Default is none, supports ssl/tls and starttls |
 | emailReports.smtp.skipTLS | bool | `false` | Skip SMTP TLS verification |
 | emailReports.smtp.certificate | string | `""` | SMTP Server Certificate file path |
+| emailReports.graphAPI.enabled | bool | `false` | Enable Microsoft Graph API for E-Mail reports, takes precedence over SMTP |
+| emailReports.graphAPI.tenant | string | `""` | Microsoft Graph API Tenant ID |
+| emailReports.graphAPI.clientID | string | `""` | Microsoft Graph API Client ID |
+| emailReports.graphAPI.clientSecret | string | `""` | Microsoft Graph API Client Secret |
+| emailReports.graphAPI.secretRef | optional | `""` | Name of an existing Secret with a `clientSecret` key, used instead of `clientSecret` |
+| emailReports.graphAPI.userID | string | `""` | Microsoft Graph API User ID (Sender) |
+| emailReports.graphAPI.cc | list | `[]` | Microsoft Graph API CC Recipients |
+| emailReports.graphAPI.bcc | list | `[]` | Microsoft Graph API BCC Recipients |
+| emailReports.graphAPI.disableSaveToSentItems | bool | `false` | Disable saving sent messages to the Sent Items folder |
+| emailReports.graphAPI.azureADEndpoint | string | `"https://login.microsoftonline.com"` | Microsoft Graph API Azure AD Endpoint override |
+| emailReports.graphAPI.graphEndpoint | string | `"https://graph.microsoft.com"` | Microsoft Graph API endpoint override |
 | emailReports.summary.enabled | bool | `false` | Enable Summary E-Mail reports |
 | emailReports.summary.schedule | string | `"0 8 * * *"` | CronJob schedule |
 | emailReports.summary.activeDeadlineSeconds | int | `300` | CronJob activeDeadlineSeconds |
@@ -379,6 +390,8 @@ Open `http://localhost:8082/` in your browser.
 | database.mountedSecret | string | `""` |  |
 | periodicSync.enabled | bool | `false` |  |
 | periodicSync.interval | int | `30` |  |
+| autoMemoryLimit.enabled | bool | `true` |  |
+| autoMemoryLimit.ratio | float | `0.9` |  |
 | podDisruptionBudget.minAvailable | int | `1` | Configures the minimum available pods for policy-reporter disruptions. Cannot be used if `maxUnavailable` is set. |
 | podDisruptionBudget.maxUnavailable | string | `nil` | Configures the maximum unavailable pods for policy-reporter disruptions. Cannot be used if `minAvailable` is set. |
 | nodeSelector | object | `{}` | Node labels for pod assignment ref: https://kubernetes.io/docs/user-guide/node-selection/ |
@@ -396,7 +409,7 @@ Open `http://localhost:8082/` in your browser.
 | ui.image.registry | string | `"ghcr.io"` | Image registry |
 | ui.image.repository | string | `"kyverno/policy-reporter-ui"` | Image repository |
 | ui.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| ui.image.tag | string | `"2.5.1"` | Image tag |
+| ui.image.tag | string | `"2.7.0"` | Image tag |
 | ui.crds.customBoard | bool | `false` | Install UI CustomBoard CRDs |
 | ui.replicaCount | int | `1` | Deployment replica count |
 | ui.priorityClassName | string | `""` | Deployment priorityClassName |
@@ -492,7 +505,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.kyverno.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.kyverno.image.repository | string | `"kyverno/policy-reporter/kyverno-plugin"` | Image repository |
 | plugin.kyverno.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.kyverno.image.tag | string | `"0.6.0"` | Image tag |
+| plugin.kyverno.image.tag | string | `"0.7.0"` | Image tag |
 | plugin.kyverno.replicaCount | int | `1` | Deployment replica count |
 | plugin.kyverno.priorityClassName | string | `""` | Deployment priorityClassName |
 | plugin.kyverno.logging.api | bool | `false` | Enables external API request logging |
@@ -565,11 +578,11 @@ Open `http://localhost:8082/` in your browser.
 | plugin.trivy.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.trivy.image.repository | string | `"kyverno/policy-reporter/trivy-plugin"` | Image repository |
 | plugin.trivy.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.trivy.image.tag | string | `"0.4.12"` | Image tag Defaults to `Chart.AppVersion` if omitted |
+| plugin.trivy.image.tag | string | `"0.5.0"` | Image tag Defaults to `Chart.AppVersion` if omitted |
 | plugin.trivy.cli.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.trivy.cli.image.repository | string | `"aquasecurity/trivy"` | Image repository |
 | plugin.trivy.cli.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.trivy.cli.image.tag | string | `"0.69.3"` | Image tag Defaults to `Chart.AppVersion` if omitted |
+| plugin.trivy.cli.image.tag | string | `"0.72.0"` | Image tag Defaults to `Chart.AppVersion` if omitted |
 | plugin.trivy.extraArgs | object | `{}` | Additional container args. |
 | plugin.trivy.cveawg.disable | bool | `false` | disable external CVEAWG API calls. |
 | plugin.trivy.github.disable | bool | `false` | disable GitHub API calls. |
@@ -633,6 +646,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.trivy.extraConfig | object | `{}` | Extra configuration options appended to trivy plugin settings |
 | monitoring.enabled | bool | `false` | Enables the Prometheus Operator integration |
 | monitoring.annotations | object | `{}` | Key/value pairs that are attached to all resources. |
+| monitoring.serviceMonitor.enabled | bool | `true` |  |
 | monitoring.serviceMonitor.honorLabels | bool | `false` | HonorLabels chooses the metrics labels on collisions with target labels |
 | monitoring.serviceMonitor.namespace | string | `nil` | Allow to override the namespace for serviceMonitor |
 | monitoring.serviceMonitor.labels | object | `{}` | Labels to match the serviceMonitorSelector of the Prometheus Resource |
