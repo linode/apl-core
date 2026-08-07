@@ -9,7 +9,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for backend pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -521,7 +524,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for bloom-builder pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -1030,8 +1036,18 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for bloom-gateway pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
+                },
+                "annotations": {
+                    "description": "Annotations for bloom-builder",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "appProtocol": {
                     "description": "Set the optional grpc service protocol. Ex: \"grpc\", \"http2\" or \"https\"",
@@ -1132,6 +1148,17 @@
                         "array",
                         "null"
                     ]
+                },
+                "kind": {
+                    "description": "Kind of compactor deployment. StatefulSet and Deployment are supported.",
+                    "type": "string"
+                },
+                "labels": {
+                    "description": "Labels for bloom-builder",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "livenessProbe": {
                     "description": "liveness probe settings for bloom-gateway pods. If empty use `loki.livenessProbe`",
@@ -1272,6 +1299,10 @@
                     "additionalProperties": {
                         "type": "string"
                     }
+                },
+                "podManagementPolicy": {
+                    "description": "The default is to deploy all pods in parallel.",
+                    "type": "string"
                 },
                 "priorityClassName": {
                     "description": "The name of the PriorityClass for bloom-gateway pods",
@@ -1419,6 +1450,20 @@
                     "type": "object",
                     "additionalProperties": true
                 },
+                "statefulSetRecreateJob": {
+                    "description": "Enable creating a Job to recreate the StatefulSet when the StatefulSet configuration is changed. # Only applicable if `compactor.kind` is StatefulSet. Useful for PVC size changes, which require recreating the StatefulSet.",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    }
+                },
+                "strategy": {
+                    "description": "UpdateStrategy or Strategy for the pattern ingester.",
+                    "type": "object",
+                    "additionalProperties": true
+                },
                 "terminationGracePeriodSeconds": {
                     "description": "Grace period to allow the bloom-gateway to shutdown before it is killed",
                     "type": "integer"
@@ -1435,8 +1480,18 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for bloom-planner pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
+                },
+                "annotations": {
+                    "description": "Annotations for bloom-builder",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "appProtocol": {
                     "description": "Set the optional grpc service protocol. Ex: \"grpc\", \"http2\" or \"https\"",
@@ -1537,6 +1592,17 @@
                         "array",
                         "null"
                     ]
+                },
+                "kind": {
+                    "description": "Kind of compactor deployment. StatefulSet and Deployment are supported.",
+                    "type": "string"
+                },
+                "labels": {
+                    "description": "Labels for bloom-builder",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "livenessProbe": {
                     "description": "liveness probe settings for bloom-planner pods. If empty use `loki.livenessProbe`",
@@ -1677,6 +1743,10 @@
                     "additionalProperties": {
                         "type": "string"
                     }
+                },
+                "podManagementPolicy": {
+                    "description": "The default is to deploy all pods in parallel.",
+                    "type": "string"
                 },
                 "priorityClassName": {
                     "description": "The name of the PriorityClass for bloom-planner pods",
@@ -1824,6 +1894,20 @@
                     "type": "object",
                     "additionalProperties": true
                 },
+                "statefulSetRecreateJob": {
+                    "description": "Enable creating a Job to recreate the StatefulSet when the StatefulSet configuration is changed. # Only applicable if `compactor.kind` is StatefulSet. Useful for PVC size changes, which require recreating the StatefulSet.",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    }
+                },
+                "strategy": {
+                    "description": "UpdateStrategy or Strategy for the pattern ingester.",
+                    "type": "object",
+                    "additionalProperties": true
+                },
                 "terminationGracePeriodSeconds": {
                     "description": "Grace period to allow the bloom-planner to shutdown before it is killed",
                     "type": "integer"
@@ -1843,7 +1927,10 @@
                 },
                 "affinity": {
                     "description": "Affinity for chunks-cache pods",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "allocatedCPU": {
@@ -2396,10 +2483,6 @@
                 }
             }
         },
-        "clusterLabelOverride": {
-            "description": "Overrides the chart's cluster label",
-            "type": "string"
-        },
         "commonLabels": {
             "description": "Labels to be added to resources",
             "type": "object",
@@ -2413,7 +2496,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for compactor pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -3111,7 +3197,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for distributor pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -3544,6 +3633,13 @@
                     "deprecated": true,
                     "type": "string"
                 },
+                "shutdownDelay": {
+                    "description": "On SIGTERM, report 503 on /ready and wait this long before shutdown so the LB drains the pod before connections are cut. \"0s\" (default) disables. When enabling, keep terminationGracePeriodSeconds above shutdownDelay + server.graceful_shutdown_timeout.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
                 "strategy": {
                     "description": "UpdateStrategy or Strategy for the distributor.",
                     "type": "object",
@@ -3586,7 +3682,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for gateway pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -4411,15 +4510,7 @@
         },
         "imagePullSecrets": {
             "description": "Image pull secrets for Docker images",
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    }
-                }
-            }
+            "type": "array"
         },
         "indexGateway": {
             "description": "Configuration for the index-gateway",
@@ -4427,7 +4518,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for index-gateway pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -4873,7 +4967,10 @@
                 },
                 "affinity": {
                     "description": "Affinity for ingester pods. Ignored if zoneAwareReplication is enabled. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -5998,7 +6095,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for canary pods",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -6527,22 +6627,147 @@
             "description": "Monitoring section determines which monitoring features to enable",
             "type": "object",
             "properties": {
+                "additionalPrometheusRules": {
+                    "description": "Additional PrometheusRule objects to create alongside the chart-managed ones. Each key becomes the resource name suffix; the value must contain a 'groups' key with standard Prometheus rule groups. Can contain both recording rules and alerts. e.g.: additionalPrometheusRules: my-alerts: groups: - name: my-loki-alerts rules: - alert: MyLokiAlert expr: 'up{job=\"loki\"} == 0'",
+                    "type": "object"
+                },
+                "alerts": {
+                    "description": "Alert rules for monitoring Loki",
+                    "type": "object",
+                    "properties": {
+                        "additionalAggregationLabels": {
+                            "description": "Extra label dimensions added to all by() aggregation clauses in alert expressions",
+                            "type": "array"
+                        },
+                        "additionalRuleAnnotations": {
+                            "description": "Additional annotations applied to all individual alert rules",
+                            "type": "object"
+                        },
+                        "additionalRuleLabels": {
+                            "description": "Additional labels applied to all individual alert rules",
+                            "type": "object"
+                        },
+                        "annotations": {
+                            "description": "Additional annotations for the alerts PrometheusRule resource",
+                            "type": "object"
+                        },
+                        "disabled": {
+                            "description": "Selectively disable individual alerts by name. e.g.: disabled: { LokiRequestErrors: true }",
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "description": "If enabled, create a PrometheusRule resource with Loki alert rules",
+                            "type": "boolean"
+                        },
+                        "keepFiringFor": {
+                            "description": "Global keepFiringFor applied to all alert rules",
+                            "type": "string"
+                        },
+                        "labels": {
+                            "description": "Additional labels for the alerts PrometheusRule resource",
+                            "type": "object"
+                        },
+                        "overrides": {
+                            "description": "Override for/severity on individual alerts. e.g.: overrides: { LokiRequestErrors: { for: 5m, severity: warning } }",
+                            "type": "object"
+                        }
+                    }
+                },
+                "appInstanceLabelName": {
+                    "description": "Label name for the app_instance label injected into scraped metrics and recording rules.",
+                    "type": "string"
+                },
+                "appInstanceLabelValue": {
+                    "description": "Value for the app_instance label injected into scraped metrics and recording rules. Supports Helm templating.",
+                    "type": "string"
+                },
                 "dashboards": {
                     "type": "object",
                     "properties": {
                         "annotations": {
-                            "description": "Additional annotations for the dashboards ConfigMap",
+                            "description": "Additional annotations for the dashboards ConfigMap resources",
                             "type": "object",
                             "additionalProperties": {
                                 "type": "string"
                             }
                         },
-                        "enabled": {
-                            "description": "If enabled, create configmap with dashboards for monitoring Loki",
+                        "defaultDashboardsEditable": {
+                            "description": "Editable flag for the default dashboards",
                             "type": "boolean"
                         },
+                        "defaultDashboardsInterval": {
+                            "description": "Default interval for Grafana dashboards",
+                            "type": "string"
+                        },
+                        "defaultDashboardsTimezone": {
+                            "description": "Timezone for the default dashboards",
+                            "type": "string"
+                        },
+                        "enabled": {
+                            "description": "If enabled, create configmap resources with dashboards for monitoring Loki",
+                            "type": "boolean"
+                        },
+                        "grafanaOperator": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for the GrafanaOperator resources",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "enabled": {
+                                    "description": "If enabled, GrafanaOperator resources for Grafana Operator are created to deploy the dashboards.",
+                                    "type": "boolean"
+                                },
+                                "folder": {
+                                    "description": "Which folder contains all dashboards in Grafana # This folder will be created on the Root level # Only one of 'folder', 'folderUID' or 'folderRef' can be set #",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "folderRef": {
+                                    "description": "Which GrafanaFolder reference contains all dashboards in Grafana # This allows you to use subfolder hierarchy. # Only one of 'folder', 'folderUID' or 'folderRef' can be set #",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "folderUID": {
+                                    "description": "Which UID of the target folder contains all dashboards in Grafana # This allows you to use subfolder hierarchy # Only one of 'folder', 'folderUID' or 'folderRef' can be set #",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "instanceSelector": {
+                                    "allOf": [
+                                        {
+                                            "description": "instanceSelector for the GrafanaDashboard resources # The grafana-operator matches this against the labels on your Grafana CR # An empty selector (the default) matches every Grafana instance",
+                                            "type": "object"
+                                        },
+                                        {
+                                            "$ref": "#/$defs/_definitions.json/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.LabelSelector"
+                                        }
+                                    ]
+                                },
+                                "labels": {
+                                    "description": "Additional labels for the GrafanaOperator resources",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "resyncPeriod": {
+                                    "description": "How frequently the operator should resync resources (in duration format)",
+                                    "type": "string"
+                                }
+                            }
+                        },
                         "labels": {
-                            "description": "Labels for the dashboards ConfigMap",
+                            "description": "Labels for the dashboards ConfigMap resources",
                             "type": "object",
                             "properties": {
                                 "grafana_dashboard": {
@@ -6552,155 +6777,62 @@
                             "additionalProperties": {
                                 "type": "string"
                             }
-                        },
-                        "namespace": {
-                            "description": "Alternative namespace to create dashboards ConfigMap in",
-                            "type": [
-                                "string",
-                                "null"
-                            ]
                         }
                     }
+                },
+                "multiCluster": {
+                    "type": "object",
+                    "properties": {
+                        "clusterName": {
+                            "description": "Value for the 'cluster' label. Supports Helm templating. When empty, recording rules and alerts are not modified — only dashboards show the cluster variable. e.g. clusterName: '{{ .Values.global.clusterName }}'",
+                            "type": "string"
+                        },
+                        "enabled": {
+                            "description": "When enabled, shows the cluster variable in dashboards. If clusterName is also set, the chart adds 'cluster' labels to scraped metrics, recording rules, and alerts, and includes 'cluster' in recording rule aggregations. If clusterName is left empty, only dashboard changes are applied — use this when an external tool (e.g. Grafana Alloy) manages cluster label injection and PromQL rewriting.",
+                            "type": "boolean"
+                        }
+                    }
+                },
+                "namespace": {
+                    "description": "Alternative namespace to deploy all monitoring resources (ServiceMonitor, PrometheusRule, ConfigMap dashboards) in. Defaults to the release namespace.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "rules": {
                     "description": "Recording rules for monitoring Loki, required for some dashboards",
                     "type": "object",
                     "properties": {
-                        "additionalGroups": {
-                            "description": "Additional groups to add to the rules file",
+                        "additionalAggregationLabels": {
+                            "description": "Extra label dimensions added to all by() aggregation clauses in recording rules",
                             "type": "array"
                         },
                         "additionalRuleAnnotations": {
-                            "description": "Additional annotations for PrometheusRule alerts",
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "description": "Additional annotations applied to all individual recording rules",
+                            "type": "object"
                         },
                         "additionalRuleLabels": {
-                            "description": "Additional labels for PrometheusRule alerts",
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "description": "Additional labels applied to all individual recording rules",
+                            "type": "object"
                         },
                         "annotations": {
-                            "description": "Additional annotations for the rules PrometheusRule resource",
+                            "description": "Additional annotations for the PrometheusRule resource",
                             "type": "object",
                             "additionalProperties": {
                                 "type": "string"
-                            }
-                        },
-                        "configs": {
-                            "type": "object",
-                            "properties": {
-                                "LokiCanaryLatency": {
-                                    "type": "object",
-                                    "properties": {
-                                        "enabled": {
-                                            "type": "boolean"
-                                        },
-                                        "for": {
-                                            "type": "string"
-                                        },
-                                        "lookbackPeriod": {
-                                            "type": "string"
-                                        },
-                                        "severity": {
-                                            "type": "string"
-                                        },
-                                        "threshold": {
-                                            "type": "integer"
-                                        }
-                                    }
-                                },
-                                "LokiRequestErrors": {
-                                    "type": "object",
-                                    "properties": {
-                                        "enabled": {
-                                            "type": "boolean"
-                                        },
-                                        "for": {
-                                            "type": "string"
-                                        },
-                                        "lookbackPeriod": {
-                                            "type": "string"
-                                        },
-                                        "severity": {
-                                            "type": "string"
-                                        },
-                                        "threshold": {
-                                            "type": "integer"
-                                        }
-                                    }
-                                },
-                                "LokiRequestLatency": {
-                                    "type": "object",
-                                    "properties": {
-                                        "enabled": {
-                                            "type": "boolean"
-                                        },
-                                        "for": {
-                                            "type": "string"
-                                        },
-                                        "severity": {
-                                            "type": "string"
-                                        },
-                                        "threshold": {
-                                            "type": "integer"
-                                        }
-                                    }
-                                },
-                                "LokiRequestPanics": {
-                                    "type": "object",
-                                    "properties": {
-                                        "enabled": {
-                                            "type": "boolean"
-                                        },
-                                        "lookbackPeriod": {
-                                            "type": "string"
-                                        },
-                                        "severity": {
-                                            "type": "string"
-                                        },
-                                        "threshold": {
-                                            "type": "integer"
-                                        }
-                                    }
-                                },
-                                "LokiTooManyCompactorsRunning": {
-                                    "type": "object",
-                                    "properties": {
-                                        "enabled": {
-                                            "type": "boolean"
-                                        },
-                                        "for": {
-                                            "type": "string"
-                                        },
-                                        "severity": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
                             }
                         },
                         "enabled": {
-                            "description": "If enabled, create PrometheusRule resources with Loki recording rules",
+                            "description": "If enabled, create a PrometheusRule resource with Loki recording rules",
                             "type": "boolean"
                         },
                         "labels": {
-                            "description": "Additional labels for the rules PrometheusRule resource",
+                            "description": "Additional labels for the PrometheusRule resource",
                             "type": "object",
                             "additionalProperties": {
                                 "type": "string"
                             }
-                        },
-                        "namespace": {
-                            "description": "Alternative namespace to create PrometheusRule resources in",
-                            "type": [
-                                "string",
-                                "null"
-                            ]
                         }
                     }
                 },
@@ -6714,10 +6846,6 @@
                             "additionalProperties": {
                                 "type": "string"
                             }
-                        },
-                        "clusterLabel": {
-                            "description": "To disable setting a 'cluster' label in metrics, set to 'null'. To overwrite the 'cluster' label with your own value, set to a non-empty string. Keep empty string \"\" to have the default value in the 'cluster' label, which is the helm release name for Loki.",
-                            "type": "string"
                         },
                         "enabled": {
                             "description": "If enabled, ServiceMonitor resources for Prometheus Operator are created",
@@ -6879,7 +7007,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for overrides-exporter pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -7235,7 +7366,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for pattern ingester pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -7637,7 +7771,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for querier pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -8169,7 +8306,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for query-frontend pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -8630,7 +8770,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for query-scheduler pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -9010,7 +9153,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for read pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -9443,7 +9589,10 @@
                 },
                 "affinity": {
                     "description": "Affinity for results-cache pods",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "allocatedCPU": {
@@ -9814,7 +9963,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for ruler pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -10416,7 +10568,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for single binary pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -10858,11 +11013,15 @@
         },
         "tableManager": {
             "description": "DEPRECATED Configuration for the table-manager. The table-manager is only necessary when using a deprecated index type such as Cassandra, Bigtable, or DynamoDB, it has not been necessary since loki introduced self- contained index types like 'boltdb-shipper' and 'tsdb'. This will be removed in a future helm chart.",
+            "deprecated": true,
             "type": "object",
             "properties": {
                 "affinity": {
                     "description": "Affinity for table-manager pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -11181,7 +11340,10 @@
             "properties": {
                 "affinity": {
                     "description": "Affinity for write pods. The value will be passed through tpl.",
-                    "type": "object",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "additionalProperties": true
                 },
                 "annotations": {
@@ -11676,5 +11838,56 @@
             }
         }
     },
-    "additionalProperties": true
+    "additionalProperties": true,
+    "$defs": {
+        "_definitions.json": {
+            "definitions": {
+                "io.k8s.apimachinery.pkg.apis.meta.v1.LabelSelector": {
+                    "description": "A label selector is a label query over a set of resources. The result of matchLabels and matchExpressions are ANDed. An empty label selector matches all objects. A null label selector matches no objects.",
+                    "type": "object",
+                    "properties": {
+                        "matchExpressions": {
+                            "description": "matchExpressions is a list of label selector requirements. The requirements are ANDed.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/_definitions.json/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.LabelSelectorRequirement"
+                            }
+                        },
+                        "matchLabels": {
+                            "description": "matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is \"key\", the operator is \"In\", and the values array contains only \"value\". The requirements are ANDed.",
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "io.k8s.apimachinery.pkg.apis.meta.v1.LabelSelectorRequirement": {
+                    "description": "A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.",
+                    "type": "object",
+                    "required": [
+                        "key",
+                        "operator"
+                    ],
+                    "properties": {
+                        "key": {
+                            "description": "key is the label key that the selector applies to.",
+                            "type": "string"
+                        },
+                        "operator": {
+                            "description": "operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.",
+                            "type": "string"
+                        },
+                        "values": {
+                            "description": "values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

@@ -53,6 +53,75 @@ See the [changelog](https://grafana-community.github.io/helm-charts/changelog/?c
 
 ## Upgrading
 
+### From 17.x to 18.0.0 ([#193](https://github.com/grafana-community/helm-charts/pull/193))
+
+The `.Values.monitoring` block has been refactored and the root `.Values.clusterLabelOverride` field removed and merged into `.Values.monitoring`. Users should not assume backwards compatibility with any prior monitoring configuration — review this section in full before upgrading.
+
+All dashboards, recording rules, and alert rules are now generated from the upstream [loki-mixin](https://github.com/grafana/loki/tree/main/production/loki-mixin) rather than maintained as static files. This ensures dashboard queries work correctly across all deployment modes (Monolithic, SimpleScalable, Distributed) and keeps the chart aligned with the upstream Loki observability stack.
+
+#### `cluster` label repurposed; new `app_instance` label
+
+The metric label that identifies the Loki Helm release has changed from `cluster` to `app_instance`. The `cluster` label is no longer added by default — it is now an optional label for multi-cluster environments, controlled by `monitoring.multiCluster.enabled`. When enabled, its value comes from `monitoring.multiCluster.clusterName` and represents the Kubernetes cluster, not the Helm release.
+
+Actions required:
+- Update any alerting rules, dashboards, or downstream recording rules that filter on `cluster=~"<release-name>"` to use `app_instance=~"<release-name>"` instead.
+- Existing Grafana dashboard URLs that encode the `cluster` variable in the URL will need to be updated.
+- If you run Loki across multiple Kubernetes clusters, enable `monitoring.multiCluster.enabled` and set `monitoring.multiCluster.clusterName` to restore the `cluster` label with a per-cluster value.
+
+#### Alerts separated from rules
+
+Alert rules have been split into a new `monitoring.alerts` section, separate from `monitoring.rules` (which now only controls recording rules). Users who had `monitoring.rules.alerting: true` must switch to `monitoring.alerts.enabled: true`.
+
+The old `monitoring.rules.configs` block (with per-alert `enabled`, `for`, `lookbackPeriod`, `threshold`, `severity`) has been removed. Alerts are now generated from the loki-mixin and can be individually disabled or customised:
+
+```yaml
+monitoring:
+  alerts:
+    enabled: true
+    disabled: {}    # disable specific alerts: { LokiRequestErrors: true }
+    overrides: {}   # override per-alert for/severity: { LokiRequestErrors: { for: 5m, severity: warning } }
+    keepFiringFor: ""
+```
+
+Note: `lookbackPeriod` and `threshold` are not carried forward as they did not generalize to all PromQL alert expressions.
+
+#### Removed and renamed values
+
+| Old value | Replacement |
+|---|---|
+| `clusterLabelOverride` | `monitoring.appInstanceLabelName` and `monitoring.appInstanceLabelValue` |
+| `monitoring.serviceMonitor.clusterLabel` | `monitoring.appInstanceLabelName` and `monitoring.appInstanceLabelValue` |
+| `monitoring.dashboards.namespace` | `monitoring.namespace` (applies to all monitoring resources) |
+| `monitoring.rules.namespace` | `monitoring.namespace` |
+| `monitoring.rules.additionalGroups` | `monitoring.additionalPrometheusRules` (dict structure, supports both recording rules and alerts — see `values.yaml` for examples) |
+| `monitoring.dashboards.multiCluster` | `monitoring.multiCluster` (hoisted to monitoring level) |
+
+#### Recording rule names
+
+Recording rule `record:` names now use the `cluster_job:`, `cluster_job_route:`, and `cluster_namespace_job_route:` conventions from the upstream loki-mixin. If you reference recording rule metrics directly in custom alerts or dashboards, update your queries.
+
+#### Multi-cluster configuration
+
+`monitoring.multiCluster` supports two modes:
+
+| Setting | Behavior |
+|---|---|
+| `enabled: true` + `clusterName: "my-cluster"` | **Basic mode.** The chart adds `cluster` labels to ServiceMonitor relabeling, recording rules, and alerts. Recording rule aggregations include `cluster` in `by()` clauses. Dashboards show the `cluster` variable. |
+| `enabled: true` + `clusterName: ""` | **Externally managed mode.** Only dashboards are modified — the `cluster` variable is shown. Recording rules, alerts, and ServiceMonitor are not modified. Use this when an external tool (e.g. Grafana Alloy) handles cluster label injection and PromQL rewriting. |
+
+To restore the old `cluster` label behavior (not recommended), set `monitoring.appInstanceLabelName` to `cluster`. This may cause confusion in multi-cluster environments and does not align with community conventions.
+
+#### Dashboard architecture changed
+
+Dashboards are now generated from loki-mixin into individual ConfigMap resources (one per dashboard) instead of a single ConfigMap containing all dashboards. The static JSON source files under `src/dashboards/` have been removed.
+
+New dashboard configuration options:
+- `monitoring.dashboards.defaultDashboardsTimezone` (default: `utc`)
+- `monitoring.dashboards.defaultDashboardsEditable` (default: `true`)
+- `monitoring.dashboards.defaultDashboardsInterval` (default: `1m`)
+- `monitoring.dashboards.grafanaOperator` — optional deployment via Grafana Operator CRD instead of ConfigMaps
+- `monitoring.dashboards.grafanaOperator.instanceSelector` — label selector matching your Grafana instance's labels (default: `{}`)
+
 ### From 16.x to 17.0.0 ([#366](https://github.com/grafana-community/helm-charts/pull/366))
 
 The built-in MinIO subchart is now **officially deprecated**. Enabling `minio.enabled=true` now fails chart rendering by default.
