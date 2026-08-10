@@ -5,29 +5,31 @@ Sealed Secrets are "one-way" encrypted K8s Secrets that can be created by anyone
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Prerequisites](#prerequisites)
-- [Installing the Chart](#installing-the-chart)
-- [Uninstalling the Chart](#uninstalling-the-chart)
-- [Parameters](#parameters)
-  - [Common parameters](#common-parameters)
-  - [Sealed Secrets Parameters](#sealed-secrets-parameters)
-  - [Traffic Exposure Parameters](#traffic-exposure-parameters)
-  - [Other Parameters](#other-parameters)
-  - [Metrics parameters](#metrics-parameters)
-- [Using kubeseal](#using-kubeseal)
-- [Configuration and installation details](#configuration-and-installation-details)
-- [Troubleshooting](#troubleshooting)
-- [Upgrading](#upgrading)
-  - [To 2.0.0](#to-200)
+- [Sealed Secrets](#sealed-secrets)
+  - [TL;DR](#tldr)
+  - [Introduction](#introduction)
+  - [Prerequisites](#prerequisites)
+  - [Installing the Chart](#installing-the-chart)
+  - [Uninstalling the Chart](#uninstalling-the-chart)
+  - [Parameters](#parameters)
+    - [Common parameters](#common-parameters)
+    - [Sealed Secrets Parameters](#sealed-secrets-parameters)
+    - [Traffic Exposure Parameters](#traffic-exposure-parameters)
+    - [Other Parameters](#other-parameters)
+    - [Metrics parameters](#metrics-parameters)
+    - [PodDisruptionBudget Parameters](#poddisruptionbudget-parameters)
+  - [Using kubeseal](#using-kubeseal)
+  - [Configuration and installation details](#configuration-and-installation-details)
+  - [Troubleshooting](#troubleshooting)
+  - [Upgrading](#upgrading)
+    - [To 2.0.0](#to-200)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto-update -->
 
 ## TL;DR
 
 ```console
-$ helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
+$ helm repo add sealed-secrets https://bitnami.github.io/sealed-secrets
 $ helm install my-release sealed-secrets/sealed-secrets
 ```
 
@@ -35,7 +37,7 @@ $ helm install my-release sealed-secrets/sealed-secrets
 
 Bitnami charts for Helm are carefully engineered, actively maintained and are the quickest and easiest way to deploy containers on a Kubernetes cluster that are ready to handle production workloads.
 
-This chart bootstraps a [Sealed Secret Controller](https://github.com/bitnami-labs/sealed-secrets) Deployment in [Kubernetes](http://kubernetes.io) using the [Helm](https://helm.sh) package manager.
+This chart bootstraps a [Sealed Secret Controller](https://github.com/bitnami/sealed-secrets) Deployment in [Kubernetes](http://kubernetes.io) using the [Helm](https://helm.sh) package manager.
 
 Bitnami charts can be used with [Kubeapps](https://kubeapps.com/) for the deployment and management of Helm Charts in clusters.
 
@@ -86,7 +88,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
 | `image.registry`                                  | Sealed Secrets image registry                                                                                      | `docker.io`                         |
 | `image.repository`                                | Sealed Secrets image repository                                                                                    | `bitnami/sealed-secrets-controller` |
-| `image.tag`                                       | Sealed Secrets image tag (immutable tags are recommended)                                                          | `0.37.0`                            |
+| `image.tag`                                       | Sealed Secrets image tag (immutable tags are recommended)                                                          | `0.38.4`                            |
 | `image.pullPolicy`                                | Sealed Secrets image pull policy                                                                                   | `IfNotPresent`                      |
 | `image.pullSecrets`                               | Sealed Secrets image pull secrets                                                                                  | `[]`                                |
 | `revisionHistoryLimit`                            | Number of old history to retain to allow rollback (If not set, default Kubernetes value is set to 10)              | `""`                                |
@@ -136,10 +138,12 @@ The command removes all the Kubernetes components associated with the chart and 
 | `resources.requests`                              | The requested resources for the Sealed Secret containers                                                           | `{}`                                |
 | `podSecurityContext.enabled`                      | Enabled Sealed Secret pods' Security Context                                                                       | `true`                              |
 | `podSecurityContext.fsGroup`                      | Set Sealed Secret pod's Security Context fsGroup                                                                   | `65534`                             |
+| `podSecurityContext.seccompProfile.type`          | Set Sealed Secret pod's Security Context seccomp profile type                                                      | `RuntimeDefault`                    |
 | `containerSecurityContext.enabled`                | Enabled Sealed Secret containers' Security Context                                                                 | `true`                              |
 | `containerSecurityContext.readOnlyRootFilesystem` | Whether the Sealed Secret container has a read-only root filesystem                                                | `true`                              |
 | `containerSecurityContext.runAsNonRoot`           | Indicates that the Sealed Secret container must run as a non-root user                                             | `true`                              |
 | `containerSecurityContext.runAsUser`              | Set Sealed Secret containers' Security Context runAsUser                                                           | `1001`                              |
+| `containerSecurityContext.allowPrivilegeEscalation` | Set Sealed Secret containers' privilege escalation                                                               | `false`                             |
 | `containerSecurityContext.capabilities`           | Adds and removes POSIX capabilities from running containers (see `values.yaml`)                                    |                                     |
 | `podLabels`                                       | Extra labels for Sealed Secret pods                                                                                | `{}`                                |
 | `podAnnotations`                                  | Annotations for Sealed Secret pods                                                                                 | `{}`                                |
@@ -253,7 +257,7 @@ helm install my-release -f values.yaml sealed-secrets/sealed-secrets
 
 ## Using kubeseal
 
-Install the kubeseal CLI by downloading the binary from [sealed-secrets/releases](https://github.com/bitnami-labs/sealed-secrets/releases).
+Install the kubeseal CLI by downloading the binary from [sealed-secrets/releases](https://github.com/bitnami/sealed-secrets/releases).
 
 Fetch the public key by passing the release name and namespace:
 
@@ -264,7 +268,7 @@ kubeseal --fetch-cert \
 > pub-cert.pem
 ```
 
-Read about kubeseal usage on [sealed-secrets docs](https://github.com/bitnami-labs/sealed-secrets#usage).
+Read about kubeseal usage on [sealed-secrets docs](https://github.com/bitnami/sealed-secrets#usage).
 
 NOTE: the helm chart by default installs the controller with the name `sealed-secrets`, while the `kubeseal` command line interface (CLI) tries to access the controller with the name `sealed-secrets-controller`. You can explicitly pass `--controller-name` to the CLI:
 
