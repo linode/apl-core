@@ -29,7 +29,7 @@ dependencies:
     version: 1.21.1
     repository: https://kubernetes-sigs.github.io/external-dns
   - name: external-secrets
-    version: 2.7.0
+    version: 2.9.0
     repository: https://charts.external-secrets.io
   - name: gitea
     version: 12.6.0
@@ -102,8 +102,8 @@ dependencies:
     version: 4.4.34
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
-    version: 2.18.6
-    repository: https://bitnami-labs.github.io/sealed-secrets/
+    version: 2.19.1
+    repository: https://bitnami.github.io/sealed-secrets
   - name: tekton-pipeline
     alias: tekton-pipelines
     version: 1.12.0
