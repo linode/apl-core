@@ -58,7 +58,6 @@ jobs:
           fi
           git config --global user.email "$BOT_EMAIL"
           git config --global user.name "$BOT_USERNAME"
-
       - name: Checkout
         uses: actions/checkout@v7
         with:
