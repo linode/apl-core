@@ -1,0 +1,7 @@
+crds:
+  annotations:
+    example.com/managed-by: opentelemetry-operator-chart
+
+manager:
+  collectorImage:
+    repository: "otel/opentelemetry-collector-k8s"
