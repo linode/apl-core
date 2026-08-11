@@ -226,7 +226,7 @@ jobs:
     name: Create k8s cluster
     needs: preprocess-linode-input
     outputs:
-      linode-cluster-context: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
+      linode-cluster-id: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
     runs-on: ubuntu-latest
     steps:
       - name: Install the Linode CLI
@@ -280,6 +280,13 @@ jobs:
             --tags testing \
             --no-defaults \
             "${args[@]}"
+      - name: Retrieve cluster id
+        id: retrieve-cluster-id
+        env:
+          LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
+        run: |
+          LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -re --arg cluster_name "$LINODE_CLUSTER_NAME" 'map(select(.label == $cluster_name) | .id) | .[0]')
+          echo "linode-cluster-id=$LINODE_CLUSTER_ID" >> "$GITHUB_OUTPUT"
       - name: Waiting for kubeconfig to be available
         id: save-kubectl-config
         env:
@@ -291,8 +298,6 @@ jobs:
             echo "still waiting..."
             sleep 10
           done
-          linode_cluster_context=$(kubectl config current-context)
-          echo "linode-cluster-context=$linode_cluster_context" >> "$GITHUB_OUTPUT"
       - name: Wait for at least one Kubernetes node to be Ready
         run: |
           echo "Waiting for at least one Kubernetes node to be Ready..."
@@ -334,18 +339,25 @@ jobs:
         uses: linode/action-linode-cli@v1
         with:
           token: ${{ secrets.LINODE_TOKEN }}
-      - name: Retrieve cluster id
-        id: retrieve-cluster-id
+      - name: Set kubeconfig
+        id: save-kubectl-config
         env:
           LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
         run: |
-          LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -re --arg cluster_name "$LINODE_CLUSTER_NAME" 'map(select(.label == $cluster_name) | .id) | .[0]')
-          echo "linode-cluster-id=$LINODE_CLUSTER_ID" >> "$GITHUB_OUTPUT"
+          echo "Waiting for kubeconfig..."
+          while :; do
+            linode-cli get-kubeconfig --label "$LINODE_CLUSTER_NAME" 2> /dev/null && break
+            echo "still waiting..."
+            sleep 10
+          done
+          linode_cluster_context=$(kubectl config current-context)
+          echo "linode-cluster-context=$linode_cluster_context" >> "$GITHUB_OUTPUT"
+
       - name: Set up Wiz
         if: ${{ inputs.install_profile != 'no-apl' && inputs.enableWiz }}
         env:
           LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
-          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
+          LINODE_CLUSTER_ID: ${{ needs.create-cluster.outputs.linode-cluster-id }}
           WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
           WIZ_CLIENT_TOKEN: ${{ secrets.WIZ_CLIENT_TOKEN }}
         run: |
@@ -425,8 +437,8 @@ jobs:
           BYO_GIT_PAT: ${{ secrets.BYO_GIT_PAT }}
           BYO_GIT_URL: ${{ secrets.BYO_GIT_URL }}
           DOMAIN: ${{ needs.preprocess-linode-input.outputs.apl-dns-domain }}
-          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
-          LINODE_CLUSTER_CONTEXT: ${{ needs.create-cluster.outputs.linode-cluster-context }}
+          LINODE_CLUSTER_ID: ${{ needs.create-cluster.outputs.linode-cluster-id }}
+          LINODE_CLUSTER_CONTEXT: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
           LKE_TIER: ${{ inputs.lke_tier }}
           INSTALL_PROFILE: ${{ inputs.install_profile }}
           CERTIFICATE: ${{ inputs.certificate }}
@@ -508,7 +520,7 @@ jobs:
         id: get-public-ip
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
-          LINODE_CLUSTER_CONTEXT: ${{ needs.create-cluster.outputs.linode-cluster-context }}
+          LINODE_CLUSTER_CONTEXT: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
         run: |
           kubectl config use-context "$LINODE_CLUSTER_CONTEXT"
           # Wait for platform-istio service to receive an external IP
@@ -526,7 +538,7 @@ jobs:
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
           LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
-          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
+          LINODE_CLUSTER_ID: ${{ needs.create-cluster.outputs.linode-cluster-id }}
         run: |
           if [[ -n "$LKE_CP_ACL_IPV4" ]]; then
             echo "Resetting ACL to internal IPs"
