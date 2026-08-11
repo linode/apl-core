@@ -473,6 +473,77 @@ Shared by both loops with trigger-specific variations:
 8. Update apply state to 'succeeded' or 'failed'
 9. Release lock (`isApplying = false`)
 
+## Readiness and Convergence Contract
+
+Bootstrap automation needs a machine-checkable answer to "has the operator finished
+its job yet?". The operator exposes it through the readiness of its own Deployment.
+
+### The gate
+
+The operator writes `/tmp/ready` (`markOperatorReady()`) at exactly one point: after
+an apply run completes successfully. That run is what creates the ArgoCD Applications,
+so past it the platform can heal itself through ArgoCD. The `readinessProbe` on the
+apl-operator Deployment tests for that file, so:
+
+```bash
+# blocks until the operator has completed an apply run
+kubectl wait --for=condition=Available deployment/apl-operator -n apl-operator --timeout=30m
+
+# same signal, via helm
+helm install apl … --wait --timeout 30m
+```
+
+This is **not** the same as "the platform is fully up". When the operator reports
+Ready, ArgoCD is still working through the Applications it was just handed. The gate
+says the operator is finished and its reconcile loop has started — from there, health
+belongs to ArgoCD.
+
+Three properties are deliberate:
+
+- **It latches, for the life of the pod.** Readiness is never cleared by a later apply.
+  The reconcile loop applies every ~5 minutes in steady state; flipping the Deployment
+  out of `Available` on each pass would make the condition useless as a gate. Per-apply
+  status is reported through the `apl-operator-state` ConfigMap instead (below). The
+  marker lives on the pod's `/tmp` emptyDir, so it survives a container restart within
+  the pod and is only cleared when the pod itself is recreated — a rescheduled or
+  rolled-out pod goes NotReady until it completes an apply of its own.
+- **It fails closed.** If the marker cannot be written, or the apply keeps failing,
+  the pod stays NotReady. The signal never claims progress that did not happen —
+  `--wait` times out loudly rather than returning early.
+- **A first install takes 10-15 minutes.** Size `--timeout` accordingly; the
+  Deployment's `progressDeadlineSeconds` is raised to 1800 so `kubectl rollout
+  status` does not report `ProgressDeadlineExceeded` on a healthy install.
+
+### Introspection
+
+For phase detail rather than a binary gate, read the ConfigMaps in the table below:
+
+```bash
+# installation phase: pending | in-progress | completed | failed (+ attempt, timestamp)
+kubectl get cm apl-installation-status -n apl-operator -o jsonpath='{.data.status}'
+
+# last apply: commitHash, status, timestamp, trigger, errorMessage
+kubectl get cm apl-operator-state -n apl-operator -o jsonpath='{.data.state}'
+```
+
+`apl-operator-state.commitHash` is the answer to "did the operator apply *my* commit
+yet?" — poll for `status: succeeded` at the revision you pushed.
+
+### What this is not
+
+The Deployment gate covers the operator's own pipeline: essential manifests, CRDs,
+`stage=prep`, `app=core`, and the creation of the ArgoCD Applications for the
+remaining apps. Whether those Applications have actually synced and gone Healthy is
+ArgoCD's business, not this gate's.
+
+An end-to-end smoke check that the platform is externally serving is
+`https://auth.<domainSuffix>/ready` (oauth2-proxy behind the ingress). It exercises
+DNS, ingress-nginx, the TLS certificate and the auth chain, which the in-cluster
+gate does not. It is complementary, not a substitute: it needs public DNS and a
+trusted certificate, it cannot tell you *which* revision of your values converged,
+and a non-200 cannot distinguish "platform not ready" from a DNS or certificate
+problem.
+
 ## Kubernetes Resources
 
 ### ConfigMaps
