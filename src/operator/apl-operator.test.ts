@@ -5,7 +5,7 @@ import { restartPlatformAuthPods } from '../common/runtime-upgrades/restart-plat
 import { AplOperations } from './apl-operations'
 import { AplOperator, AplOperatorConfig, ApplyTrigger, OAUTH2_PROXY_ARGOCD_APP_NAME } from './apl-operator'
 import { GitRepository } from './git-repository'
-import { hasPlatformAuthPodsRestarted, markPlatformAuthPodsRestarted, updateApplyState } from './k8s'
+import { markOperatorReady, hasPlatformAuthPodsRestarted, markPlatformAuthPodsRestarted, updateApplyState } from './k8s'
 
 const mockInfoFn = jest.fn()
 const mockWarnFn = jest.fn()
@@ -65,6 +65,7 @@ jest.mock('./k8s', () => ({
   appRevisionMatches: jest.fn().mockResolvedValue(true),
   hasPlatformAuthPodsRestarted: jest.fn().mockResolvedValue(true),
   markPlatformAuthPodsRestarted: jest.fn().mockResolvedValue(undefined),
+  markOperatorReady: jest.fn(),
 }))
 
 jest.mock('../common/k8s', () => ({
@@ -224,6 +225,7 @@ describe('AplOperator', () => {
         }),
       )
 
+      expect(markOperatorReady).toHaveBeenCalled()
       expect((aplOperator as any).isApplying).toBe(false)
     })
 
@@ -275,6 +277,8 @@ describe('AplOperator', () => {
         }),
       )
 
+      // A failed apply leaves the ArgoCD Applications unaccounted for — the pod must stay NotReady.
+      expect(markOperatorReady).not.toHaveBeenCalled()
       expect((aplOperator as any).isApplying).toBe(false)
 
       expect(mockErrorFn).toHaveBeenCalledWith('[poll] Apply process failed', 'Apply failed')

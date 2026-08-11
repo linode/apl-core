@@ -10,6 +10,8 @@ metadata:
 {{- end }}
 spec:
   replicas: {{ .Values.scale.replicas | default 1 }}
+  # The rollout stays Progressing until the operator is ready, which is longer than the 600s default.
+  progressDeadlineSeconds: 1800
   selector:
     matchLabels:
       {{- include "apl-operator.selectorLabels" . | nindent 6 }}
@@ -73,6 +75,16 @@ spec:
             periodSeconds: 60
             failureThreshold: 3
             timeoutSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test -f /tmp/ready"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
