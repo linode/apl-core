@@ -284,6 +284,8 @@ jobs:
     needs:
       - preprocess-linode-input
       - create-cluster
+    outputs:
+      apl-public-ip: ${{ steps.get-public-ip.outputs.apl-public-ip }}
     runs-on: ubuntu-latest
     steps:
       - name: Install the Linode CLI
@@ -514,23 +516,6 @@ jobs:
                 echo "Waiting for platform-istio IP..."
               fi
           done
-      - name: Create DNS A record for wildcard domain
-        if: ${{ inputs.install_profile != 'no-apl' }}
-        env:
-          EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
-          EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
-          EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
-          EDGEDNS_ZONE: ${{ vars.EDGEDNS_ZONE }}
-          EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
-          DOMAIN: ${{ needs.preprocess-linode-input.outputs.apl-dns-domain }}
-          PUB_IP: ${{ steps.get-public-ip.outputs.apl-public-ip }}
-        run: |
-          pip3 install edgegrid-python requests
-          python3 bin/edgedns_A_record.py create "*.${DOMAIN}" "$PUB_IP" || \
-            (echo "Will try to recreate it" && \
-            python3 bin/edgedns_A_record.py delete "*.${DOMAIN}" && \
-            python3 bin/edgedns_A_record.py create "*.${DOMAIN}" "$PUB_IP")
-
       - name: Set control plane ACL to internal IPs
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
@@ -558,3 +543,29 @@ jobs:
         if: failure()
         run: |
           kubectl logs -l app.kubernetes.io/name=apl-operator -n apl-operator --tail 150
+
+  create-dns-record:
+    name: Create DNS A record for wildcard domain
+    if: ${{ inputs.install_profile != 'no-apl' }}
+    needs:
+      - preprocess-linode-input
+      - deploy-apl
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Create DNS A record for wildcard domain
+        env:
+          EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
+          EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
+          EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
+          EDGEDNS_ZONE: ${{ vars.EDGEDNS_ZONE }}
+          EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
+          DOMAIN: ${{ needs.preprocess-linode-input.outputs.apl-dns-domain }}
+          PUB_IP: ${{ needs.deploy-apl.outputs.apl-public-ip }}
+        run: |
+          pip3 install edgegrid-python requests
+          python3 bin/edgedns_A_record.py create "*.${DOMAIN}" "$PUB_IP" || \
+            (echo "Will try to recreate it" && \
+            python3 bin/edgedns_A_record.py delete "*.${DOMAIN}" && \
+            python3 bin/edgedns_A_record.py create "*.${DOMAIN}" "$PUB_IP")
