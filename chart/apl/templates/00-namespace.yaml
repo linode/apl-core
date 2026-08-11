@@ -1,3 +1,4 @@
+{{- if .Values.installation.createNamespaces }}
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -21,3 +22,4 @@ metadata:
   labels:
     kubernetes.io/metadata.name: apl-secrets
     name: apl-secrets
+{{- end }}
