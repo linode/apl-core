@@ -1,9 +1,11 @@
 import { getStoredGitRepoConfig, GitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/gitea'
+import { checkArgoCDAppStatus } from '../common/k8s'
+import { restartPlatformAuthPods } from '../common/runtime-upgrades/restart-platform-auth-pods'
 import { AplOperations } from './apl-operations'
-import { AplOperator, AplOperatorConfig, ApplyTrigger } from './apl-operator'
+import { AplOperator, AplOperatorConfig, ApplyTrigger, OAUTH2_PROXY_ARGOCD_APP_NAME } from './apl-operator'
 import { GitRepository } from './git-repository'
-import { updateApplyState } from './k8s'
+import { hasPlatformAuthPodsRestarted, markPlatformAuthPodsRestarted, updateApplyState } from './k8s'
 
 const mockInfoFn = jest.fn()
 const mockWarnFn = jest.fn()
@@ -61,6 +63,18 @@ jest.mock('../cmd/commit', () => ({
 jest.mock('./k8s', () => ({
   updateApplyState: jest.fn().mockResolvedValue(undefined),
   appRevisionMatches: jest.fn().mockResolvedValue(true),
+  hasPlatformAuthPodsRestarted: jest.fn().mockResolvedValue(true),
+  markPlatformAuthPodsRestarted: jest.fn().mockResolvedValue(undefined),
+}))
+
+jest.mock('../common/k8s', () => ({
+  checkArgoCDAppStatus: jest.fn().mockResolvedValue('Healthy'),
+  k8s: { custom: jest.fn().mockReturnValue({}), core: jest.fn().mockReturnValue({}) },
+}))
+
+jest.mock('../common/runtime-upgrades/restart-platform-auth-pods', () => ({
+  OAUTH2_PROXY_ARGOCD_APP_NAME: 'istio-system-oauth2-proxy',
+  restartPlatformAuthPods: jest.fn().mockResolvedValue(undefined),
 }))
 
 jest.mock('./git-repository', () => ({
@@ -264,6 +278,59 @@ describe('AplOperator', () => {
       expect((aplOperator as any).isApplying).toBe(false)
 
       expect(mockErrorFn).toHaveBeenCalledWith('[poll] Apply process failed', 'Apply failed')
+    })
+
+    test('restarts platform-auth pods when oauth2-proxy is healthy and marker is unset', async () => {
+      Object.defineProperty(aplOperator, 'isApplying', { value: false, configurable: true })
+      ;(hasPlatformAuthPodsRestarted as jest.Mock).mockResolvedValueOnce(false)
+      ;(checkArgoCDAppStatus as jest.Mock).mockResolvedValueOnce('Healthy')
+
+      await aplOperator.runApplyIfNotBusy(ApplyTrigger.Poll)
+
+      expect(checkArgoCDAppStatus).toHaveBeenCalledWith(
+        OAUTH2_PROXY_ARGOCD_APP_NAME,
+        expect.anything(),
+        'health',
+        'Healthy',
+      )
+      expect(restartPlatformAuthPods).toHaveBeenCalled()
+      expect(markPlatformAuthPodsRestarted).toHaveBeenCalled()
+    })
+
+    test('does not restart platform-auth pods when the marker is already set', async () => {
+      Object.defineProperty(aplOperator, 'isApplying', { value: false, configurable: true })
+      ;(hasPlatformAuthPodsRestarted as jest.Mock).mockResolvedValueOnce(true)
+
+      await aplOperator.runApplyIfNotBusy(ApplyTrigger.Poll)
+
+      expect(checkArgoCDAppStatus).not.toHaveBeenCalled()
+      expect(restartPlatformAuthPods).not.toHaveBeenCalled()
+      expect(markPlatformAuthPodsRestarted).not.toHaveBeenCalled()
+    })
+
+    test('does not restart platform-auth pods when oauth2-proxy is not healthy yet', async () => {
+      Object.defineProperty(aplOperator, 'isApplying', { value: false, configurable: true })
+      ;(hasPlatformAuthPodsRestarted as jest.Mock).mockResolvedValueOnce(false)
+      ;(checkArgoCDAppStatus as jest.Mock).mockRejectedValueOnce(new Error('not healthy yet'))
+
+      await aplOperator.runApplyIfNotBusy(ApplyTrigger.Poll)
+
+      expect(restartPlatformAuthPods).not.toHaveBeenCalled()
+      expect(markPlatformAuthPodsRestarted).not.toHaveBeenCalled()
+      expect((aplOperator as any).isApplying).toBe(false)
+    })
+
+    test('does not fail the apply when the platform-auth restart check throws', async () => {
+      Object.defineProperty(aplOperator, 'isApplying', { value: false, configurable: true })
+      ;(hasPlatformAuthPodsRestarted as jest.Mock).mockRejectedValueOnce(new Error('configmap read failed'))
+
+      await aplOperator.runApplyIfNotBusy(ApplyTrigger.Poll)
+
+      expect(updateApplyState).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'succeeded',
+        }),
+      )
     })
   })
 
