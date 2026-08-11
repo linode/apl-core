@@ -329,10 +329,16 @@ jobs:
           WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
           WIZ_CLIENT_TOKEN: ${{ secrets.WIZ_CLIENT_TOKEN }}
         run: |
+          set -euo pipefail
 
           # Use cluster information from environment variables
           CLUSTER_NAME="$LINODE_CLUSTER_NAME"
           CLUSTER_ID="$LINODE_CLUSTER_ID"
+
+          if [[ -z "$WIZ_CLIENT_ID" || -z "$WIZ_CLIENT_TOKEN" ]]; then
+            echo "Wiz credentials are missing. Ensure WIZ_CLIENT_ID and WIZ_CLIENT_TOKEN are configured."
+            exit 1
+          fi
 
           echo "Setting up Wiz for cluster: $CLUSTER_NAME (ID: $CLUSTER_ID)"
 
@@ -341,6 +347,8 @@ jobs:
           sed "s/__WIZ_CLIENT_ID__/${WIZ_CLIENT_ID}/g; s/__WIZ_CLIENT_TOKEN__/${WIZ_CLIENT_TOKEN}/g; s/<connectorName>/${CLUSTER_NAME}/g; s/<clusterExternalId>/${CLUSTER_ID}/g" .github/templates/wiz-kubernetes-integration.yaml > "$KUB_INTEGRATION_PATH"
 
           NAMESPACE="wiz"
+          RELEASE_NAME="wiz-lke-ac"
+          CHART_NAME="wiz-sec/wiz-kubernetes-integration"
           # Add Helm repo for Wiz
           helm repo add wiz-sec https://charts.wiz.io/
           helm repo update
@@ -348,9 +356,37 @@ jobs:
           kubectl create namespace $NAMESPACE || echo "Namespace '$NAMESPACE' already exists."
 
           echo "🚀 Installing Wiz Kubernetes Integration..."
-          helm install wiz-lke-ac wiz-sec/wiz-kubernetes-integration --values "$KUB_INTEGRATION_PATH" -n "$NAMESPACE"
 
-          echo "✅ Wiz deployment for cluster $CLUSTER_NAME completed."
+          install_wiz() {
+            helm upgrade --install "$RELEASE_NAME" "$CHART_NAME" \
+              --values "$KUB_INTEGRATION_PATH" \
+              -n "$NAMESPACE" \
+              --wait \
+              --wait-for-jobs \
+              --timeout 20m0s \
+              --atomic
+          }
+
+          for attempt in 1 2 3; do
+            echo "Wiz install attempt ${attempt}/3"
+            if install_wiz; then
+              echo "Wiz deployment for cluster $CLUSTER_NAME completed."
+              break
+            fi
+
+            echo "Wiz install attempt ${attempt} failed."
+
+            if [[ "$attempt" -eq 3 ]]; then
+              echo "Wiz installation failed after 3 attempts."
+              exit 1
+            fi
+
+            # Clear stale hook artifacts before retrying
+            kubectl delete job -n "$NAMESPACE" wiz-kubernetes-connector-create-connector --ignore-not-found=true || true
+            kubectl delete secret -n "$NAMESPACE" wiz-kubernetes-connector-create-connector --ignore-not-found=true || true
+            echo "Retrying Wiz installation in 30 seconds..."
+            sleep 30
+          done
       - name: APL install
         id: apl-install
         if: ${{ inputs.install_profile != 'no-apl' }}
