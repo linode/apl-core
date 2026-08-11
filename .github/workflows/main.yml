@@ -1,11 +1,6 @@
 name: Build and publish Docker
 on:
   pull_request:
-    paths-ignore:
-      - 'docs/**'
-      - 'adr/**'
-      - '.vscode/**'
-      - '**.md'
   push:
     branches:
       - main
