@@ -222,8 +222,8 @@ jobs:
           echo "apl-dns-domain=$DOMAIN" >> "$GITHUB_OUTPUT"
           echo "DOMAIN=$DOMAIN"
 
-  deploy-apl:
-    name: Run integration test on linode cluster
+  create-cluster:
+    name: Create k8s cluster for testing
     needs: preprocess-linode-input
     runs-on: ubuntu-latest
     steps:
@@ -278,6 +278,18 @@ jobs:
             --tags testing \
             --no-defaults \
             "${args[@]}"
+
+  deploy-apl:
+    name: Run integration test on linode cluster
+    needs:
+      - preprocess-linode-input
+      - create-cluster
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install the Linode CLI
+        uses: linode/action-linode-cli@v1
+        with:
+          token: ${{ secrets.LINODE_TOKEN }}
       - name: Retrieve cluster id
         id: retrieve-cluster-id
         env:
