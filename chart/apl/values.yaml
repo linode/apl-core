@@ -129,6 +129,10 @@ operator:
   installRetries: 1000
   installMaxTimeoutMs: 10000
 
+  readiness:
+    # 30 minutes. If the operator has not installed the platform by then, something is off.
+    progressDeadlineSeconds: 1800
+
   image:
     repository: "mirror.registry.linodelke.net/docker/linode/apl-core"
 
