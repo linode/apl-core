@@ -7,7 +7,6 @@ import { waitTillGitRepoAvailable } from '../common/gitea'
 import { hfValues } from '../common/hf'
 import { checkArgoCDAppStatus, k8s } from '../common/k8s'
 import {
-  OAUTH2_PROXY_ARGOCD_APP_NAME,
   restartPlatformAuthPods as restartLabelledPlatformAuthPods,
 } from '../common/runtime-upgrades/restart-platform-auth-pods'
 import { ensureManifestDirectories, ensureTeamGitOpsDirectories } from '../common/utils'
@@ -32,6 +31,8 @@ export enum ApplyTrigger {
 function maskRepoUrl(url: string): string {
   return url.replace(/(https?:\/\/)([^@]+)(@.+)/g, '$1***$3')
 }
+
+const OAUTH2_PROXY_ARGOCD_APP_NAME = 'istio-system-oauth2-proxy'
 
 export class AplOperator {
   private d = terminal('operator:apl-operator')

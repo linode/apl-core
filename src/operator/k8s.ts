@@ -1,6 +1,6 @@
 import { ApiException, CoreV1Api, KubeConfig } from '@kubernetes/client-node'
 import { writeFileSync } from 'fs'
-import { APL_OPERATOR_NS, APL_PLATFORM_AUTH_RESTART_STATE_CM } from '../common/constants'
+import { APL_OPERATOR_NS, PLATFORM_AUTH_RESTART_STATE_CM } from '../common/constants'
 import { terminal } from '../common/debug'
 import { getErrorMessage } from './utils'
 
@@ -90,7 +90,7 @@ export async function updateApplyState(
 
 export async function hasPlatformAuthPodsRestarted(
   namespace: string = APL_OPERATOR_NS,
-  configMapName: string = APL_PLATFORM_AUTH_RESTART_STATE_CM,
+  configMapName: string = PLATFORM_AUTH_RESTART_STATE_CM,
 ): Promise<boolean> {
   try {
     await k8s.core().readNamespacedConfigMap({ name: configMapName, namespace })
@@ -103,7 +103,7 @@ export async function hasPlatformAuthPodsRestarted(
 
 export async function markPlatformAuthPodsRestarted(
   namespace: string = APL_OPERATOR_NS,
-  configMapName: string = APL_PLATFORM_AUTH_RESTART_STATE_CM,
+  configMapName: string = PLATFORM_AUTH_RESTART_STATE_CM,
 ): Promise<void> {
   try {
     await k8s.core().createNamespacedConfigMap({

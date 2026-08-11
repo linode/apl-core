@@ -4,7 +4,6 @@ import { terminal } from '../debug'
 import { getWorkloadKeyFromPod, restartPodOwner } from './restart-istio-sidecars'
 
 export const PLATFORM_AUTH_LABEL_SELECTOR = 'otomi.io/auth=platform'
-export const OAUTH2_PROXY_ARGOCD_APP_NAME = 'istio-system-oauth2-proxy'
 
 export async function restartPlatformAuthPods(
   coreV1Api: CoreV1Api,
