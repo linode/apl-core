@@ -419,11 +419,7 @@ jobs:
           # Add Helm repo for Wiz
           helm repo add wiz-sec https://charts.wiz.io/
           helm repo update
-
-          kubectl create namespace $NAMESPACE || echo "Namespace '$NAMESPACE' already exists."
-
           echo "🚀 Installing Wiz Kubernetes Integration..."
-
           install_wiz() {
             local release_status
             release_status="$(helm status "$RELEASE_NAME" -n "$NAMESPACE" 2>/dev/null | awk -F': ' '/^STATUS:/{print $2}')"
@@ -435,6 +431,7 @@ jobs:
 
             helm upgrade --install "$RELEASE_NAME" "$CHART_NAME" \
               --values "$KUB_INTEGRATION_PATH" \
+              --create-namespace \
               -n "$NAMESPACE" \
               --wait \
               --wait-for-jobs \
