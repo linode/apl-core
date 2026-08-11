@@ -204,7 +204,7 @@ additionalPrometheusRules:
   - name: harbor-db-backup
     {{- readFile "rules/harbor-db-backup.yaml" | nindent 4 }}
   {{- end }}
-  {{- if $v.platformBackups.database.keycloak.enabled }}
+  {{- if and $v.platformBackups.database.keycloak.enabled ($v.apps | get "keycloak.enabled" false) }}
   - name: keycloak-db-backup
     {{- readFile "rules/keycloak-db-backup.yaml" | nindent 4 }}
   {{- end }}

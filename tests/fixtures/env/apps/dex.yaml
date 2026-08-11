@@ -1,0 +1,16 @@
+kind: AplApp
+metadata:
+    name: dex
+spec:
+    _rawValues: {}
+    idp:
+        clientID: otomi
+    replicas: 1
+    resources:
+        limits:
+            cpu: 200m
+            memory: 128Mi
+        requests:
+            cpu: 20m
+            memory: 64Mi
+    adminUsername: otomi-admin

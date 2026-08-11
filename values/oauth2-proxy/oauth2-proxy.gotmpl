@@ -82,7 +82,8 @@ extraInitContainers:
     image: curlimages/curl:latest
     {{- end }}
     command: ["/bin/sh","-c"]
-    args: ["while [ $(curl -sw '%{http_code}' {{ $v._derived.oidcBaseUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak OIDC Issuer URL'; done"]
+    {{- /* Polls discovery rather than the issuer root: Keycloak serves both, Dex only serves discovery. */}}
+    args: ["while [ $(curl -sw '%{http_code}' {{ $v._derived.oidcWellKnownUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for OIDC Issuer URL'; done"]
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 initContainers:

@@ -1,0 +1,56 @@
+{{- $v := .Values }}
+{{- $d := $v.apps | get "dex" }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+
+{{- /*
+  Chart 0.24.1 ships Dex 2.44.0, which drops the groups field when a user logs in with a local
+  password. Group membership drives all platform authorization, so 2.45.1 or later is required:
+  it returns Groups from the password record. Remove this override once the chart catches up.
+*/}}
+image:
+  tag: v2.45.1
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  repository: {{ $v.otomi.linodeLkeImageRepository }}/ghcr/dexidp/dex
+  {{- end }}
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+
+replicaCount: {{ $d.replicas }}
+
+# The Dex configuration is delivered as an ExternalSecret (see dex-raw.gotmpl) because it
+# contains the OAuth2 client secret. Secret values must never travel through Helmfile values.
+configSecret:
+  create: false
+  name: dex-config
+
+# Dex stores auth codes, refresh tokens, offline sessions, passwords and signing keys as
+# custom resources, so it needs permission to manage them and to register its own CRDs.
+rbac:
+  create: true
+  createClusterScoped: true
+
+serviceAccount:
+  create: true
+
+httpRoute:
+  enabled: true
+  {{- with $httpRoute.annotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  parentRefs:
+    {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
+  hostnames:
+    - {{ $v._derived.dexDomain }}
+
+service:
+  ports:
+    http:
+      port: 5556
+
+resources: {{- toYaml $d.resources | nindent 2 }}
+
+priorityClassName: otomi-critical

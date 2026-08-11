@@ -1,5 +1,5 @@
 {{- $v := . }}
-{{- $logoutRedirectParam := printf "%s?post_logout_redirect_uri=https://%s/oauth2/start&client_id=%s" $v._derived.oidcLogoutUrl $v._derived.consoleDomain $v.apps.keycloak.idp.clientID }}
+{{- $logoutRedirectParam := $v._derived.logoutToOauth2Start }}
 annotations:
   {{- if $v.otomi.hasExternalDNS }}
   externaldns: "true"

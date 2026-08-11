@@ -135,6 +135,19 @@ export const deriveSecrets = async (values: Record<string, any> = {}): Promise<R
   ).stdout.trim()
 
   set(secrets, 'apps.harbor.registry.credentials.htpasswd', htpasswd)
+
+  // Dex seeds the platform admin as a static password and only accepts a bcrypt hash, so derive
+  // one from the generated admin password. htpasswd emits the `$2y$` variant, which Go's bcrypt
+  // rejects; `$2a$` is the same format and is what Dex expects.
+  const adminPassword = values.otomi?.adminPassword
+  if (adminPassword) {
+    const dexAdminPasswordHash = (await $`htpasswd -nbBC 10 "" ${adminPassword}`).stdout
+      .trim()
+      .replace(/^:/, '')
+      .replace(/^\$2y\$/, () => '$2a$')
+    set(secrets, 'apps.dex.adminPasswordHash', dexAdminPasswordHash)
+  }
+
   return secrets
 }
 /**

@@ -39,8 +39,8 @@ resources:
             property: adminPassword
         - secretKey: keycloakClientSecret
           remoteRef:
-            key: keycloak-secrets
-            property: idp_clientSecret
+            key: {{ $v._derived.oidcClientSecretKey }}
+            property: {{ $v._derived.oidcClientSecretProperty }}
   - apiVersion: v1
     kind: ConfigMap
     metadata:
