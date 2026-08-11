@@ -280,7 +280,7 @@ jobs:
             --tags testing \
             --no-defaults \
             "${args[@]}"
-      - name: Save kubectl config with auth token
+      - name: Waiting for kubeconfig to be available
         id: save-kubectl-config
         env:
           LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
