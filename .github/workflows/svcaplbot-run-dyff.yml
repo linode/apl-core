@@ -107,6 +107,22 @@ jobs:
           echo '```diff' >> "$comment_file"
           cat "$GITHUB_WORKSPACE/pr/tmp/diff-output.txt" >> "$comment_file"
           echo '```' >> "$comment_file"
+
+          # Always publish the diff to the job summary. For pull requests from a
+          # fork, secrets — and therefore BOT_TOKEN — are not available, so this
+          # is the only channel that can carry the comparison.
+          # Truncating mid-diff would leave the ```diff fence unclosed and garble the
+          # rest of the summary, so close it explicitly and say the output was cut.
+          summary_limit=900000
+          head -c "$summary_limit" "$comment_file" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$(wc -c < "$comment_file")" -gt "$summary_limit" ]; then
+            printf '\n```\n\n_Output truncated at %s bytes._\n' "$summary_limit" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
           if [ "${{ github.event_name }}" = "pull_request" ]; then
+            if [ -z "$GH_TOKEN" ]; then
+              echo "::notice::No BOT_TOKEN available (pull request from a fork) — comparison published to the job summary instead of a PR comment."
+              exit 0
+            fi
             gh pr comment ${{ github.event.pull_request.number }} --body-file "$comment_file" --create-if-none --edit-last
           fi
