@@ -664,6 +664,14 @@
               "examples": [
                 false
               ]
+            },
+            "operator.collector.usedefaulttelemetryshape": {
+              "type": "boolean",
+              "default": false,
+              "title": "Use collector defaults for injected Prometheus telemetry metric names",
+              "examples": [
+                false
+              ]
             }
           },
           "examples": [
@@ -1812,6 +1820,19 @@
           "examples": [
             true
           ]
+        },
+        "annotations": {
+          "type": "object",
+          "default": {},
+          "title": "CRD Annotations",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "examples": [
+            {
+              "example.com/managed-by": "opentelemetry-operator-chart"
+            }
+          ]
         }
       },
       "examples": [
@@ -1948,11 +1969,61 @@
       "default": {},
       "title": "The testFramework Schema",
       "required": [
+        "certManager",
         "image",
         "securityContext"
       ],
       "additionalProperties": false,
       "properties": {
+        "certManager": {
+          "type": "object",
+          "default": {},
+          "title": "The cert-manager test configuration Schema",
+          "required": [
+            "env"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "env": {
+              "type": "array",
+              "default": [],
+              "title": "Environment variables used by the cert-manager Helm test hook",
+              "items": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "valueFrom": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          },
+          "examples": [
+            {
+              "env": [
+                {
+                  "name": "CERT_MANAGER_CLUSTERIP",
+                  "value": "cert-manager-webhook.cert-manager"
+                },
+                {
+                  "name": "CERT_MANAGER_PORT",
+                  "value": "443"
+                }
+              ]
+            }
+          ]
+        },
         "image": {
           "type": "object",
           "default": {},
@@ -2003,6 +2074,18 @@
       },
       "examples": [
         {
+          "certManager": {
+            "env": [
+              {
+                "name": "CERT_MANAGER_CLUSTERIP",
+                "value": "cert-manager-webhook.cert-manager"
+              },
+              {
+                "name": "CERT_MANAGER_PORT",
+                "value": "443"
+              }
+            ]
+          },
           "image": {
             "repository": "busybox",
             "tag": "latest"
@@ -2203,6 +2286,18 @@
         "fsGroup": 65532
       },
       "testFramework": {
+        "certManager": {
+          "env": [
+            {
+              "name": "CERT_MANAGER_CLUSTERIP",
+              "value": "cert-manager-webhook.cert-manager"
+            },
+            {
+              "name": "CERT_MANAGER_PORT",
+              "value": "443"
+            }
+          ]
+        },
         "image": {
           "repository": "busybox",
           "tag": "latest"
