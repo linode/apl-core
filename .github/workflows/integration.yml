@@ -358,6 +358,14 @@ jobs:
           echo "🚀 Installing Wiz Kubernetes Integration..."
 
           install_wiz() {
+            local release_status
+            release_status="$(helm status "$RELEASE_NAME" -n "$NAMESPACE" 2>/dev/null | awk -F': ' '/^STATUS:/{print $2}')"
+
+            if [[ -n "$release_status" && "$release_status" != "deployed" ]]; then
+              echo "Found existing Wiz release in status '$release_status'; uninstalling stale release before retrying."
+              helm uninstall "$RELEASE_NAME" -n "$NAMESPACE" || true
+            fi
+
             helm upgrade --install "$RELEASE_NAME" "$CHART_NAME" \
               --values "$KUB_INTEGRATION_PATH" \
               -n "$NAMESPACE" \
@@ -380,12 +388,8 @@ jobs:
               echo "Wiz installation failed after 3 attempts."
               exit 1
             fi
-
-            # Clear stale hook artifacts before retrying
-            kubectl delete job -n "$NAMESPACE" wiz-kubernetes-connector-create-connector --ignore-not-found=true || true
-            kubectl delete secret -n "$NAMESPACE" wiz-kubernetes-connector-create-connector --ignore-not-found=true || true
-            echo "Retrying Wiz installation in 30 seconds..."
-            sleep 30
+            echo "Retrying Wiz installation in 60 seconds..."
+            sleep 60
           done
       - name: APL install
         id: apl-install
