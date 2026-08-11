@@ -6,9 +6,7 @@ import { getStoredGitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/gitea'
 import { hfValues } from '../common/hf'
 import { checkArgoCDAppStatus, k8s } from '../common/k8s'
-import {
-  restartPlatformAuthPods as restartLabelledPlatformAuthPods,
-} from '../common/runtime-upgrades/restart-platform-auth-pods'
+import { restartPlatformAuthPods } from '../common/runtime-upgrades/restart-platform-auth-pods'
 import { ensureManifestDirectories, ensureTeamGitOpsDirectories } from '../common/utils'
 import { getDefaultValues, writeValues } from '../common/values'
 import { AplOperations } from './apl-operations'
@@ -142,7 +140,7 @@ export class AplOperator {
 
   private async restartPlatformAuthPods(): Promise<void> {
     this.d.info('oauth2-proxy is healthy, restarting platform-auth pods')
-    await restartLabelledPlatformAuthPods(k8s.core())
+    await restartPlatformAuthPods(k8s.core())
     await markPlatformAuthPodsRestarted()
   }
 
