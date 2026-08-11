@@ -140,3 +140,7 @@ installation:
   mode: standard
   # Skip deployment of the operator
   skipOperatorDeployment: false
+  ## Create namespaces (apl-operator, otomi, apl-secrets). Disable if creating them yourself.
+  ## Label them `kubernetes.io/metadata.name: <name>` and `name: <name>` — NetworkPolicies match on `name`.
+  ## Set this at install time; flipping it to false later makes helm delete the namespaces.
+  createNamespaces: true
