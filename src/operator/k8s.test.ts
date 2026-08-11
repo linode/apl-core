@@ -1,5 +1,15 @@
-import { ApplyState, hasPlatformAuthPodsRestarted, markPlatformAuthPodsRestarted, updateApplyState } from './k8s'
+import {
+  ApplyState,
+  markOperatorReady,
+  READINESS_FILE,
+  hasPlatformAuthPodsRestarted,
+  markPlatformAuthPodsRestarted,
+  updateApplyState,
+} from './k8s'
 import { CoreV1Api, ApiException } from '@kubernetes/client-node'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
 
 jest.mock('@kubernetes/client-node', () => {
   const mocks = {
@@ -38,6 +48,7 @@ jest.mock('../common/debug', () => ({
   terminal: jest.fn().mockImplementation(() => ({
     info: jest.fn(),
     error: jest.fn(),
+    warn: jest.fn(),
   })),
 }))
 
@@ -229,5 +240,46 @@ describe('markPlatformAuthPodsRestarted', () => {
       namespace: 'test-namespace',
       body: { metadata: { name: 'apl-platform-auth-restart-state' } },
     })
+  })
+})
+
+describe('markOperatorReady', () => {
+  let workDir: string
+
+  beforeEach(() => {
+    workDir = mkdtempSync(join(tmpdir(), 'apl-readiness-'))
+  })
+
+  afterEach(() => {
+    rmSync(workDir, { recursive: true, force: true })
+  })
+
+  test('defaults to the path the readinessProbe checks', () => {
+    expect(READINESS_FILE).toBe('/tmp/ready')
+  })
+
+  test('writes the readiness marker with a timestamp', () => {
+    const marker = join(workDir, 'ready')
+
+    markOperatorReady(marker)
+
+    expect(existsSync(marker)).toBe(true)
+    expect(Date.parse(readFileSync(marker, 'utf8'))).not.toBeNaN()
+  })
+
+  test('is idempotent — every apply run re-marks readiness', () => {
+    const marker = join(workDir, 'ready')
+
+    markOperatorReady(marker)
+    markOperatorReady(marker)
+
+    expect(existsSync(marker)).toBe(true)
+  })
+
+  test('never throws when the marker cannot be written, leaving the pod NotReady', () => {
+    const unwritable = join(workDir, 'does', 'not', 'exist', 'ready')
+
+    expect(() => markOperatorReady(unwritable)).not.toThrow()
+    expect(existsSync(unwritable)).toBe(false)
   })
 })
