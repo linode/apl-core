@@ -1,15 +1,6 @@
 name: Build and publish Docker
 on:
   pull_request:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'docs/**'
-      - 'adr/**'
-      - '.vscode/**'
-      - '**.md'
-  workflow_dispatch: ~
 env:
   REPO: linode/apl-core
   REGISTRY: docker.io
