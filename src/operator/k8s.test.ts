@@ -1,5 +1,15 @@
-import { ApplyState, updateApplyState } from './k8s'
+import {
+  ApplyState,
+  markOperatorReady,
+  READINESS_FILE,
+  hasPlatformAuthPodsRestarted,
+  markPlatformAuthPodsRestarted,
+  updateApplyState,
+} from './k8s'
 import { CoreV1Api, ApiException } from '@kubernetes/client-node'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
 
 jest.mock('@kubernetes/client-node', () => {
   const mocks = {
@@ -38,6 +48,7 @@ jest.mock('../common/debug', () => ({
   terminal: jest.fn().mockImplementation(() => ({
     info: jest.fn(),
     error: jest.fn(),
+    warn: jest.fn(),
   })),
 }))
 
@@ -171,5 +182,104 @@ describe('updateApplyState', () => {
     await updateApplyState(testState, testNamespace, testConfigMapName)
 
     expect(mockCoreV1Api.createNamespacedConfigMap).not.toHaveBeenCalled()
+  })
+})
+
+describe('hasPlatformAuthPodsRestarted', () => {
+  let mockCoreV1Api
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockCoreV1Api = new CoreV1Api({} as any) as jest.Mocked<CoreV1Api>
+  })
+
+  test('returns true when the marker configmap exists', async () => {
+    mockCoreV1Api.readNamespacedConfigMap.mockResolvedValue({ metadata: { name: 'apl-platform-auth-restart-state' } })
+
+    const result = await hasPlatformAuthPodsRestarted('test-namespace', 'apl-platform-auth-restart-state')
+
+    expect(result).toBe(true)
+    expect(mockCoreV1Api.readNamespacedConfigMap).toHaveBeenCalledWith({
+      name: 'apl-platform-auth-restart-state',
+      namespace: 'test-namespace',
+    })
+  })
+
+  test('returns false when the marker configmap does not exist', async () => {
+    mockCoreV1Api.readNamespacedConfigMap.mockRejectedValue(new ApiException(404, 'Not Found', {}, {}))
+
+    const result = await hasPlatformAuthPodsRestarted('test-namespace', 'apl-platform-auth-restart-state')
+
+    expect(result).toBe(false)
+  })
+
+  test('rethrows unexpected errors', async () => {
+    const unexpectedError = new Error('boom')
+    mockCoreV1Api.readNamespacedConfigMap.mockRejectedValue(unexpectedError)
+
+    await expect(hasPlatformAuthPodsRestarted('test-namespace', 'apl-platform-auth-restart-state')).rejects.toThrow(
+      'boom',
+    )
+  })
+})
+
+describe('markPlatformAuthPodsRestarted', () => {
+  let mockCoreV1Api
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockCoreV1Api = new CoreV1Api({} as any) as jest.Mocked<CoreV1Api>
+  })
+
+  test('creates the marker configmap', async () => {
+    mockCoreV1Api.createNamespacedConfigMap.mockResolvedValue({})
+
+    await markPlatformAuthPodsRestarted('test-namespace', 'apl-platform-auth-restart-state')
+
+    expect(mockCoreV1Api.createNamespacedConfigMap).toHaveBeenCalledWith({
+      namespace: 'test-namespace',
+      body: { metadata: { name: 'apl-platform-auth-restart-state' } },
+    })
+  })
+})
+
+describe('markOperatorReady', () => {
+  let workDir: string
+
+  beforeEach(() => {
+    workDir = mkdtempSync(join(tmpdir(), 'apl-readiness-'))
+  })
+
+  afterEach(() => {
+    rmSync(workDir, { recursive: true, force: true })
+  })
+
+  test('defaults to the path the readinessProbe checks', () => {
+    expect(READINESS_FILE).toBe('/tmp/ready')
+  })
+
+  test('writes the readiness marker with a timestamp', () => {
+    const marker = join(workDir, 'ready')
+
+    markOperatorReady(marker)
+
+    expect(existsSync(marker)).toBe(true)
+    expect(Date.parse(readFileSync(marker, 'utf8'))).not.toBeNaN()
+  })
+
+  test('is idempotent — every apply run re-marks readiness', () => {
+    const marker = join(workDir, 'ready')
+
+    markOperatorReady(marker)
+    markOperatorReady(marker)
+
+    expect(existsSync(marker)).toBe(true)
+  })
+
+  test('never throws when the marker cannot be written, leaving the pod NotReady', () => {
+    const unwritable = join(workDir, 'does', 'not', 'exist', 'ready')
+
+    expect(() => markOperatorReady(unwritable)).not.toThrow()
+    expect(existsSync(unwritable)).toBe(false)
   })
 })

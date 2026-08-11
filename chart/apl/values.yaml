@@ -129,6 +129,10 @@ operator:
   installRetries: 1000
   installMaxTimeoutMs: 10000
 
+  readiness:
+    # 30 minutes. If the operator has not installed the platform by then, something is off.
+    progressDeadlineSeconds: 1800
+
   image:
     repository: "mirror.registry.linodelke.net/docker/linode/apl-core"
 
@@ -136,3 +140,7 @@ installation:
   mode: standard
   # Skip deployment of the operator
   skipOperatorDeployment: false
+  ## Create namespaces (apl-operator, otomi, apl-secrets). Disable if creating them yourself.
+  ## Label them `kubernetes.io/metadata.name: <name>` and `name: <name>` — NetworkPolicies match on `name`.
+  ## Set this at install time; flipping it to false later makes helm delete the namespaces.
+  createNamespaces: true
