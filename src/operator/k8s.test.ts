@@ -1,4 +1,4 @@
-import { ApplyState, updateApplyState } from './k8s'
+import { ApplyState, hasPlatformAuthPodsRestarted, markPlatformAuthPodsRestarted, updateApplyState } from './k8s'
 import { CoreV1Api, ApiException } from '@kubernetes/client-node'
 
 jest.mock('@kubernetes/client-node', () => {
@@ -171,5 +171,63 @@ describe('updateApplyState', () => {
     await updateApplyState(testState, testNamespace, testConfigMapName)
 
     expect(mockCoreV1Api.createNamespacedConfigMap).not.toHaveBeenCalled()
+  })
+})
+
+describe('hasPlatformAuthPodsRestarted', () => {
+  let mockCoreV1Api
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockCoreV1Api = new CoreV1Api({} as any) as jest.Mocked<CoreV1Api>
+  })
+
+  test('returns true when the marker configmap exists', async () => {
+    mockCoreV1Api.readNamespacedConfigMap.mockResolvedValue({ metadata: { name: 'apl-platform-auth-restart-state' } })
+
+    const result = await hasPlatformAuthPodsRestarted('test-namespace', 'apl-platform-auth-restart-state')
+
+    expect(result).toBe(true)
+    expect(mockCoreV1Api.readNamespacedConfigMap).toHaveBeenCalledWith({
+      name: 'apl-platform-auth-restart-state',
+      namespace: 'test-namespace',
+    })
+  })
+
+  test('returns false when the marker configmap does not exist', async () => {
+    mockCoreV1Api.readNamespacedConfigMap.mockRejectedValue(new ApiException(404, 'Not Found', {}, {}))
+
+    const result = await hasPlatformAuthPodsRestarted('test-namespace', 'apl-platform-auth-restart-state')
+
+    expect(result).toBe(false)
+  })
+
+  test('rethrows unexpected errors', async () => {
+    const unexpectedError = new Error('boom')
+    mockCoreV1Api.readNamespacedConfigMap.mockRejectedValue(unexpectedError)
+
+    await expect(hasPlatformAuthPodsRestarted('test-namespace', 'apl-platform-auth-restart-state')).rejects.toThrow(
+      'boom',
+    )
+  })
+})
+
+describe('markPlatformAuthPodsRestarted', () => {
+  let mockCoreV1Api
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockCoreV1Api = new CoreV1Api({} as any) as jest.Mocked<CoreV1Api>
+  })
+
+  test('creates the marker configmap', async () => {
+    mockCoreV1Api.createNamespacedConfigMap.mockResolvedValue({})
+
+    await markPlatformAuthPodsRestarted('test-namespace', 'apl-platform-auth-restart-state')
+
+    expect(mockCoreV1Api.createNamespacedConfigMap).toHaveBeenCalledWith({
+      namespace: 'test-namespace',
+      body: { metadata: { name: 'apl-platform-auth-restart-state' } },
+    })
   })
 })
