@@ -135,8 +135,7 @@ resources:
               - logs/otlphttp-default
             table:
               {{- range $id, $team := $v.teamConfig }}
-              - context: resource
-                condition: attributes["namespace"] == "team-{{ $id }}"
+              - condition: resource.attributes["namespace"] == "team-{{ $id }}"
                 pipelines:
                   - logs/otlphttp-team-{{ $id }}
               {{- end }}
