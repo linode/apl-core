@@ -223,7 +223,7 @@ jobs:
           echo "DOMAIN=$DOMAIN"
 
   create-cluster:
-    name: Create k8s cluster for testing
+    name: Create k8s cluster
     needs: preprocess-linode-input
     outputs:
       linode-cluster-context: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
@@ -243,7 +243,7 @@ jobs:
             echo "Exiting workflow..."
             exit 1
           fi
-      - name: Create k8s cluster for testing
+      - name: Create k8s cluster
         env:
           LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
           LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
