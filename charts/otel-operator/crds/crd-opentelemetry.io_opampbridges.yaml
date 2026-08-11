@@ -874,6 +874,13 @@ spec:
                 type: object
               serviceAccount:
                 type: string
+              tls:
+                properties:
+                  insecure:
+                    type: boolean
+                  insecure_skip_verify:
+                    type: boolean
+                type: object
               tolerations:
                 items:
                   properties:
