@@ -225,6 +225,8 @@ jobs:
   create-cluster:
     name: Create k8s cluster for testing
     needs: preprocess-linode-input
+    outputs:
+      linode-cluster-context: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
     runs-on: ubuntu-latest
     steps:
       - name: Install the Linode CLI
@@ -278,49 +280,8 @@ jobs:
             --tags testing \
             --no-defaults \
             "${args[@]}"
-
-  deploy-apl:
-    name: Run integration test on linode cluster
-    needs:
-      - preprocess-linode-input
-      - create-cluster
-    outputs:
-      apl-public-ip: ${{ steps.get-public-ip.outputs.apl-public-ip }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install the Linode CLI
-        uses: linode/action-linode-cli@v1
-        with:
-          token: ${{ secrets.LINODE_TOKEN }}
-      - name: Retrieve cluster id
-        id: retrieve-cluster-id
-        env:
-          LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
-        run: |
-          LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -re --arg cluster_name "$LINODE_CLUSTER_NAME" 'map(select(.label == $cluster_name) | .id) | .[0]')
-          echo "linode-cluster-id=$LINODE_CLUSTER_ID" >> "$GITHUB_OUTPUT"
-      - name: Wait for cluster to be ready
-        env:
-          LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
-        run: |
-          echo "Waiting for the cluster to be active..."
-
-          while :; do
-            rawOutput=$(linode-cli lke pools-list "$LINODE_CLUSTER_ID" --json)
-
-            allReady=$(echo "$rawOutput" | jq -r 'map(.nodes[] | .status == "ready") | all')
-            echo "All nodes ready: $allReady"
-
-            if [ "$allReady" == "true" ]; then
-              echo "Cluster is ready"
-              break
-            fi
-
-            sleep 30
-          done
       - name: Save kubectl config with auth token
         id: save-kubectl-config
-        if: ${{ inputs.install_profile != 'no-apl' }}
         env:
           LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
         run: |
@@ -332,9 +293,54 @@ jobs:
           done
           linode_cluster_context=$(kubectl config current-context)
           echo "linode-cluster-context=$linode_cluster_context" >> "$GITHUB_OUTPUT"
+      - name: Wait for at least one Kubernetes node to be Ready
+        run: |
+          echo "Waiting for at least one Kubernetes node to be Ready..."
+          attempts=0
+          max_attempts=80
+
+          while :; do
+            readyNodeCount=$(kubectl get nodes --no-headers 2>/dev/null | awk '$2 ~ /(^|,)Ready(,|$)/ {count++} END {print count+0}')
+            echo "Ready nodes: $readyNodeCount"
+
+            if [[ "$readyNodeCount" -ge 1 ]]; then
+              echo "At least one Kubernetes node is Ready"
+              break
+            fi
+
+            attempts=$((attempts + 1))
+            if [[ "$attempts" -ge "$max_attempts" ]]; then
+              echo "Timed out waiting for a Ready Kubernetes node"
+              kubectl get nodes -o wide || true
+              exit 1
+            fi
+
+            sleep 30
+          done
+
+  deploy-to-cluster:
+    name: Deploy to K8s cluster
+    if: ${{ inputs.install_profile != 'no-apl' }}
+    needs:
+      - preprocess-linode-input
+      - create-cluster
+    outputs:
+      apl-public-ip: ${{ steps.get-public-ip.outputs.apl-public-ip }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout
-        if: ${{ inputs.install_profile != 'no-apl' }}
         uses: actions/checkout@v7
+      - name: Install the Linode CLI
+        uses: linode/action-linode-cli@v1
+        with:
+          token: ${{ secrets.LINODE_TOKEN }}
+      - name: Retrieve cluster id
+        id: retrieve-cluster-id
+        env:
+          LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
+        run: |
+          LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -re --arg cluster_name "$LINODE_CLUSTER_NAME" 'map(select(.label == $cluster_name) | .id) | .[0]')
+          echo "linode-cluster-id=$LINODE_CLUSTER_ID" >> "$GITHUB_OUTPUT"
       - name: Set up Wiz
         if: ${{ inputs.install_profile != 'no-apl' && inputs.enableWiz }}
         env:
@@ -420,7 +426,7 @@ jobs:
           BYO_GIT_URL: ${{ secrets.BYO_GIT_URL }}
           DOMAIN: ${{ needs.preprocess-linode-input.outputs.apl-dns-domain }}
           LINODE_CLUSTER_ID: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
-          LINODE_CLUSTER_CONTEXT: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
+          LINODE_CLUSTER_CONTEXT: ${{ needs.create-cluster.outputs.linode-cluster-context }}
           LKE_TIER: ${{ inputs.lke_tier }}
           INSTALL_PROFILE: ${{ inputs.install_profile }}
           CERTIFICATE: ${{ inputs.certificate }}
@@ -502,7 +508,7 @@ jobs:
         id: get-public-ip
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
-          LINODE_CLUSTER_CONTEXT: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
+          LINODE_CLUSTER_CONTEXT: ${{ needs.create-cluster.outputs.linode-cluster-context }}
         run: |
           kubectl config use-context "$LINODE_CLUSTER_CONTEXT"
           # Wait for platform-istio service to receive an external IP
@@ -531,25 +537,12 @@ jobs:
             done
             linode-cli lke cluster-update "${cluster_patch_args[@]}"
           fi
-      - name: Gather k8s events on failure
-        if: failure()
-        run: |
-          kubectl get events --sort-by='.lastTimestamp' -A
-      - name: Gather k8s pods on failure
-        if: failure()
-        run: |
-          kubectl get pods -A -o wide
-      - name: Gather APL logs on failure
-        if: failure()
-        run: |
-          kubectl logs -l app.kubernetes.io/name=apl-operator -n apl-operator --tail 150
-
   create-dns-record:
     name: Create DNS A record for wildcard domain
     if: ${{ inputs.install_profile != 'no-apl' }}
     needs:
       - preprocess-linode-input
-      - deploy-apl
+      - deploy-to-cluster
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -562,7 +555,7 @@ jobs:
           EDGEDNS_ZONE: ${{ vars.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
           DOMAIN: ${{ needs.preprocess-linode-input.outputs.apl-dns-domain }}
-          PUB_IP: ${{ needs.deploy-apl.outputs.apl-public-ip }}
+          PUB_IP: ${{ needs.deploy-to-cluster.outputs.apl-public-ip }}
         run: |
           pip3 install edgegrid-python requests
           python3 bin/edgedns_A_record.py create "*.${DOMAIN}" "$PUB_IP" || \
