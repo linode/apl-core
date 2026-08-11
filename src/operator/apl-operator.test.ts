@@ -1,12 +1,9 @@
 import { getStoredGitRepoConfig, GitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/gitea'
 import { checkArgoCDAppStatus } from '../common/k8s'
-import {
-  OAUTH2_PROXY_ARGOCD_APP_NAME,
-  restartPlatformAuthPods,
-} from '../common/runtime-upgrades/restart-platform-auth-pods'
+import { restartPlatformAuthPods } from '../common/runtime-upgrades/restart-platform-auth-pods'
 import { AplOperations } from './apl-operations'
-import { AplOperator, AplOperatorConfig, ApplyTrigger } from './apl-operator'
+import { AplOperator, AplOperatorConfig, ApplyTrigger, OAUTH2_PROXY_ARGOCD_APP_NAME } from './apl-operator'
 import { GitRepository } from './git-repository'
 import { hasPlatformAuthPodsRestarted, markPlatformAuthPodsRestarted, updateApplyState } from './k8s'
 
