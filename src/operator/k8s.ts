@@ -1,6 +1,6 @@
 import { ApiException, CoreV1Api, KubeConfig } from '@kubernetes/client-node'
 import { writeFileSync } from 'fs'
-import { APL_OPERATOR_NS } from '../common/constants'
+import { APL_OPERATOR_NS, PLATFORM_AUTH_RESTART_STATE_CM } from '../common/constants'
 import { terminal } from '../common/debug'
 import { getErrorMessage } from './utils'
 
@@ -85,5 +85,33 @@ export async function updateApplyState(
     updateHeartbeatFile()
   } catch (error) {
     d.error('Failed to update apply state:', getErrorMessage(error))
+  }
+}
+
+export async function hasPlatformAuthPodsRestarted(
+  namespace: string = APL_OPERATOR_NS,
+  configMapName: string = PLATFORM_AUTH_RESTART_STATE_CM,
+): Promise<boolean> {
+  try {
+    await k8s.core().readNamespacedConfigMap({ name: configMapName, namespace })
+    return true
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) return false
+    throw error
+  }
+}
+
+export async function markPlatformAuthPodsRestarted(
+  namespace: string = APL_OPERATOR_NS,
+  configMapName: string = PLATFORM_AUTH_RESTART_STATE_CM,
+): Promise<void> {
+  try {
+    await k8s.core().createNamespacedConfigMap({
+      namespace,
+      body: { metadata: { name: configMapName } },
+    })
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 409) return
+    throw error
   }
 }
