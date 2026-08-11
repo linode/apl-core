@@ -353,6 +353,41 @@ jobs:
           linode_cluster_context=$(kubectl config current-context)
           echo "linode-cluster-context=$linode_cluster_context" >> "$GITHUB_OUTPUT"
 
+      - name: Add runner IP to control plane ACL
+        env:
+          LKE_CP_ACL_IPV4: ${{ secrets.LKE_CP_ACL_IPV4 }}
+          LINODE_CLUSTER_ID: ${{ needs.create-cluster.outputs.linode-cluster-id }}
+        run: |
+          CURRENT_IP=$(curl -sS https://ipv4.whatismyip.akamai.com/)
+          echo "Current runner IP: $CURRENT_IP"
+          cluster_patch_args=("$LINODE_CLUSTER_ID" --control_plane.acl.enabled true --control_plane.acl.addresses.ipv4 "$CURRENT_IP")
+          if [[ -n "$LKE_CP_ACL_IPV4" ]]; then
+            IFS=',' read -ra acl_ips <<< "$LKE_CP_ACL_IPV4"
+            for acl_ip in "${acl_ips[@]}"; do
+              cluster_patch_args+=(--control_plane.acl.addresses.ipv4 "$acl_ip")
+            done
+          fi
+          linode-cli lke cluster-update "${cluster_patch_args[@]}"
+
+      - name: Wait for control plane ACL to take effect
+        env:
+          LINODE_CLUSTER_ID: ${{ needs.create-cluster.outputs.linode-cluster-id }}
+        run: |
+          echo "Waiting for control plane ACL to take effect..."
+          attempts=0
+          max_attempts=20
+          # Wait for KubeAPI to respond before attempting install
+          echo "Checking Kubernetes API availability..."
+          while true; do
+              if kubectl get pods 2> /dev/null; then
+                echo "Ok."
+                break
+              else
+                echo "Retrying in 5 seconds"
+                sleep 5
+              fi
+          done
+
       - name: Set up Wiz
         if: ${{ inputs.install_profile != 'no-apl' && inputs.enableWiz }}
         env:
@@ -501,18 +536,6 @@ jobs:
           if [[ -n "$LKE_APL_FIREWALL_INBOUND_RULES" ]]; then
             install_args+=("--set-json" "apps.linode-cfw._rawValues.firewall.inbound=${LKE_APL_FIREWALL_INBOUND_RULES}")
           fi
-
-          # Wait for KubeAPI to respond before attempting install
-          echo "Checking Kubernetes API availability..."
-          while true; do
-              if kubectl get pods 2> /dev/null; then
-                echo "Ok."
-                break
-              else
-                echo "Retrying in 5 seconds"
-                sleep 5
-              fi
-          done
 
           helm install "${install_args[@]}"
 
