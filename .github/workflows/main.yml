@@ -6,15 +6,15 @@ on:
       - 'adr/**'
       - '.vscode/**'
       - '**.md'
-    push:
-      branches:
-        - main
-      paths-ignore:
-        - 'docs/**'
-        - 'adr/**'
-        - '.vscode/**'
-        - '**.md'
-    workflow_dispatch: ~
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
+      - 'adr/**'
+      - '.vscode/**'
+      - '**.md'
+  workflow_dispatch: ~
 env:
   REPO: linode/apl-core
   REGISTRY: docker.io
