@@ -4,7 +4,7 @@ Helm chart for deploying [Grafana rollout-operator](https://github.com/grafana/r
 
 # rollout-operator
 
-![Version: 0.50.0](https://img.shields.io/badge/Version-0.50.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.38.0](https://img.shields.io/badge/AppVersion-v0.38.0-informational?style=flat-square)
+![Version: 0.50.1](https://img.shields.io/badge/Version-0.50.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.38.1](https://img.shields.io/badge/AppVersion-v0.38.1-informational?style=flat-square)
 
 Grafana rollout-operator
 
