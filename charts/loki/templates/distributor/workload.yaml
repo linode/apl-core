@@ -8,5 +8,11 @@
     {{- $args = list "-distributor.zone-awareness-enabled=true" }}
   {{- end }}
 {{- end }}
+{{/* Inject -shutdown-delay before extraArgs so a user-supplied extraArgs override can't drop it. "0s" (default) renders nothing. */}}
+{{- with .Values.distributor.shutdownDelay }}
+{{- if ne (. | toString) "0s" }}
+{{- $args = append $args (printf "-shutdown-delay=%s" .) }}
+{{- end }}
+{{- end }}
 {{- include "loki.component" (dict "ctx" . "component" .Values.distributor "target" "distributor" "args" $args) }}
 {{- end }}
