@@ -18,9 +18,10 @@
 image:
   tag: master
   digest: sha256:af9469509350ff3f6ca70127175a58e5ab085b9d18740fa4a590d9f03f0a026b
-  {{- if $v.otomi.linodeLkeImageRepository }}
-  repository: {{ $v.otomi.linodeLkeImageRepository }}/ghcr/dexidp/dex
-  {{- end }}
+#  TODO add dex to ORCS
+#  {{- if $v.otomi.linodeLkeImageRepository }}
+#  repository: {{ $v.otomi.linodeLkeImageRepository }}/ghcr/dexidp/dex
+#  {{- end }}
 
 {{- /* Auth sessions are behind a feature flag while unreleased. */}}
 env:
