@@ -1,0 +1,190 @@
+{{- /*
+Generated from 'loki-alerts' group from https://github.com/grafana/loki.git
+Do not change in-place! In order to change this file first read following link:
+https://github.com/grafana-community/helm-charts/tree/main/charts/loki/hack
+*/ -}}
+{{- if and .Values.monitoring.alerts.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "loki.resourceName" (dict "ctx" $ "component" "loki-alerts") }}
+  namespace: {{ .Values.monitoring.namespace | default (include "loki.namespace" $) }}
+  labels:
+    {{- include "loki.labels" $ | nindent 4 }}
+    {{- with .Values.monitoring.alerts.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.monitoring.alerts.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  groups:
+  - name: loki_alerts
+    rules:
+{{- if not (.Values.monitoring.alerts.disabled.LokiRequestErrors | default false) }}
+    - alert: LokiRequestErrors
+      annotations:
+{{- if .Values.monitoring.alerts.additionalRuleAnnotations }}
+{{ toYaml .Values.monitoring.alerts.additionalRuleAnnotations | indent 8 }}
+{{- end }}
+        description: '{{`{{`}} $labels.{{ $.Values.monitoring.appInstanceLabelName }} {{`}}`}} {{`{{`}} $labels.job {{`}}`}} {{`{{`}} $labels.route {{`}}`}} is experiencing {{`{{`}} printf "%.2f" $value {{`}}`}}% errors.
+
+          '
+        summary: Loki request error rate is high.
+      expr: |-
+        100 * sum(rate(loki_request_duration_seconds_count{status_code=~"5.."}[2m])) by ({{ range $.Values.monitoring.alerts.additionalAggregationLabels }}{{ . }},{{ end }}{{ if and $.Values.monitoring.multiCluster.enabled $.Values.monitoring.multiCluster.clusterName }}cluster, {{ end }}{{ $.Values.monitoring.appInstanceLabelName }}, namespace, job, route)
+          /
+        sum(rate(loki_request_duration_seconds_count[2m])) by ({{ range $.Values.monitoring.alerts.additionalAggregationLabels }}{{ . }},{{ end }}{{ if and $.Values.monitoring.multiCluster.enabled $.Values.monitoring.multiCluster.clusterName }}cluster, {{ end }}{{ $.Values.monitoring.appInstanceLabelName }}, namespace, job, route)
+          > 10
+      for: {{ dig "LokiRequestErrors" "for" "15m" .Values.monitoring.alerts.overrides }}
+      {{- with .Values.monitoring.alerts.keepFiringFor }}
+      keep_firing_for: "{{ . }}"
+      {{- end }}
+      labels:
+        severity: {{ dig "LokiRequestErrors" "severity" "critical" .Values.monitoring.alerts.overrides }}
+        {{- if and .Values.monitoring.multiCluster.enabled .Values.monitoring.multiCluster.clusterName }}
+        cluster: "{{ tpl .Values.monitoring.multiCluster.clusterName $ }}"
+        {{- end }}
+        {{ $.Values.monitoring.appInstanceLabelName }}: "{{ tpl $.Values.monitoring.appInstanceLabelValue $ }}"
+        {{- with .Values.monitoring.alerts.additionalRuleLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}
+{{- if not (.Values.monitoring.alerts.disabled.LokiRequestPanics | default false) }}
+    - alert: LokiRequestPanics
+      annotations:
+{{- if .Values.monitoring.alerts.additionalRuleAnnotations }}
+{{ toYaml .Values.monitoring.alerts.additionalRuleAnnotations | indent 8 }}
+{{- end }}
+        description: '{{`{{`}} $labels.{{ $.Values.monitoring.appInstanceLabelName }} {{`}}`}} {{`{{`}} $labels.job {{`}}`}} is experiencing {{`{{`}} printf "%.2f" $value {{`}}`}}% increase of panics.
+
+          '
+        summary: Loki requests are causing code panics.
+      expr: sum(increase(loki_panic_total[10m])) by ({{ range $.Values.monitoring.alerts.additionalAggregationLabels }}{{ . }},{{ end }}{{ if and $.Values.monitoring.multiCluster.enabled $.Values.monitoring.multiCluster.clusterName }}cluster, {{ end }}{{ $.Values.monitoring.appInstanceLabelName }}, namespace, job) > 0
+      labels:
+        severity: {{ dig "LokiRequestPanics" "severity" "critical" .Values.monitoring.alerts.overrides }}
+        {{- if and .Values.monitoring.multiCluster.enabled .Values.monitoring.multiCluster.clusterName }}
+        cluster: "{{ tpl .Values.monitoring.multiCluster.clusterName $ }}"
+        {{- end }}
+        {{ $.Values.monitoring.appInstanceLabelName }}: "{{ tpl $.Values.monitoring.appInstanceLabelValue $ }}"
+        {{- with .Values.monitoring.alerts.additionalRuleLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}
+{{- if not (.Values.monitoring.alerts.disabled.LokiRequestLatency | default false) }}
+    - alert: LokiRequestLatency
+      annotations:
+{{- if .Values.monitoring.alerts.additionalRuleAnnotations }}
+{{ toYaml .Values.monitoring.alerts.additionalRuleAnnotations | indent 8 }}
+{{- end }}
+        description: '{{`{{`}} $labels.{{ $.Values.monitoring.appInstanceLabelName }} {{`}}`}} {{`{{`}} $labels.job {{`}}`}} {{`{{`}} $labels.route {{`}}`}} is experiencing {{`{{`}} printf "%.2f" $value {{`}}`}}s 99th percentile latency.
+
+          '
+        summary: Loki request error latency is high.
+      expr: cluster_namespace_job_route:loki_request_duration_seconds:99quantile{route!~"(?i).*tail.*|/schedulerpb.SchedulerForQuerier/QuerierLoop"} > 1
+      for: {{ dig "LokiRequestLatency" "for" "15m" .Values.monitoring.alerts.overrides }}
+      {{- with .Values.monitoring.alerts.keepFiringFor }}
+      keep_firing_for: "{{ . }}"
+      {{- end }}
+      labels:
+        severity: {{ dig "LokiRequestLatency" "severity" "critical" .Values.monitoring.alerts.overrides }}
+        {{- if and .Values.monitoring.multiCluster.enabled .Values.monitoring.multiCluster.clusterName }}
+        cluster: "{{ tpl .Values.monitoring.multiCluster.clusterName $ }}"
+        {{- end }}
+        {{ $.Values.monitoring.appInstanceLabelName }}: "{{ tpl $.Values.monitoring.appInstanceLabelValue $ }}"
+        {{- with .Values.monitoring.alerts.additionalRuleLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}
+{{- if not (.Values.monitoring.alerts.disabled.LokiTooManyCompactorsRunning | default false) }}
+    - alert: LokiTooManyCompactorsRunning
+      annotations:
+{{- if .Values.monitoring.alerts.additionalRuleAnnotations }}
+{{ toYaml .Values.monitoring.alerts.additionalRuleAnnotations | indent 8 }}
+{{- end }}
+        description: '{{`{{`}} $labels.{{ $.Values.monitoring.appInstanceLabelName }} {{`}}`}} {{`{{`}} $labels.namespace {{`}}`}} has had {{`{{`}} printf "%.0f" $value {{`}}`}} compactors running for more than 5m. Only one compactor should run at a time.
+
+          '
+        summary: Loki deployment is running more than one compactor.
+      expr: sum(loki_boltdb_shipper_compactor_running) by ({{ range $.Values.monitoring.alerts.additionalAggregationLabels }}{{ . }},{{ end }}{{ if and $.Values.monitoring.multiCluster.enabled $.Values.monitoring.multiCluster.clusterName }}cluster, {{ end }}{{ $.Values.monitoring.appInstanceLabelName }}, namespace) > 1
+      for: {{ dig "LokiTooManyCompactorsRunning" "for" "5m" .Values.monitoring.alerts.overrides }}
+      {{- with .Values.monitoring.alerts.keepFiringFor }}
+      keep_firing_for: "{{ . }}"
+      {{- end }}
+      labels:
+        severity: {{ dig "LokiTooManyCompactorsRunning" "severity" "warning" .Values.monitoring.alerts.overrides }}
+        {{- if and .Values.monitoring.multiCluster.enabled .Values.monitoring.multiCluster.clusterName }}
+        cluster: "{{ tpl .Values.monitoring.multiCluster.clusterName $ }}"
+        {{- end }}
+        {{ $.Values.monitoring.appInstanceLabelName }}: "{{ tpl $.Values.monitoring.appInstanceLabelValue $ }}"
+        {{- with .Values.monitoring.alerts.additionalRuleLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}
+{{- if not (.Values.monitoring.alerts.disabled.LokiCompactorHasNotSuccessfullyRunCompaction | default false) }}
+    - alert: LokiCompactorHasNotSuccessfullyRunCompaction
+      annotations:
+{{- if .Values.monitoring.alerts.additionalRuleAnnotations }}
+{{ toYaml .Values.monitoring.alerts.additionalRuleAnnotations | indent 8 }}
+{{- end }}
+        description: '{{`{{`}} $labels.{{ $.Values.monitoring.appInstanceLabelName }} {{`}}`}} {{`{{`}} $labels.namespace {{`}}`}} has not run compaction in the last 3 hours since the last compaction. This may indicate a problem with the compactor.
+
+          '
+        summary: Loki compaction has not run in the last 3 hours since the last compaction.
+      expr: |-
+        # The "last successful run" metric is updated even if the compactor owns no tenants,
+        # so this alert correctly doesn't fire if compactor has nothing to do.
+        min (
+          time() - (loki_boltdb_shipper_compact_tables_operation_last_successful_run_timestamp_seconds{} > 0)
+        )
+        by ({{ range $.Values.monitoring.alerts.additionalAggregationLabels }}{{ . }},{{ end }}{{ if and $.Values.monitoring.multiCluster.enabled $.Values.monitoring.multiCluster.clusterName }}cluster, {{ end }}{{ $.Values.monitoring.appInstanceLabelName }}, namespace)
+        > 60 * 60 * 3
+      for: {{ dig "LokiCompactorHasNotSuccessfullyRunCompaction" "for" "1h" .Values.monitoring.alerts.overrides }}
+      {{- with .Values.monitoring.alerts.keepFiringFor }}
+      keep_firing_for: "{{ . }}"
+      {{- end }}
+      labels:
+        severity: {{ dig "LokiCompactorHasNotSuccessfullyRunCompaction" "severity" "critical" .Values.monitoring.alerts.overrides }}
+        {{- if and .Values.monitoring.multiCluster.enabled .Values.monitoring.multiCluster.clusterName }}
+        cluster: "{{ tpl .Values.monitoring.multiCluster.clusterName $ }}"
+        {{- end }}
+        {{ $.Values.monitoring.appInstanceLabelName }}: "{{ tpl $.Values.monitoring.appInstanceLabelValue $ }}"
+        {{- with .Values.monitoring.alerts.additionalRuleLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}
+{{- if not (.Values.monitoring.alerts.disabled.LokiCompactorHasNotSuccessfullyRunCompaction | default false) }}
+    - alert: LokiCompactorHasNotSuccessfullyRunCompaction
+      annotations:
+{{- if .Values.monitoring.alerts.additionalRuleAnnotations }}
+{{ toYaml .Values.monitoring.alerts.additionalRuleAnnotations | indent 8 }}
+{{- end }}
+        description: '{{`{{`}} $labels.{{ $.Values.monitoring.appInstanceLabelName }} {{`}}`}} {{`{{`}} $labels.namespace {{`}}`}} has not run compaction in the last 3h since startup. This may indicate a problem with the compactor.
+
+          '
+        summary: Loki compaction has not run in the last 3h since startup.
+      expr: |-
+        # The "last successful run" metric is updated even if the compactor owns no tenants,
+        # so this alert correctly doesn't fire if compactor has nothing to do.
+        max(
+          max_over_time(
+            loki_boltdb_shipper_compact_tables_operation_last_successful_run_timestamp_seconds{}[3h]
+          )
+        ) by ({{ range $.Values.monitoring.alerts.additionalAggregationLabels }}{{ . }},{{ end }}{{ if and $.Values.monitoring.multiCluster.enabled $.Values.monitoring.multiCluster.clusterName }}cluster, {{ end }}{{ $.Values.monitoring.appInstanceLabelName }}, namespace)
+        == 0
+      for: {{ dig "LokiCompactorHasNotSuccessfullyRunCompaction" "for" "1h" .Values.monitoring.alerts.overrides }}
+      {{- with .Values.monitoring.alerts.keepFiringFor }}
+      keep_firing_for: "{{ . }}"
+      {{- end }}
+      labels:
+        severity: {{ dig "LokiCompactorHasNotSuccessfullyRunCompaction" "severity" "critical" .Values.monitoring.alerts.overrides }}
+        {{- if and .Values.monitoring.multiCluster.enabled .Values.monitoring.multiCluster.clusterName }}
+        cluster: "{{ tpl .Values.monitoring.multiCluster.clusterName $ }}"
+        {{- end }}
+        {{ $.Values.monitoring.appInstanceLabelName }}: "{{ tpl $.Values.monitoring.appInstanceLabelValue $ }}"
+        {{- with .Values.monitoring.alerts.additionalRuleLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}
+{{- end }}
