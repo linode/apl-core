@@ -5,7 +5,7 @@ go install github.com/plexsystems/konstraint@latest
 npm install -g json-dereference-cli
 
 # Desired version
-helm_secrets_target_version="4.6.2"
+helm_secrets_target_version="4.7.7"
 
 # Get the installed version of helm-secrets
 helm_secrets_installed_version=$(helm plugin list | awk '/secrets/ {print $2}')
