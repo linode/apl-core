@@ -1522,6 +1522,10 @@ containers:
         {{- end }}
       {{- end }}
     {{- end }}
+    {{- with .Values.startupProbe }}
+    startupProbe:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
     {{- with .Values.livenessProbe }}
     livenessProbe:
       {{- toYaml . | nindent 6 }}

@@ -22,8 +22,11 @@ maintainers:
 - email: david@0xdc.me
   name: dotdc
   url: https://github.com/dotdc
+- email: git@gaiser.bayern
+  name: sebastiangaiser
+  url: https://github.com/sebastiangaiser
 name: kube-state-metrics
 sources:
 - https://github.com/kubernetes/kube-state-metrics/
 type: application
-version: 7.5.1
+version: 8.2.0

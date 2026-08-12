@@ -83,6 +83,10 @@ deploymentStrategy:
 ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds
 progressDeadlineSeconds: null
 
+## Startup probe. Holds off the liveness and readiness probes until it succeeds, useful for slow starts.
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+startupProbe: {}
+
 readinessProbe:
   httpGet:
     path: /api/health
@@ -129,7 +133,7 @@ testFramework:
     # -- The Docker registry
     registry: docker.io
     repository: bats/bats
-    tag: "1.13.0"
+    tag: "1.14.0"
   imagePullPolicy: IfNotPresent
   securityContext: {}
   containerSecurityContext: {}
@@ -204,7 +208,7 @@ downloadDashboardsImage:
   # -- The Docker registry
   registry: docker.io
   repository: curlimages/curl
-  tag: 8.20.0
+  tag: 8.21.0
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -502,6 +506,12 @@ persistence:
   ## Extra labels to apply to a PVC.
   extraPvcLabels: {}
   disableWarning: false
+  ## Configure StatefulSet persistent volume claim retention policy.
+  ## This is ignored when Grafana is configured to use a Deployment with a PVC.
+  ## By default, Kubernetes uses Retain for both whenDeleted and whenScaled.
+  persistentVolumeClaimRetentionPolicy: {}
+  #  whenDeleted: Retain
+  #  whenScaled: Retain
 
   ## If persistence is not enabled, this allows to mount the
   ## local storage in-memory to improve performance
@@ -1032,7 +1042,7 @@ sidecar:
     # -- The Docker registry
     registry: quay.io
     repository: kiwigrid/k8s-sidecar
-    tag: 2.7.3
+    tag: 2.10.1
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}
