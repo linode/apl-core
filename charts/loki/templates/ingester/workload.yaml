@@ -1,4 +1,14 @@
 {{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
-{{- if and $isDistributed (or (not .Values.ingester.zoneAwareReplication.enabled) .Values.ingester.zoneAwareReplication.migration.enabled) }}
+{{- if $isDistributed  }}
+{{- if (or (not .Values.ingester.zoneAwareReplication.enabled) .Values.ingester.zoneAwareReplication.migration.enabled) }}
 {{- include "loki.component" (dict "ctx" . "component" .Values.ingester "target" "ingester" "args" (list "-ingester.availability-zone=zone-default")) }}
+{{- end }}
+{{- if .Values.ingester.zoneAwareReplication.enabled }}
+{{- $replicas := (include "loki.ingester.replicaCount" .) -}}
+{{- range $zone := list "zone-a" "zone-b" "zone-c" }}
+{{- $args := (list (print "-ingester.availability-zone=" $zone) "-ingester.unregister-on-shutdown=false" "-ingester.tokens-file-path=/var/loki/ring-tokens") }}
+---
+{{ include "loki.component" (dict "ctx" $ "component" $.Values.ingester "target" "ingester" "rolloutZoneName" $zone "args" $args "replicas" $replicas) }}
+{{- end }}
+{{- end }}
 {{- end }}
