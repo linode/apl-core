@@ -127,13 +127,6 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{/*
-Cluster label for rules and alerts.
-*/}}
-{{- define "loki.clusterLabel" -}}
-{{- .Values.clusterLabelOverride | default (include "loki.fullname" .) | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
-{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "loki.chart" -}}
