@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: v0.38.0
+appVersion: v0.38.1
 dependencies:
 - condition: crds.enabled
   name: crds
@@ -10,4 +10,4 @@ home: https://github.com/grafana/rollout-operator
 kubeVersion: ^1.10.0-0
 name: rollout-operator
 type: application
-version: 0.50.0
+version: 0.50.1

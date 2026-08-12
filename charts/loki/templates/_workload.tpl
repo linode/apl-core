@@ -17,27 +17,40 @@ Workload helper
 {{- $name := .name }}
 {{- $headlessName := .headlessName }}
 {{- $args := .args }}
+{{- $rolloutZoneName := .rolloutZoneName | default "" -}}
+{{- $replicas := .replicas | default $component.replicas -}}
 {{- $memberlist := hasKey . "memberlist" | ternary .memberlist true -}}
 {{- with $ctx }}
 {{- if $component.enabled }}
 apiVersion: apps/v1
 kind: {{ $component.kind }}
 metadata:
-  name: "{{ $name | default (include "loki.workloadResourceName" (dict "ctx" $ctx "component" $target "componentValues" $component)) }}"
+  name: "{{ $name | default (include "loki.workloadResourceName" (dict "ctx" $ctx "component" $target "componentValues" $component "rolloutZoneName" $rolloutZoneName)) }}"
   namespace: "{{ include "loki.namespace" . }}"
   labels:
     {{- include "loki.labels" . | nindent 4 }}
     app.kubernetes.io/component: {{ $target }}
+    {{- if $rolloutZoneName }}
+    name: {{ include "loki.prefixIngesterName" . }}ingester-{{ $rolloutZoneName }}
+    rollout-group: {{ include "loki.prefixRolloutGroup" . }}ingester
+    {{- end }}
     {{- with (mergeOverwrite (dict) .Values.defaults.labels $component.labels) }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- with (mergeOverwrite (dict) .Values.defaults.annotations .Values.loki.annotations $component.annotations) }}
+  {{- $annotations := (mergeOverwrite (dict) .Values.defaults.annotations .Values.loki.annotations $component.annotations) }}
+  {{- if $rolloutZoneName }}
+  {{- $annotations = mergeOverwrite (dict) ($annotations) (dig "zoneAwareReplication" (printf "zone%s" (upper (splitList "-" $rolloutZoneName | last))) "annotations" (dict) $component)}}
+  {{- if (not (hasKey $annotations "rollout-max-unavailable")) }}
+  {{- $_ := set $annotations "rollout-max-unavailable" (include "loki.ingester.maxUnavailable" (dict "ctx" . "replicas" $replicas)) }}
+  {{- end }}
+  {{- end }}
+  {{- with $annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
 {{- if and (not (dig "autoscaling" "enabled" false $component)) (not (dig "kedaAutoscaling" "enabled" false $component)) (not (kindIs "invalid" $component.replicas)) }}
-  replicas: {{ if eq $target "single-binary" }}{{ include "loki.monolithicReplicas" $ctx }}{{ else }}{{ $component.replicas }}{{ end }}
+  replicas: {{ if eq $target "single-binary" }}{{ include "loki.monolithicReplicas" $ctx }}{{ else }}{{ $replicas }}{{ end }}
 {{- end }}
   {{- if eq $component.kind "StatefulSet" }}
   {{- with $component.podManagementPolicy }}
@@ -47,7 +60,7 @@ spec:
   updateStrategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  serviceName: {{ $headlessName | default (include "loki.resourceName" (dict "ctx" $ctx "component" $target "suffix" "headless")) }}
+  serviceName: {{ $headlessName | default (include "loki.resourceName" (dict "ctx" $ctx "component" $target "rolloutZoneName" $rolloutZoneName "suffix" "headless")) }}
   {{- if and (or (dig "persistence" "volumeClaimsEnabled" false $component) (dig "persistence" "enabled" false $component)) $component.persistence.enableStatefulSetAutoDeletePVC }}
   persistentVolumeClaimRetentionPolicy:
     whenDeleted: {{ $component.persistence.whenDeleted }}
@@ -64,13 +77,18 @@ spec:
     matchLabels:
       {{- include "loki.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: {{ $target }}
+      {{- if $rolloutZoneName }}
+      name: {{ include "loki.prefixIngesterName" . }}ingester-{{ $rolloutZoneName }}
+      rollout-group: {{ include "loki.prefixRolloutGroup" . }}ingester
+      {{- end }}
   template:
-    {{- include "loki.podTemplate" (dict "target" $target "component" $component "ctx" $ctx "memberlist" $memberlist "args" $args) | nindent 4 }}
+    {{- include "loki.podTemplate" (dict "target" $target "component" $component "ctx" $ctx "memberlist" $memberlist "args" $args "rolloutZoneName" $rolloutZoneName) | nindent 4 }}
   {{- if and (or (dig "persistence" "volumeClaimsEnabled" false $component) (dig "persistence" "enabled" false $component)) (eq (dig "persistence" "type" "pvc" $component) "pvc") }}
     {{- if and (eq $component.kind "Deployment") (gt (int $component.replicas) 1) }}
       {{- fail "Persistence with PVC is not supported for Deployment with more than 1 replica. Please use StatefulSet or set replicas to 1." }}
     {{- end }}
-    {{- if and (eq $component.kind "StatefulSet") }}
+    {{- if eq $component.kind "StatefulSet" }}
+  {{- $zoneStorageClass := dig "zoneAwareReplication" (printf "zone%s" (upper (splitList "-" $rolloutZoneName | last))) "persistence" "storageClass" nil $component }}
   volumeClaimTemplates:
   {{- $dataClaimExists := false }}
   {{- range $component.persistence.claims }}
@@ -92,7 +110,8 @@ spec:
       spec:
         accessModes:
           {{- toYaml .accessModes | nindent 10 }}
-        {{- with .storageClass }}
+        {{- $storageClass := default .storageClass $zoneStorageClass }}
+        {{- with $storageClass }}
         storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
         {{- end }}
         {{- with .volumeAttributesClassName }}
@@ -116,7 +135,8 @@ spec:
           {{- toYaml . | nindent 10 }}
         {{- end }}
       spec:
-        {{- with $component.persistence.storageClass }}
+        {{- $storageClass := default $component.persistence.storageClass $zoneStorageClass }}
+        {{- with $storageClass }}
         storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
         {{- end }}
         {{- with $component.persistence.accessModes }}
@@ -192,6 +212,7 @@ spec:
       {{- end -}}
     {{- end -}}
     {{- if $needsRecreation -}}
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
