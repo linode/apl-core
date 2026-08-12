@@ -5,11 +5,13 @@ import { env } from '../common/envalid'
 import { getStoredGitRepoConfig } from '../common/git-config'
 import { waitTillGitRepoAvailable } from '../common/gitea'
 import { hfValues } from '../common/hf'
+import { checkArgoCDAppStatus, k8s } from '../common/k8s'
+import { restartPlatformAuthPods } from '../common/runtime-upgrades/restart-platform-auth-pods'
 import { ensureManifestDirectories, ensureTeamGitOpsDirectories } from '../common/utils'
 import { getDefaultValues, writeValues } from '../common/values'
 import { AplOperations } from './apl-operations'
 import { GitRepository } from './git-repository'
-import { updateApplyState } from './k8s'
+import { hasPlatformAuthPodsRestarted, markOperatorReady, markPlatformAuthPodsRestarted, updateApplyState } from './k8s'
 import { getErrorMessage } from './utils'
 
 export interface AplOperatorConfig {
@@ -27,6 +29,8 @@ export enum ApplyTrigger {
 function maskRepoUrl(url: string): string {
   return url.replace(/(https?:\/\/)([^@]+)(@.+)/g, '$1***$3')
 }
+
+export const OAUTH2_PROXY_ARGOCD_APP_NAME = 'istio-system-oauth2-proxy'
 
 export class AplOperator {
   private d = terminal('operator:apl-operator')
@@ -99,12 +103,25 @@ export class AplOperator {
 
       this.d.info(`[${trigger}] Apply process completed`)
 
+      // The apply run above is what creates the ArgoCD Applications, so from here on the
+      // platform can heal itself through ArgoCD. That — not the end of the helmfile install
+      // — is what the operator being 'ready' means.
+      markOperatorReady()
+
       await updateApplyState({
         commitHash,
         status: 'succeeded',
         timestamp: new Date().toISOString(),
         trigger,
       })
+      try {
+        // See adr/2026-08-04-restart-platform-auth-pods-after-oauth2-proxy-healthy.md
+        if (await this.needsPlatformAuthPodsRestart()) {
+          await this.restartPlatformAuthPods()
+        }
+      } catch (error) {
+        this.d.debug(`Skipping platform-auth pod restart: ${getErrorMessage(error)}`)
+      }
     } catch (error) {
       const errorMessage = getErrorMessage(error)
       this.d.error(`[${trigger}] Apply process failed`, errorMessage)
@@ -118,6 +135,18 @@ export class AplOperator {
     } finally {
       this.isApplying = false
     }
+  }
+
+  private async needsPlatformAuthPodsRestart(): Promise<boolean> {
+    if (await hasPlatformAuthPodsRestarted()) return false
+    await checkArgoCDAppStatus(OAUTH2_PROXY_ARGOCD_APP_NAME, k8s.custom(), 'health', 'Healthy')
+    return true
+  }
+
+  private async restartPlatformAuthPods(): Promise<void> {
+    this.d.info('oauth2-proxy is healthy, restarting platform-auth pods')
+    await restartPlatformAuthPods(k8s.core())
+    await markPlatformAuthPodsRestarted()
   }
 
   // Only used in tests: run N iterations and exit
