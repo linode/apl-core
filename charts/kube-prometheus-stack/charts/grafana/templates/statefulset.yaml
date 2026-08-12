@@ -17,6 +17,12 @@ spec:
     matchLabels:
       {{- include "grafana.selectorLabels" . | nindent 6 }}
   serviceName: {{ include "grafana.fullname" . }}-headless
+  {{- if .Values.persistence.enabled }}
+  {{- with .Values.persistence.persistentVolumeClaimRetentionPolicy }}
+  persistentVolumeClaimRetentionPolicy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
   template:
     metadata:
       labels:
