@@ -471,6 +471,7 @@ jobs:
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
           BYO_GIT_PAT: ${{ secrets.BYO_GIT_PAT }}
           BYO_GIT_URL: ${{ secrets.BYO_GIT_URL }}
+          LINODE_TOKEN: ${{ secrets.LINODE_TOKEN }}
           DOMAIN: ${{ needs.preprocess-linode-input.outputs.apl-dns-domain }}
           LINODE_CLUSTER_ID: ${{ needs.create-cluster.outputs.linode-cluster-id }}
           LINODE_CLUSTER_CONTEXT: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
@@ -485,10 +486,23 @@ jobs:
           BOT_USERNAME: ${{ vars.BOT_USERNAME }}
           BOT_PULL_TOKEN: ${{ secrets.BOT_PULL_TOKEN }}
         run: |
+          set -euo pipefail
+
           touch values.yaml
           adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
           # Treat the admin password as sensitive information and mask it in the logs
           echo "::add-mask::$adminPassword"
+
+          if [[ -z "$LINODE_TOKEN" ]]; then
+            echo "LINODE_TOKEN is required for the Linode cloud firewall controller on enterprise clusters."
+            exit 1
+          fi
+          echo "::add-mask::$LINODE_TOKEN"
+
+          kubectl create secret generic linode-cfw \
+            --namespace kube-system \
+            --from-literal=token="${LINODE_TOKEN}" \
+            --dry-run=client -o yaml | kubectl apply -f -
 
           install_args=(
             "otomi" "chart/apl" "--wait" "--wait-for-jobs" "--timeout" "90m0s"
