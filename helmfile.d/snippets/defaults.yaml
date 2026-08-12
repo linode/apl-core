@@ -139,6 +139,7 @@ environments:
           dex:
             enabled: true
             replicas: 1
+            adminUsername: otomi-admin
             idp:
               clientID: otomi
             resources:

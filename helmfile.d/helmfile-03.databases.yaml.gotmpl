@@ -32,7 +32,7 @@ releases:
       app: core
     <<: *otomiDb
   - name: keycloak-otomi-db
-    installed: {{ $k | get "enabled" false }}
+    installed: {{ $k | get "enabled" }}
     namespace: keycloak
     labels:
       pkg: keycloak

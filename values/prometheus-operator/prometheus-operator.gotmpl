@@ -14,7 +14,7 @@
 {{- $alertmanagerDomain := printf "alertmanager.%s" $domain }}
 {{- $prometheusDomain := printf "prometheus.%s" $domain }}
 {{- $grafanaDomain := printf "grafana.%s" $domain }}
-{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "oidcAuthUrl" $v._derived.oidcAuthUrl "oidcTokenUrl" $v._derived.oidcTokenUrl "oidcUserInfoUrl" $v._derived.oidcUserInfoUrl "untrustedCA" $v._derived.untrustedCA "keycloak" (dict "clientID" ($k | get "idp.clientID" "otomi"))) | toString }}
+{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "oidcAuthUrl" $v._derived.oidcAuthUrl "oidcTokenUrl" $v._derived.oidcTokenUrl "oidcUserInfoUrl" $v._derived.oidcUserInfoUrl "untrustedCA" $v._derived.untrustedCA "keycloak" (dict "clientID" $v._derived.oidcClientID)) | toString }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 {{- $hasServices := false }}
 {{- range $teamId, $team := $v.teamConfig }}
@@ -204,7 +204,7 @@ additionalPrometheusRules:
   - name: harbor-db-backup
     {{- readFile "rules/harbor-db-backup.yaml" | nindent 4 }}
   {{- end }}
-  {{- if and $v.platformBackups.database.keycloak.enabled ($v.apps | get "keycloak.enabled" false) }}
+  {{- if and $v.platformBackups.database.keycloak.enabled $v.apps.keycloak.enabled }}
   - name: keycloak-db-backup
     {{- readFile "rules/keycloak-db-backup.yaml" | nindent 4 }}
   {{- end }}

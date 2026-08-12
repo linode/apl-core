@@ -36,14 +36,17 @@
 {{- $oidcJwksUrl := printf "%s/protocol/openid-connect/certs" $oidcBaseUrl }}
 {{- $oidcJwksUrlBackchannel := printf "%s/protocol/openid-connect/certs" $oidcBaseUrlBackchannel }}
 {{- $oidcLogoutUrl := printf "%s/protocol/openid-connect/logout" $oidcBaseUrl }}
-{{- $oidcClientID := $a.keycloak | get "idp.clientID" "otomi" }}
+{{- $oidcClientID := $a.keycloak.idp.clientID }}
 # Where the shared platform client secret lives in the secret store. Consumers read these
 # coordinates rather than naming an issuer's store entry directly.
 {{- $oidcClientSecretKey := "keycloak-secrets" }}
 {{- $oidcClientSecretProperty := "idp_clientSecret" }}
+# Server-to-server logout call, used when the issuer needs the user's ID token to end its
+# session. Empty when the issuer can be logged out with a plain browser redirect.
+{{- $oidcBackchannelLogoutUrl := "" }}
 # When Dex is the issuer every endpoint above is replaced. Dex has no realm concept and its
 # endpoint paths differ entirely from Keycloak's, which is why consumers take whole URLs.
-{{- if $a | get "dex.enabled" false }}
+{{- if $a.dex.enabled }}
   {{- $dexBaseUrl := printf "https://dex.%s" $domainSuffix }}
   {{- $dexBaseUrlBackchannel := "http://dex.dex.svc.cluster.local:5556" }}
   {{- $oidcBaseUrl = $dexBaseUrl }}
@@ -55,13 +58,15 @@
   {{- $oidcUserInfoUrl = printf "%s/userinfo" $dexBaseUrl }}
   {{- $oidcJwksUrl = printf "%s/keys" $dexBaseUrl }}
   {{- $oidcJwksUrlBackchannel = printf "%s/keys" $dexBaseUrlBackchannel }}
-  {{- $oidcClientID = $a.dex | get "idp.clientID" "otomi" }}
+  {{- $oidcClientID = $a.dex.idp.clientID }}
   {{- $oidcClientSecretKey = "dex-secrets" }}
   {{- $oidcClientSecretProperty = "idp_clientSecret" }}
-  # Dex only serves an end-session endpoint when its sessions feature is enabled, which it is
-  # not here. Without a browser session at the issuer, clearing the local session is a full
-  # logout, so there is nothing to redirect to at the issuer.
+  # Dex's end-session endpoint refuses a post_logout_redirect_uri unless id_token_hint is also
+  # present, and a bare call only renders a confirmation page without ending the session. A
+  # browser redirect cannot supply the token, so logout is driven from oauth2-proxy's backchannel
+  # instead, which substitutes {id_token}. The browser is then sent straight to the console.
   {{- $oidcLogoutUrl = "" }}
+  {{- $oidcBackchannelLogoutUrl = printf "%s/logout?id_token_hint={id_token}" $dexBaseUrl }}
 {{- end }}
 # Fully-formed logout destinations. Which of these ends at the issuer and which goes straight
 # back to the console depends on the issuer, so consumers take the finished URL.
@@ -246,6 +251,7 @@ environments:
           oidcClientID: {{ $oidcClientID }}
           oidcClientSecretKey: {{ $oidcClientSecretKey }}
           oidcClientSecretProperty: {{ $oidcClientSecretProperty }}
+          oidcBackchannelLogoutUrl: {{ $oidcBackchannelLogoutUrl | quote }}
           logoutToConsole: {{ $logoutToConsole }}
           logoutToOauth2Start: {{ $logoutToOauth2Start }}
           authDomain: {{ printf "auth.%s" $domainSuffix }}

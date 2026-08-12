@@ -1637,6 +1637,12 @@ properties:
             type: string
             default: otomi-admin
             description: Username of the platform admin account seeded as a static password.
+          sessionCookieEncryptionKey:
+            type: string
+            x-secret: '{{ randAlphaNum 32 }}'
+            description: >-
+              AES key encrypting the Dex session cookie. Must be 16, 24 or 32 characters. Shared
+              by all replicas, otherwise a session created by one pod is unreadable by another.
           idp:
             additionalProperties: false
             properties:

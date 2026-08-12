@@ -63,6 +63,14 @@ resources:
                 http: 0.0.0.0:5558
               oauth2:
                 skipApprovalScreen: true
+              {{- /*
+                Without a session Dex re-authenticates on every authorization request, so every
+                application running its own OIDC flow would prompt again. ssoSharedWithDefault
+                defaults to "none"; "all" is what makes one login cover every platform client.
+              */}}
+              sessions:
+                ssoSharedWithDefault: all
+                cookieEncryptionKey: '{{ "{{ .sessionCookieEncryptionKey | toString }}" }}'
               enablePasswordDB: true
               {{- /*
                 Seeds the platform admin as a static password so someone can log in before any
@@ -86,17 +94,25 @@ resources:
                     {{- range $url := $redirectUrls }}
                     - {{ $url }}
                     {{- end }}
+                  {{- /* Dex rejects a post_logout_redirect_uri that is not registered here. */}}
+                  postLogoutRedirectURIs:
+                    - https://{{ $v._derived.consoleDomain }}
+                    - https://{{ $v._derived.consoleDomain }}/oauth2/start
               {{- if $v.otomi.hasExternalIDP }}
+              {{- /*
+                The connector id is part of every Subject Dex issues, so it must never change:
+                renaming it orphans every account that downstream applications keyed on that
+                Subject. It is deliberately a constant rather than a configurable value.
+              */}}
               connectors:
                 - type: oidc
-                  id: {{ $o | get "alias" "upstream" }}
-                  name: {{ $o | get "alias" "upstream" }}
+                  id: idp
+                  name: Single Sign-On
                   config:
                     issuer: {{ $o.issuer }}
                     clientID: '{{ "{{ .oidcClientID | toString }}" }}'
                     clientSecret: '{{ "{{ .oidcClientSecret | toString }}" }}'
                     redirectURI: https://{{ $v._derived.dexDomain }}/callback
-                    userIDKey: {{ $o | get "subClaimMapper" "sub" }}
                     scopes:
                       - openid
                       - profile
@@ -113,6 +129,10 @@ resources:
           remoteRef:
             key: dex-secrets
             property: adminPasswordHash
+        - secretKey: sessionCookieEncryptionKey
+          remoteRef:
+            key: dex-secrets
+            property: sessionCookieEncryptionKey
         {{- if $v.otomi.hasExternalIDP }}
         - secretKey: oidcClientID
           remoteRef:

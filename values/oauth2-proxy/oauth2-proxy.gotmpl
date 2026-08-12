@@ -32,7 +32,12 @@ config:
     upstreams = [ "static://200" ]
     # Custom
     ssl_insecure_skip_verify = {{ $v._derived.untrustedCA }}
-    provider = "keycloak-oidc"
+    provider = {{ ternary "oidc" "keycloak-oidc" $v.apps.dex.enabled | quote }}
+    {{- with $v._derived.oidcBackchannelLogoutUrl }}
+    # The issuer needs the user's ID token to end its session, which a browser redirect cannot
+    # carry. oauth2-proxy substitutes {id_token} and calls this itself on sign-out.
+    backend_logout_url = {{ . | quote }}
+    {{- end }}
     whitelist_domains = {{ $domains | toJson }}
     scope = {{ $o | get "scope" "openid email profile" | quote }}
     oidc_issuer_url = {{ $v._derived.oidcBaseUrl | quote }}
