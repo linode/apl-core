@@ -30,3 +30,4 @@ test/
 scenarios/
 docs/
 *-values.yaml
+hack/
