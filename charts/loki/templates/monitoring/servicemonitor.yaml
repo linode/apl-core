@@ -1,5 +1,5 @@
 {{- with .Values.monitoring.serviceMonitor }}
-{{- if and ($.Capabilities.APIVersions.Has "monitoring.coreos.com/v1/ServiceMonitor") .enabled }}
+{{- if .enabled }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -40,13 +40,16 @@ spec:
       relabelings:
         {{- with .jobPrefix }}
         - sourceLabels: [job]
-          action: replace
-          replacement: "{{ tpl . $}}$1"
-          targetLabel: job
+          action: "replace"
+          replacement: {{ print (tpl . $) "$1" | quote }}
+          targetLabel: "job"
         {{- end }}
-        {{- if kindIs "string" .clusterLabel }}
-        - action: replace
-          replacement: "{{ .clusterLabel | default (include "loki.clusterLabel" $) }}"
+        - action: "replace"
+          replacement: {{ tpl $.Values.monitoring.appInstanceLabelValue $ | quote }}
+          targetLabel: {{ $.Values.monitoring.appInstanceLabelName | quote }}
+        {{- if and $.Values.monitoring.multiCluster.enabled $.Values.monitoring.multiCluster.clusterName }}
+        - action: "replace"
+          replacement: "{{ tpl $.Values.monitoring.multiCluster.clusterName $ }}"
           targetLabel: cluster
         {{- end }}
         {{- with .relabelings }}
