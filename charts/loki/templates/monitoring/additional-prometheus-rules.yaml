@@ -1,0 +1,20 @@
+{{- range $name, $rule := .Values.monitoring.additionalPrometheusRules }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ printf "%s-%s" (include "loki.fullname" $) $name | trunc 63 | trimSuffix "-" }}
+  namespace: {{ $.Values.monitoring.namespace | default (include "loki.namespace" $) }}
+  labels:
+    {{- include "loki.labels" $ | nindent 4 }}
+    {{- with $.Values.monitoring.rules.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with $.Values.monitoring.rules.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  groups:
+    {{- toYaml $rule.groups | nindent 4 }}
+{{- end }}
