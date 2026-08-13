@@ -37,7 +37,7 @@ env:
   {{- with $v.otomi.linodeLkeImageRepository }}
   TTY_IMAGE_REPOSITORY: "{{ . }}/docker/linode/apl-tty"
   {{- end }}
-  TTY_IMAGE_TAG: '1.2.8'
+  TTY_IMAGE_TAG: {{ $v.versions.tty | quote }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
