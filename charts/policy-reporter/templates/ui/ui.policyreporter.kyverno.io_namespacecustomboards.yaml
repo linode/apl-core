@@ -3,7 +3,10 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v2.4.5-0.20250927090338-8022a0e22018+incompatible.dirty
+  {{- if .Values.annotations }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+  {{- end }}
   name: namespacecustomboards.ui.policyreporter.kyverno.io
 spec:
   group: ui.policyreporter.kyverno.io
@@ -87,7 +90,29 @@ spec:
                           type: string
                         type: array
                     type: object
+                  clusterResources:
+                    properties:
+                      exclude:
+                        items:
+                          type: string
+                        type: array
+                      include:
+                        items:
+                          type: string
+                        type: array
+                    type: object
                   namespaceKinds:
+                    properties:
+                      exclude:
+                        items:
+                          type: string
+                        type: array
+                      include:
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                  resources:
                     properties:
                       exclude:
                         items:
@@ -128,6 +153,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                required:
+                - labelSelector
                 type: object
               sources:
                 description: SourceSelector allows to select visualized sources
@@ -136,6 +163,8 @@ spec:
                     items:
                       type: string
                     type: array
+                required:
+                - list
                 type: object
               title:
                 type: string
