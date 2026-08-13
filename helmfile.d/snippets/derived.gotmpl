@@ -59,7 +59,6 @@
   {{- $oidcClientID = $a.dex.idp.clientID }}
   {{- $oidcClientSecretKey = "dex-secrets" }}
   {{- $oidcClientSecretProperty = "idp_clientSecret" }}
-  {{- $oidcScopes = append $oidcScopes "groups" }}
   # Dex needs id_token_hint to end a session, which a browser redirect cannot carry, so logout
   # goes through oauth2-proxy's backchannel instead.
   {{- $oidcLogoutUrl = "" }}
