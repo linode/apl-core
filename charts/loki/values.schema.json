@@ -11610,6 +11610,14 @@
                         "volumeClaimsEnabled": {
                             "description": "Enable volume claims in pod spec",
                             "type": "boolean"
+                        },
+                        "whenDeleted": {
+                            "description": "What to do with the volumes when the StatefulSet is deleted.",
+                            "type": "string"
+                        },
+                        "whenScaled": {
+                            "description": "What to do with the volume when the StatefulSet is scaled down.",
+                            "type": "string"
                         }
                     }
                 },
