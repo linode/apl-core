@@ -28,8 +28,7 @@
 {{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
 {{- $oidcBaseUrlBackchannel := "http://keycloak-keycloakx-http.keycloak:8080/realms/otomi" }}
 {{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
-# Fully-formed OIDC endpoints. Consumers must use these verbatim and never append paths to
-# a base URL, because endpoint paths are specific to the issuer implementation.
+# Fully-formed endpoints. Consumers use these verbatim; never append paths to a base URL.
 {{- $oidcAuthUrl := printf "%s/protocol/openid-connect/auth" $oidcBaseUrl }}
 {{- $oidcTokenUrl := printf "%s/protocol/openid-connect/token" $oidcBaseUrl }}
 {{- $oidcUserInfoUrl := printf "%s/protocol/openid-connect/userinfo" $oidcBaseUrl }}
@@ -37,15 +36,12 @@
 {{- $oidcJwksUrlBackchannel := printf "%s/protocol/openid-connect/certs" $oidcBaseUrlBackchannel }}
 {{- $oidcLogoutUrl := printf "%s/protocol/openid-connect/logout" $oidcBaseUrl }}
 {{- $oidcClientID := $a.keycloak.idp.clientID }}
-# Where the shared platform client secret lives in the secret store. Consumers read these
-# coordinates rather than naming an issuer's store entry directly.
+# Where the shared client secret lives, so consumers do not name an issuer's store entry.
 {{- $oidcClientSecretKey := "keycloak-secrets" }}
 {{- $oidcClientSecretProperty := "idp_clientSecret" }}
-# Server-to-server logout call, used when the issuer needs the user's ID token to end its
-# session. Empty when the issuer can be logged out with a plain browser redirect.
+# Set when the issuer needs the user's ID token to end its session.
 {{- $oidcBackchannelLogoutUrl := "" }}
-# When Dex is the issuer every endpoint above is replaced. Dex has no realm concept and its
-# endpoint paths differ entirely from Keycloak's, which is why consumers take whole URLs.
+# Dex replaces every endpoint above; its paths differ entirely from Keycloak's.
 {{- if $a.dex.enabled }}
   {{- $dexBaseUrl := printf "https://dex.%s" $domainSuffix }}
   {{- $dexBaseUrlBackchannel := "http://dex.dex.svc.cluster.local:5556" }}
@@ -61,15 +57,12 @@
   {{- $oidcClientID = $a.dex.idp.clientID }}
   {{- $oidcClientSecretKey = "dex-secrets" }}
   {{- $oidcClientSecretProperty = "idp_clientSecret" }}
-  # Dex's end-session endpoint refuses a post_logout_redirect_uri unless id_token_hint is also
-  # present, and a bare call only renders a confirmation page without ending the session. A
-  # browser redirect cannot supply the token, so logout is driven from oauth2-proxy's backchannel
-  # instead, which substitutes {id_token}. The browser is then sent straight to the console.
+  # Dex needs id_token_hint to end a session, which a browser redirect cannot carry, so logout
+  # goes through oauth2-proxy's backchannel instead.
   {{- $oidcLogoutUrl = "" }}
   {{- $oidcBackchannelLogoutUrl = printf "%s/logout?id_token_hint={id_token}" $dexBaseUrl }}
 {{- end }}
-# Fully-formed logout destinations. Which of these ends at the issuer and which goes straight
-# back to the console depends on the issuer, so consumers take the finished URL.
+# Finished logout destinations; whether they route via the issuer depends on which one is active.
 {{- $logoutToConsole := printf "https://console.%s" $domainSuffix }}
 {{- $logoutToOauth2Start := printf "%s/oauth2/start" $logoutToConsole }}
 {{- if $oidcLogoutUrl }}

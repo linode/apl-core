@@ -2,19 +2,7 @@
 {{- $d := $v.apps | get "dex" }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 
-{{- /*
-  PRE-RELEASE IMAGE. APL must not be released while this is pinned to a build from Dex's master
-  branch. Two features are needed and only one has shipped:
-
-    - groups on local passwords: released in 2.45.0. Chart 0.24.1 still ships 2.44.0, which drops
-      the groups field at login, and group membership drives all platform authorization.
-    - auth sessions and RP-initiated logout: merged on master, unreleased (dexidp/dex#4560).
-      Without them Dex holds no browser session, so applications running their own OIDC flow
-      prompt for credentials again and there is no end-session endpoint.
-
-  Pinned by digest rather than the floating `master` tag so the running version cannot change
-  underneath a cluster. Replace with the first Dex release that contains dexidp/dex#4560.
-*/}}
+{{- /* PRE-RELEASE: do not release APL while pinned. Needs sessions, unreleased (dexidp/dex#4560). */}}
 image:
   tag: master
   digest: sha256:af9469509350ff3f6ca70127175a58e5ab085b9d18740fa4a590d9f03f0a026b
@@ -33,6 +21,37 @@ imagePullSecrets:
 {{- end }}
 
 replicaCount: {{ $d.replicas }}
+
+{{- /* Dex reads its config only at startup, so a config change must roll the pods. */}}
+deploymentAnnotations:
+  checksum/config: {{ tpl (readFile "../../helmfile.d/snippets/dex-config.gotmpl") . | sha256sum }}
+
+{{- /* Replicas share all state, so surging keeps auth up during a roll. */}}
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+podDisruptionBudget:
+  enabled: {{ gt (int $d.replicas) 1 }}
+  minAvailable: 1
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: dex
+        app.kubernetes.io/instance: dex
+
+{{- with $v.otomi | get "nodeSelector" nil }}
+nodeSelector:
+  {{- range $key, $val := . }}
+  {{ $key }}: {{ $val }}
+  {{- end }}
+{{- end }}
 
 # The Dex configuration is delivered as an ExternalSecret (see dex-raw.gotmpl) because it
 # contains the OAuth2 client secret. Secret values must never travel through Helmfile values.

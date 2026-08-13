@@ -5,7 +5,6 @@ spec:
     _rawValues: {}
     idp:
         clientID: otomi
-    replicas: 1
     resources:
         limits:
             cpu: 200m

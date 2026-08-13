@@ -1,40 +1,9 @@
 {{- $v := .Values }}
-{{- $d := $v.apps | get "dex" }}
-{{- $o := $v | get "oidc" dict }}
-{{- $domainSuffix := $v.cluster.domainSuffix }}
-
-{{- /*
-  Redirect URIs for the shared platform client. Mirrors how the Keycloak operator builds its
-  redirect list, so switching issuer does not change which URLs are accepted.
-*/}}
-{{- $teamIds := list }}
-{{- range $name, $team := omit $v.teamConfig "admin" }}
-{{- $teamIds = append $teamIds $name }}
-{{- end }}
-{{- $teamIds = sortAlpha $teamIds }}
-{{- $redirectUrls := list }}
-{{- range $coreApp := $v.adminApps }}
-  {{- if $coreApp | get "ownHost" false }}
-    {{- $redirectUrls = append $redirectUrls (printf "https://%s.%s/*" $coreApp.name $domainSuffix) }}
-  {{- end }}
-{{- end }}
-{{- range $teamApp := $v.teamApps }}
-  {{- if $teamApp | get "ownHost" false }}
-    {{- range $teamId := $teamIds }}
-      {{- $redirectUrls = append $redirectUrls (printf "https://%s-%s.%s/*" $teamApp.name $teamId $domainSuffix) }}
-    {{- end }}
-  {{- end }}
-{{- end }}
-{{- $redirectUrls = sortAlpha $redirectUrls }}
 
 resources:
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "dex" "host" $v._derived.dexDomain) | nindent 4 }}
 
-  {{- /*
-    The whole Dex configuration is assembled here rather than in dex.gotmpl because it embeds
-    the OAuth2 client secret. Consumers read the same secret through the derived store
-    coordinates, so every application shares one client with the active issuer.
-  */}}
+  {{- /* Config is delivered as a secret because it embeds the OAuth2 client secret. */}}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
@@ -52,74 +21,7 @@ resources:
           type: Opaque
           data:
             config.yaml: |
-              issuer: https://{{ $v._derived.dexDomain }}
-              storage:
-                type: kubernetes
-                config:
-                  inCluster: true
-              web:
-                http: 0.0.0.0:5556
-              telemetry:
-                http: 0.0.0.0:5558
-              oauth2:
-                skipApprovalScreen: true
-              {{- /*
-                Without a session Dex re-authenticates on every authorization request, so every
-                application running its own OIDC flow would prompt again. ssoSharedWithDefault
-                defaults to "none"; "all" is what makes one login cover every platform client.
-              */}}
-              sessions:
-                ssoSharedWithDefault: all
-                cookieEncryptionKey: '{{ "{{ .sessionCookieEncryptionKey | toString }}" }}'
-              enablePasswordDB: true
-              {{- /*
-                Seeds the platform admin as a static password so someone can log in before any
-                user projection exists. Static passwords are read once at startup and cannot be
-                changed at runtime, so this is a bootstrap credential only. Real users become
-                Password custom resources, which Dex reads live from storage.
-              */}}
-              staticPasswords:
-                - email: {{ $d.adminUsername }}@{{ $domainSuffix }}
-                  username: {{ $d.adminUsername }}
-                  userID: apl-platform-admin
-                  hash: '{{ "{{ .adminPasswordHash | toString }}" }}'
-                  groups:
-                    - platform-admin
-                    - admin
-              staticClients:
-                - id: {{ $d.idp.clientID }}
-                  name: APL
-                  secret: '{{ "{{ .idpClientSecret | toString }}" }}'
-                  redirectURIs:
-                    {{- range $url := $redirectUrls }}
-                    - {{ $url }}
-                    {{- end }}
-                  {{- /* Dex rejects a post_logout_redirect_uri that is not registered here. */}}
-                  postLogoutRedirectURIs:
-                    - https://{{ $v._derived.consoleDomain }}
-                    - https://{{ $v._derived.consoleDomain }}/oauth2/start
-              {{- if $v.otomi.hasExternalIDP }}
-              {{- /*
-                The connector id is part of every Subject Dex issues, so it must never change:
-                renaming it orphans every account that downstream applications keyed on that
-                Subject. It is deliberately a constant rather than a configurable value.
-              */}}
-              connectors:
-                - type: oidc
-                  id: idp
-                  name: Single Sign-On
-                  config:
-                    issuer: {{ $o.issuer }}
-                    clientID: '{{ "{{ .oidcClientID | toString }}" }}'
-                    clientSecret: '{{ "{{ .oidcClientSecret | toString }}" }}'
-                    redirectURI: https://{{ $v._derived.dexDomain }}/callback
-                    scopes:
-                      - openid
-                      - profile
-                      - email
-                      - groups
-                    insecureSkipEmailVerified: true
-              {{- end }}
+              {{- tpl (readFile "../../helmfile.d/snippets/dex-config.gotmpl") . | nindent 14 }}
       data:
         - secretKey: idpClientSecret
           remoteRef:

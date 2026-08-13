@@ -1,0 +1,93 @@
+{{- /* Dex config. Read by dex-raw.gotmpl to deliver it, and by dex.gotmpl to hash it. */}}
+{{- $v := .Values }}
+{{- $d := $v.apps | get "dex" }}
+{{- $o := $v | get "oidc" dict }}
+{{- $domainSuffix := $v.cluster.domainSuffix }}
+
+{{- /* Dex matches redirect_uri by exact string, so every callback must be listed literally. */}}
+{{- $ownOidcCallbacks := dict
+    "argocd"  "/auth/callback"
+    "harbor"  "/c/oidc/callback"
+    "grafana" "/login/generic_oauth"
+    "gitea"   "/user/oauth2/otomi-idp/callback" }}
+{{- $teamIds := list }}
+{{- range $name, $team := omit $v.teamConfig "admin" }}
+{{- $teamIds = append $teamIds $name }}
+{{- end }}
+{{- $teamIds = sortAlpha $teamIds }}
+{{- $redirectUrls := list }}
+{{- range $coreApp := $v.adminApps }}
+  {{- if $coreApp | get "ownHost" false }}
+    {{- $host := printf "%s.%s" $coreApp.name $domainSuffix }}
+    {{- $redirectUrls = append $redirectUrls (printf "https://%s/oauth2/callback" $host) }}
+    {{- with $ownOidcCallbacks | get $coreApp.name "" }}
+    {{- $redirectUrls = append $redirectUrls (printf "https://%s%s" $host .) }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- range $teamApp := $v.teamApps }}
+  {{- if $teamApp | get "ownHost" false }}
+    {{- range $teamId := $teamIds }}
+      {{- $host := printf "%s-%s.%s" $teamApp.name $teamId $domainSuffix }}
+      {{- $redirectUrls = append $redirectUrls (printf "https://%s/oauth2/callback" $host) }}
+      {{- with $ownOidcCallbacks | get $teamApp.name "" }}
+      {{- $redirectUrls = append $redirectUrls (printf "https://%s%s" $host .) }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- $redirectUrls = sortAlpha $redirectUrls -}}
+issuer: https://{{ $v._derived.dexDomain }}
+storage:
+  type: kubernetes
+  config:
+    inCluster: true
+web:
+  http: 0.0.0.0:5556
+telemetry:
+  http: 0.0.0.0:5558
+oauth2:
+  skipApprovalScreen: true
+{{- /* ssoSharedWithDefault defaults to "none", which gives no single sign-on. */}}
+sessions:
+  ssoSharedWithDefault: all
+  cookieEncryptionKey: '{{ "{{ .sessionCookieEncryptionKey | toString }}" }}'
+enablePasswordDB: true
+{{- /* Config is the only interface that carries groups: the gRPC API has no groups field. */}}
+staticPasswords:
+  - email: {{ $d.adminUsername }}@{{ $domainSuffix }}
+    username: {{ $d.adminUsername }}
+    userID: apl-platform-admin
+    hash: '{{ "{{ .adminPasswordHash | toString }}" }}'
+    groups:
+      - platform-admin
+      - admin
+staticClients:
+  - id: {{ $d.idp.clientID }}
+    name: APL
+    secret: '{{ "{{ .idpClientSecret | toString }}" }}'
+    redirectURIs:
+      {{- range $url := $redirectUrls }}
+      - {{ $url }}
+      {{- end }}
+    postLogoutRedirectURIs:
+      - https://{{ $v._derived.consoleDomain }}
+      - https://{{ $v._derived.consoleDomain }}/oauth2/start
+{{- if $v.otomi.hasExternalIDP }}
+{{- /* The connector id is baked into every Subject. Never rename it. */}}
+connectors:
+  - type: oidc
+    id: idp
+    name: Single Sign-On
+    config:
+      issuer: {{ $o.issuer }}
+      clientID: '{{ "{{ .oidcClientID | toString }}" }}'
+      clientSecret: '{{ "{{ .oidcClientSecret | toString }}" }}'
+      redirectURI: https://{{ $v._derived.dexDomain }}/callback
+      scopes:
+        - openid
+        - profile
+        - email
+        - groups
+      insecureSkipEmailVerified: true
+{{- end }}

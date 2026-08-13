@@ -34,8 +34,7 @@ config:
     ssl_insecure_skip_verify = {{ $v._derived.untrustedCA }}
     provider = {{ ternary "oidc" "keycloak-oidc" $v.apps.dex.enabled | quote }}
     {{- with $v._derived.oidcBackchannelLogoutUrl }}
-    # The issuer needs the user's ID token to end its session, which a browser redirect cannot
-    # carry. oauth2-proxy substitutes {id_token} and calls this itself on sign-out.
+    # oauth2-proxy substitutes {id_token} and calls this itself on sign-out.
     backend_logout_url = {{ . | quote }}
     {{- end }}
     whitelist_domains = {{ $domains | toJson }}
@@ -80,14 +79,14 @@ extraVolumeMounts:
     readOnly: true
 
 extraInitContainers:
-  - name: wait-for-keycloak
+  - name: wait-for-oidc-issuer
     {{- if $v.otomi.linodeLkeImageRepository }}
     image: "{{ $v.otomi.linodeLkeImageRepository }}/docker/curlimages/curl:latest"
     {{- else }}
     image: curlimages/curl:latest
     {{- end }}
     command: ["/bin/sh","-c"]
-    {{- /* Polls discovery rather than the issuer root: Keycloak serves both, Dex only serves discovery. */}}
+    {{- /* Polls discovery: Dex does not serve the issuer root. */}}
     args: ["while [ $(curl -sw '%{http_code}' {{ $v._derived.oidcWellKnownUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for OIDC Issuer URL'; done"]
 
 {{- if $v.otomi.linodeLkeImageRepository }}
