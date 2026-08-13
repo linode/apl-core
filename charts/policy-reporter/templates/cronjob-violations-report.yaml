@@ -72,8 +72,12 @@ spec:
               {{- with .Values.extraVolumes.volumeMounts }}
               {{ toYaml . | nindent 14 | trim }}
               {{- end }}
-              {{- if .Values.emailReports.smtp.secret }}
               env:
+              - name: POD_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+              {{- if .Values.emailReports.smtp.secret }}
               - name: EMAIL_REPORTS_SMTP_HOST
                 valueFrom:
                   secretKeyRef:
