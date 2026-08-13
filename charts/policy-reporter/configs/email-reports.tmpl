@@ -5,6 +5,10 @@ emailReports:
   smtp:
     {{- toYaml . | nindent 4 }}
   {{- end }}
+  {{- with .Values.emailReports.graphAPI }}
+  graphAPI:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 
   summary:
     {{- with .Values.emailReports.summary.to }}
