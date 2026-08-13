@@ -39,6 +39,8 @@ config:
     {{- end }}
     whitelist_domains = {{ $domains | toJson }}
     scope = {{ $o | get "scope" "openid email profile groups" | quote }}
+    {{- /* Defaults to "force", which makes Dex show the consent screen on every login. */}}
+    approval_prompt = ""
     oidc_issuer_url = {{ $v._derived.oidcBaseUrl | quote }}
     code_challenge_method = "S256"
     insecure_oidc_allow_unverified_email = true
