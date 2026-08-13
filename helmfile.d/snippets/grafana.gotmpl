@@ -13,7 +13,7 @@ analytics:
   # See: https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#variable-expansion
   client_id: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_ID}
   client_secret: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
-  scopes: email profile openid
+  scopes: email profile openid groups
   email_attribute_path: email
   login_attribute_path: username
   name_attribute_path: full_name

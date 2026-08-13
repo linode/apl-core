@@ -38,7 +38,7 @@ config:
     backend_logout_url = {{ . | quote }}
     {{- end }}
     whitelist_domains = {{ $domains | toJson }}
-    scope = {{ $o | get "scope" "openid email profile" | quote }}
+    scope = {{ $o | get "scope" "openid email profile groups" | quote }}
     oidc_issuer_url = {{ $v._derived.oidcBaseUrl | quote }}
     code_challenge_method = "S256"
     insecure_oidc_allow_unverified_email = true

@@ -212,6 +212,7 @@ configs:
         - openid
         - profile
         - email
+        - groups
       {{- if $v._derived.untrustedCA }}
       rootCA: |
         {{- $v._derived.caCert | nindent 8 }}

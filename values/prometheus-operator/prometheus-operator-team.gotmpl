@@ -192,7 +192,7 @@ grafana:
       oauth_auto_login: true
       client_id: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_ID}
       client_secret: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
-      scopes: email profile openid
+      scopes: email profile openid groups
       email_attribute_path: email
       login_attribute_path: username
       name_attribute_path: full_name
