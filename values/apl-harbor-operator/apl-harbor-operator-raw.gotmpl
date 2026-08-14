@@ -40,7 +40,7 @@ resources:
         - secretKey: oidcClientSecret
           remoteRef:
             key: {{ $v._derived.oidcClientSecretKey }}
-            property: idp_clientSecret
+            property: {{ $v._derived.oidcClientSecretProperty }}
   - apiVersion: v1
     kind: ConfigMap
     metadata:
