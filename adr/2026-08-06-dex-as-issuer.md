@@ -48,6 +48,16 @@ So configuration it is. The consequence is that adding a user, adding a team, or
 
 That restart is made harmless rather than avoided: Dex runs two replicas with `maxUnavailable: 0`, and a checksum of the rendered configuration is annotated on the Deployment so a change rolls the pods automatically. Sessions live in Dex storage, not pod memory, so a roll does not log anybody out.
 
+We have asked upstream for group membership to be accepted over the gRPC API (dexidp/dex#4972). If that is granted, users could be managed through the API instead, which would remove the restart. Nothing else in this decision depends on it.
+
+### How users reach the configuration
+
+Users are created through the API and stored as SealedSecrets in the `apl-users` namespace. Under Keycloak they reach the issuer at runtime, because the Keycloak operator watches those Secrets. Dex has no operator, so the records must be in hand when the configuration is rendered.
+
+They cannot be read from the values repository: every field of a user record is a secret, so templates see ciphertext. They are instead loaded from the cluster during apply — the same source the Keycloak operator watches — and rendered into `staticPasswords`. Group membership is derived from the stored administrator flags and team list, reproducing what the Keycloak operator produces for the same record.
+
+The password hash is stored on the user record rather than computed while rendering. Bcrypt is salted, so hashing at render time would produce a different value on every run, change the configuration checksum on every apply, and restart Dex continuously. The API computes it once, when it holds the plaintext.
+
 ### Subjects are derived from the values repository
 
 A Dex password entry carries an explicit `userID`, and Dex derives the subject as `base64url(proto{user_id, connector_id})`. Setting `userID` to the APL user's existing UUID makes subjects repository-derived rather than Dex-allocated: they survive a cluster rebuild, and any user's subject is computable offline before a cluster is touched.
@@ -58,7 +68,7 @@ The connector ID is part of every subject and must never be renamed.
 
 Bringing an external identity provider remains supported, and the two populations stay mutually exclusive, as they are under Keycloak:
 
-- **Users created in APL** are recorded in the values repository and rendered into Dex's `staticPasswords`. The values repository is their system of record; Dex holds their credential and group membership.
+- **Users created in APL** originate in the values repository and are rendered into Dex's `staticPasswords` from their materialised form on the cluster, as described above. The values repository remains their system of record.
 - **Federated users** arrive through a Dex `oidc` connector configured from the existing `oidc.*` settings. They are never written to the values repository, and their team membership comes from group claims.
 
 ### Positive Consequences
@@ -70,7 +80,8 @@ Bringing an external identity provider remains supported, and the two population
 
 ### Negative Consequences
 
-- **Users cannot change their own password.** Static passwords are configuration. Keycloak offered a self-service account console; Dex has no equivalent, and the gRPC API cannot carry groups, so it is not a usable alternative. Password changes are administrative until Dex accepts groups over the API.
+- **Users cannot change their own password.** Static passwords are configuration. Keycloak offered a self-service account console; Dex has no equivalent, and the gRPC API cannot carry groups, so it is not a usable alternative. Password changes are administrative until dexidp/dex#4972 is accepted.
+- **User provisioning spans two repositories.** The password hash is produced by the API, while loading and rendering happen here. Neither half is useful alone.
 - **Every user or team change restarts Dex.** Mitigated by two replicas and a surge-first rollout, but it is a restart nonetheless.
 - **Runs a pre-release Dex.** Auth sessions and RP-initiated logout are merged on Dex's master branch but unreleased (dexidp/dex#4560). Without sessions there is no single sign-on across applications that run their own OIDC flow, and no logout endpoint. The image is therefore pinned to a master digest with `DEX_SESSIONS_ENABLED=true`. **APL must not be released while this pin stands.**
 - **Single sign-on needs explicit configuration.** `sessions.ssoSharedWithDefault` defaults to `none`, which gives no SSO at all. It is set to `all`.
@@ -115,3 +126,4 @@ Bringing an external identity provider remains supported, and the two population
 - Builds on [ADR-2026-06-25](2026-06-25-drop-sops-for-sealedsecrets.md)
 - [Dex storage documentation](https://dexidp.io/docs/configuration/storage/) — states the custom resources are internal
 - [dexidp/dex#4560](https://github.com/dexidp/dex/issues/4560) — auth sessions, merged but unreleased
+- [dexidp/dex#4972](https://github.com/dexidp/dex/issues/4972) — request to accept group membership over the gRPC API; would remove the restart on user change
