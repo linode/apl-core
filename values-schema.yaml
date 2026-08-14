@@ -1617,6 +1617,49 @@ properties:
             type: boolean
             default: false
             description: Use CNPG plugin for platform database backups
+      dex:
+        additionalProperties: false
+        description: Dex is an OIDC identity broker. When enabled it acts as the cluster's OIDC issuer instead of Keycloak.
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          adminPasswordHash:
+            type: string
+            x-secret: ''
+            description: >-
+              Bcrypt hash of otomi.adminPassword, derived automatically at bootstrap. Seeds the
+              platform admin as a Dex static password so someone can log in before any user
+              projection exists. Not user-supplied.
+          adminUsername:
+            type: string
+            default: otomi-admin
+            description: Username of the platform admin account seeded as a static password.
+          sessionCookieEncryptionKey:
+            type: string
+            x-secret: '{{ randAlphaNum 32 }}'
+            description: >-
+              AES key encrypting the Dex session cookie. Must be 16, 24 or 32 characters. Shared
+              by all replicas, otherwise a session created by one pod is unreadable by another.
+          idp:
+            additionalProperties: false
+            properties:
+              clientID:
+                $ref: '#/definitions/wordCharacterPattern'
+                default: otomi
+                description: The OAuth2 client identifier that platform applications use when authenticating against Dex.
+              clientSecret:
+                type: string
+                x-secret: '{{ randAlphaNum 32 }}'
+                description: Secret of the shared platform OAuth2 client. Generated at bootstrap.
+          replicas:
+            type: integer
+            default: 1
+            description: Number of Dex replicas. More than one requires all replicas to share the same storage backend.
+          resources:
+            $ref: '#/definitions/resources'
       external-dns:
         additionalProperties: false
         properties:
@@ -1816,6 +1859,13 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+            description: >-
+              Run Keycloak as the cluster's OIDC issuer instead of Dex. Only one issuer can be
+              active at a time. New clusters use Dex; this exists for clusters installed before
+              Dex became the default.
           idp:
             additionalProperties: false
             properties:

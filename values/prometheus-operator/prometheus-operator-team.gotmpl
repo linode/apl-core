@@ -192,14 +192,14 @@ grafana:
       oauth_auto_login: true
       client_id: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_ID}
       client_secret: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
-      scopes: email profile openid
+      scopes: email profile openid groups
       email_attribute_path: email
       login_attribute_path: username
       name_attribute_path: full_name
       use_refresh_token: true
-      auth_url: {{ printf "%s/protocol/openid-connect/auth" $v._derived.oidcBaseUrl }}
-      token_url: {{ printf "%s/protocol/openid-connect/token" $v._derived.oidcBaseUrl }}
-      api_url: {{ printf "%s/protocol/openid-connect/userinfo" $v._derived.oidcBaseUrl }}
+      auth_url: {{ $v._derived.oidcAuthUrl }}
+      token_url: {{ $v._derived.oidcTokenUrl }}
+      api_url: {{ $v._derived.oidcUserInfoUrl }}
       role_attribute_path: "contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'platform-admin') && 'Admin' || contains(groups[*], '{{ $teamGroupName }}') && 'Editor'"
       role_attribute_strict: true
     log:

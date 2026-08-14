@@ -25,6 +25,8 @@ This log lists the architectural decisions for apl-core.
 - [ADR-2026-06-25](2026-06-25-git-server-as-default-values-repo.md) - Lightweight git-server as the default values repository backend
 - [ADR-2026-06-25](2026-06-25-manifests-directory.md) - Manifests directory in the values repo
 - [ADR-2026-08-04](2026-08-04-restart-platform-auth-pods-after-oauth2-proxy-healthy.md) - Restart platform-auth pods once oauth2-proxy is healthy
+- [ADR-2026-08-06](2026-08-06-dex-as-issuer.md) - Dex replaces Keycloak as the OIDC issuer for newly installed clusters
+- [ADR-2026-08-06](2026-08-06-keycloak-to-dex-migration-path.md) - Migration path from Keycloak to Dex for existing clusters
 
 <!-- adrlogstop -->
 

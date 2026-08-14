@@ -35,13 +35,13 @@ releases:
       pkg: otomi-operator
     <<: *default
   - name: apl-keycloak-operator
-    installed: true
+    installed: {{ $a | get "keycloak.enabled" }}
     namespace: apl-keycloak-operator
     labels:
       pkg: apl-keycloak-operator
     <<: *default
   - name: apl-keycloak-operator-artifacts
-    installed: true
+    installed: {{ $a | get "keycloak.enabled" }}
     namespace: apl-keycloak-operator
     labels:
       pkg: apl-keycloak-operator

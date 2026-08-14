@@ -1,0 +1,89 @@
+{{- $v := .Values }}
+{{- $d := $v.apps | get "dex" }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+
+{{- /* PRE-RELEASE: do not release APL while pinned. Needs sessions, unreleased (dexidp/dex#4560). */}}
+image:
+  tag: master
+  digest: sha256:af9469509350ff3f6ca70127175a58e5ab085b9d18740fa4a590d9f03f0a026b
+#  TODO add dex to ORCS
+#  {{- if $v.otomi.linodeLkeImageRepository }}
+#  repository: {{ $v.otomi.linodeLkeImageRepository }}/ghcr/dexidp/dex
+#  {{- end }}
+
+{{- /* Auth sessions are behind a feature flag while unreleased. */}}
+env:
+  DEX_SESSIONS_ENABLED: "true"
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+
+replicaCount: {{ $d.replicas }}
+
+{{- /* Dex reads its config only at startup, so a config change must roll the pods. */}}
+deploymentAnnotations:
+  checksum/config: {{ tpl (readFile "../../helmfile.d/snippets/dex-config.gotmpl") . | sha256sum }}
+
+{{- /* Replicas share all state, so surging keeps auth up during a roll. */}}
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+podDisruptionBudget:
+  enabled: {{ gt (int $d.replicas) 1 }}
+  minAvailable: 1
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: dex
+        app.kubernetes.io/instance: dex
+
+{{- with $v.otomi | get "nodeSelector" nil }}
+nodeSelector:
+  {{- range $key, $val := . }}
+  {{ $key }}: {{ $val }}
+  {{- end }}
+{{- end }}
+
+# The Dex configuration is delivered as an ExternalSecret (see dex-raw.gotmpl) because it
+# contains the OAuth2 client secret. Secret values must never travel through Helmfile values.
+configSecret:
+  create: false
+  name: dex-config
+
+# Dex stores auth codes, refresh tokens, offline sessions, passwords and signing keys as
+# custom resources, so it needs permission to manage them and to register its own CRDs.
+rbac:
+  create: true
+  createClusterScoped: true
+
+serviceAccount:
+  create: true
+
+httpRoute:
+  enabled: true
+  {{- with $httpRoute.annotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  parentRefs:
+    {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
+  hostnames:
+    - {{ $v._derived.dexDomain }}
+
+service:
+  ports:
+    http:
+      port: 5556
+
+resources: {{- toYaml $d.resources | nindent 2 }}
+
+priorityClassName: otomi-critical

@@ -32,9 +32,15 @@ config:
     upstreams = [ "static://200" ]
     # Custom
     ssl_insecure_skip_verify = {{ $v._derived.untrustedCA }}
-    provider = "keycloak-oidc"
+    provider = {{ ternary "oidc" "keycloak-oidc" $v.apps.dex.enabled | quote }}
+    {{- with $v._derived.oidcBackchannelLogoutUrl }}
+    # oauth2-proxy substitutes {id_token} and calls this itself on sign-out.
+    backend_logout_url = {{ . | quote }}
+    {{- end }}
     whitelist_domains = {{ $domains | toJson }}
-    scope = {{ $o | get "scope" "openid email profile" | quote }}
+    scope = {{ join " " $v._derived.oidcScopes | quote }}
+    {{- /* Defaults to "force", which makes Dex show the consent screen on every login. */}}
+    approval_prompt = ""
     oidc_issuer_url = {{ $v._derived.oidcBaseUrl | quote }}
     code_challenge_method = "S256"
     insecure_oidc_allow_unverified_email = true
@@ -75,14 +81,15 @@ extraVolumeMounts:
     readOnly: true
 
 extraInitContainers:
-  - name: wait-for-keycloak
+  - name: wait-for-oidc-issuer
     {{- if $v.otomi.linodeLkeImageRepository }}
     image: "{{ $v.otomi.linodeLkeImageRepository }}/docker/curlimages/curl:latest"
     {{- else }}
     image: curlimages/curl:latest
     {{- end }}
     command: ["/bin/sh","-c"]
-    args: ["while [ $(curl -sw '%{http_code}' {{ $v._derived.oidcBaseUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak OIDC Issuer URL'; done"]
+    {{- /* Polls discovery: Dex does not serve the issuer root. */}}
+    args: ["while [ $(curl -sw '%{http_code}' {{ $v._derived.oidcWellKnownUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for OIDC Issuer URL'; done"]
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 initContainers:

@@ -136,6 +136,20 @@ environments:
                 memory: 200Mi
             useBackupPlugin: true
             _rawValues: {}
+          dex:
+            enabled: true
+            replicas: 2
+            adminUsername: otomi-admin
+            idp:
+              clientID: otomi
+            resources:
+              limits:
+                cpu: 200m
+                memory: 128Mi
+              requests:
+                cpu: 20m
+                memory: 64Mi
+            _rawValues: {}
           external-dns:
             logLevel: info
             resources:
@@ -306,6 +320,7 @@ environments:
                   memory: 2Gi
             _rawValues: {}
           keycloak:
+            enabled: false
             adminUsername: otomi-admin
             theme: otomi
             databaseMaxConnections: 28

@@ -1,0 +1,47 @@
+{{- $v := .Values }}
+
+resources:
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "dex" "host" $v._derived.dexDomain) | nindent 4 }}
+
+  {{- /* Config is delivered as a secret because it embeds the OAuth2 client secret. */}}
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: dex-config
+      namespace: dex
+    spec:
+      refreshInterval: 5m
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: dex-config
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            config.yaml: |
+              {{- tpl (readFile "../../helmfile.d/snippets/dex-config.gotmpl") . | nindent 14 }}
+      data:
+        - secretKey: idpClientSecret
+          remoteRef:
+            key: {{ $v._derived.oidcClientSecretKey }}
+            property: {{ $v._derived.oidcClientSecretProperty }}
+        - secretKey: adminPasswordHash
+          remoteRef:
+            key: dex-secrets
+            property: adminPasswordHash
+        - secretKey: sessionCookieEncryptionKey
+          remoteRef:
+            key: dex-secrets
+            property: sessionCookieEncryptionKey
+        {{- if $v.otomi.hasExternalIDP }}
+        - secretKey: oidcClientID
+          remoteRef:
+            key: oidc-secrets
+            property: clientID
+        - secretKey: oidcClientSecret
+          remoteRef:
+            key: oidc-secrets
+            property: clientSecret
+        {{- end }}

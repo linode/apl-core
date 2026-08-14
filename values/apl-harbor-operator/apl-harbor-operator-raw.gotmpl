@@ -39,8 +39,8 @@ resources:
             property: adminPassword
         - secretKey: keycloakClientSecret
           remoteRef:
-            key: keycloak-secrets
-            property: idp_clientSecret
+            key: {{ $v._derived.oidcClientSecretKey }}
+            property: {{ $v._derived.oidcClientSecretProperty }}
   - apiVersion: v1
     kind: ConfigMap
     metadata:
@@ -51,7 +51,8 @@ resources:
       oidcAutoOnboard: "{{ $h.oidcAutoOnboard }}"
       oidcUserClaim: {{ $h.oidcUserClaim }}
       oidcGroupsClaim: groups
-      oidcName: keycloak
-      oidcScope: openid
+      oidcName: {{ ternary "dex" "keycloak" $v.apps.dex.enabled }}
+      {{- /* Ignored until apl-tasks stops hardcoding oidcScope in harbor-oidc.ts. */}}
+      oidcScope: {{ join "," $v._derived.oidcScopes }}
       oidcVerifyCert: '{{ not $v._derived.untrustedCA }}'
       teamNamespaces: {{ $teamNamespaces | toJson }}

@@ -49,8 +49,8 @@ resources:
       data:
         - secretKey: clientSecret
           remoteRef:
-            key: keycloak-secrets
-            property: idp_clientSecret
+            key: {{ $v._derived.oidcClientSecretKey }}
+            property: {{ $v._derived.oidcClientSecretProperty }}
         - secretKey: cookieSecret
           remoteRef:
             key: oauth2-proxy-secrets
