@@ -82,7 +82,26 @@ extraInitContainers:
     image: curlimages/curl:latest
     {{- end }}
     command: ["/bin/sh","-c"]
-    args: ["while [ $(curl -sw '%{http_code}' {{ $v._derived.oidcBaseUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak OIDC Issuer URL'; done"]
+    # Deliberately polls the public issuer, not the backchannel: this gate is an end-to-end check
+    # that DNS, ingress and the certificate chain are all serving Keycloak, which is what oauth2-proxy
+    # needs to work for real users.
+    #
+    # `-k` mirrors the `ssl_insecure_skip_verify` the main container is already given on the same
+    # condition. Without it the curl fails cert verification forever against a platform-issued cert
+    # — and `custom-ca` is the default issuer, so that is the ordinary install, not an edge case.
+    # This container has no istio sidecar to terminate TLS for it (the whole pod sets
+    # sidecar.istio.io/inject=false), so it has to make the same trust decision itself.
+    {{- /*
+    Deliberately polls the public issuer, not the backchannel: this gate is an end-to-end check
+    that DNS, ingress and the certificate chain are all serving Keycloak, which is what oauth2-proxy
+    needs to work for real users.
+
+    `-k` mirrors the `ssl_insecure_skip_verify` the main container is already given on the same
+    condition. Without it the curl fails cert verification forever against a platform-issued cert
+    — and `custom-ca` is the default issuer, so that is the ordinary install, not an edge case.
+    This container has no istio sidecar to terminate TLS for it (the whole pod sets
+    sidecar.istio.io/inject=false), so it has to make the same trust decision itself.
+    */}}   
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 initContainers:
