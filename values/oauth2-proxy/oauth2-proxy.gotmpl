@@ -38,7 +38,7 @@ config:
     backend_logout_url = {{ . | quote }}
     {{- end }}
     whitelist_domains = {{ $domains | toJson }}
-    scope = {{ $o | get "scope" "openid email profile groups" | quote }}
+    scope = {{ join " " $v._derived.oidcScopes | quote }}
     {{- /* Defaults to "force", which makes Dex show the consent screen on every login. */}}
     approval_prompt = ""
     oidc_issuer_url = {{ $v._derived.oidcBaseUrl | quote }}

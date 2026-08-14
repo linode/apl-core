@@ -51,7 +51,8 @@ resources:
       oidcAutoOnboard: "{{ $h.oidcAutoOnboard }}"
       oidcUserClaim: {{ $h.oidcUserClaim }}
       oidcGroupsClaim: groups
-      oidcName: dex
-      oidcScope: openid,email,profile,groups
+      oidcName: {{ ternary "dex" "keycloak" $v.apps.dex.enabled }}
+      {{- /* Ignored until apl-tasks stops hardcoding oidcScope in harbor-oidc.ts. */}}
+      oidcScope: {{ join "," $v._derived.oidcScopes }}
       oidcVerifyCert: '{{ not $v._derived.untrustedCA }}'
       teamNamespaces: {{ $teamNamespaces | toJson }}

@@ -42,7 +42,7 @@
 # Set when the issuer needs the user's ID token to end its session.
 {{- $oidcBackchannelLogoutUrl := "" }}
 # Keycloak sends groups via a protocol mapper and has no groups scope; Dex needs it requested.
-{{- $oidcScopes := list "openid" "email" "profile" "groups" }}
+{{- $oidcScopes := list "openid" "email" "profile" }}
 # Dex replaces every endpoint above; its paths differ entirely from Keycloak's.
 {{- if $a.dex.enabled }}
   {{- $dexBaseUrl := printf "https://dex.%s" $domainSuffix }}
@@ -59,6 +59,7 @@
   {{- $oidcClientID = $a.dex.idp.clientID }}
   {{- $oidcClientSecretKey = "dex-secrets" }}
   {{- $oidcClientSecretProperty = "idp_clientSecret" }}
+  {{- $oidcScopes = append $oidcScopes "groups" }}
   # Dex needs id_token_hint to end a session, which a browser redirect cannot carry, so logout
   # goes through oauth2-proxy's backchannel instead.
   {{- $oidcLogoutUrl = "" }}

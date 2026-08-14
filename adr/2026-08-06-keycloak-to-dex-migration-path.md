@@ -1,71 +1,91 @@
 # Migration path from Keycloak to Dex for existing clusters
 
-- Status: proposed
+- Status: accepted
 - Deciders: APL team
 
 ## Context and Problem Statement
 
-[ADR-2026-08-06](2026-08-06-dex-as-issuer.md) makes Dex the OIDC issuer for newly installed clusters and leaves existing clusters on Keycloak. A migration path will be provided; this record captures the analysis and the candidate options so the choice can be made deliberately rather than re-derived later.
+[ADR-2026-08-06](2026-08-06-dex-as-issuer.md) makes Dex the OIDC issuer. Existing clusters run Keycloak as both issuer and user store, and most of them hold their users locally rather than federating to a customer identity provider. Those users and their passwords cannot simply be moved.
 
-Two findings constrain every option, and both were established from the code rather than assumed.
+Two findings constrain every option, and both come from the code rather than assumption.
 
-**Dex always mints its own subject.** In `server/tokens/claims.go` the `sub` claim appears in `ReservedClaimNames` — *"derived from connector identity, must not be spoofed"* — and is forbidden even to CEL token policies. There is no passthrough of an upstream subject. Any cluster whose issuer becomes Dex therefore issues new subjects to all of its users, regardless of where those users are stored.
+**Dex always mints its own subject.** In `server/tokens/claims.go` the `sub` claim appears in `ReservedClaimNames` — *"derived from connector identity, must not be spoofed"* — and is forbidden even to token policies. Any cluster whose issuer becomes Dex issues new subjects to all of its users.
 
-**Passwords cannot be carried across.** Team users are created in Keycloak with `temporary: true` (`apl-tasks/src/tasks/keycloak/config.ts`), so Keycloak forces a password change on first login and the `initialPassword` held in the values repository is stale for every user who has ever logged in. `apl-tasks/src/operators/keycloak/keycloak.ts` confirms it is never re-synced, since `initialPassword` is in `omitUpdateFields`. Keycloak's PBKDF2/Argon2 hashes cannot be converted to the bcrypt hashes Dex expects.
+**Passwords cannot be carried across.** Team users are created in Keycloak with `temporary: true` (`apl-tasks/src/tasks/keycloak/config.ts`), so Keycloak forces a change on first login and the `initialPassword` in the values repository is stale for anyone who has logged in. Keycloak's PBKDF2 hashes cannot be converted to the bcrypt hashes Dex expects.
 
 ## Decision Drivers
 
-- The footprint reduction delivered by Dex should eventually reach existing clusters, not only new ones. Roughly nine in ten existing clusters run with `otomi.hasExternalIDP: false`, so a path that only serves federated clusters serves almost nobody.
-- The two populations migrate very differently. On a federated cluster (`hasExternalIDP: true`) no passwords exist in Keycloak at all — Keycloak is already doing nothing but brokering, and the Dex `oidc` connector takes over that role directly, leaving subject remapping as the only impact. The password problem below applies solely to clusters holding users created in APL.
-- Applications that persist a local account keyed on subject and issuer are orphaned when the issuer changes. **Harbor** stores `subiss` and refuses re-onboard on mismatch; **Gitea** links users to a login source plus external ID. Consumers keyed on the `groups` or `email` claims — Argo CD, Grafana, apl-api — are unaffected, as are oauth2-proxy and Istio `RequestAuthentication`, which hold no persistent user state.
-- Subject discontinuity should happen at most once per cluster. Because Dex derives the subject from the connector ID, a cluster that first attaches Keycloak as an upstream source and later moves users into Dex breaks subjects a second time.
-- APL has no channel for delivering credentials to users. Today a platform admin reads an initial password from the console and passes it on out of band.
-- Whatever is chosen must not require a decision about disaster-recovery behaviour for credentials, which is being left open separately.
+- The footprint reduction should reach existing clusters, not only new ones.
+- APL has no channel for delivering credentials to users, so a fleet-wide password reset is expensive operationally.
+- Applications that persist a local account keyed on subject and issuer are orphaned when the issuer changes. **Harbor** stores `subiss` and refuses re-onboard on mismatch; **Gitea** links users to a login source and external ID. Consumers keyed on `groups` or `email` — Argo CD, Grafana, apl-api, oauth2-proxy, Istio — are unaffected.
+- Subject discontinuity should happen at most once per cluster. Because Dex derives the subject from the connector ID, a cluster that changes connector later breaks subjects a second time.
+- On a federated cluster (`hasExternalIDP: true`) no passwords exist in Keycloak at all, so that segment migrates far more cheaply.
 
 ## Considered Options
 
-- Migrate users into Dex, requiring a password reset
-- Attach Keycloak to Dex as an upstream identity source
-- Leave existing clusters on Keycloak indefinitely
+- Migrate every existing cluster automatically, requiring a fleet-wide password reset
+- Keep Keycloak as an in-cluster identity provider behind Dex on every cluster
+- Leave existing clusters on Keycloak, and document a manual migration for those who want it
 
 ## Decision Outcome
 
-**Open.** No option is chosen yet. The team is leaning towards either migrating users into Dex with a password reset, or attaching Keycloak to Dex as an upstream identity source, and will decide after prototyping Dex on new clusters.
+Chosen option: **leave existing clusters on Keycloak, and document a manual migration.**
 
-One constraint applies whichever is chosen: because a Dex password entry carries an explicit `userID` and the subject is `base64url(proto{user_id, connector_id})`, every user's post-migration subject is computable offline from the values repository alone, before any cluster is touched. This is what makes a Harbor and Gitea subject-remapping job feasible, and it should be preserved by any option that is chosen.
+Existing clusters keep Keycloak as their issuer and are not migrated by an upgrade. New installations use Dex. A written guide describes how an operator can move a cluster to Dex deliberately, with the consequences stated plainly.
+
+The reasoning is that these clusters are already running Keycloak and their operators are evidently content with it. Nothing about an APL upgrade should force an authentication change on them, and no migration we could build avoids the two costs below. Making it a choice puts that trade in the hands of the person who has to live with it.
+
+`apps.keycloak.enabled` therefore still selects the issuer for the clusters that keep it. The values migration must write `apps.keycloak.enabled: true` into existing clusters before the default flips, so an upgrade never removes a running Keycloak.
+
+The manual guide has to cover, at minimum:
+
+- that every user's subject changes, because Dex cannot pass an upstream subject through
+- that Harbor and Gitea accounts are orphaned as a result, and how to clean them up
+- how to move users, either as Dex static passwords with new credentials, or by adopting an external identity provider
+- that the platform admin password hash must be regenerated for Dex
+
+### Positive Consequences
+
+- No upgrade changes authentication on a running cluster. The riskiest part of this work never runs unattended.
+- No fleet-wide password reset, and no migration tooling to build, test and support.
+- New installations get the full footprint reduction immediately.
+- Clusters that federate to an external identity provider have the cheapest path, since Keycloak is already only brokering there.
+
+### Negative Consequences
+
+- **The footprint reduction does not reach the existing fleet** unless an operator chooses to migrate. This work reduces the cost of a new installation, not of the fleet, and should not be presented otherwise.
+- **Two issuer implementations stay supported indefinitely**, both covered by CI, until a later decision retires Keycloak.
+- **The migration cost is moved, not removed.** Whoever follows the guide still faces the subject change and the orphaned Harbor and Gitea accounts, without tooling to help.
+- A written guide can drift from the code. It needs an owner and a test pass each release.
 
 ## Pros and Cons of the Options
 
-### Migrate users into Dex, requiring a password reset
+### Migrate every existing cluster automatically
 
-APL users already live in the values repository as SealedSecrets; they are rendered into Dex password entries with `userID` set to the existing user UUID. Keycloak and its database are removed. Every user receives a newly issued password.
+- Good, because it delivers the footprint reduction across the fleet.
+- Good, because only one configuration shape would remain supported.
+- Bad, because every user must be issued a new password and APL has no channel to deliver one.
+- Bad, because an upgrade would change authentication unattended, which is the highest-risk way to run this change.
+- Bad, because fleet user counts are unknown, so the operational cost cannot be estimated in advance.
 
-- Good, because it delivers the full footprint reduction to the existing cluster — Keycloak, `apl-keycloak-operator` and the CloudNativePG cluster all go away.
-- Good, because subject discontinuity happens exactly once, and the resulting subject is repository-derived and stable thereafter.
-- Good, because it leaves the cluster in the same shape as a newly installed one, so only one configuration is supported long-term.
-- Bad, because every user must be issued a new password, and APL has no delivery channel for that — it becomes platform-admin toil that scales with user count.
-- Bad, because user counts across the fleet are currently unknown, so the size of that toil cannot yet be estimated.
+### Keep Keycloak as an in-cluster identity provider behind Dex on every cluster
 
-### Attach Keycloak to Dex as an upstream identity source
+- Good, because passwords and user records are untouched and no user action is required.
+- Good, because it needs no credential distribution.
+- Bad, because Keycloak and its database keep running, so nothing is saved on that cluster.
+- Bad, because subjects still change, so Harbor and Gitea accounts still orphan — it buys password preservation and nothing else.
+- Bad, because moving users into Dex afterwards breaks subjects a second time, since the connector ID changes.
 
-Dex becomes the issuer; the existing in-cluster Keycloak is demoted to an upstream OIDC connector holding the user accounts. Users keep their passwords and log in through Keycloak as before, one hop further back.
+### Leave existing clusters on Keycloak, with a manual guide
 
-- Good, because passwords are preserved and no user action is required.
-- Good, because user records, groups and team membership are untouched.
-- Good, because it is the only option that requires no credential distribution.
-- Bad, because it saves nothing — Keycloak, its operator and its two-instance database keep running, so the resource goal is not met on that cluster.
-- Bad, because subjects still change, so Harbor and Gitea accounts orphan anyway. It buys password preservation and nothing else.
-- Bad, because if such a cluster is later moved onto Dex-held users, subjects break a **second** time, since the connector ID changes.
-- Bad, because it introduces a third supported configuration alongside Keycloak-only and Dex-only.
-
-### Leave existing clusters on Keycloak indefinitely
-
-- Good, because it is genuinely zero impact — no subject change, no password reset, no orphaned accounts.
-- Good, because it requires no engineering work at all.
-- Bad, because the resource reduction never reaches the existing fleet, which is where most clusters are.
-- Bad, because two issuer implementations must be maintained and tested with no end date.
+- Good, because no upgrade changes authentication on a running cluster.
+- Good, because the trade is made by the person who has to live with the consequences.
+- Good, because it needs no migration tooling.
+- Bad, because the reduction never reaches the existing fleet unless someone opts in.
+- Bad, because two issuer implementations must be maintained with no end date.
+- Bad, because the cost is moved to the operator rather than removed.
 
 ## Links
 
 - Refines [ADR-2026-08-06](2026-08-06-dex-as-issuer.md)
-- Related to [ADR-2026-06-25](2026-06-25-drop-sops-for-sealedsecrets.md) — APL users are stored as SealedSecrets in the values repository
+- Related to [ADR-2026-06-25](2026-06-25-drop-sops-for-sealedsecrets.md)
