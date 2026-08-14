@@ -30,16 +30,16 @@ resources:
             harborPassword: '{{ "{{ .harborAdminPassword | toString }}" }}'
             harborUser: admin
             oidcEndpoint: {{ $v._derived.oidcBaseUrl }}
-            oidcClientId: {{ $k.idp.clientID }}
-            oidcClientSecret: '{{ "{{ .keycloakClientSecret | toString }}" }}'
+            oidcClientId: {{ $v._derived.oidcClientID }}
+            oidcClientSecret: '{{ "{{ .oidcClientSecret | toString }}" }}'
       data:
         - secretKey: harborAdminPassword
           remoteRef:
             key: otomi-secrets
             property: adminPassword
-        - secretKey: keycloakClientSecret
+        - secretKey: oidcClientSecret
           remoteRef:
-            key: keycloak-secrets
+            key: {{ $v._derived.oidcClientSecretKey }}
             property: idp_clientSecret
   - apiVersion: v1
     kind: ConfigMap
