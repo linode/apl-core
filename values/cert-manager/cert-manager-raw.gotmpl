@@ -120,9 +120,10 @@ resources:
         solvers:
           - selector: {}
             dns01:
-              {{- with $p | get "akamai" nil }}
+              {{- if hasKey $p "akamai" }}
+              {{- $akamai := index $p "akamai" }}
               akamai:
-                serviceConsumerDomain: {{ .host }}
+                serviceConsumerDomain: {{ $akamai.host }}
                 accessTokenSecretRef:
                   name: external-dns
                   key: access_token
@@ -133,69 +134,73 @@ resources:
                   name: external-dns
                   key: client_secret
               {{- end }}
-              {{- with $p | get "aws" nil }}
+              {{- if hasKey $p "aws" }}
+              {{- $aws := index $p "aws" }}
               route53:
-                {{- with . | get "credentials.accessKey" nil }}
+                {{- with $aws | get "credentials.accessKey" nil }}
                 accessKeyID: {{ . }}
                 {{- end }}
-                {{- if . | get "credentials.secretKey" nil }}
+                {{- if $aws | get "credentials.secretKey" nil }}
                 secretAccessKeySecretRef:
                   key: secret
                   name: external-dns
                 {{- end }}
-                region: {{ .region }}
-                {{- with . | get "role" nil }}
+                region: {{ $aws.region }}
+                {{- with $aws | get "role" nil }}
                 role: {{ . }}
                 {{- end }}
               {{- end }}
-              {{- with $p | get "azure" nil }}
+              {{- if hasKey $p "azure" }}
+              {{- $azure := index $p "azure" }}
               azureDNS:
-                resourceGroupName: {{ .resourceGroup }}
-                subscriptionID: {{ .subscriptionId }}
-                {{- if hasKey . "aadClientId" }}
-                tenantID: {{ .tenantId }}
-                clientID: {{ .aadClientId }}
+                resourceGroupName: {{ $azure.resourceGroup }}
+                subscriptionID: {{ $azure.subscriptionId }}
+                {{- if hasKey $azure "aadClientId" }}
+                tenantID: {{ $azure.tenantId }}
+                clientID: {{ $azure.aadClientId }}
                 {{- end }}
-                {{- with . | get "hostedZoneName" nil }}
+                {{- with $azure | get "hostedZoneName" nil }}
                 hostedZoneName: {{ . }}
                 {{- end }}
                 clientSecretSecretRef:
                   key: secret
                   name: external-dns
               {{- end }}
-              {{- with $p | get "azure-private-dns" nil }}
+              {{- if hasKey $p "azure-private-dns" }}
+              {{- $azurePrivateDns := index $p "azure-private-dns" }}
               azureDNS:
-                resourceGroupName: {{ .resourceGroup }}
-                subscriptionID: {{ .subscriptionId }}
-                {{- if hasKey . "aadClientId" }}
-                tenantID: {{ .tenantId }}
-                clientID: {{ .aadClientId }}
+                resourceGroupName: {{ $azurePrivateDns.resourceGroup }}
+                subscriptionID: {{ $azurePrivateDns.subscriptionId }}
+                {{- if hasKey $azurePrivateDns "aadClientId" }}
+                tenantID: {{ $azurePrivateDns.tenantId }}
+                clientID: {{ $azurePrivateDns.aadClientId }}
                 {{- end }}
-                {{- with . | get "hostedZoneName" nil }}
+                {{- with $azurePrivateDns | get "hostedZoneName" nil }}
                 hostedZoneName: {{ . }}
                 {{- end }}
                 clientSecretSecretRef:
                   key: secret
                   name: external-dns
               {{- end }}
-              {{- with $p | get "cloudflare" nil }}
+              {{- if hasKey $p "cloudflare" }}
+              {{- $cloudflare := index $p "cloudflare" }}
               cloudflare:
-                {{- with . | get "apiToken" nil }}
+                {{- with $cloudflare | get "apiToken" nil }}
                 apiTokenSecretRef:
                 {{- end }}
-                {{- with . | get "apiSecret" nil }}
+                {{- with $cloudflare | get "apiSecret" nil }}
                 apiKeySecretRef:
                 {{- end }}
                   key: secret
                   name: external-dns
               {{- end }}
-              {{- with $p | get "digitalocean" nil }}
+              {{- if hasKey $p "digitalocean" }}
               digitalocean:
                 tokenSecretRef:
                   key: secret
                   name: external-dns
               {{- end }}
-              {{- with $p | get "linode" nil }}
+              {{- if hasKey $p "linode" }}
               webhook:
                 solverName: "linode"
                 groupName: acme.slicen.me
@@ -203,15 +208,17 @@ resources:
                   secretKey: secret
                   secretName: external-dns
               {{- end }}
-              {{- with $p | get "google" nil }}
+              {{- if hasKey $p "google" }}
+              {{- $google := index $p "google" }}
               cloudDNS:
-                project: {{ .project }}
+                project: {{ $google.project }}
                 serviceAccountSecretRef:
                   key: secret
                   name: external-dns
               {{- end }}
-              {{- with $p | get "other" nil }}
-              {{- toYaml . | get "cert-manager" nindent 14 }}
+              {{- if hasKey $p "other" }}
+              {{- $other := index $p "other" }}
+              {{- toYaml ($other | get "cert-manager" dict) | nindent 14 }}
               {{- end }}
 {{- end }}
 {{- if eq $cm.issuer "byo-wildcard-cert" }}
