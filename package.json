@@ -9,7 +9,7 @@
     }
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "15.5.1",
+    "@apidevtools/json-schema-ref-parser": "16.0.0",
     "@kubernetes/client-node": "1.4.0",
     "@linode/kubeseal-encrypt": "^1.0.1",
     "@types/deep-diff": "1.0.5",
