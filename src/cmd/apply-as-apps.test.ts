@@ -1,19 +1,20 @@
+import { statSync } from 'fs'
+import { glob } from 'glob'
+import { ARGOCD_APP_PARAMS } from '../common/constants'
+import { env } from '../common/envalid'
+import { getNames } from '../common/utils'
 import {
   addGitOpsApps,
   applyArgocdApp,
   applyGitOpsApps,
   ArgocdAppManifest,
   calculateGitOpsAppsSyncState,
-  getApplications,
-  getArgocdGitopsManifest,
   checkArgoCdController,
+  getApplications,
+  getArgocdCoreAppManifest,
+  getArgocdGitopsManifest,
   removeGitOpsApps,
 } from './apply-as-apps'
-import { glob } from 'glob'
-import { env } from '../common/envalid'
-import { statSync } from 'fs'
-import { ARGOCD_APP_PARAMS } from '../common/constants'
-import { getNames } from '../common/utils'
 
 jest.mock('glob')
 jest.mock('fs', () => ({
@@ -685,5 +686,36 @@ describe('checkArgoCdController', () => {
 
     await expect(checkArgoCdController(mockApplications, [argocdRelease])).resolves.toBeUndefined()
     expect(mockRestartStatefulSet).not.toHaveBeenCalled()
+  })
+})
+
+describe('getArgocdCoreAppManifest', () => {
+  const release = {
+    name: 'kyverno',
+    namespace: 'kyverno',
+    enabled: true,
+    installed: true,
+    labels: '',
+    chart: '../charts/kyverno',
+    version: '1.0.0',
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    ;(env as any).APPS_REPO_URL = 'https://charts.example.com'
+    ;(env as any).APPS_REVISION = undefined
+  })
+
+  it('should include ServerSideApply=true in syncOptions', () => {
+    const manifest = getArgocdCoreAppManifest(release, {}, '1.0.0')
+
+    expect(manifest.spec.syncPolicy.syncOptions).toContain('ServerSideApply=true')
+  })
+
+  it('should preserve ServerSideApply=true when app has a patch with only ignoreDifferences', () => {
+    const istioBase = { ...release, name: 'istio-base', namespace: 'istio-system' }
+    const manifest = getArgocdCoreAppManifest(istioBase, {}, '1.0.0')
+
+    expect(manifest.spec.syncPolicy.syncOptions).toContain('ServerSideApply=true')
   })
 })
