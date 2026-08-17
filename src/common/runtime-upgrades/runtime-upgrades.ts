@@ -1,6 +1,7 @@
 import { OtomiDebugger } from '../debug'
 import { k8s } from '../k8s'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
+import { stripOversizedLastAppliedAnnotations } from './strip-oversized-annotations'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -33,6 +34,12 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
+    },
+  },
+  {
+    version: '6.3.0',
+    pre: async ({ debug }) => {
+      await stripOversizedLastAppliedAnnotations().catch((e) => debug.warn('Failed to strip oversized annotations:', e))
     },
   },
 ]
