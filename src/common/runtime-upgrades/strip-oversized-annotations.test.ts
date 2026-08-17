@@ -1,4 +1,4 @@
-import { stripOversizedLastAppliedAnnotations } from './v6.2.0'
+import { stripOversizedLastAppliedAnnotations } from './strip-oversized-annotations'
 
 jest.mock('../debug', () => ({
   ...jest.requireActual('../debug'),

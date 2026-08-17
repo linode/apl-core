@@ -12,7 +12,7 @@ export const stripOversizedLastAppliedAnnotations = async (
     getCoreApi: (): CoreV1Api => k8s.core(),
   },
 ): Promise<void> => {
-  const log = terminal('common:runtime-upgrades:v6.2.0:stripOversized')
+  const log = terminal('common:runtime-upgrades:stripOversizedAnnotations')
   const patchHeaders = setHeaderOptions('Content-Type', PatchStrategy.JsonPatch)
   const removePatch = [{ op: 'remove', path: LAST_APPLIED_PATCH_PATH }]
 
