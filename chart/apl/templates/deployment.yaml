@@ -81,6 +81,8 @@ spec:
               mountPath: /secret
             - name: tmp
               mountPath: /tmp
+            - name: cache
+              mountPath: /home/app/.cache
             - name: git-config
               mountPath: /home/app/.gitconfig
               subPath: .gitconfig
@@ -105,6 +107,8 @@ spec:
         - name: otomi-values
           emptyDir: {}
         - name: tmp
+          emptyDir: {}
+        - name: cache
           emptyDir: {}
         - name: git-config
           configMap:
