@@ -42,15 +42,11 @@ Equivalent GitHub CLI commands for a minor release cycle from `main`:
 # Dry run
 gh workflow run release-cut-branch.yml --ref main \
 	-f bump_type=minor \
-	-f base_branch=main \
-	-f release_branch_prefix=releases/ \
 	-f dry_run=true
 
 # Create the branch after reviewing the dry run
 gh workflow run release-cut-branch.yml --ref main \
 	-f bump_type=minor \
-	-f base_branch=main \
-	-f release_branch_prefix=releases/ \
 	-f dry_run=false
 ```
 
@@ -62,20 +58,9 @@ For a release candidate, the workflow increments the highest RC tag on the branc
 
 The workflow validates dependencies and publishes the Git tag, GitHub release, container image, and Helm chart. The same release branch is used for later patch release candidates and stable patch releases.
 
-1. Open **Actions > Release create from branch > Run workflow**.
-2. Select the release branch in the branch selector.
-3. Leave `is_prerelease` enabled to create the next release candidate, or disable it to promote the current release candidate to stable.
-4. Run once with `dry_run` enabled.
-5. Review the computed tag and validation jobs, then run again with `dry_run` disabled.
-
-Equivalent GitHub CLI commands for an RC on `releases/v6.1`:
+GitHub CLI commands for an RC on `releases/v6.1`:
 
 ```bash
-# Dry run
-gh workflow run release-create-from-branch.yml --ref releases/v6.1 \
-	-f is_prerelease=true \
-	-f dry_run=true
-
 # Publish the RC after reviewing the dry run
 gh workflow run release-create-from-branch.yml --ref releases/v6.1 \
 	-f is_prerelease=true \
@@ -85,13 +70,19 @@ gh workflow run release-create-from-branch.yml --ref releases/v6.1 \
 To promote the current RC to stable, use the same release branch with `is_prerelease=false`:
 
 ```bash
-# Dry run
-gh workflow run release-create-from-branch.yml --ref releases/v6.1 \
-	-f is_prerelease=false \
-	-f dry_run=true
-
 # Publish the stable release after reviewing the dry run
 gh workflow run release-create-from-branch.yml --ref releases/v6.1 \
 	-f is_prerelease=false \
 	-f dry_run=false
 ```
+
+The same action can be performed in the GitHub web interface by navigating to **Actions > Release create from branch > Run workflow**.
+
+# Release notes
+
+The `What has changed` section is generated automatically during the release process.
+There are three manual steps that need to be performed to enrich the release notes:
+
+1. Add summary
+2. Render the updated app table `cd ci && npm run render-chart-version-changes -- <old-tag> <new-tag>` and copy the output to the corresponding GitHub release notes.
+3. Add the `# Internal component release notes` section containing links to apl-api, apl-console, and apl-tasks release notes (if applicable).
