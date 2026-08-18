@@ -43,14 +43,14 @@ resources:
         template:
           type: Opaque
           data:
-            client-id: {{ $k.idp.clientID }}
+            client-id: {{ $v._derived.oidcClientID }}
             client-secret: '{{ "{{ .clientSecret | toString }}" }}'
             cookie-secret: '{{ "{{ .cookieSecret | toString }}" }}'
       data:
         - secretKey: clientSecret
           remoteRef:
-            key: keycloak-secrets
-            property: idp_clientSecret
+            key: {{ $v._derived.oidcClientSecretKey }}
+            property: {{ $v._derived.oidcClientSecretProperty }}
         - secretKey: cookieSecret
           remoteRef:
             key: oauth2-proxy-secrets
