@@ -36,15 +36,15 @@ resources:
           type: Opaque
           data:
             giteaPassword: '{{ "{{ .gitPassword | toString }}" }}'
-            oidcClientId: {{ $k.idp.clientID }}
-            oidcClientSecret: '{{ "{{ .keycloakClientSecret | toString }}" }}'
+            oidcClientId: {{ $v._derived.oidcClientID }}
+            oidcClientSecret: '{{ "{{ .oidcClientSecret | toString }}" }}'
             oidcEndpoint: {{ $v._derived.oidcBaseUrl }}
       data:
         - secretKey: gitPassword
           remoteRef:
             key: gitea-secrets
             property: adminPassword
-        - secretKey: keycloakClientSecret
+        - secretKey: oidcClientSecret
           remoteRef:
-            key: keycloak-secrets
-            property: idp_clientSecret
+            key: {{ $v._derived.oidcClientSecretKey }}
+            property: {{ $v._derived.oidcClientSecretProperty }}
