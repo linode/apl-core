@@ -82,7 +82,8 @@ extraInitContainers:
     image: curlimages/curl:latest
     {{- end }}
     command: ["/bin/sh","-c"]
-    args: ["while [ $(curl -sw '%{http_code}' {{ $v._derived.oidcBaseUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak OIDC Issuer URL'; done"]
+    {{- /* Polls the backchannel: plain HTTP to a ClusterIP, so no DNS or TLS to fail on. */}}
+    args: ["while [ $(curl -s{{ if $v._derived.untrustedCA }}k{{ end }}w '%{http_code}' {{ $v._derived.oidcBaseUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak OIDC Issuer URL'; done"]
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 initContainers:

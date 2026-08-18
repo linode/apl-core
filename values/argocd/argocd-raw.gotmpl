@@ -142,8 +142,8 @@ resources:
       data:
         - secretKey: oidc.clientSecret
           remoteRef:
-            key: keycloak-secrets
-            property: idp_clientSecret
+            key: {{ $v._derived.oidcClientSecretKey }}
+            property: {{ $v._derived.oidcClientSecretProperty }}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
