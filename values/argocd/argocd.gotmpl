@@ -206,12 +206,12 @@ configs:
     oidc.config: |
       name: Otomi
       issuer: {{ $v._derived.oidcBaseUrl }}
-      clientID: {{ $k.idp.clientID }}
+      clientID: {{ $v._derived.oidcClientID }}
       clientSecret: '$oidc.clientSecret'
       requestedScopes:
-        - openid
-        - profile
-        - email
+        {{- range $v._derived.oidcScopes }}
+        - {{ . }}
+        {{- end }}
       {{- if $v._derived.untrustedCA }}
       rootCA: |
         {{- $v._derived.caCert | nindent 8 }}
