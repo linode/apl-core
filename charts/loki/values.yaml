@@ -1610,7 +1610,7 @@ gateway:
     image:
       registry: ghcr.io
       repository: "jkroepke/access-log-exporter"
-      tag: "0.4.10"
+      tag: "0.4.11"
       pullPolicy: IfNotPresent
     # @schema additionalProperties:true
     resources:
@@ -6257,7 +6257,7 @@ memcachedExporter:
   enabled: true
   image:
     repository: prom/memcached-exporter
-    tag: v0.16.0
+    tag: v0.17.0
     pullPolicy: IfNotPresent
   # @schema additionalProperties:true
   resources:
