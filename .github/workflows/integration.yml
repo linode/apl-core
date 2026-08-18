@@ -220,6 +220,11 @@ jobs:
           LINODE_CLUSTER_NAME: ${{ steps.determine-cluster-name.outputs.linode-cluster-name }}
         run: |
           # Mapping of domain_zone to domain names
+          if [[ "$DOMAIN_ZONE" == 'Zone-Linode' && -z "$LINODE_DNS_ZONE" ]]; then
+            echo "LINODE_DNS_ZONE repo variable is required when domain_zone is Zone-Linode."
+            exit 1
+          fi
+
           case "$DOMAIN_ZONE" in
             "Zone-1") DOMAIN=$(jq -r --arg actor "$ACTOR" '.[$actor][0]' <<< "$DEV_DOMAINS") ;;
             "Zone-2") DOMAIN=$(jq -r --arg actor "$ACTOR" '.[$actor][1]' <<< "$DEV_DOMAINS") ;;
