@@ -103,7 +103,7 @@ function main() {
     console.log('No chart dependency changes between ' + oldTag + ' and ' + newTag)
     return
   }
-
+  console.log('# Core application changes')
   console.log(renderTable(rows))
 }
 
