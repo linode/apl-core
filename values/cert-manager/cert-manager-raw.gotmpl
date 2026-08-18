@@ -185,14 +185,15 @@ resources:
               {{- if hasKey $p "cloudflare" }}
               {{- $cloudflare := index $p "cloudflare" }}
               cloudflare:
-                {{- with $cloudflare | get "apiToken" nil }}
-                apiTokenSecretRef:
-                {{- end }}
-                {{- with $cloudflare | get "apiSecret" nil }}
+                {{- if hasKey $cloudflare "email" }}
                 apiKeySecretRef:
-                {{- end }}
                   key: secret
                   name: external-dns
+                {{- else }}
+                apiTokenSecretRef:
+                  key: secret
+                  name: external-dns
+                {{- end }}
               {{- end }}
               {{- if hasKey $p "digitalocean" }}
               digitalocean:
