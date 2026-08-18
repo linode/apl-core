@@ -28,6 +28,21 @@
 {{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
 {{- $oidcBaseUrlBackchannel := "http://keycloak-keycloakx-http.keycloak:8080/realms/otomi" }}
 {{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
+# Fully-formed endpoints. Consumers use these verbatim; never append paths to a base URL.
+{{- $oidcAuthUrl := printf "%s/protocol/openid-connect/auth" $oidcBaseUrl }}
+{{- $oidcTokenUrl := printf "%s/protocol/openid-connect/token" $oidcBaseUrl }}
+{{- $oidcUserInfoUrl := printf "%s/protocol/openid-connect/userinfo" $oidcBaseUrl }}
+{{- $oidcJwksUrl := printf "%s/protocol/openid-connect/certs" $oidcBaseUrl }}
+{{- $oidcJwksUrlBackchannel := printf "%s/protocol/openid-connect/certs" $oidcBaseUrlBackchannel }}
+{{- $oidcLogoutUrl := printf "%s/protocol/openid-connect/logout" $oidcBaseUrl }}
+{{- $oidcClientID := $a.keycloak.idp.clientID }}
+{{- $oidcScopes := list "openid" "email" "profile" }}
+# Where the shared client secret lives, so consumers do not name an issuer's store entry.
+{{- $oidcClientSecretKey := "keycloak-secrets" }}
+{{- $oidcClientSecretProperty := "idp_clientSecret" }}
+# Finished logout destinations, so consumers do not assemble query parameters themselves.
+{{- $logoutToConsole := printf "%s?post_logout_redirect_uri=https://console.%s&client_id=%s" $oidcLogoutUrl $domainSuffix $oidcClientID }}
+{{- $logoutToOauth2Start := printf "%s?post_logout_redirect_uri=https://console.%s/oauth2/start&client_id=%s" $oidcLogoutUrl $domainSuffix $oidcClientID }}
 {{- $tlsSecretName := "otomi-cert-manager-wildcard-cert" }}
 {{- if eq $cm.issuer "externally-managed-tls-secret" }}
   {{- $tlsSecretName = $cm.externallyManagedTlsSecretName }}
@@ -194,6 +209,18 @@ environments:
           oidcBaseUrlBackchannel: {{ $oidcBaseUrlBackchannel}}
           oidcWellKnownUrl: {{ $oidcWellKnownUrl }}
           oidcWellKnownUrlBackchannel: {{ $oidcWellKnownBackchannel}}
+          oidcAuthUrl: {{ $oidcAuthUrl }}
+          oidcTokenUrl: {{ $oidcTokenUrl }}
+          oidcUserInfoUrl: {{ $oidcUserInfoUrl }}
+          oidcJwksUrl: {{ $oidcJwksUrl }}
+          oidcJwksUrlBackchannel: {{ $oidcJwksUrlBackchannel }}
+          oidcLogoutUrl: {{ $oidcLogoutUrl }}
+          oidcClientID: {{ $oidcClientID }}
+          oidcClientSecretKey: {{ $oidcClientSecretKey }}
+          oidcClientSecretProperty: {{ $oidcClientSecretProperty }}
+          oidcScopes: {{ $oidcScopes | toJson }}
+          logoutToConsole: {{ $logoutToConsole }}
+          logoutToOauth2Start: {{ $logoutToOauth2Start }}
           authDomain: {{ printf "auth.%s" $domainSuffix }}
           apiDomain: {{ print "api." $domainSuffix }}
           ttyDomain: {{ print "tty." $domainSuffix }}
