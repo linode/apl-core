@@ -35,7 +35,7 @@ Existing clusters keep Keycloak as their issuer and are not migrated by an upgra
 
 The reasoning is that these clusters are already running Keycloak and their operators are evidently content with it. Nothing about an APL upgrade should force an authentication change on them, and no migration we could build avoids the two costs below. Making it a choice puts that trade in the hands of the person who has to live with it.
 
-`apps.keycloak.enabled` therefore still selects the issuer for the clusters that keep it. The values migration must write `apps.keycloak.enabled: true` into existing clusters before the default flips, so an upgrade never removes a running Keycloak.
+`apps.dex.enabled` selects the issuer. The values migration must write `apps.keycloak.enabled: true` into existing clusters before the default flips, so an upgrade never removes a running Keycloak.
 
 The manual guide has to cover, at minimum:
 
