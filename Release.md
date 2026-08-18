@@ -76,13 +76,13 @@ gh workflow run release-create-from-branch.yml --ref releases/v6.1 \
 	-f dry_run=false
 ```
 
-Same Action can be performed in GitHub web interface by navigating into: **Actions > Release create from branch > Run workflow**.
+The same action can be performed in the GitHub web interface by navigating to **Actions > Release create from branch > Run workflow**.
 
 # Release notes
 
 The `What has changed` section is generated automatically during the release process.
-There are three manual steps that needs to be performed to enrich the release notes:
+There are three manual steps that need to be performed to enrich the release notes:
 
 1. Add summary
-2. Render the updated app table `cd ci && npm run render-chart-version-changes <old-tag> <new-tag>` and copy the output the corresponding GitHub Release notes.
+2. Render the updated app table `cd ci && npm run render-chart-version-changes -- <old-tag> <new-tag>` and copy the output to the corresponding GitHub release notes.
 3. Add the `# Internal component release notes` section containing links to apl-api, apl-console, and apl-tasks release notes (if applicable).
