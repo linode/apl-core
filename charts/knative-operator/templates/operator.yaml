@@ -867,9 +867,13 @@ spec:
             - name: access-config
               mountPath: /etc/cluster-inventory
               readOnly: true
-{{- range ($mc.plugins | default list) }}
+{{- range $index, $plugin := ($mc.plugins | default list) }}
+{{- $mountPath := $plugin.mountPath | default "" | toString | clean }}
+{{- if not (hasPrefix "/" $mountPath) }}
+{{-   fail (printf "knative_operator.multicluster.plugins[%d].mountPath must be an absolute path, got %q" $index ($plugin.mountPath | default "" | toString)) }}
+{{- end }}
             - name: {{ .name }}
-              mountPath: {{ .mountPath }}
+              mountPath: {{ $mountPath }}
               readOnly: true
 {{- end }}
 {{- end }}
