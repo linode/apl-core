@@ -139,6 +139,11 @@ resources:
       target:
         name: argocd-secret
         creationPolicy: Merge
+        # Empty template stops ESO from copying this ExternalSecret's
+        # argocd tracking-id annotation onto the shared argocd-secret
+        template:
+          mergePolicy: Merge
+          metadata: {}
       data:
         - secretKey: oidc.clientSecret
           remoteRef:
