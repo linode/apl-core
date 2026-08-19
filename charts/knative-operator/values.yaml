@@ -8,27 +8,30 @@ knative_operator:
     #     - name: secretreader
     #       execConfig:
     #         apiVersion: client.authentication.k8s.io/v1
-    #         command: /access-plugins/secretreader/secretreader-plugin
+    #         command: /access-plugins/secretreader/bin/secretreader-plugin
+    #         interactiveMode: Never
     #         provideClusterInfo: true
     #     - name: kubeconfig-secretreader
     #       execConfig:
     #         apiVersion: client.authentication.k8s.io/v1
-    #         command: /access-plugins/secretreader/kubeconfig-secretreader-plugin
+    #         command: /access-plugins/kubeconfig-secretreader/bin/kubeconfig-secretreader-plugin
+    #         interactiveMode: Never
     #         provideClusterInfo: true
-    # plugins[] uses the Kubernetes "image" volume type
+    # plugins[] uses the Kubernetes "image" volume type. Each mountPath must be
+    # absolute, and each execConfig.command must point under one of these paths.
     plugins: []
     # plugins:
     #   - name: secretreader
-    #     image: registry.k8s.io/cluster-inventory-api/secretreader:v0.1.0
+    #     image: registry.k8s.io/cluster-inventory-api/secretreader:v0.1.3
     #     mountPath: /access-plugins/secretreader
     #   - name: kubeconfig-secretreader
-    #     image: registry.k8s.io/cluster-inventory-api/kubeconfig-secretreader:v0.1.0
+    #     image: registry.k8s.io/cluster-inventory-api/kubeconfig-secretreader:v0.1.3
     #     mountPath: /access-plugins/kubeconfig-secretreader
     # Polling cadence for spoke deployment readiness.
     remoteDeploymentsPollInterval: 10s
   knative_operator:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
-    tag: v1.22.2
+    tag: v1.23.0
     affinity: {}
     tolerations: []
     containerSecurityContext:
@@ -44,7 +47,7 @@ knative_operator:
         memory: 1000Mi
   operator_webhook:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
-    tag: v1.22.2
+    tag: v1.23.0
     affinity:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       podAntiAffinity:
