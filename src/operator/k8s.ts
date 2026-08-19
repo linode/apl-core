@@ -1,6 +1,6 @@
 import { ApiException, CoreV1Api, KubeConfig } from '@kubernetes/client-node'
 import { writeFileSync } from 'fs'
-import { APL_OPERATOR_NS } from '../common/constants'
+import { APL_OPERATOR_NS, PLATFORM_AUTH_RESTART_STATE_CM } from '../common/constants'
 import { terminal } from '../common/debug'
 import { getErrorMessage } from './utils'
 
@@ -37,6 +37,25 @@ export const k8s = {
  */
 export function updateHeartbeatFile(): void {
   writeFileSync('/tmp/heartbeat', '')
+}
+
+export const READINESS_FILE = '/tmp/ready'
+
+/**
+ * Idempotent, and safe to call on every apply. Readiness latches: the marker is never
+ * cleared while a later apply runs, because the steady-state reconcile loop would
+ * otherwise flap the Deployment's Available condition. Per-apply status lives in the
+ * apl-operator-state ConfigMap.
+ */
+export function markOperatorReady(filePath: string = READINESS_FILE): void {
+  const d = terminal('operator:k8s:markOperatorReady')
+  try {
+    writeFileSync(filePath, new Date().toISOString())
+    d.info(`Wrote readiness marker ${filePath}`)
+  } catch (error) {
+    // Non-fatal: a missing marker keeps the pod NotReady, which is the safe direction.
+    d.warn(`Failed to write readiness marker ${filePath}:`, getErrorMessage(error))
+  }
 }
 
 export async function updateApplyState(
@@ -85,5 +104,33 @@ export async function updateApplyState(
     updateHeartbeatFile()
   } catch (error) {
     d.error('Failed to update apply state:', getErrorMessage(error))
+  }
+}
+
+export async function hasPlatformAuthPodsRestarted(
+  namespace: string = APL_OPERATOR_NS,
+  configMapName: string = PLATFORM_AUTH_RESTART_STATE_CM,
+): Promise<boolean> {
+  try {
+    await k8s.core().readNamespacedConfigMap({ name: configMapName, namespace })
+    return true
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404) return false
+    throw error
+  }
+}
+
+export async function markPlatformAuthPodsRestarted(
+  namespace: string = APL_OPERATOR_NS,
+  configMapName: string = PLATFORM_AUTH_RESTART_STATE_CM,
+): Promise<void> {
+  try {
+    await k8s.core().createNamespacedConfigMap({
+      namespace,
+      body: { metadata: { name: configMapName } },
+    })
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 409) return
+    throw error
   }
 }

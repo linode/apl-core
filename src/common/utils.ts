@@ -6,13 +6,14 @@ import { access, mkdir, readdir, readFile, writeFile } from 'fs/promises'
 import { glob } from 'glob'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
-import { omit } from 'lodash'
+import { isEmpty, omit } from 'lodash'
 import { dirname, join, resolve } from 'path'
 import { $, ProcessOutput, within } from 'zx'
 import { operatorEnv } from '../operator/validators'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { KubernetesObject } from '@kubernetes/client-node'
+import { stringify } from 'yaml'
 
 const packagePath = process.cwd()
 
@@ -20,6 +21,10 @@ const packagePath = process.cwd()
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 export const pkg = JSON.parse(readFileSync(`${rootDir}/package.json`, 'utf8'))
 export const getFilename = (path: string): string => path.split('/').pop()?.split('.')[0] as string
+
+export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 200): string => {
+  return isEmpty(obj) ? '' : stringify(obj, { indent, lineWidth })
+}
 
 export const asArray = (args: string | string[]): string[] => {
   return Array.isArray(args) ? args : [args]

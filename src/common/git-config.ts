@@ -1,11 +1,11 @@
 import type { CoreV1Api } from '@kubernetes/client-node'
 import { generate as generatePassword } from 'generate-password'
+import { get } from 'lodash'
 import { $ } from 'zx'
 import { terminal } from './debug'
 import { env } from './envalid'
-import { createUpdateGenericSecret, ensureNamespaceExists, getK8sSecret, k8s } from './k8s'
+import { createUpdateGenericSecret, ensureNamespaceExists, getK8sConfigMap, getK8sSecret, k8s } from './k8s'
 import { loadYaml } from './utils'
-import { get } from 'lodash'
 
 const d = terminal('common:git-config')
 
@@ -57,23 +57,34 @@ export async function getGitCredentials(): Promise<Partial<GitConfigData> | unde
 }
 
 export async function getOldGitCredentials(): Promise<Partial<GitConfigData> | undefined> {
-  let secretData = await getK8sSecret('gitea-credentials', 'apl-operator')
-  if (secretData?.GIT_PASSWORD) {
-    return {
-      ...GIT_LEGACY_CONFIG,
-      username: secretData.GIT_USERNAME,
-      password: secretData.GIT_PASSWORD,
-    }
+  let { repoUrl } = GIT_LEGACY_CONFIG
+  let gitBranch = GIT_DEFAULT_CONFIG.branch
+  // argocd-repo-creds-git contaion full repo URL
+  let secretData = await getK8sSecret('argocd-repo-creds-git', 'argocd')
+
+  if (secretData) {
+    repoUrl = secretData?.url
+  } else {
+    // argocd-repo-creds-gitea contains only the base URL
+    secretData = await getK8sSecret('argocd-repo-creds-gitea', 'argocd')
   }
-  secretData = await getK8sSecret('gitea-admin-secret', 'gitea')
-  if (secretData?.password) {
-    return {
-      ...GIT_LEGACY_CONFIG,
-      username: secretData.username,
-      password: secretData.password,
-    }
+  if (!secretData?.password) {
+    return undefined
   }
-  return undefined
+
+  try {
+    const cm = await getK8sConfigMap('otomi', 'otomi-api', k8s.core())
+    gitBranch = cm?.data?.GIT_BRANCH || GIT_DEFAULT_CONFIG.branch
+  } catch (error) {
+    d.debug('Could not read otomi-api ConfigMap for GIT_BRANCH; using default branch', error)
+  }
+  return {
+    ...GIT_LEGACY_CONFIG,
+    repoUrl,
+    branch: gitBranch,
+    username: secretData.username,
+    password: secretData.password,
+  }
 }
 
 export function getAuthUrlFromGitConfig(credentials: Partial<GitConfigData>): string | undefined {

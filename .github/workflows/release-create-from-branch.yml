@@ -1,0 +1,63 @@
+name: Release create from branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      is_prerelease:
+        description: 'Pre-release — cuts RC tag (false strips RC suffix and cuts stable tag)'
+        required: true
+        default: true
+        type: boolean
+      dry_run:
+        description: 'Dry run — skip all writes (tag, release, Docker push, Helm)'
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  release-get-tag:
+    permissions:
+      contents: read
+    uses: linode/apl-gh-actions/.github/workflows/release-get-tag.yml@v0.2.5
+    with:
+      release_branch: ${{ github.ref_name }}
+      is_prerelease: ${{ inputs.is_prerelease }}
+
+  validate-deps:
+    needs: release-get-tag
+    permissions:
+      contents: read
+    uses: linode/apl-gh-actions/.github/workflows/validate-deps.yml@v0.2.5
+    with:
+      release_branch: ${{ github.ref_name }}
+      is_prerelease: ${{ inputs.is_prerelease }}
+
+  release-from-branch:
+    needs:
+      - release-get-tag
+      - validate-deps
+    permissions:
+      contents: write
+    uses: linode/apl-gh-actions/.github/workflows/release-software.yml@v0.2.5
+    with:
+      release_branch: ${{ github.ref_name }}
+      is_prerelease: ${{ inputs.is_prerelease }}
+      dry_run: ${{ inputs.dry_run }}
+      container_registry: 'docker.io'
+      container_image: 'linode/apl-core'
+      release_tag: ${{ needs.release-get-tag.outputs.release_tag }}
+    secrets:
+      oci_password: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
+      oci_username: ${{ secrets.DOCKERHUB_LINODEBOT_USERNAME }}
+  release-helm-chart:
+    needs:
+      - release-get-tag
+      - release-from-branch
+    permissions:
+      contents: write
+    uses: linode/apl-gh-actions/.github/workflows/release-helm-chart.yml@v0.2.5
+    with:
+      release_tag: ${{ needs.release-get-tag.outputs.release_tag }}
+      dry_run: ${{ inputs.dry_run }}
+      chart_name: 'apl'
+      charts_dir: 'chart'

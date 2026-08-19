@@ -51,9 +51,9 @@ jobs:
           git config --global user.email $BOT_EMAIL
           git config --global user.name $BOT_USERNAME
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           check-latest: true

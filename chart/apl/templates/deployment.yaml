@@ -1,6 +1,7 @@
 {{- $kms := .Values.kms | default dict }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
 {{- $skipDeployment := .Values.installation.skipOperatorDeployment }}
+{{- $readiness := .Values.operator.readiness }}
 {{- if not $skipDeployment }}
 apiVersion: apps/v1
 kind: Deployment
@@ -10,6 +11,8 @@ metadata:
   labels: {{- include "apl-operator.labels" . | nindent 4 }}
 spec:
   replicas: 1
+  # The rollout stays Progressing until the operator is ready, which is longer than the 600s default.
+  progressDeadlineSeconds: {{ $readiness.progressDeadlineSeconds }}
   selector:
     matchLabels: {{- include "apl-operator.selectorLabels" . | nindent 6 }}
   strategy:
@@ -78,6 +81,8 @@ spec:
               mountPath: /secret
             - name: tmp
               mountPath: /tmp
+            - name: cache
+              mountPath: /home/app/.cache
             - name: git-config
               mountPath: /home/app/.gitconfig
               subPath: .gitconfig
@@ -90,7 +95,7 @@ spec:
             failureThreshold: 3
           readinessProbe:
             exec:
-              command: ["/bin/sh", "-c", "pgrep -f 'apl-operator' > /dev/null"]
+              command: ["/bin/sh", "-c", "test -f /tmp/ready"]
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -102,6 +107,8 @@ spec:
         - name: otomi-values
           emptyDir: {}
         - name: tmp
+          emptyDir: {}
+        - name: cache
           emptyDir: {}
         - name: git-config
           configMap:

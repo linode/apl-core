@@ -14,8 +14,8 @@ import {
   patchContainerResourcesOfSts,
   restartStatefulSet,
 } from 'src/common/k8s'
-import { getFilename, getNames, loadYaml } from 'src/common/utils'
-import { getImageTagFromValues, objectToYaml } from 'src/common/values'
+import { getFilename, getNames, loadYaml, objectToYaml } from 'src/common/utils'
+import { getImageTagFromValues } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { operatorEnv } from 'src/operator/validators'
 import { Argv, CommandModule } from 'yargs'
@@ -113,13 +113,14 @@ const getArgoCdAppManifest = (name: string, appLabel: string, spec: Record<strin
   }
 }
 
-const getArgocdCoreAppManifest = (
+export const getArgocdCoreAppManifest = (
   release: HelmRelease,
   values: Record<string, any>,
   otomiVersion: string,
 ): ArgocdAppManifest => {
   const name = getAppName(release)
   const patch = (appPatches[name] || genericPatch) as Record<string, any>
+
   return getArgoCdAppManifest(name, ARGOCD_APP_DEFAULT_LABEL, {
     syncPolicy: ARGOCD_APP_DEFAULT_SYNC_POLICY,
     project: 'default',

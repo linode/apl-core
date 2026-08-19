@@ -4,8 +4,14 @@ metadata:
   name: {{ include "apl-operator.fullname" . }}
   labels:
     {{- include "apl-operator.labels" . | nindent 4 }}
+{{- with .Values.deploymentAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+{{- end }}
 spec:
   replicas: {{ .Values.scale.replicas | default 1 }}
+  # The rollout stays Progressing until the operator is ready, which is longer than the 600s default.
+  progressDeadlineSeconds: 1800
   selector:
     matchLabels:
       {{- include "apl-operator.selectorLabels" . | nindent 6 }}
@@ -69,6 +75,16 @@ spec:
             periodSeconds: 60
             failureThreshold: 3
             timeoutSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test -f /tmp/ready"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
@@ -76,6 +92,8 @@ spec:
               mountPath: /home/app/stack/env
             - name: tmp
               mountPath: /tmp
+            - name: cache
+              mountPath: /home/app/.cache
             - name: git-config
               mountPath: /home/app/.gitconfig
               subPath: .gitconfig
@@ -83,6 +101,8 @@ spec:
         - name: apl-values
           emptyDir: {}
         - name: tmp
+          emptyDir: {}
+        - name: cache
           emptyDir: {}
         - name: git-config
           configMap:

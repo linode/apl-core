@@ -23,7 +23,7 @@ commonAnnotations: {}
 
 ## @param commonLabels [object] Labels to add to all deployed resources
 ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-## 
+##
 commonLabels: {}
 
 ## @section Sealed Secrets Parameters
@@ -39,7 +39,7 @@ commonLabels: {}
 image:
   registry: docker.io
   repository: bitnami/sealed-secrets-controller
-  tag: 0.37.0
+  tag: 0.38.4
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -84,7 +84,7 @@ keyrenewperiod: ""
 keyttl: ""
 ## @param keycutofftime Specifies a date at which the controller should generate a new certificate. Useful in early key renewal scenarios.
 ## Takes a date formated according to RFC1123. Can be obtained with the 'date -R' command on a unix system.
-## e.g 
+## e.g
 ## keycutofftime: "Mon, 14 Oct 2024 21:45:30 +0200"
 ##
 keycutofftime: ""
@@ -98,10 +98,10 @@ rateLimitBurst: ""
 ##
 additionalNamespaces: []
 ## @param privateKeyAnnotations Map of annotations to be set on the sealing keypairs
-## 
+##
 privateKeyAnnotations: {}
 ## @param privateKeyLabels Map of labels to be set on the sealing keypairs
-## 
+##
 privateKeyLabels: {}
 ## @param logInfoStdout Specifies whether the Sealed Secrets controller will log info to stdout
 ##
@@ -195,16 +195,20 @@ resources:
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 ## @param podSecurityContext.enabled Enabled Sealed Secret pods' Security Context
 ## @param podSecurityContext.fsGroup Set Sealed Secret pod's Security Context fsGroup
+## @param podSecurityContext.seccompProfile.type Set Sealed Secret pod's Security Context seccomp profile type
 ##
 podSecurityContext:
   enabled: true
   fsGroup: 65534
+  seccompProfile:
+    type: RuntimeDefault
 ## Configure Container Security Context
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 ## @param containerSecurityContext.enabled Enabled Sealed Secret containers' Security Context
 ## @param containerSecurityContext.readOnlyRootFilesystem Whether the Sealed Secret container has a read-only root filesystem
 ## @param containerSecurityContext.runAsNonRoot Indicates that the Sealed Secret container must run as a non-root user
 ## @param containerSecurityContext.runAsUser Set Sealed Secret containers' Security Context runAsUser
+## @param containerSecurityContext.allowPrivilegeEscalation Set Sealed Secret containers' privilege escalation
 ## @extra containerSecurityContext.capabilities Adds and removes POSIX capabilities from running containers (see `values.yaml`)
 ## @skip  containerSecurityContext.capabilities.drop
 ##
@@ -213,6 +217,7 @@ containerSecurityContext:
   readOnlyRootFilesystem: true
   runAsNonRoot: true
   runAsUser: 1001
+  allowPrivilegeEscalation: false
   capabilities:
     drop:
       - ALL
@@ -467,6 +472,37 @@ rbac:
 ## @section Metrics parameters
 
 metrics:
+  prometheusRule:
+    ## @param metrics.prometheusRule.enabled Specify if a PrometheusRule will be deployed for Prometheus Operator
+    ##
+    enabled: false
+
+    ## @param metrics.prometheusRule.namespace Namespace where Prometheus Operator is running in
+    ##
+    namespace: ""
+
+    ## @param metrics.prometheusRule.labels Extra labels for the PrometheusRule
+    ##
+    labels: {}
+
+    ## @param metrics.prometheusRule.annotations Extra annotations for the PrometheusRule
+    ##
+    annotations: {}
+
+    ## @param metrics.prometheusRule.groups Prometheus alerting rule groups
+    ##
+    groups:
+      - name: sealed-secrets-controller.rules
+        rules:
+          - alert: SealedSecretsControllerNotReady
+            expr: |
+              sealed_secrets_controller_condition_info != 1
+            for: 10m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Sealed Secrets controller is not Synced"
+              description: "At least one SealedSecret is in a non-synced state (0 or -1). Check controller logs and secret reconciliation status."
   ## Prometheus Operator ServiceMonitor configuration
   ##
   serviceMonitor:

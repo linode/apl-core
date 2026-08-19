@@ -13,7 +13,7 @@ spec:
     hasExternalDNS: true
     hasExternalIDP: false
     isMultitenant: true
-    isPreInstalled: false
+    isPreInstalled: true
     nodeSelector:
         otomi: otomi-sys
     useORCS: false

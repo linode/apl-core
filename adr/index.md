@@ -14,16 +14,18 @@ This log lists the architectural decisions for apl-core.
 - [ADR-2022-04-22](2022-04-22-values-migration.md) - Values migration
 - [ADR-2022-04-23](2022-04-23-pre-upgrade.md) - A new otomi pre-upgrade command
 - [ADR-2022-05-17](2022-05-17-destroy-upon-uninstall.md) - Extra flags to accomodate destroy upon uninstall
-- [ADR-2022-06-07](2022-06-07-ingress-classes.md) - Ingress classes *(superseded by ADR-2026-05-20)*
+- [ADR-2022-06-07](2022-06-07-ingress-classes.md) - Ingress classes _(superseded by ADR-2026-05-20)_
 - [ADR-2022-07-02](2022-07-02-node-affinity.md) - Node affinity
 - [ADR-2022-08-26](2022-08-26-other-dns-provider.md) - Other DNS provider
+- [ADR-2026-05-20](2026-05-20-gateway-api.md) - Kubernetes Gateway API replaces Ingress CR and Istio IngressGateway
+- [ADR-2026-06-02](2026-06-02-release-branch-per-cycle.md) - One release branch per major.minor cycle
 - [ADR-2026-06-12](2026-06-12-auth-policy-pod-label.md) - Auth policy pod label (`otomi.io/auth-policy`)
 - [ADR-2026-06-25](2026-06-25-drop-sops-for-sealedsecrets.md) - Drop SOPS in favour of SealedSecrets
-- [ADR-2026-06-25](2026-06-25-manifests-directory.md) - Manifests directory in the values repo
-- [ADR-2026-06-25](2026-06-25-git-server-as-default-values-repo.md) - git-server as the default values repository backend
-- [ADR-2026-05-20](2026-05-20-gateway-api.md) - Kubernetes Gateway API replaces Ingress CR and Istio IngressGateway
 - [ADR-2026-06-25](2026-06-25-git-credential-management.md) - Git credential management via Kubernetes Secret
-- [ADR-2026-07-07](2026-07-07-apl-addons-argocd-project.md) - apl-addons ArgoCD project for platform-admin addon deployments
+- [ADR-2026-06-25](2026-06-25-git-server-as-default-values-repo.md) - Lightweight git-server as the default values repository backend
+- [ADR-2026-06-25](2026-06-25-manifests-directory.md) - Manifests directory in the values repo
+- [ADR-2026-08-04](2026-08-04-restart-platform-auth-pods-after-oauth2-proxy-healthy.md) - Restart platform-auth pods once oauth2-proxy is healthy
+- [ADR-2026-08-10](2026-07-07-apl-addons-argocd-project.md) - apl-addons ArgoCD project for platform-admin addon deployments
 
 <!-- adrlogstop -->
 

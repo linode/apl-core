@@ -1,8 +1,8 @@
 import { CoreV1Api, PatchStrategy, setHeaderOptions, V1OwnerReference, V1Pod } from '@kubernetes/client-node'
-import { getDeploymentState, k8s } from '../k8s'
-import { OtomiDebugger, terminal } from '../debug'
-import { getParsedArgs } from '../yargs'
 import { $ } from 'zx'
+import { OtomiDebugger, terminal } from '../debug'
+import { getDeploymentState, k8s } from '../k8s'
+import { getParsedArgs } from '../yargs'
 
 export function getWorkloadKeyFromPod(pod: V1Pod): string | null {
   if (!pod.metadata?.ownerReferences || !pod.metadata?.namespace) return null

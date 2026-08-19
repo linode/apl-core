@@ -2100,8 +2100,6 @@ properties:
             description: Automatically set to a date in the future in case of an upgrade
             title: Schema v13 start date
             type: string
-        required:
-          - adminPassword
       metrics-server:
         additionalProperties: false
         properties:
@@ -2943,6 +2941,8 @@ properties:
         properties:
           size:
             type: string
+          storageClass:
+            type: string
           walStorageSize:
             type: string
           resources:
@@ -2972,6 +2972,8 @@ properties:
         properties:
           size:
             type: string
+          storageClass:
+            type: string
           walStorageSize:
             type: string
           resources:
@@ -3000,6 +3002,8 @@ properties:
         title: gitea
         properties:
           size:
+            type: string
+          storageClass:
             type: string
           walStorageSize:
             type: string

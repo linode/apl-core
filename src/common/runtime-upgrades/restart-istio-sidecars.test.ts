@@ -1,4 +1,6 @@
 import { CoreV1Api, V1OwnerReference } from '@kubernetes/client-node'
+import { $ } from 'zx'
+import { k8s } from '../k8s'
 import {
   deletePod,
   detectAndRestartOutdatedIstioSidecars,
@@ -10,8 +12,6 @@ import {
   restartPodOwner,
   restartStatefulSet,
 } from './restart-istio-sidecars'
-import { $ } from 'zx'
-import { k8s } from '../k8s'
 
 jest.mock('zx')
 jest.mock('../k8s')

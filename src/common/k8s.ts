@@ -106,7 +106,7 @@ export const createK8sSecret = async (
 
   await writeFile(filePath, rawString)
   const result =
-    await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply -f -`
+    await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply --server-side -f -`
       .nothrow()
       .quiet()
   if (result.stderr) d.error(result.stderr)
@@ -159,7 +159,7 @@ export const deleteSecretForHelmRelease = async (releaseName: string, namespace:
   const d = terminal('common:k8s:deleteSecretForHelmRelease')
   d.info(`Deleting secret for Helm release ${releaseName} revision ${revision} in namespace ${namespace}`)
   try {
-    await coreClient.deleteNamespacedSecret({ name: `sh.helm.release.v1.${releaseName}.v${revision}`, namespace })
+    await k8s.core().deleteNamespacedSecret({ name: `sh.helm.release.v1.${releaseName}.v${revision}`, namespace })
     d.debug(`Deleted secret for Helm release ${releaseName} revision ${revision} in namespace ${namespace}`)
   } catch (error) {
     if (!(error instanceof ApiException && error.code === 404)) {

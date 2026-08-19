@@ -20,6 +20,8 @@ serviceAccount:
 
 podAnnotations: {}
 
+deploymentAnnotations: {}
+
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 1001

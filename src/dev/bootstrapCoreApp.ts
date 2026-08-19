@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import { set } from 'lodash'
 import { terminal } from 'src/common/debug'
-import { objectToYaml } from 'src/common/values'
+import { objectToYaml } from 'src/common/utils'
 
 const d = terminal('bootstrapCoreApp')
 const indent = 2
