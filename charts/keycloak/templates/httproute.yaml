@@ -16,12 +16,31 @@ metadata:
   {{- end }}
 spec:
   parentRefs:
+    {{- if $httpRoute.listenerSet.enabled }}
+    - kind: ListenerSet
+      name: {{ include "keycloak.fullname" $ }}
+      namespace: {{ $.Release.Namespace }}
+    {{- else }}
     {{- with $httpRoute.parentRefs }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
+    {{- end }}
+  {{- if $httpRoute.listenerSet.enabled }}
+  {{- $hostnames := list }}
+  {{- range $httpRoute.listenerSet.listeners }}
+  {{- if .hostname }}
+  {{- $hostnames = append $hostnames .hostname }}
+  {{- end }}
+  {{- end }}
+  {{- with $hostnames }}
+  hostnames:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- else }}
   {{- with $httpRoute.hostnames }}
   hostnames:
     {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- end }}
   rules:
     {{- range $httpRoute.rules }}
