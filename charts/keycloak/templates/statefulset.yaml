@@ -38,6 +38,9 @@ spec:
         {{- end }}
       labels:
         {{- include "keycloak.selectorLabels" . | nindent 8 }}
+        {{- range $key, $value := .Values.commonLabels }}
+        {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 8 }}
+        {{- end }}
         {{- range $key, $value := .Values.podLabels }}
         {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 8 }}
         {{- end }}
@@ -95,6 +98,14 @@ spec:
             {{ else }}
             - name: KC_HTTP_RELATIVE_PATH
               value: {{ tpl .Values.http.relativePath $ | trimSuffix "/" }}
+            {{- end }}
+            {{- if .Values.http.managementRelativePath }}
+            - name: KC_HTTP_MANAGEMENT_RELATIVE_PATH
+              {{- if eq .Values.http.managementRelativePath "/" }}
+              value: {{ tpl .Values.http.managementRelativePath $ }}
+              {{- else }}
+              value: {{ tpl .Values.http.managementRelativePath $ | trimSuffix "/" }}
+              {{- end }}
             {{- end }}
             {{- if eq .Values.cache.stack "default" }}
             - name: KC_CACHE
