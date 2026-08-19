@@ -4,7 +4,7 @@
 
 ## Context and Problem Statement
 
-Platform admins need a way to deploy arbitrary Kubernetes addons to any namespace without going through the team-scoped AppProject model. Every existing AppProject is locked to a single team namespace and forbids cluster-scoped resources. There is no supported escape hatch for platform admins who need to deploy, say, a CRD, a cross-namespace operator, or a Helm chart that spans multiple namespaces.
+Platform admins need a way to deploy arbitrary Kubernetes addons to any namespace without going through the team-scoped AppProject model. Every existing AppProject is locked to a single team namespace and forbids cluster-scoped resources. Platform admin could define Applications in the argocd namespace but that is reserved for the apl operator to manage.
 
 ## Decision Outcome
 
