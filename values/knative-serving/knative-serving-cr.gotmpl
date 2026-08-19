@@ -1,29 +1,34 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.knative }}
-{{- $knativeServingVersion := "1.22" }}
-{{- $tag := "v1.22.1" }}
-{{- $netIstioTag := "v1.22.1" }}
-{{- $netGatewayTag := "v1.22.1" }}
+{{- $imageRepo := "" }}
+{{- with $v.otomi.linodeLkeImageRepository }}
+{{- /** Only set if Linode image repository is used */}}
+{{- $imageRepo = print . "/gcr/knative-releases/knative.dev" }}
+{{- end }}
+{{- $knativeServingVersion := "1.23" }}
+{{- $tag := "v1.23.0" }}
+{{- $netIstioTag := "v1.23.0" }}
+{{- $netGatewayTag := "v1.23.0" }}
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
   name: knative-serving
   namespace: knative-serving
 spec:
-  {{- if $v.otomi.linodeLkeImageRepository }}
+  {{- with $imageRepo }}
   {{- /* Use private repository configuration when ORCS is enabled
         https://knative.dev/docs/install/operator/configuring-serving-cr/#private-repository-and-private-secrets */}}
   registry:
-    default: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/cmd/${NAME}:{{ $tag }}"
+    default: "{{ . }}/serving/cmd/${NAME}:{{ $tag }}"
     override:
       {{- /* Overriding paths for images not under "gcr.io/knative-releases/knative.dev/serving/cmd" otherwise the system
              will try to pull them from "mirrored.registry/knative-releases/knative.dev/serving/cmd" which does not exist. */}}
-      migrate: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate:{{ $tag }}"
-      cleanup: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/pkg/cleanup/cmd/cleanup:{{ $tag }}"
-      net-istio-controller/controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/controller:{{ $netIstioTag }}"
-      net-istio-webhook/webhook: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/webhook:{{ $netIstioTag }}"
-      net-gateway-api-controller/controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-gateway-api/cmd/controller:{{ $netGatewayTag }}"
-      net-gateway-api-webhook/webhook: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-gateway-api/cmd/webhook:{{ $netGatewayTag }}"
+      migrate: "{{ . }}/pkg/apiextensions/storageversion/cmd/migrate:{{ $tag }}"
+      cleanup: "{{ . }}/serving/pkg/cleanup/cmd/cleanup:{{ $tag }}"
+      net-istio-controller/controller: "{{ . }}/net-istio/cmd/controller:{{ $netIstioTag }}"
+      net-istio-webhook/webhook: "{{ . }}/net-istio/cmd/webhook:{{ $netIstioTag }}"
+      net-gateway-api-controller/controller: "{{ . }}/net-gateway-api/cmd/controller:{{ $netGatewayTag }}"
+      net-gateway-api-webhook/webhook: "{{ . }}/net-gateway-api/cmd/webhook:{{ $netGatewayTag }}"
   {{- end }}
   version: "{{ $knativeServingVersion }}"
   {{- if $v._derived.untrustedCA }}
