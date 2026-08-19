@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $d := $v.dns}}
 
-{{- with $d.provider | get "akamai" nil }}
+{{- if hasKey $d.provider "akamai" }}
 resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
@@ -36,7 +36,7 @@ resources:
           property: provider_akamai_accessToken
 {{- end }}
 
-{{- with $d.provider | get "linode" nil }}
+{{- if hasKey $d.provider "linode" }}
 resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
@@ -61,7 +61,7 @@ resources:
           property: provider_linode_apiToken
 {{- end }}
 
-{{- with $d.provider | get "digitalocean" nil }}
+{{- if hasKey $d.provider "digitalocean" }}
 resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
@@ -86,8 +86,9 @@ resources:
           property: provider_digitalocean_apiToken
 {{- end }}
 
-{{- with $d.provider | get "cloudflare" nil }}
-  {{- with .apiToken  }}
+{{- if hasKey $d.provider "cloudflare" }}
+  {{- $provider := index $d.provider "cloudflare" }}
+  {{- with $provider.apiToken  }}
 resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
@@ -111,7 +112,7 @@ resources:
           key: dns-secrets
           property: provider_cloudflare_apiToken
   {{- end }}
-  {{- with . | get "apiSecret" nil }}
+  {{- with $provider | get "apiSecret" nil }}
 resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
@@ -138,8 +139,9 @@ resources:
   {{- end }}
 {{- end }}
 
-{{- with $d.provider | get "aws" nil }}
-  {{- with .credentials }}
+{{- if hasKey $d.provider "aws" }}
+  {{- $provider := index $d.provider "aws" }}
+  {{- with $provider.credentials }}
 resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
@@ -170,7 +172,8 @@ resources:
   {{- end }}
 {{- end }}
 
-{{- with $d.provider | get "azure" nil }}
+{{- if hasKey $d.provider "azure" }}
+{{- $provider := index $d.provider "azure" }}
 resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
@@ -187,10 +190,10 @@ resources:
       template:
         type: Opaque
         data:
-          AZURE_TENANT_ID: {{ .tenantId | quote }}
-          AZURE_SUBSCRIPTION_ID: {{ .subscriptionId | quote }}
-          AZURE_RESOURCE_GROUP: {{ .resourceGroup | quote }}
-          AZURE_CLIENT_ID: {{ .aadClientId | quote }}
+          AZURE_TENANT_ID: {{ $provider.tenantId | quote }}
+          AZURE_SUBSCRIPTION_ID: {{ $provider.subscriptionId | quote }}
+          AZURE_RESOURCE_GROUP: {{ $provider.resourceGroup | quote }}
+          AZURE_CLIENT_ID: {{ $provider.aadClientId | quote }}
           AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret | toString }}" }}'
     data:
       - secretKey: aadClientSecret
@@ -199,7 +202,8 @@ resources:
           property: provider_azure_aadClientSecret
 {{- end }}
 
-{{- with $d.provider | get "azure-private-dns" nil }}
+{{- if hasKey $d.provider "azure-private-dns" }}
+{{- $provider := index $d.provider "azure-private-dns" }}
 resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
@@ -216,10 +220,10 @@ resources:
       template:
         type: Opaque
         data:
-          AZURE_TENANT_ID: {{ .tenantId | quote }}
-          AZURE_SUBSCRIPTION_ID: {{ .subscriptionId | quote }}
-          AZURE_RESOURCE_GROUP: {{ .resourceGroup | quote }}
-          AZURE_CLIENT_ID: {{ .aadClientId | quote }}
+          AZURE_TENANT_ID: {{ $provider.tenantId | quote }}
+          AZURE_SUBSCRIPTION_ID: {{ $provider.subscriptionId | quote }}
+          AZURE_RESOURCE_GROUP: {{ $provider.resourceGroup | quote }}
+          AZURE_CLIENT_ID: {{ $provider.aadClientId | quote }}
           AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret | toString }}" }}'
     data:
       - secretKey: aadClientSecret
@@ -228,7 +232,7 @@ resources:
           property: provider_azure-private-dns_aadClientSecret
 {{- end }}
 
-{{- with $d.provider | get "google" nil }}
+{{- if hasKey $d.provider "google" }}
 resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
