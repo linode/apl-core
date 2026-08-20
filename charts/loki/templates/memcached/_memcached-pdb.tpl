@@ -10,6 +10,12 @@ valuesSection and component are specified separately because helm prefers camelc
 {{- define "loki.memcached.pdb" -}}
 {{ with $.memcacheConfig }}
 {{- $pdb := mergeOverwrite (pick . "maxUnavailable") .podDisruptionBudget }}
+{{- $pdbSpec := dict }}
+{{- range $key, $value := omit $pdb "enabled" "labels" "annotations" }}
+{{- if not (kindIs "invalid" $value) }}
+{{- $_ := set $pdbSpec $key $value }}
+{{- end }}
+{{- end }}
 {{- if and .enabled .podDisruptionBudget.enabled (gt (int .replicas) 1) -}}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -27,7 +33,9 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-  {{- toYaml (omit $pdb "enabled" "labels" "annotations") | nindent 2 }}
+  {{- with $pdbSpec }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "loki.selectorLabels" $.ctx | nindent 6 }}
