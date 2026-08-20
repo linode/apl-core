@@ -479,6 +479,7 @@ jobs:
           EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
           LINODE_DNS_TOKEN: ${{ secrets.LINODE_DNS_TOKEN }}
+          LINODE_DNS_ZONE: ${{ vars.LINODE_DNS_ZONE }}
           BYO_GIT_PAT: ${{ secrets.BYO_GIT_PAT }}
           BYO_GIT_URL: ${{ secrets.BYO_GIT_URL }}
           DOMAIN: ${{ needs.preprocess-linode-input.outputs.apl-dns-domain }}
@@ -510,7 +511,6 @@ jobs:
             "--set" "cluster.name=aplinstall${LINODE_CLUSTER_ID}"
             "--set" "cluster.k8sContext=${LINODE_CLUSTER_CONTEXT}"
             "--set" "cluster.domainSuffix=${DOMAIN}"
-            "--set" "dns.domainFilters[0]=${DOMAIN}"
             "--set" "otomi.hasExternalDNS=true"
             "--set" "otomi.adminPassword=$adminPassword"
             "--set" "otomi.version=${GITHUB_REF##*/}"
@@ -524,9 +524,13 @@ jobs:
               exit 1
             fi
             echo "::add-mask::$LINODE_DNS_TOKEN"
-            install_args+=("--set" "dns.provider.linode.apiToken=${LINODE_DNS_TOKEN}")
+            install_args+=(
+              "--set" "dns.domainFilters[0]=${LINODE_DNS_ZONE}"
+              "--set" "dns.provider.linode.apiToken=${LINODE_DNS_TOKEN}"
+            )
           else
             install_args+=(
+              "--set" "dns.domainFilters[0]=${DOMAIN}"
               "--set" "dns.provider.akamai.clientSecret=${EDGEDNS_CLIENT_SECRET}"
               "--set" "dns.provider.akamai.host=${EDGEDNS_HOST}"
               "--set" "dns.provider.akamai.accessToken=${EDGEDNS_ACCESS_TOKEN}"
