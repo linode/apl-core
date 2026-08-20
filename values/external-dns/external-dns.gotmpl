@@ -92,14 +92,7 @@ env:
 provider:
   name: cloudflare
 env:
-  {{- with $dns.provider.cloudflare | get "apiToken" nil }}
-- name: CF_API_TOKEN
-  valueFrom:
-    secretKeyRef:
-      name: cloudflare-api-key
-      key: CF_API_TOKEN
-  {{- end }}
-  {{- with $dns.provider.cloudflare | get "apiSecret" nil }}
+  {{- if hasKey $dns.provider.cloudflare "email" }}
   - name: CF_API_KEY
     valueFrom:
       secretKeyRef:
@@ -110,6 +103,12 @@ env:
       secretKeyRef:
         name: cloudflare-api-key
         key: CF_API_EMAIL
+  {{- else }}
+  - name: CF_API_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: cloudflare-api-key
+        key: CF_API_TOKEN
   {{- end }}
 {{- end }}
 
