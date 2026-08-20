@@ -71,3 +71,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create the name of the certificate issuer to use
+*/}}
+{{- define "plugin-barman-cloud.certificateIssuerName" -}}
+{{- default (printf "%s-selfsigned-issuer" (include "plugin-barman-cloud.fullname" .)) .Values.certificate.issuerName }}
+{{- end }}
