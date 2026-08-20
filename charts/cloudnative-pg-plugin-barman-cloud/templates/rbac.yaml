@@ -74,7 +74,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - postgresql.cnpg.io
+  - {{ .Values.rbac.cnpgGroup }}
   resources:
   - backups
   verbs:
@@ -82,7 +82,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - postgresql.cnpg.io
+  - {{ .Values.rbac.cnpgGroup }}
   resources:
   - clusters/finalizers
   verbs:
