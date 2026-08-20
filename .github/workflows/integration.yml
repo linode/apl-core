@@ -581,7 +581,8 @@ jobs:
         if: ${{ inputs.install_profile != 'no-apl' && inputs.lke_tier == 'enterprise' }}
         env:
           PUB_IP: ${{ steps.get-public-ip.outputs.apl-public-ip }}
-          SDET_FIREWALL_ID: ${{ secrets.SDET_FIREWALL_ID }}
+          # TODO: move back to secrets.SDET_FIREWALL_ID once the secret can be added to the repo.
+          SDET_FIREWALL_ID: '133632034'
         run: |
           if [[ -z "$SDET_FIREWALL_ID" ]]; then
             echo "SDET_FIREWALL_ID is required to attach the NodeBalancer firewall on enterprise clusters."
