@@ -386,8 +386,6 @@ jobs:
           LINODE_CLUSTER_ID: ${{ needs.create-cluster.outputs.linode-cluster-id }}
         run: |
           echo "Waiting for control plane ACL to take effect..."
-          attempts=0
-          max_attempts=20
           # Wait for KubeAPI to respond before attempting install
           echo "Checking Kubernetes API availability..."
           while true; do
