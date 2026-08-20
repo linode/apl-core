@@ -32,7 +32,7 @@ spec:
   issuerRef:
     group: cert-manager.io
     kind: Issuer
-    name: {{ include "plugin-barman-cloud.fullname" . }}-selfsigned-issuer
+    name: {{ include "plugin-barman-cloud.certificateIssuerName" . }}
   renewBefore: {{ .Values.certificate.renewBefore | default "360h" }}
   secretName: barman-cloud-server-tls
   usages:
