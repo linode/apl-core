@@ -88,7 +88,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
 | `image.registry`                                  | Sealed Secrets image registry                                                                                      | `docker.io`                         |
 | `image.repository`                                | Sealed Secrets image repository                                                                                    | `bitnami/sealed-secrets-controller` |
-| `image.tag`                                       | Sealed Secrets image tag (immutable tags are recommended)                                                          | `0.38.4`                            |
+| `image.tag`                                       | Sealed Secrets image tag (immutable tags are recommended)                                                          | `0.39.0`                            |
 | `image.pullPolicy`                                | Sealed Secrets image pull policy                                                                                   | `IfNotPresent`                      |
 | `image.pullSecrets`                               | Sealed Secrets image pull secrets                                                                                  | `[]`                                |
 | `revisionHistoryLimit`                            | Number of old history to retain to allow rollback (If not set, default Kubernetes value is set to 10)              | `""`                                |
@@ -145,6 +145,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `containerSecurityContext.runAsUser`              | Set Sealed Secret containers' Security Context runAsUser                                                           | `1001`                              |
 | `containerSecurityContext.allowPrivilegeEscalation` | Set Sealed Secret containers' privilege escalation                                                               | `false`                             |
 | `containerSecurityContext.capabilities`           | Adds and removes POSIX capabilities from running containers (see `values.yaml`)                                    |                                     |
+| `hostUsers`                                       | Specifies whether or not host or namespaced users should be used                                                   | `null`                              |
 | `podLabels`                                       | Extra labels for Sealed Secret pods                                                                                | `{}`                                |
 | `podAnnotations`                                  | Annotations for Sealed Secret pods                                                                                 | `{}`                                |
 | `priorityClassName`                               | Sealed Secret pods' priorityClassName                                                                              | `""`                                |
