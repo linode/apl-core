@@ -16,7 +16,7 @@ dependencies:
     repository: https://cloudnative-pg.github.io/charts
   - name: plugin-barman-cloud
     alias: cloudnative-pg-plugin-barman-cloud
-    version: 0.6.0
+    version: 0.7.1
     repository: https://cloudnative-pg.github.io/charts
   - name: cloud-firewall-crd
     version: 0.2.0
@@ -35,7 +35,7 @@ dependencies:
     version: 12.6.0
     repository: https://dl.gitea.io/charts
   - name: harbor
-    version: 1.19.1
+    version: 1.19.2
     repository: https://helm.goharbor.io
   - name: base
     alias: istio-base
@@ -57,10 +57,10 @@ dependencies:
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
-    version: 7.2.2
+    version: 7.2.3
     repository: https://codecentric.github.io/helm-charts
   - name: knative-operator
-    version: v1.22.2
+    version: v1.23.0
     repository: https://knative.github.io/operator
   - name: kserve-crd
     version: v0.19.0
@@ -70,13 +70,13 @@ dependencies:
     version: v0.19.0
     repository: oci://ghcr.io/kserve/charts/kserve-resources
   - name: kube-prometheus-stack
-    version: 88.3.0
+    version: 88.5.0
     repository: https://prometheus-community.github.io/helm-charts
   - name: kyverno
     version: 3.8.2
     repository: https://kyverno.github.io/kyverno/
   - name: loki
-    version: 18.9.0
+    version: 18.9.1
     repository: oci://ghcr.io/grafana-community/helm-charts/loki
   - name: metrics-server
     version: 3.13.1
@@ -102,7 +102,7 @@ dependencies:
     version: 4.4.34
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
-    version: 2.19.1
+    version: 2.19.2
     repository: https://bitnami.github.io/sealed-secrets
   - name: tekton-pipeline
     alias: tekton-pipelines

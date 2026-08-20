@@ -109,6 +109,9 @@
     "command": {
       "type": "array"
     },
+    "commonLabels": {
+      "type": "object"
+    },
     "enableServiceLinks": {
       "type": "boolean"
     },
@@ -144,6 +147,7 @@
     },
     "http": {
       "relativePath": "string",
+      "managementRelativePath": "string",
       "internalPort": "string",
       "internalScheme": "string"
     },
@@ -158,6 +162,37 @@
             },
             "console": {
               "$ref": "#/definitions/httpRoute"
+            },
+            "listenerSet": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "annotations": {
+                  "type": "object"
+                },
+                "labels": {
+                  "type": "object"
+                },
+                "parentRef": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "namespace": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "listeners": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
             }
           }
         }
