@@ -91,6 +91,7 @@ on:
         options:
           - Zone-1
           - Zone-2
+          - Zone-Linode
           - Random
         default: Random
       certificate:
@@ -201,6 +202,7 @@ jobs:
           case "$DOMAIN_ZONE" in
             "Zone-1") LINODE_CLUSTER_NAME=$user-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=$user-2 ;;
+            "Zone-Linode") LINODE_CLUSTER_NAME=$user-$RUN_NUMBER-$RUN_ATTEMPT ;;
             "Random") LINODE_CLUSTER_NAME=$user-$RUN_NUMBER-$RUN_ATTEMPT ;;
           esac
           [[ "$INSTALL_PROFILE" == 'no-apl' ]] && LINODE_CLUSTER_NAME="$LINODE_CLUSTER_NAME-no-apl"
@@ -211,15 +213,22 @@ jobs:
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
           EDGEDNS_ZONE: ${{ vars.EDGEDNS_ZONE }}
+          LINODE_DNS_ZONE: ${{ vars.LINODE_DNS_ZONE }}
           DOMAIN_ZONE: ${{ inputs.domain_zone }}
           DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
           ACTOR: ${{ github.actor }}
           LINODE_CLUSTER_NAME: ${{ steps.determine-cluster-name.outputs.linode-cluster-name }}
         run: |
           # Mapping of domain_zone to domain names
+          if [[ "$DOMAIN_ZONE" == 'Zone-Linode' && -z "$LINODE_DNS_ZONE" ]]; then
+            echo "LINODE_DNS_ZONE repo variable is required when domain_zone is Zone-Linode."
+            exit 1
+          fi
+
           case "$DOMAIN_ZONE" in
             "Zone-1") DOMAIN=$(jq -r --arg actor "$ACTOR" '.[$actor][0]' <<< "$DEV_DOMAINS") ;;
             "Zone-2") DOMAIN=$(jq -r --arg actor "$ACTOR" '.[$actor][1]' <<< "$DEV_DOMAINS") ;;
+            "Zone-Linode") DOMAIN="${LINODE_CLUSTER_NAME}.${LINODE_DNS_ZONE}" ;;
             "Random") DOMAIN="${LINODE_CLUSTER_NAME}.${EDGEDNS_ZONE}" ;;
           esac
           echo "apl-dns-domain=$DOMAIN" >> "$GITHUB_OUTPUT"
@@ -377,8 +386,6 @@ jobs:
           LINODE_CLUSTER_ID: ${{ needs.create-cluster.outputs.linode-cluster-id }}
         run: |
           echo "Waiting for control plane ACL to take effect..."
-          attempts=0
-          max_attempts=20
           # Wait for KubeAPI to respond before attempting install
           echo "Checking Kubernetes API availability..."
           while true; do
@@ -469,9 +476,12 @@ jobs:
           EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
           EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
+          LINODE_DNS_TOKEN: ${{ secrets.LINODE_DNS_TOKEN }}
+          LINODE_DNS_ZONE: ${{ vars.LINODE_DNS_ZONE }}
           BYO_GIT_PAT: ${{ secrets.BYO_GIT_PAT }}
           BYO_GIT_URL: ${{ secrets.BYO_GIT_URL }}
           DOMAIN: ${{ needs.preprocess-linode-input.outputs.apl-dns-domain }}
+          DOMAIN_ZONE: ${{ inputs.domain_zone }}
           LINODE_CLUSTER_ID: ${{ needs.create-cluster.outputs.linode-cluster-id }}
           LINODE_CLUSTER_CONTEXT: ${{ steps.save-kubectl-config.outputs.linode-cluster-context }}
           LKE_TIER: ${{ inputs.lke_tier }}
@@ -499,17 +509,31 @@ jobs:
             "--set" "cluster.name=aplinstall${LINODE_CLUSTER_ID}"
             "--set" "cluster.k8sContext=${LINODE_CLUSTER_CONTEXT}"
             "--set" "cluster.domainSuffix=${DOMAIN}"
-            "--set" "dns.domainFilters[0]=${DOMAIN}"
-            "--set" "dns.provider.akamai.clientSecret=${EDGEDNS_CLIENT_SECRET}"
-            "--set" "dns.provider.akamai.host=${EDGEDNS_HOST}"
-            "--set" "dns.provider.akamai.accessToken=${EDGEDNS_ACCESS_TOKEN}"
-            "--set" "dns.provider.akamai.clientToken=${EDGEDNS_CLIENT_TOKEN}"
             "--set" "otomi.hasExternalDNS=true"
             "--set" "otomi.adminPassword=$adminPassword"
             "--set" "otomi.version=${GITHUB_REF##*/}"
             "--set" "apps.linode-cfw.enabled=true"
             "--set" "operator.image.repository=docker.io/linode/apl-core"
           )
+
+          if [[ "$DOMAIN_ZONE" == 'Zone-Linode' ]]; then
+            if [[ -z "$LINODE_DNS_TOKEN" ]]; then
+              echo "LINODE_DNS_TOKEN is required when domain_zone is Zone-Linode."
+              exit 1
+            fi
+            install_args+=(
+              "--set" "dns.domainFilters[0]=${LINODE_DNS_ZONE}"
+              "--set" "dns.provider.linode.apiToken=${LINODE_DNS_TOKEN}"
+            )
+          else
+            install_args+=(
+              "--set" "dns.domainFilters[0]=${DOMAIN}"
+              "--set" "dns.provider.akamai.clientSecret=${EDGEDNS_CLIENT_SECRET}"
+              "--set" "dns.provider.akamai.host=${EDGEDNS_HOST}"
+              "--set" "dns.provider.akamai.accessToken=${EDGEDNS_ACCESS_TOKEN}"
+              "--set" "dns.provider.akamai.clientToken=${EDGEDNS_CLIENT_TOKEN}"
+            )
+          fi
 
           [[ "$CERTIFICATE" == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ "$CERTIFICATE" == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
@@ -574,7 +598,8 @@ jobs:
           fi
   create-dns-record:
     name: Create DNS A record for wildcard domain
-    if: ${{ inputs.install_profile != 'no-apl' }}
+    # Linode DNS zone relies on external-dns to manage the wildcard record instead
+    if: ${{ inputs.install_profile != 'no-apl' && inputs.domain_zone != 'Zone-Linode' }}
     needs:
       - preprocess-linode-input
       - deploy-to-cluster
