@@ -523,7 +523,6 @@ jobs:
               echo "LINODE_DNS_TOKEN is required when domain_zone is Zone-Linode."
               exit 1
             fi
-            echo "::add-mask::$LINODE_DNS_TOKEN"
             install_args+=(
               "--set" "dns.domainFilters[0]=${LINODE_DNS_ZONE}"
               "--set" "dns.provider.linode.apiToken=${LINODE_DNS_TOKEN}"
