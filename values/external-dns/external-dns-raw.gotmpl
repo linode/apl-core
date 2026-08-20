@@ -88,7 +88,31 @@ resources:
 
 {{- if hasKey $d.provider "cloudflare" }}
   {{- $provider := index $d.provider "cloudflare" }}
-  {{- with $provider.apiToken  }}
+  {{- if hasKey $provider "email" }}
+resources:
+- apiVersion: external-secrets.io/v1
+  kind: ExternalSecret
+  metadata:
+    name: cloudflare-api-key
+  spec:
+    refreshInterval: 5m
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: cloudflare-api-key
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          CF_API_KEY: '{{ "{{ .apiSecret | toString }}" }}'
+          CF_API_EMAIL: {{ $provider.email | quote }}
+    data:
+      - secretKey: apiSecret
+        remoteRef:
+          key: dns-secrets
+          property: provider_cloudflare_apiSecret
+  {{- else }}
 resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
@@ -112,36 +136,10 @@ resources:
           key: dns-secrets
           property: provider_cloudflare_apiToken
   {{- end }}
-  {{- with $provider | get "apiSecret" nil }}
-resources:
-- apiVersion: external-secrets.io/v1
-  kind: ExternalSecret
-  metadata:
-    name: cloudflare-api-key
-  spec:
-    refreshInterval: 5m
-    secretStoreRef:
-      name: core-secrets-store
-      kind: ClusterSecretStore
-    target:
-      name: cloudflare-api-key
-      creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          CF_API_KEY: '{{ "{{ .apiSecret | toString }}" }}'
-          CF_API_EMAIL: {{ $d.provider.cloudflare.email | quote }}
-    data:
-      - secretKey: apiSecret
-        remoteRef:
-          key: dns-secrets
-          property: provider_cloudflare_apiSecret
-  {{- end }}
 {{- end }}
 
 {{- if hasKey $d.provider "aws" }}
   {{- $provider := index $d.provider "aws" }}
-  {{- with $provider.credentials }}
 resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
@@ -169,7 +167,6 @@ resources:
         remoteRef:
           key: dns-secrets
           property: provider_aws_credentials_secretKey
-  {{- end }}
 {{- end }}
 
 {{- if hasKey $d.provider "azure" }}
