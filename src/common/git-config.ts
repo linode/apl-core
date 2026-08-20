@@ -153,6 +153,7 @@ export async function getStoredGitRepoConfig(preferInternal = false): Promise<Gi
   if (!credentials) {
     throw new Error(`Git password/token not found in ${env.GIT_CONFIG_SECRET_NAME} or gitea-credentials secret`)
   }
+
   return createRepoConfig(credentials, preferInternal)
 }
 
