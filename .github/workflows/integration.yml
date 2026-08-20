@@ -493,16 +493,18 @@ jobs:
           # Treat the admin password as sensitive information and mask it in the logs
           echo "::add-mask::$adminPassword"
 
-          if [[ -z "$LINODE_TOKEN" ]]; then
-            echo "LINODE_TOKEN is required for the Linode cloud firewall controller on enterprise clusters."
-            exit 1
-          fi
-          echo "::add-mask::$LINODE_TOKEN"
+          if [[ "$LKE_TIER" == 'enterprise' ]]; then
+            if [[ -z "$LINODE_TOKEN" ]]; then
+              echo "LINODE_TOKEN is required for the Linode cloud firewall controller on enterprise clusters."
+              exit 1
+            fi
+            echo "::add-mask::$LINODE_TOKEN"
 
-          kubectl create secret generic linode-cfw \
-            --namespace kube-system \
-            --from-literal=token="${LINODE_TOKEN}" \
-            --dry-run=client -o yaml | kubectl apply -f -
+            kubectl create secret generic linode-cfw \
+              --namespace kube-system \
+              --from-literal=token="${LINODE_TOKEN}" \
+              --dry-run=client -o yaml | kubectl apply -f -
+          fi
 
           # Docker tags allow only [a-zA-Z0-9_.-]; sanitize the same way main.yml does when pushing images.
           IMAGE_TAG=$(echo "$GITHUB_REF_NAME" | sed 's/[^a-zA-Z0-9_.-]/-/g')
@@ -524,9 +526,10 @@ jobs:
             "--set" "otomi.hasExternalDNS=true"
             "--set" "otomi.adminPassword=$adminPassword"
             "--set" "otomi.version=${IMAGE_TAG}"
-            "--set" "apps.linode-cfw.enabled=true"
             "--set" "operator.image.repository=docker.io/linode/apl-core"
           )
+
+          [[ "$LKE_TIER" == 'enterprise' ]] && install_args+=("--set" "apps.linode-cfw.enabled=true")
 
           [[ "$CERTIFICATE" == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ "$CERTIFICATE" == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
@@ -550,7 +553,7 @@ jobs:
             install_args+=(--set otomi.git.branch="$DOMAIN")
           fi
 
-          if [[ -n "$LKE_APL_FIREWALL_INBOUND_RULES" ]]; then
+          if [[ "$LKE_TIER" == 'enterprise' && -n "$LKE_APL_FIREWALL_INBOUND_RULES" ]]; then
             install_args+=("--set-json" "apps.linode-cfw._rawValues.firewall.inbound=${LKE_APL_FIREWALL_INBOUND_RULES}")
           fi
 
@@ -574,6 +577,26 @@ jobs:
                 echo "Waiting for platform-istio IP..."
               fi
           done
+      - name: Attach NodeBalancer to sdet-firewall
+        if: ${{ inputs.install_profile != 'no-apl' && inputs.lke_tier == 'enterprise' }}
+        env:
+          PUB_IP: ${{ steps.get-public-ip.outputs.apl-public-ip }}
+          SDET_FIREWALL_ID: ${{ secrets.SDET_FIREWALL_ID }}
+        run: |
+          if [[ -z "$SDET_FIREWALL_ID" ]]; then
+            echo "SDET_FIREWALL_ID is required to attach the NodeBalancer firewall on enterprise clusters."
+            exit 1
+          fi
+
+          # The NodeBalancer is created by LKE for the platform-istio LoadBalancer service; find it by its IP.
+          NODEBALANCER_ID=$(linode-cli nodebalancers list --json | jq -re --arg ip "$PUB_IP" 'map(select(.ipv4 == $ip) | .id) | .[0]')
+          if [[ -z "$NODEBALANCER_ID" || "$NODEBALANCER_ID" == "null" ]]; then
+            echo "Could not find a NodeBalancer with IP $PUB_IP"
+            exit 1
+          fi
+
+          echo "Attaching NodeBalancer $NODEBALANCER_ID to firewall $SDET_FIREWALL_ID"
+          linode-cli nodebalancers firewalls --firewall_ids "$SDET_FIREWALL_ID" "$NODEBALANCER_ID"
       - name: Set control plane ACL to internal IPs
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
