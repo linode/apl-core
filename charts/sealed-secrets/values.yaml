@@ -39,7 +39,7 @@ commonLabels: {}
 image:
   registry: docker.io
   repository: bitnami/sealed-secrets-controller
-  tag: 0.38.4
+  tag: 0.39.0
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -221,6 +221,10 @@ containerSecurityContext:
   capabilities:
     drop:
       - ALL
+## @param hostUsers Specifies whether or not host or namespaced users should be used
+## ref: https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/
+##
+hostUsers: ~
 
 ## @param podLabels [object] Extra labels for Sealed Secret pods
 ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
