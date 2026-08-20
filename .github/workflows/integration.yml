@@ -202,7 +202,7 @@ jobs:
           case "$DOMAIN_ZONE" in
             "Zone-1") LINODE_CLUSTER_NAME=$user-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=$user-2 ;;
-            "Zone-Linode") LINODE_CLUSTER_NAME=$user-linode ;;
+            "Zone-Linode") LINODE_CLUSTER_NAME=$user-$RUN_NUMBER-$RUN_ATTEMPT ;;
             "Random") LINODE_CLUSTER_NAME=$user-$RUN_NUMBER-$RUN_ATTEMPT ;;
           esac
           [[ "$INSTALL_PROFILE" == 'no-apl' ]] && LINODE_CLUSTER_NAME="$LINODE_CLUSTER_NAME-no-apl"
