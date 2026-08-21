@@ -95,7 +95,11 @@ spec:
             failureThreshold: 3
           readinessProbe:
             exec:
+              {{- if $readiness.gateOnReadiness }}
               command: ["/bin/sh", "-c", "test -f /tmp/ready"]
+              {{- else }}
+              command: ["/bin/sh", "-c", "pgrep -f 'apl-operator' > /dev/null"]
+              {{- end }}
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
