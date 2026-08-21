@@ -641,14 +641,6 @@
                 false
               ]
             },
-            "operator.golang.flags": {
-              "type": "boolean",
-              "default": false,
-              "title": "Set GOMEMLIMIT and GOMAXPROCS for collector automatically",
-              "examples": [
-                false
-              ]
-            },
             "operand.networkpolicy": {
               "type": "boolean",
               "default": false,
@@ -661,14 +653,6 @@
               "type": "boolean",
               "default": false,
               "title": "Creates a NetworkPolicy to restrict access to the operator pod",
-              "examples": [
-                false
-              ]
-            },
-            "operator.collector.usedefaulttelemetryshape": {
-              "type": "boolean",
-              "default": false,
-              "title": "Use collector defaults for injected Prometheus telemetry metric names",
               "examples": [
                 false
               ]
