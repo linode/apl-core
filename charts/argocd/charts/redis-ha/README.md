@@ -69,9 +69,9 @@ The following table lists the configurable parameters of the Redis chart and the
 | `authKey` | Defines the key holding the redis password in existing secret. | string | `"auth"` |
 | `authSecretAnnotations` | Annotations for auth secret | object | `{}` |
 | `configmap.labels` | Custom labels for the redis configmap | object | `{}` |
-| `configmapTest.image` | Image for redis-ha-configmap-test hook | object | `{"repository":"koalaman/shellcheck","tag":"v0.10.0"}` |
+| `configmapTest.image` | Image for redis-ha-configmap-test hook | object | `{"repository":"koalaman/shellcheck","tag":"v0.11.0"}` |
 | `configmapTest.image.repository` | Repository of the configmap shellcheck test image. | string | `"koalaman/shellcheck"` |
-| `configmapTest.image.tag` | Tag of the configmap shellcheck test image. | string | `"v0.10.0"` |
+| `configmapTest.image.tag` | Tag of the configmap shellcheck test image. | string | `"v0.11.0"` |
 | `configmapTest.resources` | Resources for the ConfigMap test pod | object | `{}` |
 | `containerSecurityContext` | Security context to be added to the Redis containers. | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsNonRoot":true,"runAsUser":1000,"seccompProfile":{"type":"RuntimeDefault"}}` |
 | `emptyDir` | Configuration of `emptyDir`, used only if persistentVolume is disabled and no hostPath specified | object | `{}` |
@@ -88,7 +88,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `hostPath.path` | Use this path on the host for data storage. path is evaluated as template so placeholders are replaced | string | `""` |
 | `image.pullPolicy` | Redis image pull policy | string | `"IfNotPresent"` |
 | `image.repository` | Redis image repository | string | `"public.ecr.aws/docker/library/redis"` |
-| `image.tag` | Redis image tag | string | `"8.2.1-alpine"` |
+| `image.tag` | Redis image tag | string | `"8.8.0-alpine"` |
 | `imagePullSecrets` | Reference to one or more secrets to be used when pulling redis images | list | `[]` |
 | `init.resources` | Extra init resources | object | `{}` |
 | `labels` | Custom labels for the redis pod | object | `{}` |
@@ -133,6 +133,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `redis.livenessProbe.successThreshold` | Success threshold for liveness probe | int | `1` |
 | `redis.livenessProbe.timeoutSeconds` | Timeout seconds for liveness probe | int | `15` |
 | `redis.masterGroupName` | Redis convention for naming the cluster group: must match `^[\\w-\\.]+$` and can be templated | string | `"mymaster"` |
+| `redis.minReadySeconds` | Configure the 'minReadySeconds' parameter to StatefulSet ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#minreadyseconds | int | `0` |
 | `redis.podAnnotations` | Annotations to be added to the redis statefulset pods | object | `{}` |
 | `redis.port` | Port to access the redis service | int | `6379` |
 | `redis.readinessProbe` | Readiness probe parameters for redis container | object | `{"enabled":true,"failureThreshold":5,"initialDelaySeconds":30,"periodSeconds":15,"successThreshold":1,"timeoutSeconds":15}` |
@@ -183,7 +184,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `sysctlImage.registry` | sysctlImage Init container registry | string | `"public.ecr.aws/docker/library"` |
 | `sysctlImage.repository` | sysctlImage Init container name | string | `"busybox"` |
 | `sysctlImage.resources` | sysctlImage resources | object | `{}` |
-| `sysctlImage.tag` | sysctlImage Init container tag | string | `"1.34.1"` |
+| `sysctlImage.tag` | sysctlImage Init container tag | string | `"1.38.0"` |
 | `tls.caCertFile` | Name of CA certificate file | string | `"ca.crt"` |
 | `tls.certFile` | Name of certificate file | string | `"redis.crt"` |
 | `tls.dhParamsFile` | Name of Diffie-Hellman (DH) key exchange parameters file (Example: redis.dh) | string | `nil` |
@@ -215,6 +216,8 @@ The following table lists the configurable parameters of the Redis chart and the
 | `sentinel.livenessProbe.successThreshold` | Success threshold for liveness probe | int | `1` |
 | `sentinel.livenessProbe.timeoutSeconds` | Timeout seconds for liveness probe | int | `15` |
 | `sentinel.password` | A password that configures a `requirepass` in the conf parameters (Requires `sentinel.auth: enabled`) | string | `nil` |
+| `sentinel.resolveHostnames` | Configures sentinel with resolve-hostnames parameter, if true sets "resolve-hostnames yes" in sentinel.conf | bool | `nil` |
+| `sentinel.announceHostnames` | Configures sentinel with announce-hostnames parameter, if true sets "announce-hostnames yes" in sentinel.conf | bool | `nil` |
 | `sentinel.port` | Port to access the sentinel service | int | `26379` |
 | `sentinel.quorum` | Minimum number of nodes expected to be live. | int | `2` |
 | `sentinel.readinessProbe.enabled` |  | bool | `true` |
@@ -240,6 +243,7 @@ The following table lists the configurable parameters of the Redis chart and the
 |-----|------|---------|-------------|
 | `haproxy.IPv6.enabled` | Enable HAProxy parameters to bind and consume IPv6 addresses. Enabled by default. | bool | `true` |
 | `haproxy.additionalAffinities` | Additional affinities to add to the haproxy pods. | object | `{}` |
+| `haproxy.additionalPorts` | Additional ports to expose on HAProxy service and deployment. Each port should have a name, containerPort, and optionally servicePort (defaults to containerPort) | list | `[]` |
 | `haproxy.affinity` | Override all other affinity settings for the haproxy pods with a string. | string | `""` |
 | `haproxy.annotations` | HAProxy template annotations | object | `{}` |
 | `haproxy.checkFall` | haproxy.cfg `check fall` setting | int | `1` |
@@ -304,6 +308,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.timeout.client` | haproxy.cfg `timeout client` setting | string | `"330s"` |
 | `haproxy.timeout.connect` | haproxy.cfg `timeout connect` setting | string | `"4s"` |
 | `haproxy.timeout.server` | haproxy.cfg `timeout server` setting | string | `"330s"` |
+| `haproxy.timeout.tunnel` | haproxy.cfg `timeout tunnel` setting | string | `"1h"` |
 | `haproxy.tls` | Enable TLS termination on HAproxy, This will create a volume mount | object | `{"certMountPath":"/tmp/","enabled":false,"keyName":null,"secretName":""}` |
 | `haproxy.tls.certMountPath` | Path to mount the secret that contains the certificates. haproxy | string | `"/tmp/"` |
 | `haproxy.tls.enabled` | If "true" this will enable TLS termination on haproxy | bool | `false` |
@@ -345,7 +350,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `exporter.serviceMonitor.relabelings` |  | list | `[]` |
 | `exporter.serviceMonitor.telemetryPath` | Set path to redis-exporter telemtery-path (default is /metrics) | string | `""` |
 | `exporter.serviceMonitor.timeout` | Set timeout for scrape (default is 10s) | string | `""` |
-| `exporter.tag` | Exporter image tag | string | `"v1.67.0"` |
+| `exporter.tag` | Exporter image tag | string | `"v1.86.0"` |
 | `prometheusRule.additionalLabels` | Additional labels to be set in metadata. | object | `{}` |
 | `prometheusRule.enabled` | If true, creates a Prometheus Operator PrometheusRule. | bool | `false` |
 | `prometheusRule.interval` | How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set). | string | `"10s"` |

@@ -118,7 +118,7 @@ global:
   # Default network policy rules used by all components
   networkPolicy:
     # -- Create NetworkPolicy objects for all components
-    create: false
+    create: true
     # -- Default deny all ingress traffic
     defaultDenyIngress: false
 
@@ -1029,8 +1029,6 @@ controller:
   metrics:
     # -- Deploy metrics service
     enabled: false
-    # -- Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used.
-    scrapeTimeout: ""
     applicationLabels:
       # -- Enables additional labels in argocd_app_labels metric
       enabled: false
@@ -1054,6 +1052,8 @@ controller:
       enabled: false
       # -- Prometheus ServiceMonitor interval
       interval: 30s
+      # -- Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used.
+      scrapeTimeout: ""
       # -- When true, honorLabels preserves the metric’s labels when they collide with the target’s labels.
       honorLabels: false
       # -- Prometheus [RelabelConfigs] to apply to samples before scraping
@@ -1551,7 +1551,7 @@ redis:
     repository: ecr-public.aws.com/docker/library/redis
     # -- Redis tag
     ## Do not use 7.4.0 <= v < 8.0.0, otherwise you are no longer using an open source version of Redis
-    tag: 8.2.3-alpine
+    tag: 8.6.4-alpine
     # -- Redis image pull policy
     # @default -- `""` (defaults to global.image.imagePullPolicy)
     imagePullPolicy: ""
@@ -1567,7 +1567,7 @@ redis:
       # -- Repository to use for the redis-exporter
       repository: ghcr.io/oliver006/redis_exporter
       # -- Tag to use for the redis-exporter
-      tag: v1.86.0
+      tag: v1.88.0
       # -- Image pull policy for the redis-exporter
       # @default -- `""` (defaults to global.image.imagePullPolicy)
       imagePullPolicy: ""
@@ -2873,11 +2873,29 @@ server:
     ## Must reference an existing Gateway. Unlike HTTPRoute, ListenerSet accepts exactly one parentRef.
     # @default -- `{}` (See [values.yaml])
     parentRef: {}
-      # group: gateway.networking.k8s.io
-      # kind: Gateway
       # name: example-gateway
       # namespace: example-gateway-namespace
-    # -- Listeners to attach to the parent Gateway
+    # -- Hostname for the synthesized listener. Defaults to global.domain when empty.
+    hostname: ""
+    # -- Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs.
+    listenerName: https
+    # -- Port for the synthesized listener
+    port: 443
+    # -- Protocol for the synthesized listener
+    protocol: HTTPS
+    # -- TLS configuration for the synthesized listener
+    tls:
+      # -- Enable TLS on the synthesized listener
+      enabled: true
+      # -- TLS termination mode
+      mode: Terminate
+      # -- Secret name for TLS certificate. Defaults to `argocd-server-tls` when empty.
+      secretName: ""
+    # -- allowedRoutes for the synthesized listener
+    allowedRoutes:
+      namespaces:
+        from: Same
+    # -- Listeners to attach to the parent Gateway. When non-empty, used verbatim and all synthesized listener fields above are ignored.
     # @default -- `[]` (See [values.yaml])
     listeners: []
       # - name: https
@@ -3842,11 +3860,29 @@ applicationSet:
     ## Must reference an existing Gateway. Unlike HTTPRoute, ListenerSet accepts exactly one parentRef.
     # @default -- `{}` (See [values.yaml])
     parentRef: {}
-      # group: gateway.networking.k8s.io
-      # kind: Gateway
       # name: example-gateway
       # namespace: example-gateway-namespace
-    # -- Listeners to attach to the parent Gateway
+    # -- Hostname for the synthesized listener. Defaults to global.domain when empty.
+    hostname: ""
+    # -- Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs.
+    listenerName: https
+    # -- Port for the synthesized listener
+    port: 443
+    # -- Protocol for the synthesized listener
+    protocol: HTTPS
+    # -- TLS configuration for the synthesized listener
+    tls:
+      # -- Enable TLS on the synthesized listener
+      enabled: true
+      # -- TLS termination mode
+      mode: Terminate
+      # -- Secret name for TLS certificate. Defaults to `argocd-applicationset-controller-tls` when empty.
+      secretName: ""
+    # -- allowedRoutes for the synthesized listener
+    allowedRoutes:
+      namespaces:
+        from: Same
+    # -- Listeners to attach to the parent Gateway. When non-empty, used verbatim and all synthesized listener fields above are ignored.
     # @default -- `[]` (See [values.yaml])
     listeners: []
       # - name: https

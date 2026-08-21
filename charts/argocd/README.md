@@ -337,13 +337,59 @@ Use ListenerSet to attach listeners to an existing shared Gateway. This is usefu
 > **Note:**
 > ListenerSet support is **EXPERIMENTAL**. Requires Gateway API v1.5+ and a controller that supports ListenerSet. Refer to [Gateway API implementations](https://gateway-api.sigs.k8s.io/implementations/) for controller-specific details.
 
+Only `parentRef` (pointing to the parent Gateway) is required. A default HTTPS listener is synthesized automatically using `global.domain` as the hostname:
+
+```yaml
+global:
+  domain: argocd.example.com
+
+server:
+  listenerset:
+    enabled: true
+    parentRef:
+      name: example-gateway
+      namespace: gateway-system
+```
+
+Combined with an HTTPRoute to route traffic through the listener to the Argo CD server. The HTTPRoute automatically targets the ListenerSet and inherits the hostname from `global.domain` — no extra configuration needed:
+
+```yaml
+global:
+  domain: argocd.example.com
+
+server:
+  listenerset:
+    enabled: true
+    parentRef:
+      name: example-gateway
+      namespace: gateway-system
+
+  httproute:
+    enabled: true
+```
+
+To customise the synthesized listener (e.g. change the port, protocol, or TLS secret), override the individual fields:
+
 ```yaml
 server:
   listenerset:
     enabled: true
     parentRef:
-      group: gateway.networking.k8s.io
-      kind: Gateway
+      name: example-gateway
+      namespace: gateway-system
+    hostname: custom.example.com   # overrides global.domain
+    port: 8443
+    tls:
+      secretName: my-tls-secret
+```
+
+For full control, provide a `listeners` array directly. When non-empty it is used verbatim and all synthesized listener fields are ignored:
+
+```yaml
+server:
+  listenerset:
+    enabled: true
+    parentRef:
       name: example-gateway
       namespace: gateway-system
     listeners:
@@ -360,35 +406,6 @@ server:
         allowedRoutes:
           namespaces:
             from: Same
-```
-
-Combined with an HTTPRoute to route traffic from the listener to the Argo CD server:
-
-```yaml
-server:
-  listenerset:
-    enabled: true
-    parentRef:
-      name: example-gateway
-      namespace: gateway-system
-    listeners:
-      - name: https
-        port: 443
-        protocol: HTTPS
-        hostname: argocd.example.com
-        tls:
-          mode: Terminate
-          certificateRefs:
-            - group: ""
-              kind: Secret
-              name: argocd-server-tls
-
-  httproute:
-    enabled: true
-    parentRefs:
-      - name: example-gateway
-        namespace: gateway-system
-        sectionName: https
 ```
 
 ## Setting the initial admin password via Argo CD Application CR
@@ -458,6 +475,11 @@ kubectl apply -k "https://github.com/argoproj/argo-cd/manifests/crds?ref=v2.4.9"
 For full list of changes please check ArtifactHub [changelog].
 
 Highlighted versions provide information about additional steps that should be performed by user when upgrading to newer version.
+
+### 10.0.0
+
+In this chart version we changed the parameter `global.networkPolicy.create` from `false` to `true` to align with the upstream manifests and apply
+security best practices. There might be use cases where users want to disable the network policies, for example when using a service mesh or when you want to use a more specific network policy type like CiliumNetworkPolicy. In this case, please set `global.networkPolicy.create` to `false` in your values.yaml and manage the network policies yourself.
 
 ### 9.1.0
 This chart contains a breaking change (if using `redis-ha`), which was introduced by the dependency `redis-ha` (as seen [here](https://github.com/DandyDeveloper/charts/blob/a03b6a6f4d72b6606ce9a218c7d0026350b48ad0/charts/redis-ha/README.md#4341---upgrade-may-complain-about-selector-label-changes-being-immutable)). The upgrade will complain about selector label changes being immutable, which requires a replacement of the `argocd-redis-ha-haproxy` deployment. To overcome this, you will need to delete (orphaning children) this deployment, updated ArgoCD to disable server-side diffing, then allow the new deployment of `argocd-redis-ha-haproxy` to rollout with the updated label selectors.
@@ -955,7 +977,7 @@ NAME: my-release
 | global.imagePullSecrets | list | `[]` | Secrets with credentials to pull images from a private registry |
 | global.logging.format | string | `"text"` | Set the global logging format. Either: `text` or `json` |
 | global.logging.level | string | `"info"` | Set the global logging level. One of: `debug`, `info`, `warn` or `error` |
-| global.networkPolicy.create | bool | `false` | Create NetworkPolicy objects for all components |
+| global.networkPolicy.create | bool | `true` | Create NetworkPolicy objects for all components |
 | global.networkPolicy.defaultDenyIngress | bool | `false` | Default deny all ingress traffic |
 | global.nodeSelector | object | `{"kubernetes.io/os":"linux"}` | Default node selector for all components |
 | global.podAnnotations | object | `{}` | Annotations for the all deployed pods |
@@ -1068,7 +1090,6 @@ NAME: my-release
 | controller.metrics.rules.namespace | string | `""` | PrometheusRule namespace |
 | controller.metrics.rules.selector | object | `{}` | PrometheusRule selector |
 | controller.metrics.rules.spec | list | `[]` | PrometheusRule.Spec for the application controller |
-| controller.metrics.scrapeTimeout | string | `""` | Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used. |
 | controller.metrics.service.annotations | object | `{}` | Metrics service annotations |
 | controller.metrics.service.clusterIP | string | `""` | Metrics service clusterIP. `None` makes a "headless service" (no virtual IP) |
 | controller.metrics.service.labels | object | `{}` | Metrics service labels |
@@ -1084,6 +1105,7 @@ NAME: my-release
 | controller.metrics.serviceMonitor.namespace | string | `""` | Prometheus ServiceMonitor namespace |
 | controller.metrics.serviceMonitor.relabelings | list | `[]` | Prometheus [RelabelConfigs] to apply to samples before scraping |
 | controller.metrics.serviceMonitor.scheme | string | `""` | Prometheus ServiceMonitor scheme |
+| controller.metrics.serviceMonitor.scrapeTimeout | string | `""` | Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used. |
 | controller.metrics.serviceMonitor.selector | object | `{}` | Prometheus ServiceMonitor selector |
 | controller.metrics.serviceMonitor.tlsConfig | object | `{}` | Prometheus ServiceMonitor tlsConfig |
 | controller.name | string | `"application-controller"` | Application controller name string |
@@ -1365,11 +1387,20 @@ NAME: my-release
 | server.ingressGrpc.tls | bool | `false` | Enable TLS configuration for the hostname defined at `server.ingressGrpc.hostname` |
 | server.initContainers | list | `[]` | Init containers to add to the server pod |
 | server.lifecycle | object | `{}` | Specify postStart and preStop lifecycle hooks for your argo-cd-server container |
+| server.listenerset.allowedRoutes | object | `{"namespaces":{"from":"Same"}}` | allowedRoutes for the synthesized listener |
 | server.listenerset.annotations | object | `{}` | Additional ListenerSet annotations |
 | server.listenerset.enabled | bool | `false` | Enable ListenerSet resource for Argo CD server (Gateway API) |
+| server.listenerset.hostname | string | `""` | Hostname for the synthesized listener. Defaults to global.domain when empty. |
 | server.listenerset.labels | object | `{}` | Additional ListenerSet labels |
-| server.listenerset.listeners | list | `[]` (See [values.yaml]) | Listeners to attach to the parent Gateway |
+| server.listenerset.listenerName | string | `"https"` | Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs. |
+| server.listenerset.listeners | list | `[]` (See [values.yaml]) | Listeners to attach to the parent Gateway. When non-empty, used verbatim and all synthesized listener fields above are ignored. |
 | server.listenerset.parentRef | object | `{}` (See [values.yaml]) | Gateway API parentRef for the ListenerSet |
+| server.listenerset.port | int | `443` | Port for the synthesized listener |
+| server.listenerset.protocol | string | `"HTTPS"` | Protocol for the synthesized listener |
+| server.listenerset.tls | object | `{"enabled":true,"mode":"Terminate","secretName":""}` | TLS configuration for the synthesized listener |
+| server.listenerset.tls.enabled | bool | `true` | Enable TLS on the synthesized listener |
+| server.listenerset.tls.mode | string | `"Terminate"` | TLS termination mode |
+| server.listenerset.tls.secretName | string | `""` | Secret name for TLS certificate. Defaults to `argocd-server-tls` when empty. |
 | server.livenessProbe.enabled | bool | `true` | Enable Kubernetes liveness probe for default backend |
 | server.livenessProbe.failureThreshold | int | `3` | Minimum consecutive failures for the [probe] to be considered failed after having succeeded |
 | server.livenessProbe.httpPath | string | `"/healthz?full=true"` | Http path to use for the liveness probe |
@@ -1595,7 +1626,7 @@ NAME: my-release
 | redis.exporter.env | list | `[]` | Environment variables to pass to the Redis exporter |
 | redis.exporter.image.imagePullPolicy | string | `""` (defaults to global.image.imagePullPolicy) | Image pull policy for the redis-exporter |
 | redis.exporter.image.repository | string | `"ghcr.io/oliver006/redis_exporter"` | Repository to use for the redis-exporter |
-| redis.exporter.image.tag | string | `"v1.86.0"` | Tag to use for the redis-exporter |
+| redis.exporter.image.tag | string | `"v1.88.0"` | Tag to use for the redis-exporter |
 | redis.exporter.livenessProbe.enabled | bool | `false` | Enable Kubernetes liveness probe for Redis exporter |
 | redis.exporter.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the [probe] to be considered failed after having succeeded |
 | redis.exporter.livenessProbe.initialDelaySeconds | int | `30` | Number of seconds after the container has started before [probe] is initiated |
@@ -1613,7 +1644,7 @@ NAME: my-release
 | redis.extraContainers | list | `[]` | Additional containers to be added to the redis pod |
 | redis.image.imagePullPolicy | string | `""` (defaults to global.image.imagePullPolicy) | Redis image pull policy |
 | redis.image.repository | string | `"ecr-public.aws.com/docker/library/redis"` | Redis repository |
-| redis.image.tag | string | `"8.2.3-alpine"` | Redis tag |
+| redis.image.tag | string | `"8.6.4-alpine"` | Redis tag |
 | redis.imagePullSecrets | list | `[]` (defaults to global.imagePullSecrets) | Secrets with credentials to pull images from a private registry |
 | redis.initContainers | list | `[]` | Init containers to add to the redis pod |
 | redis.livenessProbe.enabled | bool | `false` | Enable Kubernetes liveness probe for Redis server |
@@ -1825,11 +1856,20 @@ If you use an External Redis (See Option 3 above), this Job is not deployed.
 | applicationSet.ingress.pathType | string | `"Prefix"` | Ingress path type. One of `Exact`, `Prefix` or `ImplementationSpecific` |
 | applicationSet.ingress.tls | bool | `false` | Enable TLS configuration for the hostname defined at `applicationSet.webhook.ingress.hostname` |
 | applicationSet.initContainers | list | `[]` | Init containers to add to the ApplicationSet controller pod |
+| applicationSet.listenerset.allowedRoutes | object | `{"namespaces":{"from":"Same"}}` | allowedRoutes for the synthesized listener |
 | applicationSet.listenerset.annotations | object | `{}` | Additional ListenerSet annotations |
 | applicationSet.listenerset.enabled | bool | `false` | Enable ListenerSet resource for Argo CD ApplicationSet webhook (Gateway API) |
+| applicationSet.listenerset.hostname | string | `""` | Hostname for the synthesized listener. Defaults to global.domain when empty. |
 | applicationSet.listenerset.labels | object | `{}` | Additional ListenerSet labels |
-| applicationSet.listenerset.listeners | list | `[]` (See [values.yaml]) | Listeners to attach to the parent Gateway |
+| applicationSet.listenerset.listenerName | string | `"https"` | Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs. |
+| applicationSet.listenerset.listeners | list | `[]` (See [values.yaml]) | Listeners to attach to the parent Gateway. When non-empty, used verbatim and all synthesized listener fields above are ignored. |
 | applicationSet.listenerset.parentRef | object | `{}` (See [values.yaml]) | Gateway API parentRef for the ListenerSet |
+| applicationSet.listenerset.port | int | `443` | Port for the synthesized listener |
+| applicationSet.listenerset.protocol | string | `"HTTPS"` | Protocol for the synthesized listener |
+| applicationSet.listenerset.tls | object | `{"enabled":true,"mode":"Terminate","secretName":""}` | TLS configuration for the synthesized listener |
+| applicationSet.listenerset.tls.enabled | bool | `true` | Enable TLS on the synthesized listener |
+| applicationSet.listenerset.tls.mode | string | `"Terminate"` | TLS termination mode |
+| applicationSet.listenerset.tls.secretName | string | `""` | Secret name for TLS certificate. Defaults to `argocd-applicationset-controller-tls` when empty. |
 | applicationSet.livenessProbe.enabled | bool | `false` | Enable Kubernetes liveness probe for ApplicationSet controller |
 | applicationSet.livenessProbe.failureThreshold | int | `3` | Minimum consecutive failures for the [probe] to be considered failed after having succeeded |
 | applicationSet.livenessProbe.initialDelaySeconds | int | `10` | Number of seconds after the container has started before [probe] is initiated |
