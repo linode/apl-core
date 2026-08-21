@@ -28,13 +28,15 @@ The `apl-addons` AppProject is fully unrestricted:
 
 The `apl-addons` AppProject carries no ArgoCD finalizer. Instead, a `ValidatingAdmissionPolicy` at the API-server level blocks DELETE operations on the AppProject. A finalizer can be stripped by anyone with sufficient kubectl access and then the project deleted; a VAP cannot be bypassed without first modifying the VAP itself, which requires a separate privilege escalation step.
 
+A second `ValidatingAdmissionPolicy` enforces that any ArgoCD `Application` created or updated in the `apl-addons` namespace sets `spec.project: apl-addons`. This prevents addon Applications from referencing the privileged `default` project (or any other project) and guarantees they are scoped by the `apl-addons` AppProject.
+
 ### Naming convention deviation
 
 [ADR-2026-06-25](2026-06-25-manifests-directory.md) establishes that directories with an `apl-` prefix under `namespaces/` are operator-owned (written by the apl-operator program, not by humans). `apl-addons/` deviates from this: the operator bootstraps the directory with a `.gitkeep` but its contents are written by human platform admins. The `apl-` prefix is retained to signal that this directory is privileged and not a regular user-owned namespace directory.
 
 ### Constraints not enforced by the AppProject
 
-ArgoCD AppProject `destinations` is a whitelist only — there is no native destination blacklist. Platform admins must not target the `argocd` namespace as a destination; this is documented but not enforced. Application CRs must set `project: apl-addons`; if they do not, ArgoCD will reject them with an RBAC error (no operator-level pre-validation is added).
+ArgoCD AppProject `destinations` is a whitelist only — there is no native destination blacklist. Platform admins must not target the `argocd` namespace as a destination; this is documented but not enforced. Application CRs must set `project: apl-addons`; this is enforced by a `ValidatingAdmissionPolicy` that rejects any Application in the `apl-addons` namespace referencing a different project (see "Protection via ValidatingAdmissionPolicy").
 
 ### ORCS registry policy
 

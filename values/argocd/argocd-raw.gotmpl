@@ -227,3 +227,31 @@ resources:
       policyName: protect-apl-addons-appproject
       validationActions:
         - Deny
+  - apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingAdmissionPolicy
+    metadata:
+      name: restrict-apl-addons-application-project
+    spec:
+      failurePolicy: Fail
+      matchConstraints:
+        resourceRules:
+          - apiGroups:
+              - argoproj.io
+            apiVersions:
+              - v1alpha1
+            operations:
+              - CREATE
+              - UPDATE
+            resources:
+              - applications
+      validations:
+        - expression: "object.metadata.namespace != 'apl-addons' || (has(object.spec.project) && object.spec.project == 'apl-addons')"
+          message: Applications in the apl-addons namespace must use the apl-addons project.
+  - apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingAdmissionPolicyBinding
+    metadata:
+      name: restrict-apl-addons-application-project
+    spec:
+      policyName: restrict-apl-addons-application-project
+      validationActions:
+        - Deny
