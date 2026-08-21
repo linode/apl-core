@@ -9,34 +9,45 @@ readonly repo_root="$(cd "${script_dir}/.." && pwd)"
 readonly out_dir="$(mktemp -d)"
 trap 'rm -rf "${out_dir}"' EXIT
 
-readonly version="v9.9.9"
-readonly repository="docker.io/linode/apl-core"
+# Each case is "<tag> <repository the Helmfile values would pass>". A released tag goes through
+# the ORCS mirror, a branch build does not, so apl-operator.gotmpl omits the repository for it.
+readonly cases=(
+  "v9.9.9 mirror.registry.linodelke.net/docker/linode/apl-core"
+  "APL-1234 "
+)
 
-helm template apl "${repo_root}/chart/apl" \
-  --namespace default \
-  --set cluster.name=local \
-  --set cluster.provider=linode \
-  --set otomi.version="${version}" \
-  --set image.repository="${repository}" \
-  --show-only templates/deployment.yaml \
-  2>/dev/null >"${out_dir}/install.yaml"
+failed=0
+for case in "${cases[@]}"; do
+  read -r tag repository <<<"${case}"
 
-helm template apl-operator "${repo_root}/charts/apl-operator" \
-  --namespace apl-operator \
-  --set image.tag="${version}" \
-  --set image.repository="${repository}" \
-  --show-only templates/deployment.yaml \
-  2>/dev/null >"${out_dir}/argocd.yaml"
+  helm template apl "${repo_root}/chart/apl" \
+    --namespace default \
+    --set cluster.name=local \
+    --set cluster.provider=linode \
+    --set otomi.version="${tag}" \
+    --show-only templates/deployment.yaml \
+    2>/dev/null >"${out_dir}/install.yaml"
 
-# Only the "# Source:" comment may differ — the charts have different names.
-sed -i.bak '/^# Source:/d' "${out_dir}/install.yaml" "${out_dir}/argocd.yaml"
+  helm template apl-operator "${repo_root}/charts/apl-operator" \
+    --namespace apl-operator \
+    --set image.tag="${tag}" \
+    --set image.repository="${repository}" \
+    --show-only templates/deployment.yaml \
+    2>/dev/null >"${out_dir}/argocd.yaml"
 
-if diff -u "${out_dir}/install.yaml" "${out_dir}/argocd.yaml"; then
-  echo "OK: chart/apl and charts/apl-operator render the same Deployment."
-else
+  # Only the "# Source:" comment may differ — the charts have different names.
+  sed -i.bak '/^# Source:/d' "${out_dir}/install.yaml" "${out_dir}/argocd.yaml"
+
+  if diff -u "${out_dir}/install.yaml" "${out_dir}/argocd.yaml"; then
+    echo "OK: identical Deployment for tag ${tag}."
+  else
+    echo >&2 "ERROR: chart/apl and charts/apl-operator differ for tag ${tag}."
+    failed=1
+  fi
+done
+
+if [[ ${failed} -ne 0 ]]; then
   cat >&2 <<'EOF'
-
-ERROR: chart/apl and charts/apl-operator render different Deployments.
 
 ArgoCD would restart the operator on its first sync after install, discarding the install logs.
 Apply the change above to both charts so they render identically.

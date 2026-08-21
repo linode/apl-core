@@ -1,7 +1,8 @@
 {{- /* Symlinked into chart/apl, so it renders in whichever chart owns it. */ -}}
 {{- $version := .Values.image.tag | default .Values.otomi.version | default .Chart.AppVersion }}
-{{- /* Mirrors the linodeLkeImageRepository derivation in snippets/derived.gotmpl. */ -}}
-{{- $useORCS := and .Values.otomi.useORCS (eq (.Values.cluster.provider | default "") "linode") }}
+{{- $isRelease := regexMatch "^v?[0-9]" $version }}
+{{- /* Mirrors snippets/derived.gotmpl, but the ORCS mirror only carries released tags. */ -}}
+{{- $useORCS := and .Values.otomi.useORCS (eq (.Values.cluster.provider | default "") "linode") $isRelease }}
 {{- $repository := .Values.image.repository | default (ternary "mirror.registry.linodelke.net/docker/linode/apl-core" "docker.io/linode/apl-core" $useORCS) }}
 {{- if not .Values.installation.skipOperatorDeployment }}
 apiVersion: apps/v1
@@ -52,7 +53,7 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ $repository }}:{{ $version }}"
-          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v?[0-9]" $version) }}
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" $isRelease }}
           workingDir: /home/app/stack
           {{- with .Values.command }}
           command:

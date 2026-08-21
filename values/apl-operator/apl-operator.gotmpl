@@ -1,7 +1,9 @@
 {{- $v := .Values }}
 {{- $o := $v.apps | get "apl-operator" }}
+{{- /* The ORCS mirror only carries released tags, not branch builds. */ -}}
+{{- $isRelease := regexMatch "^v?[0-9]" $v.otomi.version }}
 image:
-  {{- if $v.otomi.linodeLkeImageRepository }}
+  {{- if and $v.otomi.linodeLkeImageRepository $isRelease }}
   repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
   {{- end }}
   tag: {{ $v.otomi.version }}

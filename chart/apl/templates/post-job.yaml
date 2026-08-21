@@ -1,5 +1,6 @@
 {{- $version := .Values.image.tag | default .Values.otomi.version | default .Chart.AppVersion }}
-{{- $useORCS := and .Values.otomi.useORCS (eq (.Values.cluster.provider | default "") "linode") }}
+{{- $isRelease := regexMatch "^v?[0-9]" $version }}
+{{- $useORCS := and .Values.otomi.useORCS (eq (.Values.cluster.provider | default "") "linode") $isRelease }}
 {{- $repository := .Values.image.repository | default (ternary "mirror.registry.linodelke.net/docker/linode/apl-core" "docker.io/linode/apl-core" $useORCS) }}
 
 apiVersion: batch/v1
@@ -33,7 +34,7 @@ spec:
       containers:
         - name: destroy
           image: "{{ $repository }}:{{ $version }}"
-          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v?[0-9]" $version) }}
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" $isRelease }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
