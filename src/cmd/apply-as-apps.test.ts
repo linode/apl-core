@@ -324,6 +324,16 @@ describe('calculateGitOpsAppsSyncState', () => {
     expect(result.namespaceDirs).toEqual(['a', 'b', 'c'])
   })
 
+  it('should require a GitOps Application for the apl-addons namespace directory', async () => {
+    setupMockDirs(['apl-addons'])
+    mockGetApplications.mockResolvedValue([])
+    mockStatSync.mockReturnValue(undefined)
+
+    const result = await calculateGitOpsAppsSyncState(mockDeps)
+
+    expect(result.requiredGitOpsApps).toContain('gitops-ns-apl-addons')
+  })
+
   it('should identify apps to remove when apps exist but directories do not', async () => {
     mockGetApplications.mockResolvedValue([
       {
