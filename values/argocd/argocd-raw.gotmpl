@@ -183,3 +183,47 @@ resources:
       depth: {{ print "1" | b64enc | quote }}
       name: {{ print "apl-core" | b64enc | quote }}
       project: {{ print "default" | b64enc | quote }}
+  - apiVersion: argoproj.io/v1alpha1
+    kind: AppProject
+    metadata:
+      name: apl-addons
+      namespace: argocd
+    spec:
+      sourceRepos:
+        - '*'
+      sourceNamespaces:
+        - apl-addons
+      destinations:
+        - namespace: '*'
+          server: '*'
+      clusterResourceWhitelist:
+        - group: '*'
+          kind: '*'
+      namespaceResourceBlacklist: []
+  - apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingAdmissionPolicy
+    metadata:
+      name: protect-apl-addons-appproject
+    spec:
+      failurePolicy: Fail
+      matchConstraints:
+        resourceRules:
+          - apiGroups:
+              - argoproj.io
+            apiVersions:
+              - v1alpha1
+            operations:
+              - DELETE
+            resources:
+              - appprojects
+      validations:
+        - expression: "oldObject.metadata.name != 'apl-addons' || oldObject.metadata.namespace != 'argocd'"
+          message: The apl-addons AppProject cannot be deleted.
+  - apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingAdmissionPolicyBinding
+    metadata:
+      name: protect-apl-addons-appproject
+    spec:
+      policyName: protect-apl-addons-appproject
+      validationActions:
+        - Deny
