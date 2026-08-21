@@ -1,7 +1,7 @@
-import * as utils from './utils'
 import * as fsUtils from 'fs/promises'
 import { readFile } from 'fs/promises'
 import * as debugTools from './debug'
+import * as utils from './utils'
 
 describe('Flatten objects', () => {
   it('should be flattened', () => {
@@ -80,6 +80,22 @@ describe('ensureTeamGitopsDirectories', () => {
       '/values/env/teams/team1/sealedsecrets/.gitkeep',
       '/values/env/teams/team1/workloadValues/.gitkeep',
     ])
+  })
+})
+
+describe('ensureManifestDirectories', () => {
+  it('creates the apl-addons namespace directory', async () => {
+    const deps = {
+      access: jest.fn().mockRejectedValue(new Error('missing')),
+      mkdir: jest.fn(),
+      writeFile: jest.fn(),
+    }
+
+    await utils.ensureManifestDirectories(deps)
+
+    expect(deps.mkdir).toHaveBeenCalledWith(expect.stringMatching(/env\/manifests\/namespaces\/apl-addons$/), {
+      recursive: true,
+    })
   })
 })
 
