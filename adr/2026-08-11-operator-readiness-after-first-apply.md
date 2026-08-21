@@ -4,48 +4,37 @@
 
 Technical Story: [#3419](https://github.com/linode/apl-core/issues/3419) / [PR #3464](https://github.com/linode/apl-core/pull/3464)
 
-## Context and Problem Statement
+The operator's readiness probe checked that the operator process was alive, so the Deployment reported Available around 30 seconds after the pod started while the install still had 10-15 minutes to run. `helm install --wait` and `kubectl wait --for=condition=Available` returned against a half-installed platform, and anyone who needed the real signal polled ArgoCD Applications and pod states and guessed. Readiness is now tied to the operator completing its first apply run: the apply success path writes a marker file, and the readiness probe checks for it.
 
-The `apl-operator` Deployment used `pgrep -f 'apl-operator'` as its `readinessProbe` — it only proved the process existed. The Deployment therefore became `Available` about 30 seconds after the pod started, while the platform install still needed another 10-15 minutes. `helm install --wait` and `kubectl wait --for=condition=Available` returned far too early, so bootstrap automation either continued against a half-installed platform or polled ArgoCD and pod state and guessed.
+## What ready means here
 
-## Decision Drivers
+The first apply run is where the ArgoCD Applications get created. Past that point the platform converges without the operator, so Ready means "handed over to ArgoCD", not "platform is up" — ArgoCD is still syncing when the probe first succeeds. The install itself is not a usable signal: it finishes before any ArgoCD Application exists.
 
-- Bootstrap automation needs one machine-checkable signal, usable with the standard `helm`/`kubectl` wait mechanisms.
-- The signal must never claim a convergence that did not happen.
-- It must not flap. The reconcile loop applies every ~5 minutes in steady state.
-- Reuse state the operator already tracks; do not introduce a CRD for this.
+Writing the marker cannot fail an apply — errors are logged and swallowed. If it cannot be written, or applies keep failing, the pod stays NotReady and the caller's wait times out. There is no path to a false Ready.
 
-## Considered Options
+`progressDeadlineSeconds` is 1800, because at the 600s default `kubectl rollout status` reports `ProgressDeadlineExceeded` during a healthy first install.
 
-- Poll `auth.<domainSuffix>/ready` (oauth2-proxy behind the ingress) from outside the cluster — rejected: needs public DNS and a trusted certificate, cannot distinguish "not ready yet" from a DNS/cert/ingress fault, does not fix the misleading probe, and says nothing about which revision was applied.
-- Add an `AplStatus` CR with conditions and `lastSuccessfulReconcile` — better long-term answer, but out of scope here; this decision makes the existing signal truthful instead of adding a CRD.
-- Write a readiness marker file at the end of the helmfile install — rejected during review: the install ends before the ArgoCD Applications exist.
-- Write a readiness marker file after the first successful apply run (chosen).
+## `gateOnReadiness`
 
-## Decision Outcome
+Gating on the install changes timing for anyone already passing `--wait`: 30 seconds becomes the full install, and Helm's 5 minute default timeout is too short for that. The probe is therefore selected by the chart value `operator.readiness.gateOnReadiness`, default `false`.
 
-Chosen option: mark readiness after a successful apply run.
+| | readiness probe | Available after |
+|---|---|---|
+| `false` | operator process alive | ~30s |
+| `true` | marker file present | first successful apply |
 
-`markOperatorReady()` (`src/operator/k8s.ts`) writes `/tmp/ready`, and is called from the success path of `runApplyIfNotBusy()` (`src/operator/apl-operator.ts`), next to the existing `/tmp/heartbeat` liveness marker. The `readinessProbe` on both operator Deployments (`chart/apl` for the install, `charts/apl-operator` via helmfile, which had no readiness probe at all) tests for that file.
+Upgrades keep their current timing. Automation that wants a real gate opts in and sizes its timeout for at least 30 minutes.
 
-The apply run is the point where the ArgoCD Applications get created, so past it the platform can heal itself through ArgoCD. That is what "the operator is ready" means here — it is explicitly **not** "the platform is fully up"; ArgoCD is still syncing at that moment.
+## Rejected
 
-Three properties are deliberate:
+Polling `auth.<domainSuffix>/ready` from outside the cluster needs public DNS and a trusted certificate before it can run at all, and a failed request is indistinguishable from a DNS, certificate or ingress fault.
 
-- **It latches for the life of the pod.** The marker is never cleared by a later apply — flipping `Available` on every reconcile pass would make the condition useless as a gate. Per-apply status stays in the `apl-operator-state` ConfigMap (`commitHash`, `status`, `trigger`), which answers "did the operator apply _my_ commit?".
-- **It fails closed.** `markOperatorReady()` never throws; if the marker cannot be written, or the apply keeps failing, the pod stays NotReady and `--wait` times out loudly.
-- **`progressDeadlineSeconds` is raised to 1800.** At the 600s default, `kubectl rollout status` would report `ProgressDeadlineExceeded` on a perfectly healthy first install.
+An `AplStatus` CR with conditions and a `lastSuccessfulReconcile` timestamp is the better long-term model, but it is a much bigger change than making the existing probe honest, and it does not work with `kubectl wait --for=condition=Available`.
 
-### Positive Consequences
+## Known limitation
 
-- `helm install apl … --wait` and `kubectl wait --for=condition=Available deployment/apl-operator` are now truthful gates; no bespoke poll loop needed per adopter.
-- No new loop, process, interval or CRD — the marker rides on the apply cycle that already runs.
-
-### Negative Consequences
-
-- Behaviour change for existing `--wait` callers: they now block for the real install duration instead of ~30 seconds. Helm's 5m default timeout is too short, so `--timeout` must be sized accordingly (`NOTES.txt` prints this).
-- The marker lives on the pod's `/tmp` emptyDir. It survives a container restart within the pod, but a rescheduled or rolled-out pod goes NotReady until it completes an apply of its own.
+The marker lives on the pod's `/tmp` emptyDir. It survives a container restart in the same pod, but a rescheduled or rolled-out pod is NotReady until it completes an apply of its own — up to one reconcile interval.
 
 ## Links
 
-- `src/operator/EXECUTION_FLOW.md` — "Readiness and Convergence Contract" describes the resulting contract and the introspection ConfigMaps.
+- `src/operator/EXECUTION_FLOW.md` — "Readiness and Convergence Contract"
