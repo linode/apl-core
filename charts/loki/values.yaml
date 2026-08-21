@@ -171,6 +171,10 @@ defaults:
     # -- ipFamilies for all services
     # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
     ipFamilies: []
+    # -- publishNotReadyAddresses for all services. Set to false so a pod's Service endpoint is
+    # withdrawn as soon as it becomes unready, instead of staying routable for the full termination
+    # window. Overridable per component via <component>.service.publishNotReadyAddresses.
+    publishNotReadyAddresses: true
   # -- KEDA autoscaling shared configuration for all components that support KEDA
   kedaAutoscaling:
     # -- Prometheus server address for KEDA triggers
@@ -6182,8 +6186,10 @@ memcached:
   # -- Enable the built in memcached server provided by the chart
   enabled: true
   image:
+    # -- Memcached Docker image registry
+    registry: docker.io
     # -- Memcached Docker image repository
-    repository: memcached
+    repository: library/memcached
     # -- Memcached Docker image tag
     tag: 1.6.45-alpine
     # -- Memcached Docker image pull policy
@@ -6256,8 +6262,13 @@ memcachedExporter:
   # -- Whether memcached metrics should be exported
   enabled: true
   image:
+    # -- Memcached exporter Docker image registry
+    registry: docker.io
+    # -- Memcached exporter Docker image repository
     repository: prom/memcached-exporter
+    # -- Memcached exporter Docker image tag
     tag: v0.17.0
+    # -- Memcached exporter Docker image pull policy
     pullPolicy: IfNotPresent
   # @schema additionalProperties:true
   resources:
