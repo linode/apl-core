@@ -2,10 +2,17 @@ The App Platform Operator has been successfully deployed on the cluster.
 
 Please inspect the output of the apl-operator deployment (apl-operator/{{ include "apl-operator.fullname" . }}) for any feedback or errors.
 
-Installing the platform takes 10-15 minutes. The operator reports Ready only once
-installation has completed, so you can wait for it:
+Installing the platform takes 10-15 minutes.
+{{- if .Values.operator.readiness.gateOnReadiness }}
+The operator reports Ready only once installation has completed, so you can wait for it:
 
   kubectl wait --for=condition=Available deployment/{{ include "apl-operator.fullname" . }} -n apl-operator --timeout=30m
+{{- else }}
+Readiness is not gated on the install (operator.readiness.gateOnReadiness=false), so the
+Deployment reports Available within ~30 seconds. Set gateOnReadiness=true to make
+`kubectl wait --for=condition=Available` and `helm install --wait` block until the
+install has completed. Size `--timeout` for at least 30 minutes when you do.
+{{- end }}
 
 Progress is readable at any time from:
 
