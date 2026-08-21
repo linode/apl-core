@@ -77,6 +77,7 @@ operator:
   readiness:
     # 30 minutes. If the operator has not installed the platform by then, something is off.
     progressDeadlineSeconds: 1800
+    gateOnReadiness: false
 
 nodeSelector: {}
 

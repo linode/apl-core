@@ -1,4 +1,5 @@
 import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
+import { KubernetesObject } from '@kubernetes/client-node'
 import cleanDeep, { CleanOptions } from 'clean-deep'
 import { createHash } from 'crypto'
 import { existsSync, readFileSync } from 'fs'
@@ -8,12 +9,11 @@ import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { isEmpty, omit } from 'lodash'
 import { dirname, join, resolve } from 'path'
+import { stringify } from 'yaml'
 import { $, ProcessOutput, within } from 'zx'
 import { operatorEnv } from '../operator/validators'
 import { terminal } from './debug'
 import { env } from './envalid'
-import { KubernetesObject } from '@kubernetes/client-node'
-import { stringify } from 'yaml'
 
 const packagePath = process.cwd()
 
@@ -212,9 +212,11 @@ export const getSchemaSecretsPaths = async (teams: string[]): Promise<string[]> 
   return cleanSecretPaths
 }
 
-export async function ensureManifestDirectories(): Promise<void> {
-  await ensureDirectoryWithGitkeepAsync(join(env.ENV_DIR, operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_PATH))
-  await ensureDirectoryWithGitkeepAsync(join(env.ENV_DIR, operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH))
+export async function ensureManifestDirectories(deps = { access, writeFile, mkdir }): Promise<void> {
+  const namespaceManifestsPath = join(env.ENV_DIR, operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_PATH)
+  await ensureDirectoryWithGitkeepAsync(namespaceManifestsPath, deps)
+  await ensureDirectoryWithGitkeepAsync(join(namespaceManifestsPath, 'apl-addons'), deps)
+  await ensureDirectoryWithGitkeepAsync(join(env.ENV_DIR, operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH), deps)
 }
 
 async function ensureDirectoryWithGitkeepAsync(dirPath: string, deps = { access, writeFile, mkdir }): Promise<void> {
