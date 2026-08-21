@@ -130,6 +130,10 @@ operator:
   installMaxTimeoutMs: 10000
 
   readiness:
+    # When true, the pod is Ready only after the operator completes its first apply,
+    # so `--wait` blocks for the whole install. When false, readiness is a process check
+    # and the Deployment becomes Available within ~30s.
+    gateOnReadiness: false
     # 30 minutes. If the operator has not installed the platform by then, something is off.
     progressDeadlineSeconds: 1800
 
