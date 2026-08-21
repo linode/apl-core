@@ -80,7 +80,11 @@ spec:
               command:
                 - /bin/sh
                 - -c
+                {{- if .Values.operator.readiness.gateOnReadiness }}
                 - "test -f /tmp/ready"
+                {{- else }}
+                - "pgrep -f 'apl-operator' > /dev/null"
+                {{- end }}
             initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 3
