@@ -190,10 +190,6 @@ operator:
     # 30 minutes. If the operator has not installed the platform by then, something is off.
     progressDeadlineSeconds: 1800
 
-  readiness:
-    # 30 minutes. If the operator has not installed the platform by then, something is off.
-    progressDeadlineSeconds: 1800
-
 installation:
   mode: standard
   # Skip deployment of the operator

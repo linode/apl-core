@@ -9,6 +9,16 @@ readonly repo_root="$(cd "${script_dir}/.." && pwd)"
 readonly out_dir="$(mktemp -d)"
 trap 'rm -rf "${out_dir}"' EXIT
 
+# Drops the "# Source:" line, which names the chart, and trailing blank lines, which some helm
+# versions emit and others do not. Neither carries meaning once the YAML is parsed.
+normalise() {
+  local file="$1"
+  sed '/^# Source:/d' "${file}" \
+    | awk 'NF { last = NR } { line[NR] = $0 } END { for (i = 1; i <= last; i++) print line[i] }' \
+    >"${file}.tmp"
+  mv "${file}.tmp" "${file}"
+}
+
 # Each case is "<tag> <repository the Helmfile values would pass>". A released tag goes through
 # the ORCS mirror, a branch build does not, so apl-operator.gotmpl omits the repository for it.
 readonly cases=(
@@ -35,8 +45,8 @@ for case in "${cases[@]}"; do
     --show-only templates/deployment.yaml \
     2>/dev/null >"${out_dir}/argocd.yaml"
 
-  # Only the "# Source:" comment may differ — the charts have different names.
-  sed -i.bak '/^# Source:/d' "${out_dir}/install.yaml" "${out_dir}/argocd.yaml"
+  normalise "${out_dir}/install.yaml"
+  normalise "${out_dir}/argocd.yaml"
 
   if diff -u "${out_dir}/install.yaml" "${out_dir}/argocd.yaml"; then
     echo "OK: identical Deployment for tag ${tag}."
