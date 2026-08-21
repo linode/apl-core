@@ -11,7 +11,9 @@ Service helper
 {{- $name := .name }}
 {{- $serviceEnabled := kindIs "bool" .serviceEnabled | ternary .serviceEnabled true }}
 {{- $headlessServiceEnabled := kindIs "bool" .headlessServiceEnabled | ternary .headlessServiceEnabled true }}
-{{- $publishNotReadyAddresses := kindIs "bool" .publishNotReadyAddresses | ternary .publishNotReadyAddresses true }}
+{{- $publishNotReadyAddressesDefault := kindIs "bool" $ctx.Values.defaults.service.publishNotReadyAddresses | ternary $ctx.Values.defaults.service.publishNotReadyAddresses true }}
+{{- $publishNotReadyAddressesComponent := kindIs "bool" $component.service.publishNotReadyAddresses | ternary $component.service.publishNotReadyAddresses $publishNotReadyAddressesDefault }}
+{{- $publishNotReadyAddresses := kindIs "bool" .publishNotReadyAddresses | ternary .publishNotReadyAddresses $publishNotReadyAddressesComponent }}
 {{- with $ctx }}
 {{- if $serviceEnabled }}
 apiVersion: v1
