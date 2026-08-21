@@ -1,12 +1,16 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $oa := $v.apps | get "otomi-api" }}
+{{- $cm := $v.apps | get "cert-manager" }}
+{{- $dnsProvider := $v | get "dns.provider" dict }}
 
 # Simple per-app network policy configuration
 netpols:
   gitServer: {{ not ($a | get "git-server.enabled") }}
   gitea: {{ $a.gitea.networkPolicies.enabled}}
   otomiApi: {{ $oa.networkPolicies.enabled}}
+  # The linode DNS-01 solver webhook only exists when linode is the DNS provider.
+  certManagerWebhookLinode: {{ and ($cm.networkPolicies.enabled) (hasKey $dnsProvider "linode") }}
 
 ingressGatewaySelectors:
   - namespaceSelector:
