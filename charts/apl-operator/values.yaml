@@ -3,15 +3,24 @@
 # Declare variables to be passed into your templates.
 
 image:
-  # Overridden with the ORCS mirror by apl-operator.gotmpl when ORCS is on.
-  repository: docker.io/linode/apl-core
-  pullPolicy: IfNotPresent
+  # Empty derives it from otomi.useORCS + cluster.provider. Set to pin.
+  repository: ""
   # Overrides the image tag whose default is the chart appVersion.
   tag: main
 
 valuesSecretName: apl-values
 
-imagePullSecrets: []
+# Declared so the shared deployment template resolves them here too; chart/apl sets them.
+namespace: ""
+otomi:
+  version: ""
+  useORCS: false
+cluster:
+  provider: ""
+installation:
+  skipOperatorDeployment: false
+
+imagePullSecretNames: []
 nameOverride: ""
 fullnameOverride: ""
 
@@ -64,6 +73,10 @@ operator:
   gitOpTimeoutMs: 10000
   installRetries: 1000
   installMaxTimeoutMs: 10000
+
+  readiness:
+    # 30 minutes. If the operator has not installed the platform by then, something is off.
+    progressDeadlineSeconds: 1800
 
 nodeSelector: {}
 

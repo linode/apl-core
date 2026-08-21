@@ -1,17 +1,14 @@
 {{- $v := .Values }}
 {{- $o := $v.apps | get "apl-operator" }}
-{{- $version := $v.otomi.version }}
-{{- $isSemver := regexMatch "^v?[0-9]" $version }}
 image:
   {{- if $v.otomi.linodeLkeImageRepository }}
   repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
   {{- end }}
-  tag: {{ $version }}
-  pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
+  tag: {{ $v.otomi.version }}
 
 {{- with $v.otomi | get "globalPullSecret" nil }}
-imagePullSecrets:
-  - name: otomi-pullsecret-global
+imagePullSecretNames:
+  - otomi-pullsecret-global
 {{- end }}
 
 resources: {{- toYaml $o.resources.operator | nindent 2 }}

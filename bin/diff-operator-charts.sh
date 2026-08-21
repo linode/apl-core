@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # chart/apl installs the operator, then ArgoCD takes it over with charts/apl-operator. If the two
-# render different Deployments, ArgoCD restarts the pod and the install logs are lost.
-# Catches template drift only, not the values each chart is fed at runtime.
+# render different Deployments, ArgoCD restarts the pod and the install logs are lost. They share
+# one template by symlink, so this catches drift between the two values.yaml key sets.
 set -Eeuo pipefail
 
 readonly script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -17,17 +17,16 @@ helm template apl "${repo_root}/chart/apl" \
   --set cluster.name=local \
   --set cluster.provider=linode \
   --set otomi.version="${version}" \
-  --set operator.image.repository="${repository}" \
+  --set image.repository="${repository}" \
   --show-only templates/deployment.yaml \
-  >"${out_dir}/install.yaml"
+  2>/dev/null >"${out_dir}/install.yaml"
 
 helm template apl-operator "${repo_root}/charts/apl-operator" \
   --namespace apl-operator \
   --set image.tag="${version}" \
   --set image.repository="${repository}" \
-  --set image.pullPolicy=IfNotPresent \
   --show-only templates/deployment.yaml \
-  >"${out_dir}/argocd.yaml"
+  2>/dev/null >"${out_dir}/argocd.yaml"
 
 # Only the "# Source:" comment may differ — the charts have different names.
 sed -i.bak '/^# Source:/d' "${out_dir}/install.yaml" "${out_dir}/argocd.yaml"

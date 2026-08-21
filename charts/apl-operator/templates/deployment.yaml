@@ -1,8 +1,14 @@
+{{- /* Symlinked into chart/apl, so it renders in whichever chart owns it. */ -}}
+{{- $version := .Values.image.tag | default .Values.otomi.version | default .Chart.AppVersion }}
+{{- /* Mirrors the linodeLkeImageRepository derivation in snippets/derived.gotmpl. */ -}}
+{{- $useORCS := and .Values.otomi.useORCS (eq (.Values.cluster.provider | default "") "linode") }}
+{{- $repository := .Values.image.repository | default (ternary "mirror.registry.linodelke.net/docker/linode/apl-core" "docker.io/linode/apl-core" $useORCS) }}
+{{- if not .Values.installation.skipOperatorDeployment }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "apl-operator.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
   labels:
     {{- include "apl-operator.labels" . | nindent 4 }}
 {{- with .Values.deploymentAnnotations }}
@@ -12,7 +18,7 @@ metadata:
 spec:
   replicas: {{ .Values.scale.replicas | default 1 }}
   # The rollout stays Progressing until the operator is ready, which is longer than the 600s default.
-  progressDeadlineSeconds: 1800
+  progressDeadlineSeconds: {{ .Values.operator.readiness.progressDeadlineSeconds }}
   selector:
     matchLabels:
       {{- include "apl-operator.selectorLabels" . | nindent 6 }}
@@ -32,19 +38,21 @@ spec:
         nameservers:
           - 8.8.8.8
           - 8.8.4.4
-      {{- with .Values.imagePullSecrets }}
+      {{- with .Values.imagePullSecretNames }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{- range . }}
+        - name: {{ . }}
+        {{- end }}
       {{- end }}
       serviceAccountName: {{ include "apl-operator.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: apl-operator
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ $repository }}:{{ $version }}"
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v?[0-9]" $version) }}
           workingDir: /home/app/stack
           {{- with .Values.command }}
           command:
@@ -135,3 +143,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}
