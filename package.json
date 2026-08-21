@@ -50,7 +50,7 @@
     "@eslint/compat": "^2.1.0",
     "@jest/types": "30.4.1",
     "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/git": "^11.0.1",
     "@types/async-retry": "1.4.9",
     "@types/debug": "4.1.13",
     "@types/express": "5.0.6",
