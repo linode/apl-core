@@ -6,12 +6,12 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/name: controller
     app.kubernetes.io/part-of: tekton-pipelines
-    app.kubernetes.io/version: v1.12.0
+    app.kubernetes.io/version: v1.14.0
       {{- with .Values.controller.deployment.labels }}
         {{- toYaml . | nindent 4 }}
       {{- end}}
-    pipeline.tekton.dev/release: v1.12.0
-    version: v1.12.0
+    pipeline.tekton.dev/release: v1.14.0
+    version: v1.14.0
   name: tekton-pipelines-controller
 spec:
   replicas: 1
@@ -34,12 +34,12 @@ spec:
         app.kubernetes.io/instance: default
         app.kubernetes.io/name: controller
         app.kubernetes.io/part-of: tekton-pipelines
-        app.kubernetes.io/version: v1.12.0
+        app.kubernetes.io/version: v1.14.0
           {{- with .Values.controller.pod.labels }}
             {{- toYaml . | nindent 8 }}
           {{- end}}
-        pipeline.tekton.dev/release: v1.12.0
-        version: v1.12.0
+        pipeline.tekton.dev/release: v1.14.0
+        version: v1.14.0
     spec:
       affinity:
           {{- with .Values.controller.affinity }}
@@ -142,6 +142,10 @@ spec:
         - mountPath: /etc/config-registry-cert
           name: config-registry-cert
         image: {{ .Values.controller.deployment.image }}
+      imagePullSecrets:
+          {{- with .Values.controller.imagePullSecrets }}
+            {{- toYaml . | nindent 6 }}
+          {{- end }}
       nodeSelector:
           {{- with .Values.controller.nodeSelector }}
             {{- toYaml . |  nindent 8 }}
