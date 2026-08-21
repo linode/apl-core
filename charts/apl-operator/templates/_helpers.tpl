@@ -33,11 +33,7 @@ Create chart name and version as used by the chart label.
 {{/*
 Common labels
 */}}
-{{/*
-Deliberately free of helm.sh/chart and app.kubernetes.io/version: chart/apl renders this
-same Deployment during install, and those two labels can never agree across two charts with
-different names and versions. Any difference keeps ArgoCD permanently OutOfSync.
-*/}}
+{{/* No helm.sh/chart or version label: they cannot match chart/apl, which renders the same objects. */}}
 {{- define "apl-operator.labels" -}}
 {{ include "apl-operator.selectorLabels" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}

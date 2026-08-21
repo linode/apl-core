@@ -71,8 +71,7 @@ async function main(): Promise<void> {
     // Phase 1: Run installation with retry until success
     const installer = new Installer(aplOps)
 
-    // Nothing else writes the heartbeat until the reconcile loop starts, and installs
-    // run far longer than the liveness probe tolerates.
+    // Installs run far longer than the liveness probe tolerates without a beat.
     const heartbeat = startHeartbeat()
     try {
       const { installationMode, isInstalled } = await retryInstallStep(() => installer.getInstallationState())

@@ -3,13 +3,12 @@
 # Declare variables to be passed into your templates.
 
 image:
-  # Overridden with the ORCS mirror by values/apl-operator/apl-operator.gotmpl when ORCS is on.
+  # Overridden with the ORCS mirror by apl-operator.gotmpl when ORCS is on.
   repository: docker.io/linode/apl-core
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: main
 
-# The install-time chart mounts the values it was given here; absent once ArgoCD owns the release.
 valuesSecretName: apl-values
 
 imagePullSecrets: []
@@ -26,7 +25,7 @@ podAnnotations: {}
 
 deploymentAnnotations: {}
 
-# Keep in sync with chart/apl/templates/deployment.yaml — see npm run lint:operator-charts.
+# Keep in sync with chart/apl; checked by npm run lint:operator-charts.
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 999
@@ -44,9 +43,7 @@ securityContext:
   runAsNonRoot: true
   runAsUser: 1001
 
-# Mirrors apps.apl-operator.resources.operator in helmfile.d/snippets/defaults.yaml, which is what
-# values/apl-operator/apl-operator.gotmpl passes in. Kept here so the chart renders the same
-# Deployment on its own as it does through Helmfile.
+# Mirrors apps.apl-operator.resources.operator in snippets/defaults.yaml.
 resources:
   limits:
     cpu: "1"
@@ -80,13 +77,6 @@ commandArgs: []
 
 env: {}
 
-
-
-kms: {}
-# example:
-#  sops:
-#    age:
-#      privateKey: "AGE-SECRET-KEY-EXAMPLExxxxxxxxxxxxxxxxxxxxxxxx"
 
 
 scale:

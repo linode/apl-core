@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
-# APL installs the operator twice: chart/apl does it with `helm install`, then ArgoCD takes over
-# with charts/apl-operator. If the two render different Deployments, ArgoCD rolls the pod on its
-# first sync and the install logs are lost. This renders both and fails on any difference.
-#
-# Scope: structural drift, which is the failure mode that has actually bitten. It does not prove
-# the values each chart receives at runtime agree — apl-operator.gotmpl derives some of those from
-# the platform values, which are not available here.
+# chart/apl installs the operator, then ArgoCD takes it over with charts/apl-operator. If the two
+# render different Deployments, ArgoCD restarts the pod and the install logs are lost.
+# Catches template drift only, not the values each chart is fed at runtime.
 set -Eeuo pipefail
 
 readonly script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

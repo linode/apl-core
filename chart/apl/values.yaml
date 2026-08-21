@@ -119,8 +119,7 @@ serviceAccount:
   name: "apl-operator"
   annotations: {}
 
-# Fixed, not release-name derived: charts/apl-operator mounts the same secret by name once
-# ArgoCD owns the release, and it cannot know the install-time release name.
+# Fixed, not release-name derived: charts/apl-operator mounts it by the same name.
 valuesSecretName: apl-values
 
 ## APL Operator configuration
@@ -138,8 +137,7 @@ operator:
     progressDeadlineSeconds: 1800
 
   image:
-    # Empty derives the repository from otomi.useORCS + cluster.provider, matching what
-    # values/apl-operator/apl-operator.gotmpl feeds the ArgoCD-managed release. Set to pin it.
+    # Empty derives it from otomi.useORCS + cluster.provider. Set to pin.
     repository: ""
 
 installation:

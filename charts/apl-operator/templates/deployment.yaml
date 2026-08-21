@@ -27,6 +27,11 @@ spec:
       labels:
         {{- include "apl-operator.selectorLabels" . | nindent 8 }}
     spec:
+      # Appended to the cluster resolvers, as a fallback while CoreDNS starts.
+      dnsConfig:
+        nameservers:
+          - 8.8.8.8
+          - 8.8.4.4
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -66,10 +71,6 @@ spec:
               value: {{ .Values.operator.installRetries | quote }}
             - name: INSTALL_MAX_TIMEOUT_MS
               value: {{ .Values.operator.installMaxTimeoutMs | quote }}
-          envFrom:
-            - secretRef:
-                name: apl-sops-secrets
-                optional: true
           livenessProbe:
             exec:
               command:
@@ -107,7 +108,7 @@ spec:
       volumes:
         - name: apl-values
           emptyDir: {}
-        # Only present during install; the operator reads its config from Git afterwards.
+        # Optional: only exists while chart/apl owns the release.
         - name: values-secret
           secret:
             secretName: {{ .Values.valuesSecretName }}

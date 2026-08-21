@@ -1,12 +1,8 @@
-{{- /*
-Must render identically to charts/apl-operator/templates/deployment.yaml, which ArgoCD applies
-once the operator hands over. Any difference here is a pod restart that discards the install
-logs. Verified by `npm run lint:operator-charts`.
-*/ -}}
+{{- /* Must render identically to charts/apl-operator; checked by npm run lint:operator-charts. */ -}}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
 {{- $skipDeployment := .Values.installation.skipOperatorDeployment }}
 {{- $readiness := .Values.operator.readiness }}
-{{- /* Mirrors the linodeLkeImageRepository derivation in helmfile.d/snippets/derived.gotmpl. */ -}}
+{{- /* Mirrors the linodeLkeImageRepository derivation in snippets/derived.gotmpl. */ -}}
 {{- $useORCS := and .Values.otomi.useORCS (eq (.Values.cluster.provider | default "") "linode") }}
 {{- $defaultRepo := ternary "mirror.registry.linodelke.net/docker/linode/apl-core" "docker.io/linode/apl-core" $useORCS }}
 {{- $repository := .Values.operator.image.repository | default $defaultRepo }}
@@ -36,6 +32,11 @@ spec:
       labels:
         {{- include "apl-operator.selectorLabels" . | nindent 8 }}
     spec:
+      # Appended to the cluster resolvers, as a fallback while CoreDNS starts.
+      dnsConfig:
+        nameservers:
+          - 8.8.8.8
+          - 8.8.4.4
       {{- if hasKey .Values "imagePullSecretNames" }}
       imagePullSecrets:
         {{- range .Values.imagePullSecretNames }}
@@ -80,10 +81,6 @@ spec:
               value: {{ .Values.operator.installRetries | quote }}
             - name: INSTALL_MAX_TIMEOUT_MS
               value: {{ .Values.operator.installMaxTimeoutMs | quote }}
-          envFrom:
-            - secretRef:
-                name: apl-sops-secrets
-                optional: true
           livenessProbe:
             exec:
               command:
@@ -126,7 +123,7 @@ spec:
       volumes:
         - name: apl-values
           emptyDir: {}
-        # Only present during install; the operator reads its config from Git afterwards.
+        # Optional: only exists while chart/apl owns the release.
         - name: values-secret
           secret:
             secretName: {{ .Values.valuesSecretName }}

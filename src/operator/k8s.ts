@@ -42,10 +42,8 @@ export function updateHeartbeatFile(filePath: string = HEARTBEAT_FILE): void {
 }
 
 /**
- * Keeps the heartbeat fresh during installation, which runs before the reconcile loop
- * exists and so has nothing else writing the marker. Stop it once the loop starts:
- * from there updateApplyState() drives the heartbeat, so a wedged reconcile goes stale
- * and the liveness probe restarts the pod. A ticker left running would mask that.
+ * Covers installation, which runs before the reconcile loop exists. Clear it once the loop
+ * starts, or a wedged reconcile keeps beating instead of failing the liveness probe.
  */
 export function startHeartbeat(intervalMs = 60_000, filePath: string = HEARTBEAT_FILE): NodeJS.Timeout {
   updateHeartbeatFile(filePath)
