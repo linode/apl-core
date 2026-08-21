@@ -36,7 +36,7 @@ spec:
             pathType: {{ default "Prefix" $.Values.ingress.pathType }}
             backend:
               service:
-                name: {{ $fullName }}-http
+                name: {{ include "gitea.service.http.name" $ }}
                 port:
                   number: {{ $httpPort }}
           {{- else }}
@@ -44,7 +44,7 @@ spec:
             pathType: {{ .pathType | default "Prefix" }}
             backend:
               service:
-                name: {{ $fullName }}-http
+                name: {{ include "gitea.service.http.name" $ }}
                 port:
                   number: {{ $httpPort }}
           {{- end }}
@@ -54,7 +54,7 @@ spec:
             pathType: "Prefix"
             backend:
               service:
-                name: {{ $fullName }}-http
+                name: {{ include "gitea.service.http.name" $ }}
                 port:
                   number: {{ $httpPort }}
           {{- end }}

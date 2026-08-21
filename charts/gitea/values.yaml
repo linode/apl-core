@@ -208,11 +208,94 @@ route:
     caCertificate:
     destinationCACertificate:
 
+## @section Gateway API
+## See docs/gateway-api.md for full guidance.
+gatewayAPI:
+  ## @param gatewayAPI.enabled Enable deployment of Gateway API resources
+  enabled: false
+
+  core:
+    ## @param gatewayAPI.core.backendTLSPolicy.enabled Render a BackendTLSPolicy resource for encrypted backend traffic
+    ## @param gatewayAPI.core.backendTLSPolicy.annotations Annotations applied to the BackendTLSPolicy
+    ## @param gatewayAPI.core.backendTLSPolicy.labels Additional labels applied to the BackendTLSPolicy
+    ## @param gatewayAPI.core.backendTLSPolicy.targetRefs Target references for the BackendTLSPolicy. Defaults to the HTTP service.
+    ## @param gatewayAPI.core.backendTLSPolicy.validation Validation configuration (required when enabled). See `docs/gateway-api.md`.
+    ## @extra gatewayAPI.core.backendTLSPolicy.validation.caCertificateRefs CA certificate references for the BackendTLSPolicy validation. See `docs/gateway-api.md`.
+    ## @extra gatewayAPI.core.backendTLSPolicy.validation.hostname Hostname for the BackendTLSPolicy validation. Must be the Common Name (CN) or a Subject Alternative Name (SAN) of the gitea server certificate. See `docs/gateway-api.md`.
+    backendTLSPolicy:
+      enabled: false
+      annotations: {}
+      labels: {}
+      targetRefs: []
+      validation: {}
+      #  caCertificateRefs:
+      #    - name: gitea-ca
+      #      group: ""
+      #      kind: ConfigMap
+      #  hostname: gitea-http
+
+    ## @param gatewayAPI.core.httpRoute.enabled Render an HTTPRoute resource
+    ## @param gatewayAPI.core.httpRoute.annotations Annotations applied to the HTTPRoute
+    ## @param gatewayAPI.core.httpRoute.labels Additional labels applied to the HTTPRoute
+    ## @param gatewayAPI.core.httpRoute.tls When true, treat the upstream Gateway as terminating TLS so `ROOT_URL` uses `https`.
+    ## @param gatewayAPI.core.httpRoute.parentRefs Parent gateway references (required when enabled).
+    ## @param gatewayAPI.core.httpRoute.hostnames List of hostnames for the HTTPRoute.
+    ## @param gatewayAPI.core.httpRoute.rules Custom routing rules. Defaults to a PathPrefix `/` rule targeting the HTTP service.
+    httpRoute:
+      enabled: false
+      annotations: {}
+      labels: {}
+      tls: false
+      parentRefs: []
+      # - group: gateway.networking.k8s.io
+      #   kind: Gateway
+      #   name: shared-gateway
+      #   namespace: gateway-system
+      #   sectionName: http
+      hostnames: []
+      # - git.example.com
+      rules: []
+
+
+    ## @param gatewayAPI.core.tcpRoute.enabled Render a TCPRoute resource (typically for SSH)
+    ## @param gatewayAPI.core.tcpRoute.annotations Annotations applied to the TCPRoute
+    ## @param gatewayAPI.core.tcpRoute.labels Additional labels applied to the TCPRoute
+    ## @param gatewayAPI.core.tcpRoute.parentRefs Parent gateway references (required when enabled).
+    ## @param gatewayAPI.core.tcpRoute.rules Custom routing rules. Defaults to a rule targeting the SSH service.
+    tcpRoute:
+      enabled: false
+      annotations: {}
+      labels: {}
+      parentRefs: []
+      # - group: gateway.networking.k8s.io
+      #   kind: Gateway
+      #   name: shared-gateway
+      #   namespace: gateway-system
+      #   sectionName: ssh
+      rules: []
+
+
+  ## NGINX Gateway Fabric specific resources. Only relevant when the upstream
+  ## Gateway is backed by NGINX Gateway Fabric (nginx.org). Other implementations
+  ## (Envoy Gateway, Cilium, ...) do not impose a default request body size limit.
+  nginx:
+    ## @param gatewayAPI.nginx.clientSettingsPolicies.enabled Render a ClientSettingsPolicy (NGINX Gateway Fabric) to raise the client request body limit
+    ## @param gatewayAPI.nginx.clientSettingsPolicies.annotations Annotations applied to the ClientSettingsPolicy
+    ## @param gatewayAPI.nginx.clientSettingsPolicies.labels Additional labels applied to the ClientSettingsPolicy
+    ## @param gatewayAPI.nginx.clientSettingsPolicies.targetRef Target reference for the ClientSettingsPolicy. Defaults to the chart's HTTPRoute.
+    ## @param gatewayAPI.nginx.clientSettingsPolicies.body Client body settings (required when enabled), e.g. `maxSize`. See `docs/gateway-api.md`.
+    clientSettingsPolicies:
+      enabled: false
+      annotations: {}
+      labels: {}
+      targetRef: {}
+      body: {}
+      #   maxSize: 100m
+
 ## @section deployment
 #
 ## @param resources Kubernetes resources
-resources:
-  {}
+resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -253,10 +336,9 @@ priorityClassName: ""
 ## @param deployment.labels Labels for the deployment
 ## @param deployment.annotations Annotations for the Gitea deployment to be created
 deployment:
-  env:
-    []
-    # - name: VARIABLE
-    #   value: my-value
+  env: []
+  # - name: VARIABLE
+  #   value: my-value
   terminationGracePeriodSeconds: 60
   labels: {}
   annotations: {}
@@ -423,8 +505,7 @@ gitea:
       tlsConfig: {}
 
   ## @param gitea.ldap LDAP configuration
-  ldap:
-    []
+  ldap: []
     # - name: "LDAP 1"
     #  existingSecret:
     #  securityProtocol:
@@ -441,8 +522,7 @@ gitea:
 
   # Either specify inline `key` and `secret` or refer to them via `existingSecret`
   ## @param gitea.oauth OAuth configuration
-  oauth:
-    []
+  oauth: []
     # - name: 'OAuth 1'
     #   provider:
     #   key:
@@ -659,9 +739,9 @@ valkey:
       repository: bitnamilegacy/redis-exporter
 
   primary:
-  ## @param valkey.primary.persistence.enabled Enable persistence on Valkey replicas nodes using Persistent Volume Claims.
-  ## @param valkey.primary.persistence.storageClass Persistent Volume storage class.
-  ## @param valkey.primary.persistence.size Persistent Volume size.
+    ## @param valkey.primary.persistence.enabled Enable persistence on Valkey replicas nodes using Persistent Volume Claims.
+    ## @param valkey.primary.persistence.storageClass Persistent Volume storage class.
+    ## @param valkey.primary.persistence.size Persistent Volume size.
     persistence:
       enabled: true
       storageClass: ""

@@ -1,22 +1,32 @@
 annotations:
   artifacthub.io/changes: |
+    - kind: added
+      description: add Gateway API support (#1073)
     - kind: changed
-      description: update lockfiles (#1079)
+      description: update alpine/helm docker tag to v3.21.3 (#1096)
     - kind: changed
-      description: upgrade to 1.26 and replace environment_to_ini_call with gitea config edit-ini (#1070)
+      description: update to 1.27.0 (#1095)
     - kind: changed
-      description: update lockfiles (#1075)
+      description: update workflow dependencies (minor & patch) (#1094)
     - kind: changed
-      description: update commitlint/commitlint docker tag to v20.5.3 (#1074)
+      description: update gitea version to 1.26.4 (#1093)
     - kind: changed
-      description: update workflow dependencies (minor & patch) (#1072)
+      description: update workflow dependencies (minor & patch) (#1092)
     - kind: changed
-      description: update dependency go-gitea/gitea to v1.26.1 (#1071)
+      description: update dependency helm-unittest/helm-unittest to v1.1.1 (#1090)
+    - kind: changed
+      description: update lockfiles (#1087)
+    - kind: changed
+      description: update dependency go-gitea/gitea to v1.26.2 (#1084)
+    - kind: changed
+      description: update lockfiles (#1082)
+    - kind: changed
+      description: update workflow dependencies (minor & patch) (#1080)
   artifacthub.io/links: |
     - name: support
       url: https://gitea.com/gitea/helm-gitea/issues
 apiVersion: v2
-appVersion: 1.26.2
+appVersion: 1.27.0
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
@@ -56,4 +66,4 @@ sources:
 - https://github.com/go-gitea/gitea
 - https://docker.gitea.com/gitea
 type: application
-version: 12.6.0
+version: 12.7.0
