@@ -104,6 +104,7 @@ configs:
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
   cm:
     admin.enabled: "true"
+    application.namespaces: apl-addons
     application.instanceLabelKey: app.kubernetes.io/instance
     application.resourceTrackingMethod: annotation
     ga.anonymizeusers: "false"
@@ -229,6 +230,7 @@ configs:
     extra: {}
   params:
     server.insecure: true # nginx terminates tls
+    application.namespaces: apl-addons
     # -- Number of application status processors
     controller.status.processors: {{ $a.controllerStatusProcessors }}
     # -- Number of application operation processors
