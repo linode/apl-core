@@ -26,6 +26,7 @@ This log lists the architectural decisions for apl-core.
 - [ADR-2026-06-25](2026-06-25-manifests-directory.md) - Manifests directory in the values repo
 - [ADR-2026-08-04](2026-08-04-restart-platform-auth-pods-after-oauth2-proxy-healthy.md) - Restart platform-auth pods once oauth2-proxy is healthy
 - [ADR-2026-08-11](2026-08-11-operator-readiness-after-first-apply.md) - Operator readiness signals the first completed apply
+- [ADR-2026-08-19](2026-08-19-apl-addons-argocd-project.md) - apl-addons ArgoCD project for platform-admin addon deployments
 
 <!-- adrlogstop -->
 
