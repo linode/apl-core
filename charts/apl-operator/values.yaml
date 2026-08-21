@@ -3,10 +3,14 @@
 # Declare variables to be passed into your templates.
 
 image:
+  # Overridden with the ORCS mirror by values/apl-operator/apl-operator.gotmpl when ORCS is on.
   repository: docker.io/linode/apl-core
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: main
+
+# The install-time chart mounts the values it was given here; absent once ArgoCD owns the release.
+valuesSecretName: apl-values
 
 imagePullSecrets: []
 nameOverride: ""
@@ -22,13 +26,17 @@ podAnnotations: {}
 
 deploymentAnnotations: {}
 
+# Keep in sync with chart/apl/templates/deployment.yaml — see npm run lint:operator-charts.
 podSecurityContext:
   runAsNonRoot: true
-  runAsUser: 1001
-  runAsGroup: 1001
-  fsGroup: 2000
+  runAsUser: 999
+  runAsGroup: 999
+  fsGroup: 3000
+  seccompProfile:
+    type: RuntimeDefault
 
 securityContext:
+  allowPrivilegeEscalation: false
   capabilities:
     drop:
     - ALL
@@ -36,17 +44,16 @@ securityContext:
   runAsNonRoot: true
   runAsUser: 1001
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+# Mirrors apps.apl-operator.resources.operator in helmfile.d/snippets/defaults.yaml, which is what
+# values/apl-operator/apl-operator.gotmpl passes in. Kept here so the chart renders the same
+# Deployment on its own as it does through Helmfile.
+resources:
+  limits:
+    cpu: "1"
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 128Mi
 
 
 ## APL Operator configuration
@@ -55,7 +62,7 @@ operator:
   gitOrg: "otomi"
   # Git repository name (will be configured during installation)
   gitRepo: "values"
-  pollIntervalMs: 15000
+  pollIntervalMs: 30000
   reconcileIntervalMs: 300000
   gitOpTimeoutMs: 10000
   installRetries: 1000

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "apl-operator.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "apl-operator.labels" . | nindent 4 }}
 {{- with .Values.deploymentAnnotations }}
@@ -49,8 +50,12 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
-            - name: CI
-              value: "true"
+            - name: VERBOSITY
+              value: '1'
+            - name: ENV_DIR
+              value: /home/app/stack/env
+            - name: VALUES_INPUT
+              value: /secret/values.yaml
             - name: POLL_INTERVAL_MS
               value: {{ .Values.operator.pollIntervalMs | quote }}
             - name: RECONCILE_INTERVAL_MS
@@ -90,6 +95,8 @@ spec:
           volumeMounts:
             - name: apl-values
               mountPath: /home/app/stack/env
+            - name: values-secret
+              mountPath: /secret
             - name: tmp
               mountPath: /tmp
             - name: cache
@@ -100,6 +107,11 @@ spec:
       volumes:
         - name: apl-values
           emptyDir: {}
+        # Only present during install; the operator reads its config from Git afterwards.
+        - name: values-secret
+          secret:
+            secretName: {{ .Values.valuesSecretName }}
+            optional: true
         - name: tmp
           emptyDir: {}
         - name: cache

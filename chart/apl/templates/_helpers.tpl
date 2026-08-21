@@ -27,12 +27,13 @@ Create chart name and version as used by the chart label.
 {{/*
 Common labels
 */}}
+{{/*
+Deliberately free of helm.sh/chart and app.kubernetes.io/version: charts/apl-operator renders
+the same Deployment once ArgoCD takes over, and those two labels can never agree across two
+charts with different names and versions. Any difference keeps ArgoCD permanently OutOfSync.
+*/}}
 {{- define "apl-operator.labels" -}}
-helm.sh/chart: {{ include "apl-operator.chart" . }}
 {{ include "apl-operator.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 

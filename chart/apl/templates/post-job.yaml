@@ -64,6 +64,6 @@ spec:
       volumes:
         - name: values-secret
           secret:
-            secretName: {{ .Release.Name }}-values
+            secretName: {{ .Values.valuesSecretName }}
         - name: otomi-values
           emptyDir: {}

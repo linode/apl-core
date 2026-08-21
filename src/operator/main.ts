@@ -10,6 +10,7 @@ import { AplOperations } from './apl-operations'
 import { AplOperator, AplOperatorConfig } from './apl-operator'
 import { GitRepository } from './git-repository'
 import { Installer } from './installer'
+import { startHeartbeat } from './k8s'
 import { getErrorMessage } from './utils'
 import { operatorEnv } from './validators'
 
@@ -70,26 +71,33 @@ async function main(): Promise<void> {
     // Phase 1: Run installation with retry until success
     const installer = new Installer(aplOps)
 
-    const { installationMode, isInstalled } = await retryInstallStep(() => installer.getInstallationState())
-    const isRecoveryMode = installationMode === 'recovery'
-    if (isInstalled) {
-      d.info('Installation already completed, skipping install steps')
-    } else if (isRecoveryMode) {
-      d.info('Recovery mode enabled, checking prerequisites')
-      await installer.ensureRecoveryPrerequisites()
-      await installer.applyRecoveryManifests()
-      await installer.recoverFromGit()
-      d.info('Recovery installation completed, switching installation mode to standard')
-      await installer.resetRecoveryModeToStandard()
-      await installer.reconcileInstall()
-    } else {
-      d.info('Standard mode enabled, initializing installer')
-      await installer.initialize()
-      await installer.reconcileInstall()
-    }
+    // Nothing else writes the heartbeat until the reconcile loop starts, and installs
+    // run far longer than the liveness probe tolerates.
+    const heartbeat = startHeartbeat()
+    try {
+      const { installationMode, isInstalled } = await retryInstallStep(() => installer.getInstallationState())
+      const isRecoveryMode = installationMode === 'recovery'
+      if (isInstalled) {
+        d.info('Installation already completed, skipping install steps')
+      } else if (isRecoveryMode) {
+        d.info('Recovery mode enabled, checking prerequisites')
+        await installer.ensureRecoveryPrerequisites()
+        await installer.applyRecoveryManifests()
+        await installer.recoverFromGit()
+        d.info('Recovery installation completed, switching installation mode to standard')
+        await installer.resetRecoveryModeToStandard()
+        await installer.reconcileInstall()
+      } else {
+        d.info('Standard mode enabled, initializing installer')
+        await installer.initialize()
+        await installer.reconcileInstall()
+      }
 
-    // Set up SOPS environment if applicable (no-op when SealedSecrets + ESO is in use)
-    await installer.setEnvAndCreateSecrets()
+      // Set up SOPS environment if applicable (no-op when SealedSecrets + ESO is in use)
+      await installer.setEnvAndCreateSecrets()
+    } finally {
+      clearInterval(heartbeat)
+    }
 
     // Phase 2: Set environment variables and start operator for GitOps operations
     const config = await loadConfig(aplOps)

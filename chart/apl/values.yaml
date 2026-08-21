@@ -119,6 +119,10 @@ serviceAccount:
   name: "apl-operator"
   annotations: {}
 
+# Fixed, not release-name derived: charts/apl-operator mounts the same secret by name once
+# ArgoCD owns the release, and it cannot know the install-time release name.
+valuesSecretName: apl-values
+
 ## APL Operator configuration
 operator:
   # Polling interval for git changes (milliseconds)
@@ -134,7 +138,9 @@ operator:
     progressDeadlineSeconds: 1800
 
   image:
-    repository: "mirror.registry.linodelke.net/docker/linode/apl-core"
+    # Empty derives the repository from otomi.useORCS + cluster.provider, matching what
+    # values/apl-operator/apl-operator.gotmpl feeds the ArgoCD-managed release. Set to pin it.
+    repository: ""
 
 installation:
   mode: standard

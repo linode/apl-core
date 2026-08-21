@@ -1,61 +1,67 @@
-{{- $kms := .Values.kms | default dict }}
+{{- /*
+Must render identically to charts/apl-operator/templates/deployment.yaml, which ArgoCD applies
+once the operator hands over. Any difference here is a pod restart that discards the install
+logs. Verified by `npm run lint:operator-charts`.
+*/ -}}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
 {{- $skipDeployment := .Values.installation.skipOperatorDeployment }}
 {{- $readiness := .Values.operator.readiness }}
+{{- /* Mirrors the linodeLkeImageRepository derivation in helmfile.d/snippets/derived.gotmpl. */ -}}
+{{- $useORCS := and .Values.otomi.useORCS (eq (.Values.cluster.provider | default "") "linode") }}
+{{- $defaultRepo := ternary "mirror.registry.linodelke.net/docker/linode/apl-core" "docker.io/linode/apl-core" $useORCS }}
+{{- $repository := .Values.operator.image.repository | default $defaultRepo }}
 {{- if not $skipDeployment }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "apl-operator.fullname" . }}
   namespace: apl-operator
-  labels: {{- include "apl-operator.labels" . | nindent 4 }}
+  labels:
+    {{- include "apl-operator.labels" . | nindent 4 }}
 spec:
   replicas: 1
   # The rollout stays Progressing until the operator is ready, which is longer than the 600s default.
   progressDeadlineSeconds: {{ $readiness.progressDeadlineSeconds }}
   selector:
-    matchLabels: {{- include "apl-operator.selectorLabels" . | nindent 6 }}
+    matchLabels:
+      {{- include "apl-operator.selectorLabels" . | nindent 6 }}
   strategy:
     type: Recreate
   template:
     metadata:
       {{- with .Values.podAnnotations }}
-      annotations: {{- toYaml . | nindent 8 }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
-      labels: {{- include "apl-operator.selectorLabels" . | nindent 8 }}
+      labels:
+        {{- include "apl-operator.selectorLabels" . | nindent 8 }}
     spec:
-      dnsConfig:
-          nameservers:
-            - 8.8.8.8
-            - 8.8.4.4
-      restartPolicy: Always
+      {{- if hasKey .Values "imagePullSecretNames" }}
+      imagePullSecrets:
+        {{- range .Values.imagePullSecretNames }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
       serviceAccountName: {{ include "apl-operator.serviceAccountName" . }}
       securityContext:
+        fsGroup: 3000
+        runAsGroup: 999
         runAsNonRoot: true
         runAsUser: 999
-        runAsGroup: 999
-        fsGroup: 3000
         seccompProfile:
           type: RuntimeDefault
       containers:
         - name: apl-operator
-          image: "{{ .Values.operator.image.repository }}:{{ $version }}"
-          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-                - ALL
+              - ALL
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             runAsUser: 1001
-          resources:
-            limits:
-              cpu: '2'
-              memory: '2Gi'
-            requests:
-              cpu: '1'
-              memory: '1Gi'
+          image: "{{ $repository }}:{{ $version }}"
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v?[0-9]" $version) }}
           workingDir: /home/app/stack
           env:
             - name: VERBOSITY
@@ -74,8 +80,39 @@ spec:
               value: {{ .Values.operator.installRetries | quote }}
             - name: INSTALL_MAX_TIMEOUT_MS
               value: {{ .Values.operator.installMaxTimeoutMs | quote }}
+          envFrom:
+            - secretRef:
+                name: apl-sops-secrets
+                optional: true
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test $(( $(date +%s) - $(date -r /tmp/heartbeat +%s) )) -le 900"
+            initialDelaySeconds: 180
+            periodSeconds: 60
+            failureThreshold: 3
+            timeoutSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "test -f /tmp/ready"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 128Mi
           volumeMounts:
-            - name: otomi-values
+            - name: apl-values
               mountPath: /home/app/stack/env
             - name: values-secret
               mountPath: /secret
@@ -86,26 +123,14 @@ spec:
             - name: git-config
               mountPath: /home/app/.gitconfig
               subPath: .gitconfig
-          livenessProbe:
-            exec:
-              command: ["/bin/sh", "-c", "pgrep -f 'apl-operator' > /dev/null"]
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            timeoutSeconds: 10
-            failureThreshold: 3
-          readinessProbe:
-            exec:
-              command: ["/bin/sh", "-c", "test -f /tmp/ready"]
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
       volumes:
+        - name: apl-values
+          emptyDir: {}
+        # Only present during install; the operator reads its config from Git afterwards.
         - name: values-secret
           secret:
-            secretName: {{ .Release.Name }}-values
-        - name: otomi-values
-          emptyDir: {}
+            secretName: {{ .Values.valuesSecretName }}
+            optional: true
         - name: tmp
           emptyDir: {}
         - name: cache
@@ -116,10 +141,4 @@ spec:
             items:
               - key: .gitconfig
                 path: .gitconfig
-      {{- if hasKey .Values "imagePullSecretNames" }}
-      imagePullSecrets:
-        {{- range .Values.imagePullSecretNames }}
-        - name: {{ . }}
-        {{- end }}
-      {{- end }}
 {{- end }}

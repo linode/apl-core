@@ -35,8 +35,23 @@ export const k8s = {
  * Kubernetes liveness probes check this file's age to determine if the operator
  * is still functioning — a stale or missing file will cause the probe to fail.
  */
-export function updateHeartbeatFile(): void {
-  writeFileSync('/tmp/heartbeat', '')
+export const HEARTBEAT_FILE = '/tmp/heartbeat'
+
+export function updateHeartbeatFile(filePath: string = HEARTBEAT_FILE): void {
+  writeFileSync(filePath, '')
+}
+
+/**
+ * Keeps the heartbeat fresh during installation, which runs before the reconcile loop
+ * exists and so has nothing else writing the marker. Stop it once the loop starts:
+ * from there updateApplyState() drives the heartbeat, so a wedged reconcile goes stale
+ * and the liveness probe restarts the pod. A ticker left running would mask that.
+ */
+export function startHeartbeat(intervalMs = 60_000, filePath: string = HEARTBEAT_FILE): NodeJS.Timeout {
+  updateHeartbeatFile(filePath)
+  const timer = setInterval(() => updateHeartbeatFile(filePath), intervalMs)
+  timer.unref()
+  return timer
 }
 
 export const READINESS_FILE = '/tmp/ready'
