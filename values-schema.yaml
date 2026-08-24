@@ -294,26 +294,36 @@ definitions:
     required:
       - name
       - provider
-      # domainSuffix is mandatory in practice, not optional. Several templates dereference it
-      # unconditionally -- e.g. values/kubernetes-gateways/kubernetes-gateways.gotmpl:2 -- so
-      # omitting it does not fail validation, it fails *template rendering*:
-      #
-      #   failed to render ../values/kubernetes-gateways/kubernetes-gateways.gotmpl:
-      #   executing "stringTemplate" at <$v.cluster.domainSuffix>:
-      #   map has no entry for key "domainSuffix"
-      #
-      # Because that happens inside the installer's retry loop, the install repeats the same
-      # failure indefinitely instead of reporting a missing setting. Nothing generates a value
-      # either: the "a '*.nip.io' domain will be created" comment in chart/apl/values.yaml and
-      # apps.yaml does not correspond to any code. Listing it here turns an opaque template
-      # error into an actionable validation error.
-      #
-      # Encountered on a from-scratch install following the documented custom-provider path,
-      # whose example values.yaml does not include this field.
-      #
-      # NOTE for upstream: if an automated LKE install supplies domainSuffix later in the flow
-      # than values validation, enforcing it here may need to be conditional on provider.
-      - domainSuffix
+    # For provider 'custom', domainSuffix is mandatory in practice rather than optional. Several
+    # templates dereference it unconditionally -- e.g.
+    # values/kubernetes-gateways/kubernetes-gateways.gotmpl:2 -- so omitting it does not fail
+    # validation, it fails *template rendering*:
+    #
+    #   failed to render ../values/kubernetes-gateways/kubernetes-gateways.gotmpl:
+    #   executing "stringTemplate" at <$v.cluster.domainSuffix>:
+    #   map has no entry for key "domainSuffix"
+    #
+    # Because that happens inside the installer's retry loop, the install repeats the same
+    # failure indefinitely instead of reporting a missing setting. Nothing in the repo generates a
+    # value either: the "a '*.nip.io' domain will be created" comment in chart/apl/values.yaml and
+    # apps.yaml does not correspond to any code. Requiring it here turns an opaque template error
+    # into an actionable validation error.
+    #
+    # Encountered on a from-scratch install following the documented custom-provider path, whose
+    # example values.yaml does not include this field.
+    #
+    # Scoped to provider 'custom' deliberately: the LKE install path is not exercised by this
+    # change, so it makes no claim about whether an automated LKE install supplies domainSuffix
+    # later in the flow than values validation.
+    if:
+      required:
+        - provider
+      properties:
+        provider:
+          const: custom
+    then:
+      required:
+        - domainSuffix
   containerSpecNoSec:
     properties:
       image:
