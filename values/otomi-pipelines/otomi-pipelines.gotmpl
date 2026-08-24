@@ -6,10 +6,17 @@
 kms: {{- $kms | toYaml | nindent 2 }}
 
 giteaPassword: {{ $g.adminPassword | quote }}
+{{- /* coreImageRepository is the full reference and wins; linodeLkeImageRepository appends the path. */ -}}
+{{- $repository := $v.otomi | get "coreImageRepository" nil }}
+{{- if not $repository }}
+  {{- with $v.otomi | get "linodeLkeImageRepository" nil }}
+    {{- $repository = printf "%s/docker/linode/apl-core" . }}
+  {{- end }}
+{{- end }}
 core:
   image:
-    {{- if $v.otomi.linodeLkeImageRepository }}
-    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
+    {{- with $repository }}
+    repository: "{{ . }}"
     {{- end }}
     tag: {{ $v.otomi.version }}
 cloneUnsecure: true

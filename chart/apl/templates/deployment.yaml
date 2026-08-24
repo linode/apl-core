@@ -1,5 +1,19 @@
 {{- $kms := .Values.kms | default dict }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
+{{/*
+Image reference and pull policy.
+
+otomi.coreImageRepository, when set, overrides operator.image.repository so a single value drives
+both this Deployment and the apl-operator release the platform later manages for itself.
+
+The pull policy is derived from the version unless otomi.coreImagePullPolicy names one outright.
+The regex accepts an optional leading 'v' so that '6.2.1' and 'v6.2.1' behave identically; the two
+templates that render this image previously disagreed ('^v\d' here versus '^[0-9.]+' in
+values/apl-operator/apl-operator.gotmpl), so no single tag could get IfNotPresent in both places
+and a locally built image was always re-pulled -- and failed -- in one of them.
+*/}}
+{{- $repository := .Values.otomi.coreImageRepository | default .Values.operator.image.repository }}
+{{- $pullPolicy := .Values.otomi.coreImagePullPolicy | default (ternary "IfNotPresent" "Always" (regexMatch "^v?\\d" $version)) }}
 {{- $skipDeployment := .Values.installation.skipOperatorDeployment }}
 {{- $readiness := .Values.operator.readiness }}
 {{- if not $skipDeployment }}
@@ -39,8 +53,8 @@ spec:
           type: RuntimeDefault
       containers:
         - name: apl-operator
-          image: "{{ .Values.operator.image.repository }}:{{ $version }}"
-          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }}
+          image: "{{ $repository }}:{{ $version }}"
+          imagePullPolicy: {{ $pullPolicy }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

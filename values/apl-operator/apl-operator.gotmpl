@@ -1,14 +1,31 @@
 {{- $v := .Values }}
 {{- $o := $v.apps | get "apl-operator" }}
 {{- $version := $v.otomi.version }}
-{{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $kms := $v | get "kms" dict }}
+{{- /*
+  coreImageRepository is the full reference and wins; linodeLkeImageRepository is the older host-
+  only form and keeps its appended path for compatibility with the LKE install.
+
+  The pull policy accepts an optional leading 'v' so it agrees with chart/apl/templates/deployment.
+  yaml. The two used to disagree -- '^[0-9.]+' here against '^v\d' there -- so no tag could be
+  IfNotPresent in both, and a locally built image was re-pulled in whichever one lost.
+*/ -}}
+{{- $repository := $v.otomi | get "coreImageRepository" nil }}
+{{- if not $repository }}
+  {{- with $v.otomi | get "linodeLkeImageRepository" nil }}
+    {{- $repository = printf "%s/docker/linode/apl-core" . }}
+  {{- end }}
+{{- end }}
+{{- $pullPolicy := $v.otomi | get "coreImagePullPolicy" nil }}
+{{- if not $pullPolicy }}
+  {{- $pullPolicy = ternary "IfNotPresent" "Always" (regexMatch "^v?\\d" $version) }}
+{{- end }}
 image:
-  {{- if $v.otomi.linodeLkeImageRepository }}
-  repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
+  {{- with $repository }}
+  repository: "{{ . }}"
   {{- end }}
   tag: {{ $version }}
-  pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
+  pullPolicy: {{ $pullPolicy }}
 
 {{- with $v.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:

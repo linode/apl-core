@@ -2799,6 +2799,32 @@ properties:
         default: latest
         description: 'Best pin this to a valid release version found in the repo.'
         pattern: '(v[0-9]+.[0-9]+.[0-9]+|[a-zA-Z]+[a-zA-Z0-9-])'
+      coreImageRepository:
+        type: string
+        description: >-
+          Full container image repository for the apl-core image, without a tag --
+          e.g. 'registry.example.com/apl/apl-core'. Used by the operator Deployment and by
+          otomi-pipelines. Takes precedence over linodeLkeImageRepository. Set this to run the
+          platform from a registry you control instead of the published one.
+      coreImagePullPolicy:
+        type: string
+        enum:
+          - Always
+          - IfNotPresent
+          - Never
+        description: >-
+          imagePullPolicy for the apl-core image. When unset it is derived from otomi.version:
+          a pinned version uses IfNotPresent, anything else uses Always. Set it explicitly when
+          running a locally built image that exists in no registry, otherwise an Always policy
+          makes the pod fail to pull a tag that cannot be fetched.
+      linodeLkeImageRepository:
+        type: string
+        description: >-
+          Registry host for LKE installs. The path '/docker/linode/apl-core' is appended to it.
+          Read by values/apl-operator and values/otomi-pipelines but previously absent from this
+          schema, which -- because otomi is additionalProperties:false -- made the key impossible
+          to set without failing validation. Prefer coreImageRepository, which takes the full
+          reference and appends nothing.
       useORCS:
         type: boolean
         description: Defines if the OCI Registry Cache Service (ORCS) is used to cache images from the public registry.

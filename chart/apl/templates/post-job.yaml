@@ -1,4 +1,7 @@
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
+{{- /* Same image resolution as templates/deployment.yaml -- see the comment there. */ -}}
+{{- $repository := .Values.otomi.coreImageRepository | default .Values.operator.image.repository }}
+{{- $pullPolicy := .Values.otomi.coreImagePullPolicy | default (ternary "IfNotPresent" "Always" (regexMatch "^v?\\d" $version)) }}
 
 apiVersion: batch/v1
 kind: Job
@@ -30,8 +33,8 @@ spec:
           type: RuntimeDefault
       containers:
         - name: destroy
-          image: "{{ .Values.operator.image.repository }}:{{ $version }}"
-          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }}
+          image: "{{ $repository }}:{{ $version }}"
+          imagePullPolicy: {{ $pullPolicy }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
