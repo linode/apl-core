@@ -416,6 +416,10 @@ describe('GitRepository', () => {
       password: 'newpass',
     }
 
+    beforeEach(async () => {
+      mockGit.addConfig = jest.fn()
+    })
+
     test('should update authenticatedUrl and set new git remote', async () => {
       mockGit.remote.mockResolvedValue(undefined)
 
@@ -423,6 +427,7 @@ describe('GitRepository', () => {
 
       expect(gitRepository.authenticatedUrl).toBe(newConfig.authenticatedUrl)
       expect(mockGit.remote).toHaveBeenCalledWith(['set-url', 'origin', newConfig.authenticatedUrl])
+      expect(mockGit.addConfig).toHaveBeenCalledWith('http.proactiveAuth', 'basic')
     })
 
     test('should update branch when it changes', async () => {
