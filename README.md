@@ -18,6 +18,51 @@
 
 <p align="center"><img src="https://github.com/linode/apl-core/blob/main/docs/img/apl-console.png/?raw=true" width="100%" align="center" alt="APL Console"></p>
 
+## This is a fork
+
+This is `qvest-digital/apl-core`, a fork of `linode/apl-core`. It carries fixes that are not in
+upstream, and they change how you install.
+
+**The fixes live inside the operator image, not in the chart.** They touch `src/operator/`,
+`helmfile.d/`, `values/` and `values-schema.yaml`, all of which are baked into the image by the
+`Dockerfile`. Installing the published `apl/apl` chart deploys *upstream's* image, so none of them
+take effect. To get them you must build the image from this repo and install this repo's chart.
+
+```bash
+# 1. build the operator image, from a clean context
+CTX=$(mktemp -d)
+git ls-files -z | tar --null -T - -c | tar -x -C "$CTX"
+docker build --build-arg VERSION=6.2.1-fork -t apl-core-local:v6.2.1-fork "$CTX"
+kind load docker-image apl-core-local:v6.2.1-fork --name <cluster>   # or push to your registry
+
+# 2. generate the chart schema -- REQUIRED, see below
+bin/gen-chart-schema.sh
+
+# 3. install from the local chart, not from the published repo
+helm install -f values.yaml apl ./chart/apl
+```
+
+**Step 2 is not optional.** `chart/apl/values.schema.json` is a generated artifact and is
+gitignored, exactly as upstream has it. Upstream's release pipeline regenerates it before
+`helm package`, so their users always get it inside the published chart. Installing from a source
+checkout skips that pipeline, and without the file Helm validates **nothing** — it does not warn,
+it silently accepts any values. Re-run `bin/gen-chart-schema.sh` whenever `values-schema.yaml`
+changes. It is Docker-only and needs no working host Node.
+
+Your `values.yaml` must point at the image you built:
+
+```yaml
+otomi:
+  version: v6.2.1-fork            # must equal the tag you built
+  coreImageRepository: apl-core-local
+  coreImagePullPolicy: IfNotPresent
+```
+
+`SETUP.md` in this repository documents the whole path end to end, including the cluster
+prerequisites, MetalLB, the CNI, and why each of the above is necessary.
+
+Everything below this section is upstream's documentation and describes the published chart.
+
 ## Getting started
 
 ### Step 1: Install the App Platform

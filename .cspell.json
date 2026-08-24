@@ -139,9 +139,11 @@
     "kube",
     "kubeclarity",
     "kubeconfig",
+    "kubeconform",
     "kubectl",
     "kubeflow",
     "kubelet",
+    "kubelets",
     "kubernetes",
     "millicores",
     "minikube",
@@ -163,8 +165,10 @@
     "precached",
     "precaches",
     "printf",
+    "println",
     "prio",
     "pullsecret",
+    "qvest",
     "rabbitmq",
     "rbac",
     "redkubes",
@@ -181,6 +185,7 @@
     "trivy",
     "unencrypted",
     "untrusted",
+    "unvalidated",
     "xlarge"
   ]
 }
