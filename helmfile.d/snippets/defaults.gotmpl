@@ -44,11 +44,11 @@ environments:
         gitea: {}
       databases:
         keycloak:
-          storageClass: {{ $defaultStorageClass }}
+          storageClass: {{ $defaultStorageClass | quote }}
         harbor:
-          storageClass: {{ $defaultStorageClass }}
+          storageClass: {{ $defaultStorageClass | quote }}
         gitea:
-          storageClass: {{ $defaultStorageClass }}
+          storageClass: {{ $defaultStorageClass | quote }}
       teamConfig:
       {{- range $teamName := $teamNames }}
         {{ $teamName }}:
@@ -262,4 +262,4 @@ environments:
         owner: customer
         name: apl
         k8sContext: customer-apl-admin
-        defaultStorageClass: {{ $defaultStorageClass }}
+        defaultStorageClass: {{ $defaultStorageClass | quote }}
