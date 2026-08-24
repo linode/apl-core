@@ -17,6 +17,7 @@ import {
 import { loadYaml } from '../common/utils'
 import { AplOperations } from './apl-operations'
 import { getErrorMessage } from './utils'
+import { operatorEnv } from './validators'
 
 type InstallationState = {
   installationMode: 'standard' | 'recovery'
@@ -135,6 +136,7 @@ export class Installer {
 
   public async reconcileInstall(): Promise<void> {
     let attemptNumber = 0
+    const maxAttempts = operatorEnv.INSTALL_RETRIES
     runTraceCollectionLoop().catch((error) => {
       this.d.warn('Trace collection loop failed:', getErrorMessage(error))
     })
@@ -160,6 +162,14 @@ export class Installer {
           await deletePendingHelmReleases()
         } catch (cleanupError) {
           this.d.warn('Failed to clean up pending Helm releases:', getErrorMessage(cleanupError))
+        }
+
+        // Stop retrying once INSTALL_RETRIES is exhausted, so a failure that cannot self-heal
+        // (a schema violation, a missing required setting) surfaces as a crash with the real
+        // error instead of looping forever and looking indistinguishable from a slow install.
+        if (attemptNumber >= maxAttempts) {
+          this.d.error(`Installation failed after ${attemptNumber} attempts, giving up: ${errorMessage}`)
+          throw error
         }
 
         this.d.warn(`Installation attempt ${attemptNumber} failed, retrying in 1 second...`)
