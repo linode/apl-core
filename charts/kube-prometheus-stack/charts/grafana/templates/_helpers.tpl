@@ -301,3 +301,29 @@ sensitiveKeys:
 {{- end -}}
 {{- $healthPort | quote -}}
 {{- end -}}
+
+{{/*
+Convert a Kubernetes memory quantity string to MiB (integer).
+Accepts Ti, Gi, Mi, Ki binary SI and T, G, M, K decimal SI suffixes,
+as well as plain byte values.
+*/}}
+{{- define "grafana.memoryToMiB" -}}
+{{- $mem := . | toString -}}
+{{- if hasSuffix "Ti" $mem -}}
+  {{- mulf ((trimSuffix "Ti" $mem) | float64) 1048576 | int -}}
+{{- else if hasSuffix "Gi" $mem -}}
+  {{- mulf ((trimSuffix "Gi" $mem) | float64) 1024 | int -}}
+{{- else if hasSuffix "Mi" $mem -}}
+  {{- (trimSuffix "Mi" $mem) | int -}}
+{{- else if hasSuffix "Ki" $mem -}}
+  {{- divf ((trimSuffix "Ki" $mem) | float64) 1024 | int -}}
+{{- else if hasSuffix "T" $mem -}}
+  {{- mulf ((trimSuffix "T" $mem) | float64) 953674.3164 | int -}}
+{{- else if hasSuffix "G" $mem -}}
+  {{- mulf ((trimSuffix "G" $mem) | float64) 953.6743164 | int -}}
+{{- else if hasSuffix "M" $mem -}}
+  {{- mulf ((trimSuffix "M" $mem) | float64) 0.9536743164 | int -}}
+{{- else -}}
+  {{- divf ($mem | float64) 1048576 | int -}}
+{{- end -}}
+{{- end -}}
