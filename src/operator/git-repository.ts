@@ -80,7 +80,12 @@ export class GitRepository {
     } else {
       this.d.info(`Cloning repository to ${this.repoPath}`)
       try {
-        await this.git.clone(this._config.authenticatedUrl, this.repoPath, ['-b', this.branch])
+        await this.git.clone(this._config.authenticatedUrl, this.repoPath, [
+          '-b',
+          this.branch,
+          '-c',
+          'http.proactiveAuth=basic',
+        ])
         this.d.info(`Repository cloned successfully`)
       } catch (error) {
         this.d.error('Failed to clone repository:', getErrorMessage(error))
@@ -88,6 +93,7 @@ export class GitRepository {
       }
     }
     await setIdentity(this.username, this.email, this.repoPath)
+    await this.git.addConfig('http.proactiveAuth', 'basic')
   }
 
   private async verifyAndFixOriginRemote(): Promise<void> {
