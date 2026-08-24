@@ -1,4 +1,20 @@
-FROM linode/apl-tools:v3.0.1 AS ci
+# Base image carrying the toolchain (kubectl, helm, helmfile, sops, node, ...).
+#
+# It is built from tools/Dockerfile in this same repository -- see
+# .github/workflows/otomi-tools-build-push.yaml, which publishes it as linode/apl-tools.
+# The default below keeps the published image, so nothing changes for a normal build.
+#
+# Override it to build against a toolchain image you produce yourself, which removes the
+# only build-time dependency on a Linode-published artifact:
+#
+#   docker build -t apl-tools-local:v3.0.1 ./tools
+#   docker build --build-arg TOOLS_IMAGE=apl-tools-local:v3.0.1 -t apl-core-local:<tag> .
+#
+# tools/Dockerfile itself derives only from ubuntu plus upstream release tarballs, so a
+# self-built toolchain contains no Linode-provided content.
+ARG TOOLS_IMAGE=linode/apl-tools:v3.0.1
+
+FROM ${TOOLS_IMAGE} AS ci
 
 ENV APP_HOME=/home/app/stack
 
@@ -36,7 +52,9 @@ FROM ci AS clean
 # below command removes the packages specified in devDependencies and set NODE_ENV to production
 RUN npm prune --production
 
-FROM linode/apl-tools:v3.0.1 AS prod
+# ARG declared before the first FROM goes out of scope at each stage, so re-declare it here.
+ARG TOOLS_IMAGE=linode/apl-tools:v3.0.1
+FROM ${TOOLS_IMAGE} AS prod
 ARG APPS_REVISION=''
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env
