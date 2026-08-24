@@ -3176,7 +3176,7 @@
                             }
                         },
                         "patchPVC": {
-                            "description": "Enable the PVC resize job for statefulsets. This job will be triggered when the storage size is increased and will recreate the statefulset to allow resizing of PVCs, which is not natively supported by Kubernetes.",
+                            "description": "When a component sets `*.statefulSetRecreateJob.enabled`, the pre-upgrade Job can patch PVC storage requests and recreate the StatefulSet for podManagementPolicy, serviceName, or volumeClaimTemplates count/name/size changes. It does not migrate storageClass, accessModes, selectors, or VCT labels. See the chart README section StatefulSet immutability.",
                             "type": "boolean"
                         }
                     }
