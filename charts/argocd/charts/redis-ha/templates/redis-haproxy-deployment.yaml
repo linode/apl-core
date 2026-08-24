@@ -136,8 +136,8 @@ spec:
         - name: AUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.existingSecret }}
-              name: {{ .Values.existingSecret }}
+            {{- if tpl (.Values.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}
             {{- end }}
@@ -147,8 +147,8 @@ spec:
         - name: SENTINELAUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.sentinel.existingSecret }}
-              name: {{ .Values.sentinel.existingSecret }}
+            {{- if tpl (.Values.sentinel.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.sentinel.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}-sentinel
             {{- end }}
@@ -180,6 +180,10 @@ spec:
         - name: metrics-port
           containerPort: {{ default "9101" .Values.haproxy.metrics.port }}
         {{- end }}
+        {{- range .Values.haproxy.additionalPorts }}
+        - name: {{ .name }}
+          containerPort: {{ .containerPort }}
+        {{- end }}
         resources:
 {{ toYaml .Values.haproxy.resources | indent 10 }}
         volumeMounts:
@@ -200,7 +204,7 @@ spec:
 {{- if .Values.haproxy.tls.enabled }}
       - name: pemfile
         secret:
-          secretName: {{ .Values.haproxy.tls.secretName }}
+          secretName: {{ tpl .Values.haproxy.tls.secretName . }}
 {{- end }}
       - name: config-volume
         configMap:
