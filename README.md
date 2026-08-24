@@ -58,8 +58,25 @@ otomi:
   coreImagePullPolicy: IfNotPresent
 ```
 
-`SETUP.md` in this repository documents the whole path end to end, including the cluster
-prerequisites, MetalLB, the CNI, and why each of the above is necessary.
+### Recommended: let Claude drive it
+
+For this fork the recommended way to bring up a local lab is to point Claude Code at `SETUP.md` and
+let it run:
+
+```bash
+claude --dangerously-skip-permissions
+```
+
+then ask it to work through `SETUP.md` from the top. `CLAUDE.md` in this repository gives it the
+operational rules it needs — bounded timeouts, verifying artifacts instead of exit codes, building
+from a clean context — so it reaches a working platform without rediscovering the traps.
+
+Use that mode on a disposable machine or VM. It executes commands without asking, which is the point
+here, and is not something you want pointed at a workstation you care about.
+
+`SETUP.md` documents the whole path end to end, including the cluster prerequisites, MetalLB, the
+CNI, and why each step is necessary. It is written to be followed literally, by a person or an
+agent.
 
 Everything below this section is upstream's documentation and describes the published chart.
 
