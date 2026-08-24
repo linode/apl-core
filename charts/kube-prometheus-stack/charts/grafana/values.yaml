@@ -432,6 +432,16 @@ resources: {}
 #    cpu: 100m
 #    memory: 128Mi
 
+## Configure the GOMEMLIMIT environment variable.
+## When enabled and resources.limits.memory is set, GOMEMLIMIT is injected
+## as a computed value (factor × memory limit) unless the user has already
+## defined GOMEMLIMIT via env or envValueFrom.
+goMemLimit:
+  # -- Enable automatic GOMEMLIMIT injection.
+  enabled: true
+  # -- Fraction of resources.limits.memory to use as GOMEMLIMIT (e.g. 0.9 = 90 %).
+  factor: 0.9
+
 ## Node labels for pod assignment
 ## ref: https://kubernetes.io/docs/user-guide/node-selection/
 #
