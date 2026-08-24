@@ -214,6 +214,7 @@ export class GitRepository {
       this.email = config.email
       this._config = config
       await setIdentity(this.username, this.email, this.repoPath)
+      await this.git.addConfig('http.proactiveAuth', 'basic')
       this.d.info('Git config reloaded successfully')
     } catch (error) {
       this.d.error('Failed to reload git config:', getErrorMessage(error))
