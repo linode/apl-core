@@ -3,6 +3,7 @@ import * as k8s from '../common/k8s'
 import * as utils from '../common/utils'
 import { AplOperations } from './apl-operations'
 import { Installer } from './installer'
+import { operatorEnv } from './validators'
 
 jest.mock('../common/debug', () => ({
   terminal: jest.fn().mockImplementation(() => ({
@@ -66,6 +67,10 @@ jest.mock('src/cmd/traces', () => ({
 
 jest.mock('./utils', () => ({
   getErrorMessage: jest.fn((error) => (error instanceof Error ? error.message : String(error))),
+}))
+
+jest.mock('./validators', () => ({
+  operatorEnv: { INSTALL_RETRIES: 1000 },
 }))
 
 describe('Installer', () => {
@@ -237,6 +242,37 @@ describe('Installer', () => {
           attempt: '3',
         }),
       )
+    })
+
+    test('should stop retrying once INSTALL_RETRIES is exhausted', async () => {
+      ;(k8s.getK8sConfigMap as jest.Mock).mockResolvedValue(null)
+      ;(k8s.createUpdateConfigMap as jest.Mock).mockResolvedValue(undefined)
+      const originalRetries = operatorEnv.INSTALL_RETRIES
+      ;(operatorEnv as { INSTALL_RETRIES: number }).INSTALL_RETRIES = 3
+
+      // A failure that cannot self-heal, e.g. a schema violation
+      mockAplOps.install.mockRejectedValue(new Error('Values validation FAILED'))
+
+      try {
+        const reconcilePromise = installer.reconcileInstall()
+        const rejection = expect(reconcilePromise).rejects.toThrow('Values validation FAILED')
+        await jest.advanceTimersByTimeAsync(10000)
+        await rejection
+
+        // Exactly INSTALL_RETRIES attempts, then give up rather than loop forever
+        expect(mockAplOps.install).toHaveBeenCalledTimes(3)
+        expect(k8s.createUpdateConfigMap).toHaveBeenCalledWith(
+          mockCoreApi,
+          'apl-installation-status',
+          'apl-operator',
+          expect.objectContaining({
+            status: 'failed',
+            attempt: '3',
+          }),
+        )
+      } finally {
+        ;(operatorEnv as { INSTALL_RETRIES: number }).INSTALL_RETRIES = originalRetries
+      }
     })
 
     test('should handle validateCluster failure', async () => {
