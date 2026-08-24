@@ -9,13 +9,14 @@ Service helper
 {{- $rolloutZoneName := .rolloutZoneName }}
 {{- $headlessName := .headlessName }}
 {{- $name := .name }}
+{{- $componentEnabled := kindIs "bool" $component.enabled | ternary $component.enabled true }}
 {{- $serviceEnabled := kindIs "bool" .serviceEnabled | ternary .serviceEnabled true }}
 {{- $headlessServiceEnabled := kindIs "bool" .headlessServiceEnabled | ternary .headlessServiceEnabled true }}
 {{- $publishNotReadyAddressesDefault := kindIs "bool" $ctx.Values.defaults.service.publishNotReadyAddresses | ternary $ctx.Values.defaults.service.publishNotReadyAddresses true }}
 {{- $publishNotReadyAddressesComponent := kindIs "bool" $component.service.publishNotReadyAddresses | ternary $component.service.publishNotReadyAddresses $publishNotReadyAddressesDefault }}
 {{- $publishNotReadyAddresses := kindIs "bool" .publishNotReadyAddresses | ternary .publishNotReadyAddresses $publishNotReadyAddressesComponent }}
 {{- with $ctx }}
-{{- if $serviceEnabled }}
+{{- if and $componentEnabled $serviceEnabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -80,7 +81,7 @@ spec:
     {{- toYaml . | nindent 4 }}
 {{- end }}
 {{- end }}
-{{- if $headlessServiceEnabled }}
+{{- if and $componentEnabled $headlessServiceEnabled }}
 ---
 apiVersion: v1
 kind: Service
