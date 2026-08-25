@@ -69,6 +69,50 @@ or runs in the background. State the timeout before running it. Time estimates a
 directions, so this is never waived for confidence. The image build and the cluster create both
 exceed 60s — background them.
 
+**1b. Backgrounding is not watching.** Rule 1 keeps the foreground free; it does not tell anyone
+what is happening. A backgrounded command yields exactly **one** notification, at the end — so for
+the ten minutes an image build takes, healthy and hung look identical, to you and to the human.
+
+**Pair every backgrounded step with a watcher that reports once a minute.** Always the same shape:
+print one status line, check for failure, check for success, sleep.
+
+```bash
+while true; do
+  echo "[<step>] $(<one-line status command>)"
+  <failure check> && echo "[<step>] !! <what broke>"
+  <success check> && { echo "[<step>] DONE"; break; }
+  sleep 60
+done
+```
+
+**The filter must cover failure, not just success.** A watcher that greps only for the good outcome
+stays silent through a crash loop — and silence is indistinguishable from "still working". Before
+arming one, ask what it would print if the thing died right now. If the answer is nothing, widen it.
+
+⚠ **Do not grep builds for `Error`.** `apl-api` and `apl-console` both run test suites that log
+handled errors *on the way to passing* — `errorMiddleware error Unauthorized` from the OpenAPI
+validator, a jsdom XHR stack from the console's unit tests. A broad pattern reports a perfectly good
+build as broken, once a minute, for the whole build. The three signatures that actually mean a
+`docker build` died:
+
+```
+failed to solve | did not complete successfully | npm ERR! code
+```
+
+For a platform install, watch `kubectl get cm apl-installation-status -n apl-operator`, and treat
+two things as failures beside the obvious pod states: **`attempt` climbing above 1**, the
+unbounded-retry signature `operator.installRetries` exists to bound, and the operator pod entering
+`CrashLoopBackOff` or `ImagePullBackOff`. A concrete watcher for that case is in `SETUP.md` step 8.
+
+Build success markers into the backgrounded command itself, so the watcher has something
+unambiguous to match — but keep rule 2 in mind while doing it:
+
+```bash
+docker build ... > build.log 2>&1
+echo "=== MARKER: built"        # this echo is now what sets $? -- the marker says the stage was
+                                # REACHED, never that it succeeded. Only the artifact says that.
+```
+
 **2. Never trust an exit code that passed through a pipe.** `docker build ... | tail` reports
 *tail's* status. This produced a "successful" build that had in fact failed and produced no image.
 After building anything, verify the artifact exists:

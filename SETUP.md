@@ -694,6 +694,28 @@ kubectl logs -n apl-operator -l app.kubernetes.io/name=apl-operator -f
 {"attempt":"1","installationMode":"standard","status":"completed","timestamp":"..."}
 ```
 
+`-f` on the logs is a foreground tail with no end, which is exactly what `CLAUDE.md` rule 1b says
+not to do. The concrete watcher for this step — one line a minute, covering both failure modes,
+exiting on `completed`:
+
+```bash
+while true; do
+  D=$(kubectl get cm apl-installation-status -n apl-operator -o jsonpath='{.data}' 2>/dev/null)
+  P=$(kubectl get pods -A --no-headers 2>/dev/null | awk '$4=="Running"||$4=="Completed"' | wc -l)
+  T=$(kubectl get pods -A --no-headers 2>/dev/null | wc -l)
+  OP=$(kubectl get pods -n apl-operator --no-headers 2>/dev/null | awk '{print $2" "$3" restarts="$4}')
+  echo "[install] ${D:-no status configmap yet} | pods ok ${P}/${T} | operator: ${OP:-absent}"
+  echo "$OP" | grep -qE 'CrashLoopBackOff|ImagePullBackOff|Error' && echo "[install] !! OPERATOR UNHEALTHY"
+  echo "$D" | grep -qE '"attempt":"([2-9]|[1-9][0-9])"' && echo "[install] !! ATTEMPT CLIMBING"
+  echo "$D" | grep -q '"status":"completed"' && { echo "[install] COMPLETED"; break; }
+  sleep 60
+done
+```
+
+The pod ratio is the useful progress signal: it climbs steadily on a healthy install (18 → 23 → 30 →
+41 → …) and stalls at a fixed number when something is wedged. Neither figure is a gate on its own —
+step 8's Argo CD checks below are.
+
 **Watch `attempt` as well as `status`.** A climbing `attempt` is the signature of the unbounded
 retry loop; against a fixed operator it should stay at 1.
 

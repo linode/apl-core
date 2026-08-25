@@ -29,7 +29,16 @@ spec:
         {{- include "turnstone.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: migrate
     spec:
-      serviceAccountName: {{ include "turnstone.serviceAccountName" . }}
+      # Deliberately NOT turnstone.serviceAccountName, and not a mistake.
+      # Argo CD renders this chart itself and has no notion of install vs
+      # upgrade, so it maps BOTH hooks above: post-install becomes PostSync
+      # and pre-upgrade becomes PreSync — and PreSync fires on a brand-new
+      # install too. The ServiceAccount comes from the ordinary sync, which
+      # cannot start until PreSync finishes, so requesting it here deadlocks
+      # the first install outright: "serviceaccount turnstone not found",
+      # forever. This Job only runs a migration against PostgreSQL over the
+      # env below and makes no Kubernetes API calls, so the default account
+      # is sufficient. See TURNSTONE.md.
       restartPolicy: OnFailure
       {{- with .Values.migrate.nodeSelector }}
       nodeSelector:
