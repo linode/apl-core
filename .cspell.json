@@ -137,6 +137,7 @@
     "kpack",
     "ksvc",
     "kube",
+    "kubeadm",
     "kubeclarity",
     "kubeconfig",
     "kubeconform",

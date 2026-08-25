@@ -19,3 +19,5 @@ otomi.cpuprofile
 /.idea/
 tmp
 **values-repo.yaml
+# Local lab credential dump written by SETUP.md step 9. Never commit this.
+passwords.txt
