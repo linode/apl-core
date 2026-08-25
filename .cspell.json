@@ -108,9 +108,11 @@
     "blackbox",
     "bootstrapper",
     "calico",
+    "clientid",
     "crds",
     "creds",
     "criticals",
+    "demodevs",
     "devops",
     "devs",
     "distro",
@@ -177,9 +179,11 @@
     "renamings",
     "repos",
     "runbook",
+    "scaffolder",
     "selinux",
     "semver",
     "showlogs",
+    "sslmode",
     "sysctls",
     "tekton",
     "testmode",
@@ -188,6 +192,7 @@
     "unencrypted",
     "untrusted",
     "unvalidated",
+    "vikunja",
     "xlarge"
   ]
 }
