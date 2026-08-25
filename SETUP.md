@@ -131,7 +131,8 @@ docker build -f "$VP/apl-tasks-vikunja.Dockerfile" \
              -t docker.io/linode/apl-tasks:v0.0.0-vikunja /tmp/apl-tasks
 docker images docker.io/linode/apl-tasks:v0.0.0-vikunja
 #     This build has two ways to exit 0 having produced nothing usable, so check the artifact.
-#     Expected: envalid reporting VIKUNJA_URL and VIKUNJA_OPERATOR_NAMESPACE as missing.
+#     Expected: envalid reporting VIKUNJA_URL, VIKUNJA_URL_PORT and VIKUNJA_OPERATOR_NAMESPACE as
+#     missing. VIKUNJA_RECONCILE_INTERVAL is NOT listed -- it has a default of 60.
 docker run --rm --entrypoint sh docker.io/linode/apl-tasks:v0.0.0-vikunja \
   -c 'node dist/src/operators/vikunja/vikunja.js'
 kind load docker-image docker.io/linode/apl-tasks:v0.0.0-vikunja --name apl
@@ -905,7 +906,11 @@ found two bugs, both now fixed in this branch — see "Two ordering bugs" at the
 Re-run these anyway: they are what caught them.
 
 ```bash
-D=$(kubectl get httproute gitea -n gitea -o jsonpath='{.spec.hostnames[0]}' | sed 's/^gitea\.//')
+# Derive the domain from Vikunja's own route. An earlier version of this file read the `gitea`
+# httproute, which does not exist on this app set -- the command errors, D is left EMPTY, and every
+# curl below then silently targets `vikunja.` with no domain.
+D=$(kubectl get httproute vikunja -n vikunja -o jsonpath='{.spec.hostnames[0]}' | sed 's/^vikunja\.//')
+[ -n "$D" ] || echo "D is empty -- nothing below will work" >&2
 
 # 1. the app itself
 kubectl get pods -n vikunja
@@ -955,8 +960,40 @@ kubectl logs -n apl-vikunja-operator deploy/apl-vikunja-operator | grep -E 'Succ
 
 Expect `Success! Vikunja setup/reconfiguration completed` and a `team-<name>` per platform team.
 A team only appears once its Keycloak group exists, and a *member* only once that user has logged
-into Vikunja at least once — the operator treats a missing user as normal and retries. So an empty
-member list straight after install is not a failure. See `VIKUNJA.md` Phase 3.
+into Vikunja at least once. So an empty member list straight after install is not a failure. See
+`VIKUNJA.md` Phase 3.
+
+**Membership converges on a timer, and that is the part to check.** Neither of the two events it
+depends on — a user joining the Keycloak group, and that user's first Vikunja login — produces a
+Kubernetes event, so the resource watches cannot see either one. `VIKUNJA_RECONCILE_INTERVAL`
+(default 60s) is what closes the gap; without it membership never appears and the operator still
+reports `Success!`. That was a real bug on this branch — `VIKUNJA.md` 3.3.
+
+```bash
+kubectl logs -n apl-vikunja-operator deploy/apl-vikunja-operator | grep 'Reconciling every'
+# expect: Reconciling every 60s -- absent means you are running an image without the timer
+
+# Prove convergence rather than assuming it. Add a team in the console, log into Vikunja once as a
+# member of it through otomi-idp, then WITHOUT touching anything wait one interval:
+kubectl logs -n apl-vikunja-operator deploy/apl-vikunja-operator --tail=20 -f | grep -m1 'Adding "'
+# expect: Adding "<user>@$D" to Vikunja team "team-<name>"
+```
+
+The member list is the check, not the log line — read it from the API as the admin, since a Vikunja
+team is only visible to its own members and looking as the wrong user shows nothing:
+
+```bash
+curl -sk -H "Authorization: Bearer $T" "https://vikunja.$D/api/v1/teams" | jq -r '.[] | "\(.id) \(.name)"'
+curl -sk -H "Authorization: Bearer $T" "https://vikunja.$D/api/v1/teams/<id>" | jq '[.members[].username]'
+```
+
+⚠ **`/api/v1/users?s=<name>` is not a usable "does this user exist" check** — it returns `null`
+regardless. Reading the database is what settles it:
+
+```bash
+kubectl exec -n vikunja vikunja-db-1 -c postgres -- \
+  psql -U postgres -d vikunja -c 'select id, username, issuer, created from users order by id;'
+```
 
 ### Browser checks ⬜ — no command covers these
 

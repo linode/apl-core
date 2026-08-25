@@ -344,9 +344,10 @@ It is only safe to switch on once you have built the patched image, below.
 
 ### 3.2 In `apl-tasks` ✅ built
 
-`vikunja-patches/apl-tasks.patch` adds `src/operators/vikunja/`, modelled on `src/operators/gitea/`:
-the same two-object watch, the same manager layout. It creates a `team-<id>` per platform team and
-reconciles membership.
+`vikunja-patches/apl-tasks.patch` adds `src/operators/vikunja/`, modelled on `src/operators/gitea/`
+for the manager layout and two-object watch, and on `src/operators/harbor/` for the reconcile timer
+that makes membership converge (see 3.3). It creates a `team-<id>` per platform team and reconciles
+membership every `VIKUNJA_RECONCILE_INTERVAL` seconds, default 60.
 
 ✅ **It builds with no credentials**, via `vikunja-patches/apl-tasks-vikunja.Dockerfile`.
 
@@ -400,8 +401,51 @@ account defaults to `apl-vikunja-admin` and not `otomi-admin`.
 
 ⚠ **A consequence to design for:** a user only exists in Vikunja after their first login, so
 membership cannot be fully reconciled when a team is created; it fills in as people sign in. A
-continuously-running operator handles this naturally, which is a further reason not to use a
-one-shot Job.
+continuously-running operator is a precondition for handling this, which is a further reason not to
+use a one-shot Job — but it is **not sufficient on its own**, and the first version of this operator
+got that wrong. See 3.3.
+
+### 3.3 Why the operator needs a timer, not just watches ⛔ found live, fixed
+
+The first version watched only its own Secret and ConfigMap, exactly as `operators/gitea/` does, and
+reconciled on those events alone. That cannot converge membership, and the reason is worth stating
+generally: **the two events membership depends on are both invisible to Kubernetes.**
+
+| the operator needs | happens in | k8s event |
+|---|---|---|
+| the user joins the Keycloak group | Keycloak | none |
+| the user logs into Vikunja for the first time | Vikunja | none |
+
+Observed on a clean lab install: a team created at 12:19 got its Vikunja team immediately, the
+Keycloak user was created and joined the group at 12:28, the user logged in at 12:28 — and
+membership never appeared, because no Secret or ConfigMap changed again. `1/1 Running`, no errors in
+the log, `Success!` as its last line. Everything needed had been in place for an hour and nothing
+would ever look again.
+
+**Neither reference operator has this problem, and they avoid it in two different ways — but note
+that neither pushes individual users.**
+
+| | membership model | what makes it converge |
+|---|---|---|
+| `operators/gitea/` | delegated to Gitea's own OIDC group→team map (`gitea-oidc.ts`: `--group-claim-name groups --group-team-map`) | the user's login, handled inside Gitea |
+| `operators/harbor/` | a *group* bound to the project (`harbor-project.ts`: `memberGroup`) | an unconditional 60s `setInterval` — **no watches at all** |
+| Vikunja (ours) | per-user push, `PUT /teams/{id}/members` | needed a timer; had none |
+
+Gitea's model is unavailable to us for the reason in `keycloak-groups.ts`: teams Vikunja creates from
+an OIDC claim are not editable through its API, so claim-driven sync and operator-managed teams are
+mutually exclusive. Harbor's group binding is unavailable too — Vikunja teams take users, not groups.
+Per-user push is therefore forced, and per-user push is exactly the model that needs a timer.
+
+So the fix follows Harbor: `VIKUNJA_RECONCILE_INTERVAL` (default **60**s) drives `setupVikunja()` on
+a `setInterval`, with a `reconciling` flag so a slow Keycloak round trip cannot overlap two runs. The
+watches are kept, but only for responsiveness when a team is added — they are not what makes the
+system correct. Harbor proves they are not even necessary: it re-reads its Secret and ConfigMap by
+polling every cycle.
+
+**The generalization: a push-based integration is only as convergent as its slowest unconditional
+retrigger.** If the state you are pushing depends on anything outside Kubernetes, event-driven alone
+is a correctness bug — and it is one that presents as a healthy pod with a success message, which is
+why it survived a full verification pass.
 
 ---
 

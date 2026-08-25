@@ -93,9 +93,23 @@ docker run --rm --entrypoint sh docker.io/linode/apl-tasks:v0.0.0-vikunja \
   -c 'ls dist/src/operators/vikunja/vikunja.js && node dist/src/operators/vikunja/vikunja.js'
 ```
 
-The expected output is the operator's `envalid` report listing `VIKUNJA_URL` and
+The expected output is the operator's `envalid` report listing `VIKUNJA_URL`, `VIKUNJA_URL_PORT` and
 `VIKUNJA_OPERATOR_NAMESPACE` as missing. That proves the module compiled, resolved every
-`@linode/*` import at runtime, and reached its own entrypoint.
+`@linode/*` import at runtime, and reached its own entrypoint. `VIKUNJA_RECONCILE_INTERVAL` is
+deliberately absent from that list — it defaults to 60, so nothing has to set it.
+
+### What the patch contains
+
+`src/operators/vikunja/` — a team-sync operator that creates a `team-<id>` per platform team and
+pushes Keycloak group membership into it. Its layout follows `src/operators/gitea/`; its reconcile
+loop follows `src/operators/harbor/`, which matters more than it sounds:
+
+**Membership cannot be event-driven.** The operator needs a user to be in the Keycloak group *and*
+to have logged into Vikunja once (`PUT /teams/{id}/members` 404s for an account that does not exist
+yet). Neither event produces anything Kubernetes can watch, so a watch-only operator reconciles at
+the wrong moments forever, reporting `Success!` each time. `VIKUNJA_RECONCILE_INTERVAL` (default 60s)
+plus a `reconciling` overlap guard is what makes it converge; the Secret and ConfigMap watches are
+retained only for fast reaction when a team is added. Full account in `VIKUNJA.md` 3.3.
 
 `npm run operator:vikunja` is unchanged by this build (`node dist/src/operators/vikunja/vikunja.js`),
 so `charts/apl-vikunja-operator` needs no special-casing — it runs the same

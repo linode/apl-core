@@ -133,10 +133,10 @@ index 0000000..2431a2f
 +}
 diff --git a/src/operators/vikunja/lib/env.ts b/src/operators/vikunja/lib/env.ts
 new file mode 100644
-index 0000000..3974a0b
+index 0000000..d0129d9
 --- /dev/null
 +++ b/src/operators/vikunja/lib/env.ts
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,21 @@
 +import dotenv from 'dotenv'
 +import { cleanEnv, num, str } from 'envalid'
 +
@@ -145,6 +145,7 @@ index 0000000..3974a0b
 +export const VIKUNJA_OPERATOR_NAMESPACE = str({ desc: 'The vikunja operator namespace' })
 +export const RETRIES = num({ desc: 'The maximum amount of times to retry a certain function', default: 20 })
 +export const MIN_TIMEOUT = num({ desc: 'The number of milliseconds before starting the first retry', default: 30000 })
++export const VIKUNJA_RECONCILE_INTERVAL = num({ desc: 'Reconciliation interval in seconds', default: 60 })
 +
 +export const vikunjaEnvValidators = {
 +  VIKUNJA_URL,
@@ -152,6 +153,7 @@ index 0000000..3974a0b
 +  VIKUNJA_OPERATOR_NAMESPACE,
 +  RETRIES,
 +  MIN_TIMEOUT,
++  VIKUNJA_RECONCILE_INTERVAL,
 +}
 +
 +dotenv.config()
@@ -356,10 +358,10 @@ index 0000000..0117a04
 +}
 diff --git a/src/operators/vikunja/vikunja.ts b/src/operators/vikunja/vikunja.ts
 new file mode 100644
-index 0000000..43c700d
+index 0000000..233f2e2
 --- /dev/null
 +++ b/src/operators/vikunja/vikunja.ts
-@@ -0,0 +1,168 @@
+@@ -0,0 +1,204 @@
 +/* eslint-disable no-console */
 +import Operator, { ResourceEventType } from '@linode/apl-k8s-operator'
 +import retry from 'async-retry'
@@ -396,6 +398,36 @@ index 0000000..43c700d
 +
 +const decode = (value: string | undefined): string => (value ? Buffer.from(value, 'base64').toString() : '')
 +
++let reconciling = false
++let reconcileTimer: ReturnType<typeof setInterval> | null = null
++
++/**
++ * Runs setupVikunja, skipping the cycle if one is already in flight.
++ *
++ * The two callers are independent -- the resource watches below and the interval timer -- so
++ * without this guard a slow Keycloak round trip could have two reconciles pushing the same team
++ * membership at the same time. Modelled on the Harbor operator (`operators/harbor/harbor.ts`).
++ */
++async function reconcile(trigger: string): Promise<void> {
++  if (!env.vikunjaUsername || !env.vikunjaPassword || !env.keycloakAdminPassword || !env.keycloakUrl) {
++    // The timer can fire before the watches have delivered the secret and configmap.
++    console.info(`Missing required variables for Vikunja setup/reconfiguration (trigger: ${trigger})`)
++    return
++  }
++  if (reconciling) {
++    console.info(`Reconciliation already in progress, skipping this cycle (trigger: ${trigger})`)
++    return
++  }
++  reconciling = true
++  try {
++    await setupVikunja()
++  } catch (error) {
++    console.debug('Error could not run setup vikunja', error)
++  } finally {
++    reconciling = false
++  }
++}
++
 +const secretsAndConfigmapsCallback = async (e: any) => {
 +  const { object } = e
 +  const { metadata, data } = object
@@ -420,11 +452,7 @@ index 0000000..43c700d
 +  switch (e.type) {
 +    case ResourceEventType.Added:
 +    case ResourceEventType.Modified: {
-+      try {
-+        await setupVikunja()
-+      } catch (error) {
-+        console.debug('Error could not run setup vikunja', error)
-+      }
++      await reconcile(`${object.kind}/${metadata.name}`)
 +      break
 +    }
 +    default:
@@ -452,6 +480,15 @@ index 0000000..43c700d
 +    } catch (error) {
 +      console.debug('Error could not watch configmaps', error)
 +    }
++
++    // Team membership depends on two things Kubernetes emits no event for: a user joining the
++    // Keycloak group, and that user's first login to Vikunja (a member cannot be added before
++    // the account exists). The watches above therefore cannot converge membership on their own --
++    // only a timer can. Same approach as the Harbor operator.
++    console.info(`Reconciling every ${vikunjaEnv.VIKUNJA_RECONCILE_INTERVAL}s`)
++    reconcileTimer = setInterval(() => {
++      void reconcile('interval')
++    }, vikunjaEnv.VIKUNJA_RECONCILE_INTERVAL * 1000)
 +  }
 +
 +  private async waitForVikunjaAvailability(): Promise<void> {
@@ -518,6 +555,7 @@ index 0000000..43c700d
 +  console.info('Listening to secrets and configmaps')
 +  await operator.start()
 +  const exit = () => {
++    if (reconcileTimer) clearInterval(reconcileTimer)
 +    operator.stop()
 +    process.exit(0)
 +  }
