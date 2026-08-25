@@ -19,6 +19,7 @@ wrong one for the task wastes a session.
 | `VIKUNJA.md` | the worked example behind that playbook — a record of one real integration | you need the concrete detail a rule in the playbook is abbreviating |
 | `TURNSTONE.md` | a second worked example — an app needing an upstream LLM API, and the certificate trap that came with it | your app is not a Go web app, or anything TLS fails in a way `openssl` says is fine |
 | `UPSTREAM-SYNC.md` | an executable runbook: pull new commits from `linode/apl-core` into this fork | you are asked to merge in, sync with, or catch up on upstream |
+| `POD-EGRESS-INVESTIGATION.md` | a record of an unsolved problem: pods cannot reach the public internet, cause unknown | you are asked to re-test whether a fresh cluster still exhibits this |
 
 The distinction that matters: **`SETUP.md` and `INTEGRATING-AN-APP.md` are instructions to follow.
 `VIKUNJA.md` is evidence, not a plan** — its work is already done and on `feat/vikunja-integration`.
@@ -55,6 +56,16 @@ kept doing its own work. Follow `UPSTREAM-SYNC.md` top to bottom: it names the e
 files most likely to conflict and why the fork touched them, and why the merge must not be a rebase
 (this fork's feature branches are built on `main` and rebasing it would orphan them). Do not try to
 reconstruct that file list from `git log` yourself before reading it — it is already there.
+
+## The task, if you were pointed at POD-EGRESS-INVESTIGATION.md
+
+You are being asked to check whether a freshly built cluster still has the problem it records: pods
+cannot reach the public internet, for a reason that survived an exhaustive elimination pass without
+being found. Run the reproduction steps at the top of that file first — if it does not reproduce, say
+so plainly and stop; do not go looking for what "fixed" it, since nothing tracked in this repo
+changed as a result of the original investigation. The file's own "already ruled out" table exists
+so you do not re-spend a night re-testing MTU, NetworkPolicy, Istio, or any of the dozen other things
+already checked with direct evidence.
 
 ## The task, if you were pointed at VIKUNJA.md or TURNSTONE.md
 
