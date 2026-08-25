@@ -1,600 +1,165 @@
-# Adding Vikunja as a first-class platform app
+# Vikunja integration plan
 
-Research notes for wiring [Vikunja](https://github.com/go-vikunja/vikunja) into `apl-core` at the same
-level as Gitea, Argo CD and the Console: one shared instance, its own host, Keycloak SSO, and platform
-teams mapped onto Vikunja teams.
+Plan for adding [Vikunja](https://github.com/go-vikunja/vikunja) to the platform at the same level as
+Gitea, Harbor and Argo CD: one shared instance, its own host, Keycloak SSO, a Console tile, and platform
+teams pushed into Vikunja teams.
 
-This file is fork-only. It is research, not a runbook — nothing here has been implemented. Claims are
-marked as follows:
+This file is fork-only and is not intended for upstream. It is written to be picked up in a fresh
+session with no prior context.
 
-- ✅ **verified** — observed on the running lab or read directly from source
-- ⬜ **unverified** — reasoned from documentation, not yet exercised
+## The ground rule
 
-Verified against the lab described in `SETUP.md`, domain suffix `172.18.255.200.nip.io`,
-image `apl-core-local:v6.2.1-fork`.
+**Every mechanism must already exist for another app. The content may be Vikunja-specific.**
 
----
+The test is on the *mechanism*, not the code. A script modelled on one that serves a different tool but
+written for Vikunja is fine — expected, even. A script with no counterpart anywhere in the platform is
+not: that is where Vikunja becomes the odd one out and the next person has nothing to reason from.
 
-## 1. What "a native app" means in this repo
+So every decision below is anchored to a file that already does the same job for another app. If you
+cannot name that file, stop — either you have missed the precedent, or you are inventing one. Appendix
+B lists approaches rejected on exactly this test; do not re-derive them.
 
-`src/dev/bootstrapCoreApp.ts` is the first-party scaffolder (`npm run dev:bootstrapCoreApp <name>`). It
-writes `.chunk` files that you merge by hand into their real peers. Reading it, plus tracing Gitea
-end-to-end, gives the authoritative file inventory:
-
-| File | Purpose |
+| What you need | Copy from |
 | --- | --- |
-| `values-schema.yaml` | `definitions.apps.properties.<name>` — the app's settings and its `x-secret` fields |
-| `helmfile.d/snippets/defaults.yaml` | `environments.default.values[0].apps.<name>` — defaults for those settings |
-| `core.yaml` | `k8s.namespaces[]` entry, **and** an `adminApps[]` entry |
-| `apps.yaml` | `appsInfo.<name>` — title, version, about/integration text shown in the Console |
-| `helmfile.d/helmfile-NN.*.yaml.gotmpl` | the Helmfile release(s) |
-| `values/<name>/<name>.gotmpl` | chart values, templated from `.Values` |
-| `values/<name>/<name>-raw.gotmpl` | extra manifests via the `*raw` anchor |
-| `charts/<name>/` | the chart itself |
-| `tests/fixtures/env/apps/<name>.yaml` | fixture consumed by `validate-templates` / `validate-values` |
+| Vendoring an upstream chart | `charts/gitea/` + entry in `charts/dependencies.yaml` |
+| HTTPRoute + ServiceEntry | `values/gitea/gitea.gotmpl` `extraDeploy:` (line 242) |
+| CNPG database | `values/gitea/gitea-otomi-db.gotmpl` + `values/gitea-db-secret/` |
+| Admin credential into the app | `values/harbor/harbor-raw.gotmpl` (ExternalSecret → env) |
+| A team-sync operator | `charts/apl-gitea-operator/` + `values/apl-gitea-operator/` |
+| Operator's config channel | `apl-gitea-operator-cm` ConfigMap carrying `teamConfig` JSON |
+| Running an app's own CLI in-cluster | `values/gitea/gitea-raw.gotmpl:111-201` (SA + Role + `kubectl exec`) |
+| App settings + generated secrets | `definitions.apps.gitea` in `values-schema.yaml` |
+| Console tile | `core.yaml` `adminApps[]` + `apps.yaml` `appsInfo` |
+| Console logo | `apl-console/public/logos/<name>_logo.svg` |
 
-Two gaps in the scaffolder, worth knowing before you trust its output:
-
-- ✅ It does **not** emit the `adminApps[]` entry, which is what actually publishes the app to the
-  Console and — see §2 — what registers its OIDC redirect URI. Scaffolding alone produces an app that
-  installs but cannot be reached or logged into.
-- ✅ Its fixture format is stale. It writes `apps.<name>: {enabled: true}`, but the current fixtures in
-  `tests/fixtures/env/apps/` are CRD-shaped (`kind: AplApp` / `metadata.name` / `spec:`). Copy an
-  existing fixture instead of using the generated one.
-
-The `*default`, `*raw`, `*otomiDb` and `*jobs` anchors in `helmfile.d/snippets/templates.gotmpl` derive
-chart and values paths from the release name by convention, so names must line up exactly:
-`<name>` → `charts/<name>` + `values/<name>/<name>.gotmpl`; `<name>-artifacts` → `charts/raw` +
-`values/<name>/<name>-raw.gotmpl`; `<name>-otomi-db` → `charts/otomi-db`.
+Status legend used throughout: ✅ verified on the lab or read from source · ⬜ not yet verified.
 
 ---
 
-## 2. How the identity layer actually works
+## Scope
 
-This is the part that decides the whole design, and it is not what the app-per-client convention would
-lead you to expect.
+**In:** deploying Vikunja, SSO login, the Console tile, and syncing platform teams and their membership
+into Vikunja.
 
-✅ **There is exactly one OIDC client for the entire platform.** The `otomi` realm contains a single
-confidential client, `otomi`. Every platform app is a redirect URI on that one client:
+**Out:** projects (APL has no project concept — confirmed, the Console's routes are `/apps/admin`,
+`/teams`, `/users`, `/workloads`, `/services`, `/settings/*`). Vikunja projects stay a user-facing
+concern. User *de*provisioning is also out — see Phase 3.
 
-```
-otomi | public=False | redirects=[
-  https://argocd.172.18.255.200.nip.io/*, https://gitea.172.18.255.200.nip.io/*,
-  https://harbor.172.18.255.200.nip.io/*, https://keycloak.172.18.255.200.nip.io/*,
-  https://console.172.18.255.200.nip.io/*, ...  ]
-```
+## Four repos
 
-✅ **That list is generated in this repo**, from `core.yaml`. See
-`values/apl-keycloak-operator/apl-keycloak-operator-raw.gotmpl:22-33`:
+✅ This is a multi-repo change. Discovering that late is what made the first pass wrong, so treat it as
+given:
 
-```gotmpl
-{{- range $coreApp := $v.adminApps }}
-  {{- if $coreApp | get "ownHost" false }}
-    {{ $redirectUrls = append $redirectUrls (printf "https://%s.%s/*" $coreApp.name $domainSuffix) }}
-```
-
-The live client's redirect list matches `adminApps` with `ownHost: true` exactly, plus the `teamApps`
-cross-product with team IDs. **Adding `- name: vikunja` with `ownHost: true` to `adminApps` is
-sufficient to register `https://vikunja.<domain>/*` as a redirect URI.** No change to `apl-tasks` is
-needed for the app to be able to log in.
-
-✅ **The `groups` claim is realm roles, not Keycloak groups.** The `openid` client scope carries a
-mapper of type `oidc-usermodel-realm-role-mapper` writing to `claim.name: groups`. Keycloak groups
-(`platform-admin`, `team-admin`, `all-teams-admin`, `team-<id>`) each have a same-named realm role
-mapped onto them, which is what makes the claim look like group membership. The claim therefore also
-carries Keycloak's built-in roles as noise:
-
-```
-groups: ['offline_access', 'platform-admin', 'default-roles-otomi', 'uma_authorization']
-```
-
-Anything consuming `groups` must filter, not trust the whole list. `helmfile.d/snippets/authpolicy-jwt.gotmpl`
-already gates on `request.auth.claims[groups]` via its `allowGroups` parameter, and is the platform's
-existing mechanism for group-restricting a host at the Istio layer.
-
-✅ **The client secret is shared and already plumbed.** `helmfile.d/snippets/derived.gotmpl` exposes
-`_derived.oidcClientSecretKey` (`keycloak-secrets`) and `_derived.oidcClientSecretProperty`
-(`idp_clientSecret`) precisely so consumers do not hardcode the store location, alongside fully-formed
-`_derived.oidcBaseUrl`, `oidcAuthUrl`, `oidcTokenUrl`, `oidcJwksUrl` and `oidcLogoutUrl`. A Vikunja
-ExternalSecret should use these rather than assembling URLs itself.
-
-### What the Keycloak operator will and will not overwrite
-
-`apl-keycloak-operator` runs `linode/apl-tasks:main` — an external repo — as a continuously reconciling
-Deployment. Whether it would erase hand-added realm objects is the central risk for any SSO work here,
-so it was read from source and then tested.
-
-✅ From `linode/apl-tasks/src/operators/keycloak/keycloak.ts`, protocol mappers on the `otomi` client
-are created **only when absent**, and never enumerated for deletion:
-
-```ts
-if (!allClientClaimMappers.some((el) => el.name === 'email')) { ...create... }
-```
-
-✅ `manageGroups` does issue an unconditional `PUT` for every existing group each loop, but the
-representation it sends is `{name}` only — `createGroups` in `realm-factory.ts` builds
-`defaultsDeep(new GroupRepresentation(), { name })`. Keycloak leaves attributes untouched when the
-representation omits `attributes`.
-
-✅ **Tested on the lab, not just inferred.** A custom protocol mapper and a group attribute were added,
-`apl-keycloak-operator` was restarted to force a full reconcile (logs confirmed `Updating groups
-team-admin` … `Updated Config`), and both survived:
-
-```
-=== otomi client mappers after reconcile ===
- - vikunja_groups
- - name
- - sub
- - email
- - aud-mapper-otomi
- - nickname
-=== group attribute after reconcile ===
-{'vikunja_groups': ['{"name":"platform-admin","oidcID":"kc-platform-admin"}']}
-```
-
-Both were removed again afterwards; the realm is back to its original state.
+| Repo | Why | Blocking? |
+| --- | --- | --- |
+| `apl-api` | Hard-coded `AppList` enum gates whether the app can exist at all | **yes — do first** |
+| `apl-core` | The app: chart, values, schema, database, routing, Console wiring | yes |
+| `apl-console` | The logo file | no — cosmetic |
+| `apl-tasks` | The team-sync operator | only for Phase 3 |
 
 ---
 
-## 3. What Vikunja needs
+## Phase 0 — `apl-api`: let the app exist
 
-From the [configuration reference](https://vikunja.io/docs/config-options/) and the
-[official Helm chart](https://github.com/go-vikunja/helm-chart) v2.2.1 (appVersion 2.5.0):
+Nothing in any other phase is visible until this lands.
+
+✅ `GET /v1/apps` is what the Console builds its tile list from, and it is derived from a hand-maintained
+enum baked into the API image:
+
+```js
+// apl-api, dist/src/app.js
+const getAppList = () => getSpec().spec.components.schemas['AppList'].enum
+```
+
+1. Fork `linode/apl-api`.
+2. Add `vikunja` to `AppList.enum` in `src/openapi/app.yaml`. It currently lists 21 names,
+   `alertmanager … trivy`, in no particular order.
+3. Run `npm run schema:sync` — it copies `values-schema.yaml` from a sibling `apl-core` checkout into
+   `src/values-schema.yaml`, which the build bakes into the image. Do this **after** Phase 1's schema
+   change, or the app's settings schema will be missing.
+4. Build, publish, and point `versions.yaml: api` at the new tag.
+
+⚠ Per `UPGRADE.md`, `versions.yaml` entries that float on `main` are already a known hazard. Pin this
+one to an immutable tag and record it there.
+
+---
+
+## Phase 1 — `apl-core`: deploy the app
+
+Mirrors Harbor: a shared app, own host, own CNPG database, no bootstrap-time dependency.
+
+### 1.1 Chart — vendor, do not write
+
+Add to `charts/dependencies.yaml`:
+
+```yaml
+  - name: vikunja
+    version: 2.2.1
+    repository: <the chart repo for go-vikunja/helm-chart>
+```
+
+Then vendor it into `charts/vikunja/`, including its `common` subchart from bjw-s — exactly as
+`charts/gitea/charts/` vendors `postgresql`, `valkey` and friends.
+
+⬜ Resolve the chart's repository URL first. The chart lives at `github.com/go-vikunja/helm-chart`
+(v2.2.1, appVersion 2.5.0) and publishes to Artifact Hub as `vikunja/vikunja`, but `vikunja.io/charts`
+404s, so the actual `helm repo add` URL is unconfirmed.
+
+### 1.2 Values — `values/vikunja/vikunja.gotmpl`
+
+Model on `values/gitea/gitea.gotmpl`. The chart is a bjw-s `common` wrapper, so its value names differ
+from Gitea's, but the *shape* is the same: config from `.Values`, secrets via `secretKeyRef` env, extra
+manifests appended at the end.
+
+✅ Facts about the container, taken from the chart's `templates/vikunja.yaml`:
 
 | Concern | Value |
 | --- | --- |
-| Image | `vikunja/vikunja` — single container, API and frontend together |
+| Image | `vikunja/vikunja` — API and frontend in one container |
 | Port | `3456` |
-| Health probe | `GET /api/v1/info` (also reports which OIDC providers are enabled — useful to verify SSO) |
-| Config file | `/etc/vikunja/config.yml`, mounted from a ConfigMap |
-| Uploads | `/app/vikunja/files`, needs a PVC (or S3 via `files.s3.*`) |
+| Probe | `GET /api/v1/info` — also reports which OIDC providers are live |
+| Config | `/etc/vikunja/config.yml` from a ConfigMap |
+| Uploads | `/app/vikunja/files` — needs a PVC |
 | Pod security | `fsGroup: 1000` |
-| Database | PostgreSQL supported — `database.type: postgres`, plus `host`, `user`, `password`, `database`, `sslmode` |
 
-Every key has an environment-variable form (`service.publicurl` → `VIKUNJA_SERVICE_PUBLICURL`), and
-environment wins over the config file — so secrets can come from `secretKeyRef` env vars while the rest
-stays in a ConfigMap, exactly as `values/gitea/gitea.gotmpl` does with `additionalConfigFromEnvs`.
+Config to set ([reference](https://vikunja.io/docs/config-options/) — every key also has a
+`VIKUNJA_SECTION_KEY` env form, and env wins over the file):
 
-Settings that matter for a platform install:
+- `service.publicurl` — `https://vikunja.<domainSuffix>`; required since app version 1.0.0
+- `service.secret` — JWT signing key. ⬜ If unset it is regenerated **per process start**, logging
+  everyone out on restart. Must come from an `x-secret` (1.4).
+- `service.enableregistration: false`
+- `auth.local.enabled: **true**` — counter-intuitive but correct; see 1.5
+- `database.*` — `type: postgres`, host `vikunja-db-rw.vikunja.svc.cluster.local:5432`
+- `auth.openid.providers.<key>` — `authurl` is `_derived.oidcBaseUrl`, which does discovery;
+  `clientid` is `_derived.oidcClientID`; `scope: openid profile email`
+- `keyvalue.type` — leave `memory` at one replica. ⬜ Multiple replicas need `redis`;
+  `charts/valkey` is already vendored and `gitea-valkey` shows the pattern.
 
-- `service.publicurl` — must be `https://vikunja.<domainSuffix>`; required since app version 1.0.0.
-- `service.secret` — the JWT signing secret. ⬜ If unset, Vikunja generates a random one **per process
-  start**, so every restart logs everyone out and no second replica can validate the first's tokens.
-  This must become an `x-secret` in `values-schema.yaml` so the platform generates and stores it.
-- `service.enableregistration: false` — no self-signup. Leave `auth.local.enabled` **true**: the sync
-  Job's service account logs in through it, and every other integrated app here keeps its local admin
-  enabled for the same reason. See §6.
-- `keyvalue.type` — defaults to `memory`. ⬜ Multi-replica requires `redis`. `charts/valkey` is already
-  vendored and used by Gitea (`gitea-valkey`), so the precedent exists; single replica is fine to start.
-- `auth.openid.providers.<key>` — `name`, `authurl`, `clientid`, `clientsecret`, `scope`.
+Append the HTTPRoute and ServiceEntry through the chart's `additionalObjects:` value, which is this
+chart's equivalent of Gitea's `extraDeploy:`. Copy both blocks from `values/gitea/gitea.gotmpl:242-264`
+verbatim, changing name, hostname and backend port to `3456`.
 
-### OIDC specifics
+### 1.3 Database
 
-`authurl` takes the **issuer** and performs discovery, so it maps onto `_derived.oidcBaseUrl`
-(`https://keycloak.<domain>/realms/otomi`) directly. The redirect URI Vikunja uses is
-`https://vikunja.<domain>/auth/openid/<provider-key>` — covered by the `/*` wildcard that `adminApps`
-generates, whatever key is chosen.
+Two releases, copied from Gitea:
 
-✅ The `scope` value does not need to request the groups claim. The mapper tested in §2 sits on the
-**client**, not on a client scope, so the claim is emitted for every token from that client — it was
-observed with `scope=openid` alone. `scope: openid profile email` is sufficient.
+- `values/vikunja/vikunja-otomi-db.gotmpl` ← `values/gitea/gitea-otomi-db.gotmpl`
+- `values/vikunja-db-secret/vikunja-db-secret-raw.gotmpl` ← `values/gitea-db-secret/`
 
----
+Add `databases.vikunja` defaults and schema alongside `databases.gitea`.
 
-## 4. Team sync — the one genuinely hard part
+### 1.4 Schema and defaults
 
-Vikunja can create and maintain teams from an OIDC claim ([docs](https://vikunja.io/docs/openid/)), but
-it requires a `vikunja_groups` claim shaped as an array of *objects*, not strings:
-
-```json
-{ "vikunja_groups": [ { "name": "team 1", "oidcID": 33349,
-                        "description": "optional", "isPublic": false } ] }
-```
-
-Teams created this way get an `(OIDC)` suffix, are not editable in Vikunja, and are reconciled on every
-login: a user missing from the claim is removed from the team, and a team that loses all members is
-deleted. A missing `oidcID` produces `The custom scope set by the OIDC provider is malformed`. That
-lifecycle matches how APL treats teams, which makes it the right mechanism rather than a workaround.
-
-The platform's existing `groups` claim is a flat list of role-name strings, so it cannot be used as-is.
-Vikunja's own docs point at a [third-party Keycloak mapper plugin](https://github.com/makerspace-darmstadt/keycloak-vikunja-mapper)
-for this, which would mean building and shipping a custom Keycloak image — an unattractive dependency
-for a platform whose Keycloak comes from an upstream chart.
-
-### That plugin is not necessary
-
-✅ Stock Keycloak can emit the required structure. A `oidc-usermodel-attribute-mapper` with
-`jsonType.label: JSON`, `multivalued: true` and `aggregate.attrs: true` collects a named attribute from
-every group the user belongs to and parses each value as JSON. With a `vikunja_groups` attribute set on
-the Keycloak group, the resulting ID token claim is exactly what Vikunja wants.
-
-Mapper on client `otomi`:
-
-```json
-{ "name": "vikunja_groups", "protocol": "openid-connect",
-  "protocolMapper": "oidc-usermodel-attribute-mapper",
-  "config": { "user.attribute": "vikunja_groups", "claim.name": "vikunja_groups",
-              "jsonType.label": "JSON", "multivalued": "true", "aggregate.attrs": "true",
-              "id.token.claim": "true", "access.token.claim": "true",
-              "userinfo.token.claim": "true" } }
-```
-
-Attribute on group `team-<id>`:
-
-```json
-{ "attributes": { "vikunja_groups": ["{\"name\":\"team-demodevs\",\"oidcID\":\"team-demodevs\"}"] } }
-```
-
-Observed ID token — a real JSON array of objects, not strings:
-
-```
-groups        : ['offline_access', 'platform-admin', 'default-roles-otomi', 'uma_authorization']
-vikunja_groups: [{"name": "platform-admin", "oidcID": "kc-platform-admin"}]
-py type       : list
-```
-
-Using the team name as `oidcID` keeps it stable and human-readable across rebuilds, which matters
-because Vikunja keys team identity on it.
-
-### Who writes those realm objects
-
-The mapper and the group attributes have to be created by something. Three options:
-
-1. **An in-repo Job/CronJob** using the `*jobs` anchor (`helmfile.d/snippets/templates.gotmpl`, documented
-   in `docs/development.md` under "Adding maintenance Job or CronJob"). It patches the mapper once and
-   sets `vikunja_groups` on each `team-*` group. Entirely within this fork, and §2 proves the result
-   survives reconciliation.
-2. **Upstream `apl-tasks`.** The correct long-term home — the Keycloak operator already owns groups and
-   mappers — but it is a second repo, a second release cycle, and outside this fork's control.
-3. **Skip the claim; sync via Vikunja's API.** Mirrors `apl-gitea-operator`, which reconciles platform
-   teams into Gitea orgs/teams (`src/operators/gitea/lib/managers/gitea-teams.ts` in `apl-tasks`). Most
-   faithful to existing platform patterns, but it is a whole new operator, and it fights Vikunja's own
-   OIDC team lifecycle rather than using it.
-
-**Recommendation: option 1**, with option 2 as the upstream follow-up. It is the smallest change that
-is verified to work, it keeps everything in one repo and one release, and it uses Vikunja's supported
-mechanism instead of reimplementing it.
-
-> **This whole section is conditional.** It describes the *claim-driven* path. §6 shows that
-> claim-driven and API-driven team management are mutually exclusive, and recommends API-driven —
-> which means not emitting this claim at all. Read §6 before implementing any of the above. What
-> survives regardless is the proof that stock Keycloak can express the claim without a custom plugin,
-> which is what makes claim-driven a viable fallback.
-
----
-
-## 5. Console presence: tile, logo and link
-
-The Console is a React app (`linode/apl-console`, public, Apache-2.0) driven entirely by data the API
-serves from `core.yaml` and `apps.yaml`. ✅ Reading `src/utils/data.ts` shows there is **no allow-list
-of known apps anywhere** — every property of a tile is derived from the app's name:
-
-```ts
-// getApps — which tiles a viewer sees
-return (teamId === 'admin' ? adminApps : adminApps.filter((app) => app.isShared).concat(teamApps))
-         .filter((app) => !app.hide)
-
-// getAppData — what each tile renders
-const hostSuffix = `${!(isShared || teamId === 'admin') ? `-${teamId}` : ''}`
-const baseUrl    = `https://${useHost || appId}${hostSuffix}.${cluster.domainSuffix}`
-logo:        `${coreAppId}_logo.svg`,
-appInfo:     appsInfo[coreAppId],
-externalUrl: ownHost || useHost ? `${baseUrl}${path ? rePlace(path, teamId) : '/'}` : undefined,
-schema:      spec.components.schemas[modelName] ? ... : {},
-```
-
-Three consequences, all of which are what we want:
-
-- ✅ **`isShared: true` puts the app in every team's list too**, not just `/apps/admin` — that is exactly
-  what the `adminApps.filter((app) => app.isShared)` branch does. One `adminApps` entry covers both.
-- ✅ **`isShared: true` suppresses the team suffix**, so every team's tile links to the same
-  `https://vikunja.<domainSuffix>/` instance. That is the correct behavior for a singleton. (Dropping
-  `isShared` would instead produce per-team hostnames `vikunja-<team>.<domain>` — a different,
-  multi-instance design.)
-- ✅ **An unknown app does not crash the Console.** The API schema lookup falls back to `{}`. Title,
-  description and links come from `appsInfo[<name>]` in `apps.yaml`.
-
-### The logo is solvable from this repo
-
-`logo` resolves to `/logos/vikunja_logo.svg`, served as a static file. The earlier assumption that this
-could only be fixed upstream was wrong on two counts:
-
-- ✅ `charts/otomi-console/` is **first-party in this repo** — it is not in `charts/dependencies.yaml`
-  and is a `helm create` scaffold. It already exposes an `extraManifests` escape hatch
-  (`templates/extra-manifests.yaml`).
-- ✅ The logo directory is writable and nginx serves whatever is in it. Tested by writing a file into
-  the running Console pod and fetching it back:
-
-```
-$ kubectl -n otomi exec $POD -- sh -c 'echo "<svg/>" > /app/build/logos/vikunja_logo.svg'
-WROTE_OK
-$ kubectl -n otomi exec $POD -- wget -qO- http://127.0.0.1:8080/logos/vikunja_logo.svg
-<svg/>
-```
-
-(The test file was removed afterwards; the directory is back to its original 35 entries.)
-
-So the fix is entirely in-repo: add `extraVolumes` / `extraVolumeMounts` to
-`charts/otomi-console/templates/deployment.yaml` (which currently has neither), ship the SVG as a
-ConfigMap through `extraManifests` in `values/otomi-console/otomi-console.gotmpl`, and mount it with
-`subPath: vikunja_logo.svg` at `/app/build/logos/vikunja_logo.svg`. A `subPath` mount places one file
-into an existing directory without hiding its siblings — which is why the other 35 logos survive.
-
-⬜ `subPath` mounts do not receive ConfigMap updates without a pod restart. Irrelevant for a static
-logo, but worth knowing if this mechanism is reused for anything that changes.
-
-Upstreaming `vikunja_logo.svg` into `linode/apl-console/public/logos/` remains the tidier long-term
-fix, and this fork can carry the mount until then.
-
-### ⚠ `apl-api` has a hard-coded app allow-list — this repo alone is not enough
-
-The Console has no allow-list. **`apl-api` does**, and it is the one that decides whether a tile exists
-at all. This was found the hard way: the live test below produced a correct-looking API payload and
-still showed nothing in the browser.
-
-✅ A `vikunja` entry was injected into the `otomi-api-core` ConfigMap and the API restarted. It came
-back `2/2 Running` with no config error, and `GET /v1/session` served the new app alongside the other
-25:
-
-```json
-{"isShared": true, "name": "vikunja", "ownHost": true, "tags": ["productivity", "tasks"]}
-```
-
-✅ But no tile appeared, because **the tile list is a different API call.** In
-`apl-console/src/components/Apps.tsx` the app list arrives as a prop (`apps: GetAppsApiResponse`);
-`session.core.adminApps` only supplies per-app metadata (`ownHost`, `isShared`, `path`). `GET /v1/apps`
-returned 21 apps with no `vikunja` among them, and the reason is in the API image:
-
-```js
-// /app/dist/src/app.js
-const getAppList = () => {
-    const appsSchema = getSpec().spec.components.schemas['AppList']
-    return appsSchema.enum          // <- a hand-maintained enum, baked into the image
-}
-```
-
-✅ That enum is authored in `linode/apl-api/src/openapi/app.yaml` and lists exactly those 21 names
-(`alertmanager … trivy`). An app absent from it can never appear in `/v1/apps`, so it can never get a
-tile, however complete its `core.yaml`, `apps.yaml` and values entries are.
-
-**Consequence: `apl-api` must be forked and rebuilt.** Three changes there:
-
-1. add `vikunja` to `AppList.enum` in `src/openapi/app.yaml`;
-2. re-run `npm run schema:sync`, which copies `values-schema.yaml` from `apl-core` into
-   `src/values-schema.yaml` — the API bakes its own snapshot of our schema (`copyup … src/values-schema.yaml
-   dist/src` in the `build` script), so a schema change here does not reach it otherwise;
-3. publish the image and point `versions.yaml: api` at it.
-
-✅ `apl-console` does **not** need forking for this. `src/common/api-spec.ts` holds the spec in a
-mutable module variable populated by `setSpec()` at runtime, and the API serves it (`/v1/spec` responds
-`401`, not `404`), so the Console picks up whatever the API knows. The only Console-side gap is the
-logo file, and that is solved by the mount above.
-
-This also revises §1: the file inventory covers what `apl-core` owns, but a genuinely first-party app
-spans two repos. `apl-tasks` is optional (§2 shows the redirect URI comes from here); **`apl-api` is
-not.**
-
-⚠ **Argo CD self-heals these ConfigMaps.** `otomi-otomi-api` has `syncPolicy.automated.selfHeal: true`,
-so a patched ConfigMap is reverted within seconds — the first attempt at this test silently restarted
-the API against the *original* config and proved nothing. Auto-sync must be suspended for the duration
-of any live-patch experiment on a platform manifest. This does not apply to the §2 realm test: Keycloak
-objects are rows in Keycloak's database, not manifests Argo tracks, which is why those survived.
-
----
-
-## 6. Propagating teams and users
-
-This is what actually makes an app first-party, and it deserves more than the one line the first draft
-gave it.
-
-**Scope.** Teams and their membership, and nothing else. APL has no project concept — it was considered
-and ruled out, so Vikunja projects are left entirely to users inside Vikunja. The project endpoints are
-listed below only because a team is worthless until something can be shared with it, and whoever
-implements this will want to know the sharing call exists.
-
-### How Gitea receives Console changes today
-
-✅ There are no APL CRDs in the cluster (`kubectl get crd` returns nothing matching `apl`/`otomi`) — the
-`kind: AplApp` fixtures are a values-repo file format, not Kubernetes resources. The propagation chain
-is instead:
-
-```
-Console → apl-api writes the values repo → Argo CD / apl-operator re-render
-        → ConfigMap apl-gitea-operator-cm changes
-        → operator's Kubernetes watch fires  → pushes to Gitea's REST API
-```
-
-`linode/apl-tasks/src/operators/gitea/gitea.ts` watches exactly two objects in its own namespace:
-
-```ts
-if (object.kind === 'Secret'    && metadata.name === 'apl-gitea-operator-secret') { ... }
-else if (object.kind === 'ConfigMap' && metadata.name === 'apl-gitea-operator-cm') { ... }
-```
-
-and reconciles through managers for organizations, teams, users, repositories, OIDC and webhooks. ✅
-The ConfigMap it watches is generated **in this repo**, by
-`values/apl-gitea-operator/apl-gitea-operator-raw.gotmpl`, and carries `teamConfig` as JSON. Adding a
-team in the Console changes that JSON, which is what triggers the sync.
-
-So "first-party propagation" means: *render the team list into a ConfigMap from this repo, and have
-something watch it and push to the app's API.* The first half is entirely ours. Only the watcher needs
-a home.
-
-### Where the watcher can live
-
-`helmfile.d/snippets/templates.gotmpl` has a `*jobs` anchor whose presync hook (`bin/job-presync.sh`)
-runs with policy `OnSpecChange` — it diffs the rendered release and destroys the old Job so it re-runs
-only when the spec actually changed. That is a values-change trigger without writing an operator, and
-✅ nothing currently uses it (`values/jobs/` contains only `scripts`), so it is free to take.
-
-| Option | Trigger | Lives in | Cost |
-| --- | --- | --- | --- |
-| `*jobs` Job, `OnSpecChange` | re-render of the values repo | this fork | low — a script and a chart values file |
-| New `apl-vikunja-operator` | Kubernetes watch, like Gitea's | `apl-tasks` (or a fork) | high — new image, new release cycle |
-
-**Recommendation: the `*jobs` Job.** It reacts to the same signal as the Gitea operator (a values
-change), it is idempotent by construction, and it stays in one repo. Promote it to a real operator only
-if sub-minute propagation or event-level granularity turns out to matter.
-
-### What Vikunja's API supports
-
-✅ From the OpenAPI spec (`/api/v1/docs.json`, 126 paths), everything needed exists:
-
-| Need | Endpoint | In scope |
-| --- | --- | --- |
-| Create team | `PUT /teams` | yes |
-| Add / remove member | `PUT /teams/{id}/members`, `DELETE /teams/{id}/members/{username}` | yes |
-| Promote to team admin | `POST /teams/{id}/members/{userID}/admin` | yes |
-| Create project | `PUT /projects` | no — users do this themselves |
-| Share project with team | `PUT /projects/{id}/teams`, `POST /projects/{projectID}/teams/{teamID}` | no — reference only |
-| Create user | `POST /admin/users` | ⛔ **Vikunja Pro only** |
-| Disable / delete user | `PATCH /admin/users/{id}/status`, `DELETE /admin/users/{id}` | ⛔ **Vikunja Pro only** |
-
-⛔ The `/admin/*` endpoints are the Pro "admin panel" feature and require both a Pro license and an
-admin user; the `vikunja user set-admin` CLI command carries the same restriction. Everything the sync
-actually needs — teams, membership, sharing — is core AGPL functionality available to any ordinary
-user, so **the sync needs no admin rights and no license.** The practical loss is user deprovisioning,
-which is fine: removing someone from their Keycloak group removes them from the Vikunja team on the
-next sync, which is the control that matters.
-
-Permissions on a project↔team relation are `0` read, `1` read & write, `2` admin (`models.TeamProject`).
-Authentication is a bearer API token, or a JWT from `POST /login`.
-
-### The decision this forces: claim-driven or API-driven
-
-These two mechanisms **conflict, and you must pick one**. Vikunja marks teams created from the OIDC
-claim as not editable — so membership cannot also be managed through the API — while teams created via
-the API are editable but are not linked to the claim.
-
-- **Claim-driven** (§4). Zero moving parts and already verified end-to-end at the Keycloak end. But it
-  is *pull-on-login*, not push: a team appears only when one of its members first signs in, and a
-  Console change is invisible until then.
-- **API-driven.** A sync Job creates teams and memberships eagerly, the moment the values change —
-  exactly the Gitea behavior, and exactly what "pushed to Vikunja like a first-party app" asks for.
-  Requires *not* emitting the `vikunja_groups` claim.
-
-**Recommendation: API-driven**, because it is what the requirement actually describes. Keep §4 in the
-back pocket — it is the fallback if the sync Job proves troublesome, and it is worth keeping the
-research because it independently proves stock Keycloak can express the claim without a custom plugin.
-
-⬜ A possible hybrid deserves a test before the design is fixed: `models.Team.external_id` — "the team's
-external id provided by the openid or ldap provider" — is not marked read-only in the spec. If
-`PUT /teams` honours it on create, a Job could create teams *pre-linked* to the OIDC identity, getting
-eager creation and claim-based membership together. The spec's `readOnly` flags look unreliable
-(`created` is documented as immutable yet carries no `readOnly`), so this must be tested against a real
-instance rather than believed.
-
-### Bootstrapping the credential — the platform already has a pattern
-
-Every integrated app here solves this the same way, and it is worth copying rather than inventing:
-**the local admin account stays enabled for machines, SSO is for humans, and the password is a
-platform-generated `x-secret`.**
-
-| App | Credential | How it reaches the app | Who consumes it |
-| --- | --- | --- | --- |
-| Gitea | `adminUsername` + `adminPassword` | chart's `gitea.admin.existingSecret: gitea-admin-secret` | `apl-gitea-operator` via `giteaPassword` |
-| Harbor | `adminPassword` | `HARBOR_ADMIN_PASSWORD` env from an ExternalSecret | `apl-harbor-operator` via `harborPassword` |
-| Keycloak | `adminUsername` + `adminPassword` | chart admin secret | `apl-keycloak-operator` via `KEYCLOAK_ADMIN*` |
-| Argo CD | local admin | `configs.cm."admin.enabled": "true"` — kept on *alongside* SSO | humans, break-glass |
-
-✅ Argo CD is the clearest statement of the principle: it explicitly keeps the local admin account
-enabled while mapping the `platform-admin` group to `role:admin` for SSO users. Turning local auth off
-entirely is not the house style.
-
-So Vikunja should follow suit:
-
-- add `adminUsername` / `adminPassword` to `apps.vikunja` as `x-secret` fields, exactly as `apps.gitea`
-  does;
-- keep `auth.local.enabled: true` — it is what the sync Job authenticates through — while setting
-  `service.enableregistration: false` so the only local account is the one we create;
-- seed that account at first boot. Vikunja has **no first-run admin bootstrap** and no chart hook
-  equivalent to Gitea's `admin.existingSecret`; the account is created from the CLI:
-
-```bash
-/app/vikunja/vikunja user create -u "$ADMIN_USER" -e "$ADMIN_EMAIL" -p "$ADMIN_PASSWORD"
-```
-
-  ⬜ Run it from an init container, or from the `*jobs` anchor — which `docs/development.md` describes
-  as being for exactly this case, "configuration that cannot be expressed declaratively". It must be
-  idempotent: re-creating an existing user has to be tolerated, not fatal.
-
-The sync Job then authenticates with `POST /login` for a JWT and calls the team endpoints. Note it does
-**not** need instance-admin rights: creating a team and adding members is something any Vikunja user may
-do, which is what keeps this clear of the Pro license.
-
-⬜ **A timing constraint that argues for a CronJob.** `PUT /teams/{id}/members` takes a username, and a
-user only exists in Vikunja after their first OIDC login. So membership cannot be fully reconciled at
-the moment a team is created — it fills in as people sign in. A purely `OnSpecChange` Job would never
-re-run to catch them. Either add a schedule so it reconciles periodically, or accept that membership
-lags until the next values change. The Gitea operator sidesteps this by running continuously.
-
-### The user-provisioning trap
-
-Moot in practice now that `/admin/users` is known to be Pro-gated, but it explains why pre-creating
-users was never the right instinct.
-
-⚠ `POST /admin/users` creates a **local** account. An OIDC login creates a *separate* identity. Whether
-a pre-created local user is adopted by a later OIDC login with the same username, or shadowed by a
-duplicate, is ⬜ untested — and this repo already treats that exact hazard as real elsewhere:
-`values/gitea/gitea.gotmpl:78` sets `ACCOUNT_LINKING: disabled` with the comment *"so that when a user
-with the same username is created in gitea, it will not be linked to another account"*.
-
-Recommended default: **do not pre-create users.** Vikunja auto-registers them on first OIDC login, which
-is how Gitea is configured here too (`ENABLE_AUTO_REGISTRATION: true`,
-`ALLOW_ONLY_EXTERNAL_REGISTRATION: true`). Reserve `/admin/users` for *deprovisioning* — `PATCH
-/admin/users/{id}/status` when a user leaves the platform — which has no such ambiguity. If eager
-creation is required, test the linking behavior first.
-
----
-
-## 7. Proposed shape
-
-### Chart: write one, do not vendor
-
-The official chart is a thin wrapper over the [bjw-s common library](https://github.com/bjw-s/helm-charts)
-and assumes an nginx `Ingress`. The platform needs a Gateway API `HTTPRoute`, an Istio `ServiceEntry`, a
-CNPG database and the platform's security context — so a vendored copy would be mostly overridden. A
-first-party chart modelled on `charts/git-server/` (`Chart.yaml`, `values.yaml`, and templates for
-`deployment`, `service`, `httproute`, `pvc`, `_helpers.tpl`) is the better fit and matches existing
-precedent for small in-repo apps.
-
-Mine the official chart for the details worth copying rather than rediscovering: port `3456`, probe
-`/api/v1/info`, `fsGroup: 1000`, config mounted at `/etc/vikunja/config.yml` via `subPath`.
-
-### Follow Harbor, not Gitea
-
-Harbor is the closest structural precedent: a shared app with its own host, its own CNPG database, no
-bespoke operator. Its releases live in `helmfile-70.shared.yaml.gotmpl` with the database in
-`helmfile-03.databases.yaml.gotmpl`. Gitea's placement in `helmfile-03.init` reflects it being needed
-during bootstrap, which Vikunja is not.
-
-```gotmpl
-# helmfile.d/helmfile-70.shared.yaml.gotmpl
-  - name: vikunja-artifacts
-    installed: {{ $a | get "vikunja.enabled" }}
-    namespace: vikunja
-    labels: {pkg: vikunja}
-    <<: *raw
-  - name: vikunja
-    installed: {{ $a | get "vikunja.enabled" }}
-    namespace: vikunja
-    labels: {pkg: vikunja}
-    <<: *default
-
-# helmfile.d/helmfile-03.databases.yaml.gotmpl
-  - name: vikunja-db-secret-artifacts   # ExternalSecret, basic-auth type
-  - name: vikunja-otomi-db              # <<: *otomiDb
-```
-
-### Schema and defaults
-
-`definitions.apps.properties.vikunja`, following `apps.gitea` in `values-schema.yaml`:
+`definitions.apps.properties.vikunja` in `values-schema.yaml`, following `apps.gitea`:
 
 ```yaml
 vikunja:
   properties:
     _rawValues: { $ref: '#/definitions/rawValues' }
     enabled: { type: boolean }
+    adminUsername: { type: string, default: otomi-admin }
+    adminPassword: { type: string, x-secret: '{{ randAlphaNum 20 }}' }
     jwtSecret:
       type: string
       x-secret: '{{ randAlphaNum 32 }}'
@@ -602,22 +167,108 @@ vikunja:
       readOnly: true
     postgresqlPassword:
       type: string
+      description: This password was generated and cannot be changed without manual intervention.
       x-secret: '{{ randAlphaNum 20 }}'
       readOnly: true
     resources: { properties: { vikunja: { $ref: '#/definitions/resources' } } }
     networkPolicies: { $ref: '#/definitions/appNetworkPolicyConfig' }
 ```
 
-`x-secret` is what makes the platform generate a value and seal it into `apl-secrets` as
-`vikunja-secrets`; the app then reads it back through an ExternalSecret against `core-secrets-store`,
-the pattern `values/gitea/gitea-raw.gotmpl` uses. ⬜ `src/common/values-schema.test.ts` asserts that a
-platform-generated `x-secret` is never also `required` — keep both fields out of any `required` list.
+`x-secret` is what makes the platform generate the value and seal it into `apl-secrets` as
+`vikunja-secrets`; the app reads it back through an ExternalSecret against `core-secrets-store`.
 
-### `core.yaml`
+⬜ `src/common/values-schema.test.ts` asserts a platform-generated `x-secret` is never also `required`.
+Keep these out of any `required` list.
+
+Matching defaults go in `helmfile.d/snippets/defaults.yaml` under `apps.vikunja`, next to `apps.gitea`.
+
+Network policies are **optional** — only `git-server`, `gitea` and `otomi-api` have them; Harbor and
+Argo CD do not. Skip unless asked.
+
+### 1.5 The admin credential
+
+✅ Every integrated app solves this identically: **the local admin account stays enabled for machines,
+SSO is for humans, and the password is a platform-generated `x-secret`.**
+
+| App | Credential | How it reaches the app |
+| --- | --- | --- |
+| Gitea | `adminUsername` + `adminPassword` | chart's `gitea.admin.existingSecret` |
+| Harbor | `adminPassword` | `HARBOR_ADMIN_PASSWORD` env from an ExternalSecret |
+| Keycloak | `adminUsername` + `adminPassword` | chart admin secret |
+| Argo CD | local admin | `configs.cm."admin.enabled": "true"`, kept on *alongside* SSO |
+
+Argo CD is the clearest statement of the principle. Disabling local auth entirely is not the house
+style, which is why 1.2 keeps `auth.local.enabled: true`.
+
+Create the ExternalSecret in `values/vikunja/vikunja-raw.gotmpl`, copying
+`values/harbor/harbor-raw.gotmpl`.
+
+Vikunja has no first-run admin bootstrap and no chart hook like Gitea's `admin.existingSecret`, so the
+account only exists once someone runs its CLI:
+
+```bash
+/app/vikunja/vikunja user create -u "$ADMIN_USER" -e "$ADMIN_EMAIL" -p "$ADMIN_PASSWORD"
+```
+
+✅ **There is a precedent for exactly this shape** — `values/gitea/gitea-raw.gotmpl:111-201` runs
+Gitea's own CLI inside the running pod from a Kubernetes workload:
+
+```yaml
+- kind: ServiceAccount        # gitea-backup
+- kind: Role                  # pods/exec: create, pods: get/list, deployments: get
+- kind: RoleBinding
+- kind: CronJob               # image registry.k8s.io/kubectl
+    command: [kubectl, exec, deployments/gitea, '--', /bin/sh, -ec, '... gitea dump ...']
+```
+
+Copy that structure into `values/vikunja/vikunja-raw.gotmpl`, as a `Job` rather than a `CronJob`, execing
+`vikunja user create` with the credentials from the ExternalSecret. Same four objects, same kubectl
+image, Vikunja-specific command.
+
+The job must be idempotent — creating an existing user must not be fatal (Appendix C.3).
+
+⬜ The `*jobs` anchor in `helmfile.d/snippets/templates.gotmpl` is the other candidate, and
+`docs/development.md` documents it for "configuration that cannot be expressed declaratively". Prefer
+the Gitea-style exec Job: the anchor is currently unused (`values/jobs/` holds only `scripts`), so it
+has documentation but no working example to copy. Reach for it only if you need its `OnSpecChange`
+re-run semantics, which this bootstrap does not.
+
+### 1.6 Releases
+
+Follow Harbor's placement, not Gitea's — Gitea sits in `helmfile-03.init` because bootstrap depends on
+it, which Vikunja does not.
+
+```gotmpl
+# helmfile.d/helmfile-70.shared.yaml.gotmpl
+  - name: vikunja-artifacts        # <<: *raw
+  - name: vikunja                  # <<: *default
+
+# helmfile.d/helmfile-03.databases.yaml.gotmpl
+  - name: vikunja-db-secret-artifacts   # <<: *raw
+  - name: vikunja-otomi-db              # <<: *otomiDb
+```
+
+The anchors derive chart and values paths from the release name, so names must match exactly.
+
+### 1.7 Fixtures
+
+`tests/fixtures/env/apps/vikunja.yaml` and `tests/fixtures/env/databases/vikunja.yaml`. ✅ **Copy an
+existing fixture** — the current format is CRD-shaped (`kind: AplApp`, `metadata.name`, `spec:`) and
+`src/dev/bootstrapCoreApp.ts` still emits the older `apps.<name>: {enabled: true}` shape.
+
+---
+
+## Phase 2 — Console presence
+
+### 2.1 `apl-core`
+
+`core.yaml` — two namespaces and the app entry:
 
 ```yaml
 k8s.namespaces:
   - name: vikunja
+  - name: apl-vikunja-operator
+    disableIstioInjection: true
 
 adminApps:
   - name: vikunja
@@ -626,161 +277,207 @@ adminApps:
     ownHost: true
 ```
 
-`isShared: true` marks it as one instance serving all teams rather than per-team; `ownHost: true` gives
-it `vikunja.<domainSuffix>` and, per §2, its OIDC redirect URI. It belongs in `adminApps`, not
-`teamApps` — `teamApps` entries generate a *per-team hostname* (`vikunja-<team>.<domain>`), which is the
-opposite of a singleton.
+✅ This one entry does three jobs. It registers `https://vikunja.<domain>/*` as an OIDC redirect URI
+(`values/apl-keycloak-operator/apl-keycloak-operator-raw.gotmpl:22-33` generates the list from
+`adminApps` where `ownHost` is true — no `apl-tasks` change needed). It puts the app on `/apps/admin`
+**and** in every team's list, via `adminApps.filter(app => app.isShared)` in the Console. And
+`isShared` suppresses the per-team hostname suffix, so every team links to the one instance.
 
-### Network policies — optional
+Then `apps.yaml` — an `appsInfo.vikunja` block with title, appVersion, repo, license, about and
+integration text, copied in shape from `appsInfo.gitea`.
 
-`values/apl-network-policies/apl-network-policies.gotmpl` covers only `git-server`, `gitea` and
-`otomi-api`; Harbor and Argo CD have none. Parity does not require one. If added, it needs both a flag
-there and a template in `charts/apl-network-policies/templates/networkpolicies/`.
+### 2.2 `apl-console`
 
----
+Fork and add `public/logos/vikunja_logo.svg`. ✅ The Console builds the path as
+`/logos/${appId}_logo.svg` with no lookup table, so the filename must match the app name exactly. There
+are 35 logos there now.
 
-## 8. Known gaps and risks
-
-- ⬜ **No end-to-end proof of anything Vikunja-side.** No Vikunja has been deployed. The claim structure
-  is verified at the Keycloak end only; the API surface is read from the OpenAPI spec, not exercised.
-  The three things to test first, in order: does Vikunja accept the `vikunja_groups` claim; does
-  `PUT /teams` honour `external_id`; does an OIDC login adopt or shadow a pre-created local user.
-- ✅ **The Console tile needs an `apl-api` fork.** Settled by §5: `AppList.enum` in `apl-api` gates
-  `/v1/apps`, which is what the tile list is built from. Confirmed in the browser — a `core.yaml`-only
-  patch renders nothing. Treat "add an app" as a two-repo change from the start.
-- ⬜ **The tile has still never been seen rendered**, because that needs the forked API image. Once one
-  exists, the §9 test becomes the real end-to-end check.
-- ✅ **Projects are deliberately out of scope.** APL has no project concept — the Console's routes are
-  `/apps/admin`, `/teams`, `/teams/create`, `/users`, `/workloads`, `/services` and `/settings/*`, and
-  `projects` appears nowhere in `values-schema.yaml`. Vikunja projects stay a user-facing concern. Do
-  not add a project sync later without revisiting §6's team model first: project sharing targets a team
-  id, so it inherits whichever of the two team mechanisms is chosen.
-- ✅ **A latent upstream bug, noted in passing.** `keycloak.ts:547` finds the client with
-  `allClients.find((el) => el.name === client.name)`, but the live `otomi` client has no `name` field
-  (`name: None`). Matching `undefined === undefined` will select the first nameless client in the realm,
-  which is not necessarily `otomi`. It has not caused visible harm here and is out of scope, but it is
-  worth knowing before relying on that reconcile path.
-- ⬜ **`versions.yaml` does not apply.** Vikunja's version is pinned by the chart's `appVersion` and the
-  image tag in `values/vikunja/vikunja.gotmpl`, not by `versions.yaml`, which tracks the `apl-*` images.
-  See `UPGRADE.md` for why several of those float on `main`.
+Do **not** mount the logo in from `apl-core` — see Appendix B.
 
 ---
 
-## 9. Reproducing the findings
+## Phase 3 — `apl-tasks`: the team-sync operator
 
-Set up admin access to the realm:
+✅ Every team sync in this platform is an operator in `apl-tasks` that watches a ConfigMap generated by
+`apl-core` and pushes to the app's REST API. The chain:
 
-```bash
-KC=https://keycloak.$(yq '.cluster.domainSuffix' values.yaml)
-KCP=$(kubectl --context kind-apl -n keycloak get secret keycloak-initial-admin \
-        -o jsonpath='{.data.password}' | base64 -d)
-TOKEN=$(curl -sk -X POST "$KC/realms/master/protocol/openid-connect/token" \
-  -d client_id=admin-cli -d username=otomi-admin -d "password=$KCP" \
-  -d grant_type=password | jq -r .access_token)
+```
+Console → apl-api writes the values repo → Argo CD / apl-operator re-render
+        → ConfigMap apl-vikunja-operator-cm changes → operator's watch fires → Vikunja API
 ```
 
-Confirm the single-client model and that redirect URIs track `core.yaml`:
+### 3.1 In `apl-core`
 
-```bash
-curl -sk -H "Authorization: Bearer $TOKEN" "$KC/admin/realms/otomi/clients" \
-  | jq -r '.[] | select(.clientId=="otomi") | .redirectUris[]' | sort
+- `charts/apl-vikunja-operator/` ← copy `charts/apl-gitea-operator/` (Chart.yaml, values.yaml,
+  templates: `deployment.yaml`, `rbac.yaml`, `_helpers.tpl`, `NOTES.txt`)
+- `values/apl-vikunja-operator/apl-vikunja-operator.gotmpl` — image `linode/apl-tasks` at
+  `$v.versions.tasks`, so no new `versions.yaml` entry is needed
+- `values/apl-vikunja-operator/apl-vikunja-operator-raw.gotmpl` ← copy the Gitea one: a ConfigMap
+  carrying `teamConfig` as JSON plus `domainSuffix`, and an ExternalSecret carrying the Vikunja admin
+  password and the OIDC client details
+- releases in `helmfile-70.shared.yaml.gotmpl`, gated on `vikunja.enabled`
+
+### 3.2 In `apl-tasks`
+
+Fork and add `src/operators/vikunja/`, modelled on `src/operators/gitea/`. That operator watches
+exactly two objects in its own namespace and reconciles through per-concern managers:
+
+```ts
+if (object.kind === 'Secret'    && metadata.name === 'apl-gitea-operator-secret') { ... }
+else if (object.kind === 'ConfigMap' && metadata.name === 'apl-gitea-operator-cm') { ... }
 ```
 
-Add the mapper and a group attribute, then read a real token back. `directAccessGrantsEnabled` is true
-on the `otomi` client, so a password grant works for inspection:
+Managers needed: teams and membership. That is all — see Scope.
+
+✅ API surface (from Vikunja's OpenAPI spec, 126 paths). Authenticate with `POST /login` for a JWT
+using the service account from 1.5:
+
+| Need | Endpoint |
+| --- | --- |
+| Create team | `PUT /teams` |
+| Add / remove member | `PUT /teams/{id}/members`, `DELETE /teams/{id}/members/{username}` |
+| Promote to team admin | `POST /teams/{id}/members/{userID}/admin` |
+
+⛔ **Do not use `/admin/*`.** Those endpoints are the Vikunja Pro admin panel and need a license plus an
+admin user; `vikunja user set-admin` carries the same restriction. Nothing above needs admin rights —
+creating a team and adding members is core AGPL functionality any user may perform. The cost is that
+user *de*provisioning is unavailable, which is acceptable: removing someone from their Keycloak group
+removes them from the Vikunja team on the next reconcile, which is the control that matters.
+
+✅ Users are never created by the operator. Vikunja auto-registers them on first OIDC login — the same
+choice Gitea makes here with `ENABLE_AUTO_REGISTRATION: true` and
+`ALLOW_ONLY_EXTERNAL_REGISTRATION: true`.
+
+⚠ **A consequence to design for:** `PUT /teams/{id}/members` takes a username, and a user only exists in
+Vikunja after their first login. Membership therefore cannot be fully reconciled when a team is
+created; it fills in as people sign in. A continuously-running operator handles this naturally, which
+is a further reason not to use a one-shot Job (Appendix B).
+
+---
+
+## Phase 4 — verification
+
+Work outward. Each step has a cheap check that fails loudly.
+
+1. **App runs.** Pods up in `vikunja`; CNPG cluster healthy; `GET /api/v1/info` returns 200 and lists
+   the OIDC provider.
+2. **Tile exists.** The one command that matters — empty output means Phase 0 did not land, and no
+   amount of `core.yaml` will help:
+   ```bash
+   curl -sk -H "Authorization: Bearer $ID_TOKEN" \
+     "https://api.<domainSuffix>/v1/apps" | jq '.[] | select(.id=="vikunja")'
+   ```
+3. **Console.** `/apps/admin` shows a Vikunja tile with its logo, linking to
+   `https://vikunja.<domainSuffix>/`. Check a team view too — `isShared` should put it there with the
+   same URL.
+4. **SSO.** Log in as a team member through Keycloak; the account is auto-created.
+5. **Team sync.** Create a team in the Console, confirm it appears in Vikunja, then log in as a member
+   and confirm they land in it.
+6. **Suite.** `npm run test:ci` from a clean context — see `CLAUDE.md` for why the context must be
+   clean and why the exit code must not pass through a pipe.
+
+For a token in steps 2–4: the `otomi` client has `directAccessGrantsEnabled`, so a password grant
+works. Read the client secret from the Keycloak admin API — ✅ the value in the
+`otomi-generated-passwords` secret does **not** authenticate:
 
 ```bash
-GID=$(curl -sk -H "Authorization: Bearer $TOKEN" "$KC/admin/realms/otomi/groups" \
-        | jq -r '.[] | select(.name=="team-demodevs") | .id')
-
-curl -sk -X PUT -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  "$KC/admin/realms/otomi/groups/$GID" \
-  -d '{"name":"team-demodevs","attributes":{"vikunja_groups":["{\"name\":\"team-demodevs\",\"oidcID\":\"team-demodevs\"}"]}}'
-
-curl -sk -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  "$KC/admin/realms/otomi/clients/otomi/protocol-mappers/models" \
-  -d '{"name":"vikunja_groups","protocol":"openid-connect",
-       "protocolMapper":"oidc-usermodel-attribute-mapper",
-       "config":{"user.attribute":"vikunja_groups","claim.name":"vikunja_groups",
-                 "jsonType.label":"JSON","multivalued":"true","aggregate.attrs":"true",
-                 "id.token.claim":"true","access.token.claim":"true",
-                 "userinfo.token.claim":"true"}}'
-
-CS=$(curl -sk -H "Authorization: Bearer $TOKEN" \
-       "$KC/admin/realms/otomi/clients/otomi/client-secret" | jq -r .value)
-curl -sk -X POST "$KC/realms/otomi/protocol/openid-connect/token" \
+CS=$(curl -sk -H "Authorization: Bearer $ADMIN_TOKEN" \
+  "https://keycloak.<domainSuffix>/admin/realms/otomi/clients/otomi/client-secret" | jq -r .value)
+curl -sk -X POST "https://keycloak.<domainSuffix>/realms/otomi/protocol/openid-connect/token" \
   -d client_id=otomi -d "client_secret=$CS" -d grant_type=password -d scope=openid \
-  -d "username=<a-team-member>" -d "password=<their-password>" \
-  | jq -r .id_token | cut -d. -f2 | base64 -d 2>/dev/null | jq .vikunja_groups
+  -d "username=<user>" -d "password=<pass>" | jq -r .id_token
 ```
 
-Read the client secret from the admin API as shown. The value in the `otomi-generated-passwords` secret
-did **not** authenticate against the realm — using it returns `unauthorized_client`.
+⚠ **Argo CD self-heals.** These apps have `syncPolicy.automated.selfHeal: true`, so any live patch to a
+platform manifest is reverted within seconds — including patches to the `Application` resource itself.
+An early attempt to test the Console tile by patching a ConfigMap silently proved nothing for exactly
+this reason. Suspend automation for the duration of any live experiment, or go through the values repo.
 
-Prove survival by forcing a full reconcile, then re-reading both objects:
+---
 
-```bash
-kubectl --context kind-apl -n apl-keycloak-operator rollout restart deploy/apl-keycloak-operator
-kubectl --context kind-apl -n apl-keycloak-operator rollout status \
-  deploy/apl-keycloak-operator --timeout=110s
-kubectl --context kind-apl -n apl-keycloak-operator logs deploy/apl-keycloak-operator \
-  --tail=200 | grep -E 'Updating groups|Updated Config'
+## Appendix A — verified findings worth not rediscovering
+
+**One OIDC client for the whole platform.** ✅ The `otomi` realm has a single confidential client,
+`otomi`, and every app is a redirect URI on it. There is no client-per-app.
+
+**The `groups` claim is realm roles, not Keycloak groups.** ✅ It carries built-in roles as noise, so
+anything consuming it must filter:
+
+```
+groups: ['offline_access', 'platform-admin', 'default-roles-otomi', 'uma_authorization']
 ```
 
-Clean up afterwards — `DELETE` the mapper by its id and `PUT` the group back with `"attributes":{}`.
+`helmfile.d/snippets/authpolicy-jwt.gotmpl` already gates on this claim via `allowGroups`, and is the
+existing way to group-restrict a host at the Istio layer.
 
-### The Console tile test (§5)
+**OIDC endpoints are pre-derived.** ✅ `helmfile.d/snippets/derived.gotmpl` exposes fully-formed
+`_derived.oidcBaseUrl`, `oidcAuthUrl`, `oidcTokenUrl`, `oidcJwksUrl`, `oidcLogoutUrl`, plus
+`oidcClientSecretKey` / `oidcClientSecretProperty` so consumers never hardcode the store location. Use
+them; do not assemble URLs.
 
-The cheapest way to confirm a brand-new app is accepted, needing no chart work. It injects a `vikunja`
-entry into the config the API already serves, without touching the values repo. **Suspend auto-sync
-first** or Argo CD reverts the ConfigMap before the new pod mounts it:
+**The Keycloak operator does not prune.** ✅ It creates protocol mappers only when absent and PUTs
+groups with a `{name}`-only representation, leaving attributes intact. Verified by adding both, forcing
+a full reconcile via `rollout restart`, and confirming survival. Relevant if the claim path in
+Appendix B is ever revisited.
 
-```bash
-kubectl --context kind-apl -n otomi get cm otomi-api-core \
-  -o jsonpath='{.data.core\.yaml}' > core-live.yaml
-# add a `- name: vikunja / isShared: true / ownHost: true` item under adminApps:
-# and a `vikunja:` block with title/about under appsInfo:
+**A latent upstream bug.** ✅ `apl-tasks` `keycloak.ts` finds the client with
+`allClients.find(el => el.name === client.name)`, but the live `otomi` client has no `name` field — so
+`undefined === undefined` matches the first nameless client in the realm. No visible harm so far.
 
-kubectl --context kind-apl -n argocd patch application otomi-otomi-api \
-  --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'
-kubectl --context kind-apl -n otomi create configmap otomi-api-core \
-  --from-file=core.yaml=core-patched.yaml --dry-run=client -o yaml \
-  | kubectl --context kind-apl -n otomi apply -f -
-kubectl --context kind-apl -n otomi rollout restart deploy/otomi-api
-kubectl --context kind-apl -n otomi rollout status deploy/otomi-api --timeout=110s
+---
+
+## Appendix B — rejected approaches
+
+Recorded so they are not re-proposed. Each was rejected by the ground rule — the *mechanism* had no
+counterpart elsewhere in the platform.
+
+**Hand-writing `charts/vikunja`.** Tempting because the official chart wraps the bjw-s `common` library
+and assumes an nginx `Ingress`. Rejected: every third-party app here vendors its upstream chart and
+overrides through values, injecting platform objects via the chart's own extra-objects hook. Vikunja's
+`additionalObjects:` is that hook. Writing a chart would make Vikunja the only app that does not follow
+the vendoring pattern. `charts/git-server` and `charts/otomi-console` are first-party only because no
+upstream chart exists for them.
+
+**Mounting the logo into `otomi-console` from `apl-core`.** Technically works — ✅ tested: the logo
+directory is writable, nginx serves whatever is dropped in, and `charts/otomi-console` is first-party
+with an `extraManifests` hook, so a ConfigMap plus a `subPath` mount would do it. Rejected: all 35
+existing logos live in `apl-console/public/logos/`, and we are forking that repo's sibling anyway. A
+mount would be a mechanism unique to Vikunja.
+
+**A `*jobs` Job for team sync instead of an operator.** Rejected: every existing team sync is an
+operator in `apl-tasks`. A Job also cannot handle the membership timing problem in Phase 3, since it
+would never re-run when a user logs in for the first time.
+
+**Claim-driven team sync via a `vikunja_groups` OIDC claim.** Vikunja can create and maintain teams
+from an OIDC claim, and ✅ this was proven to work with stock Keycloak — no custom mapper plugin needed,
+despite Vikunja's docs pointing at one. A user-attribute mapper with `jsonType.label: JSON`,
+`multivalued: true` and `aggregate.attrs: true`, over a `vikunja_groups` attribute on the Keycloak
+group, produces exactly the required structure:
+
+```
+vikunja_groups: [{"name": "platform-admin", "oidcID": "kc-platform-admin"}]
 ```
 
-Check the served payload directly — this is what the Console renders from, so it is the real assertion.
-The `otomi` client has `directAccessGrantsEnabled`, so a password grant yields a usable bearer token
-(see the §2 snippet for fetching the client secret):
+Rejected on two grounds. It is bespoke — no other app maps platform teams through a custom claim. And
+it is pull-on-login rather than push: a team would not exist until one of its members first signed in,
+so a Console change would be invisible until then. Note the two mechanisms are **mutually exclusive** —
+OIDC-created teams are not editable, so membership cannot also be managed by API. If the operator ever
+proves unworkable, this is the fallback, and the mapper configuration above is known-good.
 
-```bash
-curl -sk -H "Authorization: Bearer $ID_TOKEN" \
-  "https://api.<domainSuffix>/v1/session" \
-  | jq '.core.adminApps[] | select(.name=="vikunja")'
-```
+---
 
-⚠ On a stock `apl-api` image this returns nothing and `/apps/admin` shows no tile, because `vikunja` is
-not in `AppList.enum` — see §5. The check that matters is therefore:
+## Appendix C — open questions
 
-```bash
-curl -sk -H "Authorization: Bearer $ID_TOKEN" \
-  "https://api.<domainSuffix>/v1/apps" | jq '.[] | select(.id=="vikunja")'
-```
+Resolve these before or during the phase that depends on them.
 
-Empty means the API image still lacks the enum entry, and no amount of `core.yaml` patching will help.
-Once a forked API image is in place, open `https://console.<domainSuffix>/apps/admin`: the tile appears,
-its title and description come from `appsInfo`, and it links to `https://vikunja.<domainSuffix>/`. A
-broken logo and a 404 on the link are both expected at that point — nothing is deployed behind that
-hostname and the §5 mount is not built yet.
-
-Restore auto-sync when done; Argo then reverts the ConfigMap for you:
-
-```bash
-kubectl --context kind-apl -n argocd patch application otomi-otomi-api --type merge \
-  -p '{"spec":{"syncPolicy":{"automated":{"prune":true,"selfHeal":true}}}}'
-kubectl --context kind-apl -n otomi rollout restart deploy/otomi-api
-```
-
-Per `CLAUDE.md`, every command above is bounded or backgrounded, and nothing is piped before its exit
-code has been checked.
+1. ⬜ **The chart's Helm repository URL** (Phase 1.1). `vikunja.io/charts` 404s.
+2. ⬜ **Does an OIDC login adopt or shadow a pre-existing local user?** (Phase 1.5). The service account
+   is local; a platform admin logging in via SSO with a colliding username could end up with a
+   duplicate. This repo already treats the hazard as real — `values/gitea/gitea.gotmpl:78` sets
+   `ACCOUNT_LINKING: disabled` with the comment *"so that when a user with the same username is created
+   in gitea, it will not be linked to another account"*. Pick a service-account username that cannot
+   collide.
+3. ⬜ **Does Vikunja tolerate `vikunja user create` being re-run?** (Phase 1.5). Decides whether the
+   bootstrap job needs a guard.
+4. ⬜ **Nothing Vikunja-side has ever been run.** No instance has been deployed; every Vikunja claim
+   here comes from its docs, its OpenAPI spec, or its chart. Phase 1 is the first contact with reality.
