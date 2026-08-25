@@ -193,7 +193,7 @@ silently regenerates and discards yours.
 
 Blast radius checked before changing it: all 14 consumers of `_derived.caCert` treat it as opaque
 PEM, nothing pins or fingerprints it, no keystore imports it, `_derived.untrustedCA` depends only on
-`issuer` so the insecure-skip-verify behaviours elsewhere are unchanged, nothing depends on the CA's
+`issuer` so the insecure-skip-verify behavior elsewhere is unchanged, nothing depends on the CA's
 subject, and no fixture encodes its shape. Keep it RSA — nothing in-tree exercises an elliptic-curve
 CA.
 
