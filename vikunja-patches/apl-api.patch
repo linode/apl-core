@@ -1,0 +1,15 @@
+Adds `vikunja` to the hand-maintained AppList enum that GET /v1/apps is derived from.
+Without this the Console never shows the tile, whatever core.yaml says.
+
+diff --git a/src/openapi/app.yaml b/src/openapi/app.yaml
+index 8f5d805..3706ba5 100644
+--- a/src/openapi/app.yaml
++++ b/src/openapi/app.yaml
+@@ -25,6 +25,7 @@ AppList:
+     - tekton
+     - sealed-secrets
+     - trivy
++    - vikunja
+ 
+ App:
+   x-acl:

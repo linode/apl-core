@@ -79,18 +79,40 @@ kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.3/
 kubectl wait --for=condition=Ready pod -l k8s-app=calico-node -n kube-system --timeout=120s
 
 # 5. build the operator image from a CLEAN context (see Traps)
-#    APPS_REVISION must be the upstream commit this fork sits on, so the charts Argo CD
-#    fetches match the templates baked into the image. Derived, never copied -- see step 5.
+#    APPS_REPO_URL + APPS_REVISION decide where Argo CD fetches charts/* from. They must
+#    point at a pushed commit that HAS the charts this image's templates expect -- on this
+#    branch that means the fork, because charts/vikunja does not exist upstream.
+#    Derived, never copied -- see step 5.
 CTX=$(mktemp -d)
 git ls-files -z | tar --null -T - -c | tar -x -C "$CTX"
-git fetch --quiet https://github.com/linode/apl-core.git main
-APPS_REVISION=$(git merge-base HEAD FETCH_HEAD)
-echo "apps revision: $APPS_REVISION"
+APPS_REPO_URL=https://github.com/qvest-digital/apl-core.git
+APPS_REVISION=$(git rev-parse HEAD)               # must already be pushed to APPS_REPO_URL
+git branch -r --contains "$APPS_REVISION" | grep -q origin || \
+  { echo "commit not pushed -- Argo CD will not find it"; exit 1; }
+echo "apps: $APPS_REPO_URL @ $APPS_REVISION"
 docker build --build-arg VERSION=6.2.1-fork \
              --build-arg APPS_REVISION="$APPS_REVISION" \
+             --build-arg APPS_REPO_URL="$APPS_REPO_URL" \
              -t apl-core-local:v6.2.1-fork "$CTX"
 docker images apl-core-local:v6.2.1-fork        # MUST show the image; do not trust the exit code
 kind load docker-image apl-core-local:v6.2.1-fork --name apl
+
+# 5b. Vikunja needs a patched apl-api (the AppList enum) and, for the tile logo, apl-console.
+#     Both are tagged with the names the charts already expect, so no registry is involved.
+#     See vikunja-patches/README.md for the full explanation.
+VP=$PWD/vikunja-patches
+git clone --depth 1 https://github.com/linode/apl-api.git /tmp/apl-api
+git -C /tmp/apl-api apply "$VP/apl-api.patch"
+( cd /tmp/apl-api && APL_CORE_PATH="$VP/.." npm run schema:sync )   # bakes in THIS values-schema
+docker build -t docker.io/linode/apl-api:v0.0.0-vikunja /tmp/apl-api
+docker images docker.io/linode/apl-api:v0.0.0-vikunja
+kind load docker-image docker.io/linode/apl-api:v0.0.0-vikunja --name apl
+
+git clone --depth 1 https://github.com/linode/apl-console.git /tmp/apl-console
+cp "$VP/apl-console/public/logos/vikunja_logo.svg" /tmp/apl-console/public/logos/
+docker build -t docker.io/linode/apl-console:v0.0.0-vikunja /tmp/apl-console
+docker images docker.io/linode/apl-console:v0.0.0-vikunja
+kind load docker-image docker.io/linode/apl-console:v0.0.0-vikunja --name apl
 
 # 6. generate the chart schema -- REQUIRED, silently skipped validation otherwise
 bin/gen-chart-schema.sh
@@ -108,9 +130,19 @@ otomi:
   coreImagePullPolicy: IfNotPresent
 operator:
   installRetries: 3
+versions:
+  # The locally built images from step 5b. A version starting with a digit is treated as a
+  # semver, which prefixes the tag with 'v' and sets pullPolicy IfNotPresent -- exactly what a
+  # kind-loaded image needs. 'vikunja' as a tag would be treated as a branch and pulled Always.
+  api: 0.0.0-vikunja
+  console: 0.0.0-vikunja
 apps:
   metrics-server:
     extraArgs: ["--kubelet-insecure-tls=true"]
+  vikunja:
+    enabled: true
+    # teamSync needs a patched apl-tasks image, which cannot be built without a GitHub
+    # Packages token. Leave it off. See vikunja-patches/README.md.
 EOF
 helm install -f values.yaml apl ./chart/apl
 
@@ -284,7 +316,32 @@ image never hits this and a hand-run `docker build` does. Reported as
 [#10](https://github.com/qvest-digital/apl-core/issues/10); this repo carries no code fix for it, so
 the build arg is the whole remedy.
 
-### Which revision — the commit this fork sits on, not a release tag ⬜
+### Which repository, and which revision ⬜
+
+**`APPS_REPO_URL` and `APPS_REVISION` together decide what Argo CD actually deploys.** The platform
+is assembled from two halves that must agree:
+
+| half | contains | comes from |
+|---|---|---|
+| the image you build | `values/*.gotmpl`, `helmfile.d/`, the operator | this working tree |
+| what Argo CD fetches | `charts/*` for the ~39 applications | `APPS_REPO_URL` at `APPS_REVISION` |
+
+The image's templates generate values, and those values are handed to the fetched charts. If the two
+come from different revisions, a template can set a key the chart at that revision does not have.
+Nothing errors — the key is silently dropped. Argo CD still reports Synced and Healthy, because the
+chart rendered fine; it just rendered without your setting.
+
+**On this branch the repository must be the fork.** `charts/vikunja` exists nowhere upstream, so
+with the default `https://github.com/linode/apl-core.git` the `vikunja` Application never syncs. And
+since both halves must match, pointing at the fork means pointing at *this commit* — which must be
+pushed first, because Argo CD clones over the network and knows nothing about your working tree.
+`APPS_REPO_URL` is a build arg on this branch; upstream only has `APPS_REVISION`.
+
+Using `git rev-parse HEAD` (rather than the `merge-base` the previous version of this file used) is
+the direct consequence: the fork now carries charts of its own, so the revision has to be the fork's
+commit, not the upstream commit it branches from.
+
+### The older advice: merge-base against upstream ⬜
 
 **Set `APPS_REVISION` to the exact upstream commit this fork is built from.** Not a release tag, and
 not the fork's own version. The platform is assembled from two halves that must agree:
@@ -306,6 +363,10 @@ avoids:
 git fetch --quiet https://github.com/linode/apl-core.git main
 APPS_REVISION=$(git merge-base HEAD FETCH_HEAD)   # the upstream commit this fork branches from
 ```
+
+⚠ **Superseded.** This was correct while the fork changed nothing under `charts/`. It no longer
+does — see the section above. Kept because the reasoning still explains *why* the two halves have to
+agree.
 
 `merge-base` is correct here because this fork's own commits exist only in this repository, so the
 most recent shared commit *is* the upstream base. Verified: it resolves to
@@ -368,10 +429,15 @@ At tag `v6.2.1` the same file is fully pinned (`api: v5.3.0`, `console: v5.2.0`,
 `tools: v2.11.2`, `aplCharts: v1.5.0`). Upstream's release process stamps those versions; building
 from a source checkout of `main` skips it — the same root cause as the `APPS_REVISION` trap above.
 
-**No fix is attempted here.** Pinning them means editing a tracked upstream file, and choosing
-versions known to work together — a decision this lab has no basis for making. Record it as a
-limitation instead: **this setup is reproducible in its charts and its operator, not in its console
-and API.** If a browser behavior changes between rebuilds and nothing here explains it, this is why.
+**Partly fixed on the Vikunja branch.** `helmfile.d/snippets/derived.gotmpl` now merges a `versions`
+block from your values over `versions.yaml`, so an installation can pin any component — or point at
+a locally built image — without editing a tracked upstream file. That is what step 5b's
+`versions: {api: 0.0.0-vikunja, console: 0.0.0-vikunja}` uses.
+
+What is still true: the checked-in defaults float, and **choosing** versions known to work together
+is a decision this lab has no basis for making. `tasks`, `consoleLogin`, `tools` and `aplCharts` are
+left on `main`. If a browser behavior changes between rebuilds and nothing here explains it, this is
+why.
 
 ### Optional: build the toolchain image too
 
@@ -778,6 +844,45 @@ Note the related inaccuracy in `chart/apl/values.yaml`, which says `domainSuffix
 when `hasExternalDNS` is set to true". This lab sets it with `hasExternalDNS: false` and the install
 succeeds — which is what [#4](https://github.com/qvest-digital/apl-core/pull/4) and
 [#6](https://github.com/qvest-digital/apl-core/pull/6) encode.
+
+## 10. Vikunja ⬜
+
+Only relevant on `feat/vikunja-integration`. The design, the reasoning and everything that was
+measured live in `VIKUNJA.md`; this is the check list.
+
+**Never run on a cluster.** Every step below is unverified. The container behavior behind it is
+not — see `VIKUNJA.md` Phase 4 for exactly what was measured and how.
+
+```bash
+D=$(kubectl get httproute gitea -n gitea -o jsonpath='{.spec.hostnames[0]}' | sed 's/^gitea\.//')
+
+# 1. the app itself
+kubectl get pods -n vikunja
+kubectl get cluster -n vikunja                      # CNPG, expect Cluster in healthy state
+kubectl get externalsecrets -n vikunja              # all SecretSynced
+kubectl get jobs -n vikunja                         # vikunja-bootstrap-admin, 1/1
+
+# 2. it answers, AND it found the identity provider.
+#    An empty providers list is the failure this integration is most likely to hit:
+#    the pod is Running and Ready either way.
+kubectl exec -n vikunja deploy/vikunja -- /app/vikunja/vikunja version
+curl -sk "https://vikunja.$D/api/v1/info" | jq '.auth.openid_connect'
+
+# 3. the tile. Empty output means the apl-api image from step 5b did not land.
+curl -sk -H "Authorization: Bearer $ID_TOKEN" "https://api.$D/v1/apps" | jq '.[] | select(.id=="vikunja")'
+```
+
+Then in a browser: `/apps/admin` shows a Vikunja tile with its logo linking to `https://vikunja.$D/`;
+a team view shows the same tile with the same URL (that is `isShared` working); and the Vikunja login
+page offers **otomi-idp**, which round-trips through Keycloak and creates the account on first login.
+
+If `providers` is `[]`, check in this order: the `custom-ca` secret exists in the `vikunja`
+namespace, the pod actually mounted it, and Keycloak was reachable when the pod last started. With
+`requireavailability: true` the pod should be crash-looping rather than serving without SSO — if it
+is serving with an empty list, that setting did not reach the config.
+
+Team sync is off. It needs a patched `apl-tasks` image that cannot be built without a GitHub
+Packages token — `vikunja-patches/README.md` has the details.
 
 ## Changing values after install
 

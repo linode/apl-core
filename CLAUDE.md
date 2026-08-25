@@ -11,6 +11,13 @@ that cost a full session to find.
 Follow `SETUP.md` top to bottom. It is a runbook, not an essay — every command in it has been run.
 The expected output is given after each step; compare against it rather than assuming success.
 
+## The task, if you were pointed at VIKUNJA.md
+
+`VIKUNJA.md` is a record, not a plan waiting to be executed — the code is on
+`feat/vikunja-integration`. Its Phase 5 is the reusable part: the order to integrate *any* new app
+in, and the traps that order avoids. Read that before starting a similar integration, and
+`vikunja-patches/README.md` before touching the three sibling repositories.
+
 ## Rules that are not negotiable
 
 **1. Nothing runs longer than 60 seconds unbounded.** Every command gets a bounded `timeout`,
@@ -47,6 +54,18 @@ Docker. Always:
 CTX=$(mktemp -d)
 git ls-files -z | tar --null -T - -c | tar -x -C "$CTX"
 docker build ... "$CTX"
+```
+
+**This checkout excludes `values.yaml` locally.** `.git/info/exclude` carries a bare `values.yaml`
+line, for the lab's own root `values.yaml` from `SETUP.md`. It matches at *every* depth, so a newly
+vendored chart's `charts/<name>/values.yaml` is silently invisible to `git add -A` — and therefore
+to the clean-context build, which is built from `git ls-files`. The symptom is a nil-pointer deep
+inside the chart's templates at `helm lint`, and `git status` shows nothing wrong. After adding any
+chart:
+
+```bash
+git add -f charts/<name>/values.yaml charts/<name>/charts/*/values.yaml
+git ls-files charts/<name> | grep values.yaml     # must not be empty
 ```
 
 **Generate the chart schema before installing.** `chart/apl/values.schema.json` is gitignored and

@@ -1,0 +1,530 @@
+diff --git a/package.json b/package.json
+index 062e5dc..b02330d 100644
+--- a/package.json
++++ b/package.json
+@@ -118,6 +118,8 @@
+     "operator:harbor": "node dist/src/operators/harbor/harbor.js",
+     "operator:keycloak-dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 tsx ./src/operators/keycloak/keycloak.ts",
+     "operator:keycloak": "node dist/src/operators/keycloak/keycloak.js",
++    "operator:vikunja-dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 tsx ./src/operators/vikunja/vikunja.ts",
++    "operator:vikunja": "node dist/src/operators/vikunja/vikunja.js",
+     "test": "NODE_ENV=test jest"
+   },
+   "standard-version": {
+diff --git a/src/operators/vikunja/lib/client.ts b/src/operators/vikunja/lib/client.ts
+new file mode 100644
+index 0000000..2431a2f
+--- /dev/null
++++ b/src/operators/vikunja/lib/client.ts
+@@ -0,0 +1,114 @@
++import { VikunjaTeam, VikunjaTeamMember } from './types/teams'
++
++/**
++ * Minimal Vikunja API client.
++ *
++ * Gitea and Harbor get generated clients from `@linode/*-client-fetch`; Vikunja publishes no
++ * such package, so the handful of endpoints this operator needs are written out here. The
++ * shapes come from Vikunja's own swagger.json.
++ *
++ * Only core AGPL endpoints are used. `/admin/*` and `vikunja user set-admin` need the Pro
++ * admin-panel licence, and nothing here does: creating a team and managing its members is
++ * something any authenticated user may do for the teams they own.
++ */
++export class VikunjaClient {
++  private token: string | null = null
++
++  constructor(
++    private readonly baseUrl: string,
++    private readonly username: string,
++    private readonly password: string,
++  ) {}
++
++  private get apiUrl(): string {
++    return `${this.baseUrl.replace(/\/$/, '')}/api/v1`
++  }
++
++  async login(): Promise<void> {
++    const res = await fetch(`${this.apiUrl}/login`, {
++      method: 'POST',
++      headers: { 'Content-Type': 'application/json' },
++      body: JSON.stringify({ username: this.username, password: this.password }),
++    })
++    if (!res.ok) throw new Error(`Vikunja login failed: ${res.status} ${await res.text()}`)
++    const body = (await res.json()) as { token?: string }
++    if (!body.token) throw new Error('Vikunja login returned no token')
++    this.token = body.token
++  }
++
++  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
++    if (!this.token) await this.login()
++    const send = async () =>
++      fetch(`${this.apiUrl}${path}`, {
++        method,
++        headers: {
++          'Content-Type': 'application/json',
++          Authorization: `Bearer ${this.token}`,
++        },
++        body: body === undefined ? undefined : JSON.stringify(body),
++      })
++
++    let res = await send()
++    // The JWT is short lived. One transparent re-login keeps the operator from
++    // needing a refresh loop of its own.
++    if (res.status === 401) {
++      await this.login()
++      res = await send()
++    }
++    if (!res.ok) throw new VikunjaResponseError(method, path, res.status, await res.text())
++    if (res.status === 204) return undefined as T
++    return (await res.json()) as T
++  }
++
++  async info(): Promise<{ version?: string }> {
++    const res = await fetch(`${this.apiUrl}/info`)
++    if (!res.ok) throw new Error(`Vikunja info failed: ${res.status}`)
++    return (await res.json()) as { version?: string }
++  }
++
++  async listTeams(): Promise<VikunjaTeam[]> {
++    const teams = await this.request<VikunjaTeam[] | null>('GET', '/teams?per_page=500')
++    return teams ?? []
++  }
++
++  async createTeam(team: VikunjaTeam): Promise<VikunjaTeam> {
++    return this.request<VikunjaTeam>('PUT', '/teams', team)
++  }
++
++  async getTeam(id: number): Promise<VikunjaTeam> {
++    return this.request<VikunjaTeam>('GET', `/teams/${id}`)
++  }
++
++  async addTeamMember(teamId: number, username: string): Promise<VikunjaTeamMember> {
++    return this.request<VikunjaTeamMember>('PUT', `/teams/${teamId}/members`, { username })
++  }
++
++  async removeTeamMember(teamId: number, username: string): Promise<void> {
++    await this.request<unknown>('DELETE', `/teams/${teamId}/members/${encodeURIComponent(username)}`)
++  }
++}
++
++export class VikunjaResponseError extends Error {
++  constructor(
++    readonly method: string,
++    readonly path: string,
++    readonly status: number,
++    readonly body: string,
++  ) {
++    super(`Vikunja ${method} ${path} failed: ${status} ${body}`)
++    this.name = 'VikunjaResponseError'
++  }
++}
++
++export function isNotFoundError(error: unknown): boolean {
++  return error instanceof VikunjaResponseError && error.status === 404
++}
++
++/**
++ * Adding a member Vikunja does not know returns 404, and adding one it already has returns
++ * 400. Both are expected -- a user only exists in Vikunja after their first OIDC login --
++ * so neither may be fatal. Verified against Vikunja v2.5.0.
++ */
++export function isMissingOrDuplicateMember(error: unknown): boolean {
++  return error instanceof VikunjaResponseError && (error.status === 400 || error.status === 404)
++}
+diff --git a/src/operators/vikunja/lib/env.ts b/src/operators/vikunja/lib/env.ts
+new file mode 100644
+index 0000000..3974a0b
+--- /dev/null
++++ b/src/operators/vikunja/lib/env.ts
+@@ -0,0 +1,19 @@
++import dotenv from 'dotenv'
++import { cleanEnv, num, str } from 'envalid'
++
++export const VIKUNJA_URL = str({ desc: 'The vikunja service url' })
++export const VIKUNJA_URL_PORT = str({ desc: 'The vikunja service url port' })
++export const VIKUNJA_OPERATOR_NAMESPACE = str({ desc: 'The vikunja operator namespace' })
++export const RETRIES = num({ desc: 'The maximum amount of times to retry a certain function', default: 20 })
++export const MIN_TIMEOUT = num({ desc: 'The number of milliseconds before starting the first retry', default: 30000 })
++
++export const vikunjaEnvValidators = {
++  VIKUNJA_URL,
++  VIKUNJA_URL_PORT,
++  VIKUNJA_OPERATOR_NAMESPACE,
++  RETRIES,
++  MIN_TIMEOUT,
++}
++
++dotenv.config()
++export const vikunjaEnv = cleanEnv(process.env, vikunjaEnvValidators)
+diff --git a/src/operators/vikunja/lib/globals.ts b/src/operators/vikunja/lib/globals.ts
+new file mode 100644
+index 0000000..e8e429f
+--- /dev/null
++++ b/src/operators/vikunja/lib/globals.ts
+@@ -0,0 +1 @@
++export const errors: string[] = []
+diff --git a/src/operators/vikunja/lib/keycloak-groups.ts b/src/operators/vikunja/lib/keycloak-groups.ts
+new file mode 100644
+index 0000000..287fae3
+--- /dev/null
++++ b/src/operators/vikunja/lib/keycloak-groups.ts
+@@ -0,0 +1,73 @@
++/**
++ * Reads platform team membership out of Keycloak.
++ *
++ * Vikunja's own OIDC team sync is not usable here: teams it creates from a claim are not
++ * editable through the API, so the two mechanisms are mutually exclusive. Membership is
++ * therefore pushed, and Keycloak is the platform's source of truth for who is in a team --
++ * the same groups apl-keycloak-operator maintains.
++ *
++ * The connection is a master-realm `admin-cli` password grant, exactly as
++ * `src/operators/keycloak/keycloak.ts` does it.
++ */
++export const keycloakRealm = 'otomi'
++
++export interface KeycloakCredentials {
++  baseUrl: string
++  adminUsername: string
++  adminPassword: string
++}
++
++async function getAdminToken(creds: KeycloakCredentials): Promise<string> {
++  const res = await fetch(`${creds.baseUrl.replace(/\/$/, '')}/realms/master/protocol/openid-connect/token`, {
++    method: 'POST',
++    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
++    body: new URLSearchParams({
++      grant_type: 'password',
++      client_id: 'admin-cli',
++      username: creds.adminUsername,
++      password: creds.adminPassword,
++    }),
++  })
++  if (!res.ok) throw new Error(`Keycloak token request failed: ${res.status} ${res.statusText}`)
++  const body = (await res.json()) as { access_token?: string }
++  if (!body.access_token) throw new Error('Keycloak token request returned no access_token')
++  return body.access_token
++}
++
++async function get<T>(creds: KeycloakCredentials, token: string, path: string): Promise<T> {
++  const res = await fetch(`${creds.baseUrl.replace(/\/$/, '')}${path}`, {
++    headers: { Authorization: `Bearer ${token}` },
++  })
++  if (!res.ok) throw new Error(`Keycloak GET ${path} failed: ${res.status} ${res.statusText}`)
++  return (await res.json()) as T
++}
++
++/**
++ * Returns a map of group name to the usernames in it, for the given group names only.
++ * Groups that do not exist yet are simply absent from the result.
++ */
++export async function getGroupMemberships(
++  creds: KeycloakCredentials,
++  groupNames: string[],
++): Promise<Record<string, string[]>> {
++  if (groupNames.length === 0) return {}
++  const token = await getAdminToken(creds)
++  const groups = await get<Array<{ id: string; name: string }>>(
++    creds,
++    token,
++    `/admin/realms/${keycloakRealm}/groups?briefRepresentation=true&max=1000`,
++  )
++
++  const result: Record<string, string[]> = {}
++  for (const name of groupNames) {
++    const group = groups.find((g) => g.name === name)
++    if (!group) continue
++    const members = await get<Array<{ username?: string }>>(
++      creds,
++      token,
++      `/admin/realms/${keycloakRealm}/groups/${group.id}/members?max=1000`,
++    )
++    result[name] = members.map((m) => m.username).filter((u): u is string => !!u)
++  }
++  return result
++}
+diff --git a/src/operators/vikunja/lib/managers/vikunja-teams.ts b/src/operators/vikunja/lib/managers/vikunja-teams.ts
+new file mode 100644
+index 0000000..44f112e
+--- /dev/null
++++ b/src/operators/vikunja/lib/managers/vikunja-teams.ts
+@@ -0,0 +1,87 @@
++import { isMissingOrDuplicateMember, VikunjaClient } from '../client'
++import { errors } from '../globals'
++import { VikunjaTeam } from '../types/teams'
++
++export const teamName = (teamId: string): string => `team-${teamId}`
++
++/**
++ * Creates the Vikunja team for every platform team. Existing teams are left alone --
++ * Vikunja has no "update team" need here, the name is the only thing the platform owns.
++ */
++export async function upsertTeams(client: VikunjaClient, teamIds: string[]): Promise<Map<string, VikunjaTeam>> {
++  const byName = new Map<string, VikunjaTeam>()
++  let existing: VikunjaTeam[]
++  try {
++    console.info('Getting all Vikunja teams')
++    existing = await client.listTeams()
++  } catch (e) {
++    errors.push(`Error getting all Vikunja teams: ${e}`)
++    return byName
++  }
++  for (const team of existing) byName.set(team.name, team)
++
++  for (const teamId of teamIds) {
++    const name = teamName(teamId)
++    if (byName.has(name)) continue
++    try {
++      console.info(`Creating Vikunja team "${name}"`)
++      const created = await client.createTeam({ name, description: `App Platform team ${teamId}` })
++      byName.set(name, created)
++    } catch (e) {
++      errors.push(`Error creating Vikunja team "${name}": ${e}`)
++    }
++  }
++  return byName
++}
++
++/**
++ * Reconciles the members of one Vikunja team against the usernames the platform expects.
++ *
++ * A user only exists in Vikunja after their first OIDC login, so `PUT /teams/{id}/members`
++ * fails for anyone who has not signed in yet. That is normal, not an error: the operator
++ * keeps running and the member is added on a later reconcile.
++ *
++ * `serviceAccount` is the platform's own local account. It owns every team it created and
++ * must never be removed, or the operator locks itself out of that team.
++ */
++export async function reconcileMembers(
++  client: VikunjaClient,
++  team: VikunjaTeam,
++  expectedUsernames: string[],
++  serviceAccount: string,
++): Promise<void> {
++  if (!team.id) return
++  let current: VikunjaTeam
++  try {
++    current = await client.getTeam(team.id)
++  } catch (e) {
++    errors.push(`Error reading Vikunja team "${team.name}": ${e}`)
++    return
++  }
++  const currentUsernames = (current.members ?? []).map((m) => m.username)
++  const keep = new Set([...expectedUsernames, serviceAccount])
++
++  for (const username of expectedUsernames) {
++    if (currentUsernames.includes(username)) continue
++    try {
++      console.info(`Adding "${username}" to Vikunja team "${team.name}"`)
++      await client.addTeamMember(team.id, username)
++    } catch (e) {
++      if (isMissingOrDuplicateMember(e)) {
++        console.info(`"${username}" has not signed in to Vikunja yet, will retry on the next reconcile`)
++        continue
++      }
++      errors.push(`Error adding "${username}" to Vikunja team "${team.name}": ${e}`)
++    }
++  }
++
++  for (const username of currentUsernames) {
++    if (keep.has(username)) continue
++    try {
++      console.info(`Removing "${username}" from Vikunja team "${team.name}"`)
++      await client.removeTeamMember(team.id, username)
++    } catch (e) {
++      errors.push(`Error removing "${username}" from Vikunja team "${team.name}": ${e}`)
++    }
++  }
++}
+diff --git a/src/operators/vikunja/lib/types/teams.ts b/src/operators/vikunja/lib/types/teams.ts
+new file mode 100644
+index 0000000..0117a04
+--- /dev/null
++++ b/src/operators/vikunja/lib/types/teams.ts
+@@ -0,0 +1,13 @@
++export interface VikunjaTeam {
++  id?: number
++  name: string
++  description?: string
++  is_public?: boolean
++  members?: VikunjaTeamMember[]
++}
++
++export interface VikunjaTeamMember {
++  id?: number
++  username: string
++  admin?: boolean
++}
+diff --git a/src/operators/vikunja/vikunja.ts b/src/operators/vikunja/vikunja.ts
+new file mode 100644
+index 0000000..43c700d
+--- /dev/null
++++ b/src/operators/vikunja/vikunja.ts
+@@ -0,0 +1,168 @@
++/* eslint-disable no-console */
++import Operator, { ResourceEventType } from '@linode/apl-k8s-operator'
++import retry from 'async-retry'
++import { keys } from 'lodash'
++import { VikunjaClient } from './lib/client'
++import { vikunjaEnv } from './lib/env'
++import { errors } from './lib/globals'
++import { getGroupMemberships, KeycloakCredentials } from './lib/keycloak-groups'
++import { reconcileMembers, teamName, upsertTeams } from './lib/managers/vikunja-teams'
++
++const VIKUNJA_ENDPOINT = `${vikunjaEnv.VIKUNJA_URL}:${vikunjaEnv.VIKUNJA_URL_PORT}`
++
++export type VikunjaConfig = {
++  vikunjaUsername: string
++  vikunjaPassword: string
++  keycloakAdmin: string
++  keycloakAdminPassword: string
++  keycloakUrl: string
++  teamConfig: Record<string, unknown>
++  teamNames: string[]
++  domainSuffix: string
++}
++
++const env: VikunjaConfig = {
++  vikunjaUsername: '',
++  vikunjaPassword: '',
++  keycloakAdmin: '',
++  keycloakAdminPassword: '',
++  keycloakUrl: '',
++  teamConfig: {},
++  teamNames: [],
++  domainSuffix: '',
++}
++
++const decode = (value: string | undefined): string => (value ? Buffer.from(value, 'base64').toString() : '')
++
++const secretsAndConfigmapsCallback = async (e: any) => {
++  const { object } = e
++  const { metadata, data } = object
++
++  if (object.kind === 'Secret' && metadata.name === 'apl-vikunja-operator-secret') {
++    env.vikunjaUsername = decode(data.vikunjaUsername)
++    env.vikunjaPassword = decode(data.vikunjaPassword)
++    env.keycloakAdmin = decode(data.keycloakAdmin)
++    env.keycloakAdminPassword = decode(data.keycloakAdminPassword)
++    env.keycloakUrl = decode(data.keycloakUrl)
++  } else if (object.kind === 'ConfigMap' && metadata.name === 'apl-vikunja-operator-cm') {
++    env.teamConfig = JSON.parse(data.teamConfig)
++    env.teamNames = keys(env.teamConfig)
++    env.domainSuffix = data.domainSuffix
++  }
++
++  if (!env.vikunjaUsername || !env.vikunjaPassword || !env.keycloakAdminPassword || !env.keycloakUrl) {
++    console.info('Missing required variables for Vikunja setup/reconfiguration')
++    return
++  }
++
++  switch (e.type) {
++    case ResourceEventType.Added:
++    case ResourceEventType.Modified: {
++      try {
++        await setupVikunja()
++      } catch (error) {
++        console.debug('Error could not run setup vikunja', error)
++      }
++      break
++    }
++    default:
++      break
++  }
++}
++
++export default class MyOperator extends Operator {
++  protected async init() {
++    await this.waitForVikunjaAvailability()
++
++    try {
++      await this.watchResource('', 'v1', 'secrets', secretsAndConfigmapsCallback, vikunjaEnv.VIKUNJA_OPERATOR_NAMESPACE)
++    } catch (error) {
++      console.debug('Error could not watch secrets', error)
++    }
++    try {
++      await this.watchResource(
++        '',
++        'v1',
++        'configmaps',
++        secretsAndConfigmapsCallback,
++        vikunjaEnv.VIKUNJA_OPERATOR_NAMESPACE,
++      )
++    } catch (error) {
++      console.debug('Error could not watch configmaps', error)
++    }
++  }
++
++  private async waitForVikunjaAvailability(): Promise<void> {
++    console.info('Waiting for Vikunja to be available...')
++    await retry(
++      async () => {
++        const client = new VikunjaClient(VIKUNJA_ENDPOINT, '', '')
++        const info = await client.info()
++        console.info(`Vikunja API is available, version: ${info.version ?? 'unknown'}`)
++      },
++      {
++        retries: 30,
++        minTimeout: 10000,
++        maxTimeout: 10000,
++        onRetry: (_error, attempt) => {
++          console.debug(`Vikunja availability check failed (attempt ${attempt}/30), retrying...`)
++        },
++      },
++    )
++  }
++}
++
++async function setupVikunja(): Promise<void> {
++  console.info('Starting Vikunja setup/reconfiguration')
++  errors.length = 0
++
++  const client = new VikunjaClient(VIKUNJA_ENDPOINT, env.vikunjaUsername, env.vikunjaPassword)
++  await client.login()
++
++  const teamsByName = await upsertTeams(client, env.teamNames)
++
++  const credentials: KeycloakCredentials = {
++    baseUrl: env.keycloakUrl,
++    adminUsername: env.keycloakAdmin,
++    adminPassword: env.keycloakAdminPassword,
++  }
++  let memberships: Record<string, string[]> = {}
++  try {
++    memberships = await getGroupMemberships(
++      credentials,
++      env.teamNames.map((id) => teamName(id)),
++    )
++  } catch (error) {
++    // Without Keycloak the teams still exist; only membership goes stale.
++    errors.push(`Error reading team membership from Keycloak: ${error}`)
++  }
++
++  for (const teamId of env.teamNames) {
++    const name = teamName(teamId)
++    const team = teamsByName.get(name)
++    if (!team) continue
++    await reconcileMembers(client, team, memberships[name] ?? [], env.vikunjaUsername)
++  }
++
++  if (errors.length) {
++    console.error(`Errors found: ${JSON.stringify(errors, null, 2)}`)
++  } else {
++    console.info('Success! Vikunja setup/reconfiguration completed')
++  }
++}
++
++async function main(): Promise<void> {
++  const operator = new MyOperator()
++  console.info('Listening to secrets and configmaps')
++  await operator.start()
++  const exit = () => {
++    operator.stop()
++    process.exit(0)
++  }
++
++  process.on('SIGTERM', exit).on('SIGINT', exit)
++}
++
++if (typeof require !== 'undefined' && require.main === module) {
++  void main()
++}
