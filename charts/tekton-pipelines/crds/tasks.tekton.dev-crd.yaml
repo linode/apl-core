@@ -19,8 +19,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: tekton-pipelines
-    pipeline.tekton.dev/release: "v1.12.0"
-    version: "v1.12.0"
+    pipeline.tekton.dev/release: "v1.14.0"
+    version: "v1.14.0"
 spec:
   group: tekton.dev
   preserveUnknownFields: false
@@ -1510,8 +1510,6 @@ spec:
                 stepTemplate:
                   description: StepTemplate
                   type: object
-                  required:
-                    - name
                   properties:
                     args:
                       description: Args
