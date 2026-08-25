@@ -2249,6 +2249,16 @@ properties:
             properties:
               operator:
                 $ref: '#/definitions/resources'
+      apl-vikunja-operator:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            additionalProperties: false
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
       apl-keycloak-operator:
         additionalProperties: false
         properties:
@@ -2401,6 +2411,62 @@ properties:
                 $ref: '#/definitions/resources'
               trivy:
                 $ref: '#/definitions/resources'
+      vikunja:
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          adminUsername:
+            type: string
+            description: >-
+              Username of the local service account the platform uses to talk to Vikunja's API.
+              Must not collide with any Keycloak username: an SSO login that wants a taken
+              username is given a random one instead.
+            default: apl-vikunja-admin
+          adminPassword:
+            type: string
+            x-secret: '{{ randAlphaNum 20 }}'
+          jwtSecret:
+            type: string
+            description: This secret was generated and cannot be changed without logging out every user.
+            x-secret: '{{ randAlphaNum 32 }}'
+            readOnly: true
+          postgresqlPassword:
+            type: string
+            description: This password was generated and cannot be changed without manual intervention.
+            x-secret: '{{ randAlphaNum 20 }}'
+            readOnly: true
+          databaseMaxConnections:
+            type: number
+            description: Maximum amount of total connections of the application to the database server
+          databaseMaxIdleConnections:
+            type: number
+            description: Maximum amount of idle connections of the application to the database server
+          persistence:
+            additionalProperties: false
+            properties:
+              size:
+                type: string
+                description: Size of the volume holding task attachments and uploaded backgrounds
+          teamSync:
+            additionalProperties: false
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                description: >-
+                  Push platform teams and their Keycloak group membership into Vikunja teams.
+                  Requires an apl-tasks image that contains src/operators/vikunja; the published
+                  linode/apl-tasks image does not, so this is off by default.
+          resources:
+            additionalProperties: false
+            properties:
+              vikunja:
+                $ref: '#/definitions/resources'
+          networkPolicies:
+            $ref: '#/definitions/appNetworkPolicyConfig'
       otel:
         properties:
           _rawValues:
@@ -2921,6 +2987,20 @@ properties:
                 type: string
                 pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
                 default: keycloak
+          vikunja:
+            title: Vikunja
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              retentionPolicy:
+                $ref: '#/definitions/backupRetentionPolicy'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+              pathSuffix:
+                type: string
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+                default: vikunja
       gitea:
         type: object
         title: Gitea
@@ -3056,6 +3136,37 @@ properties:
             default: []
       gitea:
         title: gitea
+        properties:
+          size:
+            type: string
+          storageClass:
+            type: string
+          walStorageSize:
+            type: string
+          resources:
+            $ref: '#/definitions/resources'
+          backupSidecarResources:
+            $ref: '#/definitions/resources'
+          postgresqlParameters:
+            type: object
+            additionalProperties:
+              type: string
+            default: {}
+          replicas:
+            type: integer
+            default: 2
+          recovery:
+            type: object
+            additionalProperties: true
+            default: {}
+          externalClusters:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+            default: []
+      vikunja:
+        title: Vikunja
         properties:
           size:
             type: string

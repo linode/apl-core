@@ -91,6 +91,9 @@ k8s:
       app: policy-reporter
       disablePolicyChecks: true
       disableIstioInjection: true
+    - name: vikunja
+    - name: apl-vikunja-operator
+      disableIstioInjection: true
 
 adminApps:
   - name: alertmanager
@@ -174,6 +177,10 @@ adminApps:
     tags: [security]
   - name: rabbitmq
     tags: [messaging]
+  - name: vikunja
+    tags: [productivity, tasks]
+    isShared: true
+    ownHost: true
 
 teamApps:
   - name: alertmanager

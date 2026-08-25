@@ -44,3 +44,17 @@ releases:
     labels:
       pkg: harbor
     <<: *otomiDb
+  - name: vikunja-db-secret-artifacts
+    installed: {{ $a | get "vikunja.enabled" }}
+    namespace: vikunja
+    labels:
+      pkg: vikunja
+      app: core
+    <<: *raw
+  - name: vikunja-otomi-db
+    installed: {{ $a | get "vikunja.enabled" }}
+    namespace: vikunja
+    labels:
+      pkg: vikunja
+      app: core
+    <<: *otomiDb

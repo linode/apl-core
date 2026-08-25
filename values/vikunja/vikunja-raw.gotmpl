@@ -1,0 +1,205 @@
+{{- $v := .Values }}
+{{- $k := $v.apps.vikunja }}
+{{- $vikunjaDomain := $v._derived.vikunjaDomain }}
+{{- $kubectlImage := "registry.k8s.io/kubectl:v1.34.1" }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+
+resources:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+  {{ with $httpRoute.annotations }}
+    annotations:
+    {{ . | toYaml | nindent 8 }}
+  {{- end }}
+    name: vikunja
+  spec:
+    hostnames:
+      - {{ $vikunjaDomain }}
+    parentRefs:
+    {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
+    rules:
+      - backendRefs:
+          - name: vikunja
+            port: 3456
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+- {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "vikunja" "host" $vikunjaDomain) | nindent 2 }}
+- apiVersion: external-secrets.io/v1
+  kind: ExternalSecret
+  metadata:
+    name: vikunja-admin-credentials
+  spec:
+    refreshInterval: 5m
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: vikunja-admin-credentials
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          username: {{ $k.adminUsername }}
+          email: {{ printf "%s@%s" $k.adminUsername $v.cluster.domainSuffix }}
+          password: '{{ "{{ .adminPassword | toString }}" }}'
+    data:
+      - secretKey: adminPassword
+        remoteRef:
+          key: vikunja-secrets
+          property: adminPassword
+- apiVersion: external-secrets.io/v1
+  kind: ExternalSecret
+  metadata:
+    name: vikunja-service-secret
+  spec:
+    refreshInterval: 5m
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: vikunja-service-secret
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          secret: '{{ "{{ .jwtSecret | toString }}" }}'
+    data:
+      - secretKey: jwtSecret
+        remoteRef:
+          key: vikunja-secrets
+          property: jwtSecret
+- apiVersion: external-secrets.io/v1
+  kind: ExternalSecret
+  metadata:
+    name: vikunja-oidc-secret
+  spec:
+    refreshInterval: 5m
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: vikunja-oidc-secret
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          clientSecret: '{{ "{{ .clientSecret | toString }}" }}'
+    data:
+      - secretKey: clientSecret
+        remoteRef:
+          key: {{ $v._derived.oidcClientSecretKey }}
+          property: {{ $v._derived.oidcClientSecretProperty }}
+{{- /*
+  Vikunja has no first-run admin bootstrap and no chart hook for one, so the
+  local service account only exists once its CLI has been run inside the pod.
+  Same four objects as the gitea-backup CronJob in values/gitea/gitea-raw.gotmpl,
+  as a Job because this only has to happen once.
+*/}}
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: vikunja-bootstrap
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    name: vikunja-bootstrap
+  rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: vikunja-bootstrap
+  subjects:
+  - kind: ServiceAccount
+    name: vikunja-bootstrap
+  roleRef:
+    kind: Role
+    name: vikunja-bootstrap
+    apiGroup: rbac.authorization.k8s.io
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: vikunja-bootstrap-admin
+  spec:
+    # Vikunja is usually not up yet when this first runs, and `kubectl exec` fails until it
+    # is. Retry rather than order the release, which the platform has no mechanism for.
+    backoffLimit: 30
+    template:
+      metadata:
+        annotations:
+          sidecar.istio.io/inject: "false"
+      spec:
+        serviceAccountName: vikunja-bootstrap
+        restartPolicy: OnFailure
+        containers:
+          - image: {{ $kubectlImage }}
+            name: kubectl
+            {{- /*
+              No shell anywhere in this Job. registry.k8s.io/kubectl has no /bin/sh, and
+              neither does vikunja/vikunja -- both are distroless, so the `kubectl exec ...
+              -- /bin/sh -ec '...'` shape that values/gitea/gitea-raw.gotmpl uses does not
+              work here. The credentials are interpolated by the kubelet's own $(VAR)
+              expansion over `env` instead.
+
+              Re-running is safe: `vikunja user create` for an existing username logs
+              "User with that username already exists" and still exits 0. Verified against
+              vikunja/vikunja:2.5.0.
+            */}}
+            env:
+              - name: ADMIN_USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: vikunja-admin-credentials
+                    key: username
+              - name: ADMIN_EMAIL
+                valueFrom:
+                  secretKeyRef:
+                    name: vikunja-admin-credentials
+                    key: email
+              - name: ADMIN_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: vikunja-admin-credentials
+                    key: password
+            command:
+              - kubectl
+              - exec
+              - deployments/vikunja
+              - '--'
+              - /app/vikunja/vikunja
+              - user
+              - create
+              - -u
+              - $(ADMIN_USERNAME)
+              - -e
+              - $(ADMIN_EMAIL)
+              - -p
+              - $(ADMIN_PASSWORD)
+            resources:
+              limits:
+                cpu: 250m
+                memory: 256Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 65535
+              runAsGroup: 65535
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+        securityContext:
+          fsGroup: 65535

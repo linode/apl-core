@@ -1,0 +1,151 @@
+{{- $v := .Values }}
+{{- $k := $v.apps.vikunja }}
+{{- $vikunjaDomain := $v._derived.vikunjaDomain }}
+{{- $vdb := $v.databases.vikunja }}
+
+vikunja:
+  image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/vikunja/vikunja"
+    {{- else }}
+    repository: vikunja/vikunja
+    {{- end }}
+    {{- with $k | get "image.vikunja.tag" nil }}
+    tag: {{ . }}
+    {{- end }}
+    pullPolicy: {{ $k | get "image.vikunja.pullPolicy" "IfNotPresent" }}
+
+  {{- with $v.otomi | get "globalPullSecret" nil }}
+  imagePullSecrets:
+    - name: otomi-pullsecret-global
+  {{- end }}
+
+  resources: {{- $k.resources.vikunja | toYaml | nindent 4 }}
+
+  # The chart's own Ingress assumes nginx. Routing goes through the platform
+  # gateway instead -- see the HTTPRoute in values/vikunja/vikunja-raw.gotmpl.
+  ingress:
+    main:
+      enabled: false
+
+  persistence:
+    # Task attachments and uploaded backgrounds.
+    data:
+      enabled: true
+      accessMode: ReadWriteOnce
+      size: {{ $k.persistence.size }}
+      mountPath: /app/vikunja/files
+      {{- with $v.cluster.defaultStorageClass }}
+      storageClass: {{ . }}
+      {{- end }}
+    # SQLite lives here. We run on CNPG, so this claim is dead weight.
+    database:
+      enabled: false
+{{- if $v._derived.untrustedCA }}
+    # Without this, OIDC discovery against a platform-issued Keycloak certificate fails
+    # with `x509: certificate signed by unknown authority` and Vikunja comes up with no
+    # providers at all. Same mount as values/gitea/gitea.gotmpl.
+    custom-ca:
+      enabled: true
+      type: secret
+      name: custom-ca
+      mountPath: /etc/ssl/certs/ca-certificates.crt
+      subPath: ca-certificates.crt
+      readOnly: true
+{{- end }}
+
+  configMaps:
+    config:
+      enabled: true
+      data:
+        # https://vikunja.io/docs/config-options/
+        # Anything secret is injected through env below instead: env is merged
+        # over this file by Vikunja's own config loader.
+        config.yml: |
+          service:
+            publicurl: "https://{{ $vikunjaDomain }}"
+            enableregistration: false
+            enablepublicteams: true
+          database:
+            type: postgres
+            host: vikunja-db-rw.vikunja.svc.cluster.local:5432
+            database: vikunja
+            schema: public
+            sslmode: disable
+            maxopenconnections: {{ $k.databaseMaxConnections }}
+            maxidleconnections: {{ $k.databaseMaxIdleConnections }}
+          files:
+            basepath: /app/vikunja/files
+          keyvalue:
+            # Safe at one replica only. Scaling out needs `redis`, see
+            # charts/valkey and the gitea-valkey release for the pattern.
+            type: memory
+          auth:
+            # Deliberately left on: the platform's service account is a local
+            # user, the same choice Argo CD makes with `admin.enabled`.
+            local:
+              enabled: true
+            openid:
+              enabled: true
+              redirecturl: "https://{{ $vikunjaDomain }}/auth/openid/"
+              providers:
+                otomi:
+                  name: otomi-idp
+                  authurl: {{ $v._derived.oidcBaseUrl | quote }}
+                  logouturl: {{ $v._derived.oidcLogoutUrl | quote }}
+                  clientid: {{ $v._derived.oidcClientID | quote }}
+                  scope: {{ $v._derived.oidcScopes | join " " | quote }}
+                  # Providers are resolved by discovery once, at startup, and a failure
+                  # is otherwise only a log line: Vikunja then serves happily with
+                  # `openid_connect.providers: []` and no SSO button. This turns that
+                  # into a fatal error so the pod restarts until Keycloak answers.
+                  requireavailability: true
+
+  env:
+    # Vikunja builds its config map from VIKUNJA_<SECTION>_<KEY> env vars and
+    # merges them over config.yml, including nested provider keys.
+    # The chart's own template reads this one to decide whether to add the
+    # SQLite path, so it must be set even though config.yml already says it.
+    VIKUNJA_DATABASE_TYPE: postgres
+    VIKUNJA_DATABASE_USER:
+      valueFrom:
+        secretKeyRef:
+          name: vikunja-db-secret
+          key: username
+    VIKUNJA_DATABASE_PASSWORD:
+      valueFrom:
+        secretKeyRef:
+          name: vikunja-db-secret
+          key: password
+    # Regenerated per process start when unset, which logs every user out on
+    # restart. Must be a platform-generated secret.
+    VIKUNJA_SERVICE_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: vikunja-service-secret
+          key: secret
+    VIKUNJA_AUTH_OPENID_PROVIDERS_OTOMI_CLIENTSECRET:
+      valueFrom:
+        secretKeyRef:
+          name: vikunja-oidc-secret
+          key: clientSecret
+
+  securityContext:
+    capabilities:
+      drop:
+        - ALL
+    allowPrivilegeEscalation: false
+    privileged: false
+
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+
+# The chart's own `additionalObjects:` hook is the counterpart of Gitea's
+# `extraDeploy:`, but it emits `---` and the object on the same line, which
+# fails `helm lint`. Routing therefore goes through the raw release instead,
+# exactly as Harbor does it -- see values/vikunja/vikunja-raw.gotmpl.
+additionalObjects: []

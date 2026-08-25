@@ -1,0 +1,16 @@
+kind: AplDatabase
+metadata:
+    name: vikunja
+spec:
+    externalClusters: []
+    recovery: {}
+    replicas: 2
+    resources:
+        limits:
+            cpu: 200m
+            memory: 192Mi
+        requests:
+            cpu: 200m
+            memory: 192Mi
+    size: 5Gi
+    storageClass: vikunja-storage-class

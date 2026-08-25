@@ -1,0 +1,20 @@
+kind: AplApp
+metadata:
+    name: vikunja
+spec:
+    enabled: true
+    adminUsername: apl-vikunja-admin
+    databaseMaxConnections: 28
+    databaseMaxIdleConnections: 6
+    persistence:
+        size: 2Gi
+    teamSync:
+        enabled: true
+    resources:
+        vikunja:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 100m
+                memory: 256Mi
