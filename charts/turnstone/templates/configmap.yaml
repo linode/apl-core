@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "turnstone.fullname" . }}-config
+  labels:
+    {{- include "turnstone.labels" . | nindent 4 }}
+data:
+  TURNSTONE_DB_BACKEND: {{ .Values.database.backend | quote }}
+  TURNSTONE_DB_HOST: {{ include "turnstone.postgresql.host" . | quote }}
+  TURNSTONE_DB_PORT: {{ include "turnstone.postgresql.port" . | quote }}
+  TURNSTONE_DB_NAME: {{ include "turnstone.postgresql.database" . | quote }}
+  TURNSTONE_DB_USER: {{ include "turnstone.postgresql.username" . | quote }}
+  TURNSTONE_SERVER_HOST: "0.0.0.0"
+  TURNSTONE_SERVER_PORT: {{ .Values.server.service.port | quote }}
+  TURNSTONE_CONSOLE_HOST: "0.0.0.0"
+  TURNSTONE_CONSOLE_PORT: {{ .Values.console.service.port | quote }}
+  TURNSTONE_POLL_INTERVAL: "5"
+  {{- if .Values.llm.baseUrl }}
+  TURNSTONE_LLM_BASE_URL: {{ .Values.llm.baseUrl | quote }}
+  {{- end }}
+  TURNSTONE_LLM_PROVIDER: {{ .Values.llm.provider | quote }}

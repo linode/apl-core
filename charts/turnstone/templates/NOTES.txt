@@ -1,0 +1,38 @@
+Turnstone {{ .Chart.AppVersion }} has been deployed.
+
+{{- if .Values.ingress.enabled }}
+
+Access the application via your ingress:
+{{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
+{{- end }}
+
+{{- else }}
+
+To access the Turnstone server, run:
+
+  kubectl port-forward svc/{{ include "turnstone.fullname" . }}-server {{ .Values.server.service.port }}:{{ .Values.server.service.port }}
+
+Then open: http://localhost:{{ .Values.server.service.port }}
+
+To access the Turnstone console (cluster dashboard), run:
+
+  kubectl port-forward svc/{{ include "turnstone.fullname" . }}-console {{ .Values.console.service.port }}:{{ .Values.console.service.port }}
+
+Then open: http://localhost:{{ .Values.console.service.port }}
+
+{{- end }}
+
+Components deployed:
+  - Server:  {{ include "turnstone.fullname" . }}-server  ({{ .Values.server.replicas }} replica(s))
+  - Console: {{ include "turnstone.fullname" . }}-console ({{ .Values.console.replicas }} replica(s))
+{{- if .Values.postgresql.enabled }}
+  - PostgreSQL (bitnami subchart)
+{{- end }}
+
+{{- if not .Values.llm.apiKey }}
+{{- if not .Values.llm.existingSecret }}
+
+WARNING: No LLM API key configured. Set llm.apiKey or llm.existingSecret in your values.
+{{- end }}
+{{- end }}

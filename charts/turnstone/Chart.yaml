@@ -1,0 +1,32 @@
+apiVersion: v2
+name: turnstone
+description: Multi-node AI orchestration platform with tool use, agent routing, and cluster simulation
+type: application
+version: 0.2.0
+appVersion: "1.8.1"
+
+# Vendored from https://github.com/turnstonelabs/turnstone, deploy/helm/turnstone at v1.8.1.
+#
+# Deliberately absent from charts/dependencies.yaml: Turnstone publishes no Helm chart to any
+# registry, so there is nothing for ci/src/update-helm-chart-deps.mjs to resolve. That also means
+# the local patch below cannot be silently overwritten by a dependency bump, which is what made
+# patching charts/gitea lossy in the past. Precedent for a source-only vendored chart:
+# charts/tekton-dashboard, charts/cert-manager-webhook-linode, charts/kubeflow-pipelines.
+#
+# Upstream sets appVersion 0.3.0 against an app at 1.8.1, and turnstone.image falls back to
+# .Chart.AppVersion -- so the upstream default resolves to an image tag that may not exist.
+# Corrected here, and pinned explicitly from values/turnstone/turnstone.gotmpl regardless.
+#
+# The upstream postgresql ~18.8.0 dependency (charts.bitnami.com) is removed: the platform runs
+# CloudNativePG, wired through database.external.* and values/turnstone/turnstone-otomi-db.gotmpl.
+# Chart.lock is removed with it. Keep postgresql.enabled: false in values.
+#
+# Local additions, all absent upstream and all required to deploy here -- see TURNSTONE.md:
+#   extraEnv / extraEnvFrom     the entire config surface (OIDC, TURNSTONE_CONFIG, SSL_CERT_FILE)
+#   volumes / volumeMounts      the config.toml ConfigMap and the CA trust bundle
+#   initContainers              concatenates the platform CA onto the image's 150-cert bundle
+#   podSecurityContext etc.     house pattern; upstream sets no security context at all
+#   automountServiceAccountToken  the server executes model-authored shell in its own pod
+#   serviceAccount.create       upstream creates one unconditionally, so a pre-existing SA collides
+#   TURNSTONE_NODE_ID           upstream never sets it; the default is {hostname}_{4 random hex},
+#                               leaving a stale services-registry row on every pod restart

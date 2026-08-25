@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "turnstone.fullname" . }}-console
+  labels:
+    {{- include "turnstone.labels" . | nindent 4 }}
+    app.kubernetes.io/component: console
+spec:
+  replicas: {{ .Values.console.replicas }}
+  {{- if eq (int .Values.console.replicas) 1 }}
+  # The console registers itself under the fixed service_id "console" and
+  # deregisters on shutdown. Under RollingUpdate the outgoing pod's
+  # deregister runs *after* the incoming pod registers and deletes its
+  # row -- and the heartbeat only touches last_heartbeat, so the row is
+  # never recreated and the console stays invisible in the registry until
+  # the next clean start. Recreate orders shutdown strictly before
+  # startup. Only valid at one replica; see console.replicas.
+  strategy:
+    type: Recreate
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "turnstone.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: console
+  template:
+    metadata:
+      labels:
+        {{- include "turnstone.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: console
+    spec:
+      serviceAccountName: {{ include "turnstone.serviceAccountName" . }}
+      {{- /* See deployment-server.yaml: nothing here consumes a ServiceAccount token. */}}
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.initContainers }}
+      initContainers:
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+      {{- with .Values.console.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.console.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.console.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: console
+          image: {{ include "turnstone.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - turnstone-console
+            - --host=0.0.0.0
+            - --port={{ .Values.console.service.port }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.console.service.port }}
+              protocol: TCP
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "turnstone.fullname" . }}-config
+            - secretRef:
+                name: {{ include "turnstone.llm.secretName" . }}
+                optional: true
+            {{- with .Values.extraEnvFrom }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
+            {{- end }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- tpl (toYaml .) $ | nindent 12 }}
+          {{- end }}
+          env:
+            {{- include "turnstone.db.env" . | nindent 12 }}
+            {{- /* The console is a single logical node; its pod name is still the stable id. */}}
+            - name: TURNSTONE_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            {{- with .Values.extraEnv }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
+            {{- end }}
+            # Self-registration URL for the service registry. Unlike a
+            # server node the console is one logical endpoint behind its
+            # Service, so the Service DNS name is correct here. Without
+            # it the console registers gethostname() (its pod name),
+            # which no server node can resolve. Stops at ".svc" rather
+            # than assuming a "cluster.local" DNS domain, which is
+            # configurable per cluster.
+            - name: TURNSTONE_CONSOLE_URL
+              value: "http://{{ include "turnstone.fullname" . }}-console.{{ .Release.Namespace }}.svc:{{ .Values.console.service.port }}"
+          {{- if or .Values.auth.existingSecret .Values.auth.jwtSecret }}
+            - name: TURNSTONE_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "turnstone.auth.secretName" . }}
+                  key: TURNSTONE_JWT_SECRET
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.console.resources | nindent 12 }}

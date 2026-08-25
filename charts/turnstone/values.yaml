@@ -1,0 +1,159 @@
+# -- Container image settings
+image:
+  repository: ghcr.io/turnstonelabs/turnstone
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# -- Database configuration
+database:
+  # Backend type (postgresql)
+  backend: postgresql
+  # External database settings (used when postgresql.enabled is false)
+  external:
+    host: ""
+    port: 5432
+    database: turnstone
+    username: turnstone
+    # Secret holding the password for `username`. Leave empty to supply
+    # `password` inline below instead.
+    existingSecret: ""
+    # Key within existingSecret holding the password. CloudNativePG
+    # generates "password"; other operators differ.
+    existingSecretPasswordKey: password
+    password: ""
+    sslmode: prefer
+
+# -- Bitnami PostgreSQL subchart
+postgresql:
+  enabled: true
+  auth:
+    database: turnstone
+    username: turnstone
+
+# -- Turnstone server (main API + web UI)
+server:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: "2"
+      memory: 1Gi
+  service:
+    type: ClusterIP
+    port: 8080
+  # -- Node scheduling constraints
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
+
+# -- Turnstone console (cluster dashboard)
+console:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 512Mi
+  service:
+    type: ClusterIP
+    port: 8090
+  # -- Node scheduling constraints
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
+
+# -- Database migration Job (post-install/pre-upgrade hook)
+migrate:
+  # -- Node scheduling constraints
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
+
+# -- LLM provider configuration
+llm:
+  baseUrl: ""
+  provider: openai
+  apiKey: ""
+  existingSecret: ""
+
+# -- Authentication (always enabled, JWT secret required)
+auth:
+  jwtSecret: ""
+  existingSecret: ""
+
+# -- Ingress configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  #  - host: turnstone.example.com
+  #    paths:
+  #      - path: /
+  #        pathType: Prefix
+  #        service: server
+  tls: []
+  #  - secretName: turnstone-tls
+  #    hosts:
+  #      - turnstone.example.com
+
+# ---------------------------------------------------------------------------
+# Local additions -- none of the following exist upstream. See Chart.yaml for
+# why each one is here. Every default keeps the chart rendering unchanged, so
+# `helm template` with no overrides produces the upstream manifests.
+# ---------------------------------------------------------------------------
+
+# -- ServiceAccount. Upstream emits one unconditionally; set create: false to
+# reuse an existing one instead of colliding with it.
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+# -- Turnstone reads nothing from /var/run/secrets/kubernetes.io, and the server
+# executes model-authored shell commands as subprocesses inside its own pod, so
+# a projected token there is pure downside. Applied to both Deployments and the
+# ServiceAccount itself.
+automountServiceAccountToken: false
+
+# -- Pod-level security context, applied to both Deployments. The image runs as
+# uid/gid 1000 (Dockerfile `useradd` with no --uid, then USER turnstone).
+podSecurityContext: {}
+
+# -- Container-level security context, applied to both Deployments.
+# NOTE: readOnlyRootFilesystem is not usable without also mounting emptyDirs
+# over /tmp, /data and /home/turnstone -- the bash tool writes scripts to /tmp
+# (core/background_shells.py), /data is the process cwd, and npx-based MCP
+# servers write ~/.npm.
+securityContext: {}
+
+# -- Extra env vars for both Deployments. Full k8s env syntax, so valueFrom
+# works. Rendered through `tpl`, so values may contain template expressions.
+extraEnv: []
+#  - name: TURNSTONE_OIDC_ISSUER
+#    value: https://keycloak.example.com/realms/main
+#  - name: ANTHROPIC_API_KEY
+#    valueFrom:
+#      secretKeyRef: {name: turnstone-anthropic-key, key: ANTHROPIC_API_KEY}
+
+# -- Extra envFrom sources for both Deployments, appended after the chart's own
+# ConfigMap and LLM Secret.
+extraEnvFrom: []
+
+# -- Volumes and mounts for both Deployments. Needed for a config.toml holding
+# [models.*] definitions (the only declarative way to configure a model: the
+# container command is fixed, so --provider/--model cannot be passed) and for a
+# CA trust bundle.
+volumes: []
+volumeMounts: []
+
+# -- Init containers for both Deployments. Rendered through `tpl`.
+# The platform CA cannot simply be mounted over /etc/ssl/certs/ca-certificates.crt:
+# httpx honours SSL_CERT_FILE, which *replaces* the trust store rather than adding
+# to it, so doing that would drop the image's 150 public roots and break TLS to
+# api.anthropic.com. Concatenate instead.
+initContainers: []

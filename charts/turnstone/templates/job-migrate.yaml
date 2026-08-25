@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "turnstone.fullname" . }}-migrate
+  labels:
+    {{- include "turnstone.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migrate
+  annotations:
+    # post-install, not pre-install: on a first install nothing the
+    # migration needs exists yet — not the ConfigMap, not the Secret, and
+    # with the bundled subchart not the database either, since Helm
+    # creates ordinary resources only once hooks have finished. On an
+    # upgrade all of it is already running, so pre-upgrade is both safe
+    # and preferable: migrations land before the new code rolls out
+    # rather than after.
+    "helm.sh/hook": post-install,pre-upgrade
+    "helm.sh/hook-weight": "-1"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  # Helm does not wait for the database to be ready before running
+  # post-install hooks, so on a first install this Job is what waits: it
+  # exits non-zero until PostgreSQL accepts connections, and the retry
+  # budget has to cover a cold StatefulSet pulling its image and
+  # initialising.
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        {{- include "turnstone.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migrate
+    spec:
+      serviceAccountName: {{ include "turnstone.serviceAccountName" . }}
+      restartPolicy: OnFailure
+      {{- with .Values.migrate.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.migrate.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.migrate.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: migrate
+          image: {{ include "turnstone.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - python
+            - -m
+            - turnstone.core.storage._migrate
+          env:
+            {{- include "turnstone.db.env" . | nindent 12 }}

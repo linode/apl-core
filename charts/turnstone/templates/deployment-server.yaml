@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "turnstone.fullname" . }}-server
+  labels:
+    {{- include "turnstone.labels" . | nindent 4 }}
+    app.kubernetes.io/component: server
+spec:
+  replicas: {{ .Values.server.replicas }}
+  selector:
+    matchLabels:
+      {{- include "turnstone.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: server
+  template:
+    metadata:
+      labels:
+        {{- include "turnstone.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: server
+    spec:
+      serviceAccountName: {{ include "turnstone.serviceAccountName" . }}
+      {{- /* Turnstone reads nothing from /var/run/secrets/kubernetes.io, and the server runs
+             model-authored shell commands as subprocesses in this pod. Do not hand them a token. */}}
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.initContainers }}
+      initContainers:
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: server
+          image: {{ include "turnstone.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - turnstone-server
+            - --host
+            - "0.0.0.0"
+            - --port
+            - {{ .Values.server.service.port | quote }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.server.service.port }}
+              protocol: TCP
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "turnstone.fullname" . }}-config
+            - secretRef:
+                name: {{ include "turnstone.llm.secretName" . }}
+                optional: true
+            {{- with .Values.extraEnvFrom }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
+            {{- end }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- tpl (toYaml .) $ | nindent 12 }}
+          {{- end }}
+          env:
+            {{- include "turnstone.db.env" . | nindent 12 }}
+            {{- /* Upstream never sets this. The default is {hostname}_{4 random hex}, so every
+                   restart registers a new node and orphans the previous services-registry row. */}}
+            - name: TURNSTONE_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            {{- with .Values.extraEnv }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
+            {{- end }}
+            # Each replica is a distinct node in the rendezvous ring, so it
+            # must advertise an address that reaches *itself*. The Service
+            # DNS name would load-balance across every replica, sending
+            # console traffic routed for node A to an arbitrary pod; the
+            # default (gethostname(), i.e. the pod name) is not resolvable
+            # at all. The pod IP is unique, routable in-cluster, and
+            # re-registered on every start, so churn is self-healing.
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: TURNSTONE_ADVERTISE_URL
+              value: "http://$(POD_IP):{{ .Values.server.service.port }}"
+          {{- if or .Values.auth.existingSecret .Values.auth.jwtSecret }}
+            - name: TURNSTONE_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "turnstone.auth.secretName" . }}
+                  key: TURNSTONE_JWT_SECRET
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.server.resources | nindent 12 }}
