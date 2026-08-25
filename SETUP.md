@@ -97,14 +97,20 @@ docker build --build-arg VERSION=6.2.1-fork \
 docker images apl-core-local:v6.2.1-fork        # MUST show the image; do not trust the exit code
 kind load docker-image apl-core-local:v6.2.1-fork --name apl
 
-# 5b. Vikunja needs a patched apl-api (the AppList enum) and, for the tile logo, apl-console.
-#     Both are tagged with the names the charts already expect, so no registry is involved.
+# 5b. Vikunja needs a patched apl-api (the AppList enum), apl-console (the tile logo) and
+#     apl-tasks (the team-sync operator). All three are tagged with the names the charts
+#     already expect, so no registry is involved.
 #     See vikunja-patches/README.md for the full explanation.
 VP=$PWD/vikunja-patches
-rm -rf /tmp/apl-api /tmp/apl-console
+rm -rf /tmp/apl-api /tmp/apl-console /tmp/apl-tasks
 git clone --depth 1 https://github.com/linode/apl-api.git /tmp/apl-api
 git -C /tmp/apl-api apply "$VP/apl-api.patch"
-( cd /tmp/apl-api && APL_CORE_PATH="$VP/.." npm run schema:sync )   # bakes in THIS values-schema
+#     Bake in THIS values-schema. npm runs in a container: the host Node is broken on this
+#     machine and CLAUDE.md requires that no step need it. See "Do not run npm on the host".
+docker run --rm --user "$(id -u):$(id -g)" \
+  -v /tmp/apl-api:/w -v "$VP/..":/core:ro -w /w -e APL_CORE_PATH=/core \
+  linode/apl-tools:v3.0.1 npm run schema:sync
+diff -q "$VP/../values-schema.yaml" /tmp/apl-api/src/values-schema.yaml   # must print nothing
 docker build -t docker.io/linode/apl-api:v0.0.0-vikunja /tmp/apl-api
 docker images docker.io/linode/apl-api:v0.0.0-vikunja
 kind load docker-image docker.io/linode/apl-api:v0.0.0-vikunja --name apl
@@ -114,6 +120,21 @@ cp "$VP/apl-console/public/logos/vikunja_logo.svg" /tmp/apl-console/public/logos
 docker build -t docker.io/linode/apl-console:v0.0.0-vikunja /tmp/apl-console
 docker images docker.io/linode/apl-console:v0.0.0-vikunja
 kind load docker-image docker.io/linode/apl-console:v0.0.0-vikunja --name apl
+
+#     apl-tasks does NOT use its own Dockerfile: that one runs `npm ci` against GitHub Packages,
+#     which needs an NPM_TOKEN with read:packages. The Dockerfile below takes the resolved
+#     node_modules out of the published linode/apl-tasks:main image instead, so no token is
+#     needed. Only typescript and its @types come from public npm.
+git clone --depth 1 https://github.com/linode/apl-tasks.git /tmp/apl-tasks
+git -C /tmp/apl-tasks apply "$VP/apl-tasks.patch"
+docker build -f "$VP/apl-tasks-vikunja.Dockerfile" \
+             -t docker.io/linode/apl-tasks:v0.0.0-vikunja /tmp/apl-tasks
+docker images docker.io/linode/apl-tasks:v0.0.0-vikunja
+#     This build has two ways to exit 0 having produced nothing usable, so check the artifact.
+#     Expected: envalid reporting VIKUNJA_URL and VIKUNJA_OPERATOR_NAMESPACE as missing.
+docker run --rm --entrypoint sh docker.io/linode/apl-tasks:v0.0.0-vikunja \
+  -c 'node dist/src/operators/vikunja/vikunja.js'
+kind load docker-image docker.io/linode/apl-tasks:v0.0.0-vikunja --name apl
 
 # 6. generate the chart schema -- REQUIRED, silently skipped validation otherwise
 bin/gen-chart-schema.sh
@@ -137,13 +158,14 @@ versions:
   # kind-loaded image needs. 'vikunja' as a tag would be treated as a branch and pulled Always.
   api: 0.0.0-vikunja
   console: 0.0.0-vikunja
+  tasks: 0.0.0-vikunja
 apps:
   metrics-server:
     extraArgs: ["--kubelet-insecure-tls=true"]
   vikunja:
     enabled: true
-    # teamSync needs a patched apl-tasks image, which cannot be built without a GitHub
-    # Packages token. Leave it off. See vikunja-patches/README.md.
+    teamSync:
+      enabled: true
 EOF
 helm install -f values.yaml apl ./chart/apl
 
@@ -170,6 +192,22 @@ Client tools: `kubectl` v1.36.3, `helm` v4.2.2, `kind` v0.32.0, `docker` 29.6.2.
 
 **No host Node.js required.** Every Node step runs inside a container. The machine this was built on
 has a broken host Node and never needed it.
+
+### Do not run npm on the host ✅
+
+This machine's Node exits immediately with `node: /usr/lib/libm.so.6: version 'GLIBC_2.44' not
+found`, so *any* `npm` invocation fails — including one whose script never executes Node. Step 5b's
+`schema:sync` is exactly that case: the script is a single `cp`, but `npm` has to start to run it.
+
+The general form, which works for any script in any of the sibling repositories:
+
+```bash
+docker run --rm --user "$(id -u):$(id -g)" -v <repo>:/w -w /w linode/apl-tools:v3.0.1 npm run <script>
+```
+
+`--user` matters: without it the container writes as root into a host-mounted directory and leaves
+files you cannot edit afterwards. `linode/apl-tools:v3.0.1` is already local — the operator build
+starts `FROM` it.
 
 Two properties of kind's StorageClass, worth knowing before they look like faults:
 
@@ -532,20 +570,26 @@ retry loop; against a fixed operator it should stay at 1.
 `initialDelaySeconds: 30`, then `1/1` while the install is still running. Set
 `gateOnReadiness=true` if you want `helm install --wait` to block, with `--timeout 30m`.
 
-⚠ **Observed with `APPS_REVISION=v6.2.1`: `1/1 Running` with no readinessProbe at all.** Argo CD
-replaces the operator Deployment with `charts/apl-operator` fetched at `APPS_REVISION`, and the
-`v6.2.1` chart predates the probe that `main` added — so the probe silently disappeared and
-`gateOnReadiness` had nothing to act on. That is the skew described in step 5, caught here.
-
-**On the next clean run, with `APPS_REVISION` derived from `merge-base`, expect the probe to survive
-the handover** — the fetched chart and the image then agree. Check it explicitly, because this is the
-cheapest single indicator that the two halves match:
+**The probe surviving the Argo CD handover is the cheapest single indicator that the two halves
+match.** Argo CD replaces the operator Deployment with `charts/apl-operator` fetched at
+`APPS_REVISION`; if that chart and the image disagree, the probe silently disappears and
+`gateOnReadiness` has nothing to act on. Check it explicitly:
 
 ```bash
 kubectl get deploy apl-operator -n apl-operator \
   -o jsonpath='{.spec.template.spec.containers[0].readinessProbe.exec.command}{"\n"}'
-# expect a pgrep command; empty output means the chart and the image disagree -- see step 5
+# expect ["/bin/sh","-c","pgrep -f 'apl-operator' > /dev/null"]
+# empty output means the chart and the image disagree -- see step 5
+
+kubectl get deploy apl-operator -n apl-operator -o jsonpath='{..image}{"\n"}'
+# expect apl-core-local:v6.2.1-fork -- if Argo CD reverted this to an upstream image, so did
+# everything else it owns
 ```
+
+✅ **Verified on the `APPS_REPO_URL`=fork run: the probe survives and the image stays local.** An
+earlier version of this file recorded the opposite under `APPS_REVISION=v6.2.1` — that chart predates
+the probe `main` added, so it vanished at handover. That was the step 5 skew, and deriving the
+revision from the fork's own `HEAD` is what fixed it.
 
 An earlier version of this file claimed the pod sits at `0/1` *throughout*. It does not, under either
 revision.
@@ -594,20 +638,25 @@ curl -sk -o /dev/null -w '%{http_code}\n' https://console.$(kubectl get cm welco
 app behind it was never deployed. Do not read a 404 as a certificate or DNS problem; it is the
 opposite, it proves both are working.
 
-Observed on a clean run with `APPS_REVISION` set: **~4 minutes** to `completed`, attempt **1**, then
-a further **~5 minutes** for Argo CD to converge. End state: **55 pods** Running/Completed, **39/39
-applications Synced + Healthy**, **20 Helm releases** all at **revision 1**, `platform-istio` holding
-the pool's first address.
+✅ **Current baseline**, measured on a clean run with `APPS_REPO_URL` pointing at the fork and
+`APPS_REVISION=$(git rev-parse HEAD)`, with `apps.vikunja` enabled:
 
-⚠ **These figures were recorded with `APPS_REVISION=v6.2.1`, which step 5 now corrects.** They were
-reproduced exactly on a second clean run, so they are solid *for that revision* — but 8 of the 25
-chart paths change when `APPS_REVISION` is derived from `merge-base`, so the pod count in particular
-may shift. Treat them as the previous baseline to compare against, not as the target. Re-record them
-after the next clean run and delete this note.
+| | |
+|---|---|
+| time to `completed` | **~4.5 minutes**, attempt **1** |
+| Argo CD convergence after that | **~5 minutes** |
+| pods Running/Completed | **60** |
+| applications Synced + Healthy | **45/45** |
+| Helm releases, all revision 1 | **25** |
+| `platform-istio` external IP | the pool's **first** address |
 
-**55 pods, not 40.** The earlier figure in this file was recorded from a run where `APPS_REVISION`
-was unset, so everything Argo CD owns — the console, the API, Prometheus, the addons — was missing.
-A pod count well below this is the same symptom.
+Earlier revisions of this file recorded **55 pods / 39 apps / 20 releases** (at `APPS_REVISION=v6.2.1`)
+and **40 pods** (with `APPS_REVISION` unset). The 40-pod figure is the `APPS_REVISION` failure from
+step 5 — everything Argo CD owns was missing. **A pod count well below the baseline is that same
+symptom**, so compare against it rather than reading "most pods are Running" as success.
+
+Counts drift with the enabled app set; treat the table as an order-of-magnitude check, and the
+`awk`-based "must be empty" checks above as the real gate.
 
 The gateway takes the *first free address in the pool*. If something else claims a LoadBalancer
 address first, `domainSuffix` no longer matches and hostnames break.
@@ -846,13 +895,14 @@ when `hasExternalDNS` is set to true". This lab sets it with `hasExternalDNS: fa
 succeeds — which is what [#4](https://github.com/qvest-digital/apl-core/pull/4) and
 [#6](https://github.com/qvest-digital/apl-core/pull/6) encode.
 
-## 10. Vikunja ⬜
+## 10. Vikunja ✅ (except the browser checks)
 
 Only relevant on `feat/vikunja-integration`. The design, the reasoning and everything that was
 measured live in `VIKUNJA.md`; this is the check list.
 
-**Never run on a cluster.** Every step below is unverified. The container behavior behind it is
-not — see `VIKUNJA.md` Phase 4 for exactly what was measured and how.
+**Everything below except the browser steps has been run against a clean install.** A previous run
+found two bugs, both now fixed in this branch — see "Two ordering bugs" at the end of this section.
+Re-run these anyway: they are what caught them.
 
 ```bash
 D=$(kubectl get httproute gitea -n gitea -o jsonpath='{.spec.hostnames[0]}' | sed 's/^gitea\.//')
@@ -860,30 +910,118 @@ D=$(kubectl get httproute gitea -n gitea -o jsonpath='{.spec.hostnames[0]}' | se
 # 1. the app itself
 kubectl get pods -n vikunja
 kubectl get cluster -n vikunja                      # CNPG, expect Cluster in healthy state
-kubectl get externalsecrets -n vikunja              # all SecretSynced
-kubectl get jobs -n vikunja                         # vikunja-bootstrap-admin, 1/1
+kubectl get externalsecrets -n vikunja              # all 4 SecretSynced
+kubectl get jobs -n vikunja                         # vikunja-bootstrap-admin, 1/1 Complete
 
 # 2. it answers, AND it found the identity provider.
 #    An empty providers list is the failure this integration is most likely to hit:
 #    the pod is Running and Ready either way.
-kubectl exec -n vikunja deploy/vikunja -- /app/vikunja/vikunja version
+kubectl exec -n vikunja deploy/vikunja -c vikunja -- /app/vikunja/vikunja version
 curl -sk "https://vikunja.$D/api/v1/info" | jq '.auth.openid_connect'
+# expect enabled:true and ONE provider, name "otomi-idp", auth_url on keycloak.$D
+```
 
-# 3. the tile. Empty output means the apl-api image from step 5b did not land.
+### The admin account, and why `Job Complete` is not enough ✅
+
+`vikunja-bootstrap-admin` creating the user is what the whole team-sync path stands on, and the Job
+reports `Complete` on a re-run that did nothing. Prove the credential instead:
+
+```bash
+U=$(kubectl get secret vikunja-admin-credentials -n vikunja -o jsonpath='{.data.username}' | base64 -d)
+P=$(kubectl get secret vikunja-admin-credentials -n vikunja -o jsonpath='{.data.password}' | base64 -d)
+T=$(curl -sk -X POST "https://vikunja.$D/api/v1/login" -H 'Content-Type: application/json' \
+      -d "{\"username\":\"$U\",\"password\":\"$P\"}" | jq -r .token)
+[ -n "$T" ] && [ "$T" != null ] && echo "admin login OK" || echo "ADMIN LOGIN FAILED"
+```
+
+### Team sync ✅
+
+On in the Quickstart values; needs the patched `apl-tasks` image from step 5b, which builds with
+**no** credentials — see `vikunja-patches/README.md`.
+
+```bash
+kubectl get pods -n apl-vikunja-operator            # 1/1 Running, not CrashLoopBackOff
+kubectl logs -n apl-vikunja-operator deploy/apl-vikunja-operator --tail=30
+curl -sk -H "Authorization: Bearer $T" "https://vikunja.$D/api/v1/teams" | jq -r '.[].name'
+```
+
+**`1/1 Running` proves nothing here.** The operator is event-driven: it reconciles on secret and
+configmap events, logs the outcome, and then sits silent whether it succeeded or failed. Read the
+log, and grep for both outcomes rather than only the good one:
+
+```bash
+kubectl logs -n apl-vikunja-operator deploy/apl-vikunja-operator | grep -E 'Success!|Errors found'
+```
+
+Expect `Success! Vikunja setup/reconfiguration completed` and a `team-<name>` per platform team.
+A team only appears once its Keycloak group exists, and a *member* only once that user has logged
+into Vikunja at least once — the operator treats a missing user as normal and retries. So an empty
+member list straight after install is not a failure. See `VIKUNJA.md` Phase 3.
+
+### Browser checks ⬜ — no command covers these
+
+`/apps/admin` shows a Vikunja tile with its logo linking to `https://vikunja.$D/`; a team view shows
+the same tile with the same URL (that is `isShared` working); and the Vikunja login page offers
+**otomi-idp**, which round-trips through Keycloak and creates the account on first login. Logging in
+this way is also the only way to make a team *member* appear, so it gates the check above.
+
+The tile also has an API-level check, if you have an `ID_TOKEN` — empty output means the `apl-api`
+image from step 5b did not land:
+
+```bash
 curl -sk -H "Authorization: Bearer $ID_TOKEN" "https://api.$D/v1/apps" | jq '.[] | select(.id=="vikunja")'
 ```
 
-Then in a browser: `/apps/admin` shows a Vikunja tile with its logo linking to `https://vikunja.$D/`;
-a team view shows the same tile with the same URL (that is `isShared` working); and the Vikunja login
-page offers **otomi-idp**, which round-trips through Keycloak and creates the account on first login.
+### Expected during startup, not faults ✅
 
-If `providers` is `[]`, check in this order: the `custom-ca` secret exists in the `vikunja`
-namespace, the pod actually mounted it, and Keycloak was reachable when the pod last started. With
-`requireavailability: true` the pod should be crash-looping rather than serving without SSO — if it
-is serving with an empty list, that setting did not reach the config.
+**Vikunja crash-loops until Keycloak serves.** `requireavailability: true` makes it exit rather than
+come up without SSO, and Keycloak is minutes behind it on a cold install:
 
-Team sync is off. It needs a patched `apl-tasks` image that cannot be built without a GitHub
-Packages token — `vikunja-patches/README.md` has the details.
+```
+OpenID Connect provider 'otomi-idp' not available after 3 attempts:
+  503 Service Unavailable: no healthy upstream
+```
+
+Observed **4 restarts** before it settled. This is the setting working — a 503 from the gateway
+proves TLS and the platform CA are fine and only the upstream is missing. It is the *opposite* of
+the `providers: []` failure, which is what you get when Vikunja comes up happily without SSO.
+
+If `providers` really is `[]`: check the `custom-ca` secret exists in the `vikunja` namespace, that
+the pod mounted it, and that Keycloak was reachable at last start. A pod serving with an empty list
+means `requireavailability` never reached the config.
+
+### Two ordering bugs, both fixed here ⛔
+
+Neither produced a usable error, and both passed the whole test suite.
+
+**1. The bootstrap Job raced the Deployment.** `vikunja-bootstrap-admin` runs `kubectl exec
+deployments/vikunja` with no readiness gate, so while Vikunja waited on Keycloak every attempt died
+with `unable to upgrade connection: container not found ("vikunja")` — 6 of its 30 retries burnt on a
+*predictable* wait. `values/vikunja/vikunja-raw.gotmpl` now has a `wait-for-vikunja` init container
+(`kubectl wait --for=condition=Available`, shell-free because the image is distroless) and the Role
+grants `list`/`watch` as well as `get`, which `kubectl wait` needs.
+
+**2. `keycloakUrl` had no port.** The Service exposes 9000/8080/8443 and **not** 80, so a port-less
+`http://` URL resolved to :80 and every request hung until the client's connect timeout. The operator
+stayed `1/1 Running` and reported only:
+
+```
+Error reading team membership from Keycloak: TypeError: fetch failed
+```
+
+Teams were still created — only *membership* failed — so the app looked half-working. Fixed in
+`values/apl-vikunja-operator/apl-vikunja-operator-raw.gotmpl` to `…svc.cluster.local:8080`, matching
+`$oidcBaseUrlBackchannel` in `helmfile.d/snippets/derived.gotmpl`.
+
+⚠ `apl-keycloak-operator`'s `KEYCLOAK_ADDRESS_INTERNAL`
+(`values/apl-keycloak-operator/apl-keycloak-operator-raw.gotmpl:88`) is written port-less in the same
+way. Not investigated — it may append the port in code, or it may be the same latent bug.
+
+The generalization is worth more than either fix: **an in-cluster URL without a port fails as a
+timeout, not as a refusal.** A wrong port that is closed gives `ECONNREFUSED` immediately; a port
+nothing listens on gives silence until a timeout fires, and most clients report that as an
+uninformative wrapper like `fetch failed`. When a client hangs and then reports nothing useful,
+check the port against `kubectl get svc -o jsonpath='{.spec.ports}'` before anything else.
 
 ## Changing values after install
 
@@ -906,6 +1044,38 @@ silently. Without the flag the change still lands, but the release is left `STAT
 configuration lives in the git values repo and restarting the operator can re-run bootstrap and
 regenerate the platform CA.
 
+### Do not use this to enable a *new app* on a running cluster ⬜
+
+Tried, and it does not work. Enabling `apps.vikunja` on an installed cluster needs a new
+`APPS_REPO_URL`/`APPS_REVISION`, because `charts/vikunja` does not exist at the revision Argo CD is
+already using. Three things then compound:
+
+1. **`helm upgrade` loses the operator Deployment.** Argo CD's own `apl-operator-apl-operator`
+   Application manages that same Deployment with `selfHeal: true`, and it wins. Helm writes the
+   `chart/apl` shape (volume `otomi-values`, `VALUES_INPUT=/secret/values.yaml`); Argo CD reverts it
+   to the `charts/apl-operator` shape (volume `apl-values`, no `VALUES_INPUT`) within seconds.
+2. **The two charts genuinely differ, and that is by design.** `chart/apl` bootstraps from a
+   `values-secret`; `charts/apl-operator` has no such volume because after bootstrap the values live
+   in the git repo. Harmless normally — fatal if the operator ever needs to bootstrap again.
+3. **Which it does, if the status ConfigMap is not `completed`.** The operator re-runs bootstrap on
+   every start until then, and under Argo CD's spec it cannot: `VALUES_INPUT is required for
+   bootstrap`, crash-loop. Patching that one Application by hand does not help — `charts/apl-operator`
+   renders the same spec at every revision.
+
+Repeated attempts also grow the values secret until `createK8sSecret` fails with
+`RequestEntityTooLarge: limit is 3145728`, at which point the cluster is unrecoverable.
+
+**The same `selfHeal` also blocks hand-patching a values fix in to test it.** Verified while
+diagnosing the `keycloakUrl` port bug in step 10: patching the generated Secret is reverted by
+external-secrets within a second, and patching the `ExternalSecret` behind it is reverted by Argo CD
+within about ten. Both revert cleanly, so nothing is left behind — but there is no quick way to try a
+`values/` change on a running cluster. Prove the *diagnosis* in place instead (`kubectl exec` into the
+pod and reproduce the call by hand), then rebuild to prove the fix.
+
+**Recreate the cluster instead.** It is ~10 minutes with the Quickstart and images already built,
+which is faster than diagnosing any of the above — consistent with `CLAUDE.md`'s "a half-installed
+platform is not salvageable".
+
 ## Traps
 
 Each of these cost real time.
@@ -920,3 +1090,7 @@ Each of these cost real time.
 | `helm uninstall apl` as a "reset" | removes the operator only; every operator-created release survives |
 | `docker system prune -a` | destroys unrelated projects' containers, images and volumes |
 | Verifying step 2 before the node is Ready | looks like a broken cluster; it just needs ~15s |
+| Running `npm` on the host | this machine's Node is broken; even a script that never runs Node fails |
+| An in-cluster URL with no port | resolves to :80, hangs to a timeout, reports `fetch failed` — not a refusal |
+| Reading `1/1 Running` as "working" | event-driven operators log the failure and then sit silent |
+| Trusting a Job's `Complete` | a re-run that did nothing also reports `Complete`; test the effect |

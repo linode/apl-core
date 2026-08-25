@@ -85,6 +85,28 @@ read `versions.yaml` and nothing else. It now merges values over the file, which
 `UPGRADE.md` asks for: four components float on `main` and an installation could not pin them
 without editing a tracked upstream file.
 
+⛔ **That merge was backwards for four commits, and it failed silently.** sprig's `merge dest src`
+lets the *destination* win, and a Go template pipeline puts the piped value last: `X | merge Y` calls
+`merge(Y, X)`, so `Y` wins. Written as `($v | get "versions" dict) | merge $versions`, the
+destination was `versions.yaml` — every pin in values was accepted, validated against the schema,
+and then dropped. No error, no warning. Every `versions:` line in `SETUP.md` and
+`vikunja-patches/README.md` was a no-op, so `apl-api` would have kept running `:main` without the
+`AppList` enum and there would have been no Vikunja tile — with nothing in any log to say why.
+
+Confirmed empirically rather than by reasoning about sprig, which is the only way to be sure here:
+
+```console
+$ helm template t ./t              # $file = {api: main}, $vals = {api: 0.0.0-vikunja}
+asWritten:  {api: main}            # ($vals | merge $file) -- values silently lost
+flipped:    {api: 0.0.0-vikunja}   # ($file | merge $vals) -- correct
+```
+
+The fix applies the override as the *argument* (`$versions | merge (deepCopy $valuesVersions)`),
+with `deepCopy` because `merge` mutates its destination, and re-applies the derived `core` last so
+it stays authoritative. The Phase 5 lesson is Step 8's, one layer down: **an override that is
+silently ignored is worse than one that errors.** When you add a values override, assert that
+setting it actually changes the rendered output — do not assume the merge went the way it reads.
+
 ---
 
 ## Phase 1 — `apl-core`: deploy the app
@@ -157,6 +179,27 @@ Two releases, copied from Gitea:
 - `values/vikunja-db-secret/vikunja-db-secret-raw.gotmpl`
 
 plus `databases.vikunja` defaults and schema, and `platformBackups.database.vikunja`.
+
+⛔ **A new database needs a fourth entry, in `helmfile.d/snippets/defaults.gotmpl`.** That file
+injects `databases.<name>.storageClass` from `cluster.defaultStorageClass`, and it lists each
+database by name. `vikunja-otomi-db.gotmpl` reads `$vdb.storageClass` unguarded — copied verbatim
+from Gitea, which does the same — so a database missing from that list fails the install with:
+
+```
+failed processing release vikunja-otomi-db: ... executing "stringTemplate" at
+<$vdb.storageClass>: map has no entry for key "storageClass"
+```
+
+That is a *hand-maintained registry* of exactly the kind Phase 5 Step 0 warns about, and it is the
+one that was missed. It is not in `values-schema.yaml`, not in `defaults.yaml`, and not next to
+anything else Vikunja-shaped.
+
+⚠ **`npm run test:ci` cannot catch it, and the fixture is why.**
+`tests/fixtures/env/databases/vikunja.yaml` originally set `storageClass: vikunja-storage-class`,
+copying `gitea.yaml` and `keycloak.yaml`, which both do the same. That satisfies the template from
+the fixture and leaves the injection untested — the suite went green on a branch where the install
+could not render. The fixture now deliberately omits the key, so it exercises the path production
+uses. **A fixture that supplies a value production derives does not test the code; it replaces it.**
 
 ### 1.4 Schema and defaults ✅
 
@@ -297,19 +340,40 @@ Console → apl-api writes the values repo → Argo CD / apl-operator re-render
 
 ⚠ **`teamSync` defaults to `false`, and that is not timidity.** The published `linode/apl-tasks`
 image has no `operator:vikunja` script, so pointing the release at it produces a crash-looping pod.
-It is only safe to switch on once you have built the patched image — and that build needs a GitHub
-Packages token, see below.
+It is only safe to switch on once you have built the patched image, below.
 
-### 3.2 In `apl-tasks` ⚠
+### 3.2 In `apl-tasks` ✅ built
 
 `vikunja-patches/apl-tasks.patch` adds `src/operators/vikunja/`, modelled on `src/operators/gitea/`:
 the same two-object watch, the same manager layout. It creates a `team-<id>` per platform team and
 reconciles membership.
 
-⛔ **This could not be built or run here.** `apl-tasks` depends on `@linode/*` packages on GitHub
-Packages and its Dockerfile expects an `NPM_TOKEN` build secret; an anonymous pull and a `gh` token
-without `read:packages` both return 403. The operator compiles in the sense that it is written
-against the same APIs the other operators use, but **no part of Phase 3 has been executed.**
+✅ **It builds with no credentials**, via `vikunja-patches/apl-tasks-vikunja.Dockerfile`.
+
+`apl-tasks`' own `Dockerfile` cannot be used: it runs `npm ci` against GitHub Packages, which
+requires authentication even for public packages — anonymous and a `gh` token without
+`read:packages` both return 403. The way past that is not a token. The published
+`linode/apl-tasks:main` image already ships a fully resolved `/app/node_modules` with all four
+`@linode/*` packages in it, so **the published image is the dependency source**; only `typescript`
+and its `@types` come from public npm.
+
+The generalization, and the reason this sat blocked for a session: *a private dependency registry
+blocks resolution, not consumption.* If a published image of the same project exists, it has already
+paid that cost. Look for the resolved artifact before looking for the credential.
+
+Verified on the artifact, not the exit code: `dist/src/operators/vikunja/vikunja.js` plus its `lib/`
+exist, `node_modules` is byte-identical to `:main`, `npm run operator:vikunja` is unchanged so
+`charts/apl-vikunja-operator` needs no special-casing, and running the entrypoint reaches the
+operator's own `envalid` check and reports `VIKUNJA_URL` missing — which proves it compiled *and*
+resolved every `@linode/*` import at runtime.
+
+⚠ Two ways this build exits `0` having produced nothing usable, both hit here:
+
+- `tsc` infers `rootDir` from the files it finds. `tsconfig.json`'s `include` lists `jest.config.ts`
+  next to `./src/**/*.ts`; omit that file and `rootDir` collapses to `src/`, output lands in
+  `dist/operators/` instead of `dist/src/operators/`, and `tsc` still exits `0`.
+- `docker build ... > log 2>&1; echo "EXIT=$?"` reports *`echo`'s* status. See `CLAUDE.md` rule 2 —
+  the pipe is not the only way to lose an exit code.
 
 ✅ The API surface it targets *was* exercised, by hand, against a real Vikunja with a plain local
 account — no admin license, no Pro features:
@@ -358,10 +422,25 @@ one-shot Job.
 
 ### What has not ⬜
 
-**No Kubernetes deployment of any of this has been attempted.** The container-level behavior is
-measured; the wiring around it — Argo CD sync, the CNPG database, the ExternalSecrets resolving, the
-HTTPRoute, the bootstrap Job's `kubectl exec`, the Console tile, a real SSO round trip, the operator
-— is not. That is what the clean `SETUP.md` run is for.
+**No Kubernetes deployment of this has been completed.** Three attempts were made and none was
+watched to `completed`, so the wiring — Argo CD sync, the CNPG database, the ExternalSecrets
+resolving, the HTTPRoute, the bootstrap Job, the Console tile, a real SSO round trip, the operator —
+remains unverified. What the attempts *did* buy was two real bugs, both of which passed the full test
+suite and would have been invisible from any amount of reading:
+
+- `databases.vikunja.storageClass` was missing from `helmfile.d/snippets/defaults.gotmpl`, so the
+  install died rendering `vikunja-otomi-db`. See Phase 1.3 — including why `test:ci` could not see it.
+- The `versions` override merged the wrong way and was silently discarded, so every image pin in
+  `SETUP.md` was a no-op. See Phase 0.
+
+The lesson is not "test more", it is that **this integration's failure modes live in the install, not
+in the templates.** The suite renders with fixtures that supply what production derives. Until an
+install reaches `completed`, treat the Phase 1 and 2 ✅ marks as "renders and lints", not "works".
+
+⚠ **Do not try to enable this on a cluster that is already installed.** Argo CD's own
+`apl-operator` Application fights `helm upgrade` for the operator Deployment and wins, and the two
+charts render deliberately different specs. `SETUP.md` § "Do not use this to enable a new app on a
+running cluster" has the full mechanism. Recreate the cluster; it is faster.
 
 ⚠ **Argo CD fetches `charts/*` from a git URL, not from the image.** `charts/vikunja` exists only on
 this branch, so the `vikunja` Application cannot sync until `APPS_REPO_URL` and `APPS_REVISION`
@@ -383,7 +462,9 @@ Work outward. Each step has a cheap check that fails loudly.
    `https://vikunja.<domainSuffix>/`. Check a team view too — `isShared` should put it there with
    the same URL.
 4. **SSO.** Log in as a team member through Keycloak; the account is auto-created.
-5. **Team sync.** Only with a patched `apl-tasks` image and `teamSync.enabled`.
+5. **Team sync.** Needs `teamSync.enabled` and the patched `apl-tasks` image, which builds without
+   credentials — see § 3.2. Expect `apl-vikunja-operator` `1/1 Running`; a `CrashLoopBackOff` almost
+   certainly means the released `linode/apl-tasks` image is in use and has no `operator:vikunja`.
 6. **Suite.** `npm run test:ci` from a clean context — see `CLAUDE.md`.
 
 For a token in steps 2–4: the `otomi` client has `directAccessGrantsEnabled`, so a password grant
@@ -419,6 +500,13 @@ repositories and see everywhere its name appears. That list is your work plan.
 The generalization: **look for hand-maintained registries.** Any enum, any `switch`, any directory
 where files are named after apps. They are invisible from `apl-core` and each one silently drops
 your app.
+
+Then check you can *build* each one before you write code for it, because that is a hard blocker
+found late. Two of the three built with `docker build .`; `apl-tasks` needs a GitHub Packages token,
+which stopped this work for a session. It should not have: **a private dependency registry blocks
+resolution, not consumption.** The project's own published image has already resolved those
+dependencies, so a build stage that copies `node_modules` out of it needs no credential at all.
+Look for the resolved artifact before you go looking for the token.
 
 ### Step 1. Pin what Argo CD fetches before you deploy anything
 

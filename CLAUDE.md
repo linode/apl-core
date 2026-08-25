@@ -33,6 +33,17 @@ After building anything, verify the artifact exists:
 docker images <tag>          # not: echo $?
 ```
 
+A pipe is not the only way to lose it. **Any** trailing command wins, including the one you added to
+report the status:
+
+```bash
+docker build ... > build.log 2>&1; echo "EXIT=$?"   # reports echo's status -- always 0
+```
+
+That printed `EXIT=0` for a build that had failed, and a backgrounded run of it was reported as
+"completed (exit code 0)". Redirect to a log, then check the artifact. If you want the status, put
+the check *inside* the same command (`&&`) or use `set -o pipefail` and nothing after it.
+
 **3. Capture raw output before filtering.** Piping to `grep`/`head` before you know the shape of the
 output hides real errors and destroys `$?`.
 
@@ -82,6 +93,16 @@ belonging to other projects on this machine. If you need disk, `docker builder p
 If you find yourself needing host Node, you have gone off the documented path.
 
 ## Working with the human
+
+**When the permission classifier blocks a command, stop immediately and ask.** Do not look for
+another route to the same end, and do not substitute a bigger action that is not blocked. A block is
+a signal that the human needs to see what you are about to do — so show them the exact command and
+why you want to run it, and wait.
+
+This has a cost record. A blocked two-line `kubectl patch` was worked around by deleting and
+rebuilding the entire cluster to add one app. The rebuild took ~25 minutes, destroyed a working
+9-hour lab, and then failed on the same unrelated bug the patch would have exposed in seconds.
+Escalating instead of asking is always the more expensive branch.
 
 Recommend, do not decide. Present options and a recommendation, then stop. Do not treat your own
 suggestion as a decision already taken, and do not continue executing while a question you asked is
