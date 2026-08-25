@@ -13,10 +13,10 @@ index 062e5dc..b02330d 100644
    "standard-version": {
 diff --git a/src/operators/vikunja/lib/client.ts b/src/operators/vikunja/lib/client.ts
 new file mode 100644
-index 0000000..4aacc4a
+index 0000000..84dc5b7
 --- /dev/null
 +++ b/src/operators/vikunja/lib/client.ts
-@@ -0,0 +1,127 @@
+@@ -0,0 +1,129 @@
 +import { VikunjaTeam, VikunjaTeamMember } from './types/teams'
 +
 +/**
@@ -112,11 +112,13 @@ index 0000000..4aacc4a
 +   * and finding it differs from what you want. Called unconditionally it flips the wrong way,
 +   * and the next reconcile flips it back, forever.
 +   *
-+   * Addressed by numeric user id, not username, which is why the caller re-reads the team after
-+   * adding members: a freshly added member's id is not known before then.
++   * ⛔ The path segment is the **username**, not the numeric user id, despite the route being
++   * documented as `{userID}`. Passing the id returns `404 {"code":1005,"message":"The user does
++   * not exist."}` for an id that demonstrably exists — measured against Vikunja 2.5.0 with the
++   * correct id for a real member. Same convention as removeTeamMember above.
 +   */
-+  async toggleTeamMemberAdmin(teamId: number, userId: number): Promise<void> {
-+    await this.request<unknown>('POST', `/teams/${teamId}/members/${userId}/admin`)
++  async toggleTeamMemberAdmin(teamId: number, username: string): Promise<void> {
++    await this.request<unknown>('POST', `/teams/${teamId}/members/${encodeURIComponent(username)}/admin`)
 +  }
 +}
 +
@@ -259,10 +261,10 @@ index 0000000..287fae3
 +}
 diff --git a/src/operators/vikunja/lib/managers/vikunja-teams.ts b/src/operators/vikunja/lib/managers/vikunja-teams.ts
 new file mode 100644
-index 0000000..a20074e
+index 0000000..31b5d92
 --- /dev/null
 +++ b/src/operators/vikunja/lib/managers/vikunja-teams.ts
-@@ -0,0 +1,136 @@
+@@ -0,0 +1,135 @@
 +import { isMissingOrDuplicateMember, VikunjaClient } from '../client'
 +import { errors } from '../globals'
 +import { VikunjaTeam } from '../types/teams'
@@ -362,10 +364,10 @@ index 0000000..a20074e
 +/**
 + * Brings the per-team admin flag in line with `adminUsernames`.
 + *
-+ * Re-reads the team rather than reusing the membership read above, for two reasons: members added
-+ * moments ago are not in it, and the toggle is addressed by numeric user id which only the server
-+ * knows. A read failure skips the whole pass -- `toggleTeamMemberAdmin` inverts the current value,
-+ * so acting on a guess is worse than not acting at all.
++ * Re-reads the team rather than reusing the membership read above, because members added moments
++ * ago are absent from it and would never get their flag set until some later reconcile. A read
++ * failure skips the whole pass -- `toggleTeamMemberAdmin` inverts the current value, so acting on
++ * a guess is worse than not acting at all.
 + *
 + * The service account is skipped: it owns every team it created and is already admin there.
 + */
@@ -386,14 +388,13 @@ index 0000000..a20074e
 +
 +  for (const member of after.members ?? []) {
 +    if (member.username === serviceAccount) continue
-+    if (member.id === undefined) continue
 +    const shouldBeAdmin = adminUsernames.has(member.username)
 +    if (Boolean(member.admin) === shouldBeAdmin) continue
 +    try {
 +      console.info(
 +        `${shouldBeAdmin ? 'Granting' : 'Revoking'} admin for "${member.username}" on Vikunja team "${team.name}"`,
 +      )
-+      await client.toggleTeamMemberAdmin(team.id, member.id)
++      await client.toggleTeamMemberAdmin(team.id, member.username)
 +    } catch (e) {
 +      errors.push(`Error updating admin flag for "${member.username}" on Vikunja team "${team.name}": ${e}`)
 +    }

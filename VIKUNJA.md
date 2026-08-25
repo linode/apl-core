@@ -449,8 +449,21 @@ it with real membership is what scopes it**. A team admin gets nothing on teams 
 ⛔ **`POST /teams/{id}/members/{userID}/admin` is a TOGGLE, not a set**, and takes no body. The
 reconcile therefore re-reads the team (`GET /teams/{id}` returns `{id, username, admin}` per member)
 and acts only on drift. Calling it unconditionally flips the flag, and the next reconcile flips it
-back, forever. The re-read is also what supplies the numeric user id, which a freshly added member
-does not have until the server assigns it.
+back, forever. The re-read is also what catches members added moments earlier in the same pass.
+
+⛔ **That path segment is the USERNAME, despite being named `{userID}`.** Passing the numeric id —
+which `GET /teams/{id}` hands you in the same object, right beside the username — fails with:
+
+```
+404 {"code":1005,"message":"The user does not exist."}
+```
+
+for an id that demonstrably exists. Measured against Vikunja 2.5.0 with the correct id of a real
+member; the username form on the same member returns `{"id":3,...,"admin":true}`. `DELETE
+/teams/{id}/members/{username}` uses the same convention, so the parameter name is simply wrong.
+This cost a full operator rebuild: the code typechecked, the image built, the operator ran and
+reported `Success!` — and the only evidence was one line in `errors` on each reconcile. Another
+instance of `CLAUDE.md`'s "reading `1/1 Running` as working".
 
 Vikunja's instance-admin API is Pro-licensed — `GET /api/v1/admin/users` returns **404** here — so
 the per-team flag is the only administrative lever available, and admin-of-every-team is the
