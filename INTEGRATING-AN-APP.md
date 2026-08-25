@@ -3,9 +3,10 @@
 How to add a third-party app to this fork as a first-class platform app — its own host, Keycloak SSO,
 a Console tile, a database if it needs one, and platform teams pushed into it.
 
-This is the generalized form of `VIKUNJA.md`, which is the worked example: every rule here was paid
-for once, in that integration or in installing it. Where this file says "see the worked example", the
-detail is there.
+This is the generalized form of two worked examples: `VIKUNJA.md` (a Go web app with teams, needing
+an operator) and `TURNSTONE.md` (an app needing an upstream API credential, with no team concept and
+a stricter TLS stack). Every rule here was paid for once, in one of those integrations or in
+installing it. Where this file says "see the worked example", the detail is in one of those two.
 
 **Status legend:** ✅ proven by running it · ⚠ known-shaky · ⛔ a bug that was found the expensive way
 · ⬜ never executed
@@ -37,10 +38,18 @@ Not every app needs every phase. Answer these four first, because each one adds 
 | Does it need to persist relational data? | Phase 2.3, a CNPG database |
 | Should humans log in with their platform identity? | Phase 2.2 OIDC config, and Phase 3 |
 | Should it appear in the Console? | Phase 3 — and Phase 1 is a hard prerequisite |
-| Should platform teams exist inside it? | Phase 4, an operator in `apl-tasks` |
+| Should platform teams exist inside it? | Phase 4 — **but check it has a team concept at all** |
+| Does it need a credential you cannot generate? | one blank `x-secret`; see 2.4 |
+| Is it written in something other than Go? | ⛔ read 2.8 before anything else |
 
-Write the answers down. "Out of scope" is a legitimate and cheap answer — the worked example
-explicitly excluded projects and user deprovisioning.
+Write the answers down. "Out of scope" is a legitimate and cheap answer — Vikunja explicitly excluded
+projects and user deprovisioning, and Turnstone dropped the whole of Phase 4.
+
+⛔ **Ask what the app's tenancy model actually is before planning Phase 4.** Turnstone has no team
+object at all — only organizations and roles — so an operator would have had nothing to push into.
+The question is not "how do I sync teams" but "does this app have teams". If it does not, the answer
+is almost always claim-driven role mapping (4.1, model one), which needs nothing outside `values/`
+and deletes the entire phase.
 
 ---
 
@@ -154,6 +163,34 @@ curl -s "https://artifacthub.io/api/v1/packages/search?ts_query_web=<app>&kind=0
 
 `charts/dependencies.yaml` already has OCI entries (`kserve`, `loki`), so either transport follows an
 existing convention.
+
+**If the app publishes no chart anywhere, vendor the one in its own git repository.** That is still
+"vendor the upstream chart" — it is not hand-writing one. It gets **no** `dependencies.yaml` entry,
+because `ci/src/update-helm-chart-deps.mjs` has nothing to resolve. Precedent:
+`charts/tekton-dashboard`, `charts/cert-manager-webhook-linode`, `charts/kubeflow-pipelines`.
+
+⚠ **A source-only chart may legitimately need patching, and patching it is safe.** Editing a
+vendored chart is normally lossy here — `charts/gitea`'s statefulset edits were silently overwritten
+by later version bumps. But the updater only touches charts listed in `dependencies.yaml`, so a chart
+that is not listed cannot be clobbered. Say so in the chart's own header, and list every local
+change, or the next person will assume it is pristine.
+
+⛔ **Check the chart for the hooks you need before you plan around it.** An upstream chart written
+for one deployment style may expose nothing you require: Turnstone's had no `extraEnv`, no `volumes`,
+no `initContainers`, no `securityContext`, and a hardcoded container `command` — so no config file
+could be mounted and no CLI flag passed. Missing hooks are worse than an awkward `merge`, because
+there is no override to reason about at all. Grep for `extraEnv`, `volumes`, `envFrom`,
+`securityContext` and `command` in `templates/` during Phase 0, not after writing your values.
+
+⚠ Its `appVersion` may also be stale — Turnstone's said `0.3.0` against an app at `1.8.1`, and the
+image helper falls back to `appVersion`, so the chart's default tag pointed at an image that may not
+exist. Always pin `image.tag` explicitly.
+
+⛔ **Rendering the chart before installing it catches object-name collisions.** A `-raw` release and
+the chart itself can both claim one name — the chart's own fullname helper produced
+`<app>-config`, exactly what the config ConfigMap had been called. Two releases owning one object is
+a fight, not a merge. `helm template` with the values your gotmpl produces costs seconds and finds
+this before Argo CD does.
 
 **Then read `templates/`, specifically for what the chart refuses to let you override.** Two patterns
 matter and both are cheaper to find by reading than by `helm lint`:
@@ -276,6 +313,46 @@ is **ReadWriteOnce only** — any chart defaulting to `ReadWriteMany` gets a per
 what makes the platform generate a value and seal it into `apl-secrets`; the app reads it back
 through an ExternalSecret against `core-secrets-store`.
 
+**A credential you cannot generate needs no new mechanism — it needs a blank `x-secret`.** The
+*value* of `x-secret` chooses the source (`src/common/values.ts`):
+
+| `x-secret:` | Source |
+|---|---|
+| `'{{ randAlphaNum 20 }}'` | platform-generated |
+| `''` (blank) | **operator-supplied** — blank ones are stripped from the generation template, so the only remaining source is the human's input values |
+
+Both take the identical path afterwards: SealedSecret in `apl-secrets/<app>-secrets` → the
+`core-secrets-store` ClusterSecretStore → an ExternalSecret in your namespace, with
+`stripAllSecrets` removing it from the values repo. Precedent is everywhere —
+`dns.provider.linode.apiToken`, `obj.provider.linode.secretAccessKey`, `alerts.slack.url`. Turnstone's
+`anthropicApiKey` is one schema entry and nothing else.
+
+⚠ **Say what happens when it is absent, in the schema description and in `SETUP.md`.** A blank
+operator-supplied secret does not fail the install: the ExternalSecret simply never syncs, and the
+pod sits in `CreateContainerConfigError`, which reads like a platform fault rather than "you forgot
+to paste a key". Document the symptom next to the field, and give people the option of disabling the
+app instead.
+
+⛔ **Prefer a config file over a bootstrap API call, if the app reads one.** The obvious way to seed
+app-side configuration is a Job that logs in and POSTs it. That path is long: mint a token with the
+right scopes, satisfy a permission check, and — the step that is easy to miss — trigger whatever
+fan-out reload makes *other* processes see the change. Turnstone's create call refreshes only the
+calling process's registry, so without the reload the console listed a model the server could not
+use.
+
+Check first whether the setting can come from a file the app already reads, mounted as a ConfigMap.
+If it can, that replaces the whole Job, and it is declarative and re-renders through GitOps like
+everything else. Two things make it work well:
+
+- **`${VAR}` expansion.** If the app expands environment variables inside its config file, the
+  ConfigMap can hold a placeholder while the real secret stays in a Secret and reaches the pod as
+  env. Check for this explicitly — it is the difference between a ConfigMap and a second
+  ExternalSecret.
+- ⚠ **Read the loader, not the example file.** Turnstone's own shipped example used the wrong key
+  name for its model entries; the loader skips such an entry with a single `log.warning` and starts
+  with an empty registry. Confirm your file loads by *reading back what the app parsed*, not by
+  checking the pod is Running.
+
 Network policies are optional — only `git-server`, `gitea` and `otomi-api` have them.
 
 ⚠ **Apps default to `enabled: false`**, which means clicking Activate in the Console after every
@@ -355,6 +432,42 @@ checking a status endpoint rather than pod health:
 Nothing copies it around. Mounting a secret that does not exist keeps the pod in
 `ContainerCreating` forever, with nothing in the app's own logs to explain it.
 
+⛔ **The CA mount pattern in this repo is Go-shaped. Do not assume it generalizes.** Gitea and
+Vikunja both mount the platform CA *over* `/etc/ssl/certs/ca-certificates.crt` with a `subPath`.
+That replaces the image's whole trust store with one certificate — invisible for them, because
+neither calls a public endpoint. **If your app also talks to the public internet** (an upstream API,
+a model provider, a webhook), that mount breaks it. Turnstone needed `api.anthropic.com`, and the
+Gitea pattern failed it with `unable to get local issuer certificate`.
+
+For those apps, concatenate rather than replace: an initContainer running the app's own image, as
+the app's own uid, joining the image bundle and the platform CA into an `emptyDir`. Then point
+whatever variable the runtime honours at the result.
+
+⛔ **Find out how your runtime is told about a CA, and whether the variable replaces or augments.**
+This is per-language and the answers differ:
+
+| Runtime | Variable | Semantics |
+|---|---|---|
+| Python / `httpx` / `requests` | `SSL_CERT_FILE`, `SSL_CERT_DIR` | **replaces** |
+| Node | `NODE_EXTRA_CA_CERTS` | **augments** — used by `apl-keycloak-operator`, `otomi-api` |
+| Go | the system store, or the app's own setting | replaces, when mounted over the bundle |
+
+`REQUESTS_CA_BUNDLE` is `requests`-only; it does nothing for an app using `httpx`.
+
+⛔ **The platform's auto-generated root CA cannot be validated by Python at all**, and this is the
+single most expensive thing in either worked example. `createCustomCA` in `src/cmd/bootstrap.ts`
+emits no `subjectKeyIdentifier`, so Go's `x509.CreateCertificate` gives cert-manager's leaves no
+`authorityKeyIdentifier`, and Python 3.13+ (`VERIFY_X509_STRICT`, enforced by OpenSSL 3.5) rejects
+the chain with `Missing Authority Key Identifier`. The fix is a root CA supplied through
+`apps.cert-manager.customRootCA` + `customRootCAKey`, **before bootstrap**. Full account in
+`TURNSTONE.md` §3, and the steps are in `SETUP.md` 6b.
+
+⚠ **Two things make that class of bug expensive.** It presents as a healthy, Ready pod with no
+sign-in button — nothing in the probe notices. And `openssl verify` reports the identical chain as
+`OK`, because the CLI does not apply the strict flag. **When an app disagrees with `openssl` about a
+certificate, believe the app.** Reproduce it in the app's own runtime — `kubectl exec … -- python -c
+"import httpx; …"` — not with `openssl s_client`.
+
 ---
 
 ## Phase 3 — Console presence
@@ -415,6 +528,20 @@ There are three, and they are not equivalent. Two of them need no timer; one doe
 Prefer the first two. Reach for per-user push only when the app forces it — for Vikunja it did,
 because teams the app creates from an OIDC claim are not editable through its API (so claim-driven
 sync and operator-managed teams are mutually exclusive), and its teams take users, not groups.
+
+✅ **Turnstone is the worked example of model one, and it needed no `apl-tasks` change at all.** Its
+role mapping reads one flat claim and maps values to role IDs, re-evaluating on every login and
+revoking what is no longer claimed. Two things to check before choosing it:
+
+- ⛔ **Is the claim lookup flat or dotted?** Turnstone does a plain top-level `claims.get(name)` with
+  no path traversal — so this platform's `groups` claim fits exactly, while the `realm_access.roles`
+  form the app's *own* documentation recommends cannot work. Read the mapping code, not the docs.
+- ⚠ **The claim must be in the ID token**, not only the access token. If everyone lands on the
+  default role, that is the first thing to check: the rows will show as `oidc-default` rather than
+  `oidc`.
+
+Remember the `groups` claim carries realm roles, not Keycloak groups, and includes built-ins as
+noise — anything consuming it must tolerate unmapped values.
 
 ⛔ **If you push individual users, a watch-only operator is a correctness bug.** Membership then
 depends on two events Kubernetes emits nothing for:
@@ -533,6 +660,13 @@ Each of these cost real time. The first four are fatal-but-silent.
 | Trap | Consequence |
 |---|---|
 | Chart's `values.yaml` hidden by `.git/info/exclude` | vendored chart reaches the build without defaults; nil-pointer deep in its templates, `git status` clean |
+| Platform root CA has no `subjectKeyIdentifier` | any **Python** app rejects Keycloak's certificate with `Missing Authority Key Identifier`; `openssl verify` says the same chain is `OK`, and the pod is Ready with no sign-in button |
+| Mounting the CA over `ca-certificates.crt` | replaces the whole trust store; fine for Go apps that call nothing public, breaks any app needing an upstream API |
+| An upstream chart with no `extraEnv`/`volumes` hooks | nothing to override — no config file can be mounted and no flag passed; found late if not grepped in Phase 0 |
+| A `-raw` object colliding with a chart object name | two releases fight over one object; `helm template` finds it in seconds |
+| Seeding app config through its admin API | needs a scoped token, a permission, *and* a fan-out reload — omit the reload and one process sees the change while another does not |
+| An operator-supplied secret left blank | ExternalSecret never syncs, pod sits in `CreateContainerConfigError`, reads like a platform fault |
+| Planning a team-sync operator before checking the app has teams | an operator with nothing to push into; claim-driven role mapping was the answer and deletes the phase |
 | App missing from `defaults.gotmpl`'s database list | install dies rendering `<app>-otomi-db` |
 | A fixture supplying what production derives | suite goes green on a branch whose install cannot render |
 | A values override merged the wrong way | override accepted, validated, then silently dropped |

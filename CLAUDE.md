@@ -47,12 +47,20 @@ You are being asked to integrate a new app, usually as "read this file and integ
 the phases is the content**, and most of the cost in the integration it generalizes came from doing
 those steps in a different order. It also tells you which phases your app does not need.
 
-## The task, if you were pointed at VIKUNJA.md
+## The task, if you were pointed at VIKUNJA.md or TURNSTONE.md
 
-`VIKUNJA.md` is a record, not a plan waiting to be executed — the code is on
-`feat/vikunja-integration`. It is now the worked example behind `INTEGRATING-AN-APP.md`, so for a
-*new* integration start there and come back here for the specifics. Read
-`vikunja-patches/README.md` before touching the three sibling repositories.
+Both are records, not plans waiting to be executed — the code is on `feat/vikunja-integration` and
+`feat/turnstone-integration`. They are the two worked examples behind `INTEGRATING-AN-APP.md`, so
+for a *new* integration start there and come back to these for the specifics. Read the matching
+`*-patches/README.md` before touching any sibling repository.
+
+Which one to reach for:
+
+- **`VIKUNJA.md`** — a Go web app with a team concept, needing an operator to push membership. The
+  fuller example: four repositories, a team-sync operator, a distroless image.
+- **`TURNSTONE.md`** — an app needing an *upstream API credential*, with no team concept, whose TLS
+  stack is stricter than Go's. Read it if your app is not Go, if it needs an operator-supplied
+  secret, or if anything TLS fails in a way `openssl` insists is fine.
 
 ## Rules that are not negotiable
 
