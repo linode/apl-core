@@ -17,12 +17,21 @@ wrong one for the task wastes a session.
 | `SETUP.md` | an executable runbook: bring the lab up from nothing | you are asked to install, rebuild or verify the lab |
 | `INTEGRATING-AN-APP.md` | a generic playbook: add any third-party app as a platform app | you are asked to integrate a new app |
 | `VIKUNJA.md` | the worked example behind that playbook — a record of one real integration | you need the concrete detail a rule in the playbook is abbreviating |
+| `TURNSTONE.md` | a second worked example — an app needing an upstream LLM API, and the certificate trap that came with it | your app is not a Go web app, or anything TLS fails in a way `openssl` says is fine |
 
 The distinction that matters: **`SETUP.md` and `INTEGRATING-AN-APP.md` are instructions to follow.
 `VIKUNJA.md` is evidence, not a plan** — its work is already done and on `feat/vikunja-integration`.
 Do not execute it.
 
-Also: `vikunja-patches/README.md` — read before touching any of the three sibling repositories
+**The platform's auto-generated root CA cannot be validated by Python.** `createCustomCA` in
+`src/cmd/bootstrap.ts` emits no subject key identifier, so cert-manager's leaves carry no authority
+key identifier, and Python 3.13+ (`VERIFY_X509_STRICT`, enforced by OpenSSL 3.5) refuses them with
+`Missing Authority Key Identifier`. Go apps are unaffected, and `openssl verify` calls the same chain
+`OK` — so this hides from every CLI check. Any Python app talking to Keycloak needs a root CA with
+`subjectKeyIdentifier=hash` supplied through `apps.cert-manager.customRootCA` +
+`customRootCAKey`, **set before bootstrap, never retrofitted**. Full account in `TURNSTONE.md` §3.
+
+Also: `vikunja-patches/README.md` and `turnstone-patches/README.md` — read before touching any sibling repository
 (`apl-api`, `apl-console`, `apl-tasks`). It explains why they ship as patches rather than forks, and
 carries the build and load commands, including the one that needs no registry token.
 
