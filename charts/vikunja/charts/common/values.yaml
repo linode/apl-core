@@ -1,0 +1,840 @@
+---
+global:
+  # -- Set an override for the prefix of the fullname
+  nameOverride:
+  # -- Set the entire name definition
+  fullnameOverride:
+  # -- Set additional global labels. Helm templates can be used.
+  labels: {}
+  # -- Set additional global annotations. Helm templates can be used.
+  annotations: {}
+
+controller:
+  # -- enable the controller.
+  enabled: true
+  # -- Set the controller type.
+  # Valid options are deployment, daemonset, statefulset or cronjob
+  type: deployment
+  # -- Set annotations on the deployment/statefulset/daemonset/cronjob
+  annotations: {}
+  # -- Set labels on the deployment/statefulset/daemonset/cronjob
+  labels: {}
+  # -- Number of desired pods. When using a HorizontalPodAutoscaler, set this to `null`.
+  replicas: 1
+  # -- Set the controller upgrade strategy
+  # For Deployments, valid values are Recreate (default) and RollingUpdate.
+  # For StatefulSets, valid values are OnDelete and RollingUpdate (default).
+  # DaemonSets/CronJobs ignore this.
+  strategy:
+  rollingUpdate:
+    # -- Set deployment RollingUpdate max unavailable
+    unavailable:
+    # -- Set deployment RollingUpdate max surge
+    surge:
+    # -- Set statefulset RollingUpdate partition
+    partition:
+  # -- ReplicaSet revision history limit
+  revisionHistoryLimit: 3
+  # -- Set statefulset podManagementPolicy, valid values are Parallel and OrderedReady (default).
+  podManagementPolicy:
+  # -- Set Container restart policy.
+  # @default -- `Always`. When `controller.type` is `cronjob` it defaults to `Never`.
+  restartPolicy:
+  # -- CronJob configuration. Required only when using `controller.type: cronjob`.
+  # @default -- See below
+  cronjob:
+    # -- Specifies how to treat concurrent executions of a job that is created by this cron job
+    # valid values are Allow, Forbid or Replace
+    concurrencyPolicy: Forbid
+    # -- Sets the CronJob time when to execute your jobs
+    schedule: "*/20 * * * *"
+    # -- The deadline in seconds for starting the job if it misses its scheduled time for any reason
+    startingDeadlineSeconds: 30
+    # -- The number of succesful Jobs to keep
+    successfulJobsHistory: 1
+    # -- The number of failed Jobs to keep
+    failedJobsHistory: 1
+    # --  If this field is set, ttlSecondsAfterFinished after the Job finishes, it is eligible to
+    # be automatically deleted.
+    ttlSecondsAfterFinished:
+    # -- Limits the number of times a failed job will be retried
+    backoffLimit: 6
+
+image:
+  # -- image repository
+  repository:
+  # -- image tag
+  tag:
+  # -- image pull policy
+  pullPolicy:
+
+# -- Set image pull secrets
+imagePullSecrets: []
+
+# -- Override the command(s) for the default container
+command: []
+# -- Override the args for the default container
+args: []
+
+# -- Set annotations on the pod
+podAnnotations: {}
+
+# -- Set labels on the pod
+podLabels: {}
+
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: false
+
+  # -- Annotations to add to the service account
+  annotations: {}
+
+  # -- The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# -- Specifies whether a service account token should be automatically mounted.
+automountServiceAccountToken: true
+
+# -- Use this to populate secrets with the values you specify.
+# Be aware that these values are not encrypted by default, and could therefore visible
+# to anybody with access to the values.yaml file.
+# Additional Secrets can be added by adding a dictionary key similar to the 'secret' object.
+# @default -- See below
+secrets:
+  secret:
+    # -- Enables or disables the Secret
+    enabled: false
+    # -- Labels to add to the Secret
+    labels: {}
+    # -- Annotations to add to the Secret
+    annotations: {}
+    # -- Secret stringData content. Helm template enabled.
+    stringData:
+      {}
+      # foo: bar
+
+# -- Configure configMaps for the chart here.
+# Additional configMaps can be added by adding a dictionary key similar to the 'config' object.
+# @default -- See below
+configMaps:
+  config:
+    # -- Enables or disables the configMap
+    enabled: false
+    # -- Labels to add to the configMap
+    labels: {}
+    # -- Annotations to add to the configMap
+    annotations: {}
+    # -- configMap data content. Helm template enabled.
+    data:
+      {}
+      # foo: bar
+
+# -- Main environment variables. Template enabled.
+# Syntax options:
+# A) TZ: UTC
+# B) PASSWD: '{{ .Release.Name }}'
+# C) PASSWD:
+#      configMapKeyRef:
+#        name: config-map-name
+#        key: key-name
+# D) PASSWD:
+#      valueFrom:
+#        secretKeyRef:
+#          name: secret-name
+#          key: key-name
+#      ...
+# E) - name: TZ
+#      value: UTC
+# F) - name: TZ
+#      value: '{{ .Release.Name }}'
+env:
+
+# -- Secrets and/or ConfigMaps that will be loaded as environment variables.
+# [[ref]](https://unofficial-kubernetes.readthedocs.io/en/latest/tasks/configure-pod-container/configmap/#use-case-consume-configmap-in-environment-variables)
+envFrom: []
+# - configMapRef:
+#     name: config-map-name
+# - secretRef:
+#     name: secret-name
+
+# -- Custom priority class for different treatment by the scheduler
+priorityClassName: # system-node-critical
+
+# -- Allow specifying a runtimeClassName other than the default one (ie: nvidia)
+runtimeClassName: # nvidia
+
+# -- Allows specifying a custom scheduler name
+schedulerName: # awkward-dangerous-scheduler
+
+# -- Allows specifying explicit hostname setting
+hostname:
+
+# -- Use the host's ipc namespace
+hostIPC: false
+
+# -- When using hostNetwork make sure you set dnsPolicy to `ClusterFirstWithHostNet`
+hostNetwork: false
+
+# -- Use the host's pid namespace
+hostPID: false
+
+# -- Defaults to "ClusterFirst" if hostNetwork is false
+# and "ClusterFirstWithHostNet" if hostNetwork is true.
+dnsPolicy: # ClusterFirst
+
+# -- Configuring the ndots option may resolve nslookup issues on some Kubernetes setups.
+dnsConfig: {}
+#   options:
+#     - name: ndots
+#       value: "1"
+
+# -- Enable/disable the generation of environment variables for services.
+# [[ref]](https://kubernetes.io/docs/concepts/services-networking/connect-applications-service/#accessing-the-service)
+enableServiceLinks: true
+
+# -- Configure the Security Context for the Pod
+podSecurityContext: {}
+
+# -- Configure the Security Context for the main container
+securityContext: {}
+
+# -- Configure the lifecycle for the main container
+lifecycle: {}
+
+# -- Specify any initContainers here as dictionary items.
+# Each initContainer should have its own key. The dictionary item key will determine the order.
+# Helm templates can be used.
+initContainers: {}
+
+# -- Specify any sidecar containers here as dictionary items.
+# Each sidecar container should have its own key. The dictionary item key will determine the order.
+# Helm templates can be used.
+sidecars: {}
+
+# -- Probe configuration
+# -- [[ref]](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+# @default -- See below
+probes:
+  # -- Liveness probe configuration
+  # @default -- See below
+  liveness:
+    # -- Enable the liveness probe
+    enabled: true
+    # -- Set this to `true` if you wish to specify your own livenessProbe
+    custom: false
+    # -- sets the probe type when not using a custom probe
+    # @default -- "TCP"
+    type: TCP
+    # -- The spec field contains the values for the default livenessProbe.
+    # If you selected `custom: true`, this field holds the definition of the livenessProbe.
+    # @default -- See below
+    spec:
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+
+  # -- Redainess probe configuration
+  # @default -- See below
+  readiness:
+    # -- Enable the readiness probe
+    enabled: true
+    # -- Set this to `true` if you wish to specify your own readinessProbe
+    custom: false
+    # -- sets the probe type when not using a custom probe
+    # @default -- "TCP"
+    type: TCP
+    # -- The spec field contains the values for the default readinessProbe.
+    # If you selected `custom: true`, this field holds the definition of the readinessProbe.
+    # @default -- See below
+    spec:
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+
+  # -- Startup probe configuration
+  # @default -- See below
+  startup:
+    # -- Enable the startup probe
+    enabled: true
+    # -- Set this to `true` if you wish to specify your own startupProbe
+    custom: false
+    # -- sets the probe type when not using a custom probe
+    # @default -- "TCP"
+    type: TCP
+    # -- The spec field contains the values for the default startupProbe.
+    # If you selected `custom: true`, this field holds the definition of the startupProbe.
+    # @default -- See below
+    spec:
+      initialDelaySeconds: 0
+      timeoutSeconds: 1
+      ## This means it has a maximum of 5*30=150 seconds to start up before it fails
+      periodSeconds: 5
+      failureThreshold: 30
+
+termination:
+  # -- Configure the path at which the file to which the main container's termination message will be written.
+  # -- [[ref](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#lifecycle-1)]
+  messagePath:
+
+  # -- Indicate how the main container's termination message should be populated.
+  # Valid options are `File` and `FallbackToLogsOnError`.
+  # -- [[ref](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#lifecycle-1)]
+  messagePolicy:
+
+  # -- Duration in seconds the pod needs to terminate gracefully
+  # -- [[ref](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#lifecycle)]
+  gracePeriodSeconds:
+
+# -- Configure the services for the chart here.
+# Additional services can be added by adding a dictionary key similar to the 'main' service.
+# @default -- See below
+service:
+  main:
+    # -- Enables or disables the service
+    enabled: true
+
+    # -- Make this the primary service (used in probes, notes, etc...).
+    # If there is more than 1 service, make sure that only 1 service is marked as primary.
+    primary: true
+
+    # -- Override the name suffix that is used for this service
+    nameOverride:
+
+    # -- Set the service type
+    type: ClusterIP
+
+    # -- Specify the externalTrafficPolicy for the service. Options: Cluster, Local
+    # -- [[ref](https://kubernetes.io/docs/tutorials/services/source-ip/)]
+    externalTrafficPolicy:
+
+    # -- Specify the ip policy. Options: SingleStack, PreferDualStack, RequireDualStack
+    ipFamilyPolicy:
+    # -- The ip families that should be used. Options: IPv4, IPv6
+    ipFamilies: []
+
+    # -- Provide additional annotations which may be required.
+    annotations: {}
+
+    # -- Provide additional labels which may be required.
+    labels: {}
+
+    # -- Configure the Service port information here.
+    # Additional ports can be added by adding a dictionary key similar to the 'http' service.
+    # @default -- See below
+    ports:
+      http:
+        # -- Enables or disables the port
+        enabled: true
+
+        # -- Make this the primary port (used in probes, notes, etc...)
+        # If there is more than 1 service, make sure that only 1 port is marked as primary.
+        primary: true
+
+        # -- The port number
+        port:
+
+        # -- Port protocol.
+        # Support values are `HTTP`, `HTTPS`, `TCP` and `UDP`.
+        # HTTPS and HTTPS spawn a TCP service and get used for internal URL and name generation
+        protocol: HTTP
+
+        # -- Specify a service targetPort if you wish to differ the service port from the application port.
+        # If `targetPort` is specified, this port number is used in the container definition instead of
+        # the `port` value. Therefore named ports are not supported for this field.
+        targetPort:
+
+        # -- Specify the nodePort value for the LoadBalancer and NodePort service types.
+        # [[ref]](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)
+        nodePort:
+
+        # -- Allow adding additional match labels
+        extraSelectorLabels: {}
+
+# -- Configure the ServiceMonitors for the chart here.
+# Additional ServiceMonitors can be added by adding a dictionary key similar to the 'main' ServiceMonitors.
+# @default -- See below
+serviceMonitor:
+  main:
+    # -- Enables or disables the serviceMonitor.
+    enabled: false
+
+    # -- Override the name suffix that is used for this serviceMonitor.
+    nameOverride:
+
+    # -- Provide additional annotations which may be required.
+    annotations: {}
+
+    # -- Provide additional labels which may be required.
+    labels: {}
+
+    # -- Configures a custom selector for the serviceMonitor, this takes precedence over
+    # specifying a service name.
+    # Helm templates can be used.
+    selector: {}
+
+    # -- Configures the target Service for the serviceMonitor. Helm templates can be used.
+    serviceName: '{{ include "bjw-s.common.lib.chart.names.fullname" $ }}'
+
+    # -- Configures the endpoints for the serviceMonitor.
+    # @default -- See values.yaml
+    endpoints:
+      - port: http
+        scheme: http
+        path: /metrics
+        interval: 1m
+        scrapeTimeout: 10s
+
+# -- Configure the ingresses for the chart here.
+# Additional ingresses can be added by adding a dictionary key similar to the 'main' ingress.
+# @default -- See below
+ingress:
+  main:
+    # -- Enables or disables the ingress
+    enabled: false
+
+    # -- Make this the primary ingress (used in probes, notes, etc...).
+    # If there is more than 1 ingress, make sure that only 1 ingress is marked as primary.
+    primary: true
+
+    # -- Override the name suffix that is used for this ingress.
+    nameOverride:
+
+    # -- Provide additional annotations which may be required.
+    annotations:
+      {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+
+    # -- Provide additional labels which may be required.
+    labels: {}
+
+    # -- Set the ingressClass that is used for this ingress.
+    ingressClassName: # "nginx"
+
+    ## Configure the hosts for the ingress
+    hosts:
+      - # -- Host address. Helm template can be passed.
+        host: chart-example.local
+        ## Configure the paths for the host
+        paths:
+          - # -- Path.  Helm template can be passed.
+            path: /
+            pathType: Prefix
+            service:
+              # -- Overrides the service name reference for this path
+              name:
+              # -- Overrides the service port reference for this path
+              port:
+
+    # -- Configure TLS for the ingress. Both secretName and hosts can process a Helm template.
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+# -- Configure the gateway routes for the chart here.
+# Additional routes can be added by adding a dictionary key similar to the 'main' route.
+# [[ref]](https://gateway-api.sigs.k8s.io/references/spec/#gateway.networking.k8s.io%2fv1alpha2)
+# @default -- See below
+route:
+  main:
+    # -- Enables or disables the route
+    enabled: false
+
+    # -- Set the route kind
+    # Valid options are GRPCRoute, HTTPRoute, TCPRoute, TLSRoute, UDPRoute
+    kind: HTTPRoute
+
+    # -- Override the name suffix that is used for this route.
+    nameOverride:
+
+    # -- Provide additional annotations which may be required.
+    annotations: {}
+
+    # -- Provide additional labels which may be required.
+    labels: {}
+
+    # -- Configure the resource the route attaches to.
+    parentRefs:
+      - # Group of the referent resource.
+        group: gateway.networking.k8s.io
+        # Kind of the referent resource.
+        kind: Gateway
+        # Name of the referent resource
+        name:
+        # Namespace of the referent resource
+        namespace:
+        # Name of the section within the target resource.
+        sectionName:
+
+    # -- Host addresses
+    hostnames: []
+
+    # -- Configure rules for routing. Defaults to the primary service.
+    rules:
+      - # -- Configure backends where matching requests should be sent.
+        backendRefs:
+          - group: ""
+            kind: Service
+            name:
+            namespace:
+            port:
+            weight: 1
+        ## Configure conditions used for matching incoming requests. Only for HTTPRoutes
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+# -- Configure persistence for the chart here.
+# Additional items can be added by adding a dictionary key similar to the 'config' key.
+# [[ref]](https://bjw-s.github.io/helm-charts/docs/common-library/common-library-storage)
+# @default -- See below
+persistence:
+  # -- Default persistence for configuration files.
+  # @default -- See below
+  config:
+    # -- Enables or disables the persistence item
+    enabled: false
+
+    # -- Sets the persistence type
+    # Valid options are pvc, emptyDir, hostPath, secret, configMap or custom
+    type: pvc
+
+    # -- Where to mount the volume in the main container.
+    # Defaults to `/<name_of_the_volume>`,
+    # setting to '-' creates the volume but disables the volumeMount.
+    mountPath: # /config
+    # -- Specify if the volume should be mounted read-only.
+    readOnly: false
+    # -- Override the name suffix that is used for this volume.
+    nameOverride:
+
+    # -- Storage Class for the config volume.
+    # If set to `-`, dynamic provisioning is disabled.
+    # If set to something else, the given storageClass is used.
+    # If undefined (the default) or set to null, no storageClassName spec is set, choosing the default provisioner.
+    storageClass: # "-"
+
+    # -- If you want to reuse an existing claim, the name of the existing PVC can be passed here.
+    existingClaim: # your-claim
+
+    # -- Used in conjunction with `existingClaim`. Specifies a sub-path inside the referenced volume instead of its root
+    subPath: # some-subpath
+
+    # -- AccessMode for the persistent volume.
+    # Make sure to select an access mode that is supported by your storage provider!
+    # [[ref]](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes)
+    accessMode: ReadWriteOnce
+
+    # -- The amount of storage that is requested for the persistent volume.
+    size: 1Gi
+
+    # -- Set to true to retain the PVC upon `helm uninstall`
+    retain: false
+
+  # -- Create an emptyDir volume to share between all containers
+  # [[ref]]https://kubernetes.io/docs/concepts/storage/volumes/#emptydir)
+  # @default -- See below
+  shared:
+    enabled: false
+    type: emptyDir
+    mountPath: /shared
+
+    # -- Set the medium to "Memory" to mount a tmpfs (RAM-backed filesystem) instead
+    # of the storage medium that backs the node.
+    medium: # Memory
+
+    # -- If the `SizeMemoryBackedVolumes` feature gate is enabled, you can
+    # specify a size for memory backed volumes.
+    sizeLimit: # 1Gi
+
+# -- Used in conjunction with `controller.type: statefulset` to create individual disks for each instance.
+volumeClaimTemplates: []
+# - name: data
+#   labels: {}
+#   annotations: {}
+#   mountPath: /data
+#   accessMode: "ReadWriteOnce"
+#   size: 1Gi
+# - name: backup
+#   labels: {}
+#   annotations: {}
+#   mountPath: /backup
+#   subPath: theSubPath
+#   accessMode: "ReadWriteOnce"
+#   size: 2Gi
+#   storageClass: cheap-storage-class
+
+# -- Node selection constraint
+# [[ref]](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)
+nodeSelector: {}
+
+# -- Defines affinity constraint rules.
+# [[ref]](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)
+affinity: {}
+
+# -- Defines topologySpreadConstraint rules.
+# [[ref]](https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/)
+topologySpreadConstraints: []
+# - maxSkew: <integer>
+#   topologyKey: <string>
+#   whenUnsatisfiable: <string>
+#   labelSelector: <object>
+
+# -- Specify taint tolerations
+# [[ref]](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/)
+tolerations: []
+
+# -- Use hostAliases to add custom entries to /etc/hosts - mapping IP addresses to hostnames.
+# [[ref]](https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/)
+hostAliases: []
+# - ip: "192.168.1.100"
+#   hostnames:
+#   - "example.com"
+#   - "www.example.com"
+
+# -- Set the resource requests / limits for the main container.
+resources:
+  {}
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# -- The common chart supports several add-ons. These can be configured under this key.
+# @default -- See below
+addons:
+  # -- The common chart supports adding a VPN add-on. It can be configured under this key.
+  # @default -- See values.yaml
+  vpn:
+    # -- Enable running a VPN in the pod to route traffic through a VPN
+    enabled: false
+
+    # -- Specify the VPN type. Valid options are `gluetun`.
+    type: gluetun
+
+    # -- Gluetun specific configuration
+    # -- Make sure to read the [documentation](https://github.com/qdm12/gluetun/wiki)
+    # to see how to configure this addon!
+    # @default -- See below
+    gluetun:
+      image:
+        # -- Specify the Gluetun image
+        repository: docker.io/qmcgaw/gluetun
+        # -- Specify the Gluetun image tag
+        tag: v3.34.3
+        # -- Specify the Gluetun image pull policy
+        pullPolicy: IfNotPresent
+
+    # -- Set the VPN container securityContext
+    # @default -- See values.yaml
+    securityContext:
+      capabilities:
+        add:
+          - NET_ADMIN
+          - SYS_MODULE
+
+    # -- All variables specified here will be added to the vpn sidecar container
+    # See the documentation of the VPN image for all config values
+    env:
+      {}
+      # TZ: UTC
+
+    # -- Override the args for the vpn sidecar container
+    args: []
+
+    # -- Provide a customized vpn configuration file to be used by the VPN.
+    configFile:
+      # |-
+      # Some Example Config
+      # remote greatvpnhost.com 8888
+      # auth-user-pass
+      # Cipher AES
+
+    # -- Reference an existing secret that contains the VPN configuration file
+    # The chart expects it to be present under the `vpnConfigfile` key.
+    configFileSecret:
+
+    # -- Provide custom up/down scripts that can be used by the vpn configuration.
+    # @default -- See values.yaml
+    scripts:
+      # @default -- See below
+      up:
+      # |-
+      # !/bin/bash
+      # echo "connected" > /shared/vpnstatus
+
+      # @default -- See below
+      down:
+        # |-
+        # #!/bin/bash
+        # echo "disconnected" > /shared/vpnstatus
+
+    additionalVolumeMounts: []
+
+    # -- Optionally specify a livenessProbe, e.g. to check if the connection is still
+    # being protected by the VPN
+    livenessProbe:
+      {}
+      # exec:
+      #   command:
+      #     - sh
+      #     - -c
+      #     - if [ $(curl -s https://ipinfo.io/country) == 'US' ]; then exit 0; else exit $?; fi
+      # initialDelaySeconds: 30
+      # periodSeconds: 60
+      # failureThreshold: 1
+
+    networkPolicy:
+      # -- If set to true, will deploy a network policy that blocks all outbound
+      # traffic except traffic specified as allowed
+      enabled: false
+
+      # -- Provide additional annotations which may be required.
+      annotations: {}
+
+      # -- Provide additional labels which may be required.
+      labels: {}
+
+      # -- Provide additional podSelector labels which may be required.
+      podSelectorLabels: {}
+
+      # -- The egress configuration for your network policy, All outbound traffic
+      # from the pod will be blocked unless specified here.
+      # [[ref]](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
+      # [[recipes]](https://github.com/ahmetb/kubernetes-network-policy-recipes)
+      egress:
+        # - to:
+        #   - ipBlock:
+        #       cidr: 0.0.0.0/0
+        #   ports:
+        #   - port: 53
+        #     protocol: UDP
+        #   - port: 53
+        #     protocol: TCP
+
+  # -- The common library supports adding a code-server add-on to access files. It can be configured under this key.
+  # @default -- See values.yaml
+  codeserver:
+    # -- Enable running a code-server container in the pod
+    enabled: false
+
+    image:
+      # -- Specify the code-server image
+      repository: ghcr.io/coder/code-server
+      # -- Specify the code-server image tag
+      tag: 4.13.0
+      # -- Specify the code-server image pull policy
+      pullPolicy: IfNotPresent
+
+    # -- Set any environment variables for code-server here
+    env:
+      {}
+      # TZ: UTC
+
+    # -- Set codeserver command line arguments.
+    # Consider setting --user-data-dir to a persistent location to preserve code-server setting changes
+    args:
+      - --auth
+      - none
+      # - --user-data-dir
+      # - "/config/.vscode"
+
+    # -- Specify a list of volumes that get mounted in the code-server container.
+    # At least 1 volumeMount is required!
+    volumeMounts: []
+    # - name: config
+    #   mountPath: /data/config
+
+    # -- Specify the working dir that will be opened when code-server starts
+    # If not given, the app will default to the mountpah of the first specified volumeMount
+    workingDir: ""
+
+    # -- Optionally allow access a Git repository by passing in a private SSH key
+    # @default -- See below
+    git:
+      # -- Raw SSH private key
+      deployKey: ""
+      # -- Base64-encoded SSH private key. When both variables are set, the raw SSH key takes precedence.
+      deployKeyBase64: ""
+      # -- Existing secret containing SSH private key
+      # The chart expects it to be present under the `id_rsa` key.
+      deployKeySecret: ""
+
+    service:
+      # -- Enable a service for the code-server add-on.
+      enabled: true
+      type: ClusterIP
+      # Specify the default port information
+      ports:
+        codeserver:
+          port: 12321
+          enabled: true
+          protocol: TCP
+          targetPort: 12321
+          ## Specify the nodePort value for the LoadBalancer and NodePort service types.
+          ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+          ##
+          # nodePort:
+      annotations: {}
+      labels: {}
+
+    ingress:
+      # -- Enable an ingress for the code-server add-on.
+      enabled: false
+
+      annotations:
+        {}
+        # kubernetes.io/ingress.class: nginx
+        # kubernetes.io/tls-acme: "true"
+
+      labels: {}
+
+      # -- Set the ingressClass that is used for this ingress.
+      ingressClassName: # "nginx"
+
+      hosts:
+        - host: code.chart-example.local
+          paths:
+            - path: /
+              pathType: Prefix
+      tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - code.chart-example.local
+
+    securityContext:
+      runAsUser: 0
+
+  # -- The common library supports adding a netshoot add-on to troubleshoot network issues within a Pod.
+  # It can be configured under this key.
+  # @default -- See values.yaml
+  netshoot:
+    # -- Enable running a netshoot container in the pod
+    enabled: false
+
+    image:
+      # -- Specify the netshoot image
+      repository: ghcr.io/nicolaka/netshoot
+      # -- Specify the netshoot image tag
+      tag: v0.11
+      # -- Specify the netshoot image pull policy
+      pullPolicy: IfNotPresent
+
+    # -- Set any environment variables for netshoot here
+    env: {}
+
+    securityContext:
+      capabilities:
+        add:
+          - NET_ADMIN

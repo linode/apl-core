@@ -1,0 +1,30 @@
+annotations:
+  category: TaskTracker
+apiVersion: v2
+appVersion: 2.5.0
+dependencies:
+- name: common
+  repository: https://bjw-s-labs.github.io/helm-charts
+  version: 1.5.1
+description: The open-source, self-hostable to-do app. Organize everything, on all
+  platforms.
+home: https://kolaente.dev/vikunja/helm-chart
+icon: https://kolaente.dev/vikunja/helm-chart/raw/main/icon.png
+keywords:
+- vikunja
+- todo
+- to-do
+- task
+- task-tracker
+- project-management
+- self-hosted
+kubeVersion: '>= 1.19'
+maintainers:
+- name: Vikunja
+  url: https://vikunja.io
+name: vikunja
+sources:
+- https://github.com/go-vikunja/helm-chart
+- https://vikunja.io
+type: application
+version: 2.2.1

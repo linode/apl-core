@@ -1,0 +1,59 @@
+## This chart relies on the common library chart from bjw-s
+## You can find it and the values you can provide and modify, at https://github.com/bjw-s/helm-charts/tree/a081de53024d8328d1ae9ff7e4f6bc500b0f3a29/charts/library/common
+## Here's the link to the values.yaml file: https://github.com/bjw-s/helm-charts/blob/a081de53024d8328d1ae9ff7e4f6bc500b0f3a29/charts/library/common/values.yaml
+## Refer there for more detail about the supported values.
+## Any values that you find in the above `values.yaml` can be provided to this chart and are then rendered.
+
+# You can find the default values that this `values.yaml` overrides, in the comment at the top of this file.
+vikunja:
+  image:
+    repository: vikunja/vikunja
+    #tag: "latest"
+    #pullPolicy: Always
+  persistence:
+    # This is where your Vikunja data lives,
+    # provide an existing PVC or let one be autocreated
+    data:
+      enabled: true
+      # existingClaim: # your-claim
+      accessMode: ReadWriteOnce
+      size: 2Gi
+      mountPath: /app/vikunja/files
+      # storageClass: storage-class
+    # Persistence for SQLite database
+    database:
+      enabled: true
+      # existingClaim: # your-claim
+      accessMode: ReadWriteOnce
+      size: 2Gi
+      mountPath: /db
+      # storageClass: storage-class
+  ingress:
+    main:
+      enabled: true
+      annotations:
+        # proxy-body-size is set to 0 to remove the body limit on file uploads
+        nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      hosts:
+        - host: vikunja.local
+          paths:
+            - path: /
+      tls: []
+  configMaps:
+    # The configuration for Vikunja's api
+    # https://vikunja.io/docs/config-options/
+    config:
+      enabled: true
+      data:
+        config.yml: |
+          # You can add Vikunja configuration items from https://vikunja.io/docs/config-options/ to this file
+          service:
+            # Required after Vikunja 1.0.0
+            publicurl: # e.g. "https://example.com"
+  env:
+    # To utilize a secret in the environment variables, you can do something like the following: https://github.com/bjw-s/helm-charts/blob/a081de53024d8328d1ae9ff7e4f6bc500b0f3a29/charts/library/common/values.yaml#L141-L145
+    # You can use PostgreSQL, MySQL, or SQLite. SQLite is the default for simplicity.
+    # https://vikunja.io/docs/config-options
+    VIKUNJA_DATABASE_TYPE: "sqlite"
+
+additionalObjects: []

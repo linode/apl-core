@@ -1,0 +1,54 @@
+{{- define "vikunja.vikunja.hardcodedValues" -}}
+service:
+  main:
+    controller: main
+    enabled: true
+    primary: true
+    type: ClusterIP
+    ports:
+      http:
+        enabled: true
+        primary: true
+        port: 3456
+        protocol: HTTP
+
+enableServiceLinks: false
+
+podSecurityContext:
+  fsGroup: 1000
+
+persistence:
+  config:
+    enabled: true
+    type: configMap
+    name: "{{ .Release.Name }}-config"
+    mountPath: /etc/vikunja/config.yml
+    subPath: config.yml
+
+probes:
+  liveness: &probes
+    enabled: true
+    custom: true
+    spec:
+      httpGet:
+        path: /api/v1/info
+        port: http
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+  readiness: *probes
+  startup:
+    enabled: false
+
+
+env:
+{{ if eq .Values.vikunja.env.VIKUNJA_DATABASE_TYPE "sqlite" }}
+  VIKUNJA_DATABASE_PATH: "/db/vikunja.db"
+{{ end }}
+{{ end }}
+
+{{- $ctx := deepCopy . -}}
+{{- $_ := get .Values "vikunja" | mergeOverwrite $ctx.Values -}}
+{{- $_ = include "vikunja.vikunja.hardcodedValues" . | fromYaml | merge $ctx.Values -}}
+{{- include "bjw-s.common.loader.all" $ctx }}

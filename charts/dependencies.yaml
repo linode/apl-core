@@ -111,3 +111,6 @@ dependencies:
   - name: trivy-operator
     version: 0.32.1
     repository: https://aquasecurity.github.io/helm-charts/
+  - name: vikunja
+    version: 2.2.1
+    repository: oci://ghcr.io/go-vikunja/helm-chart/vikunja

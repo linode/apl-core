@@ -1,0 +1,9 @@
+# Artifact Hub repository metadata file
+# https://artifacthub.io/docs/topics/repositories/helm-charts/#oci-support
+# publish via:
+# oras push kolaente.dev/vikunja/vikunja:artifacthub.io --config artifacthub.config.json:application/vnd.cncf.artifacthub.config.v1+yaml artifacthub-repo.yml:application/vnd.cncf.artifacthub.repository-metadata.layer.v1.yaml
+repositoryID: 14bd8402-9829-4f9b-b71e-e496fc1307f5
+owners: # (optional, used to claim repository ownership)
+  - name: kolaente
+    email: artifacthub@kolaente.de
+

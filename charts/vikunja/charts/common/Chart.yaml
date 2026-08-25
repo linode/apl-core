@@ -1,0 +1,23 @@
+annotations:
+  artifacthub.io/changes: |-
+    - kind: fixed
+      description: Ingress secret name template is evaluated before deciding whether to omit it
+    - kind: changed
+      description: Updated code-server image tag to v4.13.0
+    - kind: changed
+      description: Updated netshoot image tag to v0.11
+    - kind: changed
+      description: Updated gluetun image tag to v3.34.3
+apiVersion: v2
+description: Function library for Helm charts
+home: https://github.com/bjw-s/helm-charts/tree/main/charts/library/common
+keywords:
+- common
+- library
+kubeVersion: '>=1.22.0-0'
+maintainers:
+- email: me@bjw-s.dev
+  name: bjw-s
+name: common
+type: library
+version: 1.5.1
