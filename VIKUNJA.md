@@ -324,6 +324,60 @@ logo, but worth knowing if this mechanism is reused for anything that changes.
 Upstreaming `vikunja_logo.svg` into `linode/apl-console/public/logos/` remains the tidier long-term
 fix, and this fork can carry the mount until then.
 
+### ⚠ `apl-api` has a hard-coded app allow-list — this repo alone is not enough
+
+The Console has no allow-list. **`apl-api` does**, and it is the one that decides whether a tile exists
+at all. This was found the hard way: the live test below produced a correct-looking API payload and
+still showed nothing in the browser.
+
+✅ A `vikunja` entry was injected into the `otomi-api-core` ConfigMap and the API restarted. It came
+back `2/2 Running` with no config error, and `GET /v1/session` served the new app alongside the other
+25:
+
+```json
+{"isShared": true, "name": "vikunja", "ownHost": true, "tags": ["productivity", "tasks"]}
+```
+
+✅ But no tile appeared, because **the tile list is a different API call.** In
+`apl-console/src/components/Apps.tsx` the app list arrives as a prop (`apps: GetAppsApiResponse`);
+`session.core.adminApps` only supplies per-app metadata (`ownHost`, `isShared`, `path`). `GET /v1/apps`
+returned 21 apps with no `vikunja` among them, and the reason is in the API image:
+
+```js
+// /app/dist/src/app.js
+const getAppList = () => {
+    const appsSchema = getSpec().spec.components.schemas['AppList']
+    return appsSchema.enum          // <- a hand-maintained enum, baked into the image
+}
+```
+
+✅ That enum is authored in `linode/apl-api/src/openapi/app.yaml` and lists exactly those 21 names
+(`alertmanager … trivy`). An app absent from it can never appear in `/v1/apps`, so it can never get a
+tile, however complete its `core.yaml`, `apps.yaml` and values entries are.
+
+**Consequence: `apl-api` must be forked and rebuilt.** Three changes there:
+
+1. add `vikunja` to `AppList.enum` in `src/openapi/app.yaml`;
+2. re-run `npm run schema:sync`, which copies `values-schema.yaml` from `apl-core` into
+   `src/values-schema.yaml` — the API bakes its own snapshot of our schema (`copyup … src/values-schema.yaml
+   dist/src` in the `build` script), so a schema change here does not reach it otherwise;
+3. publish the image and point `versions.yaml: api` at it.
+
+✅ `apl-console` does **not** need forking for this. `src/common/api-spec.ts` holds the spec in a
+mutable module variable populated by `setSpec()` at runtime, and the API serves it (`/v1/spec` responds
+`401`, not `404`), so the Console picks up whatever the API knows. The only Console-side gap is the
+logo file, and that is solved by the mount above.
+
+This also revises §1: the file inventory covers what `apl-core` owns, but a genuinely first-party app
+spans two repos. `apl-tasks` is optional (§2 shows the redirect URI comes from here); **`apl-api` is
+not.**
+
+⚠ **Argo CD self-heals these ConfigMaps.** `otomi-otomi-api` has `syncPolicy.automated.selfHeal: true`,
+so a patched ConfigMap is reverted within seconds — the first attempt at this test silently restarted
+the API against the *original* config and proved nothing. Auto-sync must be suspended for the duration
+of any live-patch experiment on a platform manifest. This does not apply to the §2 realm test: Keycloak
+objects are rows in Keycloak's database, not manifests Argo tracks, which is why those survived.
+
 ---
 
 ## 6. Propagating teams and users
@@ -535,10 +589,11 @@ there and a template in `charts/apl-network-policies/templates/networkpolicies/`
   is verified at the Keycloak end only; the API surface is read from the OpenAPI spec, not exercised.
   The three things to test first, in order: does Vikunja accept the `vikunja_groups` claim; does
   `PUT /teams` honour `external_id`; does an OIDC login adopt or shadow a pre-created local user.
-- ⬜ **Console rendering of a new app is argued from source, not observed.** `src/utils/data.ts` shows
-  no allow-list and a safe schema fallback, which is strong evidence, but the intended live test —
-  injecting a `vikunja` entry into the `otomi-api-core` ConfigMap and restarting the API — was blocked
-  by the sandbox and never ran. See §9 for the exact command to run it by hand.
+- ✅ **The Console tile needs an `apl-api` fork.** Settled by §5: `AppList.enum` in `apl-api` gates
+  `/v1/apps`, which is what the tile list is built from. Confirmed in the browser — a `core.yaml`-only
+  patch renders nothing. Treat "add an app" as a two-repo change from the start.
+- ⬜ **The tile has still never been seen rendered**, because that needs the forked API image. Once one
+  exists, the §9 test becomes the real end-to-end check.
 - ✅ **Projects are deliberately out of scope.** APL has no project concept — the Console's routes are
   `/apps/admin`, `/teams`, `/teams/create`, `/users`, `/workloads`, `/services` and `/settings/*`, and
   `projects` appears nowhere in `values-schema.yaml`. Vikunja projects stay a user-facing concern. Do
@@ -618,27 +673,58 @@ kubectl --context kind-apl -n apl-keycloak-operator logs deploy/apl-keycloak-ope
 
 Clean up afterwards — `DELETE` the mapper by its id and `PUT` the group back with `"attributes":{}`.
 
-### The Console tile test (§5) — not yet run
+### The Console tile test (§5)
 
-This is the cheapest way to confirm a brand-new app renders, and it needs no chart work. It injects a
-`vikunja` entry into the config the API already serves, without touching the values repo. Argo CD will
-revert the ConfigMap on its next sync, which is the intended cleanup.
+The cheapest way to confirm a brand-new app is accepted, needing no chart work. It injects a `vikunja`
+entry into the config the API already serves, without touching the values repo. **Suspend auto-sync
+first** or Argo CD reverts the ConfigMap before the new pod mounts it:
 
 ```bash
 kubectl --context kind-apl -n otomi get cm otomi-api-core \
   -o jsonpath='{.data.core\.yaml}' > core-live.yaml
 # add a `- name: vikunja / isShared: true / ownHost: true` item under adminApps:
 # and a `vikunja:` block with title/about under appsInfo:
+
+kubectl --context kind-apl -n argocd patch application otomi-otomi-api \
+  --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'
 kubectl --context kind-apl -n otomi create configmap otomi-api-core \
   --from-file=core.yaml=core-patched.yaml --dry-run=client -o yaml \
   | kubectl --context kind-apl -n otomi apply -f -
 kubectl --context kind-apl -n otomi rollout restart deploy/otomi-api
+kubectl --context kind-apl -n otomi rollout status deploy/otomi-api --timeout=110s
 ```
 
-Then open `https://console.<domainSuffix>/apps/admin` and check three things: the tile appears; its
-title and description come from `appsInfo`; and it links to `https://vikunja.<domainSuffix>/`. The logo
-will be broken until §5's mount is in place — that is expected, and is itself the proof that the logo
-path is the only missing piece.
+Check the served payload directly — this is what the Console renders from, so it is the real assertion.
+The `otomi` client has `directAccessGrantsEnabled`, so a password grant yields a usable bearer token
+(see the §2 snippet for fetching the client secret):
+
+```bash
+curl -sk -H "Authorization: Bearer $ID_TOKEN" \
+  "https://api.<domainSuffix>/v1/session" \
+  | jq '.core.adminApps[] | select(.name=="vikunja")'
+```
+
+⚠ On a stock `apl-api` image this returns nothing and `/apps/admin` shows no tile, because `vikunja` is
+not in `AppList.enum` — see §5. The check that matters is therefore:
+
+```bash
+curl -sk -H "Authorization: Bearer $ID_TOKEN" \
+  "https://api.<domainSuffix>/v1/apps" | jq '.[] | select(.id=="vikunja")'
+```
+
+Empty means the API image still lacks the enum entry, and no amount of `core.yaml` patching will help.
+Once a forked API image is in place, open `https://console.<domainSuffix>/apps/admin`: the tile appears,
+its title and description come from `appsInfo`, and it links to `https://vikunja.<domainSuffix>/`. A
+broken logo and a 404 on the link are both expected at that point — nothing is deployed behind that
+hostname and the §5 mount is not built yet.
+
+Restore auto-sync when done; Argo then reverts the ConfigMap for you:
+
+```bash
+kubectl --context kind-apl -n argocd patch application otomi-otomi-api --type merge \
+  -p '{"spec":{"syncPolicy":{"automated":{"prune":true,"selfHeal":true}}}}'
+kubectl --context kind-apl -n otomi rollout restart deploy/otomi-api
+```
 
 Per `CLAUDE.md`, every command above is bounded or backgrounded, and nothing is piped before its exit
 code has been checked.
