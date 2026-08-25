@@ -163,6 +163,13 @@ versions:
 apps:
   metrics-server:
     extraArgs: ["--kubelet-insecure-tls=true"]
+  # Both default to false upstream, which means clicking Activate in the console after every
+  # rebuild. Enabling them here rather than in helmfile.d/snippets/defaults.yaml keeps the fork's
+  # deviation from upstream to this file. See step 7.
+  gitea:
+    enabled: true
+  harbor:
+    enabled: true
   vikunja:
     enabled: true
     teamSync:
@@ -511,7 +518,31 @@ Re-run it whenever `values-schema.yaml` changes. It is Docker-only and needs no 
 
 ## 7. Install ✅
 
-The `values.yaml` from the Quickstart. Five things in it are load-bearing:
+The `values.yaml` from the Quickstart. Six things in it are load-bearing:
+
+- **`apps.gitea.enabled` / `apps.harbor.enabled`** ⬜ — both default to `false`
+  (`helmfile.d/snippets/defaults.yaml`), so without these two lines the platform installs without
+  them and you have to click **Activate** in the console after every rebuild. Set here, in the
+  lab's own values, rather than by changing that defaults file: the effect on this install is
+  identical and it keeps the fork's deviation from upstream out of a tracked upstream file.
+
+  Two things were checked before turning Harbor on, because both would otherwise present as
+  platform failures rather than as unmet requirements:
+
+  - **Object storage is not needed.** With `obj.provider.type` anything other than `linode`, the
+    registry falls back to `imageChartStorage: type: filesystem` on a PVC
+    (`values/harbor/harbor.gotmpl`). The claim under "Two console settings this lab does not need"
+    that Harbor "cannot be activated" without object storage is **wrong** — that is true of Loki and
+    the CloudNativePG backups, not of Harbor.
+  - **Every Harbor PVC is `ReadWriteOnce`** (registry, jobservice, database, redis, trivy), so kind's
+    `rancher.io/local-path` serves them. A chart defaulting to `ReadWriteMany` would sit `Pending`
+    forever here — see step 0.
+
+  Neither app touches the platform's own git backend. `otomi.git.repoUrl` stays
+  `git-server.git-server.svc.cluster.local` regardless (`helmfile.d/snippets/defaults.yaml`), and
+  the `$giteaUrl` built in `derived.gotmpl` is dead code, referenced nowhere. Enabling Gitea adds
+  Gitea; it does not move the values repository, despite `apps.yaml` describing Gitea as the
+  "default repository for App Platform configuration".
 
 - **`domainSuffix`** — the base hostname every app hangs off (`console.<suffix>`, `keycloak.<suffix>`).
   With a real domain you would use it directly. We own none, so we use `nip.io`, a public resolver
@@ -639,8 +670,15 @@ curl -sk -o /dev/null -w '%{http_code}\n' https://console.$(kubectl get cm welco
 app behind it was never deployed. Do not read a 404 as a certificate or DNS problem; it is the
 opposite, it proves both are working.
 
-✅ **Current baseline**, measured on a clean run with `APPS_REPO_URL` pointing at the fork and
-`APPS_REVISION=$(git rev-parse HEAD)`, with `apps.vikunja` enabled:
+⚠ **The table below predates Gitea and Harbor being in the Quickstart values, and every figure in
+it will be higher.** Harbor adds core, portal, registry, jobservice, trivy, a database and a redis;
+Gitea adds itself, a valkey and a database. **None of the new numbers has been measured** — the next
+clean run is what produces them. Until then, read the table as an order of magnitude and treat the
+`awk`-based "must be empty" checks below as the real gate. The 6 vCPU / 12 GB floor in step 0 was
+also measured without these two.
+
+✅ **Baseline as last measured**, on a clean run with `APPS_REPO_URL` pointing at the fork and
+`APPS_REVISION=$(git rev-parse HEAD)`, with `apps.vikunja` enabled and Gitea and Harbor **off**:
 
 | | |
 |---|---|
@@ -906,9 +944,10 @@ found two bugs, both now fixed in this branch — see "Two ordering bugs" at the
 Re-run these anyway: they are what caught them.
 
 ```bash
-# Derive the domain from Vikunja's own route. An earlier version of this file read the `gitea`
-# httproute, which does not exist on this app set -- the command errors, D is left EMPTY, and every
-# curl below then silently targets `vikunja.` with no domain.
+# Derive the domain from Vikunja's own route -- the app these checks are about. An earlier version
+# read the `gitea` httproute, which did not exist while Gitea was off: the command errors, D is left
+# EMPTY, and every curl below then silently targets `vikunja.` with no domain. Gitea is enabled as
+# of step 7 so that route is back, but deriving it from an unrelated app was the bug.
 D=$(kubectl get httproute vikunja -n vikunja -o jsonpath='{.spec.hostnames[0]}' | sed 's/^vikunja\.//')
 [ -n "$D" ] || echo "D is empty -- nothing below will work" >&2
 
