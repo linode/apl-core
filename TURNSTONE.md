@@ -212,17 +212,115 @@ ignores because it maps to nothing:
 
 ```
 TURNSTONE_OIDC_ROLE_CLAIM=groups
-TURNSTONE_OIDC_ROLE_MAP=platform-admin:builtin-admin,team-<id>:builtin-operator
+TURNSTONE_OIDC_ROLE_MAP=platform-admin:builtin-admin,all-teams-admin:builtin-admin,
+                        team-admin:apl-team-lead,team-<id>:builtin-operator
 ```
 
-The map is rendered from `teamConfig`, so adding a team re-renders it through the normal GitOps
-path. Roles are re-evaluated on every login and `replace_oidc_roles` revokes any no longer claimed,
-so removing someone from a Keycloak group demotes them at next sign-in. Manual grants and the
-`oidc-default` fallback are untouched.
+The `team-<id>` half is rendered from `teamConfig`, so adding a team re-renders it through the
+normal GitOps path. Roles are re-evaluated on every login and `replace_oidc_roles` revokes any no
+longer claimed, so removing someone from a Keycloak group demotes them at next sign-in. Manual
+grants and the `oidc-default` fallback are untouched. Mapping is a **union** over matching values,
+so a team admin holds `apl-team-lead` *and* `builtin-operator`.
 
 ⚠ Turnstone's own `docs/oidc.md` recommends `realm_access.roles` for this. That **cannot work** —
 the code looks for a literal top-level key of that name. The claim must also be in the **ID token**,
 not just the access token.
+
+⛔ **`team-admin` is two different things**, and this file previously asserted the wrong one — that
+"the platform's admin team is not a realm role of the form team-admin". It is one: `apl-tasks`'
+keycloak operator pushes `team-admin` for every user with `isTeamAdmin`. It is *also* how the
+platform's special admin team renders. The `omit teamConfig "admin"` in the team loop is still
+correct, but for the opposite reason to the one given: it stops the loop emitting
+`team-admin:builtin-operator`, which would collide with the marker and pin every team admin to
+operator. That false comment is what hid this gap for a full integration cycle.
+
+### 4.1 ⛔ Turnstone cannot express a team-scoped admin
+
+An earlier version of this file mapped only `platform-admin` and `team-<id>`, and never considered
+team admins. Measured on a running lab, a team admin landed on `builtin-operator` — byte-identical
+to a plain member — which in the UI means every admin tab except **Nodes** disappears, because
+`builtin-operator` holds only `read,write,conversation.modify,workstreams.*`.
+
+The obvious fix, mapping `team-admin` to `builtin-admin`, is wrong: it hands global power over
+users, roles, models and settings to someone who should only administer their own teams. And
+Turnstone offers nothing in between, because **it has no scoping mechanism at all**:
+
+- `org_id` is inert — the `orgs` table is seeded with exactly one row, there is no `create_org`
+  route, and `users.org_id` is written by nothing and read by nothing.
+- `user_roles` has no org column; its primary key is `(user_id, role_id)`. A grant is global.
+- There is no `TURNSTONE_OIDC_ORG_CLAIM`; `_parse_role_map` is a flat `{value: role_id}` map.
+- `project_members` carries **no role column**, and delete/visibility/membership are bound to a
+  single `owner_id` — one person, not a group, and not syncable from a claim.
+
+So the honest answer is a **power user**, named to say so: `apl-team-lead` grants
+`project.*`, `persona.read` and `tools.approve` on top of the operator baseline, and deliberately
+**not** `admin.users`, `admin.roles`, `admin.orgs` or `admin.settings`. A team admin gets a useful
+UI and can own projects; they cannot act on other people or on global configuration.
+
+Contrast the first-party integrations, which sidestep this by having real scopes: Harbor gives
+`team-<id>` the *developer* role on that team's project and `all-teams-admin` *projectAdmin* on
+every project; Gitea maps `team-<id>` to Admin of its own org. Both **ignore `team-admin`
+entirely**. This fork deviates deliberately, because Turnstone has no per-team object to scope to.
+
+### 4.2 Seeding the role, and why it is SQL
+
+`apply_role_mapping` resolves through `storage.get_role(role_id)` and **silently drops** a mapped
+value whose role does not exist — no log line, and the user quietly falls back. So `apl-team-lead`
+must exist before the first sign-in; the `seed-team-lead-role` init container on
+`turnstone-bootstrap-admin` does it.
+
+⚠ **It writes SQL, and that is forced rather than preferred.** Turnstone ships a Python SDK with
+full role CRUD (`turnstone/sdk/console.py`), and `turnstone-admin create-token` can mint its token —
+but `create_role` POSTs to `/v1/api/admin/roles` and the **server** assigns `role_id` as a random
+uuid4. Since `apply_role_mapping` matches on that primary key only, a UUID-keyed role can never be
+named in a `TURNSTONE_OIDC_ROLE_MAP` that Helm renders *before* the role exists. A fixed `role_id`
+is the only thing that closes the loop.
+
+The cost is a coupling to Turnstone's `roles` table: a future migration that re-keys or renames it
+breaks the seed **silently**, leaving team admins on `builtin-operator`. `SETUP.md` §11.6 carries
+the query that catches it. Note `roles` has a UNIQUE constraint on `name` as well as the `role_id`
+primary key, so the seed clears a stray non-builtin row holding the name before upserting.
+
+**Worth filing upstream:** `get_role_by_name` already exists in the storage layer; having
+`apply_role_mapping` fall back to it would let the role map use a stable human-readable name and
+delete this whole step.
+
+### 4.3 ⛔ Discovery happens once, at startup, and is never retried
+
+Found on a clean install, and it is the most misleading failure in this integration because
+**nothing looks wrong**. Both pods run OIDC discovery during startup; on a cold install Keycloak is
+minutes behind, discovery fails, and the failure is logged at `warning`:
+
+```
+OIDC discovery failed for https://keycloak.<domain>/realms/otomi:
+  HTTPStatusError("Server error '503 Service Unavailable' ...")
+```
+
+The pods then stay `Running` and `Ready`, serving a login page with **no sign-in button**. That is
+the same symptom §3's certificate trap produces, which is why §3 used to get the blame.
+
+The two are easy to tell apart once you know: a plain `kubectl rollout restart` fixes the race and
+does nothing for a certificate problem. Verified — after a restart, with the same CA and no other
+change, both pods logged `OIDC enabled: otomi-idp` and the same URL returned **200** from inside the
+pod.
+
+Turnstone's own code is where the retry belongs, so the platform-side fix is a `wait-for-keycloak`
+init container in `values/turnstone/turnstone.gotmpl`, ordered **after** `build-ca-bundle` because
+validating Keycloak needs that bundle. It exits non-zero on timeout rather than proceeding: a
+restart with backoff is recoverable, a pod serving without SSO is the silent failure it exists to
+prevent. Compare Vikunja, which handles this itself with `requireavailability: true`.
+
+### 4.4 Tool approval is an admin's job to pre-authorise
+
+`builtin-operator` does **not** hold `tools.approve`, and tool approval is on by default — so a
+plain team member can chat but cannot grant any tool call. That is upstream's role baseline and is
+left alone deliberately; `apl-team-lead` includes `tools.approve` so team admins can act.
+
+For members, an admin pre-authorises instead. `AutoApproveReason` documents six disjoint paths that
+bypass the gate; the two admin-controlled ones are **`POLICY`** (a `tool_policies` row with
+`action='allow'`, needs `admin.policies`) and **`SKILL`** (a skill template's `allowed_tools`, needs
+`admin.skills`). Note `ALWAYS` ("Approve + Always") is *not* available to them — it requires
+approving once, which they cannot do — so members depend entirely on admin-defined policies.
 
 ---
 
@@ -249,8 +347,48 @@ one user.
 on a predictable wait — and once spent, the admin user is never created and OIDC then fails with a
 403 that reads like a Keycloak problem.
 
+⛔ **And gate it on *existence* first.** `kubectl wait --for=condition=Available` honours
+`--timeout` only if the object exists; against a missing one it returns NotFound **immediately**.
+Measured on a clean install: the gate failed instantly 5 times while Argo CD had not yet created the
+Deployment, escalating the Job into a multi-minute `Init:CrashLoopBackOff` that was still backing off
+long after the console went Ready. It recovered only because `backoffLimit` is 30. A
+`--for=create` container now runs ahead of it — two containers rather than one flag, because the
+kubectl image is distroless and there is no shell to sequence them.
+
 **No AuthorizationPolicy.** Turnstone does OIDC in-app, like Vikunja. Putting oauth2-proxy
 ext-authz in front would double-authenticate and break the callback.
+
+**The console tile deep-links into the OIDC handshake.** ✅ Because there is no oauth2-proxy in
+front, the tile would otherwise land on Turnstone's own login page and the user would click
+*otomi-idp* despite already holding a Keycloak session. `core.yaml` sets
+`path: /v1/api/auth/oidc/authorize`, the same trick Gitea uses with `/user/oauth2/otomi-idp`.
+Verified: that path returns **302** to Keycloak with PKCE, `state`, `nonce` and the right
+`redirect_uri`. Harbor needs no such link because `primaryAuthMode: true` auto-redirects from `/`.
+
+⛔ **The migrate Job deadlocked Argo CD's PreSync phase.** The vendored chart annotates it
+`helm.sh/hook: post-install,pre-upgrade` — correct under Helm, where only `post-install` fires on a
+fresh install, so the ConfigMap, Secret and database exist first. **Argo CD renders this chart
+itself and has no notion of install versus upgrade**: it honours both annotations, so `pre-upgrade`
+becomes a **PreSync** hook that fires on a brand-new install too. The Job then requested
+`serviceAccountName: turnstone`, which the *ordinary* sync creates — and the sync cannot start until
+PreSync completes.
+
+The signature is a Job `Running` with **zero pods** and the job controller repeating:
+
+```
+Error creating: pods "turnstone-migrate-" is forbidden: error looking up service account
+turnstone/turnstone: serviceaccount "turnstone" not found
+```
+
+It never self-heals. Everything else that looked broken followed from it — no Deployments, and
+`turnstone-bootstrap-admin` burning retries against a console that was never coming. Fixed by
+dropping `serviceAccountName` from the Job: the migration runs
+`python -m turnstone.core.storage._migrate` against PostgreSQL over env vars and makes no Kubernetes
+API calls, so the default account suffices and the hook semantics stay untouched.
+
+**The general lesson, worth more than the fix:** a Helm hook annotation is not a portable
+specification. Under Argo CD, `pre-upgrade` means "every sync, including the first". Any hook that
+depends on a resource the main sync creates is a deadlock waiting for its first install.
 
 **SSE needs nothing special.** Every stream emits a 5-second keepalive, `X-Accel-Buffering: no` is
 set, uvicorn is HTTP/1.1-only, and this repo configures no route or idle timeout. Do not strip

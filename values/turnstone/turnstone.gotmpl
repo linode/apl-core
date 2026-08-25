@@ -12,10 +12,28 @@
   you to prefer. Roles are re-evaluated on every login and replace_oidc_roles revokes any that are
   no longer claimed, so removing someone from a Keycloak group demotes them here on next sign-in.
 
-  Note: `admin` is omitted the same way values/kubernetes-gateways does it -- the platform's admin
-  team is not a realm role of the form team-admin.
+  ⛔ `team-admin` is TWO different things, and an earlier version of this comment claimed the
+  wrong one. It IS a realm role -- apl-tasks' keycloak operator does
+  `if (decoded.isTeamAdmin === 'true') groups.push('team-admin')`, so every team admin carries it.
+  It is ALSO how the platform's special *admin team* renders. Keeping the `omit` is therefore
+  still correct, but for the opposite reason to the one previously given: it stops the team loop
+  emitting `team-admin:builtin-operator`, which would collide with the role marker and quietly
+  pin every team admin to operator. The marker is mapped explicitly below instead.
+
+  Group vocabulary, matching how apl-api reads the same claim (src/middleware/jwt.ts):
+    platform-admin   -> global admin
+    all-teams-admin  -> also a platform admin there, and projectAdmin on every Harbor project
+    team-admin       -> "is a team admin" (global flag; there is no per-team variant)
+    team-<id>        -> membership of that team
+
+  ⚠ Turnstone cannot express a team-scoped admin. org_id is inert (one seeded row, no create_org
+  route, read by nothing), user_roles has no org column, and project_members carries no role. So
+  team admins get `apl-team-lead` -- a deliberately-named power-user role with project and persona
+  access and tools.approve, but NO admin.users / admin.roles / admin.settings, so it cannot act on
+  other people or global config. It is seeded by the bootstrap Job; see turnstone-raw.gotmpl.
+  Mapping is a union, so a team admin also keeps builtin-operator from their team-<id> entry.
 */}}
-{{- $roleMap := list "platform-admin:builtin-admin" }}
+{{- $roleMap := list "platform-admin:builtin-admin" "all-teams-admin:builtin-admin" "team-admin:apl-team-lead" }}
 {{- range $teamId := (keys (omit $v.teamConfig "admin") | sortAlpha) }}
 {{- $roleMap = append $roleMap (printf "team-%s:builtin-operator" $teamId) }}
 {{- end }}
@@ -135,8 +153,8 @@ volumeMounts:
   - name: workspace
     mountPath: /workspace
 
-{{- if $v._derived.untrustedCA }}
 initContainers:
+{{- if $v._derived.untrustedCA }}
   {{- /*
     Keycloak is served with a certificate signed by the platform CA, and OIDC discovery must
     validate it. httpx (0.28.1, the only client on the OIDC path) honours SSL_CERT_FILE, which
@@ -174,6 +192,71 @@ initContainers:
         cpu: 50m
         memory: 64Mi
 {{- end }}
+  {{- /*
+    Turnstone performs OIDC discovery exactly once, at startup, and does not retry: a failure is
+    logged at `warning` and the pod then serves happily with SSO disabled and no sign-in button.
+    On a cold install Keycloak is minutes behind Turnstone, so without this gate a clean bring-up
+    reliably produces a healthy-looking pod that cannot do SSO. Measured on a clean install:
+    "OIDC discovery failed ... 503 Service Unavailable", and a plain `kubectl rollout restart`
+    afterwards fixed it with no other change.
+
+    This is deliberately NOT the certificate trap from TURNSTONE.md section 3 -- the same URL
+    returns 200 from this pod minutes later. It is purely an ordering race, and it is the reason
+    SETUP.md section 11 now lists this ahead of the certificate chain.
+
+    Must run after build-ca-bundle: validating Keycloak needs the concatenated bundle, which is
+    why SSL_CERT_FILE is set below under the same guard. Same shape as oauth2-proxy's
+    wait-for-keycloak. Exits non-zero on timeout rather than proceeding -- a restart with backoff
+    is recoverable, a pod serving without SSO is the silent failure this exists to prevent.
+  */}}
+  - name: wait-for-keycloak
+    image: {{ $image }}
+    imagePullPolicy: IfNotPresent
+    command:
+      - python
+      - -c
+      - |
+        import os, sys, time, httpx
+
+        url = os.environ["ISSUER"].rstrip("/") + "/.well-known/openid-configuration"
+        deadline = time.monotonic() + 600
+        while time.monotonic() < deadline:
+            try:
+                code = httpx.get(url, timeout=5).status_code
+                if code == 200:
+                    print("OIDC discovery reachable:", url, flush=True)
+                    sys.exit(0)
+                print("not ready yet, status", code, flush=True)
+            except Exception as exc:
+                print("not ready yet:", exc, flush=True)
+            time.sleep(5)
+        print("timed out waiting for", url, flush=True)
+        sys.exit(1)
+    env:
+      - name: ISSUER
+        value: {{ $v._derived.oidcBaseUrl | quote }}
+{{- if $v._derived.untrustedCA }}
+      - name: SSL_CERT_FILE
+        value: /trust/ca-bundle.crt
+{{- end }}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+{{- if $v._derived.untrustedCA }}
+    volumeMounts:
+      - name: trust
+        mountPath: /trust
+        readOnly: true
+{{- end }}
+    resources:
+      limits:
+        cpu: 250m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
 
 extraEnv:
   - name: TURNSTONE_CONFIG

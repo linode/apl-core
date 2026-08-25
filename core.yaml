@@ -182,10 +182,25 @@ adminApps:
     tags: [ai, agents]
     isShared: true
     ownHost: true
+    # Same trick as gitea above: link into the app's OIDC-start endpoint, not its login page, so a
+    # user who already has a Keycloak session never sees the password form or the otomi-idp button.
+    # Neither app can sit behind oauth2-proxy -- both do OIDC in-app, and a proxy in front would
+    # double-authenticate and break the callback (TURNSTONE.md).
+    # Verified: this returns 302 to Keycloak with PKCE, state, nonce and the right redirect_uri.
+    path: /v1/api/auth/oidc/authorize
   - name: vikunja
     tags: [productivity, tasks]
     isShared: true
     ownHost: true
+    # Vikunja starts OIDC client-side, so unlike gitea and turnstone there is no server-side
+    # endpoint to link to and curl sees only the SPA shell (200, no Location) on every URL here.
+    # `redirectToProvider` is upstream's own query parameter, handled on boot whenever the user is
+    # unauthenticated. It matches on the provider KEY (`otomi`, the map key in values/vikunja),
+    # NOT the display name `otomi-idp`.
+    # Do not try to replace this with a gateway RequestRedirect to Keycloak: the flow stores its
+    # `state` in localStorage and the callback validates it, so a redirect minted anywhere else
+    # always fails the state check.
+    path: /login?redirectToProvider=otomi
 
 teamApps:
   - name: alertmanager

@@ -259,6 +259,33 @@ resources:
           distroless. Same shape as oauth2-proxy's wait-for-keycloak init container.
         */}}
         initContainers:
+          {{- /*
+            `kubectl wait --for=condition=Available` honours --timeout only if the object EXISTS.
+            Against a missing one it returns NotFound immediately, so the gate below does not wait
+            at all during the window before Argo CD has created the Deployment -- it fails fast and
+            spends a retry. Measured on a clean install: 5 instant failures, escalating the Job into
+            a multi-minute Init:CrashLoopBackOff that was still backing off well after the console
+            went Ready. It recovered only because backoffLimit is 30.
+
+            --for=create is the half that waits for existence (kubectl >= 1.31; the pinned image is
+            v1.34.1). Two containers rather than one because the image is distroless: there is no
+            shell to sequence them in. The Role above already grants list/watch, which both need.
+          */}}
+          - image: {{ $kubectlImage }}
+            name: wait-for-turnstone-created
+            command:
+              - kubectl
+              - wait
+              - deployments/turnstone-console
+              - --for=create
+              - --timeout=15m
+            resources:
+              limits:
+                cpu: 250m
+                memory: 256Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
           - image: {{ $kubectlImage }}
             name: wait-for-turnstone
             command:
@@ -267,6 +294,75 @@ resources:
               - deployments/turnstone-console
               - --for=condition=Available
               - --timeout=15m
+            resources:
+              limits:
+                cpu: 250m
+                memory: 256Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+          {{- /*
+            Seed the role that team admins map to. It has to exist before anyone signs in:
+            apply_role_mapping resolves a mapped value through storage.get_role(role_id) and
+            silently drops it when the role is missing, so a team admin would fall back to
+            builtin-operator with no error anywhere.
+
+            Why SQL and not the API. Turnstone ships a Python SDK with full role CRUD
+            (turnstone/sdk/console.py), and turnstone-admin can mint a token for it -- but
+            create_role POSTs to /v1/api/admin/roles and the SERVER mints role_id as a random
+            uuid4. apply_role_mapping matches on that primary key only (there is a
+            get_role_by_name in the storage layer, but the OIDC path never calls it), so a
+            UUID-keyed role cannot be named in TURNSTONE_OIDC_ROLE_MAP -- which helm renders
+            before the role exists. A fixed role_id is the only thing that closes that loop.
+            Upstream fix worth filing: fall back to get_role_by_name, and this step disappears.
+
+            `roles` has a UNIQUE constraint on `name` as well as the role_id primary key, so a
+            stray non-builtin row holding the name is cleared first; otherwise the insert fails
+            on roles_name_key rather than reaching the ON CONFLICT. Never touches builtin rows.
+          */}}
+          - image: {{ $kubectlImage }}
+            name: seed-team-lead-role
+            command:
+              - kubectl
+              - exec
+              - deployments/turnstone-console
+              - '--'
+              - python
+              - -c
+              - |
+                import os, datetime, sqlalchemy as sa
+
+                ROLE_ID = "apl-team-lead"
+                PERMS = (
+                    "read,write,conversation.modify,"
+                    "workstreams.create,workstreams.close,"
+                    "project.create,project.read,project.write,project.delete,"
+                    "persona.read,tools.approve"
+                )
+                now = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+                engine = sa.create_engine(os.environ["TURNSTONE_DB_URL"])
+                with engine.begin() as conn:
+                    conn.execute(
+                        sa.text(
+                            "delete from roles where name = :rid and role_id <> :rid"
+                            " and builtin = 0"
+                        ),
+                        {"rid": ROLE_ID},
+                    )
+                    conn.execute(
+                        sa.text(
+                            "insert into roles"
+                            " (role_id, name, display_name, permissions, builtin, org_id,"
+                            "  created, updated)"
+                            " values (:rid, :rid, :dn, :p, 0, '', :now, :now)"
+                            " on conflict (role_id) do update set"
+                            "  permissions = excluded.permissions,"
+                            "  display_name = excluded.display_name,"
+                            "  updated = excluded.updated"
+                        ),
+                        {"rid": ROLE_ID, "dn": "Team Lead", "p": PERMS, "now": now},
+                    )
+                print("seeded role", ROLE_ID, flush=True)
             resources:
               limits:
                 cpu: 250m

@@ -409,6 +409,53 @@ continuously-running operator is a precondition for handling this, which is a fu
 use a one-shot Job — but it is **not sufficient on its own**, and the first version of this operator
 got that wrong. See 3.3.
 
+### 3.2b Admin rights, and the `team-admin` collision ⛔ found live, fixed
+
+Two defects, found by inspecting a running lab rather than by reading code.
+
+**1. A phantom team, from two things sharing one name.** `team-admin` is a Keycloak group carried by
+every user with `isTeamAdmin` — `apl-tasks` `src/operators/keycloak/keycloak.ts` does
+`if (decoded.isTeamAdmin === 'true') groups.push('team-admin')`. It is *also* how the platform's
+special **admin team** renders, because teams become `team-<id>`. Every other consumer writes
+`omit .Values.teamConfig "admin"`; `values/apl-vikunja-operator/apl-vikunja-operator-raw.gotmpl` was
+the only one that did not. So the operator created a Vikunja team `team-admin` for the admin *team*,
+then filled it from the *role* group — producing a team containing every team admin in the platform:
+
+```
+ team_id |               username               | admin
+       1 | apl-vikunja-admin                    | t
+       1 | demodevs-admin@…                     | f      <- should not be in this team at all
+```
+
+Fixed by adding the `omit`. `CLAUDE.md` carries the general trap.
+
+**2. Nobody's platform role reached Vikunja.** `addTeamMember` sent `{username}` only. The type
+`VikunjaTeamMember` already declared `admin?: boolean` — declared, never read, never sent. Measured:
+a platform admin was in **no team at all**, and a team admin was `admin=false` in the teams they were
+in.
+
+The model now implemented, which mirrors Harbor (`harbor-project.ts` adds `all-teams-admin` to
+*every* project with `roleId: 1` on each reconcile):
+
+| Keycloak group | Vikunja effect |
+|---|---|
+| `platform-admin`, `all-teams-admin` | member of **every** team, `admin=true` |
+| `team-admin` ∩ `team-<id>` | `admin=true` on **that** team only |
+| `team-<id>` | ordinary member |
+
+`team-admin` is global — there is no `team-<id>-admin` anywhere in the platform — so **intersecting
+it with real membership is what scopes it**. A team admin gets nothing on teams they are not in.
+
+⛔ **`POST /teams/{id}/members/{userID}/admin` is a TOGGLE, not a set**, and takes no body. The
+reconcile therefore re-reads the team (`GET /teams/{id}` returns `{id, username, admin}` per member)
+and acts only on drift. Calling it unconditionally flips the flag, and the next reconcile flips it
+back, forever. The re-read is also what supplies the numeric user id, which a freshly added member
+does not have until the server assigns it.
+
+Vikunja's instance-admin API is Pro-licensed — `GET /api/v1/admin/users` returns **404** here — so
+the per-team flag is the only administrative lever available, and admin-of-every-team is the
+faithful equivalent of a global admin.
+
 ### 3.3 Why the operator needs a timer, not just watches ⛔ found live, fixed
 
 The first version watched only its own Secret and ConfigMap, exactly as `operators/gitea/` does, and

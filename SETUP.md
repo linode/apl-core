@@ -11,11 +11,17 @@ disk, 6+ vCPU, 12+ GB RAM.
 Only steps marked ✅ have actually been run. Nothing here is copied from upstream documentation
 without checking it.
 
-⚠ **Read this before trusting the ✅ marks.** Steps **6b** and **6c** are new and are marked ⬜:
-they replace the lab's root CA and add an operator-supplied API key, both required by Turnstone
-(§11). The ✅ marks elsewhere were earned *before* that change, on a bring-up that generated its own
-root CA — so the file as a whole has not been run start-to-finish in its current form. Everything
-6b/6c depends on was verified in isolation (see §11), but the composed path has not been.
+✅ **This file has now been run start to finish in its current form**, including steps **6b** and
+**6c** (the replaced root CA and the operator-supplied API key), with Gitea, Harbor, Vikunja and
+Turnstone all enabled. `completed` at attempt 1, then 61/61 Argo CD applications Synced + Healthy.
+The figures in step 8 are from that run.
+
+That run also found three real bugs, all fixed here and all invisible to any pre-install check:
+the Turnstone migrate Job deadlocked Argo CD's PreSync phase; Turnstone's one-shot OIDC discovery
+raced Keycloak and left SSO silently disabled on a healthy-looking pod; and the bootstrap Job's
+`kubectl wait` gate failed fast instead of waiting. See §11.
+
+⬜ Still unproven: a real agent turn against the Claude API, and the browser checks in §11.7.
 
 If you only want the previously-verified lab, set `apps.turnstone.enabled: false` and skip 6b and
 6c entirely; nothing else in this file depends on them.
@@ -793,24 +799,23 @@ curl -sk -o /dev/null -w '%{http_code}\n' https://console.$(kubectl get cm welco
 app behind it was never deployed. Do not read a 404 as a certificate or DNS problem; it is the
 opposite, it proves both are working.
 
-⚠ **The table below predates Gitea and Harbor being in the Quickstart values, and every figure in
-it will be higher.** Harbor adds core, portal, registry, jobservice, trivy, a database and a redis;
-Gitea adds itself, a valkey and a database. **None of the new numbers has been measured** — the next
-clean run is what produces them. Until then, read the table as an order of magnitude and treat the
-`awk`-based "must be empty" checks below as the real gate. The 6 vCPU / 12 GB floor in step 0 was
-also measured without these two.
-
 ✅ **Baseline as last measured**, on a clean run with `APPS_REPO_URL` pointing at the fork and
-`APPS_REVISION=$(git rev-parse HEAD)`, with `apps.vikunja` enabled and Gitea and Harbor **off**:
+`APPS_REVISION=$(git rev-parse HEAD)`, with **Gitea, Harbor, Vikunja and Turnstone all enabled** —
+i.e. the Quickstart values in this file, measured end to end:
 
 | | |
 |---|---|
-| time to `completed` | **~4.5 minutes**, attempt **1** |
-| Argo CD convergence after that | **~5 minutes** |
-| pods Running/Completed | **60** |
-| applications Synced + Healthy | **45/45** |
-| Helm releases, all revision 1 | **25** |
+| time to `completed` | **~5.7 minutes**, attempt **1** |
+| Argo CD convergence after that | **~6 minutes** |
+| pods Running/Completed | **79** |
+| applications Synced + Healthy | **61/61** |
+| Helm releases, all revision 1 | **35** |
 | `platform-istio` external IP | the pool's **first** address |
+
+An earlier table recorded **60 pods / 45 apps / 25 releases** with Gitea and Harbor **off**; those
+two account for most of the difference (Harbor adds core, portal, registry, jobservice, trivy, a
+database and a redis; Gitea adds itself, a valkey and a database). The 6 vCPU / 12 GB floor in
+step 0 was measured without them and has not been re-derived.
 
 Earlier revisions of this file recorded **55 pods / 39 apps / 20 releases** (at `APPS_REVISION=v6.2.1`)
 and **40 pods** (with `APPS_REVISION` unset). The 40-pod figure is the `APPS_REVISION` failure from
@@ -1227,10 +1232,9 @@ check the port against `kubectl get svc -o jsonpath='{.spec.ports}'` before anyt
 Only relevant on `feat/turnstone-integration`. The design, the reasoning and everything that *was*
 measured live in `TURNSTONE.md`; this is the check list.
 
-⬜ **None of this section has been executed against a clean install.** That is a deliberate,
-honest mark, and it is broader than it looks: steps 6b and 6c replace the lab's root CA, so the whole
-bring-up above now runs on a path that has not been re-verified end to end either. Treat every ✅ in
-this file as "was true before the CA change".
+✅ **This section has now been executed against a clean install**, on the composed 6b/6c path.
+What that run proved, and what it broke, is recorded below — three bugs came out of it, and all
+three are fixed on this branch.
 
 What *is* proven, all of it before any Helm was written:
 
@@ -1244,9 +1248,33 @@ What *is* proven, all of it before any Helm was written:
 | the concatenated CA bundle keeps `api.anthropic.com` reachable | 151-cert bundle; Anthropic returns 401 (TLS fine), platform CA alone breaks it |
 | `turnstone-admin create-admin` is idempotent | ran twice against SQLite: *"is already an admin … no change"* |
 
-What is **not** proven, and is exactly what this section is for: the install itself, the bootstrap
-Job's in-cluster `kubectl exec`, a real OIDC login, the `/metrics` redirect, role mapping writing
-real rows, and one real agent turn against the Claude API.
+Proven since, on a clean install:
+
+| Proven ✅ | How |
+|---|---|
+| the install itself | `completed` at attempt 1; `turnstone-turnstone` Synced + Healthy; both pods 2/2 |
+| the CA trap is defeated | **from Python, inside the pod**, OIDC discovery returns **200** under `VERIFY_X509_STRICT` — step 6b's `subjectKeyIdentifier` reached the leaf |
+| the bundle is concatenated, not replacing | `api.anthropic.com` → **401** from the same pod |
+| the API key reaches the pod | all **5** ExternalSecrets `SecretSynced`; no `CreateContainerConfigError` |
+| the bootstrap Job's in-cluster `kubectl exec` | `Completed`; `turnstone-admin list-users` shows the admin, created at a real timestamp |
+| the model registry loads | `model = "claude-sonnet-5"`, `api_key` the literal `${ANTHROPIC_API_KEY}` |
+| the `/metrics` redirect | **302** to `/`, not a Prometheus dump |
+| role mapping writes real rows | `assigned_by='oidc'` for both a platform admin and a team member |
+
+⚠ Note the ExternalSecret count is **5**, not the 4 an earlier version of this file claimed.
+
+Three bugs that only a real install could have found, all fixed here:
+
+1. **The migrate Job deadlocked Argo CD.** `helm.sh/hook: post-install,pre-upgrade` is right under
+   Helm, but Argo CD has no install/upgrade distinction and honours **both** — so `pre-upgrade`
+   made it a **PreSync** hook on a first install, where it demanded a ServiceAccount the main sync
+   creates. The sync waits on PreSync; nothing breaks the cycle. Symptom: a Job `Running` with
+   **zero pods**, and `serviceaccount "turnstone" not found` repeating from the job controller.
+2. **OIDC discovery raced Keycloak** — see "What to expect to go wrong first" below.
+3. **The `kubectl wait` gate failed fast** on a Deployment that did not exist yet.
+
+Still **not** proven: a real OIDC login end to end, the browser checks in 11.7, and one real agent
+turn against the Claude API. TLS to Anthropic is proven; an actual completion is not.
 
 ```bash
 # Derive the domain from Turnstone's own route -- never from an unrelated app's, which may be off.
@@ -1291,13 +1319,20 @@ A missing model is silent — a healthy pod, a working UI, and no model:
 
 ```bash
 for d in turnstone-server turnstone-console; do
-  kubectl logs -n turnstone deploy/$d | grep -iE 'no model name, skipping|empty registry|world-readable'
+  kubectl logs -n turnstone deploy/$d | grep -iE 'no model name, skipping|empty registry'
 done
 # any output is a failure; "no model name, skipping" is the model=/name= trap
 kubectl get cm turnstone-model-config -n turnstone -o jsonpath='{.data.config\.toml}'
 # expect `model = "claude-sonnet-5"` and api_key = "${ANTHROPIC_API_KEY}" -- the LITERAL string,
 # never the real key. If the real key is in here, something templated it wrongly.
 ```
+
+⚠ **Do not grep for `world-readable` here.** An earlier version of this file did, and it fires on
+a perfectly healthy install. Turnstone warns because `/etc/turnstone/config.toml` is mode `0440`,
+but the chart already sets `defaultMode: 0400` — kubelet widens it to `0440 root:1000` because the
+pod sets `fsGroup: 1000`, and that group bit is precisely what lets the app (uid 1000, non-root)
+read a root-owned file. Tightening it breaks the pod. The "group" here is the app's own, and the
+file holds only the literal `${ANTHROPIC_API_KEY}`, so nothing is exposed.
 
 ### 4. The admin account, and why `Job Complete` is not enough ⬜
 
@@ -1328,13 +1363,40 @@ After a real SSO login:
 
 ```bash
 kubectl exec -n turnstone turnstone-db-1 -c postgres -- psql -U postgres -d turnstone \
-  -c 'select u.username, ur.role_id, ur.assigned_by from user_roles ur join users u on u.id=ur.user_id;'
+  -c 'select u.username, ur.role_id, ur.assigned_by from user_roles ur
+        join users u on u.user_id = ur.user_id order by u.username;'
 ```
+
+⚠ The join is on `users.user_id`, **not** `users.id` — there is no `id` column, and an earlier
+version of this file printed `ERROR: column u.id does not exist`.
 
 `assigned_by='oidc'` is claim-mapped and correct. `'oidc-default'` means the claim matched nothing
 and the user fell back to `builtin-viewer` — which almost always means the Keycloak mapper is not
 putting `groups` in the **ID token** (the access token is not enough), or the realm role name does
 not match `team-<teamId>`.
+
+The mapping is a **union** over every matching claim value, so expect:
+
+| signed in as | Keycloak `groups` carries | roles |
+|---|---|---|
+| platform admin | `platform-admin` | `builtin-admin` |
+| all-teams admin | `all-teams-admin` | `builtin-admin` |
+| team admin of `foo` | `team-admin` **and** `team-foo` | `apl-team-lead` **and** `builtin-operator` |
+| member of `foo` | `team-foo` | `builtin-operator` |
+
+⛔ **`apl-team-lead` is not a team-scoped admin, and cannot be.** Turnstone has no scoping at all:
+`org_id` is inert (one seeded row, no `create_org` route, read by nothing), `user_roles` has no org
+column, and `project_members` carries no role. The role is a deliberately-named *power user* —
+projects, personas and `tools.approve`, but no `admin.users`/`admin.roles`/`admin.settings`, so a
+team admin cannot act on other people or global configuration. If it is missing entirely, the
+bootstrap Job's `seed-team-lead-role` init container did not run:
+
+```bash
+kubectl exec -n turnstone turnstone-db-1 -c postgres -- psql -U postgres -d turnstone \
+  -c "select role_id, name, permissions from roles where role_id = 'apl-team-lead';"
+# empty means team admins silently fell back to builtin-operator -- apply_role_mapping drops a
+# mapped value whose role does not exist, without logging anything
+```
 
 ### 7. Browser checks ⬜
 
@@ -1355,17 +1417,44 @@ No command substitutes for these. Steps 4 and 9 are the ones that matter.
 | 11 | leave a session idle 2–3 min | stream stays up, no reconnect loop — SSE survives the Istio gateway |
 | 12 | sign in as a team member, not an admin | chat works, **Admin/Settings 403** — confirms `team-<id>` → `builtin-operator` |
 | 13 | `https://turnstone.$D/metrics` in a private window | redirected, not a Prometheus dump |
+| 14 | click the **Turnstone** tile while signed in to the console | lands **signed in**, no login page and no otomi-idp button — the `path:` deep link in `core.yaml` |
+| 15 | same for the **Vikunja** tile | same. ⚠ This one is **client-side**; `curl` shows only the SPA shell on every URL and can never prove it. A browser is the only check |
+| 16 | sign in as a **team admin** | Admin → **Projects** and **Personas** are visible; **Users**, **Roles** and **Settings** are not. That split is `apl-team-lead` |
+| 17 | as that team admin, approve a tool call | the approval works — `tools.approve` is in `apl-team-lead` but **not** in `builtin-operator`, so a plain member cannot grant it |
 
 ### What to expect to go wrong first ⬜
 
 In rough order of likelihood, with the check that distinguishes each:
 
-1. **No sign-in button.** Certificate chain — section 2 above, not Keycloak.
-2. **Pods in `CreateContainerConfigError`.** The API key is missing; step 6c.
-3. **Empty Models tab.** The `model =` vs `name =` trap; section 3.
-4. **Bootstrap Job burning retries** with `container not found`. The `kubectl wait` init container
-   should prevent it; if it fires anyway the console never became Available.
-5. **Everyone lands on `builtin-viewer`.** The `groups` claim is not in the ID token; section 6.
+1. **No sign-in button.** ✅ **Check the startup race first, not the certificate.** Turnstone runs
+   OIDC discovery exactly once, at startup, and does not retry; on a cold install Keycloak is
+   minutes behind it, so discovery fails and the pod then serves happily with SSO disabled. It is
+   logged at `warning`, so nothing looks wrong:
+
+   ```bash
+   kubectl logs -n turnstone deploy/turnstone-console -c console | grep -c 'OIDC discovery failed'
+   # 0 is correct. Any hit means the pod came up before Keycloak was serving.
+   kubectl logs -n turnstone deploy/turnstone-console -c console | grep 'OIDC enabled'
+   # expect two lines, the second confirming discovery actually succeeded
+   ```
+
+   The `wait-for-keycloak` init container in `values/turnstone/turnstone.gotmpl` exists to prevent
+   this; if it fired anyway, read its log. A `kubectl rollout restart` is the instant confirmation —
+   if SSO works afterwards with no other change, it was the race and **not** the certificate.
+
+   This was observed on a clean install and is what demoted the certificate chain to second place.
+2. **Still no sign-in button, and discovery is genuinely failing.** *Now* it is the certificate
+   chain — section 2 above.
+3. **Pods in `CreateContainerConfigError`.** The API key is missing; step 6c.
+4. **Empty Models tab.** The `model =` vs `name =` trap; section 3.
+5. **Bootstrap Job burning retries.** `container not found` means the console never became
+   Available. `deployments.apps "turnstone-console" not found` is different and means the *gate*
+   ran before Argo CD created the Deployment — `kubectl wait` returns NotFound immediately and
+   ignores `--timeout`, which is why a `--for=create` container runs ahead of it.
+6. **A team admin sees almost nothing.** Expected until `apl-team-lead` is mapped — see section 6.
+   `builtin-operator` holds only `read,write,conversation.modify,workstreams.*`, so every admin tab
+   except **Nodes** disappears.
+7. **Everyone lands on `builtin-viewer`.** The `groups` claim is not in the ID token; section 6.
 
 ## Changing values after install
 

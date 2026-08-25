@@ -174,6 +174,16 @@ Run `bin/gen-chart-schema.sh`. See `SETUP.md` for why.
 **A half-installed platform is not salvageable.** `helm uninstall apl` removes the operator only;
 every release the *operator* created survives. Delete the cluster instead.
 
+**`team-admin` means two different things.** It is a Keycloak group and realm role carried by every
+user with `isTeamAdmin` (`apl-tasks` `src/operators/keycloak/keycloak.ts`:
+`if (decoded.isTeamAdmin === 'true') groups.push('team-admin')`). It is *also* how the platform's
+special **admin team** renders, since teams become `team-<id>`. Any loop over `teamConfig` must
+therefore write `omit .Values.teamConfig "admin"`, as `apl-keycloak-operator`, `kubernetes-gateways`
+and `turnstone` all do. Miss it and you emit a `team-admin` entry that collides with the role
+marker — which is exactly how a phantom Vikunja team appeared, containing every team admin in the
+platform. Note the flag is **global**: there is no per-team admin group, so scoping it means
+intersecting `team-admin` with the actual `team-<id>` membership.
+
 **Never run `docker system prune -a`.** It will destroy unrelated containers, images and volumes
 belonging to other projects on this machine. If you need disk, `docker builder prune` is safe.
 

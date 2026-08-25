@@ -1,8 +1,15 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.vikunja }}
 {{- $kc := $v.apps.keycloak }}
+{{- /*
+  `omit "admin"` matches apl-keycloak-operator, kubernetes-gateways and turnstone. This file was
+  the only consumer missing it, and the consequence was visible in a running lab: the operator
+  created a Vikunja team `team-admin` for the platform's special *admin team*, then filled it from
+  the Keycloak group of the same name -- which is not that team at all, but the global marker every
+  isTeamAdmin user carries. The result was a phantom team containing every team admin.
+*/}}
 {{- $teamConfig := dict }}
-{{- range $teamId, $team := $v.teamConfig }}
+{{- range $teamId, $team := omit $v.teamConfig "admin" }}
   {{- $_ := set $teamConfig $teamId dict }}
 {{- end }}
 {{- $teamConfig := $teamConfig | toJson }}

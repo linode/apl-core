@@ -13,10 +13,10 @@ index 062e5dc..b02330d 100644
    "standard-version": {
 diff --git a/src/operators/vikunja/lib/client.ts b/src/operators/vikunja/lib/client.ts
 new file mode 100644
-index 0000000..2431a2f
+index 0000000..4aacc4a
 --- /dev/null
 +++ b/src/operators/vikunja/lib/client.ts
-@@ -0,0 +1,114 @@
+@@ -0,0 +1,127 @@
 +import { VikunjaTeam, VikunjaTeamMember } from './types/teams'
 +
 +/**
@@ -104,6 +104,19 @@ index 0000000..2431a2f
 +
 +  async removeTeamMember(teamId: number, username: string): Promise<void> {
 +    await this.request<unknown>('DELETE', `/teams/${teamId}/members/${encodeURIComponent(username)}`)
++  }
++
++  /**
++   * ⛔ This TOGGLES the member's admin flag -- Vikunja has no "set admin to X" call, and the
++   * endpoint takes no body. Only ever call it after reading the member's current `admin` value
++   * and finding it differs from what you want. Called unconditionally it flips the wrong way,
++   * and the next reconcile flips it back, forever.
++   *
++   * Addressed by numeric user id, not username, which is why the caller re-reads the team after
++   * adding members: a freshly added member's id is not known before then.
++   */
++  async toggleTeamMemberAdmin(teamId: number, userId: number): Promise<void> {
++    await this.request<unknown>('POST', `/teams/${teamId}/members/${userId}/admin`)
 +  }
 +}
 +
@@ -246,10 +259,10 @@ index 0000000..287fae3
 +}
 diff --git a/src/operators/vikunja/lib/managers/vikunja-teams.ts b/src/operators/vikunja/lib/managers/vikunja-teams.ts
 new file mode 100644
-index 0000000..44f112e
+index 0000000..a20074e
 --- /dev/null
 +++ b/src/operators/vikunja/lib/managers/vikunja-teams.ts
-@@ -0,0 +1,87 @@
+@@ -0,0 +1,136 @@
 +import { isMissingOrDuplicateMember, VikunjaClient } from '../client'
 +import { errors } from '../globals'
 +import { VikunjaTeam } from '../types/teams'
@@ -295,12 +308,18 @@ index 0000000..44f112e
 + *
 + * `serviceAccount` is the platform's own local account. It owns every team it created and
 + * must never be removed, or the operator locks itself out of that team.
++ *
++ * `adminUsernames` are the members that should hold Vikunja's per-team admin flag (add/remove
++ * members, rename the team). Vikunja's instance-admin API is Pro-licensed and returns 404 here,
++ * so this flag is the only administrative lever available -- and it is genuinely scoped to a
++ * single team, which is exactly the shape of a platform team admin.
 + */
 +export async function reconcileMembers(
 +  client: VikunjaClient,
 +  team: VikunjaTeam,
 +  expectedUsernames: string[],
 +  serviceAccount: string,
++  adminUsernames: Set<string> = new Set(),
 +): Promise<void> {
 +  if (!team.id) return
 +  let current: VikunjaTeam
@@ -336,6 +355,49 @@ index 0000000..44f112e
 +      errors.push(`Error removing "${username}" from Vikunja team "${team.name}": ${e}`)
 +    }
 +  }
++
++  await reconcileAdmins(client, team, adminUsernames, serviceAccount)
++}
++
++/**
++ * Brings the per-team admin flag in line with `adminUsernames`.
++ *
++ * Re-reads the team rather than reusing the membership read above, for two reasons: members added
++ * moments ago are not in it, and the toggle is addressed by numeric user id which only the server
++ * knows. A read failure skips the whole pass -- `toggleTeamMemberAdmin` inverts the current value,
++ * so acting on a guess is worse than not acting at all.
++ *
++ * The service account is skipped: it owns every team it created and is already admin there.
++ */
++async function reconcileAdmins(
++  client: VikunjaClient,
++  team: VikunjaTeam,
++  adminUsernames: Set<string>,
++  serviceAccount: string,
++): Promise<void> {
++  if (!team.id) return
++  let after: VikunjaTeam
++  try {
++    after = await client.getTeam(team.id)
++  } catch (e) {
++    errors.push(`Error re-reading Vikunja team "${team.name}" before setting admins: ${e}`)
++    return
++  }
++
++  for (const member of after.members ?? []) {
++    if (member.username === serviceAccount) continue
++    if (member.id === undefined) continue
++    const shouldBeAdmin = adminUsernames.has(member.username)
++    if (Boolean(member.admin) === shouldBeAdmin) continue
++    try {
++      console.info(
++        `${shouldBeAdmin ? 'Granting' : 'Revoking'} admin for "${member.username}" on Vikunja team "${team.name}"`,
++      )
++      await client.toggleTeamMemberAdmin(team.id, member.id)
++    } catch (e) {
++      errors.push(`Error updating admin flag for "${member.username}" on Vikunja team "${team.name}": ${e}`)
++    }
++  }
 +}
 diff --git a/src/operators/vikunja/lib/types/teams.ts b/src/operators/vikunja/lib/types/teams.ts
 new file mode 100644
@@ -358,10 +420,10 @@ index 0000000..0117a04
 +}
 diff --git a/src/operators/vikunja/vikunja.ts b/src/operators/vikunja/vikunja.ts
 new file mode 100644
-index 0000000..233f2e2
+index 0000000..85eba33
 --- /dev/null
 +++ b/src/operators/vikunja/vikunja.ts
-@@ -0,0 +1,204 @@
+@@ -0,0 +1,230 @@
 +/* eslint-disable no-console */
 +import Operator, { ResourceEventType } from '@linode/apl-k8s-operator'
 +import retry from 'async-retry'
@@ -370,6 +432,12 @@ index 0000000..233f2e2
 +import { vikunjaEnv } from './lib/env'
 +import { errors } from './lib/globals'
 +import { getGroupMemberships, KeycloakCredentials } from './lib/keycloak-groups'
++
++// Keycloak group names the platform maintains, alongside one `team-<id>` per team. See
++// apl-tasks src/tasks/keycloak/realm-factory.ts, which creates exactly these three.
++const PLATFORM_ADMIN_GROUP = 'platform-admin'
++const ALL_TEAMS_ADMIN_GROUP = 'all-teams-admin'
++const TEAM_ADMIN_GROUP = 'team-admin'
 +import { reconcileMembers, teamName, upsertTeams } from './lib/managers/vikunja-teams'
 +
 +const VIKUNJA_ENDPOINT = `${vikunjaEnv.VIKUNJA_URL}:${vikunjaEnv.VIKUNJA_URL_PORT}`
@@ -527,20 +595,40 @@ index 0000000..233f2e2
 +  }
 +  let memberships: Record<string, string[]> = {}
 +  try {
-+    memberships = await getGroupMemberships(
-+      credentials,
-+      env.teamNames.map((id) => teamName(id)),
-+    )
++    memberships = await getGroupMemberships(credentials, [
++      ...env.teamNames.map((id) => teamName(id)),
++      PLATFORM_ADMIN_GROUP,
++      ALL_TEAMS_ADMIN_GROUP,
++      TEAM_ADMIN_GROUP,
++    ])
 +  } catch (error) {
 +    // Without Keycloak the teams still exist; only membership goes stale.
 +    errors.push(`Error reading team membership from Keycloak: ${error}`)
 +  }
 +
++  // platform-admin and all-teams-admin are the platform's two global tiers -- apl-api treats both
++  // as platform admins, and Harbor gives all-teams-admin projectAdmin on EVERY project. Vikunja
++  // has no instance-admin API (Pro-licensed, 404 here), so admin of every team is the faithful
++  // equivalent: they join each team and hold its admin flag.
++  const globalAdmins = new Set([
++    ...(memberships[PLATFORM_ADMIN_GROUP] ?? []),
++    ...(memberships[ALL_TEAMS_ADMIN_GROUP] ?? []),
++  ])
++  // team-admin is a single global marker (isTeamAdmin on the user), not a per-team role -- there
++  // is no team-<id>-admin group anywhere in the platform. Intersecting it with actual membership
++  // is what scopes it: a team admin gets the admin flag on the teams they are in, and nothing at
++  // all on the teams they are not.
++  const teamAdmins = new Set(memberships[TEAM_ADMIN_GROUP] ?? [])
++
 +  for (const teamId of env.teamNames) {
 +    const name = teamName(teamId)
 +    const team = teamsByName.get(name)
 +    if (!team) continue
-+    await reconcileMembers(client, team, memberships[name] ?? [], env.vikunjaUsername)
++    const teamMembers = memberships[name] ?? []
++    const expected = [...new Set([...teamMembers, ...globalAdmins])]
++    const admins = new Set<string>(globalAdmins)
++    for (const username of teamMembers) if (teamAdmins.has(username)) admins.add(username)
++    await reconcileMembers(client, team, expected, env.vikunjaUsername, admins)
 +  }
 +
 +  if (errors.length) {
