@@ -236,6 +236,8 @@ $(sed 's/^/      /' /tmp/apl-ca.pkcs1.key)
     enabled: true
   harbor:
     enabled: true
+  tekton:
+    enabled: true
   vikunja:
     enabled: true
     teamSync:
@@ -631,11 +633,31 @@ The `values.yaml` from the Quickstart. Eight things in it are load-bearing:
   stay in `CreateContainerConfigError` because the ExternalSecret has nothing to sync. If you do not
   have a key, set `apps.turnstone.enabled: false` rather than leaving the field blank.
 
-- **`apps.gitea.enabled` / `apps.harbor.enabled`** ⬜ — both default to `false`
-  (`helmfile.d/snippets/defaults.yaml`), so without these two lines the platform installs without
-  them and you have to click **Activate** in the console after every rebuild. Set here, in the
-  lab's own values, rather than by changing that defaults file: the effect on this install is
+- **`apps.gitea.enabled` / `apps.harbor.enabled` / `apps.tekton.enabled`** ⬜ — all default to
+  `false` (`helmfile.d/snippets/defaults.yaml`), so without these lines the platform installs
+  without them and you have to click **Activate** in the console after every rebuild. Set here, in
+  the lab's own values, rather than by changing that defaults file: the effect on this install is
   identical and it keeps the fork's deviation from upstream out of a tracked upstream file.
+
+  **Tekton is one flag driving six releases.** `apps.tekton.enabled` gates `tekton-pipelines`,
+  `tekton-dashboard` and their two `-artifacts` releases (`helmfile.d/helmfile-04.init.yaml.gotmpl`),
+  `tekton-triggers` (`helmfile-09.init.yaml.gotmpl`), and a `tekton-dashboard-<teamId>` **per team**
+  (`helmfile-60.teams.yaml.gotmpl`) — so its cost grows with the number of teams, unlike Gitea and
+  Harbor.
+
+  Two things checked before turning it on, both of which would otherwise present as platform
+  failures rather than unmet requirements:
+
+  - **No object storage, Gitea or Harbor dependency.** Nothing under `values/tekton-*` references
+    `obj.`, and the `installed:` conditions above are the only gates. It stands alone.
+  - **It requests no PersistentVolumeClaims at all**, so kind's `ReadWriteOnce`-only
+    `rancher.io/local-path` is simply not involved — the trap that makes a `ReadWriteMany` chart sit
+    `Pending` forever here (step 0) cannot apply.
+
+  Note the dashboard sits behind **oauth2-proxy ext-authz**
+  (`values/tekton-dashboard/tekton-dashboard-raw.gotmpl`), so it gets seamless SSO the way Harbor
+  and Argo CD do, and needs no `path:` deep link in `core.yaml` — unlike Turnstone and Vikunja,
+  which do their own OIDC.
 
   Two things were checked before turning Harbor on, because both would otherwise present as
   platform failures rather than as unmet requirements:
@@ -803,9 +825,15 @@ curl -sk -o /dev/null -w '%{http_code}\n' https://console.$(kubectl get cm welco
 app behind it was never deployed. Do not read a 404 as a certificate or DNS problem; it is the
 opposite, it proves both are working.
 
+⚠ **The table below predates `apps.tekton.enabled` being added to the Quickstart values, and every
+figure in it will be higher.** Tekton adds six releases — pipelines, dashboard, triggers, two
+`-artifacts` releases and one dashboard *per team*. **None of the new numbers has been measured**;
+the next clean run produces them. Until then read the table as an order of magnitude and treat the
+`awk`-based "must be empty" checks as the real gate.
+
 ✅ **Baseline as last measured**, on a clean run with `APPS_REPO_URL` pointing at the fork and
-`APPS_REVISION=$(git rev-parse HEAD)`, with **Gitea, Harbor, Vikunja and Turnstone all enabled** —
-i.e. the Quickstart values in this file, measured end to end:
+`APPS_REVISION=$(git rev-parse HEAD)`, with Gitea, Harbor, Vikunja and Turnstone enabled and
+**Tekton off**:
 
 | | |
 |---|---|
