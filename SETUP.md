@@ -79,9 +79,16 @@ kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.3/
 kubectl wait --for=condition=Ready pod -l k8s-app=calico-node -n kube-system --timeout=120s
 
 # 5. build the operator image from a CLEAN context (see Traps)
+#    APPS_REVISION must be the upstream commit this fork sits on, so the charts Argo CD
+#    fetches match the templates baked into the image. Derived, never copied -- see step 5.
 CTX=$(mktemp -d)
 git ls-files -z | tar --null -T - -c | tar -x -C "$CTX"
-docker build --build-arg VERSION=6.2.1-fork -t apl-core-local:v6.2.1-fork "$CTX"
+git fetch --quiet https://github.com/linode/apl-core.git main
+APPS_REVISION=$(git merge-base HEAD FETCH_HEAD)
+echo "apps revision: $APPS_REVISION"
+docker build --build-arg VERSION=6.2.1-fork \
+             --build-arg APPS_REVISION="$APPS_REVISION" \
+             -t apl-core-local:v6.2.1-fork "$CTX"
 docker images apl-core-local:v6.2.1-fork        # MUST show the image; do not trust the exit code
 kind load docker-image apl-core-local:v6.2.1-fork --name apl
 
@@ -99,6 +106,8 @@ otomi:
   version: v6.2.1-fork
   coreImageRepository: apl-core-local
   coreImagePullPolicy: IfNotPresent
+operator:
+  installRetries: 3
 apps:
   metrics-server:
     extraArgs: ["--kubelet-insecure-tls=true"]
@@ -230,8 +239,10 @@ step 7 instead.
 ```bash
 CTX=$(mktemp -d)
 git ls-files -z | tar --null -T - -c | tar -x -C "$CTX"
+git fetch --quiet https://github.com/linode/apl-core.git main
+APPS_REVISION=$(git merge-base HEAD FETCH_HEAD)
 docker build --build-arg VERSION=6.2.1-fork \
-             --build-arg APPS_REVISION=v6.2.1 \
+             --build-arg APPS_REVISION="$APPS_REVISION" \
              -t apl-core-local:v6.2.1-fork "$CTX"
 ```
 
@@ -268,20 +279,55 @@ Nothing Argo CD owns then deploys — including the console and the API. The ins
 the operator's own helmfile pass. The failure is only visible in Argo CD, and as a 404 from the
 console hostname. See step 8 for the check that catches it.
 
-Set it to a **real upstream tag**, not the fork version. Confirm it exists before building:
-
-```bash
-git ls-remote --tags https://github.com/linode/apl-core.git 'v6.2.1'   # must print a SHA
-```
-
 Upstream's own CI passes this build arg (`.github/workflows/main.yml`), which is why a published
 image never hits this and a hand-run `docker build` does. Reported as
 [#10](https://github.com/qvest-digital/apl-core/issues/10); this repo carries no code fix for it, so
 the build arg is the whole remedy.
 
-Set `APPS_REVISION` to the **upstream release this fork is based on**, not to the fork's own tag —
-it names a revision in *upstream's* repository, which is where the charts are fetched from. This
-fork changes nothing under `charts/`, so upstream's `v6.2.1` charts are the correct ones to use.
+### Which revision — the commit this fork sits on, not a release tag ⬜
+
+**Set `APPS_REVISION` to the exact upstream commit this fork is built from.** Not a release tag, and
+not the fork's own version. The platform is assembled from two halves that must agree:
+
+| half | contains | comes from |
+|---|---|---|
+| the image you build | `values/*.gotmpl`, `helmfile.d/`, the operator | this working tree |
+| what Argo CD fetches | `charts/*` for the ~39 applications | `linode/apl-core.git` at `APPS_REVISION` |
+
+The image's templates generate values, and those values are handed to the fetched charts. If the two
+come from different revisions, a template can set a key the chart at that revision does not have.
+Nothing errors — the key is silently dropped. Argo CD still reports Synced and Healthy, because the
+chart rendered fine; it just rendered without your setting.
+
+Derive it, never copy it — the fork gets rebased, and a stale SHA reintroduces exactly the skew this
+avoids:
+
+```bash
+git fetch --quiet https://github.com/linode/apl-core.git main
+APPS_REVISION=$(git merge-base HEAD FETCH_HEAD)   # the upstream commit this fork branches from
+```
+
+`merge-base` is correct here because this fork's own commits exist only in this repository, so the
+most recent shared commit *is* the upstream base. Verified: it resolves to
+`05b2e9499e858989de64aecf6c137b646c41c57f`, which is reachable from `linode/apl-core`'s `main`, so
+Argo CD can fetch it.
+
+**This corrects an earlier version of this file, which used `APPS_REVISION=v6.2.1`.** That was
+justified by "this fork changes nothing under `charts/`, so upstream's `v6.2.1` charts are correct" —
+a non-sequitur. The question is not whether *we* changed the charts, it is whether the charts match
+*the image*. They did not: `v6.2.1` (2026-08-20) sits on a release branch that is **not an ancestor
+of `main`**; this fork sits on `main` (2026-08-24); they diverged on 2026-08-05. Of the 25 chart
+paths the applications reference, **8 differed** between those two revisions, including
+`kube-prometheus-stack` (85 files) and `external-secrets` (26 files).
+
+One consequence was observed live rather than predicted, and it is the reason to trust this
+correction: `charts/apl-operator` at `v6.2.1` predates the readinessProbe that `main` added, so Argo
+CD replaced the operator Deployment with a probe-less one and `operator.readiness.gateOnReadiness`
+became a setting with nothing to act on. See step 8.
+
+**Not yet re-verified.** The end-state figures in step 8 were recorded with `APPS_REVISION=v6.2.1`.
+Since 8 chart paths change, the pod count and the operator's readiness column may both move on the
+next clean run. Compare, do not assume.
 
 **Verify the image exists. Do not trust the exit code**, especially through a pipe:
 
@@ -295,6 +341,38 @@ what caught two separate build breakages.
 
 **The tag must match `otomi.version` in step 7 exactly.**
 
+### Known limitation: four components float on `main` ⬜
+
+`APPS_REVISION` pins the charts. It does **not** pin the component images, and this lab cannot make
+them reproducible. `versions.yaml` in the repo root is checked in with every component set to a
+moving branch:
+
+```yaml
+api: main       console: main    consoleLogin: main
+tasks: main     tools: main      aplCharts: main
+```
+
+Observed on this install — mutable tags, re-pulled on every restart:
+
+```
+otomi-api      docker.io/linode/apl-api:main      Always
+otomi-console  docker.io/linode/apl-console:main  Always
+```
+
+`catalogs.default.branch` likewise tracks `apl-charts.git@main`
+(`helmfile.d/snippets/defaults.gotmpl:259`). So the console, the API, the task runners and the chart
+catalogue can all change without a single change in this repository. Restarting those pods next month
+may give you different software, with nothing recording that it happened.
+
+At tag `v6.2.1` the same file is fully pinned (`api: v5.3.0`, `console: v5.2.0`, `tasks: v4.0.0`,
+`tools: v2.11.2`, `aplCharts: v1.5.0`). Upstream's release process stamps those versions; building
+from a source checkout of `main` skips it — the same root cause as the `APPS_REVISION` trap above.
+
+**No fix is attempted here.** Pinning them means editing a tracked upstream file, and choosing
+versions known to work together — a decision this lab has no basis for making. Record it as a
+limitation instead: **this setup is reproducible in its charts and its operator, not in its console
+and API.** If a browser behavior changes between rebuilds and nothing here explains it, this is why.
+
 ### Optional: build the toolchain image too
 
 The build starts `FROM linode/apl-tools:v3.0.1`. Nothing needs forking to replace it — that image is
@@ -305,7 +383,7 @@ releases. It contains no Linode-provided content; the dependency is publication,
 docker build -t apl-tools-local:v3.0.1 ./tools
 docker build --build-arg TOOLS_IMAGE=apl-tools-local:v3.0.1 \
              --build-arg VERSION=6.2.1-fork \
-             --build-arg APPS_REVISION=v6.2.1 \
+             --build-arg APPS_REVISION="$APPS_REVISION" \
              -t apl-core-local:v6.2.1-fork "$CTX"
 ```
 
@@ -327,7 +405,7 @@ Re-run it whenever `values-schema.yaml` changes. It is Docker-only and needs no 
 
 ## 7. Install ✅
 
-The `values.yaml` from the Quickstart. Four things in it are load-bearing:
+The `values.yaml` from the Quickstart. Five things in it are load-bearing:
 
 - **`domainSuffix`** — the base hostname every app hangs off (`console.<suffix>`, `keycloak.<suffix>`).
   With a real domain you would use it directly. We own none, so we use `nip.io`, a public resolver
@@ -341,6 +419,13 @@ The `values.yaml` from the Quickstart. Four things in it are load-bearing:
 - **`metrics-server.extraArgs`** — kind does not enable kubelet serving-certificate bootstrapping,
   so metrics-server rejects the kubelets' self-signed certs without `--kubelet-insecure-tls=true`.
   Upstream adds this automatically only for `provider: linode`.
+- **`operator.installRetries: 3`** ⬜ — without it the operator retries a failed install **1000**
+  times (`chart/apl/values.yaml`, `src/operator/validators.ts`). [#5](https://github.com/qvest-digital/apl-core/pull/5)
+  made the operator honour this setting, which it previously ignored outright — but it left the
+  default at 1000, so the unbounded-retry behavior that PR was written to stop is still what you get
+  unless you set it. On a lab, a failure that cannot self-heal should surface in minutes, not drive
+  releases to revision 37. A healthy install never reaches attempt 2, so this costs nothing when
+  things go right. Not yet exercised against a failing install.
 
 Render before installing — this is upstream's own validation step, it costs a second, and with the
 schema from step 6 in place it is what turns a missing setting into a named error:
@@ -374,9 +459,29 @@ kubectl logs -n apl-operator -l app.kubernetes.io/name=apl-operator -f
 **Watch `attempt` as well as `status`.** A climbing `attempt` is the signature of the unbounded
 retry loop; against a fixed operator it should stay at 1.
 
-The operator pod sits at **`0/1 Running`** throughout, and that is correct — readiness is a process
-check, not an install gate. Set `operator.readiness.gateOnReadiness=true` if you want
-`helm install --wait` to block, with `--timeout 30m`.
+**The operator pod's readiness column is not an install gate**, whatever it reads. With the default
+`operator.readiness.gateOnReadiness: false`, the probe is a `pgrep` for the operator process
+(`chart/apl/templates/deployment.yaml`), so the pod reports `0/1` only for the first
+`initialDelaySeconds: 30`, then `1/1` while the install is still running. Set
+`gateOnReadiness=true` if you want `helm install --wait` to block, with `--timeout 30m`.
+
+⚠ **Observed with `APPS_REVISION=v6.2.1`: `1/1 Running` with no readinessProbe at all.** Argo CD
+replaces the operator Deployment with `charts/apl-operator` fetched at `APPS_REVISION`, and the
+`v6.2.1` chart predates the probe that `main` added — so the probe silently disappeared and
+`gateOnReadiness` had nothing to act on. That is the skew described in step 5, caught here.
+
+**On the next clean run, with `APPS_REVISION` derived from `merge-base`, expect the probe to survive
+the handover** — the fetched chart and the image then agree. Check it explicitly, because this is the
+cheapest single indicator that the two halves match:
+
+```bash
+kubectl get deploy apl-operator -n apl-operator \
+  -o jsonpath='{.spec.template.spec.containers[0].readinessProbe.exec.command}{"\n"}'
+# expect a pgrep command; empty output means the chart and the image disagree -- see step 5
+```
+
+An earlier version of this file claimed the pod sits at `0/1` *throughout*. It does not, under either
+revision.
 
 Completion checks:
 
@@ -424,8 +529,14 @@ opposite, it proves both are working.
 
 Observed on a clean run with `APPS_REVISION` set: **~4 minutes** to `completed`, attempt **1**, then
 a further **~5 minutes** for Argo CD to converge. End state: **55 pods** Running/Completed, **39/39
-applications Synced + Healthy**, every Helm release at **revision 1**, `platform-istio` holding the
-pool's first address.
+applications Synced + Healthy**, **20 Helm releases** all at **revision 1**, `platform-istio` holding
+the pool's first address.
+
+⚠ **These figures were recorded with `APPS_REVISION=v6.2.1`, which step 5 now corrects.** They were
+reproduced exactly on a second clean run, so they are solid *for that revision* — but 8 of the 25
+chart paths change when `APPS_REVISION` is derived from `merge-base`, so the pod count in particular
+may shift. Treat them as the previous baseline to compare against, not as the target. Re-record them
+after the next clean run and delete this note.
 
 **55 pods, not 40.** The earlier figure in this file was recorded from a run where `APPS_REVISION`
 was unset, so everything Argo CD owns — the console, the API, Prometheus, the addons — was missing.
@@ -434,7 +545,7 @@ A pod count well below this is the same symptom.
 The gateway takes the *first free address in the pool*. If something else claims a LoadBalancer
 address first, `domainSuffix` no longer matches and hostnames break.
 
-## 9. Post-install ⬜
+## 9. Post-install ✅
 
 ### Credentials ✅
 
@@ -484,6 +595,11 @@ username: platform-admin@172.18.255.200.nip.io
 password: <20-odd random characters>
 ```
 
+**Keycloak marks this credential temporary and forces a change on first login**, so `passwords.txt`
+records the *install-time* secret, not a live view. Reusing the same string at the prompt is accepted
+and keeps the file accurate; choosing a new one silently invalidates it — update the file by hand if
+you do, because nothing regenerates it.
+
 **Yes, this writes a password to disk in cleartext.** That is a deliberate choice for *this* lab and
 nowhere else: the cluster is local, it is disposable, the credential is auto-generated at install and
 is worthless the moment the cluster is deleted — and the alternative is re-running two `base64 -d`
@@ -522,10 +638,11 @@ parameters intact. That path is confirmed working on this machine.
 `oauth2-proxy` blocks on an init container `wait-for-keycloak`, so the console returns a bare 403
 for a minute or two after the install reports `completed`. That is startup ordering, not a fault.
 
-### Remaining post-install ⬜
+### Remaining post-install ✅
 
-**Not yet executed.** The credentialed login itself is unproven — everything up to the Keycloak
-sign-in page is verified above, but nobody has typed a password yet.
+**Credentialed login is proven.** Signing in at the Keycloak page with the credentials above
+succeeds and lands in the console. Verified by hand in a browser on this machine — there is no
+command in this file that covers it, and there is no substitute for doing it once.
 
 **The console is served with the platform's own CA, so the browser will warn.** Click through it.
 
@@ -585,6 +702,58 @@ values/harbor/harbor-otomi-db.gotmpl:41  endpointURL: https://{{ $obj.linode.reg
 A generic `s3` provider type with a settable endpoint would let those apps run against an in-cluster
 MinIO — and would unblock AWS, Ceph and on-prem users too. Not attempted here.
 
+### The "Configure Git Repository" popup — dismiss it ✅
+
+On first login the console opens a dialog recommending an external Git repo over the built-in one,
+naming `https://git.<domainSuffix>/otomi/values`. **Dismiss it. The internal repo is the right
+choice for this lab.**
+
+What it is pointing at matters more than the recommendation. App Platform is GitOps-based, so the
+cluster is *not* the source of truth for its own configuration — every change made in the console is
+committed as YAML to the `otomi/values` repository, and Argo CD reconciles the cluster toward it.
+That repo is the platform's configuration. The `values.yaml` from step 7 ends up there too: the
+operator reads it once at startup from Secret `apl-values` and then hands ownership to git, which is
+exactly why "Changing values after install" below warns that `helm upgrade` alone stops being the
+way to change things.
+
+Upstream's warning is about a real circularity. On this install the repo is served by:
+
+```
+image:  linode/apl-http-git-server:v0.2.2   (single replica)
+pvc:    git-server-data, 256Mi, RWO, storageClass standard
+```
+
+On kind, `standard` is `rancher.io/local-path` — a directory on the one node. So the repository
+describing how to rebuild the cluster lives inside that cluster, with no replica and no backup. In
+production you also give up pull-request review, an audit trail and any disaster recovery that does
+not start with "the thing we need is gone."
+
+None of that applies here: the cluster is deliberately disposable, `kind delete cluster` is the
+documented reset, and the config is meant to die with it. Migrating would instead push this lab's
+generated secrets to a hosted repo and require real credentials to do it. If you ever do want an
+external repo, set it **at install time** rather than migrating afterwards — `otomi.git.repoUrl` /
+`username` / `password` / `email` / `branch` are real values keys, defaulted in
+`helmfile.d/snippets/defaults.yaml`.
+
+**There is no setting that suppresses this dialog.** Confirmed against this repository:
+
+- `apps.otomi-console` is `additionalProperties: false` and permits only `enabled`, `resources` and
+  `_rawValues` (`values-schema.yaml`) — nothing can be injected through it.
+- The console Deployment receives exactly two environment variables, `API_BASE_URL` and
+  `CONTEXT_PATH` (`values/otomi-console/otomi-console.gotmpl`). Verified on the running pod.
+- `otomi.git` takes credentials only; it has no display flag.
+
+The dialog lives in the `linode/apl-console` image, which is built from a different repository and
+is **not** part of this fork. Note the console runs tag `main`, unpinned
+(`docker.io/linode/apl-console:main`), so this behavior can change without any change here.
+
+Worth reporting upstream: the same pattern already exists for the sibling wizard — `obj.showWizard`
+(`values-schema.yaml`, default `true`) suppresses the Object Storage dialog. There is no
+`otomi.git.showWizard` to match it. That asymmetry looks like an oversight rather than a decision.
+
+Before dismissing it, open `https://git.<domainSuffix>/otomi/values` once and read the YAML. It is
+the clearest illustration of what the platform believes its own state to be.
+
 **Health is not proven by pods Running, nor by Argo CD reporting Healthy.** The platform issues its
 own CA (`clusterissuer/custom-ca`, wildcard cert in `istio-system/otomi-cert-manager-wildcard-cert`).
 What has actually been proven on this machine:
@@ -592,9 +761,10 @@ What has actually been proven on this machine:
 - **TLS** ✅ — `clusterissuer/custom-ca` is `READY=True` and `otomi-wildcard` issued; a browser
   reaches the console over HTTPS after clicking through the warning. Chain verification against the
   CA (`openssl s_client -CAfile <ca>`) was not run — the CA is deliberately not trusted here.
-- **SSO** ⬜ — the OIDC redirect chain reaches Keycloak's sign-in page, which proves oauth2-proxy,
-  the Keycloak realm and the client registration are wired up. **Completing a login is still
-  unproven.** Keycloak being Running says nothing about whether the flow finishes.
+- **SSO** ✅ — the OIDC redirect chain reaches Keycloak's sign-in page, and a credentialed login
+  completes through to the console. That covers oauth2-proxy, the Keycloak realm, the client
+  registration and the callback. Verified by hand in a browser; Keycloak being Running proves none
+  of it on its own.
 
 ### Not needed here, despite the upstream Helm page ✅
 

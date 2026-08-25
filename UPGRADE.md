@@ -215,8 +215,42 @@ Build from a clean context, in the background — it exceeds 60 seconds:
 ```bash
 CTX=$(mktemp -d)
 git ls-files -z | tar --null -T - -c | tar -x -C "$CTX"
-docker build --build-arg VERSION=6.2.1-fork -t apl-core-merge:v6.2.1-fork "$CTX"
+APPS_REVISION=$(git merge-base upstream/main HEAD)     # see below -- this moves with every merge
+docker build --build-arg VERSION=6.2.1-fork \
+             --build-arg APPS_REVISION="$APPS_REVISION" \
+             -t apl-core-merge:v6.2.1-fork "$CTX"
 ```
+
+**`APPS_REVISION` changes on every upstream merge, and re-deriving it is part of the merge.** This is
+the single easiest thing to get wrong here, because getting it wrong produces a platform that looks
+healthy.
+
+The image carries the fork's `values/*.gotmpl` and `helmfile.d/`; the ~39 Argo CD applications fetch
+their charts from `linode/apl-core.git` at `APPS_REVISION` (`src/cmd/apply-as-apps.ts`). Those two
+halves must come from the **same upstream commit**. When they do not, the image's templates set keys
+the older charts do not define, and those keys are dropped silently — Argo CD still reports Synced
+and Healthy, because the chart rendered fine without them.
+
+After merging, `upstream/main` is an ancestor of `HEAD`, so `merge-base` resolves to upstream's new
+tip — exactly the commit whose `charts/` the merged image was built against. That is why it must be
+**derived here and not carried over**: a value from the previous merge now points at the *old*
+charts, which is the skew this check exists to prevent.
+
+This has bitten this repository once already. An earlier `SETUP.md` pinned `APPS_REVISION=v6.2.1`
+while the image was built from `main` — two revisions that diverged three weeks apart, differing in
+**8 of the 25** chart paths in use. The visible symptom was that `charts/apl-operator` at `v6.2.1`
+predated a readinessProbe added on `main`, so Argo CD replaced the operator Deployment with a
+probe-less one and `operator.readiness.gateOnReadiness` silently became a no-op. Everything else
+stayed green throughout.
+
+A release tag is **not** a safe substitute. Upstream cuts release branches
+(`.github/workflows/release-cut-branch.yml`), so tags like `v6.2.1` are not ancestors of `main` —
+they are a different line of development, not an older point on the same one.
+
+Also re-read `versions.yaml` after the merge. It pins `api`, `console`, `consoleLogin`, `tasks`,
+`tools` and `aplCharts`, and on upstream `main` every one of them is the literal string `main`. If a
+merge changes those, the console and API images change with it — see the known-limitation section in
+[`SETUP.md`](SETUP.md) step 5.
 
 The build runs `npm run test:ci`, so a green build is also the unit suite passing — including our
 `INSTALL_RETRIES` test, which is the regression guard for the highest-risk change.
@@ -261,6 +295,19 @@ Then SETUP.md steps 2–8, substituting the merged image tag. The bar is the one
 holding the pool's first address.**
 
 A climbing `attempt` after a merge is the specific signature of change 3 having been lost.
+
+**Also confirm the image and the fetched charts agree**, which none of the above proves — a skewed
+install reports Synced and Healthy:
+
+```bash
+# the revision Argo CD actually resolved must equal the APPS_REVISION you built with
+kubectl get application otomi-otomi-console -n argocd -o jsonpath='{.spec.source.targetRevision}{"\n"}'
+
+# the operator's readinessProbe must survive Argo CD replacing the Deployment
+kubectl get deploy apl-operator -n apl-operator \
+  -o jsonpath='{.spec.template.spec.containers[0].readinessProbe.exec.command}{"\n"}'
+# empty output == the fetched chart predates the image's templates. Rebuild with the derived revision.
+```
 
 ### 6. Commit
 
