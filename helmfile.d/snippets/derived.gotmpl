@@ -17,6 +17,12 @@
   {{- $otomiTag = print "v" $otomiVersion }}
 {{- end }}
 {{- $versions = $versions | merge (dict "core" $otomiVersion) }}
+{{- /*
+  Values may override any component version. versions.yaml in the repo root floats several
+  components on `main` (see UPGRADE.md); this lets an installation pin them -- or point at a
+  locally built image -- without editing a tracked upstream file.
+*/}}
+{{- $versions = ($v | get "versions" dict) | merge $versions }}
 # Domain suffix may not be present during initial deployment stage
 {{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
 {{- $provider := $v.cluster.provider }}
@@ -229,6 +235,8 @@ environments:
           giteaDbUsername: gitea
           keycloakDomain: {{ printf "keycloak.%s" $domainSuffix }}
           harborDomain: {{ printf "harbor.%s" $domainSuffix }}
+          vikunjaDomain: {{ printf "vikunja.%s" $domainSuffix }}
+          vikunjaDbUsername: vikunja
           tlsSecretName: {{ $tlsSecretName }}
           egressGatewayName: {{ $egressGatewayName }}
           egressGatewayLabel: {{ $egressGatewayLabel }}

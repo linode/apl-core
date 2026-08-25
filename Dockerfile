@@ -56,12 +56,17 @@ RUN npm prune --production
 ARG TOOLS_IMAGE=linode/apl-tools:v3.0.1
 FROM ${TOOLS_IMAGE} AS prod
 ARG APPS_REVISION=''
+# Repository Argo CD fetches charts/* from. It must hold the same commit the
+# templates in this image came from -- see the APPS_REVISION note in SETUP.md.
+# Overridable so a fork can serve charts that upstream does not have.
+ARG APPS_REPO_URL='https://github.com/linode/apl-core.git'
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env
 ENV VERBOSITY='0'
 ENV NODE_NO_WARNINGS='1'
 ENV NODE_PATH='dist'
 ENV APPS_REVISION=$APPS_REVISION
+ENV APPS_REPO_URL=$APPS_REPO_URL
 
 RUN npm config set update-notifier false
 
