@@ -13,4 +13,10 @@ spec:
             cpu: 200m
             memory: 192Mi
     size: 5Gi
-    storageClass: vikunja-storage-class
+    # storageClass is deliberately NOT set here. `values/vikunja/vikunja-otomi-db.gotmpl` reads
+    # $vdb.storageClass unguarded, and the only thing that supplies it is the per-database block in
+    # helmfile.d/snippets/defaults.gotmpl. Setting it in the fixture -- as gitea.yaml and
+    # keycloak.yaml both do -- satisfies the template from the fixture and leaves the injection
+    # itself untested, so a database missing from defaults.gotmpl passes the whole suite and then
+    # fails the real install with `map has no entry for key "storageClass"`. That happened.
+    # Leaving it unset is what makes this fixture cover the path that production actually uses.
