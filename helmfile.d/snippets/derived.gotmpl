@@ -242,6 +242,8 @@ environments:
           harborDomain: {{ printf "harbor.%s" $domainSuffix }}
           vikunjaDomain: {{ printf "vikunja.%s" $domainSuffix }}
           vikunjaDbUsername: vikunja
+          turnstoneDomain: {{ printf "turnstone.%s" $domainSuffix }}
+          turnstoneDbUsername: turnstone
           tlsSecretName: {{ $tlsSecretName }}
           egressGatewayName: {{ $egressGatewayName }}
           egressGatewayLabel: {{ $egressGatewayLabel }}

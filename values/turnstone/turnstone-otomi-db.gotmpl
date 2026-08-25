@@ -1,0 +1,69 @@
+{{- $v := .Values }}
+{{- $cnpg := $v.apps.cnpg }}
+{{- $vdb := $v.databases.turnstone }}
+{{- $obj := $v.obj.provider }}
+{{- $b := $v.platformBackups.database.turnstone }}
+{{- /*
+  Read unguarded on purpose, matching values/vikunja/vikunja-otomi-db.gotmpl. The only thing that
+  supplies it is the per-database block in helmfile.d/snippets/defaults.gotmpl, so a database
+  missing from that list fails the install here rather than silently defaulting.
+*/}}
+{{- $dbStorageClass := $vdb.storageClass }}
+
+name: turnstone-db
+storage:
+  storageClass: {{ $dbStorageClass }}
+  size: {{ $vdb.size }}
+walStorage:
+  storageClass: {{ $dbStorageClass }}
+  size: {{ $vdb.walStorageSize }}
+instances: {{ $vdb.replicas }}
+
+{{- if $vdb.imageName }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
+imageName: {{ regexReplaceAll "^ghcr\\.io" $vdb.imageName (printf "%s/ghcr" $v.otomi.linodeLkeImageRepository) }}
+  {{- else }}
+imageName: {{ $vdb.imageName }}
+  {{- end }}
+{{- else if $v.otomi.linodeLkeImageRepository }}
+imageName: {{ $v.otomi.linodeLkeImageRepository }}/ghcr/{{ $cnpg.pgDefaultPlatformImage }}
+{{- else }}
+imageName: ghcr.io/{{ $cnpg.pgDefaultPlatformImage }}
+{{- end }}
+
+postgresql:
+  parameters: {{ toYaml $vdb.postgresqlParameters | nindent 4 }}
+
+{{- if and $b.enabled (eq $obj.type "linode") }}
+backup:
+  enabled: {{ $b.enabled }}
+  schedule: {{ $b.schedule | quote }}
+  retentionPolicy: {{ $b.retentionPolicy }}
+  type:  {{ $obj.type }}
+  {{- if eq $obj.type "linode" }}
+  linode:
+    destinationPath: "s3://{{ $obj.linode.buckets.cnpg }}/{{ $b.pathSuffix }}"
+    endpointURL: https://{{ $obj.linode.region }}.linodeobjects.com
+  {{- end }}
+  usePlugin: {{ $cnpg.useBackupPlugin }}
+{{- end }}
+
+clusterSpec:
+  bootstrap:
+{{- if $vdb.recovery }}
+    recovery: {{ toYaml $vdb.recovery | nindent 6 }}
+{{- else }}
+    initdb:
+      database: turnstone
+      owner: {{ $v._derived.turnstoneDbUsername }}
+      secret:
+        name: turnstone-db-secret
+      localeCollate: 'en_US.UTF-8'
+      localeCType: 'en_US.UTF-8'
+{{- end }}
+{{- if $vdb.externalClusters }}
+  externalClusters: {{ toYaml $vdb.externalClusters | nindent 4 }}
+{{- end }}
+
+resources: {{ toYaml $vdb.resources | nindent 2 }}
+backupSidecarResources: {{ toYaml $vdb.backupSidecarResources | nindent 2 }}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Turnstone">
+  <title>Turnstone</title>
+  <!--
+    Original placeholder mark, authored for this integration. Turnstone ships no logo, favicon or
+    brand asset of any kind, so there is nothing upstream to reuse - see turnstone-patches/README.md.
+    Deliberately abstract rather than an imitation of any Turnstone Labs branding: a console at the
+    centre routing to three nodes, which is the topology the platform actually deploys.
+  -->
+  <g fill="none" stroke="#334155" stroke-width="13" stroke-linecap="round">
+    <line x1="128" y1="128" x2="128" y2="34"/>
+    <line x1="128" y1="128" x2="46" y2="175"/>
+    <line x1="128" y1="128" x2="210" y2="175"/>
+    <circle cx="128" cy="128" r="104" stroke-width="13" stroke-dasharray="26 20" opacity="0.45"/>
+  </g>
+  <g fill="#334155">
+    <circle cx="128" cy="30" r="21"/>
+    <circle cx="42" cy="178" r="21"/>
+    <circle cx="214" cy="178" r="21"/>
+  </g>
+  <circle cx="128" cy="128" r="33" fill="#e2703a"/>
+</svg>

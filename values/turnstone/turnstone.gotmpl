@@ -1,0 +1,229 @@
+{{- $v := .Values }}
+{{- $t := $v.apps.turnstone }}
+{{- $turnstoneDomain := $v._derived.turnstoneDomain }}
+{{- /*
+  The role map is built from the platform's teams. Turnstone's apply_role_mapping does a FLAT
+  claims.get(role_claim) with no dotted-path traversal, which happens to be exactly the shape of
+  this platform's `groups` claim -- it carries realm roles (platform-admin, team-<id>) plus
+  built-in noise that Turnstone silently ignores because it maps to nothing.
+
+  This is why there is no apl-turnstone-operator: Turnstone has no team object at all, only orgs
+  and roles, and claim-driven role mapping is the membership model INTEGRATING-AN-APP.md 4.1 tells
+  you to prefer. Roles are re-evaluated on every login and replace_oidc_roles revokes any that are
+  no longer claimed, so removing someone from a Keycloak group demotes them here on next sign-in.
+
+  Note: `admin` is omitted the same way values/kubernetes-gateways does it -- the platform's admin
+  team is not a realm role of the form team-admin.
+*/}}
+{{- $roleMap := list "platform-admin:builtin-admin" }}
+{{- range $teamId := (keys (omit $v.teamConfig "admin") | sortAlpha) }}
+{{- $roleMap = append $roleMap (printf "team-%s:builtin-operator" $teamId) }}
+{{- end }}
+{{- /*
+  Image is assembled here rather than referenced through the chart's turnstone.image helper,
+  because this file is rendered by helmfile/gucci and Helm's `include` does not exist here. The
+  initContainer below needs the same string, so it is a variable.
+*/}}
+{{- $imageTag := "1.8.1" }}
+{{- $imageRepo := "ghcr.io/turnstonelabs/turnstone" }}
+{{- if $v.otomi.linodeLkeImageRepository }}
+{{- $imageRepo = printf "%s/ghcr/turnstonelabs/turnstone" $v.otomi.linodeLkeImageRepository }}
+{{- end }}
+{{- $image := printf "%s:%s" $imageRepo $imageTag }}
+
+image:
+  repository: {{ $imageRepo }}
+  # Pinned deliberately. The chart's turnstone.image helper falls back to .Chart.AppVersion, and
+  # upstream never bumped that past 0.3.0 -- an image tag that may not exist.
+  tag: {{ $imageTag | quote }}
+  pullPolicy: IfNotPresent
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+
+server:
+  replicas: 1
+  resources: {{- $t.resources.server | toYaml | nindent 4 }}
+console:
+  replicas: 1
+  resources: {{- $t.resources.console | toYaml | nindent 4 }}
+
+# Routing goes through the platform gateway, not the chart's own nginx-flavoured Ingress.
+# See the HTTPRoute in values/turnstone/turnstone-raw.gotmpl.
+ingress:
+  enabled: false
+
+# CloudNativePG, not the chart's bundled bitnami subchart (which is removed from Chart.yaml).
+postgresql:
+  enabled: false
+database:
+  backend: postgresql
+  external:
+    host: turnstone-db-rw.turnstone.svc.cluster.local
+    port: 5432
+    database: turnstone
+    username: {{ $v._derived.turnstoneDbUsername }}
+    existingSecret: turnstone-db-secret
+    existingSecretPasswordKey: password
+    sslmode: disable
+
+# The chart reads the key name TURNSTONE_JWT_SECRET out of this secret verbatim, so the
+# ExternalSecret in turnstone-raw.gotmpl templates it under exactly that name.
+auth:
+  existingSecret: turnstone-jwt-secret
+
+serviceAccount:
+  create: true
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  privileged: false
+  capabilities:
+    drop:
+      - ALL
+  # Deliberately NOT readOnlyRootFilesystem. The image needs /tmp writable (the bash tool writes
+  # each command to a NamedTemporaryFile and execs `bash <script>`, core/background_shells.py),
+  # /data is the process working directory, and npx-based MCP servers write ~/.npm.
+
+volumes:
+  # The only declarative way to configure a model. The container command is fixed by the chart, so
+  # --provider/--model/--api-key cannot be passed, and there is no seed file or
+  # `turnstone-admin model` subcommand. [models.*] in config.toml is read directly by both the
+  # server and the console and overrides DB rows of the same alias.
+  - name: config
+    # turnstone-model-config, not turnstone-config: the latter is the chart's own env-var
+    # ConfigMap. See values/turnstone/turnstone-raw.gotmpl.
+    configMap:
+      name: turnstone-model-config
+      # Turnstone warns on a world-readable config file (core/config.py).
+      defaultMode: 0400
+{{- if $v._derived.untrustedCA }}
+  - name: platform-ca
+    secret:
+      secretName: custom-ca
+  - name: trust
+    emptyDir: {}
+{{- end }}
+  # /data is the process cwd and the SQLite fallback location; nothing durable lives here because
+  # all state is in Postgres. /workspace is what the model is told it can write to.
+  - name: data
+    emptyDir: {}
+  - name: workspace
+    emptyDir: {}
+
+volumeMounts:
+  - name: config
+    mountPath: /etc/turnstone
+    readOnly: true
+{{- if $v._derived.untrustedCA }}
+  - name: trust
+    mountPath: /trust
+    readOnly: true
+{{- end }}
+  - name: data
+    mountPath: /data
+  - name: workspace
+    mountPath: /workspace
+
+{{- if $v._derived.untrustedCA }}
+initContainers:
+  {{- /*
+    Keycloak is served with a certificate signed by the platform CA, and OIDC discovery must
+    validate it. httpx (0.28.1, the only client on the OIDC path) honours SSL_CERT_FILE, which
+    *replaces* the trust store rather than adding to it -- so the gitea/vikunja pattern of
+    mounting the CA over /etc/ssl/certs/ca-certificates.crt would leave this pod trusting one
+    certificate and unable to reach api.anthropic.com. Measured: doing that fails Anthropic TLS
+    with "unable to get local issuer certificate".
+
+    So concatenate instead: the image's 150 public roots plus the platform CA, into an emptyDir.
+    Runs as the same uid 1000 as the app, so no root is needed.
+  */}}
+  - name: build-ca-bundle
+    image: {{ $image }}
+    imagePullPolicy: IfNotPresent
+    command:
+      - /bin/sh
+      - -ec
+      - cat /etc/ssl/certs/ca-certificates.crt /platform-ca/ca-certificates.crt > /trust/ca-bundle.crt
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+    volumeMounts:
+      - name: platform-ca
+        mountPath: /platform-ca
+        readOnly: true
+      - name: trust
+        mountPath: /trust
+    resources:
+      limits:
+        cpu: 250m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+{{- end }}
+
+extraEnv:
+  - name: TURNSTONE_CONFIG
+    value: /etc/turnstone/config.toml
+{{- if $v._derived.untrustedCA }}
+  # Must point at the concatenated bundle, never at the platform CA alone.
+  - name: SSL_CERT_FILE
+    value: /trust/ca-bundle.crt
+{{- end }}
+  # Expanded into the model definition's api_key at registry-load time, so the key itself lives
+  # only here and never in the ConfigMap or the database.
+  - name: ANTHROPIC_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: turnstone-anthropic-key
+        key: ANTHROPIC_API_KEY
+
+  {{- /* Pre-derived endpoints, used verbatim -- never assemble an OIDC URL by hand. */}}
+  - name: TURNSTONE_OIDC_ISSUER
+    value: {{ $v._derived.oidcBaseUrl | quote }}
+  - name: TURNSTONE_OIDC_CLIENT_ID
+    value: {{ $v._derived.oidcClientID | quote }}
+  - name: TURNSTONE_OIDC_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: turnstone-oidc-secret
+        key: clientSecret
+  # Origin only. A path, query or fragment here is rejected outright, and an empty value disables
+  # OIDC at boot with only a log line (there is no Host-header fallback -- that was removed as a
+  # redirect-spoofing hole). The callback path is hardcoded to
+  # <redirect_base>/v1/api/auth/oidc/callback, which `ownHost: true` in core.yaml already
+  # registers on the shared otomi client via its /* wildcard.
+  - name: TURNSTONE_OIDC_REDIRECT_BASE
+    value: {{ printf "https://%s" $turnstoneDomain | quote }}
+  - name: TURNSTONE_OIDC_SCOPES
+    value: {{ $v._derived.oidcScopes | join " " | quote }}
+  - name: TURNSTONE_OIDC_PROVIDER_NAME
+    value: otomi-idp
+  # Flat, top-level claim: apply_role_mapping does claims.get(role_claim) with no dotted-path
+  # traversal, so the realm_access.roles form suggested by Turnstone's own docs cannot work.
+  - name: TURNSTONE_OIDC_ROLE_CLAIM
+    value: groups
+  - name: TURNSTONE_OIDC_ROLE_MAP
+    value: {{ $roleMap | join "," | quote }}
+  # Keycloak resolves to an in-cluster RFC1918 address. Without this, discovery refuses the issuer
+  # outright as an SSRF risk. HTTPS and the same-origin endpoint checks still apply.
+  - name: TURNSTONE_OIDC_ALLOW_PRIVATE_NETWORK
+    value: "true"
+  # Left on deliberately. SSO is for humans, the local account is for machines -- the same choice
+  # Argo CD makes with admin.enabled. It is also load-bearing here: OIDC login is refused entirely
+  # until at least one user exists, so the bootstrap Job needs password auth to create it.
+  - name: TURNSTONE_OIDC_PASSWORD_ENABLED
+    value: "true"

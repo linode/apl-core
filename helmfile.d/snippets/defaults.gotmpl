@@ -51,6 +51,8 @@ environments:
           storageClass: {{ $defaultStorageClass | quote }}
         vikunja:
           storageClass: {{ $defaultStorageClass | quote }}
+        turnstone:
+          storageClass: {{ $defaultStorageClass | quote }}
       teamConfig:
       {{- range $teamName := $teamNames }}
         {{ $teamName }}:

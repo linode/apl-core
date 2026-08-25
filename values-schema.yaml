@@ -2411,6 +2411,62 @@ properties:
                 $ref: '#/definitions/resources'
               trivy:
                 $ref: '#/definitions/resources'
+      turnstone:
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          anthropicApiKey:
+            type: string
+            description: >-
+              Anthropic API key, used by Turnstone to reach the Claude API. This is the one value
+              that cannot be generated: supply it yourself, and the platform seals it like any
+              other secret. The key never reaches the values repo and never reaches Turnstone's
+              database -- the model definition stores the literal string ${ANTHROPIC_API_KEY} and
+              Turnstone expands it from the pod environment when it loads its model registry.
+              Without it Turnstone still starts and SSO still works, but every prompt fails.
+            x-secret: ''
+          defaultModel:
+            type: string
+            description: >-
+              Claude model Turnstone offers by default. Written into the [models.*] section of the
+              config.toml the pods mount, and set as [model] default. Changeable afterwards in the
+              Turnstone console's Models tab.
+            default: claude-sonnet-5
+          adminUsername:
+            type: string
+            description: >-
+              Username of the local service account the platform creates in Turnstone. It exists
+              because OIDC login is refused entirely until at least one user exists ("Initial setup
+              required before OIDC login"), so SSO cannot bootstrap itself. Must not collide with a
+              Keycloak username.
+            default: apl-turnstone-admin
+          adminPassword:
+            type: string
+            x-secret: '{{ randAlphaNum 20 }}'
+          jwtSecret:
+            type: string
+            description: >-
+              This secret was generated and cannot be changed without logging out every user.
+              Turnstone rejects anything shorter than 32 characters.
+            x-secret: '{{ randAlphaNum 32 }}'
+            readOnly: true
+          postgresqlPassword:
+            type: string
+            description: This password was generated and cannot be changed without manual intervention.
+            x-secret: '{{ randAlphaNum 20 }}'
+            readOnly: true
+          resources:
+            additionalProperties: false
+            properties:
+              server:
+                $ref: '#/definitions/resources'
+              console:
+                $ref: '#/definitions/resources'
+          networkPolicies:
+            $ref: '#/definitions/appNetworkPolicyConfig'
       vikunja:
         properties:
           _rawValues:
@@ -2987,6 +3043,20 @@ properties:
                 type: string
                 pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
                 default: keycloak
+          turnstone:
+            title: Turnstone
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              retentionPolicy:
+                $ref: '#/definitions/backupRetentionPolicy'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+              pathSuffix:
+                type: string
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+                default: turnstone
           vikunja:
             title: Vikunja
             properties:
@@ -3167,6 +3237,37 @@ properties:
             default: []
       vikunja:
         title: Vikunja
+        properties:
+          size:
+            type: string
+          storageClass:
+            type: string
+          walStorageSize:
+            type: string
+          resources:
+            $ref: '#/definitions/resources'
+          backupSidecarResources:
+            $ref: '#/definitions/resources'
+          postgresqlParameters:
+            type: object
+            additionalProperties:
+              type: string
+            default: {}
+          replicas:
+            type: integer
+            default: 2
+          recovery:
+            type: object
+            additionalProperties: true
+            default: {}
+          externalClusters:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+            default: []
+      turnstone:
+        title: Turnstone
         properties:
           size:
             type: string

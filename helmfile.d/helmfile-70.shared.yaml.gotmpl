@@ -21,6 +21,19 @@ releases:
     labels:
       pkg: harbor
     <<: *default
+  - name: turnstone-artifacts
+    installed: {{ $a | get "turnstone.enabled" }}
+    namespace: turnstone
+    labels:
+      pkg: turnstone
+      app: core
+    <<: *raw
+  - name: turnstone
+    installed: {{ $a | get "turnstone.enabled" }}
+    namespace: turnstone
+    labels:
+      pkg: turnstone
+    <<: *default
   - name: vikunja-artifacts
     installed: {{ $a | get "vikunja.enabled" }}
     namespace: vikunja

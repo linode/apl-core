@@ -179,6 +179,26 @@ environments:
                 requests:
                   cpu: 100m
                   memory: 128Mi
+          turnstone:
+            _rawValues: {}
+            enabled: false
+            adminUsername: apl-turnstone-admin
+            defaultModel: claude-sonnet-5
+            resources:
+              server:
+                limits:
+                  cpu: "2"
+                  memory: 1Gi
+                requests:
+                  cpu: 500m
+                  memory: 512Mi
+              console:
+                limits:
+                  cpu: "1"
+                  memory: 512Mi
+                requests:
+                  cpu: 250m
+                  memory: 256Mi
           vikunja:
             _rawValues: {}
             enabled: false
@@ -1093,6 +1113,33 @@ environments:
               max_connections: "32"
               shared_buffers: 64MB
               work_mem: 2MB
+          turnstone:
+            imageName: null
+            size: 5Gi
+            walStorageSize: 5Gi
+            replicas: 2
+            recovery: {}
+            externalClusters: []
+            # Same sizing rationale as vikunja below. Turnstone opens roughly 5 connections per
+            # process (server + console + the migrate Job), well inside max_connections.
+            resources:
+              limits:
+                cpu: "200m"
+                memory: 192Mi
+              requests:
+                cpu: "200m"
+                memory: 192Mi
+            backupSidecarResources:
+              limits:
+                cpu: "300m"
+                memory: 256Mi
+              requests:
+                cpu: "50m"
+                memory: 48Mi
+            postgresqlParameters:
+              max_connections: "32"
+              shared_buffers: 64MB
+              work_mem: 2MB
           vikunja:
             imageName: null
             size: 5Gi
@@ -1169,6 +1216,11 @@ environments:
               retentionPolicy: 7d
               schedule: 0 0 * * *
               pathSuffix: keycloak
+            turnstone:
+              enabled: false
+              retentionPolicy: 7d
+              schedule: 0 0 * * *
+              pathSuffix: turnstone
             vikunja:
               enabled: false
               retentionPolicy: 7d

@@ -245,6 +245,17 @@ appsInfo:
     maintainers: Valkey Project
     license: BSD-3-
     about: Valkey is a high-performance data structure server that primarily serves key/value workloads. It supports a wide range of native structures and an extensible plugin system for adding new data structures and access patterns.
+  turnstone:
+    title: Turnstone
+    appVersion: 1.8.1
+    repo: https://github.com/turnstonelabs/turnstone
+    maintainers: Turnstone Labs
+    relatedLinks:
+      - https://github.com/turnstonelabs/turnstone/blob/main/docs/oidc.md
+    license: Apache-2.0
+    dependencies: Keycloak
+    about: Turnstone is self-hosted, local-first orchestration for tool-using AI agents. It gives large language models real tools - shell, files, search and web - behind a browser UI and a REST API, with role-based access control, per-tool approval policies and an audit log, storing everything in its own Postgres database.
+    integration: App Platform runs one shared Turnstone instance for the whole cluster, exposed through its cluster console. Members sign in through Keycloak and their account is created on first login. Platform group membership decides what they can do - platform admins become Turnstone administrators and team members become operators - and those roles are re-evaluated at every sign-in, so removing someone from a team in the Console demotes them here too. Turnstone calls the Anthropic API, so it needs an API key supplied in the platform settings; without one it still starts and signs users in, but prompts will fail. Note that agents execute tools inside the cluster, and every tool call requires explicit human approval by default.
   vikunja:
     title: Vikunja
     appVersion: 2.5.0

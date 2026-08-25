@@ -1,0 +1,329 @@
+{{- $v := .Values }}
+{{- $t := $v.apps.turnstone }}
+{{- $turnstoneDomain := $v._derived.turnstoneDomain }}
+{{- $kubectlImage := "registry.k8s.io/kubectl:v1.34.1" }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+{{- $model := $t.defaultModel }}
+
+resources:
+{{- /*
+  One hostname, pointed entirely at the console. Server and console share every top-level path
+  prefix (/, /v1/*, /static/*, /shared/*) and neither UI supports a base path, so path-splitting
+  the two is impossible. The console already reverse-proxies each server node at /node/{id}/ with
+  HTML and JS prefix rewriting -- the same topology as Turnstone's own reference Caddyfile. The
+  server Service therefore stays ClusterIP-only and is never exposed.
+*/}}
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+  {{ with $httpRoute.annotations }}
+    annotations:
+    {{ . | toYaml | nindent 8 }}
+  {{- end }}
+    name: turnstone
+  spec:
+    hostnames:
+      - {{ $turnstoneDomain }}
+    parentRefs:
+    {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
+    rules:
+      {{- /*
+        /metrics and / are both in Turnstone's PUBLIC_PATHS, so /metrics serves Prometheus data
+        with no authentication on both services. An Exact match is more specific than the
+        PathPrefix below, so this rule wins. Same redirect filter shape as the /platform-logout
+        rule in helmfile.d/snippets/routes.gotmpl -- core Gateway API has no "return 403".
+      */}}
+      - matches:
+          - path:
+              type: Exact
+              value: /metrics
+        filters:
+          - type: RequestRedirect
+            requestRedirect:
+              path:
+                type: ReplaceFullPath
+                replaceFullPath: /
+              statusCode: 302
+      - backendRefs:
+          # Matches console.service.port, which values/turnstone/turnstone.gotmpl leaves at the
+          # chart default of 8090.
+          - name: turnstone-console
+            port: 8090
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+- {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "turnstone" "host" $turnstoneDomain) | nindent 2 }}
+{{- /*
+  The only declarative way to give Turnstone a model. Its container command is fixed by the chart
+  so --provider/--model/--api-key cannot be passed, there is no seed file and no
+  `turnstone-admin model` subcommand -- but [models.*] in config.toml is read directly by both the
+  server and the console and takes precedence over DB rows of the same alias.
+
+  api_key holds the literal ${ANTHROPIC_API_KEY}; Turnstone expands it from the process
+  environment when it builds the registry, so the real key stays in a Secret and never appears in
+  this ConfigMap or in the database.
+
+  The key is `model =`, NOT `name =`. Turnstone's own turnstone.example.toml gets this wrong; the
+  loader reads entry.get("model") and skips the entry with "has no model name, skipping", leaving
+  an empty registry and a healthy-looking pod with no model at all. Verified against 1.8.1.
+  base_url is deliberately absent so the Anthropic SDK uses https://api.anthropic.com.
+*/}}
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    # NOT "turnstone-config": the chart already emits a ConfigMap of exactly that name via its
+    # own fullname helper, carrying the env-var block. Two releases owning one object name is a
+    # fight, not a merge. Caught by rendering the chart before installing it.
+    name: turnstone-model-config
+  data:
+    config.toml: |
+      [models.{{ $model }}]
+      provider = "anthropic"
+      model = "{{ $model }}"
+      api_key = "${ANTHROPIC_API_KEY}"
+
+      [model]
+      default = "{{ $model }}"
+- apiVersion: external-secrets.io/v1
+  kind: ExternalSecret
+  metadata:
+    name: turnstone-anthropic-key
+  spec:
+    refreshInterval: 5m
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: turnstone-anthropic-key
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          ANTHROPIC_API_KEY: '{{ "{{ .anthropicApiKey | toString }}" }}'
+    data:
+      - secretKey: anthropicApiKey
+        remoteRef:
+          key: turnstone-secrets
+          property: anthropicApiKey
+{{- /*
+  Regenerated per process start when unset, which would log every user out on restart, and
+  Turnstone refuses anything shorter than 32 characters. The chart reads the key name
+  TURNSTONE_JWT_SECRET verbatim out of this secret, so the template must use exactly that name.
+*/}}
+- apiVersion: external-secrets.io/v1
+  kind: ExternalSecret
+  metadata:
+    name: turnstone-jwt-secret
+  spec:
+    refreshInterval: 5m
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: turnstone-jwt-secret
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          TURNSTONE_JWT_SECRET: '{{ "{{ .jwtSecret | toString }}" }}'
+    data:
+      - secretKey: jwtSecret
+        remoteRef:
+          key: turnstone-secrets
+          property: jwtSecret
+- apiVersion: external-secrets.io/v1
+  kind: ExternalSecret
+  metadata:
+    name: turnstone-oidc-secret
+  spec:
+    refreshInterval: 5m
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: turnstone-oidc-secret
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          clientSecret: '{{ "{{ .clientSecret | toString }}" }}'
+    data:
+      - secretKey: clientSecret
+        remoteRef:
+          key: {{ $v._derived.oidcClientSecretKey }}
+          property: {{ $v._derived.oidcClientSecretProperty }}
+- apiVersion: external-secrets.io/v1
+  kind: ExternalSecret
+  metadata:
+    name: turnstone-admin-credentials
+  spec:
+    refreshInterval: 5m
+    secretStoreRef:
+      name: core-secrets-store
+      kind: ClusterSecretStore
+    target:
+      name: turnstone-admin-credentials
+      creationPolicy: Owner
+      template:
+        type: Opaque
+        data:
+          username: {{ $t.adminUsername }}
+          password: '{{ "{{ .adminPassword | toString }}" }}'
+    data:
+      - secretKey: adminPassword
+        remoteRef:
+          key: turnstone-secrets
+          property: adminPassword
+{{- if $v._derived.untrustedCA }}
+{{- /*
+  Each app that needs the platform CA creates this secret in its own namespace -- nothing copies
+  it around, and mounting a secret that does not exist leaves the pod in ContainerCreating forever
+  with nothing in the app's own logs. values/gitea/gitea-raw.gotmpl does the same.
+
+  Unlike gitea and vikunja this is NOT mounted over /etc/ssl/certs/ca-certificates.crt: an
+  initContainer concatenates it onto the image's bundle instead, because Turnstone must also reach
+  api.anthropic.com. See values/turnstone/turnstone.gotmpl.
+*/}}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: custom-ca
+  data:
+    ca-certificates.crt: {{ $v._derived.caCert | b64enc }}
+{{- end }}
+{{- /*
+  Turnstone refuses OIDC login entirely while it has no users -- handle_oidc_authorize returns 403
+  "Initial setup required before OIDC login" when count_users() == 0 -- so SSO cannot bootstrap
+  itself and this Job is required, not optional. It also gives the platform a local service
+  account for machine access, the same posture Argo CD takes with admin.enabled.
+
+  Same four objects as the gitea-backup CronJob in values/gitea/gitea-raw.gotmpl, as a Job because
+  this only has to happen once.
+*/}}
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: turnstone-bootstrap
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    name: turnstone-bootstrap
+  rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    # list+watch, not just get: the wait-for-turnstone init container uses `kubectl wait`,
+    # which watches the Deployment rather than polling it.
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: turnstone-bootstrap
+  subjects:
+  - kind: ServiceAccount
+    name: turnstone-bootstrap
+  roleRef:
+    kind: Role
+    name: turnstone-bootstrap
+    apiGroup: rbac.authorization.k8s.io
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: turnstone-bootstrap-admin
+  spec:
+    # backoffLimit is a backstop only; the wait-for init container below is the real ordering
+    # gate. It covers the cases the gate cannot -- the pod going away between the wait succeeding
+    # and the exec landing.
+    backoffLimit: 30
+    template:
+      metadata:
+        annotations:
+          sidecar.istio.io/inject: "false"
+      spec:
+        serviceAccountName: turnstone-bootstrap
+        restartPolicy: OnFailure
+        {{- /*
+          Without this gate the Job races the console Deployment, and every attempt until the
+          console is up dies with `unable to upgrade connection: container not found`. Spending
+          the retry budget on a *predictable* wait is what makes it unsafe: once the budget is
+          gone the Job fails permanently, the admin user is never created, and OIDC login then
+          fails with a 403 that reads like a Keycloak problem rather than an ordering one.
+
+          `kubectl wait` needs no shell, which matters because registry.k8s.io/kubectl is
+          distroless. Same shape as oauth2-proxy's wait-for-keycloak init container.
+        */}}
+        initContainers:
+          - image: {{ $kubectlImage }}
+            name: wait-for-turnstone
+            command:
+              - kubectl
+              - wait
+              - deployments/turnstone-console
+              - --for=condition=Available
+              - --timeout=15m
+            resources:
+              limits:
+                cpu: 250m
+                memory: 256Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+        containers:
+          - image: {{ $kubectlImage }}
+            name: kubectl
+            {{- /*
+              The turnstone image is Debian-based and does have a shell, unlike vikunja/vikunja --
+              but exec'ing the binary directly still avoids all shell quoting concerns, and the
+              kubelet's own $(VAR) expansion over `env` keeps the credentials out of this template.
+
+              `turnstone-admin create-admin` creates the user or promotes an existing one, so
+              re-running is safe. It needs the database, which is why it runs inside the console
+              pod rather than as a standalone container: that pod already has TURNSTONE_DB_URL.
+            */}}
+            env:
+              - name: ADMIN_USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: turnstone-admin-credentials
+                    key: username
+              - name: ADMIN_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: turnstone-admin-credentials
+                    key: password
+            command:
+              - kubectl
+              - exec
+              - deployments/turnstone-console
+              - '--'
+              - turnstone-admin
+              - create-admin
+              - --username
+              - $(ADMIN_USERNAME)
+              - --name
+              - App Platform admin
+              - --password
+              - $(ADMIN_PASSWORD)
+            resources:
+              limits:
+                cpu: 250m
+                memory: 256Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 65535
+              runAsGroup: 65535
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+        securityContext:
+          fsGroup: 65535

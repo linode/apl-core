@@ -1,0 +1,22 @@
+kind: AplDatabase
+metadata:
+    name: turnstone
+spec:
+    externalClusters: []
+    recovery: {}
+    replicas: 2
+    resources:
+        limits:
+            cpu: 200m
+            memory: 192Mi
+        requests:
+            cpu: 200m
+            memory: 192Mi
+    size: 5Gi
+    # storageClass is deliberately NOT set here, for the same reason as databases/vikunja.yaml:
+    # `values/turnstone/turnstone-otomi-db.gotmpl` reads $vdb.storageClass unguarded, and the only
+    # thing that supplies it is the per-database block in helmfile.d/snippets/defaults.gotmpl.
+    # Setting it here would satisfy the template from the fixture and leave that injection
+    # untested, so a database missing from defaults.gotmpl would pass the whole suite and then
+    # fail the real install with `map has no entry for key "storageClass"`.
+    # walStorageSize is likewise left to helmfile.d/snippets/defaults.yaml, as vikunja.yaml does.

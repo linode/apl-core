@@ -44,6 +44,20 @@ releases:
     labels:
       pkg: harbor
     <<: *otomiDb
+  - name: turnstone-db-secret-artifacts
+    installed: {{ $a | get "turnstone.enabled" }}
+    namespace: turnstone
+    labels:
+      pkg: turnstone
+      app: core
+    <<: *raw
+  - name: turnstone-otomi-db
+    installed: {{ $a | get "turnstone.enabled" }}
+    namespace: turnstone
+    labels:
+      pkg: turnstone
+      app: core
+    <<: *otomiDb
   - name: vikunja-db-secret-artifacts
     installed: {{ $a | get "vikunja.enabled" }}
     namespace: vikunja

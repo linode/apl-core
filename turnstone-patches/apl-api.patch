@@ -1,0 +1,19 @@
+Adds `turnstone` to the hand-maintained AppList enum that GET /v1/apps is derived from.
+Without this the Console never shows the tile, whatever core.yaml says.
+
+Applies on top of vikunja-patches/apl-api.patch, because this lab runs both apps and one
+apl-api image has to carry both entries. Apply the vikunja patch first; the context lines
+below already include its `- vikunja` line.
+
+diff --git a/src/openapi/app.yaml b/src/openapi/app.yaml
+index 3706ba5..4c1e2a9 100644
+--- a/src/openapi/app.yaml
++++ b/src/openapi/app.yaml
+@@ -25,6 +25,7 @@ AppList:
+     - tekton
+     - sealed-secrets
+     - trivy
++    - turnstone
+     - vikunja
+
+ App:

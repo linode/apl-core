@@ -1,0 +1,25 @@
+kind: AplApp
+metadata:
+    name: turnstone
+spec:
+    enabled: true
+    adminUsername: apl-turnstone-admin
+    defaultModel: claude-sonnet-5
+    # anthropicApiKey is an x-secret with a blank value, i.e. operator-supplied. Templates read it
+    # only through the ExternalSecret in values/turnstone/turnstone-raw.gotmpl, which references
+    # the sealed secret by name rather than interpolating the value, so nothing here needs it.
+    resources:
+        server:
+            limits:
+                cpu: '2'
+                memory: 1Gi
+            requests:
+                cpu: 500m
+                memory: 512Mi
+        console:
+            limits:
+                cpu: '1'
+                memory: 512Mi
+            requests:
+                cpu: 250m
+                memory: 256Mi
