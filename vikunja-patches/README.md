@@ -67,19 +67,39 @@ project.
 
 ## apl-tasks — needed only for team sync
 
-⚠ **This one cannot be built without credentials.** `apl-tasks`' `package.json` depends on
-`@linode/*` packages hosted on GitHub Packages, and its Dockerfile expects an `NPM_TOKEN` build
-secret. An unauthenticated pull gets `403`, and a `gh` token without the `read:packages` scope gets
-`403` as well. That is why `apps.vikunja.teamSync.enabled` defaults to `false`: the published
-`linode/apl-tasks` image has no `operator:vikunja` script, so enabling the operator against it
-would only produce a crash-looping pod.
+`apl-tasks`' own `Dockerfile` cannot be used here: it runs `npm ci` against GitHub Packages, and
+GitHub Packages requires authentication **even for public packages**. Anonymous gets `403`, and so
+does a `gh` token whose scopes lack `read:packages`.
+
+No token is needed anyway. The published `linode/apl-tasks:main` image already ships a fully
+resolved `/app/node_modules` containing all four `@linode/*` packages, so it can serve as the
+dependency source. Only `typescript` and the `@types/*` it needs come from public npm.
+`apl-tasks-vikunja.Dockerfile` in this directory does exactly that.
 
 ```bash
 git clone https://github.com/linode/apl-tasks.git && cd apl-tasks
 git apply /path/to/apl-core/vikunja-patches/apl-tasks.patch
-docker build --secret id=NPM_TOKEN,env=NPM_TOKEN -t docker.io/linode/apl-tasks:v0.0.0-vikunja .
+docker build -f /path/to/apl-core/vikunja-patches/apl-tasks-vikunja.Dockerfile \
+             -t docker.io/linode/apl-tasks:v0.0.0-vikunja .
+docker images docker.io/linode/apl-tasks:v0.0.0-vikunja   # verify; do not trust the exit code
 kind load docker-image docker.io/linode/apl-tasks:v0.0.0-vikunja --name apl
 ```
+
+Verify the artifact rather than the build's exit status — this build has two ways to exit `0`
+having produced nothing useful (see the comments in the Dockerfile):
+
+```bash
+docker run --rm --entrypoint sh docker.io/linode/apl-tasks:v0.0.0-vikunja \
+  -c 'ls dist/src/operators/vikunja/vikunja.js && node dist/src/operators/vikunja/vikunja.js'
+```
+
+The expected output is the operator's `envalid` report listing `VIKUNJA_URL` and
+`VIKUNJA_OPERATOR_NAMESPACE` as missing. That proves the module compiled, resolved every
+`@linode/*` import at runtime, and reached its own entrypoint.
+
+`npm run operator:vikunja` is unchanged by this build (`node dist/src/operators/vikunja/vikunja.js`),
+so `charts/apl-vikunja-operator` needs no special-casing — it runs the same
+`command: [npm, run, operator:<name>]` as the Gitea operator.
 
 ```yaml
 versions:
