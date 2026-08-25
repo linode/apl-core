@@ -230,6 +230,17 @@ through the bjw-s `persistence` block with `type: secret`. ✅ Verified against 
 Keycloak: without the mount, `providers: []`; with it, the provider is listed with its discovered
 `auth_url`.
 
+✅ **The `custom-ca` secret is per-namespace and each app creates its own.** Nothing copies it
+around — `values/gitea/gitea-raw.gotmpl` emits it from `_derived.caCert`, and on the running lab it
+exists in exactly four namespaces, one per app that mounts it. `values/vikunja/vikunja-raw.gotmpl`
+does the same. Mounting a secret that does not exist would keep the pod in `ContainerCreating`
+forever with nothing in the app's own logs to explain it.
+
+⚠ The operator sidesteps all of this by talking to `http://keycloak-keycloakx-http.keycloak.svc.
+cluster.local` rather than the public host — the address `apl-keycloak-operator` already passes as
+`KEYCLOAK_ADDRESS_INTERNAL`. Vikunja itself cannot: its `authurl` has to be the browser-facing
+issuer, so it needs the CA.
+
 ---
 
 ## Phase 2 — Console presence ✅

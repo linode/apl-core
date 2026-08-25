@@ -92,6 +92,19 @@ resources:
         remoteRef:
           key: {{ $v._derived.oidcClientSecretKey }}
           property: {{ $v._derived.oidcClientSecretProperty }}
+{{- if $v._derived.untrustedCA }}
+{{- /*
+  Each app that needs the platform CA creates this secret in its own namespace --
+  values/gitea/gitea-raw.gotmpl does the same. Without it the volume mount in
+  values/vikunja/vikunja.gotmpl has nothing to mount and the pod never starts.
+*/}}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: custom-ca
+  data:
+    ca-certificates.crt: {{ $v._derived.caCert | b64enc }}
+{{- end }}
 {{- /*
   Vikunja has no first-run admin bootstrap and no chart hook for one, so the
   local service account only exists once its CLI has been run inside the pod.

@@ -39,7 +39,10 @@ resources:
                  admin credential and the same master-realm admin-cli grant. */}}
             keycloakAdmin: {{ $kc.adminUsername }}
             keycloakAdminPassword: '{{ "{{ .keycloakAdminPassword | toString }}" }}'
-            keycloakUrl: {{ printf "https://keycloak.%s" $v.cluster.domainSuffix }}
+            {{/* The in-cluster service, not https://keycloak.<domain>: over the public
+                 host the platform CA is untrusted and Node would need NODE_EXTRA_CA_CERTS.
+                 Same address apl-keycloak-operator passes as KEYCLOAK_ADDRESS_INTERNAL. */}}
+            keycloakUrl: http://keycloak-keycloakx-http.keycloak.svc.cluster.local
       data:
         - secretKey: vikunjaPassword
           remoteRef:

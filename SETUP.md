@@ -101,6 +101,7 @@ kind load docker-image apl-core-local:v6.2.1-fork --name apl
 #     Both are tagged with the names the charts already expect, so no registry is involved.
 #     See vikunja-patches/README.md for the full explanation.
 VP=$PWD/vikunja-patches
+rm -rf /tmp/apl-api /tmp/apl-console
 git clone --depth 1 https://github.com/linode/apl-api.git /tmp/apl-api
 git -C /tmp/apl-api apply "$VP/apl-api.patch"
 ( cd /tmp/apl-api && APL_CORE_PATH="$VP/.." npm run schema:sync )   # bakes in THIS values-schema
