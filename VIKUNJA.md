@@ -161,7 +161,9 @@ Settings that matter for a platform install:
 - `service.secret` — the JWT signing secret. ⬜ If unset, Vikunja generates a random one **per process
   start**, so every restart logs everyone out and no second replica can validate the first's tokens.
   This must become an `x-secret` in `values-schema.yaml` so the platform generates and stores it.
-- `service.enableregistration: false` and `auth.local.enabled: false` — SSO only.
+- `service.enableregistration: false` — no self-signup. Leave `auth.local.enabled` **true**: the sync
+  Job's service account logs in through it, and every other integrated app here keeps its local admin
+  enabled for the same reason. See §6.
 - `keyvalue.type` — defaults to `memory`. ⬜ Multi-replica requires `redis`. `charts/valkey` is already
   vendored and used by Gitea (`gitea-valkey`), so the precedent exists; single replica is fine to start.
 - `auth.openid.providers.<key>` — `name`, `authurl`, `clientid`, `clientsecret`, `scope`.
@@ -443,10 +445,17 @@ if sub-minute propagation or event-level granularity turns out to matter.
 | Create team | `PUT /teams` | yes |
 | Add / remove member | `PUT /teams/{id}/members`, `DELETE /teams/{id}/members/{username}` | yes |
 | Promote to team admin | `POST /teams/{id}/members/{userID}/admin` | yes |
-| Disable / delete user | `PATCH /admin/users/{id}/status`, `DELETE /admin/users/{id}` | deprovisioning only |
-| Create user | `POST /admin/users` | no — see the trap below |
 | Create project | `PUT /projects` | no — users do this themselves |
 | Share project with team | `PUT /projects/{id}/teams`, `POST /projects/{projectID}/teams/{teamID}` | no — reference only |
+| Create user | `POST /admin/users` | ⛔ **Vikunja Pro only** |
+| Disable / delete user | `PATCH /admin/users/{id}/status`, `DELETE /admin/users/{id}` | ⛔ **Vikunja Pro only** |
+
+⛔ The `/admin/*` endpoints are the Pro "admin panel" feature and require both a Pro license and an
+admin user; the `vikunja user set-admin` CLI command carries the same restriction. Everything the sync
+actually needs — teams, membership, sharing — is core AGPL functionality available to any ordinary
+user, so **the sync needs no admin rights and no license.** The practical loss is user deprovisioning,
+which is fine: removing someone from their Keycloak group removes them from the Vikunja team on the
+next sync, which is the control that matters.
 
 Permissions on a project↔team relation are `0` read, `1` read & write, `2` admin (`models.TeamProject`).
 Authentication is a bearer API token, or a JWT from `POST /login`.
@@ -475,7 +484,54 @@ eager creation and claim-based membership together. The spec's `readOnly` flags 
 (`created` is documented as immutable yet carries no `readOnly`), so this must be tested against a real
 instance rather than believed.
 
+### Bootstrapping the credential — the platform already has a pattern
+
+Every integrated app here solves this the same way, and it is worth copying rather than inventing:
+**the local admin account stays enabled for machines, SSO is for humans, and the password is a
+platform-generated `x-secret`.**
+
+| App | Credential | How it reaches the app | Who consumes it |
+| --- | --- | --- | --- |
+| Gitea | `adminUsername` + `adminPassword` | chart's `gitea.admin.existingSecret: gitea-admin-secret` | `apl-gitea-operator` via `giteaPassword` |
+| Harbor | `adminPassword` | `HARBOR_ADMIN_PASSWORD` env from an ExternalSecret | `apl-harbor-operator` via `harborPassword` |
+| Keycloak | `adminUsername` + `adminPassword` | chart admin secret | `apl-keycloak-operator` via `KEYCLOAK_ADMIN*` |
+| Argo CD | local admin | `configs.cm."admin.enabled": "true"` — kept on *alongside* SSO | humans, break-glass |
+
+✅ Argo CD is the clearest statement of the principle: it explicitly keeps the local admin account
+enabled while mapping the `platform-admin` group to `role:admin` for SSO users. Turning local auth off
+entirely is not the house style.
+
+So Vikunja should follow suit:
+
+- add `adminUsername` / `adminPassword` to `apps.vikunja` as `x-secret` fields, exactly as `apps.gitea`
+  does;
+- keep `auth.local.enabled: true` — it is what the sync Job authenticates through — while setting
+  `service.enableregistration: false` so the only local account is the one we create;
+- seed that account at first boot. Vikunja has **no first-run admin bootstrap** and no chart hook
+  equivalent to Gitea's `admin.existingSecret`; the account is created from the CLI:
+
+```bash
+/app/vikunja/vikunja user create -u "$ADMIN_USER" -e "$ADMIN_EMAIL" -p "$ADMIN_PASSWORD"
+```
+
+  ⬜ Run it from an init container, or from the `*jobs` anchor — which `docs/development.md` describes
+  as being for exactly this case, "configuration that cannot be expressed declaratively". It must be
+  idempotent: re-creating an existing user has to be tolerated, not fatal.
+
+The sync Job then authenticates with `POST /login` for a JWT and calls the team endpoints. Note it does
+**not** need instance-admin rights: creating a team and adding members is something any Vikunja user may
+do, which is what keeps this clear of the Pro license.
+
+⬜ **A timing constraint that argues for a CronJob.** `PUT /teams/{id}/members` takes a username, and a
+user only exists in Vikunja after their first OIDC login. So membership cannot be fully reconciled at
+the moment a team is created — it fills in as people sign in. A purely `OnSpecChange` Job would never
+re-run to catch them. Either add a schedule so it reconciles periodically, or accept that membership
+lags until the next values change. The Gitea operator sidesteps this by running continuously.
+
 ### The user-provisioning trap
+
+Moot in practice now that `/admin/users` is known to be Pro-gated, but it explains why pre-creating
+users was never the right instinct.
 
 ⚠ `POST /admin/users` creates a **local** account. An OIDC login creates a *separate* identity. Whether
 a pre-created local user is adopted by a later OIDC login with the same username, or shadowed by a
