@@ -4,9 +4,13 @@
 Gitea, Harbor and Argo CD: one shared instance, its own host, Keycloak SSO, a Console tile, and
 platform teams pushed into Vikunja teams.
 
-This file is fork-only and is not intended for upstream. It started as a plan; it is now a record of
-what was built, what was measured, and what is still unproven. Phase 5 is the part to read if you
-are integrating a *different* app — it is the plan generalized.
+This file is fork-only and is not intended for upstream. It started as a plan; it is now a **record**
+of what was built, what was measured, and what is still unproven. It is evidence, not a plan — the
+work is done and on `feat/vikunja-integration`. Do not execute it.
+
+➡ **Integrating a *different* app? Read [`INTEGRATING-AN-APP.md`](INTEGRATING-AN-APP.md) instead.**
+That is this file's Phase 5 generalized into a full playbook, with everything learned since. Come
+back here for the concrete detail behind any rule in it — this file is the worked example it cites.
 
 Status legend: ✅ verified by running it · ⚠ built but not run end to end · ⬜ not done
 

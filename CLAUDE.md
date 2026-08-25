@@ -6,16 +6,43 @@ intended for upstream.
 Its purpose: let an agent reproduce the local lab from `SETUP.md` without rediscovering the traps
 that cost a full session to find.
 
+## What the documents in here are for
+
+Four fork-only documents, none intended for upstream. They have different jobs, and reading the
+wrong one for the task wastes a session.
+
+| File | What it is | Read it when |
+|---|---|---|
+| `CLAUDE.md` | this file — operational rules and traps that apply to *any* work here | always, first |
+| `SETUP.md` | an executable runbook: bring the lab up from nothing | you are asked to install, rebuild or verify the lab |
+| `INTEGRATING-AN-APP.md` | a generic playbook: add any third-party app as a platform app | you are asked to integrate a new app |
+| `VIKUNJA.md` | the worked example behind that playbook — a record of one real integration | you need the concrete detail a rule in the playbook is abbreviating |
+
+The distinction that matters: **`SETUP.md` and `INTEGRATING-AN-APP.md` are instructions to follow.
+`VIKUNJA.md` is evidence, not a plan** — its work is already done and on `feat/vikunja-integration`.
+Do not execute it.
+
+Also: `vikunja-patches/README.md` — read before touching any of the three sibling repositories
+(`apl-api`, `apl-console`, `apl-tasks`). It explains why they ship as patches rather than forks, and
+carries the build and load commands, including the one that needs no registry token.
+
 ## The task, if you were pointed at SETUP.md
 
 Follow `SETUP.md` top to bottom. It is a runbook, not an essay — every command in it has been run.
 The expected output is given after each step; compare against it rather than assuming success.
 
+## The task, if you were pointed at INTEGRATING-AN-APP.md
+
+You are being asked to integrate a new app, usually as "read this file and integrate
+`<repo-url>` the same way Vikunja was". Read the whole file before writing anything: **the order of
+the phases is the content**, and most of the cost in the integration it generalizes came from doing
+those steps in a different order. It also tells you which phases your app does not need.
+
 ## The task, if you were pointed at VIKUNJA.md
 
 `VIKUNJA.md` is a record, not a plan waiting to be executed — the code is on
-`feat/vikunja-integration`. Its Phase 5 is the reusable part: the order to integrate *any* new app
-in, and the traps that order avoids. Read that before starting a similar integration, and
+`feat/vikunja-integration`. It is now the worked example behind `INTEGRATING-AN-APP.md`, so for a
+*new* integration start there and come back here for the specifics. Read
 `vikunja-patches/README.md` before touching the three sibling repositories.
 
 ## Rules that are not negotiable
