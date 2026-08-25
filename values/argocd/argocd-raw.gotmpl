@@ -149,27 +149,6 @@ resources:
           remoteRef:
             key: {{ $v._derived.oidcClientSecretKey }}
             property: {{ $v._derived.oidcClientSecretProperty }}
-  - apiVersion: external-secrets.io/v1
-    kind: ExternalSecret
-    metadata:
-      name: argocd-redis-secret
-      namespace: argocd
-    spec:
-      refreshPolicy: CreatedOnce
-      target:
-        name: argocd-redis
-        creationPolicy: Owner
-        immutable: true
-      dataFrom:
-        - sourceRef:
-            generatorRef:
-              apiVersion: generators.external-secrets.io/v1alpha1
-              kind: ClusterGenerator
-              name: alpha-num-32
-          rewrite:
-            - regexp:
-                source: password
-                target: auth
   - apiVersion: v1
     kind: Secret
     metadata:
