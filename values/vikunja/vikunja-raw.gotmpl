@@ -122,7 +122,9 @@ resources:
   rules:
   - apiGroups: ["apps"]
     resources: ["deployments"]
-    verbs: ["get"]
+    # list+watch, not just get: the wait-for-vikunja init container uses `kubectl wait`,
+    # which watches the Deployment rather than polling it.
+    verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["pods"]
     verbs: ["get", "list"]
@@ -146,7 +148,9 @@ resources:
     name: vikunja-bootstrap-admin
   spec:
     # Vikunja is usually not up yet when this first runs, and `kubectl exec` fails until it
-    # is. Retry rather than order the release, which the platform has no mechanism for.
+    # is. The wait-for-vikunja init container below is the actual ordering gate; backoffLimit
+    # stays as a backstop for the cases the gate cannot cover (the pod going away between the
+    # wait succeeding and the exec landing).
     backoffLimit: 30
     template:
       metadata:
@@ -155,6 +159,38 @@ resources:
       spec:
         serviceAccountName: vikunja-bootstrap
         restartPolicy: OnFailure
+        {{- /*
+          Without this gate the Job races the Vikunja Deployment. Vikunja itself waits on
+          Keycloak (requireavailability), so on a cold install it is minutes behind, and every
+          attempt until then dies with `unable to upgrade connection: container not found
+          ("vikunja")`. Observed burning 6 of the 30 retries on a clean lab install.
+
+          Consuming the retry budget on a *predictable* wait is what makes it unsafe: the
+          budget is meant for genuine failures, and once spent the Job fails permanently. The
+          admin user is then never created, and the team-sync operator -- which logs in as that
+          admin -- fails every reconcile with a 403 that reads like a credentials bug rather
+          than an ordering one.
+
+          `kubectl wait` needs no shell, which matters because registry.k8s.io/kubectl is
+          distroless. Same shape as oauth2-proxy's wait-for-keycloak init container, and as
+          the operator's own "Waiting for Vikunja to be available..." gate.
+        */}}
+        initContainers:
+          - image: {{ $kubectlImage }}
+            name: wait-for-vikunja
+            command:
+              - kubectl
+              - wait
+              - deployments/vikunja
+              - --for=condition=Available
+              - --timeout=15m
+            resources:
+              limits:
+                cpu: 250m
+                memory: 256Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
         containers:
           - image: {{ $kubectlImage }}
             name: kubectl
