@@ -8,7 +8,7 @@ import {
   updateApplyState,
 } from './k8s'
 import { CoreV1Api, ApiException } from '@kubernetes/client-node'
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
@@ -300,8 +300,6 @@ describe('startHeartbeat', () => {
     rmSync(workDir, { recursive: true, force: true })
   })
 
-  const mtimeOf = (path: string): number => statSync(path).mtimeMs
-
   test('beats immediately, so the marker exists before the probe initial delay elapses', () => {
     const timer = startHeartbeat(60_000, marker)
 
@@ -312,12 +310,13 @@ describe('startHeartbeat', () => {
 
   test('keeps beating for the length of an install', () => {
     const timer = startHeartbeat(60_000, marker)
-    const before = mtimeOf(marker)
+    // Deleting first means only a genuine later write can bring the marker back. mtime cannot
+    // be used here: fake timers move Date.now(), not the clock the filesystem stamps with.
+    rmSync(marker)
 
-    jest.setSystemTime(Date.now() + 10 * 60_000)
     jest.advanceTimersByTime(10 * 60_000)
 
-    expect(mtimeOf(marker)).toBeGreaterThan(before)
+    expect(existsSync(marker)).toBe(true)
 
     clearInterval(timer)
   })
@@ -325,11 +324,10 @@ describe('startHeartbeat', () => {
   test('stops on clear, so a wedged reconcile loop goes stale instead of being masked', () => {
     const timer = startHeartbeat(60_000, marker)
     clearInterval(timer)
-    const before = mtimeOf(marker)
+    rmSync(marker)
 
-    jest.setSystemTime(Date.now() + 10 * 60_000)
     jest.advanceTimersByTime(10 * 60_000)
 
-    expect(mtimeOf(marker)).toBe(before)
+    expect(existsSync(marker)).toBe(false)
   })
 })
