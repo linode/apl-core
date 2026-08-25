@@ -21,7 +21,11 @@ the Turnstone migrate Job deadlocked Argo CD's PreSync phase; Turnstone's one-sh
 raced Keycloak and left SSO silently disabled on a healthy-looking pod; and the bootstrap Job's
 `kubectl wait` gate failed fast instead of waiting. See §11.
 
-⬜ Still unproven: a real agent turn against the Claude API, and the browser checks in §11.7.
+✅ Since verified by hand in a browser: SSO round-trips into **both** Turnstone and Vikunja from
+the console tiles with **no** sign-in click, and role mapping produces the intended rows for a
+platform admin, a team admin and a plain team member.
+
+⬜ Still unproven: one real agent turn against the Claude API, and the remaining §11.7 checks.
 
 If you only want the previously-verified lab, set `apps.turnstone.enabled: false` and skip 6b and
 6c entirely; nothing else in this file depends on them.
@@ -1273,8 +1277,30 @@ Three bugs that only a real install could have found, all fixed here:
 2. **OIDC discovery raced Keycloak** — see "What to expect to go wrong first" below.
 3. **The `kubectl wait` gate failed fast** on a Deployment that did not exist yet.
 
-Still **not** proven: a real OIDC login end to end, the browser checks in 11.7, and one real agent
-turn against the Claude API. TLS to Anthropic is proven; an actual completion is not.
+✅ Proven by hand in a browser, on this build:
+
+| Proven ✅ | Observed |
+|---|---|
+| SSO end to end, both apps | console tile → signed in, **no** otomi-idp click, for Turnstone *and* Vikunja |
+| the `path:` deep links work | including Vikunja's client-side one, which curl cannot observe |
+| role mapping, real users | `platform-admin`→`builtin-admin`; team admin→**`apl-team-lead`+`builtin-operator`**; member→`builtin-operator`; all `assigned_by='oidc'` |
+| Vikunja admin flags | `platform-admin` admin of the team, team admin admin of their own team, plain member not |
+
+⚠ **Membership lags a new user's first login, and that is not a fault.** A user does not exist in
+Vikunja until they sign in there once (it auto-registers on OIDC), so `PUT /teams/{id}/members`
+returns 404 before that and the operator can only add them on the *next* reconcile. Measured: login
+16:34:27 → membership 16:35:02. Open a share dialog inside that window and the team list is
+correctly empty. Sign in, wait up to `VIKUNJA_RECONCILE_INTERVAL` (60s), then look.
+
+Still **not** proven: one real agent turn against the Claude API. TLS to Anthropic is proven
+(401 from inside the pod); an actual completion is not.
+
+⬜ Known gaps, neither a regression:
+- **Turnstone rights need more work.** `apl-team-lead` is a global power-user role, not a team
+  admin, because Turnstone cannot scope — see §4.1 of `TURNSTONE.md`.
+- **Vikunja projects are not shared with teams automatically.** The operator creates no projects
+  and no shares; a user shares their project with a team by hand in the UI. Nothing has ever done
+  this, so a team member cannot see a colleague's project until it is shared.
 
 ```bash
 # Derive the domain from Turnstone's own route -- never from an unrelated app's, which may be off.
