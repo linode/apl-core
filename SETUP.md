@@ -11,6 +11,15 @@ disk, 6+ vCPU, 12+ GB RAM.
 Only steps marked ✅ have actually been run. Nothing here is copied from upstream documentation
 without checking it.
 
+⚠ **Read this before trusting the ✅ marks.** Steps **6b** and **6c** are new and are marked ⬜:
+they replace the lab's root CA and add an operator-supplied API key, both required by Turnstone
+(§11). The ✅ marks elsewhere were earned *before* that change, on a bring-up that generated its own
+root CA — so the file as a whole has not been run start-to-finish in its current form. Everything
+6b/6c depends on was verified in isolation (see §11), but the composed path has not been.
+
+If you only want the previously-verified lab, set `apps.turnstone.enabled: false` and skip 6b and
+6c entirely; nothing else in this file depends on them.
+
 If you are an agent working through this file, read [`CLAUDE.md`](CLAUDE.md) first — it carries the
 operational rules and the traps that are expensive to rediscover.
 
@@ -97,29 +106,39 @@ docker build --build-arg VERSION=6.2.1-fork \
 docker images apl-core-local:v6.2.1-fork        # MUST show the image; do not trust the exit code
 kind load docker-image apl-core-local:v6.2.1-fork --name apl
 
-# 5b. Vikunja needs a patched apl-api (the AppList enum), apl-console (the tile logo) and
-#     apl-tasks (the team-sync operator). All three are tagged with the names the charts
+# 5b. Vikunja and Turnstone both need a patched apl-api (the AppList enum) and apl-console (the
+#     tile logo); Vikunja alone also needs apl-tasks (the team-sync operator -- Turnstone has no
+#     team object, so it needs no operator at all). Everything is tagged with the names the charts
 #     already expect, so no registry is involved.
-#     See vikunja-patches/README.md for the full explanation.
+#     See vikunja-patches/README.md and turnstone-patches/README.md for the full explanation.
+#
+#     There is ONE apl-api image and ONE apl-console image, so each must carry BOTH apps' changes.
+#     Order matters: the turnstone apl-api patch has `- vikunja` in its context lines.
 VP=$PWD/vikunja-patches
+TP=$PWD/turnstone-patches
 rm -rf /tmp/apl-api /tmp/apl-console /tmp/apl-tasks
 git clone --depth 1 https://github.com/linode/apl-api.git /tmp/apl-api
 git -C /tmp/apl-api apply "$VP/apl-api.patch"
+git -C /tmp/apl-api apply "$TP/apl-api.patch"
+grep -qE '^\s+- turnstone$' /tmp/apl-api/src/openapi/app.yaml || echo "AppList missing turnstone -- no tile"
 #     Bake in THIS values-schema. npm runs in a container: the host Node is broken on this
 #     machine and CLAUDE.md requires that no step need it. See "Do not run npm on the host".
+#     Without this the Console renders an EMPTY settings form for Turnstone -- including the
+#     anthropicApiKey field, which is the one value an operator has to fill in by hand.
 docker run --rm --user "$(id -u):$(id -g)" \
   -v /tmp/apl-api:/w -v "$VP/..":/core:ro -w /w -e APL_CORE_PATH=/core \
   linode/apl-tools:v3.0.1 npm run schema:sync
 diff -q "$VP/../values-schema.yaml" /tmp/apl-api/src/values-schema.yaml   # must print nothing
-docker build -t docker.io/linode/apl-api:v0.0.0-vikunja /tmp/apl-api
-docker images docker.io/linode/apl-api:v0.0.0-vikunja
-kind load docker-image docker.io/linode/apl-api:v0.0.0-vikunja --name apl
+docker build -t docker.io/linode/apl-api:v0.0.0-turnstone /tmp/apl-api
+docker images docker.io/linode/apl-api:v0.0.0-turnstone
+kind load docker-image docker.io/linode/apl-api:v0.0.0-turnstone --name apl
 
 git clone --depth 1 https://github.com/linode/apl-console.git /tmp/apl-console
 cp "$VP/apl-console/public/logos/vikunja_logo.svg" /tmp/apl-console/public/logos/
-docker build -t docker.io/linode/apl-console:v0.0.0-vikunja /tmp/apl-console
-docker images docker.io/linode/apl-console:v0.0.0-vikunja
-kind load docker-image docker.io/linode/apl-console:v0.0.0-vikunja --name apl
+cp "$TP/apl-console/public/logos/turnstone_logo.svg" /tmp/apl-console/public/logos/
+docker build -t docker.io/linode/apl-console:v0.0.0-turnstone /tmp/apl-console
+docker images docker.io/linode/apl-console:v0.0.0-turnstone
+kind load docker-image docker.io/linode/apl-console:v0.0.0-turnstone --name apl
 
 #     apl-tasks does NOT use its own Dockerfile: that one runs `npm ci` against GitHub Packages,
 #     which needs an NPM_TOKEN with read:packages. The Dockerfile below takes the resolved
@@ -140,7 +159,36 @@ kind load docker-image docker.io/linode/apl-tasks:v0.0.0-vikunja --name apl
 # 6. generate the chart schema -- REQUIRED, silently skipped validation otherwise
 bin/gen-chart-schema.sh
 
+# 6b. root CA -- REQUIRED if you enable Turnstone, or any other app whose TLS stack is Python's.
+#     The platform generates its own root CA when you leave these empty, and that one carries no
+#     subjectKeyIdentifier -- so cert-manager cannot put an authorityKeyIdentifier on the leaves it
+#     issues, and Python 3.13+ (VERIFY_X509_STRICT, enforced by OpenSSL 3.5) refuses the chain with
+#     "Missing Authority Key Identifier". Go apps never notice and `openssl verify` says OK, so this
+#     is invisible unless you test with Python. Full account in TURNSTONE.md section 3.
+#     MUST be done before the install below: retrofitting it onto a bootstrapped cluster pairs your
+#     new key with the OLD certificate (see step 7).
+openssl req -x509 -newkey rsa:4096 -nodes -keyout /tmp/apl-ca.key -out /tmp/apl-ca.crt \
+  -days 3650 -sha256 -subj "/C=NL/ST=Utrecht/L=Utrecht/O=Otomi/OU=Development" \
+  -addext "basicConstraints=critical,CA:TRUE" \
+  -addext "keyUsage=critical,digitalSignature,keyCertSign,cRLSign" \
+  -addext "subjectKeyIdentifier=hash"
+openssl rsa -traditional -in /tmp/apl-ca.key -out /tmp/apl-ca.pkcs1.key   # match what the platform emits
+openssl x509 -in /tmp/apl-ca.crt -noout -text | grep -q 'Subject Key Identifier' \
+  && echo "CA has a subjectKeyIdentifier -- good" || echo "CA IS WRONG, Turnstone SSO will fail"
+
+# 6c. your Anthropic API key -- REQUIRED if you enable Turnstone.
+#     Turnstone talks to the Claude API and there is nothing to generate here: this is the one
+#     value you have to supply yourself. Without it the install still completes and SSO still
+#     works, but the turnstone-anthropic-key ExternalSecret never syncs and both Turnstone pods
+#     sit in CreateContainerConfigError.
+#     Get one at https://console.anthropic.com/settings/keys -- it starts with `sk-ant-`.
+read -rsp 'Anthropic API key (sk-ant-...): ' ANTHROPIC_API_KEY; echo
+[ -n "$ANTHROPIC_API_KEY" ] || echo "empty -- Turnstone will not start; set apps.turnstone.enabled: false instead"
+
 # 7. values + install
+#    NOTE: values.yaml carries two secrets now (the CA private key and your API key), which is why
+#    .git/info/exclude has a bare `values.yaml` line. Keep it that way -- and see the Traps section,
+#    because that same line hides a newly vendored chart's own values.yaml from git add -A.
 cat > values.yaml <<EOF
 cluster:
   name: apl-local
@@ -156,14 +204,22 @@ operator:
 versions:
   # The locally built images from step 5b. A version starting with a digit is treated as a
   # semver, which prefixes the tag with 'v' and sets pullPolicy IfNotPresent -- exactly what a
-  # kind-loaded image needs. 'vikunja' as a tag would be treated as a branch and pulled Always.
-  api: 0.0.0-vikunja
-  console: 0.0.0-vikunja
+  # kind-loaded image needs. 'turnstone' as a tag would be treated as a branch and pulled Always.
+  api: 0.0.0-turnstone
+  console: 0.0.0-turnstone
   tasks: 0.0.0-vikunja
 apps:
   metrics-server:
     extraArgs: ["--kubelet-insecure-tls=true"]
-  # Both default to false upstream, which means clicking Activate in the console after every
+  cert-manager:
+    # From step 6b. BOTH are required: src/cmd/bootstrap.ts checks
+    # \`if (cm.customRootCA && cm.customRootCAKey)\` and silently generates and uses its own weak CA
+    # if either is missing.
+    customRootCA: |
+$(sed 's/^/      /' /tmp/apl-ca.crt)
+    customRootCAKey: |
+$(sed 's/^/      /' /tmp/apl-ca.pkcs1.key)
+  # Apps default to false upstream, which means clicking Activate in the console after every
   # rebuild. Enabling them here rather than in helmfile.d/snippets/defaults.yaml keeps the fork's
   # deviation from upstream to this file. See step 7.
   gitea:
@@ -174,7 +230,15 @@ apps:
     enabled: true
     teamSync:
       enabled: true
+  turnstone:
+    enabled: true
+    # The only operator-supplied secret in the whole file. Sealed like any other x-secret, so it
+    # never reaches the values repo, and never reaches Turnstone's database either -- the model
+    # definition stores the literal \${ANTHROPIC_API_KEY} and Turnstone expands it from the pod
+    # environment. See TURNSTONE.md section 2.
+    anthropicApiKey: $ANTHROPIC_API_KEY
 EOF
+chmod 0600 values.yaml
 helm install -f values.yaml apl ./chart/apl
 
 # 8. watch
@@ -518,7 +582,44 @@ Re-run it whenever `values-schema.yaml` changes. It is Docker-only and needs no 
 
 ## 7. Install ✅
 
-The `values.yaml` from the Quickstart. Six things in it are load-bearing:
+The `values.yaml` from the Quickstart. Eight things in it are load-bearing:
+
+- ⛔ **`apps.cert-manager.customRootCA` + `customRootCAKey`** ✅ — required for Turnstone, and
+  required *before* the install. Leave them empty and `createCustomCA` in `src/cmd/bootstrap.ts`
+  generates a root CA that is RSA-2048, SHA-1, and carries **no `subjectKeyIdentifier`**. Go's
+  `x509.CreateCertificate` derives a leaf's `authorityKeyIdentifier` from the parent's
+  `subjectKeyIdentifier`, so cert-manager then issues leaves without one — and Python 3.13+ sets
+  `VERIFY_X509_STRICT` on every default SSL context, under which OpenSSL 3.5 rejects such a chain
+  with `Missing Authority Key Identifier`. Turnstone's OIDC discovery against Keycloak fails, and
+  the pod looks perfectly healthy with no sign-in button.
+
+  Two things make this hard to find. `openssl verify` reports the same chain as `OK`, because the
+  CLI does not apply the strict flag — so every command-line check anyone would think to run says
+  the certificate is fine. And Go apps (Gitea, Vikunja, Argo CD) never notice at all.
+
+  ⛔ **Never retrofit this onto a bootstrapped cluster.** `customRootCAKey` is an `x-secret` but
+  `customRootCA` is not, so on a re-bootstrap the new *key* wins through `generateSecrets` while the
+  old *certificate* survives in `storedSecrets` (read back from `otomi-generated-passwords`) and
+  overrides yours on disk. The result is a mismatched pair, a dead `ClusterIssuer custom-ca`, and
+  the wrong CA distributed to all 14 consumers of `_derived.caCert`. Recreate the cluster instead.
+
+  Also note `bootstrap.ts` tests `if (cm.customRootCA && cm.customRootCAKey)` — supply only one and
+  it silently generates its own and discards yours. Keep the key RSA; nothing in-tree exercises an
+  elliptic-curve CA. Full account in `TURNSTONE.md` §3.
+
+- **`apps.turnstone.anthropicApiKey`** ✅ — the only value in this file that the platform cannot
+  generate for you, and the only one you have to go and fetch. It is an `x-secret` with a blank
+  value, which is what marks a secret as operator-supplied rather than generated
+  (`src/common/values.ts` removes blank ones from the generation template, so the only remaining
+  source is your input). It follows the same path as `dns.provider.linode.apiToken`: sealed into
+  `apl-secrets/turnstone-secrets`, stripped from the values repo, and surfaced to the pod through an
+  ExternalSecret.
+
+  It never reaches Turnstone's database either — the model definition stores the literal
+  `${ANTHROPIC_API_KEY}` and Turnstone expands it from the pod environment when it builds its model
+  registry. Omit it and the install still completes and SSO still works, but both Turnstone pods
+  stay in `CreateContainerConfigError` because the ExternalSecret has nothing to sync. If you do not
+  have a key, set `apps.turnstone.enabled: false` rather than leaving the field blank.
 
 - **`apps.gitea.enabled` / `apps.harbor.enabled`** ⬜ — both default to `false`
   (`helmfile.d/snippets/defaults.yaml`), so without these two lines the platform installs without
@@ -1098,6 +1199,151 @@ timeout, not as a refusal.** A wrong port that is closed gives `ECONNREFUSED` im
 nothing listens on gives silence until a timeout fires, and most clients report that as an
 uninformative wrapper like `fetch failed`. When a client hangs and then reports nothing useful,
 check the port against `kubectl get svc -o jsonpath='{.spec.ports}'` before anything else.
+
+## 11. Turnstone ⬜
+
+Only relevant on `feat/turnstone-integration`. The design, the reasoning and everything that *was*
+measured live in `TURNSTONE.md`; this is the check list.
+
+⬜ **None of this section has been executed against a clean install.** That is a deliberate,
+honest mark, and it is broader than it looks: steps 6b and 6c replace the lab's root CA, so the whole
+bring-up above now runs on a path that has not been re-verified end to end either. Treat every ✅ in
+this file as "was true before the CA change".
+
+What *is* proven, all of it before any Helm was written:
+
+| Proven ✅ | How |
+|---|---|
+| the full suite passes with Turnstone enabled | clean-context `docker build`; all four releases lint, `validate-values`, `validate-templates`, `bootstrap-dev` |
+| the chart renders correct manifests | `helm template` with the values `turnstone.gotmpl` produces; every added hook diffed with and without |
+| `[models.*]` loads and `${ANTHROPIC_API_KEY}` expands from the environment | ran the registry loader in the real image; got `source: 'config'` and the expanded key |
+| the `name =` vs `model =` trap is real | reproduced live: `has no model name, skipping` → empty registry |
+| a root CA with `subjectKeyIdentifier` makes cert-manager emit `authorityKeyIdentifier` | cert-manager v1.21.1, throwaway namespace in the running lab |
+| the concatenated CA bundle keeps `api.anthropic.com` reachable | 151-cert bundle; Anthropic returns 401 (TLS fine), platform CA alone breaks it |
+| `turnstone-admin create-admin` is idempotent | ran twice against SQLite: *"is already an admin … no change"* |
+
+What is **not** proven, and is exactly what this section is for: the install itself, the bootstrap
+Job's in-cluster `kubectl exec`, a real OIDC login, the `/metrics` redirect, role mapping writing
+real rows, and one real agent turn against the Claude API.
+
+```bash
+# Derive the domain from Turnstone's own route -- never from an unrelated app's, which may be off.
+D=$(kubectl get httproute turnstone -n turnstone -o jsonpath='{.spec.hostnames[0]}' | sed 's/^turnstone\.//')
+[ -n "$D" ] || echo "D is empty -- nothing below will work" >&2
+
+# 1. the app itself
+kubectl get pods -n turnstone                       # server + console Running; migrate Job Completed
+kubectl get cluster -n turnstone                    # CNPG, expect Cluster in healthy state
+kubectl get externalsecrets -n turnstone            # all 4 SecretSynced
+kubectl get jobs -n turnstone                       # turnstone-bootstrap-admin, 1/1 Complete
+```
+
+⚠ If both pods are in `CreateContainerConfigError`, check `turnstone-anthropic-key` first — a
+missing or blank `apps.turnstone.anthropicApiKey` leaves that ExternalSecret with nothing to sync,
+and the `secretKeyRef` then blocks the pod. That is step 6c, not a platform fault.
+
+### 2. The certificate chain — check this before blaming OIDC ⬜
+
+The single most likely thing to be wrong, and the reason for steps 6b and 6c. Both must pass, from
+inside the pod:
+
+```bash
+kubectl exec -n turnstone deploy/turnstone-console -- python -c \
+  "import httpx,os;print(httpx.get(os.environ['TURNSTONE_OIDC_ISSUER']+'/.well-known/openid-configuration').status_code)"
+# expect 200. "Missing Authority Key Identifier" means the root CA has no subjectKeyIdentifier --
+# step 6b was skipped, or was retrofitted onto an already-bootstrapped cluster.
+
+kubectl exec -n turnstone deploy/turnstone-console -- python -c \
+  "import httpx;print(httpx.get('https://api.anthropic.com/v1/models').status_code)"
+# expect 401 -- that is a PASS: TLS worked and only the key was rejected on that unauthenticated
+# call. An SSLCertVerificationError here means the CA bundle replaced the public roots instead of
+# being concatenated onto them.
+```
+
+⚠ **Do not verify this with `openssl` on the host.** `openssl verify` does not apply
+`VERIFY_X509_STRICT` and reports the broken chain as `OK`. Only Python sees the problem.
+
+### 3. The model registry ⬜
+
+A missing model is silent — a healthy pod, a working UI, and no model:
+
+```bash
+for d in turnstone-server turnstone-console; do
+  kubectl logs -n turnstone deploy/$d | grep -iE 'no model name, skipping|empty registry|world-readable'
+done
+# any output is a failure; "no model name, skipping" is the model=/name= trap
+kubectl get cm turnstone-model-config -n turnstone -o jsonpath='{.data.config\.toml}'
+# expect `model = "claude-sonnet-5"` and api_key = "${ANTHROPIC_API_KEY}" -- the LITERAL string,
+# never the real key. If the real key is in here, something templated it wrongly.
+```
+
+### 4. The admin account, and why `Job Complete` is not enough ⬜
+
+`turnstone-bootstrap-admin` exists because OIDC login is refused outright while the user count is
+zero, so SSO cannot bootstrap itself. The Job reports `Complete` on a re-run that did nothing, so
+test the effect:
+
+```bash
+kubectl exec -n turnstone deploy/turnstone-console -- turnstone-admin list-users
+# expect apl-turnstone-admin
+```
+
+### 5. The tile ⬜
+
+Empty output means step 5b did not land, and no amount of `core.yaml` will help:
+
+```bash
+curl -sk -H "Authorization: Bearer $ID_TOKEN" "https://api.$D/v1/apps" | jq '.[] | select(.id=="turnstone")'
+```
+
+For an `ID_TOKEN`, see section 9 — the `otomi` client has `directAccessGrantsEnabled`, but the
+client secret in `otomi-generated-passwords` does **not** authenticate; read it from the Keycloak
+admin API.
+
+### 6. Role mapping ⬜
+
+After a real SSO login:
+
+```bash
+kubectl exec -n turnstone turnstone-db-1 -c postgres -- psql -U postgres -d turnstone \
+  -c 'select u.username, ur.role_id, ur.assigned_by from user_roles ur join users u on u.id=ur.user_id;'
+```
+
+`assigned_by='oidc'` is claim-mapped and correct. `'oidc-default'` means the claim matched nothing
+and the user fell back to `builtin-viewer` — which almost always means the Keycloak mapper is not
+putting `groups` in the **ID token** (the access token is not enough), or the realm role name does
+not match `team-<teamId>`.
+
+### 7. Browser checks ⬜
+
+No command substitutes for these. Steps 4 and 9 are the ones that matter.
+
+| # | Do this | Expect |
+|---|---|---|
+| 1 | `https://console.$D`, sign in as a platform admin | loads; browser prompts once to trust the **new** CA |
+| 2 | **Apps → Admin Apps** | a **Turnstone** tile with a logo. Broken image = `apl-console` patch missing; no tile = `apl-api` patch missing |
+| 3 | click it | new tab on `https://turnstone.$D`, Turnstone login page |
+| 4 | look at the login page | an **otomi-idp** button beside the password form. **No button = OIDC discovery failed** — go back to check 2 |
+| 5 | click it | Keycloak → `/v1/api/auth/oidc/callback` → signed in, account auto-created |
+| 6 | open **Admin / Settings** | reachable, not 403 — confirms `platform-admin` → `builtin-admin` |
+| 7 | **Models** tab | one enabled `claude-sonnet-5`, provider `anthropic`, sourced from **config**; key masked. An empty list is the `model =` trap |
+| 8 | **Users** tab | your SSO user plus `apl-turnstone-admin` |
+| 9 | new session, *"In one sentence, what are you?"* | a streamed reply. **The end-to-end proof of the API key**: Secret → env → `${ANTHROPIC_API_KEY}` → `api.anthropic.com`. A 401 or "no models available" means the key is wrong |
+| 10 | *"list the files in your working directory"* | an **approval prompt** blocks first. No prompt means `tools.skip_permissions` got flipped on — turn it back off |
+| 11 | leave a session idle 2–3 min | stream stays up, no reconnect loop — SSE survives the Istio gateway |
+| 12 | sign in as a team member, not an admin | chat works, **Admin/Settings 403** — confirms `team-<id>` → `builtin-operator` |
+| 13 | `https://turnstone.$D/metrics` in a private window | redirected, not a Prometheus dump |
+
+### What to expect to go wrong first ⬜
+
+In rough order of likelihood, with the check that distinguishes each:
+
+1. **No sign-in button.** Certificate chain — section 2 above, not Keycloak.
+2. **Pods in `CreateContainerConfigError`.** The API key is missing; step 6c.
+3. **Empty Models tab.** The `model =` vs `name =` trap; section 3.
+4. **Bootstrap Job burning retries** with `container not found`. The `kubectl wait` init container
+   should prevent it; if it fires anyway the console never became Available.
+5. **Everyone lands on `builtin-viewer`.** The `groups` claim is not in the ID token; section 6.
 
 ## Changing values after install
 
