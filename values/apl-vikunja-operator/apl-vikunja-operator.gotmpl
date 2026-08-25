@@ -1,0 +1,22 @@
+{{- $v := .Values }}
+{{- $o := $v.apps | get "apl-vikunja-operator" }}
+{{- $version := $v.versions.tasks }}
+{{- $isSemver := regexMatch "^[0-9.]+" $version }}
+image:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-tasks"
+  {{- end }}
+  tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
+  pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+
+resources: {{- toYaml $o.resources.operator | nindent 2 }}
+
+env:
+  VIKUNJA_URL: http://vikunja.vikunja
+  VIKUNJA_URL_PORT: '3456'
+  VIKUNJA_OPERATOR_NAMESPACE: apl-vikunja-operator

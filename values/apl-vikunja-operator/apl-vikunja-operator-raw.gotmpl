@@ -1,0 +1,51 @@
+{{- $v := .Values }}
+{{- $k := $v.apps.vikunja }}
+{{- $kc := $v.apps.keycloak }}
+{{- $teamConfig := dict }}
+{{- range $teamId, $team := $v.teamConfig }}
+  {{- $_ := set $teamConfig $teamId dict }}
+{{- end }}
+{{- $teamConfig := $teamConfig | toJson }}
+
+resources:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: apl-vikunja-operator-cm
+      namespace: apl-vikunja-operator
+    data:
+      domainSuffix: "{{ $v.cluster.domainSuffix }}"
+      teamConfig: {{ $teamConfig | toJson }}
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: apl-vikunja-operator-secret
+      namespace: apl-vikunja-operator
+    spec:
+      refreshInterval: 1m
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: apl-vikunja-operator-secret
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            vikunjaUsername: {{ $k.adminUsername }}
+            vikunjaPassword: '{{ "{{ .vikunjaPassword | toString }}" }}'
+            {{/* Membership is read from the Keycloak group of the same name as the
+                 platform team -- see the apl-keycloak-operator secret for the same
+                 admin credential and the same master-realm admin-cli grant. */}}
+            keycloakAdmin: {{ $kc.adminUsername }}
+            keycloakAdminPassword: '{{ "{{ .keycloakAdminPassword | toString }}" }}'
+            keycloakUrl: {{ printf "https://keycloak.%s" $v.cluster.domainSuffix }}
+      data:
+        - secretKey: vikunjaPassword
+          remoteRef:
+            key: vikunja-secrets
+            property: adminPassword
+        - secretKey: keycloakAdminPassword
+          remoteRef:
+            key: otomi-secrets
+            property: adminPassword

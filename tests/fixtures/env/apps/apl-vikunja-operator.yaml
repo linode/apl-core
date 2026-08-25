@@ -1,0 +1,13 @@
+kind: AplApp
+metadata:
+    name: apl-vikunja-operator
+spec:
+    _rawValues: {}
+    resources:
+        operator:
+            limits:
+                cpu: 500m
+                memory: 512Mi
+            requests:
+                cpu: 50m
+                memory: 128Mi
