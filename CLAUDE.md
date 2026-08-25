@@ -8,7 +8,7 @@ that cost a full session to find.
 
 ## What the documents in here are for
 
-Four fork-only documents, none intended for upstream. They have different jobs, and reading the
+Five fork-only documents, none intended for upstream. They have different jobs, and reading the
 wrong one for the task wastes a session.
 
 | File | What it is | Read it when |
@@ -18,6 +18,7 @@ wrong one for the task wastes a session.
 | `INTEGRATING-AN-APP.md` | a generic playbook: add any third-party app as a platform app | you are asked to integrate a new app |
 | `VIKUNJA.md` | the worked example behind that playbook — a record of one real integration | you need the concrete detail a rule in the playbook is abbreviating |
 | `TURNSTONE.md` | a second worked example — an app needing an upstream LLM API, and the certificate trap that came with it | your app is not a Go web app, or anything TLS fails in a way `openssl` says is fine |
+| `UPSTREAM-SYNC.md` | an executable runbook: pull new commits from `linode/apl-core` into this fork | you are asked to merge in, sync with, or catch up on upstream |
 
 The distinction that matters: **`SETUP.md` and `INTEGRATING-AN-APP.md` are instructions to follow.
 `VIKUNJA.md` is evidence, not a plan** — its work is already done and on `feat/vikunja-integration`.
@@ -46,6 +47,14 @@ You are being asked to integrate a new app, usually as "read this file and integ
 `<repo-url>` the same way Vikunja was". Read the whole file before writing anything: **the order of
 the phases is the content**, and most of the cost in the integration it generalizes came from doing
 those steps in a different order. It also tells you which phases your app does not need.
+
+## The task, if you were pointed at UPSTREAM-SYNC.md
+
+You are being asked to pull in commits from upstream (`linode/apl-core`) that landed while this fork
+kept doing its own work. Follow `UPSTREAM-SYNC.md` top to bottom: it names the exact fork point, the
+files most likely to conflict and why the fork touched them, and why the merge must not be a rebase
+(this fork's feature branches are built on `main` and rebasing it would orphan them). Do not try to
+reconstruct that file list from `git log` yourself before reading it — it is already there.
 
 ## The task, if you were pointed at VIKUNJA.md or TURNSTONE.md
 
