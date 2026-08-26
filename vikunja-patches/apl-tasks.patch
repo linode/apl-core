@@ -13,11 +13,12 @@ index 062e5dc..b02330d 100644
    "standard-version": {
 diff --git a/src/operators/vikunja/lib/client.ts b/src/operators/vikunja/lib/client.ts
 new file mode 100644
-index 0000000..84dc5b7
+index 0000000..8029bdb
 --- /dev/null
 +++ b/src/operators/vikunja/lib/client.ts
-@@ -0,0 +1,129 @@
+@@ -0,0 +1,161 @@
 +import { VikunjaTeam, VikunjaTeamMember } from './types/teams'
++import { VikunjaProject, VikunjaTeamProjectShare, VikunjaTeamProjectShareRequest } from './types/projects'
 +
 +/**
 + * Minimal Vikunja API client.
@@ -119,6 +120,37 @@ index 0000000..84dc5b7
 +   */
 +  async toggleTeamMemberAdmin(teamId: number, username: string): Promise<void> {
 +    await this.request<unknown>('POST', `/teams/${teamId}/members/${encodeURIComponent(username)}/admin`)
++  }
++
++  async listProjects(): Promise<VikunjaProject[]> {
++    const projects = await this.request<VikunjaProject[] | null>('GET', '/projects?per_page=500')
++    return projects ?? []
++  }
++
++  async createProject(project: VikunjaProject): Promise<VikunjaProject> {
++    return this.request<VikunjaProject>('PUT', '/projects', project)
++  }
++
++  async listProjectTeams(projectId: number): Promise<VikunjaTeamProjectShare[]> {
++    const teams = await this.request<VikunjaTeamProjectShare[] | null>('GET', `/projects/${projectId}/teams`)
++    return teams ?? []
++  }
++
++  /**
++   * Shares a project with a team at a fixed permission level (0 = Read, 1 = Read & Write,
++   * 2 = Admin). This is a single project<->team relation, not per-member -- Vikunja has no
++   * per-member permission when sharing at the team level, see `models.TeamProject` in its
++   * swagger. Callers that need finer-grained roles must fall back to per-user project shares.
++   */
++  async shareProjectWithTeam(
++    projectId: number,
++    teamId: number,
++    permission: number,
++  ): Promise<VikunjaTeamProjectShareRequest> {
++    return this.request<VikunjaTeamProjectShareRequest>('PUT', `/projects/${projectId}/teams`, {
++      team_id: teamId,
++      permission,
++    })
 +  }
 +}
 +
@@ -258,6 +290,86 @@ index 0000000..287fae3
 +    result[name] = members.map((m) => m.username).filter((u): u is string => !!u)
 +  }
 +  return result
++}
+diff --git a/src/operators/vikunja/lib/managers/vikunja-projects.ts b/src/operators/vikunja/lib/managers/vikunja-projects.ts
+new file mode 100644
+index 0000000..10095e5
+--- /dev/null
++++ b/src/operators/vikunja/lib/managers/vikunja-projects.ts
+@@ -0,0 +1,74 @@
++import { VikunjaClient } from '../client'
++import { errors } from '../globals'
++import { VikunjaProject } from '../types/projects'
++import { VikunjaTeam } from '../types/teams'
++
++export const projectTitle = (teamId: string): string => `team-${teamId}`
++
++// Read & Write. Sharing at the team level gives every member of the team the same permission --
++// Vikunja's project<->team relation carries one permission, not one per member (see
++// `models.TeamProject`) -- so this is a deliberate simplification, not a limitation of the
++// operator. A platform that needs PO/Developer-style per-role permissions on the project itself
++// would need two Vikunja teams per platform team instead of one.
++const TEAM_PROJECT_PERMISSION = 1
++
++/**
++ * Creates the Vikunja project for every platform team, one project per team, named to match its
++ * team (`team-<id>`). Existing projects are left alone -- same idempotency shape as
++ * `upsertTeams`, so this is safe to call every reconcile.
++ */
++export async function upsertProjects(client: VikunjaClient, teamIds: string[]): Promise<Map<string, VikunjaProject>> {
++  const byTitle = new Map<string, VikunjaProject>()
++  let existing: VikunjaProject[]
++  try {
++    console.info('Getting all Vikunja projects')
++    existing = await client.listProjects()
++  } catch (e) {
++    errors.push(`Error getting all Vikunja projects: ${e}`)
++    return byTitle
++  }
++  for (const project of existing) byTitle.set(project.title, project)
++
++  for (const teamId of teamIds) {
++    const title = projectTitle(teamId)
++    if (byTitle.has(title)) continue
++    try {
++      console.info(`Creating Vikunja project "${title}"`)
++      const created = await client.createProject({ title, description: `Demo project for team ${teamId}` })
++      byTitle.set(title, created)
++    } catch (e) {
++      errors.push(`Error creating Vikunja project "${title}": ${e}`)
++    }
++  }
++  return byTitle
++}
++
++/**
++ * Ensures a project is shared with its matching team at `TEAM_PROJECT_PERMISSION`. Idempotent --
++ * re-reads the project's current team shares first and does nothing if already correct, the same
++ * "check before write" shape every other manager in this operator uses.
++ */
++export async function ensureProjectSharedWithTeam(
++  client: VikunjaClient,
++  project: VikunjaProject,
++  team: VikunjaTeam,
++): Promise<void> {
++  if (!project.id || !team.id) return
++  let current: Awaited<ReturnType<VikunjaClient['listProjectTeams']>>
++  try {
++    current = await client.listProjectTeams(project.id)
++  } catch (e) {
++    errors.push(`Error reading teams shared with Vikunja project "${project.title}": ${e}`)
++    return
++  }
++  // `GET /projects/{id}/teams` embeds the shared team's own object -- its `id` is the team id,
++  // not a `team_id` field (that name is only used in the PUT request body). Confirmed live.
++  const alreadyShared = current.some((share) => share.id === team.id && share.permission === TEAM_PROJECT_PERMISSION)
++  if (alreadyShared) return
++  try {
++    console.info(`Sharing Vikunja project "${project.title}" with team "${team.name}"`)
++    await client.shareProjectWithTeam(project.id, team.id, TEAM_PROJECT_PERMISSION)
++  } catch (e) {
++    errors.push(`Error sharing Vikunja project "${project.title}" with team "${team.name}": ${e}`)
++  }
 +}
 diff --git a/src/operators/vikunja/lib/managers/vikunja-teams.ts b/src/operators/vikunja/lib/managers/vikunja-teams.ts
 new file mode 100644
@@ -400,6 +512,32 @@ index 0000000..31b5d92
 +    }
 +  }
 +}
+diff --git a/src/operators/vikunja/lib/types/projects.ts b/src/operators/vikunja/lib/types/projects.ts
+new file mode 100644
+index 0000000..11ea724
+--- /dev/null
++++ b/src/operators/vikunja/lib/types/projects.ts
+@@ -0,0 +1,20 @@
++export interface VikunjaProject {
++  id?: number
++  title: string
++  description?: string
++}
++
++// The body PUT /projects/{id}/teams expects to create a share.
++export interface VikunjaTeamProjectShareRequest {
++  team_id: number
++  permission: number
++}
++
++// What GET /projects/{id}/teams actually returns: the shared team's own object (its own `id`,
++// not `team_id`), with the share's `permission` folded in as an extra field. Confirmed live
++// against Vikunja 2.5.0 -- the read and write shapes are not the same DTO.
++export interface VikunjaTeamProjectShare {
++  id: number
++  name: string
++  permission: number
++}
 diff --git a/src/operators/vikunja/lib/types/teams.ts b/src/operators/vikunja/lib/types/teams.ts
 new file mode 100644
 index 0000000..0117a04
@@ -421,10 +559,10 @@ index 0000000..0117a04
 +}
 diff --git a/src/operators/vikunja/vikunja.ts b/src/operators/vikunja/vikunja.ts
 new file mode 100644
-index 0000000..85eba33
+index 0000000..5713030
 --- /dev/null
 +++ b/src/operators/vikunja/vikunja.ts
-@@ -0,0 +1,230 @@
+@@ -0,0 +1,235 @@
 +/* eslint-disable no-console */
 +import Operator, { ResourceEventType } from '@linode/apl-k8s-operator'
 +import retry from 'async-retry'
@@ -440,6 +578,7 @@ index 0000000..85eba33
 +const ALL_TEAMS_ADMIN_GROUP = 'all-teams-admin'
 +const TEAM_ADMIN_GROUP = 'team-admin'
 +import { reconcileMembers, teamName, upsertTeams } from './lib/managers/vikunja-teams'
++import { ensureProjectSharedWithTeam, projectTitle, upsertProjects } from './lib/managers/vikunja-projects'
 +
 +const VIKUNJA_ENDPOINT = `${vikunjaEnv.VIKUNJA_URL}:${vikunjaEnv.VIKUNJA_URL_PORT}`
 +
@@ -588,6 +727,7 @@ index 0000000..85eba33
 +  await client.login()
 +
 +  const teamsByName = await upsertTeams(client, env.teamNames)
++  const projectsByTitle = await upsertProjects(client, env.teamNames)
 +
 +  const credentials: KeycloakCredentials = {
 +    baseUrl: env.keycloakUrl,
@@ -630,6 +770,9 @@ index 0000000..85eba33
 +    const admins = new Set<string>(globalAdmins)
 +    for (const username of teamMembers) if (teamAdmins.has(username)) admins.add(username)
 +    await reconcileMembers(client, team, expected, env.vikunjaUsername, admins)
++
++    const project = projectsByTitle.get(projectTitle(teamId))
++    if (project) await ensureProjectSharedWithTeam(client, project, team)
 +  }
 +
 +  if (errors.length) {

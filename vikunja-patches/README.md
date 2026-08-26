@@ -67,6 +67,21 @@ project.
 
 ## apl-tasks — needed only for team sync
 
+**The operator also syncs one Vikunja project per team, shared with the matching Vikunja team at
+Read & Write.** `src/operators/vikunja/lib/managers/vikunja-projects.ts` — `upsertProjects`
+creates a project titled `team-<id>` per platform team (same idempotent check-before-create shape
+as `upsertTeams`), and `ensureProjectSharedWithTeam` shares it with the matching Vikunja team.
+Sharing is at the team level, not per-member — Vikunja's `PUT /projects/{id}/teams` takes one
+`permission` for the whole team (`models.TeamProject`), so every member of a team gets the same
+project permission; there is no per-role split at this layer. One live-verified trap: `GET
+/projects/{id}/teams` embeds the shared team's own object, so the field carrying the team id is
+`id`, not `team_id` — that name only exists in the `PUT` request body. Checking `team_id` on the
+read-back never matches, so every reconcile re-attempts an already-correct share and gets a
+harmless but noisy `409 {"code":6004,"message":"This team already has access."}`. Verified
+built and deployed live as `docker.io/linode/apl-tasks:v0.0.1-vikunja-projects` against a running
+lab (`env/settings/versions.yaml`'s `tasks` key — see `TEAM-WORKLOAD-CATALOG.md` for why that file,
+not the gitignored root `values.yaml`, is the one to edit for an already-`completed` cluster).
+
 `apl-tasks`' own `Dockerfile` cannot be used here: it runs `npm ci` against GitHub Packages, and
 GitHub Packages requires authentication **even for public packages**. Anonymous gets `403`, and so
 does a `gh` token whose scopes lack `read:packages`.
