@@ -240,29 +240,128 @@ long back-and-forth session. `npm i -g agent-browser && agent-browser install`; 
 
 ---
 
-## Not done — the real next step ⬜
+## Wiring Turnstone to these servers ✅
 
-**Wiring Turnstone itself to these servers.** Out of scope for this pass on purpose — no MCP
-client/catalog config surface was found anywhere in `charts/turnstone` or `TURNSTONE.md` before
-this work started (only an incidental comment noting the agent can spawn local npx-based MCP
-subprocesses).
+Turnstone's own "Add MCP server" UI shows what reads as three modes but is actually **four**
+distinct `auth_type` values in its schema (`turnstone/core/storage/_schema.py`,
+`turnstone/console/server.py:10304`: `_MCP_AUTH_TYPES = frozenset({"none", "static", "oauth_user",
+"oauth_obo"})`). The UI's third radio label concatenates two of them:
 
-Turnstone's own "Add MCP server" UI (seen directly, not yet explored hands-on) exposes a
-**multitenant authorization** setting with three modes — this maps cleanly onto everything learned
-above:
+| `auth_type` | UI label | What it actually does |
+|---|---|---|
+| `none` | "No authorization" | No auth header — not useful here, both servers need a credential |
+| `static` | "Static headers — single shared identity" | Operator pastes a literal header (e.g. `Authorization: Bearer <token>`) into the form. Stored **as plaintext JSON** in `mcp_servers.headers` — no encryption, unlike the OAuth token columns. Sent unchanged on every call. |
+| `oauth_user` | "Per-user OAuth 2.1 (recommended)" | Turnstone is a genuine OAuth 2.1 client **against the target MCP server's own authorization server** — RFC 9728 protected-resource discovery, RFC 8414 AS metadata, PKCE, optional RFC 7591 dynamic client registration, per-user consent, its own refresh tokens (`turnstone/core/mcp_oauth.py`). |
+| `oauth_obo` | "Sign-in passthrough — uses your org login, no separate connect" | Redeems the user's **captured Keycloak/Entra login** from Turnstone's own SSO callback via RFC 8693 token-exchange **against Turnstone's own OIDC issuer**, audience-scoped to the target server's registered client id, and Bearer's that minted token downstream. Never talks to the target server's OAuth endpoints at all. |
 
-- **No authorization** — not useful here; both servers need *some* credential for anything beyond
-  `initialize`.
-- **Static headers, single shared identity** — exactly the Bot Account / PAT pattern proven in
-  this doc. One credential, attributed to one identity (a bot, or a PAT-holding human), used for
-  every call regardless of which Turnstone user triggered it.
-- **Per-user OAuth 2.1, "sign-in passthrough uses your org login — no separate connect"** — this is
-  the interesting one, and likely the actual answer to "log into Turnstone via Keycloak and have
-  it act on my behalf." **It would not use Keycloak directly** — we've proven Keycloak tokens don't
-  work against either app. It would only work if `gitea-mcp` and/or Vikunja itself expose their
-  *own* OAuth 2.1 authorization-server metadata (per the MCP spec's authorization extension) for
-  Turnstone to discover and drive automatically. Both apps **can** act as their own OAuth
-  providers in principle (Gitea has a documented "OAuth2 Provider" mode for third-party apps;
-  Vikunja "can act as an OAuth 2.0 Authorization Server" with mandatory PKCE, S256) — but whether
-  `gitea-mcp` surfaces that through MCP's OAuth flow, and whether it's worth enabling on Vikunja's
-  side for this, has not been checked. That's the real next investigation, not a config tweak.
+The key finding: **both OAuth modes require the downstream MCP server to be an OAuth-aware
+resource server**, and neither `gitea-mcp` nor `vikunja-mcp` is one.
+
+- `oauth_user` needs the target to expose `WWW-Authenticate: resource_metadata=...` on a 401, plus
+  real AS discovery/token endpoints. `gitea-mcp` and `vikunja-mcp` are small stateless proxies —
+  neither does this.
+- `oauth_obo` needs the target to accept a token minted by *our Keycloak*, audience-scoped to that
+  server. Already proven, twice, earlier in this doc: neither app's API accepts a raw
+  Keycloak-issued token, regardless of audience/scope framing.
+
+So your original hope — "log into Turnstone via Keycloak and have it act on my behalf using the
+token Keycloak minted for me" — is architecturally sound as a *Turnstone* feature (`oauth_obo`
+exists, does exactly that exchange), but hits the same wall this whole doc is about: **the app on
+the other end has to be able to validate that token, and today neither Gitea nor Vikunja can.**
+Making `oauth_user` work would mean turning on Gitea's own "OAuth2 Provider" role and/or Vikunja's
+own OAuth 2.0 Authorization Server support (both exist, per their docs, unexplored here) so
+Turnstone has a real per-app authorization server to discover and drive. That's a real project, not
+a config tweak — building an OAuth resource-server layer in front of two apps that don't have one
+wired up for this yet.
+
+**What was actually registered and proven live**, via Turnstone's admin REST API
+(`/v1/api/admin/mcp-servers`, no browser needed — log in with `POST /v1/api/auth/login` using the
+`turnstone-admin-credentials` Secret, then `POST` a server definition with a Bearer JWT):
+
+```bash
+curl -sk -X POST https://turnstone.<domain>/v1/api/admin/mcp-servers \
+  -H "Authorization: Bearer $JWT" -H "Content-Type: application/json" \
+  -d '{"name":"gitea","transport":"streamable-http",
+       "url":"http://gitea-mcp.gitea.svc.cluster.local:8090/mcp",
+       "auth_type":"static",
+       "headers":{"Authorization":"Bearer <gitea PAT>"}, "enabled":true}'
+```
+
+- **Gitea, `auth_type: static`, `platform-admin`'s Gitea PAT: works.** `GET
+  /v1/api/admin/mcp-servers` shows `"connected": true, "tools": 54"` on every server node
+  immediately after registration — no code changes needed, the existing NetworkPolicy
+  (`charts/apl-network-policies/templates/networkpolicies/gitea.yaml`) already allows the
+  `turnstone` namespace.
+- **Vikunja, `auth_type: static`, the bot's Vikunja API token: registered, but failed to connect**
+  — see the SDK-version bug below. Not a credential/auth-mode problem; `initialize` itself
+  succeeds.
+
+**Minting fresh app-native tokens without a browser, revisited.** The earlier sections of this doc
+used a browser because the *original* tokens were never persisted (shown once at creation, by
+design). This time, faster non-browser paths exist for each app, worth knowing for next time:
+
+- **Gitea**: its own CLI, run inside the pod, mints a PAT for any existing user non-interactively —
+  `kubectl exec -n gitea deploy/gitea -c gitea -- gitea admin user generate-access-token -u
+  <username> -t <token-name> --scopes <comma-list> --raw`. No login flow at all. Gitea usernames
+  are derived from the OIDC `nickname` claim (`values/gitea/gitea.gotmpl`'s
+  `oauth2_client.USERNAME: nickname`) — check `gitea admin user list` for the exact string
+  (`platform-admin`'s login became `platform-admin-172-18-255-200-nip-io`).
+- **Vikunja**: no CLI equivalent for bot tokens. `vikunja user reset-password <id> --direct
+  --password <pw>` *succeeds* on any account including OIDC-linked ones, but Vikunja's own
+  `/api/v1/login` then refuses it: `{"code":1021,"message":"This account is managed by a
+  third-party authentication provider."}` — the CLI resets the password hash, but the login
+  handler still gate-checks the account's `issuer` column and blocks local auth for anything not
+  `issuer: local`. Bot accounts *are* `issuer: local` (confirmed via `vikunja user list`), but
+  Vikunja separately refuses interactive login for any bot: `{"code":1031,"message":"This account
+  is a bot and cannot log in interactively."}`. A bot's token can only be minted by its *owner*
+  logging in normally (browser/OIDC) and calling `/api/v1/user/bots` (confirmed to exist — returns
+  401 unauthenticated, not 404) — there is no fully non-interactive path found for this specific
+  case. In the end the fastest route was generating both tokens directly in each app's own UI by
+  hand and pasting them in, which is a perfectly legitimate way to mint these credentials.
+
+### The Vikunja MCP connection bug, and the fix
+
+`vikunja-mcp` registered fine but never connected. Turnstone's server logs showed a session
+established, protocol negotiated as `2025-11-25`, then an immediate 400 on the very next request:
+
+```
+httpx.HTTPStatusError: Client error '400 Bad Request' for url
+'http://vikunja-mcp.vikunja.svc.cluster.local:8090/mcp'
+```
+
+Reproduced directly against the pod with a throwaway `curl` pod (`kubectl run ... --image
+curlimages/curl ... --rm`), bypassing Turnstone entirely:
+
+- `initialize` **echoes back whatever `protocolVersion` the client sent**, unconditionally — sent
+  `2025-11-25`, got `2025-11-25` back; sent `2025-06-18`, got `2025-06-18` back. No real
+  negotiation happens at that layer.
+- The very next request (`notifications/initialized`, or the SSE `GET`) hits a *different* layer
+  that actually validates the version, and rejects `2025-11-25`: `{"error":{"message":"Bad
+  Request: Unsupported protocol version (supported versions: 2025-06-18, 2025-03-26, 2024-11-05,
+  2024-10-07)"}}`.
+
+Root cause: **two separate copies of `@modelcontextprotocol/sdk` inside the image, at different
+versions.** `vikunja-mcp/Dockerfile` built `FROM supercorp/supergateway:latest` — a pre-built
+Docker image with `supergateway`'s own `node_modules` already baked in from whenever supercorp last
+published it. That baked-in `@modelcontextprotocol/sdk` was `1.19.1` (its Streamable HTTP transport
+is the layer that validates and rejects `2025-11-25`). `@democratize-technology/vikunja-mcp`,
+installed fresh at *our* build time, resolved its own separate copy of the same SDK to whatever was
+current — `1.30.0`, which is where the (buggy, unconditional) `initialize` echo comes from.
+Turnstone's MCP client correctly requests the current spec version (`2025-11-25`); the older SDK
+inside supergateway's baked layer has never heard of it.
+
+**Fix**: stop inheriting a pre-baked `supergateway` image. Build `vikunja-mcp/Dockerfile` `FROM
+node:22-slim` and `npm install -g supergateway@3.4.3
+@democratize-technology/vikunja-mcp@0.2.0` in the same layer, at our own build time — this resolves
+supergateway's `@modelcontextprotocol/sdk` dependency (declared as `^1.18.2`) to current-latest the
+same way vikunja-mcp's own install does, closing the version gap between the two copies. Verified
+in a throwaway `node:22-slim` pod before rewriting the Dockerfile:
+`npm install -g supergateway@latest` alone resolves its nested SDK to `1.30.0`, matching
+vikunja-mcp's. Image rebuilt as `vikunja-mcp-local:0.2.1`.
+
+**Lesson for next time a base image bundles its own dependency tree**: a `FROM
+<vendor>/<tool>:latest` base image is only as fresh as whenever the vendor last published it — it
+does **not** re-resolve semver ranges at *your* build time the way installing that same tool via
+`npm install` in your own Dockerfile does. If a wrapped app's own dependency on the same shared
+library (here, the MCP SDK) can outpace the wrapper image's baked-in copy, building both from
+scratch in one layer is what keeps them in step.
