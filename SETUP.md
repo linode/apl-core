@@ -692,6 +692,19 @@ The `values.yaml` from the Quickstart. Eight things in it are load-bearing:
   and Argo CD do, and needs no `path:` deep link in `core.yaml` — unlike Turnstone and Vikunja,
   which do their own OIDC.
 
+  **Docker-mode build pipelines need the pod-egress CA workaround too, and it's already baked
+  in.** `charts/team-ns/templates/builds/docker.yaml` sets `sslVerify: false` on `git-clone` and
+  `--skip-tls-verify`/`--skip-tls-verify-pull` on kaniko unconditionally, for exactly the reason
+  `POD-EGRESS-INVESTIGATION.md`'s Tekton workaround section gives — without it, every
+  console-triggered docker build fails at either the clone or the push step against this
+  platform's self-signed CA. Nothing needs doing for a fresh install: step 5's `APPS_REVISION` is
+  derived from `git rev-parse HEAD`, so any install built from a commit at or after this one gets
+  the fix automatically, baked into the operator image, with Argo CD pinned to it from the start.
+  It only needed a live rebuild-and-reload once, on a cluster whose operator image predated the
+  fix — see the git log around the `fix(team-ns)` commit if you need the forensics on why a
+  `kubectl patch` on the Application's `targetRevision` alone did not stick (the operator's
+  reconcile loop recomputes it from its own baked-in `APPS_REVISION` every cycle).
+
   Two things were checked before turning Harbor on, because both would otherwise present as
   platform failures rather than as unmet requirements:
 
