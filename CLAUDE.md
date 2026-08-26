@@ -19,7 +19,7 @@ wrong one for the task wastes a session.
 | `VIKUNJA.md` | the worked example behind that playbook — a record of one real integration | you need the concrete detail a rule in the playbook is abbreviating |
 | `TURNSTONE.md` | a second worked example — an app needing an upstream LLM API, and the certificate trap that came with it | your app is not a Go web app, or anything TLS fails in a way `openssl` says is fine |
 | `UPSTREAM-SYNC.md` | an executable runbook: pull new commits from `linode/apl-core` into this fork | you are asked to merge in, sync with, or catch up on upstream |
-| `POD-EGRESS-INVESTIGATION.md` | a record of an unsolved problem: pods cannot reach the public internet, cause unknown | you are asked to re-test whether a fresh cluster still exhibits this |
+| `POD-EGRESS-INVESTIGATION.md` | pods cannot reach the public internet, cause unknown — but has a proven, mandatory workaround for Tekton | you are building/running any Tekton pipeline, or asked to re-test the bug itself |
 
 The distinction that matters: **`SETUP.md` and `INTEGRATING-AN-APP.md` are instructions to follow.
 `VIKUNJA.md` is evidence, not a plan** — its work is already done and on `feat/vikunja-integration`.
@@ -59,13 +59,28 @@ reconstruct that file list from `git log` yourself before reading it — it is a
 
 ## The task, if you were pointed at POD-EGRESS-INVESTIGATION.md
 
-You are being asked to check whether a freshly built cluster still has the problem it records: pods
-cannot reach the public internet, for a reason that survived an exhaustive elimination pass without
-being found. Run the reproduction steps at the top of that file first — if it does not reproduce, say
-so plainly and stop; do not go looking for what "fixed" it, since nothing tracked in this repo
-changed as a result of the original investigation. The file's own "already ruled out" table exists
-so you do not re-spend a night re-testing MTU, NetworkPolicy, Istio, or any of the dozen other things
-already checked with direct evidence.
+Pods on this lab cannot reliably reach the public internet — confirmed again on a fresh cluster on
+2026-08-26, not just an old-cluster artifact. The cause is still unknown after an exhaustive
+elimination pass (see that file's "already ruled out" table); do not re-open the investigation
+without genuinely new evidence, and do not re-spend time re-testing MTU, NetworkPolicy, Istio,
+`kindnetd`/Calico NAT races, conntrack exhaustion, or any of the dozen-plus other things already
+checked with direct evidence, not just reasoned about.
+
+**If your actual goal is building or running a Tekton pipeline, you do not need to solve this — the
+workaround is proven and is not optional.** Any Dockerfile's `FROM` must resolve to an image already
+mirrored into Harbor, not a public registry — mirror it from the **host** (which has working egress)
+with `skopeo` over `--network host`, then point `FROM` at the Harbor copy. Full recipe, plus the two
+CA-trust settings every Tekton Task on this lab also needs (`git-clone`'s `sslVerify: false`,
+`kaniko`'s `EXTRA_ARGS: [--skip-tls-verify, --skip-tls-verify-pull]`), is at the top of
+`POD-EGRESS-INVESTIGATION.md` under "The workaround". Apply it by default to any pipeline you build
+here — do not treat it as a one-off hack to rediscover each time.
+
+If you *are* specifically asked to re-test whether the egress bug itself still reproduces, run the
+reproduction steps at the top of that file. If it does not reproduce, say so plainly and stop; do not
+go looking for what "fixed" it, since nothing tracked in this repo changed as a result of the
+investigation — and note that a clean "yes it reproduced" result minutes after install has already
+flipped to "no" and back to "yes" again within the same 40-minute-old cluster once, so a single
+negative result early in a session is weak evidence either way.
 
 ## The task, if you were pointed at VIKUNJA.md or TURNSTONE.md
 
