@@ -207,6 +207,9 @@ valkey:
 extraContainers:
   - name: gitea-mcp
     image: "docker.gitea.com/gitea-mcp-server:latest"
+    # The image has no ENTRYPOINT, only CMD=["/app/gitea-mcp"] -- args: alone replaces CMD
+    # entirely, so without this the kubelet tries to exec "-transport=http" as the binary.
+    command: ["/app/gitea-mcp"]
     args:
       - -transport=http
       - -host=http://localhost:3000
