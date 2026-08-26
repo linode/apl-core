@@ -67,6 +67,7 @@ on:
         description: 'Linode instance types'
         type: choice
         options:
+          - g6-dedicated-2
           - g6-dedicated-4
           - g6-dedicated-8
           - g6-dedicated-16
