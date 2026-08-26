@@ -928,6 +928,49 @@ kubectl $CTX_ARG get secret argocd-initial-admin-secret -n argocd -o jsonpath='{
 kubectl $CTX_ARG get secret git-server-credentials -n git-server -o jsonpath='{.data}'
 ```
 
+### Trust the platform CA on the kind node — required for any image pull ✅
+
+`containerd`, inside the `kind` node container, pulls images by talking straight to whatever
+registry the image reference names — Harbor, or Gitea if you ever push an OCI artifact there. It
+never gets the platform's self-signed root CA (`cert-manager`'s `custom-ca`, the same one behind the
+Python/Keycloak AKI trap in `TURNSTONE.md` §3) into its OS trust store, so every pull fails:
+
+```
+Failed to pull image "harbor.<domainSuffix>/...": failed to do request: Head "https://harbor...":
+tls: failed to verify certificate: x509: certificate signed by unknown authority
+```
+
+Confirmed live on 2026-08-26: a Workload created through the APL console stayed `Degraded` in Argo CD
+with exactly this error until this fix was applied, then a `kubectl delete pod` re-pull succeeded in
+413ms. This CA is fine for Go binaries like `containerd` (see the CA note in `CLAUDE.md` — the AKI
+problem is Python-only); it just needs to be installed. Do this once, right after credentials, since
+`custom-ca` does not exist before install completes:
+
+```bash
+kubectl $CTX_ARG get secret custom-ca -n cert-manager -o jsonpath='{.data.tls\.crt}' \
+  | base64 -d > apl-root-ca.crt
+docker cp apl-root-ca.crt apl-control-plane:/usr/local/share/ca-certificates/apl-root-ca.crt
+docker exec apl-control-plane update-ca-certificates
+docker exec apl-control-plane systemctl restart containerd
+```
+
+Verify without waiting for a real Workload:
+
+```bash
+docker exec apl-control-plane curl -sv --max-time 5 https://harbor.<domainSuffix>/v2/ 2>&1 \
+  | grep -i "certificate verify ok"
+```
+
+**Do not reach for a `skip_verify = true` `hosts.toml` under `/etc/containerd/certs.d/<domain>/`
+instead** — it was tried first and works, but only for that one exact domain (`containerd`'s
+`certs.d` does not glob; `[host."https://*"]` fails with `lookup *: no such host`, not a wildcard
+match), and it has to be redone by hand for every registry and every rebuild. Trusting the CA once
+covers every registry behind the platform's wildcard cert, permanently for that cluster's life.
+
+**This step is not persisted across `kind delete cluster`.** It patches the live node container, not
+a `kind` config file — the platform's CA does not exist until after install, so it cannot be baked
+into `kind create cluster --config`. Re-run it after every fresh install.
+
 ### Reaching the login screen ✅
 
 Verified end to end. From the host, unauthenticated:
