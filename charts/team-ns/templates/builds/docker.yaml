@@ -36,6 +36,12 @@ spec:
       value: {{ .mode.docker.repoUrl }}
     - name: revision
       value: {{ .mode.docker.revision }}
+    # The platform's self-signed CA has no Authority Key Identifier (see CLAUDE.md), which every
+    # in-cluster client this side of Go chokes on. This lab's git-init and kaniko builds are TLS
+    # clients that fail against it too, so skip verification rather than trust it -- see
+    # POD-EGRESS-INVESTIGATION.md's Tekton workaround.
+    - name: sslVerify
+      value: "false"
   {{- if .scanSource }}
   - name: grype-code-scan
     taskRef:
@@ -74,13 +80,17 @@ spec:
       value: {{ $context }}
     - name: IMAGE
       value: {{ $v.harborDomain }}/team-{{ $v.teamId }}/{{ .imageName }}:{{ .tag }}
-    {{- with (dig "mode" "docker" "envVars" nil . ) }}
+    # See the sslVerify note on fetch-source above: kaniko is a TLS client too, and needs the
+    # same skip against the platform's self-signed CA to reach Harbor and Gitea.
     - name: EXTRA_ARGS
       value:
+        - --skip-tls-verify
+        - --skip-tls-verify-pull
+        {{- with (dig "mode" "docker" "envVars" nil . ) }}
         {{- range . }}
         - --build-arg={{ .name }}={{ .value }}
         {{- end }}
-    {{- end }}
+        {{- end }}
 ---
 {{- if .trigger }}
 apiVersion: triggers.tekton.dev/v1alpha1
