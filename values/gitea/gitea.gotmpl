@@ -49,7 +49,7 @@ strategy:
 
 gitea:
   admin:
-    existingSecret: gitea-admin-secret
+    existingSecret: gitea-config
   config:
     database:
       DB_TYPE: postgres
@@ -141,15 +141,24 @@ gitea:
     - name: GITEA__CACHE__ADAPTER
       value: "redis"
     - name: GITEA__CACHE__HOST
-      value: "redis://:changeme@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&"
+      valueFrom:
+        secretKeyRef:
+          name: gitea-config
+          key: cacheUrl
     - name: GITEA__QUEUE__CONN_STR
-      value: "redis://:changeme@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&"
+      valueFrom:
+        secretKeyRef:
+          name: gitea-config
+          key: cacheUrl
     - name: GITEA__QUEUE__TYPE
       value: "redis"
     - name: GITEA__SESSION__PROVIDER
       value: "redis"
     - name: GITEA__SESSION__PROVIDER_CONFIG
-      value: "redis://:changeme@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&"
+      valueFrom:
+        secretKeyRef:
+          name: gitea-config
+          key: cacheUrl
 
 init:
   resources: {{- $g.resources.init | toYaml | nindent 4 }}

@@ -17,25 +17,30 @@ resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
-    name: gitea-admin-secret
+    name: gitea-config
   spec:
     refreshInterval: 1m
     secretStoreRef:
       name: core-secrets-store
       kind: ClusterSecretStore
     target:
-      name: gitea-admin-secret
+      name: gitea-config
       creationPolicy: Owner
       template:
         type: Opaque
         data:
           username: {{ $v.apps.gitea.adminUsername | quote }}
-          password: '{{ "{{ .adminPassword | toString }}" }}'
+          password: "{{ `{{ .adminPassword }}` }}"
+          cacheUrl: "{{ `redis://:{{ .valkeyPassword }}@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&` }}"
     data:
       - secretKey: adminPassword
         remoteRef:
-          key: gitea-secrets
+          key: gitea
           property: adminPassword
+      - secretKey: valkeyPassword
+        remoteRef:
+          key: gitea
+          property: valkeyPassword
 {{- if $v._derived.untrustedCA }}
 - apiVersion: v1
   kind: Secret
