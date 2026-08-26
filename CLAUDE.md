@@ -20,6 +20,7 @@ wrong one for the task wastes a session.
 | `TURNSTONE.md` | a second worked example — an app needing an upstream LLM API, and the certificate trap that came with it | your app is not a Go web app, or anything TLS fails in a way `openssl` says is fine |
 | `UPSTREAM-SYNC.md` | an executable runbook: pull new commits from `linode/apl-core` into this fork | you are asked to merge in, sync with, or catch up on upstream |
 | `POD-EGRESS-INVESTIGATION.md` | pods cannot reach the public internet, cause unknown — but has a proven, mandatory workaround for Tekton | you are building/running any Tekton pipeline, or asked to re-test the bug itself |
+| `MCP.md` | a record of deploying MCP servers for Gitea and Vikunja, and every credential/session trap proving them live turned up | you are touching either app's MCP server, wiring an MCP client (Turnstone or otherwise) to them, or need a platform-user credential neither app's OIDC login hands you directly |
 
 The distinction that matters: **`SETUP.md` and `INTEGRATING-AN-APP.md` are instructions to follow.
 `VIKUNJA.md` is evidence, not a plan** — its work is already done and on `feat/vikunja-integration`.
@@ -81,6 +82,22 @@ go looking for what "fixed" it, since nothing tracked in this repo changed as a 
 investigation — and note that a clean "yes it reproduced" result minutes after install has already
 flipped to "no" and back to "yes" again within the same 40-minute-old cluster once, so a single
 negative result early in a session is weak evidence either way.
+
+## The task, if you were pointed at MCP.md
+
+MCP servers for Gitea and Vikunja are already deployed (`values/gitea/gitea.gotmpl`'s
+`gitea-mcp` sidecar, `values/vikunja/vikunja-raw.gotmpl`'s standalone `vikunja-mcp` Deployment) and
+proven live — both created real, attributed content (an issue, a task) through their MCP servers
+using platform-user credentials, not the bootstrap admin. **The one finding that matters most:
+neither app's API accepts a raw Keycloak/OIDC token as a bearer credential** — this is a real
+upstream limitation (tracked for Gitea, `go-gitea/gitea#23382`), not something to fix here or route
+around with a cleverer curl invocation. Getting a usable credential for a real platform user means
+completing an actual SSO login, then taking the credential *that app itself* hands back — a Gitea
+Personal Access Token, or a Vikunja Bot Account token. Full detail, including exact API calls,
+CLI flags, and every trap that cost real time (a crash-looping sidecar, a session model that
+silently dropped auth between requests, a UI search box that can't find the very account you just
+created) is in `MCP.md` — read it before touching either server again, and before wiring any MCP
+client (Turnstone included) to them.
 
 ## The task, if you were pointed at VIKUNJA.md or TURNSTONE.md
 
