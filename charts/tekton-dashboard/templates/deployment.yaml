@@ -16,6 +16,22 @@ spec:
         {{- end }}
       name: {{ template "tekton-dashboard.fullname" . }}
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: NotIn
+                    values:
+                      - windows
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels: {{- include "tekton-dashboard.selector-labels" . | nindent 20 }}
+                topologyKey: kubernetes.io/hostname
+              weight: 100
       containers:
         - env:
             - name: INSTALLED_NAMESPACE

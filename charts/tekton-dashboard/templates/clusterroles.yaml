@@ -1,7 +1,31 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ template "tekton-dashboard.fullname" . }}-backend
+  name: {{ template "tekton-dashboard.fullname" . }}-backend-edit
+  labels: {{- include "tekton-dashboard.labels" . | indent 4 }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - dashboard.tekton.dev
+    resources:
+      - extensions
+    verbs:
+      - create
+      - update
+      - delete
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "tekton-dashboard.fullname" . }}-backend-view
   labels: {{- include "tekton-dashboard.labels" . | indent 4 }}
 rules:
   - apiGroups:
@@ -17,28 +41,11 @@ rules:
       - securitycontextconstraints
     verbs:
       - use
-  - apiGroups:
-      - tekton.dev
-    resources:
-      - clustertasks
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - triggers.tekton.dev
-    resources:
-      - clusterinterceptors
-      - clustertriggerbindings
-    verbs:
-      - get
-      - list
-      - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ template "tekton-dashboard.fullname" . }}-tenant
+  name: {{ template "tekton-dashboard.fullname" . }}-tenant-view
   labels: {{- include "tekton-dashboard.labels" . | indent 4 }}
 rules:
   - apiGroups:
@@ -56,31 +63,6 @@ rules:
       - namespaces
       - pods
       - pods/log
-      - serviceaccounts
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - tekton.dev
-    resources:
-      - tasks
-      - taskruns
-      - pipelines
-      - pipelineruns
-      - customruns
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - triggers.tekton.dev
-    resources:
-      - eventlisteners
-      - interceptors
-      - triggerbindings
-      - triggers
-      - triggertemplates
     verbs:
       - get
       - list

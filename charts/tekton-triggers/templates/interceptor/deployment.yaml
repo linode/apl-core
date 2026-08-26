@@ -7,10 +7,10 @@ metadata:
     app.kubernetes.io/name: core-interceptors
     app.kubernetes.io/component: interceptors
     app.kubernetes.io/instance: default
-    app.kubernetes.io/version: "v0.25.0"
+    app.kubernetes.io/version: "v0.37.0"
     app.kubernetes.io/part-of: tekton-triggers
     # tekton.dev/release value replaced with inputs.params.versionTag in triggers/tekton/publish.yaml
-    triggers.tekton.dev/release: "v0.25.0"
+    triggers.tekton.dev/release: "v0.37.0"
 spec:
   replicas: 1
   selector:
@@ -25,12 +25,12 @@ spec:
         app.kubernetes.io/name: core-interceptors
         app.kubernetes.io/component: interceptors
         app.kubernetes.io/instance: default
-        app.kubernetes.io/version: "v0.25.0"
+        app.kubernetes.io/version: "v0.37.0"
         app.kubernetes.io/part-of: tekton-triggers
         app: tekton-triggers-core-interceptors
-        triggers.tekton.dev/release: "v0.25.0"
+        triggers.tekton.dev/release: "v0.37.0"
         # version value replaced with inputs.params.versionTag in triggers/tekton/publish.yaml
-        version: "v0.25.0"
+        version: "v0.37.0"
     spec:
       serviceAccountName: tekton-triggers-core-interceptors
       containers:
@@ -55,6 +55,8 @@ spec:
               value: tekton-triggers-core-interceptors
             - name: INTERCEPTOR_TLS_SECRET_NAME
               value: tekton-triggers-core-interceptors-certs
+            - name: KUBERNETES_MIN_VERSION
+              value: v1.28.0
           resources: {{- toYaml .Values.interceptors.resources | nindent 12 }}
           readinessProbe:
             httpGet:
@@ -66,6 +68,7 @@ spec:
             timeoutSeconds: 5
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             # User 65532 is the distroless nonroot user ID
             runAsUser: 65532
             runAsGroup: 65532

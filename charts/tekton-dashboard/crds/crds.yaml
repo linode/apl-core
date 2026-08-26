@@ -27,7 +27,7 @@ spec:
         - jsonPath: .spec.name
           name: Kind
           type: string
-        - jsonPath: .spec.displayname
+        - jsonPath: .spec.displayName
           name: Display name
           type: string
         - jsonPath: .metadata.creationTimestamp

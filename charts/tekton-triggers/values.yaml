@@ -4,17 +4,17 @@
 interceptors:
   resources: {}
   image:
-    repository: "ghcr.io/tektoncd/github.com/tektoncd/triggers/cmd/interceptors"
-    tag: "v0.25.0"
+    repository: "ghcr.io/tektoncd/triggers/interceptors-3176d6a3f314c3655b30bfd36e421dd5"
+    tag: "v0.37.0@sha256:df3a692bb96010a52a3a9cb64a762bbfdce467b3393fbee28235b341c73b35ae"
 
 controller:
   resources: {}
   image:
-    repository: "ghcr.io/tektoncd/github.com/tektoncd/triggers/cmd/controller"
-    tag: "v0.25.0"
+    repository: "ghcr.io/tektoncd/triggers/controller-f656ca31de179ab913fa76abc255c315"
+    tag: "v0.37.0@sha256:72cfb3e11b906f5cd92c8e84f7b05662520f3e0d669f7db3c6b8fd39867985e9"
 
 webhook:
   resources: {}
   image:
-    repository: "ghcr.io/tektoncd/github.com/tektoncd/triggers/cmd/webhook"
-    tag: "v0.25.0"
+    repository: "ghcr.io/tektoncd/triggers/webhook-dd1edc925ee1772a9f76e2c1bc291ef6"
+    tag: "v0.37.0@sha256:88766079716ddd8fc21754bd750919138bf352a1f6a2fe50c175720fd18c57a2"

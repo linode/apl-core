@@ -3,9 +3,9 @@
 # Declare variables to be passed into your templates.
 
 image:
-  repository: ghcr.io/tektoncd/github.com/tektoncd/dashboard/cmd/dashboard
+  repository: ghcr.io/tektoncd/dashboard/dashboard-9623576a202fe86c8b7d1bc489905f86
   pullPolicy: IfNotPresent
-  tag: "v0.40.1"
+  tag: "v0.71.0@sha256:e8d29a97f0e0d0bc525692ab0a872f0c04cd8065806ae05c62757c441f4fcb82"
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

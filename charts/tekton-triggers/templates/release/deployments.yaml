@@ -7,10 +7,10 @@ metadata:
     app.kubernetes.io/name: controller
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: default
-    app.kubernetes.io/version: "v0.25.0"
+    app.kubernetes.io/version: "v0.37.0"
     app.kubernetes.io/part-of: tekton-triggers
     # tekton.dev/release value replaced with inputs.params.versionTag in triggers/tekton/publish.yaml
-    triggers.tekton.dev/release: "v0.25.0"
+    triggers.tekton.dev/release: "v0.37.0"
 spec:
   replicas: 1
   selector:
@@ -25,18 +25,38 @@ spec:
         app.kubernetes.io/name: controller
         app.kubernetes.io/component: controller
         app.kubernetes.io/instance: default
-        app.kubernetes.io/version: "v0.25.0"
+        app.kubernetes.io/version: "v0.37.0"
         app.kubernetes.io/part-of: tekton-triggers
         app: tekton-triggers-controller
-        triggers.tekton.dev/release: "v0.25.0"
+        triggers.tekton.dev/release: "v0.37.0"
         # version value replaced with inputs.params.versionTag in triggers/tekton/publish.yaml
-        version: "v0.25.0"
+        version: "v0.37.0"
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: NotIn
+                    values:
+                      - windows
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: controller
+                    app.kubernetes.io/component: controller
+                    app.kubernetes.io/instance: default
+                    app.kubernetes.io/part-of: tekton-triggers
+                topologyKey: kubernetes.io/hostname
+              weight: 100
       serviceAccountName: tekton-triggers-controller
       containers:
         - name: tekton-triggers-controller
           image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
-          args: ["-logtostderr", "-stderrthreshold", "INFO", "-el-image", "ghcr.io/tektoncd/github.com/tektoncd/triggers/cmd/eventlistenersink:v0.25.0@sha256:a029b639f5a69913002f944e63bb113d05e289fc1c885257665dd0d116315c9c", "-el-port", "8080", "-el-security-context=true", "-el-events", "disable", "-el-readtimeout", "5", "-el-writetimeout", "40", "-el-idletimeout", "120", "-el-timeouthandler", "30", "-el-httpclient-readtimeout", "30", "-el-httpclient-keep-alive", "30", "-el-httpclient-tlshandshaketimeout", "10", "-el-httpclient-responseheadertimeout", "10", "-el-httpclient-expectcontinuetimeout", "1", "-period-seconds", "10", "-failure-threshold", "3"]
+          args: ["-logtostderr", "-stderrthreshold", "INFO", "-el-image", "ghcr.io/tektoncd/triggers/eventlistenersink-7ad1faa98cddbcb0c24990303b220bb8:v0.37.0@sha256:1fa445623620dbf01496306b29eb824ee00030b71d2337e3c43297a1fc286355", "-el-port", "8080", "-el-security-context=true", "-el-read-only-root-filesystem=true", "-el-events", "disable", "-el-readtimeout", "5", "-el-writetimeout", "40", "-el-idletimeout", "120", "-el-timeouthandler", "30", "-el-httpclient-readtimeout", "30", "-el-httpclient-keep-alive", "30", "-el-httpclient-tlshandshaketimeout", "10", "-el-httpclient-responseheadertimeout", "10", "-el-httpclient-expectcontinuetimeout", "1", "-period-seconds", "10", "-failure-threshold", "3"]
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:
@@ -54,9 +74,12 @@ spec:
               value: "9000"
             - name: CONFIG_LEADERELECTION_NAME
               value: config-leader-election-triggers-controllers
+            - name: KUBERNETES_MIN_VERSION
+              value: v1.28.0
           resources: {{- toYaml .Values.controller.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - "ALL"
@@ -76,10 +99,10 @@ metadata:
     app.kubernetes.io/name: webhook
     app.kubernetes.io/component: webhook
     app.kubernetes.io/instance: default
-    app.kubernetes.io/version: "v0.25.0"
+    app.kubernetes.io/version: "v0.37.0"
     app.kubernetes.io/part-of: tekton-triggers
     # tekton.dev/release value replaced with inputs.params.versionTag in triggers/tekton/publish.yaml
-    triggers.tekton.dev/release: "v0.25.0"
+    triggers.tekton.dev/release: "v0.37.0"
 spec:
   replicas: 1
   selector:
@@ -94,12 +117,12 @@ spec:
         app.kubernetes.io/name: webhook
         app.kubernetes.io/component: webhook
         app.kubernetes.io/instance: default
-        app.kubernetes.io/version: "v0.25.0"
+        app.kubernetes.io/version: "v0.37.0"
         app.kubernetes.io/part-of: tekton-triggers
         app: tekton-triggers-webhook
-        triggers.tekton.dev/release: "v0.25.0"
+        triggers.tekton.dev/release: "v0.37.0"
         # version value replaced with inputs.params.versionTag in triggers/tekton/publish.yaml
-        version: "v0.25.0"
+        version: "v0.37.0"
     spec:
       serviceAccountName: tekton-triggers-webhook
       containers:
@@ -122,6 +145,8 @@ spec:
               value: tekton.dev/triggers
             - name: CONFIG_LEADERELECTION_NAME
               value: config-leader-election-triggers-webhook
+            - name: KUBERNETES_MIN_VERSION
+              value: v1.28.0
           ports:
             - name: metrics
               containerPort: 9000
@@ -132,6 +157,7 @@ spec:
           resources: {{- toYaml .Values.webhook.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             # User 65532 is the distroless nonroot user ID
             runAsUser: 65532
             runAsGroup: 65532
