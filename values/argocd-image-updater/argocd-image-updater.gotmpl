@@ -17,6 +17,6 @@ config:
   # fails with "certificate signed by unknown authority" and no digest update is ever detected.
   registries:
     - name: Harbor
-      api_url: https://{{ $v.harborDomain }}
-      prefix: {{ $v.harborDomain }}
+      api_url: https://{{ $v._derived.harborDomain }}
+      prefix: {{ $v._derived.harborDomain }}
       insecure: yes
