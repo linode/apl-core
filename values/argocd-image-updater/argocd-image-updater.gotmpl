@@ -11,3 +11,12 @@ resources: {{ $a.resources.imageUpdater | toYaml | nindent 2 }}
 
 config:
   git.commit-message-template: "build: automatic update of {{`{{ .AppName }}`}} [ci skip]"
+  # Harbor's leaf certs chain to the platform's self-signed root CA, which this controller's Go
+  # trust store does not carry (see CLAUDE.md's CA note and POD-EGRESS-INVESTIGATION.md's Tekton
+  # workaround for the same class of failure against Harbor/Gitea) -- without this every poll
+  # fails with "certificate signed by unknown authority" and no digest update is ever detected.
+  registries:
+    - name: Harbor
+      api_url: https://{{ $v.harborDomain }}
+      prefix: {{ $v.harborDomain }}
+      insecure: yes
