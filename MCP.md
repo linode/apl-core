@@ -292,9 +292,11 @@ curl -sk -X POST https://turnstone.<domain>/v1/api/admin/mcp-servers \
   immediately after registration — no code changes needed, the existing NetworkPolicy
   (`charts/apl-network-policies/templates/networkpolicies/gitea.yaml`) already allows the
   `turnstone` namespace.
-- **Vikunja, `auth_type: static`, the bot's Vikunja API token: registered, but failed to connect**
-  — see the SDK-version bug below. Not a credential/auth-mode problem; `initialize` itself
-  succeeds.
+- **Vikunja, `auth_type: static`, the bot's Vikunja API token: works, after the fix below.**
+  Registration and `initialize` succeeded immediately (not a credential/auth-mode problem) but
+  every request after that 400'd — see the SDK-version bug below. After rebuilding the
+  `vikunja-mcp` image (`vikunja-mcp-local:0.2.1`) and rolling it out, `GET
+  /v1/api/admin/mcp-servers` shows `"connected": true, "tools": 9"` on every server node.
 
 **Minting fresh app-native tokens without a browser, revisited.** The earlier sections of this doc
 used a browser because the *original* tokens were never persisted (shown once at creation, by

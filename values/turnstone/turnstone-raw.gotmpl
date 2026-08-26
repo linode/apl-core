@@ -67,7 +67,18 @@ resources:
   The key is `model =`, NOT `name =`. Turnstone's own turnstone.example.toml gets this wrong; the
   loader reads entry.get("model") and skips the entry with "has no model name, skipping", leaving
   an empty registry and a healthy-looking pod with no model at all. Verified against 1.8.1.
-  base_url is deliberately absent so the Anthropic SDK uses https://api.anthropic.com.
+
+  base_url must be set explicitly, to https://api.anthropic.com -- leaving it out does NOT make
+  the Anthropic SDK fall back to its own default. Every [models.*] entry without its own base_url
+  inherits the *CLI-level* --base-url bootstrap flag instead (turnstone/core/model_registry.py,
+  entry_base_url = entry.get("base_url", base_url)) -- and that CLI flag defaults to
+  "http://localhost:8000/v1" (a local vLLM/llama.cpp convention) unless --provider anthropic was
+  also passed on the command line to trigger server.py's own correction. Our turnstone-server
+  container command carries neither flag (the chart's own command is fixed, per the comment
+  above), so the uncorrected localhost default silently wins even though this model's own
+  provider is "anthropic" -- verified live: every chat request failed with
+  `anthropic.APIConnectionError: Connection error` / `[Errno 111] Connection refused` against
+  `http://localhost:8000/v1/`, nothing listening there in this pod at all.
 */}}
 - apiVersion: v1
   kind: ConfigMap
@@ -81,6 +92,7 @@ resources:
       [models.{{ $model }}]
       provider = "anthropic"
       model = "{{ $model }}"
+      base_url = "https://api.anthropic.com"
       api_key = "${ANTHROPIC_API_KEY}"
 
       [model]
