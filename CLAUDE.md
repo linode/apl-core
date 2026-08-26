@@ -21,6 +21,7 @@ wrong one for the task wastes a session.
 | `UPSTREAM-SYNC.md` | an executable runbook: pull new commits from `linode/apl-core` into this fork | you are asked to merge in, sync with, or catch up on upstream |
 | `POD-EGRESS-INVESTIGATION.md` | pods cannot reach the public internet, cause unknown — but has a proven, mandatory workaround for Tekton | you are building/running any Tekton pipeline, or asked to re-test the bug itself |
 | `MCP.md` | a record of deploying MCP servers for Gitea and Vikunja, and every credential/session trap proving them live turned up | you are touching either app's MCP server, wiring an MCP client (Turnstone or otherwise) to them, or need a platform-user credential neither app's OIDC login hands you directly |
+| `VIKUNJA-TURNSTONE-PIPELINE.md` | a proof-of-flow: a Vikunja webhook triggers a Tekton pipeline that calls Turnstone through its real Python SDK | you are wiring any app event to trigger a Tekton pipeline, or need a working example of the `turnstone` PyPI SDK from inside a pod |
 
 The distinction that matters: **`SETUP.md` and `INTEGRATING-AN-APP.md` are instructions to follow.
 `VIKUNJA.md` is evidence, not a plan** — its work is already done and on `feat/vikunja-integration`.
@@ -98,6 +99,16 @@ CLI flags, and every trap that cost real time (a crash-looping sidecar, a sessio
 silently dropped auth between requests, a UI search box that can't find the very account you just
 created) is in `MCP.md` — read it before touching either server again, and before wiring any MCP
 client (Turnstone included) to them.
+
+## The task, if you were pointed at VIKUNJA-TURNSTONE-PIPELINE.md
+
+This is a record of a proof-of-concept, not a platform feature — every object it describes was
+`kubectl apply`'d directly against the live cluster, not committed to any chart or `values/*.gotmpl`,
+and none of it survives a cluster rebuild. Read it for the four real bugs it hit (Vikunja's own SSRF
+protection blocking cluster-internal webhook targets, a missing NetworkPolicy, a Tekton
+TriggerTemplate JSON-escaping trap, and an Alpine-vs-Debian base image trap for `pip install
+turnstone`) and for the working shape of the `turnstone` Python SDK, not as something to re-execute
+verbatim.
 
 ## The task, if you were pointed at VIKUNJA.md or TURNSTONE.md
 
