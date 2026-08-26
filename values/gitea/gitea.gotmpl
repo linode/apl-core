@@ -193,6 +193,60 @@ valkey-cluster:
 valkey:
   enabled: false
 
+{{- /*
+  gitea-mcp lets an MCP client (e.g. a Turnstone agent) talk to this Gitea instance. It runs as a
+  sidecar so it can reach Gitea over plain localhost HTTP -- no CA trust needed, unlike every
+  other in-cluster caller of Gitea's external HTTPS endpoint (see POD-EGRESS-INVESTIGATION.md and
+  the otomi-api git-CLI trust gap found while integrating Tekton). It carries no baked-in
+  credential: gitea-mcp supports per-request `Authorization: Bearer <token>` passthrough, so each
+  caller supplies whichever Gitea personal access token is appropriate for that call -- verified
+  live against docker.gitea.com/gitea-mcp-server:latest (v1.6.0), which accepts /mcp requests with
+  no GITEA_ACCESS_TOKEN set. That version ships no /healthz (despite upstream docs claiming one),
+  hence the TCP-only probes below.
+*/}}
+extraContainers:
+  - name: gitea-mcp
+    image: "docker.gitea.com/gitea-mcp-server:latest"
+    args:
+      - -transport=http
+      - -host=http://localhost:3000
+      - -port=8090
+    ports:
+      - name: mcp
+        containerPort: 8090
+    volumeMounts:
+      # gitea-mcp always tries to write /tmp/gitea-mcp.log regardless of transport; without this
+      # it logs (harmlessly, to stdout as a fallback) a write-error every request under our
+      # readOnlyRootFilesystem.
+      - name: gitea-mcp-tmp
+        mountPath: /tmp
+    livenessProbe:
+      tcpSocket:
+        port: mcp
+      initialDelaySeconds: 5
+    readinessProbe:
+      tcpSocket:
+        port: mcp
+      initialDelaySeconds: 5
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+      privileged: false
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 65532
+      runAsGroup: 65532
+      seccompProfile:
+        type: RuntimeDefault
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128Mi
+      requests:
+        cpu: 10m
+        memory: 32Mi
+
 extraContainerVolumeMounts:
   - name: backup
     mountPath: /backup
@@ -202,6 +256,8 @@ extraContainerVolumeMounts:
     subPath: ca-certificates.crt
 {{- end }}
 extraVolumes:
+  - name: gitea-mcp-tmp
+    emptyDir: {}
   - name: backup
 {{- if ne $v.cluster.provider "custom" }}
     persistentVolumeClaim:
@@ -262,3 +318,17 @@ extraDeploy:
                 type: PathPrefix
                 value: /
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "gitea" "host" $giteaDomain) | nindent 4 }}
+  # No hook in this chart's own Service templates for an extra port, so the gitea-mcp sidecar
+  # (added above via extraContainers) gets its own Service, selecting the same pod.
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: gitea-mcp
+    spec:
+      selector:
+        app.kubernetes.io/name: gitea
+        app.kubernetes.io/instance: gitea
+      ports:
+        - name: mcp
+          port: 8090
+          targetPort: mcp

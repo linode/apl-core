@@ -611,6 +611,30 @@ docker build --build-arg TOOLS_IMAGE=apl-tools-local:v3.0.1 \
 
 Verified: same image size as the published one, full suite passes on it.
 
+### Vikunja MCP — build this if `apps.vikunja.enabled` is set
+
+`values/vikunja/vikunja-raw.gotmpl` deploys a `vikunja-mcp` Deployment referencing
+`vikunja-mcp-local:0.2.0`, built from `vikunja-mcp/Dockerfile` in this repo. Unlike the operator
+image, this one has nothing to do with `APPS_REVISION` — just build and load it once per cluster,
+same as the toolchain image above:
+
+```bash
+docker build -t vikunja-mcp-local:0.2.0 ./vikunja-mcp
+docker images vikunja-mcp-local:0.2.0        # verify the artifact, not the exit code (Traps)
+kind load docker-image vikunja-mcp-local:0.2.0 --name apl
+```
+
+The npm package (`@democratize-technology/vikunja-mcp`) is installed **at image build time**, not
+fetched by the running pod, so every restart runs one pinned, known-good version instead of
+re-resolving `latest` from the npm registry each time — this is unrelated to
+`POD-EGRESS-INVESTIGATION.md`'s Tekton-specific egress bug, which does not affect a normal
+Deployment's own image pulls or a running pod's regular outbound calls.
+
+No credential needs provisioning for this one. The server carries no static token — a caller
+authenticates per MCP session via the `vikunja_auth` tool (`connect`, passing its own `apiToken`),
+and supergateway's default stateless mode gives each session its own child process, so sessions
+never share auth state. See the comment in `vikunja-raw.gotmpl` for how this was verified.
+
 ## 6. Generate the chart schema ✅
 
 ```bash

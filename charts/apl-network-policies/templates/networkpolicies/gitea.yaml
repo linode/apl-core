@@ -52,6 +52,14 @@ spec:
           podSelector:
             matchLabels:
               tekton.dev/task: git-clone
+    # Allow Turnstone agents access to the gitea-mcp sidecar (see values/gitea/gitea.gotmpl)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: turnstone
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: turnstone
     # Allow monitoring access
     - from:
         - namespaceSelector:

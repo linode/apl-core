@@ -92,6 +92,89 @@ resources:
         remoteRef:
           key: {{ $v._derived.oidcClientSecretKey }}
           property: {{ $v._derived.oidcClientSecretProperty }}
+{{- /*
+  vikunja-mcp lets an MCP client (e.g. a Turnstone agent) talk to this Vikunja instance.
+  Unlike Gitea, Vikunja has no official MCP server and the chart has no sidecar hook (see
+  values/vikunja/vikunja.gotmpl's note on additionalObjects), so this is a standalone
+  Deployment+Service instead of a sidecar -- same shape as the vikunja-bootstrap Job below.
+  The upstream project (democratize-technology/vikunja-mcp) is npm-only and stdio-only, wrapped
+  in supergateway (see vikunja-mcp/Dockerfile) to speak HTTP, with the npm package installed at
+  image-build time rather than fetched by the pod at startup, so every restart runs one pinned,
+  known-good version instead of re-resolving `latest` from the npm registry each time.
+
+  No static credential is baked in, and none is needed: the server exposes a `vikunja_auth`
+  tool (subcommands connect/status/refresh/disconnect, taking apiUrl+apiToken) that a caller
+  invokes as its first MCP call, and -- verified live against supergateway's default stateless
+  mode -- each HTTP request gets its own fresh child process, so one session's auth never leaks
+  into another's. That's per-session credential delegation for free: whoever's token the caller
+  passes to vikunja_auth.connect is who Vikunja sees, matching Gitea's per-request Bearer
+  passthrough in effect, just as an explicit first tool call instead of a header. VIKUNJA_URL
+  below is only the default apiUrl a caller can still override per-session.
+*/}}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: vikunja-mcp
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: vikunja-mcp
+    template:
+      metadata:
+        labels:
+          app: vikunja-mcp
+      spec:
+        containers:
+          - name: vikunja-mcp
+            image: vikunja-mcp-local:0.2.0
+            imagePullPolicy: IfNotPresent
+            ports:
+              - name: mcp
+                containerPort: 8090
+            env:
+              - name: VIKUNJA_URL
+                value: http://vikunja.vikunja.svc.cluster.local:3456/api/v1
+            livenessProbe:
+              httpGet:
+                path: /healthz
+                port: mcp
+              initialDelaySeconds: 5
+            readinessProbe:
+              httpGet:
+                path: /healthz
+                port: mcp
+              initialDelaySeconds: 5
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: [ALL]
+              privileged: false
+              runAsNonRoot: true
+              runAsUser: 1000
+              runAsGroup: 1000
+              seccompProfile:
+                type: RuntimeDefault
+            resources:
+              limits:
+                cpu: 200m
+                memory: 256Mi
+              requests:
+                cpu: 10m
+                memory: 64Mi
+        securityContext:
+          fsGroup: 1000
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: vikunja-mcp
+  spec:
+    selector:
+      app: vikunja-mcp
+    ports:
+      - name: mcp
+        port: 8090
+        targetPort: mcp
 {{- if $v._derived.untrustedCA }}
 {{- /*
   Each app that needs the platform CA creates this secret in its own namespace --
