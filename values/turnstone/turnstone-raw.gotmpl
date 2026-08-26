@@ -79,6 +79,16 @@ resources:
   provider is "anthropic" -- verified live: every chat request failed with
   `anthropic.APIConnectionError: Connection error` / `[Errno 111] Connection refused` against
   `http://localhost:8000/v1/`, nothing listening there in this pod at all.
+
+  context_window must also be set explicitly, for the same reason: an entry without it inherits
+  the loader's own hardcoded 32768 default (model_registry.py, ModelConfig.context_window /
+  the CLI-level context_window param), which is not this model's real limit -- it's an arbitrary
+  fallback sized for small local models. Left unset, Turnstone enforces that 32768-token ceiling
+  as the session's context budget and silently DROPS tool results that don't fit once a session
+  fills it, rather than erroring -- verified live: a session at ~33k tokens had every further MCP
+  tool result dropped with "tool result dropped -- context budget exhausted", trivially reachable
+  with a handful of MCP tool calls once gitea-mcp + vikunja-mcp's 60+ tool definitions are loaded
+  into every request too. claude-sonnet-5's real context window is 200000.
 */}}
 - apiVersion: v1
   kind: ConfigMap
@@ -93,6 +103,7 @@ resources:
       provider = "anthropic"
       model = "{{ $model }}"
       base_url = "https://api.anthropic.com"
+      context_window = 200000
       api_key = "${ANTHROPIC_API_KEY}"
 
       [model]
