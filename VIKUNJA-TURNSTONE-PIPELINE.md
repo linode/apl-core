@@ -8,12 +8,17 @@ trigger a Tekton pipeline that talks to Turnstone through its real Python SDK an
 workstream. The task title, the Vikunja project, and the workstream content are all
 placeholders — nothing here is meant to be a real automation.
 
-**Status: proof-of-concept, not a platform feature.** Every object below was created with `kubectl
-apply` directly against the live cluster, not through Helm charts, `values/*.gotmpl`, or the
-console. Nothing here survives a cluster rebuild, and none of it is wired into `SETUP.md`. If this
-ever becomes a real feature, it needs to move into `charts/team-ns` (for the Tekton objects) and
-`values/vikunja` (for the webhook registration) the way `INTEGRATING-AN-APP.md` describes — this
-file only records that the mechanism works end to end.
+**Status at the time this was written: proof-of-concept, not a platform feature.** Every object
+below was created with `kubectl apply` directly against the live cluster, not through Helm charts,
+`values/*.gotmpl`, or the console.
+
+**Update: this has since moved into a git-tracked chart.** Rather than `charts/team-ns` +
+`values/vikunja` in apl-core, it now lives in a team-owned Gitea repo
+(`team-labteam/team-pipelines`, chart `agentic-sdlc`) deployed through the platform's own
+`workloads`/`catalogs` mechanism — see `TEAM-WORKLOAD-CATALOG.md` for the full account, including
+why that mechanism (not an apl-core change) is the preferred way to do this. The rest of this file
+still accurately records the four bugs and the SDK usage that made the pipeline work; only the
+"kubectl-applied, nothing survives a rebuild" framing below is now out of date.
 
 ## The flow
 

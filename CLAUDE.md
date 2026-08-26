@@ -8,7 +8,7 @@ that cost a full session to find.
 
 ## What the documents in here are for
 
-Five fork-only documents, none intended for upstream. They have different jobs, and reading the
+Fork-only documents, none intended for upstream. They have different jobs, and reading the
 wrong one for the task wastes a session.
 
 | File | What it is | Read it when |
@@ -22,6 +22,7 @@ wrong one for the task wastes a session.
 | `POD-EGRESS-INVESTIGATION.md` | pods cannot reach the public internet, cause unknown — but has a proven, mandatory workaround for Tekton | you are building/running any Tekton pipeline, or asked to re-test the bug itself |
 | `MCP.md` | a record of deploying MCP servers for Gitea and Vikunja, and every credential/session trap proving them live turned up | you are touching either app's MCP server, wiring an MCP client (Turnstone or otherwise) to them, or need a platform-user credential neither app's OIDC login hands you directly |
 | `VIKUNJA-TURNSTONE-PIPELINE.md` | a proof-of-flow: a Vikunja webhook triggers a Tekton pipeline that calls Turnstone through its real Python SDK | you are wiring any app event to trigger a Tekton pipeline, or need a working example of the `turnstone` PyPI SDK from inside a pod |
+| `TEAM-WORKLOAD-CATALOG.md` | the preferred, correct way to give a team a pipeline or other workload: a git-tracked chart + the platform's own `workloads`/`catalogs` mechanism, not raw `kubectl apply` | you are asked to add a pipeline, a workload, or anything a team should own and iterate on going forward |
 
 The distinction that matters: **`SETUP.md` and `INTEGRATING-AN-APP.md` are instructions to follow.
 `VIKUNJA.md` is evidence, not a plan** — its work is already done and on `feat/vikunja-integration`.
@@ -102,13 +103,24 @@ client (Turnstone included) to them.
 
 ## The task, if you were pointed at VIKUNJA-TURNSTONE-PIPELINE.md
 
-This is a record of a proof-of-concept, not a platform feature — every object it describes was
-`kubectl apply`'d directly against the live cluster, not committed to any chart or `values/*.gotmpl`,
-and none of it survives a cluster rebuild. Read it for the four real bugs it hit (Vikunja's own SSRF
-protection blocking cluster-internal webhook targets, a missing NetworkPolicy, a Tekton
-TriggerTemplate JSON-escaping trap, and an Alpine-vs-Debian base image trap for `pip install
-turnstone`) and for the working shape of the `turnstone` Python SDK, not as something to re-execute
-verbatim.
+This is a record of how the pipeline was originally proven out — every object it describes was
+first `kubectl apply`'d directly against the live cluster, not committed to any chart or
+`values/*.gotmpl`. Read it for the four real bugs it hit (Vikunja's own SSRF protection blocking
+cluster-internal webhook targets, a missing NetworkPolicy, a Tekton TriggerTemplate JSON-escaping
+trap, and an Alpine-vs-Debian base image trap for `pip install turnstone`) and for the working shape
+of the `turnstone` Python SDK. **The pipeline itself has since moved into a git-tracked chart** —
+see `TEAM-WORKLOAD-CATALOG.md` for where it actually lives now and how to reproduce or extend it;
+this file is history, not the current deployment mechanism.
+
+## The task, if you were pointed at TEAM-WORKLOAD-CATALOG.md
+
+This is the pattern to follow whenever you're asked to add a pipeline or workload for a team —
+read it before reaching for raw `kubectl apply` or inventing a new mechanism. It documents the
+platform's own `workloads` + `catalogs` feature (git-tracked chart, self-service console picker),
+worked out concretely for `team-labteam`'s `agentic-sdlc` chart. Read "Traps found building this"
+before repeating any of the six mistakes already made here (wrong git URL, catalog caching, image
+egress, a stale `workloads` entry surviving a deleted chart path). Check "Surviving a rebuild"
+before assuming any of the live example still exists — it isn't wired into `SETUP.md`.
 
 ## The task, if you were pointed at VIKUNJA.md or TURNSTONE.md
 
