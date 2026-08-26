@@ -218,7 +218,40 @@ versions:
   api: 0.0.0-turnstone
   console: 0.0.0-turnstone
   tasks: 0.0.0-vikunja
+# This is a single-node lab, so every HA-oriented default (2+ Postgres instances per app, 2-3
+# replica HPA floors on argocd-repo-server/istiod/the ingress gateway) is pure waste -- it bought
+# nothing (there is no second node to fail over to) while costing real memory. Confirmed live on
+# 2026-08-26: dropping all of this to 1 replica saved ~860Mi node memory / ~560Mi pod-sum with zero
+# loss of function. See databases/gitea.yaml etc in the otomi/values repo for where these actually
+# live post-install -- this block only sets the install-time starting point.
+databases:
+  gitea:
+    replicas: 1
+  harbor:
+    replicas: 1
+  keycloak:
+    replicas: 1
+  turnstone:
+    replicas: 1
+  vikunja:
+    replicas: 1
+ingress:
+  platformClass:
+    gateway:
+      replicas: 1
+      autoscaling:
+        minReplicas: 1
 apps:
+  argocd:
+    autoscaling:
+      repoServer:
+        minReplicas: 1
+  istio:
+    autoscaling:
+      pilot:
+        minReplicas: 1
+      egressgateway:
+        minReplicas: 1
   metrics-server:
     extraArgs: ["--kubelet-insecure-tls=true"]
   cert-manager:
