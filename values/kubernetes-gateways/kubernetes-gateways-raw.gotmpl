@@ -2,8 +2,6 @@
 {{- $a := $v.apps }}
 {{- $authAppNamespaces := list "argocd" "harbor" "monitoring" "grafana" "kfp" "otomi" "tekton-dashboard"}}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
-{{- /* Double backslash: CEL unescapes it to a single one before the regex sees it. */}}
-{{- $domainSuffixRe := $domainSuffix | replace "." "\\\\." }}
 {{- $logoutRedirectParam := $v._derived.logoutToOauth2Start }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 resources:
@@ -116,9 +114,17 @@ resources:
       variables:
         - name: teamId
           expression: 'namespaceObject.metadata.name.substring(5)'
-        - name: pattern
+        {{- /* The only hostname tail this team may claim inside the cluster domain. */}}
+        - name: tail
           expression: |
-            '^[a-z0-9]([-a-z0-9]*[a-z0-9])?-' + variables.teamId + '\\.{{ $domainSuffixRe }}$'
+            '-' + variables.teamId + '.{{ $domainSuffix }}'
+        {{- /* Per-team platform hostnames, mapped to the object that already owns each one. */}}
+        {{- /* Names come from helmfile-60.teams.yaml.gotmpl and prometheus-operator-team.gotmpl. */}}
+        - name: reserved
+          expression: |
+            {'tekton': 'tekton-' + variables.teamId,
+             'grafana': variables.teamId + '-po-grafana',
+             'alertmanager': variables.teamId + '-po-alertmanager'}
         {{- /* HTTPRoute keeps hostnames on the route, ListenerSet keeps one per listener. */}}
         - name: hostnames
           expression: |
@@ -128,14 +134,26 @@ resources:
       validations:
         - expression: 'size(variables.hostnames) > 0 && !variables.hostnames.exists(h, h == "")'
           message: 'every hostname must be set: an empty hostname binds the whole cluster domain'
-        {{- /* A wildcard host is only safe when it cannot cover the cluster domain. */}}
+        {{- /* A wildcard is only safe when it cannot cover the cluster domain. */}}
+        {{- /* Anything else inside the domain must be exactly <name>-<teamId>, one label. */}}
         - expression: |
             variables.hostnames.all(h,
               h.startsWith('*.')
-                ? !'{{ $domainSuffix }}'.endsWith(h.substring(2))
-                : (!h.endsWith('.{{ $domainSuffix }}') || h.matches(variables.pattern))
+                ? !('{{ $domainSuffix }}' == h.substring(2) || '{{ $domainSuffix }}'.endsWith('.' + h.substring(2)))
+                : (!h.endsWith('.{{ $domainSuffix }}')
+                   || (h.endsWith(variables.tail)
+                       && h.size() > variables.tail.size()
+                       && !h.substring(0, h.size() - variables.tail.size()).contains('.')))
             )
           message: 'a hostname inside the cluster domain must be <name>-<teamId>.{{ $domainSuffix }}'
+        {{- /* A team owns <name>-<teamId>, but not the ones its own platform apps already serve. */}}
+        - expression: |
+            variables.hostnames.all(h,
+              !h.endsWith(variables.tail)
+                || !(h.substring(0, h.size() - variables.tail.size()) in variables.reserved)
+                || object.metadata.name == variables.reserved[h.substring(0, h.size() - variables.tail.size())]
+            )
+          message: 'this hostname is served by a platform app for your team and cannot be rebound'
   - apiVersion: admissionregistration.k8s.io/v1
     kind: ValidatingAdmissionPolicyBinding
     metadata:
