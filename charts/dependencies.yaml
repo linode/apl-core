@@ -76,7 +76,7 @@ dependencies:
     version: 3.8.2
     repository: https://kyverno.github.io/kyverno/
   - name: loki
-    version: 18.11.2
+    version: 18.11.3
     repository: oci://ghcr.io/grafana-community/helm-charts/loki
   - name: metrics-server
     version: 3.13.1
@@ -106,7 +106,7 @@ dependencies:
     repository: https://bitnami.github.io/sealed-secrets
   - name: tekton-pipeline
     alias: tekton-pipelines
-    version: 1.12.0
+    version: 1.14.0
     repository: https://cdfoundation.github.io/tekton-helm-chart/
   - name: trivy-operator
     version: 0.32.1

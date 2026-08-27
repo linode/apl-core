@@ -6,9 +6,9 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/name: events
     app.kubernetes.io/part-of: tekton-pipelines
-    app.kubernetes.io/version: v1.12.0
-    pipeline.tekton.dev/release: v1.12.0
-    version: v1.12.0
+    app.kubernetes.io/version: v1.14.0
+    pipeline.tekton.dev/release: v1.14.0
+    version: v1.14.0
   name: tekton-events-controller
 spec:
   replicas: 1
@@ -26,9 +26,9 @@ spec:
         app.kubernetes.io/instance: default
         app.kubernetes.io/name: events
         app.kubernetes.io/part-of: tekton-pipelines
-        app.kubernetes.io/version: v1.12.0
-        pipeline.tekton.dev/release: v1.12.0
-        version: v1.12.0
+        app.kubernetes.io/version: v1.14.0
+        pipeline.tekton.dev/release: v1.14.0
+        version: v1.14.0
     spec:
       affinity:
         nodeAffinity:
@@ -101,6 +101,10 @@ spec:
         - mountPath: /etc/config-registry-cert
           name: config-registry-cert
         image: {{ .Values.eventscontroller.deployment.image }}
+      imagePullSecrets:
+          {{- with .Values.eventscontroller.imagePullSecrets }}
+            {{- toYaml . | nindent 6 }}
+          {{- end }}
       serviceAccountName: tekton-events-controller
       volumes:
       - configMap:
