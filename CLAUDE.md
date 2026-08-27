@@ -23,7 +23,6 @@ wrong one for the task wastes a session.
 | `MCP.md` | a record of deploying MCP servers for Gitea and Vikunja, and every credential/session trap proving them live turned up | you are touching either app's MCP server, wiring an MCP client (Turnstone or otherwise) to them, or need a platform-user credential neither app's OIDC login hands you directly |
 | `VIKUNJA-TURNSTONE-PIPELINE.md` | a proof-of-flow: a Vikunja webhook triggers a Tekton pipeline that calls Turnstone through its real Python SDK | you are wiring any app event to trigger a Tekton pipeline, or need a working example of the `turnstone` PyPI SDK from inside a pod |
 | `TEAM-WORKLOAD-CATALOG.md` | the preferred, correct way to give a team a pipeline or other workload: a git-tracked chart + the platform's own `workloads`/`catalogs` mechanism, not raw `kubectl apply` | you are asked to add a pipeline, a workload, or anything a team should own and iterate on going forward |
-| `DEMO-TOPOLOGY.md` | a repeatable example org chart: two teams, nine role-distinguishable accounts, one Gitea+Vikunja project per team, including a declarative `SETUP.md` diff and the Vikunja team-sync operator's project-sharing extension | you are asked to set up demo users/teams, or need a worked example of `users:`/`teamConfig:` as install-time values |
 
 The distinction that matters: **`SETUP.md` and `INTEGRATING-AN-APP.md` are instructions to follow.
 `VIKUNJA.md` is evidence, not a plan** — its work is already done and on `feat/vikunja-integration`.
@@ -122,17 +121,6 @@ worked out concretely for `team-labteam`'s `agentic-sdlc` chart. Read "Traps fou
 before repeating any of the six mistakes already made here (wrong git URL, catalog caching, image
 egress, a stale `workloads` entry surviving a deleted chart path). Check "Surviving a rebuild"
 before assuming any of the live example still exists — it isn't wired into `SETUP.md`.
-
-## The task, if you were pointed at DEMO-TOPOLOGY.md
-
-Read this before creating any demo users/teams by hand. Team + user creation is fully declarative
-now — a `users:`/`teamConfig:` block already lives in `SETUP.md`'s step 7 heredoc, so a fresh
-install reproduces the whole account table with zero scripting. Only the Gitea repos and Vikunja
-projects still need a one-time script after install (no declarative path exists for either — see
-the file for why and the exact commands). If you're extending Vikunja's team-sync operator further,
-read `vikunja-patches/README.md`'s "apl-tasks" section first — the project-sharing extension it
-already carries has one real, easy-to-repeat trap documented there (`id` vs `team_id` on the
-project-teams read-back).
 
 ## The task, if you were pointed at VIKUNJA.md or TURNSTONE.md
 
