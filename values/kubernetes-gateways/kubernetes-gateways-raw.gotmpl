@@ -2,8 +2,8 @@
 {{- $a := $v.apps }}
 {{- $authAppNamespaces := list "argocd" "harbor" "monitoring" "grafana" "kfp" "otomi" "tekton-dashboard"}}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
-{{- /* Dots escaped so the suffix can be used inside a CEL regex. */}}
-{{- $domainSuffixRe := $domainSuffix | replace "." "\\." }}
+{{- /* Double backslash: CEL unescapes it to a single one before the regex sees it. */}}
+{{- $domainSuffixRe := $domainSuffix | replace "." "\\\\." }}
 {{- $logoutRedirectParam := $v._derived.logoutToOauth2Start }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 resources:
@@ -118,7 +118,7 @@ resources:
           expression: 'namespaceObject.metadata.name.substring(5)'
         - name: pattern
           expression: |
-            '^[a-z0-9]([-a-z0-9]*[a-z0-9])?-' + variables.teamId + '\.{{ $domainSuffixRe }}$'
+            '^[a-z0-9]([-a-z0-9]*[a-z0-9])?-' + variables.teamId + '\\.{{ $domainSuffixRe }}$'
         {{- /* HTTPRoute keeps hostnames on the route, ListenerSet keeps one per listener. */}}
         - name: hostnames
           expression: |
