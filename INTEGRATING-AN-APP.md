@@ -96,9 +96,13 @@ Nothing in this phase writes code. It is the cheapest phase and it decides the o
 | `apl-api` | a hand-maintained `AppList` enum gates whether the app can exist at all | a patch in `vikunja-patches/` |
 | `apl-core` | the app itself: chart, values, schema, database, routing, Console wiring | this repo |
 | `apl-console` | the logo file | a patch/asset in `vikunja-patches/` |
-| `apl-tasks` | the team-sync operator | a patch in `vikunja-patches/` |
+| `apl-tasks` | the team-sync operator, *if your app has one* | a patch in `vikunja-patches/`, historically — Vikunja's own copy was later removed as a deliberate, revisit-able decision; see `VIKUNJA.md` Phase 3 |
 
-The three foreign repos ship as **patches against upstream, not forks** — see
+The pattern itself is still current — Gitea's own team-sync operator (`values/apl-gitea-operator/`)
+is live and unaffected by Vikunja's removal. Only follow this row if your app actually needs a
+standing operator; check the reconnaissance step against your app's own team/group model first.
+
+The foreign repos ship as **patches against upstream, not forks** — see
 `vikunja-patches/README.md` for why and for the build commands. Create a sibling directory
 (`<app>-patches/`) following the same layout.
 

@@ -207,8 +207,6 @@ environments:
             databaseMaxIdleConnections: 6
             persistence:
               size: 2Gi
-            teamSync:
-              enabled: false
             resources:
               vikunja:
                 limits:

@@ -131,8 +131,12 @@ for a *new* integration start there and come back to these for the specifics. Re
 
 Which one to reach for:
 
-- **`VIKUNJA.md`** — a Go web app with a team concept, needing an operator to push membership. The
-  fuller example: four repositories, a team-sync operator, a distroless image.
+- **`VIKUNJA.md`** — a Go web app with a team concept. The fuller example: three repositories, a
+  distroless image. It originally also built a team-sync operator to push platform teams and their
+  membership into Vikunja teams — that operator was later removed as a deliberate, revisit-able
+  decision (standing infrastructure that would act on every future team, not just demo ones, was
+  judged more ongoing risk than value). `VIKUNJA.md`'s Phase 3 and Appendix B still record how it
+  worked and the rejected OIDC-native alternative; the removal itself is `git log`, not this file.
 - **`TURNSTONE.md`** — an app needing an *upstream API credential*, with no team concept, whose TLS
   stack is stricter than Go's. Read it if your app is not Go, if it needs an operator-supplied
   secret, or if anything TLS fails in a way `openssl` insists is fine.

@@ -2506,16 +2506,6 @@ properties:
               size:
                 type: string
                 description: Size of the volume holding task attachments and uploaded backgrounds
-          teamSync:
-            additionalProperties: false
-            properties:
-              enabled:
-                type: boolean
-                default: false
-                description: >-
-                  Push platform teams and their Keycloak group membership into Vikunja teams.
-                  Requires an apl-tasks image that contains src/operators/vikunja; the published
-                  linode/apl-tasks image does not, so this is off by default.
           resources:
             additionalProperties: false
             properties:

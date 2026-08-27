@@ -117,16 +117,15 @@ docker images apl-core-local:v6.2.1-fork        # MUST show the image; do not tr
 kind load docker-image apl-core-local:v6.2.1-fork --name apl
 
 # 5b. Vikunja and Turnstone both need a patched apl-api (the AppList enum) and apl-console (the
-#     tile logo); Vikunja alone also needs apl-tasks (the team-sync operator -- Turnstone has no
-#     team object, so it needs no operator at all). Everything is tagged with the names the charts
-#     already expect, so no registry is involved.
-#     See vikunja-patches/README.md and turnstone-patches/README.md for the full explanation.
+#     tile logo). Everything is tagged with the names the charts already expect, so no registry
+#     is involved. See vikunja-patches/README.md and turnstone-patches/README.md for the full
+#     explanation.
 #
 #     There is ONE apl-api image and ONE apl-console image, so each must carry BOTH apps' changes.
 #     Order matters: the turnstone apl-api patch has `- vikunja` in its context lines.
 VP=$PWD/vikunja-patches
 TP=$PWD/turnstone-patches
-rm -rf /tmp/apl-api /tmp/apl-console /tmp/apl-tasks
+rm -rf /tmp/apl-api /tmp/apl-console
 git clone --depth 1 https://github.com/linode/apl-api.git /tmp/apl-api
 git -C /tmp/apl-api apply "$VP/apl-api.patch"
 git -C /tmp/apl-api apply "$TP/apl-api.patch"
@@ -149,22 +148,6 @@ cp "$TP/apl-console/public/logos/turnstone_logo.svg" /tmp/apl-console/public/log
 docker build -t docker.io/linode/apl-console:v0.0.0-turnstone /tmp/apl-console
 docker images docker.io/linode/apl-console:v0.0.0-turnstone
 kind load docker-image docker.io/linode/apl-console:v0.0.0-turnstone --name apl
-
-#     apl-tasks does NOT use its own Dockerfile: that one runs `npm ci` against GitHub Packages,
-#     which needs an NPM_TOKEN with read:packages. The Dockerfile below takes the resolved
-#     node_modules out of the published linode/apl-tasks:main image instead, so no token is
-#     needed. Only typescript and its @types come from public npm.
-git clone --depth 1 https://github.com/linode/apl-tasks.git /tmp/apl-tasks
-git -C /tmp/apl-tasks apply "$VP/apl-tasks.patch"
-docker build -f "$VP/apl-tasks-vikunja.Dockerfile" \
-             -t docker.io/linode/apl-tasks:v0.0.0-vikunja /tmp/apl-tasks
-docker images docker.io/linode/apl-tasks:v0.0.0-vikunja
-#     This build has two ways to exit 0 having produced nothing usable, so check the artifact.
-#     Expected: envalid reporting VIKUNJA_URL, VIKUNJA_URL_PORT and VIKUNJA_OPERATOR_NAMESPACE as
-#     missing. VIKUNJA_RECONCILE_INTERVAL is NOT listed -- it has a default of 60.
-docker run --rm --entrypoint sh docker.io/linode/apl-tasks:v0.0.0-vikunja \
-  -c 'node dist/src/operators/vikunja/vikunja.js'
-kind load docker-image docker.io/linode/apl-tasks:v0.0.0-vikunja --name apl
 
 # 6. generate the chart schema -- REQUIRED, silently skipped validation otherwise
 bin/gen-chart-schema.sh
@@ -217,7 +200,6 @@ versions:
   # kind-loaded image needs. 'turnstone' as a tag would be treated as a branch and pulled Always.
   api: 0.0.0-turnstone
   console: 0.0.0-turnstone
-  tasks: 0.0.0-vikunja
 # This is a single-node lab, so every HA-oriented default (2+ Postgres instances per app, 2-3
 # replica HPA floors on argocd-repo-server/istiod/the ingress gateway) is pure waste -- it bought
 # nothing (there is no second node to fail over to) while costing real memory. Confirmed live on
@@ -273,8 +255,6 @@ $(sed 's/^/      /' /tmp/apl-ca.pkcs1.key)
     enabled: true
   vikunja:
     enabled: true
-    teamSync:
-      enabled: true
   turnstone:
     enabled: true
     # The only operator-supplied secret in the whole file. Sealed like any other x-secret, so it
@@ -1258,8 +1238,8 @@ curl -sk "https://vikunja.$D/api/v1/info" | jq '.auth.openid_connect'
 
 ### The admin account, and why `Job Complete` is not enough ✅
 
-`vikunja-bootstrap-admin` creating the user is what the whole team-sync path stands on, and the Job
-reports `Complete` on a re-run that did nothing. Prove the credential instead:
+`vikunja-bootstrap-admin` creates a service-account admin user, used for API-level checks like this
+one. The Job reports `Complete` on a re-run that did nothing. Prove the credential instead:
 
 ```bash
 U=$(kubectl get secret vikunja-admin-credentials -n vikunja -o jsonpath='{.data.username}' | base64 -d)
@@ -1269,61 +1249,10 @@ T=$(curl -sk -X POST "https://vikunja.$D/api/v1/login" -H 'Content-Type: applica
 [ -n "$T" ] && [ "$T" != null ] && echo "admin login OK" || echo "ADMIN LOGIN FAILED"
 ```
 
-### Team sync ✅
+### Team sync
 
-On in the Quickstart values; needs the patched `apl-tasks` image from step 5b, which builds with
-**no** credentials — see `vikunja-patches/README.md`.
-
-```bash
-kubectl get pods -n apl-vikunja-operator            # 1/1 Running, not CrashLoopBackOff
-kubectl logs -n apl-vikunja-operator deploy/apl-vikunja-operator --tail=30
-curl -sk -H "Authorization: Bearer $T" "https://vikunja.$D/api/v1/teams" | jq -r '.[].name'
-```
-
-**`1/1 Running` proves nothing here.** The operator is event-driven: it reconciles on secret and
-configmap events, logs the outcome, and then sits silent whether it succeeded or failed. Read the
-log, and grep for both outcomes rather than only the good one:
-
-```bash
-kubectl logs -n apl-vikunja-operator deploy/apl-vikunja-operator | grep -E 'Success!|Errors found'
-```
-
-Expect `Success! Vikunja setup/reconfiguration completed` and a `team-<name>` per platform team.
-A team only appears once its Keycloak group exists, and a *member* only once that user has logged
-into Vikunja at least once. So an empty member list straight after install is not a failure. See
-`VIKUNJA.md` Phase 3.
-
-**Membership converges on a timer, and that is the part to check.** Neither of the two events it
-depends on — a user joining the Keycloak group, and that user's first Vikunja login — produces a
-Kubernetes event, so the resource watches cannot see either one. `VIKUNJA_RECONCILE_INTERVAL`
-(default 60s) is what closes the gap; without it membership never appears and the operator still
-reports `Success!`. That was a real bug on this branch — `VIKUNJA.md` 3.3.
-
-```bash
-kubectl logs -n apl-vikunja-operator deploy/apl-vikunja-operator | grep 'Reconciling every'
-# expect: Reconciling every 60s -- absent means you are running an image without the timer
-
-# Prove convergence rather than assuming it. Add a team in the console, log into Vikunja once as a
-# member of it through otomi-idp, then WITHOUT touching anything wait one interval:
-kubectl logs -n apl-vikunja-operator deploy/apl-vikunja-operator --tail=20 -f | grep -m1 'Adding "'
-# expect: Adding "<user>@$D" to Vikunja team "team-<name>"
-```
-
-The member list is the check, not the log line — read it from the API as the admin, since a Vikunja
-team is only visible to its own members and looking as the wrong user shows nothing:
-
-```bash
-curl -sk -H "Authorization: Bearer $T" "https://vikunja.$D/api/v1/teams" | jq -r '.[] | "\(.id) \(.name)"'
-curl -sk -H "Authorization: Bearer $T" "https://vikunja.$D/api/v1/teams/<id>" | jq '[.members[].username]'
-```
-
-⚠ **`/api/v1/users?s=<name>` is not a usable "does this user exist" check** — it returns `null`
-regardless. Reading the database is what settles it:
-
-```bash
-kubectl exec -n vikunja vikunja-db-1 -c postgres -- \
-  psql -U postgres -d vikunja -c 'select id, username, issuer, created from users order by id;'
-```
+Removed. Platform teams are no longer synced into Vikunja teams -- see `vikunja-patches/README.md`
+for what this used to do and why it was taken out. Nothing to check here.
 
 ### Browser checks ⬜ — no command covers these
 

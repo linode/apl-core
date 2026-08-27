@@ -47,20 +47,6 @@ releases:
     labels:
       pkg: vikunja
     <<: *default
-  - name: apl-vikunja-operator-artifacts
-    installed: {{ and ($a | get "vikunja.enabled") ($a | get "vikunja.teamSync.enabled" false) }}
-    namespace: apl-vikunja-operator
-    labels:
-      pkg: apl-vikunja-operator
-      app: core
-    <<: *raw
-  - name: apl-vikunja-operator
-    installed: {{ and ($a | get "vikunja.enabled") ($a | get "vikunja.teamSync.enabled" false) }}
-    namespace: apl-vikunja-operator
-    labels:
-      pkg: apl-vikunja-operator
-      app: core
-    <<: *default
   - name: oauth2-proxy
     # TODO: remove oauth dependency
     installed: true

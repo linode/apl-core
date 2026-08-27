@@ -323,6 +323,16 @@ Do **not** mount the logo in from `apl-core` — see Appendix B.
 
 ## Phase 3 — `apl-tasks`: the team-sync operator ⚠
 
+⛔ **Removed from `main` after this integration.** Everything below is still an accurate record of
+what was built, why, and the two real bugs found running it (§3.2b, §3.3) — kept as evidence, not
+reverted here. It was taken out as a deliberate, **revisit-able** decision, not because it didn't
+work: a continuously-reconciling operator acting on every team in `teamConfig` (later extended,
+`vikunja-patches`' `ed317eb89`, to also create a per-team Vikunja project with a hardcoded "Demo
+project" description) was judged more ongoing risk to real teams than the value it gave. The
+rejected OIDC-native alternative in Appendix B is the fallback if this is wanted again without an
+operator; the removal commit itself, and everything it deleted, is `git log` on `main`, not this
+file.
+
 ✅ Every team sync in this platform is an operator in `apl-tasks` that watches a ConfigMap generated
 by `apl-core` and pushes to the app's REST API:
 

@@ -266,4 +266,4 @@ appsInfo:
     license: AGPL-3.0
     dependencies: Keycloak
     about: Vikunja is the open-source, self-hostable to-do app. It organizes tasks in projects, with list, gantt, table and kanban views, labels, reminders, filters and sharing, and offers a CalDAV interface and a full REST API.
-    integration: App Platform runs one shared Vikunja instance for the whole cluster. Access is provided by the OIDC integration in App Platform, so members sign in through Keycloak and their account is created on first login. Platform teams and their membership are pushed into Vikunja teams, so a team created in the Console appears in Vikunja without further setup.
+    integration: App Platform runs one shared Vikunja instance for the whole cluster. Access is provided by the OIDC integration in App Platform, so members sign in through Keycloak and their account is created on first login. Vikunja teams are not currently synced from platform teams -- set them up inside Vikunja directly.

@@ -8,8 +8,6 @@ spec:
     databaseMaxIdleConnections: 6
     persistence:
         size: 2Gi
-    teamSync:
-        enabled: true
     resources:
         vikunja:
             limits:
