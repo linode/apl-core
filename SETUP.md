@@ -698,15 +698,33 @@ Verified: same image size as the published one, full suite passes on it.
 ### Vikunja MCP — build this if `apps.vikunja.enabled` is set
 
 `values/vikunja/vikunja-raw.gotmpl` deploys a `vikunja-mcp` Deployment referencing
-`vikunja-mcp-local:0.2.0`, built from `vikunja-mcp/Dockerfile` in this repo. Unlike the operator
+`vikunja-mcp-local:0.2.1`, built from `vikunja-mcp/Dockerfile` in this repo. Unlike the operator
 image, this one has nothing to do with `APPS_REVISION` — just build and load it once per cluster,
 same as the toolchain image above:
 
 ```bash
-docker build -t vikunja-mcp-local:0.2.0 ./vikunja-mcp
-docker images vikunja-mcp-local:0.2.0        # verify the artifact, not the exit code (Traps)
-kind load docker-image vikunja-mcp-local:0.2.0 --name apl
+docker build -t vikunja-mcp-local:0.2.1 ./vikunja-mcp
+docker images vikunja-mcp-local:0.2.1        # verify the artifact, not the exit code (Traps)
+kind load docker-image vikunja-mcp-local:0.2.1 --name apl
 ```
+
+**The tag here is our own local image revision, not the `@democratize-technology/vikunja-mcp` npm
+package version pinned inside `vikunja-mcp/Dockerfile` (still `0.2.0`) — the two numbers are
+unrelated and only look coupled by coincidence.** `b938c3e15` rebuilt this image from
+`node:22-slim` instead of `FROM supercorp/supergateway:latest` (to fix a stale-SDK MCP protocol
+mismatch) and bumped the chart's image tag to `0.2.1` to mark the new build, but missed updating
+this build command to match. The result: this section silently built and loaded an image tagged
+`0.2.0` that the chart never references, `vikunja-mcp` sat in permanent `ImagePullBackOff`, and
+because the operator applies helmfile releases strictly sequentially (`--concurrency=1`) and
+`vikunja-artifacts` only waits on Deployments becoming Available (not the co-located
+`vikunja-bootstrap-admin` Job — helmfile's global `wait: true` without `waitForJobs: true`), that
+one un-pulled image blocked the *entire* install: zero Argo CD Applications got created, so no
+Keycloak, no console, nothing — not just Vikunja. `vikunja-bootstrap-admin`'s own
+`wait-for-vikunja` init container failing looked like a second, circular problem but was only a
+symptom of the same block. `operator.installRetries` burns an attempt on this (~10 minutes to
+time out) before you'd notice from the install-status configmap alone. If a future commit changes
+this Dockerfile again, bump the tag in both `values/vikunja/vikunja-raw.gotmpl` and here, together,
+in the same commit.
 
 The npm package (`@democratize-technology/vikunja-mcp`) is installed **at image build time**, not
 fetched by the running pod, so every restart runs one pinned, known-good version instead of
