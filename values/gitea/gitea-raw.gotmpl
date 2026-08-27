@@ -29,10 +29,14 @@ resources:
       template:
         type: Opaque
         data:
-          username: {{ $v.apps.gitea.adminUsername | quote }}
+          username: "{{ `{{ .adminUsername }}` }}"
           password: "{{ `{{ .adminPassword }}` }}"
           cacheUrl: "{{ `redis://:{{ .valkeyPassword }}@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&` }}"
     data:
+      - secretKey: adminUsername
+        remoteRef:
+          key: gitea
+          property: adminUsername
       - secretKey: adminPassword
         remoteRef:
           key: gitea
