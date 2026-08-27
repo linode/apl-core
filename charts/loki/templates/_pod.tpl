@@ -29,7 +29,17 @@ metadata:
     name: {{ if $component.addIngesterNamePrefix }}loki-{{ end }}{{ $target }}-{{ $rolloutZoneName }}
     rollout-group: {{ with $component.rolloutGroupPrefix }}{{ . }}-{{ end }}{{ $target }}
     {{- end }}
-    {{- with (mergeOverwrite (dict) .Values.loki.podLabels .Values.defaults.podLabels $component.podLabels) }}
+    {{- $podLabels := mergeOverwrite (dict) .Values.loki.podLabels .Values.defaults.podLabels $component.podLabels }}
+    {{- /* labels referenced by the workload selectors (and, for zone-aware ingesters, the
+    per-zone headless Services and grafana/rollout-operator) are chart-owned and must win */}}
+    {{- $reserved := list "app.kubernetes.io/name" "app.kubernetes.io/instance" "app.kubernetes.io/component" }}
+    {{- if $rolloutZoneName }}
+    {{- $reserved = concat $reserved (list "name" "rollout-group") }}
+    {{- end }}
+    {{- range $reserved }}
+    {{- $podLabels = unset $podLabels . }}
+    {{- end }}
+    {{- with $podLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
