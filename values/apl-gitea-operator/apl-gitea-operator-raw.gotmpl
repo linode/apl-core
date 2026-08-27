@@ -37,7 +37,7 @@ resources:
           data:
             giteaPassword: "{{ `{{ .giteaPassword }}` }}"
             oidcClientId: {{ $v._derived.oidcClientID }}
-            oidcClientSecret: '{{ "{{ .oidcClientSecret | toString }}" }}'
+            oidcClientSecret: "{{ `{{ .oidcClientSecret }}` }}"
             oidcEndpoint: {{ $v._derived.oidcBaseUrl }}
       data:
         - secretKey: giteaPassword

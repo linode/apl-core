@@ -31,7 +31,7 @@ resources:
             harborUser: admin
             oidcEndpoint: {{ $v._derived.oidcBaseUrl }}
             oidcClientId: {{ $v._derived.oidcClientID }}
-            oidcClientSecret: '{{ "{{ .oidcClientSecret | toString }}" }}'
+            oidcClientSecret: "{{ `{{ .oidcClientSecret }}` }}"
       data:
         - secretKey: harborAdminPassword
           remoteRef:
