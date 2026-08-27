@@ -173,6 +173,10 @@ httproute:
       #       add:
       #         - name: X-Custom-Header
       #           value: value
+      # Optional timeouts configuration:
+      # timeouts:
+      #  request: 30s
+      #  backendRequest: 30s
 
 logging:
   # -- Enables server access logging
@@ -1032,11 +1036,13 @@ ui:
     # -- (string) Image PullPolicy
     pullPolicy: IfNotPresent
     # -- (string) Image tag
-    tag: "2.7.0"
+    tag: "2.8.1"
 
   crds:
     # -- Install UI CustomBoard CRDs
     customBoard: false
+    # -- Install UI CustomBoard CRDs
+    cluster: false
 
   # -- Deployment replica count
   replicaCount: 1
@@ -1084,6 +1090,8 @@ ui:
     groupClaim: ""
     # -- OpenID Connect allowed Scopes
     scopes: []
+    # -- Enable PKCE (Proof Key for Code Exchange) for OpenID Connect authentication
+    pkce: false
     # -- Skip TLS Verification
     skipTLS: false
     # -- TLS Certificate file path
@@ -1137,7 +1145,7 @@ ui:
   #     # -- list of displayed namespaces
   #     list: []
   #     # -- selector for displayed namespaces
-  #     selector:
+  #     labelSelector:
   #       team: team-a  # equal
   #       workload: *   # label exists
   #       infra: !*     # label does not exist
@@ -1245,6 +1253,9 @@ ui:
   # -- Allow additional env variables to be added
   envVars: []
 
+  # -- Allow custom configuration of the /tmp volume
+  tmpVolume: {}
+
   rbac:
     # -- Create RBAC resources
     enabled: true
@@ -1346,6 +1357,10 @@ ui:
         #       add:
         #         - name: X-Custom-Header
         #           value: value
+        # Optional timeouts configuration:
+        # timeouts:
+        #  request: 30s
+        #  backendRequest: 30s
 
   networkPolicy:
     # -- When true, use a NetworkPolicy to allow ingress to the webhook
@@ -1412,7 +1427,7 @@ plugin:
       # -- (string) Image PullPolicy
       pullPolicy: IfNotPresent
       # -- (string) Image tag
-      tag: "0.7.0"
+      tag: "0.7.1"
 
     # -- Deployment replica count
     replicaCount: 1
@@ -1594,6 +1609,10 @@ plugin:
           #       add:
           #         - name: X-Custom-Header
           #           value: value
+          # Optional timeouts configuration:
+          # timeouts:
+          #  request: 30s
+          #  backendRequest: 30s
 
     # -- Resource constraints
     resources: {}
@@ -1662,7 +1681,7 @@ plugin:
       pullPolicy: IfNotPresent
         # -- (string) Image tag
         # Defaults to `Chart.AppVersion` if omitted
-      tag: "0.5.0"
+      tag: "0.5.1"
 
     cli:
       image:
@@ -1674,7 +1693,7 @@ plugin:
         pullPolicy: IfNotPresent
           # -- (string) Image tag
           # Defaults to `Chart.AppVersion` if omitted
-        tag: "0.72.0"
+        tag: "0.74.0"
 
     # -- Additional container args.
     extraArgs: {}

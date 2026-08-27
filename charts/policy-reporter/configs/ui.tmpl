@@ -22,6 +22,7 @@ ui:
 
 crds:
   customBoard: {{ .Values.ui.crds.customBoard }}
+  cluster: {{ .Values.ui.crds.cluster }}
 
 {{- $default := false -}}
 {{- range .Values.ui.clusters }}
