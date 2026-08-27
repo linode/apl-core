@@ -14,7 +14,8 @@ wrong one for the task wastes a session.
 | File | What it is | Read it when |
 |---|---|---|
 | `CLAUDE.md` | this file — operational rules and traps that apply to *any* work here | always, first |
-| `SETUP.md` | an executable runbook: bring the lab up from nothing | you are asked to install, rebuild or verify the lab |
+| `Taskfile.yml` + `.taskfiles/*.yml` | the actual, current way to bring the lab up — a deterministic `go-task` reproduction of `SETUP.md`'s Quickstart, written by an agent after running it by hand | you are asked to install, rebuild or verify the lab — run `task setup` (or `go-task setup` if `task` isn't the installed binary name), don't re-derive the steps yourself |
+| `SETUP.md` | the runbook `Taskfile.yml` encodes, and the *why* behind each of its steps | the Taskfile fails and you need to understand a step to debug it, or you're changing what the lab does and need to update both |
 | `INTEGRATING-AN-APP.md` | a generic playbook: add any third-party app as a platform app | you are asked to integrate a new app |
 | `VIKUNJA.md` | the worked example behind that playbook — a record of one real integration | you need the concrete detail a rule in the playbook is abbreviating |
 | `TURNSTONE.md` | a second worked example — an app needing an upstream LLM API, and the certificate trap that came with it | your app is not a Go web app, or anything TLS fails in a way `openssl` says is fine |
@@ -40,10 +41,34 @@ Also: `vikunja-patches/README.md` and `turnstone-patches/README.md` — read bef
 (`apl-api`, `apl-console`, `apl-tasks`). It explains why they ship as patches rather than forks, and
 carries the build and load commands, including the one that needs no registry token.
 
-## The task, if you were pointed at SETUP.md
+## The task, if you were asked to install, rebuild or verify the lab
 
-Follow `SETUP.md` top to bottom. It is a runbook, not an essay — every command in it has been run.
-The expected output is given after each step; compare against it rather than assuming success.
+**Run `task setup` (binary may be installed as `go-task` instead — check `which task go-task`),
+not a manual walk through `SETUP.md`.** That was the point of building it: this lab should no
+longer need an agent driving `kubectl`/`docker`/`helm` by hand, session after session, to come up
+the same way SETUP.md already proved works. Useful sub-tasks (see `task --list`):
+
+- `task setup` — everything, defaults on (gitea/harbor/tekton/vikunja/turnstone)
+- `ANTHROPIC_API_KEY=sk-ant-... task setup` — non-interactive, for Turnstone
+- `task setup TURNSTONE_ENABLED=false` (and the other `*_ENABLED` toggles)
+- `task verify:platform` / `task verify:vikunja` / `task verify:turnstone` — the non-browser
+  checklists, safe to re-run any time against an already-up cluster
+- `task down CONFIRM=yes` — destructive, deletes the cluster; still needs the same confirmation
+  care as any other destructive action in this file
+
+If `task setup` fails, don't fall back to re-deriving the fix from first principles — read the
+matching step in `SETUP.md` first (the Taskfile's comments cite the exact section), fix the
+Taskfile itself if the fix is real and generalizes, and re-run. Only fall back to raw
+`kubectl`/`docker`/`helm` commands if the Taskfile genuinely can't express what's needed; if that
+happens, that's itself a gap worth fixing in `Taskfile.yml`/`.taskfiles/*.yml`, not just working
+around once.
+
+## The task, if you were pointed at SETUP.md directly
+
+Only read this top-to-bottom if you're debugging the Taskfile itself, changing what the lab does,
+or were explicitly told to follow it by hand rather than through `task setup`. It is a runbook, not
+an essay — every command in it has been run. The expected output is given after each step; compare
+against it rather than assuming success.
 
 ## The task, if you were pointed at INTEGRATING-AN-APP.md
 

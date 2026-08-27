@@ -15,6 +15,24 @@ data:
   TURNSTONE_CONSOLE_HOST: "0.0.0.0"
   TURNSTONE_CONSOLE_PORT: {{ .Values.console.service.port | quote }}
   TURNSTONE_POLL_INTERVAL: "5"
+  {{- /*
+    Hardcoded, not operator-configurable. Anthropic's native tool-search (deferred loading via a
+    server-side tool_search_tool_bm25 tool) auto-activates once tool count exceeds
+    tools.search_threshold (default 20, tools.search default "auto") -- MCP catalogs across
+    gitea-mcp + vikunja-mcp alone already exceed that (54 + 9 = 63 tools). Turnstone has a real
+    bug in how it persists/resumes that server-side tool's tool_use/tool_result pairing across a
+    session resume: verified live, every resumed chat 400'd with `messages.1:
+    tool_search_tool_bm25 tool use ... was found without a corresponding
+    tool_search_tool_bm25_tool_result block`. Forcing tools.search off avoids the feature (and the
+    bug) entirely -- all tools are sent directly every turn instead, at higher per-turn token cost
+    but no crash. _seed_config_from_env (turnstone/console/server.py) only seeds a setting on
+    FIRST boot if it isn't already stored in the DB, so this env var has no effect on an
+    already-running instance.
+
+    Deliberately set here rather than as an operator-generated extraEnv entry -- see
+    values/turnstone/turnstone.gotmpl for why that broke the install.
+  */}}
+  TURNSTONE_TOOLS_SEARCH: "off"
   {{- if .Values.llm.baseUrl }}
   TURNSTONE_LLM_BASE_URL: {{ .Values.llm.baseUrl | quote }}
   {{- end }}

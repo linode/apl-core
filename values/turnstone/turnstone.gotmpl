@@ -275,21 +275,18 @@ extraEnv:
         key: ANTHROPIC_API_KEY
 
   {{- /*
-    Anthropic's native tool-search (deferred loading via a server-side tool_search_tool_bm25
-    tool) auto-activates once tool count exceeds tools.search_threshold (default 20,
-    tools.search default "auto") -- MCP catalogs across gitea-mcp + vikunja-mcp alone already
-    exceed that (54 + 9 = 63 tools). Turnstone has a real bug in how it persists/resumes that
-    server-side tool's tool_use/tool_result pairing across a session resume: verified live, every
-    resumed chat 400'd with `messages.1: tool_search_tool_bm25 tool use ... was found without a
-    corresponding tool_search_tool_bm25_tool_result block`. Forcing tools.search off avoids the
-    feature (and the bug) entirely -- all tools are sent directly every turn instead, at higher
-    per-turn token cost but no crash. _seed_config_from_env (turnstone/console/server.py) only
-    seeds a setting on FIRST boot if it isn't already stored in the DB, so this env var has no
-    effect on an already-running instance -- it was also set live via
-    `PUT /api/admin/settings/tools.search {"value":"off"}` to fix the current cluster immediately.
+    TURNSTONE_TOOLS_SEARCH ("off", the workaround for Anthropic's native tool-search /
+    session-resume bug) used to be set here as an operator-generated extraEnv entry. Moved to
+    charts/turnstone/templates/configmap.yaml instead -- see the comment there for why: this
+    fork's operator drops quoting on YAML-1.1-boolean-ambiguous bare words ("off"/"on"/"yes"/"no",
+    but not "true"/"false") when it serializes generated values into the Argo CD Application
+    manifest, so Argo CD's own (YAML-1.1) Helm parse silently turned the string "off" into the
+    boolean false, and `env[].value` must be a string -- Argo CD then refused to sync
+    turnstone-turnstone at all: "expected string, got ...false" on both Deployments. Confirmed
+    live on this install: zero turnstone-console / turnstone-server pods ever got created.
+    This value is a fixed, non-configurable workaround for a real Turnstone bug, not an operator
+    setting, so it belongs in the chart directly -- which also sidesteps the round-trip entirely.
   */}}
-  - name: TURNSTONE_TOOLS_SEARCH
-    value: "off"
 
   {{- /* Pre-derived endpoints, used verbatim -- never assemble an OIDC URL by hand. */}}
   - name: TURNSTONE_OIDC_ISSUER

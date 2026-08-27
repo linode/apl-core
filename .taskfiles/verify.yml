@@ -1,0 +1,117 @@
+# Post-install verification. SETUP.md steps 8 (Argo CD layer), 9 (CA/reachability), 10 (Vikunja),
+# 11 (Turnstone). Browser-only checks (SSO round-trip, tiles, an actual chat turn) are NOT here --
+# no command substitutes for them, see SETUP.md itself for the checklist.
+version: '3'
+
+tasks:
+  platform:
+    desc: "Platform-level health: pods, Argo CD sync, gateway, operator/image handover"
+    cmds:
+      - |
+        set -euo pipefail
+        echo "=== readiness probe survives Argo CD handover ==="
+        PROBE=$(kubectl get deploy apl-operator -n apl-operator \
+          -o jsonpath='{.spec.template.spec.containers[0].readinessProbe.exec.command}' 2>/dev/null || true)
+        echo "$PROBE"
+        [ -n "$PROBE" ] || echo "warning: empty -- chart and image may disagree, see SETUP.md step 8"
+
+        echo "=== operator image after handover ==="
+        kubectl get deploy apl-operator -n apl-operator -o jsonpath='{..image}{"\n"}'
+
+        echo "=== pods not Running/Completed (must be empty) ==="
+        kubectl get pods -A --no-headers | awk '$4!="Running" && $4!="Completed"'
+
+        echo "=== helm releases ==="
+        helm list -A
+
+        echo "=== gateway LoadBalancer (external IP must match domainSuffix's first octet-group) ==="
+        kubectl get svc -A -o wide | grep -i loadbalancer
+
+        echo "=== Argo CD applications not Synced+Healthy (must be empty) ==="
+        kubectl get applications -n argocd \
+          -o custom-columns='NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status' \
+          --no-headers | awk '$2!="Synced" || $3!="Healthy"'
+
+        D=$(cat {{.STATE_DIR}}/pool_start.txt).nip.io
+        echo "=== console reachability (403 with an HTML body is correct -- oauth2-proxy's login interstitial) ==="
+        curl -sk -o /dev/null -w 'HTTP %{http_code}\n' "https://console.$D/"
+        curl -sk -D- -o /dev/null "https://console.$D/oauth2/start" | grep -i location || true
+
+  vikunja:
+    desc: "Vikunja checklist (non-browser parts only -- SETUP.md step 10)"
+    cmds:
+      - |
+        set -euo pipefail
+        if [ "$VIKUNJA_ENABLED" != "true" ]; then
+          echo "VIKUNJA_ENABLED=$VIKUNJA_ENABLED -- nothing to verify"
+          exit 0
+        fi
+        D=$(kubectl get httproute vikunja -n vikunja -o jsonpath='{.spec.hostnames[0]}' | sed 's/^vikunja\.//')
+        [ -n "$D" ] || { echo "error: could not derive domain from the vikunja httproute" >&2; exit 1; }
+
+        echo "=== pods / cluster / secrets / bootstrap job ==="
+        kubectl get pods -n vikunja
+        kubectl get cluster -n vikunja
+        kubectl get externalsecrets -n vikunja
+        kubectl get jobs -n vikunja
+
+        echo "=== OIDC provider (empty list is the most likely failure -- pod is Running/Ready either way) ==="
+        curl -sk "https://vikunja.$D/api/v1/info" | jq '.auth.openid_connect'
+
+        echo "=== admin credential actually authenticates (a Job 'Complete' on a no-op rerun proves nothing) ==="
+        U=$(kubectl get secret vikunja-admin-credentials -n vikunja -o jsonpath='{.data.username}' | base64 -d)
+        P=$(kubectl get secret vikunja-admin-credentials -n vikunja -o jsonpath='{.data.password}' | base64 -d)
+        T=$(curl -sk -X POST "https://vikunja.$D/api/v1/login" -H 'Content-Type: application/json' \
+              -d "{\"username\":\"$U\",\"password\":\"$P\"}" | jq -r .token)
+        [ -n "$T" ] && [ "$T" != null ] && echo "admin login OK" || { echo "ADMIN LOGIN FAILED" >&2; exit 1; }
+
+        echo
+        echo "Not covered here (browser-only, see SETUP.md step 10): the /apps/admin tile, the"
+        echo "otomi-idp SSO round-trip, and team-member visibility (which only appears after that login)."
+
+  turnstone:
+    desc: "Turnstone checklist (non-browser parts only -- SETUP.md step 11, sections 1-4 + metrics)"
+    cmds:
+      - |
+        set -euo pipefail
+        if [ "$TURNSTONE_ENABLED" != "true" ]; then
+          echo "TURNSTONE_ENABLED=$TURNSTONE_ENABLED -- nothing to verify"
+          exit 0
+        fi
+        D=$(kubectl get httproute turnstone -n turnstone -o jsonpath='{.spec.hostnames[0]}' | sed 's/^turnstone\.//')
+        [ -n "$D" ] || { echo "error: could not derive domain from the turnstone httproute" >&2; exit 1; }
+
+        echo "=== section 1: the app itself ==="
+        kubectl get pods -n turnstone
+        kubectl get cluster -n turnstone
+        kubectl get externalsecrets -n turnstone
+        kubectl get jobs -n turnstone
+
+        echo "=== section 2: the certificate chain (the whole point of 'task install:ca') ==="
+        echo "-- OIDC discovery under Python's VERIFY_X509_STRICT, expect 200 --"
+        kubectl exec -n turnstone deploy/turnstone-console -- python -c \
+          "import httpx,os;print(httpx.get(os.environ['TURNSTONE_OIDC_ISSUER']+'/.well-known/openid-configuration').status_code)"
+        echo "-- api.anthropic.com reachability, expect 401 (TLS fine, key check fails -- that's a PASS) --"
+        kubectl exec -n turnstone deploy/turnstone-console -- python -c \
+          "import httpx;print(httpx.get('https://api.anthropic.com/v1/models').status_code)"
+        echo "   (do not re-check this with 'openssl verify' on the host -- it doesn't apply"
+        echo "   VERIFY_X509_STRICT and will report a broken chain as OK. Only Python sees it.)"
+
+        echo "=== section 3: the model registry (a missing model is silent otherwise) ==="
+        for d in turnstone-server turnstone-console; do
+          kubectl logs -n turnstone deploy/$d | grep -iE 'no model name, skipping|empty registry' \
+            && echo "warning: the model=/name= trap fired in $d" >&2 || true
+        done
+        kubectl get cm turnstone-model-config -n turnstone -o jsonpath='{.data.config\.toml}'
+        echo
+
+        echo "=== section 4: the admin account (Job 'Complete' on a no-op rerun proves nothing) ==="
+        kubectl exec -n turnstone deploy/turnstone-console -- turnstone-admin list-users
+
+        echo "=== /metrics redirect (expect 302, not a Prometheus dump) ==="
+        curl -sk -o /dev/null -w 'HTTP %{http_code}\n' "https://turnstone.$D/metrics"
+
+        echo
+        echo "Not covered here (browser-only, see SETUP.md step 11 sections 5-7): the console tile,"
+        echo "the otomi-idp SSO round-trip, role mapping after a real login, and an actual chat turn"
+        echo "against the Claude API."

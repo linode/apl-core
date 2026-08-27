@@ -1,0 +1,130 @@
+# Build + load every image the lab needs from local source. SETUP.md steps 5 and 5b.
+version: '3'
+
+tasks:
+  build-operator:
+    desc: "Build the operator image from a clean git-tracked-only context"
+    cmds:
+      - |
+        set -euo pipefail
+        mkdir -p {{.STATE_DIR}}
+        # Build from a clean context, never the working directory: `docker build .` copies the
+        # whole tree, and npm run test:ci spellchecks every root *.md -- a stray local note fails
+        # the build on an error that has nothing to do with the code. .git/info/exclude does not
+        # apply to Docker, so exporting only git-tracked files is the only way to sidestep it.
+        CTX=$(mktemp -d)
+        git ls-files -z | tar --null -T - -c | tar -x -C "$CTX"
+
+        APPS_REVISION=$(git rev-parse HEAD)
+        echo -n "$APPS_REVISION" > {{.STATE_DIR}}/apps_revision.txt
+        # APPS_REVISION is what Argo CD fetches charts/* at -- it must already be pushed, or every
+        # Argo CD Application fails "unable to resolve to a commit SHA" while the operator's own
+        # install still reports completed (see SETUP.md step 5's "Which repository, and which
+        # revision" section). Catching this here beats catching it 15 minutes into an install.
+        if ! git branch -r --contains "$APPS_REVISION" | grep -q .; then
+          echo "error: HEAD ($APPS_REVISION) is not pushed to any remote branch -- Argo CD will not find it." >&2
+          echo "Push this commit first, or every Application will fail to sync." >&2
+          exit 1
+        fi
+        echo "apps: {{.APPS_REPO_URL}} @ $APPS_REVISION"
+
+        docker build --build-arg VERSION={{.OPERATOR_VERSION}} \
+                     --build-arg APPS_REVISION="$APPS_REVISION" \
+                     --build-arg APPS_REPO_URL="{{.APPS_REPO_URL}}" \
+                     -t {{.OPERATOR_IMAGE}} "$CTX"
+        rm -rf "$CTX"
+      # Never trust docker build's exit code through anything, and never trust it blindly even
+      # un-piped -- verify the artifact landed.
+      - docker images {{.OPERATOR_IMAGE}}
+      - |
+        if ! docker image inspect {{.OPERATOR_IMAGE}} >/dev/null 2>&1; then
+          echo "error: {{.OPERATOR_IMAGE}} was not produced -- check the build log above" >&2
+          exit 1
+        fi
+
+  build-api:
+    desc: "Clone apl-api, apply the vikunja+turnstone patches, sync the schema, build"
+    cmds:
+      - |
+        set -euo pipefail
+        rm -rf {{.API_CLONE_DIR}}
+        git clone --depth 1 https://github.com/linode/apl-api.git {{.API_CLONE_DIR}}
+        # Order matters: the turnstone patch has `- vikunja` in its context lines, i.e. it assumes
+        # the vikunja patch already applied. Both are needed regardless of which apps are enabled --
+        # there is one apl-api image for the whole platform.
+        # `git -C <dir> apply <patch>` resolves <patch> relative to <dir>, not to $PWD -- -C
+        # changes cwd for the whole git invocation, same as `cd <dir> && git apply <patch>` would.
+        # A bare relative path here (`vikunja-patches/apl-api.patch`) fails with "can't open patch
+        # ... No such file or directory" even though the file exists relative to the repo root.
+        # Capture $PWD into an absolute path first.
+        REPO_ROOT="$PWD"
+        git -C {{.API_CLONE_DIR}} apply "$REPO_ROOT/vikunja-patches/apl-api.patch"
+        git -C {{.API_CLONE_DIR}} apply "$REPO_ROOT/turnstone-patches/apl-api.patch"
+        grep -qE '^\s+- turnstone$' {{.API_CLONE_DIR}}/src/openapi/app.yaml \
+          || { echo "error: AppList missing turnstone after patching -- no tile will render" >&2; exit 1; }
+      - |
+        set -euo pipefail
+        # This machine's host Node can be broken (see CLAUDE.md "Do not run npm on the host") --
+        # npm always runs inside the toolchain container instead, even for a script that's just a
+        # cp. Bakes in THIS repo's values-schema.yaml; without it the Console renders an EMPTY
+        # settings form for any app added by a patch (e.g. Turnstone's anthropicApiKey field).
+        docker run --rm --user "$(id -u):$(id -g)" \
+          -v {{.API_CLONE_DIR}}:/w -v "$PWD":/core:ro -w /w -e APL_CORE_PATH=/core \
+          {{.APL_TOOLS_IMAGE}} npm run schema:sync
+        diff -q values-schema.yaml {{.API_CLONE_DIR}}/src/values-schema.yaml
+      - docker build -t {{.API_IMAGE}} {{.API_CLONE_DIR}}
+      - docker images {{.API_IMAGE}}
+      - |
+        if ! docker image inspect {{.API_IMAGE}} >/dev/null 2>&1; then
+          echo "error: {{.API_IMAGE}} was not produced" >&2
+          exit 1
+        fi
+
+  build-console:
+    desc: "Clone apl-console, drop in the vikunja+turnstone tile logos, build"
+    cmds:
+      - |
+        set -euo pipefail
+        rm -rf {{.CONSOLE_CLONE_DIR}}
+        git clone --depth 1 https://github.com/linode/apl-console.git {{.CONSOLE_CLONE_DIR}}
+        cp vikunja-patches/apl-console/public/logos/vikunja_logo.svg {{.CONSOLE_CLONE_DIR}}/public/logos/
+        cp turnstone-patches/apl-console/public/logos/turnstone_logo.svg {{.CONSOLE_CLONE_DIR}}/public/logos/
+      - docker build -t {{.CONSOLE_IMAGE}} {{.CONSOLE_CLONE_DIR}}
+      - docker images {{.CONSOLE_IMAGE}}
+      - |
+        if ! docker image inspect {{.CONSOLE_IMAGE}} >/dev/null 2>&1; then
+          echo "error: {{.CONSOLE_IMAGE}} was not produced" >&2
+          exit 1
+        fi
+
+  build-vikunja-mcp:
+    desc: "Build the vikunja-mcp sidecar image (only if VIKUNJA_ENABLED)"
+    cmds:
+      - |
+        set -euo pipefail
+        if [ "$VIKUNJA_ENABLED" != "true" ]; then
+          echo "VIKUNJA_ENABLED=$VIKUNJA_ENABLED -- skipping vikunja-mcp build"
+          exit 0
+        fi
+        docker build -t {{.VIKUNJA_MCP_IMAGE}} ./vikunja-mcp
+        docker images {{.VIKUNJA_MCP_IMAGE}}
+        docker image inspect {{.VIKUNJA_MCP_IMAGE}} >/dev/null 2>&1 || { echo "error: {{.VIKUNJA_MCP_IMAGE}} was not produced" >&2; exit 1; }
+
+  build-all:
+    desc: "Build every image the lab needs"
+    cmds:
+      - task: build-operator
+      - task: build-api
+      - task: build-console
+      - task: build-vikunja-mcp
+
+  load-all:
+    desc: "Load every built image into the kind cluster"
+    cmds:
+      - kind load docker-image {{.OPERATOR_IMAGE}} --name {{.CLUSTER_NAME}}
+      - kind load docker-image {{.API_IMAGE}} --name {{.CLUSTER_NAME}}
+      - kind load docker-image {{.CONSOLE_IMAGE}} --name {{.CLUSTER_NAME}}
+      - |
+        if [ "$VIKUNJA_ENABLED" = "true" ]; then
+          kind load docker-image {{.VIKUNJA_MCP_IMAGE}} --name {{.CLUSTER_NAME}}
+        fi

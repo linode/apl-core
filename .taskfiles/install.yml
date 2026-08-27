@@ -1,0 +1,243 @@
+# Chart schema, CA, values.yaml, helm install, convergence watchers, post-install. SETUP.md
+# steps 6, 6b, 6c, 7, 8, 9.
+version: '3'
+
+tasks:
+  schema:
+    desc: "Generate chart/apl/values.schema.json (gitignored, generated -- not optional)"
+    cmds:
+      # Without this Helm validates NOTHING, silently -- a missing domainSuffix becomes a
+      # confusing failure inside the operator instead of a named error at `helm template` time.
+      - bin/gen-chart-schema.sh {{.OPERATOR_IMAGE}}
+
+  ca:
+    desc: "Generate the platform root CA with a subjectKeyIdentifier (required for Turnstone)"
+    cmds:
+      - mkdir -p {{.STATE_DIR}}
+      - |
+        set -euo pipefail
+        # The platform's own auto-generated root CA carries no subjectKeyIdentifier, so
+        # cert-manager's leaves carry no authorityKeyIdentifier, and Python 3.13+'s
+        # VERIFY_X509_STRICT refuses them with "Missing Authority Key Identifier" -- invisible to
+        # `openssl verify`, which doesn't apply that flag. Go apps (Gitea, Vikunja, Argo CD) never
+        # notice. Full account: TURNSTONE.md section 3. MUST be generated before install; never
+        # retrofit onto an already-bootstrapped cluster (customRootCAKey is an x-secret and would
+        # win over the stale customRootCA read back from storedSecrets -- recreate the cluster
+        # instead, see SETUP.md step 7).
+        openssl req -x509 -newkey rsa:4096 -nodes \
+          -keyout {{.STATE_DIR}}/apl-ca.key -out {{.STATE_DIR}}/apl-ca.crt \
+          -days 3650 -sha256 -subj "/C=NL/ST=Utrecht/L=Utrecht/O=Otomi/OU=Development" \
+          -addext "basicConstraints=critical,CA:TRUE" \
+          -addext "keyUsage=critical,digitalSignature,keyCertSign,cRLSign" \
+          -addext "subjectKeyIdentifier=hash"
+        openssl rsa -traditional -in {{.STATE_DIR}}/apl-ca.key -out {{.STATE_DIR}}/apl-ca.pkcs1.key
+        openssl x509 -in {{.STATE_DIR}}/apl-ca.crt -noout -text | grep -q 'Subject Key Identifier' \
+          || { echo "error: generated CA has no subjectKeyIdentifier -- Turnstone SSO will fail" >&2; exit 1; }
+        echo "CA generated with a subjectKeyIdentifier -- good"
+
+  values:
+    desc: "Assemble values.yaml (CA + Anthropic key + app toggles), then validate it renders"
+    cmds:
+      - |
+        set -euo pipefail
+        [ -f {{.STATE_DIR}}/pool_start.txt ] || { echo "error: run 'task cluster:metallb' first" >&2; exit 1; }
+        [ -f {{.STATE_DIR}}/apl-ca.crt ] || { echo "error: run 'task install:ca' first" >&2; exit 1; }
+        POOL_START=$(cat {{.STATE_DIR}}/pool_start.txt)
+
+        ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
+        if [ "$TURNSTONE_ENABLED" = "true" ] && [ -z "$ANTHROPIC_API_KEY" ]; then
+          if [ -t 0 ]; then
+            read -rsp 'Anthropic API key (sk-ant-...): ' ANTHROPIC_API_KEY; echo
+          fi
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "error: TURNSTONE_ENABLED=true but no Anthropic API key available (env var unset, and" >&2
+            echo "either not interactive or left blank). Either export ANTHROPIC_API_KEY=sk-ant-... or" >&2
+            echo "run with TURNSTONE_ENABLED=false -- the install would otherwise complete but both" >&2
+            echo "Turnstone pods would sit in CreateContainerConfigError forever." >&2
+            exit 1
+          fi
+        fi
+
+        cat > values.yaml <<EOF
+        cluster:
+          name: apl-local
+          provider: custom
+          domainSuffix: $POOL_START.nip.io
+          defaultStorageClass: standard
+        otomi:
+          version: v{{.OPERATOR_VERSION}}
+          coreImageRepository: apl-core-local
+          coreImagePullPolicy: IfNotPresent
+        operator:
+          installRetries: 3
+        versions:
+          api: {{.APP_VERSION}}
+          console: {{.APP_VERSION}}
+        # Single-node lab: every HA-oriented default (2+ Postgres instances per app, 2-3 replica
+        # HPA floors) is pure waste here -- there's no second node to fail over to.
+        databases:
+          gitea: {replicas: 1}
+          harbor: {replicas: 1}
+          keycloak: {replicas: 1}
+          turnstone: {replicas: 1}
+          vikunja: {replicas: 1}
+        ingress:
+          platformClass:
+            gateway: {replicas: 1, autoscaling: {minReplicas: 1}}
+        apps:
+          argocd:
+            autoscaling: {repoServer: {minReplicas: 1}}
+          istio:
+            autoscaling: {pilot: {minReplicas: 1}, egressgateway: {minReplicas: 1}}
+          metrics-server:
+            # kind does not enable kubelet serving-cert bootstrapping; upstream only adds this
+            # automatically for provider: linode.
+            extraArgs: ["--kubelet-insecure-tls=true"]
+          cert-manager:
+            # BOTH required -- src/cmd/bootstrap.ts checks customRootCA and customRootCAKey
+            # together, and silently generates and uses its own weak CA if either is missing.
+        EOF
+        {
+          echo "    customRootCA: |"
+          sed 's/^/      /' {{.STATE_DIR}}/apl-ca.crt
+          echo "    customRootCAKey: |"
+          sed 's/^/      /' {{.STATE_DIR}}/apl-ca.pkcs1.key
+        } >> values.yaml
+        cat >> values.yaml <<EOF
+          gitea:
+            enabled: $GITEA_ENABLED
+          harbor:
+            enabled: $HARBOR_ENABLED
+          tekton:
+            enabled: $TEKTON_ENABLED
+          vikunja:
+            enabled: $VIKUNJA_ENABLED
+          turnstone:
+            enabled: $TURNSTONE_ENABLED
+        EOF
+        if [ "$TURNSTONE_ENABLED" = "true" ]; then
+          {
+            echo "    # Sealed like any x-secret -- never reaches the values repo or Turnstone's DB;"
+            echo "    # the model definition stores the literal \${ANTHROPIC_API_KEY} and Turnstone"
+            echo "    # expands it from the pod environment. See TURNSTONE.md section 2."
+            echo "    anthropicApiKey: $ANTHROPIC_API_KEY"
+          } >> values.yaml
+        fi
+        unset ANTHROPIC_API_KEY
+        chmod 0600 values.yaml
+        echo "wrote values.yaml ($(wc -l < values.yaml) lines)"
+      - helm template -f values.yaml apl ./chart/apl >/dev/null
+      - 'echo "values.yaml renders cleanly against the chart schema"'
+
+  apply:
+    desc: "helm install the operator (deploys in seconds; the platform install itself takes 5-15 min)"
+    cmds:
+      - helm install -f values.yaml apl ./chart/apl
+
+  watch:
+    desc: "Watch apl-installation-status until completed (bounded: 30 x 60s = 30 min cap)"
+    cmds:
+      - |
+        set -euo pipefail
+        for i in $(seq 1 30); do
+          D=$(kubectl get cm apl-installation-status -n apl-operator -o jsonpath='{.data}' 2>/dev/null || true)
+          P=$(kubectl get pods -A --no-headers 2>/dev/null | awk '$4=="Running"||$4=="Completed"' | wc -l)
+          T=$(kubectl get pods -A --no-headers 2>/dev/null | wc -l)
+          OP=$(kubectl get pods -n apl-operator --no-headers 2>/dev/null | awk '{print $2" "$3" restarts="$4}')
+          echo "[install] ${D:-no status configmap yet} | pods ok ${P}/${T} | operator: ${OP:-absent}"
+          if echo "$OP" | grep -qE 'CrashLoopBackOff|ImagePullBackOff|Error'; then
+            echo "[install] !! OPERATOR UNHEALTHY" >&2
+          fi
+          if echo "$D" | grep -qE '"attempt":"([2-9]|[1-9][0-9])"'; then
+            echo "[install] !! ATTEMPT CLIMBING -- unbounded-retry signature, something is wedged" >&2
+          fi
+          if echo "$D" | grep -q '"status":"completed"'; then
+            echo "[install] COMPLETED"
+            exit 0
+          fi
+          sleep 60
+        done
+        echo "error: install did not complete within 30 minutes" >&2
+        exit 1
+
+  watch-argocd:
+    desc: "Watch Argo CD until every Application is Synced+Healthy (bounded: 30 x 60s = 30 min cap)"
+    cmds:
+      - |
+        set -euo pipefail
+        STABLE=0
+        for i in $(seq 1 30); do
+          NOTOK=$(kubectl get applications -n argocd \
+            -o custom-columns='NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status' \
+            --no-headers 2>/dev/null | awk '$2!="Synced" || $3!="Healthy"')
+          TOTAL=$(kubectl get applications -n argocd --no-headers 2>/dev/null | wc -l)
+          BADCOUNT=$(echo "$NOTOK" | grep -c . || true)
+          P=$(kubectl get pods -A --no-headers 2>/dev/null | awk '$4=="Running"||$4=="Completed"' | wc -l)
+          T=$(kubectl get pods -A --no-headers 2>/dev/null | wc -l)
+          echo "[argocd] apps ${TOTAL} total, ${BADCOUNT} not Synced+Healthy | pods ${P}/${T}"
+          if [ "$BADCOUNT" -gt 0 ]; then
+            echo "$NOTOK" | sed 's/^/[argocd]   /'
+          fi
+          if [ "$BADCOUNT" -eq 0 ] && [ "$TOTAL" -gt 0 ]; then
+            STABLE=$((STABLE+1))
+          else
+            STABLE=0
+          fi
+          if [ "$STABLE" -ge 2 ]; then
+            echo "[argocd] ALL SYNCED+HEALTHY, stable for 2 checks"
+            exit 0
+          fi
+          sleep 60
+        done
+        echo "error: Argo CD did not fully converge within 30 minutes -- see 'task verify:platform' for what's stuck" >&2
+        exit 1
+
+  trust-ca:
+    desc: "Trust the platform CA on the kind node's containerd (required for any image pull)"
+    cmds:
+      - |
+        set -euo pipefail
+        kubectl get secret custom-ca -n cert-manager -o jsonpath='{.data.tls\.crt}' \
+          | base64 -d > apl-root-ca.crt
+        docker cp apl-root-ca.crt {{.CLUSTER_NAME}}-control-plane:/usr/local/share/ca-certificates/apl-root-ca.crt
+        docker exec {{.CLUSTER_NAME}}-control-plane update-ca-certificates
+        docker exec {{.CLUSTER_NAME}}-control-plane systemctl restart containerd
+      # This step is NOT persisted across `kind delete cluster` -- it patches the live node
+      # container, not a kind config file. Re-run after every fresh install.
+      - |
+        set -euo pipefail
+        D=$(cat {{.STATE_DIR}}/pool_start.txt).nip.io
+        sleep 3
+        docker exec {{.CLUSTER_NAME}}-control-plane curl -sv --max-time 5 "https://harbor.$D/v2/" 2>&1 \
+          | grep -qi "certificate verify ok" \
+          && echo "CA trusted -- Harbor pull path verified" \
+          || echo "warning: could not confirm CA trust via Harbor (harbor may still be starting -- not fatal)"
+
+  credentials:
+    desc: "Fetch initial platform-admin credentials into passwords.txt (0600, gitignored)"
+    cmds:
+      - |
+        set -euo pipefail
+        CONSOLE=$(kubectl --context {{.KIND_CONTEXT}} get cm welcome -n apl-operator -o jsonpath='{.data.consoleUrl}')
+        USERNAME=$(kubectl --context {{.KIND_CONTEXT}} get secret platform-admin-initial-credentials -n keycloak \
+                     -o jsonpath='{.data.username}' | base64 -d)
+        PASSWORD=$(kubectl --context {{.KIND_CONTEXT}} get secret platform-admin-initial-credentials -n keycloak \
+                     -o jsonpath='{.data.password}' | base64 -d)
+        [ -n "$CONSOLE" ] && [ -n "$USERNAME" ] && [ -n "$PASSWORD" ] \
+          || { echo "warning: one or more values came back empty -- is the install actually completed?" >&2; }
+        # `umask` is a shell builtin go-task's own embedded interpreter (mvdan/sh) does not
+        # implement ("umask: unsupported builtin") -- rely on the chmod after writing instead of
+        # restricting the file's permissions from the moment of creation. Fine for a local lab.
+        cat > passwords.txt <<EOF
+        # App Platform local lab -- initial credentials
+        # Generated by 'task install:credentials'. Gitignored. Delete with the cluster.
+        console:  $CONSOLE
+        username: $USERNAME
+        password: $PASSWORD
+        EOF
+        chmod 600 passwords.txt
+        echo "console:  $CONSOLE"
+        echo "username: $USERNAME"
+        echo "password: <written to passwords.txt>"
+      # Keycloak marks this credential temporary and forces a change on first login --
+      # passwords.txt records the install-time secret, not a live view.

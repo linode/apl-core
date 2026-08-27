@@ -35,6 +35,33 @@ operational rules and the traps that are expensive to rediscover.
 
 ---
 
+## Fastest path: `task`
+
+✅ This whole runbook — every step below, plus every trap in the table in "Why from this fork" —
+is encoded as a [`go-task`](https://taskfile.dev/installation/) `Taskfile.yml` (`Taskfile.yml` +
+`.taskfiles/*.yml` in the repo root). Use it instead of copy-pasting the steps below by hand:
+
+```bash
+task setup                            # everything, Gitea/Harbor/Tekton/Vikunja/Turnstone all on
+ANTHROPIC_API_KEY=sk-ant-... task setup   # non-interactive (Turnstone needs a key -- see step 6c)
+task setup TURNSTONE_ENABLED=false    # skip Turnstone, no key needed
+task verify:platform                  # re-run the health checks any time against an up cluster
+task down CONFIRM=yes                 # destructive: deletes the cluster and generated local state
+task --list                           # every other sub-task (build one image, watch the install, ...)
+```
+
+Installing `go-task`: see the [official install docs](https://taskfile.dev/installation/) for your
+platform. **The installed binary is not always named `task`** — e.g. Arch/CachyOS's `go-task`
+package installs a binary literally called `go-task`; check `which task go-task` and use whichever
+exists. Every command above is written as `task` for readability but works identically as
+`go-task`.
+
+This file (`SETUP.md`) is still what the Taskfile encodes and what its comments cite section-by-
+section — read on if `task setup` fails and you need to understand *why* a step exists, or if
+you're changing what the lab does and need to update both.
+
+---
+
 ## Why from this fork, and not the published chart
 
 The fixes this lab depends on live **inside the operator image** — in `src/operator/`,

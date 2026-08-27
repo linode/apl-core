@@ -1,0 +1,104 @@
+# Non-agent-driven reproduction of SETUP.md, using go-task (https://taskfile.dev).
+#
+# This exists so the local kind lab no longer needs an AI agent to reproduce -- every command
+# here was originally worked out, and every fix below discovered, by an agent working through
+# SETUP.md by hand. Read SETUP.md itself for the *why* behind each step; this encodes the *how*
+# deterministically. CLAUDE.md's rules (bounded waits, verify artifacts not exit codes, clean
+# build context, etc.) are baked into these tasks, not just documented.
+#
+# Binary note: on Arch/CachyOS the `go-task` package installs a binary literally named
+# `go-task`, not `task` -- if `task` isn't on your PATH, use `go-task` instead; every command
+# below is written generically as `task` in comments/output but works identically either way.
+#
+# Quick start:
+#   task setup                        # everything, defaults on (gitea/harbor/tekton/vikunja/turnstone)
+#   ANTHROPIC_API_KEY=sk-ant-... task setup
+#   task setup TURNSTONE_ENABLED=false
+#   task down CONFIRM=yes             # destructive: deletes the kind cluster
+#
+# State that has to survive across tasks (the MetalLB pool, the derived APPS_REVISION) is written
+# to .taskfiles/state/ (gitignored) rather than threaded through Task's own var system, because
+# it's computed by one task and consumed by several later ones run as separate `task` invocations.
+
+version: '3'
+
+vars:
+  CLUSTER_NAME: apl
+  KIND_CONTEXT: kind-{{.CLUSTER_NAME}}
+  STATE_DIR: .taskfiles/state
+  OPERATOR_VERSION: 6.2.1-fork
+  OPERATOR_IMAGE: apl-core-local:v{{.OPERATOR_VERSION}}
+  # APP_VERSION goes into values.yaml's versions.api/console UNPREFIXED -- the operator treats a
+  # version starting with a digit as a semver and prefixes it with "v" itself when resolving the
+  # actual image tag to pull (see SETUP.md step 5b). The docker images built/loaded below MUST
+  # therefore carry that "v" prefix in their own tag, or the operator looks for an image that was
+  # never built. Getting this wrong doesn't fail loudly -- it's an ImagePullBackOff on otomi-api/
+  # otomi-console that only shows up once Argo CD tries to schedule them.
+  APP_VERSION: 0.0.0-turnstone
+  API_IMAGE: docker.io/linode/apl-api:v{{.APP_VERSION}}
+  CONSOLE_IMAGE: docker.io/linode/apl-console:v{{.APP_VERSION}}
+  VIKUNJA_MCP_IMAGE: vikunja-mcp-local:0.2.1
+  APL_TOOLS_IMAGE: linode/apl-tools:v3.0.1
+  APPS_REPO_URL: https://github.com/qvest-digital/apl-core.git
+  API_CLONE_DIR: /tmp/apl-api-taskfile
+  CONSOLE_CLONE_DIR: /tmp/apl-console-taskfile
+
+# Read as OS env vars by every task's shell scripts (rather than Go-template vars) so the same
+# `${GITEA_ENABLED:-true}`-style shell default works whether the value came from the CLI
+# (`task setup GITEA_ENABLED=false`), a real env var, or neither. The `| default` here only
+# supplies what a *CLI var* would otherwise leave undefined -- it's the standard Task idiom for
+# "optional CLI var with a fallback".
+env:
+  GITEA_ENABLED: '{{.GITEA_ENABLED | default "true"}}'
+  HARBOR_ENABLED: '{{.HARBOR_ENABLED | default "true"}}'
+  TEKTON_ENABLED: '{{.TEKTON_ENABLED | default "true"}}'
+  VIKUNJA_ENABLED: '{{.VIKUNJA_ENABLED | default "true"}}'
+  TURNSTONE_ENABLED: '{{.TURNSTONE_ENABLED | default "true"}}'
+
+includes:
+  cluster: .taskfiles/cluster.yml
+  images: .taskfiles/images.yml
+  install: .taskfiles/install.yml
+  verify: .taskfiles/verify.yml
+
+tasks:
+  default:
+    desc: List all available tasks
+    silent: true
+    cmds:
+      - task --list
+
+  setup:
+    desc: "Full end-to-end lab setup -- equivalent to SETUP.md's Quickstart, ~15 minutes"
+    cmds:
+      - task: cluster:create
+      - task: cluster:metallb
+      - task: cluster:cni
+      - task: images:build-all
+      - task: images:load-all
+      - task: install:schema
+      - task: install:ca
+      - task: install:values
+      - task: install:apply
+      - task: install:watch
+      - task: install:watch-argocd
+      - task: install:trust-ca
+      - task: install:credentials
+      - task: verify:platform
+      - cmd: |
+          echo
+          echo "=== setup complete ==="
+          echo "Credentials: $(pwd)/passwords.txt"
+          echo "Run 'task verify:vikunja' / 'task verify:turnstone' for the non-browser app checklists."
+          echo "Browser-only checks (SSO round-trip, tiles, an actual chat turn) are never scriptable -- see SETUP.md."
+
+  down:
+    desc: "Delete the kind cluster and local generated state (destructive; requires CONFIRM=yes)"
+    preconditions:
+      - sh: '[ "{{.CONFIRM}}" = "yes" ]'
+        msg: "Refusing to delete anything without CONFIRM=yes -- this destroys the cluster and all in-cluster data. Run: task down CONFIRM=yes"
+    cmds:
+      - kind delete cluster --name {{.CLUSTER_NAME}}
+      - rm -f passwords.txt values.yaml apl-root-ca.crt
+      - rm -rf {{.STATE_DIR}} /tmp/apl-ca.key /tmp/apl-ca.pkcs1.key /tmp/apl-ca.crt
+      - 'echo "Cluster deleted. Note: kind''s own docker network usually survives -- MetalLB pool may or may not change on next task cluster:create."'

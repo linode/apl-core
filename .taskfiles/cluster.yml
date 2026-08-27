@@ -1,0 +1,63 @@
+# kind cluster + MetalLB + Calico. SETUP.md steps 1-4.
+version: '3'
+
+tasks:
+  create:
+    desc: "Create the kind cluster (deletes any existing one with the same name first)"
+    cmds:
+      - kind delete cluster --name {{.CLUSTER_NAME}}
+      - kind create cluster --name {{.CLUSTER_NAME}}
+      # kind create cluster returns before the node is Ready -- checking immediately shows
+      # NotReady with coredns Pending, which looks like failure but just needs ~15s more.
+      - kubectl --context {{.KIND_CONTEXT}} wait --for=condition=Ready node --all --timeout=120s
+      - kubectl --context {{.KIND_CONTEXT}} get nodes -o wide
+      - kubectl --context {{.KIND_CONTEXT}} get storageclass
+
+  metallb:
+    desc: "Install MetalLB, pool derived from the live docker network (never hardcoded)"
+    cmds:
+      - mkdir -p {{.STATE_DIR}}
+      - |
+        set -euo pipefail
+        # Derive the range from the live docker network -- it has been both 172.18.x and 172.19.x
+        # on the same machine across rebuilds. A stale address makes MetalLB advertise an
+        # unreachable IP, which presents as a platform failure rather than a config mistake.
+        SUBNET=$(docker network inspect kind --format '{{`{{range .IPAM.Config}}{{println .Subnet}}{{end}}`}}' | grep -v ':')
+        PREFIX=$(echo "$SUBNET" | cut -d. -f1-2)
+        POOL_START="$PREFIX.255.200"
+        POOL_END="$PREFIX.255.250"
+        echo "pool: $POOL_START-$POOL_END"
+        echo -n "$POOL_START" > {{.STATE_DIR}}/pool_start.txt
+        echo -n "$POOL_END" > {{.STATE_DIR}}/pool_end.txt
+      - kubectl create namespace mlb --dry-run=client -o yaml | kubectl apply -f -
+      - helm repo add metallb https://metallb.github.io/metallb
+      - helm repo update metallb
+      - helm upgrade --install metallb metallb/metallb -n mlb
+      # Wait for the controller's admission webhook to actually be serving, rather than SETUP.md's
+      # blind `sleep 60` -- functionally equivalent, event-driven instead of a fixed guess. 90s
+      # was measured against a node with cached images from a still-running earlier cluster on the
+      # same machine and timed out on a genuinely cold node (frr-k8s's images alone took ~72s to
+      # pull) -- 240s to give real headroom, since the deployment is Available the moment its
+      # condition flips regardless of the ceiling.
+      - kubectl wait --for=condition=Available deployment/metallb-controller -n mlb --timeout=240s
+      - |
+        set -euo pipefail
+        POOL_START=$(cat {{.STATE_DIR}}/pool_start.txt)
+        POOL_END=$(cat {{.STATE_DIR}}/pool_end.txt)
+        cat <<EOF | kubectl apply -f -
+        apiVersion: metallb.io/v1beta1
+        kind: IPAddressPool
+        metadata: {name: default-pool, namespace: mlb}
+        spec: {addresses: ["$POOL_START-$POOL_END"]}
+        ---
+        apiVersion: metallb.io/v1beta1
+        kind: L2Advertisement
+        metadata: {name: default-pool, namespace: mlb}
+        EOF
+      - kubectl get pods -n mlb
+
+  cni:
+    desc: "Install Calico CNI (layers over kind's dormant kindnet)"
+    cmds:
+      - kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.3/manifests/calico.yaml
+      - kubectl wait --for=condition=Ready pod -l k8s-app=calico-node -n kube-system --timeout=120s
