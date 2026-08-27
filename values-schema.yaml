@@ -1814,9 +1814,6 @@ properties:
               clientID:
                 $ref: '#/definitions/wordCharacterPattern'
                 default: otomi
-              clientSecret:
-                type: string
-                x-secret: '{{ randAlphaNum 32 }}'
           adminPassword:
             type: string
             x-secret: ''
