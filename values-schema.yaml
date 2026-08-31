@@ -1664,9 +1664,6 @@ properties:
           enabled:
             type: boolean
             default: false
-          adminPassword:
-            type: string
-            x-secret: ''
           image:
             $ref: '#/definitions/imageSimple'
           resources:
@@ -1777,9 +1774,6 @@ properties:
               clientID:
                 $ref: '#/definitions/wordCharacterPattern'
                 default: otomi
-          adminPassword:
-            type: string
-            x-secret: ''
           adminUsername:
             type: string
             default: otomi-admin
