@@ -1686,44 +1686,10 @@ properties:
             type: boolean
             default: true
             description: Will mark the main project named "library" as private.
-          adminPassword:
-            type: string
-            x-secret: ''
           oidcAutoOnboard:
             type: boolean
           oidcUserClaim:
             type: string
-          core:
-            properties:
-              secret:
-                type: string
-                x-secret: '{{ randAlphaNum 16 }}'
-              xsrfKey:
-                type: string
-                x-secret: '{{ randAlphaNum 32 }}'
-          jobservice:
-            properties:
-              secret:
-                type: string
-                x-secret: '{{ randAlphaNum 16 }}'
-          registry:
-            properties:
-              secret:
-                type: string
-                x-secret: '{{ randAlpha 16 }}'
-              credentials:
-                properties:
-                  htpasswd:
-                    type: string
-                    x-secret: ''
-                  username:
-                    type: string
-                    $ref: '#/definitions/secretTemplates/definitions/otomiAdminUsername'
-                  password:
-                    type: string
-                    x-secret: '{{ randAlphaNum 32 }}'
-            required:
-              - credentials
           databaseMaxConnections:
             type: number
             description: Maximum amount of total connections of the application to the database server
@@ -1749,9 +1715,6 @@ properties:
                 $ref: '#/definitions/resources'
               nginx:
                 $ref: '#/definitions/resources'
-          secretKey:
-            type: string
-            x-secret: '{{ randAlpha 16 }}'
       istio:
         properties:
           _rawValues:
