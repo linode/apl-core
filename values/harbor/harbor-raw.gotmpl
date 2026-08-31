@@ -46,12 +46,8 @@ resources:
     target:
       name: harbor-admin-password
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          HARBOR_ADMIN_PASSWORD: '{{ "{{ .adminPassword | toString }}" }}'
     data:
-      - secretKey: adminPassword
+      - secretKey: HARBOR_ADMIN_PASSWORD
         remoteRef:
           key: otomi-secrets
           property: adminPassword
@@ -86,22 +82,21 @@ resources:
   metadata:
     name: harbor-secret-key
   spec:
-    refreshInterval: 5m
-    secretStoreRef:
-      name: core-secrets-store
-      kind: ClusterSecretStore
+    refreshPolicy: CreatedOnce
     target:
       name: harbor-secret-key
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          secretKey: '{{ "{{ .secretKey | toString }}" }}'
-    data:
-      - secretKey: secretKey
-        remoteRef:
-          key: harbor-secrets
-          property: secretKey
+      immutable: true
+    dataFrom:
+      - sourceRef:
+          generatorRef:
+            apiVersion: generators.external-secrets.io/v1alpha1
+            kind: ClusterGenerator
+            name: random-16
+        rewrite:
+          - regexp:
+              source: password
+              target: secretKey
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
@@ -117,7 +112,7 @@ resources:
           generatorRef:
             apiVersion: generators.external-secrets.io/v1alpha1
             kind: ClusterGenerator
-            name: alpha-num-32-base64
+            name: random-16
         rewrite:
           - regexp:
               source: password
@@ -137,7 +132,7 @@ resources:
           generatorRef:
             apiVersion: generators.external-secrets.io/v1alpha1
             kind: ClusterGenerator
-            name: alpha-num-32-base64
+            name: alpha-num-32
         rewrite:
           - regexp:
               source: password
@@ -157,7 +152,7 @@ resources:
           generatorRef:
             apiVersion: generators.external-secrets.io/v1alpha1
             kind: ClusterGenerator
-            name: alpha-num-32-base64
+            name: alpha-num-16
         rewrite:
           - regexp:
               source: password
@@ -177,7 +172,7 @@ resources:
           generatorRef:
             apiVersion: generators.external-secrets.io/v1alpha1
             kind: ClusterGenerator
-            name: alpha-num-32-base64
+            name: random-16
         rewrite:
           - regexp:
               source: password
