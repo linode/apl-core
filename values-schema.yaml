@@ -1919,9 +1919,6 @@ properties:
                   size:
                     default: 20Gi
                     $ref: '#/definitions/size'
-          rootPassword:
-            type: string
-            x-secret: '{{ randAlphaNum 32 }}'
           resources:
             additionalProperties: false
             properties:
