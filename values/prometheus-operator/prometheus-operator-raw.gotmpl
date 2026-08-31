@@ -26,7 +26,7 @@ resources:
           type: Opaque
           data:
             admin-user: otomi-admin
-            admin-password: '{{ "{{ .adminPassword | toString }}" }}'
+            admin-password: "{{ `{{ .adminPassword }}` }}"
       data:
         - secretKey: adminPassword
           remoteRef:

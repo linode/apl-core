@@ -2618,9 +2618,6 @@ properties:
   otomi:
     additionalProperties: false
     properties:
-      adminPassword:
-        type: string
-        x-secret: '{{ randAlphaNum 20 }}'
       isPreInstalled:
         type: boolean
         description: Defines if APL is installed and managed by Linode

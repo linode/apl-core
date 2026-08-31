@@ -25,7 +25,7 @@ resources:
       template:
         type: Opaque
         data:
-          password: '{{ "{{ .adminPassword | toString }}" }}'
+          password: "{{ `{{ .adminPassword }}` }}"
           username: {{ $k.adminUsername }}
     data:
       - secretKey: adminPassword

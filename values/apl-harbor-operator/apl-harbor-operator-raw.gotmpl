@@ -27,7 +27,7 @@ resources:
         template:
           type: Opaque
           data:
-            harborPassword: '{{ "{{ .harborAdminPassword | toString }}" }}'
+            harborPassword: "{{ `{{ .harborAdminPassword }}` }}"
             harborUser: admin
             oidcEndpoint: {{ $v._derived.oidcBaseUrl }}
             oidcClientId: {{ $v._derived.oidcClientID }}
