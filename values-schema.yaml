@@ -2040,9 +2040,6 @@ properties:
                 $ref: '#/definitions/autoscalingEnabled'
               queryScheduler:
                 $ref: '#/definitions/autoscalingEnabled'
-          adminPassword:
-            type: string
-            x-secret: '{{ randAlphaNum 20 }}'
           persistentVolumeSize:
             $ref: '#/definitions/size'
           v13SchemaStartDate:

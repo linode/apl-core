@@ -71,11 +71,11 @@ resources:
         template:
           type: Opaque
           data:
-            password: '{{ "{{ .adminPassword | toString }}" }}'
+            password: "{{ "{{ .adminPassword }}" }}"
       data:
         - secretKey: adminPassword
           remoteRef:
-            key: loki-secrets
+            key: loki
             property: adminPassword
   {{- if $p | get "remoteWrite.rwConfig.basicAuth.enabled" false }}
   - apiVersion: external-secrets.io/v1

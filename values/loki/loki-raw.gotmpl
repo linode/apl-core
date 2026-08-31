@@ -24,8 +24,8 @@ resources:
           data:
             authn.yaml: |
               users:
-                - username: otomi-admin
-                  password: '{{ "{{ .adminPassword }}" }}'
+                - username: "{{ `{{ .adminUsername }}` }}"
+                  password: "{{ `{{ .adminPassword }}` }}"
                   orgid: admins
               {{- range $id := $teamNames }}
               {{- $passwordVar := printf "{{ .team_%s }}" (sha1sum $id) }}
@@ -34,9 +34,13 @@ resources:
                   orgid: {{ $id }}
               {{- end }}
       data:
+        - secretKey: adminUsername
+          remoteRef:
+            key: loki
+            property: adminUsername
         - secretKey: adminPassword
           remoteRef:
-            key: loki-secrets
+            key: loki
             property: adminPassword
         {{- range $teamId := $teamNames }}
         - secretKey: team_{{ sha1sum $teamId }}
