@@ -3,7 +3,6 @@ metadata:
     name: oauth2-proxy
 spec:
     _rawValues: {}
-    config: {}
     resources:
         limits:
             cpu: 200m

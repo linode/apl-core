@@ -507,3 +507,6 @@ changes:
   - version: 71
     customFunctions:
       - preservePvcStorageClassInRawValues
+  - version: 72
+    deletions:
+      - apps.oauth2-proxy.config
