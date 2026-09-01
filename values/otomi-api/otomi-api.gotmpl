@@ -8,6 +8,13 @@
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 {{- $version := $v.versions | get "api" }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
+{{- /* Apps with ownHost already claim <app>-<teamId>.<domain>, so team services may not reuse the name. */}}
+{{- $reservedServiceNames := list }}
+{{- range $app := $v.teamApps }}
+  {{- if $app | get "ownHost" false }}
+    {{- $reservedServiceNames = append $reservedServiceNames $app.name }}
+  {{- end }}
+{{- end }}
 replicaCount: 1
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 resources: {{- $o.resources.api | toYaml | nindent 2 }}
@@ -38,6 +45,7 @@ env:
   TTY_IMAGE_REPOSITORY: "{{ . }}/docker/linode/apl-tty"
   {{- end }}
   TTY_IMAGE_TAG: {{ $v.versions.tty | quote }}
+  RESERVED_SERVICE_NAMES: {{ sortAlpha $reservedServiceNames | join "," | quote }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
