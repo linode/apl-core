@@ -23,6 +23,32 @@
 {{- end }}
 {{- $domains = sortAlpha (uniq $domains) }}
 
+{{- /* Platform hostnames only: a wildcard would also cover team hostnames. */}}
+{{- /* First suffix match wins, so the busiest host goes first. */}}
+{{- $cookieDomains := list
+      $v._derived.consoleDomain
+      $v._derived.authDomain
+      $v._derived.apiDomain
+      $v._derived.ttyDomain
+      $v._derived.giteaDomain
+      $v._derived.keycloakDomain
+      $v._derived.harborDomain
+      (print "argocd." $domainSuffix)
+      (print "tekton." $domainSuffix)
+      (print "kubeflow-pipelines." $domainSuffix)
+      (print "alertmanager." $domainSuffix)
+      (print "grafana." $domainSuffix)
+      (print "prometheus." $domainSuffix)
+      "oauth2-proxy.istio-system.svc.cluster.local" }}
+{{- /* core.yaml teamApps with ownHost. Last, so team count does not slow the lookup. */}}
+{{- $perTeamDomains := list }}
+{{- range $teamId, $team := $v.teamConfig }}
+  {{- range $appName := list "tekton" "grafana" "alertmanager" }}
+    {{- $perTeamDomains = append $perTeamDomains (printf "%s-%s.%s" $appName $teamId $domainSuffix) }}
+  {{- end }}
+{{- end }}
+{{- $cookieDomains = concat $cookieDomains (sortAlpha $perTeamDomains) }}
+
 config:
   existingSecret: oauth2-proxy-client-access
   configFile: |-
@@ -38,8 +64,9 @@ config:
     oidc_issuer_url = {{ $v._derived.oidcBaseUrl | quote }}
     code_challenge_method = "S256"
     insecure_oidc_allow_unverified_email = true
-    cookie_domains = {{ $domains | toJson }}
-    cookie_samesite = "none"
+    cookie_domains = {{ $cookieDomains | toJson }}
+    # lax is enough for the redirect-based OIDC login and blocks cross-site delivery
+    cookie_samesite = "lax"
     # set to the same as keycloak realm's accessCodeLifespan
     cookie_refresh = "1m"
     # set to the same as keycloak client idle timeout
