@@ -510,3 +510,6 @@ changes:
   - version: 72
     deletions:
       - apps.oauth2-proxy.config
+      - apps.harbor.core
+      - apps.harbor.jobservice
+      - apps.harbor.registry
