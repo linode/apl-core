@@ -51,3 +51,7 @@ changes:
       - apps.harbor.jobservice
       - apps.harbor.registry.credentials.htpasswd
       - apps.harbor.registry.credentials.password
+  - version: 74
+    additions:
+      - apps.keycloak.enabled: true
+      - otomi.issuer: keycloak

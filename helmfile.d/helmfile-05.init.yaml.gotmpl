@@ -41,13 +41,13 @@ releases:
       pkg: dex
     <<: *default
   - name: keycloak-artifacts
-    installed: true
+    installed: {{ $a | get "keycloak.enabled" false }}
     namespace: keycloak
     labels:
       pkg: keycloak
     <<: *raw
   - name: keycloak
-    installed: true
+    installed: {{ $a | get "keycloak.enabled" false }}
     namespace: keycloak
     labels:
       pkg: keycloak
