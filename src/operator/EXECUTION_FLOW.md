@@ -482,8 +482,22 @@ its job yet?". The operator exposes it through the readiness of its own Deployme
 
 The operator writes `/tmp/ready` (`markOperatorReady()`) at exactly one point: after
 an apply run completes successfully. That run is what creates the ArgoCD Applications,
-so past it the platform can heal itself through ArgoCD. The `readinessProbe` on the
-apl-operator Deployment tests for that file, so:
+so past it the platform can heal itself through ArgoCD.
+
+Whether the `readinessProbe` on the apl-operator Deployment tests for that file is
+controlled by the chart value `operator.readiness.gateOnReadiness`, default `false`:
+
+| `gateOnReadiness` | readinessProbe | Deployment becomes Available |
+| --- | --- | --- |
+| `false` (default) | `pgrep -f 'apl-operator'` — process is alive | ~30s after pod start |
+| `true` | `test -f /tmp/ready` | after the first successful apply |
+
+The default is off because gating changes the timing for anyone already passing
+`--wait`: 30 seconds becomes the full install, and Helm's 5 minute default timeout is
+too short for that. Existing installs keep their timing on upgrade; automation that
+wants a real gate opts in.
+
+The rest of this section describes `gateOnReadiness: true`. With it set:
 
 ```bash
 # blocks until the operator has completed an apply run

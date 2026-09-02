@@ -171,6 +171,10 @@ defaults:
     # -- ipFamilies for all services
     # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
     ipFamilies: []
+    # -- publishNotReadyAddresses for all services. Set to false so a pod's Service endpoint is
+    # withdrawn as soon as it becomes unready, instead of staying routable for the full termination
+    # window. Overridable per component via <component>.service.publishNotReadyAddresses.
+    publishNotReadyAddresses: true
   # -- KEDA autoscaling shared configuration for all components that support KEDA
   kedaAutoscaling:
     # -- Prometheus server address for KEDA triggers
@@ -194,8 +198,7 @@ defaults:
       # -- Secret key references for TriggerAuthentication
       secretTargetRef: []
   statefulSetRecreateJob:
-    # -- Enable the PVC resize job for statefulsets. This job will be triggered when the storage size is increased and
-    # will recreate the statefulset to allow resizing of PVCs, which is not natively supported by Kubernetes.
+    # -- When a component sets `*.statefulSetRecreateJob.enabled`, the pre-upgrade Job can patch PVC storage requests and recreate the StatefulSet for podManagementPolicy, serviceName, or volumeClaimTemplates count/name/size changes. It does not migrate storageClass, accessModes, selectors, or VCT labels. See the chart README section StatefulSet immutability.
     patchPVC: true
     image:
       registry: registry.k8s.io
@@ -3023,7 +3026,11 @@ ingester:
   # -- Annotations for ingester
   annotations: {}
   # @schema additionalProperties:{"type":"string"}
-  # -- Labels for ingester pods
+  # -- Labels for ingester pods. Keys used by the workload selectors
+  # (`app.kubernetes.io/name`, `app.kubernetes.io/instance`, `app.kubernetes.io/component`
+  # and, with zoneAwareReplication, `name` and `rollout-group`) are reserved and
+  # ignored here: the latter are also used by the per-zone headless Services and
+  # grafana/rollout-operator.
   podLabels: {}
   # @schema additionalProperties:{"type":"string"}
   # -- Annotations for ingester pods
@@ -6182,8 +6189,10 @@ memcached:
   # -- Enable the built in memcached server provided by the chart
   enabled: true
   image:
+    # -- Memcached Docker image registry
+    registry: docker.io
     # -- Memcached Docker image repository
-    repository: memcached
+    repository: library/memcached
     # -- Memcached Docker image tag
     tag: 1.6.45-alpine
     # -- Memcached Docker image pull policy
@@ -6256,8 +6265,13 @@ memcachedExporter:
   # -- Whether memcached metrics should be exported
   enabled: true
   image:
+    # -- Memcached exporter Docker image registry
+    registry: docker.io
+    # -- Memcached exporter Docker image repository
     repository: prom/memcached-exporter
+    # -- Memcached exporter Docker image tag
     tag: v0.17.0
+    # -- Memcached exporter Docker image pull policy
     pullPolicy: IfNotPresent
   # @schema additionalProperties:true
   resources:
