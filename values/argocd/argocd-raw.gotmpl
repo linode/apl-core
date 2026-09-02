@@ -31,9 +31,13 @@ resources:
           data:
             type: git
             url: {{ printf "https://%s" $v._derived.giteaDomain }}
-            username: {{ $v.otomi.git.username }}
-            password: '{{ "{{ .gitPassword | toString }}" }}'
+            username: "{{ `{{ .gitUsername }}` }}"
+            password: "{{ `{{ .gitPassword }}` }}"
       data:
+        - secretKey: gitUsername
+          remoteRef:
+            key: apl-git-config
+            property: username
         - secretKey: gitPassword
           remoteRef:
             key: apl-git-config
@@ -58,10 +62,18 @@ resources:
           type: Opaque
           data:
             type: git
-            url: {{ $v.otomi.git.repoUrl | quote }}
-            username: {{ $v.otomi.git.username | quote }}
-            password: '{{ "{{ .gitPassword | toString }}" }}'
+            url: "{{ `{{ .repoUrl }}` }}"
+            username: "{{ `{{ .gitUsername }}` }}"
+            password: "{{ `{{ .gitPassword }}` }}"
       data:
+        - secretKey: repoUrl
+          remoteRef:
+            key: apl-git-config
+            property: repoUrl
+        - secretKey: gitUsername
+          remoteRef:
+            key: apl-git-config
+            property: username
         - secretKey: gitPassword
           remoteRef:
             key: apl-git-config
@@ -88,10 +100,18 @@ resources:
           type: Opaque
           data:
             type: git
-            url: {{ $v.otomi.git.repoUrl | quote }}
-            username: {{ $v.otomi.git.username | quote }}
-            password: '{{ "{{ .gitPassword | toString }}" }}'
+            url: "{{ `{{ .repoUrl }}` }}"
+            username: "{{ `{{ .gitUsername }}` }}"
+            password: "{{ `{{ .gitPassword }}` }}"
       data:
+        - secretKey: repoUrl
+          remoteRef:
+            key: apl-git-config
+            property: repoUrl
+        - secretKey: gitUsername
+          remoteRef:
+            key: apl-git-config
+            property: username
         - secretKey: gitPassword
           remoteRef:
             key: apl-git-config
@@ -117,10 +137,18 @@ resources:
           type: Opaque
           data:
             type: git
-            url: {{ $v.otomi.git.repoUrl | quote }}
-            username: {{ $v.otomi.git.username | quote }}
-            password: '{{ "{{ .gitPassword | toString }}" }}'
+            url: "{{ `{{ .repoUrl }}` }}"
+            username: "{{ `{{ .gitUsername }}` }}"
+            password: "{{ `{{ .gitPassword }}` }}"
       data:
+        - secretKey: repoUrl
+          remoteRef:
+            key: apl-git-config
+            property: repoUrl
+        - secretKey: gitUsername
+          remoteRef:
+            key: apl-git-config
+            property: username
         - secretKey: gitPassword
           remoteRef:
             key: apl-git-config

@@ -40,7 +40,7 @@ resources:
           type: Opaque
           data:
             accesskey: {{ $obj.linode.accessKeyId }}
-            secretkey: '{{ "{{ .secretAccessKey | toString }}" }}'
+            secretkey: "{{ `{{ .secretAccessKey }}` }}"
       data:
         - secretKey: secretAccessKey
           remoteRef:

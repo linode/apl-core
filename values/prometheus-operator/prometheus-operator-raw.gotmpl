@@ -96,7 +96,7 @@ resources:
           type: Opaque
           data:
             username: {{ $p.remoteWrite.rwConfig.basicAuth.username }}
-            password: '{{ "{{ .password | toString }}" }}'
+            password: "{{ `{{ .password }}` }}"
       data:
         - secretKey: password
           remoteRef:

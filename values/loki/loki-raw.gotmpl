@@ -67,7 +67,7 @@ resources:
           type: Opaque
           data:
             AWS_ACCESS_KEY_ID: {{ $obj.linode.accessKeyId }}
-            AWS_SECRET_ACCESS_KEY: '{{ "{{ .secretAccessKey | toString }}" }}'
+            AWS_SECRET_ACCESS_KEY: "{{ `{{ .secretAccessKey }}` }}"
       data:
         - secretKey: secretAccessKey
           remoteRef:
