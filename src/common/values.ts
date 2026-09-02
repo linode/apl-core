@@ -127,16 +127,6 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.info('All values were written to ENV_DIR')
 }
 
-export const deriveSecrets = async (values: Record<string, any> = {}): Promise<Record<string, any>> => {
-  // Some secrets needs to be derived from the generated secrets
-  const secrets = {}
-  const htpasswd = (
-    await $`htpasswd -nbB ${values.apps.harbor.registry.credentials.username} ${values.apps.harbor.registry.credentials.password}`
-  ).stdout.trim()
-
-  set(secrets, 'apps.harbor.registry.credentials.htpasswd', htpasswd)
-  return secrets
-}
 /**
  * Takes values as input and generates secrets that don't exist yet.
  * Returns all generated secrets.
@@ -161,10 +151,7 @@ export const generateSecrets = async (
   d.debug('Secrets template: ', template)
   d.info('Generating secrets from the secrets template')
   const generatedSecrets = (await gucci(template, {})) as Record<string, any>
-  const mergedGeneratedSecrets = merge(generatedSecrets, cloneDeep(values))
-
-  const derivedSecrets = await deriveSecrets(mergedGeneratedSecrets)
-  const allSecrets = merge(cloneDeep(derivedSecrets), cloneDeep(mergedGeneratedSecrets))
+  const allSecrets = merge(generatedSecrets, cloneDeep(values))
 
   d.info('Generated all secrets')
   // Only return values that have x-secrets prop and are now fully templated:
