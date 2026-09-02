@@ -25,6 +25,9 @@ dependencies:
     alias: linode-cfw
     version: 0.2.1
     repository: https://linode.github.io/cloud-firewall-controller
+  - name: dex
+    version: 0.24.1
+    repository: https://charts.dexidp.io
   - name: external-dns
     version: 1.21.1
     repository: https://kubernetes-sigs.github.io/external-dns
