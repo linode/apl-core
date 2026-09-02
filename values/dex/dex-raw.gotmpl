@@ -1,0 +1,92 @@
+{{- $v := .Values }}
+
+resources:
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "dex" "host" $v._derived.dexDomain) | nindent 4 }}
+
+  {{- /* refreshInterval "0" below keeps the generated value stable across reconciles. */}}
+  - apiVersion: generators.external-secrets.io/v1alpha1
+    kind: Password
+    metadata:
+      name: dex-idp-client-secret-gen
+      namespace: apl-secrets
+    spec:
+      length: 32
+      digits: 5
+      symbols: 0
+      allowRepeat: true
+      noUpper: false
+  {{- /* AES key: length must be exactly 16, 24 or 32 characters. */}}
+  - apiVersion: generators.external-secrets.io/v1alpha1
+    kind: Password
+    metadata:
+      name: dex-session-cookie-key-gen
+      namespace: apl-secrets
+    spec:
+      length: 32
+      digits: 5
+      symbols: 0
+      allowRepeat: true
+      noUpper: false
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: dex-secrets
+      namespace: apl-secrets
+    spec:
+      refreshInterval: "0"
+      target:
+        name: dex-secrets
+        creationPolicy: Owner
+      dataFrom:
+        - sourceRef:
+            generatorRef:
+              apiVersion: generators.external-secrets.io/v1alpha1
+              kind: Password
+              name: dex-idp-client-secret-gen
+          rewrite:
+            - regexp:
+                source: password
+                target: idpClientSecret
+        - sourceRef:
+            generatorRef:
+              apiVersion: generators.external-secrets.io/v1alpha1
+              kind: Password
+              name: dex-session-cookie-key-gen
+          rewrite:
+            - regexp:
+                source: password
+                target: sessionCookieEncryptionKey
+
+  {{- /* adminPassword is hashed by ESO itself (sprig bcrypt), never stored or rendered as a hash. */}}
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: dex-config
+      namespace: dex
+    spec:
+      refreshInterval: 5m
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: dex-config
+        creationPolicy: Owner
+        template:
+          engineVersion: v2
+          type: Opaque
+          data:
+            config.yaml: |
+              {{- tpl (readFile "../../helmfile.d/snippets/dex-config.gotmpl") . | nindent 14 }}
+      data:
+        - secretKey: idpClientSecret
+          remoteRef:
+            key: dex-secrets
+            property: idpClientSecret
+        - secretKey: sessionCookieEncryptionKey
+          remoteRef:
+            key: dex-secrets
+            property: sessionCookieEncryptionKey
+        - secretKey: adminPassword
+          remoteRef:
+            key: otomi-secrets
+            property: adminPassword

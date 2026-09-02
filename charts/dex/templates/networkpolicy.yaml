@@ -1,0 +1,36 @@
+{{- if .Values.networkPolicy.enabled }}
+{{- if semverCompare "<1.7-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: extensions/v1beta1
+{{- else -}}
+apiVersion: networking.k8s.io/v1
+{{- end }}
+kind: NetworkPolicy
+metadata:
+  name: {{ include "dex.fullname" . }}
+  namespace: {{ include "dex.namespace" . }}
+  labels:
+    {{- include "dex.labels" . | nindent 4 }}
+spec:
+  policyTypes:
+    {{- if .Values.networkPolicy.egressRules }}
+    - Egress
+    {{- end }}
+    - Ingress
+  podSelector:
+    matchLabels:
+      {{- include "dex.selectorLabels" . | nindent 6 }}
+  ingress:
+    - ports:
+        - port: http
+        {{- if .Values.https.enabled }}
+        - port: https
+        {{- end }}
+        {{- if .Values.grpc.enabled }}
+        - port: grpc
+        {{- end }}
+        - port: telemetry
+  {{- with .Values.networkPolicy.egressRules }}
+  egress:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
