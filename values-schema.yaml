@@ -2718,6 +2718,13 @@ properties:
         type: boolean
         description: Defines if APL is installed and managed by Linode
         default: false
+      issuer:
+        type: string
+        enum:
+          - dex
+          - keycloak
+        default: keycloak
+        description: Which app every consumer authenticates against.
       aiEnabled:
         type: boolean
         description: Defines if APL enables AI/ML components
