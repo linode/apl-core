@@ -190,11 +190,8 @@ export const processValues = async (
   const users = deps.getUsers(originalValues)
   // Store users in allSecrets for sealed secret generation
   // The keycloak-operator derives groups from isPlatformAdmin/isTeamAdmin/teams directly
-  const allSecrets = {
-    ...caSecrets,
-    ...extractedSecrets,
-    users,
-  }
+  const allSecrets = merge(cloneDeep(caSecrets), extractedSecrets)
+  set(allSecrets, 'users', users)
   // Include users in originalInput — getUsers() may return a detached array
   // when originalInput had no 'users' key initially
   const newInput = merge(cloneDeep(originalValues), { users })
