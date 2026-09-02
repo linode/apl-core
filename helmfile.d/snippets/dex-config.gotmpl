@@ -1,0 +1,36 @@
+{{- /* Rendered inside the ExternalSecret template in dex-raw.gotmpl. */}}
+{{- $v := .Values }}
+{{- $d := $v.apps | get "dex" }}
+{{- $domainSuffix := $v.cluster.domainSuffix }}
+issuer: https://{{ $v._derived.dexDomain }}
+storage:
+  type: kubernetes
+  config:
+    inCluster: true
+web:
+  http: 0.0.0.0:5556
+telemetry:
+  http: 0.0.0.0:5558
+oauth2:
+  skipApprovalScreen: true
+enablePasswordDB: true
+{{- /* Bootstrap login only; real user provisioning is #3541. */}}
+staticPasswords:
+  - email: {{ $d.adminUsername }}@{{ $domainSuffix }}
+    username: {{ $d.adminUsername }}
+    userID: apl-platform-admin
+    hash: '{{ "{{ .adminPassword | bcrypt | toString }}" }}'
+    groups:
+      - platform-admin
+      - admin
+{{- /* No redirect URIs: nothing points at Dex yet. */}}
+staticClients:
+  - id: {{ $d.idp.clientID }}
+    name: APL
+    secret: '{{ "{{ .idpClientSecret | toString }}" }}'
+    redirectURIs: []
+    {{- /* Dex only accepts the password grant from a client that opts in explicitly. */}}
+    grantTypes:
+      - authorization_code
+      - refresh_token
+      - password
