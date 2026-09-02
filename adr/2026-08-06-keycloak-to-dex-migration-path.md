@@ -41,7 +41,7 @@ The manual guide has to cover, at minimum:
 
 - that every user's subject changes, because Dex cannot pass an upstream subject through
 - that Harbor and Gitea accounts are orphaned as a result, and how to clean them up
-- how to move users, either as Dex static passwords with new credentials, or by adopting an external identity provider
+- how to move users, either into Dex with new credentials via `apl-api`, or by adopting an external identity provider
 - that the platform admin password hash must be regenerated for Dex
 
 ### Positive Consequences

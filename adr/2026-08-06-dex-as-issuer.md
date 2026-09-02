@@ -20,43 +20,45 @@ Dex is an identity broker that needs no database. Can it take over the issuer ro
 ## Considered Options
 
 - Keep Keycloak as the issuer (status quo)
-- Dex, with users held in Dex storage
+- Dex, with users held in Dex storage, managed over the gRPC API
 - Dex, with users held in the Dex configuration file
 - Dex as a pure broker, requiring every cluster to bring an external identity provider
 
 ## Decision Outcome
 
-Chosen option: **Dex, with users held in the Dex configuration file.**
+Chosen option: **Dex, with users held in Dex storage, managed over the gRPC API.**
 
 The issuer is selected per cluster by `apps.dex.enabled`. New installations default to Dex; existing clusters keep Keycloak until migrated. Migration is decided separately in [ADR-2026-08-06](2026-08-06-keycloak-to-dex-migration-path.md).
 
-Dex uses `storage.type: kubernetes` for the state it owns — auth codes, refresh tokens, sessions and signing keys. Users and clients are **not** kept there.
+Dex uses `storage.type: kubernetes` for all the state it owns — auth codes, refresh tokens, sessions, signing keys, and now users. Nothing user-related is rendered into Dex's configuration.
 
-### Why users live in configuration
+### Why users live in storage now, not configuration
 
-Dex offers three ways to hold users, and only one can express what APL needs:
+Dex offers three ways to hold users:
 
 | Interface | Users with groups | Supported |
 |---|---|---|
 | configuration file | yes | yes |
-| gRPC API | **no** — the `Password` message has no groups field | yes |
+| gRPC API | yes, on our fork | yes, upstream PR pending |
 | custom resources | yes | **no** — Dex documents them as internal state |
 
-The gRPC `Password` message in `api/v2/api.proto` carries only `email`, `hash`, `username` and `user_id`, and `server/apiserver/passwords.go` copies just those four into `storage.Password`, which does have a `Groups` field. The custom resources work, but Dex's storage documentation states they are internal and not to be used directly; their object names are derived from an undocumented FNV-64 and base32 scheme.
+The blocker recorded when this ADR was first written was that the gRPC `Password` message in `api/v2/api.proto` carried only `email`, `hash`, `username` and `user_id` — no `groups` — even though `storage.Password` itself has a `Groups` field. We patched that gap ourselves: our fork adds `groups` to the `Password` message and threads it through `server/apiserver/passwords.go` into `storage.Password`. That patch is the substance of dexidp/dex#4972, filed upstream and not yet merged; until it lands, APL's Dex image is built from our fork rather than upstream master.
 
-So configuration it is. The consequence is that adding a user, adding a team, or changing group membership requires Dex to restart, because Dex reads its configuration only at startup and never reloads it.
+With `groups` available over gRPC, storage-backed users are now fully expressible, and they win outright over the configuration-file approach:
 
-That restart is made harmless rather than avoided: Dex runs two replicas with `maxUnavailable: 0`, and a checksum of the rendered configuration is annotated on the Deployment so a change rolls the pods automatically. Sessions live in Dex storage, not pod memory, so a roll does not log anybody out.
+- No restart on user or team change. `CreatePassword` / `UpdatePassword` / `DeletePassword` take effect immediately; Dex never re-reads a config file for this.
+- No checksum-triggered rollout to reason about, and no dependency on `maxUnavailable: 0` timing to make a restart harmless.
+- The custom-resource concern about undocumented internal naming doesn't apply here: callers never touch the `Password` custom resource directly, they go through the documented gRPC surface, and the storage backend is Dex's own concern.
 
-We have asked upstream for group membership to be accepted over the gRPC API (dexidp/dex#4972). If that is granted, users could be managed through the API instead, which would remove the restart. Nothing else in this decision depends on it.
+### How users reach Dex
 
-### How users reach the configuration
+`apl-api` is the only writer. When a user is created, updated, or deleted — or a user's team membership changes — `apl-api` calls Dex's gRPC API directly (`CreatePassword` / `UpdatePassword` / `DeletePassword`) with the user's `email`, bcrypt `hash`, `username`, `user_id`, and `groups`. There is no intermediate render step and nothing for apl-core's Helmfile pipeline to generate for this.
 
-Users are created through the API and stored as SealedSecrets in the `apl-users` namespace. Under Keycloak they reach the issuer at runtime, because the Keycloak operator watches those Secrets. Dex has no operator, so the records must be in hand when the configuration is rendered.
+The values repository is no longer in this path at all for user records reaching the issuer; it previously only existed to get ciphertext to a place apl-core could read it during apply, which is no longer necessary now that apl-api talks to Dex directly. User records may still be persisted as SealedSecrets in the `apl-users` namespace as APL's system of record and for backup/inspection, but Dex's own state is populated straight from the API call, independent of any apply cycle.
 
-They cannot be read from the values repository: every field of a user record is a secret, so templates see ciphertext. They are instead loaded from the cluster during apply — the same source the Keycloak operator watches — and rendered into `staticPasswords`. Group membership is derived from the stored administrator flags and team list, reproducing what the Keycloak operator produces for the same record.
+Group membership is derived the same way it always was — from the stored administrator flag and team list — but is now sent as part of the same gRPC call rather than reproduced separately at render time.
 
-The password hash is stored on the user record rather than computed while rendering. Bcrypt is salted, so hashing at render time would produce a different value on every run, change the configuration checksum on every apply, and restart Dex continuously. The API computes it once, when it holds the plaintext.
+The password hash is still computed by `apl-api`, once, at the point it holds the plaintext — bcrypt stays salted and non-reproducible, but that no longer matters for a configuration checksum, since there is no configuration to check.
 
 ### Subjects are derived from the values repository
 
@@ -76,14 +78,15 @@ Bringing an external identity provider remains supported, and the two population
 - Removes the Keycloak deployment, `apl-keycloak-operator` and the `keycloak-otomi-db` CloudNativePG cluster: roughly 650m CPU, 1.25Gi memory, 20Gi block storage and five pods, replaced by two pods at roughly 40m/128Mi in total.
 - Removes the `platformBackups.database.keycloak` path and its alerting rule.
 - Realm bootstrap, client registration, client scopes, protocol mappers and group mapping have no successor — most of `realm-factory.ts` is deleted rather than ported.
-- Subjects become computable from the values repository, which is what makes a future subject-remapping migration tractable.
+- Subjects remain settable by `apl-api` on `CreatePassword` (see below), which is what makes a future subject-remapping migration tractable.
+- No restart on user, team, or group-membership change — the configuration-file approach's central cost is gone.
+- Password changes (`UpdatePassword`) also take effect immediately, without a restart, which reopens the door to self-service password change if a client is built for it.
 
 ### Negative Consequences
 
-- **Users cannot change their own password.** Static passwords are configuration. Keycloak offered a self-service account console; Dex has no equivalent, and the gRPC API cannot carry groups, so it is not a usable alternative. Password changes are administrative until dexidp/dex#4972 is accepted.
-- **User provisioning spans two repositories.** The password hash is produced by the API, while loading and rendering happen here. Neither half is useful alone.
-- **Every user or team change restarts Dex.** Mitigated by two replicas and a surge-first rollout, but it is a restart nonetheless.
-- **Runs a pre-release Dex.** Auth sessions and RP-initiated logout are merged on Dex's master branch but unreleased (dexidp/dex#4560). Without sessions there is no single sign-on across applications that run their own OIDC flow, and no logout endpoint. The image is therefore pinned to a master digest with `DEX_SESSIONS_ENABLED=true`. **APL must not be released while this pin stands.**
+- **Runs a fork of Dex, not upstream.** The `groups` field on the gRPC `Password` message is our patch, submitted upstream as dexidp/dex#4972 but not yet merged. Until it merges, apl-core builds and tracks its own Dex image, rebasing our patch onto upstream as it moves — an ongoing maintenance cost with no fixed end date, and a real risk of drift if the fork is neglected.
+- **Runs a pre-release Dex.** Auth sessions and RP-initiated logout are merged on Dex's master branch but unreleased (dexidp/dex#4560). Without sessions there is no single sign-on across applications that run their own OIDC flow, and no logout endpoint. The image is therefore pinned to a master digest with `DEX_SESSIONS_ENABLED=true`. **APL must not be released while this pin stands.** This now compounds with the fork above: the pinned image carries two sets of unreleased/unmerged changes at once.
+- **User provisioning is now `apl-api`'s responsibility end-to-end.** It computes the password hash and calls Dex directly; there is no separate render step in apl-core to sanity-check or replay the call, so a bug in `apl-api`'s Dex client has no independent safety net.
 - **Single sign-on needs explicit configuration.** `sessions.ssoSharedWithDefault` defaults to `none`, which gives no SSO at all. It is set to `all`.
 - **Every claim must be requested.** Keycloak attached `groups` through a protocol mapper regardless of scope; Dex only emits a claim when its scope is requested (`server/tokens/issuer.go`). Consumers that previously asked for `openid` alone now need the full scope list, or they authenticate successfully with no authorization.
 - **Logout requires the ID token.** Dex refuses `post_logout_redirect_uri` without `id_token_hint`, and a browser redirect cannot carry one. Logout is therefore driven from oauth2-proxy's `backend_logout_url`, which substitutes `{id_token}`.
@@ -99,15 +102,18 @@ Bringing an external identity provider remains supported, and the two population
 - Bad, because it leaves the largest reducible component of the footprint in place on every installation.
 - Bad, because it keeps `realm-factory.ts` and the Keycloak operator in maintenance indefinitely.
 
-### Dex with users in storage
+### Dex with users in storage, managed over the gRPC API
 
-- Good, because users could be changed at runtime with no restart.
-- Bad, because the gRPC API cannot set groups, which every authorization decision depends on.
-- Bad, because the custom resources that can express groups are documented as internal, with undocumented naming; depending on them would couple APL to Dex's private implementation.
+- Good, because users, including group membership, can be created, updated and deleted at runtime with no restart.
+- Good, because it removes the SQL database entirely.
+- Good, because `user_id` is settable on `CreatePassword`, making subjects deterministic.
+- Good, because it reopens self-service password change as a future possibility (`UpdatePassword` needs no restart).
+- Bad, because upstream Dex's `Password` message has no `groups` field — this depends on our own unmerged patch (dexidp/dex#4972), so APL runs a fork rather than upstream Dex.
+- Bad, because `apl-api` becomes the sole path for provisioning; there's no separate rendering step to independently verify what reached Dex.
 
 ### Dex with users in configuration
 
-- Good, because it is the only supported interface that expresses a user with groups.
+- Good, because it needs no fork or patch — it works against unmodified upstream Dex.
 - Good, because it removes the SQL database entirely.
 - Good, because `userID` is settable, making subjects deterministic and repository-derived.
 - Bad, because configuration is read only at startup, so user and team changes require a restart.
@@ -126,4 +132,4 @@ Bringing an external identity provider remains supported, and the two population
 - Builds on [ADR-2026-06-25](2026-06-25-drop-sops-for-sealedsecrets.md)
 - [Dex storage documentation](https://dexidp.io/docs/configuration/storage/) — states the custom resources are internal
 - [dexidp/dex#4560](https://github.com/dexidp/dex/issues/4560) — auth sessions, merged but unreleased
-- [dexidp/dex#4972](https://github.com/dexidp/dex/issues/4972) — request to accept group membership over the gRPC API; would remove the restart on user change
+- [dexidp/dex#4972](https://github.com/dexidp/dex/issues/4972) — our patch adding `groups` to the gRPC `Password` message; unmerged, APL runs a fork carrying it
