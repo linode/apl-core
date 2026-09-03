@@ -16,15 +16,68 @@
 #   task setup TURNSTONE_ENABLED=false
 #   task down CONFIRM=yes             # destructive: deletes the kind cluster
 #
-# State that has to survive across tasks (the MetalLB pool, the derived APPS_REVISION) is written
-# to .taskfiles/state/ (gitignored) rather than threaded through Task's own var system, because
-# it's computed by one task and consumed by several later ones run as separate `task` invocations.
+# By default all of this targets a local kind cluster, exactly as SETUP.md's Quickstart does.
+# To target a different Kubernetes cluster instead -- e.g. one already running on a server --
+# set CLUSTER_PROVIDER=existing:
+#
+#   task setup CLUSTER_PROVIDER=existing KUBE_CONTEXT=my-server \
+#     DOMAIN_SUFFIX=apl.example.com IMAGE_REGISTRY=registry.example.com/apl
+#
+#   - KUBE_CONTEXT must already exist in your kubeconfig (see `kubectl config get-contexts`);
+#     this Taskfile never creates or deletes a non-kind cluster, only points at one.
+#   - DOMAIN_SUFFIX must already resolve (real DNS, or a <public-ip>.nip.io) to that cluster's
+#     ingress LoadBalancer IP -- for kind this is derived from the docker network instead, but
+#     there is no docker network to derive it from for an arbitrary remote cluster.
+#   - IMAGE_REGISTRY is required unless the target cluster's nodes can already pull the exact
+#     image tags this Taskfile builds by some other means (`kind load docker-image` only works
+#     for kind). `task images:push-all` pushes the built images there and `task install:values`
+#     points the operator, otomi-api and otomi-console at it (the latter two via values.yaml's
+#     `apps.<name>._rawValues` escape hatch -- see .taskfiles/install.yml).
+#   - MetalLB and Calico are assumed already provided by an existing cluster and are skipped by
+#     default; force them on with METALLB_ENABLED=true / CNI_ENABLED=true if it needs them too.
+#   - Vikunja defaults to disabled (VIKUNJA_ENABLED=false) for CLUSTER_PROVIDER=existing: its
+#     vikunja-mcp sidecar image is hardcoded kind-only (no registry override exists yet) and,
+#     left on, stalls the entire install rather than just failing on its own -- see the env:
+#     block below and images:push-all's warning. Only set VIKUNJA_ENABLED=true yourself once
+#     vikunja-mcp's image is actually reachable from that cluster.
+#   - `task install:trust-ca` only knows how to reach into a kind node's containerd -- for
+#     CLUSTER_PROVIDER=existing it no-ops and prints the manual step instead (SETUP.md step 9).
+#   - `task down` refuses to run against anything but a kind cluster; it never touches a cluster
+#     it didn't create.
+#
+# State that has to survive across tasks (the MetalLB pool, the domain suffix, the derived
+# APPS_REVISION) is written to .taskfiles/state/ (gitignored) rather than threaded through
+# Task's own var system, because it's computed by one task and consumed by several later ones
+# run as separate `task` invocations.
 
 version: '3'
 
 vars:
+  # kind (default): a local, disposable cluster this Taskfile creates and deletes itself.
+  # existing: point at an already-running cluster via KUBE_CONTEXT instead -- see the quick
+  # start above. Anything typo'd here that isn't "kind" is treated as "existing".
+  CLUSTER_PROVIDER: '{{.CLUSTER_PROVIDER | default "kind"}}'
   CLUSTER_NAME: apl
   KIND_CONTEXT: kind-{{.CLUSTER_NAME}}
+  # The kubeconfig context every kubectl/helm call targets. Defaults to the kind context; for
+  # CLUSTER_PROVIDER=existing this MUST be set explicitly to a context already in your kubeconfig
+  # -- left empty rather than falling back to the kind context, so cluster:use-existing's own
+  # check can tell "never set" apart from "set to something that happens to not exist yet".
+  KUBE_CONTEXT: '{{if .KUBE_CONTEXT}}{{.KUBE_CONTEXT}}{{else if eq .CLUSTER_PROVIDER "kind"}}{{.KIND_CONTEXT}}{{else}}{{end}}'
+  # Required for CLUSTER_PROVIDER=existing (validated in cluster:use-existing); for kind it's left
+  # empty here and derived instead from the live docker network in cluster:metallb.
+  DOMAIN_SUFFIX: '{{.DOMAIN_SUFFIX | default ""}}'
+  # Registry to push built images to for CLUSTER_PROVIDER=existing (see images:push-all). Unused
+  # for kind, which loads images directly into the cluster's containerd instead.
+  IMAGE_REGISTRY: '{{.IMAGE_REGISTRY | default ""}}'
+  # MetalLB/Calico are only needed for kind's bare setup; an existing cluster is assumed to
+  # already have a LoadBalancer and CNI unless told otherwise.
+  METALLB_ENABLED: '{{if .METALLB_ENABLED}}{{.METALLB_ENABLED}}{{else if eq .CLUSTER_PROVIDER "kind"}}true{{else}}false{{end}}'
+  CNI_ENABLED: '{{if .CNI_ENABLED}}{{.CNI_ENABLED}}{{else if eq .CLUSTER_PROVIDER "kind"}}true{{else}}false{{end}}'
+  # Computed under a name distinct from the env: block's VIKUNJA_ENABLED on purpose -- see the
+  # comment next to that entry below for why a self-referencing conditional default there
+  # resolves wrong.
+  VIKUNJA_DEFAULT: '{{if eq .CLUSTER_PROVIDER "kind"}}true{{else}}false{{end}}'
   STATE_DIR: .taskfiles/state
   OPERATOR_VERSION: 6.2.1-fork
   OPERATOR_IMAGE: apl-core-local:v{{.OPERATOR_VERSION}}
@@ -52,7 +105,24 @@ env:
   GITEA_ENABLED: '{{.GITEA_ENABLED | default "true"}}'
   HARBOR_ENABLED: '{{.HARBOR_ENABLED | default "true"}}'
   TEKTON_ENABLED: '{{.TEKTON_ENABLED | default "true"}}'
-  VIKUNJA_ENABLED: '{{.VIKUNJA_ENABLED | default "true"}}'
+  # Defaults to false for CLUSTER_PROVIDER=existing, unlike the other *_ENABLED toggles above.
+  # values/vikunja/vikunja-raw.gotmpl hardcodes the vikunja-mcp sidecar's image to a kind-only
+  # local tag with no registry override -- confirmed live (2026-09-02) that leaving this on
+  # existing doesn't just leave vikunja-mcp broken, it stalls the ENTIRE install: that raw chart
+  # bundles vikunja-mcp alongside other vikunja resources in one release, so its failed rollout
+  # triggers Helm's rollback-on-failure, burning all of operator.installRetries (~10 min each)
+  # before otomi-api/otomi-console/turnstone are ever reached. Set VIKUNJA_ENABLED=true yourself
+  # only once vikunja-mcp's image is actually reachable from that cluster.
+  #
+  # The kind/existing default itself is computed as vars.VIKUNJA_DEFAULT above, NOT inline here
+  # as `{{if .VIKUNJA_ENABLED}}...{{else if eq .CLUSTER_PROVIDER "kind"}}...{{end}}` the way
+  # METALLB_ENABLED/CNI_ENABLED do in vars: -- that self-referencing-if form resolved to "true"
+  # unconditionally when placed in env: (confirmed live 2026-09-02: even bare `task setup`, no
+  # CLUSTER_PROVIDER given at all, came out true, and CLUSTER_PROVIDER=existing also came out
+  # true instead of false). vars: entries referencing their own CLI var this way resolve fine;
+  # the same pattern inside env: does not -- keep this as a plain `| default` against a
+  # differently-named vars: value instead of re-introducing that form here.
+  VIKUNJA_ENABLED: '{{.VIKUNJA_ENABLED | default .VIKUNJA_DEFAULT}}'
   TURNSTONE_ENABLED: '{{.TURNSTONE_ENABLED | default "true"}}'
 
 includes:
@@ -69,13 +139,20 @@ tasks:
       - task --list
 
   setup:
-    desc: "Full end-to-end lab setup -- equivalent to SETUP.md's Quickstart, ~15 minutes"
+    desc: "Full end-to-end lab setup -- equivalent to SETUP.md's Quickstart, ~15 minutes (kind, the default) or targeting an existing cluster (CLUSTER_PROVIDER=existing)"
     cmds:
+      # cluster:create / cluster:use-existing, and each pair below, are mutually exclusive --
+      # both are always called, but each self-skips ("Task ... is up to date") when its status
+      # check says it doesn't apply, based on CLUSTER_PROVIDER/METALLB_ENABLED/CNI_ENABLED. This
+      # keeps the branching inside the tasks themselves rather than shelling out to a `task`
+      # binary whose name isn't guaranteed (see the header comment above).
       - task: cluster:create
+      - task: cluster:use-existing
       - task: cluster:metallb
       - task: cluster:cni
       - task: images:build-all
       - task: images:load-all
+      - task: images:push-all
       - task: install:schema
       - task: install:ca
       - task: install:values
@@ -93,10 +170,12 @@ tasks:
           echo "Browser-only checks (SSO round-trip, tiles, an actual chat turn) are never scriptable -- see SETUP.md."
 
   down:
-    desc: "Delete the kind cluster and local generated state (destructive; requires CONFIRM=yes)"
+    desc: "Delete the kind cluster and local generated state (destructive; requires CONFIRM=yes; refuses to run against CLUSTER_PROVIDER=existing)"
     preconditions:
       - sh: '[ "{{.CONFIRM}}" = "yes" ]'
         msg: "Refusing to delete anything without CONFIRM=yes -- this destroys the cluster and all in-cluster data. Run: task down CONFIRM=yes"
+      - sh: '[ "{{.CLUSTER_PROVIDER}}" = "kind" ]'
+        msg: "CLUSTER_PROVIDER={{.CLUSTER_PROVIDER}} -- this task only ever deletes the local kind lab, never a cluster it didn't create. To remove the platform from an existing cluster: helm uninstall apl --kube-context {{.KUBE_CONTEXT}}, then clean up whatever the operator created yourself."
     cmds:
       - kind delete cluster --name {{.CLUSTER_NAME}}
       - rm -f passwords.txt values.yaml apl-root-ca.crt

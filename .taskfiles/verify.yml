@@ -32,7 +32,7 @@ tasks:
           -o custom-columns='NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status' \
           --no-headers | awk '$2!="Synced" || $3!="Healthy"'
 
-        D=$(cat {{.STATE_DIR}}/pool_start.txt).nip.io
+        D=$(cat {{.STATE_DIR}}/domain_suffix.txt)
         echo "=== console reachability (403 with an HTML body is correct -- oauth2-proxy's login interstitial) ==="
         curl -sk -o /dev/null -w 'HTTP %{http_code}\n' "https://console.$D/"
         curl -sk -D- -o /dev/null "https://console.$D/oauth2/start" | grep -i location || true

@@ -40,9 +40,9 @@ tasks:
     cmds:
       - |
         set -euo pipefail
-        [ -f {{.STATE_DIR}}/pool_start.txt ] || { echo "error: run 'task cluster:metallb' first" >&2; exit 1; }
+        [ -f {{.STATE_DIR}}/domain_suffix.txt ] || { echo "error: run 'task cluster:metallb' (kind) or 'task cluster:use-existing' (CLUSTER_PROVIDER=existing) first" >&2; exit 1; }
         [ -f {{.STATE_DIR}}/apl-ca.crt ] || { echo "error: run 'task install:ca' first" >&2; exit 1; }
-        POOL_START=$(cat {{.STATE_DIR}}/pool_start.txt)
+        DOMAIN_SUFFIX=$(cat {{.STATE_DIR}}/domain_suffix.txt)
 
         ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
         if [ "$TURNSTONE_ENABLED" = "true" ] && [ -z "$ANTHROPIC_API_KEY" ]; then
@@ -62,11 +62,11 @@ tasks:
         cluster:
           name: apl-local
           provider: custom
-          domainSuffix: $POOL_START.nip.io
+          domainSuffix: $DOMAIN_SUFFIX
           defaultStorageClass: standard
         otomi:
           version: v{{.OPERATOR_VERSION}}
-          coreImageRepository: apl-core-local
+          coreImageRepository: {{if .IMAGE_REGISTRY}}{{.IMAGE_REGISTRY}}/apl-core-local{{else}}apl-core-local{{end}}
           coreImagePullPolicy: IfNotPresent
         operator:
           installRetries: 3
@@ -124,6 +124,23 @@ tasks:
           } >> values.yaml
         fi
         unset ANTHROPIC_API_KEY
+        if [ -n "{{.IMAGE_REGISTRY}}" ]; then
+          # otomi-api/otomi-console's chart defaults (charts/otomi-api|otomi-console/values.yaml)
+          # hardcode image.repository to docker.io/linode/... -- there is no top-level values.yaml
+          # field for it, so _rawValues (an intentional, documented "no schema, you're on your
+          # own" escape hatch into the subchart's own values) is the only way to repoint them at
+          # a registry the target cluster can actually reach. Must match the tags images:push-all
+          # pushed. Appended last -- inserting this between the apps.turnstone block above and its
+          # anthropicApiKey line broke that key's indentation onto whatever app entry came last.
+          cat >> values.yaml <<EOF
+          otomi-api:
+            _rawValues:
+              image: {repository: "{{.IMAGE_REGISTRY}}/apl-api", tag: "v{{.APP_VERSION}}"}
+          otomi-console:
+            _rawValues:
+              image: {repository: "{{.IMAGE_REGISTRY}}/apl-console", tag: "v{{.APP_VERSION}}"}
+        EOF
+        fi
         chmod 0600 values.yaml
         echo "wrote values.yaml ($(wc -l < values.yaml) lines)"
       - helm template -f values.yaml apl ./chart/apl >/dev/null
@@ -193,7 +210,9 @@ tasks:
         exit 1
 
   trust-ca:
-    desc: "Trust the platform CA on the kind node's containerd (required for any image pull)"
+    desc: "Trust the platform CA on the kind node's containerd (required for any image pull) -- CLUSTER_PROVIDER=kind only"
+    status:
+      - 'test "{{.CLUSTER_PROVIDER}}" != "kind"'
     cmds:
       - |
         set -euo pipefail
@@ -203,10 +222,13 @@ tasks:
         docker exec {{.CLUSTER_NAME}}-control-plane update-ca-certificates
         docker exec {{.CLUSTER_NAME}}-control-plane systemctl restart containerd
       # This step is NOT persisted across `kind delete cluster` -- it patches the live node
-      # container, not a kind config file. Re-run after every fresh install.
+      # container, not a kind config file. Re-run after every fresh install. For
+      # CLUSTER_PROVIDER=existing there is no kind node to docker exec into -- this task no-ops
+      # (see the status check above); trust apl-root-ca.crt on that cluster's own nodes by
+      # whatever mechanism it uses (SETUP.md step 9 explains what containerd needs and why).
       - |
         set -euo pipefail
-        D=$(cat {{.STATE_DIR}}/pool_start.txt).nip.io
+        D=$(cat {{.STATE_DIR}}/domain_suffix.txt)
         sleep 3
         docker exec {{.CLUSTER_NAME}}-control-plane curl -sv --max-time 5 "https://harbor.$D/v2/" 2>&1 \
           | grep -qi "certificate verify ok" \
@@ -218,10 +240,10 @@ tasks:
     cmds:
       - |
         set -euo pipefail
-        CONSOLE=$(kubectl --context {{.KIND_CONTEXT}} get cm welcome -n apl-operator -o jsonpath='{.data.consoleUrl}')
-        USERNAME=$(kubectl --context {{.KIND_CONTEXT}} get secret platform-admin-initial-credentials -n keycloak \
+        CONSOLE=$(kubectl --context {{.KUBE_CONTEXT}} get cm welcome -n apl-operator -o jsonpath='{.data.consoleUrl}')
+        USERNAME=$(kubectl --context {{.KUBE_CONTEXT}} get secret platform-admin-initial-credentials -n keycloak \
                      -o jsonpath='{.data.username}' | base64 -d)
-        PASSWORD=$(kubectl --context {{.KIND_CONTEXT}} get secret platform-admin-initial-credentials -n keycloak \
+        PASSWORD=$(kubectl --context {{.KUBE_CONTEXT}} get secret platform-admin-initial-credentials -n keycloak \
                      -o jsonpath='{.data.password}' | base64 -d)
         [ -n "$CONSOLE" ] && [ -n "$USERNAME" ] && [ -n "$PASSWORD" ] \
           || { echo "warning: one or more values came back empty -- is the install actually completed?" >&2; }

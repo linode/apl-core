@@ -3,18 +3,45 @@ version: '3'
 
 tasks:
   create:
-    desc: "Create the kind cluster (deletes any existing one with the same name first)"
+    desc: "Create the kind cluster (deletes any existing one with the same name first) -- CLUSTER_PROVIDER=kind only"
+    status:
+      - 'test "{{.CLUSTER_PROVIDER}}" != "kind"'
     cmds:
       - kind delete cluster --name {{.CLUSTER_NAME}}
       - kind create cluster --name {{.CLUSTER_NAME}}
       # kind create cluster returns before the node is Ready -- checking immediately shows
       # NotReady with coredns Pending, which looks like failure but just needs ~15s more.
-      - kubectl --context {{.KIND_CONTEXT}} wait --for=condition=Ready node --all --timeout=120s
-      - kubectl --context {{.KIND_CONTEXT}} get nodes -o wide
-      - kubectl --context {{.KIND_CONTEXT}} get storageclass
+      - kubectl --context {{.KUBE_CONTEXT}} wait --for=condition=Ready node --all --timeout=120s
+      - kubectl --context {{.KUBE_CONTEXT}} get nodes -o wide
+      - kubectl --context {{.KUBE_CONTEXT}} get storageclass
+
+  use-existing:
+    desc: "Point at an already-running Kubernetes cluster instead of creating a kind one -- CLUSTER_PROVIDER=existing only"
+    status:
+      - 'test "{{.CLUSTER_PROVIDER}}" = "kind"'
+    cmds:
+      - |
+        set -euo pipefail
+        [ -n "{{.KUBE_CONTEXT}}" ] || { echo "error: set KUBE_CONTEXT=<a context from 'kubectl config get-contexts'> for CLUSTER_PROVIDER=existing" >&2; exit 1; }
+        kubectl config get-contexts {{.KUBE_CONTEXT}} >/dev/null 2>&1 \
+          || { echo "error: no such kubeconfig context '{{.KUBE_CONTEXT}}' -- see 'kubectl config get-contexts'" >&2; exit 1; }
+        # Switched globally (not just --context on this command) so every bare kubectl/helm call
+        # elsewhere in this Taskfile -- most of them don't pass --context -- targets this cluster.
+        kubectl config use-context {{.KUBE_CONTEXT}}
+        kubectl --context {{.KUBE_CONTEXT}} wait --for=condition=Ready node --all --timeout=120s
+        kubectl --context {{.KUBE_CONTEXT}} get nodes -o wide
+        kubectl --context {{.KUBE_CONTEXT}} get storageclass
+      - |
+        set -euo pipefail
+        [ -n "{{.DOMAIN_SUFFIX}}" ] || { echo "error: set DOMAIN_SUFFIX=<dns suffix resolving to this cluster's ingress LoadBalancer, e.g. apl.example.com or 203.0.113.10.nip.io> for CLUSTER_PROVIDER=existing" >&2; exit 1; }
+        mkdir -p {{.STATE_DIR}}
+        echo -n "{{.DOMAIN_SUFFIX}}" > {{.STATE_DIR}}/domain_suffix.txt
+        echo "targeting existing cluster '{{.KUBE_CONTEXT}}', domain suffix: {{.DOMAIN_SUFFIX}}"
 
   metallb:
-    desc: "Install MetalLB, pool derived from the live docker network (never hardcoded)"
+    desc: "Install MetalLB, pool derived from the live docker network (never hardcoded) -- skipped unless METALLB_ENABLED=true"
+    status:
+      - 'test "{{.METALLB_ENABLED}}" != "true"'
     cmds:
       - mkdir -p {{.STATE_DIR}}
       - |
@@ -22,6 +49,9 @@ tasks:
         # Derive the range from the live docker network -- it has been both 172.18.x and 172.19.x
         # on the same machine across rebuilds. A stale address makes MetalLB advertise an
         # unreachable IP, which presents as a platform failure rather than a config mistake.
+        # This only works against kind's own "kind" docker network -- METALLB_ENABLED=true against
+        # CLUSTER_PROVIDER=existing (e.g. a bare-metal server with no LoadBalancer of its own)
+        # needs its pool picked by hand instead; adjust this derivation for that environment.
         SUBNET=$(docker network inspect kind --format '{{`{{range .IPAM.Config}}{{println .Subnet}}{{end}}`}}' | grep -v ':')
         PREFIX=$(echo "$SUBNET" | cut -d. -f1-2)
         POOL_START="$PREFIX.255.200"
@@ -29,6 +59,10 @@ tasks:
         echo "pool: $POOL_START-$POOL_END"
         echo -n "$POOL_START" > {{.STATE_DIR}}/pool_start.txt
         echo -n "$POOL_END" > {{.STATE_DIR}}/pool_end.txt
+        # domain_suffix.txt is the cross-file source of truth read by install:values,
+        # install:trust-ca and verify:platform -- cluster:use-existing writes it directly from
+        # DOMAIN_SUFFIX instead, since there's no docker network to derive a pool from there.
+        echo -n "$POOL_START.nip.io" > {{.STATE_DIR}}/domain_suffix.txt
       - kubectl create namespace mlb --dry-run=client -o yaml | kubectl apply -f -
       - helm repo add metallb https://metallb.github.io/metallb
       - helm repo update metallb
@@ -57,7 +91,9 @@ tasks:
       - kubectl get pods -n mlb
 
   cni:
-    desc: "Install Calico CNI (layers over kind's dormant kindnet)"
+    desc: "Install Calico CNI (layers over kind's dormant kindnet) -- skipped unless CNI_ENABLED=true"
+    status:
+      - 'test "{{.CNI_ENABLED}}" != "true"'
     cmds:
       - kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.3/manifests/calico.yaml
       - kubectl wait --for=condition=Ready pod -l k8s-app=calico-node -n kube-system --timeout=120s

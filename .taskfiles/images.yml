@@ -119,7 +119,9 @@ tasks:
       - task: build-vikunja-mcp
 
   load-all:
-    desc: "Load every built image into the kind cluster"
+    desc: "Load every built image into the kind cluster -- CLUSTER_PROVIDER=kind only"
+    status:
+      - 'test "{{.CLUSTER_PROVIDER}}" != "kind"'
     cmds:
       - kind load docker-image {{.OPERATOR_IMAGE}} --name {{.CLUSTER_NAME}}
       - kind load docker-image {{.API_IMAGE}} --name {{.CLUSTER_NAME}}
@@ -127,4 +129,32 @@ tasks:
       - |
         if [ "$VIKUNJA_ENABLED" = "true" ]; then
           kind load docker-image {{.VIKUNJA_MCP_IMAGE}} --name {{.CLUSTER_NAME}}
+        fi
+
+  push-all:
+    desc: "Push every built image to IMAGE_REGISTRY for a non-kind cluster -- CLUSTER_PROVIDER=existing only"
+    status:
+      - 'test "{{.CLUSTER_PROVIDER}}" = "kind"'
+    cmds:
+      - |
+        set -euo pipefail
+        [ -n "{{.IMAGE_REGISTRY}}" ] || { echo "error: set IMAGE_REGISTRY=<registry/path reachable from the target cluster's nodes> for CLUSTER_PROVIDER=existing" >&2; exit 1; }
+        push() {
+          local local_tag="$1" remote_tag="$2"
+          docker tag "$local_tag" "$remote_tag"
+          docker push "$remote_tag"
+        }
+        # These three remote tags are what install:values points otomi.coreImageRepository and
+        # the otomi-api/otomi-console _rawValues image overrides at -- keep in sync if changed.
+        push {{.OPERATOR_IMAGE}} {{.IMAGE_REGISTRY}}/apl-core-local:v{{.OPERATOR_VERSION}}
+        push {{.API_IMAGE}} {{.IMAGE_REGISTRY}}/apl-api:v{{.APP_VERSION}}
+        push {{.CONSOLE_IMAGE}} {{.IMAGE_REGISTRY}}/apl-console:v{{.APP_VERSION}}
+        if [ "$VIKUNJA_ENABLED" = "true" ]; then
+          push {{.VIKUNJA_MCP_IMAGE}} {{.IMAGE_REGISTRY}}/vikunja-mcp:0.2.1
+          echo "warning: VIKUNJA_ENABLED=true was forced on for CLUSTER_PROVIDER=existing (it defaults" >&2
+          echo "off precisely because of this). values/vikunja/vikunja-raw.gotmpl hardcodes" >&2
+          echo "'image: {{.VIKUNJA_MCP_IMAGE}}' directly -- pushing it to the registry is not enough," >&2
+          echo "that file's image: line must also be edited to {{.IMAGE_REGISTRY}}/vikunja-mcp:0.2.1," >&2
+          echo "or the vikunja-mcp rollout will fail and (per Helm rollback-on-failure on that bundled" >&2
+          echo "raw release) can stall the entire platform install, not just Vikunja." >&2
         fi
