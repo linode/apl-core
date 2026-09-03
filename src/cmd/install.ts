@@ -29,7 +29,7 @@ import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/co
 import { getErrorMessage } from 'src/operator/utils'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
-import { commit, createCredentialsSecret, createWelcomeConfigMap, initialSetupData } from './commit'
+import { commit, createWelcomeConfigMap, initialSetupData } from './commit'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -291,8 +291,7 @@ export const installAll = async () => {
     d.info('Git push verified successfully')
 
     const initialData = await initialSetupData()
-    await retryInstallStep(createCredentialsSecret, initialData.secretName, initialData.username, initialData.password)
-    await retryInstallStep(createWelcomeConfigMap, initialData.secretName, initialData.domainSuffix)
+    await retryInstallStep(createWelcomeConfigMap, initialData.domainSuffix)
   }
   await setDeploymentState({ status: 'deployed', version })
   d.info('Installation completed')

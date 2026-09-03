@@ -507,3 +507,7 @@ changes:
   - version: 71
     customFunctions:
       - preservePvcStorageClassInRawValues
+  - version: 72
+    additions:
+      - apps.keycloak.enabled: true
+      - otomi.issuer: keycloak

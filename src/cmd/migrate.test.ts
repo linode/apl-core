@@ -1,3 +1,6 @@
+import { readFileSync } from 'fs'
+import { load } from 'js-yaml'
+import { join } from 'path'
 import {
   applyChanges,
   Changes,
@@ -587,5 +590,31 @@ describe('preservePvcStorageClassInRawValues', () => {
     expect(values.databases.gitea.storageClass).toBe('preset-db-sc')
     expect(values.databases.harbor.storageClass).toBe('preset-db-sc')
     expect(values.databases.keycloak.storageClass).toBe('preset-db-sc')
+  })
+})
+
+describe('Keycloak-optional migration (version 72)', () => {
+  it('enables Keycloak and pins the issuer for a pre-existing cluster', async () => {
+    const { changes } = load(readFileSync(join(__dirname, '../../values-changes.yaml'), 'utf-8')) as {
+      changes: Changes
+    }
+    const values = { apps: {}, otomi: {}, versions: { specVersion: 71 } }
+    const deps = {
+      cd: jest.fn(),
+      rename: jest.fn(),
+      hfValues: jest.fn().mockReturnValue(values),
+      terminal,
+      writeValues: jest.fn(),
+    }
+
+    await applyChanges(filterChanges(71, changes), false, deps)
+
+    expect(deps.writeValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        apps: expect.objectContaining({ keycloak: { enabled: true } }),
+        otomi: expect.objectContaining({ issuer: 'keycloak' }),
+      }),
+      true,
+    )
   })
 })
