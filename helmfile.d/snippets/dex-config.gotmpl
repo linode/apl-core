@@ -55,7 +55,7 @@ sessions:
 enablePasswordDB: true
 {{- /* Bootstrap login only; real user provisioning is #3541. */}}
 staticPasswords:
-  - email: {{ $d.adminUsername }}@{{ $domainSuffix }}
+  - email: platform-admin@{{ $domainSuffix }}
     username: {{ $d.adminUsername }}
     userID: apl-platform-admin
     hash: '{{ "{{ .adminPassword | bcrypt | toString }}" }}'
