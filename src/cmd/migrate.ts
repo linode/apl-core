@@ -791,8 +791,9 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
     strict: true,
   }
   d.info('Pausing External-Secrets Operator')
+  let app = undefined
   if (!isTest) {
-    const app = await getArgoCdApp('external-secrets-external-secrets', k8s.custom())
+    app = await getArgoCdApp('external-secrets-external-secrets', k8s.custom())
     if (app) {
       await setArgoCdAppSync('external-secrets-external-secrets', false, k8s.custom())
     }
@@ -917,7 +918,9 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
         },
         setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
       )
-      await setArgoCdAppSync('external-secrets-external-secrets', true, k8s.custom())
+      if (app) {
+        await setArgoCdAppSync('external-secrets-external-secrets', true, k8s.custom())
+      }
     }
   }
 }
