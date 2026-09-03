@@ -2,7 +2,6 @@
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $h := $v.apps.harbor }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
-{{- $otomiAdmin := "otomi-admin" }}
 {{- $cnpg := $v.apps.cnpg }}
 {{- $obj := $v.obj.provider }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
