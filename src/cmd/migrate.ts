@@ -858,7 +858,7 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
         'kubernetes.io/basic-auth',
       )
       await setSecret('gitea', SEALED_SECRETS_NAMESPACE, {
-        adminUsername: 'otomi-admin',
+        adminUsername: values?.apps?.gitea?.adminUsername || 'otomi-admin',
         adminPassword: secrets.gitea.adminPassword,
         valkeyPassword: generate(GENERATE_OPTS),
       })
@@ -866,7 +866,7 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
     if (secrets.harbor) {
       d.info('Processing Harbor secrets.')
       await setSecret('harbor', SEALED_SECRETS_NAMESPACE, {
-        registryUsername: 'otomi-admin',
+        registryUsername: values?.apps?.harbor?.registry?.credentials?.username || 'otomi-admin',
         registryPassword: secrets.harbor.registry_credentials_password,
       })
       await setSecret('harbor-secret-key', 'harbor', {
