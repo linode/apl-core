@@ -99,7 +99,11 @@ spec:
           secretName: {{ include "ui.fullname" . }}-config
           optional: true
       - name: tmp
+        {{- if .Values.ui.tmpVolume }}
+          {{- toYaml .Values.ui.tmpVolume | nindent 8 }}
+        {{- else }}
         emptyDir: {}
+        {{- end }}
       {{- with .Values.ui.extraVolumes.volumes }}
       {{ toYaml . | nindent 6 | trim }}
       {{- end }}
