@@ -9,7 +9,7 @@ import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
+import { getFilename, getSchemaSecretsPaths, loadYaml, rootDir } from 'src/common/utils'
 import { writeValues } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -183,12 +183,6 @@ export function filterChanges(version: number, changes: Changes): Changes {
   return changes.filter((c) => c.version - version > 0)
 }
 
-const replace = async (tmplStr: any, prev: any): Promise<string> => {
-  if (typeof tmplStr !== 'string' || !tmplStr.includes('.prev')) return tmplStr
-  const tmpl = `{{ ${tmplStr} }}`
-  return (await gucci(tmpl, { prev })) as string
-}
-
 /**
  * Allows to mutate or set values in dynamic paths that can include team marker or array notation.
  * Example:
@@ -215,9 +209,7 @@ export const setDeep = async (obj: Record<string, any>, path: string, tmplStr: s
   await Promise.all(
     paths.map(async (p) => {
       if (!p.includes(arrayMarker)) {
-        const prev = get(obj, p)
-        const ret = await replace(tmplStr, prev)
-        set(obj, p, ret)
+        set(obj, p, tmplStr)
         return
       }
 
@@ -227,10 +219,8 @@ export const setDeep = async (obj: Record<string, any>, path: string, tmplStr: s
       await Promise.all(
         holder.map(async (item, idx) => {
           if (rhs.length === 1) {
-            const prev = get(item, rhs[0])
-            const ret = await replace(tmplStr, prev)
             const realPath = `${lhs}[${idx}].${rhs[0]}`
-            set(obj, realPath, ret)
+            set(obj, realPath, tmplStr)
             return
           }
           const rhsPath = rhs.join(arrayMarker)
@@ -1054,8 +1044,7 @@ export const applyChanges = async (
         const prev = get(values, path)
         if (prev !== undefined) {
           // path worked and we found something, simple scenario, just replace directly
-          const ret = await replace(tmplStr, prev)
-          set(values, path, ret)
+          set(values, path, tmplStr)
         } else {
           // we might have a complex path, which we will deal with in setDeep
           await setDeep(values, path, tmplStr)
