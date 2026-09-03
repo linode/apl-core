@@ -10,7 +10,7 @@ import { prepareEnvironment } from 'src/common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
-import { createK8sSecret, getK8sSecret, secretId } from 'src/common/k8s'
+import { getK8sSecret, secretId } from 'src/common/k8s'
 import { bootstrapSealedSecrets, stripAllSecrets } from 'src/common/sealed-secrets'
 import {
   ensureManifestDirectories,
@@ -21,7 +21,7 @@ import {
   loadYaml,
   rootDir,
 } from 'src/common/utils'
-import { generateSecrets, writeValues } from 'src/common/values'
+import { writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
@@ -160,10 +160,7 @@ export const processValues = async (
   deps = {
     terminal,
     loadYaml,
-    getStoredClusterSecrets,
     writeValues,
-    generateSecrets,
-    createK8sSecret,
     createCustomCA,
     getUsers,
     getSchemaSecretsPaths,
