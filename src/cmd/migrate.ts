@@ -821,10 +821,10 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
     if (otomiSecret) {
       d.info('Processing Otomi secrets.')
       await setSecret('otomi', SEALED_SECRETS_NAMESPACE, {
-        adminPassword: secrets.otomi.adminPassword,
+        adminPassword: otomiSecret.adminPassword,
       })
       // Otomi-secret optionally contains the globalPullSecret password, in addition to the generated adminPassword
-      if (secrets.otomi.globalPullSecret_password) {
+      if (otomiSecret.globalPullSecret_password) {
         const otomiSecretFilename = `${env.ENV_DIR}/env/manifests/namespaces/${SEALED_SECRETS_NAMESPACE}/sealedsecrets/otomi-secrets.yaml`
         const otomiSealedSecret = await loadYaml(otomiSecretFilename)
         if (otomiSealedSecret) {
