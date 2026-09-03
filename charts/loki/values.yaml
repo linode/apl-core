@@ -1613,7 +1613,7 @@ gateway:
     image:
       registry: ghcr.io
       repository: "jkroepke/access-log-exporter"
-      tag: "0.4.11"
+      tag: "0.4.12"
       pullPolicy: IfNotPresent
     # @schema additionalProperties:true
     resources:
@@ -6932,7 +6932,7 @@ sidecar:
     # -- The Docker registry and image for the k8s sidecar
     repository: kiwigrid/k8s-sidecar
     # -- Docker image tag
-    tag: 2.10.1
+    tag: 2.10.3
     # -- Docker image sha. If empty, no sha will be used
     sha: ""
     # -- Docker image pull policy
