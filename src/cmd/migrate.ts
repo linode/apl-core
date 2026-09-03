@@ -1,5 +1,4 @@
 import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
-import { randomBytes } from 'crypto'
 import { diff } from 'deep-diff'
 import { existsSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { cp, rename as fsRename, rm } from 'fs/promises'
@@ -18,14 +17,11 @@ import { cd, sleep } from 'zx'
 import { OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
 import { getOldGitCredentials, setGitConfig } from '../common/git-config'
 import {
-  createArgoCdRedisSecret,
   createUpdateGenericSecret,
   ensureNamespaceExists,
   getArgoCdApp,
   getK8sSecret,
   k8s,
-  restartDeployment,
-  restartStatefulSet,
   setArgoCdAppSync,
 } from '../common/k8s'
 import {
@@ -412,57 +408,6 @@ const valkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
     } else {
       d.info(`Skipping oauth2-proxy redis PVC migration: no PVC found with storageClass ${legacyStorageClass}`)
     }
-  }
-}
-
-export const addRedisSecretForArgoCD = async (values: Record<string, any>): Promise<void> => {
-  const d = terminal('addRedisSecretForArgoCD')
-  const argocdNamespace = 'argocd'
-
-  try {
-    const parsedArgs = getParsedArgs()
-    if (parsedArgs?.dryRun || parsedArgs?.local || env.DISABLE_SYNC) {
-      d.info('Skipping ArgoCD redis secret creation in dry-run/local/dev mode')
-      return
-    }
-
-    if (!(await namespaceExists(argocdNamespace))) {
-      d.info(`Namespace ${argocdNamespace} not found, skipping argocd-redis migration`)
-      return
-    }
-
-    // redisPassword is an x-secret field: never present in values on disk.
-    // Generate one and write it into the shared values object so sopsMigration (v61) seals the same password.
-    const redisPassword = randomBytes(24).toString('base64url')
-    set(values, 'apps.argocd.redisPassword', redisPassword)
-    await createArgoCdRedisSecret({ apps: { argocd: { redisPassword } } })
-
-    // Components consume REDIS_PASSWORD as env var, so they must restart after secret rotation.
-    const restartTargets = [
-      { kind: 'deployment', name: 'argocd-redis' },
-      { kind: 'deployment', name: 'argocd-server' },
-      { kind: 'deployment', name: 'argocd-repo-server' },
-      { kind: 'statefulset', name: 'argocd-application-controller' },
-      { kind: 'deployment', name: 'argocd-application-controller' },
-    ]
-    for (const target of restartTargets) {
-      try {
-        if (target.kind === 'deployment') {
-          await restartDeployment(target.name, argocdNamespace)
-        } else {
-          await restartStatefulSet(target.name, argocdNamespace)
-        }
-        d.info(`Restarted ${target.kind}/${target.name}`)
-      } catch (error) {
-        if (error instanceof ApiException && error.code === 404) {
-          d.debug(`Could not restart ${target.kind}/${target.name}: not found`)
-          continue
-        }
-        throw error
-      }
-    }
-  } catch (error) {
-    d.error('Failed to create/update ArgoCD redis secret, continuing migration:', error)
   }
 }
 
@@ -1065,7 +1010,6 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   addLinodeNBAnnotations,
   sopsMigration,
   setIngressDefault,
-  addRedisSecretForArgoCD,
   removeIngressTracing,
   removeIngressNginxValues,
   migrateGeneratedSecrets,

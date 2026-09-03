@@ -8,7 +8,6 @@ import { getStoredGitRepoConfig } from 'src/common/git-config'
 import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS } from 'src/common/hf'
 import {
   applyServerSide,
-  createArgoCdRedisSecret,
   createUpdateConfigMap,
   getDeploymentState,
   getHelmReleases,
@@ -26,7 +25,6 @@ import {
 import { getFilename, rootDir } from 'src/common/utils'
 import { getImageTagFromValues, getPackageVersion, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
-import { getErrorMessage } from 'src/operator/utils'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
 import { commit, createCredentialsSecret, createWelcomeConfigMap, initialSetupData } from './commit'

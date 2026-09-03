@@ -19,7 +19,7 @@ import {
 import retry, { Options } from 'async-retry'
 import { X509Certificate } from 'crypto'
 import { access, mkdir, writeFile } from 'fs/promises'
-import { get, isEqual, map, mapValues } from 'lodash'
+import { isEqual, map, mapValues } from 'lodash'
 import { dirname, join } from 'path'
 import { Writable } from 'stream'
 import { parse, stringify } from 'yaml'
@@ -823,68 +823,6 @@ export async function setArgoCdAppSync(
     },
     setHeaderOptions('Content-Type', PatchStrategy.JsonPatch),
   )
-}
-
-export const createArgoCdRedisSecret = async (values: Record<string, any>): Promise<void> => {
-  const d = terminal('common:k8s:createArgoCdRedisSecret')
-  const argocdNamespace = 'argocd'
-  const secretName = 'argocd-redis'
-  const helmReleaseName = 'argocd-artifacts'
-  const redisPassword = get(values, 'apps.argocd.redisPassword')
-
-  if (typeof redisPassword !== 'string' || redisPassword.length === 0) {
-    d.warn('apps.argocd.redisPassword is missing, skipping argocd-redis reconciliation')
-    return
-  }
-
-  try {
-    await k8s.object().patch(
-      {
-        apiVersion: 'v1',
-        kind: 'Namespace',
-        metadata: {
-          name: argocdNamespace,
-        },
-      },
-      undefined,
-      undefined,
-      'apl-operator',
-      true,
-      PatchStrategy.ServerSideApply,
-    )
-    d.info(`Patched with server-side apply ${argocdNamespace}`)
-  } catch (error) {
-    if (!(error instanceof ApiException && error.code === 409)) throw error
-  }
-
-  const secretBody = {
-    apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-      name: secretName,
-      namespace: argocdNamespace,
-      labels: {
-        'app.kubernetes.io/managed-by': 'Helm',
-      },
-      annotations: {
-        'meta.helm.sh/release-name': helmReleaseName,
-        'meta.helm.sh/release-namespace': argocdNamespace,
-      },
-    },
-    type: 'Opaque',
-    stringData: {
-      auth: redisPassword,
-    },
-  }
-
-  try {
-    await k8s.object().patch(secretBody, undefined, undefined, 'apl-operator', true, PatchStrategy.ServerSideApply)
-    d.info(`Patched Secret ${secretName} in namespace ${argocdNamespace}`)
-  } catch (error) {
-    if (!(error instanceof ApiException && error.code === 409)) throw error
-    d.error(`Failed to patch Secret ${secretName} with server-side apply:`, error)
-    throw error
-  }
 }
 
 export async function restartDeployment(name: string, namespace: string): Promise<void> {
