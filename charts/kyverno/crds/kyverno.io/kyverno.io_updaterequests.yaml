@@ -8,8 +8,8 @@ metadata:
     app.kubernetes.io/instance: release-name
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: release-name-crds
-    app.kubernetes.io/version: 3.8.2
-    helm.sh/chart: crds-3.8.2
+    app.kubernetes.io/version: 3.9.0
+    helm.sh/chart: crds-3.9.0
   annotations:
     controller-gen.kubebuilder.io/version: v0.20.0
   name: updaterequests.kyverno.io
@@ -232,33 +232,27 @@ spec:
                                   items:
                                     type: string
                                   type: array
-                                description: Any additional information provided by
-                                  the authenticator.
+                                description: extra is any additional information provided
+                                  by the authenticator.
                                 type: object
                               groups:
-                                description: The names of groups this user is a part
-                                  of.
+                                description: groups is the names of groups this user
+                                  is a part of.
                                 items:
                                   type: string
                                 type: array
                                 x-kubernetes-list-type: atomic
                               uid:
                                 description: |-
-                                  A unique value that identifies this user across time. If this user is
+                                  uid is a unique value that identifies this user across time. If this user is
                                   deleted and another user by the same name is added, they will have
                                   different UIDs.
                                 type: string
                               username:
-                                description: The name that uniquely identifies this
-                                  user among all active users.
+                                description: username is the name that uniquely identifies
+                                  this user among all active users.
                                 type: string
                             type: object
-                        required:
-                        - kind
-                        - operation
-                        - resource
-                        - uid
-                        - userInfo
                         type: object
                       operation:
                         description: Operation is the type of resource operation being
@@ -293,24 +287,25 @@ spec:
                               items:
                                 type: string
                               type: array
-                            description: Any additional information provided by the
-                              authenticator.
+                            description: extra is any additional information provided
+                              by the authenticator.
                             type: object
                           groups:
-                            description: The names of groups this user is a part of.
+                            description: groups is the names of groups this user is
+                              a part of.
                             items:
                               type: string
                             type: array
                             x-kubernetes-list-type: atomic
                           uid:
                             description: |-
-                              A unique value that identifies this user across time. If this user is
+                              uid is a unique value that identifies this user across time. If this user is
                               deleted and another user by the same name is added, they will have
                               different UIDs.
                             type: string
                           username:
-                            description: The name that uniquely identifies this user
-                              among all active users.
+                            description: username is the name that uniquely identifies
+                              this user among all active users.
                             type: string
                         type: object
                     type: object
@@ -612,33 +607,27 @@ spec:
                                   items:
                                     type: string
                                   type: array
-                                description: Any additional information provided by
-                                  the authenticator.
+                                description: extra is any additional information provided
+                                  by the authenticator.
                                 type: object
                               groups:
-                                description: The names of groups this user is a part
-                                  of.
+                                description: groups is the names of groups this user
+                                  is a part of.
                                 items:
                                   type: string
                                 type: array
                                 x-kubernetes-list-type: atomic
                               uid:
                                 description: |-
-                                  A unique value that identifies this user across time. If this user is
+                                  uid is a unique value that identifies this user across time. If this user is
                                   deleted and another user by the same name is added, they will have
                                   different UIDs.
                                 type: string
                               username:
-                                description: The name that uniquely identifies this
-                                  user among all active users.
+                                description: username is the name that uniquely identifies
+                                  this user among all active users.
                                 type: string
                             type: object
-                        required:
-                        - kind
-                        - operation
-                        - resource
-                        - uid
-                        - userInfo
                         type: object
                       operation:
                         description: Operation is the type of resource operation being
@@ -678,24 +667,25 @@ spec:
                               items:
                                 type: string
                               type: array
-                            description: Any additional information provided by the
-                              authenticator.
+                            description: extra is any additional information provided
+                              by the authenticator.
                             type: object
                           groups:
-                            description: The names of groups this user is a part of.
+                            description: groups is the names of groups this user is
+                              a part of.
                             items:
                               type: string
                             type: array
                             x-kubernetes-list-type: atomic
                           uid:
                             description: |-
-                              A unique value that identifies this user across time. If this user is
+                              uid is a unique value that identifies this user across time. If this user is
                               deleted and another user by the same name is added, they will have
                               different UIDs.
                             type: string
                           username:
-                            description: The name that uniquely identifies this user
-                              among all active users.
+                            description: username is the name that uniquely identifies
+                              this user among all active users.
                             type: string
                         type: object
                     type: object
