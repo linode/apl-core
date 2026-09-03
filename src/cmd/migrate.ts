@@ -850,8 +850,8 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
     if (secrets.gitea) {
       d.info('Processing Gitea secrets.')
       await setSecret(
-        'gitea',
         'gitea-db',
+        'gitea',
         {
           username: 'gitea',
           password: secrets.gitea.postgresqlPassword,
