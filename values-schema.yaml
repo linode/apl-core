@@ -1617,6 +1617,32 @@ properties:
             type: boolean
             default: false
             description: Use CNPG plugin for platform database backups
+      dex:
+        additionalProperties: false
+        description: Dex is an OIDC identity broker, installed disabled by default. Nothing points at it yet.
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          adminUsername:
+            type: string
+            default: otomi-admin
+            description: Username of the platform admin account seeded as a static password.
+          idp:
+            additionalProperties: false
+            properties:
+              clientID:
+                $ref: '#/definitions/wordCharacterPattern'
+                default: otomi
+                description: The OAuth2 client identifier platform applications will use against Dex.
+          replicas:
+            type: integer
+            default: 1
+            description: Number of Dex replicas. More than one requires all replicas to share the same storage backend.
+          resources:
+            $ref: '#/definitions/resources'
       external-dns:
         additionalProperties: false
         properties:
