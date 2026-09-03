@@ -51,7 +51,7 @@ resources:
       oidcAutoOnboard: "{{ $h.oidcAutoOnboard }}"
       oidcUserClaim: {{ $h.oidcUserClaim }}
       oidcGroupsClaim: groups
-      oidcName: keycloak
-      oidcScope: openid
+      oidcName: {{ $v.otomi.issuer }}
+      oidcScope: {{ join " " $v._derived.oidcScopes }}
       oidcVerifyCert: '{{ not $v._derived.untrustedCA }}'
       teamNamespaces: {{ $teamNamespaces | toJson }}
