@@ -15,8 +15,6 @@ ARG HELM_SECRETS_VERSION=4.7.7
 ARG SOPS_VERSION=3.12.2
 # https://github.com/FiloSottile/age/releases
 ARG AGE_VERSION=1.2.1
-# https://github.com/noqcks/gucci/releases
-ARG GUCCI_VERSION=1.9.0
 # https://github.com/yannh/kubeconform/releases/
 ARG KUBECONFORM_VERSION=0.8.0
 # https://github.com/helmfile/helmfile/releases
@@ -100,10 +98,6 @@ RUN helm plugin install https://github.com/jkroepke/helm-secrets --version ${HEL
 # helmfile
 ADD https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz /tmp
 RUN tar -zxvf /tmp/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz -C /tmp && mv /tmp/helmfile helmfile
-
-# gucci
-ADD https://github.com/noqcks/gucci/releases/download/v${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-${TARGETARCH} gucci
-RUN chmod +x gucci
 
 # kubeconform
 ADD https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-${TARGETARCH}.tar.gz /tmp
