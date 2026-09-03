@@ -119,6 +119,59 @@ serviceAccount:
   name: "apl-operator"
   annotations: {}
 
+# Fixed, not release-name derived: charts/apl-operator mounts it by the same name.
+valuesSecretName: apl-values
+
+# The operator always runs here, regardless of the release namespace.
+namespace: apl-operator
+
+image:
+  # Empty derives it from otomi.useORCS + cluster.provider. Set to pin.
+  repository: ""
+  # Empty falls back to otomi.version.
+  tag: ""
+
+scale:
+  replicas: 1
+
+imagePullSecretNames: []
+nameOverride: ""
+fullnameOverride: ""
+podAnnotations: {}
+deploymentAnnotations: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+command: []
+commandArgs: []
+
+# Keep in sync with charts/apl-operator; checked by npm run lint:operator-charts.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+  runAsGroup: 999
+  fsGroup: 3000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1001
+
+# Mirrors apps.apl-operator.resources.operator in snippets/defaults.yaml.
+resources:
+  limits:
+    cpu: "1"
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 128Mi
+
 ## APL Operator configuration
 operator:
   # Polling interval for git changes (milliseconds)
@@ -136,9 +189,6 @@ operator:
     gateOnReadiness: false
     # 30 minutes. If the operator has not installed the platform by then, something is off.
     progressDeadlineSeconds: 1800
-
-  image:
-    repository: "mirror.registry.linodelke.net/docker/linode/apl-core"
 
 installation:
   mode: standard

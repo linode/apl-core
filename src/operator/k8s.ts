@@ -35,8 +35,21 @@ export const k8s = {
  * Kubernetes liveness probes check this file's age to determine if the operator
  * is still functioning — a stale or missing file will cause the probe to fail.
  */
-export function updateHeartbeatFile(): void {
-  writeFileSync('/tmp/heartbeat', '')
+export const HEARTBEAT_FILE = '/tmp/heartbeat'
+
+export function updateHeartbeatFile(filePath: string = HEARTBEAT_FILE): void {
+  writeFileSync(filePath, '')
+}
+
+/**
+ * Covers installation, which runs before the reconcile loop exists. Clear it once the loop
+ * starts, or a wedged reconcile keeps beating instead of failing the liveness probe.
+ */
+export function startHeartbeat(intervalMs = 60_000, filePath: string = HEARTBEAT_FILE): NodeJS.Timeout {
+  updateHeartbeatFile(filePath)
+  const timer = setInterval(() => updateHeartbeatFile(filePath), intervalMs)
+  timer.unref()
+  return timer
 }
 
 export const READINESS_FILE = '/tmp/ready'

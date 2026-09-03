@@ -1,7 +1,15 @@
+{{- /* Symlinked into chart/apl, so it renders in whichever chart owns it. */ -}}
+{{- $version := .Values.image.tag | default .Values.otomi.version | default .Chart.AppVersion }}
+{{- $isRelease := regexMatch "^v?[0-9]" $version }}
+{{- /* Mirrors snippets/derived.gotmpl, but the ORCS mirror only carries released tags. */ -}}
+{{- $useORCS := and .Values.otomi.useORCS (eq (.Values.cluster.provider | default "") "linode") $isRelease }}
+{{- $repository := .Values.image.repository | default (ternary "mirror.registry.linodelke.net/docker/linode/apl-core" "docker.io/linode/apl-core" $useORCS) }}
+{{- if not .Values.installation.skipOperatorDeployment }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "apl-operator.fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
   labels:
     {{- include "apl-operator.labels" . | nindent 4 }}
 {{- with .Values.deploymentAnnotations }}
@@ -11,7 +19,7 @@ metadata:
 spec:
   replicas: {{ .Values.scale.replicas | default 1 }}
   # The rollout stays Progressing until the operator is ready, which is longer than the 600s default.
-  progressDeadlineSeconds: 1800
+  progressDeadlineSeconds: {{ .Values.operator.readiness.progressDeadlineSeconds }}
   selector:
     matchLabels:
       {{- include "apl-operator.selectorLabels" . | nindent 6 }}
@@ -26,19 +34,26 @@ spec:
       labels:
         {{- include "apl-operator.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      # Appended to the cluster resolvers, as a fallback while CoreDNS starts.
+      dnsConfig:
+        nameservers:
+          - 8.8.8.8
+          - 8.8.4.4
+      {{- with .Values.imagePullSecretNames }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{- range . }}
+        - name: {{ . }}
+        {{- end }}
       {{- end }}
       serviceAccountName: {{ include "apl-operator.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: apl-operator
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ $repository }}:{{ $version }}"
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" $isRelease }}
           workingDir: /home/app/stack
           {{- with .Values.command }}
           command:
@@ -49,8 +64,12 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
-            - name: CI
-              value: "true"
+            - name: VERBOSITY
+              value: '1'
+            - name: ENV_DIR
+              value: /home/app/stack/env
+            - name: VALUES_INPUT
+              value: /secret/values.yaml
             - name: POLL_INTERVAL_MS
               value: {{ .Values.operator.pollIntervalMs | quote }}
             - name: RECONCILE_INTERVAL_MS
@@ -61,10 +80,6 @@ spec:
               value: {{ .Values.operator.installRetries | quote }}
             - name: INSTALL_MAX_TIMEOUT_MS
               value: {{ .Values.operator.installMaxTimeoutMs | quote }}
-          envFrom:
-            - secretRef:
-                name: apl-sops-secrets
-                optional: true
           livenessProbe:
             exec:
               command:
@@ -94,6 +109,8 @@ spec:
           volumeMounts:
             - name: apl-values
               mountPath: /home/app/stack/env
+            - name: values-secret
+              mountPath: /secret
             - name: tmp
               mountPath: /tmp
             - name: cache
@@ -104,6 +121,11 @@ spec:
       volumes:
         - name: apl-values
           emptyDir: {}
+        # Optional: only exists while chart/apl owns the release.
+        - name: values-secret
+          secret:
+            secretName: {{ .Values.valuesSecretName }}
+            optional: true
         - name: tmp
           emptyDir: {}
         - name: cache
@@ -126,3 +148,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}
