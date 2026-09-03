@@ -77,7 +77,7 @@ gitea:
       {{/*Disabled so that when an user with the same username is created in gitea, it will not be linked to another account*/}}
       ACCOUNT_LINKING: disabled
       OPENID_CONNECT_SCOPES: {{ join " " $v._derived.oidcScopes }}
-      USERNAME: nickname
+      USERNAME: {{ eq $v.otomi.issuer "dex" | ternary "name" "nickname" }}
     repository:
       DEFAULT_BRANCH: main
     service:
