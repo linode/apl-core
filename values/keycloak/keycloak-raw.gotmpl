@@ -30,7 +30,7 @@ resources:
     data:
       - secretKey: adminPassword
         remoteRef:
-          key: otomi-secrets
+          key: otomi
           property: adminPassword
 {{- if eq $obj.type "linode" }}
 - apiVersion: external-secrets.io/v1

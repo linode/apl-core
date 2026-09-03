@@ -1,7 +1,7 @@
 import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
 import { diff } from 'deep-diff'
 import { existsSync, renameSync, rmSync, writeFileSync } from 'fs'
-import { cp, rename as fsRename, rm } from 'fs/promises'
+import { cp, rename as fsRename, rm, writeFile } from 'fs/promises'
 import { globSync } from 'glob'
 import { cloneDeep, each, get, pull, set, unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
@@ -9,7 +9,7 @@ import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { getFilename, getSchemaSecretsPaths, loadYaml, rootDir } from 'src/common/utils'
+import { getFilename, getSchemaSecretsPaths, loadYaml, objectToYaml, rootDir } from 'src/common/utils'
 import { writeValues } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -747,17 +747,29 @@ const removeIngressNginxValues = async (values: Record<string, any>) => {
 
 const migrateGeneratedSecrets = async (values: Record<string, any>) => {
   const d = terminal('migrateGeneratedSecrets')
-  const BASE_APPS = ['argocd', 'keycloak', 'oauth2-proxy', 'oauth2-proxy-redis', 'otomi']
+  const isTest = process.env.NODE_ENV === 'test'
+  const BASE_APPS = ['argocd', 'keycloak', 'oauth2-proxy', 'oauth2-proxy-redis']
   const OPTIONAL_APPS = ['gitea', 'harbor', 'loki', 'kubeflow-pipelines']
   const ALL_APPS = [...BASE_APPS, ...OPTIONAL_APPS]
   const secrets: Record<string, Record<string, string>> = {}
   const discardSealedSecrets: string[] = []
+
+  // Wrappers around getK8sSecret / createUpdateGenericSecret for avoiding cluster contact in tests
+  const getSecret = async (name: string, namespace: string) => {
+    if (isTest) return
+    return await getK8sSecret(name, namespace)
+  }
+  const setSecret = async (name: string, namespace: string, data: Record<string, string>, type: string = 'Opaque') => {
+    if (isTest) return
+    await createUpdateGenericSecret(api, name, namespace, data, false, true, type)
+  }
+
   for (const appName of ALL_APPS) {
     const secretName = `${appName}-secrets`
     if (!OPTIONAL_APPS.includes(appName) || get(values, `apps.${appName}.enabled`, false)) {
       // For optional apps, the secret is only migrated if the app is also enabled.
       // If not it can just be regenerated as needed.
-      const appSecret = await getK8sSecret(secretName, SEALED_SECRETS_NAMESPACE)
+      const appSecret = await getSecret(secretName, SEALED_SECRETS_NAMESPACE)
       if (appSecret) {
         d.info(`Read ${secretName} from cluster.`)
         secrets[appName] = appSecret
@@ -767,6 +779,8 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
     }
     discardSealedSecrets.push(secretName)
   }
+  // The otomi-secrets may contain input values and therefore needs separate handling
+  const otomiSecret = await getSecret('otomi-secrets', SEALED_SECRETS_NAMESPACE)
   const api = k8s.core()
   const GENERATE_OPTS = {
     length: 32,
@@ -777,201 +791,113 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
     strict: true,
   }
   d.info('Pausing External-Secrets Operator')
-  const app = await getArgoCdApp('external-secrets-external-secrets', k8s.custom())
-  if (app) {
-    await setArgoCdAppSync('external-secrets-external-secrets', false, k8s.custom())
+  if (!isTest) {
+    const app = await getArgoCdApp('external-secrets-external-secrets', k8s.custom())
+    if (app) {
+      await setArgoCdAppSync('external-secrets-external-secrets', false, k8s.custom())
+    }
+    await k8s.app().patchNamespacedDeploymentScale(
+      {
+        name: 'external-secrets',
+        namespace: 'external-secrets',
+        body: { spec: { replicas: 0 } },
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+    )
   }
-  await k8s.app().patchNamespacedDeploymentScale(
-    {
-      name: 'external-secrets',
-      namespace: 'external-secrets',
-      body: { spec: { replicas: 0 } },
-    },
-    setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
-  )
   try {
     // Preserve values of current cluster Secret resources
     if (secrets.argocd) {
       d.info('Processing ArgoCD secrets.')
-      await createUpdateGenericSecret(
-        api,
-        'argocd-redis',
-        'argocd',
-        { auth: secrets.argocd.redisPassword },
-        false,
-        true,
-      )
+      await setSecret('argocd-redis', 'argocd', { auth: secrets.argocd.redisPassword })
     }
     if (secrets.keycloak) {
       d.info('Processing Keycloak secrets.')
-      await createUpdateGenericSecret(
-        api,
-        'keycloak',
-        SEALED_SECRETS_NAMESPACE,
-        {
-          idpClientSecret: secrets.keycloak.idp_clientSecret,
-        },
-        false,
-        true,
-      )
+      await setSecret('keycloak', SEALED_SECRETS_NAMESPACE, {
+        idpClientSecret: secrets.keycloak.idp_clientSecret,
+      })
     }
-    if (secrets.otomi) {
+    if (otomiSecret) {
       d.info('Processing Otomi secrets.')
-      await createUpdateGenericSecret(
-        api,
-        'otomi',
-        SEALED_SECRETS_NAMESPACE,
-        {
-          adminPassword: secrets.otomi.adminPassword,
-        },
-        false,
-        true,
-      )
+      await setSecret('otomi', SEALED_SECRETS_NAMESPACE, {
+        adminPassword: secrets.otomi.adminPassword,
+      })
+      // Otomi-secret optionally contains the globalPullSecret password, in addition to the generated adminPassword
+      if (secrets.otomi.globalPullSecret_password) {
+        const otomiSecretFilename = `${env.ENV_DIR}/env/manifests/namespaces/${SEALED_SECRETS_NAMESPACE}/sealedsecrets/otomi-secrets.yaml`
+        const otomiSealedSecret = await loadYaml(otomiSecretFilename)
+        if (otomiSealedSecret) {
+          unset(otomiSealedSecret, 'spec.encryptedData.adminPassword')
+          await writeFile(otomiSecretFilename, objectToYaml(otomiSealedSecret))
+        }
+      } else {
+        discardSealedSecrets.push('otomi-secrets')
+      }
     }
     if (secrets['oauth2-proxy']) {
       d.info('Processing OAuth2-Proxy secrets.')
-      await createUpdateGenericSecret(
-        api,
-        'oauth2-proxy',
-        SEALED_SECRETS_NAMESPACE,
-        {
-          cookieSecret: secrets['oauth2-proxy'].config_cookieSecret,
-        },
-        false,
-        true,
-      )
+      await setSecret('oauth2-proxy', SEALED_SECRETS_NAMESPACE, {
+        cookieSecret: secrets['oauth2-proxy'].config_cookieSecret,
+      })
     }
     if (secrets['oauth2-proxy-redis']) {
       d.info('Processing OAuth2-Proxy Redis secrets.')
-      await createUpdateGenericSecret(
-        api,
-        'oauth2-proxy-redis-password',
-        'istio-system',
-        {
-          password: secrets['oauth2-proxy-redis'].password,
-        },
-        false,
-        true,
-      )
+      await setSecret('oauth2-proxy-redis-password', 'istio-system', {
+        password: secrets['oauth2-proxy-redis'].password,
+      })
     }
     if (secrets.gitea) {
       d.info('Processing Gitea secrets.')
-      await createUpdateGenericSecret(
-        api,
+      await setSecret(
         'gitea',
         'gitea-db',
         {
           username: 'gitea',
           password: secrets.gitea.postgresqlPassword,
         },
-        false,
-        true,
         'kubernetes.io/basic-auth',
       )
-      await createUpdateGenericSecret(
-        api,
-        'gitea',
-        SEALED_SECRETS_NAMESPACE,
-        {
-          adminUsername: 'otomi-admin',
-          adminPassword: secrets.gitea.adminPassword,
-          valkeyPassword: generate(GENERATE_OPTS),
-        },
-        false,
-        true,
-      )
+      await setSecret('gitea', SEALED_SECRETS_NAMESPACE, {
+        adminUsername: 'otomi-admin',
+        adminPassword: secrets.gitea.adminPassword,
+        valkeyPassword: generate(GENERATE_OPTS),
+      })
     }
     if (secrets.harbor) {
       d.info('Processing Harbor secrets.')
-      await createUpdateGenericSecret(
-        api,
-        'harbor',
-        SEALED_SECRETS_NAMESPACE,
-        {
-          registryUsername: 'otomi-admin',
-          registryPassword: secrets.harbor.registry_credentials_password,
-        },
-        false,
-        true,
-      )
-      await createUpdateGenericSecret(
-        api,
-        'harbor-secret-key',
-        'harbor',
-        {
-          secretKey: generate({ ...GENERATE_OPTS, length: 16 }),
-        },
-        false,
-        true,
-      )
-      await createUpdateGenericSecret(
-        api,
-        'harbor-core-secret',
-        'harbor',
-        {
-          secret: generate({ ...GENERATE_OPTS, length: 16 }),
-        },
-        false,
-        true,
-      )
-      await createUpdateGenericSecret(
-        api,
-        'harbor-core-xsrf-secret',
-        'harbor',
-        {
-          CSRF_KEY: generate({ ...GENERATE_OPTS }),
-        },
-        false,
-        true,
-      )
-      await createUpdateGenericSecret(
-        api,
-        'harbor-jobservice-secret',
-        'harbor',
-        {
-          JOBSERVICE_SECRET: generate({ ...GENERATE_OPTS, length: 16 }),
-        },
-        false,
-        true,
-      )
-      await createUpdateGenericSecret(
-        api,
-        'harbor-registry-http',
-        'harbor',
-        {
-          REGISTRY_HTTP_SECRET: generate({ ...GENERATE_OPTS, length: 16 }),
-        },
-        false,
-        true,
-      )
+      await setSecret('harbor', SEALED_SECRETS_NAMESPACE, {
+        registryUsername: 'otomi-admin',
+        registryPassword: secrets.harbor.registry_credentials_password,
+      })
+      await setSecret('harbor-secret-key', 'harbor', {
+        secretKey: secrets.harbor.secretKey,
+      })
+      await setSecret('harbor-core-secret', 'harbor', {
+        secret: secrets.harbor.core_secret,
+      })
+      await setSecret('harbor-core-xsrf-secret', 'harbor', {
+        CSRF_KEY: secrets.harbor.core_xsrfKey,
+      })
+      await setSecret('harbor-jobservice-secret', 'harbor', {
+        JOBSERVICE_SECRET: secrets.harbor.jobservice_secret,
+      })
+      await setSecret('harbor-registry-http', 'harbor', {
+        REGISTRY_HTTP_SECRET: secrets.harbor.registry_secret,
+      })
     }
     if (secrets.loki) {
       d.info('Processing Loki secrets.')
-      await createUpdateGenericSecret(
-        api,
-        'loki',
-        SEALED_SECRETS_NAMESPACE,
-        {
-          adminUsername: 'otomi-admin',
-          adminPassword: secrets.loki.adminPassword,
-        },
-        false,
-        true,
-      )
+      await setSecret('loki', SEALED_SECRETS_NAMESPACE, {
+        adminUsername: 'otomi-admin',
+        adminPassword: secrets.loki.adminPassword,
+      })
     }
     if (secrets['kubeflow-pipelines']) {
       d.info('Processing Kubeflow-Pipelines secrets.')
-      await createUpdateGenericSecret(
-        api,
-        'kfp-mysql-secret',
-        'kfp',
-        {
-          username: 'root',
-          password: secrets['kubeflow-pipelines'].rootPassword,
-        },
-        false,
-        true,
-      )
+      await setSecret('kfp-mysql-secret', 'kfp', {
+        username: 'root',
+        password: secrets['kubeflow-pipelines'].rootPassword,
+      })
     }
     for (const secretName of discardSealedSecrets) {
       const fileName = `${env.ENV_DIR}/env/manifests/namespaces/${SEALED_SECRETS_NAMESPACE}/sealedsecrets/${secretName}.yaml`
@@ -982,15 +908,17 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
     }
   } finally {
     d.info('Restarting External-Secrets Operator')
-    await k8s.app().patchNamespacedDeploymentScale(
-      {
-        name: 'external-secrets',
-        namespace: 'external-secrets',
-        body: { spec: { replicas: 0 } },
-      },
-      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
-    )
-    await setArgoCdAppSync('external-secrets-external-secrets', true, k8s.custom())
+    if (!isTest) {
+      await k8s.app().patchNamespacedDeploymentScale(
+        {
+          name: 'external-secrets',
+          namespace: 'external-secrets',
+          body: { spec: { replicas: 0 } },
+        },
+        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+      )
+      await setArgoCdAppSync('external-secrets-external-secrets', true, k8s.custom())
+    }
   }
 }
 
