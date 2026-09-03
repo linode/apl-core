@@ -512,4 +512,5 @@ changes:
       - apps.oauth2-proxy.config
       - apps.harbor.core
       - apps.harbor.jobservice
-      - apps.harbor.registry
+      - apps.harbor.registry.credentials.htpasswd
+      - apps.harbor.registry.credentials.password
