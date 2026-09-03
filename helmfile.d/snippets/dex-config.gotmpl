@@ -56,7 +56,7 @@ enablePasswordDB: true
 {{- /* Bootstrap login only; real user provisioning is #3541. */}}
 staticPasswords:
   - email: platform-admin@{{ $domainSuffix }}
-    username: otomi-admin
+    username: platform-admin
     userID: apl-platform-admin
     hash: "{{ `{{ .adminPassword | bcrypt }}` }}"
     groups:
