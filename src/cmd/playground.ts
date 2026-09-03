@@ -2,7 +2,6 @@
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { getFilename } from 'src/common/utils'
-import { generateSecrets } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
@@ -20,7 +19,6 @@ const playground = async (): Promise<void> => {
   const q = $.quote
   $.quote = (v) => v
   const res = await $`${cmd.split(' ')}`
-  console.log(JSON.stringify(await generateSecrets({})))
 }
 
 export const module = {

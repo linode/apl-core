@@ -1,25 +1,14 @@
 import { existsSync } from 'fs'
 import { mkdir, unlink, writeFile } from 'fs/promises'
-import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, pick, set } from 'lodash'
+import { cloneDeep, get, isEmpty, isEqual, mergeWith } from 'lodash'
 import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
-import { $ } from 'zx'
 import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
 import { saveValues } from './repo'
-import {
-  extract,
-  flattenObject,
-  getSchemaSecretsPaths,
-  getValuesSchema,
-  gucci,
-  loadYaml,
-  objectToYaml,
-  pkg,
-  removeBlankAttributes,
-} from './utils'
+import { getSchemaSecretsPaths, loadYaml, objectToYaml, pkg, removeBlankAttributes } from './utils'
 import { HelmArguments } from './yargs'
 import { stripAllSecrets } from './sealed-secrets'
 
@@ -125,61 +114,4 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.debug('Writing values: ', inValues)
   await saveValues(env.ENV_DIR, inValues, {})
   d.info('All values were written to ENV_DIR')
-}
-
-export const deriveSecrets = async (values: Record<string, any> = {}): Promise<Record<string, any>> => {
-  // Some secrets needs to be derived from the generated secrets
-  const secrets = {}
-  const htpasswd = (
-    await $`htpasswd -nbB ${values.apps.harbor.registry.credentials.username} ${values.apps.harbor.registry.credentials.password}`
-  ).stdout.trim()
-
-  set(secrets, 'apps.harbor.registry.credentials.htpasswd', htpasswd)
-  return secrets
-}
-/**
- * Takes values as input and generates secrets that don't exist yet.
- * Returns all generated secrets.
- */
-export const generateSecrets = async (
-  values: Record<string, any> = {},
-  deps = {
-    terminal,
-    getValuesSchema,
-    getSchemaSecretsPaths,
-  },
-): Promise<Record<string, any>> => {
-  const d = deps.terminal('common:values:generateSecrets')
-  const leaf = 'x-secret'
-  const schema = await deps.getValuesSchema()
-
-  d.info('Extracting secrets')
-  const schemaSecrets = extract(schema, leaf)
-  // Remove properties with blank `x-secret`
-  const template = removeBlankAttributes(schemaSecrets)
-
-  d.debug('Secrets template: ', template)
-  d.info('Generating secrets from the secrets template')
-  const generatedSecrets = (await gucci(template, {})) as Record<string, any>
-  const mergedGeneratedSecrets = merge(generatedSecrets, cloneDeep(values))
-
-  const derivedSecrets = await deriveSecrets(mergedGeneratedSecrets)
-  const allSecrets = merge(cloneDeep(derivedSecrets), cloneDeep(mergedGeneratedSecrets))
-
-  d.info('Generated all secrets')
-  // Only return values that have x-secrets prop and are now fully templated:
-  const templatePaths = Object.keys(flattenObject(schemaSecrets))
-  const res = pick(allSecrets, templatePaths)
-
-  // Template paths use schema patternProperties regex keys which don't match concrete team names.
-  // Expand team paths so team secrets are included in the result.
-  const teamNames = Object.keys(get(values, 'teamConfig', {})).filter((t) => t !== 'admin')
-  if (teamNames.length > 0) {
-    const expandedPaths = await deps.getSchemaSecretsPaths(teamNames)
-    const teamSecrets = pick(allSecrets, expandedPaths)
-    merge(res, teamSecrets)
-  }
-
-  d.debug('generateSecrets result: ', res)
-  return res
 }

@@ -1,8 +1,7 @@
 import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/client-node'
-import { randomBytes } from 'crypto'
 import { diff } from 'deep-diff'
 import { existsSync, renameSync, rmSync, writeFileSync } from 'fs'
-import { cp, rename as fsRename, rm } from 'fs/promises'
+import { cp, rename as fsRename, rm, writeFile } from 'fs/promises'
 import { globSync } from 'glob'
 import { cloneDeep, each, get, pull, set, unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
@@ -10,7 +9,7 @@ import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
+import { getFilename, getSchemaSecretsPaths, loadYaml, objectToYaml, rootDir } from 'src/common/utils'
 import { writeValues } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -18,13 +17,11 @@ import { cd, sleep } from 'zx'
 import { OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
 import { getOldGitCredentials, setGitConfig } from '../common/git-config'
 import {
-  createArgoCdRedisSecret,
+  createUpdateGenericSecret,
   ensureNamespaceExists,
   getArgoCdApp,
   getK8sSecret,
   k8s,
-  restartDeployment,
-  restartStatefulSet,
   setArgoCdAppSync,
 } from '../common/k8s'
 import {
@@ -41,6 +38,7 @@ import {
   SealedSecretManifest,
   writeSealedSecretManifests,
 } from '../common/sealed-secrets'
+import { generate } from 'generate-password'
 
 const cmdName = getFilename(__filename)
 const sealedSecretManifestsGlob = `${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`
@@ -185,12 +183,6 @@ export function filterChanges(version: number, changes: Changes): Changes {
   return changes.filter((c) => c.version - version > 0)
 }
 
-const replace = async (tmplStr: any, prev: any): Promise<string> => {
-  if (typeof tmplStr !== 'string' || !tmplStr.includes('.prev')) return tmplStr
-  const tmpl = `{{ ${tmplStr} }}`
-  return (await gucci(tmpl, { prev })) as string
-}
-
 /**
  * Allows to mutate or set values in dynamic paths that can include team marker or array notation.
  * Example:
@@ -217,9 +209,7 @@ export const setDeep = async (obj: Record<string, any>, path: string, tmplStr: s
   await Promise.all(
     paths.map(async (p) => {
       if (!p.includes(arrayMarker)) {
-        const prev = get(obj, p)
-        const ret = await replace(tmplStr, prev)
-        set(obj, p, ret)
+        set(obj, p, tmplStr)
         return
       }
 
@@ -229,10 +219,8 @@ export const setDeep = async (obj: Record<string, any>, path: string, tmplStr: s
       await Promise.all(
         holder.map(async (item, idx) => {
           if (rhs.length === 1) {
-            const prev = get(item, rhs[0])
-            const ret = await replace(tmplStr, prev)
             const realPath = `${lhs}[${idx}].${rhs[0]}`
-            set(obj, realPath, ret)
+            set(obj, realPath, tmplStr)
             return
           }
           const rhsPath = rhs.join(arrayMarker)
@@ -410,57 +398,6 @@ const valkeyAndOauth2RedisPVCMigration = async (values: Record<string, any>): Pr
     } else {
       d.info(`Skipping oauth2-proxy redis PVC migration: no PVC found with storageClass ${legacyStorageClass}`)
     }
-  }
-}
-
-export const addRedisSecretForArgoCD = async (values: Record<string, any>): Promise<void> => {
-  const d = terminal('addRedisSecretForArgoCD')
-  const argocdNamespace = 'argocd'
-
-  try {
-    const parsedArgs = getParsedArgs()
-    if (parsedArgs?.dryRun || parsedArgs?.local || env.DISABLE_SYNC) {
-      d.info('Skipping ArgoCD redis secret creation in dry-run/local/dev mode')
-      return
-    }
-
-    if (!(await namespaceExists(argocdNamespace))) {
-      d.info(`Namespace ${argocdNamespace} not found, skipping argocd-redis migration`)
-      return
-    }
-
-    // redisPassword is an x-secret field: never present in values on disk.
-    // Generate one and write it into the shared values object so sopsMigration (v61) seals the same password.
-    const redisPassword = randomBytes(24).toString('base64url')
-    set(values, 'apps.argocd.redisPassword', redisPassword)
-    await createArgoCdRedisSecret({ apps: { argocd: { redisPassword } } })
-
-    // Components consume REDIS_PASSWORD as env var, so they must restart after secret rotation.
-    const restartTargets = [
-      { kind: 'deployment', name: 'argocd-redis' },
-      { kind: 'deployment', name: 'argocd-server' },
-      { kind: 'deployment', name: 'argocd-repo-server' },
-      { kind: 'statefulset', name: 'argocd-application-controller' },
-      { kind: 'deployment', name: 'argocd-application-controller' },
-    ]
-    for (const target of restartTargets) {
-      try {
-        if (target.kind === 'deployment') {
-          await restartDeployment(target.name, argocdNamespace)
-        } else {
-          await restartStatefulSet(target.name, argocdNamespace)
-        }
-        d.info(`Restarted ${target.kind}/${target.name}`)
-      } catch (error) {
-        if (error instanceof ApiException && error.code === 404) {
-          d.debug(`Could not restart ${target.kind}/${target.name}: not found`)
-          continue
-        }
-        throw error
-      }
-    }
-  } catch (error) {
-    d.error('Failed to create/update ArgoCD redis secret, continuing migration:', error)
   }
 }
 
@@ -808,15 +745,192 @@ const removeIngressNginxValues = async (values: Record<string, any>) => {
   }
 }
 
+const migrateGeneratedSecrets = async (values: Record<string, any>) => {
+  const d = terminal('migrateGeneratedSecrets')
+  const isTest = process.env.NODE_ENV === 'test'
+  const BASE_APPS = ['argocd', 'keycloak', 'oauth2-proxy', 'oauth2-proxy-redis']
+  const OPTIONAL_APPS = ['gitea', 'harbor', 'loki', 'kubeflow-pipelines']
+  const ALL_APPS = [...BASE_APPS, ...OPTIONAL_APPS]
+  const secrets: Record<string, Record<string, string>> = {}
+  const discardSealedSecrets: string[] = []
+
+  // Wrappers around getK8sSecret / createUpdateGenericSecret for avoiding cluster contact in tests
+  const getSecret = async (name: string, namespace: string) => {
+    if (isTest) return
+    return await getK8sSecret(name, namespace)
+  }
+  const setSecret = async (name: string, namespace: string, data: Record<string, string>, type: string = 'Opaque') => {
+    if (isTest) return
+    await createUpdateGenericSecret(api, name, namespace, data, false, true, type)
+  }
+
+  for (const appName of ALL_APPS) {
+    const secretName = `${appName}-secrets`
+    if (!OPTIONAL_APPS.includes(appName) || get(values, `apps.${appName}.enabled`, false)) {
+      // For optional apps, the secret is only migrated if the app is also enabled.
+      // If not it can just be regenerated as needed.
+      const appSecret = await getSecret(secretName, SEALED_SECRETS_NAMESPACE)
+      if (appSecret) {
+        d.info(`Read ${secretName} from cluster.`)
+        secrets[appName] = appSecret
+      }
+    } else {
+      d.info(`Skipping migration for ${appName} as it is not enabled.`)
+    }
+    discardSealedSecrets.push(secretName)
+  }
+  // The otomi-secrets may contain input values and therefore needs separate handling
+  const otomiSecret = await getSecret('otomi-secrets', SEALED_SECRETS_NAMESPACE)
+  const api = k8s.core()
+  const GENERATE_OPTS = {
+    length: 32,
+    numbers: true,
+    strict: true,
+  }
+  d.info('Pausing External-Secrets Operator')
+  let app = undefined
+  if (!isTest) {
+    app = await getArgoCdApp('external-secrets-external-secrets', k8s.custom())
+    if (app) {
+      await setArgoCdAppSync('external-secrets-external-secrets', false, k8s.custom())
+    }
+    await k8s.app().patchNamespacedDeploymentScale(
+      {
+        name: 'external-secrets',
+        namespace: 'external-secrets',
+        body: { spec: { replicas: 0 } },
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+    )
+  }
+  try {
+    // Preserve values of current cluster Secret resources
+    if (secrets.argocd) {
+      d.info('Processing ArgoCD secrets.')
+      await setSecret('argocd-redis', 'argocd', { auth: secrets.argocd.redisPassword })
+    }
+    if (secrets.keycloak) {
+      d.info('Processing Keycloak secrets.')
+      await setSecret('keycloak', SEALED_SECRETS_NAMESPACE, {
+        idpClientSecret: secrets.keycloak.idp_clientSecret,
+      })
+    }
+    if (otomiSecret) {
+      d.info('Processing Otomi secrets.')
+      await setSecret('otomi', SEALED_SECRETS_NAMESPACE, {
+        adminPassword: otomiSecret.adminPassword,
+      })
+      // Otomi-secret optionally contains the globalPullSecret password, in addition to the generated adminPassword
+      if (otomiSecret.globalPullSecret_password) {
+        const otomiSecretFilename = `${env.ENV_DIR}/env/manifests/namespaces/${SEALED_SECRETS_NAMESPACE}/sealedsecrets/otomi-secrets.yaml`
+        const otomiSealedSecret = await loadYaml(otomiSecretFilename)
+        if (otomiSealedSecret) {
+          unset(otomiSealedSecret, 'spec.encryptedData.adminPassword')
+          await writeFile(otomiSecretFilename, objectToYaml(otomiSealedSecret))
+        }
+      } else {
+        discardSealedSecrets.push('otomi-secrets')
+      }
+    }
+    if (secrets['oauth2-proxy']) {
+      d.info('Processing OAuth2-Proxy secrets.')
+      await setSecret('oauth2-proxy', SEALED_SECRETS_NAMESPACE, {
+        cookieSecret: secrets['oauth2-proxy'].config_cookieSecret,
+      })
+    }
+    if (secrets['oauth2-proxy-redis']) {
+      d.info('Processing OAuth2-Proxy Redis secrets.')
+      await setSecret('oauth2-proxy-redis-password', 'istio-system', {
+        password: secrets['oauth2-proxy-redis'].password,
+      })
+    }
+    if (secrets.gitea) {
+      d.info('Processing Gitea secrets.')
+      await setSecret(
+        'gitea-db',
+        'gitea',
+        {
+          username: 'gitea',
+          password: secrets.gitea.postgresqlPassword,
+        },
+        'kubernetes.io/basic-auth',
+      )
+      await setSecret('gitea', SEALED_SECRETS_NAMESPACE, {
+        adminUsername: values?.apps?.gitea?.adminUsername || 'otomi-admin',
+        adminPassword: secrets.gitea.adminPassword,
+        valkeyPassword: generate(GENERATE_OPTS),
+      })
+    }
+    if (secrets.harbor) {
+      d.info('Processing Harbor secrets.')
+      await setSecret('harbor', SEALED_SECRETS_NAMESPACE, {
+        registryUsername: values?.apps?.harbor?.registry?.credentials?.username || 'otomi-admin',
+        registryPassword: secrets.harbor.registry_credentials_password,
+      })
+      await setSecret('harbor-secret-key', 'harbor', {
+        secretKey: secrets.harbor.secretKey,
+      })
+      await setSecret('harbor-core-secret', 'harbor', {
+        secret: secrets.harbor.core_secret,
+      })
+      await setSecret('harbor-core-xsrf-secret', 'harbor', {
+        CSRF_KEY: secrets.harbor.core_xsrfKey,
+      })
+      await setSecret('harbor-jobservice-secret', 'harbor', {
+        JOBSERVICE_SECRET: secrets.harbor.jobservice_secret,
+      })
+      await setSecret('harbor-registry-http', 'harbor', {
+        REGISTRY_HTTP_SECRET: secrets.harbor.registry_secret,
+      })
+    }
+    if (secrets.loki) {
+      d.info('Processing Loki secrets.')
+      await setSecret('loki', SEALED_SECRETS_NAMESPACE, {
+        adminUsername: 'otomi-admin',
+        adminPassword: secrets.loki.adminPassword,
+      })
+    }
+    if (secrets['kubeflow-pipelines']) {
+      d.info('Processing Kubeflow-Pipelines secrets.')
+      await setSecret('kfp-mysql-secret', 'kfp', {
+        username: 'root',
+        password: secrets['kubeflow-pipelines'].rootPassword,
+      })
+    }
+    for (const secretName of discardSealedSecrets) {
+      const fileName = `${env.ENV_DIR}/env/manifests/namespaces/${SEALED_SECRETS_NAMESPACE}/sealedsecrets/${secretName}.yaml`
+      if (existsSync(fileName)) {
+        d.info(`Removing ${fileName}.`)
+        await rm(fileName)
+      }
+    }
+  } finally {
+    d.info('Restarting External-Secrets Operator')
+    if (!isTest) {
+      await k8s.app().patchNamespacedDeploymentScale(
+        {
+          name: 'external-secrets',
+          namespace: 'external-secrets',
+          body: { spec: { replicas: 1 } },
+        },
+        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+      )
+      if (app) {
+        await setArgoCdAppSync('external-secrets-external-secrets', true, k8s.custom())
+      }
+    }
+  }
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   valkeyAndOauth2RedisPVCMigration,
   preservePvcStorageClassInRawValues,
   addLinodeNBAnnotations,
   sopsMigration,
   setIngressDefault,
-  addRedisSecretForArgoCD,
   removeIngressTracing,
   removeIngressNginxValues,
+  migrateGeneratedSecrets,
 }
 
 /**
@@ -858,8 +972,7 @@ export const applyChanges = async (
         const prev = get(values, path)
         if (prev !== undefined) {
           // path worked and we found something, simple scenario, just replace directly
-          const ret = await replace(tmplStr, prev)
-          set(values, path, ret)
+          set(values, path, tmplStr)
         } else {
           // we might have a complex path, which we will deal with in setDeep
           await setDeep(values, path, tmplStr)

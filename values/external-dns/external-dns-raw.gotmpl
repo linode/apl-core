@@ -15,22 +15,16 @@ resources:
     target:
       name: akamai-dns
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          EXTERNAL_DNS_AKAMAI_CLIENT_SECRET: '{{ "{{ .clientSecret | toString }}" }}'
-          EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN: '{{ "{{ .clientToken | toString }}" }}'
-          EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN: '{{ "{{ .accessToken | toString }}" }}'
     data:
-      - secretKey: clientSecret
+      - secretKey: EXTERNAL_DNS_AKAMAI_CLIENT_SECRET
         remoteRef:
           key: dns-secrets
           property: provider_akamai_clientSecret
-      - secretKey: clientToken
+      - secretKey: EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN
         remoteRef:
           key: dns-secrets
           property: provider_akamai_clientToken
-      - secretKey: accessToken
+      - secretKey: EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN
         remoteRef:
           key: dns-secrets
           property: provider_akamai_accessToken
@@ -50,12 +44,8 @@ resources:
     target:
       name: linode-dns-api-token
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          LINODE_TOKEN: '{{ "{{ .apiToken | toString }}" }}'
     data:
-      - secretKey: apiToken
+      - secretKey: LINODE_TOKEN
         remoteRef:
           key: dns-secrets
           property: provider_linode_apiToken
@@ -75,12 +65,8 @@ resources:
     target:
       name: do-token
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          DO_TOKEN: '{{ "{{ .apiToken | toString }}" }}'
     data:
-      - secretKey: apiToken
+      - secretKey: DO_TOKEN
         remoteRef:
           key: dns-secrets
           property: provider_digitalocean_apiToken
@@ -105,7 +91,7 @@ resources:
       template:
         type: Opaque
         data:
-          CF_API_KEY: '{{ "{{ .apiSecret | toString }}" }}'
+          CF_API_KEY: "{{ `{{ .apiSecret }}` }}"
           CF_API_EMAIL: {{ $provider.email | quote }}
     data:
       - secretKey: apiSecret
@@ -126,12 +112,8 @@ resources:
     target:
       name: cloudflare-api-key
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          CF_API_TOKEN: '{{ "{{ .apiToken | toString }}" }}'
     data:
-      - secretKey: apiToken
+      - secretKey: CF_API_TOKEN
         remoteRef:
           key: dns-secrets
           property: provider_cloudflare_apiToken
@@ -153,17 +135,12 @@ resources:
     target:
       name: aws-dns-credentials
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          AWS_ACCESS_KEY_ID: '{{ "{{ .accessKey | toString }}" }}'
-          AWS_SECRET_ACCESS_KEY: '{{ "{{ .secretKey | toString }}" }}'
     data:
-      - secretKey: accessKey
+      - secretKey: AWS_ACCESS_KEY_ID
         remoteRef:
           key: dns-secrets
           property: provider_aws_credentials_accessKey
-      - secretKey: secretKey
+      - secretKey: AWS_SECRET_ACCESS_KEY
         remoteRef:
           key: dns-secrets
           property: provider_aws_credentials_secretKey
@@ -191,7 +168,7 @@ resources:
           AZURE_SUBSCRIPTION_ID: {{ $provider.subscriptionId | quote }}
           AZURE_RESOURCE_GROUP: {{ $provider.resourceGroup | quote }}
           AZURE_CLIENT_ID: {{ $provider.aadClientId | quote }}
-          AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret | toString }}" }}'
+          AZURE_CLIENT_SECRET: "{{ `{{ .aadClientSecret }}` }}"
     data:
       - secretKey: aadClientSecret
         remoteRef:
@@ -221,7 +198,7 @@ resources:
           AZURE_SUBSCRIPTION_ID: {{ $provider.subscriptionId | quote }}
           AZURE_RESOURCE_GROUP: {{ $provider.resourceGroup | quote }}
           AZURE_CLIENT_ID: {{ $provider.aadClientId | quote }}
-          AZURE_CLIENT_SECRET: '{{ "{{ .aadClientSecret | toString }}" }}'
+          AZURE_CLIENT_SECRET: "{{ `{{ .aadClientSecret }}` }}"
     data:
       - secretKey: aadClientSecret
         remoteRef:
@@ -243,12 +220,8 @@ resources:
     target:
       name: google-dns
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          GOOGLE_APPLICATION_CREDENTIALS: '{{ "{{ .serviceAccountKey | toString }}" }}'
     data:
-      - secretKey: serviceAccountKey
+      - secretKey: GOOGLE_APPLICATION_CREDENTIALS
         remoteRef:
           key: dns-secrets
           property: provider_google_serviceAccountKey

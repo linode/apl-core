@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -eu
-go install github.com/noqcks/gucci@latest
 go install github.com/plexsystems/konstraint@latest
 npm install -g json-dereference-cli
 

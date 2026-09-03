@@ -38,8 +38,8 @@
 {{- $oidcClientID := $a.keycloak.idp.clientID }}
 {{- $oidcScopes := list "openid" "email" "profile" }}
 # Where the shared client secret lives, so consumers do not name an issuer's store entry.
-{{- $oidcClientSecretKey := "keycloak-secrets" }}
-{{- $oidcClientSecretProperty := "idp_clientSecret" }}
+{{- $oidcClientSecretKey := "keycloak" }}
+{{- $oidcClientSecretProperty := "idpClientSecret" }}
 # Finished logout destinations, so consumers do not assemble query parameters themselves.
 {{- $logoutToConsole := printf "%s?post_logout_redirect_uri=https://console.%s&client_id=%s" $oidcLogoutUrl $domainSuffix $oidcClientID }}
 {{- $logoutToOauth2Start := printf "%s?post_logout_redirect_uri=https://console.%s/oauth2/start&client_id=%s" $oidcLogoutUrl $domainSuffix $oidcClientID }}

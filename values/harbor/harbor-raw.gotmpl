@@ -2,7 +2,6 @@
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $h := $v.apps.harbor }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
-{{- $otomiAdmin := "otomi-admin" }}
 {{- $cnpg := $v.apps.cnpg }}
 {{- $obj := $v.obj.provider }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
@@ -46,14 +45,10 @@ resources:
     target:
       name: harbor-admin-password
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          HARBOR_ADMIN_PASSWORD: '{{ "{{ .adminPassword | toString }}" }}'
     data:
-      - secretKey: adminPassword
+      - secretKey: HARBOR_ADMIN_PASSWORD
         remoteRef:
-          key: otomi-secrets
+          key: otomi
           property: adminPassword
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
@@ -68,129 +63,119 @@ resources:
       name: harbor-registry-credentials
       creationPolicy: Owner
       template:
-        type: Opaque
         data:
-          REGISTRY_PASSWD: '{{ "{{ .password | toString }}" }}'
-          REGISTRY_HTPASSWD: '{{ "{{ .htpasswd | toString }}" }}'
-          REGISTRY_USERNAME: '{{ "{{ .username | toString }}" }}'
+          REGISTRY_USERNAME: "{{ `{{ .registryUsername }}` }}"
+          REGISTRY_PASSWD: "{{ `{{ .registryPassword }}` }}"
+          REGISTRY_HTPASSWD: '{{ `{{ htpasswd .registryUsername .registryPassword "bcrypt" }}` }}'
     data:
-      - secretKey: password
+      - secretKey: registryUsername
         remoteRef:
-          key: harbor-secrets
-          property: registry_credentials_password
-      - secretKey: htpasswd
+          key: harbor
+          property: registryUsername
+      - secretKey: registryPassword
         remoteRef:
-          key: harbor-secrets
-          property: registry_credentials_htpasswd
-      - secretKey: username
-        remoteRef:
-          key: harbor-secrets
-          property: registry_credentials_username
+          key: harbor
+          property: registryPassword
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: harbor-secret-key
   spec:
-    refreshInterval: 5m
-    secretStoreRef:
-      name: core-secrets-store
-      kind: ClusterSecretStore
+    refreshPolicy: CreatedOnce
     target:
       name: harbor-secret-key
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          secretKey: '{{ "{{ .secretKey | toString }}" }}'
-    data:
-      - secretKey: secretKey
-        remoteRef:
-          key: harbor-secrets
-          property: secretKey
+      immutable: true
+    dataFrom:
+      - sourceRef:
+          generatorRef:
+            apiVersion: generators.external-secrets.io/v1alpha1
+            kind: ClusterGenerator
+            name: random-16
+        rewrite:
+          - regexp:
+              source: password
+              target: secretKey
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
-    name: harbor-core-secret
+    name: harbor-core
   spec:
-    refreshInterval: 5m
-    secretStoreRef:
-      name: core-secrets-store
-      kind: ClusterSecretStore
+    refreshPolicy: CreatedOnce
     target:
       name: harbor-core-secret
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          secret: '{{ "{{ .coreSecret | toString }}" }}'
-    data:
-      - secretKey: coreSecret
-        remoteRef:
-          key: harbor-secrets
-          property: core_secret
+      immutable: true
+    dataFrom:
+      - sourceRef:
+          generatorRef:
+            apiVersion: generators.external-secrets.io/v1alpha1
+            kind: ClusterGenerator
+            name: random-16
+        rewrite:
+          - regexp:
+              source: password
+              target: secret
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
-    name: harbor-core-xsrf-secret
+    name: harbor-core-xsrf
   spec:
-    refreshInterval: 5m
-    secretStoreRef:
-      name: core-secrets-store
-      kind: ClusterSecretStore
+    refreshPolicy: CreatedOnce
     target:
       name: harbor-core-xsrf-secret
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          CSRF_KEY: '{{ "{{ .xsrfKey | toString }}" }}'
-    data:
-      - secretKey: xsrfKey
-        remoteRef:
-          key: harbor-secrets
-          property: core_xsrfKey
+      immutable: true
+    dataFrom:
+      - sourceRef:
+          generatorRef:
+            apiVersion: generators.external-secrets.io/v1alpha1
+            kind: ClusterGenerator
+            name: alpha-num-32
+        rewrite:
+          - regexp:
+              source: password
+              target: CSRF_KEY
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
-    name: harbor-jobservice-secret
+    name: harbor-jobservice
   spec:
-    refreshInterval: 5m
-    secretStoreRef:
-      name: core-secrets-store
-      kind: ClusterSecretStore
+    refreshPolicy: CreatedOnce
     target:
       name: harbor-jobservice-secret
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          JOBSERVICE_SECRET: '{{ "{{ .jobserviceSecret | toString }}" }}'
-    data:
-      - secretKey: jobserviceSecret
-        remoteRef:
-          key: harbor-secrets
-          property: jobservice_secret
+      immutable: true
+    dataFrom:
+      - sourceRef:
+          generatorRef:
+            apiVersion: generators.external-secrets.io/v1alpha1
+            kind: ClusterGenerator
+            name: random-16
+        rewrite:
+          - regexp:
+              source: password
+              target: JOBSERVICE_SECRET
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
     name: harbor-registry-http
   spec:
-    refreshInterval: 5m
-    secretStoreRef:
-      name: core-secrets-store
-      kind: ClusterSecretStore
+    refreshPolicy: CreatedOnce
     target:
       name: harbor-registry-http
       creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          REGISTRY_HTTP_SECRET: '{{ "{{ .registrySecret | toString }}" }}'
-    data:
-      - secretKey: registrySecret
-        remoteRef:
-          key: harbor-secrets
-          property: registry_secret
+      immutable: true
+    dataFrom:
+      - sourceRef:
+          generatorRef:
+            apiVersion: generators.external-secrets.io/v1alpha1
+            kind: ClusterGenerator
+            name: random-16
+        rewrite:
+          - regexp:
+              source: password
+              target: REGISTRY_HTTP_SECRET
 {{- if eq $obj.type "linode" }}
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
@@ -208,7 +193,7 @@ resources:
         type: Opaque
         data:
           S3_STORAGE_ACCOUNT: {{ $obj.linode.accessKeyId }}
-          S3_STORAGE_KEY: '{{ "{{ .secretAccessKey | toString }}" }}'
+          S3_STORAGE_KEY: "{{ `{{ .secretAccessKey }}` }}"
     data:
       - secretKey: secretAccessKey
         remoteRef:
@@ -230,7 +215,7 @@ resources:
         type: Opaque
         data:
           REGISTRY_STORAGE_S3_ACCESSKEY: {{ $obj.linode.accessKeyId }}
-          REGISTRY_STORAGE_S3_SECRETKEY: '{{ "{{ .secretAccessKey | toString }}" }}'
+          REGISTRY_STORAGE_S3_SECRETKEY: "{{ `{{ .secretAccessKey }}` }}"
     data:
       - secretKey: secretAccessKey
         remoteRef:

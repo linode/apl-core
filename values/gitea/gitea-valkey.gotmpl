@@ -18,6 +18,26 @@ image:
   tag: 8.1.3
 
 auth:
-  password: changeme
+  existingSecret: gitea-valkey
+  existingSecretPasswordKey: password
 
 architecture: standalone
+
+extraDeploy:
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: gitea-valkey
+    spec:
+      refreshInterval: 1m
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: gitea-valkey
+        creationPolicy: Owner
+      data:
+        - secretKey: password
+          remoteRef:
+            key: gitea
+            property: valkeyPassword
