@@ -785,9 +785,6 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
   const GENERATE_OPTS = {
     length: 32,
     numbers: true,
-    symbols: '!@#$%&*',
-    lowercase: true,
-    uppercase: true,
     strict: true,
   }
   d.info('Pausing External-Secrets Operator')
