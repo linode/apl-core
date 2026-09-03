@@ -913,7 +913,7 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
         {
           name: 'external-secrets',
           namespace: 'external-secrets',
-          body: { spec: { replicas: 0 } },
+          body: { spec: { replicas: 1 } },
         },
         setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
       )
