@@ -1,0 +1,58 @@
+{{- if .Values.netpols.harborDb }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: harbor-db-platform-policy
+  namespace: harbor
+  labels:
+    {{- include "apl-network-policies.labels" . | nindent 4 }}
+    app: harbor
+spec:
+  # Scoped to the Harbor CloudNativePG instances rather than the whole harbor namespace: Harbor has
+  # a wide component surface (core, jobservice, registry, trivy, exporter, redis) and a
+  # namespace-wide Ingress policy would have to enumerate all of it correctly or take the registry
+  # down. The database is where the documented default-deny gap actually is.
+  podSelector:
+    matchLabels:
+      cnpg.io/cluster: harbor-otomi-db
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow the CloudNativePG operator to reach the instance manager status endpoint (8000), the
+    # metrics endpoint (9187) and Postgres itself (5432, for declarative role/database
+    # reconciliation). Without this the operator cannot read instance status, the Harbor Postgres
+    # replica never starts, and the stack stalls on Instance Status Extraction Error →
+    # ClusterIsNotReady → Degraded — with nothing in the symptom pointing at a NetworkPolicy.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: cnpg-system
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9187
+        - protocol: TCP
+          port: 5432
+    # Allow the Harbor components (core, jobservice, registry, exporter, trivy) to reach Postgres,
+    # and the instances to reach each other for replication — both on 5432.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: harbor
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow monitoring access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: po-prometheus
+      ports:
+        - protocol: TCP
+          port: 9187
+{{- end }}
