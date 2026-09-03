@@ -108,6 +108,7 @@ describe('createGenericSecret', () => {
         data: { password: 'cGFzc3dvcmQxMjM=', username: 'YWRtaW4=' },
         metadata: { name: 'test-secret', namespace: 'default' },
         type: 'Opaque',
+        immutable: false,
       },
       namespace: 'default',
     })
@@ -138,6 +139,7 @@ describe('createGenericSecret', () => {
         data: { password: 'cGFzc3dvcmQxMjM=', username: 'YWRtaW4=' },
         metadata: { name: 'test-secret', namespace: 'default' },
         type: 'Opaque',
+        immutable: false,
       },
       namespace: 'default',
     })
@@ -147,6 +149,7 @@ describe('createGenericSecret', () => {
           data: { password: 'cGFzc3dvcmQxMjM=', username: 'YWRtaW4=' },
           metadata: { name: 'test-secret', namespace: 'default' },
           type: 'Opaque',
+          immutable: false,
         },
         name: 'test-secret',
         namespace: 'default',
