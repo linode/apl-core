@@ -3,9 +3,9 @@
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 
 {{- /*
-  PRE-RELEASE IMAGE. Do not release APL while pinned. Chart default v2.44.0 drops group
-  membership on local-password login; fix is on master, unreleased. Replace with first
-  tagged release containing it. Not routed through ORCS: dex not in mirror yet.
+  Custom fork build: adds group membership
+  on local-password login and auth sessions/RP-initiated logout, both absent upstream. Replace
+  once these land in a tagged Dex release. Not routed through ORCS: dex not in mirror yet.
 */}}
 image:
   repository: clubbers1892/dex
@@ -18,6 +18,10 @@ imagePullSecrets:
 {{- end }}
 
 replicaCount: {{ $d.replicas }}
+
+# Feature-flagged while unreleased upstream. Needed for SSO across apps and real logout.
+env:
+  DEX_SESSIONS_ENABLED: "true"
 
 # config is an ExternalSecret (dex-raw.gotmpl), not helm values — it embeds the OAuth2 secret.
 configSecret:

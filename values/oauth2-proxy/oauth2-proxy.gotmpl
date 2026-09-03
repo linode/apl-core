@@ -7,6 +7,7 @@
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 {{- $persistentStorageEnabled := hasKey $r "persistentVolumeSize" }}
+{{- $issuer := $v.otomi | get "issuer" "keycloak" }}
 
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list (print "." $domainSuffix) "oauth2-proxy.istio-system.svc.cluster.local" }}
@@ -58,12 +59,21 @@ config:
     upstreams = [ "static://200" ]
     # Custom
     ssl_insecure_skip_verify = {{ $v._derived.untrustedCA }}
-    provider = "keycloak-oidc"
+    provider = {{ ternary "oidc" "keycloak-oidc" (eq $issuer "dex") | quote }}
     whitelist_domains = {{ $domains | toJson }}
-    scope = {{ $o | get "scope" "openid email profile" | quote }}
+    scope = {{ $o | get "scope" (join " " $v._derived.oidcScopes) | quote }}
     oidc_issuer_url = {{ $v._derived.oidcBaseUrl | quote }}
     code_challenge_method = "S256"
     insecure_oidc_allow_unverified_email = true
+    {{- with $v._derived.oidcBackchannelLogoutUrl }}
+    # oauth2-proxy substitutes {id_token} and calls this itself on sign-out.
+    backend_logout_url = {{ . | quote }}
+    {{- end }}
+    {{- if eq $issuer "dex" }}
+    # oauth2-proxy forces the consent screen by default; Dex honours that over its own
+    # skipApprovalScreen setting, unlike Keycloak which ignores it.
+    approval_prompt = "auto"
+    {{- end }}
     cookie_domains = {{ $cookieDomains | toJson }}
     # lax is enough for the redirect-based OIDC login and blocks cross-site delivery
     cookie_samesite = "lax"
@@ -102,6 +112,17 @@ extraVolumeMounts:
     readOnly: true
 
 extraInitContainers:
+  {{- if eq $issuer "dex" }}
+  - name: wait-for-oidc-issuer
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image: "{{ $v.otomi.linodeLkeImageRepository }}/docker/curlimages/curl:latest"
+    {{- else }}
+    image: curlimages/curl:latest
+    {{- end }}
+    command: ["/bin/sh","-c"]
+    {{- /* Dex does not serve the issuer root; poll the discovery document instead. */}}
+    args: ["while [ $(curl -s{{ if $v._derived.untrustedCA }}k{{ end }}w '%{http_code}' {{ $v._derived.oidcWellKnownUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for OIDC Issuer URL'; done"]
+  {{- else }}
   - name: wait-for-keycloak
     {{- if $v.otomi.linodeLkeImageRepository }}
     image: "{{ $v.otomi.linodeLkeImageRepository }}/docker/curlimages/curl:latest"
@@ -111,6 +132,7 @@ extraInitContainers:
     command: ["/bin/sh","-c"]
     {{- /* Polls the backchannel: plain HTTP to a ClusterIP, so no DNS or TLS to fail on. */}}
     args: ["while [ $(curl -s{{ if $v._derived.untrustedCA }}k{{ end }}w '%{http_code}' {{ $v._derived.oidcBaseUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak OIDC Issuer URL'; done"]
+  {{- end }}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 initContainers:
