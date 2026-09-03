@@ -3,6 +3,13 @@ metadata:
     name: otomi
 spec:
     aiEnabled: true
+    git:
+      # Supplied in actual clusters from Secret apl-git-config
+      # Kept here only for testing effect on templates
+      branch: test-branch
+      email: pipeline@cluster.local
+      repoUrl: http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git
+      username: otomi-admin
     globalPullSecret:
         username: otomi
     hasExternalDNS: true
