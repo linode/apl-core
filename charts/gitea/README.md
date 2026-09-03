@@ -43,6 +43,8 @@
   - [Security](#security)
   - [Service](#service)
   - [Ingress](#ingress)
+  - [Route](#route)
+  - [Gateway API](#gateway-api)
   - [deployment](#deployment)
   - [ServiceAccount](#serviceaccount)
   - [Persistence](#persistence-1)
@@ -310,6 +312,11 @@ route:
 ```
 
 When `route.host` is set, the chart uses it for `DOMAIN`, `SSH_DOMAIN`, and `ROOT_URL`. Setting `route.tls.termination` also switches the default `ROOT_URL` scheme to `https`.
+
+#### Gateway API
+
+The chart can also expose Gitea through Gateway API resources (`HTTPRoute`, `TCPRoute`, `BackendTLSPolicy`, and optionally `Gateway`).
+See [docs/gateway-api.md](docs/gateway-api.md) for the full guide, including how routes interact with `ROOT_URL`/`DOMAIN` resolution and recommended topologies.
 
 #### Session, Cache and Queue
 
@@ -1074,6 +1081,36 @@ To comply with the Gitea helm chart definition of the digest parameter, a "custo
 | `route.tls.certificate`                   | Route TLS certificate                                                                                          | `nil`   |
 | `route.tls.caCertificate`                 | Route TLS CA certificate                                                                                       | `nil`   |
 | `route.tls.destinationCACertificate`      | Route destination CA certificate                                                                               | `nil`   |
+
+### Gateway API
+
+| Name                                                            | Description                                                                                                                                                                | Value   |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `gatewayAPI.enabled`                                            | Enable deployment of Gateway API resources                                                                                                                                 | `false` |
+| `gatewayAPI.core.backendTLSPolicy.enabled`                      | Render a BackendTLSPolicy resource for encrypted backend traffic                                                                                                           | `false` |
+| `gatewayAPI.core.backendTLSPolicy.annotations`                  | Annotations applied to the BackendTLSPolicy                                                                                                                                | `{}`    |
+| `gatewayAPI.core.backendTLSPolicy.labels`                       | Additional labels applied to the BackendTLSPolicy                                                                                                                          | `{}`    |
+| `gatewayAPI.core.backendTLSPolicy.targetRefs`                   | Target references for the BackendTLSPolicy. Defaults to the HTTP service.                                                                                                  | `[]`    |
+| `gatewayAPI.core.backendTLSPolicy.validation`                   | Validation configuration (required when enabled). See `docs/gateway-api.md`.                                                                                               | `{}`    |
+| `gatewayAPI.core.backendTLSPolicy.validation.caCertificateRefs` | CA certificate references for the BackendTLSPolicy validation. See `docs/gateway-api.md`.                                                                                  |         |
+| `gatewayAPI.core.backendTLSPolicy.validation.hostname`          | Hostname for the BackendTLSPolicy validation. Must be the Common Name (CN) or a Subject Alternative Name (SAN) of the Gitea server certificate. See `docs/gateway-api.md`. |         |
+| `gatewayAPI.core.httpRoute.enabled`                             | Render an HTTPRoute resource                                                                                                                                               | `false` |
+| `gatewayAPI.core.httpRoute.annotations`                         | Annotations applied to the HTTPRoute                                                                                                                                       | `{}`    |
+| `gatewayAPI.core.httpRoute.labels`                              | Additional labels applied to the HTTPRoute                                                                                                                                 | `{}`    |
+| `gatewayAPI.core.httpRoute.tls`                                 | When true, treat the upstream Gateway as terminating TLS so `ROOT_URL` uses `https`.                                                                                       | `false` |
+| `gatewayAPI.core.httpRoute.parentRefs`                          | Parent gateway references (required when enabled).                                                                                                                         | `[]`    |
+| `gatewayAPI.core.httpRoute.hostnames`                           | List of hostnames for the HTTPRoute.                                                                                                                                       | `[]`    |
+| `gatewayAPI.core.httpRoute.rules`                               | Custom routing rules. Defaults to a PathPrefix `/` rule targeting the HTTP service.                                                                                        | `[]`    |
+| `gatewayAPI.core.tcpRoute.enabled`                              | Render a TCPRoute resource (typically for SSH)                                                                                                                             | `false` |
+| `gatewayAPI.core.tcpRoute.annotations`                          | Annotations applied to the TCPRoute                                                                                                                                        | `{}`    |
+| `gatewayAPI.core.tcpRoute.labels`                               | Additional labels applied to the TCPRoute                                                                                                                                  | `{}`    |
+| `gatewayAPI.core.tcpRoute.parentRefs`                           | Parent gateway references (required when enabled).                                                                                                                         | `[]`    |
+| `gatewayAPI.core.tcpRoute.rules`                                | Custom routing rules. Defaults to a rule targeting the SSH service.                                                                                                        | `[]`    |
+| `gatewayAPI.nginx.clientSettingsPolicies.enabled`               | Render a ClientSettingsPolicy (NGINX Gateway Fabric) to raise the client request body limit                                                                                | `false` |
+| `gatewayAPI.nginx.clientSettingsPolicies.annotations`           | Annotations applied to the ClientSettingsPolicy                                                                                                                            | `{}`    |
+| `gatewayAPI.nginx.clientSettingsPolicies.labels`                | Additional labels applied to the ClientSettingsPolicy                                                                                                                      | `{}`    |
+| `gatewayAPI.nginx.clientSettingsPolicies.targetRef`             | Target reference for the ClientSettingsPolicy. Defaults to the chart's HTTPRoute.                                                                                          | `{}`    |
+| `gatewayAPI.nginx.clientSettingsPolicies.body`                  | Client body settings (required when enabled), e.g. `maxSize`. See `docs/gateway-api.md`.                                                                                   | `{}`    |
 
 ### deployment
 
