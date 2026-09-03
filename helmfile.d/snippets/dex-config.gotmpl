@@ -46,10 +46,13 @@ storage:
     inCluster: true
 web:
   http: 0.0.0.0:5556
+grpc:
+  addr: 0.0.0.0:5557
 telemetry:
   http: 0.0.0.0:5558
 oauth2:
   skipApprovalScreen: true
+  passwordConnector: local
 {{- /* ssoSharedWithDefault defaults to "none" (no SSO across clients). */}}
 sessions:
   ssoSharedWithDefault: all

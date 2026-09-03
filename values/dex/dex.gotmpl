@@ -47,6 +47,9 @@ httpRoute:
   hostnames:
     - {{ $v._derived.dexDomain }}
 
+grpc:
+  enabled: true
+
 service:
   ports:
     http:
