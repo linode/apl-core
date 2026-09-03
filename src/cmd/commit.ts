@@ -1,20 +1,14 @@
 import retry from 'async-retry'
 import { bootstrapGit } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
-import {
-  APL_OPERATOR_NS,
-  DEPLOYMENT_PASSWORDS_SECRET,
-  OTOMI_NAMESPACE,
-  OTOMI_SECRETS,
-  SEALED_SECRETS_NAMESPACE,
-} from 'src/common/constants'
+import { APL_OPERATOR_NS } from 'src/common/constants'
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { getStoredGitRepoConfig, GitRepoConfig } from 'src/common/git-config'
 import { waitTillGitRepoAvailable } from 'src/common/gitea'
 import { hfValues } from 'src/common/hf'
-import { createUpdateConfigMap, createUpdateGenericSecret, getK8sSecret, k8s } from 'src/common/k8s'
+import { createUpdateConfigMap, k8s } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -25,6 +19,11 @@ const cmdName = getFilename(__filename)
 
 const $git = $({ cwd: env.ENV_DIR })
 
+// Rendered by values/otomi-operator/otomi-operator-raw.gotmpl — one ExternalSecret pulling the
+// same admin password every issuer uses, so nothing here needs to know which issuer is active.
+const PLATFORM_ADMIN_CREDENTIALS_SECRET = 'platform-admin-credentials'
+const PLATFORM_ADMIN_CREDENTIALS_NAMESPACE = 'apl-secrets'
+
 interface Arguments extends HelmArguments {
   m?: string
   message?: string
@@ -32,9 +31,6 @@ interface Arguments extends HelmArguments {
 
 interface InitialData {
   domainSuffix: string
-  username: string
-  password: string
-  secretName: string
 }
 
 const isConflictError = (error: any): boolean => {
@@ -158,88 +154,13 @@ export const commit = async (gitConfig: GitRepoConfig, initialInstall = false): 
   await commitAndPush(gitConfig, initialInstall)
 }
 
-async function getPlatformAdminPasswordFromAplUsers(defaultEmail: string): Promise<string> {
-  const response = await k8s.core().listNamespacedSecret({ namespace: 'apl-users' })
-  for (const item of response.items ?? []) {
-    if (!item.data) continue
-    const decoded: Record<string, string> = {}
-    for (const [key, value] of Object.entries(item.data)) {
-      decoded[key] = Buffer.from(value, 'base64').toString('utf-8')
-    }
-    if (decoded.email === defaultEmail && decoded.initialPassword) {
-      return decoded.initialPassword
-    }
-  }
-  return ''
-}
-
 export async function initialSetupData(): Promise<InitialData> {
-  const d = terminal(`cmd:${cmdName}:initialSetupData`)
   const values = (await hfValues()) as Record<string, any>
   const { domainSuffix } = values.cluster
-  const { hasExternalIDP } = values.otomi
-  const secretName = hasExternalIDP ? 'root-credentials' : 'platform-admin-initial-credentials'
-
-  if (!hasExternalIDP) {
-    const defaultEmail = `platform-admin@${domainSuffix}`
-    let platformAdminPassword = ''
-    try {
-      // getK8sSecret returns undefined for 404 (no exception); this catch only fires for
-      // unexpected errors such as network failures or permission issues.
-      const secretData = await getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, OTOMI_NAMESPACE)
-      const allSecrets = secretData?.[DEPLOYMENT_PASSWORDS_SECRET]
-      const users = allSecrets?.users || []
-      const platformAdmin = users.find((u: any) => u.email === defaultEmail)
-      platformAdminPassword = platformAdmin?.initialPassword || ''
-    } catch (error) {
-      d.warn(
-        `Unexpected error reading ${DEPLOYMENT_PASSWORDS_SECRET}: ${error instanceof Error ? error.message : error}`,
-      )
-    }
-    if (!platformAdminPassword) {
-      // Recovery mode: processValues() was not called (initialize() phase is skipped in recovery),
-      // so otomi-generated-passwords was never created. The platform admin's initialPassword lives
-      // in the per-user K8s Secret in apl-users, decrypted from the SealedSecret restored from
-      // the BYO git repo.
-      try {
-        platformAdminPassword = await getPlatformAdminPasswordFromAplUsers(defaultEmail)
-      } catch (error) {
-        d.warn(
-          `Failed to read platform admin from apl-users namespace: ${error instanceof Error ? error.message : error}`,
-        )
-      }
-    }
-    if (!platformAdminPassword) {
-      d.warn(
-        `Could not resolve platform admin password for ${defaultEmail} from ${OTOMI_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET} or apl-users namespace`,
-      )
-    }
-    return {
-      domainSuffix,
-      username: defaultEmail,
-      password: platformAdminPassword,
-      secretName,
-    }
-  } else {
-    // External IDP: show Keycloak admin credentials
-    const adminUsername = values?.apps?.keycloak?.adminUsername || 'otomi-admin'
-    const otomiSecret = await getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
-    const adminPassword = otomiSecret?.adminPassword ? String(otomiSecret.adminPassword) : ''
-    return {
-      domainSuffix,
-      username: adminUsername,
-      password: adminPassword,
-      secretName,
-    }
-  }
+  return { domainSuffix }
 }
 
-export async function createCredentialsSecret(secretName: string, username: string, password: string): Promise<void> {
-  const secretData = { username, password }
-  await createUpdateGenericSecret(k8s.core(), secretName, 'keycloak', secretData)
-}
-
-export const createWelcomeConfigMap = async (secretName: string, domainSuffix: string): Promise<void> => {
+export const createWelcomeConfigMap = async (domainSuffix: string): Promise<void> => {
   const welcomeMessage = `Welcome to App Platform!
 
 Your installation has completed successfully.
@@ -250,8 +171,8 @@ CONSOLE ACCESS:
 LOGIN CREDENTIALS:
   To obtain your login credentials, run the following commands:
 
-  Username: kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.username}' | base64 -d
-  Password: kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.password}' | base64 -d
+  Username: kubectl get secret ${PLATFORM_ADMIN_CREDENTIALS_SECRET} -n ${PLATFORM_ADMIN_CREDENTIALS_NAMESPACE} -o jsonpath='{.data.username}' | base64 -d
+  Password: kubectl get secret ${PLATFORM_ADMIN_CREDENTIALS_SECRET} -n ${PLATFORM_ADMIN_CREDENTIALS_NAMESPACE} -o jsonpath='{.data.password}' | base64 -d
 
 NEXT STEPS:
   1. Visit the console URL above
@@ -264,8 +185,8 @@ For documentation and support, visit: https://techdocs.akamai.com/app-platform/d
   await createUpdateConfigMap(k8s.core(), 'welcome', APL_OPERATOR_NS, {
     message: welcomeMessage,
     consoleUrl: `https://console.${domainSuffix}`,
-    secretName,
-    secretNamespace: 'keycloak',
+    secretName: PLATFORM_ADMIN_CREDENTIALS_SECRET,
+    secretNamespace: PLATFORM_ADMIN_CREDENTIALS_NAMESPACE,
   })
 }
 

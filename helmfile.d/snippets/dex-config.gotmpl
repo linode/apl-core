@@ -2,6 +2,8 @@
 {{- $v := .Values }}
 {{- $d := $v.apps | get "dex" }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
+{{- /* Dex logs in by email, not the display username; "otomi-admin" maps to platform-admin@. */}}
+{{- $adminLocalPart := (eq $d.adminUsername "otomi-admin") | ternary "platform-admin" $d.adminUsername }}
 
 {{- /* Apps that run their own OIDC flow instead of sitting behind oauth2-proxy. */}}
 {{- $ownOidcCallbacks := dict
@@ -55,7 +57,7 @@ sessions:
 enablePasswordDB: true
 {{- /* Bootstrap login only; real user provisioning is #3541. */}}
 staticPasswords:
-  - email: platform-admin@{{ $domainSuffix }}
+  - email: {{ $adminLocalPart }}@{{ $domainSuffix }}
     username: {{ $d.adminUsername }}
     userID: apl-platform-admin
     hash: '{{ "{{ .adminPassword | bcrypt | toString }}" }}'
