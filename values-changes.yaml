@@ -508,6 +508,8 @@ changes:
     customFunctions:
       - preservePvcStorageClassInRawValues
   - version: 72
+    customFunctions:
+      - migrateGeneratedSecrets
     deletions:
       - apps.oauth2-proxy.config
       - apps.harbor.core

@@ -413,6 +413,8 @@ export async function createUpdateGenericSecret(
   namespace: string,
   secretData: Record<string, string>,
   patch = true,
+  immutable = false,
+  type = 'Opaque',
 ): Promise<V1Secret> {
   const encodedData = mapValues(secretData, b64enc)
 
@@ -422,14 +424,18 @@ export async function createUpdateGenericSecret(
       namespace,
     },
     data: encodedData,
-    type: 'Opaque',
+    type,
+    immutable,
   }
 
   try {
     return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
   } catch (error) {
     if (error instanceof ApiException && error.code === 409) {
-      if (patch) {
+      if (immutable) {
+        await coreV1Api.deleteNamespacedSecret({ namespace, name })
+        return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
+      } else if (patch) {
         return await coreV1Api.patchNamespacedSecret(
           { name, namespace, body: secret },
           setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
