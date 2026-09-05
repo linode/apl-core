@@ -22,6 +22,14 @@
 
 replicaCount: 1
 
+# @schema
+# type: string
+# enum: [error, warning, info, debug, trace]
+# default: info
+# @schema
+# -- Log verbosity level for the plugin barman cloud with values: [error, warning, info, debug, trace].
+logLevel: info
+
 image:
   registry: ghcr.io
   repository: cloudnative-pg/plugin-barman-cloud
