@@ -14,6 +14,7 @@ PDB helper
   {{- $suffix := .suffix }}
   {{- $extraMatchLabels := .extraMatchLabels }}
   {{- $extraMatchExpressions := .extraMatchExpressions }}
+  {{- $componentLabel := default $target .componentLabel }}
   {{- with $ctx }}
     {{- $podDisruptionBudget := dict }}
     {{- if hasKey $component "maxUnavailable"}}
@@ -38,7 +39,7 @@ metadata:
   {{- end }}
   labels:
     {{- include "loki.labels" $ctx | nindent 4 }}
-    app.kubernetes.io/component: {{ $target }}
+    app.kubernetes.io/component: {{ $componentLabel }}
     {{- with $component.podDisruptionBudget.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -51,7 +52,7 @@ spec:
   selector:
     matchLabels:
       {{- include "loki.selectorLabels" $ctx | nindent 6 }}
-      app.kubernetes.io/component: {{ $target }}
+      app.kubernetes.io/component: {{ $componentLabel }}
     {{- with $extraMatchLabels }}
       {{- toYaml . | nindent 6 }}
     {{- end }}
