@@ -79,11 +79,11 @@ resources:
 - apiVersion: external-secrets.io/v1
   kind: ExternalSecret
   metadata:
-    name: harbor-secret-key
+    name: harbor-generated
   spec:
     refreshPolicy: CreatedOnce
     target:
-      name: harbor-secret-key
+      name: harbor-generated
       creationPolicy: Owner
       immutable: true
     dataFrom:
@@ -96,17 +96,6 @@ resources:
           - regexp:
               source: password
               target: secretKey
-- apiVersion: external-secrets.io/v1
-  kind: ExternalSecret
-  metadata:
-    name: harbor-core
-  spec:
-    refreshPolicy: CreatedOnce
-    target:
-      name: harbor-core-secret
-      creationPolicy: Owner
-      immutable: true
-    dataFrom:
       - sourceRef:
           generatorRef:
             apiVersion: generators.external-secrets.io/v1alpha1
@@ -116,17 +105,6 @@ resources:
           - regexp:
               source: password
               target: secret
-- apiVersion: external-secrets.io/v1
-  kind: ExternalSecret
-  metadata:
-    name: harbor-core-xsrf
-  spec:
-    refreshPolicy: CreatedOnce
-    target:
-      name: harbor-core-xsrf-secret
-      creationPolicy: Owner
-      immutable: true
-    dataFrom:
       - sourceRef:
           generatorRef:
             apiVersion: generators.external-secrets.io/v1alpha1
@@ -136,17 +114,6 @@ resources:
           - regexp:
               source: password
               target: CSRF_KEY
-- apiVersion: external-secrets.io/v1
-  kind: ExternalSecret
-  metadata:
-    name: harbor-jobservice
-  spec:
-    refreshPolicy: CreatedOnce
-    target:
-      name: harbor-jobservice-secret
-      creationPolicy: Owner
-      immutable: true
-    dataFrom:
       - sourceRef:
           generatorRef:
             apiVersion: generators.external-secrets.io/v1alpha1
@@ -156,17 +123,6 @@ resources:
           - regexp:
               source: password
               target: JOBSERVICE_SECRET
-- apiVersion: external-secrets.io/v1
-  kind: ExternalSecret
-  metadata:
-    name: harbor-registry-http
-  spec:
-    refreshPolicy: CreatedOnce
-    target:
-      name: harbor-registry-http
-      creationPolicy: Owner
-      immutable: true
-    dataFrom:
       - sourceRef:
           generatorRef:
             apiVersion: generators.external-secrets.io/v1alpha1

@@ -867,19 +867,11 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
         registryUsername: values?.apps?.harbor?.registry?.credentials?.username || 'otomi-admin',
         registryPassword: secrets.harbor.registry_credentials_password,
       })
-      await setSecret('harbor-secret-key', 'harbor', {
+      await setSecret('harbor-generated', 'harbor', {
         secretKey: secrets.harbor.secretKey,
-      })
-      await setSecret('harbor-core-secret', 'harbor', {
         secret: secrets.harbor.core_secret,
-      })
-      await setSecret('harbor-core-xsrf-secret', 'harbor', {
         CSRF_KEY: secrets.harbor.core_xsrfKey,
-      })
-      await setSecret('harbor-jobservice-secret', 'harbor', {
         JOBSERVICE_SECRET: secrets.harbor.jobservice_secret,
-      })
-      await setSecret('harbor-registry-http', 'harbor', {
         REGISTRY_HTTP_SECRET: secrets.harbor.registry_secret,
       })
     }
