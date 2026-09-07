@@ -71,9 +71,6 @@ sequenceDiagram
             K8s-->>Bootstrap: secret created
 
             Bootstrap->>Bootstrap: handleFileEntry()
-            Bootstrap->>Bootstrap: bootstrapSops()
-            Bootstrap->>Bootstrap: encrypt()
-            Bootstrap->>Bootstrap: decrypt()
             Bootstrap->>Bootstrap: ensureTeamGitOpsDirectories()
             Bootstrap-->>AplOps: bootstrap complete
             AplOps-->>Installer: bootstrap complete
@@ -148,7 +145,6 @@ sequenceDiagram
     Main->>Installer: setEnvAndCreateSecrets()
     Installer->>Helmfile: hfValues()
     Helmfile-->>Installer: all computed values
-    Installer->>Installer: Extract gitea credentials & SOPS key
     Installer->>K8s: createUpdateGenericSecret('gitea-credentials')
     K8s-->>Installer: credentials stored
     Installer->>Installer: Set process.env variables
@@ -296,9 +292,6 @@ sequenceDiagram
                 AplOps->>AplOps: Load values-schema.yaml
                 AplOps->>AplOps: Validate with Ajv
                 AplOps-->>Operator: validation passed
-            else trigger === ApplyTrigger.Reconcile
-                Operator->>Operator: decrypt()
-                Note right of Operator: Decrypt SOPS files
             end
 
             Operator->>Helmfile: hfValues({})
@@ -399,7 +392,6 @@ The installation phase runs in a retry loop until successful:
    - Migrates values to latest schema
    - Processes values (generates secrets, CA, users)
    - Stores secrets in K8s
-   - Sets up SOPS encryption
    - Creates team GitOps directories
 3. **getInstallationStatus()** - Checks if already installed
 4. **install()** - Deploys the platform
@@ -443,8 +435,7 @@ Two parallel infinite loops run concurrently:
 - **Purpose:** Periodic reconciliation to ensure desired state
 - **Process:**
   1. Always triggers full apply (not teams-only)
-  2. Decrypts SOPS-encrypted files
-  3. Runs complete apply process
+  2. Runs complete apply process
 
 ### Apply Process
 
@@ -460,10 +451,6 @@ Shared by both loops with trigger-specific variations:
 
 - Migrate values
 - Validate values
-
-**Reconcile-Specific:**
-
-- Decrypt SOPS files
 
 **Continuation:** 4. Ensure team GitOps directories 5. Commit changes (with encryption) 6. Push to Git with conflict resolution 7. Apply changes:
 
