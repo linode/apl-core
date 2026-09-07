@@ -272,7 +272,6 @@ describe('Install command', () => {
       expect(mockDeps.writeValuesToFile).toHaveBeenCalledWith(
         expect.stringContaining('/env/status.yaml'),
         { status: { otomi: mockState, helm: mockReleases } },
-        true,
       )
 
       process.env.DISABLE_SYNC = originalEnv
