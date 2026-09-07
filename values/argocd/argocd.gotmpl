@@ -48,7 +48,7 @@ redisSecretInit:
   enabled: false
 
 redis-ha:
-  existingSecret: argocd-redis
+  existingSecret: argocd-redis-generated
 
 redis:
   resources: {{- $a.resources.redis | toYaml | nindent 4 }}
@@ -296,7 +296,7 @@ extraObjects:
     spec:
       refreshPolicy: CreatedOnce
       target:
-        name: argocd-redis
+        name: argocd-redis-generated
         creationPolicy: Owner
         immutable: true
       dataFrom:
