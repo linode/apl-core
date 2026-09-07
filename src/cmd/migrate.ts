@@ -6,7 +6,6 @@ import { cp, rename as fsRename, rm } from 'fs/promises'
 import { globSync } from 'glob'
 import { cloneDeep, each, get, pull, set, unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
-import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
@@ -955,9 +954,6 @@ export const migrate = async (): Promise<boolean> => {
       } version`,
     )
     const diffedValues = await applyChanges(filteredChanges, argv.dryRun)
-    // encrypt and decrypt to
-    await encrypt()
-    await decrypt()
     d.log(`Migration changes: ${JSON.stringify(diffedValues, null, 2)}`)
     return true
   }

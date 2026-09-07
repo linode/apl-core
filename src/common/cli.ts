@@ -1,6 +1,5 @@
 import { readdir } from 'fs/promises'
 import { chalk } from 'zx'
-import { decrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { unsetValuesFile, unsetValuesFileSync } from './repo'
@@ -35,12 +34,6 @@ export const scriptName = 'otomi'
  */
 export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): Promise<void> => {
   await unsetValuesFile(env.ENV_DIR)
-  if (options?.skipAllPreChecks) return
-  const d = terminal('common:prepareEnvironment')
-  d.info('Checking environment')
-  if (!options?.skipEnvDirCheck && (await isReadyEnvDir())) {
-    if (!options?.skipDecrypt) await decrypt()
-  }
 }
 
 /**
