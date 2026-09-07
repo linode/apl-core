@@ -63,7 +63,6 @@ sequenceDiagram
             Bootstrap->>Bootstrap: generateSecrets()
             Bootstrap->>Bootstrap: createCustomCA()
             Bootstrap->>Bootstrap: getKmsValues()
-            Note right of Bootstrap: Generate age keys<br/>if needed
             Bootstrap->>Bootstrap: getUsers()
             Note right of Bootstrap: Add platform admin<br/>with initial password
             Bootstrap->>Bootstrap: writeValues(merged)
