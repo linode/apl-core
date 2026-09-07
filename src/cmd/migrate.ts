@@ -621,159 +621,6 @@ const addLinodeNBAnnotations = async (values: Record<string, any>): Promise<void
   d.info('Linode NodeBalancer annotations added to ingress.platformClass successfully')
 }
 
-export const removeSopsArtifacts = (deps = { existsSync, rmSync, globSync, terminal }): void => {
-  const d = deps.terminal(`cmd:${cmdName}:removeSopsArtifacts`)
-
-  // Remove .sops.yaml — makes encrypt()/decrypt() no-ops
-  const sopsConfigPath = `${env.ENV_DIR}/.sops.yaml`
-  if (deps.existsSync(sopsConfigPath)) {
-    deps.rmSync(sopsConfigPath)
-    d.info('Removed .sops.yaml')
-  }
-
-  // Remove SOPS-encrypted files
-  const sopsEncrypted = deps.globSync(`${env.ENV_DIR}/env/**/secrets.*.yaml`, { dot: false })
-  for (const f of sopsEncrypted) {
-    deps.rmSync(f)
-    d.info(`Removed ${f}`)
-  }
-
-  // Remove SOPS-decrypted files
-  const sopsDecrypted = deps.globSync(`${env.ENV_DIR}/env/**/secrets.*.yaml.dec`, { dot: false })
-  for (const f of sopsDecrypted) {
-    deps.rmSync(f)
-    d.info(`Removed ${f}`)
-  }
-
-  // Remove user YAML files — users are now managed via SealedSecrets in env/manifests/namespaces/apl-users/sealedsecrets.
-  // These files may contain SOPS-encrypted data that was written by the "Write default values" step
-  // before SOPS decryption ran, contaminating the public YAML files with ENC[...] strings.
-  const userFiles = deps.globSync(`${env.ENV_DIR}/env/users/*.yaml`, { dot: false })
-  for (const f of userFiles) {
-    deps.rmSync(f)
-    d.info(`Removed ${f}`)
-  }
-}
-
-export const sopsMigration = async (
-  values: Record<string, any>,
-  deps = {
-    existsSync,
-    globSync,
-    terminal,
-    getOrCreateSealedSecretsPem,
-    getExistingSealedSecretsCert,
-    getPemFromCertificate,
-    generateSealedSecretsKeyPair,
-    createSealedSecretsKeySecret,
-    buildSecretToNamespaceMap,
-    createSealedSecretManifest,
-    createUserSealedSecretManifests,
-    writeSealedSecretManifests,
-    applySealedSecretManifestsFromDir,
-    restartSealedSecretsController,
-    getK8sSecret,
-    getSchemaSecretsPaths,
-    removeSopsArtifacts,
-    ensureNamespaceExists,
-    setGitConfig,
-    getOldGitCredentials,
-  },
-): Promise<void> => {
-  const d = deps.terminal(`cmd:${cmdName}:sopsMigration`)
-
-  // Idempotency guard: no SOPS config means migration already ran.
-  // However, if SealedSecret manifests exist on disk but the K8s Secrets are not yet
-  // decrypted (e.g. the operator was killed after writing manifests but before applying
-  // them, or the controller used its auto-generated key), re-apply them and restart
-  // the controller so subsequent steps can resolve the git password.
-  if (!deps.existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    const existingManifests = deps.globSync(sealedSecretManifestsGlob, {
-      dot: false,
-    })
-    if (existingManifests.length > 0) {
-      try {
-        const platformSecret = await deps.getK8sSecret(OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE)
-        if (!platformSecret) {
-          d.info('SealedSecret manifests exist but K8s Secrets are missing — re-applying and restarting controller')
-          await deps.applySealedSecretManifestsFromDir(env.ENV_DIR)
-          await deps.restartSealedSecretsController()
-        }
-      } catch {
-        d.info('Could not reach K8s API to check secrets, skipping re-apply')
-      }
-    }
-    d.info('No .sops.yaml found, skipping SOPS migration')
-    return
-  }
-
-  d.info('Starting SOPS to SealedSecrets migration')
-
-  // Get or generate sealed-secrets key
-  const pem = await deps.getOrCreateSealedSecretsPem({
-    terminal: deps.terminal,
-    getExistingSealedSecretsCert: deps.getExistingSealedSecretsCert,
-    getPemFromCertificate: deps.getPemFromCertificate,
-    generateSealedSecretsKeyPair: deps.generateSealedSecretsKeyPair,
-    createSealedSecretsKeySecret: deps.createSealedSecretsKeySecret,
-  })
-
-  // Write Git credentials to cluster and remove from values
-  const gitValues = values?.git || {}
-  const gitConfig = await deps.getOldGitCredentials()
-  if (gitConfig) {
-    await deps.ensureNamespaceExists(env.GIT_CONFIG_SECRET_NAMESPACE)
-    await deps.setGitConfig({
-      ...gitConfig,
-      ...gitValues,
-    })
-    set(values, 'apps.gitea.adminPassword', gitConfig.password)
-    unset(values, 'otomi.git')
-  }
-
-  // Build secret-to-namespace mappings
-  const teams = Object.keys((values.teamConfig as Record<string, any>) || {})
-  const mappings = await deps.buildSecretToNamespaceMap(values, teams, values)
-
-  // Create core SealedSecret manifests
-  const manifests: SealedSecretManifest[] = []
-  for (const mapping of mappings) {
-    const manifest = await deps.createSealedSecretManifest(pem, mapping)
-    manifests.push(manifest)
-  }
-
-  // Create user SealedSecret manifests
-  const users = values.users as any[] | undefined
-  if (Array.isArray(users) && users.length > 0) {
-    const userManifests = await deps.createUserSealedSecretManifests(users, pem)
-    manifests.push(...userManifests)
-  }
-
-  // Write manifests to disk
-  await deps.writeSealedSecretManifests(manifests, env.ENV_DIR)
-  d.info(`Wrote ${manifests.length} SealedSecret manifests`)
-
-  // Apply SealedSecret manifests to the cluster so the sealed-secrets controller
-  // can decrypt them into K8s Secrets before the apply step needs them.
-  d.info('Applying SealedSecret manifests to cluster')
-  await deps.applySealedSecretManifestsFromDir(env.ENV_DIR)
-
-  // Restart the sealed-secrets controller so it picks up the migration-generated key.
-  // Without this, the controller uses its auto-generated key and cannot decrypt.
-  d.info('Restarting sealed-secrets controller to use migration key')
-  await deps.restartSealedSecretsController()
-
-  // Strip secrets from values (in-place mutation — writeValues() persists after return)
-  const secretPaths = await deps.getSchemaSecretsPaths(teams)
-  for (const path of secretPaths) {
-    unset(values, path)
-  }
-
-  // Remove SOPS artifacts
-  deps.removeSopsArtifacts()
-  d.info('SOPS to SealedSecrets migration complete')
-}
-
 const setIngressDefault = async (values: Record<string, any>) => {
   const d = terminal('setIngressDefault')
   if (values?.cluster?.provider !== 'linode') {
@@ -807,15 +654,24 @@ const removeIngressNginxValues = async (values: Record<string, any>) => {
   }
 }
 
+const removeSopsConfig = async () => {
+  const d = terminal('removeSopsConfig')
+  const filename = `${env.ENV_DIR}/env/settings/kms.yaml`
+  if (existsSync(filename)) {
+    d.info(`Removing ${filename}`)
+    await rm(filename)
+  }
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   valkeyAndOauth2RedisPVCMigration,
   preservePvcStorageClassInRawValues,
   addLinodeNBAnnotations,
-  sopsMigration,
   setIngressDefault,
   addRedisSecretForArgoCD,
   removeIngressTracing,
   removeIngressNginxValues,
+  removeSopsConfig,
 }
 
 /**

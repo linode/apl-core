@@ -21,9 +21,6 @@ export const recoverFromGit = async (gitConfig: GitRepoConfig): Promise<void> =>
   await $`timeout 10 git clone ${gitConfig.authenticatedUrl} ${env.ENV_DIR}`
   await setIdentity(gitConfig.username ?? 'otomi-admin', gitConfig.email)
   await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    await $`git config --local diff.sopsdiffer.textconv "sops -d"`.nothrow().quiet()
-  }
 }
 /**
  * Prepare the ENV_DIR before anything else. Scenario's:
@@ -91,10 +88,6 @@ export const bootstrapGit = async (gitConfig: GitRepoConfig): Promise<void> => {
   if (!hasCommits) {
     await $`git checkout -b ${branch}`.nothrow().quiet()
     await $`git remote add origin ${remote}`.nothrow().quiet()
-  }
-
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    await $`git config --local diff.sopsdiffer.textconv "sops -d"`.nothrow().quiet()
   }
 
   d.log(`Done bootstrapping git`)
