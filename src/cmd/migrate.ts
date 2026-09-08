@@ -14,7 +14,7 @@ import { writeValues } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { cd, sleep } from 'zx'
-import { OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
+import { EXTERNAL_SECRET_PARAMS, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
 import { getOldGitCredentials, setGitConfig } from '../common/git-config'
 import {
   applyCrd,
@@ -811,6 +811,20 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
     if (secrets.argocd) {
       d.info('Processing ArgoCD secrets.')
       await setSecret('argocd-redis', 'argocd', { auth: secrets.argocd.redisPassword })
+      if (!isTest) {
+        d.info('Removing possibly conflicting ArgoCD ExternalSecret.')
+        try {
+          await k8s.custom().deleteNamespacedCustomObject({
+            ...EXTERNAL_SECRET_PARAMS,
+            name: 'argocd-redis-secret',
+            namespace: 'argocd',
+          })
+        } catch (error) {
+          if (!(error instanceof ApiException && error.code === 404)) {
+            throw error
+          }
+        }
+      }
     }
     if (secrets.keycloak) {
       d.info('Processing Keycloak secrets.')
