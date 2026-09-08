@@ -88,9 +88,6 @@ async function main(): Promise<void> {
       await installer.reconcileInstall()
     }
 
-    // Set up SOPS environment if applicable (no-op when SealedSecrets + ESO is in use)
-    await installer.setEnvAndCreateSecrets()
-
     // Phase 2: Set environment variables and start operator for GitOps operations
     const config = await loadConfig(aplOps)
     const operator = new AplOperator(config)
