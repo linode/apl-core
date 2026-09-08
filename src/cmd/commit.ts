@@ -8,7 +8,6 @@ import {
   OTOMI_SECRETS,
   SEALED_SECRETS_NAMESPACE,
 } from 'src/common/constants'
-import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { getStoredGitRepoConfig, GitRepoConfig } from 'src/common/git-config'
@@ -154,7 +153,6 @@ export const commit = async (gitConfig: GitRepoConfig, initialInstall = false): 
     await waitTillGitRepoAvailable(remote)
   }
   // continue
-  await encrypt()
   await commitAndPush(gitConfig, initialInstall)
 }
 
@@ -283,7 +281,7 @@ export const module = {
     }),
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await prepareEnvironment({ skipKubeContextCheck: true })
+    await prepareEnvironment()
     const gitConfig = await getStoredGitRepoConfig()
     await commit(gitConfig)
   },
