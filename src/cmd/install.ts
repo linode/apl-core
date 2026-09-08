@@ -152,7 +152,7 @@ export const installAll = async () => {
 
   const state = await getDeploymentState()
   const releases = await getHelmReleases()
-  await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, { status: { otomi: state, helm: releases } }, true)
+  await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, { status: { otomi: state, helm: releases } })
 
   const essentialDeployResult = await deployEssential()
   if (!essentialDeployResult) {
