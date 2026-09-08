@@ -47,9 +47,6 @@ notifications:
 redisSecretInit:
   enabled: false
 
-redis-ha:
-  existingSecret: argocd-redis-generated
-
 redis:
   resources: {{- $a.resources.redis | toYaml | nindent 4 }}
   {{- if $v.otomi.linodeLkeImageRepository }}
@@ -296,7 +293,7 @@ extraObjects:
     spec:
       refreshPolicy: CreatedOnce
       target:
-        name: argocd-redis-generated
+        name: argocd-redis
         creationPolicy: Owner
         immutable: true
       dataFrom:

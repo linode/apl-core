@@ -810,7 +810,7 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
     // Preserve values of current cluster Secret resources
     if (secrets.argocd) {
       d.info('Processing ArgoCD secrets.')
-      await setSecret('argocd-redis-generated', 'argocd', { auth: secrets.argocd.redisPassword })
+      await setSecret('argocd-redis', 'argocd', { auth: secrets.argocd.redisPassword })
     }
     if (secrets.keycloak) {
       d.info('Processing Keycloak secrets.')
