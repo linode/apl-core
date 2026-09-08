@@ -408,7 +408,7 @@ export async function createUpdateGenericSecret(
   } catch (error) {
     if (error instanceof ApiException && error.code === 409) {
       if (immutable) {
-        await coreV1Api.deleteNamespacedSecret({ namespace, name })
+        await deleteSecret(coreV1Api, name, namespace)
         return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
       } else if (patch) {
         return await coreV1Api.patchNamespacedSecret(
@@ -421,6 +421,22 @@ export async function createUpdateGenericSecret(
     } else {
       throw error
     }
+  }
+}
+
+export async function deleteSecret(
+  coreV1Api: CoreV1Api,
+  name: string,
+  namespace: string,
+  ignoreMissing: boolean = true,
+): Promise<void> {
+  try {
+    await coreV1Api.deleteNamespacedSecret({ namespace, name })
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404 && ignoreMissing) {
+      return
+    }
+    throw error
   }
 }
 
