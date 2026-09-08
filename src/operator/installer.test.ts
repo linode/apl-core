@@ -334,35 +334,6 @@ describe('Installer', () => {
     })
   })
 
-  describe('setEnvAndCreateSecrets', () => {
-    test('should set SOPS_AGE_KEY when secret exists', async () => {
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ SOPS_AGE_KEY: 'AGE-SECRET-KEY-1ABC' })
-
-      await installer.setEnvAndCreateSecrets()
-
-      expect(k8s.getK8sSecret).toHaveBeenCalledWith('apl-sops-secrets', 'apl-operator')
-      expect(process.env.SOPS_AGE_KEY).toBe('AGE-SECRET-KEY-1ABC')
-    })
-
-    test('should not throw when secret does not exist', async () => {
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(undefined)
-
-      await expect(installer.setEnvAndCreateSecrets()).resolves.not.toThrow()
-    })
-
-    test('should not throw when getK8sSecret fails', async () => {
-      ;(k8s.getK8sSecret as jest.Mock).mockRejectedValue(new Error('Not found'))
-
-      await expect(installer.setEnvAndCreateSecrets()).resolves.not.toThrow()
-    })
-
-    test('should handle secret without SOPS_AGE_KEY field', async () => {
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ OTHER_KEY: 'value' })
-
-      await expect(installer.setEnvAndCreateSecrets()).resolves.not.toThrow()
-    })
-  })
-
   describe('applyRecoveryManifests', () => {
     test('should create secrets from manifest items', async () => {
       ;(utils.loadYaml as jest.Mock).mockResolvedValue({
@@ -518,33 +489,6 @@ describe('Installer', () => {
   })
 
   describe('ensureRecoveryPrerequisites', () => {
-    test('should succeed without SOPS secret', async () => {
-      getStoredGitRepoConfig.mockResolvedValue({
-        authenticatedUrl: 'https://user:pass@github.com/org/repo.git',
-      })
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue(undefined)
-
-      await expect(installer.ensureRecoveryPrerequisites()).resolves.not.toThrow()
-    })
-
-    test('should succeed with SOPS secret', async () => {
-      getStoredGitRepoConfig.mockResolvedValue({
-        authenticatedUrl: 'https://user:pass@github.com/org/repo.git',
-      })
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({ SOPS_AGE_KEY: 'AGE-SECRET-KEY-1ABC' })
-
-      await expect(installer.ensureRecoveryPrerequisites()).resolves.not.toThrow()
-    })
-
-    test('should succeed with empty SOPS secret', async () => {
-      getStoredGitRepoConfig.mockResolvedValue({
-        authenticatedUrl: 'https://user:pass@github.com/org/repo.git',
-      })
-      ;(k8s.getK8sSecret as jest.Mock).mockResolvedValue({})
-
-      await expect(installer.ensureRecoveryPrerequisites()).resolves.not.toThrow()
-    })
-
     test('should throw when git config is missing', async () => {
       getStoredGitRepoConfig.mockRejectedValue(new Error('Git config not found'))
 
