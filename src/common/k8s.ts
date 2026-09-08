@@ -97,39 +97,6 @@ export const k8s = {
   },
 }
 
-export const createK8sSecret = async (
-  name: string,
-  namespace: string,
-  data: Record<string, any> | string,
-): Promise<void> => {
-  const d = terminal('common:k8s:createK8sSecret')
-  const rawString = stringify(data)
-  const filePath = join('/tmp', secretId)
-  const dirPath = dirname(filePath)
-  try {
-    await access(dirPath)
-  } catch (e) {
-    await mkdir(dirPath, { recursive: true })
-  }
-
-  await writeFile(filePath, rawString)
-  const result =
-    await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply --server-side -f -`
-      .nothrow()
-      .quiet()
-  if (result.stderr) d.error(result.stderr)
-  d.debug(`kubectl create secret output: \n ${result.stdout}`)
-}
-
-export const isResourcePresent = async (type: string, name: string, namespace: string): Promise<boolean> => {
-  try {
-    await $`kubectl get -n ${namespace} ${type} ${name}`
-  } catch {
-    return false
-  }
-  return true
-}
-
 export const getK8sSecret = async (
   name: string,
   namespace: string,
