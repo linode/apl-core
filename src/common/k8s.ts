@@ -20,11 +20,9 @@ import {
 } from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
 import { X509Certificate } from 'crypto'
-import { access, mkdir, writeFile } from 'fs/promises'
 import { isEqual, map, mapValues } from 'lodash'
-import { dirname, join } from 'path'
 import { Writable } from 'stream'
-import { parse, stringify } from 'yaml'
+import { parse } from 'yaml'
 import { $ } from 'zx'
 import {
   ARGOCD_APP_DEFAULT_SYNC_POLICY,

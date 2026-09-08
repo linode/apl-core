@@ -2,19 +2,17 @@ import { ApiException, PatchStrategy, setHeaderOptions } from '@kubernetes/clien
 import { diff } from 'deep-diff'
 import { existsSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { cp, rename as fsRename, rm, writeFile } from 'fs/promises'
-import { globSync } from 'glob'
 import { cloneDeep, each, get, pull, set, unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { getFilename, getSchemaSecretsPaths, loadYaml, objectToYaml, rootDir } from 'src/common/utils'
+import { getFilename, loadYaml, objectToYaml, rootDir } from 'src/common/utils'
 import { writeValues } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { cd, sleep } from 'zx'
-import { EXTERNAL_SECRET_PARAMS, OTOMI_SECRETS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
-import { getOldGitCredentials, setGitConfig } from '../common/git-config'
+import { EXTERNAL_SECRET_PARAMS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
 import {
   applyCrd,
   createUpdateGenericSecret,
@@ -24,24 +22,9 @@ import {
   k8s,
   setArgoCdAppSync,
 } from '../common/k8s'
-import {
-  applySealedSecretManifestsFromDir,
-  buildSecretToNamespaceMap,
-  createSealedSecretManifest,
-  createSealedSecretsKeySecret,
-  createUserSealedSecretManifests,
-  generateSealedSecretsKeyPair,
-  getExistingSealedSecretsCert,
-  getOrCreateSealedSecretsPem,
-  getPemFromCertificate,
-  restartSealedSecretsController,
-  SealedSecretManifest,
-  writeSealedSecretManifests,
-} from '../common/sealed-secrets'
 import { generate } from 'generate-password'
 
 const cmdName = getFilename(__filename)
-const sealedSecretManifestsGlob = `${env.ENV_DIR}/env/manifests/namespaces/**/sealedsecrets/*.yaml`
 
 interface Arguments extends BasicArguments {
   dryRun?: boolean
