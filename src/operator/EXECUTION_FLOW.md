@@ -141,7 +141,6 @@ sequenceDiagram
 
     Note over Installer,K8s: On Error: Update status to 'failed',<br/>wait 1 second, retry
 
-    Main->>Installer: setEnvAndCreateSecrets()
     Installer->>Helmfile: hfValues()
     Helmfile-->>Installer: all computed values
     Installer->>K8s: createUpdateGenericSecret('gitea-credentials')
@@ -400,7 +399,6 @@ The installation phase runs in a retry loop until successful:
    - Syncs core app charts
    - Commits changes to Git
    - Creates welcome ConfigMap
-5. **setEnvAndCreateSecrets()** - Extracts and stores credentials
 
 **Retry Logic:**
 
