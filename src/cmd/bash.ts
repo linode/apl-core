@@ -37,7 +37,7 @@ export const module: CommandModule = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await prepareEnvironment({ skipKubeContextCheck: true, skipDecrypt: true })
+    await prepareEnvironment()
     await bash()
   },
 }
