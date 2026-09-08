@@ -749,8 +749,8 @@ const removeIngressNginxValues = async (values: Record<string, any>) => {
 const migrateGeneratedSecrets = async (values: Record<string, any>) => {
   const d = terminal('migrateGeneratedSecrets')
   const isTest = process.env.NODE_ENV === 'test'
-  const BASE_APPS = ['argocd', 'keycloak', 'oauth2-proxy', 'oauth2-proxy-redis']
-  const OPTIONAL_APPS = ['gitea', 'harbor', 'loki', 'kubeflow-pipelines']
+  const BASE_APPS = ['argocd', 'keycloak', 'oauth2-proxy', 'oauth2-proxy-redis', 'loki']
+  const OPTIONAL_APPS = ['gitea', 'harbor', 'kubeflow-pipelines']
   const ALL_APPS = [...BASE_APPS, ...OPTIONAL_APPS]
   const secrets: Record<string, Record<string, string>> = {}
   const discardSealedSecrets: string[] = []
