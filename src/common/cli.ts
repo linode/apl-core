@@ -20,19 +20,12 @@ const isReadyEnvDir = async (): Promise<boolean> => {
   return (await readdir(env.ENV_DIR)).length > 0
 }
 
-type PrepareEnvironmentOptions = {
-  skipEnvDirCheck?: boolean
-  skipKubeContextCheck?: boolean
-  skipDecrypt?: boolean
-  skipAllPreChecks?: boolean
-}
-
 export const scriptName = 'otomi'
 
 /**
  * Prepare environment when running an otomi command
  */
-export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): Promise<void> => {
+export const prepareEnvironment = async (): Promise<void> => {
   await unsetValuesFile(env.ENV_DIR)
 }
 

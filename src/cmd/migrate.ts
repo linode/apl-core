@@ -840,7 +840,7 @@ export const module = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await prepareEnvironment({ skipKubeContextCheck: true })
+    await prepareEnvironment()
     await migrate()
   },
 }

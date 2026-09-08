@@ -281,7 +281,7 @@ export const module = {
     }),
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await prepareEnvironment({ skipKubeContextCheck: true })
+    await prepareEnvironment()
     const gitConfig = await getStoredGitRepoConfig()
     await commit(gitConfig)
   },
