@@ -11,10 +11,6 @@ ARG HELM_VERSION=4.2.3
 ARG HELM_DIFF_VERSION=3.15.11
 # https://github.com/jkroepke/helm-secrets/releases
 ARG HELM_SECRETS_VERSION=4.7.7
-# https://github.com/mozilla/sops/releases
-ARG SOPS_VERSION=3.12.2
-# https://github.com/FiloSottile/age/releases
-ARG AGE_VERSION=1.2.1
 # https://github.com/noqcks/gucci/releases
 ARG GUCCI_VERSION=1.9.0
 # https://github.com/yannh/kubeconform/releases/
@@ -79,16 +75,6 @@ RUN CNPG_ARCH=$(if [ "${TARGETARCH}" = "amd64" ]; then echo "x86_64"; else echo 
   tar -zxvf kubectl-cnpg_${CNPG_VERSION}_linux_${CNPG_ARCH}.tar.gz && \
   chmod +x kubectl-cnpg && \
   rm kubectl-cnpg_${CNPG_VERSION}_linux_${CNPG_ARCH}.tar.gz
-
-# sops
-ADD https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.amd64 sops
-RUN chmod +x sops
-
-# age
-ADD https://github.com/FiloSottile/age/releases/download/v${AGE_VERSION}/age-v${AGE_VERSION}-linux-amd64.tar.gz age.tar.gz
-RUN tar -zxvf age.tar.gz age/age age/age-keygen --strip-components=1 && \
-  chmod +x age age-keygen && \
-  rm -rf age.tar.gz
 
 # helm
 ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
