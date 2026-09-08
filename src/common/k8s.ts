@@ -1,5 +1,6 @@
 import {
   ApiException,
+  ApiextensionsV1Api,
   AppsV1Api,
   BatchV1Api,
   CoreV1Api,
@@ -12,6 +13,7 @@ import {
   PatchStrategy,
   setHeaderOptions,
   V1ConfigMap,
+  V1CustomResourceDefinition,
   V1ResourceRequirements,
   V1Secret,
   V1Status,
@@ -32,6 +34,7 @@ import {
 } from './constants'
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
+import { loadYaml } from './utils'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
@@ -44,7 +47,7 @@ let networkingClient: NetworkingV1Api
 let customClient: CustomObjectsApi
 let discoveryClient: DiscoveryV1Api
 let objectClient: KubernetesObjectApi
-let execObject: Exec
+let extensionsClient: ApiextensionsV1Api
 export const k8s = {
   kc: (): KubeConfig => {
     if (kc) return kc
@@ -86,6 +89,11 @@ export const k8s = {
     if (objectClient) return objectClient
     objectClient = k8s.kc().makeApiClient(KubernetesObjectApi)
     return objectClient
+  },
+  extensions: (): ApiextensionsV1Api => {
+    if (extensionsClient) return extensionsClient
+    extensionsClient = k8s.kc().makeApiClient(ApiextensionsV1Api)
+    return extensionsClient
   },
 }
 
@@ -917,6 +925,24 @@ export async function applyServerSide(
     }
   }
   await $`kubectl apply ${kubectlArgs}`
+}
+
+export async function applyCrd(path: string, dryRun: boolean = false): Promise<V1CustomResourceDefinition> {
+  const api = k8s.extensions()
+  const body = await loadYaml(path)
+  if (body?.kind !== 'CustomResourceDefinition') {
+    throw Error(`Invalid CRD manifest in file ${path}`)
+  }
+  return await api.patchCustomResourceDefinition(
+    {
+      name: body?.metadata?.name,
+      body,
+      dryRun: dryRun ? 'All' : undefined,
+      fieldManager: 'apl-operator',
+      force: true,
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.ServerSideApply),
+  )
 }
 
 export async function waitForCRD(crdName: string, timeoutSeconds: number = 60): Promise<void> {
