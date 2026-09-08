@@ -1,9 +1,4 @@
 changes:
-  - version: 62
-    deletions:
-      - 'kms.sops'
-    customFunctions:
-      - sopsMigration
   - version: 63
     customFunctions:
       - removeIngressTracing
@@ -43,6 +38,11 @@ changes:
     customFunctions:
       - preservePvcStorageClassInRawValues
   - version: 72
+    deletions:
+      - kms
+    customFunctions:
+      - removeSopsConfig
+  - version: 73
     customFunctions:
       - migrateGeneratedSecrets
     deletions:

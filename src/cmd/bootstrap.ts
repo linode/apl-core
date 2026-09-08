@@ -346,7 +346,7 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     const gitConfig = await initializeGitConfig()
-    await prepareEnvironment({ skipAllPreChecks: true })
+    await prepareEnvironment()
     await bootstrap()
     await bootstrapGit(gitConfig)
   },

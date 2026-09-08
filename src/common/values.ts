@@ -1,14 +1,12 @@
-import { existsSync } from 'fs'
-import { mkdir, unlink, writeFile } from 'fs/promises'
-import { cloneDeep, get, isEmpty, isEqual, mergeWith } from 'lodash'
+import { mkdir, writeFile } from 'fs/promises'
 import path from 'path'
+import { get } from 'lodash'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
-import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
 import { saveValues } from './repo'
-import { getSchemaSecretsPaths, loadYaml, objectToYaml, pkg, removeBlankAttributes } from './utils'
+import { getSchemaSecretsPaths, objectToYaml, pkg } from './utils'
 import { HelmArguments } from './yargs'
 import { stripAllSecrets } from './sealed-secrets'
 
@@ -40,61 +38,10 @@ export const getPackageVersion = (): string => {
   return pkg.version
 }
 
-function mergeCustomizer(prev, next) {
-  return next
-}
-
-let hasSops = false
-/**
- * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
- */
-export const writeValuesToFile = async (
-  targetPath: string,
-  inValues: Record<string, any> = {},
-  overwrite = false,
-): Promise<void> => {
-  const d = terminal('common:values:writeValuesToFile')
+export const writeValuesToFile = async (targetPath: string, values: Record<string, any>) => {
   const filePath = path.dirname(targetPath)
-
   await mkdir(filePath, { recursive: true })
-
-  const isSecretsFile = targetPath.includes('/secrets.') && hasSops
-  const suffix = isSecretsFile ? '.dec' : ''
-  const values = cloneDeep(inValues)
-  const originalValues = (await loadYaml(targetPath + suffix, { noError: true })) ?? {}
-  d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
-  const mergeResult = mergeWith(cloneDeep(originalValues), values, mergeCustomizer)
-  const cleanedValues = removeBlankAttributes(values)
-  const cleanedMergeResult = removeBlankAttributes(mergeResult)
-  if (((overwrite && isEmpty(cleanedValues)) || (!overwrite && isEmpty(cleanedMergeResult))) && isSecretsFile) {
-    // get rid of empty secrets files as those are problematic
-    if (existsSync(targetPath)) await unlink(targetPath)
-    if (existsSync(`${targetPath}.dec`)) await unlink(`${targetPath}.dec`)
-    return
-  }
-  const useValues = overwrite ? values : mergeResult
-  if (!existsSync(targetPath) || overwrite) {
-    // create the non-suffixed file for encryption to not skip this later on
-    const notExists = !existsSync(targetPath)
-    if (notExists) {
-      if (isSecretsFile) {
-        await writeFile(targetPath, objectToYaml(useValues))
-        await encrypt(targetPath)
-        await decrypt(targetPath)
-        return
-      }
-      await writeFile(targetPath, objectToYaml(useValues))
-      return
-    }
-  }
-
-  if (isEqual(originalValues, useValues)) {
-    d.debug(`No changes for ${targetPath}${suffix}, skipping...`)
-    return
-  }
-  d.debug('mergeResult: ', JSON.stringify(useValues, null, 2))
-  await writeFile(targetPath + suffix, objectToYaml(useValues))
-  d.debug(`Values were written to ${targetPath}${suffix}`)
+  await writeFile(targetPath, objectToYaml(values))
 }
 
 export const getDefaultValues = async (): Promise<Record<string, any>> => {
