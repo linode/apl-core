@@ -804,7 +804,7 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
       setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
     )
     d.info('Adding ClusterGenerator CRD.')
-    await applyCrd('charts/external-secrets/crds/clustergenerator.yaml')
+    await applyCrd(`${rootDir}/charts/external-secrets/crds/clustergenerator.yaml`)
   }
   try {
     // Preserve values of current cluster Secret resources
