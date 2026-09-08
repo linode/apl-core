@@ -1,24 +1,8 @@
-import { readdir } from 'fs/promises'
 import { chalk } from 'zx'
-import { terminal } from './debug'
 import { env } from './envalid'
 import { unsetValuesFile, unsetValuesFileSync } from './repo'
-import { isCore } from './utils'
 
 chalk.level = 2
-/**
- * Check the ENV_DIR parameter and whether or not the folder is populated
- * @returns
- */
-const isReadyEnvDir = async (): Promise<boolean> => {
-  const { ENV_DIR, isDev } = env
-  const d = terminal('common:isReadyEnvDir')
-  if (isDev && isCore && !ENV_DIR) {
-    throw new Error('The ENV_DIR environment variable is not set')
-  }
-  d.debug(`ENV_DIR: ${env.ENV_DIR}`)
-  return (await readdir(env.ENV_DIR)).length > 0
-}
 
 export const scriptName = 'otomi'
 
