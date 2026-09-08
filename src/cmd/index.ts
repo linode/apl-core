@@ -6,10 +6,8 @@ import { module as bashModule } from './bash'
 import { module as bootstrapModule } from './bootstrap'
 import { module as collectModule } from './collect'
 import { module as commitModule } from './commit'
-import { module as decryptModule } from './decrypt'
 import { module as destroyModule } from './destroy'
 import { module as diffModule } from './diff'
-import { module as encryptModule } from './encrypt'
 import { module as filesModule } from './files'
 import { module as hfModule } from './hf'
 import { module as installModule } from './install'
@@ -35,10 +33,8 @@ export { module as bash } from './bash'
 export { module as bootstrap } from './bootstrap'
 export { module as collect } from './collect'
 export { module as commit } from './commit'
-export { module as decrypt } from './decrypt'
 export { module as destroy } from './destroy'
 export { module as diff } from './diff'
-export { module as encrypt } from './encrypt'
 export { module as files } from './files'
 export { module as hf } from './hf'
 export { module as install } from './install'
@@ -63,10 +59,8 @@ export const commands: CommandModule[] = [
   bashModule,
   bootstrapModule,
   commitModule,
-  decryptModule,
   destroyModule,
   diffModule,
-  encryptModule,
   filesModule,
   hfModule,
   installModule,
