@@ -704,7 +704,7 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
     if (secrets.gitea) {
       d.info('Processing Gitea secrets.')
       await setSecret(
-        'gitea-db-secret',
+        'gitea-db',
         'gitea',
         {
           username: 'gitea',
@@ -717,8 +717,6 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
         adminPassword: secrets.gitea.adminPassword,
         valkeyPassword: generate(GENERATE_OPTS),
       })
-      d.info('Removing possibly conflicting Gitea DB ExternalSecret.')
-      await removeExternalSecret('gitea-db-secret', 'gitea')
     }
     if (secrets.harbor) {
       d.info('Processing Harbor secrets.')
