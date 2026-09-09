@@ -5318,7 +5318,7 @@
                     }
                 },
                 "podLabels": {
-                    "description": "Labels for ingester pods",
+                    "description": "Labels for ingester pods. Keys used by the workload selectors (`app.kubernetes.io/name`, `app.kubernetes.io/instance`, `app.kubernetes.io/component` and, with zoneAwareReplication, `name` and `rollout-group`) are reserved and ignored here: the latter are also used by the per-zone headless Services and grafana/rollout-operator.",
                     "type": "object",
                     "additionalProperties": {
                         "type": "string"

@@ -91,9 +91,6 @@ async function main(): Promise<void> {
         await installer.initialize()
         await installer.reconcileInstall()
       }
-
-      // Set up SOPS environment if applicable (no-op when SealedSecrets + ESO is in use)
-      await installer.setEnvAndCreateSecrets()
     } finally {
       clearInterval(heartbeat)
     }

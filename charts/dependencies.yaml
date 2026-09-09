@@ -39,21 +39,21 @@ dependencies:
     repository: https://helm.goharbor.io
   - name: base
     alias: istio-base
-    version: 1.30.3
+    version: 1.30.4
     repository: https://istio-release.storage.googleapis.com/charts
   - name: cni
     alias: istio-cni
-    version: 1.30.3
+    version: 1.30.4
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
-    version: 1.30.3
+    version: 1.30.4
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
-    version: 1.30.3
+    version: 1.30.4
     repository: https://istio-release.storage.googleapis.com/charts
   - name: ztunnel
-    version: 1.30.3
+    version: 1.30.4
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
@@ -70,16 +70,16 @@ dependencies:
     version: v0.19.0
     repository: oci://ghcr.io/kserve/charts/kserve-resources
   - name: kube-prometheus-stack
-    version: 88.5.4
+    version: 88.6.5
     repository: https://prometheus-community.github.io/helm-charts
   - name: kyverno
     version: 3.8.2
     repository: https://kyverno.github.io/kyverno/
   - name: loki
-    version: 18.11.2
+    version: 18.12.1
     repository: oci://ghcr.io/grafana-community/helm-charts/loki
   - name: metrics-server
-    version: 3.13.1
+    version: 3.14.0
     repository: https://kubernetes-sigs.github.io/metrics-server
   - name: oauth2-proxy
     version: 10.7.0

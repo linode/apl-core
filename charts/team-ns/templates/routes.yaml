@@ -21,6 +21,10 @@
 {{- /* Setting the namespace is only valid for the admin team */}}
 {{- $serviceNamespace := ternary (get $s "namespace") nil (eq $v.teamId "admin") }}
 {{- $defaultHostname := print $serviceName "-" $v.teamId "." $v.domain }}
+{{- /* core.yaml teamApps with ownHost already claim these hostnames. */}}
+{{- if has $serviceName (list "grafana" "alertmanager" "tekton") }}
+{{- fail (printf "team service name %q is reserved: it would claim the platform hostname %s" $serviceName $defaultHostname) }}
+{{- end }}
 {{- $headersRequestSet := dig "headers" "request" "set" nil $s }}
 {{- $headersResponseSet := dig "headers" "response" "set" nil $s }}
 {{- $headersRequestRemove := get $s "removeRequestHeaders" | default nil }}

@@ -49,8 +49,6 @@
     "@commitlint/config-conventional": "21.2.2",
     "@eslint/compat": "^2.1.0",
     "@jest/types": "30.4.1",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
     "@types/async-retry": "1.4.9",
     "@types/debug": "4.1.13",
     "@types/express": "5.0.6",
@@ -79,7 +77,6 @@
     "eslint-plugin-prettier": "5.5.6",
     "eslint-plugin-unused-imports": "4.4.1",
     "git-cz": "4.9.0",
-    "github-release-from-changelog": "2.1.1",
     "globals": "17.11.0",
     "husky": "9.1.7",
     "jest": "30.4.2",
@@ -88,8 +85,6 @@
     "lint-staged": "17.3.0",
     "npm-run-all": "4.1.5",
     "prettier": "3.9.6",
-    "semantic-release": "^25.0.9",
-    "standard-version": "9.5.0",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.9.2",
     "tsconfig-paths": "4.2.0",
@@ -160,11 +155,6 @@
     "validate-templates:all": "set -e; i=33; while [ $i -le 36 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
     "validate-values": "ENV_DIR=$PWD/tests/fixtures NODE_ENV=test tsx src/otomi.ts -- validate-values --strict-additional",
     "bootstrap-dev": "rm -rf /tmp/otomi-bootstrap-dev; VALUES_INPUT=$PWD/tests/bootstrap/input-local-dev.yaml ENV_DIR=/tmp/otomi-bootstrap-dev NODE_ENV=test tsx src/otomi.ts -- bootstrap"
-  },
-  "standard-version": {
-    "skip": {
-      "tag": true
-    }
   },
   "type": "commonjs",
   "version": "0.0.0"

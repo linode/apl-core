@@ -27,19 +27,16 @@ export type RuntimeUpgrades = Array<RuntimeUpgrade>
  */
 export const runtimeUpgrades: RuntimeUpgrades = [
   {
-    version: '6.1.1',
+    version: '6.3.0',
+    pre: async ({ debug }) => {
+      await stripOversizedLastAppliedAnnotations().catch((e) => debug.warn('Failed to strip oversized annotations:', e))
+    },
     applications: {
       'istio-system-istiod': {
         post: async () => {
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
-    },
-  },
-  {
-    version: '6.3.0',
-    pre: async ({ debug }) => {
-      await stripOversizedLastAppliedAnnotations().catch((e) => debug.warn('Failed to strip oversized annotations:', e))
     },
   },
 ]
