@@ -98,6 +98,70 @@ resources:
   {{- $groupName := print "team-" $teamId }}
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" "platform-team" "namespace" $groupName "allowGroups" (list "platform-admin" $groupName)) | nindent 4 }}
   {{- end }}
+  {{- /* Reserved hostname -> the object allowed to serve it. Empty means no object may. */}}
+  {{- $reserved := dict }}
+  {{- range $host := $v._derived.platformHostnames }}
+    {{- $_ := set $reserved $host "" }}
+  {{- end }}
+  {{- /* Owner names are set in helmfile-60.teams.yaml.gotmpl and prometheus-operator-team.gotmpl. */}}
+  {{- $owners := dict "tekton" "tekton-%s" "grafana" "%s-po-grafana" "alertmanager" "%s-po-alertmanager" }}
+  {{- range $teamId, $team := $v.teamConfig }}
+    {{- range $app := $v._derived.teamHostnameApps }}
+      {{- $_ := set $reserved (printf "%s-%s.%s" $app $teamId $domainSuffix) (printf ($owners | get $app "%s") $teamId) }}
+    {{- end }}
+  {{- end }}
+  {{- $pairs := list }}
+  {{- range $host, $owner := $reserved }}
+    {{- $pairs = append $pairs (printf "'%s': '%s'" $host $owner) }}
+  {{- end }}
+  - apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingAdmissionPolicy
+    metadata:
+      name: apl-team-hostnames
+    spec:
+      failurePolicy: Fail
+      matchConstraints:
+        resourceRules:
+          - apiGroups: ["gateway.networking.k8s.io"]
+            apiVersions: ["*"]
+            operations: ["CREATE", "UPDATE"]
+            resources: ["httproutes", "listenersets"]
+      variables:
+        - name: reserved
+          expression: "{ {{ join ", " $pairs }} }"
+        {{- /* HTTPRoute keeps hostnames on the route, ListenerSet keeps one per listener. */}}
+        - name: hostnames
+          expression: |
+            request.resource.resource == 'listenersets'
+              ? object.spec.listeners.map(l, has(l.hostname) ? l.hostname : '')
+              : (has(object.spec.hostnames) ? object.spec.hostnames : [])
+      validations:
+        - expression: 'size(variables.hostnames) > 0 && !variables.hostnames.exists(h, h == "")'
+          message: 'every hostname must be set: an empty hostname binds the whole cluster domain'
+        {{- /* A wildcard is only safe when it cannot cover the cluster domain. */}}
+        - expression: |
+            variables.hostnames.all(h,
+              !h.startsWith('*.')
+                || !('{{ $domainSuffix }}' == h.substring(2) || '{{ $domainSuffix }}'.endsWith('.' + h.substring(2)))
+            )
+          message: 'a wildcard hostname may not cover {{ $domainSuffix }}'
+        {{- /* A reserved hostname stays with the object that already serves it. */}}
+        - expression: |
+            variables.hostnames.all(h,
+              !(h in variables.reserved) || object.metadata.name == variables.reserved[h]
+            )
+          message: 'this hostname is served by a platform app and cannot be rebound'
+  - apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingAdmissionPolicyBinding
+    metadata:
+      name: apl-team-hostnames
+    spec:
+      policyName: apl-team-hostnames
+      validationActions: ["Deny"]
+      matchResources:
+        namespaceSelector:
+          matchLabels:
+            type: team
   - apiVersion: security.istio.io/v1
     kind: RequestAuthentication
     metadata:
