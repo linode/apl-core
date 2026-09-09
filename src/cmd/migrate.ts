@@ -593,7 +593,7 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
   const secrets: Record<string, Record<string, string>> = {}
   const discardSealedSecrets: string[] = []
 
-  // Wrappers around getK8sSecret / createUpdateGenericSecret for avoiding cluster contact in tests
+  // Wrappers around KubeAPI functions for avoiding cluster contact in tests
   const getSecret = async (name: string, namespace: string) => {
     if (isTest) return
     return await getK8sSecret(name, namespace)
@@ -601,6 +601,20 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
   const setSecret = async (name: string, namespace: string, data: Record<string, string>, type: string = 'Opaque') => {
     if (isTest) return
     await createUpdateGenericSecret(api, name, namespace, data, false, true, type)
+  }
+  const removeExternalSecret = async (name: string, namespace: string) => {
+    if (isTest) return
+    try {
+      await k8s.custom().deleteNamespacedCustomObject({
+        ...EXTERNAL_SECRET_PARAMS,
+        name,
+        namespace,
+      })
+    } catch (error) {
+      if (!(error instanceof ApiException && error.code === 404)) {
+        throw error
+      }
+    }
   }
 
   for (const appName of ALL_APPS) {
@@ -649,20 +663,8 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
     if (secrets.argocd) {
       d.info('Processing ArgoCD secrets.')
       await setSecret('argocd-redis', 'argocd', { auth: secrets.argocd.redisPassword })
-      if (!isTest) {
-        d.info('Removing possibly conflicting ArgoCD ExternalSecret.')
-        try {
-          await k8s.custom().deleteNamespacedCustomObject({
-            ...EXTERNAL_SECRET_PARAMS,
-            name: 'argocd-redis-secret',
-            namespace: 'argocd',
-          })
-        } catch (error) {
-          if (!(error instanceof ApiException && error.code === 404)) {
-            throw error
-          }
-        }
-      }
+      d.info('Removing possibly conflicting ArgoCD ExternalSecret.')
+      await removeExternalSecret('argocd-redis-secret', 'argocd')
     }
     if (secrets.keycloak) {
       d.info('Processing Keycloak secrets.')
@@ -702,7 +704,7 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
     if (secrets.gitea) {
       d.info('Processing Gitea secrets.')
       await setSecret(
-        'gitea-db',
+        'gitea-db-secret',
         'gitea',
         {
           username: 'gitea',
@@ -715,6 +717,8 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
         adminPassword: secrets.gitea.adminPassword,
         valkeyPassword: generate(GENERATE_OPTS),
       })
+      d.info('Removing possibly conflicting Gitea DB ExternalSecret.')
+      await removeExternalSecret('gitea-db-secret', 'gitea')
     }
     if (secrets.harbor) {
       d.info('Processing Harbor secrets.')

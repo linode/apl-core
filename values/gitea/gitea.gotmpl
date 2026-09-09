@@ -119,12 +119,12 @@ gitea:
     - name: GITEA__DATABASE__USER
       valueFrom:
         secretKeyRef:
-          name: gitea-db
+          name: gitea-db-secret
           key: username
     - name: GITEA__DATABASE__PASSWD
       valueFrom:
         secretKeyRef:
-          name: gitea-db
+          name: gitea-db-secret
           key: password
     {{- with $v | get "smtp" nil }}
     - name: GITEA__MAILER__PASSWD
