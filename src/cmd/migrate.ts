@@ -13,15 +13,7 @@ import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { cd, sleep } from 'zx'
 import { EXTERNAL_SECRET_PARAMS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
-import {
-  applyCrd,
-  createUpdateGenericSecret,
-  ensureNamespaceExists,
-  getArgoCdApp,
-  getK8sSecret,
-  k8s,
-  setArgoCdAppSync,
-} from '../common/k8s'
+import { applyCrd, createUpdateGenericSecret, getArgoCdApp, getK8sSecret, k8s, setArgoCdAppSync } from '../common/k8s'
 import { generate } from 'generate-password'
 
 const cmdName = getFilename(__filename)
@@ -604,6 +596,27 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
   }
   const removeExternalSecret = async (name: string, namespace: string) => {
     if (isTest) return
+    try {
+      await k8s.custom().patchNamespacedCustomObject(
+        {
+          ...EXTERNAL_SECRET_PARAMS,
+          name,
+          namespace,
+          body: [
+            {
+              op: 'replace',
+              path: '/metadata/finalizers',
+              value: [],
+            },
+          ],
+        },
+        setHeaderOptions('Content-Type', PatchStrategy.JsonPatch),
+      )
+    } catch (error) {
+      if (!(error instanceof ApiException && error.code === 404)) {
+        throw error
+      }
+    }
     try {
       await k8s.custom().deleteNamespacedCustomObject({
         ...EXTERNAL_SECRET_PARAMS,
