@@ -1,4 +1,7 @@
-{{- $version := .Values.otomi.version | default .Chart.AppVersion }}
+{{- $version := .Values.image.tag | default .Values.otomi.version | default .Chart.AppVersion }}
+{{- $isRelease := regexMatch "^v?[0-9]" $version }}
+{{- $useORCS := and .Values.otomi.useORCS (eq (.Values.cluster.provider | default "") "linode") $isRelease }}
+{{- $repository := .Values.image.repository | default (ternary "mirror.registry.linodelke.net/docker/linode/apl-core" "docker.io/linode/apl-core" $useORCS) }}
 
 apiVersion: batch/v1
 kind: Job
@@ -30,8 +33,8 @@ spec:
           type: RuntimeDefault
       containers:
         - name: destroy
-          image: "{{ .Values.operator.image.repository }}:{{ $version }}"
-          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }}
+          image: "{{ $repository }}:{{ $version }}"
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" $isRelease }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -64,6 +67,6 @@ spec:
       volumes:
         - name: values-secret
           secret:
-            secretName: {{ .Release.Name }}-values
+            secretName: {{ .Values.valuesSecretName }}
         - name: otomi-values
           emptyDir: {}
