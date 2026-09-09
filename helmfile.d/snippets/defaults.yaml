@@ -319,7 +319,7 @@ environments:
                   memory: 2Gi
             _rawValues: {}
           keycloak:
-            enabled: false
+            enabled: true
             adminUsername: otomi-admin
             theme: otomi
             databaseMaxConnections: 28
@@ -1179,7 +1179,7 @@ environments:
           isPreInstalled: false
           useORCS: true
           aiEnabled: false
-          issuer: dex
+          issuer: keycloak
         users: []
         versions:
           specVersion: 73
