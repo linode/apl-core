@@ -25,25 +25,17 @@
 
 {{- /* Platform hostnames only: a wildcard would also cover team hostnames. */}}
 {{- /* First suffix match wins, so the busiest host goes first. */}}
-{{- $cookieDomains := list
-      $v._derived.consoleDomain
-      $v._derived.authDomain
-      $v._derived.apiDomain
-      $v._derived.ttyDomain
-      $v._derived.giteaDomain
-      $v._derived.keycloakDomain
-      $v._derived.harborDomain
-      (print "argocd." $domainSuffix)
-      (print "tekton." $domainSuffix)
-      (print "kubeflow-pipelines." $domainSuffix)
-      (print "alertmanager." $domainSuffix)
-      (print "grafana." $domainSuffix)
-      (print "prometheus." $domainSuffix)
-      "oauth2-proxy.istio-system.svc.cluster.local" }}
-{{- /* core.yaml teamApps with ownHost. Last, so team count does not slow the lookup. */}}
+{{- $cookieDomains := list $v._derived.consoleDomain }}
+{{- range $host := $v._derived.platformHostnames }}
+  {{- if ne $host $v._derived.consoleDomain }}
+    {{- $cookieDomains = append $cookieDomains $host }}
+  {{- end }}
+{{- end }}
+{{- $cookieDomains = append $cookieDomains "oauth2-proxy.istio-system.svc.cluster.local" }}
+{{- /* Per-team hostnames last, so team count does not slow the lookup. */}}
 {{- $perTeamDomains := list }}
 {{- range $teamId, $team := $v.teamConfig }}
-  {{- range $appName := list "tekton" "grafana" "alertmanager" }}
+  {{- range $appName := $v._derived.teamHostnameApps }}
     {{- $perTeamDomains = append $perTeamDomains (printf "%s-%s.%s" $appName $teamId $domainSuffix) }}
   {{- end }}
 {{- end }}
