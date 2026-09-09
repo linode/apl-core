@@ -27,12 +27,9 @@ Create chart name and version as used by the chart label.
 {{/*
 Common labels
 */}}
+{{/* No helm.sh/chart or version label: they cannot match charts/apl-operator, which renders the same objects. */}}
 {{- define "apl-operator.labels" -}}
-helm.sh/chart: {{ include "apl-operator.chart" . }}
 {{ include "apl-operator.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
