@@ -111,7 +111,7 @@ image:
   # -- Docker image repository
   repository: grafana/grafana
   # Overrides the Grafana image tag whose default is the chart appVersion
-  tag: ""
+  tag: "{{ .Chart.AppVersion }}-distroless"
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -170,6 +170,7 @@ containerSecurityContext:
     - ALL
   seccompProfile:
     type: RuntimeDefault
+  readOnlyRootFilesystem: true
 
 # Enable creating the grafana configmap
 createConfigmap: true
@@ -208,7 +209,7 @@ downloadDashboardsImage:
   # -- The Docker registry
   registry: docker.io
   repository: curlimages/curl
-  tag: 8.21.0
+  tag: 8.22.0
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -590,10 +591,9 @@ admin:
 
 ## Define command to be executed at startup by grafana container
 ## Needed if using `vault-env` to manage secrets (ref: https://banzaicloud.com/blog/inject-secrets-into-pods-vault/)
-## Default is "run.sh" as defined in grafana's Dockerfile
+## The default distroless image starts Grafana directly and does not contain a shell or `/run.sh`.
 # command:
-# - "sh"
-# - "/run.sh"
+# - "/path/to/your/entrypoint"
 
 ## Optionally define args if command is used
 ## Needed if using `hashicorp/envconsul` to manage secrets
@@ -912,6 +912,11 @@ dashboardProviders: {}
 ##
 defaultCurlOptions: "-skf"
 
+## Configure shell options for downloading dashboards. The beginning dash is added automatically.
+## Add `x` to enable command tracing. This can expose sensitive values in logs.
+##
+defaultShellOptions: "eufo pipefail"
+
 ## Configure grafana dashboard to import
 ## NOTE: To use dashboards you must also enable/configure dashboardProviders
 ## ref: https://grafana.com/dashboards
@@ -1052,7 +1057,7 @@ sidecar:
     # -- The Docker registry
     registry: quay.io
     repository: kiwigrid/k8s-sidecar
-    tag: 2.10.1
+    tag: 2.11.2
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}
