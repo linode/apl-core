@@ -235,8 +235,9 @@ environments:
           egressGatewayName: {{ $egressGatewayName }}
           egressGatewayLabel: {{ $egressGatewayLabel }}
           ingressClassNames: {{- $ingressClassNames | toYaml | nindent 12 }}
-          {{- /* Hostnames the platform serves itself. auth is oauth2-proxy's own route. */}}
+          {{- /* Hostnames the platform serves itself. auth is oauth2-proxy's own route; the bare domain must stay unclaimed too. */}}
           platformHostnames:
+            - {{ $domainSuffix }}
             - {{ printf "auth.%s" $domainSuffix }}
             {{- range $app := $core.adminApps }}
             {{- if $app | get "ownHost" false }}
