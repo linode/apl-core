@@ -61,9 +61,13 @@ resources:
       template:
         type: Opaque
         data:
-          S3_STORAGE_ACCOUNT: {{ $obj.linode.accessKeyId }}
+          S3_STORAGE_ACCOUNT: '{{ "{{ .accessKeyId | toString }}" }}'
           S3_STORAGE_KEY: '{{ "{{ .secretAccessKey | toString }}" }}'
     data:
+      - secretKey: accessKeyId
+        remoteRef:
+          key: obj-secrets
+          property: provider_linode_accessKeyId
       - secretKey: secretAccessKey
         remoteRef:
           key: obj-secrets

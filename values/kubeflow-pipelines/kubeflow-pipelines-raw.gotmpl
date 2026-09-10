@@ -41,9 +41,13 @@ resources:
         template:
           type: Opaque
           data:
-            accesskey: {{ $obj.linode.accessKeyId }}
+            accesskey: '{{ "{{ .accessKeyId | toString }}" }}'
             secretkey: '{{ "{{ .secretAccessKey | toString }}" }}'
       data:
+        - secretKey: accessKeyId
+          remoteRef:
+            key: obj-secrets
+            property: provider_linode_accessKeyId
         - secretKey: secretAccessKey
           remoteRef:
             key: obj-secrets
