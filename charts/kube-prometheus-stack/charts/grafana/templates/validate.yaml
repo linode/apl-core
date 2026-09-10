@@ -1,0 +1,11 @@
+{{- $imageTag := (tpl (toString .Values.image.tag) .) | default .Chart.AppVersion -}}
+{{- if contains "-distroless" $imageTag -}}
+  {{- range $name, $value := .Values.env -}}
+    {{- $envName := tpl $name $ -}}
+    {{- if regexMatch "^GF_.+__FILE$" $envName -}}
+      {{- $replacementName := trimSuffix "__FILE" $envName -}}
+      {{- $filePath := tpl (print $value) $ -}}
+      {{- fail (printf "%s is not supported with the distroless Grafana image because it depends on /run.sh. Keep the secret mounted and, under env, replace %s: %s with %s: $__file{%s}, or select a non-distroless image tag." $envName $envName $filePath $replacementName $filePath) -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
