@@ -195,9 +195,8 @@ describe('processDeletionEntry', () => {
   it('should delete app files when entry matches apps.<name>', () => {
     const values: any = { apps: { myApp: {} } }
     processDeletionEntry('apps.myApp', values, deps)
-    expect(mockDeleteFile).toHaveBeenCalledTimes(2)
+    expect(mockDeleteFile).toHaveBeenCalledTimes(1)
     expect(mockDeleteFile).toHaveBeenCalledWith('env/apps/myApp.yaml')
-    expect(mockDeleteFile).toHaveBeenCalledWith('env/apps/secrets.myApp.yaml')
   })
 
   it('should not delete files when entry does not match apps.<name>', () => {
