@@ -62,7 +62,7 @@ spec:
 {{- if $rule.ports }}
 {{ toYaml $rule.ports | indent 7 }}
 {{- else }}
-      {{- include "redis-ports" . | nindent 6 }}
+      {{- include "redis-ports" $root | nindent 6 }}
 {{- end }}
 {{- end }}
 {{- end }}
