@@ -637,6 +637,8 @@ environments:
             _rawValues: {}
           loki:
             enabled: false
+            networkPolicies:
+              enabled: true
             resources:
               compactor:
                 requests:
