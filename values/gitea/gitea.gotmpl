@@ -98,7 +98,7 @@ gitea:
       PROVIDER: memory
       GC_INTERVAL_TIME: 3600
       SESSION_LIFE_TIME: 600
-    webhook:
+    security:
       ALLOWED_HOST_LIST: "*"
     server:
       DOMAIN: {{ $giteaDomain }}
@@ -239,26 +239,19 @@ global:
     - otomi-pullsecret-global
 {{- end }}
 
-extraDeploy:
-  - apiVersion: gateway.networking.k8s.io/v1
-    kind: HTTPRoute
-    metadata:
+gatewayAPI:
+  enabled: true
+  core:
+    httpRoute:
+      enabled: true
       {{ with $httpRoute.annotations }}
       annotations:
-        {{ . | toYaml | nindent 8 }}
+        {{- . | toYaml | nindent 8 }}
       {{- end }}
-      name: gitea
-    spec:
       hostnames:
         - {{ $giteaDomain }}
       parentRefs:
         {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
-      rules:
-        - backendRefs:
-            - name: gitea-http
-              port: 3000
-          matches:
-            - path:
-                type: PathPrefix
-                value: /
+
+extraDeploy:
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "gitea" "host" $giteaDomain) | nindent 4 }}
