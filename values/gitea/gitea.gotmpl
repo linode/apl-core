@@ -241,16 +241,17 @@ global:
 
 gatewayAPI:
   enabled: true
-  httpRoute:
-    enabled: true
-    {{ with $httpRoute.annotations }}
-    annotations:
-      {{- . | toYaml | nindent 6 }}
-    {{- end }}
-    hostnames:
-      - {{ $giteaDomain }}
-    parentRefs:
-      {{- $httpRoute.parentRefs | toYaml | nindent 6 }}
+  core:
+    httpRoute:
+      enabled: true
+      {{ with $httpRoute.annotations }}
+      annotations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      hostnames:
+        - {{ $giteaDomain }}
+      parentRefs:
+        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
 
 extraDeploy:
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "gitea" "host" $giteaDomain) | nindent 4 }}
