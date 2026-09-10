@@ -1,0 +1,30 @@
+{{- if .Values.netpols.certManagerWebhookLinode }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cert-manager-webhook-linode-platform-policy
+  namespace: cert-manager
+  labels:
+    {{- include "apl-network-policies.labels" . | nindent 4 }}
+    app: cert-manager-webhook-linode
+spec:
+  # This webhook is deployed by the cert-manager-webhook-linode chart, which labels its pods
+  # `app: cert-manager-webhook-linode` with no `app.kubernetes.io/name`. The cert-manager chart's
+  # own webhook policy selects `app.kubernetes.io/name: webhook`, so it does not — and should not —
+  # cover this one.
+  podSelector:
+    matchLabels:
+      app: cert-manager-webhook-linode
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow the apiserver's discovery probe to reach the aggregated APIService
+    # (v1alpha1.acme.slicen.me). The apiserver is off the pod network on a managed control plane and
+    # has no address a namespaceSelector or ipBlock can pin down, so this rule is scoped by port
+    # rather than by source. Without it the APIService stays Available=False with
+    # FailedDiscoveryCheck and convergence hangs waiting on a certificate that can never be issued.
+    - ports:
+        - protocol: TCP
+          port: 443
+{{- end }}
