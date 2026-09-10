@@ -76,7 +76,7 @@ initContainers:
     {{- end }}
     imagePullPolicy: {{ .Values.downloadDashboardsImage.pullPolicy }}
     command: ["/bin/sh"]
-    args: [ "-c", "mkdir -p /var/lib/grafana/dashboards/default && /bin/sh -x /etc/grafana/download_dashboards.sh" ]
+    args: [ "/etc/grafana/download_dashboards.sh" ]
     {{- with .Values.downloadDashboards.resources }}
     resources:
       {{- toYaml . | nindent 6 }}
@@ -1245,9 +1245,9 @@ containers:
   - name: grafana
     {{- $registry := .Values.global.imageRegistry | default .Values.image.registry -}}
     {{- if .Values.image.sha }}
-    image: "{{ $registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}@sha256:{{ .Values.image.sha }}"
+    image: "{{ $registry }}/{{ .Values.image.repository }}:{{ (tpl (toString .Values.image.tag) .) | default .Chart.AppVersion }}@sha256:{{ .Values.image.sha }}"
     {{- else }}
-    image: "{{ $registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+    image: "{{ $registry }}/{{ .Values.image.repository }}:{{ (tpl (toString .Values.image.tag) .) | default .Chart.AppVersion }}"
     {{- end }}
     imagePullPolicy: {{ .Values.image.pullPolicy }}
     {{- if .Values.command }}
@@ -1267,6 +1267,8 @@ containers:
       {{- toYaml . | nindent 6 }}
     {{- end }}
     volumeMounts:
+      - name: tmp
+        mountPath: "/tmp"
       - name: config
         mountPath: "/etc/grafana/grafana.ini"
         subPath: grafana.ini
@@ -1570,6 +1572,8 @@ tolerations:
   {{- toYaml . | nindent 2 }}
 {{- end }}
 volumes:
+  - name: tmp
+    emptyDir: {}
   - name: config
     configMap:
       name: {{ include "grafana.fullname" . }}
