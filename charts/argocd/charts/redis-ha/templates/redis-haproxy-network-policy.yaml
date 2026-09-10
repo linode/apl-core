@@ -61,6 +61,6 @@ spec:
         {{- if $rule.ports }}
         {{- toYaml $rule.ports | nindent 8 }}
         {{- end }}
-        {{- include "redis-ports" . | nindent 8 }}
+        {{- include "redis-ports" $root | nindent 8 }}
     {{- end }}
 {{- end }}
