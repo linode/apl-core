@@ -7,22 +7,15 @@
 
    {{ include "grafana.fullname" . }}.{{ include "grafana.namespace" . }}.svc.cluster.local
 {{ if .Values.ingress.enabled }}
-   If you bind grafana to 80, please update values in values.yaml and reinstall:
+   If you configure Grafana itself to listen on port 80, grant the container
+   the `NET_BIND_SERVICE` capability in values.yaml and reinstall:
    ```
-   securityContext:
-     runAsUser: 0
-     runAsGroup: 0
-     fsGroup: 0
-
-   command:
-   - "setcap"
-   - "'cap_net_bind_service=+ep'"
-   - "/usr/sbin/grafana-server &&"
-   - "sh"
-   - "/run.sh"
+   containerSecurityContext:
+     capabilities:
+       add:
+         - NET_BIND_SERVICE
    ```
-   Details refer to https://grafana.com/docs/installation/configuration/#http-port.
-   Or grafana would always crash.
+   For details, see https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#http_port.
 
    From outside the cluster, the server URL(s) are:
      {{- range .Values.ingress.hosts }}
