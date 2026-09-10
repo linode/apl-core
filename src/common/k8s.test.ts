@@ -1037,3 +1037,129 @@ describe('getSealedSecretsPEM', () => {
     expect(MockX509Certificate).toHaveBeenCalledWith('single-cert')
   })
 })
+
+describe('createArgoCdRedisSecret', () => {
+  const password = 'new-password'
+  const objectApi = { patch: jest.fn() }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    objectApi.patch.mockResolvedValue({})
+    jest.spyOn(k8s.k8s, 'object').mockReturnValue(objectApi as any)
+  })
+
+  afterEach(() => jest.restoreAllMocks())
+
+  const makeDeps = (overrides = {}) => ({
+    getK8sSecret: jest.fn(async () => ({ auth: password })),
+    restartArgoCdRedisConsumers: jest.fn(async (_namespace: string) => {}),
+    ...overrides,
+  })
+
+  it('should restart redis and its consumers when the password changed', async () => {
+    const deps = makeDeps({ getK8sSecret: jest.fn(async () => ({ auth: 'old-password' })) })
+
+    await k8s.createArgoCdRedisSecret({ apps: { argocd: { redisPassword: password } } }, deps as any)
+
+    expect(deps.restartArgoCdRedisConsumers).toHaveBeenCalledWith('argocd')
+  })
+
+  it('should not restart anything when the password is unchanged', async () => {
+    const deps = makeDeps()
+
+    await k8s.createArgoCdRedisSecret({ apps: { argocd: { redisPassword: password } } }, deps as any)
+
+    expect(objectApi.patch).toHaveBeenCalled()
+    expect(deps.restartArgoCdRedisConsumers).not.toHaveBeenCalled()
+  })
+
+  it('should not restart anything on a fresh install where the secret does not exist yet', async () => {
+    const deps = makeDeps({ getK8sSecret: jest.fn(async () => undefined) })
+
+    await k8s.createArgoCdRedisSecret({ apps: { argocd: { redisPassword: password } } }, deps as any)
+
+    expect(deps.restartArgoCdRedisConsumers).not.toHaveBeenCalled()
+  })
+
+  it('should restart when the existing secret cannot be read at all', async () => {
+    const deps = makeDeps({
+      getK8sSecret: jest.fn(async () => {
+        throw new Error('forbidden')
+      }),
+    })
+
+    await k8s.createArgoCdRedisSecret({ apps: { argocd: { redisPassword: password } } }, deps as any)
+
+    expect(objectApi.patch).toHaveBeenCalled()
+    expect(deps.restartArgoCdRedisConsumers).toHaveBeenCalledWith('argocd')
+  })
+
+  it('should skip reconciliation entirely when no password is supplied', async () => {
+    const deps = makeDeps()
+
+    await k8s.createArgoCdRedisSecret({ apps: { argocd: {} } }, deps as any)
+
+    expect(objectApi.patch).not.toHaveBeenCalled()
+    expect(deps.restartArgoCdRedisConsumers).not.toHaveBeenCalled()
+  })
+})
+
+describe('restartArgoCdRedisConsumers', () => {
+  const makeDeps = (overrides = {}) => ({
+    restartDeployment: jest.fn(async (_name: string, _namespace: string) => {}),
+    restartStatefulSet: jest.fn(async (_name: string, _namespace: string) => {}),
+    ...overrides,
+  })
+
+  it('should restart redis before its clients', async () => {
+    const deps = makeDeps()
+
+    await k8s.restartArgoCdRedisConsumers('argocd', deps as any)
+
+    expect(deps.restartDeployment).toHaveBeenCalledWith('argocd-redis', 'argocd')
+    expect(deps.restartDeployment.mock.calls[0][0]).toBe('argocd-redis')
+    expect(deps.restartDeployment).toHaveBeenCalledWith('argocd-repo-server', 'argocd')
+    expect(deps.restartStatefulSet).toHaveBeenCalledWith('argocd-application-controller', 'argocd')
+  })
+
+  it('should keep going when a target does not exist', async () => {
+    const notFound = new MockApiException(404, 'not found', {}, {})
+    const deps = makeDeps({
+      restartDeployment: jest.fn(async (name: string) => {
+        if (name === 'argocd-server') throw notFound
+      }),
+    })
+
+    await expect(k8s.restartArgoCdRedisConsumers('argocd', deps as any)).resolves.toBeUndefined()
+
+    expect(deps.restartDeployment).toHaveBeenCalledWith('argocd-repo-server', 'argocd')
+  })
+
+  it('should not restart the clients when redis itself fails to restart', async () => {
+    const deps = makeDeps({
+      restartDeployment: jest.fn(async (name: string) => {
+        if (name === 'argocd-redis') throw new Error('boom')
+      }),
+    })
+
+    await expect(k8s.restartArgoCdRedisConsumers('argocd', deps as any)).rejects.toThrow('boom')
+
+    expect(deps.restartDeployment).toHaveBeenCalledTimes(1)
+    expect(deps.restartDeployment).toHaveBeenCalledWith('argocd-redis', 'argocd')
+    expect(deps.restartStatefulSet).not.toHaveBeenCalled()
+  })
+
+  it('should leave the clients alone when redis is not present at all', async () => {
+    const notFound = new MockApiException(404, 'not found', {}, {})
+    const deps = makeDeps({
+      restartDeployment: jest.fn(async (name: string) => {
+        if (name === 'argocd-redis') throw notFound
+      }),
+    })
+
+    await expect(k8s.restartArgoCdRedisConsumers('argocd', deps as any)).resolves.toBeUndefined()
+
+    expect(deps.restartDeployment).toHaveBeenCalledTimes(1)
+    expect(deps.restartStatefulSet).not.toHaveBeenCalled()
+  })
+})
