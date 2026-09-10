@@ -118,7 +118,7 @@ global:
   # Default network policy rules used by all components
   networkPolicy:
     # -- Create NetworkPolicy objects for all components
-    create: false
+    create: true
     # -- Default deny all ingress traffic
     defaultDenyIngress: false
 
@@ -425,6 +425,13 @@ configs:
         - BackgroundScanReport
         - ClusterBackgroundScanReport
         - UpdateRequest
+
+    # -- Additional resource exclusions to append to the default `resource.exclusions` list above,
+    # so that the defaults can be kept up to date without needing to duplicate/override them.
+    # These entries are always appended, never substituted: if you also set `resource.exclusions`
+    # yourself, they are appended to your value rather than to the chart defaults.
+    # @default -- `[]`
+    resourceExclusionsAdditional: []
 
   # Argo CD configuration parameters
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cmd-params-cm.yaml
@@ -826,6 +833,17 @@ controller:
       # maxAllowed:
       #   cpu: 1
       #   memory: 1Gi
+    # -- The recommenders that will provide recommendations for vertical scaling. Only relevant if a named VPA recommender (e.g. one started with a custom recommender name) is in use; leave unset to use the cluster's default recommender
+    ## Ref: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/api.md#verticalpodautoscalerspec
+    ## NOTE: specify only zero or one recommender as of VPA 1.7.1
+    recommenders: []
+    # -- Configures a startup resource boost for faster cold-start (application boot) resource allocation. NOTE: startupBoost is currently a GKE-specific extension to the VPA API and is only honored on GKE clusters; it is rendered only when set
+    ## Ref: https://cloud.google.com/kubernetes-engine/docs/how-to/boost-application-startup
+    startupBoost: {}
+      # cpu:
+      #   type: Factor
+      #   factor: 2
+      #   durationSeconds: 10
 
   ## Application controller image
   image:
@@ -964,6 +982,28 @@ controller:
     # -- Number of seconds after which the [probe] times out
     timeoutSeconds: 1
 
+  ## Liveness probe for the application controller.
+  ## Disabled by default, matching upstream: Argo CD removed this probe deliberately
+  ## (argoproj/argo-cd#9557) because restarting an overloaded controller usually makes
+  ## things worse. Enable only if you have a known failure mode (e.g. deadlock) where
+  ## a restart is the correct remediation, and size the thresholds generously.
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    # -- Enable Kubernetes liveness probe for Application controller
+    enabled: false
+    # -- Http path to use for the liveness probe
+    httpPath: /healthz
+    # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
+    failureThreshold: 5
+    # -- Number of seconds after the container has started before [probe] is initiated
+    initialDelaySeconds: 10
+    # -- How often (in seconds) to perform the [probe]
+    periodSeconds: 30
+    # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
+    successThreshold: 1
+    # -- Number of seconds after which the [probe] times out
+    timeoutSeconds: 5
+
   ## Startup probe for application controller (optional)
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   startupProbe:
@@ -1029,8 +1069,6 @@ controller:
   metrics:
     # -- Deploy metrics service
     enabled: false
-    # -- Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used.
-    scrapeTimeout: ""
     applicationLabels:
       # -- Enables additional labels in argocd_app_labels metric
       enabled: false
@@ -1054,6 +1092,8 @@ controller:
       enabled: false
       # -- Prometheus ServiceMonitor interval
       interval: 30s
+      # -- Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used.
+      scrapeTimeout: ""
       # -- When true, honorLabels preserves the metric’s labels when they collide with the target’s labels.
       honorLabels: false
       # -- Prometheus [RelabelConfigs] to apply to samples before scraping
@@ -1223,6 +1263,17 @@ dex:
       # maxAllowed:
       #   cpu: 1
       #   memory: 1Gi
+    # -- The recommenders that will provide recommendations for vertical scaling. Only relevant if a named VPA recommender (e.g. one started with a custom recommender name) is in use; leave unset to use the cluster's default recommender
+    ## Ref: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/api.md#verticalpodautoscalerspec
+    ## NOTE: specify only zero or one recommender as of VPA 1.7.1
+    recommenders: []
+    # -- Configures a startup resource boost for faster cold-start (application boot) resource allocation. NOTE: startupBoost is currently a GKE-specific extension to the VPA API and is only honored on GKE clusters; it is rendered only when set
+    ## Ref: https://cloud.google.com/kubernetes-engine/docs/how-to/boost-application-startup
+    startupBoost: {}
+      # cpu:
+      #   type: Factor
+      #   factor: 2
+      #   durationSeconds: 10
 
   ## Dex image
   image:
@@ -1544,6 +1595,17 @@ redis:
       # maxAllowed:
       #   cpu: 1
       #   memory: 1Gi
+    # -- The recommenders that will provide recommendations for vertical scaling. Only relevant if a named VPA recommender (e.g. one started with a custom recommender name) is in use; leave unset to use the cluster's default recommender
+    ## Ref: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/api.md#verticalpodautoscalerspec
+    ## NOTE: specify only zero or one recommender as of VPA 1.7.1
+    recommenders: []
+    # -- Configures a startup resource boost for faster cold-start (application boot) resource allocation. NOTE: startupBoost is currently a GKE-specific extension to the VPA API and is only honored on GKE clusters; it is rendered only when set
+    ## Ref: https://cloud.google.com/kubernetes-engine/docs/how-to/boost-application-startup
+    startupBoost: {}
+      # cpu:
+      #   type: Factor
+      #   factor: 2
+      #   durationSeconds: 10
 
   ## Redis image
   image:
@@ -1551,7 +1613,7 @@ redis:
     repository: ecr-public.aws.com/docker/library/redis
     # -- Redis tag
     ## Do not use 7.4.0 <= v < 8.0.0, otherwise you are no longer using an open source version of Redis
-    tag: 8.2.3-alpine
+    tag: 8.6.4-alpine
     # -- Redis image pull policy
     # @default -- `""` (defaults to global.image.imagePullPolicy)
     imagePullPolicy: ""
@@ -1567,7 +1629,7 @@ redis:
       # -- Repository to use for the redis-exporter
       repository: ghcr.io/oliver006/redis_exporter
       # -- Tag to use for the redis-exporter
-      tag: v1.86.0
+      tag: v1.91.1
       # -- Image pull policy for the redis-exporter
       # @default -- `""` (defaults to global.image.imagePullPolicy)
       imagePullPolicy: ""
@@ -1721,6 +1783,9 @@ redis:
     # -- Metrics container port
     metrics: 9121
 
+  # -- Host Network for redis pods
+  hostNetwork: false
+
   # -- [DNS configuration]
   dnsConfig: {}
   # -- Alternative DNS policy for Redis server pods
@@ -1846,8 +1911,10 @@ redis-ha:
     # -- Redis repository
     repository: ecr-public.aws.com/docker/library/redis
     # -- Redis tag
-    ## Do not upgrade to >= 7.4.0, otherwise you are no longer using an open source version of Redis
-    tag: 8.2.3-alpine
+    ## Do not use 7.4.0 <= v < 8.0.0, otherwise you are no longer using an open source version of Redis
+    ## Runs ahead of the upstream HA manifests' pin: the redis 8.2.x line is only built on Alpine 3.22,
+    ## whose OpenSSL carries known vulnerabilities (GHSA-5p3w-hgjv-f6q3 report); 8.6.x is the patched base.
+    tag: 8.6.4-alpine
   ## Prometheus redis-exporter sidecar
   exporter:
     # -- Enable Prometheus redis-exporter sidecar
@@ -1869,6 +1936,18 @@ redis-ha:
       # -- Will save the DB if both the given number of seconds and the given number of write operations against the DB occurred. `""`  is disabled
       # @default -- `'""'`
       save: '""'
+  ## Redis sentinel specific configuration options
+  sentinel:
+    # -- Sentinel container lifecycle hooks. The default `postStart` hook resets the sentinel state after a rolling update to prevent high CPU usage
+    # @default -- See [values.yaml]
+    lifecycle:
+      postStart:
+        exec:
+          ## Note: the reset command hardcodes the master group name `argocd`. If you override `redis-ha.redis.masterGroupName`, you must override this hook to match.
+          command:
+            - '/bin/sh'
+            - '-c'
+            - 'sleep 30; redis-cli -p 26379 sentinel reset argocd'
   ## Enables a HA Proxy for better LoadBalancing / Sentinel Master support. Automatically proxies to Redis master.
   haproxy:
     # -- Enabled HAProxy LoadBalancing/Proxy
@@ -2024,6 +2103,14 @@ redisSecretInit:
   # @default -- `""` (defaults to global.priorityClassName)
   priorityClassName: ""
 
+  # -- Host Network for redis-secret-init pods
+  hostNetwork: false
+
+  # -- [DNS configuration]
+  dnsConfig: {}
+  # -- Alternative DNS policy for Redis secret-init Job
+  dnsPolicy: "ClusterFirst"
+
   # -- Assign custom [affinity] rules to the Redis secret-init Job
   affinity: {}
 
@@ -2116,6 +2203,17 @@ server:
       # maxAllowed:
       #   cpu: 1
       #   memory: 1Gi
+    # -- The recommenders that will provide recommendations for vertical scaling. Only relevant if a named VPA recommender (e.g. one started with a custom recommender name) is in use; leave unset to use the cluster's default recommender
+    ## Ref: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/api.md#verticalpodautoscalerspec
+    ## NOTE: specify only zero or one recommender as of VPA 1.7.1
+    recommenders: []
+    # -- Configures a startup resource boost for faster cold-start (application boot) resource allocation. NOTE: startupBoost is currently a GKE-specific extension to the VPA API and is only honored on GKE clusters; it is rendered only when set
+    ## Ref: https://cloud.google.com/kubernetes-engine/docs/how-to/boost-application-startup
+    startupBoost: {}
+      # cpu:
+      #   type: Factor
+      #   factor: 2
+      #   durationSeconds: 10
 
   ## Argo CD server image
   image:
@@ -2164,7 +2262,7 @@ server:
       # -- Repository to use for extension installer image
       repository: "quay.io/argoprojlabs/argocd-extension-installer"
       # -- Tag to use for extension installer image
-      tag: "v1.0.1"
+      tag: "v1.1.0"
       # -- Image pull policy for extensions
       # @default -- `""` (defaults to global.image.imagePullPolicy)
       imagePullPolicy: ""
@@ -2464,16 +2562,33 @@ server:
     type: ClusterIP
     # -- Server service http port for NodePort service type (only if `server.service.type` is set to "NodePort")
     nodePortHttp: 30080
+    # -- (int) Server service http2 port for NodePort service type (only if `server.service.servicePortHttp2` is set and `server.service.type` is set to "NodePort")
+    # @default -- `nil` (a random node port is assigned)
+    nodePortHttp2:
     # -- Server service https port for NodePort service type (only if `server.service.type` is set to "NodePort")
     nodePortHttps: 30443
     # -- Server service http port
     servicePortHttp: 80
+    # -- (int) Server service cleartext http2 (h2c) port, targeting the same container port as `servicePortHttp`
+    # @default -- `nil` (disabled)
+    ## The Argo CD server serves the web UI (HTTP/1.1) and gRPC (HTTP/2) on a single container port, and
+    ## `appProtocol` is single-valued per service port. Set this to expose a second port advertising the
+    ## h2c backend protocol, for Gateway API implementations that do not infer it from the route type.
+    ## Leave empty to disable. Only rendered when `configs.params."server.insecure"` is `true`, since
+    ## h2c is not applicable to a TLS backend.
+    servicePortHttp2:
     # -- Server service https port
     servicePortHttps: 443
     # -- Server service http port name, can be used to route traffic via istio
     servicePortHttpName: http
+    # -- Server service http2 port name, can be used to route traffic via istio
+    servicePortHttp2Name: http2
     # -- Server service https port name, can be used to route traffic via istio
     servicePortHttpsName: https
+    # -- Server service http2 port appProtocol, e.g. `kubernetes.io/h2c`. Implementations that select the
+    # protocol from the port name instead do not need it
+    ## Ref: https://kubernetes.io/docs/concepts/services-networking/service/#application-protocol
+    servicePortHttp2AppProtocol: ""
     # -- Server service https port appProtocol
     ## Ref: https://kubernetes.io/docs/concepts/services-networking/service/#application-protocol
     servicePortHttpsAppProtocol: ""
@@ -2873,11 +2988,29 @@ server:
     ## Must reference an existing Gateway. Unlike HTTPRoute, ListenerSet accepts exactly one parentRef.
     # @default -- `{}` (See [values.yaml])
     parentRef: {}
-      # group: gateway.networking.k8s.io
-      # kind: Gateway
       # name: example-gateway
       # namespace: example-gateway-namespace
-    # -- Listeners to attach to the parent Gateway
+    # -- Hostname for the synthesized listener. Defaults to global.domain when empty.
+    hostname: ""
+    # -- Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs.
+    listenerName: https
+    # -- Port for the synthesized listener
+    port: 443
+    # -- Protocol for the synthesized listener
+    protocol: HTTPS
+    # -- TLS configuration for the synthesized listener
+    tls:
+      # -- Enable TLS on the synthesized listener
+      enabled: true
+      # -- TLS termination mode
+      mode: Terminate
+      # -- Secret name for TLS certificate. Defaults to `argocd-server-tls` when empty.
+      secretName: ""
+    # -- allowedRoutes for the synthesized listener
+    allowedRoutes:
+      namespaces:
+        from: Same
+    # -- Listeners to attach to the parent Gateway. When non-empty, used verbatim and all synthesized listener fields above are ignored.
     # @default -- `[]` (See [values.yaml])
     listeners: []
       # - name: https
@@ -2989,6 +3122,17 @@ repoServer:
       # maxAllowed:
       #   cpu: 1
       #   memory: 1Gi
+    # -- The recommenders that will provide recommendations for vertical scaling. Only relevant if a named VPA recommender (e.g. one started with a custom recommender name) is in use; leave unset to use the cluster's default recommender
+    ## Ref: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/api.md#verticalpodautoscalerspec
+    ## NOTE: specify only zero or one recommender as of VPA 1.7.1
+    recommenders: []
+    # -- Configures a startup resource boost for faster cold-start (application boot) resource allocation. NOTE: startupBoost is currently a GKE-specific extension to the VPA API and is only honored on GKE clusters; it is rendered only when set
+    ## Ref: https://cloud.google.com/kubernetes-engine/docs/how-to/boost-application-startup
+    startupBoost: {}
+      # cpu:
+      #   type: Factor
+      #   factor: 2
+      #   durationSeconds: 10
 
   ## Repo server image
   image:
@@ -3427,6 +3571,17 @@ applicationSet:
       # maxAllowed:
       #   cpu: 1
       #   memory: 1Gi
+    # -- The recommenders that will provide recommendations for vertical scaling. Only relevant if a named VPA recommender (e.g. one started with a custom recommender name) is in use; leave unset to use the cluster's default recommender
+    ## Ref: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/api.md#verticalpodautoscalerspec
+    ## NOTE: specify only zero or one recommender as of VPA 1.7.1
+    recommenders: []
+    # -- Configures a startup resource boost for faster cold-start (application boot) resource allocation. NOTE: startupBoost is currently a GKE-specific extension to the VPA API and is only honored on GKE clusters; it is rendered only when set
+    ## Ref: https://cloud.google.com/kubernetes-engine/docs/how-to/boost-application-startup
+    startupBoost: {}
+      # cpu:
+      #   type: Factor
+      #   factor: 2
+      #   durationSeconds: 10
 
   ## ApplicationSet controller image
   image:
@@ -3842,11 +3997,29 @@ applicationSet:
     ## Must reference an existing Gateway. Unlike HTTPRoute, ListenerSet accepts exactly one parentRef.
     # @default -- `{}` (See [values.yaml])
     parentRef: {}
-      # group: gateway.networking.k8s.io
-      # kind: Gateway
       # name: example-gateway
       # namespace: example-gateway-namespace
-    # -- Listeners to attach to the parent Gateway
+    # -- Hostname for the synthesized listener. Defaults to global.domain when empty.
+    hostname: ""
+    # -- Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs.
+    listenerName: https
+    # -- Port for the synthesized listener
+    port: 443
+    # -- Protocol for the synthesized listener
+    protocol: HTTPS
+    # -- TLS configuration for the synthesized listener
+    tls:
+      # -- Enable TLS on the synthesized listener
+      enabled: true
+      # -- TLS termination mode
+      mode: Terminate
+      # -- Secret name for TLS certificate. Defaults to `argocd-applicationset-controller-tls` when empty.
+      secretName: ""
+    # -- allowedRoutes for the synthesized listener
+    allowedRoutes:
+      namespaces:
+        from: Same
+    # -- Listeners to attach to the parent Gateway. When non-empty, used verbatim and all synthesized listener fields above are ignored.
     # @default -- `[]` (See [values.yaml])
     listeners: []
       # - name: https
@@ -3927,6 +4100,17 @@ notifications:
       # maxAllowed:
       #   cpu: 1
       #   memory: 1Gi
+    # -- The recommenders that will provide recommendations for vertical scaling. Only relevant if a named VPA recommender (e.g. one started with a custom recommender name) is in use; leave unset to use the cluster's default recommender
+    ## Ref: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/api.md#verticalpodautoscalerspec
+    ## NOTE: specify only zero or one recommender as of VPA 1.7.1
+    recommenders: []
+    # -- Configures a startup resource boost for faster cold-start (application boot) resource allocation. NOTE: startupBoost is currently a GKE-specific extension to the VPA API and is only honored on GKE clusters; it is rendered only when set
+    ## Ref: https://cloud.google.com/kubernetes-engine/docs/how-to/boost-application-startup
+    startupBoost: {}
+      # cpu:
+      #   type: Factor
+      #   factor: 2
+      #   durationSeconds: 10
 
   ## Notifications controller image
   image:
@@ -4723,3 +4907,14 @@ commitServer:
       # maxAllowed:
       #   cpu: 1
       #   memory: 1Gi
+    # -- The recommenders that will provide recommendations for vertical scaling. Only relevant if a named VPA recommender (e.g. one started with a custom recommender name) is in use; leave unset to use the cluster's default recommender
+    ## Ref: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/api.md#verticalpodautoscalerspec
+    ## NOTE: specify only zero or one recommender as of VPA 1.7.1
+    recommenders: []
+    # -- Configures a startup resource boost for faster cold-start (application boot) resource allocation. NOTE: startupBoost is currently a GKE-specific extension to the VPA API and is only honored on GKE clusters; it is rendered only when set
+    ## Ref: https://cloud.google.com/kubernetes-engine/docs/how-to/boost-application-startup
+    startupBoost: {}
+      # cpu:
+      #   type: Factor
+      #   factor: 2
+      #   durationSeconds: 10
