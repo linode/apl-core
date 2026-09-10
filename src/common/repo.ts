@@ -581,7 +581,7 @@ export function getJsonPath(fileMap: FileMap, filePath: string): string {
 
   if (jsonPath.includes('.*')) {
     const fileName = path.basename(filePath, path.extname(filePath))
-    const strippedFileName = fileName.replace(/^secrets\.|\.yaml|\.dec$/g, '')
+    const strippedFileName = fileName.replace(/\.yaml$/g, '')
     jsonPath = jsonPath.replace('.*', `.${strippedFileName}`)
   }
   if (jsonPath.includes('[*]')) jsonPath = jsonPath.replace('[*]', '')
