@@ -239,26 +239,18 @@ global:
     - otomi-pullsecret-global
 {{- end }}
 
+gatewayAPI:
+  enabled: true
+  httpRoute:
+    enabled: true
+    {{ with $httpRoute.annotations }}
+    annotations:
+      {{- . | toYaml | nindent 6 }}
+    {{- end }}
+    hostnames:
+      - {{ $giteaDomain }}
+    parentRefs:
+      {{- $httpRoute.parentRefs | toYaml | nindent 6 }}
+
 extraDeploy:
-  - apiVersion: gateway.networking.k8s.io/v1
-    kind: HTTPRoute
-    metadata:
-      {{ with $httpRoute.annotations }}
-      annotations:
-        {{ . | toYaml | nindent 8 }}
-      {{- end }}
-      name: gitea
-    spec:
-      hostnames:
-        - {{ $giteaDomain }}
-      parentRefs:
-        {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
-      rules:
-        - backendRefs:
-            - name: gitea-http
-              port: 3000
-          matches:
-            - path:
-                type: PathPrefix
-                value: /
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "gitea" "host" $giteaDomain) | nindent 4 }}
