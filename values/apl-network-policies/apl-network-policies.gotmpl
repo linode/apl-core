@@ -1,12 +1,14 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $oa := $v.apps | get "otomi-api" }}
+{{- $h := $v.apps | get "harbor" }}
 
 # Simple per-app network policy configuration
 netpols:
   gitServer: {{ not ($a | get "git-server.enabled") }}
   gitea: {{ $a.gitea.networkPolicies.enabled}}
   otomiApi: {{ $oa.networkPolicies.enabled}}
+  harborDb: {{ and ($h.networkPolicies.enabled) ($h.enabled) }}
 
 ingressGatewaySelectors:
   - namespaceSelector:
