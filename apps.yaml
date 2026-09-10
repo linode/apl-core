@@ -65,7 +65,7 @@ appsInfo:
     integration: App Platform uses External Secrets to manage shared and generated secrets for various applications.
   gitea:
     title: Gitea Self-hosted GIT
-    appVersion: 1.26.2
+    appVersion: 1.27.3
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
