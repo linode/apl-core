@@ -76,7 +76,6 @@ export const processDeletionEntry = (entry: string, values: Record<string, any>,
   if (appMatch) {
     const appName = appMatch[1]
     deps.deleteFile(`env/apps/${appName}.yaml`)
-    deps.deleteFile(`env/apps/secrets.${appName}.yaml`)
   }
 }
 
@@ -91,29 +90,10 @@ export const rename = async (
     d.warn(`File does not exist: "${env.ENV_DIR}/${oldName}". Already renamed?`)
     return
   }
-  // so the file exists, check if it has a '/secrets.' companion
-  let secretsCompanionOld
-  let secretsCompanionNew
-  if (oldName.includes('.yaml') && !oldName.includes('secrets.')) {
-    const lastSlashPosOld = oldName.lastIndexOf('/') + 1
-    const tmpOld = `${oldName.substring(0, lastSlashPosOld)}secrets.${oldName.substring(lastSlashPosOld)}`
-    if (deps.pathExists(`${env.ENV_DIR}/${secretsCompanionOld}`)) {
-      secretsCompanionOld = tmpOld
-      const lastSlashPosNew = oldName.lastIndexOf('/') + 1
-      secretsCompanionNew = `${newName.substring(0, lastSlashPosNew)}secrets.${newName.substring(lastSlashPosNew)}`
-    }
-  }
   d.info(`Renaming ${oldName} to ${newName}`)
   if (!dryRun) {
     try {
       await deps.move(`${env.ENV_DIR}/${oldName}`, `${env.ENV_DIR}/${newName}`)
-      if (secretsCompanionOld) {
-        // we also rename the secret companion
-        await deps.move(`${env.ENV_DIR}/${secretsCompanionOld}`, `${env.ENV_DIR}/${secretsCompanionNew}`)
-        if (deps.pathExists(`${env.ENV_DIR}/${secretsCompanionOld}.dec`))
-          // and remove the old decrypted file
-          deps.rmSync(`${env.ENV_DIR}/${secretsCompanionOld}.dec`)
-      }
     } catch (e) {
       if (e.message === 'dest already exists.') {
         // we were given a folder that already exists, which is allowed,

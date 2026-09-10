@@ -4,17 +4,15 @@ FROM ubuntu:26.04 AS builder
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=1.36.3
+ARG KUBECTL_VERSION=1.36.4
 # https://github.com/helm/helm/tags
-ARG HELM_VERSION=4.2.3
+ARG HELM_VERSION=4.3.0
 # https://github.com/databus23/helm-diff/releases
-ARG HELM_DIFF_VERSION=3.15.11
-# https://github.com/jkroepke/helm-secrets/releases
-ARG HELM_SECRETS_VERSION=4.7.7
+ARG HELM_DIFF_VERSION=3.15.12
 # https://github.com/yannh/kubeconform/releases/
 ARG KUBECONFORM_VERSION=0.8.0
 # https://github.com/helmfile/helmfile/releases
-ARG HELMFILE_VERSION=1.7.3
+ARG HELMFILE_VERSION=1.7.4
 # https://nodejs.org/en/download/
 ARG NODE_VERSION=24
 # https://github.com/cloudnative-pg/cloudnative-pg/releases
@@ -79,7 +77,6 @@ ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
 RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp && mv /tmp/linux-${TARGETARCH}/helm helm && rm -rf /tmp/*
 RUN helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION} --verify=false
 RUN echo "exec \$*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
-RUN helm plugin install https://github.com/jkroepke/helm-secrets --version ${HELM_SECRETS_VERSION} --verify=false
 
 # helmfile
 ADD https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz /tmp
