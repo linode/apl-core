@@ -98,7 +98,7 @@ gitea:
       PROVIDER: memory
       GC_INTERVAL_TIME: 3600
       SESSION_LIFE_TIME: 600
-    webhook:
+    security:
       ALLOWED_HOST_LIST: "*"
     server:
       DOMAIN: {{ $giteaDomain }}
