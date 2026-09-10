@@ -111,6 +111,8 @@ adminApps:
     ownHost: true
   - name: external-dns
     tags: [ingress, security, tls]
+  - name: external-secrets
+    tags: [secrets, security]
   - name: gitea
     tags: [git]
     isShared: true
