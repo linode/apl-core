@@ -305,7 +305,6 @@ sequenceDiagram
             Git-->>Operator: identity set
             Operator->>Git: git remote set-url origin
             Git-->>Operator: remote updated
-            Operator->>Operator: encrypt()
             Operator->>Git: commitAndPush(values, branch)
             Git->>Git: git add -A
             Git->>Git: git commit -m "updated values [ci skip]"
@@ -569,7 +568,7 @@ problem.
 | **Condition**    | Git changes detected          | Always (scheduled) |
 | **Skip Logic**   | Yes (`[ci skip]`, no changes) | No                 |
 | **Concurrency**  | Skips if applying             | Waits if applying  |
-| **Operations**   | Migrate → Validate            | Decrypt            |
+| **Operations**   | Migrate → Validate            | No                 |
 | **Apply Type**   | Teams-only or Full            | Always Full        |
 | **Optimization** | Smart (file-based)            | None               |
 

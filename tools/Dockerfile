@@ -9,8 +9,6 @@ ARG KUBECTL_VERSION=1.36.3
 ARG HELM_VERSION=4.2.3
 # https://github.com/databus23/helm-diff/releases
 ARG HELM_DIFF_VERSION=3.15.11
-# https://github.com/jkroepke/helm-secrets/releases
-ARG HELM_SECRETS_VERSION=4.7.7
 # https://github.com/noqcks/gucci/releases
 ARG GUCCI_VERSION=1.9.0
 # https://github.com/yannh/kubeconform/releases/
@@ -81,7 +79,6 @@ ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
 RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp && mv /tmp/linux-${TARGETARCH}/helm helm && rm -rf /tmp/*
 RUN helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION} --verify=false
 RUN echo "exec \$*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
-RUN helm plugin install https://github.com/jkroepke/helm-secrets --version ${HELM_SECRETS_VERSION} --verify=false
 
 # helmfile
 ADD https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz /tmp
