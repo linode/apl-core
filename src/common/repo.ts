@@ -139,7 +139,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       kind: 'AplApp',
       envDir,
       jsonPathExpression: '$.apps.*',
-      pathGlob: `${envDir}/env/apps/*.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/apps/*.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'platformApps',
       resourceDir: 'apps',
@@ -149,7 +149,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       envDir,
       kind: 'AplAlertSet',
       jsonPathExpression: '$.alerts',
-      pathGlob: `${envDir}/env/settings/*alerts.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/settings/alerts.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
@@ -159,7 +159,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       kind: 'AplCatalog',
       envDir,
       jsonPathExpression: '$.catalogs.*',
-      pathGlob: `${envDir}/env/catalogs/*.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/catalogs/*.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'platformCatalogs',
       resourceDir: 'catalogs',
@@ -169,7 +169,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       kind: 'AplCluster',
       envDir,
       jsonPathExpression: '$.cluster',
-      pathGlob: `${envDir}/env/settings/cluster.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/settings/cluster.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
@@ -179,7 +179,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       kind: 'AplDatabase',
       envDir,
       jsonPathExpression: '$.databases.*',
-      pathGlob: `${envDir}/env/databases/*.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/databases/*.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'platformDatabases',
       resourceDir: 'databases',
@@ -189,7 +189,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       kind: 'AplDns',
       envDir,
       jsonPathExpression: '$.dns',
-      pathGlob: `${envDir}/env/settings/*dns.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/settings/dns.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
@@ -206,20 +206,10 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       loadToSpec: true,
     },
     {
-      kind: 'AplKms',
-      envDir,
-      jsonPathExpression: '$.kms',
-      pathGlob: `${envDir}/env/settings/*kms.{yaml,yaml.dec}`,
-      processAs: 'mapItem',
-      resourceGroup: 'platformSettings',
-      resourceDir: 'settings',
-      loadToSpec: true,
-    },
-    {
       kind: 'AplObjectStorage',
       envDir,
       jsonPathExpression: '$.obj',
-      pathGlob: `${envDir}/env/settings/*obj.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/settings/obj.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
@@ -229,7 +219,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       kind: 'AplIdentityProvider',
       envDir,
       jsonPathExpression: '$.oidc',
-      pathGlob: `${envDir}/env/settings/*oidc.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/settings/oidc.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
@@ -239,7 +229,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       kind: 'AplCapabilitySet',
       envDir,
       jsonPathExpression: '$.otomi',
-      pathGlob: `${envDir}/env/settings/*otomi.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/settings/otomi.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
@@ -249,7 +239,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       kind: 'AplBackupCollection',
       envDir,
       jsonPathExpression: '$.platformBackups',
-      pathGlob: `${envDir}/env/settings/*platformBackups.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/settings/platformBackups.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'platformBackups',
       resourceDir: 'settings',
@@ -259,20 +249,10 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       kind: 'AplSmtp',
       envDir,
       jsonPathExpression: '$.smtp',
-      pathGlob: `${envDir}/env/settings/*smtp.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/settings/smtp.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
-      loadToSpec: true,
-    },
-    {
-      kind: 'AplUser',
-      envDir,
-      jsonPathExpression: '$.users[*]',
-      pathGlob: `${envDir}/env/users/*.{yaml,yaml.dec}`,
-      processAs: 'arrayItem',
-      resourceGroup: 'users',
-      resourceDir: 'users',
       loadToSpec: true,
     },
     {
@@ -389,7 +369,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       kind: 'AplTeamSettingSet',
       envDir,
       jsonPathExpression: '$.teamConfig.*.settings',
-      pathGlob: `${envDir}/env/teams/*/*settings{.yaml,.yaml.dec}`,
+      pathGlob: `${envDir}/env/teams/*/settings.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'team',
       resourceDir: '.',
@@ -399,7 +379,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       kind: 'AplTeamTool',
       envDir,
       jsonPathExpression: '$.teamConfig.*.apps',
-      pathGlob: `${envDir}/env/teams/*/*apps{.yaml,.yaml.dec}`,
+      pathGlob: `${envDir}/env/teams/*/apps.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'team',
       resourceDir: '.',
@@ -417,10 +397,6 @@ export function getFileMaps(envDir: string): Array<FileMap> {
     },
   ]
   return maps
-}
-
-export function hasCorrespondingDecryptedFile(filePath: string, fileList: Array<string>): boolean {
-  return fileList.includes(`${filePath}.dec`)
 }
 
 export async function saveValues(
@@ -495,14 +471,6 @@ export async function saveResourceGroupToFiles(
 
   // Secrets are now stored as SealedSecret manifests via buildSecretToNamespaceMap() + writeSealedSecretManifests()
   // No longer writing secrets.*.yaml files
-}
-
-export function getUniqueIdentifierFromFilePath(filePath: string): string {
-  return path
-    .basename(filePath)
-    .replace(/^secrets\./, '')
-    .replace(/\.yaml\.dec$/, '')
-    .replace(/\.yaml$/, '')
 }
 
 export function sortUserArraysByName(spec: Record<string, any>): Record<string, any> {
@@ -613,7 +581,7 @@ export function getJsonPath(fileMap: FileMap, filePath: string): string {
 
   if (jsonPath.includes('.*')) {
     const fileName = path.basename(filePath, path.extname(filePath))
-    const strippedFileName = fileName.replace(/^secrets\.|\.yaml|\.dec$/g, '')
+    const strippedFileName = fileName.replace(/\.yaml$/g, '')
     jsonPath = jsonPath.replace('.*', `.${strippedFileName}`)
   }
   if (jsonPath.includes('[*]')) jsonPath = jsonPath.replace('[*]', '')
@@ -644,7 +612,6 @@ export async function loadToSpec(
   files.forEach((filePath) => {
     const jsonPath = getJsonPath(fileMap, filePath)
     initSpec(fileMap, jsonPath, spec)
-    if (hasCorrespondingDecryptedFile(filePath, files)) return
     promises.push(deps.loadFileToSpec(filePath, fileMap, spec))
   })
   await Promise.all(promises)
@@ -660,13 +627,8 @@ export async function loadFileToSpec(
   try {
     const data = (await deps.loadYaml(filePath)) || {}
 
-    if (!filePath.includes('secrets.')) {
-      if (fileMap.resourceGroup === 'team' && fileMap.processAs === 'arrayItem') {
-        data.spec.name = data.metadata.name
-      }
-    }
-    if (fileMap.resourceGroup === 'users') {
-      data.spec.name = getUniqueIdentifierFromFilePath(filePath)
+    if (fileMap.resourceGroup === 'team' && fileMap.processAs === 'arrayItem') {
+      data.spec.name = data.metadata.name
     }
     if (fileMap.processAs === 'arrayItem') {
       const ref: Record<string, any>[] = get(spec, jsonPath)
@@ -679,20 +641,11 @@ export async function loadFileToSpec(
       const newRef = merge(cloneDeep(ref), policy)
       set(spec, jsonPath, newRef)
     } else {
-      const ref: Record<string, any> = get(spec, jsonPath)
-      // Decrypted secrets may need to be merged with plain text specs
-      const newRef = merge(cloneDeep(ref), data?.spec)
-      set(spec, jsonPath, newRef)
+      set(spec, jsonPath, data?.spec)
     }
   } catch (e) {
     console.log(filePath)
     console.log(fileMap)
     throw e
   }
-}
-export async function getKmsSettings(envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> {
-  const kmsFiles = getFileMap('AplKms', envDir)
-  const spec = {}
-  await deps.loadToSpec(spec, kmsFiles)
-  return spec
 }
