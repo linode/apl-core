@@ -68,7 +68,7 @@ Common labels
 helm.sh/chart: {{ include "grafana.chart" . }}
 {{ include "grafana.selectorLabels" . }}
 {{- if or .Chart.AppVersion .Values.image.tag }}
-app.kubernetes.io/version: {{ mustRegexReplaceAllLiteral "@sha.*" .Values.image.tag "" | default .Chart.AppVersion | trunc 63 | trimSuffix "-" | quote }}
+app.kubernetes.io/version: {{ mustRegexReplaceAllLiteral "@sha.*" (tpl (toString .Values.image.tag) .) "" | default .Chart.AppVersion | trimSuffix "-distroless" | trunc 63 | trimSuffix "-" | quote }}
 {{- end }}
 {{- with .Values.extraLabels }}
 {{ toYaml . }}
@@ -99,7 +99,7 @@ Common labels
 helm.sh/chart: {{ include "grafana.chart" . }}
 {{ include "grafana.imageRenderer.selectorLabels" . }}
 {{- if or .Chart.AppVersion .Values.image.tag }}
-app.kubernetes.io/version: {{ mustRegexReplaceAllLiteral "@sha.*" .Values.image.tag "" | default .Chart.AppVersion | trunc 63 | trimSuffix "-" | quote }}
+app.kubernetes.io/version: {{ mustRegexReplaceAllLiteral "@sha.*" (tpl (toString .Values.image.tag) .) "" | default .Chart.AppVersion | trimSuffix "-distroless" | trunc 63 | trimSuffix "-" | quote }}
 {{- end }}
 {{- end }}
 
