@@ -7,6 +7,7 @@ apiVersion: v2
 appVersion: 2.20.0
 description: Install kube-state-metrics to generate and expose cluster-level metrics
 home: https://github.com/kubernetes/kube-state-metrics/
+icon: https://raw.githubusercontent.com/cncf/artwork/main/projects/kubernetes/icon/color/kubernetes-icon-color.svg
 keywords:
 - metric
 - monitoring
@@ -29,4 +30,4 @@ name: kube-state-metrics
 sources:
 - https://github.com/kubernetes/kube-state-metrics/
 type: application
-version: 8.4.1
+version: 8.4.2
