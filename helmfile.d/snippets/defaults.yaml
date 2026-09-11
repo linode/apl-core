@@ -141,6 +141,8 @@ environments:
             replicas: 1
             idp:
               clientID: otomi
+            networkPolicies:
+              enabled: true
             resources:
               limits:
                 cpu: 200m
