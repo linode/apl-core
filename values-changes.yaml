@@ -42,3 +42,12 @@ changes:
       - kms
     customFunctions:
       - removeSopsConfig
+  - version: 73
+    customFunctions:
+      - migrateGeneratedSecrets
+    deletions:
+      - apps.oauth2-proxy.config
+      - apps.harbor.core
+      - apps.harbor.jobservice
+      - apps.harbor.registry.credentials.htpasswd
+      - apps.harbor.registry.credentials.password

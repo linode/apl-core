@@ -6,25 +6,23 @@ resources:
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
-      name: kfp-mysql-secret
+      name: kfp-mysql
     spec:
-      refreshInterval: 5m
-      secretStoreRef:
-        name: core-secrets-store
-        kind: ClusterSecretStore
+      refreshPolicy: CreatedOnce
       target:
         name: kfp-mysql-secret
         creationPolicy: Owner
+        immutable: true
         template:
-          type: Opaque
           data:
             username: root
-            password: '{{ "{{ .rootPassword | toString }}" }}'
-      data:
-        - secretKey: rootPassword
-          remoteRef:
-            key: kubeflow-pipelines-secrets
-            property: rootPassword
+            password: "{{ `{{ .password }}` }}"
+      dataFrom:
+        - sourceRef:
+            generatorRef:
+              apiVersion: generators.external-secrets.io/v1alpha1
+              kind: ClusterGenerator
+              name: alpha-num-32
   {{- if eq $obj.type "linode" }}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
@@ -42,7 +40,7 @@ resources:
           type: Opaque
           data:
             accesskey: {{ $obj.linode.accessKeyId }}
-            secretkey: '{{ "{{ .secretAccessKey | toString }}" }}'
+            secretkey: "{{ `{{ .secretAccessKey }}` }}"
       data:
         - secretKey: secretAccessKey
           remoteRef:
