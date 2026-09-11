@@ -1167,4 +1167,4 @@ environments:
           aiEnabled: false
         users: []
         versions:
-          specVersion: 72
+          specVersion: 73
