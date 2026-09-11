@@ -83,12 +83,8 @@ jest.mock('./commit', () => ({
   commit: jest.fn(),
   deletePendingHelmReleases: jest.fn(),
   initialSetupData: jest.fn().mockResolvedValue({
-    secretName: 'test-secret',
-    username: 'admin',
-    password: 'password',
     domainSuffix: 'test.local',
   }),
-  createCredentialsSecret: jest.fn(),
   retryIsOAuth2ProxyRunning: jest.fn(),
   printWelcomeMessage: jest.fn(),
   createWelcomeConfigMap: jest.fn(),

@@ -44,10 +44,13 @@ storage:
     inCluster: true
 web:
   http: 0.0.0.0:5556
+grpc:
+  addr: 0.0.0.0:5557
 telemetry:
   http: 0.0.0.0:5558
 oauth2:
   skipApprovalScreen: true
+  passwordConnector: local
 {{- /* ssoSharedWithDefault defaults to "none" (no SSO across clients). */}}
 sessions:
   ssoSharedWithDefault: all
@@ -56,7 +59,7 @@ enablePasswordDB: true
 {{- /* Bootstrap login only; real user provisioning is #3541. */}}
 staticPasswords:
   - email: platform-admin@{{ $domainSuffix }}
-    username: otomi-admin
+    username: platform-admin
     userID: apl-platform-admin
     hash: "{{ `{{ .adminPassword | bcrypt }}` }}"
     groups:

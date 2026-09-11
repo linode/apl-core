@@ -1,0 +1,46 @@
+{{- if .Values.netpols.dex }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: dex-platform-policy
+  namespace: dex
+  labels:
+    {{- include "apl-network-policies.labels" . | nindent 4 }}
+    app: dex
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow access from public ingress gateway to the web login/OIDC endpoints
+    - ports:
+        - protocol: TCP
+          port: 5556
+      from:
+        {{- with .Values.ingressGatewaySelectors }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+    # Allow monitoring access for metrics scraping
+    - ports:
+        - protocol: TCP
+          port: 5558
+      from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: po-prometheus
+    # gRPC has no auth of its own; restrict to otomi-api
+    - ports:
+        - protocol: TCP
+          port: 5557
+      from:
+        - namespaceSelector:
+            matchLabels:
+              name: otomi
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: otomi-api
+{{- end }}
