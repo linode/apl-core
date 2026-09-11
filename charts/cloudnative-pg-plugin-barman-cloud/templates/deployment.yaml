@@ -56,7 +56,7 @@ spec:
         - --client-cert=/client/tls.crt
         - --server-address=:9090
         - --leader-elect
-        - --log-level=debug
+        - --log-level={{ .Values.logLevel | default "info" }}
         {{- range .Values.additionalArgs }}
         - {{ . }}
         {{- end }}
