@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto'
 import { existsSync } from 'fs'
 import { copyFile, cp, mkdir, writeFile } from 'fs/promises'
 import { generate as generatePassword } from 'generate-password'
-import { cloneDeep, get, merge, set, unset } from 'lodash'
+import { cloneDeep, get, merge, pick, set, unset } from 'lodash'
 import { pki } from 'node-forge'
 import path from 'path'
 import { bootstrapGit } from 'src/common/bootstrap'
@@ -10,7 +10,7 @@ import { prepareEnvironment } from 'src/common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
-import { createK8sSecret, getK8sSecret, secretId } from 'src/common/k8s'
+import { getK8sSecret, secretId } from 'src/common/k8s'
 import { bootstrapSealedSecrets, stripAllSecrets } from 'src/common/sealed-secrets'
 import {
   ensureManifestDirectories,
@@ -21,7 +21,7 @@ import {
   loadYaml,
   rootDir,
 } from 'src/common/utils'
-import { generateSecrets, writeValues } from 'src/common/values'
+import { writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
@@ -160,10 +160,7 @@ export const processValues = async (
   deps = {
     terminal,
     loadYaml,
-    getStoredClusterSecrets,
     writeValues,
-    generateSecrets,
-    createK8sSecret,
     createCustomCA,
     getUsers,
     getSchemaSecretsPaths,
@@ -176,39 +173,30 @@ export const processValues = async (
   const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
   // This part should be stored in a secret by initializeGitConfig
   unset(originalValues, 'otomi.git')
-  const storedSecrets: Record<string, any> = (await deps.getStoredClusterSecrets()) || {}
-  const originalInput: Record<string, any> = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues))
-  // generate all secrets (does not diff against previous so generates all new secrets every time)
-  const generatedSecrets = await deps.generateSecrets(originalInput)
+  const secretPaths = await deps.getSchemaSecretsPaths(Object.keys(get(originalValues, 'teamConfig', {})))
+  const extractedSecrets = pick(originalValues, secretPaths)
   // do we need to create a custom CA? if so add it to the secrets
-  const cm = get(originalInput, 'apps.cert-manager', {})
+  const cm = get(originalValues, 'apps.cert-manager', {})
   let caSecrets = {}
   if (cm.customRootCA && cm.customRootCAKey) {
     d.info('Skipping custom RootCA generation')
   } else {
     caSecrets = deps.createCustomCA()
   }
-  // merge existing secrets over newly generated ones to keep them
-  const allSecrets = merge(cloneDeep(caSecrets), cloneDeep(storedSecrets), cloneDeep(generatedSecrets))
   // add default platform admin & generate initial passwords for users if they don't have one
-  const users = deps.getUsers(originalInput)
+  const users = deps.getUsers(originalValues)
   // Store users in allSecrets for sealed secret generation
   // The keycloak-operator derives groups from isPlatformAdmin/isTeamAdmin/teams directly
-  allSecrets.users = users
+  const allSecrets = merge(cloneDeep(caSecrets), extractedSecrets)
+  set(allSecrets, 'users', users)
   // Include users in originalInput — getUsers() may return a detached array
   // when originalInput had no 'users' key initially
-  const newInput = merge(cloneDeep(originalInput), cloneDeep({ users }))
+  const newInput = merge(cloneDeep(originalValues), { users })
   // Write only non-secret values to disk — secrets are stored exclusively in SealedSecrets
   // Include allSecrets so non-secret fields like customRootCA are preserved (stripAllSecrets removes only x-secret paths)
-  const mergedForDisk = merge(cloneDeep(newInput), cloneDeep(allSecrets))
-  const secretPaths = await deps.getSchemaSecretsPaths(Object.keys(get(mergedForDisk, 'teamConfig', {})))
+  const mergedForDisk = merge(cloneDeep(caSecrets), originalValues)
   const valuesForDisk = deps.stripAllSecrets(mergedForDisk, secretPaths)
   await deps.writeValues(valuesForDisk)
-  // and do some context dependent post processing:
-  // to support potential failing chart install we store secrets on cluster
-  if (!(env.isDev && env.DISABLE_SYNC) && process.env.NODE_ENV !== 'test') {
-    await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
-  }
   return { originalInput: newInput, allSecrets }
 }
 
