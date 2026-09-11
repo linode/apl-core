@@ -82,13 +82,6 @@ export class Installer {
 
   public async ensureRecoveryPrerequisites(): Promise<void> {
     await getStoredGitRepoConfig()
-    // SOPS is optional — sealed-secrets clusters don't have it
-    const sopsSecret = await getK8sSecret('apl-sops-secrets', APL_OPERATOR_NS)
-    if (sopsSecret && Object.keys(sopsSecret).length > 0) {
-      this.d.info('SOPS configuration found for recovery')
-    } else {
-      this.d.info('No SOPS configuration — sealed-secrets mode recovery')
-    }
   }
 
   public async applyRecoveryManifests(): Promise<void> {
@@ -179,25 +172,6 @@ export class Installer {
       await createUpdateConfigMap(k8s.core(), APL_OPERATOR_STATUS_CM, APL_OPERATOR_NS, data)
     } catch (err) {
       this.d.warn('Failed to update installation status:', getErrorMessage(err))
-    }
-  }
-
-  public async setEnvAndCreateSecrets(): Promise<void> {
-    this.d.debug('Setting up environment')
-    await this.setupSopsEnvironment()
-  }
-
-  private async setupSopsEnvironment(): Promise<void> {
-    try {
-      const aplSopsSecret = await getK8sSecret('apl-sops-secrets', APL_OPERATOR_NS)
-      if (!aplSopsSecret?.SOPS_AGE_KEY) {
-        this.d.info('SOPS_AGE_KEY not found — cluster may already use SealedSecrets')
-        return
-      }
-      process.env.SOPS_AGE_KEY = aplSopsSecret.SOPS_AGE_KEY
-      this.d.info('SOPS environment configured')
-    } catch (error) {
-      this.d.info('Could not read apl-sops-secrets — cluster may already use SealedSecrets')
     }
   }
 }

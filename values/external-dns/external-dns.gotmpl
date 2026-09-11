@@ -43,7 +43,7 @@ extraArgs:
 {{- end }}
 
 
-{{- with $dns.provider | get "akamai" nil }}
+{{- if hasKey $dns.provider "akamai" }}
 provider:
   name: akamai
 env:
@@ -66,7 +66,7 @@ env:
       key: EXTERNAL_DNS_AKAMAI_CLIENT_SECRET
 {{- end }}
 
-{{- with $dns.provider | get "linode" nil }}
+{{- if hasKey $dns.provider "linode" }}
 provider:
   name: linode
 env:
@@ -77,7 +77,7 @@ env:
       key: LINODE_TOKEN
 {{- end }}
 
-{{- with $dns.provider | get "digitalocean" nil }}
+{{- if hasKey $dns.provider "digitalocean" }}
 provider:
   name: digitalocean
 env:
@@ -88,18 +88,11 @@ env:
       key: DO_TOKEN
 {{- end }}
 
-{{- with $dns.provider | get "cloudflare" nil }}
+{{- if hasKey $dns.provider "cloudflare" }}
 provider:
   name: cloudflare
 env:
-  {{- with $dns.provider.cloudflare | get "apiToken" nil }}
-- name: CF_API_TOKEN
-  valueFrom:
-    secretKeyRef:
-      name: cloudflare-api-key
-      key: CF_API_TOKEN
-  {{- end }}
-  {{- with $dns.provider.cloudflare | get "apiSecret" nil }}
+  {{- if hasKey $dns.provider.cloudflare "email" }}
   - name: CF_API_KEY
     valueFrom:
       secretKeyRef:
@@ -110,15 +103,21 @@ env:
       secretKeyRef:
         name: cloudflare-api-key
         key: CF_API_EMAIL
+  {{- else }}
+  - name: CF_API_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: cloudflare-api-key
+        key: CF_API_TOKEN
   {{- end }}
 {{- end }}
 
-{{- with $dns.provider | get "aws" nil }}
+{{- if hasKey $dns.provider "aws" }}
 provider:
   name: aws
 env:
 - name: AWS_DEFAULT_REGION
-  value: "{{ .region }}"
+  value: "{{ $dns.provider.aws.region }}"
 {{- with $dns.provider.aws | get "credentials" nil }}
 - name: AWS_ACCESS_KEY_ID
   valueFrom:
@@ -137,7 +136,7 @@ extraArgs:
 {{- end }}
 {{- end }}
 
-{{- with $dns.provider | get "azure" nil }}
+{{- if hasKey $dns.provider "azure" }}
 provider:
   name: azure
 env:
@@ -168,7 +167,7 @@ env:
       key: AZURE_CLIENT_SECRET
 {{- end }}
 
-{{- with $dns.provider | get "azure-private-dns" nil }}
+{{- if hasKey $dns.provider "azure-private-dns" }}
 provider:
   name: azure
 env:
@@ -199,7 +198,7 @@ env:
       key: AZURE_CLIENT_SECRET
 {{- end }}
 
-{{- with $dns.provider | get "google" nil }}
+{{- if hasKey $dns.provider "google" }}
 provider:
   name: google
 secretConfiguration:
@@ -208,7 +207,7 @@ secretConfiguration:
   subPath: service-account.json
 env:
 - name: GOOGLE_PROJECT
-  value: "{{ .project }}"
+  value: "{{ $dns.provider.google.project }}"
 - name: GOOGLE_APPLICATION_CREDENTIALS
   value: /etc/secrets/service-account/service-account.json
 extraVolumes:
@@ -221,9 +220,9 @@ extraVolumeMounts:
   readOnly: true
 {{- end }}
 
-{{- with $dns.provider | get "other" nil }}
-provider: {{ .name }}
-{{ .name }}: {{- . | get "external-dns" | toYaml | nindent 2 }}
+{{- if hasKey $dns.provider "other" }}
+provider: {{ $dns.provider.other.name }}
+{{ $dns.provider.other.name }}: {{- $dns.provider.other | get "external-dns" | toYaml | nindent 2 }}
 {{- end }}
 
 deploymentStrategy:

@@ -3,7 +3,7 @@
 Policy Reporter watches for PolicyReport Resources.
 It creates Prometheus Metrics and can send rule validation events to different targets like Loki, Elasticsearch, Slack or Discord
 
-![Version: 3.9.1](https://img.shields.io/badge/Version-3.9.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.9.0](https://img.shields.io/badge/AppVersion-3.9.0-informational?style=flat-square)
+![Version: 3.10.0](https://img.shields.io/badge/Version-3.10.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.10.0](https://img.shields.io/badge/AppVersion-3.10.0-informational?style=flat-square)
 
 ## Documentation
 
@@ -409,8 +409,9 @@ Open `http://localhost:8082/` in your browser.
 | ui.image.registry | string | `"ghcr.io"` | Image registry |
 | ui.image.repository | string | `"kyverno/policy-reporter-ui"` | Image repository |
 | ui.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| ui.image.tag | string | `"2.7.0"` | Image tag |
+| ui.image.tag | string | `"2.8.1"` | Image tag |
 | ui.crds.customBoard | bool | `false` | Install UI CustomBoard CRDs |
+| ui.crds.cluster | bool | `false` | Install UI CustomBoard CRDs |
 | ui.replicaCount | int | `1` | Deployment replica count |
 | ui.priorityClassName | string | `""` | Deployment priorityClassName |
 | ui.logging.api | bool | `false` | Enables external api request logging |
@@ -428,6 +429,7 @@ Open `http://localhost:8082/` in your browser.
 | ui.openIDConnect.clientSecret | string | `""` | OpenID Connect ClientSecret |
 | ui.openIDConnect.groupClaim | string | `""` | Optional Group Claim to map user groups to the profile groups can be used to define access control for clusters, boards and custom boards. |
 | ui.openIDConnect.scopes | list | `[]` | OpenID Connect allowed Scopes |
+| ui.openIDConnect.pkce | bool | `false` | Enable PKCE (Proof Key for Code Exchange) for OpenID Connect authentication |
 | ui.openIDConnect.skipTLS | bool | `false` | Skip TLS Verification |
 | ui.openIDConnect.certificate | string | `""` | TLS Certificate file path |
 | ui.openIDConnect.secretRef | string | `""` | Provide OpenID Connect configuration via Secret supported keys: `discoveryUrl`, `clientId`, `clientSecret`, `certificate`, `skipTLS` |
@@ -460,6 +462,7 @@ Open `http://localhost:8082/` in your browser.
 | ui.revisionHistoryLimit | int | `10` | The number of revisions to keep |
 | ui.podSecurityContext | object | `{"runAsGroup":1234,"runAsUser":1234}` | Security context for the pod |
 | ui.envVars | list | `[]` | Allow additional env variables to be added |
+| ui.tmpVolume | object | `{}` | Allow custom configuration of the /tmp volume |
 | ui.rbac.enabled | bool | `true` | Create RBAC resources |
 | ui.securityContext.runAsUser | int | `1234` |  |
 | ui.securityContext.runAsNonRoot | bool | `true` |  |
@@ -505,7 +508,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.kyverno.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.kyverno.image.repository | string | `"kyverno/policy-reporter/kyverno-plugin"` | Image repository |
 | plugin.kyverno.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.kyverno.image.tag | string | `"0.7.0"` | Image tag |
+| plugin.kyverno.image.tag | string | `"0.7.1"` | Image tag |
 | plugin.kyverno.replicaCount | int | `1` | Deployment replica count |
 | plugin.kyverno.priorityClassName | string | `""` | Deployment priorityClassName |
 | plugin.kyverno.logging.api | bool | `false` | Enables external API request logging |
@@ -578,11 +581,11 @@ Open `http://localhost:8082/` in your browser.
 | plugin.trivy.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.trivy.image.repository | string | `"kyverno/policy-reporter/trivy-plugin"` | Image repository |
 | plugin.trivy.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.trivy.image.tag | string | `"0.5.0"` | Image tag Defaults to `Chart.AppVersion` if omitted |
+| plugin.trivy.image.tag | string | `"0.5.1"` | Image tag Defaults to `Chart.AppVersion` if omitted |
 | plugin.trivy.cli.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.trivy.cli.image.repository | string | `"aquasecurity/trivy"` | Image repository |
 | plugin.trivy.cli.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.trivy.cli.image.tag | string | `"0.72.0"` | Image tag Defaults to `Chart.AppVersion` if omitted |
+| plugin.trivy.cli.image.tag | string | `"0.74.0"` | Image tag Defaults to `Chart.AppVersion` if omitted |
 | plugin.trivy.extraArgs | object | `{}` | Additional container args. |
 | plugin.trivy.cveawg.disable | bool | `false` | disable external CVEAWG API calls. |
 | plugin.trivy.github.disable | bool | `false` | disable GitHub API calls. |

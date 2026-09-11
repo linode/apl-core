@@ -1,25 +1,12 @@
-import { existsSync } from 'fs'
-import { mkdir, unlink, writeFile } from 'fs/promises'
-import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, pick, set } from 'lodash'
+import { mkdir, writeFile } from 'fs/promises'
 import path from 'path'
+import { get } from 'lodash'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
-import { $ } from 'zx'
-import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
 import { saveValues } from './repo'
-import {
-  extract,
-  flattenObject,
-  getSchemaSecretsPaths,
-  getValuesSchema,
-  gucci,
-  loadYaml,
-  objectToYaml,
-  pkg,
-  removeBlankAttributes,
-} from './utils'
+import { getSchemaSecretsPaths, objectToYaml, pkg } from './utils'
 import { HelmArguments } from './yargs'
 import { stripAllSecrets } from './sealed-secrets'
 
@@ -51,61 +38,10 @@ export const getPackageVersion = (): string => {
   return pkg.version
 }
 
-function mergeCustomizer(prev, next) {
-  return next
-}
-
-let hasSops = false
-/**
- * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
- */
-export const writeValuesToFile = async (
-  targetPath: string,
-  inValues: Record<string, any> = {},
-  overwrite = false,
-): Promise<void> => {
-  const d = terminal('common:values:writeValuesToFile')
+export const writeValuesToFile = async (targetPath: string, values: Record<string, any>) => {
   const filePath = path.dirname(targetPath)
-
   await mkdir(filePath, { recursive: true })
-
-  const isSecretsFile = targetPath.includes('/secrets.') && hasSops
-  const suffix = isSecretsFile ? '.dec' : ''
-  const values = cloneDeep(inValues)
-  const originalValues = (await loadYaml(targetPath + suffix, { noError: true })) ?? {}
-  d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
-  const mergeResult = mergeWith(cloneDeep(originalValues), values, mergeCustomizer)
-  const cleanedValues = removeBlankAttributes(values)
-  const cleanedMergeResult = removeBlankAttributes(mergeResult)
-  if (((overwrite && isEmpty(cleanedValues)) || (!overwrite && isEmpty(cleanedMergeResult))) && isSecretsFile) {
-    // get rid of empty secrets files as those are problematic
-    if (existsSync(targetPath)) await unlink(targetPath)
-    if (existsSync(`${targetPath}.dec`)) await unlink(`${targetPath}.dec`)
-    return
-  }
-  const useValues = overwrite ? values : mergeResult
-  if (!existsSync(targetPath) || overwrite) {
-    // create the non-suffixed file for encryption to not skip this later on
-    const notExists = !existsSync(targetPath)
-    if (notExists) {
-      if (isSecretsFile) {
-        await writeFile(targetPath, objectToYaml(useValues))
-        await encrypt(targetPath)
-        await decrypt(targetPath)
-        return
-      }
-      await writeFile(targetPath, objectToYaml(useValues))
-      return
-    }
-  }
-
-  if (isEqual(originalValues, useValues)) {
-    d.debug(`No changes for ${targetPath}${suffix}, skipping...`)
-    return
-  }
-  d.debug('mergeResult: ', JSON.stringify(useValues, null, 2))
-  await writeFile(targetPath + suffix, objectToYaml(useValues))
-  d.debug(`Values were written to ${targetPath}${suffix}`)
+  await writeFile(targetPath, objectToYaml(values))
 }
 
 export const getDefaultValues = async (): Promise<Record<string, any>> => {
@@ -125,61 +61,4 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.debug('Writing values: ', inValues)
   await saveValues(env.ENV_DIR, inValues, {})
   d.info('All values were written to ENV_DIR')
-}
-
-export const deriveSecrets = async (values: Record<string, any> = {}): Promise<Record<string, any>> => {
-  // Some secrets needs to be derived from the generated secrets
-  const secrets = {}
-  const htpasswd = (
-    await $`htpasswd -nbB ${values.apps.harbor.registry.credentials.username} ${values.apps.harbor.registry.credentials.password}`
-  ).stdout.trim()
-
-  set(secrets, 'apps.harbor.registry.credentials.htpasswd', htpasswd)
-  return secrets
-}
-/**
- * Takes values as input and generates secrets that don't exist yet.
- * Returns all generated secrets.
- */
-export const generateSecrets = async (
-  values: Record<string, any> = {},
-  deps = {
-    terminal,
-    getValuesSchema,
-    getSchemaSecretsPaths,
-  },
-): Promise<Record<string, any>> => {
-  const d = deps.terminal('common:values:generateSecrets')
-  const leaf = 'x-secret'
-  const schema = await deps.getValuesSchema()
-
-  d.info('Extracting secrets')
-  const schemaSecrets = extract(schema, leaf)
-  // Remove properties with blank `x-secret`
-  const template = removeBlankAttributes(schemaSecrets)
-
-  d.debug('Secrets template: ', template)
-  d.info('Generating secrets from the secrets template')
-  const generatedSecrets = (await gucci(template, {})) as Record<string, any>
-  const mergedGeneratedSecrets = merge(generatedSecrets, cloneDeep(values))
-
-  const derivedSecrets = await deriveSecrets(mergedGeneratedSecrets)
-  const allSecrets = merge(cloneDeep(derivedSecrets), cloneDeep(mergedGeneratedSecrets))
-
-  d.info('Generated all secrets')
-  // Only return values that have x-secrets prop and are now fully templated:
-  const templatePaths = Object.keys(flattenObject(schemaSecrets))
-  const res = pick(allSecrets, templatePaths)
-
-  // Template paths use schema patternProperties regex keys which don't match concrete team names.
-  // Expand team paths so team secrets are included in the result.
-  const teamNames = Object.keys(get(values, 'teamConfig', {})).filter((t) => t !== 'admin')
-  if (teamNames.length > 0) {
-    const expandedPaths = await deps.getSchemaSecretsPaths(teamNames)
-    const teamSecrets = pick(allSecrets, expandedPaths)
-    merge(res, teamSecrets)
-  }
-
-  d.debug('generateSecrets result: ', res)
-  return res
 }

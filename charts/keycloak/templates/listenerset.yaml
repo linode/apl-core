@@ -1,0 +1,29 @@
+{{- $httpRoute := .Values.httpRoute -}}
+{{- $listenerSet := $httpRoute.listenerSet -}}
+{{- if and $httpRoute.enabled $listenerSet.enabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: ListenerSet
+metadata:
+  name: {{ include "keycloak.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "keycloak.labels" . | nindent 4 }}
+    {{- range $key, $value := $httpRoute.labels }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+    {{- range $key, $value := $listenerSet.labels }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- with $listenerSet.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRef:
+    name: {{ $listenerSet.parentRef.name }}
+    {{- with $listenerSet.parentRef.namespace }}
+    namespace: {{ . }}
+    {{- end }}
+  listeners:
+    {{- toYaml $listenerSet.listeners | nindent 4 }}
+{{- end }}

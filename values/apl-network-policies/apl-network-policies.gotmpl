@@ -7,6 +7,7 @@ netpols:
   gitServer: {{ not ($a | get "git-server.enabled") }}
   gitea: {{ $a.gitea.networkPolicies.enabled}}
   otomiApi: {{ $oa.networkPolicies.enabled}}
+  loki: {{ and $a.loki.enabled $a.loki.networkPolicies.enabled }}
 
 ingressGatewaySelectors:
   - namespaceSelector:
@@ -15,3 +16,16 @@ ingressGatewaySelectors:
     podSelector:
       matchLabels:
         gateway.networking.k8s.io/gateway-name: {{ $v.ingress.platformClass.className }}
+
+# Managed Grafana instances of the teams, which are allowed to query platform data sources
+teamGrafanaSelectors:
+{{- range $teamId, $team := omit $v.teamConfig "admin" }}
+{{- if $team | get "settings.managedMonitoring.grafana" false }}
+  - namespaceSelector:
+      matchLabels:
+        name: team-{{ $teamId }}
+    podSelector:
+      matchLabels:
+        app.kubernetes.io/name: {{ $teamId }}-po-grafana
+{{- end }}
+{{- end }}

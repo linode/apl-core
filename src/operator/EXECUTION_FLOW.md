@@ -63,7 +63,6 @@ sequenceDiagram
             Bootstrap->>Bootstrap: generateSecrets()
             Bootstrap->>Bootstrap: createCustomCA()
             Bootstrap->>Bootstrap: getKmsValues()
-            Note right of Bootstrap: Generate age keys<br/>if needed
             Bootstrap->>Bootstrap: getUsers()
             Note right of Bootstrap: Add platform admin<br/>with initial password
             Bootstrap->>Bootstrap: writeValues(merged)
@@ -71,9 +70,6 @@ sequenceDiagram
             K8s-->>Bootstrap: secret created
 
             Bootstrap->>Bootstrap: handleFileEntry()
-            Bootstrap->>Bootstrap: bootstrapSops()
-            Bootstrap->>Bootstrap: encrypt()
-            Bootstrap->>Bootstrap: decrypt()
             Bootstrap->>Bootstrap: ensureTeamGitOpsDirectories()
             Bootstrap-->>AplOps: bootstrap complete
             AplOps-->>Installer: bootstrap complete
@@ -145,10 +141,8 @@ sequenceDiagram
 
     Note over Installer,K8s: On Error: Update status to 'failed',<br/>wait 1 second, retry
 
-    Main->>Installer: setEnvAndCreateSecrets()
     Installer->>Helmfile: hfValues()
     Helmfile-->>Installer: all computed values
-    Installer->>Installer: Extract gitea credentials & SOPS key
     Installer->>K8s: createUpdateGenericSecret('gitea-credentials')
     K8s-->>Installer: credentials stored
     Installer->>Installer: Set process.env variables
@@ -296,9 +290,6 @@ sequenceDiagram
                 AplOps->>AplOps: Load values-schema.yaml
                 AplOps->>AplOps: Validate with Ajv
                 AplOps-->>Operator: validation passed
-            else trigger === ApplyTrigger.Reconcile
-                Operator->>Operator: decrypt()
-                Note right of Operator: Decrypt SOPS files
             end
 
             Operator->>Helmfile: hfValues({})
@@ -314,7 +305,6 @@ sequenceDiagram
             Git-->>Operator: identity set
             Operator->>Git: git remote set-url origin
             Git-->>Operator: remote updated
-            Operator->>Operator: encrypt()
             Operator->>Git: commitAndPush(values, branch)
             Git->>Git: git add -A
             Git->>Git: git commit -m "updated values [ci skip]"
@@ -399,7 +389,6 @@ The installation phase runs in a retry loop until successful:
    - Migrates values to latest schema
    - Processes values (generates secrets, CA, users)
    - Stores secrets in K8s
-   - Sets up SOPS encryption
    - Creates team GitOps directories
 3. **getInstallationStatus()** - Checks if already installed
 4. **install()** - Deploys the platform
@@ -409,7 +398,6 @@ The installation phase runs in a retry loop until successful:
    - Syncs core app charts
    - Commits changes to Git
    - Creates welcome ConfigMap
-5. **setEnvAndCreateSecrets()** - Extracts and stores credentials
 
 **Retry Logic:**
 
@@ -443,8 +431,7 @@ Two parallel infinite loops run concurrently:
 - **Purpose:** Periodic reconciliation to ensure desired state
 - **Process:**
   1. Always triggers full apply (not teams-only)
-  2. Decrypts SOPS-encrypted files
-  3. Runs complete apply process
+  2. Runs complete apply process
 
 ### Apply Process
 
@@ -460,10 +447,6 @@ Shared by both loops with trigger-specific variations:
 
 - Migrate values
 - Validate values
-
-**Reconcile-Specific:**
-
-- Decrypt SOPS files
 
 **Continuation:** 4. Ensure team GitOps directories 5. Commit changes (with encryption) 6. Push to Git with conflict resolution 7. Apply changes:
 
@@ -482,8 +465,22 @@ its job yet?". The operator exposes it through the readiness of its own Deployme
 
 The operator writes `/tmp/ready` (`markOperatorReady()`) at exactly one point: after
 an apply run completes successfully. That run is what creates the ArgoCD Applications,
-so past it the platform can heal itself through ArgoCD. The `readinessProbe` on the
-apl-operator Deployment tests for that file, so:
+so past it the platform can heal itself through ArgoCD.
+
+Whether the `readinessProbe` on the apl-operator Deployment tests for that file is
+controlled by the chart value `operator.readiness.gateOnReadiness`, default `false`:
+
+| `gateOnReadiness` | readinessProbe | Deployment becomes Available |
+| --- | --- | --- |
+| `false` (default) | `pgrep -f 'apl-operator'` — process is alive | ~30s after pod start |
+| `true` | `test -f /tmp/ready` | after the first successful apply |
+
+The default is off because gating changes the timing for anyone already passing
+`--wait`: 30 seconds becomes the full install, and Helm's 5 minute default timeout is
+too short for that. Existing installs keep their timing on upgrade; automation that
+wants a real gate opts in.
+
+The rest of this section describes `gateOnReadiness: true`. With it set:
 
 ```bash
 # blocks until the operator has completed an apply run
@@ -571,7 +568,7 @@ problem.
 | **Condition**    | Git changes detected          | Always (scheduled) |
 | **Skip Logic**   | Yes (`[ci skip]`, no changes) | No                 |
 | **Concurrency**  | Skips if applying             | Waits if applying  |
-| **Operations**   | Migrate → Validate            | Decrypt            |
+| **Operations**   | Migrate → Validate            | No                 |
 | **Apply Type**   | Teams-only or Full            | Always Full        |
 | **Optimization** | Smart (file-based)            | None               |
 

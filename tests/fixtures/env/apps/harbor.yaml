@@ -3,13 +3,9 @@ metadata:
     name: harbor
 spec:
     _rawValues: {}
-    core: {}
     enabled: true
-    jobservice: {}
     oidcAutoOnboard: true
     oidcUserClaim: email
-    registry:
-        credentials: {}
     resources:
         core:
             limits:

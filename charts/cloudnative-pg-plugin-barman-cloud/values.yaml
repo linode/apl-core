@@ -51,6 +51,7 @@ dnsPolicy: ""
 # @schema
 # -- Update strategy for the operator.
 # ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+updateStrategy: {}
 # For example:
 #  type: RollingUpdate
 #  rollingUpdate:
@@ -59,7 +60,6 @@ dnsPolicy: ""
 #
 # WARNING: the RollingUpdate strategy is not supported by the operator yet so it can
 # currently only use the Recreate strategy.
-updateStrategy: {}
 
 crds:
   # -- Specifies whether the CRDs should be created when installing the chart.
@@ -75,12 +75,12 @@ additionalArgs: []
 # additionalProperties: true
 # @schema
 # -- Array containing extra environment variables which can be templated.
+additionalEnv: []
 # For example:
 #  - name: RELEASE_NAME
 #    value: "{{ .Release.Name }}"
 #  - name: MY_VAR
 #    value: "mySpecialKey"
-additionalEnv: []
 
 serviceAccount:
   # -- Specifies whether the service account should be created.
@@ -92,6 +92,11 @@ serviceAccount:
 rbac:
   # -- Specifies whether Role and RoleBinding should be created.
   create: true
+  # -- The API group of the Cluster CRD the plugin is granted access to
+  # (get/list/watch on backups, update on clusters/finalizers). Override
+  # this if you run a CloudNativePG-based operator whose Cluster CRD lives
+  # under a different API group.
+  cnpgGroup: postgresql.cnpg.io
 
 # @schema
 # additionalProperties: true
@@ -189,8 +194,10 @@ certificate:
   createClientCertificate: true
   # -- Specifies whether the server certificate should be created.
   createServerCertificate: true
+  # -- Specifies whether the issuer should be created.
+  createIssuer: true
   # -- The name of the issuer to use for the certificates.
-  issuerName: selfsigned-issuer
+  issuerName: ""
   # -- The duration of the certificates.
   duration: 2160h
   # -- The renew before time for the certificates.

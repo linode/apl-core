@@ -19,6 +19,15 @@ metadata:
   {{- end }}
 spec:
   type: {{ default "ClusterIP" .Values.haproxy.service.type }}
+  {{- if .Values.haproxy.service.clusterIP }}
+  clusterIP: {{ .Values.haproxy.service.clusterIP }}
+  {{- end }}
+  {{- if .Values.haproxy.service.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.haproxy.service.ipFamilyPolicy }}
+  {{- end }}
+  {{- if .Values.haproxy.service.ipFamilies }}
+  ipFamilies: {{ toYaml .Values.haproxy.service.ipFamilies | nindent 2 }}
+  {{- end }}
   {{- if and (eq .Values.haproxy.service.type "LoadBalancer") .Values.haproxy.service.loadBalancerIP }}
   loadBalancerIP: {{ .Values.haproxy.service.loadBalancerIP }}
   {{- end }}
@@ -53,6 +62,12 @@ spec:
     port: {{ .Values.haproxy.metrics.port }}
     protocol: TCP
     targetPort: metrics-port
+{{- end }}
+{{- range .Values.haproxy.additionalPorts }}
+  - name: {{ .name }}
+    port: {{ .servicePort | default .containerPort }}
+    protocol: TCP
+    targetPort: {{ .name }}
 {{- end }}
   selector:
     release: {{ .Release.Name }}

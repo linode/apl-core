@@ -92,6 +92,18 @@ rules:
   - limitranges
   verbs: ["list", "watch"]
 {{ end -}}
+{{ if has "mutatingadmissionpolicies" $activeCollectors }}
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources:
+    - mutatingadmissionpolicies
+  verbs: ["list", "watch"]
+{{ end -}}
+{{ if has "mutatingadmissionpolicybindings" $activeCollectors }}
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources:
+    - mutatingadmissionpolicybindings
+  verbs: ["list", "watch"]
+{{ end -}}
 {{ if has "mutatingwebhookconfigurations" $activeCollectors }}
 - apiGroups: ["admissionregistration.k8s.io"]
   resources:
@@ -218,6 +230,18 @@ rules:
     - storageclasses
   verbs: ["list", "watch"]
 {{ end -}}
+{{ if has "validatingadmissionpolicies" $activeCollectors }}
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources:
+    - validatingadmissionpolicies
+  verbs: ["list", "watch"]
+{{ end -}}
+{{ if has "validatingadmissionpolicybindings" $activeCollectors }}
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources:
+    - validatingadmissionpolicybindings
+  verbs: ["list", "watch"]
+{{ end -}}
 {{ if has "validatingwebhookconfigurations" $activeCollectors }}
 - apiGroups: ["admissionregistration.k8s.io"]
   resources:
@@ -240,7 +264,7 @@ rules:
     - subjectaccessreviews
   verbs: ["create"]
 {{- end }}
-{{- if $.Values.customResourceState.enabled }}
+{{- if and $.Values.customResourceState.enabled $.Values.rbac.customResourceState.createClusterRoleRules }}
 - apiGroups: ["apiextensions.k8s.io"]
   resources:
     - customresourcedefinitions

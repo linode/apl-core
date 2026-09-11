@@ -31,9 +31,13 @@ resources:
           data:
             type: git
             url: {{ printf "https://%s" $v._derived.giteaDomain }}
-            username: {{ $v.otomi.git.username }}
-            password: '{{ "{{ .gitPassword | toString }}" }}'
+            username: "{{ `{{ .gitUsername }}` }}"
+            password: "{{ `{{ .gitPassword }}` }}"
       data:
+        - secretKey: gitUsername
+          remoteRef:
+            key: apl-git-config
+            property: username
         - secretKey: gitPassword
           remoteRef:
             key: apl-git-config
@@ -58,10 +62,18 @@ resources:
           type: Opaque
           data:
             type: git
-            url: {{ $v.otomi.git.repoUrl | quote }}
-            username: {{ $v.otomi.git.username | quote }}
-            password: '{{ "{{ .gitPassword | toString }}" }}'
+            url: "{{ `{{ .repoUrl }}` }}"
+            username: "{{ `{{ .gitUsername }}` }}"
+            password: "{{ `{{ .gitPassword }}` }}"
       data:
+        - secretKey: repoUrl
+          remoteRef:
+            key: apl-git-config
+            property: repoUrl
+        - secretKey: gitUsername
+          remoteRef:
+            key: apl-git-config
+            property: username
         - secretKey: gitPassword
           remoteRef:
             key: apl-git-config
@@ -88,10 +100,18 @@ resources:
           type: Opaque
           data:
             type: git
-            url: {{ $v.otomi.git.repoUrl | quote }}
-            username: {{ $v.otomi.git.username | quote }}
-            password: '{{ "{{ .gitPassword | toString }}" }}'
+            url: "{{ `{{ .repoUrl }}` }}"
+            username: "{{ `{{ .gitUsername }}` }}"
+            password: "{{ `{{ .gitPassword }}` }}"
       data:
+        - secretKey: repoUrl
+          remoteRef:
+            key: apl-git-config
+            property: repoUrl
+        - secretKey: gitUsername
+          remoteRef:
+            key: apl-git-config
+            property: username
         - secretKey: gitPassword
           remoteRef:
             key: apl-git-config
@@ -117,10 +137,18 @@ resources:
           type: Opaque
           data:
             type: git
-            url: {{ $v.otomi.git.repoUrl | quote }}
-            username: {{ $v.otomi.git.username | quote }}
-            password: '{{ "{{ .gitPassword | toString }}" }}'
+            url: "{{ `{{ .repoUrl }}` }}"
+            username: "{{ `{{ .gitUsername }}` }}"
+            password: "{{ `{{ .gitPassword }}` }}"
       data:
+        - secretKey: repoUrl
+          remoteRef:
+            key: apl-git-config
+            property: repoUrl
+        - secretKey: gitUsername
+          remoteRef:
+            key: apl-git-config
+            property: username
         - secretKey: gitPassword
           remoteRef:
             key: apl-git-config
@@ -139,32 +167,16 @@ resources:
       target:
         name: argocd-secret
         creationPolicy: Merge
+        # Empty template stops ESO from copying this ExternalSecret's
+        # argocd tracking-id annotation onto the shared argocd-secret
+        template:
+          mergePolicy: Merge
+          metadata: {}
       data:
         - secretKey: oidc.clientSecret
           remoteRef:
-            key: keycloak-secrets
-            property: idp_clientSecret
-  - apiVersion: external-secrets.io/v1
-    kind: ExternalSecret
-    metadata:
-      name: argocd-redis-secret
-      namespace: argocd
-    spec:
-      refreshInterval: 5m
-      secretStoreRef:
-        name: core-secrets-store
-        kind: ClusterSecretStore
-      target:
-        name: argocd-redis
-        creationPolicy: Owner
-        template:
-          data:
-            auth: '{{ "{{ .redisPassword | toString }}" }}'
-      data:
-        - secretKey: redisPassword
-          remoteRef:
-            key: argocd-secrets
-            property: redisPassword
+            key: {{ $v._derived.oidcClientSecretKey }}
+            property: {{ $v._derived.oidcClientSecretProperty }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -178,3 +190,47 @@ resources:
       depth: {{ print "1" | b64enc | quote }}
       name: {{ print "apl-core" | b64enc | quote }}
       project: {{ print "default" | b64enc | quote }}
+  - apiVersion: argoproj.io/v1alpha1
+    kind: AppProject
+    metadata:
+      name: apl-addons
+      namespace: argocd
+    spec:
+      sourceRepos:
+        - '*'
+      sourceNamespaces:
+        - apl-addons
+      destinations:
+        - namespace: '*'
+          server: '*'
+      clusterResourceWhitelist:
+        - group: '*'
+          kind: '*'
+      namespaceResourceBlacklist: []
+  - apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingAdmissionPolicy
+    metadata:
+      name: protect-apl-addons-appproject
+    spec:
+      failurePolicy: Fail
+      matchConstraints:
+        resourceRules:
+          - apiGroups:
+              - argoproj.io
+            apiVersions:
+              - v1alpha1
+            operations:
+              - DELETE
+            resources:
+              - appprojects
+      validations:
+        - expression: "oldObject.metadata.name != 'apl-addons' || oldObject.metadata.namespace != 'argocd'"
+          message: The apl-addons AppProject cannot be deleted.
+  - apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingAdmissionPolicyBinding
+    metadata:
+      name: protect-apl-addons-appproject
+    spec:
+      policyName: protect-apl-addons-appproject
+      validationActions:
+        - Deny

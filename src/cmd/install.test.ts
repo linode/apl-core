@@ -269,11 +269,9 @@ describe('Install command', () => {
 
       await installAll()
 
-      expect(mockDeps.writeValuesToFile).toHaveBeenCalledWith(
-        expect.stringContaining('/env/status.yaml'),
-        { status: { otomi: mockState, helm: mockReleases } },
-        true,
-      )
+      expect(mockDeps.writeValuesToFile).toHaveBeenCalledWith(expect.stringContaining('/env/status.yaml'), {
+        status: { otomi: mockState, helm: mockReleases },
+      })
 
       process.env.DISABLE_SYNC = originalEnv
     })

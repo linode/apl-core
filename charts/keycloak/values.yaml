@@ -11,6 +11,9 @@ namespaceOverride: ""
 # The number of replicas to create (has no effect if autoscaling enabled)
 replicas: 1
 
+# Additional labels applied to every resource in this chart, and on the StatefulSet's pods
+commonLabels: {}
+
 image:
   # The Keycloak image repository
   repository: quay.io/keycloak/keycloak
@@ -172,7 +175,7 @@ podAnnotations: {}
 # Liveness probe configuration
 livenessProbe: |
   httpGet:
-    path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/health/live'
+    path: '{{ tpl (coalesce .Values.http.managementRelativePath .Values.http.relativePath) $ | trimSuffix "/" }}/health/live'
     port: '{{ .Values.http.internalPort }}'
     scheme: '{{ .Values.http.internalScheme }}'
   initialDelaySeconds: 0
@@ -181,7 +184,7 @@ livenessProbe: |
 # Readiness probe configuration
 readinessProbe: |
   httpGet:
-    path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/health/ready'
+    path: '{{ tpl (coalesce .Values.http.managementRelativePath .Values.http.relativePath) $ | trimSuffix "/" }}/health/ready'
     port: '{{ .Values.http.internalPort }}'
     scheme: '{{ .Values.http.internalScheme }}'
   initialDelaySeconds: 10
@@ -190,7 +193,7 @@ readinessProbe: |
 # Startup probe configuration
 startupProbe: |
   httpGet:
-    path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/health'
+    path: '{{ tpl (coalesce .Values.http.managementRelativePath .Values.http.relativePath) $ | trimSuffix "/" }}/health'
     port: '{{ .Values.http.internalPort }}'
     scheme: '{{ .Values.http.internalScheme }}'
   initialDelaySeconds: 15
@@ -318,6 +321,34 @@ httpRoute:
       - path:
           type: PathPrefix
           value: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
+
+  # -- Create a ListenerSet resource to attach listeners to an existing Gateway
+  # without requiring write access to the Gateway resource itself. Useful for
+  # namespace-level configuration where app owners do not have Gateway write access.
+  # When enabled, the HTTPRoute parentRefs are auto-derived from the ListenerSet name,
+  # and hostnames are derived from listener hostnames; httpRoute.parentRefs and
+  # httpRoute.hostnames are unused.
+  listenerSet:
+    # If `true`, a ListenerSet resource is created alongside the HTTPRoute
+    enabled: false
+    # Additional ListenerSet labels
+    labels: {}
+    # ListenerSet annotations
+    annotations: {}
+    # The Gateway this ListenerSet attaches to
+    parentRef:
+      name: gateway
+      # namespace: envoy-gateway-system
+    # Listeners to attach to the Gateway. Passed through as-is.
+    # Listener hostnames are used to populate the HTTPRoute hostnames field.
+    listeners: []
+    # - name: http
+    #   hostname: keycloak.example.com
+    #   port: 80
+    #   protocol: HTTP
+    #   allowedRoutes:
+    #     namespaces:
+    #       from: Same
 
   # HTTPRoute for console only (/auth/admin)
   console:
@@ -503,6 +534,11 @@ health:
 http:
   # For backwards compatibility reasons we set this to the value used by previous Keycloak versions.
   relativePath: "/auth"
+  # Set the relative path for Keycloak's management interface (KC_HTTP_MANAGEMENT_RELATIVE_PATH).
+  # This controls the path prefix for health and metrics endpoints served on the management port (9000).
+  # When empty, the env var is not set and Keycloak inherits the value from `http.relativePath`.
+  # Set to "/" to serve management endpoints at the root (e.g. /health, /metrics).
+  managementRelativePath: ""
   internalPort: http-internal
   internalScheme: HTTP
 
@@ -526,7 +562,7 @@ serviceMonitor:
   # metricRelabelings for the Servicemonitor
   metricRelabelings: []
   # The path at which metrics are served
-  path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/metrics'
+  path: '{{ tpl (coalesce .Values.http.managementRelativePath .Values.http.relativePath) $ | trimSuffix "/" }}/metrics'
   # The Service port at which metrics are served
   port: '{{ .Values.http.internalPort }}'
   # The scheme to use for scraping metrics ("http" or "https"); if not set, the `http.internalScheme` value is used
@@ -552,7 +588,7 @@ extraServiceMonitor:
   # metricRelabelings for the Servicemonitor
   metricRelabelings: []
   # The path at which metrics are served
-  path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/metrics'
+  path: '{{ tpl (coalesce .Values.http.managementRelativePath .Values.http.relativePath) $ | trimSuffix "/" }}/metrics'
   # The Service port at which metrics are served
   port: '{{ .Values.http.internalPort }}'
   # The scheme to use for scraping metrics ("http" or "https"); if not set, the `http.internalScheme` value is used

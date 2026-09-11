@@ -47,9 +47,6 @@ notifications:
 redisSecretInit:
   enabled: false
 
-redis-ha:
-  existingSecret: argocd-redis
-
 redis:
   resources: {{- $a.resources.redis | toYaml | nindent 4 }}
   {{- if $v.otomi.linodeLkeImageRepository }}
@@ -104,6 +101,7 @@ configs:
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
   cm:
     admin.enabled: "true"
+    application.namespaces: apl-addons
     application.instanceLabelKey: app.kubernetes.io/instance
     application.resourceTrackingMethod: annotation
     ga.anonymizeusers: "false"
@@ -206,12 +204,12 @@ configs:
     oidc.config: |
       name: Otomi
       issuer: {{ $v._derived.oidcBaseUrl }}
-      clientID: {{ $k.idp.clientID }}
+      clientID: {{ $v._derived.oidcClientID }}
       clientSecret: '$oidc.clientSecret'
       requestedScopes:
-        - openid
-        - profile
-        - email
+        {{- range $v._derived.oidcScopes }}
+        - {{ . }}
+        {{- end }}
       {{- if $v._derived.untrustedCA }}
       rootCA: |
         {{- $v._derived.caCert | nindent 8 }}
@@ -229,6 +227,7 @@ configs:
     extra: {}
   params:
     server.insecure: true # nginx terminates tls
+    application.namespaces: apl-addons
     # -- Number of application status processors
     controller.status.processors: {{ $a.controllerStatusProcessors }}
     # -- Number of application operation processors
@@ -286,3 +285,24 @@ extraObjects:
                 statusCode: 302
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" "argocd" "gatewayName" $v.ingress.platformClass.className "host" $hostname) | nindent 4 }}
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "argocd" "host" $hostname) | nindent 4 }}
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: argocd-redis
+      namespace: argocd
+    spec:
+      refreshPolicy: CreatedOnce
+      target:
+        name: argocd-redis
+        creationPolicy: Owner
+        immutable: true
+      dataFrom:
+        - sourceRef:
+            generatorRef:
+              apiVersion: generators.external-secrets.io/v1alpha1
+              kind: ClusterGenerator
+              name: alpha-num-32
+          rewrite:
+            - regexp:
+                source: password
+                target: auth

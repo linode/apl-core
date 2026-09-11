@@ -12,22 +12,17 @@ resources:
     metadata:
       name: oauth2-proxy-redis-password
     spec:
-      refreshInterval: 5m
-      secretStoreRef:
-        name: core-secrets-store
-        kind: ClusterSecretStore
+      refreshPolicy: CreatedOnce
       target:
         name: oauth2-proxy-redis-password
         creationPolicy: Owner
-        template:
-          type: Opaque
-          data:
-            password: '{{ "{{ .password | toString }}" }}'
-      data:
-        - secretKey: password
-          remoteRef:
-            key: oauth2-proxy-redis-secrets
-            property: password
+        immutable: true
+      dataFrom:
+        - sourceRef:
+            generatorRef:
+              apiVersion: generators.external-secrets.io/v1alpha1
+              kind: ClusterGenerator
+              name: alpha-num-32
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
@@ -43,18 +38,18 @@ resources:
         template:
           type: Opaque
           data:
-            client-id: {{ $k.idp.clientID }}
-            client-secret: '{{ "{{ .clientSecret | toString }}" }}'
-            cookie-secret: '{{ "{{ .cookieSecret | toString }}" }}'
+            client-id: {{ $v._derived.oidcClientID }}
+            client-secret: "{{ `{{ .clientSecret }}` }}"
+            cookie-secret: "{{ `{{ .cookieSecret }}` }}"
       data:
         - secretKey: clientSecret
           remoteRef:
-            key: keycloak-secrets
-            property: idp_clientSecret
+            key: {{ $v._derived.oidcClientSecretKey }}
+            property: {{ $v._derived.oidcClientSecretProperty }}
         - secretKey: cookieSecret
           remoteRef:
-            key: oauth2-proxy-secrets
-            property: config_cookieSecret
+            key: oauth2-proxy
+            property: cookieSecret
   - apiVersion: v1
     kind: ConfigMap
     metadata:

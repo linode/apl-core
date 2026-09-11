@@ -4,7 +4,6 @@ import { initialSetupData } from './commit'
 
 jest.mock('src/common/bootstrap', () => ({ bootstrapGit: jest.fn() }))
 jest.mock('src/common/cli', () => ({ prepareEnvironment: jest.fn() }))
-jest.mock('src/common/crypt', () => ({ encrypt: jest.fn() }))
 jest.mock('src/common/git-config', () => ({ getRepo: jest.fn() }))
 jest.mock('src/common/gitea', () => ({ waitTillGitRepoAvailable: jest.fn() }))
 jest.mock('./validate-values', () => ({ validateValues: jest.fn() }))

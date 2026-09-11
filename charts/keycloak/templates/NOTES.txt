@@ -4,7 +4,21 @@
 *                                                                     *
 ***********************************************************************
 
-{{- if .Values.ingress.enabled }}
+{{- if and .Values.httpRoute.enabled .Values.httpRoute.listenerSet.enabled }}
+
+Keycloak was installed with a Gateway API HTTPRoute and ListenerSet.
+The ListenerSet {{ include "keycloak.fullname" . }} attaches listeners to the Gateway "{{ .Values.httpRoute.listenerSet.parentRef.name }}"{{ with .Values.httpRoute.listenerSet.parentRef.namespace }} in namespace "{{ . }}"{{ end }}.
+
+Ensure the Gateway is configured to allow ListenerSet attachment from namespace {{ .Release.Namespace }}.
+
+{{- else if .Values.httpRoute.enabled }}
+
+Keycloak was installed with a Gateway API HTTPRoute attached to:
+{{- range .Values.httpRoute.parentRefs }}
+  - Gateway: {{ .name }}{{ with .sectionName }}, section: {{ . }}{{ end }}
+{{- end }}
+
+{{- else if .Values.ingress.enabled }}
 
 Keycloak was installed with an Ingress and an be reached at the following URL(s):
 {{ range $unused, $rule := .Values.ingress.rules }}

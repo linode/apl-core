@@ -16,28 +16,28 @@ namespace:
 controller:
   resources: {{- $t.resources.pipelinesController | toYaml | nindent 4 }}
   deployment:
-    image: "{{ $tektonRegistry }}/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.12.0@sha256:8d5f900677386b8fe5371429e9c1461b25de47e5e34736c7f99e82e2c279ebbc"
+    image: "{{ $tektonRegistry }}/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.14.0@sha256:5209c1969c407d36d9c2c5217a8b0700a9fb52b3068b6fbdce0d88ead397ea75"
   images:
-    entrypoint: "{{ $tektonRegistry }}/tektoncd/pipeline/entrypoint-bff0a22da108bc2f16c818c97641a296:v1.12.0@sha256:3ec960b07abd85604242e146092e72f11be8787452c2a20d12a37fdee4a666e2"
-    nop: "{{ $tektonRegistry }}/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.12.0@sha256:f89fb760b05fdef6895290e524d992b66ede72546622d5028b0406a9bea36d2f"
-    sidecarlogresults: "{{ $tektonRegistry }}/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.12.0@sha256:8b61bdcad62a99e7b15f9dc92690ea39f49be2c5a1c9f428a0aac712f349543d"
-    workingdirinit: "{{ $tektonRegistry }}/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.12.0@sha256:11031cbed2b8ddbb5af0947a5e0c997ba7cd3da5f309ddfa76e58f5418868d71"
+    entrypoint: "{{ $tektonRegistry }}/tektoncd/pipeline/entrypoint-bff0a22da108bc2f16c818c97641a296:v1.14.0@sha256:e3e7a41a23f8d8cafac7b964187d414d5fcbe503b34d50e2b579ce2a36cfa522"
+    nop: "{{ $tektonRegistry }}/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.14.0@sha256:4768edf4d3ccaa7b0e590a7840176a1d12af4cd9ed4fcdccf46a7aa57b80649f"
+    sidecarlogresults: "{{ $tektonRegistry }}/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.14.0@sha256:db616ab753d84dd2e27dac8c4bafe50b81b638d92933390cfaa2cff0169c26f4"
+    workingdirinit: "{{ $tektonRegistry }}/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.14.0@sha256:7f9394bf30aa055e03a81b1c2882152b9df947353ffd17c681e205488fd7762d"
     {{- /* Note the image digest for Busybox differs from the upstream chart, as the old version used there is not available on Docker Hub */}}
-    shellImage: "{{ $shellRegistry }}/chainguard/busybox@sha256:972a590ee3f5f636860c5a9e40121ce30ad07deff5c91a035469b0e70c3a4dcf"
+    shellImage: "{{ $shellRegistry }}/chainguard/busybox@sha256:db1930eb13e4acdd7f448dda7b7264b55b00858a528eb7c8d32d9cbfaee77b81"
 
 remoteresolver:
   resources: {{- $t.resources.pipelinesRemoteresolver | toYaml | nindent 4 }}
   deployment:
-    image: "{{ $tektonRegistry }}/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.12.0@sha256:b1f06197342ed946b23efd1ce124d7c17d50678b461733a6cc0912b07a4943e7"
+    image: "{{ $tektonRegistry }}/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.14.0@sha256:7516b1750c7147fbe2e48e8d334acff74a02aad68696c9cf2f32a2790bc4dbf9"
 
 eventscontroller:
   deployment:
-    image: "{{ $tektonRegistry }}/tektoncd/pipeline/events-a9042f7efb0cbade2a868a1ee5ddd52c:v1.12.0@sha256:d5d5869215a58fea01ce627d605786090949a324969102ab1fd25716adde10e9"
+    image: "{{ $tektonRegistry }}/tektoncd/pipeline/events-a9042f7efb0cbade2a868a1ee5ddd52c:v1.14.0@sha256:7ccdab7772fc5aa74987b53a5246e5c6863a653d13484bf535a3a15d96e3cd21"
 
 webhook:
   resources: {{- $t.resources.pipelinesWebhook | toYaml | nindent 4 }}
   deployment:
-    image: "{{ $tektonRegistry }}/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.12.0@sha256:1e4eded1773f6fa8ec67c9348f84bed0d39666a9698ebd1ffb4eaed88b38f7d4"
+    image: "{{ $tektonRegistry }}/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.14.0@sha256:dab27b10a60e56cbeb444d84356835b145c3d8491a7afe77353b1b999eb3a867"
 
 configDefaults:
   default-pod-template: |

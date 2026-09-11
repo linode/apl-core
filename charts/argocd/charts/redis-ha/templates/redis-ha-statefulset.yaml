@@ -32,8 +32,8 @@ spec:
     metadata:
       annotations:
         checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-sentinel.conf" .) (include "config-init.sh" .) (include "fix-split-brain.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) (include "trigger-failover-if-master.sh" .)| sha256sum }}
-      {{- if .Values.podAnnotations }}
-{{ toYaml .Values.podAnnotations | indent 8 }}
+      {{- if .Values.redis.podAnnotations }}
+{{ toYaml .Values.redis.podAnnotations | indent 8 }}
       {{- end }}
       {{- if and (.Values.exporter.enabled) (not .Values.exporter.serviceMonitor.enabled) }}
         prometheus.io/port: "{{ .Values.exporter.port }}"
@@ -129,10 +129,13 @@ spec:
 {{- if and .Values.hostPath.path .Values.hostPath.chown }}
       - name: hostpath-chown
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
-        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
+        securityContext:
+          runAsUser: 0
+          runAsNonRoot: false
+        resources: {{ toYaml .Values.init.resources | nindent 10 }}
         command:
         - chown
-        - "{{ .Values.containerSecurityContext.runAsUser }}"
+        - "{{ .Values.containerSecurityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }}"
         - /data
         volumeMounts:
         - name: data
@@ -141,8 +144,7 @@ spec:
       - name: config-init
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        resources:
-{{ toYaml .Values.init.resources | indent 10 }}
+        resources: {{ toYaml .Values.init.resources | nindent 10 }}
         command:
         - sh
         args:
@@ -158,8 +160,8 @@ spec:
         - name: AUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.existingSecret }}
-              name: {{ .Values.existingSecret }}
+            {{- if tpl (.Values.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}
             {{- end }}
@@ -169,8 +171,8 @@ spec:
         - name: SENTINELAUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.sentinel.existingSecret }}
-              name: {{ .Values.sentinel.existingSecret }}
+            {{- if tpl (.Values.sentinel.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.sentinel.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}-sentinel
             {{- end }}
@@ -190,8 +192,7 @@ spec:
       - name: restore-s3
         image: s3cmd/s3cmd:latest
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        resources:
-{{ toYaml .Values.init.resources | indent 10 }}
+        resources: {{ toYaml .Values.init.resources | nindent 10 }}
         command:
         - sh
         args:
@@ -205,7 +206,7 @@ spec:
         envFrom:
         - secretRef:
           {{- if .Values.restore.existingSecret }}
-            name: {{ .Values.existingSecret }}
+            name: {{ tpl (.Values.existingSecret | default "" ) . }}
           {{- else }}
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
@@ -217,8 +218,7 @@ spec:
       - name: restore-ssh
         image: lgatica/openssh-client:latest
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        resources:
-{{ toYaml .Values.init.resources | indent 10 }}
+        resources: {{ toYaml .Values.init.resources | nindent 10 }}
         command:
         - sh
         args:
@@ -239,7 +239,7 @@ spec:
         envFrom:
         - secretRef:
           {{- if .Values.restore.existingSecret }}
-            name: {{ .Values.existingSecret }}
+            name: {{ tpl (.Values.existingSecret | default "" ) . }}
           {{- else }}
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
@@ -251,8 +251,7 @@ spec:
       - name: restore-redis
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        resources:
-{{ toYaml .Values.init.resources | indent 10 }}
+        resources: {{ toYaml .Values.init.resources | nindent 10 }}
         command:
         - sh
         args:
@@ -269,7 +268,7 @@ spec:
         {{- if .Values.restore.existingSecret }}
         envFrom:
         - secretRef:
-            name: {{ .Values.existingSecret }}
+            name: {{ tpl (.Values.existingSecret | default "" ) . }}
         {{- end }}
         volumeMounts:
         - name: data
@@ -300,8 +299,8 @@ spec:
         - name: AUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.existingSecret }}
-              name: {{ .Values.existingSecret }}
+            {{- if tpl (.Values.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}
             {{- end }}
@@ -400,8 +399,8 @@ spec:
         - name: AUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.existingSecret }}
-              name: {{ .Values.existingSecret }}
+            {{- if tpl (.Values.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}
             {{- end }}
@@ -411,8 +410,8 @@ spec:
         - name: SENTINELAUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.sentinel.existingSecret }}
-              name: {{ .Values.sentinel.existingSecret }}
+            {{- if tpl (.Values.sentinel.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.sentinel.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}-sentinel
             {{- end }}
@@ -487,6 +486,9 @@ spec:
       - name: split-brain-fix
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        livenessProbe: {{ .Values.splitBrainDetection.livenessProbe | toYaml | nindent 10 }}
+        readinessProbe: {{ .Values.splitBrainDetection.readinessProbe | toYaml | nindent 10 }}
+        resources: {{ toYaml .Values.splitBrainDetection.resources | nindent 10 }}
         command:
           - sh
         args:
@@ -502,8 +504,8 @@ spec:
         - name: AUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.existingSecret }}
-              name: {{ .Values.existingSecret }}
+            {{- if tpl (.Values.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}
             {{- end }}
@@ -513,15 +515,13 @@ spec:
         - name: SENTINELAUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.sentinel.existingSecret }}
-              name: {{ .Values.sentinel.existingSecret }}
+            {{- if tpl (.Values.sentinel.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.sentinel.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}-sentinel
             {{- end }}
               key: {{ .Values.sentinel.authKey }}
 {{- end }}
-        resources: 
-          {{- toYaml .Values.splitBrainDetection.resources | nindent 10 }}
         volumeMounts:
         - name: config
           mountPath: /readonly-config
@@ -553,8 +553,8 @@ spec:
           - name: REDIS_PASSWORD
             valueFrom:
               secretKeyRef:
-              {{- if .Values.existingSecret }}
-                name: {{ .Values.existingSecret }}
+              {{- if tpl (.Values.existingSecret | default "" ) . }}
+                name: {{ tpl (.Values.existingSecret | default "" ) . }}
               {{- else }}
                 name: {{ template "redis-ha.fullname" . }}
               {{- end }}
@@ -617,8 +617,8 @@ spec:
       {{- if .Values.redis.tlsPort }}
       - name: tls-certs
         secret:
-          {{- if .Values.tls.secretName }}
-          secretName: {{ .Values.tls.secretName }}
+          {{- if tpl (.Values.tls.secretName | default "" ) . }}
+          secretName: {{ tpl (.Values.tls.secretName | default "" ) . }}
           {{- else }}
           secretName: {{ template "redis-ha.fullname" . }}-tls-secret
           {{- end }}

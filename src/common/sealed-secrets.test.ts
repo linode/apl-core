@@ -195,23 +195,6 @@ describe('sealed-secrets', () => {
       expect(harborMapping!.data).toHaveProperty('secretKey', 'harbor-secret')
     })
 
-    it('should skip kms.sops paths', async () => {
-      const secrets = {
-        kms: { sops: { provider: 'age', age: { publicKey: 'pk', privateKey: 'sk' } } },
-        apps: { harbor: { adminPassword: 'pass' } },
-      }
-      const deps = {
-        getSchemaSecretsPaths: jest
-          .fn()
-          .mockResolvedValue(['kms.sops.provider', 'kms.sops.age.publicKey', 'apps.harbor.adminPassword']),
-      }
-
-      const result = await buildSecretToNamespaceMap(secrets, [], undefined, deps)
-
-      expect(result).toHaveLength(1)
-      expect(result[0].namespace).toBe('apl-secrets')
-    })
-
     it('should skip users path (managed individually in apl-users namespace)', async () => {
       const secrets = {
         users: [

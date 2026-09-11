@@ -1,5 +1,4 @@
 import { existsSync } from 'fs'
-import { decrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
 import { GitRepoConfig } from 'src/common/git-config'
@@ -22,10 +21,6 @@ export const recoverFromGit = async (gitConfig: GitRepoConfig): Promise<void> =>
   await $`timeout 10 git clone ${gitConfig.authenticatedUrl} ${env.ENV_DIR}`
   await setIdentity(gitConfig.username ?? 'otomi-admin', gitConfig.email)
   await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    await $`git config --local diff.sopsdiffer.textconv "sops -d"`.nothrow().quiet()
-  }
-  await decrypt()
 }
 /**
  * Prepare the ENV_DIR before anything else. Scenario's:
@@ -67,8 +62,6 @@ export const bootstrapGit = async (gitConfig: GitRepoConfig): Promise<void> => {
     // then sync the clone back to ENV_DIR
     const flags = '-rl' // recursive, preserve symlinks and groups (all we can do without superuser privs)
     await $`rsync ${flags} ${env.ENV_DIR}/ /tmp/xx/ && rm -rf .[!.]* * && rsync ${flags} --exclude="." /tmp/xx/ ${env.ENV_DIR}/`
-    // decrypt the freshly cloned repo
-    await decrypt()
   } catch (e) {
     d.debug(e?.message?.replace(password, '****'))
     d.info('Remote repository is empty or unreachable. Will initialize locally and push initial commit.')
@@ -95,10 +88,6 @@ export const bootstrapGit = async (gitConfig: GitRepoConfig): Promise<void> => {
   if (!hasCommits) {
     await $`git checkout -b ${branch}`.nothrow().quiet()
     await $`git remote add origin ${remote}`.nothrow().quiet()
-  }
-
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    await $`git config --local diff.sopsdiffer.textconv "sops -d"`.nothrow().quiet()
   }
 
   d.log(`Done bootstrapping git`)

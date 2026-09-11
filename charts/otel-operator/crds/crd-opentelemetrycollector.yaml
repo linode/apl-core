@@ -7620,6 +7620,17 @@ spec:
                 type: string
               serviceName:
                 type: string
+              sessionAffinity:
+                type: string
+              sessionAffinityConfig:
+                properties:
+                  clientIP:
+                    properties:
+                      timeoutSeconds:
+                        format: int32
+                        type: integer
+                    type: object
+                type: object
               shareProcessNamespace:
                 type: boolean
               startupProbe:
@@ -8204,6 +8215,85 @@ spec:
                     properties:
                       enabled:
                         type: boolean
+                      tls:
+                        properties:
+                          certificateAuthorityCertificate:
+                            properties:
+                              configMap:
+                                properties:
+                                  key:
+                                    default: ca.crt
+                                    type: string
+                                  name:
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              secret:
+                                properties:
+                                  key:
+                                    type: string
+                                  name:
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                            type: object
+                          clientCertificate:
+                            properties:
+                              certificateSecret:
+                                properties:
+                                  key:
+                                    type: string
+                                  name:
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              keySecret:
+                                properties:
+                                  key:
+                                    type: string
+                                  name:
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                            required:
+                            - certificateSecret
+                            - keySecret
+                            type: object
+                          serverCertificate:
+                            properties:
+                              certificateSecret:
+                                properties:
+                                  key:
+                                    type: string
+                                  name:
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              keySecret:
+                                properties:
+                                  key:
+                                    type: string
+                                  name:
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                            required:
+                            - certificateSecret
+                            - keySecret
+                            type: object
+                        type: object
                       useCertManager:
                         default: true
                         type: boolean

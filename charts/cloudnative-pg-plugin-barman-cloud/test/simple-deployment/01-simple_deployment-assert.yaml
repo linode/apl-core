@@ -23,7 +23,12 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 10
           tcpSocket:
-            port: 9090
+            port: 8081
+        livenessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          tcpSocket:
+            port: 8081
         resources:
           limits:
             cpu: 100m

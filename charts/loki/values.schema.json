@@ -3142,6 +3142,10 @@
                                 "type": "string"
                             }
                         },
+                        "publishNotReadyAddresses": {
+                            "description": "publishNotReadyAddresses for all services. Set to false so a pod's Service endpoint is withdrawn as soon as it becomes unready, instead of staying routable for the full termination window. Overridable per component via \u003ccomponent\u003e.service.publishNotReadyAddresses.",
+                            "type": "boolean"
+                        },
                         "trafficDistribution": {
                             "description": "trafficDistribution for services Ref: https://kubernetes.io/docs/concepts/services-networking/service/#traffic-distribution",
                             "type": "string"
@@ -3172,7 +3176,7 @@
                             }
                         },
                         "patchPVC": {
-                            "description": "Enable the PVC resize job for statefulsets. This job will be triggered when the storage size is increased and will recreate the statefulset to allow resizing of PVCs, which is not natively supported by Kubernetes.",
+                            "description": "When a component sets `*.statefulSetRecreateJob.enabled`, the pre-upgrade Job can patch PVC storage requests and recreate the StatefulSet for podManagementPolicy, serviceName, or volumeClaimTemplates count/name/size changes. It does not migrate storageClass, accessModes, selectors, or VCT labels. See the chart README section StatefulSet immutability.",
                             "type": "boolean"
                         }
                     }
@@ -5314,7 +5318,7 @@
                     }
                 },
                 "podLabels": {
-                    "description": "Labels for ingester pods",
+                    "description": "Labels for ingester pods. Keys used by the workload selectors (`app.kubernetes.io/name`, `app.kubernetes.io/instance`, `app.kubernetes.io/component` and, with zoneAwareReplication, `name` and `rollout-group`) are reserved and ignored here: the latter are also used by the per-zone headless Services and grafana/rollout-operator.",
                     "type": "object",
                     "additionalProperties": {
                         "type": "string"
@@ -6450,6 +6454,10 @@
                             "description": "Memcached Docker image pull policy",
                             "type": "string"
                         },
+                        "registry": {
+                            "description": "Memcached Docker image registry",
+                            "type": "string"
+                        },
                         "repository": {
                             "description": "Memcached Docker image repository",
                             "type": "string"
@@ -6555,12 +6563,19 @@
                     "type": "object",
                     "properties": {
                         "pullPolicy": {
+                            "description": "Memcached exporter Docker image pull policy",
+                            "type": "string"
+                        },
+                        "registry": {
+                            "description": "Memcached exporter Docker image registry",
                             "type": "string"
                         },
                         "repository": {
+                            "description": "Memcached exporter Docker image repository",
                             "type": "string"
                         },
                         "tag": {
+                            "description": "Memcached exporter Docker image tag",
                             "type": "string"
                         }
                     }

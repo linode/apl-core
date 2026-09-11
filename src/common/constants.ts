@@ -12,6 +12,11 @@ export const ARGOCD_APP_PARAMS = {
   namespace: 'argocd',
   plural: 'applications',
 }
+export const EXTERNAL_SECRET_PARAMS = {
+  group: 'external-secrets.io',
+  version: 'v1',
+  plural: 'externalsecrets',
+}
 export const ARGOCD_APP_DEFAULT_SYNC_POLICY = {
   automated: {
     prune: true,

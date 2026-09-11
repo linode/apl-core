@@ -6,12 +6,12 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/name: webhook
     app.kubernetes.io/part-of: tekton-pipelines
-    app.kubernetes.io/version: v1.12.0
+    app.kubernetes.io/version: v1.14.0
       {{- with .Values.webhook.deployment.labels }}
         {{- toYaml . | nindent 4 }}
       {{- end}}
-    pipeline.tekton.dev/release: v1.12.0
-    version: v1.12.0
+    pipeline.tekton.dev/release: v1.14.0
+    version: v1.14.0
   name: tekton-pipelines-webhook
 spec:
   selector:
@@ -28,12 +28,12 @@ spec:
         app.kubernetes.io/instance: default
         app.kubernetes.io/name: webhook
         app.kubernetes.io/part-of: tekton-pipelines
-        app.kubernetes.io/version: v1.12.0
+        app.kubernetes.io/version: v1.14.0
           {{- with .Values.webhook.pod.labels }}
             {{- toYaml . | nindent 8 }}
           {{- end}}
-        pipeline.tekton.dev/release: v1.12.0
-        version: v1.12.0
+        pipeline.tekton.dev/release: v1.14.0
+        version: v1.14.0
     spec:
       affinity:
           {{- with .Values.webhook.affinity }}
@@ -127,6 +127,10 @@ spec:
           seccompProfile:
             type: RuntimeDefault
         image: {{ .Values.webhook.deployment.image }}
+      imagePullSecrets:
+          {{- with .Values.webhook.imagePullSecrets }}
+            {{- toYaml . | nindent 6 }}
+          {{- end }}
       nodeSelector:
           {{- with .Values.webhook.nodeSelector }}
             {{- toYaml . |  nindent 8 }}

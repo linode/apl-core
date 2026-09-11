@@ -16,11 +16,13 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+{{- if .Values.certificate.createIssuer }}
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: {{ include "plugin-barman-cloud.fullname" . }}-selfsigned-issuer
+  name: {{ include "plugin-barman-cloud.certificateIssuerName" . }}
   namespace: {{ include "plugin-barman-cloud.namespace" . }}
 spec:
   selfSigned: {}
+{{- end }}
