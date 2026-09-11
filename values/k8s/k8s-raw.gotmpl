@@ -39,7 +39,7 @@ resources:
         template:
           type: kubernetes.io/dockerconfigjson
           data:
-            .dockerconfigjson: '{"auths":{"{{ $gpsServer }}":{"username":"{{ $gpsUsername }}","password":"{{ "{{ .password | toString }}" }}","email":"{{ $gpsEmail }}"}}}'
+            .dockerconfigjson: '{"auths":{"{{ $gpsServer }}":{"username":"{{ $gpsUsername }}","password":"{{ `{{ .password }}` }}","email":"{{ $gpsEmail }}"}}}'
       data:
         - secretKey: password
           remoteRef:
