@@ -5,11 +5,12 @@ crds:
   # Do not use Helm subchart, but statically-rendered CRDs
   install: false
 
-{{- with $v.otomi.linodeLkeImageRepository }}
 global:
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
+  {{- with $v.otomi.linodeLkeImageRepository }}
   image:
     registry: {{ . }}/ghcr
-{{- end }}
+  {{- end }}
 
 admissionController:
   {{- if eq $kv.mode "DevTest" }}
