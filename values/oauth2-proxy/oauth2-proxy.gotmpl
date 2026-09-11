@@ -130,6 +130,7 @@ sessionStorage:
     passwordKey: password
 
 redis-ha:
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   global:
     priorityClassName: otomi-critical
   {{- if $v.otomi.linodeLkeImageRepository }}

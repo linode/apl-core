@@ -193,16 +193,15 @@ redis:
 registry:
   priorityClassName: otomi-critical
   existingSecret: harbor-generated
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 
   registry:
-    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     {{- with $imageRepo }}
     image:
       repository: "{{ . }}/registry-photon"
     {{- end }}
     resources: {{- $h.resources.registry | toYaml | nindent 6 }}
   controller:
-    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     {{- with $imageRepo }}
     image:
       repository: "{{ . }}/harbor-registryctl"

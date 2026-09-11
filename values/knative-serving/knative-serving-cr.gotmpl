@@ -64,6 +64,10 @@ spec:
     resources:
     - container: autoscaler-hpa
       {{- $k.resources.autoscalerHpa | toYaml | nindent 6 }}
+  - name: net-gateway-api-controller
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
+  - name: net-gateway-api-webhook
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
   config:
     defaults:
       revision-timeout-seconds: "300"
