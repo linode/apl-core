@@ -104,7 +104,6 @@ extraVolumeMounts:
     readOnly: true
 
 extraInitContainers:
-  {{- if eq $issuer "dex" }}
   - name: wait-for-oidc-issuer
     {{- if $v.otomi.linodeLkeImageRepository }}
     image: "{{ $v.otomi.linodeLkeImageRepository }}/docker/curlimages/curl:latest"
@@ -112,19 +111,8 @@ extraInitContainers:
     image: curlimages/curl:latest
     {{- end }}
     command: ["/bin/sh","-c"]
-    {{- /* Dex does not serve the issuer root; poll the discovery document instead. */}}
+    {{- /* Polls the external discovery doc, so this also confirms DNS/TLS/ingress are actually serving before oauth2-proxy starts. */}}
     args: ["while [ $(curl -s{{ if $v._derived.untrustedCA }}k{{ end }}w '%{http_code}' {{ $v._derived.oidcWellKnownUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for OIDC Issuer URL'; done"]
-  {{- else }}
-  - name: wait-for-keycloak
-    {{- if $v.otomi.linodeLkeImageRepository }}
-    image: "{{ $v.otomi.linodeLkeImageRepository }}/docker/curlimages/curl:latest"
-    {{- else }}
-    image: curlimages/curl:latest
-    {{- end }}
-    command: ["/bin/sh","-c"]
-    {{- /* Polls the backchannel: plain HTTP to a ClusterIP, so no DNS or TLS to fail on. */}}
-    args: ["while [ $(curl -s{{ if $v._derived.untrustedCA }}k{{ end }}w '%{http_code}' {{ $v._derived.oidcBaseUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak OIDC Issuer URL'; done"]
-  {{- end }}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 initContainers:

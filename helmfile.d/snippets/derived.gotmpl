@@ -65,7 +65,7 @@
   {{- $oidcClientSecretKey = "dex-secrets" }}
   {{- $oidcClientSecretProperty = "idpClientSecret" }}
   {{- /* Dex has no browser-redirect logout; oauth2-proxy ends the session via this backchannel call instead. */}}
-  {{- $oidcBackchannelLogoutUrl = printf "%s/logout?id_token_hint={id_token}" $dexBaseUrl }}
+  {{- $oidcBackchannelLogoutUrl = printf "%s/logout?id_token_hint={id_token}" $dexBaseUrlBackchannel }}
   {{- $logoutToConsole = printf "https://console.%s" $domainSuffix }}
   {{- $logoutToOauth2Start = printf "https://console.%s/oauth2/start" $domainSuffix }}
 {{- end }}
