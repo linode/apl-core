@@ -1182,4 +1182,4 @@ environments:
           issuer: keycloak
         users: []
         versions:
-          specVersion: 73
+          specVersion: 74
