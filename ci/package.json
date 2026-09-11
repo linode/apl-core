@@ -34,7 +34,9 @@
     "url": "git+https://github.com/linode/apl-core.git"
   },
   "scripts": {
-    "update-helm-chart-deps": "node src/update-helm-chart-deps.mjs",
+    "update-helm-chart-deps": "src/update-helm-chart-deps.mjs",
+    "check-schema-versions": "src/check-schema-versions.mjs",
+    "tests": "npm --prefix .. run test:ts -- ci/src",
     "test": "jest",
     "render-chart-version-changes": "tsx src/render-chart-version-changes.ts"
   },
