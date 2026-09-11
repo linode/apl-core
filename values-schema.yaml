@@ -1623,10 +1623,6 @@ properties:
           enabled:
             type: boolean
             default: false
-          adminUsername:
-            type: string
-            default: otomi-admin
-            description: Username of the platform admin account seeded as a static password.
           idp:
             additionalProperties: false
             properties:
