@@ -3,18 +3,21 @@
 
 interceptors:
   resources: {}
+  nodeSelector: {}
   image:
     repository: "ghcr.io/tektoncd/github.com/tektoncd/triggers/cmd/interceptors"
     tag: "v0.25.0"
 
 controller:
   resources: {}
+  nodeSelector: {}
   image:
     repository: "ghcr.io/tektoncd/github.com/tektoncd/triggers/cmd/controller"
     tag: "v0.25.0"
 
 webhook:
   resources: {}
+  nodeSelector: {}
   image:
     repository: "ghcr.io/tektoncd/github.com/tektoncd/triggers/cmd/webhook"
     tag: "v0.25.0"

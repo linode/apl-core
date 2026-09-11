@@ -33,6 +33,10 @@ spec:
         version: "v0.25.0"
     spec:
       serviceAccountName: tekton-triggers-controller
+      {{- with .Values.controller.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: tekton-triggers-controller
           image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
@@ -102,6 +106,10 @@ spec:
         version: "v0.25.0"
     spec:
       serviceAccountName: tekton-triggers-webhook
+      {{- with .Values.webhook.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: webhook
           # This is the Go import path for the binary that is containerized

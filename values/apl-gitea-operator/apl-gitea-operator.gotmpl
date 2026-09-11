@@ -21,3 +21,5 @@ env:
   GITEA_URL_PORT: '3000'
   GITEA_OPERATOR_NAMESPACE: apl-gitea-operator
   GITEA_USERNAME: {{ $v.apps.gitea.adminUsername }}
+
+nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}

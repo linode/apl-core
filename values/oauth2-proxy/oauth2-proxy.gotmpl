@@ -130,6 +130,7 @@ sessionStorage:
     passwordKey: password
 
 redis-ha:
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   global:
     priorityClassName: otomi-critical
   {{- if $v.otomi.linodeLkeImageRepository }}
@@ -221,3 +222,5 @@ gatewayApi:
 
 extraObjects:
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "oauth2-proxy" "host" $v._derived.authDomain) | nindent 4 }}
+
+nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}

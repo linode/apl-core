@@ -58,6 +58,7 @@ gateways:
     {{- with $ingress | get "gateway" dict }}
     replicas: {{ . | get "replicas" 3 }}
     minAvailable: {{ . | get "minAvailable" 1 }}
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     resources:
     {{- with $ingress.gateway | get "resources" nil }}
       {{- . | toYaml | nindent 6 }}
@@ -113,6 +114,7 @@ gateways:
     {{- with $v.apps.knative.serving.gateway }}
     replicas: {{ .replicas }}
     minAvailable: {{ .minAvailable }}
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     resources:
       {{ .resources | toYaml | nindent 6 }}
     {{- with .autoscaling }}

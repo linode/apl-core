@@ -17,6 +17,7 @@ persistence:
 {{- end }}
 resources:
   {{- $g | get "resources" dict | toYaml | nindent 2 }}
+nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}
 {{- if $g.createHttpRoute }}
 httproute:
   enabled: true

@@ -24,6 +24,8 @@ resources:
     cpu: 200m
     memory: 128Mi
 
+nodeSelector: {}
+
 service:
   port: 80
 
