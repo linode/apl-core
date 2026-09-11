@@ -1,5 +1,6 @@
 import {
   ApiException,
+  ApiextensionsV1Api,
   AppsV1Api,
   BatchV1Api,
   CoreV1Api,
@@ -12,17 +13,16 @@ import {
   PatchStrategy,
   setHeaderOptions,
   V1ConfigMap,
+  V1CustomResourceDefinition,
   V1ResourceRequirements,
   V1Secret,
   V1Status,
 } from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
 import { X509Certificate } from 'crypto'
-import { access, mkdir, writeFile } from 'fs/promises'
-import { get, isEqual, map, mapValues } from 'lodash'
-import { dirname, join } from 'path'
+import { isEqual, map, mapValues } from 'lodash'
 import { Writable } from 'stream'
-import { parse, stringify } from 'yaml'
+import { parse } from 'yaml'
 import { $ } from 'zx'
 import {
   ARGOCD_APP_DEFAULT_SYNC_POLICY,
@@ -32,6 +32,7 @@ import {
 } from './constants'
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
+import { loadYaml } from './utils'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
@@ -44,7 +45,7 @@ let networkingClient: NetworkingV1Api
 let customClient: CustomObjectsApi
 let discoveryClient: DiscoveryV1Api
 let objectClient: KubernetesObjectApi
-let execObject: Exec
+let extensionsClient: ApiextensionsV1Api
 export const k8s = {
   kc: (): KubeConfig => {
     if (kc) return kc
@@ -87,39 +88,11 @@ export const k8s = {
     objectClient = k8s.kc().makeApiClient(KubernetesObjectApi)
     return objectClient
   },
-}
-
-export const createK8sSecret = async (
-  name: string,
-  namespace: string,
-  data: Record<string, any> | string,
-): Promise<void> => {
-  const d = terminal('common:k8s:createK8sSecret')
-  const rawString = stringify(data)
-  const filePath = join('/tmp', secretId)
-  const dirPath = dirname(filePath)
-  try {
-    await access(dirPath)
-  } catch (e) {
-    await mkdir(dirPath, { recursive: true })
-  }
-
-  await writeFile(filePath, rawString)
-  const result =
-    await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply --server-side -f -`
-      .nothrow()
-      .quiet()
-  if (result.stderr) d.error(result.stderr)
-  d.debug(`kubectl create secret output: \n ${result.stdout}`)
-}
-
-export const isResourcePresent = async (type: string, name: string, namespace: string): Promise<boolean> => {
-  try {
-    await $`kubectl get -n ${namespace} ${type} ${name}`
-  } catch {
-    return false
-  }
-  return true
+  extensions: (): ApiextensionsV1Api => {
+    if (extensionsClient) return extensionsClient
+    extensionsClient = k8s.kc().makeApiClient(ApiextensionsV1Api)
+    return extensionsClient
+  },
 }
 
 export const getK8sSecret = async (
@@ -413,6 +386,8 @@ export async function createUpdateGenericSecret(
   namespace: string,
   secretData: Record<string, string>,
   patch = true,
+  immutable = false,
+  type = 'Opaque',
 ): Promise<V1Secret> {
   const encodedData = mapValues(secretData, b64enc)
 
@@ -422,14 +397,18 @@ export async function createUpdateGenericSecret(
       namespace,
     },
     data: encodedData,
-    type: 'Opaque',
+    type,
+    immutable,
   }
 
   try {
     return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
   } catch (error) {
     if (error instanceof ApiException && error.code === 409) {
-      if (patch) {
+      if (immutable) {
+        await deleteSecret(coreV1Api, name, namespace)
+        return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
+      } else if (patch) {
         return await coreV1Api.patchNamespacedSecret(
           { name, namespace, body: secret },
           setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
@@ -440,6 +419,22 @@ export async function createUpdateGenericSecret(
     } else {
       throw error
     }
+  }
+}
+
+export async function deleteSecret(
+  coreV1Api: CoreV1Api,
+  name: string,
+  namespace: string,
+  ignoreMissing: boolean = true,
+): Promise<void> {
+  try {
+    await coreV1Api.deleteNamespacedSecret({ namespace, name })
+  } catch (error) {
+    if (error instanceof ApiException && error.code === 404 && ignoreMissing) {
+      return
+    }
+    throw error
   }
 }
 
@@ -819,68 +814,6 @@ export async function setArgoCdAppSync(
   )
 }
 
-export const createArgoCdRedisSecret = async (values: Record<string, any>): Promise<void> => {
-  const d = terminal('common:k8s:createArgoCdRedisSecret')
-  const argocdNamespace = 'argocd'
-  const secretName = 'argocd-redis'
-  const helmReleaseName = 'argocd-artifacts'
-  const redisPassword = get(values, 'apps.argocd.redisPassword')
-
-  if (typeof redisPassword !== 'string' || redisPassword.length === 0) {
-    d.warn('apps.argocd.redisPassword is missing, skipping argocd-redis reconciliation')
-    return
-  }
-
-  try {
-    await k8s.object().patch(
-      {
-        apiVersion: 'v1',
-        kind: 'Namespace',
-        metadata: {
-          name: argocdNamespace,
-        },
-      },
-      undefined,
-      undefined,
-      'apl-operator',
-      true,
-      PatchStrategy.ServerSideApply,
-    )
-    d.info(`Patched with server-side apply ${argocdNamespace}`)
-  } catch (error) {
-    if (!(error instanceof ApiException && error.code === 409)) throw error
-  }
-
-  const secretBody = {
-    apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-      name: secretName,
-      namespace: argocdNamespace,
-      labels: {
-        'app.kubernetes.io/managed-by': 'Helm',
-      },
-      annotations: {
-        'meta.helm.sh/release-name': helmReleaseName,
-        'meta.helm.sh/release-namespace': argocdNamespace,
-      },
-    },
-    type: 'Opaque',
-    stringData: {
-      auth: redisPassword,
-    },
-  }
-
-  try {
-    await k8s.object().patch(secretBody, undefined, undefined, 'apl-operator', true, PatchStrategy.ServerSideApply)
-    d.info(`Patched Secret ${secretName} in namespace ${argocdNamespace}`)
-  } catch (error) {
-    if (!(error instanceof ApiException && error.code === 409)) throw error
-    d.error(`Failed to patch Secret ${secretName} with server-side apply:`, error)
-    throw error
-  }
-}
-
 export async function restartDeployment(name: string, namespace: string): Promise<void> {
   await k8s.app().patchNamespacedDeployment(
     {
@@ -973,6 +906,24 @@ export async function applyServerSide(
     }
   }
   await $`kubectl apply ${kubectlArgs}`
+}
+
+export async function applyCrd(path: string, dryRun: boolean = false): Promise<V1CustomResourceDefinition> {
+  const api = k8s.extensions()
+  const body = await loadYaml(path)
+  if (body?.kind !== 'CustomResourceDefinition') {
+    throw Error(`Invalid CRD manifest in file ${path}`)
+  }
+  return await api.patchCustomResourceDefinition(
+    {
+      name: body?.metadata?.name,
+      body,
+      dryRun: dryRun ? 'All' : undefined,
+      fieldManager: 'apl-operator',
+      force: true,
+    },
+    setHeaderOptions('Content-Type', PatchStrategy.ServerSideApply),
+  )
 }
 
 export async function waitForCRD(crdName: string, timeoutSeconds: number = 60): Promise<void> {
