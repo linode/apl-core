@@ -16,7 +16,7 @@ logLevel: warning
 
 existingSecretAdminPassword: harbor-admin-password
 nameOverride: harbor
-existingSecretSecretKey: harbor-secret-key
+existingSecretSecretKey: harbor-generated
 
 updateStrategy:
     type: Recreate
@@ -31,8 +31,8 @@ core:
   {{- end }}
 
   resources: {{- $h.resources.core | toYaml | nindent 4 }}
-  existingSecret: harbor-core-secret
-  existingXsrfSecret: harbor-core-xsrf-secret
+  existingSecret: harbor-generated
+  existingXsrfSecret: harbor-generated
   existingXsrfSecretKey: CSRF_KEY
   extraEnvVars:
     - name: REGISTRY_CREDENTIAL_USERNAME
@@ -86,7 +86,7 @@ jobservice:
   jobLoggers:
     - stdout
   resources: {{- $h.resources.jobservice | toYaml | nindent 4 }}
-  existingSecret: harbor-jobservice-secret
+  existingSecret: harbor-generated
   extraEnvVars:
     - name: REGISTRY_CREDENTIAL_USERNAME
       valueFrom:
@@ -192,7 +192,7 @@ redis:
 
 registry:
   priorityClassName: otomi-critical
-  existingSecret: harbor-registry-http
+  existingSecret: harbor-generated
 
   registry:
     nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}

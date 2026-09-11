@@ -7,7 +7,7 @@
   {{- $teamSettings := $team.settings }}
   {{- $_ := set $teamConfig $teamId (dict "selfService" (dict "apps" ($teamSettings | get "selfService.apps" list))) }}
 {{- end }}
-{{- $teamConfig := $teamConfig | toJson }}
+{{- $teamConfig = $teamConfig | toJson }}
 
 resources:
   - apiVersion: v1
@@ -22,7 +22,7 @@ resources:
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
-      name: apl-gitea-operator-secret
+      name: apl-gitea-operator
       namespace: apl-gitea-operator
     spec:
       refreshInterval: 1m
@@ -35,14 +35,14 @@ resources:
         template:
           type: Opaque
           data:
-            giteaPassword: '{{ "{{ .gitPassword | toString }}" }}'
+            giteaPassword: "{{ `{{ .giteaPassword }}` }}"
             oidcClientId: {{ $v._derived.oidcClientID }}
-            oidcClientSecret: '{{ "{{ .oidcClientSecret | toString }}" }}'
+            oidcClientSecret: "{{ `{{ .oidcClientSecret }}` }}"
             oidcEndpoint: {{ $v._derived.oidcBaseUrl }}
       data:
-        - secretKey: gitPassword
+        - secretKey: giteaPassword
           remoteRef:
-            key: gitea-secrets
+            key: gitea
             property: adminPassword
         - secretKey: oidcClientSecret
           remoteRef:
