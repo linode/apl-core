@@ -9,8 +9,6 @@ ARG KUBECTL_VERSION=1.36.4
 ARG HELM_VERSION=4.3.0
 # https://github.com/databus23/helm-diff/releases
 ARG HELM_DIFF_VERSION=3.15.12
-# https://github.com/noqcks/gucci/releases
-ARG GUCCI_VERSION=1.9.0
 # https://github.com/yannh/kubeconform/releases/
 ARG KUBECONFORM_VERSION=0.8.0
 # https://github.com/helmfile/helmfile/releases
@@ -83,10 +81,6 @@ RUN echo "exec \$*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
 # helmfile
 ADD https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz /tmp
 RUN tar -zxvf /tmp/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz -C /tmp && mv /tmp/helmfile helmfile
-
-# gucci
-ADD https://github.com/noqcks/gucci/releases/download/v${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-${TARGETARCH} gucci
-RUN chmod +x gucci
 
 # kubeconform
 ADD https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-${TARGETARCH}.tar.gz /tmp
