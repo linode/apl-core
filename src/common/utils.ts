@@ -6,11 +6,10 @@ import { existsSync, readFileSync } from 'fs'
 import { access, mkdir, readdir, readFile, writeFile } from 'fs/promises'
 import { glob } from 'glob'
 import walk from 'ignore-walk'
-import { dump, load } from 'js-yaml'
+import { load } from 'js-yaml'
 import { isEmpty, omit } from 'lodash'
 import { dirname, join, resolve } from 'path'
 import { stringify } from 'yaml'
-import { $, ProcessOutput, within } from 'zx'
 import { operatorEnv } from '../operator/validators'
 import { terminal } from './debug'
 import { env } from './envalid'
@@ -99,44 +98,6 @@ export const flattenObject = (obj: Record<string, any>, path = ''): { [key: stri
     .reduce((acc, base) => {
       return { ...acc, ...base }
     }, {})
-}
-export interface GucciOptions {
-  asObject?: boolean
-}
-
-export const escapeGucciValue = (val: unknown): string => String(val ?? '').replaceAll("'", "'\\''")
-
-export const gucci = async (
-  tmpl: string | unknown,
-  ctx: { [key: string]: any },
-  asString = false,
-): Promise<string | unknown> => {
-  const kv = flattenObject(ctx)
-  const gucciArgs = Object.entries(kv).map(([k, v]) => {
-    // Cannot template if key contains regex characters, so skip
-    if (stringContainsSome(k, ...'^()[]$'.split(''))) return ''
-    const val = typeof v === 'object' ? JSON.stringify(v) : v
-    return `-s ${k}='${escapeGucciValue(val)}'`
-  })
-
-  return within(async () => {
-    $.quote = (v) => v
-    let processOutput: ProcessOutput
-    const templateContent: string = typeof tmpl === 'string' ? tmpl : dump(tmpl, { lineWidth: -1 })
-    // Cannot be a path if it wasn't a string
-    if (typeof tmpl === 'string' && existsSync(templateContent)) {
-      processOutput = await $`gucci -o missingkey=zero ${gucciArgs} ${templateContent}`
-    } else {
-      // input string is a go template content
-      processOutput = await $`echo "${templateContent.replaceAll('"', '\\"')}" | gucci -o missingkey=zero ${gucciArgs}`
-    }
-    const ret = processOutput.stdout.trim()
-    if (asString) {
-      return ret
-    }
-    // translate the output from yaml to js, and return it, whatever shape
-    return load(ret)
-  })
 }
 
 export const extract = (
