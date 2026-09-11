@@ -8,6 +8,7 @@ netpols:
   gitea: {{ $a.gitea.networkPolicies.enabled}}
   otomiApi: {{ $oa.networkPolicies.enabled}}
   loki: {{ and $a.loki.enabled $a.loki.networkPolicies.enabled }}
+  dex: {{ and $a.dex.enabled $a.dex.networkPolicies.enabled }}
 
 ingressGatewaySelectors:
   - namespaceSelector:

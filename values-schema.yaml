@@ -1636,6 +1636,8 @@ properties:
             description: Number of Dex replicas. More than one requires all replicas to share the same storage backend.
           resources:
             $ref: '#/definitions/resources'
+          networkPolicies:
+            $ref: '#/definitions/appNetworkPolicyConfig'
       external-dns:
         additionalProperties: false
         properties:
