@@ -15,6 +15,7 @@ namespace:
 
 controller:
   resources: {{- $t.resources.pipelinesController | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   deployment:
     image: "{{ $tektonRegistry }}/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.14.0@sha256:5209c1969c407d36d9c2c5217a8b0700a9fb52b3068b6fbdce0d88ead397ea75"
   images:
@@ -27,6 +28,7 @@ controller:
 
 remoteresolver:
   resources: {{- $t.resources.pipelinesRemoteresolver | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   deployment:
     image: "{{ $tektonRegistry }}/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.14.0@sha256:7516b1750c7147fbe2e48e8d334acff74a02aad68696c9cf2f32a2790bc4dbf9"
 
@@ -36,9 +38,11 @@ eventscontroller:
 
 webhook:
   resources: {{- $t.resources.pipelinesWebhook | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   deployment:
     image: "{{ $tektonRegistry }}/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.14.0@sha256:dab27b10a60e56cbeb444d84356835b145c3d8491a7afe77353b1b999eb3a867"
 
 configDefaults:
   default-pod-template: |
     priorityClassName: tekton-low
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}

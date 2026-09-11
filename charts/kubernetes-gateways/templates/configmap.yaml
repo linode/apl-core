@@ -12,13 +12,19 @@ data:
   deployment: |
     spec:
       replicas: {{ $gateway.replicas | default 2 }}
-      {{- with $gateway.resources }}
+      {{- if or $gateway.resources $gateway.nodeSelector }}
       template:
         spec:
+          {{- with $gateway.nodeSelector }}
+          nodeSelector:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with $gateway.resources }}
           containers:
             - name: istio-proxy
               resources:
                 {{- . | toYaml | nindent 16 }}
+          {{- end }}
       {{- end }}
   {{- with $gateway.hpa }}
   horizontalPodAutoscaler: |

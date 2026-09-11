@@ -27,6 +27,7 @@ admissionController:
       prometheus: system
   container:
     resources: {{- $kv.resources.admissionController | toYaml | nindent 6 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 
 cleanupController:
   {{- if eq $kv.mode "DevTest" }}
@@ -35,6 +36,7 @@ cleanupController:
   replicas: 3
   {{- end }}
   resources: {{- $kv.resources.cleanupController | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 
 backgroundController:
   {{- if eq $kv.mode "DevTest" }}
@@ -43,6 +45,7 @@ backgroundController:
   replicas: 2
   {{- end }}
   resources: {{- $kv.resources.backgroundController | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   serviceMonitor:
     enabled: true
     additionalLabels:
@@ -55,6 +58,7 @@ reportsController:
   replicas: 2
   {{- end }}
   resources: {{- $kv.resources.reportsController | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 
 features:
   logging:

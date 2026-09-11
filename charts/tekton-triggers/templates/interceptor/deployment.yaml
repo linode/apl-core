@@ -33,6 +33,10 @@ spec:
         version: "v0.25.0"
     spec:
       serviceAccountName: tekton-triggers-core-interceptors
+      {{- with .Values.interceptors.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: tekton-triggers-core-interceptors
           image: {{ .Values.interceptors.image.repository }}:{{ .Values.interceptors.image.tag }}

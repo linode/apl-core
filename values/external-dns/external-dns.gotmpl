@@ -227,3 +227,5 @@ provider: {{ $dns.provider.other.name }}
 
 deploymentStrategy:
   type: RollingUpdate
+
+nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}

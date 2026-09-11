@@ -3,6 +3,7 @@
 
 interceptors:
   resources: {{- $t.resources.triggersInterceptors | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/triggers/cmd/interceptors"
@@ -10,6 +11,7 @@ interceptors:
 
 controller:
   resources: {{- $t.resources.triggersController | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/triggers/cmd/controller"
@@ -17,6 +19,7 @@ controller:
 
 webhook:
   resources: {{- $t.resources.triggersWebhook | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/triggers/cmd/webhook"

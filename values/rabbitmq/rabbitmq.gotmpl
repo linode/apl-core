@@ -12,6 +12,7 @@ clusterOperator:
     tag: 2.16.1-debian-12-r0
     digest: ""
   resources: {{- $r.resources.clusterOperator | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   watchAllNamespaces: false
   watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
 
@@ -22,6 +23,7 @@ msgTopologyOperator:
     tag: 1.17.4-debian-12-r0
     digest: ""
   resources: {{- $r.resources.msgTopologyOperator | toYaml | nindent 4 }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   watchAllNamespaces: false
   watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
 
