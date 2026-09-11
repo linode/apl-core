@@ -3,6 +3,39 @@
 resources:
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "dex" "host" $v._derived.dexDomain) | nindent 4 }}
 
+  {{- /* No mesh-wide PeerAuthentication exists; enforce mTLS explicitly here. */}}
+  - apiVersion: security.istio.io/v1
+    kind: PeerAuthentication
+    metadata:
+      name: dex-strict-mtls
+      namespace: dex
+    spec:
+      mtls:
+        mode: STRICT
+
+  {{- /* Dex gRPC has no auth of its own; restrict it to otomi-api's identity. */}}
+  - apiVersion: security.istio.io/v1
+    kind: AuthorizationPolicy
+    metadata:
+      name: dex-grpc-otomi-api
+      namespace: dex
+    spec:
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: dex
+      action: ALLOW
+      rules:
+        - from:
+            - source:
+                principals:
+                  - "cluster.local/ns/otomi/sa/otomi-api"
+          to:
+            - operation:
+                ports: ["5557"]
+        - to:
+            - operation:
+                notPorts: ["5557"]
+
   {{- /* refreshInterval "0" below keeps the generated value stable across reconciles. */}}
   - apiVersion: generators.external-secrets.io/v1alpha1
     kind: Password
