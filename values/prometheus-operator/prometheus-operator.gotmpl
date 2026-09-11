@@ -55,14 +55,18 @@ prometheusOperator:
   {{- end }}
   admissionWebhooks:
     enabled: true
-    {{- if $v.otomi.linodeLkeImageRepository }}
     deployment:
+      nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 8 }}
+      {{- if $v.otomi.linodeLkeImageRepository }}
       image:
         registry: "{{ $v.otomi.linodeLkeImageRepository }}/quay"
+      {{- end }}
     patch:
+      nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 8 }}
+      {{- if $v.otomi.linodeLkeImageRepository }}
       image:
         registry: "{{ $v.otomi.linodeLkeImageRepository }}/k8s"
-    {{- end }}
+      {{- end }}
     certManager:
       enabled: true
       issuerRef:
@@ -383,7 +387,6 @@ nodeExporter:
   enabled: {{ $p.enabled }}
 
 prometheus-node-exporter:
-  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   prometheus:
     monitor:
       additionalLabels:

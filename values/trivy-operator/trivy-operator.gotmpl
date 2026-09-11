@@ -42,3 +42,6 @@ resources: {{- $t.resources.operator | toYaml | nindent 2 }}
 
 nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}
 
+trivyOperator:
+  scanJobNodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
+
