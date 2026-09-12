@@ -26,7 +26,7 @@ dependencies:
     version: 0.2.1
     repository: https://linode.github.io/cloud-firewall-controller
   - name: external-dns
-    version: 1.21.1
+    version: 1.22.0
     repository: https://kubernetes-sigs.github.io/external-dns
   - name: external-secrets
     version: 2.10.0
