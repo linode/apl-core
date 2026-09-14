@@ -2,6 +2,7 @@ import { OtomiDebugger } from '../debug'
 import { k8s } from '../k8s'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { stripOversizedLastAppliedAnnotations } from './strip-oversized-annotations'
+import { ApiException } from '@kubernetes/client-node'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -37,14 +38,14 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       try {
         await k8s.app().deleteNamespacedDeployment({ name: 'gitea', namespace: 'gitea' })
       } catch (e) {
-        if (e.response?.statusCode !== 404) {
+        if (!(e instanceof ApiException && e.code === 404)) {
           debug.warn('Failed to delete Gitea deployment:', e)
         }
       }
       try {
         await k8s.app().deleteNamespacedStatefulSet({ name: 'gitea-valkey-primary', namespace: 'gitea' })
       } catch (e) {
-        if (e.response?.statusCode !== 404) {
+        if (!(e instanceof ApiException && e.code === 404)) {
           debug.warn('Failed to delete Gitea Valkey StatefulSet:', e)
         }
       }
