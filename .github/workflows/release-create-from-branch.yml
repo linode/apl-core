@@ -13,15 +13,39 @@ on:
         required: true
         default: true
         type: boolean
+env:
+  CONTAINER_REGISTRY: docker.io
+  CONTAINER_IMAGE_NAME: linode/apl-core
+  RELEASE_BRANCH: ${{ github.ref_name }}
+  RELEASE_BRANCH_PREFIX: 'releases/'
+  RELEASE_TAG_PREFIX: 'v'
 
 jobs:
   release-get-tag:
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
-    uses: linode/apl-gh-actions/.github/workflows/release-get-tag.yml@v0.3.0
-    with:
-      release_branch: ${{ github.ref_name }}
-      is_prerelease: ${{ inputs.is_prerelease }}
+    outputs:
+      release_tag: ${{ steps.compute-tag.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 1
+          fetch-tags: true
+
+      - name: Validate branch, compute release tag, and check it does not already exist
+        id: compute-tag
+        uses: linode/apl-gh-actions/actions/release-get-tag@v0.3.0
+        with:
+          is_prerelease: ${{ inputs.is_prerelease }}
+          release_branch: ${{ env.RELEASE_BRANCH }}
+          release_branch_prefix: ${{ env.RELEASE_BRANCH_PREFIX }}
+          release_tag_prefix: ${{ env.RELEASE_TAG_PREFIX }}
+          require_rc_before_stable: false
+          check_tag_not_exists: true
+          validate_branch: true
 
   validate-deps:
     needs: release-get-tag
