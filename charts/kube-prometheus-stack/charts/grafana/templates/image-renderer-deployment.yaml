@@ -38,7 +38,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/config: {{ include "grafana.configMapOrSecretContentHash" (dict "ctx" . "name" "/configmap.yaml") }}
         {{- with .Values.imageRenderer.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
