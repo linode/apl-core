@@ -264,3 +264,5 @@ gatewayAPI:
 
 extraDeploy:
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "gitea" "host" $giteaDomain) | nindent 4 }}
+
+nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}
