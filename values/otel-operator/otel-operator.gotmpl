@@ -22,3 +22,5 @@ manager:
     metricsPort: 8080
   metrics:
     secure: false
+
+nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}
