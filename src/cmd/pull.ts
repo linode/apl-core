@@ -36,7 +36,7 @@ export const module = {
 
   handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
-    await prepareEnvironment({ skipKubeContextCheck: true })
+    await prepareEnvironment()
     await pull()
   },
 }

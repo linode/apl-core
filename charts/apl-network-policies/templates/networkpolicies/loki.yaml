@@ -1,0 +1,126 @@
+{{- if .Values.netpols.loki }}
+---
+# Baseline policy: selects every Loki pod, so any traffic not explicitly
+# allowed by this or one of the policies below is denied.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: loki-platform-policy
+  namespace: monitoring
+  labels:
+    {{- include "apl-network-policies.labels" . | nindent 4 }}
+    app: loki
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+      app.kubernetes.io/instance: loki
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow communication between the Loki components themselves
+    # (HTTP, gRPC, gRPC load balancing, memberlist gossip and the gateway)
+    - ports:
+        - protocol: TCP
+          port: 3100
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 7946
+        - protocol: TCP
+          port: 9095
+        - protocol: TCP
+          port: 9096
+      from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: loki
+              app.kubernetes.io/instance: loki
+    # Allow monitoring access for metrics scraping
+    - ports:
+        - protocol: TCP
+          port: 3100
+      from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: po-prometheus
+---
+# Log ingestion: only the platform OpenTelemetry log collector may push
+# logs through the Loki gateway.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: loki-gateway-platform-policy
+  namespace: monitoring
+  labels:
+    {{- include "apl-network-policies.labels" . | nindent 4 }}
+    app: loki
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+      app.kubernetes.io/instance: loki
+      app.kubernetes.io/component: gateway
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8080
+      from:
+        # Allow the platform log collector to push logs via OTLP
+        - namespaceSelector:
+            matchLabels:
+              name: otel
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: platform-logs-collector
+---
+# Log querying: only Grafana instances may reach the multi-tenant reverse
+# proxy that fronts the read path. Grafana connects to the headless service,
+# so it talks to the pod port directly.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: loki-query-platform-policy
+  namespace: monitoring
+  labels:
+    {{- include "apl-network-policies.labels" . | nindent 4 }}
+    app: loki
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+      app.kubernetes.io/instance: loki
+    matchExpressions:
+      # query-frontend in distributed mode, single-binary in monolithic mode
+      - key: app.kubernetes.io/component
+        operator: In
+        values:
+          - query-frontend
+          - single-binary
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 3101
+      from:
+        # Allow the platform Grafana to query logs
+        - namespaceSelector:
+            matchLabels:
+              name: grafana
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: po-grafana
+        # Allow the team Grafana instances to query their own logs
+        {{- with .Values.teamGrafanaSelectors }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+{{- end }}

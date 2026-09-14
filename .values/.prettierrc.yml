@@ -6,7 +6,6 @@ printWidth: 120
 overrides:
   - files:
       - 'env/**/*.yaml'
-      - 'env/**/*.dec'
     options:
       tabWidth: 4
       useTabs: true

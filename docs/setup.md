@@ -2,10 +2,9 @@
 
 We invite you to first look at the code and file structure. It also helps to have read the docs on using the CLI at [otomi.io](https://apl-docs.net/docs/cli/working-with).
 
-You will notice that we use some tooling to enforce consistent commits and releases:
+You will notice that we use some tooling to enforce consistent commits (releases are handled by the GitHub Actions workflows in `.github/workflows/release-*.yml`):
 
 - [Commitizen](https://github.com/commitizen): We use their `cz-cli` and `cz-conventional-changelog`.
-- [Standard Version](https://github.com/conventional-changelog/standard-version): Generates CHANGELOG, bumps & releases image (also as git tag).
 - [Prettier](https://prettier.io): Almost all code is autoformatted when using vscode (except all the go templates, as these are unstructured by intent).
 
 The bulk of the work in this repo consists of go templates. These are highlighted by the helm plugin, but not auto formatted (as they might contain any kind of code). In order to help you write consistent go templates we have written a [special section about go templating](./go-templating.md).

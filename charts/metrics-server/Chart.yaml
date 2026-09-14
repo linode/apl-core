@@ -1,13 +1,19 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: "Conditionally render `insecureSkipTLSVerify` field in APIService template to prevent GitOps sync drift when value is `false`."
-    - kind: fixed
-      description: "Do not render annotations as null in APIService template to prevent permanent OutOfSync in ArgoCD."
+    - kind: added
+      description: "Add chart option to permit setting hostUsers for additional isolation."
+    - kind: added
+      description: "Add `namespaceOverride` which allows deploying to a namespace other than `.Release.namespace`."
     - kind: changed
-      description: "Update the Metrics Server OCI image to [`0.8.1`](https://github.com/kubernetes-sigs/metrics-server/releases/tag/v0.8.1)."
+      description: "Apply `tls.certManager.annotations` and `tls.certManager.labels` to the Cert Manager `Certificate` resource; these values are documented but were previously never rendered."
+    - kind: changed
+      description: "Use `metrics-server.fullname` instead of `metrics-server.name` for ClusterRole."
+    - kind: changed
+      description: "Update the _Metrics Server_ OCI image to [`0.9.0`](https://github.com/kubernetes-sigs/metrics-server/releases/tag/v0.9.0)."
+    - kind: fixed
+      description: "Stop rendering `annotations: null` on the cert-manager `Issuer`, which referenced an undefined `additionalAnnotations` value. This mirrors the earlier APIService fix and prevents permanent GitOps `OutOfSync`."
 apiVersion: v2
-appVersion: 0.8.1
+appVersion: 0.9.0
 description: Metrics Server is a scalable, efficient source of container resource
   metrics for Kubernetes built-in autoscaling pipelines.
 home: https://github.com/kubernetes-sigs/metrics-server
@@ -27,4 +33,4 @@ name: metrics-server
 sources:
 - https://github.com/kubernetes-sigs/metrics-server
 type: application
-version: 3.13.1
+version: 3.14.0

@@ -31,7 +31,7 @@ knative_operator:
     remoteDeploymentsPollInterval: 10s
   knative_operator:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
-    tag: v1.23.0
+    tag: v1.23.1
     affinity: {}
     tolerations: []
     containerSecurityContext:
@@ -47,7 +47,7 @@ knative_operator:
         memory: 1000Mi
   operator_webhook:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
-    tag: v1.23.0
+    tag: v1.23.1
     affinity:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       podAntiAffinity:

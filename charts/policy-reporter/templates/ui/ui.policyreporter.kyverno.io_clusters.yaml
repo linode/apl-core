@@ -1,0 +1,184 @@
+{{- if and .Values.ui.enabled .Values.ui.crds.cluster -}}
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  {{- if .Values.annotations }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "ui.labels" . | nindent 4 }}
+  name: clusters.ui.policyreporter.kyverno.io
+spec:
+  group: ui.policyreporter.kyverno.io
+  names:
+    kind: Cluster
+    listKind: ClusterList
+    plural: clusters
+    shortNames:
+    - cl
+    singular: cluster
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.name
+      name: Name
+      priority: 1
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: |-
+          Cluster is the Schema for the external clusters API
+          It is used to configure additional external clusters for the PolicyReporter UI
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ClusterSpec defines the desired state of Cluster
+            properties:
+              accessControl:
+                description: |-
+                  Access control configuration for the external cluster. If not set, the cluster will be accessible for all users.
+                  Requires Authentication to be enabled in the Policy Reporter UI.
+                oneOf:
+                - required:
+                  - emails
+                - required:
+                  - groups
+                properties:
+                  emails:
+                    description: Source is an identifier for the policy engine that
+                      manages this report
+                    items:
+                      type: string
+                    type: array
+                  groups:
+                    description: Rule is the name or identifier of the rule within
+                      the policy
+                    items:
+                      type: string
+                    type: array
+                type: object
+              basicAuth:
+                description: BasicAuth configuration for the external API. If not
+                  set, no authentication will be used.
+                properties:
+                  password:
+                    description: Password for basic authentication to the external
+                      API.
+                    type: string
+                  username:
+                    description: Username for basic authentication to the external
+                      API.
+                    type: string
+                required:
+                - password
+                - username
+                type: object
+              certificate:
+                description: Path to a certificate file for the connection to the
+                  external Policy Reporter API.
+                type: string
+              host:
+                description: Host of the external Policy Reporter API. This is required
+                  to connect to the api and needs to be reachable from Policy Reporter
+                  UI.
+                type: string
+              http2:
+                description: Forces HTTP2 for the connection to the external Policy
+                  Reporter API.
+                type: boolean
+              plugins:
+                description: List of plugins running in the external cluster.
+                items:
+                  description: Plugin is the Schema for plugins running in the external
+                    cluster
+                  properties:
+                    basicAuth:
+                      description: BasicAuth configuration for the plugin API. If
+                        not set, no authentication will be used.
+                      properties:
+                        password:
+                          description: Password for basic authentication to the external
+                            API.
+                          type: string
+                        username:
+                          description: Username for basic authentication to the external
+                            API.
+                          type: string
+                      required:
+                      - password
+                      - username
+                      type: object
+                    certificate:
+                      description: Path to a certificate file for the connection to
+                        the plugin API.
+                      type: string
+                    host:
+                      description: Host of the plugin API. This is required to connect
+                        to the plugin and needs to be reachable from Policy Reporter
+                        UI.
+                      type: string
+                    http2:
+                      description: Forces HTTP2 for the connection to the plugin API.
+                      type: boolean
+                    secretRef:
+                      description: |-
+                        SecretRef is the name of a secret containing additional configuration for the plugin API.
+                        The secret needs to be in the same namespace as the Policy Reporter UI deployment.
+                      type: string
+                    skipTLS:
+                      description: SkipTLS disables TLS verification for the connection
+                        to the plugin API.
+                      type: boolean
+                    source:
+                      description: The Report source/engine the plugin is referenced
+                        to
+                      type: string
+                  required:
+                  - host
+                  - source
+                  type: object
+                type: array
+              secretRef:
+                description: |-
+                  SecretRef is the name of a secret containing additional configuration for the external cluster API.
+                  The secret needs to be in the same namespace as the Policy Reporter UI deployment.
+                type: string
+              skipTLS:
+                description: SkipTLS disables TLS verification for the connection
+                  to the external Policy Reporter API.
+                type: boolean
+              title:
+                description: Optional title for the cluster in the Dropdown menu.
+                  If not set, the cluster name will be used.
+                type: string
+            required:
+            - host
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources: {}
+{{- end -}}

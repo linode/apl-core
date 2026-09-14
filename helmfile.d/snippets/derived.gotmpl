@@ -5,6 +5,8 @@
 {{- $obj := $v.obj.provider }}
 {{- $cm := index $v.apps "cert-manager" }}
 {{- $versions := (readFile "../versions.yaml" | fromYaml) }}
+{{- /* core.yaml is merged into values further down this file, so read it directly here. */}}
+{{- $core := (readFile "../core.yaml" | fromYaml) }}
 {{- $pkgVersion := (readFile "../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" }}
 {{- $otomiVersion := $v.otomi | get "version" nil }}
 {{- $otomiTag := $otomiVersion }}
@@ -38,8 +40,8 @@
 {{- $oidcClientID := $a.keycloak.idp.clientID }}
 {{- $oidcScopes := list "openid" "email" "profile" }}
 # Where the shared client secret lives, so consumers do not name an issuer's store entry.
-{{- $oidcClientSecretKey := "keycloak-secrets" }}
-{{- $oidcClientSecretProperty := "idp_clientSecret" }}
+{{- $oidcClientSecretKey := "keycloak" }}
+{{- $oidcClientSecretProperty := "idpClientSecret" }}
 # Finished logout destinations, so consumers do not assemble query parameters themselves.
 {{- $logoutToConsole := printf "%s?post_logout_redirect_uri=https://console.%s&client_id=%s" $oidcLogoutUrl $domainSuffix $oidcClientID }}
 {{- $logoutToOauth2Start := printf "%s?post_logout_redirect_uri=https://console.%s/oauth2/start&client_id=%s" $oidcLogoutUrl $domainSuffix $oidcClientID }}
@@ -233,6 +235,22 @@ environments:
           egressGatewayName: {{ $egressGatewayName }}
           egressGatewayLabel: {{ $egressGatewayLabel }}
           ingressClassNames: {{- $ingressClassNames | toYaml | nindent 12 }}
+          {{- /* Hostnames the platform serves itself. auth is oauth2-proxy's own route; the bare domain must stay unclaimed too. */}}
+          platformHostnames:
+            - {{ $domainSuffix }}
+            - {{ printf "auth.%s" $domainSuffix }}
+            {{- range $app := $core.adminApps }}
+            {{- if $app | get "ownHost" false }}
+            - {{ printf "%s.%s" $app.name $domainSuffix }}
+            {{- end }}
+            {{- end }}
+          {{- /* Apps that get a hostname per team: <app>-<teamId>.<domainSuffix> */}}
+          teamHostnameApps:
+            {{- range $app := $core.teamApps }}
+            {{- if $app | get "ownHost" false }}
+            - {{ $app.name }}
+            {{- end }}
+            {{- end }}
         apps:
           argocd:
             enabled: true

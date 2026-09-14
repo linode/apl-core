@@ -16,7 +16,7 @@ logLevel: warning
 
 existingSecretAdminPassword: harbor-admin-password
 nameOverride: harbor
-existingSecretSecretKey: harbor-secret-key
+existingSecretSecretKey: harbor-generated
 
 updateStrategy:
     type: Recreate
@@ -24,14 +24,15 @@ updateStrategy:
 core:
   secretName: harbor-token-service-ca
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   {{- with $imageRepo }}
   image:
     repository: "{{ . }}/harbor-core"
   {{- end }}
 
   resources: {{- $h.resources.core | toYaml | nindent 4 }}
-  existingSecret: harbor-core-secret
-  existingXsrfSecret: harbor-core-xsrf-secret
+  existingSecret: harbor-generated
+  existingXsrfSecret: harbor-generated
   existingXsrfSecretKey: CSRF_KEY
   extraEnvVars:
     - name: REGISTRY_CREDENTIAL_USERNAME
@@ -54,6 +55,7 @@ database:
 
 exporter:
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   {{- with $imageRepo }}
   image:
     repository: "{{ . }}/harbor-exporter"
@@ -75,6 +77,7 @@ expose:
 
 jobservice:
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   {{- with $imageRepo }}
   image:
     repository: "{{ . }}/harbor-jobservice"
@@ -83,7 +86,7 @@ jobservice:
   jobLoggers:
     - stdout
   resources: {{- $h.resources.jobservice | toYaml | nindent 4 }}
-  existingSecret: harbor-jobservice-secret
+  existingSecret: harbor-generated
   extraEnvVars:
     - name: REGISTRY_CREDENTIAL_USERNAME
       valueFrom:
@@ -98,6 +101,7 @@ metrics:
       prometheus: system
 
 nginx:
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   resources: {{- $h.resources.nginx | toYaml | nindent 4 }}
   {{- with $imageRepo }}
   image:
@@ -166,6 +170,7 @@ persistence:
 
 portal:
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   {{- with $imageRepo }}
   image:
     repository: "{{ . }}/harbor-portal"
@@ -178,6 +183,7 @@ portal:
 redis:
   internal:
     priorityClassName: otomi-critical
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     {{- with $imageRepo }}
     image:
       repository: "{{ . }}/valkey-photon"
@@ -186,7 +192,8 @@ redis:
 
 registry:
   priorityClassName: otomi-critical
-  existingSecret: harbor-registry-http
+  existingSecret: harbor-generated
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 
   registry:
     {{- with $imageRepo }}
@@ -207,6 +214,7 @@ registry:
 
 trivy:
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 
   {{- with $imageRepo }}
   image:
