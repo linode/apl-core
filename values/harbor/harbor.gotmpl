@@ -24,6 +24,7 @@ updateStrategy:
 core:
   secretName: harbor-token-service-ca
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   {{- with $imageRepo }}
   image:
     repository: "{{ . }}/harbor-core"
@@ -54,6 +55,7 @@ database:
 
 exporter:
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   {{- with $imageRepo }}
   image:
     repository: "{{ . }}/harbor-exporter"
@@ -75,6 +77,7 @@ expose:
 
 jobservice:
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   {{- with $imageRepo }}
   image:
     repository: "{{ . }}/harbor-jobservice"
@@ -98,6 +101,7 @@ metrics:
       prometheus: system
 
 nginx:
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   resources: {{- $h.resources.nginx | toYaml | nindent 4 }}
   {{- with $imageRepo }}
   image:
@@ -166,6 +170,7 @@ persistence:
 
 portal:
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
   {{- with $imageRepo }}
   image:
     repository: "{{ . }}/harbor-portal"
@@ -178,6 +183,7 @@ portal:
 redis:
   internal:
     priorityClassName: otomi-critical
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     {{- with $imageRepo }}
     image:
       repository: "{{ . }}/valkey-photon"
@@ -187,6 +193,7 @@ redis:
 registry:
   priorityClassName: otomi-critical
   existingSecret: harbor-generated
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 
   registry:
     {{- with $imageRepo }}
@@ -207,6 +214,7 @@ registry:
 
 trivy:
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 
   {{- with $imageRepo }}
   image:
