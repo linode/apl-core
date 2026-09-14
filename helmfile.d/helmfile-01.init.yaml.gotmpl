@@ -42,6 +42,14 @@ releases:
     installed: {{ $a | get "sealed-secrets.enabled" }}
     namespace: external-secrets
     <<: *raw
+  - name: generated-secrets
+    installed: {{ $a | get "sealed-secrets.enabled" }}
+    namespace: apl-secrets
+    labels:
+      app: core
+    chart: ../charts/raw
+    values:
+      - ../values/raw/generated-secrets.gotmpl
   - name: cert-manager
     installed: true
     namespace: cert-manager

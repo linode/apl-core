@@ -17,8 +17,8 @@ resources:
         data:
           connectors.yaml: |
             connectors:
-            - high_priority_channel: {{ "{{ .highPrio | toString }}" }}
-            - low_priority_channel: {{ "{{ .lowPrio | toString }}" }}
+            - high_priority_channel: {{ `{{ .highPrio | toString }}` }}
+            - low_priority_channel: {{ `{{ .lowPrio | toString }}` }}
     data:
       - secretKey: highPrio
         remoteRef:

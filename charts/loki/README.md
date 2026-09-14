@@ -51,6 +51,48 @@ See the [changelog](https://grafana-community.github.io/helm-charts/changelog/?c
 
 ---
 
+## StatefulSet immutability
+
+Most StatefulSet spec fields are immutable. Storage class, PVC size, access modes, `podManagementPolicy`, selector, and `serviceName` are install-time unless the recreate job below covers the change.
+
+### Which workloads render StatefulSets
+
+| Deployment mode | Typical StatefulSet components |
+| --- | --- |
+| Monolithic (`singleBinary`) | `singleBinary` when `singleBinary.kind=StatefulSet` (the default) |
+| Simple Scalable | `write`, `backend` (and `read` only if `read.kind=StatefulSet`) |
+| Distributed | `ingester`, `indexGateway`, `compactor`, `ruler`, plus `patternIngester` / bloom components when enabled and `kind=StatefulSet` |
+| Caches | `resultsCache` / `chunksCache` memcached StatefulSets when those caches are enabled |
+
+### Values that map to immutable StatefulSet fields
+
+Paths are per component (`singleBinary.*`, `write.*`, `backend.*`, `ingester.*`, and so on) unless noted.
+
+| Values | Recreate job covers it? |
+| --- | --- |
+| `*.persistence.storageClass`, `*.persistence.claims[].storageClass`, zone storageClass overrides | No |
+| `*.persistence.size`, `*.persistence.claims[].size`, cache `persistence.storageSize` | Yes, if `*.statefulSetRecreateJob.enabled` (Loki components only). Also patches PVCs when `defaults.statefulSetRecreateJob.patchPVC` is true |
+| `*.persistence.accessModes`, `claims[].accessModes` | No |
+| `*.persistence.selector` | No |
+| `*.persistence.volumeAttributesClassName` and claims equivalent | No |
+| `*.persistence.labels`, `claims[].labels`, claim `name` | Count/name/size mismatch only |
+| `*.persistence.annotations`, `claims[].annotations` | No |
+| `*.podManagementPolicy` | Yes, if the recreate job is enabled |
+| `nameOverride`, `fullnameOverride`, `*.fullnameOverride`, Helm release name | `serviceName` only |
+| Chart-generated selector labels | No |
+
+`*.selectorLabels` in `values.yaml` is **not rendered** into `spec.selector`.
+
+### Recreate job (experimental)
+
+Set `*.statefulSetRecreateJob.enabled=true` on a Loki component. On `helm upgrade`, a pre-upgrade Job deletes the StatefulSet with `--cascade=orphan` when `podManagementPolicy`, `serviceName`, volume-claim count, claim name, or claim **size** differs, and optionally expands PVCs when `defaults.statefulSetRecreateJob.patchPVC` is true.
+
+It does not migrate `storageClass`, `accessModes`, VCT selectors, VCT labels/annotations, or `volumeAttributesClassName`. Memcached cache StatefulSets do not have this Job. `lookup` needs a live cluster; `helm template` / dry-run will not emit it.
+
+This chart emits `apiVersion: v1` and `kind: PersistentVolumeClaim` on each VCT. Older live objects that lack those fields can fail server-side apply even when values did not change.
+
+---
+
 ## Upgrading
 
 ### From 17.x to 18.0.0 ([#193](https://github.com/grafana-community/helm-charts/pull/193))

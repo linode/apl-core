@@ -14,7 +14,7 @@ image:
   # -- Redis image repository
   repository: public.ecr.aws/docker/library/redis
   # -- Redis image tag
-  tag: 8.2.1-alpine
+  tag: 8.8.0-alpine
   # -- Redis image pull policy
   pullPolicy: IfNotPresent
 
@@ -70,7 +70,7 @@ configmapTest:
     # -- Repository of the configmap shellcheck test image.
     repository: koalaman/shellcheck
     # -- Tag of the configmap shellcheck test image.
-    tag: v0.10.0
+    tag: v0.11.0
   # -- Resources for the ConfigMap test pod
   resources: {}
 
@@ -103,18 +103,28 @@ haproxy:
     # -- If "true" this will enable TLS termination on haproxy
     enabled: false
     # -- Secret containing the .pem file
+    # Supports templates like "{{ .Release.Name }}-haproxy-tls"
     secretName: ""
     # -- Key file name
     keyName:
     # -- Path to mount the secret that contains the certificates. haproxy
     certMountPath: /tmp/
-
   # -- Enable read-only redis-slaves
   readOnly:
     # -- Enable if you want a dedicated port in haproxy for redis-slaves
     enabled: false
     # -- Port for the read-only redis-slaves
     port: 6380
+  # -- Additional ports to expose on HAProxy service and deployment
+  # Each port should have a name, containerPort, and optionally servicePort (defaults to containerPort)
+  additionalPorts: []
+  # Example:
+  # additionalPorts:
+  #   - name: custom-port
+  #     containerPort: 8080
+  #     servicePort: 8080
+  #   - name: another-port
+  #     containerPort: 9090
   # -- Number of HAProxy instances
   replicas: 3
   # -- Deployment strategy for the haproxy deployment
@@ -127,7 +137,7 @@ haproxy:
     # -- HAProxy Image Repository
     repository: public.ecr.aws/docker/library/haproxy
     # -- HAProxy Image Tag
-    tag: 3.0.8-alpine
+    tag: 3.3.10-alpine
     # -- HAProxy Image PullPolicy
     pullPolicy: IfNotPresent
 
@@ -172,6 +182,8 @@ haproxy:
   service:
     # -- HAProxy service type "ClusterIP", "LoadBalancer" or "NodePort"
     type: ClusterIP
+    # -- HAProxy service clusterIP. Set to "None" to create a headless service.
+    clusterIP: ""
     # -- (int) HAProxy service nodePort value (haproxy.service.type must be NodePort)
     nodePort: ~
     # -- HAProxy service loadbalancer IP
@@ -187,6 +199,10 @@ haproxy:
 
     # -- List of CIDR's allowed to connect to LoadBalancer
     loadBalancerSourceRanges: []
+    # -- HAProxy service IP family policy for dual-stack clusters
+    ipFamilyPolicy: ""
+    # -- HAProxy service IP families (e.g. ["IPv4", "IPv6"] for dual-stack)
+    ipFamilies: []
 
   # -- HAProxy serviceAccountName
   serviceAccountName: redis-sa
@@ -238,6 +254,8 @@ haproxy:
     client: 330s
     # -- haproxy.cfg `timeout check` setting
     check: 2s
+    # -- haproxy.cfg `timeout tunnel` setting
+    tunnel: 1h
   # -- haproxy.cfg `check inter` setting
   checkInterval: 1s
   # -- haproxy.cfg `check fall` setting
@@ -343,7 +361,7 @@ sysctlImage:
   # -- sysctlImage Init container name
   repository: busybox
   # -- sysctlImage Init container tag
-  tag: 1.34.1
+  tag: 1.38.0
   # -- sysctlImage Init container pull policy
   pullPolicy: Always
   # -- Mount the host `/sys` folder to `/host-sys`
@@ -374,6 +392,10 @@ redis:
   envFrom: []
   # - secretRef:
   #     name: add-env-secret
+
+  # -- Configure the 'minReadySeconds' parameter to StatefulSet
+  # ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#minreadyseconds
+  minReadySeconds: 0
 
   ## Configures redis with tls-port parameter
   # -- (int) TLS Port to access the redis service
@@ -504,6 +526,7 @@ sentinel:
   port: 26379
 
   ## Configure the 'bind' directive to bind to a list of network interfaces
+  bind: ~
   # bind: 0.0.0.0
 
   ## Configures sentinel with tls-port parameter
@@ -527,8 +550,17 @@ sentinel:
   password: ~
   # password: password
 
+  # -- (bool) Configures sentinel with resolve-hostnames parameter, if true sets "resolve-hostnames yes" in sentinel.conf
+  resolveHostnames: ~
+  # resolveHostnames: true
+
+  # -- (bool) Configures sentinel with announce-hostnames parameter, if true sets "announce-hostnames yes" in sentinel.conf
+  announceHostnames: ~
+  # announceHostnames: true
+
   # -- An existing secret containing a key defined by `sentinel.authKey` that configures `requirepass`
   # in the conf parameters (Requires `sentinel.auth: enabled`, cannot be used in conjunction with `.Values.sentinel.password`)
+  # Supports templates like "{{ .Release.Name }}-sentinel-creds"
   existingSecret: ""
 
   ## Defines the key holding the sentinel password in existing secret.
@@ -718,7 +750,7 @@ exporter:
   # -- Exporter image
   image: quay.io/oliver006/redis_exporter
   # -- Exporter image tag
-  tag: v1.67.0
+  tag: v1.86.0
   # -- Exporter image pullPolicy
   pullPolicy: IfNotPresent
 
@@ -852,6 +884,7 @@ authSecretAnnotations: {}
 
 ## Use existing secret containing key `authKey` (ignores redisPassword)
 ## Can also store AWS S3 or SSH secrets in this secret
+## Supports templates like "{{ .Release.Name }}-creds"
 # -- An existing secret containing a key defined by `authKey` that configures `requirepass` and `masterauth` in the conf
 # parameters (Requires `auth: enabled`, cannot be used in conjunction with `.Values.redisPassword`)
 existingSecret: ~
@@ -905,7 +938,8 @@ emptyDir: {}
 tls:
   ## Fill the name of secret if you want to use your own TLS certificates.
   ## The secret should contains keys named by "tls.certFile" - the certificate, "tls.keyFile" - the private key, "tls.caCertFile" - the certificate of CA and "tls.dhParamsFile" - the dh parameter file
-  ## These secret will be genrated using files from certs folder if the secretName is not set and redis.tlsPort is set
+  ## Supports templates like "{{ .Release.Name }}-tls"
+  ## This secret will be generated using files from certs folder if the secretName is not set and redis.tlsPort is set
   # secretName: tls-secret
 
   # -- Name of certificate file
@@ -1045,3 +1079,37 @@ splitBrainDetection:
   retryInterval: 10
   # -- splitBrainDetection resources
   resources: {}
+  # liveness probe parameters for split brain container
+  livenessProbe:
+    # -- Initial delay in seconds for liveness probe
+    initialDelaySeconds: 30
+    # -- Period in seconds after which liveness probe will be repeated
+    periodSeconds: 15
+    # -- Timeout seconds for liveness probe
+    timeoutSeconds: 15
+    # -- Success threshold for liveness probe
+    successThreshold: 1
+    # -- Failure threshold for liveness probe
+    failureThreshold: 5
+    exec:
+      command:
+        - cat
+        - /readonly-config/redis.conf
+
+  # readiness probe parameters for split brain container
+  readinessProbe:
+    # -- Initial delay in seconds for readiness probe
+    initialDelaySeconds: 30
+    # -- Period in seconds after which readiness probe will be repeated
+    periodSeconds: 15
+    # -- Timeout seconds for readiness probe
+    timeoutSeconds: 15
+    # -- Success threshold for readiness probe
+    successThreshold: 1
+    # -- Failure threshold for readiness probe
+    failureThreshold: 5
+    exec:
+      command:
+        - sh
+        - -c
+        - test -d /proc/1

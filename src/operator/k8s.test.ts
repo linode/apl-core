@@ -4,6 +4,7 @@ import {
   READINESS_FILE,
   hasPlatformAuthPodsRestarted,
   markPlatformAuthPodsRestarted,
+  startHeartbeat,
   updateApplyState,
 } from './k8s'
 import { CoreV1Api, ApiException } from '@kubernetes/client-node'
@@ -281,5 +282,52 @@ describe('markOperatorReady', () => {
 
     expect(() => markOperatorReady(unwritable)).not.toThrow()
     expect(existsSync(unwritable)).toBe(false)
+  })
+})
+
+describe('startHeartbeat', () => {
+  let workDir: string
+  let marker: string
+
+  beforeEach(() => {
+    jest.useFakeTimers()
+    workDir = mkdtempSync(join(tmpdir(), 'apl-heartbeat-'))
+    marker = join(workDir, 'heartbeat')
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+    rmSync(workDir, { recursive: true, force: true })
+  })
+
+  test('beats immediately, so the marker exists before the probe initial delay elapses', () => {
+    const timer = startHeartbeat(60_000, marker)
+
+    expect(existsSync(marker)).toBe(true)
+
+    clearInterval(timer)
+  })
+
+  test('keeps beating for the length of an install', () => {
+    const timer = startHeartbeat(60_000, marker)
+    // Deleting first means only a genuine later write can bring the marker back. mtime cannot
+    // be used here: fake timers move Date.now(), not the clock the filesystem stamps with.
+    rmSync(marker)
+
+    jest.advanceTimersByTime(10 * 60_000)
+
+    expect(existsSync(marker)).toBe(true)
+
+    clearInterval(timer)
+  })
+
+  test('stops on clear, so a wedged reconcile loop goes stale instead of being masked', () => {
+    const timer = startHeartbeat(60_000, marker)
+    clearInterval(timer)
+    rmSync(marker)
+
+    jest.advanceTimersByTime(10 * 60_000)
+
+    expect(existsSync(marker)).toBe(false)
   })
 })

@@ -1,11 +1,10 @@
 import { prepareEnvironment } from 'src/common/cli'
-import { Arguments } from 'src/common/crypt'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
 import { getFilename } from 'src/common/utils'
 import { getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
-import { Argv } from 'yargs'
+import { Arguments, Argv } from 'yargs'
 
 const cmdName = getFilename(__filename)
 

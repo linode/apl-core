@@ -9,12 +9,7 @@ global:
     repository: "{{ $v.otomi.linodeLkeImageRepository }}/quay/argoproj/argocd"
   {{- end }}
   domain: {{ $hostname }}
-  {{- with $v.otomi | get "nodeSelector" nil }}
-  nodeSelector:
-    {{- range $key, $val := . }}
-    {{ $key }}: {{ $val }}
-    {{- end }}
-  {{- end }}
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 # ApplicationSet Controller
 applicationSet:
   replicas: {{ $a.applicationSet.replicas }}
@@ -46,9 +41,6 @@ notifications:
 
 redisSecretInit:
   enabled: false
-
-redis-ha:
-  existingSecret: argocd-redis
 
 redis:
   resources: {{- $a.resources.redis | toYaml | nindent 4 }}
@@ -104,6 +96,7 @@ configs:
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
   cm:
     admin.enabled: "true"
+    application.namespaces: apl-addons
     application.instanceLabelKey: app.kubernetes.io/instance
     application.resourceTrackingMethod: annotation
     ga.anonymizeusers: "false"
@@ -229,6 +222,7 @@ configs:
     extra: {}
   params:
     server.insecure: true # nginx terminates tls
+    application.namespaces: apl-addons
     # -- Number of application status processors
     controller.status.processors: {{ $a.controllerStatusProcessors }}
     # -- Number of application operation processors
@@ -286,3 +280,24 @@ extraObjects:
                 statusCode: 302
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" "argocd" "gatewayName" $v.ingress.platformClass.className "host" $hostname) | nindent 4 }}
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "argocd" "host" $hostname) | nindent 4 }}
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: argocd-redis
+      namespace: argocd
+    spec:
+      refreshPolicy: CreatedOnce
+      target:
+        name: argocd-redis
+        creationPolicy: Owner
+        immutable: true
+      dataFrom:
+        - sourceRef:
+            generatorRef:
+              apiVersion: generators.external-secrets.io/v1alpha1
+              kind: ClusterGenerator
+              name: alpha-num-32
+          rewrite:
+            - regexp:
+                source: password
+                target: auth

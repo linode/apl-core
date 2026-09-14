@@ -20,7 +20,7 @@ spec:
   {{- end }}
   to:
     kind: Service
-    name: {{ $fullName }}-http
+    name: {{ include "gitea.service.http.name" . }}
   port:
     targetPort: http
   wildcardPolicy: {{ .Values.route.wildcardPolicy }}

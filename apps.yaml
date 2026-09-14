@@ -12,7 +12,7 @@ appsInfo:
     integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by App Platform to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: Argo CD
-    appVersion: 3.4.4
+    appVersion: 3.5.2
     repo: https://github.com/argoproj/argo-helm
     maintainers: Argo Project
     relatedLinks:
@@ -53,9 +53,19 @@ appsInfo:
     license: Apache 2.0
     about: ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with DNS providers.
     integration: ExternalDNS is used by App Platform to make public service domains accessible by registering them with App Platform's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then App Platform will rely on nip.io to create host names for all services.
+  external-secrets:
+    title: External Secrets
+    appVersion: 2.10.0
+    repo: https://github.com/external-secrets/external-secrets
+    maintainers: External Secrets
+    relatedLinks:
+      - https://external-secrets.io/
+    license: Apache 2.0
+    about: External Secrets allows you to add secrets in Kubernetes from generated or external sources such as secret management systems.
+    integration: App Platform uses External Secrets to manage shared and generated secrets for various applications.
   gitea:
     title: Gitea Self-hosted GIT
-    appVersion: 1.26.2
+    appVersion: 1.27.3
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
@@ -65,7 +75,7 @@ appsInfo:
     integration: App Platform uses Gitea as its default repository for App Platform configuration (values). Gitea can also be used by Teams to provide application code repositories. Access to Gitea is provided by the OIDC integration in App Platform. Members of the otomi-admin and team-admin group can seamlessly sign in to Gitea. When Argo CD is enabled, App Platform will automatically create a Gitops repository for each Team in Gitea.
   grafana:
     title: Grafana
-    appVersion: 13.2.0
+    appVersion: 13.2.1
     repo: https://github.com/grafana/grafana
     maintainers: Grafana Labs
     relatedLinks:
@@ -87,7 +97,7 @@ appsInfo:
     integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. App Platform runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
   istio:
     title: Istio
-    appVersion: 1.30.3
+    appVersion: 1.30.4
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -107,7 +117,7 @@ appsInfo:
     integration: The SSO login page for App Platform is served by Keycloak. Keycloak is used as an identity broker or provider for all App Platform integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of App Platform and is always enabled.
   knative:
     title: Knative Operator
-    appVersion: 1.23.0
+    appVersion: 1.23.1
     repo: https://github.com/knative/serving
     maintainers: Knative
     relatedLinks:
@@ -149,7 +159,7 @@ appsInfo:
     isAlpha: true
   tekton:
     title: Tekton Pipelines
-    appVersion: 1.12.0
+    appVersion: 1.14.0
     repo: https://github.com/tektoncd/pipeline
     maintainers: Tekton
     relatedLinks:
@@ -164,7 +174,7 @@ appsInfo:
     chartName: tekton-pipelines
   loki:
     title: Loki
-    appVersion: 3.7.6
+    appVersion: 3.7.7
     repo: https://github.com/grafana/loki
     maintainers: Grafana Labs
     relatedLinks:
@@ -198,7 +208,7 @@ appsInfo:
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
-    appVersion: 0.39.0
+    appVersion: 0.40.0
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:
@@ -220,7 +230,7 @@ appsInfo:
     chartName: trivy-operator
   otel:
     title: OpenTelemetry Operator
-    appVersion: 0.156.0
+    appVersion: 0.158.0
     repo: https://github.com/open-telemetry/opentelemetry-operator
     maintainers: Grafana labs
     relatedLinks:

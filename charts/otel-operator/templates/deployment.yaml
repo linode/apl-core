@@ -111,6 +111,10 @@ spec:
           command:
             - /manager
           env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
             - name: SERVICE_ACCOUNT_NAME
               valueFrom:
                 fieldRef:

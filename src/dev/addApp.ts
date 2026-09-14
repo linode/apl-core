@@ -103,17 +103,11 @@ const generateDefaultsFile = async (projectDir: string, name: string): Promise<v
 
 const generateFixtureFiles = async (projectDir: string, name: string): Promise<void> => {
   const fixturesPath = `${projectDir}/tests/fixtures/env/apps/${name}.yaml`
-  const secretFixturesPath = `${projectDir}/tests/fixtures/env/apps/secrets.${name}.yaml`
   const fixturesData = {}
   const fixturesDataChunk = { enabled: true }
   set(fixturesData, `apps.${name}`, fixturesDataChunk)
   await writeFile(fixturesPath, objectToYaml(fixturesData))
   d.info(`Generated ${fixturesPath} file.`)
-
-  const secrets = {}
-  set(secrets, `apps.${name}`, {})
-  await writeFile(secretFixturesPath, objectToYaml(secrets))
-  d.info(`Generated ${secretFixturesPath} file.`)
 }
 
 const generateHelmChartValues = (projectDir: string, name: string): void => {

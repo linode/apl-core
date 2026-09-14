@@ -1,4 +1,3 @@
-import { decrypt } from 'src/common/crypt'
 import { commit } from '../cmd/commit'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
@@ -84,9 +83,6 @@ export class AplOperator {
         this.d.info(`[${trigger}] Starting validation process`)
         await this.aplOps.validateValues()
         this.d.info(`[${trigger}] Validation process completed`)
-      }
-      if (trigger === ApplyTrigger.Reconcile) {
-        await decrypt()
       }
       const values = await hfValues({}, env.ENV_DIR)
       await ensureTeamGitOpsDirectories(env.ENV_DIR, values ?? {})

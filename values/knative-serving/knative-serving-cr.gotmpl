@@ -40,25 +40,34 @@ spec:
     replicas: {{ $k.serving.replicas }}
   workloads:
   - name: controller
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     resources:
     - container: controller
       {{- $k.resources.controller | toYaml | nindent 6 }}
   - name: activator
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     resources:
     - container: activator
       {{- $k.resources.activator | toYaml | nindent 6 }}
   - name: webhook
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     resources:
     - container: webhook
       {{- $k.resources.webhook | toYaml | nindent 6 }}
   - name: autoscaler
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     resources:
     - container: autoscaler
       {{- $k.resources.autoscaler | toYaml | nindent 6 }}
   - name: autoscaler-hpa
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     resources:
     - container: autoscaler-hpa
       {{- $k.resources.autoscalerHpa | toYaml | nindent 6 }}
+  - name: net-gateway-api-controller
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
+  - name: net-gateway-api-webhook
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
   config:
     defaults:
       revision-timeout-seconds: "300"
@@ -94,6 +103,7 @@ spec:
             - HTTPRouteRequestTimeout
     features:
       podspec-securitycontext: enabled
+      podspec-nodeselector: enabled
   ingress:
     gateway-api:
       enabled: true

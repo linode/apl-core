@@ -8,3 +8,4 @@ resources:
 deployment:
   secretName: external-dns
   secretKey: secret
+nodeSelector: {{- toYaml .Values.otomi.nodeSelector | nindent 2 }}

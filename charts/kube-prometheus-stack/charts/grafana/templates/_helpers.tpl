@@ -68,7 +68,7 @@ Common labels
 helm.sh/chart: {{ include "grafana.chart" . }}
 {{ include "grafana.selectorLabels" . }}
 {{- if or .Chart.AppVersion .Values.image.tag }}
-app.kubernetes.io/version: {{ mustRegexReplaceAllLiteral "@sha.*" .Values.image.tag "" | default .Chart.AppVersion | trunc 63 | trimSuffix "-" | quote }}
+app.kubernetes.io/version: {{ mustRegexReplaceAllLiteral "@sha.*" (tpl (toString .Values.image.tag) .) "" | default .Chart.AppVersion | trimSuffix "-distroless" | trunc 63 | trimSuffix "-" | quote }}
 {{- end }}
 {{- with .Values.extraLabels }}
 {{ toYaml . }}
@@ -99,7 +99,7 @@ Common labels
 helm.sh/chart: {{ include "grafana.chart" . }}
 {{ include "grafana.imageRenderer.selectorLabels" . }}
 {{- if or .Chart.AppVersion .Values.image.tag }}
-app.kubernetes.io/version: {{ mustRegexReplaceAllLiteral "@sha.*" .Values.image.tag "" | default .Chart.AppVersion | trunc 63 | trimSuffix "-" | quote }}
+app.kubernetes.io/version: {{ mustRegexReplaceAllLiteral "@sha.*" (tpl (toString .Values.image.tag) .) "" | default .Chart.AppVersion | trimSuffix "-distroless" | trunc 63 | trimSuffix "-" | quote }}
 {{- end }}
 {{- end }}
 
@@ -301,3 +301,43 @@ sensitiveKeys:
 {{- end -}}
 {{- $healthPort | quote -}}
 {{- end -}}
+
+{{/*
+Convert a Kubernetes memory quantity string to MiB (integer).
+Accepts Ti, Gi, Mi, Ki binary SI and T, G, M, K decimal SI suffixes,
+as well as plain byte values.
+*/}}
+{{- define "grafana.memoryToMiB" -}}
+{{- $mem := . | toString -}}
+{{- if hasSuffix "Ti" $mem -}}
+  {{- mulf ((trimSuffix "Ti" $mem) | float64) 1048576 | int -}}
+{{- else if hasSuffix "Gi" $mem -}}
+  {{- mulf ((trimSuffix "Gi" $mem) | float64) 1024 | int -}}
+{{- else if hasSuffix "Mi" $mem -}}
+  {{- (trimSuffix "Mi" $mem) | int -}}
+{{- else if hasSuffix "Ki" $mem -}}
+  {{- divf ((trimSuffix "Ki" $mem) | float64) 1024 | int -}}
+{{- else if hasSuffix "T" $mem -}}
+  {{- mulf ((trimSuffix "T" $mem) | float64) 953674.3164 | int -}}
+{{- else if hasSuffix "G" $mem -}}
+  {{- mulf ((trimSuffix "G" $mem) | float64) 953.6743164 | int -}}
+{{- else if hasSuffix "M" $mem -}}
+  {{- mulf ((trimSuffix "M" $mem) | float64) 0.9536743164 | int -}}
+{{- else -}}
+  {{- divf ($mem | float64) 1048576 | int -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+compute a ConfigMap or Secret checksum only based on its .data content.
+This function needs to be called with a context object containing the following keys:
+- ctx: the current Helm context (what '.' is at the call site)
+- name: the file name of the ConfigMap or Secret
+*/}}
+{{- define "grafana.configMapOrSecretContentHash" -}}
+{{- $data := list -}}
+{{- range regexSplit "(?m)^---$" (include (print .ctx.Template.BasePath .name) .ctx) -1 -}}
+{{- $data = append $data (pick (fromYaml .) "data" "stringData") -}}
+{{- end -}}
+{{ $data | toYaml | sha256sum }}
+{{- end }}

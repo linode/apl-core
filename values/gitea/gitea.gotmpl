@@ -49,7 +49,7 @@ strategy:
 
 gitea:
   admin:
-    existingSecret: gitea-admin-secret
+    existingSecret: gitea-config
   config:
     database:
       DB_TYPE: postgres
@@ -98,7 +98,7 @@ gitea:
       PROVIDER: memory
       GC_INTERVAL_TIME: 3600
       SESSION_LIFE_TIME: 600
-    webhook:
+    security:
       ALLOWED_HOST_LIST: "*"
     server:
       DOMAIN: {{ $giteaDomain }}
@@ -119,12 +119,12 @@ gitea:
     - name: GITEA__DATABASE__USER
       valueFrom:
         secretKeyRef:
-          name: gitea-db-secret
+          name: gitea-db
           key: username
     - name: GITEA__DATABASE__PASSWD
       valueFrom:
         secretKeyRef:
-          name: gitea-db-secret
+          name: gitea-db
           key: password
     {{- with $v | get "smtp" nil }}
     - name: GITEA__MAILER__PASSWD
@@ -141,15 +141,24 @@ gitea:
     - name: GITEA__CACHE__ADAPTER
       value: "redis"
     - name: GITEA__CACHE__HOST
-      value: "redis://:changeme@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&"
+      valueFrom:
+        secretKeyRef:
+          name: gitea-config
+          key: cacheUrl
     - name: GITEA__QUEUE__CONN_STR
-      value: "redis://:changeme@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&"
+      valueFrom:
+        secretKeyRef:
+          name: gitea-config
+          key: cacheUrl
     - name: GITEA__QUEUE__TYPE
       value: "redis"
     - name: GITEA__SESSION__PROVIDER
       value: "redis"
     - name: GITEA__SESSION__PROVIDER_CONFIG
-      value: "redis://:changeme@gitea-valkey-headless.gitea.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s&"
+      valueFrom:
+        secretKeyRef:
+          name: gitea-config
+          key: cacheUrl
 
 init:
   resources: {{- $g.resources.init | toYaml | nindent 4 }}
@@ -239,26 +248,21 @@ global:
     - otomi-pullsecret-global
 {{- end }}
 
-extraDeploy:
-  - apiVersion: gateway.networking.k8s.io/v1
-    kind: HTTPRoute
-    metadata:
+gatewayAPI:
+  enabled: true
+  core:
+    httpRoute:
+      enabled: true
       {{ with $httpRoute.annotations }}
       annotations:
-        {{ . | toYaml | nindent 8 }}
+        {{- . | toYaml | nindent 8 }}
       {{- end }}
-      name: gitea
-    spec:
       hostnames:
         - {{ $giteaDomain }}
       parentRefs:
         {{- $httpRoute.parentRefs | toYaml | nindent 8 }}
-      rules:
-        - backendRefs:
-            - name: gitea-http
-              port: 3000
-          matches:
-            - path:
-                type: PathPrefix
-                value: /
+
+extraDeploy:
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "gitea" "host" $giteaDomain) | nindent 4 }}
+
+nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}

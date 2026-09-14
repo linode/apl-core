@@ -7,36 +7,18 @@ import {
   getResourceFileName,
   getResourceName,
   getTeamNameFromJsonPath,
-  getUniqueIdentifierFromFilePath,
-  hasCorrespondingDecryptedFile,
   renderManifest,
   saveResourceGroupToFiles,
   sortTeamConfigArraysByName,
   sortUserArraysByName,
   attachGitConfig,
 } from 'src/common/repo'
-import stubs from 'src/test-stubs'
-
-const { terminal } = stubs
 
 jest.mock('../common/git-config', () => ({
   GIT_DEFAULT_CONFIG: jest.requireActual('../common/git-config').GIT_DEFAULT_CONFIG,
   getGitCredentials: jest.fn().mockResolvedValue({ repoUrl: 'test-repo' }),
   getOldGitCredentials: jest.fn(),
 }))
-
-describe('getUniqueIdentifierFromFilePath', () => {
-  it('should get user name from .dec file', () => {
-    expect(getUniqueIdentifierFromFilePath('secrets.7f5d1670-ea3d-48b5-aa48-0f9d62f80fdb.yaml.dec')).toEqual(
-      '7f5d1670-ea3d-48b5-aa48-0f9d62f80fdb',
-    )
-  })
-  it('should get user name', () => {
-    expect(getUniqueIdentifierFromFilePath('secrets.7f5d1670-ea3d-48b5-aa48-0f9d62f80fdb.yaml')).toEqual(
-      '7f5d1670-ea3d-48b5-aa48-0f9d62f80fdb',
-    )
-  })
-})
 
 describe('getFilePath', () => {
   it('should get path for apps', () => {
@@ -77,7 +59,7 @@ describe('getJsonPath', () => {
       kind: 'AplApp',
       envDir: '/tmp/values',
       jsonPathExpression: 'apps.*',
-      pathGlob: '/tmp/values/env/apps/*.{yaml,yaml.dec}',
+      pathGlob: '/tmp/values/env/apps/*.yaml',
       processAs: 'mapItem',
       resourceGroup: 'platformApps',
       resourceDir: 'apps',
@@ -99,13 +81,6 @@ describe('getJsonPath', () => {
     }
 
     expect(getJsonPath(fileMap, '/tmp/values/env/teams/team_a/netpols/net1.yaml')).toEqual('teamConfig.team_a.netpols')
-  })
-})
-
-describe('hasCorrespondingDecryptedFile', () => {
-  it('should filter out encrypted files', () => {
-    expect(hasCorrespondingDecryptedFile('test.yaml.dec', ['test.yaml.dec', 'test.yaml'])).toEqual(false)
-    expect(hasCorrespondingDecryptedFile('test.yaml', ['test.yaml.dec', 'test.yaml'])).toEqual(true)
   })
 })
 
@@ -629,7 +604,7 @@ describe('AplCatalog', () => {
     kind: 'AplCatalog',
     envDir,
     jsonPathExpression: '$.catalogs.*',
-    pathGlob: `${envDir}/env/catalogs/*.{yaml,yaml.dec}`,
+    pathGlob: `${envDir}/env/catalogs/*.yaml`,
     processAs: 'mapItem',
     resourceGroup: 'platformCatalogs',
     resourceDir: 'catalogs',
@@ -705,11 +680,6 @@ describe('AplCatalog', () => {
     it('should return the correct json path for a different catalog name', () => {
       const jsonPath = getJsonPath(catalogFileMap, '/tmp/values/env/catalogs/custom.yaml')
       expect(jsonPath).toBe('catalogs.custom')
-    })
-
-    it('should strip secrets prefix and resolve to the same json path', () => {
-      const jsonPath = getJsonPath(catalogFileMap, '/tmp/values/env/catalogs/secrets.default.yaml')
-      expect(jsonPath).toBe('catalogs.default')
     })
   })
 
