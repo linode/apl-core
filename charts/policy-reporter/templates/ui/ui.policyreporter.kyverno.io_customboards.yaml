@@ -6,6 +6,8 @@ metadata:
   annotations:
     {{- toYaml .Values.annotations | nindent 4 }}
   {{- end }}
+  labels:
+    {{- include "ui.labels" . | nindent 4 }}
   name: customboards.ui.policyreporter.kyverno.io
 spec:
   group: ui.policyreporter.kyverno.io

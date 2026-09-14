@@ -483,7 +483,7 @@ export const module = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await prepareEnvironment({ skipEnvDirCheck: true, skipDecrypt: true })
+    await prepareEnvironment()
     await collectTraces()
   },
 }

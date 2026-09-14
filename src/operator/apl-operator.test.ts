@@ -49,9 +49,6 @@ jest.mock('../common/values', () => ({
   getDefaultValues: jest.fn().mockResolvedValue(undefined),
   writeValues: jest.fn().mockResolvedValue(undefined),
 }))
-jest.mock('../common/crypt', () => ({
-  decrypt: jest.fn().mockResolvedValue(undefined),
-}))
 jest.mock('../common/utils', () => ({
   ensureTeamGitOpsDirectories: jest.fn().mockResolvedValue(undefined),
   ensureManifestDirectories: jest.fn().mockResolvedValue(undefined),

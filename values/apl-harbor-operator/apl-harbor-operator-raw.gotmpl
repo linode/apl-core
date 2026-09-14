@@ -27,15 +27,15 @@ resources:
         template:
           type: Opaque
           data:
-            harborPassword: '{{ "{{ .harborAdminPassword | toString }}" }}'
+            harborPassword: "{{ `{{ .harborAdminPassword }}` }}"
             harborUser: admin
             oidcEndpoint: {{ $v._derived.oidcBaseUrl }}
             oidcClientId: {{ $v._derived.oidcClientID }}
-            oidcClientSecret: '{{ "{{ .oidcClientSecret | toString }}" }}'
+            oidcClientSecret: "{{ `{{ .oidcClientSecret }}` }}"
       data:
         - secretKey: harborAdminPassword
           remoteRef:
-            key: otomi-secrets
+            key: otomi
             property: adminPassword
         - secretKey: oidcClientSecret
           remoteRef:

@@ -111,17 +111,6 @@ templates:
     mykey: {{ .Values.mysecret }}
 ```
 
-The yaml file containing `mysecret` should be encrypted with a tool like [helm-secrets](https://github.com/futuresimple/helm-secrets)
-
-```
-# secrets.yaml
-mysecret: abc123
-```
-
-```
-$ helm secrets encrypt secrets.yaml
-```
-
 #### STEP 2: Install your templated resources.
 
 ```

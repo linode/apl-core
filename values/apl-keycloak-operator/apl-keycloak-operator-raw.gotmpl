@@ -51,21 +51,21 @@ resources:
           type: Opaque
           data:
             KEYCLOAK_ADMIN: {{ $k.adminUsername }}
-            KEYCLOAK_ADMIN_PASSWORD: '{{ "{{ .adminPassword | toString }}" }}'
-            KEYCLOAK_CLIENT_SECRET: '{{ "{{ .idpClientSecret | toString }}" }}'
+            KEYCLOAK_ADMIN_PASSWORD: "{{ `{{ .adminPassword }}` }}"
+            KEYCLOAK_CLIENT_SECRET: "{{ `{{ .idpClientSecret }}` }}"
             {{- if $v.otomi.hasExternalIDP }}
-            IDP_CLIENT_ID: '{{ "{{ .oidcClientID | toString }}" }}'
-            IDP_CLIENT_SECRET: '{{ "{{ .oidcClientSecret | toString }}" }}'
+            IDP_CLIENT_ID: "{{ `{{ .oidcClientID }}` }}"
+            IDP_CLIENT_SECRET: "{{ `{{ .oidcClientSecret }}` }}"
             {{- end }}
       data:
         - secretKey: adminPassword
           remoteRef:
-            key: otomi-secrets
+            key: otomi
             property: adminPassword
         - secretKey: idpClientSecret
           remoteRef:
-            key: keycloak-secrets
-            property: idp_clientSecret
+            key: keycloak
+            property: idpClientSecret
         {{- if $v.otomi.hasExternalIDP }}
         - secretKey: oidcClientID
           remoteRef:

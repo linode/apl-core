@@ -160,70 +160,12 @@ function customer_name() {
   return 1
 }
 
-function rotate() {
-  cd $ENV_DIR/env >/dev/null
-  find . -type f -name 'secrets.*.yaml' -exec bash -c "sops --input-type=yaml --output-type yaml -r {} > {}" \;
-  cd - >/dev/null
-}
-
 function pushd() {
   command pushd "$@" >/dev/null
 }
 
 function popd() {
   command popd "$@" >/dev/null
-}
-
-function crypt() {
-  if [ ! -f "$ENV_DIR/.sops.yaml" ]; then
-    [ -n "$VERBOSE" ] && echo "No .sops.yaml found so skipping crypt action"
-    return 0
-  fi
-  if [ -n "$GCLOUD_SERVICE_KEY" ]; then
-    GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
-    echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
-    export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
-  fi
-  command=${1:-'dec'}
-  [ "$*" != "" ] && shift
-  files="$*"
-  local out='/dev/stdout'
-  [ -z "$VERBOSE" ] && out='/dev/null'
-  [ -z "$files" ] && files=$(find $ENV_DIR/env -type f -name 'secrets.*.yaml')
-  pushd $ENV_DIR
-  for file in $files; do
-    if [ "$command" = 'enc' ]; then
-      # somehow sops does not treat encryption with the same grace as decryption, and disregards timestamps
-      # so we check those and only encrypt when there is a change found in the .dec file
-      sec_diff=0
-      if [ -f $file.dec ]; then
-        [ -n "$VERBOSE" ] && echo "Found decrypted $file.dec. Calculating diff..."
-        sec_diff=$(expr $(stat -c %Y $file.dec) - $(stat -c %Y $file))
-        [ -n "$VERBOSE" ] && echo "Found timestamp diff in seconds: $sec_diff"
-      fi
-      if [ ! -f $file.dec ] || [ $sec_diff -gt 1 ]; then
-        helm secrets encrypt -i $file >$out
-        ts=$(stat -c %Y $file)
-        chek_ts=$(expr $ts + 1)
-        touch -d @$chek_ts $file.dec
-        [ -n "$VERBOSE" ] && echo "Set timestamp of decrypted file to that of source file: $chek_ts"
-      else
-        [ -n "$VERBOSE" ] && echo "Skipping encryption for $file as it is not changed."
-      fi
-    else
-      if helm secrets decrypt "$file" >"${file}.dec"; then
-        # we correct timestamp of decrypted file to match source file,
-        # in order to detect changes for conditional encryption
-        [ -n "$VERBOSE" ] && echo "Setting timestamp of decrypted file to that of source file."
-        ts=$(stat -c %Y $file)
-        chek_ts=$(expr $ts + 1)
-        touch -d @$chek_ts $file.dec
-        [ -n "$VERBOSE" ] && echo "Set timestamp of decrypted file to that of source file: $chek_ts"
-      fi
-    fi
-  done
-  popd
-  unset GOOGLE_APPLICATION_CREDENTIALS
 }
 
 function hf() {

