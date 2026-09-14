@@ -48,7 +48,9 @@ spec:
             runAsUser: 65532
             seccompProfile:
               type: RuntimeDefault
+      {{- with .Values.nodeSelector }}
       nodeSelector:
-        kubernetes.io/os: linux
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: tekton-dashboard
       volumes: []
