@@ -16,3 +16,5 @@ firewall:
       addresses:
         ipv4:
           - 192.168.128.0/17
+
+nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}
