@@ -98,9 +98,10 @@ metadata:
   name: tekton-triggers-team-{{ $v.teamId }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: RoleBinding
 metadata:
   name: triggers-eventlistener-binding-team-{{ $v.teamId }}
+  namespace: team-{{ $v.teamId }}
 subjects:
 - kind: ServiceAccount
   name: tekton-triggers-team-{{ $v.teamId }}
