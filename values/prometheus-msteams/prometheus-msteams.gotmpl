@@ -25,3 +25,5 @@ resources:
   requests:
     cpu: 1m
     memory: 8Mi
+
+nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}

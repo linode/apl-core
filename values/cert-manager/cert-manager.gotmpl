@@ -7,6 +7,7 @@ global:
     - name: otomi-pullsecret-global
   {{- end }}
   priorityClassName: otomi-critical
+  nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 image:

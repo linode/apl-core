@@ -17,6 +17,10 @@ spec:
       labels:
         {{- include "git-server.selectorLabels" . | nindent 8 }}
     spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       securityContext:
         runAsNonRoot: true
         fsGroup: 1001
