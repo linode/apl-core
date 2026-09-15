@@ -1538,12 +1538,96 @@
               "examples": [
                 "Ignore"
               ]
+            },
+            "namespaceSelector": {
+              "type": "object",
+              "default": {},
+              "title": "The namespaceSelector Schema",
+              "required": [],
+              "properties": {},
+              "examples": [
+                {}
+              ]
+            },
+            "objectSelector": {
+              "type": "object",
+              "default": {},
+              "title": "The objectSelector Schema",
+              "required": [],
+              "properties": {},
+              "examples": [
+                {}
+              ]
             }
           },
           "examples": [
             {
               "failurePolicy": "Ignore"
             }
+          ]
+        },
+        "instrumentation": {
+          "type": "object",
+          "default": {},
+          "title": "The instrumentation Schema",
+          "required": [],
+          "additionalProperties": false,
+          "properties": {
+            "namespaceSelector": {
+              "type": "object",
+              "default": {},
+              "title": "The namespaceSelector Schema",
+              "required": [],
+              "properties": {},
+              "examples": [
+                {}
+              ]
+            },
+            "objectSelector": {
+              "type": "object",
+              "default": {},
+              "title": "The objectSelector Schema",
+              "required": [],
+              "properties": {},
+              "examples": [
+                {}
+              ]
+            }
+          },
+          "examples": [
+            {}
+          ]
+        },
+        "opentelemetryCollector": {
+          "type": "object",
+          "default": {},
+          "title": "The opentelemetryCollector Schema",
+          "required": [],
+          "additionalProperties": false,
+          "properties": {
+            "namespaceSelector": {
+              "type": "object",
+              "default": {},
+              "title": "The namespaceSelector Schema",
+              "required": [],
+              "properties": {},
+              "examples": [
+                {}
+              ]
+            },
+            "objectSelector": {
+              "type": "object",
+              "default": {},
+              "title": "The objectSelector Schema",
+              "required": [],
+              "properties": {},
+              "examples": [
+                {}
+              ]
+            }
+          },
+          "examples": [
+            {}
           ]
         },
         "namePrefix": {
