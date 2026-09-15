@@ -3,7 +3,7 @@ description: APL Helm chart dependencies
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 10.9.0
+    version: 10.9.1
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
     version: 1.3.1
