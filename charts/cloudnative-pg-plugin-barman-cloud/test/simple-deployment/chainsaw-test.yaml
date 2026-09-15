@@ -23,6 +23,18 @@ spec:
                 plugin-barman-cloud ../../
         - assert:
             file: ./01-simple_deployment-assert.yaml
+    - name: Override log level
+      try:
+        - script:
+            content: |
+              helm upgrade \
+              --install \
+              --namespace $NAMESPACE \
+              --values ./02-loglevel_override.yaml \
+              --wait \
+              plugin-barman-cloud ../../
+        - assert:
+            file: ./02-loglevel_override-assert.yaml
     - name: Cleanup
       try:
         - script:

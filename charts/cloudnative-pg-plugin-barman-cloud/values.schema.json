@@ -171,6 +171,18 @@
       },
       "required": []
     },
+    "logLevel": {
+      "default": "info",
+      "description": "Log verbosity level for the plugin barman cloud with values: [error, warning, info, debug, trace].",
+      "enum": [
+        "error",
+        "warning",
+        "info",
+        "debug",
+        "trace"
+      ],
+      "type": "string"
+    },
     "nameOverride": {
       "default": "",
       "type": "string"
