@@ -141,6 +141,8 @@ environments:
             replicas: 1
             idp:
               clientID: otomi
+            networkPolicies:
+              enabled: true
             resources:
               limits:
                 cpu: 200m
@@ -319,6 +321,7 @@ environments:
                   memory: 2Gi
             _rawValues: {}
           keycloak:
+            enabled: true
             adminUsername: otomi-admin
             theme: otomi
             databaseMaxConnections: 28
@@ -1178,6 +1181,7 @@ environments:
           isPreInstalled: false
           useORCS: true
           aiEnabled: false
+          issuer: keycloak
         users: []
         versions:
-          specVersion: 73
+          specVersion: 74
