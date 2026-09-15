@@ -1,23 +1,21 @@
 annotations:
   artifacthub.io/changes: |-
     - kind: added
-      description: "Add value .sourceNamespace to watch a namespace which is different from the one that external-dns is installed into when .namespaced is true."
+      description: "Add value .service.enabled to enable the creation of the Kubernetes service."
     - kind: added
-      description: "Add option to enable Gateway API ListenerSet support."
+      description: "Add value replicaCount to set the number of external-dns replicas (bounded to 0 or 1, since external-dns does not support leader election)."
     - kind: added
-      description: "Add support for bool in extraArgs."
+      description: "Add crd as a valid registry value and grant the matching RBAC on dnsrecords for the CRD registry."
     - kind: added
-      description: "Add value .namespaceOverride to render chart resources into a namespace different from the release namespace, for subchart installs that want their own namespace."
+      description: "Add value hostAliases to inject entries into the Pod's /etc/hosts, for reaching a provider or webhook by a hostname that cluster DNS cannot resolve."
     - kind: changed
-      description: "Update ExternalDNS OCI image version to v0.21.0."
+      description: "Breaking: policy no longer defaults to upsert-only and is now required. You must set policy explicitly to one of create-only, sync, or upsert-only."
+    - kind: changed
+      description: "Update ExternalDNS OCI image version to v0.22.0."
     - kind: fixed
-      description: "Avoid creating cluster-scoped RBAC for Gateway API sources when running namespaced with gatewayNamespace set. Namespace listing permissions are now only added when gatewayNamespace is unset."
-    - kind: fixed
-      description: "Ensure container arguments are passed in as strings (#6264) @KhooHaoYit."
-    - kind: fixed
-      description: "Ensure container arguments are passed in as strings when extraArgs is a map (#6284) @vflaux."
+      description: "RBAC compliance checkbox for dnsendpoints/status #6442 @vflaux."
 apiVersion: v2
-appVersion: 0.21.0
+appVersion: 0.22.0
 description: ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with
   DNS providers.
 home: https://github.com/kubernetes-sigs/external-dns/
@@ -38,4 +36,4 @@ name: external-dns
 sources:
 - https://github.com/kubernetes-sigs/external-dns/
 type: application
-version: 1.21.1
+version: 1.22.0
