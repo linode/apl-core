@@ -4,7 +4,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.21.0
     "helm.sh/resource-policy": keep
   name: imageupdaters.argocd-image-updater.argoproj.io
 spec:
@@ -16,7 +16,20 @@ spec:
     singular: imageupdater
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .status.applicationsMatched
+      name: Apps
+      type: integer
+    - jsonPath: .status.imagesManaged
+      name: Images
+      type: integer
+    - jsonPath: .status.lastCheckedAt
+      name: Last Checked
+      type: date
+    - jsonPath: .status.conditions[?(@.type=="Ready")].status
+      name: Ready
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: ImageUpdater is the Schema for the imageupdaters API
@@ -169,10 +182,47 @@ spec:
                               Example: "docker.io/library/nginx:1.17.10", "quay.io/prometheus/node-exporter:v1.5.0".
                               This field is mandatory.
                             type: string
+                          imagesVerification:
+                            description: |-
+                              ImagesVerification overrides the signature verification policy for this specific image.
+                              When set, it takes precedence over both the spec-level and ApplicationRef-level
+                              ImagesVerification.
+                            properties:
+                              cosignKey:
+                                description: |-
+                                  CosignKey references a Kubernetes Secret in the same namespace as the
+                                  ImageUpdater CR that holds the PEM-encoded ECDSA public key used to verify
+                                  cosign signatures. Providing this field selects cosign key-based verification.
+                                properties:
+                                  key:
+                                    description: |-
+                                      Key is the key within the Secret's data map whose value contains the credential material
+                                      (e.g. "cosign.pub" for a PEM-encoded public key).
+                                    type: string
+                                  secretName:
+                                    description: SecretName is the name of the Kubernetes
+                                      Secret.
+                                    type: string
+                                required:
+                                - key
+                                - secretName
+                                type: object
+                              enabled:
+                                default: true
+                                description: |-
+                                  Enabled controls whether signature verification is active at this scope.
+                                  Defaults to true when the ImagesVerification block is present.
+                                  Set to false to explicitly opt out of verification for this image or group.
+                                type: boolean
+                            type: object
+                            x-kubernetes-validations:
+                            - message: at least one verification method (cosignKey)
+                                is required when verification is enabled
+                              rule: self.enabled == false || has(self.cosignKey)
                           manifestTargets:
                             description: |-
                               ManifestTarget defines how and where to update this image in Kubernetes manifests.
-                              Only one of Helm or Kustomize should be specified within this block.
+                              Exactly one of Helm, Kustomize, or Plugin should be specified within this block.
                               This whole block is optional if the image update isn't written to a manifest in a structured way.
                             properties:
                               helm:
@@ -218,11 +268,50 @@ spec:
                                 required:
                                 - name
                                 type: object
+                              plugin:
+                                description: |-
+                                  Plugin specifies update parameters if the target manifest is managed by a Config Management Plugin.
+                                  When the argocd write-back method is configured, updates will be written as environment variables
+                                  in the Argo CD Application spec.source.plugin.env list. When the git write-back method is
+                                  configured, updates will be written to the .argocd-source-<appName>.yaml file in the git repository.
+                                properties:
+                                  name:
+                                    description: |-
+                                      Name is the environment variable name for the image repository/name part.
+                                      Example: "IMAGE_NAME", "REDIS_IMAGE_REPO".
+                                      If Spec is set, this field is ignored.
+                                    maxLength: 253
+                                    minLength: 1
+                                    type: string
+                                  spec:
+                                    description: |-
+                                      Spec is the environment variable name where the full image string
+                                      (e.g., "image/name:1.0") should be written.
+                                      Use this if your plugin expects the entire image reference in a single env var.
+                                      If this is set, Name and Tag will be ignored.
+                                    maxLength: 253
+                                    minLength: 1
+                                    type: string
+                                  tag:
+                                    description: |-
+                                      Tag is the environment variable name for the image tag part.
+                                      Example: "IMAGE_TAG", "REDIS_IMAGE_VERSION".
+                                      If Spec is set, this field is ignored.
+                                    maxLength: 253
+                                    minLength: 1
+                                    type: string
+                                type: object
+                                x-kubernetes-validations:
+                                - message: At least one of spec or name must be specified
+                                    in plugin target.
+                                  rule: has(self.spec) || has(self.name)
                             type: object
                             x-kubernetes-validations:
-                            - message: Exactly one of helm or kustomize must be specified
-                                within manifestTargets if the block is present.
-                              rule: 'has(self.helm) ? !has(self.kustomize) : has(self.kustomize)'
+                            - message: Exactly one of helm, kustomize, or plugin must
+                                be specified within manifestTargets if the block is
+                                present.
+                              rule: '(has(self.helm) ? 1 : 0) + (has(self.kustomize)
+                                ? 1 : 0) + (has(self.plugin) ? 1 : 0) == 1'
                         required:
                         - alias
                         - imageName
@@ -231,6 +320,44 @@ spec:
                       x-kubernetes-list-map-keys:
                       - alias
                       x-kubernetes-list-type: map
+                    imagesVerification:
+                      description: |-
+                        ImagesVerification overrides the global signature verification policy for applications
+                        matched by this ApplicationRef. When set, it takes precedence over the spec-level
+                        ImagesVerification for all images in this group, but can still be overridden
+                        at the individual ImageConfig level.
+                      properties:
+                        cosignKey:
+                          description: |-
+                            CosignKey references a Kubernetes Secret in the same namespace as the
+                            ImageUpdater CR that holds the PEM-encoded ECDSA public key used to verify
+                            cosign signatures. Providing this field selects cosign key-based verification.
+                          properties:
+                            key:
+                              description: |-
+                                Key is the key within the Secret's data map whose value contains the credential material
+                                (e.g. "cosign.pub" for a PEM-encoded public key).
+                              type: string
+                            secretName:
+                              description: SecretName is the name of the Kubernetes
+                                Secret.
+                              type: string
+                          required:
+                          - key
+                          - secretName
+                          type: object
+                        enabled:
+                          default: true
+                          description: |-
+                            Enabled controls whether signature verification is active at this scope.
+                            Defaults to true when the ImagesVerification block is present.
+                            Set to false to explicitly opt out of verification for this image or group.
+                          type: boolean
+                      type: object
+                      x-kubernetes-validations:
+                      - message: at least one verification method (cosignKey) is required
+                          when verification is enabled
+                        rule: self.enabled == false || has(self.cosignKey)
                     labelSelectors:
                       description: LabelSelectors indicates the label selectors to
                         apply for application selection
@@ -308,6 +435,25 @@ spec:
                                 Branch to commit updates to.
                                 Required if write-back method is Git and this is not specified at the spec level.
                               type: string
+                            pullRequest:
+                              description: |-
+                                PullRequest configures creation of pull requests when writing back image updates to Git.
+                                When set, the controller opens a PR instead of pushing to the branch.
+                                If not specified write back config method is `git`.
+                              properties:
+                                github:
+                                  description: GitHub configures PR creation via the
+                                    GitHub API.
+                                  type: object
+                                gitlab:
+                                  description: GitLab configures MR creation via the
+                                    GitLab API.
+                                  type: object
+                              type: object
+                              x-kubernetes-validations:
+                              - message: Exactly one of github or gitlab must be set
+                                rule: '(has(self.github) ? 1 : 0) + (has(self.gitlab)
+                                  ? 1 : 0) == 1'
                             repository:
                               description: |-
                                 Repository URL to commit changes to.
@@ -318,20 +464,17 @@ spec:
                               description: |-
                                 WriteBackTarget defines the path and type of file to update in the Git repository.
                                 Examples: "helmvalues:./helm/values.yaml", "kustomization:./kustomize/overlays/production".
-                                For ApplicationSet usage, `"{{ .app.path.path }}"` should be resolved by ApplicationSet
+                                For ApplicationSet usage, `{{ .app.path.path }}` should be resolved by ApplicationSet
                                 before this CR is generated, resulting in a concrete path here.
                                 Required if write-back method is Git and this is not specified at the spec level.
                               type: string
                           type: object
                         method:
-                          default: argocd
                           description: |-
                             Method defines the method for writing back updated image versions.
                             This acts as the default if not overridden. If not specified, defaults to "argocd".
                           pattern: ^(argocd|git|git:[a-zA-Z0-9][a-zA-Z0-9-._/:]*)$
                           type: string
-                      required:
-                      - method
                       type: object
                   required:
                   - namePattern
@@ -392,14 +535,43 @@ spec:
                       This acts as the default if not overridden at a more specific level.
                     type: string
                 type: object
-              namespace:
+              imagesVerification:
                 description: |-
-                  Namespace indicates the target namespace of the applications.
-
-                  Deprecated: This field is deprecated and will be removed in a future release.
-                  The controller now uses the ImageUpdater CR's namespace (metadata.namespace)
-                  to determine which namespace to search for applications. This field is ignored.
-                type: string
+                  ImagesVerification defines the global default image signature verification policy.
+                  When set, every image update is subject to cryptographic verification before being
+                  committed to Git or applied to an Argo CD Application.
+                  Can be overridden at the ApplicationRef or ImageConfig level.
+                properties:
+                  cosignKey:
+                    description: |-
+                      CosignKey references a Kubernetes Secret in the same namespace as the
+                      ImageUpdater CR that holds the PEM-encoded ECDSA public key used to verify
+                      cosign signatures. Providing this field selects cosign key-based verification.
+                    properties:
+                      key:
+                        description: |-
+                          Key is the key within the Secret's data map whose value contains the credential material
+                          (e.g. "cosign.pub" for a PEM-encoded public key).
+                        type: string
+                      secretName:
+                        description: SecretName is the name of the Kubernetes Secret.
+                        type: string
+                    required:
+                    - key
+                    - secretName
+                    type: object
+                  enabled:
+                    default: true
+                    description: |-
+                      Enabled controls whether signature verification is active at this scope.
+                      Defaults to true when the ImagesVerification block is present.
+                      Set to false to explicitly opt out of verification for this image or group.
+                    type: boolean
+                type: object
+                x-kubernetes-validations:
+                - message: at least one verification method (cosignKey) is required
+                    when verification is enabled
+                  rule: self.enabled == false || has(self.cosignKey)
               writeBackConfig:
                 description: |-
                   WriteBackConfig provides global default settings for how and where to write back image updates.
@@ -415,6 +587,25 @@ spec:
                           Branch to commit updates to.
                           Required if write-back method is Git and this is not specified at the spec level.
                         type: string
+                      pullRequest:
+                        description: |-
+                          PullRequest configures creation of pull requests when writing back image updates to Git.
+                          When set, the controller opens a PR instead of pushing to the branch.
+                          If not specified write back config method is `git`.
+                        properties:
+                          github:
+                            description: GitHub configures PR creation via the GitHub
+                              API.
+                            type: object
+                          gitlab:
+                            description: GitLab configures MR creation via the GitLab
+                              API.
+                            type: object
+                        type: object
+                        x-kubernetes-validations:
+                        - message: Exactly one of github or gitlab must be set
+                          rule: '(has(self.github) ? 1 : 0) + (has(self.gitlab) ?
+                            1 : 0) == 1'
                       repository:
                         description: |-
                           Repository URL to commit changes to.
@@ -425,20 +616,17 @@ spec:
                         description: |-
                           WriteBackTarget defines the path and type of file to update in the Git repository.
                           Examples: "helmvalues:./helm/values.yaml", "kustomization:./kustomize/overlays/production".
-                          For ApplicationSet usage, `"{{ .app.path.path }}"` should be resolved by ApplicationSet
+                          For ApplicationSet usage, `{{ .app.path.path }}` should be resolved by ApplicationSet
                           before this CR is generated, resulting in a concrete path here.
                           Required if write-back method is Git and this is not specified at the spec level.
                         type: string
                     type: object
                   method:
-                    default: argocd
                     description: |-
                       Method defines the method for writing back updated image versions.
                       This acts as the default if not overridden. If not specified, defaults to "argocd".
                     pattern: ^(argocd|git|git:[a-zA-Z0-9][a-zA-Z0-9-._/:]*)$
                     type: string
-                required:
-                - method
                 type: object
             required:
             - applicationRefs
@@ -446,7 +634,15 @@ spec:
           status:
             description: ImageUpdaterStatus defines the observed state of ImageUpdater
             properties:
+              applicationsMatched:
+                description: ApplicationsMatched is the number of Argo CD applications
+                  matched by this CR's selectors.
+                format: int32
+                minimum: 0
+                type: integer
               conditions:
+                description: Conditions represent the latest available observations
+                  of the resource's state.
                 items:
                   description: Condition contains details for one aspect of the current
                     state of this API Resource.
@@ -502,48 +698,73 @@ spec:
                   - type
                   type: object
                 type: array
-              imageStatus:
-                description: ImageStatus indicates the detailed status for the list
-                  of managed images
-                items:
-                  description: ImageStatus contains information for an image:version
-                    and its update status in hosting applications
-                  properties:
-                    applications:
-                      description: Applications contains a list of applications and
-                        when the image was last updated therein
-                      items:
-                        description: ImageApplicationLastUpdated contains information
-                          for an application and when the image was last updated therein
-                        properties:
-                          appName:
-                            description: AppName indicates and namespace and the application
-                              name
-                            type: string
-                          lastUpdatedAt:
-                            description: LastUpdatedAt indicates when the image in
-                              this application was last updated
-                            format: date-time
-                            type: string
-                        required:
-                        - appName
-                        type: object
-                      type: array
-                    name:
-                      description: Name indicates the image name
-                      type: string
-                    version:
-                      description: Version indicates the image version
-                      type: string
-                  required:
-                  - name
-                  - version
-                  type: object
-                type: array
-              reconciledAt:
-                description: LastUpdatedAt indicates when the image updater last ran
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              imagesManaged:
+                description: ImagesManaged is the number of images that were eligible
+                  for update checking.
+                format: int32
+                minimum: 0
+                type: integer
+              lastCheckedAt:
+                description: LastCheckedAt indicates when the controller last checked
+                  for image updates.
                 format: date-time
                 type: string
+              lastUpdatedAt:
+                description: LastUpdatedAt indicates when the controller last performed
+                  an image update.
+                format: date-time
+                type: string
+              observedGeneration:
+                description: ObservedGeneration is the most recent generation observed
+                  by the controller.
+                format: int64
+                minimum: 0
+                type: integer
+              recentUpdates:
+                description: RecentUpdates contains the list of image updates performed
+                  during the last update cycle.
+                items:
+                  description: RecentUpdate records a single image update performed
+                    during the last update.
+                  properties:
+                    alias:
+                      description: Alias is the alias of the image configuration that
+                        was updated.
+                      type: string
+                    applicationsUpdated:
+                      description: ApplicationsUpdated is the number of applications
+                        in which this image was updated.
+                      format: int32
+                      minimum: 0
+                      type: integer
+                    image:
+                      description: Image is the full image reference.
+                      type: string
+                    message:
+                      description: Message provides a human-readable description of
+                        the update action.
+                      type: string
+                    newVersion:
+                      description: NewVersion is the new tag or digest the image was
+                        updated to.
+                      type: string
+                    updatedAt:
+                      description: UpdatedAt is the timestamp when the update was
+                        applied.
+                      format: date-time
+                      type: string
+                  required:
+                  - alias
+                  - applicationsUpdated
+                  - image
+                  - newVersion
+                  - updatedAt
+                  type: object
+                type: array
+                x-kubernetes-list-type: atomic
             type: object
         type: object
     served: true
