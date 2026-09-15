@@ -19,13 +19,13 @@ webhooks:
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: minstrumentation.kb.io
-    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    {{- if or .Values.admissionWebhooks.instrumentation.namespaceSelector .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
-    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.namespaceSelector "specific" .Values.admissionWebhooks.instrumentation.namespaceSelector) | nindent 6 }}
     {{- end }}
-    {{- if .Values.admissionWebhooks.objectSelector }}
+    {{- if or .Values.admissionWebhooks.instrumentation.objectSelector .Values.admissionWebhooks.objectSelector }}
     objectSelector:
-    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.objectSelector "specific" .Values.admissionWebhooks.instrumentation.objectSelector) | nindent 6 }}
     {{- end }}
     rules:
     - apiGroups:
@@ -50,13 +50,13 @@ webhooks:
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: mopentelemetrycollectorbeta.kb.io
-    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    {{- if or .Values.admissionWebhooks.opentelemetryCollector.namespaceSelector .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
-    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.namespaceSelector "specific" .Values.admissionWebhooks.opentelemetryCollector.namespaceSelector) | nindent 6 }}
     {{- end }}
-    {{- if .Values.admissionWebhooks.objectSelector }}
+    {{- if or .Values.admissionWebhooks.opentelemetryCollector.objectSelector .Values.admissionWebhooks.objectSelector }}
     objectSelector:
-    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.objectSelector "specific" .Values.admissionWebhooks.opentelemetryCollector.objectSelector) | nindent 6 }}
     {{- end }}
     rules:
       - apiGroups:
@@ -79,13 +79,13 @@ webhooks:
         namespace: {{ template "opentelemetry-operator.namespace" . }}
         path: /mutate-v1-pod
         port: {{ .Values.admissionWebhooks.servicePort }}
-    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    {{- if or .Values.admissionWebhooks.pods.namespaceSelector .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
-    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.namespaceSelector "specific" .Values.admissionWebhooks.pods.namespaceSelector) | nindent 6 }}
     {{- end }}
-    {{- if .Values.admissionWebhooks.objectSelector }}
+    {{- if or .Values.admissionWebhooks.pods.objectSelector .Values.admissionWebhooks.objectSelector }}
     objectSelector:
-    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.objectSelector "specific" .Values.admissionWebhooks.pods.objectSelector) | nindent 6 }}
     {{- end }}
     failurePolicy: {{ .Values.admissionWebhooks.pods.failurePolicy }}
     name: mpod.kb.io
@@ -122,13 +122,13 @@ webhooks:
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: vinstrumentationcreateupdate.kb.io
-    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    {{- if or .Values.admissionWebhooks.instrumentation.namespaceSelector .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
-    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.namespaceSelector "specific" .Values.admissionWebhooks.instrumentation.namespaceSelector) | nindent 6 }}
     {{- end }}
-    {{- if .Values.admissionWebhooks.objectSelector }}
+    {{- if or .Values.admissionWebhooks.instrumentation.objectSelector .Values.admissionWebhooks.objectSelector }}
     objectSelector:
-    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.objectSelector "specific" .Values.admissionWebhooks.instrumentation.objectSelector) | nindent 6 }}
     {{- end }}
     rules:
     - apiGroups:
@@ -153,13 +153,13 @@ webhooks:
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: Ignore
     name: vinstrumentationdelete.kb.io
-    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    {{- if or .Values.admissionWebhooks.instrumentation.namespaceSelector .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
-    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.namespaceSelector "specific" .Values.admissionWebhooks.instrumentation.namespaceSelector) | nindent 6 }}
     {{- end }}
-    {{- if .Values.admissionWebhooks.objectSelector }}
+    {{- if or .Values.admissionWebhooks.instrumentation.objectSelector .Values.admissionWebhooks.objectSelector }}
     objectSelector:
-    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.objectSelector "specific" .Values.admissionWebhooks.instrumentation.objectSelector) | nindent 6 }}
     {{- end }}
     rules:
       - apiGroups:
@@ -183,13 +183,13 @@ webhooks:
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
     name: vopentelemetrycollectorcreateupdatebeta.kb.io
-    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    {{- if or .Values.admissionWebhooks.opentelemetryCollector.namespaceSelector .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
-    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.namespaceSelector "specific" .Values.admissionWebhooks.opentelemetryCollector.namespaceSelector) | nindent 6 }}
     {{- end }}
-    {{- if .Values.admissionWebhooks.objectSelector }}
+    {{- if or .Values.admissionWebhooks.opentelemetryCollector.objectSelector .Values.admissionWebhooks.objectSelector }}
     objectSelector:
-    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.objectSelector "specific" .Values.admissionWebhooks.opentelemetryCollector.objectSelector) | nindent 6 }}
     {{- end }}
     rules:
       - apiGroups:
@@ -214,13 +214,13 @@ webhooks:
         port: {{ .Values.admissionWebhooks.servicePort }}
     failurePolicy: Ignore
     name: vopentelemetrycollectordeletebeta.kb.io
-    {{- if .Values.admissionWebhooks.namespaceSelector }}
+    {{- if or .Values.admissionWebhooks.opentelemetryCollector.namespaceSelector .Values.admissionWebhooks.namespaceSelector }}
     namespaceSelector:
-    {{- toYaml .Values.admissionWebhooks.namespaceSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.namespaceSelector "specific" .Values.admissionWebhooks.opentelemetryCollector.namespaceSelector) | nindent 6 }}
     {{- end }}
-    {{- if .Values.admissionWebhooks.objectSelector }}
+    {{- if or .Values.admissionWebhooks.opentelemetryCollector.objectSelector .Values.admissionWebhooks.objectSelector }}
     objectSelector:
-    {{- toYaml .Values.admissionWebhooks.objectSelector | nindent 6 }}
+    {{- include "opentelemetry-operator.mergeSelector" (dict "common" .Values.admissionWebhooks.objectSelector "specific" .Values.admissionWebhooks.opentelemetryCollector.objectSelector) | nindent 6 }}
     {{- end }}
     rules:
       - apiGroups:
