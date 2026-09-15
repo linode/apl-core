@@ -22,12 +22,6 @@
 *.tmproj
 .vscode/
 # Helm plugin tooling
-ci/
-tests/
-*.gotmpl
-# pre-fork content - to be removed
-test/
-scenarios/
-docs/
-*-values.yaml
-hack/
+/ci/
+/tests/
+/hack/
