@@ -282,6 +282,20 @@ admissionWebhooks:
   ## - Fail, the injection is fail-close. If the webhook pod is not ready, pods cannot be created.
   pods:
     failurePolicy: Ignore
+    namespaceSelector: {}
+    objectSelector: {}
+
+  ## Selectors for Instrumentation webhooks.
+  ## Empty maps use the common selectors from admissionWebhooks.namespaceSelector and admissionWebhooks.objectSelector.
+  instrumentation:
+    namespaceSelector: {}
+    objectSelector: {}
+
+  ## Selectors for OpenTelemetryCollector webhooks.
+  ## Empty maps use the common selectors from admissionWebhooks.namespaceSelector and admissionWebhooks.objectSelector.
+  opentelemetryCollector:
+    namespaceSelector: {}
+    objectSelector: {}
 
   ## Adds a prefix to the mutating webhook name.
   ## This can be used to order this mutating webhook with all your cluster's mutating webhooks.
@@ -290,7 +304,8 @@ admissionWebhooks:
   ## Customize webhook timeout duration
   timeoutSeconds: 10
 
-  ## Provide selectors for your objects
+  ## Common selectors for all admission webhooks (Pods, Instrumentation, and OpenTelemetryCollector).
+  ## Per-webhook selectors are merged with these values, with specific values taking precedence on conflicts.
   namespaceSelector: {}
   objectSelector: {}
 
