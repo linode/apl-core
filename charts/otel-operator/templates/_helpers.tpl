@@ -185,3 +185,13 @@ The image to use for opentelemetry-operator.
 {{- end -}}
 {{ join "," $list }}
 {{- end }}
+
+{{/*
+Merge common and webhook-specific selector values.
+Specific values take precedence over common values.
+*/}}
+{{- define "opentelemetry-operator.mergeSelector" -}}
+{{- $common := .common | default (dict) -}}
+{{- $specific := .specific | default (dict) -}}
+{{- toYaml (mergeOverwrite (deepCopy $common) $specific) -}}
+{{- end }}
