@@ -3,7 +3,7 @@ description: APL Helm chart dependencies
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 10.9.0
+    version: 10.9.1
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
     version: 1.1.5
@@ -76,7 +76,7 @@ dependencies:
     version: 3.8.2
     repository: https://kyverno.github.io/kyverno/
   - name: loki
-    version: 18.12.1
+    version: 18.13.1
     repository: oci://ghcr.io/grafana-community/helm-charts/loki
   - name: metrics-server
     version: 3.14.0
@@ -86,7 +86,7 @@ dependencies:
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
-    version: 0.122.0
+    version: 0.122.1
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   - name: policy-reporter
     version: 3.10.0
