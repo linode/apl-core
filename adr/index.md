@@ -29,6 +29,7 @@ This log lists the architectural decisions for apl-core.
 * [ADR-2026-08-06](2026-08-06-keycloak-to-dex-migration-path.md) - Migration path from Keycloak to Dex for existing clusters
 - [ADR-2026-08-11](2026-08-11-operator-readiness-after-first-apply.md) - Operator readiness signals the first completed apply
 - [ADR-2026-08-19](2026-08-19-apl-addons-argocd-project.md) - apl-addons ArgoCD project for platform-admin addon deployments
+- [ADR-2026-08-21](2026-08-21-app-enable-flags-in-aplcluster.md) - App enable flags stored in the AplCluster spec
 
 <!-- adrlogstop -->
 
