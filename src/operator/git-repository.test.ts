@@ -120,7 +120,6 @@ describe('GitRepository', () => {
 
     beforeEach(() => {
       fs.existsSync.mockReturnValue(false)
-      mockGit.addConfig = jest.fn()
     })
 
     test('should clone repository successfully when repo does not exist', async () => {
@@ -137,9 +136,8 @@ describe('GitRepository', () => {
       expect(mockGit.clone).toHaveBeenCalledWith(
         'https://testuser:testpass@github.com:443/testorg/testrepo.git',
         '/tmp/repo',
-        ['-b', 'main', '-c', 'http.proactiveAuth=basic'],
+        ['-b', 'main'],
       )
-      expect(mockGit.addConfig).toHaveBeenCalledWith('http.proactiveAuth', 'basic')
       expect(fs.existsSync).toHaveBeenCalledWith('/tmp/repo/.git')
     })
 
@@ -168,7 +166,6 @@ describe('GitRepository', () => {
       expect(fs.existsSync).toHaveBeenCalledWith('/tmp/repo/.git')
       expect(mockGit.clone).not.toHaveBeenCalled()
       expect(mockGit.getRemotes).toHaveBeenCalledWith(true)
-      expect(mockGit.addConfig).toHaveBeenCalledWith('http.proactiveAuth', 'basic')
       expect(mockGit.remote).not.toHaveBeenCalled()
     })
 
@@ -419,10 +416,6 @@ describe('GitRepository', () => {
       password: 'newpass',
     }
 
-    beforeEach(async () => {
-      mockGit.addConfig = jest.fn()
-    })
-
     test('should update authenticatedUrl and set new git remote', async () => {
       mockGit.remote.mockResolvedValue(undefined)
 
@@ -430,7 +423,6 @@ describe('GitRepository', () => {
 
       expect(gitRepository.authenticatedUrl).toBe(newConfig.authenticatedUrl)
       expect(mockGit.remote).toHaveBeenCalledWith(['set-url', 'origin', newConfig.authenticatedUrl])
-      expect(mockGit.addConfig).toHaveBeenCalledWith('http.proactiveAuth', 'basic')
     })
 
     test('should update branch when it changes', async () => {
