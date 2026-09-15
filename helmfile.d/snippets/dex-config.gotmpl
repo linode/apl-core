@@ -3,12 +3,6 @@
 {{- $d := $v.apps | get "dex" }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 
-{{- /* Apps that run their own OIDC flow instead of sitting behind oauth2-proxy. */}}
-{{- $ownOidcCallbacks := dict
-    "argocd"  "/auth/callback"
-    "harbor"  "/c/oidc/callback"
-    "grafana" "/login/generic_oauth"
-    "gitea"   "/user/oauth2/otomi-idp/callback" }}
 {{- $teamIds := list }}
 {{- range $name, $team := omit $v.teamConfig "admin" }}
   {{- $teamIds = append $teamIds $name }}
@@ -19,7 +13,7 @@
   {{- if $coreApp | get "ownHost" false }}
     {{- $host := printf "%s.%s" $coreApp.name $domainSuffix }}
     {{- $redirectUrls = append $redirectUrls (printf "https://%s/oauth2/callback" $host) }}
-    {{- with $ownOidcCallbacks | get $coreApp.name "" }}
+    {{- with $coreApp | get "oidcCallbackPath" "" }}
     {{- $redirectUrls = append $redirectUrls (printf "https://%s%s" $host .) }}
     {{- end }}
   {{- end }}
@@ -29,7 +23,7 @@
     {{- range $teamId := $teamIds }}
       {{- $host := printf "%s-%s.%s" $teamApp.name $teamId $domainSuffix }}
       {{- $redirectUrls = append $redirectUrls (printf "https://%s/oauth2/callback" $host) }}
-      {{- with $ownOidcCallbacks | get $teamApp.name "" }}
+      {{- with $teamApp | get "oidcCallbackPath" "" }}
       {{- $redirectUrls = append $redirectUrls (printf "https://%s%s" $host .) }}
       {{- end }}
     {{- end }}
