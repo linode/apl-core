@@ -97,7 +97,7 @@ jobs:
       - name: Push to OCI registry
         uses: docker/build-push-action@v7
         env:
-          CONTAINER_IMAGE_TAG: ${{ env.CONTAINER_REGISTRY }}/${{ env.CONTAINER_IMAGE_NAME }}:${{ needs.release-get-tag.outputs.release_tag }}
+          CONTAINER_IMAGE_TAG: ${{ env.CONTAINER_REGISTRY }}/${{ env.CONTAINER_IMAGE_NAME }}:${{ env.GIT_TAG }}
         with:
           push: ${{ !inputs.dry_run }}
           context: .
