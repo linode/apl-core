@@ -305,9 +305,8 @@ grafana:
         replacement: po-grafana.grafana.svc.cluster.local:80
   testFramework:
     enabled: false
-  {{- if or $apps.loki.enabled }}
+  {{- if $apps.loki.enabled }}
   additionalDataSources:
-    {{- if $apps.loki.enabled }}
     - name: Loki
       editable: false
       uid: loki
@@ -322,7 +321,6 @@ grafana:
       basicAuthUser: otomi-admin
       secureJsonData:
         basicAuthPassword: $__env{GF_LOKI_BASIC_AUTH_PASSWORD}
-    {{- end }}
   {{- end }}
   admin:
     existingSecret: grafana-admin-secret
