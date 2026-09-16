@@ -20,6 +20,7 @@ on:
         description: 'Dry run — skip all writes (git push)'
         required: true
         type: boolean
+        default: true
 
 env:
   RELEASE_BRANCH_PREFIX: 'releases/'

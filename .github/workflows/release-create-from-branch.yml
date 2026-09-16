@@ -114,6 +114,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   release-helm-chart:
+    if: ${{ !inputs.dry_run }}
     runs-on: ubuntu-22.04
     permissions:
       contents: write
