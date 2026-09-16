@@ -36,37 +36,6 @@ resources:
             - operation:
                 notPorts: ["5557"]
 
-  - apiVersion: external-secrets.io/v1
-    kind: ExternalSecret
-    metadata:
-      name: dex-secrets
-      namespace: apl-secrets
-    spec:
-      refreshPolicy: CreatedOnce
-      target:
-        name: dex-secrets
-        creationPolicy: Owner
-        immutable: true
-      dataFrom:
-        - sourceRef:
-            generatorRef:
-              apiVersion: generators.external-secrets.io/v1alpha1
-              kind: ClusterGenerator
-              name: alpha-num-32
-          rewrite:
-            - regexp:
-                source: password
-                target: idpClientSecret
-        - sourceRef:
-            generatorRef:
-              apiVersion: generators.external-secrets.io/v1alpha1
-              kind: ClusterGenerator
-              name: alpha-num-32
-          rewrite:
-            - regexp:
-                source: password
-                target: sessionCookieEncryptionKey
-
   {{- /* adminPassword is hashed by ESO itself (sprig bcrypt), never stored or rendered as a hash. */}}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
@@ -90,13 +59,13 @@ resources:
       data:
         - secretKey: idpClientSecret
           remoteRef:
-            key: dex-secrets
+            key: dex
             property: idpClientSecret
         - secretKey: sessionCookieEncryptionKey
           remoteRef:
-            key: dex-secrets
+            key: dex
             property: sessionCookieEncryptionKey
         - secretKey: adminPassword
           remoteRef:
-            key: otomi-secrets
+            key: otomi
             property: adminPassword
