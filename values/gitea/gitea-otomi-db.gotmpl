@@ -14,9 +14,12 @@ walStorage:
   size: {{ $gdb.walStorageSize }}
 instances: {{ $gdb.replicas }}
 
+{{- with $v.otomi.nodeSelector }}
 clusterAffinity:
   affinity:
-    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
+    {{- /** Empty nodeSelector object leads to scheduling issues! */}}
+    nodeSelector: {{- toYaml . | nindent 6 }}
+{{- end }}
 
 {{- if $gdb.imageName }}
   {{- if $v.otomi.linodeLkeImageRepository }}

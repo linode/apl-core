@@ -14,10 +14,12 @@ walStorage:
   size: {{ $kdb.walStorageSize }}
 instances: {{ $kdb.replicas }}
 
+{{- with $v.otomi.nodeSelector }}
 clusterAffinity:
   affinity:
-    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
-
+    {{- /** Empty nodeSelector object leads to scheduling issues! */}}
+    nodeSelector: {{- toYaml . | nindent 6 }}
+{{- end }}
 
 {{- if $kdb.imageName }}
   {{- if $v.otomi.linodeLkeImageRepository }}
