@@ -150,6 +150,7 @@ grafana:
       url: http://po-prometheus.monitoring:9090
       jsonData:
         httpMethod: GET
+    {{- if $apps.loki.enabled }}
     - name: Loki
       editable: false
       uid: loki
@@ -164,6 +165,7 @@ grafana:
       basicAuthUser: {{ $teamId }}
       secureJsonData:
         basicAuthPassword: $__env{GF_LOKI_BASIC_AUTH_PASSWORD}
+    {{- end }}
   admin:
     existingSecret: team-{{ $teamId }}-grafana-admin
     userKey: admin-user
