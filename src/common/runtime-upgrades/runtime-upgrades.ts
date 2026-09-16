@@ -32,6 +32,16 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     pre: async ({ debug }) => {
       await stripOversizedLastAppliedAnnotations().catch((e) => debug.warn('Failed to strip oversized annotations:', e))
     },
+    applications: {
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
+    },
+  },
+  {
+    version: '6.4.0',
     post: async ({ debug }) => {
       // Wait until all Applications have been applied, but do not wait for sync.
       // Delete Gitea deployment and Valkey, as ArgoCD fails to update it incrementally after migrating secrets to generated ones.
@@ -49,13 +59,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           debug.warn('Failed to delete Gitea Valkey StatefulSet:', e)
         }
       }
-    },
-    applications: {
-      'istio-system-istiod': {
-        post: async () => {
-          await detectAndRestartOutdatedIstioSidecars(k8s.core())
-        },
-      },
     },
   },
 ]
