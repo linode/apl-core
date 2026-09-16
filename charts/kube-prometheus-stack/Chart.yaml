@@ -22,11 +22,11 @@ dependencies:
 - condition: nodeExporter.enabled
   name: prometheus-node-exporter
   repository: oci://ghcr.io/prometheus-community/charts
-  version: 4.56.3
+  version: 4.57.0
 - condition: grafana.enabled
   name: grafana
   repository: oci://ghcr.io/grafana-community/helm-charts
-  version: 13.2.2
+  version: 13.2.4
 - condition: windowsMonitoring.enabled
   name: prometheus-windows-exporter
   repository: oci://ghcr.io/prometheus-community/charts
@@ -69,4 +69,4 @@ sources:
 - https://github.com/prometheus-community/helm-charts
 - https://github.com/prometheus-operator/kube-prometheus
 type: application
-version: 90.0.0
+version: 90.2.0

@@ -2,6 +2,7 @@ import { OtomiDebugger } from '../debug'
 import { k8s } from '../k8s'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { stripOversizedLastAppliedAnnotations } from './strip-oversized-annotations'
+import { ApiException } from '@kubernetes/client-node'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -37,6 +38,27 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           await detectAndRestartOutdatedIstioSidecars(k8s.core())
         },
       },
+    },
+  },
+  {
+    version: '6.4.0',
+    post: async ({ debug }) => {
+      // Wait until all Applications have been applied, but do not wait for sync.
+      // Delete Gitea deployment and Valkey, as ArgoCD fails to update it incrementally after migrating secrets to generated ones.
+      try {
+        await k8s.app().deleteNamespacedDeployment({ name: 'gitea', namespace: 'gitea' })
+      } catch (e) {
+        if (!(e instanceof ApiException && e.code === 404)) {
+          debug.warn('Failed to delete Gitea deployment:', e)
+        }
+      }
+      try {
+        await k8s.app().deleteNamespacedStatefulSet({ name: 'gitea-valkey-primary', namespace: 'gitea' })
+      } catch (e) {
+        if (!(e instanceof ApiException && e.code === 404)) {
+          debug.warn('Failed to delete Gitea Valkey StatefulSet:', e)
+        }
+      }
     },
   },
 ]
