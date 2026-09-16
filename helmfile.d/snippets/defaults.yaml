@@ -137,7 +137,7 @@ environments:
             useBackupPlugin: true
             _rawValues: {}
           dex:
-            enabled: false
+            enabled: true
             replicas: 1
             idp:
               clientID: otomi
@@ -321,7 +321,7 @@ environments:
                   memory: 2Gi
             _rawValues: {}
           keycloak:
-            enabled: true
+            enabled: false
             adminUsername: otomi-admin
             theme: otomi
             databaseMaxConnections: 28
@@ -1181,7 +1181,7 @@ environments:
           isPreInstalled: false
           useORCS: true
           aiEnabled: false
-          issuer: keycloak
+          issuer: dex
         users: []
         versions:
           specVersion: 74

@@ -1622,7 +1622,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            default: false
+            default: true
           idp:
             additionalProperties: false
             properties:
@@ -1791,7 +1791,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            default: true
+            default: false
             description: Whether Keycloak is deployed. Independent of otomi.issuer — enabling Keycloak does not select it as the issuer.
           idp:
             additionalProperties: false
@@ -2569,7 +2569,7 @@ properties:
         enum:
           - dex
           - keycloak
-        default: keycloak
+        default: dex
         description: Which app every consumer authenticates against.
       aiEnabled:
         type: boolean
