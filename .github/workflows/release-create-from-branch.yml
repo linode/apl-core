@@ -46,42 +46,108 @@ jobs:
           require_rc_before_stable: false
           check_tag_not_exists: true
           validate_branch: true
+      - name: Check versions.yaml entries are semver-compatible
+        uses: linode/apl-gh-actions/actions/release-check-versions-yaml@v0.3.0
+        with:
+          repo_root: ${{ github.workspace }}
+          is_prerelease: ${{ inputs.is_prerelease }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
-  validate-deps:
-    needs: release-get-tag
-    permissions:
-      contents: read
-    uses: linode/apl-gh-actions/.github/workflows/validate-deps.yml@v0.3.0
-    with:
-      release_branch: ${{ github.ref_name }}
-      is_prerelease: ${{ inputs.is_prerelease }}
-
-  release-from-branch:
-    needs:
-      - release-get-tag
-      - validate-deps
+  release-software:
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
-    uses: linode/apl-gh-actions/.github/workflows/release-software.yml@v0.3.0
-    with:
-      release_branch: ${{ github.ref_name }}
-      is_prerelease: ${{ inputs.is_prerelease }}
-      dry_run: ${{ inputs.dry_run }}
-      container_registry: 'docker.io'
-      container_image: 'linode/apl-core'
-      release_tag: ${{ needs.release-get-tag.outputs.release_tag }}
-    secrets:
-      oci_password: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
-      oci_username: ${{ secrets.DOCKERHUB_LINODEBOT_USERNAME }}
+    needs:
+      - release-get-tag
+    env:
+      GIT_TAG: ${{ needs.release-get-tag.outputs.release_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_BRANCH }}
+          fetch-depth: 1
+          fetch-tags: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git identity
+        env:
+          ACTOR_ID: ${{ github.actor_id }}
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "${ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
+
+      - name: Create and push git tag
+        uses: linode/apl-gh-actions/actions/release-tag@v0.3.0
+        with:
+          release_tag: ${{ env.GIT_TAG }}
+          dry_run: ${{ inputs.dry_run }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to OCI registry
+        if: ${{ !inputs.dry_run }}
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.CONTAINER_REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_LINODEBOT_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
+
+      - name: Push to OCI registry
+        uses: docker/build-push-action@v7
+        env:
+          CONTAINER_IMAGE_TAG: ${{ env.CONTAINER_REGISTRY }}/${{ env.CONTAINER_IMAGE_NAME }}:${{ needs.release-get-tag.outputs.release_tag }}
+        with:
+          push: ${{ !inputs.dry_run }}
+          context: .
+          build-args: |
+            VERSION=${{ env.GIT_TAG }}
+          tags: ${{ env.CONTAINER_IMAGE_TAG }}
+
+      - name: Create GitHub Release
+        uses: linode/apl-gh-actions/actions/release-create-github-release@v0.3.0
+        with:
+          release_tag: ${{ env.GIT_TAG }}
+          is_prerelease: ${{ inputs.is_prerelease }}
+          dry_run: ${{ inputs.dry_run }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
   release-helm-chart:
-    needs:
-      - release-get-tag
-      - release-from-branch
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
-    uses: linode/apl-gh-actions/.github/workflows/release-helm-chart.yml@v0.3.0
-    with:
-      release_tag: ${{ needs.release-get-tag.outputs.release_tag }}
-      dry_run: ${{ inputs.dry_run }}
-      chart_name: 'apl'
-      charts_dir: 'chart'
+    needs:
+      - release-get-tag
+      - release-software
+    env:
+      GIT_TAG: ${{ needs.release-get-tag.outputs.release_tag }}
+      CHARTS_DIR: chart
+      CHART_PATH: chart/apl
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.GIT_TAG }}
+          fetch-depth: 0
+      - name: Configure git identity
+        env:
+          ACTOR_ID: ${{ github.actor_id }}
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "${ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
+      - name: Prepare Helm chart
+        if: ${{ !inputs.dry_run }}
+        uses: linode/apl-gh-actions/actions/release-prepare-chart-for-release@v0.3.0
+        with:
+          chart_path: ${{ env.CHART_PATH }}
+          release_tag: ${{ env.GIT_TAG }}
+      - name: Publish Helm chart
+        if: ${{ !inputs.dry_run }}
+        uses: helm/chart-releaser-action@v1.7.0
+        with:
+          charts_dir: ${{ env.CHARTS_DIR }}
+          skip_existing: true
+          mark_as_latest: false
+        env:
+          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
