@@ -1,11 +1,49 @@
 {{- $v := .Values -}}
 {{- $ks := $v.apps.kserve -}}
+{{- $imagePrefix := "" }}
+{{- with $v.otomi.linodeLkeImageRepository }}
+{{- /** Only set if Linode image repository is used */}}
+{{- $imagePrefix = print . "/docker/" }}
+{{- end }}
 
 kserve:
+  agent:
+    image: {{ $imagePrefix }}kserve/agent
+  router:
+    image: {{ $imagePrefix }}kserve/router
+    {{- with .Values.otomi | get "globalPullSecret" nil }}
+    imagePullSecrets:
+      - name: otomi-pullsecret-global
+    {{- end }}
+  storage:
+    image: {{ $imagePrefix }}kserve/storage-initializer
+  servingruntime:
+    art:
+      image: {{ $imagePrefix }}kserve/art-explainer
+  localmodel:
+    controller:
+      image: {{ $imagePrefix }}kserve/kserve-localmodel-controller
+    defaultJobImage: {{ $imagePrefix }}kserve/storage-initializer
+    agent:
+      nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 8 }}
+      image: {{ $imagePrefix }}kserve/kserve-localmodelnode-agent
+  inferenceservice:
+    resources: {{- $ks.resources.inferenceService | toYaml | nindent 8 }}
   controller:
     nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
+    {{- /**
+      Check on upgrade against upstream changes on tag.
+      gcr.io/kubebuilder/kube-rbac-proxy is published with same images as quay.io/brancz/kube-rbac-proxy
+      */}}
+    {{- with $v.otomi.linodeLkeImageRepository }}
+    rbacProxyImage: {{ . }}/gcr/kubebuilder/kube-rbac-proxy:v0.18.0
+    {{- end }}
     rbacProxy:
       resources: {{- $ks.resources.rbacProxy | toYaml | nindent 8 }}
     resources: {{- $ks.resources.controller | toYaml | nindent 6 }}
-  inferenceservice:
-    resources: {{- $ks.resources.inferenceService | toYaml | nindent 8 }}
+    image: {{ $imagePrefix }}kserve/kserve-controller
+    imagePullPolicy: IfNotPresent
+    {{- with .Values.otomi | get "globalPullSecret" nil }}
+    imagePullSecrets:
+      - name: otomi-pullsecret-global
+    {{- end }}
