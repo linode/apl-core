@@ -52,3 +52,17 @@ service:
 resources: {{- toYaml $d.resources | nindent 2 }}
 
 priorityClassName: otomi-critical
+
+# Overlays custom login page + apl theme onto the image's stock /srv/dex/web, no custom image needed.
+volumes:
+  - name: web-overlay
+    configMap:
+      name: dex-web-overlay
+
+volumeMounts:
+  - name: web-overlay
+    mountPath: /srv/dex/web/templates/password.html
+    subPath: password.html
+  - name: web-overlay
+    mountPath: /srv/dex/web/themes/apl/styles.css
+    subPath: styles.css
