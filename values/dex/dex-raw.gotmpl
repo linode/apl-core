@@ -36,6 +36,18 @@ resources:
             - operation:
                 notPorts: ["5557"]
 
+  {{- /* Overlay: replaces stock password.html and adds the apl theme, layered onto the image's /srv/dex/web via subPath mounts. */}}
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: dex-web-overlay
+      namespace: dex
+    data:
+      password.html: |
+        {{- readFile "web-overlay/password.html" | nindent 8 }}
+      styles.css: |
+        {{- readFile "web-overlay/styles.css" | nindent 8 }}
+
   {{- /* adminPassword is hashed by ESO itself (sprig bcrypt), never stored or rendered as a hash. */}}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
