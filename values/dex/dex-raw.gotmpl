@@ -88,3 +88,14 @@ resources:
           remoteRef:
             key: platform-admin-credentials
             property: password
+        {{- if $v.otomi.hasExternalIDP }}
+        - secretKey: externalIdpClientID
+          remoteRef:
+            key: oidc-secrets
+            property: clientID
+        - secretKey: externalIdpClientSecret
+          remoteRef:
+            key: oidc-secrets
+            property: clientSecret
+        {{- end }}
+
