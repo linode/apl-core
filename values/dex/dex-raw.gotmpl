@@ -81,3 +81,13 @@ resources:
           remoteRef:
             key: otomi
             property: adminPassword
+        {{- if $v.otomi.hasExternalIDP }}
+        - secretKey: externalIdpClientID
+          remoteRef:
+            key: oidc-secrets
+            property: clientID
+        - secretKey: externalIdpClientSecret
+          remoteRef:
+            key: oidc-secrets
+            property: clientSecret
+        {{- end }}
