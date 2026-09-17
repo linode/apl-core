@@ -105,6 +105,8 @@ alertmanager:
 
 grafana:
   enabled: {{ $teamSettings | get "managedMonitoring.grafana" false }}
+  rbac:
+    namespaced: true
   defaultDashboardsEnabled: false
   nameOverride: {{ $teamId }}-po-grafana
   fullnameOverride: {{ $teamId }}-po-grafana
@@ -130,6 +132,8 @@ grafana:
       enabled: true
       label: release
       labelValue: grafana-dashboards-{{ $teamId }}
+      searchNamespace:
+        - team-{{ $teamId }}
     datasources:
       defaultDatasourceEnabled: false
   serviceMonitor:
