@@ -54,7 +54,9 @@ resources: {{- toYaml $d.resources | nindent 2 }}
 
 priorityClassName: otomi-critical
 
-# Overlays custom login page + apl theme onto the image's stock /srv/dex/web, no custom image needed.
+# Overlays custom login page onto the image's stock /srv/dex/web, no custom image needed.
+# CSS mounts under static/ (not themes/<name>/) so it's page-scoped via password.html's own
+# <link>, instead of frontend.theme, which would apply it to every Dex screen, not just this one.
 volumes:
   - name: web-overlay
     configMap:
@@ -65,5 +67,5 @@ volumeMounts:
     mountPath: /srv/dex/web/templates/password.html
     subPath: password.html
   - name: web-overlay
-    mountPath: /srv/dex/web/themes/apl/styles.css
+    mountPath: /srv/dex/web/static/apl.css
     subPath: styles.css
