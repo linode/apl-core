@@ -609,6 +609,16 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
       }
     }
   }
+  const pauseAppSync = async (appName: string): Promise<boolean> => {
+    if (isTest) return false
+    const app = await getArgoCdApp(appName, k8s.custom())
+    if (app) {
+      await setArgoCdAppSync(appName, false, k8s.custom())
+      return true
+    } else {
+      return false
+    }
+  }
 
   for (const appName of ALL_APPS) {
     const secretName = `${appName}-secrets`
@@ -633,13 +643,16 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
     numbers: true,
     strict: true,
   }
+  d.info('Pausing ArgoCD App sync')
+  const resumeApps: string[] = []
+  if (await pauseAppSync('external-secrets-external-secrets')) {
+    resumeApps.push('external-secrets-external-secrets')
+  }
+  // Needed for removing conflicting ExternalSecret argocd-redis-secret.
+  // Do not resume before patched by next operator cycle.
+  await pauseAppSync('argocd-argocd-artifacts')
   d.info('Pausing External-Secrets Operator')
-  let app = undefined
   if (!isTest) {
-    app = await getArgoCdApp('external-secrets-external-secrets', k8s.custom())
-    if (app) {
-      await setArgoCdAppSync('external-secrets-external-secrets', false, k8s.custom())
-    }
     await k8s.app().patchNamespacedDeploymentScale(
       {
         name: 'external-secrets',
@@ -654,10 +667,10 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
   try {
     // Preserve values of current cluster Secret resources
     if (secrets.argocd) {
-      d.info('Processing ArgoCD secrets.')
-      await setSecret('argocd-redis', 'argocd', { auth: secrets.argocd.redisPassword })
       d.info('Removing possibly conflicting ArgoCD ExternalSecret.')
       await removeExternalSecret('argocd-redis-secret', 'argocd')
+      d.info('Processing ArgoCD secrets.')
+      await setSecret('argocd-redis', 'argocd', { auth: secrets.argocd.redisPassword })
     }
     if (secrets.keycloak) {
       d.info('Processing Keycloak secrets.')
@@ -757,9 +770,10 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
         },
         setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
       )
-      if (app) {
-        await setArgoCdAppSync('external-secrets-external-secrets', true, k8s.custom())
-      }
+    }
+    d.info('Resuming ArgoCD App sync')
+    for (const appName of resumeApps) {
+      await setArgoCdAppSync(appName, true, k8s.custom())
     }
   }
 }
