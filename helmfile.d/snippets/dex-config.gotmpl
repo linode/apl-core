@@ -32,9 +32,10 @@
 {{- $redirectUrls = sortAlpha $redirectUrls }}
 
 issuer: https://{{ $v._derived.dexDomain }}
+{{- /* theme stays default (light) — apl/styles.css only applies to password.html, which links it explicitly. Setting theme: apl here would apply it site-wide and break every other Dex screen. */}}
 frontend:
+  dir: /srv/dex/web
   issuer: App Platform
-  theme: apl
 storage:
   type: kubernetes
   config:
