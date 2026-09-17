@@ -32,6 +32,9 @@
 {{- $redirectUrls = sortAlpha $redirectUrls }}
 
 issuer: https://{{ $v._derived.dexDomain }}
+frontend:
+  issuer: App Platform
+  theme: apl
 storage:
   type: kubernetes
   config:
