@@ -17,6 +17,12 @@ export function filterAplBranches(branches: string[]): string[] {
   return [...new Set(normalized)].sort((a, b) => a.localeCompare(b))
 }
 
+export function parseReleaseRef(input: string): { repo?: string; tag: string } {
+  const url = input.match(/github\.com\/([^/]+\/[^/]+)\/releases\/tag\/(.+)$/)
+  if (url) return { repo: url[1], tag: url[2] }
+  return { tag: input }
+}
+
 const DEFAULT_REPO = 'linode/apl-core'
 
 function ghApi(endpoint: string, jq: string): string {
@@ -34,12 +40,15 @@ function fetchBranchName(repo: string, prNumber: number): string {
 }
 
 function main() {
-  const [tag, repo = DEFAULT_REPO] = process.argv.slice(2)
+  const [releaseArg, repoArg] = process.argv.slice(2)
 
-  if (!tag) {
-    console.error('Usage: tsx src/extract-apl-branches.ts <release-tag> [owner/repo]')
+  if (!releaseArg) {
+    console.error('Usage: tsx src/extract-apl-branches.ts <release-tag|release-url> [owner/repo]')
     process.exit(1)
   }
+
+  const { repo: repoFromUrl, tag } = parseReleaseRef(releaseArg)
+  const repo = repoArg ?? repoFromUrl ?? DEFAULT_REPO
 
   const body = fetchReleaseBody(repo, tag)
   const prNumbers = extractPrNumbers(body)

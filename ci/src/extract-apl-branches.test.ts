@@ -1,4 +1,4 @@
-import { extractPrNumbers, filterAplBranches } from './extract-apl-branches'
+import { extractPrNumbers, filterAplBranches, parseReleaseRef } from './extract-apl-branches'
 
 describe('extractPrNumbers', () => {
   it('extracts a PR number from a pull link', () => {
@@ -36,5 +36,16 @@ describe('filterAplBranches', () => {
   it('returns unique, sorted branch names after stripping postfixes', () => {
     const branches = ['APL-200-b', 'APL-100-a', 'APL-200-crds']
     expect(filterAplBranches(branches)).toEqual(['APL-100', 'APL-200'])
+  })
+})
+
+describe('parseReleaseRef', () => {
+  it('derives repo and tag from a release URL', () => {
+    const url = 'https://github.com/linode/apl-core/releases/tag/v6.4.0-rc.1'
+    expect(parseReleaseRef(url)).toEqual({ repo: 'linode/apl-core', tag: 'v6.4.0-rc.1' })
+  })
+
+  it('treats a plain tag as a tag with no repo', () => {
+    expect(parseReleaseRef('v6.4.0-rc.1')).toEqual({ tag: 'v6.4.0-rc.1' })
   })
 })

@@ -79,9 +79,21 @@ Given a release tag, reads the release notes, follows every referenced pull requ
 **Usage:**
 
 ```sh
-npm run extract-apl-branches -- <release-tag> [owner/repo]
+npm run extract-apl-branches -- <release-tag|release-url> [owner/repo]
 # or directly:
-npx tsx src/extract-apl-branches.ts <release-tag> [owner/repo]
+npx tsx src/extract-apl-branches.ts <release-tag|release-url> [owner/repo]
 ```
 
 `owner/repo` defaults to `linode/apl-core`. Requires an authenticated `gh` CLI.
+
+**Targeting a different repo:**
+
+```sh
+# 1. Pass owner/repo as the second argument:
+npm run extract-apl-branches -- v6.4.0-rc.1 linode/apl-api
+
+# 2. Or pass a full release URL — the repo is derived from it:
+npm run extract-apl-branches -- https://github.com/linode/apl-console/releases/tag/v6.3.0
+```
+
+When both are given, the explicit `owner/repo` argument overrides the repo derived from the URL.
