@@ -9,7 +9,7 @@ The node selector settings allow the user to control where APL pods are schedule
 
 ## Decision
 
-For every platform app the `nodeSelector` field can be set (if possible through chart values). The node selector can be set by setting `otomi.nodeSelector`. This covers all otomi managed platform apps. Team workloads are never touched, `otomi.nodeSelector` only steers platform infrastructure, not tenant pods.
+For every platform app the `nodeSelector` field can be set (if possible through chart values). The node selector can be set by setting `otomi.nodeSelector`. This covers all App Platform managed Helm charts. Team workloads are never touched, `otomi.nodeSelector` only steers platform infrastructure, not tenant pods.
 
 If a chart didn't expose a `nodeSelector` field, we added one (`git-server`, `tekton-triggers`, `tekton-dashboard`, `kubernetes-gateways`, all apl-core's own charts). No mutating webhook is involved anymore.
 
