@@ -27,7 +27,6 @@ type AplKind =
   | 'AplCapabilitySet'
   | 'AplSmtp'
   | 'AplBackupCollection'
-  | 'AplUser'
   | 'AplTeamCodeRepo'
   | 'AplTeamBuild'
   | 'AplTeamPolicy'
