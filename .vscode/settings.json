@@ -60,5 +60,8 @@
   },
   "[dockerfile]": {
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
+  "chat.tools.terminal.autoApprove": {
+    "npx jest": true
   }
 }
