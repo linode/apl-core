@@ -23,7 +23,7 @@ Therefore, it was decided to replace this mechanism with resources provided by E
 - For secrets only needed by one app (chart), an ExternalSecret can be defined in the app's `*-raw.gotmpl` file, using the `ClusterGenerator` as a source.
 - For secrets shared between different charts, `values/raw/generated-secrets.gotmpl` declares one `ExternalSecret` per platform app "owning" the generated secret (e.g. gitea) in the `apl-secrets` namespace.
 - Each `ExternalSecret` uses `refreshPolicy: CreatedOnce` and `target.immutable: true`, so a password is generated exactly once and never silently rotated. This is according to the documentation for ESO.
-- Making the Secret immutable can also be used during the migration: Already-generated secrets are copied from the existing `*-secrets` Secrets in the `apl-secrets` namespace to the new target of the ExternalSecret using the `ClusterGenerator`. ESO will take ownership but not replace them.
+- Making the Secret immutable can also be used during the migration: Already-generated secrets are copied from the existing `*-secrets` Secrets in the `apl-secrets` namespace to each target of the new ExternalSecret. That ExternalSecret will take ownership but not replace it.
 - Rotation is an explicit act: delete the Secret and let it be regenerated.
 
 Note that this does not replace all secrets in the `apl-secrets` namespace, but only the generated ones. Secrets provided through values input are still stored in the same pattern as before.
