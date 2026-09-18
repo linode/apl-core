@@ -15,7 +15,7 @@ However, the way it was implemented had several drawbacks:
 3. When the installation was interrupted and restarted, there was a process to store, re-read and merge the already-generated secrets with new values. This process was faulty, causing delays and stalls during the installation.
 4. The generation of secrets was only done at bootstrap time, hence only at the installation. It was not usable for new apps that were to be integrated.
 
-Therefore, it was decided to replace this mechanism with resources provided by External Secrets Operator (ESO), which we already use for other secrets management tasks. ESO has a `Password` resource that can generate random strings and store them in a Secret, which can then be consumed by applications.
+Therefore, it was decided to replace this mechanism with resources provided by External Secrets Operator (ESO), which we already use for other secrets management tasks. ESO has a `Password` resource that can generate random strings. These can be sourced by an ExternalSecret, storing them in a Secret resource.
 
 ## How it works
 
