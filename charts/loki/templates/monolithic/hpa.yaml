@@ -1,5 +1,6 @@
 {{- $isMonolithic := eq (include "loki.deployment.isMonolithic" .) "true" -}}
 {{- $usingObjectStorage := eq (include "loki.isUsingObjectStorage" .) "true" }}
 {{- if and $isMonolithic $usingObjectStorage }}
-{{- include "loki.hpa" (dict "target" "single-binary" "component" .Values.singleBinary "ctx" .) }}
+{{- $targetName := include "loki.resourceName" (dict "ctx" .) -}}
+{{- include "loki.hpa" (dict "target" "single-binary" "component" .Values.singleBinary "ctx" . "targetName" $targetName) }}
 {{- end }}
