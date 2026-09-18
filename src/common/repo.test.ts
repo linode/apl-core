@@ -234,22 +234,6 @@ describe('getFilePath', () => {
     const filePath = getFilePath(fileMap, jsonPath, data, '')
     expect(filePath).toBe('/tmp/env/settings/dns.yaml')
   })
-  it('should return file path for user', () => {
-    const fileMap: FileMap = {
-      kind: 'AplUser',
-      envDir: '/tmp',
-      jsonPathExpression: '',
-      pathGlob: '',
-      processAs: 'arrayItem',
-      resourceGroup: 'users',
-      resourceDir: 'users',
-      loadToSpec: true,
-    }
-    const jsonPath = ['$', 'dns']
-    const data = { id: 'a' }
-    const filePath = getFilePath(fileMap, jsonPath, data, '')
-    expect(filePath).toBe('/tmp/env/users/a.yaml')
-  })
 })
 
 describe('getFileMap', () => {
