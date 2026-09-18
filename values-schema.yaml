@@ -2554,6 +2554,10 @@ properties:
         type: string
         description: Claim name passed by Keycloak as a unique user identifier. Best to not change this from the default.
         default: sub
+      groupsClaimMapper:
+        type: string
+        description: Claim name the identity provider uses for group membership. Some providers require a namespaced name instead of "groups".
+        default: groups
     required:
       - clientID
       - issuer
