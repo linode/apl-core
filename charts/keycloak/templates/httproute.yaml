@@ -19,7 +19,7 @@ spec:
     {{- if $httpRoute.listenerSet.enabled }}
     - kind: ListenerSet
       name: {{ include "keycloak.fullname" $ }}
-      namespace: {{ $.Release.Namespace }}
+      namespace: {{ include "keycloak.namespace" $ }}
     {{- else }}
     {{- with $httpRoute.parentRefs }}
       {{- toYaml . | nindent 4 }}
@@ -66,7 +66,7 @@ spec:
     {{- end }}
 {{- end }}
 ---
-{{- if $httpRoute.console.enabled }}
+{{- if and $httpRoute.enabled $httpRoute.console.enabled }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -86,12 +86,31 @@ metadata:
   {{- end }}
 spec:
   parentRefs:
-      {{- with pluck "parentRefs" $httpRoute.console $httpRoute | first }}
-      {{- toYaml . | nindent 4 }}
+    {{- if $httpRoute.listenerSet.enabled }}
+    - kind: ListenerSet
+      name: {{ include "keycloak.fullname" $ }}
+      namespace: {{ include "keycloak.namespace" $ }}
+    {{- else }}
+    {{- with pluck "parentRefs" $httpRoute.console $httpRoute | first }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
+    {{- end }}
+  {{- if $httpRoute.listenerSet.enabled }}
+  {{- $hostnames := list }}
+  {{- range $httpRoute.listenerSet.listeners }}
+  {{- if .hostname }}
+  {{- $hostnames = append $hostnames .hostname }}
+  {{- end }}
+  {{- end }}
+  {{- with $hostnames }}
+  hostnames:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- else }}
   {{- with pluck "hostnames" $httpRoute.console $httpRoute | first }}
   hostnames:
     {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- end }}
   rules:
     {{- range $httpRoute.console.rules }}
