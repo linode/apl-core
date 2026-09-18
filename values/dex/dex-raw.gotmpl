@@ -1,0 +1,93 @@
+{{- $v := .Values }}
+
+resources:
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "dex" "host" $v._derived.dexDomain) | nindent 4 }}
+
+  {{- /* No mesh-wide PeerAuthentication exists; enforce mTLS explicitly here. */}}
+  - apiVersion: security.istio.io/v1
+    kind: PeerAuthentication
+    metadata:
+      name: dex-strict-mtls
+      namespace: dex
+    spec:
+      mtls:
+        mode: STRICT
+
+  {{- /* Dex gRPC has no auth of its own; restrict it to otomi-api's identity. */}}
+  - apiVersion: security.istio.io/v1
+    kind: AuthorizationPolicy
+    metadata:
+      name: dex-grpc-otomi-api
+      namespace: dex
+    spec:
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: dex
+      action: ALLOW
+      rules:
+        - from:
+            - source:
+                principals:
+                  - "cluster.local/ns/otomi/sa/otomi-api"
+          to:
+            - operation:
+                ports: ["5557"]
+        - to:
+            - operation:
+                notPorts: ["5557"]
+
+  {{- /* Overlay: replaces stock password.html and adds the apl theme, layered onto the image's /srv/dex/web via subPath mounts. */}}
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: dex-web-overlay
+      namespace: dex
+    data:
+      password.html: |
+        {{- readFile "web-overlay/password.html" | nindent 8 }}
+      styles.css: |
+        {{- readFile "web-overlay/styles.css" | nindent 8 }}
+
+  {{- /* adminPassword is hashed by ESO itself (sprig bcrypt), never stored or rendered as a hash. */}}
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: dex-config
+      namespace: dex
+    spec:
+      refreshPolicy: OnChange
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: dex-config
+        creationPolicy: Owner
+        template:
+          engineVersion: v2
+          type: Opaque
+          data:
+            config.yaml: |
+              {{- tpl (readFile "../../helmfile.d/snippets/dex-config.gotmpl") . | nindent 14 }}
+      data:
+        - secretKey: idpClientSecret
+          remoteRef:
+            key: dex
+            property: idpClientSecret
+        - secretKey: sessionCookieEncryptionKey
+          remoteRef:
+            key: dex
+            property: sessionCookieEncryptionKey
+        - secretKey: adminPassword
+          remoteRef:
+            key: otomi
+            property: adminPassword
+        {{- if $v.otomi.hasExternalIDP }}
+        - secretKey: externalIdpClientID
+          remoteRef:
+            key: oidc-secrets
+            property: clientID
+        - secretKey: externalIdpClientSecret
+          remoteRef:
+            key: oidc-secrets
+            property: clientSecret
+        {{- end }}

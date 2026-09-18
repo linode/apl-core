@@ -1,0 +1,100 @@
+{{- /* Rendered inside the ExternalSecret template in dex-raw.gotmpl. */}}
+{{- $v := .Values }}
+{{- $d := $v.apps | get "dex" }}
+{{- $domainSuffix := $v.cluster.domainSuffix }}
+
+{{- $teamIds := list }}
+{{- range $name, $team := omit $v.teamConfig "admin" }}
+  {{- $teamIds = append $teamIds $name }}
+{{- end }}
+{{- $teamIds = sortAlpha $teamIds }}
+{{- $redirectUrls := list }}
+{{- range $coreApp := $v.adminApps }}
+  {{- if $coreApp | get "ownHost" false }}
+    {{- $host := printf "%s.%s" $coreApp.name $domainSuffix }}
+    {{- $redirectUrls = append $redirectUrls (printf "https://%s/oauth2/callback" $host) }}
+    {{- with $coreApp | get "oidcCallbackPath" "" }}
+    {{- $redirectUrls = append $redirectUrls (printf "https://%s%s" $host .) }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- range $teamApp := $v.teamApps }}
+  {{- if $teamApp | get "ownHost" false }}
+    {{- range $teamId := $teamIds }}
+      {{- $host := printf "%s-%s.%s" $teamApp.name $teamId $domainSuffix }}
+      {{- $redirectUrls = append $redirectUrls (printf "https://%s/oauth2/callback" $host) }}
+      {{- with $teamApp | get "oidcCallbackPath" "" }}
+      {{- $redirectUrls = append $redirectUrls (printf "https://%s%s" $host .) }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- $redirectUrls = sortAlpha $redirectUrls }}
+
+issuer: https://{{ $v._derived.dexDomain }}
+{{- /* theme stays default (light) — apl/styles.css only applies to password.html, which links it explicitly. Setting theme: apl here would apply it site-wide and break every other Dex screen. */}}
+frontend:
+  dir: /srv/dex/web
+  issuer: App Platform
+storage:
+  type: kubernetes
+  config:
+    inCluster: true
+{{- if $v.otomi.hasExternalIDP }}
+connectors:
+  - type: oidc
+    id: external-idp
+    name: External IdP
+    config:
+      issuer: {{ $v.oidc.issuer }}
+      {{- /* clientID is also x-secret (stripped from .Values); pulled from oidc-secrets same as clientSecret. */}}
+      clientID: "{{ `{{ .externalIdpClientID }}` }}"
+      clientSecret: "{{ `{{ .externalIdpClientSecret }}` }}"
+      redirectURI: https://{{ $v._derived.dexDomain }}/callback
+      scopes: [openid, profile, email, groups]
+      {{- /* Dex silently drops the upstream groups claim without this. Naming is Dex's own. */}}
+      insecureEnableGroups: true
+      {{- /* Most IdPs emit a plain "groups" claim; some (Auth0) require a namespaced one instead. */}}
+      claimMapping:
+        groups: {{ $v.oidc.groupsClaimMapper }}
+{{- end }}
+web:
+  http: 0.0.0.0:5556
+grpc:
+  addr: 0.0.0.0:5557
+telemetry:
+  http: 0.0.0.0:5558
+oauth2:
+  skipApprovalScreen: true
+  passwordConnector: local
+{{- /* ssoSharedWithDefault defaults to "none" (no SSO across clients). */}}
+sessions:
+  ssoSharedWithDefault: all
+  cookieEncryptionKey: "{{ `{{ .sessionCookieEncryptionKey }}` }}"
+enablePasswordDB: true
+{{- /* Bootstrap login only; real user provisioning is #3541. */}}
+staticPasswords:
+  - email: platform-admin@{{ $domainSuffix }}
+    username: platform-admin
+    userID: apl-platform-admin
+    hash: "{{ `{{ .adminPassword | bcrypt }}` }}"
+    groups:
+      - platform-admin
+      - admin
+staticClients:
+  - id: {{ $d.idp.clientID }}
+    name: APL
+    secret: "{{ `{{ .idpClientSecret }}` }}"
+    redirectURIs:
+      {{- range $url := $redirectUrls }}
+      - {{ $url }}
+      {{- end }}
+    {{- /* Dex rejects a post_logout_redirect_uri that is not registered here. */}}
+    postLogoutRedirectURIs:
+      - https://{{ $v._derived.consoleDomain }}
+      - https://{{ $v._derived.consoleDomain }}/oauth2/start
+    {{- /* Dex only accepts the password grant from a client that opts in explicitly. */}}
+    grantTypes:
+      - authorization_code
+      - refresh_token
+      - password

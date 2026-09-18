@@ -41,6 +41,10 @@ env:
   EDITOR_INACTIVITY_TIMEOUT: {{ $o.editorInactivityTimeout }}
   SSO_ISSUER: {{ $v._derived.oidcBaseUrl }}
   SSO_JWKS_URI: {{ $v._derived.oidcJwksUrl }}
+  AUTH_PROVIDER: {{ $v.otomi.issuer }}
+  {{- if eq $v.otomi.issuer "dex" }}
+  DEX_GRPC_ADDRESS: dex.dex.svc:5557
+  {{- end }}
   {{- with $v.otomi.linodeLkeImageRepository }}
   TTY_IMAGE_REPOSITORY: "{{ . }}/docker/linode/apl-tty"
   {{- end }}

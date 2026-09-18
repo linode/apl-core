@@ -1,0 +1,71 @@
+{{- $v := .Values }}
+{{- $d := $v.apps | get "dex" }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+
+image:
+  repository: ghcr.io/dexidp/dex
+  tag: master
+  digest: sha256:3c51c922e768c374b9bcf9cf8c4d1f47a6efa528b3edce926605a2881a2b3a70
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+
+replicaCount: {{ $d.replicas }}
+
+# Feature-flagged while unreleased upstream. Needed for SSO across apps and real logout.
+env:
+  DEX_SESSIONS_ENABLED: "true"
+
+# config is an ExternalSecret (dex-raw.gotmpl), not helm values — it embeds the OAuth2 secret.
+configSecret:
+  create: false
+  name: dex-config
+
+# Dex stores tokens/sessions/passwords/keys as CRDs, needs RBAC to manage and register them.
+rbac:
+  create: true
+  createClusterScoped: true
+
+serviceAccount:
+  create: true
+
+httpRoute:
+  enabled: true
+  {{- with $httpRoute.annotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  parentRefs:
+    {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
+  hostnames:
+    - {{ $v._derived.dexDomain }}
+
+grpc:
+  enabled: true
+
+service:
+  ports:
+    http:
+      port: 5556
+
+resources: {{- toYaml $d.resources | nindent 2 }}
+
+priorityClassName: otomi-critical
+
+# Overlays custom login page onto the image's stock /srv/dex/web, no custom image needed.
+# CSS mounts under static/ (not themes/<name>/) so it's page-scoped via password.html's own
+# <link>, instead of frontend.theme, which would apply it to every Dex screen, not just this one.
+volumes:
+  - name: web-overlay
+    configMap:
+      name: dex-web-overlay
+
+volumeMounts:
+  - name: web-overlay
+    mountPath: /srv/dex/web/templates/password.html
+    subPath: password.html
+  - name: web-overlay
+    mountPath: /srv/dex/web/static/apl.css
+    subPath: styles.css

@@ -1614,6 +1614,30 @@ properties:
             type: boolean
             default: false
             description: Use CNPG plugin for platform database backups
+      dex:
+        additionalProperties: false
+        description: Dex is an OIDC identity broker, installed by default. otomi.issuer decides whether it is actually used.
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          idp:
+            additionalProperties: false
+            properties:
+              clientID:
+                $ref: '#/definitions/wordCharacterPattern'
+                default: otomi
+                description: The OAuth2 client identifier platform applications will use against Dex.
+          replicas:
+            type: integer
+            default: 1
+            description: Number of Dex replicas. More than one requires all replicas to share the same storage backend.
+          resources:
+            $ref: '#/definitions/resources'
+          networkPolicies:
+            $ref: '#/definitions/appNetworkPolicyConfig'
       external-dns:
         additionalProperties: false
         properties:
@@ -1765,6 +1789,10 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: true
+            description: Whether Keycloak is deployed. Independent of otomi.issuer — enabling Keycloak does not select it as the issuer.
           idp:
             additionalProperties: false
             properties:
@@ -2526,6 +2554,10 @@ properties:
         type: string
         description: Claim name passed by Keycloak as a unique user identifier. Best to not change this from the default.
         default: sub
+      groupsClaimMapper:
+        type: string
+        description: Claim name the identity provider uses for group membership. Some providers require a namespaced name instead of "groups".
+        default: groups
     required:
       - clientID
       - issuer
@@ -2536,6 +2568,13 @@ properties:
         type: boolean
         description: Defines if APL is installed and managed by Linode
         default: false
+      issuer:
+        type: string
+        enum:
+          - dex
+          - keycloak
+        default: keycloak
+        description: Which app every consumer authenticates against.
       aiEnabled:
         type: boolean
         description: Defines if APL enables AI/ML components
