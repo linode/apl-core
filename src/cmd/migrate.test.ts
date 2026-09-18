@@ -6,7 +6,6 @@ import {
   processDeletionEntry,
 } from 'src/cmd/migrate'
 import { terminal } from '../common/debug'
-import { env } from '../common/envalid'
 
 // Mock external dependencies at the top level - BEFORE imports
 jest.mock('uuid', () => ({

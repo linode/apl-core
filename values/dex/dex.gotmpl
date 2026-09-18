@@ -2,15 +2,10 @@
 {{- $d := $v.apps | get "dex" }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 
-{{- /*
-  Custom fork build: adds group membership
-  on local-password login and auth sessions/RP-initiated logout, both absent upstream. Replace
-  once these land in a tagged Dex release. Not routed through ORCS: dex not in mirror yet.
-*/}}
 image:
-  repository: clubbers1892/dex
-  tag: v0.1.0-groups.1
-  digest: sha256:595178dbde430d71500efdb0353d5f649dbb4f9dfb35e3854be9b81a9e2dc28a
+  repository: ghcr.io/dexidp/dex
+  tag: master
+  digest: sha256:3c51c922e768c374b9bcf9cf8c4d1f47a6efa528b3edce926605a2881a2b3a70
 
 {{- with $v.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
@@ -46,6 +41,9 @@ httpRoute:
     {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
   hostnames:
     - {{ $v._derived.dexDomain }}
+
+grpc:
+  enabled: true
 
 service:
   ports:
