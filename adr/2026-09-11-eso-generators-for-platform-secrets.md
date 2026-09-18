@@ -12,7 +12,7 @@ This technique was used whenever there was a need for a sufficiently random secr
 However, the way it was implemented had several drawbacks:
 1. Gucci was an extra dependency to be included in the distribution and development environments.
 2. The process of generating the secrets and merging them with the rest of the values input was not transparent and code-wise extremely convoluted, making it hard to maintain and understand.
-3. When the installation was interrupted and restarted, there was a process to store, re-read and merge the already-generated secrets with new values. Likely this process was faulty and causing delays and stalls during the installation.
+3. When the installation was interrupted and restarted, there was a process to store, re-read and merge the already-generated secrets with new values. This process was faulty, causing delays and stalls during the installation.
 4. The generation of secrets was only done at bootstrap time, hence only at the installation. It was not usable for new apps that were to be integrated.
 
 Therefore, it was decided to replace this mechanism with resources provided by External Secrets Operator (ESO), which we already use for other secrets management tasks. ESO has a `ClusterGenerator` resource that can generate random strings and store them in a Secret, which can then be consumed by applications.
