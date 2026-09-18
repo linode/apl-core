@@ -19,8 +19,8 @@ CNPG database clusters (`otomi-db`) get it too, via the native `spec.affinity.no
 
 DaemonSets that must run on every node are never given `otomi.nodeSelector`. Doing so would starve non-selected nodes of the thing the DaemonSet provides. This currently means:
 
-- `prometheus-operator-prometheus-node-exporter`: one instance per node scrapes host metrics, restricting it would blind monitoring on every other node.
-- the OTEL log collector (`platform-logs-collector`): one instance per node ships that node's logs, restricting it would drop logs from every other node.
+- `prometheus-operator-prometheus-node-exporter`: one instance per node scrapes host metrics, restricting it would blind monitoring on any other node.
+- the OTEL log collector (`platform-logs-collector`): one instance per node ships that node's logs, restricting it would drop logs from any other node.
 - `istio-cni` and `ztunnel`: cluster networking and ambient-mesh dataplane, required on every node regardless of platform node pool.
 
 ## Not yet covered
