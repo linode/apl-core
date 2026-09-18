@@ -14,9 +14,9 @@ npm run <script-name>
 `../charts/dependencies.yaml` lists the source repository and version for most of the APL Helm chart dependencies (a.k.a. core apps). Each entry follows this format:
 
 ```yaml
-  - name: <chart name>
-    version: <chart version>
-    repository: <chart url>
+- name: <chart name>
+  version: <chart version>
+  repository: <chart url>
 ```
 
 Adding a new version of a core app is normally performed by `update-helm-chart-deps` (see below), but can also be done manually:
@@ -69,3 +69,31 @@ npx tsx src/render-chart-version-changes.ts <old-tag> <new-tag>
 **Output columns:** App Name · Old Version · New Version · Notes (`New` / `Removed` / `Updated`)
 
 Rows are grouped New → Removed → Updated, alphabetical within each group. Both tags are validated before any comparison is attempted.
+
+---
+
+## `extract-apl-branches`
+
+Given a release tag, reads the release notes, follows every referenced pull request, and prints the unique `APL-<number>` identifiers from the source branch names (postfixes are stripped, one per line).
+
+**Usage:**
+
+```sh
+npm run extract-apl-branches -- <release-tag|release-url> [owner/repo]
+# or directly:
+npx tsx src/extract-apl-branches.ts <release-tag|release-url> [owner/repo]
+```
+
+`owner/repo` defaults to `linode/apl-core`. Requires an authenticated `gh` CLI.
+
+**Targeting a different repo:**
+
+```sh
+# 1. Pass owner/repo as the second argument:
+npm run extract-apl-branches -- v6.4.0-rc.1 linode/apl-api
+
+# 2. Or pass a full release URL — the repo is derived from it:
+npm run extract-apl-branches -- https://github.com/linode/apl-console/releases/tag/v6.3.0
+```
+
+When both are given, the explicit `owner/repo` argument overrides the repo derived from the URL.
