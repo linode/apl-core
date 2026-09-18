@@ -1,0 +1,69 @@
+{{- $v := .Values }}
+
+resources:
+  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "dex" "host" $v._derived.dexDomain) | nindent 4 }}
+
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: dex-secrets
+      namespace: apl-secrets
+    spec:
+      refreshPolicy: CreatedOnce
+      target:
+        name: dex-secrets
+        creationPolicy: Owner
+        immutable: true
+      dataFrom:
+        - sourceRef:
+            generatorRef:
+              apiVersion: generators.external-secrets.io/v1alpha1
+              kind: ClusterGenerator
+              name: alpha-num-32
+          rewrite:
+            - regexp:
+                source: password
+                target: idpClientSecret
+        - sourceRef:
+            generatorRef:
+              apiVersion: generators.external-secrets.io/v1alpha1
+              kind: ClusterGenerator
+              name: alpha-num-32
+          rewrite:
+            - regexp:
+                source: password
+                target: sessionCookieEncryptionKey
+
+  {{- /* adminPassword is hashed by ESO itself (sprig bcrypt), never stored or rendered as a hash. */}}
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: dex-config
+      namespace: dex
+    spec:
+      refreshInterval: OnChange
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: dex-config
+        creationPolicy: Owner
+        template:
+          engineVersion: v2
+          type: Opaque
+          data:
+            config.yaml: |
+              {{- tpl (readFile "../../helmfile.d/snippets/dex-config.gotmpl") . | nindent 14 }}
+      data:
+        - secretKey: idpClientSecret
+          remoteRef:
+            key: dex-secrets
+            property: idpClientSecret
+        - secretKey: sessionCookieEncryptionKey
+          remoteRef:
+            key: dex-secrets
+            property: sessionCookieEncryptionKey
+        - secretKey: adminPassword
+          remoteRef:
+            key: otomi-secrets
+            property: adminPassword
