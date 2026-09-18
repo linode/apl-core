@@ -54,6 +54,9 @@ connectors:
       scopes: [openid, profile, email, groups]
       {{- /* Dex silently drops the upstream groups claim without this. Naming is Dex's own. */}}
       insecureEnableGroups: true
+      {{- /* Most IdPs emit a plain "groups" claim; some (Auth0) require a namespaced one instead. */}}
+      claimMapping:
+        groups: {{ $v.oidc.groupsClaimMapper }}
 {{- end }}
 web:
   http: 0.0.0.0:5556
