@@ -99,9 +99,6 @@ data:
             buckets: [ .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10 ]
             help: "The time spent on receiving and response the response to the client"
             valueIndex: 4
-            math:
-              enabled: true
-              div: 1000
             labels:
               - name: "host"
                 lineIndex: 0
@@ -122,9 +119,6 @@ data:
             buckets: [ .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10 ]
             help: "The time spent on establishing a connection with the upstream server"
             valueIndex: 8
-            math:
-              enabled: true
-              div: 1000
             upstream:
               enabled: true
               addrLineIndex: 7
@@ -149,9 +143,6 @@ data:
             help: "The time spent on receiving the response header from the upstream server"
             buckets: [ .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10 ]
             valueIndex: 9
-            math:
-              enabled: true
-              div: 1000
             upstream:
               enabled: true
               addrLineIndex: 7
@@ -176,9 +167,6 @@ data:
             help: "The time spent on receiving the response from the upstream server"
             buckets: [ .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10 ]
             valueIndex: 10
-            math:
-              enabled: true
-              div: 1000
             upstream:
               enabled: true
               addrLineIndex: 7
