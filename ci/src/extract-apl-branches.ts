@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execFileSync } from 'child_process'
 
 export function extractPrNumbers(releaseBody: string): number[] {
   const numbers = new Set<number>()
@@ -26,7 +26,7 @@ export function parseReleaseRef(input: string): { repo?: string; tag: string } {
 const DEFAULT_REPO = 'linode/apl-core'
 
 function ghApi(endpoint: string, jq: string): string {
-  return execSync(`gh api ${JSON.stringify(endpoint)} --jq ${JSON.stringify(jq)}`, {
+  return execFileSync('gh', ['api', endpoint, '--jq', jq], {
     encoding: 'utf8',
   }).trim()
 }
