@@ -3,7 +3,7 @@ description: APL Helm chart dependencies
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 10.9.1
+    version: 10.9.2
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
     version: 1.1.5
@@ -16,7 +16,7 @@ dependencies:
     repository: https://cloudnative-pg.github.io/charts
   - name: plugin-barman-cloud
     alias: cloudnative-pg-plugin-barman-cloud
-    version: 0.7.1
+    version: 0.8.0
     repository: https://cloudnative-pg.github.io/charts
   - name: cloud-firewall-crd
     version: 0.2.0
@@ -76,7 +76,7 @@ dependencies:
     version: 3.8.2
     repository: https://kyverno.github.io/kyverno/
   - name: loki
-    version: 18.13.3
+    version: 18.13.4
     repository: oci://ghcr.io/grafana-community/helm-charts/loki
   - name: metrics-server
     version: 3.14.0

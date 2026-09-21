@@ -1,6 +1,6 @@
 # plugin-barman-cloud
 
-![Version: 0.7.1](https://img.shields.io/badge/Version-0.7.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.14.0](https://img.shields.io/badge/AppVersion-v0.14.0-informational?style=flat-square)
+![Version: 0.8.0](https://img.shields.io/badge/Version-0.8.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.15.0](https://img.shields.io/badge/AppVersion-v0.15.0-informational?style=flat-square)
 
 Helm Chart for CloudNativePG's CNPG-I backup plugin using Barman Cloud
 
@@ -103,6 +103,7 @@ Kubernetes: `>=1.29.0-0`
 | image.repository | string | `"cloudnative-pg/plugin-barman-cloud"` |  |
 | image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` |  |
+| logLevel | string | `"info"` | Log verbosity level for the plugin barman cloud with values: [error, warning, info, debug, trace]. |
 | nameOverride | string | `""` |  |
 | namespaceOverride | string | `""` |  |
 | nodeSelector | object | `{}` | Nodeselector for the operator to be installed. |
