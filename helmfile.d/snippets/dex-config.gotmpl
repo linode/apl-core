@@ -47,16 +47,13 @@ connectors:
     name: External IdP
     config:
       issuer: {{ $v.oidc.issuer }}
-      {{- /* clientID is also x-secret (stripped from .Values); pulled from oidc-secrets same as clientSecret. */}}
       clientID: "{{ `{{ .externalIdpClientID }}` }}"
       clientSecret: "{{ `{{ .externalIdpClientSecret }}` }}"
       redirectURI: https://{{ $v._derived.dexDomain }}/callback
       scopes: [openid, profile, email, groups]
-      {{- /* Dex silently drops the upstream groups claim without this. Naming is Dex's own. */}}
       insecureEnableGroups: true
-      {{- /* Most IdPs emit a plain "groups" claim; some (Auth0) require a namespaced one instead. */}}
       claimMapping:
-        groups: {{ $v.oidc.groupsClaimMapper }}
+        groups: {{ $v.oidc | get "groupsClaimMapper" "groups" }}
 {{- end }}
 web:
   http: 0.0.0.0:5556
