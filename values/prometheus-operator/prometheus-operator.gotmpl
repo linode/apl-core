@@ -91,6 +91,9 @@ prometheus:
       matchLabels:
         prometheus: system
     {{- end }}
+    scrapeConfigNamespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: monitoring
     replicas: {{ $p.replicas }}
     scrapeInterval: {{ $p.scrapeInterval }}
     podAntiAffinity: hard
