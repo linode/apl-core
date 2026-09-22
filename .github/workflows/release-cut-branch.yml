@@ -43,13 +43,13 @@ jobs:
 
       - name: Derive release branch from highest stable tag
         id: derive-branch
-        uses: linode/apl-gh-actions/actions/release-derive-branch@v0.3.0
+        uses: linode/apl-gh-actions/actions/release-derive-branch@v0.4.0
         with:
           bump_type: ${{ inputs.bump_type }}
           release_branch_prefix: ${{ env.RELEASE_BRANCH_PREFIX }}
 
       - name: Check release branch does not already exist
-        uses: linode/apl-gh-actions/actions/release-check-branch-not-exists@v0.3.0
+        uses: linode/apl-gh-actions/actions/release-check-branch-not-exists@v0.4.0
         with:
           release_branch: ${{ steps.derive-branch.outputs.branch }}
 
@@ -62,7 +62,7 @@ jobs:
 
       - name: Create release branch
         if: ${{ !inputs.dry_run }}
-        uses: linode/apl-gh-actions/actions/release-create-branch@v0.3.0
+        uses: linode/apl-gh-actions/actions/release-create-branch@v0.4.0
         with:
           release_branch: ${{ steps.derive-branch.outputs.branch }}
 
