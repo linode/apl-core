@@ -37,7 +37,7 @@ jobs:
 
       - name: Validate branch, compute release tag, and check it does not already exist
         id: compute-tag
-        uses: linode/apl-gh-actions/actions/release-get-tag@v0.3.0
+        uses: linode/apl-gh-actions/actions/release-get-tag@v0.4.0
         with:
           is_prerelease: ${{ inputs.is_prerelease }}
           release_branch: ${{ env.RELEASE_BRANCH }}
@@ -47,7 +47,7 @@ jobs:
           check_tag_not_exists: true
           validate_branch: true
       - name: Check versions.yaml entries are semver-compatible
-        uses: linode/apl-gh-actions/actions/release-check-versions-yaml@v0.3.0
+        uses: linode/apl-gh-actions/actions/release-check-versions-yaml@v0.4.0
         with:
           repo_root: ${{ github.workspace }}
           is_prerelease: ${{ inputs.is_prerelease }}
@@ -78,7 +78,7 @@ jobs:
           git config user.email "${ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
 
       - name: Create and push git tag
-        uses: linode/apl-gh-actions/actions/release-tag@v0.3.0
+        uses: linode/apl-gh-actions/actions/release-tag@v0.4.0
         with:
           release_tag: ${{ env.GIT_TAG }}
           dry_run: ${{ inputs.dry_run }}
@@ -106,7 +106,7 @@ jobs:
           tags: ${{ env.CONTAINER_IMAGE_TAG }}
 
       - name: Create GitHub Release
-        uses: linode/apl-gh-actions/actions/release-create-github-release@v0.3.0
+        uses: linode/apl-gh-actions/actions/release-create-github-release@v0.4.0
         with:
           release_tag: ${{ env.GIT_TAG }}
           is_prerelease: ${{ inputs.is_prerelease }}
@@ -138,7 +138,7 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "${ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
       - name: Prepare Helm chart
-        uses: linode/apl-gh-actions/actions/release-prepare-chart-for-release@v0.3.0
+        uses: linode/apl-gh-actions/actions/release-prepare-chart-for-release@v0.4.0
         with:
           chart_path: ${{ env.CHART_PATH }}
           release_tag: ${{ env.GIT_TAG }}
