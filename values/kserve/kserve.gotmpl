@@ -31,15 +31,10 @@ kserve:
     resources: {{- $ks.resources.inferenceService | toYaml | nindent 8 }}
   controller:
     nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
-    {{- /**
-      TODO: Uncomment when added to caching rules.
-
-      Check on upgrade against upstream changes on tag.
-      ghcr.io/kube-rbac-proxy/kube-rbac-proxy is published with same images as quay.io/brancz/kube-rbac-proxy
+    {{- /** Check on upgrade against upstream changes on tag. */}}
     {{- with $v.otomi.linodeLkeImageRepository }}
-    rbacProxyImage: {{ . }}/ghcr/kube-rbac-proxy/kube-rbac-proxy:v0.18.0
+    rbacProxyImage: {{ . }}/quay/brancz/kube-rbac-proxy:v0.18.0
     {{- end }}
-    */}}
     rbacProxy:
       resources: {{- $ks.resources.rbacProxy | toYaml | nindent 8 }}
     resources: {{- $ks.resources.controller | toYaml | nindent 6 }}
