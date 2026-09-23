@@ -36,7 +36,8 @@
   "scripts": {
     "update-helm-chart-deps": "node src/update-helm-chart-deps.mjs",
     "test": "jest",
-    "render-chart-version-changes": "tsx src/render-chart-version-changes.ts"
+    "render-chart-version-changes": "tsx src/render-chart-version-changes.ts",
+    "extract-apl-branches": "tsx src/extract-apl-branches.ts"
   },
   "version": "1.0.0"
 }
