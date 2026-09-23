@@ -66,5 +66,11 @@ volumeMounts:
     mountPath: /srv/dex/web/templates/password.html
     subPath: password.html
   - name: web-overlay
+    mountPath: /srv/dex/web/templates/login.html
+    subPath: login.html
+  - name: web-overlay
     mountPath: /srv/dex/web/static/apl.css
     subPath: styles.css
+  - name: web-overlay
+    mountPath: /srv/dex/web/static/apl-favicon.png
+    subPath: favicon.png
