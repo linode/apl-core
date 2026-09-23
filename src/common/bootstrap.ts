@@ -16,9 +16,10 @@ export const setIdentity = async (username: string, email: string, cwd?: string)
 
 export const recoverFromGit = async (gitConfig: GitRepoConfig): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:recoverFromGit`)
-  d.info(`Attempting to clone git repository from: ${gitConfig.repoUrl}`)
+  const { authenticatedUrl: remote, branch } = gitConfig
+  d.info(`Attempting to clone git repository from: ${gitConfig.repoUrl}, branch: ${branch}`)
   cd(env.ENV_DIR)
-  await $`timeout 10 git clone ${gitConfig.authenticatedUrl} ${env.ENV_DIR}`
+  await $`timeout 10 git clone --branch ${branch} ${remote} ${env.ENV_DIR}`
   await setIdentity(gitConfig.username ?? 'otomi-admin', gitConfig.email)
   await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
 }
