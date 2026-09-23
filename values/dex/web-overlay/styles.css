@@ -264,6 +264,123 @@ body.theme-body {
 .apl-back a:hover {
   text-decoration: underline;
 }
+/* Connector selection screen */
+
+.apl-card--connectors {
+  padding-top: 40px;
+}
+
+.apl-connectors {
+  display: grid;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.apl-connector-row {
+  width: 100%;
+}
+
+.apl-connector-btn,
+a.apl-connector-btn,
+.apl-connector-btn.dex-btn-provider {
+  width: 100%;
+  min-height: 58px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px 8px 12px;
+  border: 1px solid var(--apl-border);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--apl-text);
+  text-decoration: none;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease,
+    background 120ms ease;
+}
+
+.apl-connector-btn:hover,
+a.apl-connector-btn:hover,
+.apl-connector-btn.dex-btn-provider:hover {
+  border-color: #b8c4d6;
+  background: #fbfdff;
+  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.05);
+  transform: translateY(-1px);
+}
+
+.apl-connector-btn:focus-visible {
+  outline: 0;
+  border-color: var(--apl-accent);
+  box-shadow: 0 0 0 3px rgba(23, 105, 224, 0.12);
+}
+
+.apl-connector-btn__text {
+  flex: 1;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.dex-btn-icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 47, 108, 0.1);
+  background: rgba(0, 164, 235, 0.12);
+  color: #002f6c;
+  position: relative;
+  overflow: hidden;
+}
+
+.dex-btn-icon::before {
+  display: block;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.dex-btn-icon--local::before {
+  content: "✉";
+}
+.dex-btn-icon--oidc::before {
+  content: "↗";
+}
+.dex-btn-icon--saml::before {
+  content: "◎";
+}
+.dex-btn-icon--ldap::before {
+  content: "◌";
+}
+.dex-btn-icon--github::before {
+  content: "GH";
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.dex-btn-icon--gitlab::before {
+  content: "GL";
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.dex-btn-icon--microsoft::before {
+  content: "MS";
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.dex-btn-icon--google::before {
+  content: "G";
+}
+.dex-btn-icon--openid::before {
+  content: "ID";
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
 
 @media (max-width: 520px) {
   .apl-auth {
