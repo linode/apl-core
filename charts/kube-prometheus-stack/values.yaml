@@ -1306,6 +1306,11 @@ alertmanager:
     ## Needs to be specified as GoDuration, a time duration that can be parsed by Go's time.ParseDuration() (e.g. 45ms, 30s, 1m, 1h20m15s)
     clusterGossipInterval: ""
 
+    ## clusterPeerName defines the name this instance advertises to other cluster peers, defaulting to the pod name.
+    ## Literal values and references to environment variables available in the container (e.g. "$(POD_NAME).$(NAMESPACE)") are both accepted.
+    ## Requires Alertmanager >= v0.30.0.
+    clusterPeerName: ""
+
     ## clusterPeerTimeout determines timeout for cluster peering.
     ## Needs to be specified as GoDuration, a time duration that can be parsed by Go's time.ParseDuration() (e.g. 45ms, 30s, 1m, 1h20m15s)
     clusterPeerTimeout: ""
@@ -1404,7 +1409,8 @@ grafana:
 
   ## Deploy GrafanaDashboard CRDs that reference dashboards from ConfigMaps when grafana-operator is used
   ## These settings control how dashboards are integrated with the Grafana Operator
-  ## Note: End user still need to create is own kind: GrafanaDataSource for Prometheus
+  ## Note: With operator.datasourcesEnabled disabled, end users still need to create their own
+  ## kind: GrafanaDatasource for Prometheus
   ## eg:
   ## apiVersion: grafana.integreatly.org/v1beta1
   ## kind: GrafanaDatasource
@@ -1430,6 +1436,15 @@ grafana:
     ## Enable references to ConfigMaps containing dashboards in GrafanaDashboard CRs
     ## Set to true to allow dashboards to be loaded from ConfigMap references
     dashboardsConfigMapRefEnabled: false
+
+    ## Provision GrafanaDatasource CRs instead of a file-based datasource ConfigMap
+    ## Covers the default Prometheus datasource, the per-replica Prometheus datasources, the
+    ## Alertmanager datasource and every entry of grafana.additionalDataSources
+    ## An entry of grafana.additionalDataSources may carry `valuesFrom` and `plugins`, both are
+    ## moved from the datasource to the CR spec
+    ## grafana.additionalDataSourcesString, grafana.deleteDatasources and grafana.prune have no CR
+    ## equivalent and keep using the ConfigMap
+    datasourcesEnabled: false
 
     ## Annotations for GrafanaDashboard Cr
     ##
@@ -3027,7 +3042,11 @@ prometheusOperator:
 
     namespaceSelector: {}
     objectSelector: {}
-    matchConditions: {}
+    # Match conditions for admission webhooks.
+    # Must be a list, for example:
+    # - name: exclude-leases
+    #   expression: '!(request.resource.group == "coordination.k8s.io" && request.resource.resource == "leases")'
+    matchConditions: []
 
     mutatingWebhookConfiguration:
       annotations: {}
@@ -4744,10 +4763,21 @@ prometheus:
     ## Unit format should be in the form of "50GiB"
     retentionSize: ""
 
+    ## Maximum percentage of the data volume's capacity used by the metrics, between 0 and 100.
+    ## Requires Prometheus >= v3.11.0, ignored by older versions.
+    retentionPercentage: ""
+
     ## Allow out-of-order/out-of-bounds samples ingested into Prometheus for a specified duration
     ## See https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tsdb
     tsdb:
       outOfOrderTimeWindow: 0s
+
+      ## Per-chunk-type encoding overrides, requires Prometheus >= v3.13.0.
+      chunkEncoding: {}
+        # floats: Xor2
+
+      ## Ratio of stale series in memory, between 0 and 1, at which stale series are compacted into persistent blocks.
+      staleSeriesCompactionThreshold: ""
 
     ## Enable compression of the write-ahead log using Snappy.
     ##
@@ -5222,6 +5252,14 @@ prometheus:
     ## Defines the offset the rule evaluation timestamp of the rule evaluation queries is shifted backwards.
     ## ref: https://github.com/prometheus-community/helm-charts/issues/5843
     ruleQueryOffset: ""
+
+    ## Configuration of the Prometheus rules' engine. Changing these triggers a restart of the pods.
+    ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#monitoring.coreos.com/v1.Rules
+    rules: {}
+      # alert:
+      #   forOutageTolerance: 1h
+      #   forGracePeriod: 10m
+      #   resendDelay: 1m
 
     ## RuntimeConfig configures the values for the Prometheus process behavior.
     runtime: {}
@@ -5995,6 +6033,10 @@ thanosRuler:
     ## PortName to use for ThanosRuler.
     ##
     portName: "web"
+
+    ## Scheduler to use for Pod scheduling, defaulting to the Kubernetes default scheduler.
+    ##
+    schedulerName: ""
 
     ## Duration in seconds the pod needs to terminate gracefully.
     ## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination
