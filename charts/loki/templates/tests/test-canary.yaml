@@ -4,7 +4,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ include "loki.name" $ }}-helm-test"
+  name: "{{ include "loki.resourceName" (dict "ctx" $ "suffix" "helm-test") }}"
   namespace: {{ include "loki.namespace" $ }}
   labels:
     {{- include "loki.helmTestLabels" $ | nindent 4 }}
