@@ -20,7 +20,7 @@
     "cli-select": "1.1.2",
     "debug": "4.4.3",
     "deep-diff": "1.0.2",
-    "dotenv": "17.4.2",
+    "dotenv": "18.0.0",
     "envalid": "8.2.0",
     "express": "5.2.1",
     "fs-extra": "11.4.0",
