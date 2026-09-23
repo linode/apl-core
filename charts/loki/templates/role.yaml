@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ include "loki.name" . }}
+  name: {{ include "loki.fullname" . }}
   namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.labels" . | nindent 4 }}
@@ -15,7 +15,7 @@ rules:
     verbs:
       - use
     resourceNames:
-      - {{ include "loki.name" . }}
+      - {{ include "loki.fullname" . }}
   {{- end }}
   {{- if and .Values.rbac.namespaced .Values.sidecar.rules.enabled }}
   - apiGroups: [""] # "" indicates the core API group
