@@ -35,7 +35,7 @@ resources:
           data:
             type: git
             url: {{ printf "https://%s" $v._derived.giteaDomain }}
-            username: "{{ `{{ index . \"username\" | default \"\" }}` }}"
+            username: "{{ `{{ index . \"username\" }}` }}"
             password: "{{ `{{ .password }}` }}"
       dataFrom:
         - extract:
@@ -65,7 +65,7 @@ resources:
           data:
             type: git
             url: "{{ `{{ .repoUrl }}` }}"
-            username: "{{ `{{ index . \"username\" | default \"\" }}` }}"
+            username: "{{ `{{ index . \"username\" }}` }}"
             password: "{{ `{{ .password }}` }}"
       dataFrom:
         - extract:
