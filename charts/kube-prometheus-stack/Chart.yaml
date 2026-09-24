@@ -9,7 +9,7 @@ annotations:
       url: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/README.md#upgrading-chart
   artifacthub.io/operator: "true"
 apiVersion: v2
-appVersion: v0.94.0
+appVersion: v0.94.1
 dependencies:
 - condition: crds.enabled
   name: crds
@@ -69,4 +69,4 @@ sources:
 - https://github.com/prometheus-community/helm-charts
 - https://github.com/prometheus-operator/kube-prometheus
 type: application
-version: 91.4.1
+version: 91.5.1
