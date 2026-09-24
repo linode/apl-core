@@ -47,7 +47,7 @@ resources:
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
-      name: argocd-repo-creds
+      name: {{ $gitSecretName }}
       namespace: argocd
     spec:
       refreshInterval: 1m
