@@ -301,6 +301,17 @@ metrics:
     selector: {}
       # promtheus: kube-prometheus
 
+    # -- Prometheus ServiceMonitor scheme
+    scheme: https
+    # -- Prometheus ServiceMonitor tlsConfig
+    tlsConfig:
+      insecureSkipVerify: true
+    # -- Prometheus ServiceMonitor authorization
+    authorization: {}
+      # type: Bearer
+      # credentials:
+      #   name: argocd-image-updater-metrics-token
+      #   key: token
     # -- Prometheus ServiceMonitor namespace
     namespace: ""
     # -- Prometheus ServiceMonitor labels
@@ -395,3 +406,18 @@ dualStack:
   ipFamilyPolicy: ""
   # -- IP families that should be supported and the order in which they should be applied to ClusterIP as well. Can be IPv4 and/or IPv6.
   ipFamilies: []
+
+# TLS certificate configuration via Secret for Webhook
+## Ref: https://argocd-image-updater.readthedocs.io/en/stable/configuration/webhook/#tls-configuration
+## Note: Issuing certificates via cert-manager in not supported right now because it's not possible to restart repo server automatically without extra controllers.
+certificateSecret:
+  # -- Create argocd-repo-server-tls secret
+  enabled: false
+  # -- Annotations to be added to argocd-repo-server-tls secret
+  annotations: {}
+  # -- Labels to be added to argocd-repo-server-tls secret
+  labels: {}
+  # -- Certificate private key
+  key: ""
+  # -- Certificate data. Must contain SANs of Repo service (ie: argocd-repo-server, argocd-repo-server.argo-cd.svc)
+  crt: ""
