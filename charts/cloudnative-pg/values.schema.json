@@ -325,6 +325,17 @@
       "required": [],
       "type": "object"
     },
+    "scratchData": {
+      "properties": {
+        "emptyDir": {
+          "description": "EmptyDir options for the scratch-data volume.",
+          "required": [],
+          "type": "object"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
     "service": {
       "properties": {
         "ipFamilies": {
