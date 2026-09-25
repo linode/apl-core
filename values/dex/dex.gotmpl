@@ -1,0 +1,53 @@
+{{- $v := .Values }}
+{{- $d := $v.apps | get "dex" }}
+{{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
+
+{{- /*
+  PRE-RELEASE IMAGE. Do not release APL while pinned. Chart default v2.44.0 drops group
+  membership on local-password login; fix is on master, unreleased. Replace with first
+  tagged release containing it. Not routed through ORCS: dex not in mirror yet.
+*/}}
+image:
+  repository: clubbers1892/dex
+  tag: v0.1.0-groups.1
+  digest: sha256:595178dbde430d71500efdb0353d5f649dbb4f9dfb35e3854be9b81a9e2dc28a
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+
+replicaCount: {{ $d.replicas }}
+
+# config is an ExternalSecret (dex-raw.gotmpl), not helm values — it embeds the OAuth2 secret.
+configSecret:
+  create: false
+  name: dex-config
+
+# Dex stores tokens/sessions/passwords/keys as CRDs, needs RBAC to manage and register them.
+rbac:
+  create: true
+  createClusterScoped: true
+
+serviceAccount:
+  create: true
+
+httpRoute:
+  enabled: true
+  {{- with $httpRoute.annotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  parentRefs:
+    {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
+  hostnames:
+    - {{ $v._derived.dexDomain }}
+
+service:
+  ports:
+    http:
+      port: 5556
+
+resources: {{- toYaml $d.resources | nindent 2 }}
+
+priorityClassName: otomi-critical
