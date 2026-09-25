@@ -151,6 +151,17 @@ resources:
               !(h in variables.reserved) || object.metadata.name == variables.reserved[h]
             )
           message: 'this hostname is served by a platform app and cannot be rebound'
+  - apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingAdmissionPolicyBinding
+    metadata:
+      name: apl-team-hostnames
+    spec:
+      policyName: apl-team-hostnames
+      validationActions: ["Deny"]
+      matchResources:
+        namespaceSelector:
+          matchLabels:
+            type: team
   {{- /* Only API may create tty hostnames. */}}
   - apiVersion: admissionregistration.k8s.io/v1
     kind: ValidatingAdmissionPolicy
@@ -179,17 +190,6 @@ resources:
         - expression: |
             variables.hostnames.all(h, h != '{{ $v._derived.ttyDomain }}')
           message: 'tty is a reserved hostname and may only be managed by the platform API'
-  - apiVersion: admissionregistration.k8s.io/v1
-    kind: ValidatingAdmissionPolicyBinding
-    metadata:
-      name: apl-team-hostnames
-    spec:
-      policyName: apl-team-hostnames
-      validationActions: ["Deny"]
-      matchResources:
-        namespaceSelector:
-          matchLabels:
-            type: team
   - apiVersion: admissionregistration.k8s.io/v1
     kind: ValidatingAdmissionPolicyBinding
     metadata:
