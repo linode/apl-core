@@ -89,6 +89,8 @@ environments:
             _rawValues: {}
           cert-manager:
             issuer: custom-ca
+            networkPolicies:
+              enabled: false
             resources:
               certManager:
                 requests:
