@@ -47,7 +47,7 @@
 {{- $logoutToConsole := printf "%s?post_logout_redirect_uri=https://console.%s&client_id=%s" $oidcLogoutUrl $domainSuffix $oidcClientID }}
 {{- $logoutToOauth2Start := printf "%s?post_logout_redirect_uri=https://console.%s/oauth2/start&client_id=%s" $oidcLogoutUrl $domainSuffix $oidcClientID }}
 {{- $oidcBackchannelLogoutUrl := "" }}
-{{- if eq ($v.otomi | get "issuer" "keycloak") "dex" }}
+{{- if eq ($v.otomi | get "oidc.authenticationLayer" "keycloak") "dex" }}
   {{- $dexBaseUrl := printf "https://%s" $dexDomain }}
   {{- $dexBaseUrlBackchannel := "http://dex.dex.svc.cluster.local:5556" }}
   {{- $oidcBaseUrl = $dexBaseUrl }}

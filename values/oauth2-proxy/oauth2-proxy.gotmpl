@@ -7,7 +7,7 @@
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 {{- $persistentStorageEnabled := hasKey $r "persistentVolumeSize" }}
-{{- $issuer := $v.otomi | get "issuer" "keycloak" }}
+{{- $issuer := $v.otomi | get "oidc.authenticationLayer" "keycloak" }}
 
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list (print "." $domainSuffix) "oauth2-proxy.istio-system.svc.cluster.local" }}

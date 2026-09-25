@@ -137,7 +137,7 @@ environments:
             useBackupPlugin: true
             _rawValues: {}
           dex:
-            enabled: false
+            enabled: true
             replicas: 1
             idp:
               clientID: otomi
@@ -1181,7 +1181,8 @@ environments:
           isPreInstalled: false
           useORCS: true
           aiEnabled: false
-          issuer: keycloak
+          oidc:
+            authenticationLayer: keycloak
         users: []
         versions:
           specVersion: 74
