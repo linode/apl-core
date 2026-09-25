@@ -561,10 +561,7 @@ jobs:
             install_args+=(
               "--set" "apps.dex.enabled=true"
               "--set" "apps.keycloak.enabled=false"
-              "--set" "otomi.issuer=dex"
-              "--set" "apps.dex._rawValues.image.repository=docker.io/clubbers1892/dex"
-              "--set" "apps.dex._rawValues.image.tag=v0.1.0-groups.1"
-              "--set" "apps.dex._rawValues.image.digest=sha256:a659f74c644b0be9592ae2cbdf5b0eb6f925e071d4543b57805b5c48fff4f639"
+              "--set" "otomi.oidc.authenticationLayer=dex"
             )
           fi
 
