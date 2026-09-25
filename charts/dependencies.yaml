@@ -29,7 +29,7 @@ dependencies:
     version: 0.24.1
     repository: https://charts.dexidp.io
   - name: external-dns
-    version: 1.21.1
+    version: 1.22.0
     repository: https://kubernetes-sigs.github.io/external-dns
   - name: external-secrets
     version: 2.11.0
