@@ -183,13 +183,6 @@ describe('Bootstrapping values', () => {
   })
   describe('processing values', () => {
     const generatedSecrets = { gen: 'x' }
-    const generatedPassword = 'generated-password'
-    const usersWithPasswords = [
-      { id: 'user1', initialPassword: 'existing-password' },
-      { id: 'user2', initialPassword: generatedPassword },
-    ]
-    // Users stored directly in allSecrets (keycloak-operator derives groups from raw fields)
-
     const ca = { a: 'cert' }
     const mergedSecretsWithGen = merge(cloneDeep(secrets), cloneDeep(generatedSecrets))
     let deps
@@ -202,10 +195,9 @@ describe('Bootstrapping values', () => {
         loadYaml: jest.fn(),
         terminal,
         writeValues: jest.fn(),
-        getUsers: jest.fn().mockReturnValue(usersWithPasswords),
-        getSchemaSecretsPaths: jest.fn().mockResolvedValue(['users', 'deep', 'deep.nested', 'secret', 'a']),
+        getSchemaSecretsPaths: jest.fn().mockResolvedValue(['deep', 'deep.nested', 'secret', 'a']),
         stripAllSecrets: jest.fn().mockImplementation((v) => {
-          return omit(v, ['users', 'deep', 'deep.nested', 'secret', 'a'])
+          return omit(v, ['deep', 'deep.nested', 'secret', 'a'])
         }),
       }
     })
@@ -240,27 +232,17 @@ describe('Bootstrapping values', () => {
         })
         expect(res.originalInput).toEqual({
           cluster: { name: 'bla', provider: 'dida' },
-          users: [
-            { id: 'user1', initialPassword: 'existing-password' },
-            { id: 'user2', initialPassword: 'generated-password' },
-          ],
         })
       })
-      it('should merge originalInput + allSecrets + users for disk (stripAllSecrets removes x-secret paths)', async () => {
-        // mergedForDisk = merge(originalInput, allSecrets, { users })
-        // allSecrets = merge(ca, storedSecrets, generatedSecrets) + users: usersWithPasswords
-        const allSecretsExpected = merge(cloneDeep(ca), secrets, {
-          users: usersWithPasswords,
-        })
-        deps.loadYaml.mockReturnValue({ ...ca, ...secrets, ...values, users })
-        deps.getUsers.mockReturnValue(usersWithPasswords)
+      it('should merge originalInput + allSecrets for disk (stripAllSecrets removes x-secret paths)', async () => {
+        const allSecretsExpected = merge(cloneDeep(ca), secrets)
+        deps.loadYaml.mockReturnValue({ ...ca, ...secrets, ...values })
         const res = await processValues(deps)
         expect(deps.writeValues).toHaveBeenNthCalledWith(1, values)
         expect(res.originalInput).toEqual({
           ...ca,
           ...secrets,
           ...values,
-          users: usersWithPasswords,
         })
         expect(res.allSecrets).toEqual(allSecretsExpected)
       })
@@ -275,30 +257,7 @@ describe('Bootstrapping values', () => {
         deps.loadYaml.mockReturnValue({ ...ca, ...secrets, values })
         deps.createCustomCA.mockReturnValue(ca)
         const result = await processValues(deps)
-        // allSecrets should contain full unstripped secrets including pre-processed users
-        expect(result.allSecrets).toEqual(merge(cloneDeep(ca), secrets, { users: usersWithPasswords }))
-      })
-      it('should store users as-is in allSecrets (keycloak-operator derives groups)', async () => {
-        const storedUsers = [
-          {
-            email: 'platform-admin@example.com',
-            firstName: 'platform',
-            lastName: 'admin',
-            initialPassword: 'existing-pass',
-            isPlatformAdmin: true,
-            teams: ['dev'],
-          },
-        ]
-        deps.loadYaml.mockReturnValue({})
-        deps.getStoredClusterSecrets.mockReturnValue({ users: storedUsers })
-        deps.generateSecrets.mockReturnValue({})
-        deps.createCustomCA.mockReturnValue({})
-        deps.getUsers.mockReturnValue(storedUsers)
-
-        const result = await processValues(deps)
-
-        // Users stored directly — no groups transformation
-        expect(result.allSecrets.users).toEqual(storedUsers)
+        expect(result.allSecrets).toEqual(merge(cloneDeep(ca), secrets))
       })
     })
   })
