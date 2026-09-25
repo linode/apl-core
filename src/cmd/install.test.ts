@@ -35,9 +35,10 @@ jest.mock('src/common/values', () => ({
 
 jest.mock('src/common/hf', () => ({
   hf: jest.fn(),
-  hfValues: jest
-    .fn()
-    .mockResolvedValue({ cluster: { domainSuffix: 'test.example.com' }, otomi: { issuer: 'keycloak' } }),
+  hfValues: jest.fn().mockResolvedValue({
+    cluster: { domainSuffix: 'test.example.com' },
+    otomi: { oidc: { authenticationLayer: 'keycloak' } },
+  }),
   deployEssential: jest.fn(),
   HF_DEFAULT_SYNC_ARGS: ['apply', '--sync-args', '--include-needs'],
   HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS: ['apply', '--include-needs'],

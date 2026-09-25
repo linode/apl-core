@@ -136,8 +136,8 @@ export const createPlatformAdminUser = async (
   const d = deps.terminal(`cmd:${cmdName}:createPlatformAdminUser`)
 
   const values = (await deps.hfValues()) as Record<string, any>
-  if (values?.otomi?.issuer !== 'keycloak') {
-    d.info('otomi.issuer is not keycloak, skipping local platform-admin user creation')
+  if (values?.otomi?.oidc?.authenticationLayer !== 'keycloak') {
+    d.info('otomi.oidc.authenticationLayer is not keycloak, skipping local platform-admin user creation')
     return
   }
 
