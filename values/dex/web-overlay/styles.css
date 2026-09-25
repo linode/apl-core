@@ -1,0 +1,414 @@
+/* APL Dex theme — centered logo above centered login card */
+
+:root {
+  --apl-bg: #f5f7fa;
+  --apl-surface: #ffffff;
+  --apl-text: #101828;
+  --apl-muted: #667085;
+  --apl-border: #d0d5dd;
+  --apl-primary: #00a4eb;
+  --apl-primary-hover: #0094d4;
+  --apl-accent: #1769e0;
+  --apl-error: #b42318;
+  --apl-error-bg: #fef3f2;
+  --apl-radius: 14px;
+  --apl-shadow: 0 24px 64px rgba(16, 24, 40, 0.1);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body.theme-body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--apl-bg);
+  color: var(--apl-text);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.theme-navbar {
+  display: none;
+}
+
+.dex-container {
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+.apl-auth {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: var(--apl-bg);
+  padding: 32px 20px;
+  box-sizing: border-box;
+}
+
+.apl-auth__inner {
+  width: 100%;
+  max-width: 470px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+}
+
+.apl-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 42px;
+}
+
+.apl-brand__logo {
+  display: block;
+  width: 104px;
+  max-height: 40px;
+  margin-top: -13px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.apl-brand__divider {
+  width: 1px;
+  height: 27px;
+  background: #98a2b3;
+}
+
+.apl-brand__product {
+  color: #484d54;
+  font-size: 17px;
+  font-weight: 500;
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+
+.apl-auth__main {
+  width: 100%;
+}
+
+.apl-card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 46px;
+  border: 1px solid rgba(208, 213, 221, 0.78);
+  border-radius: var(--apl-radius);
+  background: var(--apl-surface);
+  box-shadow: var(--apl-shadow);
+}
+
+.apl-card__eyebrow {
+  color: #667085;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.apl-card h2 {
+  margin: 0 0 30px;
+  font-size: 30px;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.apl-card__intro {
+  margin: 0 0 30px;
+  color: var(--apl-muted);
+  line-height: 1.5;
+}
+
+.apl-form {
+  display: grid;
+  gap: 20px;
+}
+
+.apl-field {
+  display: grid;
+  gap: 8px;
+}
+
+.apl-field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #344054;
+}
+
+.apl-field input[type="text"],
+.apl-field input[type="email"],
+.apl-field input[type="password"] {
+  width: 100%;
+  height: 46px;
+  box-sizing: border-box;
+  padding: 0 13px;
+  border: 1px solid var(--apl-border);
+  border-radius: 8px;
+  outline: 0;
+  background: #fff;
+  color: var(--apl-text);
+  font: inherit;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.apl-field input:focus {
+  border-color: var(--apl-accent);
+  box-shadow: 0 0 0 3px rgba(23, 105, 224, 0.12);
+}
+
+.apl-password-wrap {
+  position: relative;
+}
+
+.apl-password-wrap input {
+  padding-right: 66px !important;
+}
+
+.apl-password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  padding: 7px 8px;
+  background: transparent;
+  color: #475467;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.apl-password-toggle:hover {
+  color: var(--apl-accent);
+}
+
+.apl-remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  width: fit-content;
+  color: #344054;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.apl-remember input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--apl-accent);
+}
+
+.apl-error {
+  margin-top: -6px;
+  padding: 11px 12px;
+  border: 1px solid #fecdca;
+  border-radius: 8px;
+  color: var(--apl-error);
+  background: var(--apl-error-bg);
+  font-size: 13px;
+}
+
+.apl-submit {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--apl-primary);
+  color: #002f6c;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    transform 120ms ease;
+}
+
+.apl-submit:hover:not(:disabled) {
+  background: var(--apl-primary-hover);
+  color: #002f6c;
+  transform: translateY(-1px);
+}
+
+.apl-submit:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.apl-back {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.apl-back a {
+  color: var(--apl-accent);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.apl-back a:hover {
+  text-decoration: underline;
+}
+/* Connector selection screen */
+
+.apl-card--connectors {
+  padding-top: 40px;
+}
+
+.apl-connectors {
+  display: grid;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.apl-connector-row {
+  width: 100%;
+}
+
+.apl-connector-btn,
+a.apl-connector-btn,
+.apl-connector-btn.dex-btn-provider {
+  width: 100%;
+  min-height: 58px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px 8px 12px;
+  border: 1px solid var(--apl-border);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--apl-text);
+  text-decoration: none;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease,
+    background 120ms ease;
+}
+
+.apl-connector-btn:hover,
+a.apl-connector-btn:hover,
+.apl-connector-btn.dex-btn-provider:hover {
+  border-color: #b8c4d6;
+  background: #fbfdff;
+  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.05);
+  transform: translateY(-1px);
+}
+
+.apl-connector-btn:focus-visible {
+  outline: 0;
+  border-color: var(--apl-accent);
+  box-shadow: 0 0 0 3px rgba(23, 105, 224, 0.12);
+}
+
+.apl-connector-btn__text {
+  flex: 1;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.dex-btn-icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 47, 108, 0.1);
+  background: rgba(0, 164, 235, 0.12);
+  color: #002f6c;
+  position: relative;
+  overflow: hidden;
+}
+
+.dex-btn-icon::before {
+  display: block;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.dex-btn-icon--local::before {
+  content: "✉";
+}
+.dex-btn-icon--oidc::before {
+  content: "↗";
+}
+.dex-btn-icon--saml::before {
+  content: "◎";
+}
+.dex-btn-icon--ldap::before {
+  content: "◌";
+}
+.dex-btn-icon--github::before {
+  content: "GH";
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.dex-btn-icon--gitlab::before {
+  content: "GL";
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.dex-btn-icon--microsoft::before {
+  content: "MS";
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.dex-btn-icon--google::before {
+  content: "G";
+}
+.dex-btn-icon--openid::before {
+  content: "ID";
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 520px) {
+  .apl-auth {
+    padding: 24px 14px;
+  }
+
+  .apl-auth__inner {
+    gap: 20px;
+  }
+
+  .apl-brand {
+    gap: 10px;
+  }
+
+  .apl-brand__logo {
+    width: 116px;
+  }
+
+  .apl-brand__product {
+    font-size: 15px;
+  }
+
+  .apl-card {
+    padding: 30px 22px;
+    border-radius: 12px;
+  }
+
+  .apl-card h2 {
+    font-size: 26px;
+  }
+}
