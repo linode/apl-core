@@ -222,8 +222,8 @@ const findGroupPrefix = (secretPath: string): string | undefined => {
 
   // Top-level paths: use the first segment as the group prefix
   const [firstSegment] = secretPath.split('.')
-  // Skip paths like 'kms' and 'users' which are handled separately
-  if (firstSegment && firstSegment !== 'kms' && firstSegment !== 'users') return firstSegment
+  // Skip paths like 'kms' which are handled separately
+  if (firstSegment && firstSegment !== 'kms') return firstSegment
 
   return undefined
 }
@@ -262,9 +262,6 @@ export const buildSecretToNamespaceMap = async (
   const groupMap = new Map<string, SecretMapping>()
 
   for (const secretPath of secretPaths) {
-    // Skip users path — user secrets are managed individually in apl-users namespace
-    if (secretPath === 'users') continue
-
     if (!findGroupPrefix(secretPath)) continue
 
     const secretName = deriveSecretName(secretPath)
@@ -575,6 +572,41 @@ export const createUserSealedSecretManifests = async (
   return manifests
 }
 
+export const PLATFORM_ADMIN_SEALED_SECRET_NAME = 'platform-admin'
+
+export const createPlatformAdminSealedSecret = async (
+  deps = {
+    getK8sSecret,
+    getOrCreateSealedSecretsPem,
+    createUserSealedSecretManifests,
+    writeSealedSecretManifests,
+    terminal,
+  },
+): Promise<void> => {
+  const d = deps.terminal(`common:${cmdName}:createPlatformAdminSealedSecret`)
+
+  const credentials = await deps.getK8sSecret('platform-admin-credentials', 'apl-secrets')
+  if (!credentials?.username || !credentials?.password) {
+    throw new Error('platform-admin-credentials secret not ready yet')
+  }
+
+  const platformAdmin = {
+    name: PLATFORM_ADMIN_SEALED_SECRET_NAME,
+    email: credentials.username,
+    firstName: 'platform',
+    lastName: 'admin',
+    isPlatformAdmin: true,
+    isTeamAdmin: false,
+    teams: [],
+    initialPassword: credentials.password,
+  }
+
+  const pem = await deps.getOrCreateSealedSecretsPem()
+  const manifests = await deps.createUserSealedSecretManifests([platformAdmin], pem)
+  await deps.writeSealedSecretManifests(manifests, env.ENV_DIR)
+  d.info('Created platform-admin SealedSecret from platform-admin-credentials')
+}
+
 /**
  * Get the PEM public key from the existing sealed-secrets certificate in the cluster,
  * or generate a new RSA key pair, store it in the cluster, and return its PEM.
@@ -613,7 +645,6 @@ export const bootstrapSealedSecrets = async (
     buildSecretToNamespaceMap,
     createSealedSecretManifest,
     writeSealedSecretManifests,
-    createUserSealedSecretManifests,
     encryptSecretItem,
   },
 ): Promise<void> => {
@@ -629,11 +660,9 @@ export const bootstrapSealedSecrets = async (
     createSealedSecretsKeySecret: deps.createSealedSecretsKeySecret,
   })
 
-  // 5. Build secret-to-namespace mapping
   const teams = Object.keys(get(secrets, 'teamConfig', {}) as Record<string, unknown>)
   const mappings = await deps.buildSecretToNamespaceMap(secrets, teams, allValues)
 
-  // 6. Create SealedSecret manifests
   const manifests: SealedSecretManifest[] = []
   for (const mapping of mappings) {
     const manifest = await deps.createSealedSecretManifest(pem, mapping, {
@@ -642,17 +671,6 @@ export const bootstrapSealedSecrets = async (
     manifests.push(manifest)
   }
 
-  // 7. Create individual user SealedSecrets in apl-users namespace
-  const { users } = secrets
-  if (Array.isArray(users) && users.length > 0) {
-    const userManifests = await deps.createUserSealedSecretManifests(users, pem, {
-      encryptSecretItem: deps.encryptSecretItem,
-      terminal: deps.terminal,
-    })
-    manifests.push(...userManifests)
-  }
-
-  // 8. Write SealedSecret manifests to disk
   // Note: These manifests are applied later during install, after the sealed-secrets
   // controller is deployed and the SealedSecret CRD is available.
   await deps.writeSealedSecretManifests(manifests, envDir)
