@@ -183,9 +183,9 @@ resources:
               ? object.spec.listeners.map(l, has(l.hostname) ? l.hostname : '')
               : (has(object.spec.hostnames) ? object.spec.hostnames : [])
       matchConditions:
-        - name: "exclude-api"
+        - name: exclude-api
           expression: |
-            request.userInfo.username != "system:serviceaccount:otomi:otomi-api"
+            request.userInfo.username != 'system:serviceaccount:otomi:otomi-api'
       validations:
         - expression: |
             variables.hostnames.all(h, h != '{{ $v._derived.ttyDomain }}')
