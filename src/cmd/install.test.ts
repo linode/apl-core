@@ -35,7 +35,9 @@ jest.mock('src/common/values', () => ({
 
 jest.mock('src/common/hf', () => ({
   hf: jest.fn(),
-  hfValues: jest.fn(),
+  hfValues: jest
+    .fn()
+    .mockResolvedValue({ cluster: { domainSuffix: 'test.example.com' }, otomi: { issuer: 'keycloak' } }),
   deployEssential: jest.fn(),
   HF_DEFAULT_SYNC_ARGS: ['apply', '--sync-args', '--include-needs'],
   HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS: ['apply', '--include-needs'],
@@ -71,6 +73,7 @@ jest.mock('src/common/sealed-secrets', () => ({
   applySealedSecretManifestsFromDir: jest.fn().mockResolvedValue([]),
   restartSealedSecretsController: jest.fn().mockResolvedValue(undefined),
   resealGitPassword: jest.fn().mockResolvedValue(undefined),
+  createPlatformAdminSealedSecret: jest.fn().mockResolvedValue(undefined),
 }))
 
 jest.mock('src/common/utils', () => ({
