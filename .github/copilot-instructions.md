@@ -31,44 +31,12 @@ All Helmfile specs in `helmfile.d/` execute alphabetically. Use reusable anchors
 
 All user-configurable parameters MUST be defined in `values-schema.yaml` (JSON Schema). Run `npm run validate-values` to validate. The schema serves as both validation and documentation.
 
-## CLI Commands & Workflow
-
-### Essential Commands
-
-```bash
-# Bootstrap a new values repo (creates $ENV_DIR with defaults)
-otomi bootstrap
-
-# Validate user configuration against schema
-otomi validate-values
-
-# Validate rendered Kubernetes manifests
-otomi validate-templates [-l name=myapp]
-
-# Render values for inspection
-otomi values
-
-# Render chart values for a specific app
-otomi x helmfile -l name=myapp write-values
-
-# Deploy all charts (or use -l name=myapp for selective deploy)
-otomi apply [-l name=myapp]
-
-# Generate diff before applying
-otomi diff [-l name=myapp]
-
-# Deploy to cluster (initial setup)
-otomi install
-```
-
 ### Development Setup
 
 ```bash
 # Install dependencies (helmfile, helm, kubectl, etc.)
 npm run install-deps
 
-# Run CLI locally (bypass Docker)
-export IN_DOCKER=false
 export ENV_DIR=$PWD/tests/fixtures
 export NODE_ENV=test
 
@@ -110,6 +78,16 @@ The `binzx/otomi` script wraps all commands in Docker by default:
 - Integration tests: Use fixtures in `tests/fixtures/` with `NODE_ENV=test`
 - Template validation: `otomi validate-templates` (validates all rendered manifests against K8s schemas)
 - Policy tests: `npm run test:opa` (Rego policy testing)
+
+### Mandatory Template Diff Check
+
+When changing files under `charts/`, `values/`, or `helmfile.d/`, always run:
+
+```bash
+bin/compare.sh
+```
+
+Review and summarize rendered diffs before finalizing changes.
 
 ## Key Files & Directories
 
