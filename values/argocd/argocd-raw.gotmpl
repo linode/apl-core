@@ -1,5 +1,7 @@
 {{- $v := .Values }}
 {{- $a := $v.apps.argocd }}
+{{- /* Default Secret name for Git credentials – depends on Git provider */}}
+{{- $gitSecretName := "argocd-repo-creds-git" }}
 resources:
 {{- if $v._derived.untrustedCA }}
   - apiVersion: v1
@@ -10,6 +12,8 @@ resources:
       custom-ca-certificates.crt: {{ .Values._derived.caCert | b64enc }}
 {{- end }}
 {{- if contains "gitea-http.gitea.svc.cluster.local" $v.otomi.git.repoUrl }}
+  {{- $gitSecretName = "argocd-repo-creds-gitea-internal" }}
+  {{- /* Additional secret specifically for external Git URL of Gitea */}}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
@@ -31,129 +35,41 @@ resources:
           data:
             type: git
             url: {{ printf "https://%s" $v._derived.giteaDomain }}
-            username: "{{ `{{ .gitUsername }}` }}"
-            password: "{{ `{{ .gitPassword }}` }}"
-      data:
-        - secretKey: gitUsername
-          remoteRef:
+            username: "{{ `{{ index . \"username\" }}` }}"
+            password: "{{ `{{ .password }}` }}"
+      dataFrom:
+        - extract:
             key: apl-git-config
-            property: username
-        - secretKey: gitPassword
-          remoteRef:
-            key: apl-git-config
-            property: password
-  - apiVersion: external-secrets.io/v1
-    kind: ExternalSecret
-    metadata:
-      name: argocd-repo-creds-gitea-internal
-      namespace: argocd
-    spec:
-      refreshInterval: 1m
-      secretStoreRef:
-        name: core-secrets-store
-        kind: ClusterSecretStore
-      target:
-        name: argocd-repo-creds-gitea-internal
-        creationPolicy: Owner
-        template:
-          metadata:
-            labels:
-              argocd.argoproj.io/secret-type: repo-creds
-          type: Opaque
-          data:
-            type: git
-            url: "{{ `{{ .repoUrl }}` }}"
-            username: "{{ `{{ .gitUsername }}` }}"
-            password: "{{ `{{ .gitPassword }}` }}"
-      data:
-        - secretKey: repoUrl
-          remoteRef:
-            key: apl-git-config
-            property: repoUrl
-        - secretKey: gitUsername
-          remoteRef:
-            key: apl-git-config
-            property: username
-        - secretKey: gitPassword
-          remoteRef:
-            key: apl-git-config
-            property: password
 
 {{- else if contains "git-server.git-server.svc.cluster.local" $v.otomi.git.repoUrl }}
-  - apiVersion: external-secrets.io/v1
-    kind: ExternalSecret
-    metadata:
-      name: argocd-repo-creds-git-server
-      namespace: argocd
-    spec:
-      refreshInterval: 1m
-      secretStoreRef:
-        name: core-secrets-store
-        kind: ClusterSecretStore
-      target:
-        name: argocd-repo-creds-git-server
-        creationPolicy: Owner
-        template:
-          metadata:
-            labels:
-              argocd.argoproj.io/secret-type: repo-creds
-          type: Opaque
-          data:
-            type: git
-            url: "{{ `{{ .repoUrl }}` }}"
-            username: "{{ `{{ .gitUsername }}` }}"
-            password: "{{ `{{ .gitPassword }}` }}"
-      data:
-        - secretKey: repoUrl
-          remoteRef:
-            key: apl-git-config
-            property: repoUrl
-        - secretKey: gitUsername
-          remoteRef:
-            key: apl-git-config
-            property: username
-        - secretKey: gitPassword
-          remoteRef:
-            key: apl-git-config
-            property: password
-{{- else }}
-  - apiVersion: external-secrets.io/v1
-    kind: ExternalSecret
-    metadata:
-      name: argocd-repo-creds-git
-      namespace: argocd
-    spec:
-      refreshInterval: 1m
-      secretStoreRef:
-        name: core-secrets-store
-        kind: ClusterSecretStore
-      target:
-        name: argocd-repo-creds-git
-        creationPolicy: Owner
-        template:
-          metadata:
-            labels:
-              argocd.argoproj.io/secret-type: repo-creds
-          type: Opaque
-          data:
-            type: git
-            url: "{{ `{{ .repoUrl }}` }}"
-            username: "{{ `{{ .gitUsername }}` }}"
-            password: "{{ `{{ .gitPassword }}` }}"
-      data:
-        - secretKey: repoUrl
-          remoteRef:
-            key: apl-git-config
-            property: repoUrl
-        - secretKey: gitUsername
-          remoteRef:
-            key: apl-git-config
-            property: username
-        - secretKey: gitPassword
-          remoteRef:
-            key: apl-git-config
-            property: password
+  {{- $gitSecretName = "argocd-repo-creds-git-server" }}
 {{- end }}
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: {{ $gitSecretName }}
+      namespace: argocd
+    spec:
+      refreshInterval: 1m
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: {{ $gitSecretName }}
+        creationPolicy: Owner
+        template:
+          metadata:
+            labels:
+              argocd.argoproj.io/secret-type: repo-creds
+          type: Opaque
+          data:
+            type: git
+            url: "{{ `{{ .repoUrl }}` }}"
+            username: "{{ `{{ index . \"username\" }}` }}"
+            password: "{{ `{{ .password }}` }}"
+      dataFrom:
+        - extract:
+            key: apl-git-config
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
