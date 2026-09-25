@@ -497,9 +497,6 @@ jobs:
           BOT_PULL_TOKEN: ${{ secrets.BOT_PULL_TOKEN }}
         run: |
           touch values.yaml
-          adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
-          # Treat the admin password as sensitive information and mask it in the logs
-          echo "::add-mask::$adminPassword"
 
           install_args=(
             "otomi" "chart/apl" "--wait" "--wait-for-jobs" "--timeout" "90m0s"
@@ -511,7 +508,6 @@ jobs:
             "--set" "cluster.k8sContext=${LINODE_CLUSTER_CONTEXT}"
             "--set" "cluster.domainSuffix=${DOMAIN}"
             "--set" "otomi.hasExternalDNS=true"
-            "--set" "otomi.adminPassword=$adminPassword"
             "--set" "otomi.version=${GITHUB_REF##*/}"
             "--set" "apps.linode-cfw.enabled=true"
             "--set" "operator.image.repository=docker.io/linode/apl-core"
