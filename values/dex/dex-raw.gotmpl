@@ -49,8 +49,11 @@ resources:
         {{- readFile "web-overlay/login.html" | nindent 8 }}
       styles.css: |
         {{- readFile "web-overlay/styles.css" | nindent 8 }}
+      apl.js: |
+        {{- readFile "web-overlay/apl.js" | nindent 8 }}
     binaryData:
       favicon.png: {{ readFile "web-overlay/favicon.png" | b64enc }}
+      apl-logo.svg: {{ readFile "web-overlay/apl-logo.svg" | b64enc }}
 
   {{- /* adminPassword is hashed by ESO itself (sprig bcrypt), never stored or rendered as a hash. */}}
   - apiVersion: external-secrets.io/v1

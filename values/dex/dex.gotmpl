@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $d := $v.apps | get "dex" }}
+{{- $domainSuffix := $v | get "cluster.domainSuffix" }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 
 image:
@@ -40,6 +41,37 @@ httpRoute:
     {{- $httpRoute.parentRefs | toYaml | nindent 4 }}
   hostnames:
     - {{ $v._derived.dexDomain }}
+  # Dex has no web.headers option, so security response headers are set on the route.
+  # Safe on both the login HTML and Dex's JSON/redirect endpoints; Cache-Control is left
+  # untouched so JWKS/discovery/static assets stay cacheable.
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            set:
+              # form-action allows all platform hosts (*.domainSuffix): the login POST
+              # redirects through other hosts (e.g. auth./console. OAuth2 callback).
+              - name: Content-Security-Policy
+                value: "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://*.{{ $domainSuffix }}; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+              - name: X-Frame-Options
+                value: "DENY"
+              - name: X-Content-Type-Options
+                value: "nosniff"
+              - name: Referrer-Policy
+                value: "no-referrer"
+              - name: Strict-Transport-Security
+                value: "max-age=31536000; includeSubDomains"
+              - name: Permissions-Policy
+                value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+              - name: Cross-Origin-Opener-Policy
+                value: "same-origin"
+
+grpc:
+  enabled: true
 
 grpc:
   enabled: true
@@ -71,6 +103,12 @@ volumeMounts:
   - name: web-overlay
     mountPath: /srv/dex/web/static/apl.css
     subPath: styles.css
+  - name: web-overlay
+    mountPath: /srv/dex/web/static/apl.js
+    subPath: apl.js
+  - name: web-overlay
+    mountPath: /srv/dex/web/static/apl-logo.svg
+    subPath: apl-logo.svg
   - name: web-overlay
     mountPath: /srv/dex/web/static/apl-favicon.png
     subPath: favicon.png
