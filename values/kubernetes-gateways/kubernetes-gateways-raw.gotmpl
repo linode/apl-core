@@ -100,7 +100,7 @@ resources:
   {{- end }}
   {{- /* Reserved hostname -> the object allowed to serve it. Empty means no object may. */}}
   {{- $reserved := dict }}
-  {{- range $host := $v._derived.platformHostnames }}
+  {{- range $host := without $v._derived.platformHostnames $v._derived.ttyDomain }}
     {{- $_ := set $reserved $host "" }}
   {{- end }}
   {{- /* Owner names are set in helmfile-60.teams.yaml.gotmpl and prometheus-operator-team.gotmpl. */}}
