@@ -63,8 +63,6 @@ sequenceDiagram
             Bootstrap->>Bootstrap: generateSecrets()
             Bootstrap->>Bootstrap: createCustomCA()
             Bootstrap->>Bootstrap: getKmsValues()
-            Bootstrap->>Bootstrap: getUsers()
-            Note right of Bootstrap: Add platform admin<br/>with initial password
             Bootstrap->>Bootstrap: writeValues(merged)
             Bootstrap->>K8s: createK8sSecret('deployment-passwords')
             K8s-->>Bootstrap: secret created
@@ -117,10 +115,8 @@ sequenceDiagram
                 Install->>Git: git add, commit, push
                 Git-->>Install: changes committed
 
+                Note right of Install: platform-admin-credentials is an ExternalSecret,<br/>rendered by Helmfile like any other app resource
                 Install->>Install: initialSetupData()
-                Install->>K8s: createUpdateGenericSecret('platform-admin-credentials')
-                K8s-->>Install: secret created
-
                 Install->>K8s: createUpdateConfigMap('welcome')
                 K8s-->>Install: welcome message created
 
