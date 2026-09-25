@@ -54,7 +54,7 @@ httpRoute:
           responseHeaderModifier:
             set:
               - name: Content-Security-Policy
-                value: "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: https://www.linode.com; style-src 'self' 'unsafe-inline'; script-src 'self'"
+                value: "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
               - name: X-Frame-Options
                 value: "DENY"
               - name: X-Content-Type-Options
@@ -101,6 +101,9 @@ volumeMounts:
   - name: web-overlay
     mountPath: /srv/dex/web/static/apl.js
     subPath: apl.js
+  - name: web-overlay
+    mountPath: /srv/dex/web/static/apl-logo.svg
+    subPath: apl-logo.svg
   - name: web-overlay
     mountPath: /srv/dex/web/static/apl-favicon.png
     subPath: favicon.png

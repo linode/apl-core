@@ -1,12 +1,16 @@
 {{ template "header.html" . }}
 
-<link rel="stylesheet" href="{{ url .ReqPath `static/apl.css` }}">
-<link rel="icon" href="{{ url .ReqPath `static/apl-favicon.png` }}">
+<link rel="stylesheet" href="{{ url .ReqPath `static/apl.css` }}" />
+<link rel="icon" href="{{ url .ReqPath `static/apl-favicon.png` }}" />
 
 <div class="apl-auth">
   <div class="apl-auth__inner">
     <div class="apl-brand">
-      <img class="apl-brand__logo" src="https://www.linode.com/linode/en/images/logo/akamai-cloud-logo.svg" alt="Akamai" referrerpolicy="no-referrer" />
+      <img
+        class="apl-brand__logo"
+        src="{{ url .ReqPath `static/apl-logo.svg` }}"
+        alt="Akamai"
+      />
       <span class="apl-brand__divider" aria-hidden="true"></span>
       <span class="apl-brand__product">App Platform</span>
     </div>
@@ -15,9 +19,7 @@
       <div class="apl-card apl-card--connectors">
         <div class="apl-card__eyebrow">WELCOME BACK</div>
         <h2>Sign in to App Platform</h2>
-        <p class="apl-card__intro">
-          Choose a sign-in method to continue.
-        </p>
+        <p class="apl-card__intro">Choose a sign-in method to continue.</p>
 
         <div class="apl-connectors">
           {{ range $c := .Connectors }}
