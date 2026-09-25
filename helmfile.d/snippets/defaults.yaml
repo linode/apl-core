@@ -1181,7 +1181,8 @@ environments:
           isPreInstalled: false
           useORCS: true
           aiEnabled: false
-          issuer: keycloak
+          oidc:
+            authenticationLayer: keycloak
         users: []
         versions:
           specVersion: 74

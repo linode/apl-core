@@ -54,4 +54,4 @@ changes:
   - version: 74
     additions:
       - apps.keycloak.enabled: true
-      - otomi.issuer: keycloak
+      - otomi.oidc.authenticationLayer: keycloak
