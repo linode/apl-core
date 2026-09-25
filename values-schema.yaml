@@ -1583,7 +1583,7 @@ properties:
             description: Use CNPG plugin for platform database backups
       dex:
         additionalProperties: false
-        description: Dex is an OIDC identity broker, installed by default. otomi.issuer decides whether it is actually used.
+        description: Dex is an OIDC identity broker, installed by default. otomi.oidc.authenticationLayer decides whether it is actually used.
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
@@ -1759,7 +1759,7 @@ properties:
           enabled:
             type: boolean
             default: true
-            description: Whether Keycloak is deployed. Independent of otomi.issuer — enabling Keycloak does not select it as the issuer.
+            description: Whether Keycloak is deployed. Independent of otomi.oidc.authenticationLayer — enabling Keycloak does not select it as the issuer.
           idp:
             additionalProperties: false
             properties:
