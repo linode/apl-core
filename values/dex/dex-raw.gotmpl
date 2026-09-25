@@ -49,6 +49,8 @@ resources:
         {{- readFile "web-overlay/login.html" | nindent 8 }}
       styles.css: |
         {{- readFile "web-overlay/styles.css" | nindent 8 }}
+      apl.js: |
+        {{- readFile "web-overlay/apl.js" | nindent 8 }}
     binaryData:
       favicon.png: {{ readFile "web-overlay/favicon.png" | b64enc }}
 
