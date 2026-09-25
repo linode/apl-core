@@ -1650,6 +1650,8 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          networkPolicies:
+            $ref: '#/definitions/appNetworkPolicyConfig'
           resources:
             properties:
               operator:
