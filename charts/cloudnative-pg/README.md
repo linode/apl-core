@@ -1,6 +1,6 @@
 # cloudnative-pg
 
-![Version: 0.29.0](https://img.shields.io/badge/Version-0.29.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.30.0](https://img.shields.io/badge/AppVersion-1.30.0-informational?style=flat-square)
+![Version: 0.29.1](https://img.shields.io/badge/Version-0.29.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.30.1](https://img.shields.io/badge/AppVersion-1.30.1-informational?style=flat-square)
 
 CloudNativePG Operator Helm Chart
 
@@ -158,6 +158,7 @@ Kubernetes: `>=1.29.0-0`
 | rbac.create | bool | `true` | Specifies whether ClusterRole and ClusterRoleBinding should be created. |
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
+| scratchData.emptyDir | object | `{}` | EmptyDir options for the scratch-data volume. |
 | service.ipFamilies | list | `[]` | Sets the families that should be supported and the order in which they should be applied to ClusterIP as well. Can be IPv4 and/or IPv6. |
 | service.ipFamilyPolicy | string | `""` | Set the ip family policy to configure dual-stack see [Configure dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services) |
 | service.name | string | `"cnpg-webhook-service"` | The name of the Webhook Service. |
