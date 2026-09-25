@@ -100,7 +100,7 @@ resources:
   {{- end }}
   {{- /* Reserved hostname -> the object allowed to serve it. Empty means no object may. */}}
   {{- $reserved := dict }}
-  {{- range $host := $v._derived.platformHostnames }}
+  {{- range $host := without $v._derived.platformHostnames $v._derived.ttyDomain }}
     {{- $_ := set $reserved $host "" }}
   {{- end }}
   {{- /* Owner names are set in helmfile-60.teams.yaml.gotmpl and prometheus-operator-team.gotmpl. */}}
@@ -157,6 +157,45 @@ resources:
       name: apl-team-hostnames
     spec:
       policyName: apl-team-hostnames
+      validationActions: ["Deny"]
+      matchResources:
+        namespaceSelector:
+          matchLabels:
+            type: team
+  {{- /* Only API may create tty hostnames. */}}
+  - apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingAdmissionPolicy
+    metadata:
+      name: apl-tty-hostname
+    spec:
+      failurePolicy: Fail
+      matchConstraints:
+        resourceRules:
+          - apiGroups: ["gateway.networking.k8s.io"]
+            apiVersions: ["*"]
+            operations: ["CREATE", "UPDATE"]
+            resources: ["httproutes", "listenersets"]
+      variables:
+        {{- /* HTTPRoute keeps hostnames on the route, ListenerSet keeps one per listener. */}}
+        - name: hostnames
+          expression: |
+            request.resource.resource == 'listenersets'
+              ? object.spec.listeners.map(l, has(l.hostname) ? l.hostname : '')
+              : (has(object.spec.hostnames) ? object.spec.hostnames : [])
+      matchConditions:
+        - name: exclude-api
+          expression: |
+            request.userInfo.username != 'system:serviceaccount:otomi:otomi-api'
+      validations:
+        - expression: |
+            variables.hostnames.all(h, h != '{{ $v._derived.ttyDomain }}')
+          message: 'tty is a reserved hostname and may only be managed by the platform API'
+  - apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingAdmissionPolicyBinding
+    metadata:
+      name: apl-tty-hostname
+    spec:
+      policyName: apl-tty-hostname
       validationActions: ["Deny"]
       matchResources:
         namespaceSelector:
