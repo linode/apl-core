@@ -33,6 +33,17 @@
 #   * Monitoring namespace (for metrics scraping)
 #   * Internal otomi namespace communication
 #
+# For harbor (netpols.harborDb: true):
+# - Creates a NetworkPolicy in the harbor namespace, scoped to the CloudNativePG instances of
+#   harbor-otomi-db (not the whole namespace — Harbor's component surface is wide)
+# - Allows ingress from:
+#   * cnpg-system on 8000/9187/5432 (operator polling instance status, metrics, and Postgres for
+#     declarative role and database reconciliation)
+#   * the harbor namespace on 5432 (components reaching Postgres; instances replicating)
+#   * Monitoring namespace on 9187 (for metrics scraping)
+# The chart renders this policy purely on the netpols.harborDb flag; apl-core's values rendering
+# is what sets it, and only when harbor is enabled.
+#
 # For Loki (netpols.loki: true):
 # - Creates NetworkPolicies in the monitoring namespace
 # - Denies all ingress to Loki pods, except:
