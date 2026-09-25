@@ -63,8 +63,6 @@ sequenceDiagram
             Bootstrap->>Bootstrap: generateSecrets()
             Bootstrap->>Bootstrap: createCustomCA()
             Bootstrap->>Bootstrap: getKmsValues()
-            Bootstrap->>Bootstrap: getUsers()
-            Note right of Bootstrap: Add platform admin<br/>with initial password
             Bootstrap->>Bootstrap: writeValues(merged)
             Bootstrap->>K8s: createK8sSecret('deployment-passwords')
             K8s-->>Bootstrap: secret created

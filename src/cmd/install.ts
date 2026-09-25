@@ -5,7 +5,7 @@ import { APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM } from 'src/common/constants'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { getStoredGitRepoConfig } from 'src/common/git-config'
-import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS } from 'src/common/hf'
+import { deployEssential, hf, HF_DEFAULT_SYNC_ON_INITIAL_INSTALL_ARGS, hfValues } from 'src/common/hf'
 import {
   applyServerSide,
   createUpdateConfigMap,
@@ -20,6 +20,7 @@ import {
 import {
   AppliedSecret,
   applySealedSecretManifestsFromDir,
+  createPlatformAdminSealedSecret,
   restartSealedSecretsController,
 } from 'src/common/sealed-secrets'
 import { getFilename, rootDir } from 'src/common/utils'
@@ -127,6 +128,20 @@ const getInitialInstallationMode = async (): Promise<'standard' | 'recovery'> =>
   const installationStatus = await getK8sConfigMap(APL_OPERATOR_NS, APL_OPERATOR_STATUS_CM, k8s.core())
   const mode = installationStatus?.data?.installationMode
   return mode === 'recovery' || mode === 'standard' ? mode : 'standard'
+}
+
+export const createPlatformAdminUser = async (
+  deps = { hfValues, createPlatformAdminSealedSecret, terminal },
+): Promise<void> => {
+  const d = deps.terminal(`cmd:${cmdName}:createPlatformAdminUser`)
+
+  const values = (await deps.hfValues()) as Record<string, any>
+  if (values?.otomi?.issuer !== 'keycloak') {
+    d.info('otomi.issuer is not keycloak, skipping local platform-admin user creation')
+    return
+  }
+
+  await deps.createPlatformAdminSealedSecret()
 }
 
 export const installAll = async () => {
@@ -248,6 +263,8 @@ export const installAll = async () => {
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
+
+  await retryInstallStep(createPlatformAdminUser)
 
   // Deploy cert-manager artifacts (ExternalSecrets, ClusterIssuers, Certificates)
   // Must be after app=core (cert-manager CRDs) and after ESO + ClusterSecretStore
