@@ -1,0 +1,24 @@
+{{- $v := .Values }}
+resources:
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: git-server-credentials
+    spec:
+      {{- /** If an external Git is used and this app is not deactivated, do not update the secret, but keep it */}}
+      {{- if contains "git-server.git-server.svc.cluster.local" $v.otomi.git.repoUrl }}
+      refreshInterval: 1m
+      {{- else }}
+      refreshInterval: "0"
+      {{- end }}
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: git-server-credentials
+        creationPolicy: Owner
+        template:
+          htpasswd: '{{ `{{ htpasswd (index . "username") .password "bcrypt" }}` }}'
+      dataFrom:
+        - extract:
+            key: apl-git-config
