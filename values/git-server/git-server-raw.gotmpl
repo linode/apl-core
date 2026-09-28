@@ -5,12 +5,8 @@ resources:
     metadata:
       name: git-server-credentials
     spec:
-      {{- /** If an external Git is used and this app is not deactivated, do not update the secret, but keep it */}}
-      {{- if contains "git-server.git-server.svc.cluster.local" $v.otomi.git.repoUrl }}
-      refreshInterval: 1m
-      {{- else }}
+      {{- /** Secret needs to be removed manually and server restarted if credentials change */}}
       refreshInterval: "0"
-      {{- end }}
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
