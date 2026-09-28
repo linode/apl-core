@@ -16,9 +16,9 @@ resources:
         kind: ClusterSecretStore
       target:
         name: git-server-credentials
-        creationPolicy: Owner
         template:
-          htpasswd: '{{ `{{ htpasswd (index . "username") .password "bcrypt" }}` }}'
+          data:
+            htpasswd: '{{ `{{ htpasswd (index . "username") .password "bcrypt" }}` }}'
       dataFrom:
         - extract:
             key: apl-git-config
