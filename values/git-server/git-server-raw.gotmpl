@@ -14,7 +14,7 @@ resources:
         name: git-server-credentials
         template:
           data:
-            htpasswd: '{{ `{{ htpasswd (index . "username") .password "bcrypt" }}` }}'
+            htpasswd: '{{ `{{ htpasswd (index . "username" | default "otomi-admin") .password "bcrypt" }}` }}'
       dataFrom:
         - extract:
             key: apl-git-config
