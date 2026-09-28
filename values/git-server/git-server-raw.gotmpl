@@ -1,0 +1,20 @@
+{{- $v := .Values }}
+resources:
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: git-server-credentials
+    spec:
+      {{- /** Secret needs to be removed manually and server restarted if credentials change */}}
+      refreshInterval: "0"
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: git-server-credentials
+        template:
+          data:
+            htpasswd: '{{ `{{ htpasswd (index . "username") .password "bcrypt" }}` }}'
+      dataFrom:
+        - extract:
+            key: apl-git-config

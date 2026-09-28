@@ -26,13 +26,7 @@ import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { migrate } from './migrate'
-import {
-  createRepoConfig,
-  getInitialGitConfig,
-  GitRepoConfig,
-  setGitConfig,
-  setGitServerConfig,
-} from '../common/git-config'
+import { createRepoConfig, getInitialGitConfig, GitRepoConfig, setGitConfig } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 
@@ -286,7 +280,6 @@ export const initializeGitConfig = async (
   deps = {
     getInitialGitConfig,
     setGitConfig,
-    setGitServerConfig,
     createRepoConfig,
   },
 ): Promise<GitRepoConfig> => {
@@ -294,9 +287,7 @@ export const initializeGitConfig = async (
   const isTest = process.env.NODE_ENV === 'test'
   const { config: data, isInitial } = await deps.getInitialGitConfig()
   if (isInitial && !isTest) {
-    const config = await deps.setGitConfig(data)
-    await deps.setGitServerConfig(config)
-    return config
+    return await deps.setGitConfig(data)
   } else {
     return deps.createRepoConfig(data)
   }
