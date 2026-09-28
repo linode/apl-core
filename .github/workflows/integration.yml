@@ -114,6 +114,10 @@ on:
         description: 'Check the box if you dont want to pull from ORCS'
         type: boolean
         default: false
+      enableDex:
+        description: 'Check the box to install Dex (patched fork with group claims) as the OIDC issuer instead of Keycloak'
+        type: boolean
+        default: false
       enableWiz:
         description: 'Check the box to enable Wiz integration'
         type: boolean
@@ -490,6 +494,7 @@ jobs:
           CERTIFICATE: ${{ inputs.certificate }}
           IS_PRE_INSTALLED: ${{ inputs.is_pre_installed }}
           DISABLE_ORCS: ${{ inputs.disableORCS }}
+          ENABLE_DEX: ${{ inputs.enableDex }}
           BYO_GIT: ${{ inputs.BYO_GIT }}
           CACHE_REGISTRY: ${{ env.CACHE_REGISTRY }}
           CACHE_REPO: ${{ env.CACHE_REPO }}
@@ -546,6 +551,14 @@ jobs:
                 --docker-password="$BOT_PULL_TOKEN"
               install_args+=("--set" "imageName=${CACHE_REGISTRY}/${CACHE_REPO}" "--set" "imagePullSecretNames[0]=reg-otomi-github")
             fi
+          fi
+
+          if [[ "$ENABLE_DEX" == 'true' ]]; then
+            install_args+=(
+              "--set" "apps.dex.enabled=true"
+              "--set" "apps.keycloak.enabled=false"
+              "--set" "otomi.oidc.authenticationLayer=dex"
+            )
           fi
 
           if [[ "$BYO_GIT" == 'true' ]]; then
