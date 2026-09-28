@@ -103,6 +103,7 @@ adminApps:
     tags: [cicd, gitops]
     isShared: true
     ownHost: true
+    oidcCallbackPath: /auth/callback
   - name: cert-manager
     tags: [ingress, security, tls]
   - name: cnpg
@@ -120,15 +121,18 @@ adminApps:
     isShared: true
     ownHost: true
     path: /user/oauth2/otomi-idp
+    oidcCallbackPath: /user/oauth2/otomi-idp/callback
   - name: grafana
     tags: [tracing, telemetry, observability]
     deps: [prometheus]
     path: /dashboards
     ownHost: true
+    oidcCallbackPath: /login/generic_oauth
   - name: harbor
     tags: [security]
     isShared: true
     ownHost: true
+    oidcCallbackPath: /c/oidc/callback
   - name: hello
     hide: true
     tags: [demo]
@@ -186,6 +190,7 @@ teamApps:
   - name: grafana
     ownHost: true
     path: /dashboards
+    oidcCallbackPath: /login/generic_oauth
   - name: loki
     useHost: grafana
     path: /explore?orgId=1&left=%7B"datasource":"loki","queries":%5B%7B"refId":"A","expr":"","queryType":"range","datasource":%7B"type":"loki","uid":"loki"%7D%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
