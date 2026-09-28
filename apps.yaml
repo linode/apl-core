@@ -241,7 +241,7 @@ appsInfo:
       - https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/api/opentelemetrycollectors.md
       - https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/api/instrumentations.md
     license: AGPL-3.0
-    dependencies: Prometheus, Grafana
+    dependencies: Prometheus, Grafana, Loki
     about: The OpenTelemetry Collector offers a vendor-agnostic implementation on how to receive, process and export telemetry data. In addition, it removes the need to run, operate and maintain multiple agents/collectors in order to support open-source telemetry data formats (e.g. Prometheus, etc.) to multiple open-source or commercial back-ends.
     integration: OpenTelemetry Collector is used to receive telemetry data and export this data to Loki.
     chartName: otel-operator
@@ -258,5 +258,5 @@ appsInfo:
     appVersion: 8.1.3
     repo: https://github.com/valkey-io/valkey
     maintainers: Valkey Project
-    license: BSD-3
+    license: BSD 3-Clause
     about: Valkey is a high-performance data structure server that primarily serves key/value workloads. It supports a wide range of native structures and an extensible plugin system for adding new data structures and access patterns.
