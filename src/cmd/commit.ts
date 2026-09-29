@@ -20,7 +20,7 @@ const $git = $({ cwd: env.ENV_DIR })
 
 // Rendered by values/otomi-operator/otomi-operator-raw.gotmpl — one ExternalSecret pulling the
 // same admin password every issuer uses, so nothing here needs to know which issuer is active.
-const PLATFORM_ADMIN_CREDENTIALS_SECRET = 'platform-admin-credentials'
+const PLATFORM_ADMIN_CREDENTIALS_SECRET = 'platform-admin-initial-credentials'
 const PLATFORM_ADMIN_CREDENTIALS_NAMESPACE = 'apl-secrets'
 
 interface Arguments extends HelmArguments {

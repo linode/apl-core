@@ -585,9 +585,9 @@ export const createPlatformAdminSealedSecret = async (
 ): Promise<void> => {
   const d = deps.terminal(`common:${cmdName}:createPlatformAdminSealedSecret`)
 
-  const credentials = await deps.getK8sSecret('platform-admin-credentials', 'apl-secrets')
+  const credentials = await deps.getK8sSecret('platform-admin-initial-credentials', 'apl-secrets')
   if (!credentials?.username || !credentials?.password) {
-    throw new Error('platform-admin-credentials secret not ready yet')
+    throw new Error('platform-admin-initial-credentials secret not ready yet')
   }
 
   const platformAdmin = {
@@ -604,7 +604,7 @@ export const createPlatformAdminSealedSecret = async (
   const pem = await deps.getOrCreateSealedSecretsPem()
   const manifests = await deps.createUserSealedSecretManifests([platformAdmin], pem)
   await deps.writeSealedSecretManifests(manifests, env.ENV_DIR)
-  d.info('Created platform-admin SealedSecret from platform-admin-credentials')
+  d.info('Created platform-admin SealedSecret from platform-admin-initial-credentials')
 }
 
 /**
