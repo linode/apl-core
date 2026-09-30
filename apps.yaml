@@ -161,7 +161,13 @@ appsInfo:
       - https://kubeflow.org
     license: Apache 2.0
     about: Kubeflow pipelines are reusable end-to-end ML workflows built using the Kubeflow Pipelines SDK.
-    isAlpha: true
+    isDeprecated: true
+    deprecationInfo:
+      message: Kubeflow Pipelines is being deprecated.
+      reasons:
+        - Kubeflow Pipelines will no longer be maintained as part of App Platform.
+      options:
+        - Click 'I understand' to continue using Kubeflow Pipelines.
   tekton:
     title: Tekton Pipelines
     appVersion: 1.14.0
