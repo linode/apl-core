@@ -1185,4 +1185,4 @@ environments:
             authenticationLayer: keycloak
         users: []
         versions:
-          specVersion: 74
+          specVersion: 75
