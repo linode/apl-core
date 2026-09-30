@@ -1,0 +1,19 @@
+config:
+  issuer: https://my-issuer.com
+
+  storage:
+    type: memory
+
+  enablePasswordDB: true
+
+deploymentAnnotations:
+  reloader.stakater.com/auto: "true"
+
+podAnnotations:
+  vault.security.banzaicloud.io/vault-addr: "https://vault.vault:8200"
+
+deploymentLabels:
+  hello: world
+
+podLabels:
+  hello: world

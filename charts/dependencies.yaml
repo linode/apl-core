@@ -26,7 +26,7 @@ dependencies:
     version: 0.2.1
     repository: https://linode.github.io/cloud-firewall-controller
   - name: dex
-    version: 0.24.1
+    version: 0.25.2
     repository: https://charts.dexidp.io
   - name: external-dns
     version: 1.22.0
