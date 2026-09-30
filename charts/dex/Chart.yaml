@@ -1,22 +1,22 @@
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: "Update Dex to 2.44.0"
+      description: "Fixed favicon link"
   artifacthub.io/images: |
     - name: dex
-      image: ghcr.io/dexidp/dex:v2.44.0
+      image: ghcr.io/dexidp/dex:v2.45.1
 apiVersion: v2
-appVersion: 2.44.0
+appVersion: 2.45.1
 description: OpenID Connect (OIDC) identity and OAuth 2.0 provider with pluggable
   connectors.
 home: https://dexidp.io/
-icon: https://dexidp.io/favicons/favicon.png
+icon: https://dexidp.io/favicons/favicon.svg
 keywords:
 - oidc
 - oauth
 - identity-provider
 - saml
-kubeVersion: '>=1.14.0-0'
+kubeVersion: '>=1.20.0-0'
 maintainers:
 - email: mark.sagikazar@gmail.com
   name: sagikazarmark
@@ -26,4 +26,4 @@ sources:
 - https://github.com/dexidp/dex
 - https://github.com/dexidp/helm-charts/tree/master/charts/dex
 type: application
-version: 0.24.1
+version: 0.25.2
