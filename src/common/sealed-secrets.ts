@@ -6,7 +6,11 @@ import { mkdir, readdir, readFile, writeFile } from 'fs/promises'
 import { cloneDeep, get, unset } from 'lodash'
 import { pki } from 'node-forge'
 import { join } from 'path'
-import { SEALED_SECRETS_NAMESPACE } from 'src/common/constants'
+import {
+  PLATFORM_ADMIN_CREDENTIALS_NAMESPACE,
+  PLATFORM_ADMIN_CREDENTIALS_SECRET,
+  SEALED_SECRETS_NAMESPACE,
+} from 'src/common/constants'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { b64enc, ensureNamespaceExists, getK8sSecret, k8s } from 'src/common/k8s'
@@ -585,9 +589,9 @@ export const createPlatformAdminSealedSecret = async (
 ): Promise<void> => {
   const d = deps.terminal(`common:${cmdName}:createPlatformAdminSealedSecret`)
 
-  const credentials = await deps.getK8sSecret('platform-admin-initial-credentials', 'apl-secrets')
+  const credentials = await deps.getK8sSecret(PLATFORM_ADMIN_CREDENTIALS_SECRET, PLATFORM_ADMIN_CREDENTIALS_NAMESPACE)
   if (!credentials?.username || !credentials?.password) {
-    throw new Error('platform-admin-initial-credentials secret not ready yet')
+    throw new Error(`${PLATFORM_ADMIN_CREDENTIALS_SECRET} secret not ready yet`)
   }
 
   const platformAdmin = {
@@ -604,7 +608,7 @@ export const createPlatformAdminSealedSecret = async (
   const pem = await deps.getOrCreateSealedSecretsPem()
   const manifests = await deps.createUserSealedSecretManifests([platformAdmin], pem)
   await deps.writeSealedSecretManifests(manifests, env.ENV_DIR)
-  d.info('Created platform-admin SealedSecret from platform-admin-initial-credentials')
+  d.info(`Created platform-admin SealedSecret from ${PLATFORM_ADMIN_CREDENTIALS_SECRET}`)
 }
 
 /**
