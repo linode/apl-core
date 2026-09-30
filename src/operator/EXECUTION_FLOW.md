@@ -115,7 +115,7 @@ sequenceDiagram
                 Install->>Git: git add, commit, push
                 Git-->>Install: changes committed
 
-                Note right of Install: platform-admin-credentials is an ExternalSecret,<br/>rendered by Helmfile like any other app resource
+                Note right of Install: platform-admin-initial-credentials is an ExternalSecret,<br/>rendered by Helmfile like any other app resource
                 Install->>Install: initialSetupData()
                 Install->>K8s: createUpdateConfigMap('welcome')
                 K8s-->>Install: welcome message created
@@ -553,7 +553,7 @@ problem.
 | Name                         | Namespace    | Purpose               | Fields                     |
 | ---------------------------- | ------------ | --------------------- | -------------------------- |
 | `gitea-credentials`          | apl-operator | Git repository access | GIT_USERNAME, GIT_PASSWORD |
-| `platform-admin-credentials` | keycloak     | Platform admin access | username, password         |
+| `platform-admin-initial-credentials` | keycloak     | Platform admin access | username, password         |
 | `deployment-passwords`       | otomi        | All generated secrets | (various)                  |
 
 ## Apply Trigger Comparison
