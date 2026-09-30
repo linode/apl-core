@@ -40,6 +40,21 @@ storage:
   type: kubernetes
   config:
     inCluster: true
+{{- if $v.otomi.hasExternalIDP }}
+connectors:
+  - type: oidc
+    id: external-idp
+    name: External IdP
+    config:
+      issuer: {{ $v.otomi.oidc.issuer }}
+      clientID: "{{ `{{ .externalIdpClientID }}` }}"
+      clientSecret: "{{ `{{ .externalIdpClientSecret }}` }}"
+      redirectURI: https://{{ $v._derived.dexDomain }}/callback
+      scopes: {{ $v.otomi.oidc.scopes | toJson }}
+      insecureEnableGroups: true
+      claimMapping:
+        groups: {{ $v.otomi.oidc.groupsClaimMapper }}
+{{- end }}
 web:
   http: 0.0.0.0:5556
 grpc:
@@ -59,7 +74,7 @@ staticPasswords:
   - email: platform-admin@{{ $domainSuffix }}
     username: platform-admin
     userID: apl-platform-admin
-    hash: "{{ `{{ .adminPassword | bcrypt }}` }}"
+    hash: "{{ `{{ .adminPasswordHash }}` }}"
     groups:
       - platform-admin
       - admin

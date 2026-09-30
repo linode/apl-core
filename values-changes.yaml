@@ -55,3 +55,15 @@ changes:
     additions:
       - apps.keycloak.enabled: true
       - otomi.oidc.authenticationLayer: keycloak
+  - version: 75
+    relocations:
+      - oidc.issuer: otomi.oidc.issuer
+      - oidc.clientID: otomi.oidc.clientID
+      - oidc.clientSecret: otomi.oidc.clientSecret
+      - oidc.platformAdminGroupID: otomi.oidc.platformAdminGroupID
+      - oidc.allTeamsAdminGroupID: otomi.oidc.allTeamsAdminGroupID
+      - oidc.teamAdminGroupID: otomi.oidc.teamAdminGroupID
+      - oidc.usernameClaimMapper: otomi.oidc.usernameClaimMapper
+      - oidc.subClaimMapper: otomi.oidc.subClaimMapper
+    deletions:
+      - oidc

@@ -1,7 +1,6 @@
 {{- $v := .Values }}
 {{- $apps := $v.apps }}
 {{- $k := $apps.keycloak }}
-{{- $o := $v | get "oidc" dict }}
 {{- $a := $apps | get "alertmanager" }}
 {{- $g := $apps | get "grafana" }}
 {{- $p := $apps | get "prometheus" }}

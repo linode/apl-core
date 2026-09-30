@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $o := $v | get "oidc" dict }}
 {{- $g := $v.apps.gitea }}
 {{- $k := $v.apps.keycloak }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}

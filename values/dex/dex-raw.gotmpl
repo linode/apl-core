@@ -55,14 +55,13 @@ resources:
       favicon.png: {{ readFile "web-overlay/favicon.png" | b64enc }}
       apl-logo.svg: {{ readFile "web-overlay/apl-logo.svg" | b64enc }}
 
-  {{- /* adminPassword is hashed by ESO itself (sprig bcrypt), never stored or rendered as a hash. */}}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: dex-config
       namespace: dex
     spec:
-      refreshPolicy: OnChange
+      refreshInterval: 1m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -84,7 +83,18 @@ resources:
           remoteRef:
             key: dex
             property: sessionCookieEncryptionKey
-        - secretKey: adminPassword
+        - secretKey: adminPasswordHash
           remoteRef:
             key: platform-admin-credentials
-            property: password
+            property: passwordHash
+        {{- if $v.otomi.hasExternalIDP }}
+        - secretKey: externalIdpClientID
+          remoteRef:
+            key: oidc-secrets
+            property: clientID
+        - secretKey: externalIdpClientSecret
+          remoteRef:
+            key: oidc-secrets
+            property: clientSecret
+        {{- end }}
+
