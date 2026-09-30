@@ -168,7 +168,7 @@ appsInfo:
         - Kubeflow Pipelines will no longer be maintained as part of App Platform.
       options:
         - Click 'I understand' to continue using Kubeflow Pipelines.
-    tekton:
+  tekton:
     title: Tekton Pipelines
     appVersion: 1.14.0
     repo: https://github.com/tektoncd/pipeline
