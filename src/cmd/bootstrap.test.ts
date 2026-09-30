@@ -226,9 +226,11 @@ describe('Bootstrapping values', () => {
         const res = await processValues(deps)
         // mergedForDisk includes allSecrets (stripAllSecrets mock is identity, real impl strips x-secret paths)
         expect(deps.writeValues).toHaveBeenNthCalledWith(1, {
+          apps: { 'git-server': { enabled: true } },
           cluster: { name: 'bla', provider: 'dida' },
         })
         expect(res.originalInput).toEqual({
+          apps: { 'git-server': { enabled: true } },
           cluster: { name: 'bla', provider: 'dida' },
         })
       })
