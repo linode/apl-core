@@ -23,7 +23,6 @@ type AplKind =
   | 'AplIngress'
   | 'AplObjectStorage'
   | 'AplKms'
-  | 'AplIdentityProvider'
   | 'AplCapabilitySet'
   | 'AplSmtp'
   | 'AplBackupCollection'
@@ -209,16 +208,6 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       envDir,
       jsonPathExpression: '$.obj',
       pathGlob: `${envDir}/env/settings/obj.yaml`,
-      processAs: 'mapItem',
-      resourceGroup: 'platformSettings',
-      resourceDir: 'settings',
-      loadToSpec: true,
-    },
-    {
-      kind: 'AplIdentityProvider',
-      envDir,
-      jsonPathExpression: '$.oidc',
-      pathGlob: `${envDir}/env/settings/oidc.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',

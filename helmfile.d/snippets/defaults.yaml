@@ -1183,6 +1183,12 @@ environments:
           aiEnabled: false
           oidc:
             authenticationLayer: keycloak
+            scopes:
+              - openid
+              - profile
+              - email
+              - groups
+            groupsClaimMapper: groups
         users: []
         versions:
-          specVersion: 74
+          specVersion: 75

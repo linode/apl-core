@@ -2495,39 +2495,6 @@ properties:
       '^/|(/[\w-]+)+$':
         type: string
         pattern: ^[^\s]+$
-  oidc:
-    additionalProperties: false
-    description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'
-    properties:
-      issuer:
-        $ref: '#/definitions/url'
-      clientID:
-        $ref: '#/definitions/wordCharacterPattern'
-        x-secret: ''
-      clientSecret:
-        type: string
-        x-secret: ''
-      platformAdminGroupID:
-        $ref: '#/definitions/wordCharacterPattern'
-      allTeamsAdminGroupID:
-        $ref: '#/definitions/wordCharacterPattern'
-      teamAdminGroupID:
-        $ref: '#/definitions/wordCharacterPattern'
-      usernameClaimMapper:
-        $ref: '#/definitions/wordCharacterPattern'
-        description: Claim name from identity provider used by Keycloak to create the username. Best to not change this from the default.
-        default: '${CLAIM.upn}'
-      subClaimMapper:
-        type: string
-        description: Claim name passed by Keycloak as a unique user identifier. Best to not change this from the default.
-        default: sub
-      groupsClaimMapper:
-        type: string
-        description: Claim name the identity provider uses for group membership. Some providers require a namespaced name instead of "groups".
-        default: groups
-    required:
-      - clientID
-      - issuer
   otomi:
     additionalProperties: false
     properties:
@@ -2537,6 +2504,7 @@ properties:
         default: false
       oidc:
         additionalProperties: false
+        description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'
         properties:
           authenticationLayer:
             type: string
@@ -2545,6 +2513,38 @@ properties:
               - keycloak
             default: keycloak
             description: Which app every consumer authenticates against.
+          issuer:
+            $ref: '#/definitions/url'
+          clientID:
+            $ref: '#/definitions/wordCharacterPattern'
+            x-secret: ''
+          clientSecret:
+            type: string
+            x-secret: ''
+          platformAdminGroupID:
+            $ref: '#/definitions/wordCharacterPattern'
+          allTeamsAdminGroupID:
+            $ref: '#/definitions/wordCharacterPattern'
+          teamAdminGroupID:
+            $ref: '#/definitions/wordCharacterPattern'
+          usernameClaimMapper:
+            $ref: '#/definitions/wordCharacterPattern'
+            description: Claim name from identity provider used by Keycloak to create the username. Best to not change this from the default.
+            default: '${CLAIM.upn}'
+          subClaimMapper:
+            type: string
+            description: Claim name passed by Keycloak as a unique user identifier. Best to not change this from the default.
+            default: sub
+          groupsClaimMapper:
+            type: string
+            description: Claim name the identity provider uses for group membership. Some providers require a namespaced name instead of "groups".
+            default: groups
+          scopes:
+            type: array
+            description: OIDC scopes requested from the external identity provider.
+            items:
+              type: string
+            default: [openid, profile, email, groups]
       aiEnabled:
         type: boolean
         description: Defines if APL enables AI/ML components

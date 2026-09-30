@@ -3,11 +3,10 @@
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $oauth2 := $v.apps | get "oauth2-proxy" }}
 {{- $r := $v.apps | get "oauth2-proxy-redis" }}
-{{- $o := $v | get "oidc" dict }}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
 {{- $persistentStorageEnabled := hasKey $r "persistentVolumeSize" }}
-{{- $issuer := $v.otomi | get "oidc.authenticationLayer" "keycloak" }}
+{{- $issuer := $v.otomi.oidc.authenticationLayer }}
 
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list (print "." $domainSuffix) "oauth2-proxy.istio-system.svc.cluster.local" }}
@@ -53,7 +52,7 @@ config:
     ssl_insecure_skip_verify = {{ $v._derived.untrustedCA }}
     provider = {{ ternary "oidc" "keycloak-oidc" (eq $issuer "dex") | quote }}
     whitelist_domains = {{ $domains | toJson }}
-    scope = {{ $o | get "scope" (join " " $v._derived.oidcScopes) | quote }}
+    scope = {{ join " " $v._derived.oidcScopes | quote }}
     oidc_issuer_url = {{ $v._derived.oidcBaseUrl | quote }}
     code_challenge_method = "S256"
     insecure_oidc_allow_unverified_email = true

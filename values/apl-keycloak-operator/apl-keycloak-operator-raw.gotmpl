@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $oi := $v | get "oidc" dict }}
+{{- $oi := $v.otomi | get "oidc" dict }}
 {{- $teamsMapping := dict }}
 {{- $teamIds := list }}
 {{- range $name, $team := omit .Values.teamConfig "admin" }}
