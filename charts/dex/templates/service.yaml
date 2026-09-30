@@ -51,8 +51,7 @@ spec:
       targetPort: grpc
       protocol: TCP
       {{- if semverCompare ">=1.20-0" .Capabilities.KubeVersion.GitVersion }}
-      {{/*https://github.com/dexidp/helm-charts/pull/162 Manually set to grpc to make the API available.*/}}
-      appProtocol: grpc
+      appProtocol: http
       {{- end }}
     {{- end }}
     - name: telemetry
