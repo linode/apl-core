@@ -298,6 +298,8 @@ environments:
             {{- end }}
           external-dns:
             enabled: {{ $v.otomi.hasExternalDNS }}
+          git-server:
+            enabled: {{ or ($a | get "git-server.enabled") (eq $gitValuesSource "internal") }}
           harbor: {}
           keycloak:
             address: {{ $keycloakBaseUrl }}
