@@ -14,6 +14,9 @@ on:
       - ci/src/check-app-urls.test.ts
   workflow_dispatch: ~
 
+permissions:
+  contents: read
+
 jobs:
   check-app-urls:
     runs-on: ubuntu-22.04
