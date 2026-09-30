@@ -76,7 +76,14 @@
   {{- $tlsSecretName = "otomi-byo-wildcard-cert" }}
 {{- end -}}
 
-
+{{- $gitValuesSource := "external" }}
+{{- if contains "git-server.git-server.svc.cluster.local" $v.otomi.git.repoUrl }}
+  {{- /** built-in git-server */}}
+  {{- $gitValuesSource = "internal" }}
+{{- else if contains "gitea-http.gitea.svc.cluster.local" $v.otomi.git.repoUrl }}
+  {{- /** Legacy Gitea values store */}}
+  {{- $gitValuesSource = "gitea" }}
+{{- end }}
 
 {{- $ingressClasses := $v.ingress.classes | default list }}
 {{- $ingressClassNames := list $v.ingress.platformClass.className }}
@@ -261,6 +268,7 @@ environments:
           egressGatewayName: {{ $egressGatewayName }}
           egressGatewayLabel: {{ $egressGatewayLabel }}
           ingressClassNames: {{- $ingressClassNames | toYaml | nindent 12 }}
+          gitValuesSource: {{ $gitValuesSource }}
           {{- /* Hostnames the platform serves itself. auth is oauth2-proxy's own route; the bare domain must stay unclaimed too. */}}
           platformHostnames:
             - {{ $domainSuffix }}
