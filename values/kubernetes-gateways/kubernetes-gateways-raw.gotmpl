@@ -125,7 +125,7 @@ resources:
           - apiGroups: ["gateway.networking.k8s.io"]
             apiVersions: ["*"]
             operations: ["CREATE", "UPDATE"]
-            resources: ["httproutes", "listenersets"]
+            resources: ["httproutes", "grpcroutes", "tlsroutes", "listenersets"]
       variables:
         - name: reserved
           expression: "{ {{ join ", " $pairs }} }"
@@ -174,7 +174,7 @@ resources:
           - apiGroups: ["gateway.networking.k8s.io"]
             apiVersions: ["*"]
             operations: ["CREATE", "UPDATE"]
-            resources: ["httproutes", "listenersets"]
+            resources: ["httproutes", "grpcroutes", "tlsroutes", "listenersets"]
       variables:
         {{- /* HTTPRoute keeps hostnames on the route, ListenerSet keeps one per listener. */}}
         - name: hostnames
