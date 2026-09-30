@@ -2523,25 +2523,28 @@ properties:
             x-secret: ''
           platformAdminGroupID:
             $ref: '#/definitions/wordCharacterPattern'
+            description: Keycloak only
           allTeamsAdminGroupID:
             $ref: '#/definitions/wordCharacterPattern'
+            description: Keycloak only
           teamAdminGroupID:
             $ref: '#/definitions/wordCharacterPattern'
+            description: Keycloak only
           usernameClaimMapper:
             $ref: '#/definitions/wordCharacterPattern'
-            description: Claim name from identity provider used by Keycloak to create the username. Best to not change this from the default.
+            description: Claim name from identity provider used by Keycloak to create the username. Best to not change this from the default. (Keycloak only)
             default: '${CLAIM.upn}'
           subClaimMapper:
             type: string
-            description: Claim name passed by Keycloak as a unique user identifier. Best to not change this from the default.
+            description: Claim name passed by Keycloak as a unique user identifier. Best to not change this from the default. (Keycloak only)
             default: sub
           groupsClaimMapper:
             type: string
-            description: Claim name the identity provider uses for group membership. Some providers require a namespaced name instead of "groups".
+            description: Claim name the identity provider uses for group membership. Some providers require a namespaced name instead of "groups". (Dex only)
             default: groups
           scopes:
             type: array
-            description: OIDC scopes requested from the external identity provider.
+            description: OIDC scopes requested from the external identity provider. (Dex only)
             items:
               type: string
             default: [openid, profile, email, groups]
