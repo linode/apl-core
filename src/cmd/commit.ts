@@ -1,7 +1,11 @@
 import retry from 'async-retry'
 import { bootstrapGit } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
-import { APL_OPERATOR_NS } from 'src/common/constants'
+import {
+  APL_OPERATOR_NS,
+  PLATFORM_ADMIN_CREDENTIALS_NAMESPACE,
+  PLATFORM_ADMIN_CREDENTIALS_SECRET,
+} from 'src/common/constants'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { getStoredGitRepoConfig, GitRepoConfig } from 'src/common/git-config'
@@ -17,11 +21,6 @@ import { validateValues } from './validate-values'
 const cmdName = getFilename(__filename)
 
 const $git = $({ cwd: env.ENV_DIR })
-
-// Rendered by values/otomi-operator/otomi-operator-raw.gotmpl — one ExternalSecret pulling the
-// same admin password every issuer uses, so nothing here needs to know which issuer is active.
-const PLATFORM_ADMIN_CREDENTIALS_SECRET = 'platform-admin-credentials'
-const PLATFORM_ADMIN_CREDENTIALS_NAMESPACE = 'apl-secrets'
 
 interface Arguments extends HelmArguments {
   m?: string
