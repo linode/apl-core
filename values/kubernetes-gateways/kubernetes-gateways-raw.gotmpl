@@ -125,15 +125,15 @@ resources:
           - apiGroups: ["gateway.networking.k8s.io"]
             apiVersions: ["*"]
             operations: ["CREATE", "UPDATE"]
-            resources: ["httproutes", "grpcroutes", "tlsroutes", "listenersets"]
+            resources: ["httproutes", "grpcroutes", "tlsroutes", "listenersets", "gateways"]
       variables:
         - name: reserved
           expression: "{ {{ join ", " $pairs }} }"
-        {{- /* HTTPRoute keeps hostnames on the route, ListenerSet keeps one per listener. */}}
+        {{- /* HTTPRoute keeps hostnames on the route, ListenerSet and Gateway keep one per listener. */}}
         - name: hostnames
           expression: |
-            request.resource.resource == 'listenersets'
-              ? object.spec.listeners.map(l, has(l.hostname) ? l.hostname : '')
+            request.resource.resource in ['listenersets', 'gateways']
+              ? (has(object.spec.listeners) ? object.spec.listeners.map(l, has(l.hostname) ? l.hostname : '') : [])
               : (has(object.spec.hostnames) ? object.spec.hostnames : [])
       validations:
         - expression: 'size(variables.hostnames) > 0 && !variables.hostnames.exists(h, h == "")'
@@ -174,13 +174,13 @@ resources:
           - apiGroups: ["gateway.networking.k8s.io"]
             apiVersions: ["*"]
             operations: ["CREATE", "UPDATE"]
-            resources: ["httproutes", "grpcroutes", "tlsroutes", "listenersets"]
+            resources: ["httproutes", "grpcroutes", "tlsroutes", "listenersets", "gateways"]
       variables:
-        {{- /* HTTPRoute keeps hostnames on the route, ListenerSet keeps one per listener. */}}
+        {{- /* HTTPRoute keeps hostnames on the route, ListenerSet and Gateway keep one per listener. */}}
         - name: hostnames
           expression: |
-            request.resource.resource == 'listenersets'
-              ? object.spec.listeners.map(l, has(l.hostname) ? l.hostname : '')
+            request.resource.resource in ['listenersets', 'gateways']
+              ? (has(object.spec.listeners) ? object.spec.listeners.map(l, has(l.hostname) ? l.hostname : '') : [])
               : (has(object.spec.hostnames) ? object.spec.hostnames : [])
       matchConditions:
         - name: exclude-api
