@@ -448,7 +448,7 @@ export async function saveResourceGroupToFiles(
   const jsonPathsValuesPublic: { path: (string | number)[]; value: any }[] = []
   evaluate(valuesPublic, fileMap.jsonPathExpression, {
     callback: (value, pathStr) => {
-      const normalizedPath = NormalizedPath.to(pathStr)
+      const normalizedPath = ['$', ...NormalizedPath.to(pathStr)]
       jsonPathsValuesPublic.push({ path: normalizedPath, value })
     },
   })
