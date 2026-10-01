@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync, rmSync } from 'fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { checkAppUrls, parseAppsYaml } from './check-app-urls'
@@ -62,21 +62,21 @@ describe('checkAppUrls', () => {
   it('marks url as ok when fetch returns status 200', async () => {
     jest.spyOn(global, 'fetch').mockResolvedValue({ ok: true, status: 200 } as Response)
     const file = writeTmpYaml(SINGLE_APP_YAML)
-    const results = await checkAppUrls(file)
+    const results = await checkAppUrls(file, 0)
     expect(results).toEqual([{ app: 'myapp', url: 'https://github.com/example/myapp', ok: true, status: 200 }])
   })
 
   it('marks url as not ok when fetch returns non-200 status', async () => {
     jest.spyOn(global, 'fetch').mockResolvedValue({ ok: false, status: 404 } as Response)
     const file = writeTmpYaml(SINGLE_APP_YAML)
-    const results = await checkAppUrls(file)
+    const results = await checkAppUrls(file, 0)
     expect(results).toEqual([{ app: 'myapp', url: 'https://github.com/example/myapp', ok: false, status: 404 }])
   })
 
   it('marks url as not ok and includes error message when fetch throws', async () => {
     jest.spyOn(global, 'fetch').mockRejectedValue(new Error('ECONNREFUSED'))
     const file = writeTmpYaml(SINGLE_APP_YAML)
-    const results = await checkAppUrls(file)
+    const results = await checkAppUrls(file, 0)
     expect(results).toEqual([
       { app: 'myapp', url: 'https://github.com/example/myapp', ok: false, error: 'ECONNREFUSED' },
     ])
@@ -85,7 +85,7 @@ describe('checkAppUrls', () => {
   it('returns results for all urls in the file', async () => {
     jest.spyOn(global, 'fetch').mockResolvedValue({ ok: true, status: 200 } as Response)
     const file = writeTmpYaml(MULTI_URL_YAML)
-    const results = await checkAppUrls(file)
+    const results = await checkAppUrls(file, 0)
     expect(results).toHaveLength(4)
     expect(results.every((r) => r.ok)).toBe(true)
   })

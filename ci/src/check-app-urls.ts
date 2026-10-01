@@ -30,12 +30,14 @@ export function parseAppsYaml(content: string): { app: string; url: string }[] {
   }
   return entries
 }
+const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
-export async function checkAppUrls(filePath: string): Promise<UrlCheckResult[]> {
+export async function checkAppUrls(filePath: string, delayMs = 50): Promise<UrlCheckResult[]> {
   const content = readFileSync(filePath, 'utf-8')
   const entries = parseAppsYaml(content)
   return Promise.all(
     entries.map(async ({ app, url }) => {
+      await delay(delayMs)
       try {
         const res = await fetch(url, { signal: AbortSignal.timeout(10_000) })
         return { app, url, ok: res.ok, status: res.status }
