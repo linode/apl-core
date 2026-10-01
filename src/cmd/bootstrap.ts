@@ -119,7 +119,8 @@ export const processValues = async (
   d.log(`Loading app values from ${VALUES_INPUT}`)
   const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
   const repoUrl = get(originalValues, 'otomi.git.repoUrl')
-  if (!repoUrl || repoUrl.includes('git-server.git-server.svc.cluster.local')) {
+  const gitServerEnabled = get(originalValues, 'apps.git-server.enabled')
+  if ((!repoUrl || repoUrl.includes('git-server.git-server.svc.cluster.local')) && gitServerEnabled === undefined) {
     // If any other Git URL is set, assume it is a Git repo external to the cluster
     set(originalValues, 'apps.git-server.enabled', true)
   }
