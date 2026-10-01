@@ -55,3 +55,6 @@ changes:
     additions:
       - apps.keycloak.enabled: true
       - otomi.oidc.authenticationLayer: keycloak
+  - version: 75
+    customFunctions:
+      - deactivateGitServer
