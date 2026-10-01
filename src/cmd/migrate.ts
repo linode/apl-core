@@ -778,6 +778,17 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
   }
 }
 
+const deactivateGitServer = async (values: Record<string, any>) => {
+  const d = terminal('deactivateGitServer')
+  if (
+    values?.apps?.['git-server']?.enabled &&
+    !values?.otomi?.git?.repoUrl?.includes('git-server.git-server.svc.cluster.local')
+  ) {
+    d.info('Disabling git-server as external Git repository is configured.')
+    set(values, 'apps.git-server.enabled', false)
+  }
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   valkeyAndOauth2RedisPVCMigration,
   preservePvcStorageClassInRawValues,
@@ -787,6 +798,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   removeIngressNginxValues,
   removeSopsConfig,
   migrateGeneratedSecrets,
+  deactivateGitServer,
 }
 
 /**
