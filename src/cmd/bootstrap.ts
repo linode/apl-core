@@ -1,6 +1,6 @@
 import { existsSync } from 'fs'
 import { copyFile, cp, mkdir, writeFile } from 'fs/promises'
-import { cloneDeep, get, merge, pick, unset } from 'lodash'
+import { cloneDeep, get, merge, pick, set, unset } from 'lodash'
 import { pki } from 'node-forge'
 import path from 'path'
 import { bootstrapGit } from 'src/common/bootstrap'
@@ -118,6 +118,12 @@ export const processValues = async (
   const { VALUES_INPUT } = env
   d.log(`Loading app values from ${VALUES_INPUT}`)
   const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
+  const repoUrl = get(originalValues, 'otomi.git.repoUrl')
+  const gitServerEnabled = get(originalValues, 'apps.git-server.enabled')
+  if ((!repoUrl || repoUrl.includes('git-server.git-server.svc.cluster.local')) && gitServerEnabled === undefined) {
+    // If any other Git URL is set, assume it is a Git repo external to the cluster
+    set(originalValues, 'apps.git-server.enabled', true)
+  }
   // This part should be stored in a secret by initializeGitConfig
   unset(originalValues, 'otomi.git')
   const secretPaths = await deps.getSchemaSecretsPaths(Object.keys(get(originalValues, 'teamConfig', {})))
