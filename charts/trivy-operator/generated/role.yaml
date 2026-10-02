@@ -10,6 +10,8 @@ rules:
   - configmaps
   - limitranges
   - nodes
+  - persistentvolumeclaims
+  - persistentvolumes
   - pods
   - replicationcontrollers
   - resourcequotas
