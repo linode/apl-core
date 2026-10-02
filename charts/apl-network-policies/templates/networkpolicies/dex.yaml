@@ -21,6 +21,17 @@ spec:
         {{- with .Values.ingressGatewaySelectors }}
         {{- . | toYaml | nindent 8 }}
         {{- end }}
+    # oauth2-proxy calls /logout directly
+    - ports:
+        - protocol: TCP
+          port: 5556
+      from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: oauth2-proxy
     # Allow monitoring access for metrics scraping
     - ports:
         - protocol: TCP
