@@ -162,7 +162,7 @@ environments:
                 cpu: 10m
           git-server:
             _rawValues: { }
-            enabled: true
+            enabled: false
             resources:
               requests:
                 cpu: 50m
@@ -1185,4 +1185,4 @@ environments:
             authenticationLayer: keycloak
         users: []
         versions:
-          specVersion: 74
+          specVersion: 75
