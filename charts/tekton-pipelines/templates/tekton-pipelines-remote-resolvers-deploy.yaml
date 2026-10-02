@@ -6,9 +6,9 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/name: resolvers
     app.kubernetes.io/part-of: tekton-pipelines
-    app.kubernetes.io/version: v1.14.0
-    pipeline.tekton.dev/release: v1.14.0
-    version: v1.14.0
+    app.kubernetes.io/version: v1.15.3
+    pipeline.tekton.dev/release: v1.15.3
+    version: v1.15.3
   name: tekton-pipelines-remote-resolvers
 spec:
   replicas: 1
@@ -26,9 +26,9 @@ spec:
         app.kubernetes.io/instance: default
         app.kubernetes.io/name: resolvers
         app.kubernetes.io/part-of: tekton-pipelines
-        app.kubernetes.io/version: v1.14.0
-        pipeline.tekton.dev/release: v1.14.0
-        version: v1.14.0
+        app.kubernetes.io/version: v1.15.3
+        pipeline.tekton.dev/release: v1.15.3
+        version: v1.15.3
     spec:
       affinity:
           {{- with .Values.remoteresolver.affinity }}
