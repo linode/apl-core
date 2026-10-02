@@ -39,10 +39,10 @@ kind: ServiceAccount
 metadata:
   name: exported-kubeconfig
 automountServiceAccountToken: false
-{{- if eq $v.teamId "admin" }}
 ---
+{{- if eq $v.teamId "admin" }}
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
   name: exported-kubeconfig
   labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
@@ -55,20 +55,6 @@ subjects:
     name: exported-kubeconfig
     namespace: {{ $ns }}
 {{- else }}
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: exported-kubeconfig
-  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
-rules:
-  - apiGroups:
-      - '*'
-    resources:
-      - '*'
-    verbs:
-      - '*'
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -76,8 +62,8 @@ metadata:
   labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: exported-kubeconfig
+  kind: ClusterRole
+  name: admin
 subjects:
 - kind: ServiceAccount
   name: exported-kubeconfig
