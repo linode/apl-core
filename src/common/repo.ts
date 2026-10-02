@@ -1,7 +1,7 @@
 import { existsSync, rmSync } from 'fs'
 import { rm, writeFile } from 'fs/promises'
 import { globSync } from 'glob'
-import jsonpath from 'jsonpath'
+import { evaluate, NormalizedPath } from '@swaggerexpert/jsonpath'
 import { cloneDeep, get, merge, omit, set, unset } from 'lodash'
 import path from 'path'
 import { getDirNames, loadYaml, objectToYaml } from './utils'
@@ -69,7 +69,7 @@ export interface AplManifest {
   spec: Record<string, any>
 }
 
-export function getResourceFileName(fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) {
+export function getResourceFileName(fileMap: FileMap, jsonPath: (string | number)[], data: Record<string, any>) {
   let fileName = 'unknown'
   if (fileMap.resourceGroup === 'team') {
     if (fileMap.processAs === 'arrayItem') {
@@ -87,11 +87,11 @@ export function getResourceFileName(fileMap: FileMap, jsonPath: jsonpath.PathCom
   return fileName
 }
 
-export function getTeamNameFromJsonPath(jsonPath: jsonpath.PathComponent[]): string {
+export function getTeamNameFromJsonPath(jsonPath: (string | number)[]): string {
   return jsonPath[2].toString()
 }
 
-export function getResourceName(fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) {
+export function getResourceName(fileMap: FileMap, jsonPath: (string | number)[], data: Record<string, any>) {
   let resourceName = 'unknown'
   if (fileMap.processAs === 'arrayItem') {
     resourceName = data.name || data.id || resourceName
@@ -110,7 +110,7 @@ export function getResourceName(fileMap: FileMap, jsonPath: jsonpath.PathCompone
 
 export function getFilePath(
   fileMap: FileMap,
-  jsonPath: jsonpath.PathComponent[],
+  jsonPath: (string | number)[],
   data: Record<string, any>,
   fileNamePrefix: string,
 ) {
@@ -415,7 +415,7 @@ export async function saveValues(
 
 export function renderManifest(
   fileMap: FileMap,
-  jsonPath: jsonpath.PathComponent[],
+  jsonPath: (string | number)[],
   data: Record<string, any>,
 ): AplManifest {
   //TODO remove this custom workaround for workloadValues
@@ -445,7 +445,13 @@ export async function saveResourceGroupToFiles(
   _valuesSecrets: Record<string, any>,
   deps = { writeValuesToFile },
 ): Promise<void> {
-  const jsonPathsValuesPublic = jsonpath.nodes(valuesPublic, fileMap.jsonPathExpression)
+  const jsonPathsValuesPublic: { path: (string | number)[]; value: any }[] = []
+  evaluate(valuesPublic, fileMap.jsonPathExpression, {
+    callback: (value, pathStr) => {
+      const normalizedPath = ['$', ...NormalizedPath.to(pathStr)]
+      jsonPathsValuesPublic.push({ path: normalizedPath, value })
+    },
+  })
 
   await Promise.all(
     jsonPathsValuesPublic.map(async (node) => {
