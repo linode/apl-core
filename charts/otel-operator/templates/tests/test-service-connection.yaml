@@ -22,14 +22,19 @@ spec:
         - sh
         - -c
         # The following shell script tests if the controller-manager-metrics-service is up.
-        # If the service is up, when we try to wget its exposed port, we will get an HTTP error 400.
+        # With secure metrics the port speaks TLS, so a plain HTTP request gets an HTTP error 400.
+        # Without secure metrics the port speaks plain HTTP, so /metrics answers with 200.
         - |
           i=0
           while [ "$i" -lt 30 ]; do
+            {{- if .Values.manager.metrics.secure }}
             wget_output=$(wget -q "$MANAGER_METRICS_SERVICE_CLUSTERIP:$MANAGER_METRICS_SERVICE_PORT" 2>&1 || true)
             if [ "$wget_output" = "wget: server returned error: HTTP/1.0 400 Bad Request" ]; then
               exit 0
             fi
+            {{- else }}
+            wget_output=$(wget -q -O /dev/null "$MANAGER_METRICS_SERVICE_CLUSTERIP:$MANAGER_METRICS_SERVICE_PORT/metrics" 2>&1) && exit 0
+            {{- end }}
             i=$((i + 1))
             sleep 2
           done
