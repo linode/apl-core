@@ -17,6 +17,7 @@ replicaCount: {{ $d.replicas }}
 # Feature-flagged while unreleased upstream. Needed for SSO across apps and real logout.
 env:
   DEX_SESSIONS_ENABLED: "true"
+  DEX_API_SESSIONS_IDENTITIES_CRUD: "true"
 
 # config is an ExternalSecret (dex-raw.gotmpl), not helm values — it embeds the OAuth2 secret.
 configSecret:

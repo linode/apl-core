@@ -27,7 +27,7 @@ dependencies:
     repository: https://linode.github.io/cloud-firewall-controller
   - name: dex
     version: 0.25.2
-    repository: https://charts.dexidp.io
+    repository: oci://ghcr.io/dexidp/helm-charts/dex
   - name: external-dns
     version: 1.21.1
     repository: https://kubernetes-sigs.github.io/external-dns
