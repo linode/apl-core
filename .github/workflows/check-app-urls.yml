@@ -1,0 +1,32 @@
+name: Check app URLs
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch: ~
+
+permissions:
+  contents: read
+
+jobs:
+  check-app-urls:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: ci
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: ci/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript tests
+        run: npm test
+
+      - name: Check URLs in apps.yaml
+        run: npm run check-app-urls
