@@ -214,6 +214,8 @@ environments:
             _rawValues: {}
           harbor:
             enabled: false
+            networkPolicies:
+              enabled: false
             oidcAutoOnboard: true
             oidcUserClaim: email
             registry:
