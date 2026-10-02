@@ -23,20 +23,6 @@ secrets:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: admin-team-{{ $v.teamId }}
-  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: admin
-subjects:
-- kind: ServiceAccount
-  name: sa-team-{{ $v.teamId }}
-  namespace: {{ $ns }}
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
   name: unprivileged-team-{{ $v.teamId }}
   labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
 roleRef:
@@ -51,32 +37,52 @@ subjects:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: kubectl
+  name: exported-kubeconfig
 automountServiceAccountToken: false
-secrets:
-- name: kubectl-token
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: kubectl-token
-  annotations:
-    kubernetes.io/service-account.name: kubectl
-type: kubernetes.io/service-account-token
+{{- if eq $v.teamId "admin" }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: kubectl
+  name: exported-kubeconfig
   labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: admin
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: exported-kubeconfig
+    namespace: {{ $ns }}
+{{- else }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: exported-kubeconfig
+  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: exported-kubeconfig
+  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: exported-kubeconfig
 subjects:
 - kind: ServiceAccount
-  name: kubectl
+  name: exported-kubeconfig
   namespace: {{ $ns }}
+{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
