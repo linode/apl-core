@@ -46,10 +46,6 @@ k8s:
       app: knative
       disablePolicyChecks: true
       disableIstioInjection: true
-    - name: kfp
-      app: kubeflow-pipelines
-      disablePolicyChecks: true
-      disableIstioInjection: true
     - name: kyverno
       app: kyverno
       disableIstioInjection: true
@@ -145,10 +141,6 @@ adminApps:
   - name: knative
     tags: [serverless, functions]
     deps: [istio]
-  - name: kubeflow-pipelines
-    tags: [ai, ml]
-    ownHost: true
-    isShared: true
   - name: kserve
     tags: [ai]
   - name: tekton
