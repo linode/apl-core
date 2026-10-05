@@ -58,3 +58,9 @@ changes:
   - version: 75
     customFunctions:
       - deactivateGitServer
+  - version: 76
+    customFunctions:
+      - removeKfp
+    deletions:
+      - apps.kubeflow-pipelines
+      - obj.provider.linode.buckets.kubeflow-pipelines

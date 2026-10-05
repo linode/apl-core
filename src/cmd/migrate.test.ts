@@ -233,7 +233,6 @@ describe('preservePvcStorageClassInRawValues', () => {
         harbor: { _rawValues: {} },
         keycloak: { _rawValues: {} },
         prometheus: { _rawValues: {} },
-        'kubeflow-pipelines': { _rawValues: {} },
         'git-server': { _rawValues: {} },
       },
     }
@@ -243,7 +242,6 @@ describe('preservePvcStorageClassInRawValues', () => {
         'git-server/git-server-data': { spec: { storageClassName: 'legacy-sc' } },
         'gitea/data-gitea-0': { spec: { storageClassName: 'legacy-sc' } },
         'gitea/gitea-backup': { spec: { storageClassName: 'legacy-sc' } },
-        'kfp/mysql-pv-claim': { spec: { storageClassName: 'legacy-sc' } },
       }
       return byName[`${namespace}/${name}`]
     })
@@ -276,7 +274,6 @@ describe('preservePvcStorageClassInRawValues', () => {
     expect(values.apps.harbor._rawValues?.persistence?.persistentVolumeClaim?.trivy?.storageClass).toBe('legacy-sc')
     expect(values.databases.harbor?.storageClass).toBe('legacy-sc')
     expect(values.databases.keycloak?.storageClass).toBe('legacy-sc')
-    expect(values.apps['kubeflow-pipelines']._rawValues?.mysql?.storage?.storageClass).toBe('legacy-sc')
     expect(
       values.apps.prometheus._rawValues?.prometheus?.prometheusSpec?.storageSpec?.volumeClaimTemplate?.spec
         ?.storageClassName,
@@ -296,7 +293,6 @@ describe('preservePvcStorageClassInRawValues', () => {
         harbor: { _rawValues: {} },
         keycloak: { _rawValues: {} },
         prometheus: { _rawValues: {} },
-        'kubeflow-pipelines': { _rawValues: {} },
         'git-server': { _rawValues: {} },
       },
     }
@@ -310,7 +306,6 @@ describe('preservePvcStorageClassInRawValues', () => {
     expect(values.apps.gitea._rawValues).toEqual({})
     expect(values.apps.harbor._rawValues).toEqual({})
     expect(values.apps.keycloak._rawValues).toEqual({})
-    expect(values.apps['kubeflow-pipelines']._rawValues).toEqual({})
     expect(values.apps.prometheus._rawValues).toEqual({})
     expect(values.databases.gitea).toEqual({})
     expect(values.databases.harbor).toEqual({})
