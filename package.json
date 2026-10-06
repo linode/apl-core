@@ -32,7 +32,7 @@
     "minimatch": "^10.2.6",
     "node-forge": "1.4.0",
     "semver": "7.8.5",
-    "simple-git": "3.36.0",
+    "simple-git": "4.0.2",
     "tar": "7.5.22",
     "uuid": "14.0.2",
     "validator": "13.15.35",
