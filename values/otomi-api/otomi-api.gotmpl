@@ -50,6 +50,7 @@ env:
   {{- end }}
   TTY_IMAGE_TAG: {{ $v.versions.tty | quote }}
   RESERVED_SERVICE_NAMES: {{ sortAlpha $reservedServiceNames | join "," | quote }}
+  KUBECONFIG_EXPIRATION_SECONDS: {{ $o.kubeconfigExpirationSeconds | quote }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
