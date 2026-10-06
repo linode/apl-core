@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import simpleGit, { SimpleGit } from 'simple-git'
+import { simpleGit, SimpleGit } from 'simple-git'
 import { setIdentity } from '../common/bootstrap'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { GitRepoConfig } from '../common/git-config'
@@ -39,6 +39,8 @@ export class GitRepository {
     this.git = simpleGit({
       baseDir: this.repoPath,
       timeout: { block: config.gitOpTimeoutMs },
+      // simple-git v4 strips GIT_* env vars unless allowed; bootstrapGit sets this one
+      allowEnvironment: ['GIT_SSL_NO_VERIFY'],
     })
     this._config = {
       repoUrl: config.repoUrl,
