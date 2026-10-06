@@ -51,23 +51,28 @@ subjects:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: kubectl
+  name: exported-kubeconfig
 automountServiceAccountToken: false
-secrets:
-- name: kubectl-token
 ---
-apiVersion: v1
-kind: Secret
+{{- if eq $v.teamId "admin" }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
 metadata:
-  name: kubectl-token
-  annotations:
-    kubernetes.io/service-account.name: kubectl
-type: kubernetes.io/service-account-token
----
+  name: exported-kubeconfig
+  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: exported-kubeconfig
+    namespace: {{ $ns }}
+{{- else }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: kubectl
+  name: exported-kubeconfig
   labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -75,8 +80,9 @@ roleRef:
   name: admin
 subjects:
 - kind: ServiceAccount
-  name: kubectl
+  name: exported-kubeconfig
   namespace: {{ $ns }}
+{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
