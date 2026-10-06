@@ -2083,6 +2083,8 @@ properties:
           editorInactivityTimeout:
             type: integer
             default: 10
+          kubeconfigExpirationSeconds:
+            type: integer
           resources:
             additionalProperties: false
             properties:
