@@ -800,6 +800,7 @@ environments:
             _rawValues: {}
           otomi-api:
             editorInactivityTimeout: 1
+            kubeconfigExpirationSeconds: 28800
             _rawValues: {}
             networkPolicies:
               enabled: true
