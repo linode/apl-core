@@ -3,7 +3,7 @@ description: APL Helm chart dependencies
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 10.9.6
+    version: 10.10.0
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
     version: 1.3.1
@@ -26,7 +26,7 @@ dependencies:
     version: 0.2.1
     repository: https://linode.github.io/cloud-firewall-controller
   - name: dex
-    version: 0.25.2
+    version: 0.26.0
     repository: https://charts.dexidp.io
   - name: external-dns
     version: 1.21.1
