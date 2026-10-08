@@ -20,7 +20,11 @@ export const removeTtyRoleBindings = async (
   const ttyRoleBindings = roleBindings.filter((roleBinding) => {
     const { name, namespace } = roleBinding.metadata ?? {}
     return (
-      !!name && !!namespace && namespace.startsWith(TEAM_NAMESPACE_PREFIX) && name.startsWith(TTY_ROLE_BINDING_PREFIX)
+      !!name &&
+      !!namespace &&
+      namespace.startsWith(TEAM_NAMESPACE_PREFIX) &&
+      name.startsWith(TTY_ROLE_BINDING_PREFIX) &&
+      name !== 'tty-admin'
     )
   })
 
