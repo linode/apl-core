@@ -37,8 +37,8 @@ describe('removeTtyRoleBindings', () => {
 
     await removeTtyRoleBindings(mockDeps as any)
 
-    expect(mockDeleteRoleBinding).toHaveBeenCalledTimes(2)
-    expect(mockDeleteRoleBinding).toHaveBeenCalledWith({ name: 'tty-admin', namespace: 'team-demo' })
+    expect(mockDeleteRoleBinding).toHaveBeenCalledTimes(1)
+    expect(mockDeleteRoleBinding).not.toHaveBeenCalledWith({ name: 'tty-admin', namespace: 'team-demo' })
     expect(mockDeleteRoleBinding).toHaveBeenCalledWith({ name: 'tty-dev', namespace: 'team-other' })
   })
 
