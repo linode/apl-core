@@ -1,3 +1,10 @@
+rest:
+  waitForInitialReports: {{ .Values.rest.waitForInitialReports }}
+
+mcp:
+  enabled: {{ .Values.mcp.enabled }}
+  port: {{ .Values.mcp.port }}
+
 crd:
   targetConfig: {{ .Values.target.crd }}
 
