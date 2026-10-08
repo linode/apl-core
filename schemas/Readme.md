@@ -17,7 +17,7 @@ kubectl api-versions > schemas/api-versions/<my-version>
 Install the `openapi2jsonschema` tool:
 
 ```
-pip3 install openapi2jsonschema
+pip3 install openapi2jsonschema2
 ```
 
 **Steps:**
