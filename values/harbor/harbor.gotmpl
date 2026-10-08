@@ -25,6 +25,10 @@ core:
   secretName: harbor-token-service-ca
   priorityClassName: otomi-critical
   nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 4 }}
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
   {{- with $imageRepo }}
   image:
     repository: "{{ . }}/harbor-core"

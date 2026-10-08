@@ -670,6 +670,8 @@ core:
   # - name: wait
   #   image: busybox
   #   command: [ 'sh', '-c', "sleep 20" ]
+  ## DNS config for the pod (e.g. ndots)
+  dnsConfig: {}
   ## User settings configuration json string
   configureUserSettings:
   # The provider for updating project quota(usage), there are 2 options, redis or db.
