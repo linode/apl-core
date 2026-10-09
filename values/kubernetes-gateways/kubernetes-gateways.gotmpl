@@ -2,8 +2,12 @@
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- $defaultIngressClass := $v.ingress.platformClass.className }}
 
+
 gateways:
 {{- range $ingress := $v.ingress.classes }}
+  {{- $gateway := get $ingress "gateway" dict }}
+  {{- $hpaEnabled := hasKey $gateway "autoscaling" }}
+  {{- $hpaSettings := $gateway | get "autoscaling" dict }}
   {{- $gatewayAnnotations := dict }}
   {{- if and ($ingress | get "entrypoint" nil) $v.otomi.hasExternalDNS }}
   {{- $_ := set $gatewayAnnotations "external-dns.alpha.kubernetes.io/target" $ingress.entrypoint }}
@@ -55,41 +59,42 @@ gateways:
     {{- with $ingress | get "loadBalancerIP" nil }}
     loadBalancerIP: {{ . | quote }}
     {{- end }}
-    {{- with $ingress | get "gateway" dict }}
+    {{- with $gateway }}
+    {{- if not $hpaEnabled }}
     replicas: {{ . | get "replicas" 3 }}
+    {{- end }}
     minAvailable: {{ . | get "minAvailable" 1 }}
     nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     resources:
-    {{- with $ingress.gateway | get "resources" nil }}
+    {{- with $gateway | get "resources" nil }}
       {{- . | toYaml | nindent 6 }}
     {{- else }}
       requests:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 500m
+        memory: 256Mi
       limits:
-        cpu: 1000m
-        memory: 1024Mi
-    {{- end }}{{- /* with $ingress.gateway | get "resources" nil */}}
-    {{- with $ingress.gateway | get "autoscaling" (dict "enabled" true) }}
-    {{- if .enabled }}
+        cpu: 500m
+        memory: 256Mi
+    {{- end }}{{- /* with $gateway | get "resources" nil */}}
+    {{- if $hpaEnabled }}
     hpa:
-      minReplicas: {{ . | get "minReplicas" 3 }}
-      maxReplicas: {{ . | get "maxReplicas" 10 }}
+      minReplicas: {{ $hpaSettings | get "minReplicas" 1 }}
+      maxReplicas: {{ $hpaSettings | get "maxReplicas" 10 }}
       metrics:
         - type: Resource
           resource:
             name: cpu
             target:
               type: Utilization
-              averageUtilization: {{ . | get "targetCPUUtilizationPercentage" 80 }}
+              averageUtilization: {{ $hpaSettings | get "targetCPUUtilizationPercentage" 80 }}
         - type: Resource
           resource:
             name: memory
             target:
               type: Utilization
-              averageUtilization: {{ . | get "targetMemoryUtilizationPercentage" 80 }}
-    {{- end }}{{- /* if .enabled */}}
-    {{- end }}{{- /* with $ingress.gateway | get "autoscaling" */}}
+              averageUtilization: {{ $hpaSettings | get "targetMemoryUtilizationPercentage" 80 }}
+    {{- end }}{{- /* if $hpaEnabled */}}
+    {{- end }}{{- /* with $gateway */}}
     {{- end }}{{- /* with $ingress */}}
 {{- end }}
 {{- if $v.apps.knative.enabled }}
