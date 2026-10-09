@@ -60,7 +60,11 @@ jobs:
       - name: Install packages
         run: |
           cd ci/
-          npm install
+          npm ci
+      - name: Run CI script tests
+        run: |
+          cd ci/
+          npm run tests
       - name: Update helm charts
         env:
           CI_UPDATE_TYPE: ${{ inputs.CI_UPDATE_TYPE }}
