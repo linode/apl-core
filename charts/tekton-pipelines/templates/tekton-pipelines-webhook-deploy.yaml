@@ -6,12 +6,12 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/name: webhook
     app.kubernetes.io/part-of: tekton-pipelines
-    app.kubernetes.io/version: v1.14.0
+    app.kubernetes.io/version: v1.15.3
       {{- with .Values.webhook.deployment.labels }}
         {{- toYaml . | nindent 4 }}
       {{- end}}
-    pipeline.tekton.dev/release: v1.14.0
-    version: v1.14.0
+    pipeline.tekton.dev/release: v1.15.3
+    version: v1.15.3
   name: tekton-pipelines-webhook
 spec:
   selector:
@@ -28,12 +28,12 @@ spec:
         app.kubernetes.io/instance: default
         app.kubernetes.io/name: webhook
         app.kubernetes.io/part-of: tekton-pipelines
-        app.kubernetes.io/version: v1.14.0
+        app.kubernetes.io/version: v1.15.3
           {{- with .Values.webhook.pod.labels }}
             {{- toYaml . | nindent 8 }}
           {{- end}}
-        pipeline.tekton.dev/release: v1.14.0
-        version: v1.14.0
+        pipeline.tekton.dev/release: v1.15.3
+        version: v1.15.3
     spec:
       affinity:
           {{- with .Values.webhook.affinity }}
@@ -109,12 +109,7 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 5
         resources:
-          limits:
-            cpu: 500m
-            memory: 500Mi
-          requests:
-            cpu: 100m
-            memory: 100Mi
+            {{- toYaml  .Values.webhook.resources |  nindent 10 }}
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
