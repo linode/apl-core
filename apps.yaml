@@ -196,7 +196,13 @@ appsInfo:
     dependencies: None
     about: RabbitMQ is the most widely deployed open source message broker.
     integration: App Platform install the RabbitMQ-Cluster-Kubernetes-Operator, afterwards users can use the RabbitMQ Catalog item to create RabbitMQ-cluster with queues and policies.
-    isBeta: true
+    isDeprecated: true
+    deprecationInfo:
+      message: RabbitMQ is being deprecated.
+      reasons:
+        - RabbitMQ will no longer be maintained as part of App Platform.
+      options:
+        - Click 'I understand' to continue using RabbitMQ.
   sealed-secrets:
     title: Sealed Secrets
     appVersion: 0.40.0
