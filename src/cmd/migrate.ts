@@ -430,9 +430,6 @@ export const preservePvcStorageClassInRawValues = async (
   const keycloakDbDataPvc = await deps.listPvcs('keycloak', 'cnpg.io/cluster=keycloak-db,cnpg.io/pvcRole=PG_DATA')
   maybeSetRawValue('databases.keycloak.storageClass', keycloakDbDataPvc[0]?.spec?.storageClassName)
 
-  const kubeflowPvc = await deps.readPvc('kfp', 'mysql-pv-claim')
-  maybeSetRawValue('apps.kubeflow-pipelines._rawValues.mysql.storage.storageClass', kubeflowPvc?.spec?.storageClassName)
-
   const prometheusPvcs = await deps.listPvcs('monitoring', 'operator.prometheus.io/name=po-prometheus')
   maybeSetRawValue(
     'apps.prometheus._rawValues.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName',
@@ -560,7 +557,7 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
   const d = terminal('migrateGeneratedSecrets')
   const isTest = process.env.NODE_ENV === 'test'
   const BASE_APPS = ['argocd', 'keycloak', 'oauth2-proxy', 'oauth2-proxy-redis', 'loki']
-  const OPTIONAL_APPS = ['gitea', 'harbor', 'kubeflow-pipelines']
+  const OPTIONAL_APPS = ['gitea', 'harbor']
   const ALL_APPS = [...BASE_APPS, ...OPTIONAL_APPS]
   const secrets: Record<string, Record<string, string>> = {}
   const discardSealedSecrets: string[] = []
@@ -745,13 +742,6 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
         adminPassword: secrets.loki.adminPassword,
       })
     }
-    if (secrets['kubeflow-pipelines']) {
-      d.info('Processing Kubeflow-Pipelines secrets.')
-      await setSecret('kfp-mysql-secret', 'kfp', {
-        username: 'root',
-        password: secrets['kubeflow-pipelines'].rootPassword,
-      })
-    }
     for (const secretName of discardSealedSecrets) {
       const fileName = `${env.ENV_DIR}/env/manifests/namespaces/${SEALED_SECRETS_NAMESPACE}/sealedsecrets/${secretName}.yaml`
       if (existsSync(fileName)) {
@@ -789,6 +779,15 @@ const deactivateGitServer = async (values: Record<string, any>) => {
   }
 }
 
+const removeKfp = async () => {
+  const d = terminal('removeKfp')
+  const filename = `${env.ENV_DIR}/env/apps/kubeflow-pipelines.yaml`
+  if (existsSync(filename)) {
+    d.info(`Removing ${filename}`)
+    await rm(filename)
+  }
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   valkeyAndOauth2RedisPVCMigration,
   preservePvcStorageClassInRawValues,
@@ -799,6 +798,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   removeSopsConfig,
   migrateGeneratedSecrets,
   deactivateGitServer,
+  removeKfp,
 }
 
 /**

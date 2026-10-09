@@ -151,23 +151,6 @@ appsInfo:
       - https://kyverno.io/docs/
     license: Apache 2.0
     about: Kyverno is a policy engine designed for Kubernetes. It can validate, mutate, and generate configurations using admission controls and background scans. Kyverno policies are Kubernetes resources and do not require learning a new language.
-  kubeflow-pipelines:
-    title: Kubeflow-Pipelines
-    appVersion: 2.4.0
-    repo: https://github.com/kubeflow/pipelines
-    maintainers: Kubeflow
-    relatedLinks:
-      - https://www.kubeflow.org/docs/components/pipelines/overview/
-      - https://kubeflow.org
-    license: Apache 2.0
-    about: Kubeflow pipelines are reusable end-to-end ML workflows built using the Kubeflow Pipelines SDK.
-    isDeprecated: true
-    deprecationInfo:
-      message: Kubeflow Pipelines is being deprecated.
-      reasons:
-        - Kubeflow Pipelines will no longer be maintained as part of App Platform.
-      options:
-        - Click 'I understand' to continue using Kubeflow Pipelines.
   tekton:
     title: Tekton Pipelines
     appVersion: 1.14.0

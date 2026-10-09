@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
-{{- $authAppNamespaces := list "argocd" "harbor" "monitoring" "grafana" "kfp" "otomi" "tekton-dashboard"}}
+{{- $authAppNamespaces := list "argocd" "harbor" "monitoring" "grafana" "otomi" "tekton-dashboard"}}
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- $logoutRedirectParam := $v._derived.logoutToOauth2Start }}
 {{- $httpRoute := tpl (readFile "../../helmfile.d/snippets/routes.gotmpl") $v | fromYaml }}
