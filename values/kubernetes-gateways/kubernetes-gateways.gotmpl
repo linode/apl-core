@@ -2,12 +2,10 @@
 {{- $domainSuffix := $v.cluster.domainSuffix }}
 {{- $defaultIngressClass := $v.ingress.platformClass.className }}
 
-
 gateways:
 {{- range $ingress := $v.ingress.classes }}
-  {{- $gateway := get $ingress "gateway" dict }}
+  {{- $gateway := $ingress | get "gateway" dict }}
   {{- $hpaEnabled := hasKey $gateway "autoscaling" }}
-  {{- $hpaSettings := $gateway | get "autoscaling" dict }}
   {{- $gatewayAnnotations := dict }}
   {{- if and ($ingress | get "entrypoint" nil) $v.otomi.hasExternalDNS }}
   {{- $_ := set $gatewayAnnotations "external-dns.alpha.kubernetes.io/target" $ingress.entrypoint }}
@@ -70,15 +68,16 @@ gateways:
       {{- . | toYaml | nindent 6 }}
     {{- else }}
       requests:
-        cpu: 500m
+        cpu: 250m
         memory: 256Mi
       limits:
-        cpu: 500m
+        cpu: 250m
         memory: 256Mi
     {{- end }}{{- /* with $gateway | get "resources" nil */}}
     {{- if $hpaEnabled }}
+    {{- $hpaSettings := $gateway | get "autoscaling" dict }}
     hpa:
-      minReplicas: {{ $hpaSettings | get "minReplicas" 1 }}
+      minReplicas: {{ $hpaSettings | get "minReplicas" 2 }}
       maxReplicas: {{ $hpaSettings | get "maxReplicas" 10 }}
       metrics:
         - type: Resource
@@ -95,7 +94,7 @@ gateways:
               averageUtilization: {{ $hpaSettings | get "targetMemoryUtilizationPercentage" 80 }}
     {{- end }}{{- /* if $hpaEnabled */}}
     {{- end }}{{- /* with $gateway */}}
-    {{- end }}{{- /* with $ingress */}}
+
 {{- end }}
 {{- if $v.apps.knative.enabled }}
   - name: knative-local-gateway
