@@ -59,6 +59,7 @@ gateways:
     replicas: {{ . | get "replicas" 3 }}
     minAvailable: {{ . | get "minAvailable" 1 }}
     nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
+    ndots: 1
     resources:
     {{- with $ingress.gateway | get "resources" nil }}
       {{- . | toYaml | nindent 6 }}

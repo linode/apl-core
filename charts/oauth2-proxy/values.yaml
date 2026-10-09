@@ -461,6 +461,9 @@ tolerations: []
 # Ref: https://kubernetes.io/docs/user-guide/node-selection/
 nodeSelector: {}
 
+# DNS config for the pod (e.g. ndots)
+dnsConfig: {}
+
 # Whether to use secrets instead of environment values for setting up OAUTH2_PROXY variables
 proxyVarsAsSecrets: true
 

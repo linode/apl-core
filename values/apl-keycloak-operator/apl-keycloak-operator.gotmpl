@@ -31,3 +31,8 @@ script: |
 resources: {{- toYaml $o.resources.operator | nindent 2 }}
 
 nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}
+
+dnsConfig:
+  options:
+    - name: ndots
+      value: "1"

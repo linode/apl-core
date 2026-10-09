@@ -14,6 +14,10 @@ global:
 applicationSet:
   replicas: {{ $a.applicationSet.replicas }}
   resources: {{- $a.resources.applicationSet | toYaml | nindent 4 }}
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
   metrics:
     enabled: true
     serviceMonitor:
@@ -25,6 +29,10 @@ applicationSet:
 controller:
   replicas: {{ $a.controller.replicas }}
   resources: {{- $a.resources.controller | toYaml | nindent 4 }}
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
   metrics:
     enabled: true
     serviceMonitor:
@@ -38,12 +46,20 @@ dex:
 notifications:
   enabled: true
   resources: {{- $a.resources.notifications | toYaml | nindent 4 }}
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
 
 redisSecretInit:
   enabled: false
 
 redis:
   resources: {{- $a.resources.redis | toYaml | nindent 4 }}
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/redis"
@@ -56,6 +72,10 @@ repoServer:
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.repoServer.targetMemoryUtilizationPercentage }}
     targetCPUUtilizationPercentage: {{ $a.autoscaling.repoServer.targetCPUUtilizationPercentage }}
   resources: {{- $a.resources.repo | toYaml | nindent 4 }}
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
   metrics:
     enabled: true
     serviceMonitor:
@@ -71,6 +91,10 @@ server:
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.server.targetMemoryUtilizationPercentage }}
     targetCPUUtilizationPercentage: {{ $a.autoscaling.server.targetCPUUtilizationPercentage }}
   resources: {{- $a.resources.server | toYaml | nindent 4 }}
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
   metrics:
     enabled: true
     serviceMonitor:

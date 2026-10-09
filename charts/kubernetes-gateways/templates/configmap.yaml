@@ -12,9 +12,15 @@ data:
   deployment: |
     spec:
       replicas: {{ $gateway.replicas | default 2 }}
-      {{- if or $gateway.resources $gateway.nodeSelector }}
+      {{- if or $gateway.resources $gateway.nodeSelector $gateway.ndots }}
       template:
         spec:
+          {{- with $gateway.ndots }}
+          dnsConfig:
+            options:
+              - name: ndots
+                value: {{ . | quote }}
+          {{- end }}
           {{- with $gateway.nodeSelector }}
           nodeSelector:
             {{- . | toYaml | nindent 12 }}

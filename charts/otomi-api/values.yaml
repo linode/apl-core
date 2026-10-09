@@ -80,6 +80,8 @@ podAnnotations: {}
 
 nodeSelector: {}
 
+dnsConfig: {}
+
 tolerations: []
 
 affinity: {}
