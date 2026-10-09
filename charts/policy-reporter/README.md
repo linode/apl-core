@@ -3,7 +3,7 @@
 Policy Reporter watches for PolicyReport Resources.
 It creates Prometheus Metrics and can send rule validation events to different targets like Loki, Elasticsearch, Slack or Discord
 
-![Version: 3.10.0](https://img.shields.io/badge/Version-3.10.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.10.0](https://img.shields.io/badge/AppVersion-3.10.0-informational?style=flat-square)
+![Version: 3.11.0](https://img.shields.io/badge/Version-3.11.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.11.0](https://img.shields.io/badge/AppVersion-3.11.0-informational?style=flat-square)
 
 ## Documentation
 
@@ -26,6 +26,14 @@ The basic installation provides an Prometheus Metrics Endpoint and different RES
 ```bash
 helm install policy-reporter policy-reporter/policy-reporter -n policy-reporter --create-namespace
 ```
+
+## Initial report readiness
+
+Set `rest.waitForInitialReports: true` to keep `/ready` and the `/v1` and `/v2` REST APIs unavailable (HTTP 503) until the initial reports have been saved. This option defaults to `false` and requires SQLite and REST enabled, either directly or through the UI. External database configurations are rejected when this option is enabled.
+
+Liveness uses `/healthz`; readiness uses `/ready`. If you override the probes, use these paths to avoid restarting the Pod while reports are loading. Metrics and profiling remain available independently of initial persistence.
+
+Failed writes receive bounded retries. If retries are exhausted, initialization remains incomplete until a later event or restart successfully processes the pending reports; check the database error logs. Completion is retained across periodic informer restarts. This option covers initial loading, not a continuously consistent snapshot of the cluster.
 
 ## Policy Reporter UI
 
@@ -99,6 +107,9 @@ Open `http://localhost:8082/` in your browser.
 | logging.encoding | string | `"console"` | Log encoding possible encodings are console and json |
 | logging.logLevel | int | `0` | Log level default info |
 | rest.enabled | bool | `false` | Enables the REST API |
+| rest.waitForInitialReports | bool | `false` | Wait for initial reports to be persisted before readiness and REST requests succeed. Requires REST and SQLite. Custom probes must use /healthz for liveness and /ready for readiness. |
+| mcp.enabled | bool | `false` | Enables the MCP Server |
+| mcp.port | int | `9090` | Port for the MCP Server |
 | metrics.enabled | bool | `false` | Enables Prometheus Metrics |
 | metrics.mode | string | `"detailed"` | Metric Mode allows to customize labels Allowed values: detailed, simple, custom |
 | metrics.customLabels | list | `[]` | List of used labels in custom mode Supported fields are: ["namespace", "rule", "policy", "report" // Report name, "kind" // resource kind, "name" // resource name, "status", "severity", "category", "source"] |
@@ -145,6 +156,7 @@ Open `http://localhost:8082/` in your browser.
 | emailReports.summary.ttlSecondsAfterFinished | int | `0` | CronJob ttlSecondsAfterFinished |
 | emailReports.summary.restartPolicy | string | `"Never"` | CronJob restartPolicy |
 | emailReports.summary.to | list | `[]` | List of receiver email addresses |
+| emailReports.summary.attachmentFormat | string | `""` | Attach report data as CSV instead of rendering details in the email body (empty or csv). Channels configure this independently. |
 | emailReports.summary.filter | optional | `{}` | Report filter |
 | emailReports.summary.channels | optional | `[]` | Channels can be used to to send only a subset of namespaces / sources to dedicated email addresses |
 | emailReports.violations.enabled | bool | `false` | Enable Violation Summary E-Mail reports |
@@ -154,6 +166,7 @@ Open `http://localhost:8082/` in your browser.
 | emailReports.violations.ttlSecondsAfterFinished | int | `0` | CronJob ttlSecondsAfterFinished |
 | emailReports.violations.restartPolicy | string | `"Never"` | CronJob restartPolicy |
 | emailReports.violations.to | list | `[]` | List of receiver email addresses |
+| emailReports.violations.attachmentFormat | string | `""` | Attach report data as CSV instead of rendering details in the email body (empty or csv). Channels configure this independently. |
 | emailReports.violations.filter | optional | `{}` | Report filter |
 | emailReports.violations.channels | optional | `[]` | Channels can be used to to send only a subset of namespaces / sources to dedicated email addresses |
 | existingTargetConfig.enabled | bool | `false` | Use an already existing configuration |
@@ -398,8 +411,8 @@ Open `http://localhost:8082/` in your browser.
 | tolerations | list | `[]` | Tolerations for pod assignment ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/ |
 | affinity | object | `{}` | Anti-affinity to disallow deploying client and master nodes on the same worker node |
 | topologySpreadConstraints | list | `[]` | Topology Spread Constraints to better spread pods |
-| livenessProbe | object | `{"httpGet":{"path":"/ready","port":"http"}}` | Deployment livenessProbe for policy-reporter |
-| readinessProbe | object | `{"httpGet":{"path":"/healthz","port":"http"}}` | Deployment readinessProbe for policy-reporter |
+| livenessProbe | object | `{"httpGet":{"path":"/healthz","port":"http"}}` | Deployment livenessProbe for policy-reporter |
+| readinessProbe | object | `{"httpGet":{"path":"/ready","port":"http"}}` | Deployment readinessProbe for policy-reporter |
 | extraVolumes.volumeMounts | list | `[]` | Deployment volumeMounts |
 | extraVolumes.volumes | list | `[]` | Deployment values |
 | sqliteVolume | object | `{}` | If set the volume for sqlite is freely configurable below "- name: sqlite". If no value is set an emptyDir is used. |
@@ -409,7 +422,7 @@ Open `http://localhost:8082/` in your browser.
 | ui.image.registry | string | `"ghcr.io"` | Image registry |
 | ui.image.repository | string | `"kyverno/policy-reporter-ui"` | Image repository |
 | ui.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| ui.image.tag | string | `"2.8.1"` | Image tag |
+| ui.image.tag | string | `"2.9.0"` | Image tag |
 | ui.crds.customBoard | bool | `false` | Install UI CustomBoard CRDs |
 | ui.crds.cluster | bool | `false` | Install UI CustomBoard CRDs |
 | ui.replicaCount | int | `1` | Deployment replica count |
@@ -508,7 +521,7 @@ Open `http://localhost:8082/` in your browser.
 | plugin.kyverno.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.kyverno.image.repository | string | `"kyverno/policy-reporter/kyverno-plugin"` | Image repository |
 | plugin.kyverno.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.kyverno.image.tag | string | `"0.7.1"` | Image tag |
+| plugin.kyverno.image.tag | string | `"0.7.2"` | Image tag |
 | plugin.kyverno.replicaCount | int | `1` | Deployment replica count |
 | plugin.kyverno.priorityClassName | string | `""` | Deployment priorityClassName |
 | plugin.kyverno.logging.api | bool | `false` | Enables external API request logging |
@@ -563,6 +576,8 @@ Open `http://localhost:8082/` in your browser.
 | plugin.kyverno.httproute.hostnames | list | `[]` | List of hostnames for HTTPRoute |
 | plugin.kyverno.httproute.rules | list | `[{"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]` | HTTPRoute rules configuration Allows advanced routing with matches and filters |
 | plugin.kyverno.resources | object | `{}` | Resource constraints |
+| plugin.kyverno.livenessProbe | object | `{"httpGet":{"path":"/v1/policies","port":"http"}}` | Deployment livenessProbe for policy-reporter-kyverno-plugin |
+| plugin.kyverno.readinessProbe | object | `{"httpGet":{"path":"/v1/policies","port":"http"}}` | Deployment readinessProbe for policy-reporter-kyverno-plugin |
 | plugin.kyverno.leaderElection.lockName | string | `"kyverno-plugin"` | Lock Name |
 | plugin.kyverno.leaderElection.releaseOnCancel | bool | `true` | Released lock when the run context is cancelled. |
 | plugin.kyverno.leaderElection.leaseDuration | int | `15` | LeaseDuration is the duration that non-leader candidates will wait to force acquire leadership. |
@@ -581,11 +596,11 @@ Open `http://localhost:8082/` in your browser.
 | plugin.trivy.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.trivy.image.repository | string | `"kyverno/policy-reporter/trivy-plugin"` | Image repository |
 | plugin.trivy.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.trivy.image.tag | string | `"0.5.1"` | Image tag Defaults to `Chart.AppVersion` if omitted |
+| plugin.trivy.image.tag | string | `"0.5.2"` | Image tag Defaults to `Chart.AppVersion` if omitted |
 | plugin.trivy.cli.image.registry | string | `"ghcr.io"` | Image registry |
 | plugin.trivy.cli.image.repository | string | `"aquasecurity/trivy"` | Image repository |
 | plugin.trivy.cli.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
-| plugin.trivy.cli.image.tag | string | `"0.74.0"` | Image tag Defaults to `Chart.AppVersion` if omitted |
+| plugin.trivy.cli.image.tag | string | `"0.75.0"` | Image tag Defaults to `Chart.AppVersion` if omitted |
 | plugin.trivy.extraArgs | object | `{}` | Additional container args. |
 | plugin.trivy.cveawg.disable | bool | `false` | disable external CVEAWG API calls. |
 | plugin.trivy.github.disable | bool | `false` | disable GitHub API calls. |
@@ -634,6 +649,12 @@ Open `http://localhost:8082/` in your browser.
 | plugin.trivy.ingress.annotations | object | `{}` | Ingress annotations. |
 | plugin.trivy.ingress.hosts | list | `[]` | List of ingress host configurations. |
 | plugin.trivy.ingress.tls | list | `[]` | List of ingress TLS configurations. |
+| plugin.trivy.httproute.enabled | bool | `false` | Enable HTTPRoute resource (Gateway API alternative to Ingress) Requires Gateway API CRDs (v1) installed in cluster https://gateway-api.sigs.k8s.io/ |
+| plugin.trivy.httproute.labels | object | `{}` | Additional HTTPRoute labels |
+| plugin.trivy.httproute.annotations | object | `{}` | Additional HTTPRoute annotations |
+| plugin.trivy.httproute.parentRefs | list | `[]` | Gateway API parentRefs (list of Gateway references) Must reference an existing Gateway resource |
+| plugin.trivy.httproute.hostnames | list | `[]` | List of hostnames for HTTPRoute |
+| plugin.trivy.httproute.rules | list | `[{"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]` | HTTPRoute rules configuration Allows advanced routing with matches and filters |
 | plugin.trivy.networkPolicy.enabled | bool | `false` | When true, use a NetworkPolicy to allow ingress to the webhook This is useful on clusters using Calico and/or native k8s network policies in a default-deny setup. |
 | plugin.trivy.networkPolicy.egress | list | `[{"ports":[{"port":6443,"protocol":"TCP"}]}]` | A list of valid from selectors according to https://kubernetes.io/docs/concepts/services-networking/network-policies. Enables Kubernetes API Server by default |
 | plugin.trivy.networkPolicy.ingress | list | `[]` | A list of valid from selectors according to https://kubernetes.io/docs/concepts/services-networking/network-policies. |
@@ -647,6 +668,80 @@ Open `http://localhost:8082/` in your browser.
 | plugin.trivy.extraVolumes.volumeMounts | list | `[]` | Deployment volumeMounts |
 | plugin.trivy.extraVolumes.volumes | list | `[]` | Deployment values |
 | plugin.trivy.extraConfig | object | `{}` | Extra configuration options appended to trivy plugin settings |
+| plugin.vap.enabled | bool | `false` | Enable ValidatingAdmissionPolicy Plugin |
+| plugin.vap.image.registry | string | `"ghcr.io"` | Image registry |
+| plugin.vap.image.repository | string | `"kyverno/policy-reporter/vap-plugin"` | Image repository |
+| plugin.vap.image.pullPolicy | string | `"IfNotPresent"` | Image PullPolicy |
+| plugin.vap.image.tag | string | `"0.1.2"` | Image tag |
+| plugin.vap.replicaCount | int | `1` |  |
+| plugin.vap.priorityClassName | string | `""` | Deployment priorityClassName |
+| plugin.vap.imagePullSecrets | list | `[]` | Image pull secrets for image verification policies, this will define the `--imagePullSecrets` argument |
+| plugin.vap.rbac.enabled | bool | `true` | Create RBAC resources |
+| plugin.vap.rbac.extraResources | list | `[]` | Additional rules to add to the ClusterRole |
+| plugin.vap.networkPolicy.enabled | bool | `false` | When true, use a NetworkPolicy to allow ingress to the webhook This is useful on clusters using Calico and/or native k8s network policies in a default-deny setup. |
+| plugin.vap.networkPolicy.egress | list | `[{"ports":[{"port":6443,"protocol":"TCP"}]}]` | A list of valid from selectors according to https://kubernetes.io/docs/concepts/services-networking/network-policies. Enables Kubernetes API Server by default |
+| plugin.vap.networkPolicy.ingress | list | `[{"ports":[{"port":8443,"protocol":"TCP"}]},{"ports":[{"port":8080,"protocol":"TCP"}]}]` | A list of valid from selectors according to https://kubernetes.io/docs/concepts/services-networking/network-policies. |
+| plugin.vap.podAnnotations | object | `{}` | Additional annotations to add to each pod |
+| plugin.vap.podLabels | object | `{}` | Additional labels to add to each pod |
+| plugin.vap.selectorLabels | object | `{}` | Custom selector labels, overwrites the default set |
+| plugin.vap.updateStrategy | object | `{}` | Deployment update strategy. Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy |
+| plugin.vap.revisionHistoryLimit | int | `10` | The number of revisions to keep |
+| plugin.vap.podSecurityContext | object | `{"runAsGroup":1234,"runAsUser":1234}` | Security context for the pod |
+| plugin.vap.envVars | list | `[]` | Allow additional env variables to be added |
+| plugin.vap.securityContext.runAsUser | int | `1234` |  |
+| plugin.vap.securityContext.runAsNonRoot | bool | `true` |  |
+| plugin.vap.securityContext.privileged | bool | `false` |  |
+| plugin.vap.securityContext.allowPrivilegeEscalation | bool | `false` |  |
+| plugin.vap.securityContext.readOnlyRootFilesystem | bool | `true` |  |
+| plugin.vap.securityContext.capabilities.drop[0] | string | `"ALL"` |  |
+| plugin.vap.securityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
+| plugin.vap.livenessProbe | object | `{"httpGet":{"path":"/v1/policies","port":"api"},"timeoutSeconds":3}` | Deployment livenessProbe for policy-reporter-vap-plugin |
+| plugin.vap.readinessProbe | object | `{"httpGet":{"path":"/v1/policies","port":"api"},"timeoutSeconds":3}` | Deployment readinessProbe for policy-reporter-vap-plugin |
+| plugin.vap.serviceAccount.create | bool | `true` | Create ServiceAccount |
+| plugin.vap.serviceAccount.automount | bool | `true` | Enable ServiceAccount automount |
+| plugin.vap.serviceAccount.annotations | object | `{}` | Annotations for the ServiceAccount |
+| plugin.vap.serviceAccount.name | string | `""` | The ServiceAccount name |
+| plugin.vap.service.type | string | `"ClusterIP"` | Service type. |
+| plugin.vap.service.port | int | `8443` | Service port. |
+| plugin.vap.service.annotations | object | `{}` | Service annotations. |
+| plugin.vap.service.labels | object | `{}` | Service labels. |
+| plugin.vap.service.clusterIP | string | `""` | Fixed ClusterIP for the service |
+| plugin.vap.podDisruptionBudget.minAvailable | int | `1` | Configures the minimum available pods for kyvernoPlugin disruptions. Cannot be used if `maxUnavailable` is set. |
+| plugin.vap.podDisruptionBudget.maxUnavailable | string | `nil` | Configures the maximum unavailable pods for kyvernoPlugin disruptions. Cannot be used if `minAvailable` is set. |
+| plugin.vap.tls.certManager.enabled | bool | `false` |  |
+| plugin.vap.tls.certManager.issuerRef.name | string | `""` |  |
+| plugin.vap.tls.certManager.issuerRef.kind | string | `"ClusterIssuer"` |  |
+| plugin.vap.tls.existingSecret | string | `""` |  |
+| plugin.vap.server.enabled | bool | `true` |  |
+| plugin.vap.webhook.bufferSize | int | `1000` |  |
+| plugin.vap.webhook.workers | int | `4` |  |
+| plugin.vap.report.severity | string | `""` |  |
+| plugin.vap.report.category | string | `""` |  |
+| plugin.vap.report.labels | object | `{}` |  |
+| plugin.vap.report.annotations | object | `{}` |  |
+| plugin.vap.report.reportDenied | bool | `false` |  |
+| plugin.vap.reconcile.interval | string | `"10m"` |  |
+| plugin.vap.reconcile.orphanTTL | string | `"24h"` |  |
+| plugin.vap.api.enabled | bool | `true` |  |
+| plugin.vap.api.port | int | `8080` |  |
+| plugin.vap.api.debug | bool | `false` |  |
+| plugin.vap.logging.level | string | `"info"` |  |
+| plugin.vap.logging.development | bool | `false` |  |
+| plugin.vap.autoMemoryLimit.enabled | bool | `true` |  |
+| plugin.vap.autoMemoryLimit.ratio | float | `0.9` |  |
+| plugin.vap.resources | object | `{}` | Resource constraints |
+| plugin.vap.nodeSelector | object | `{}` | Node labels for pod assignment |
+| plugin.vap.tolerations | list | `[]` | List of node taints to tolerate |
+| plugin.vap.affinity | object | `{}` | Affinity constraints. |
+| plugin.vap.topologySpreadConstraints | object | `{}` | Pod Topology Spread Constraints for the kyverno plugin. |
+| plugin.vap.extraVolumes.volumeMounts | list | `[]` | Deployment volumeMounts |
+| plugin.vap.extraVolumes.volumes | list | `[]` | Deployment values |
+| plugin.vap.httproute.enabled | bool | `false` | Enable HTTPRoute resource (Gateway API alternative to Ingress) Requires Gateway API CRDs (v1) installed in cluster https://gateway-api.sigs.k8s.io/ |
+| plugin.vap.httproute.labels | object | `{}` | Additional HTTPRoute labels |
+| plugin.vap.httproute.annotations | object | `{}` | Additional HTTPRoute annotations |
+| plugin.vap.httproute.parentRefs | list | `[]` | Gateway API parentRefs (list of Gateway references) Must reference an existing Gateway resource |
+| plugin.vap.httproute.hostnames | list | `[]` | List of hostnames for HTTPRoute |
+| plugin.vap.httproute.rules | list | `[{"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]` | HTTPRoute rules configuration Allows advanced routing with matches and filters |
 | monitoring.enabled | bool | `false` | Enables the Prometheus Operator integration |
 | monitoring.annotations | object | `{}` | Key/value pairs that are attached to all resources. |
 | monitoring.serviceMonitor.enabled | bool | `true` |  |

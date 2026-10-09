@@ -26,6 +26,14 @@ The basic installation provides an Prometheus Metrics Endpoint and different RES
 helm install policy-reporter policy-reporter/policy-reporter -n policy-reporter --create-namespace
 ```
 
+## Initial report readiness
+
+Set `rest.waitForInitialReports: true` to keep `/ready` and the `/v1` and `/v2` REST APIs unavailable (HTTP 503) until the initial reports have been saved. This option defaults to `false` and requires SQLite and REST enabled, either directly or through the UI. External database configurations are rejected when this option is enabled.
+
+Liveness uses `/healthz`; readiness uses `/ready`. If you override the probes, use these paths to avoid restarting the Pod while reports are loading. Metrics and profiling remain available independently of initial persistence.
+
+Failed writes receive bounded retries. If retries are exhausted, initialization remains incomplete until a later event or restart successfully processes the pending reports; check the database error logs. Completion is retained across periodic informer restarts. This option covers initial loading, not a continuously consistent snapshot of the cluster.
+
 ## Policy Reporter UI
 
 You can use the Policy Reporter as standalone Application along with the optional UI SubChart.
