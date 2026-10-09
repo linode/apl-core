@@ -455,17 +455,17 @@ environments:
             resources:
               cacheDeployer:
                 requests:
-                  cpu: 10m
-                  memory: 8Mi
-                limits:
                   cpu: 100m
                   memory: 32Mi
+                limits:
+                  cpu: 200m
+                  memory: 64Mi
               cacheServer:
                 requests:
-                  cpu: 20m
+                  cpu: 100m
                   memory: 32Mi
                 limits:
-                  cpu: 100m
+                  cpu: 200m
                   memory: 64Mi
               metadataEnvoy:
                 requests:
@@ -497,35 +497,35 @@ environments:
                   memory: 1Gi
               mlPipelinePersistenceagent:
                 requests:
-                  cpu: 20m
-                  memory: 16Mi
+                  cpu: 100m
+                  memory: 64Mi
                 limits:
                   cpu: 200m
                   memory: 128Mi
               mlPipelineScheduledworkflow:
                 requests:
-                  cpu: 20m
-                  memory: 32Mi
-                limits:
                   cpu: 100m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
                   memory: 128Mi
               mlPipelineUi:
                 requests:
-                  cpu: 20m
+                  cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 256Mi
               mlPipelineViewer:
                 requests:
-                  cpu: 20m
-                  memory: 32Mi
+                  cpu: 100m
+                  memory: 64Mi
                 limits:
                   cpu: 200m
                   memory: 128Mi
               mlPipelineVisualizationserver:
                 requests:
-                  cpu: 20m
+                  cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: 200m
@@ -539,10 +539,10 @@ environments:
                   memory: 1Gi
               workflowController:
                 requests:
-                  cpu: 20m
-                  memory: 32Mi
-                limits:
                   cpu: 100m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
                   memory: 128Mi
             _rawValues: {}
           kyverno:
