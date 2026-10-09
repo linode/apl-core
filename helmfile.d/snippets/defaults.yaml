@@ -1154,11 +1154,11 @@ environments:
               minAvailable: 1
               resources:
                 requests:
-                  cpu: 100m
+                  cpu: 250m
                   memory: 128Mi
                 limits:
-                  cpu: 1000m
-                  memory: 1024Mi
+                  cpu: 250m
+                  memory: 256Mi
               autoscaling:
                 enabled: true
                 minReplicas: 3
