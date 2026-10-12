@@ -5,7 +5,7 @@
 gateways:
 {{- range $ingress := $v.ingress.classes }}
   {{- $gateway := $ingress | get "gateway" dict }}
-  {{- $hpaEnabled := hasKey $gateway "autoscaling" }}
+  {{- $hpaEnabled :=  $gateway | get "autoscaling.enabled" true }}
   {{- $gatewayAnnotations := dict }}
   {{- if and ($ingress | get "entrypoint" nil) $v.otomi.hasExternalDNS }}
   {{- $_ := set $gatewayAnnotations "external-dns.alpha.kubernetes.io/target" $ingress.entrypoint }}
