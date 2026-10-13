@@ -2,25 +2,16 @@ analytics:
   check_for_updates: false
   check_for_plugin_updates: false
   feedback_links_enabled: false
-"auth.generic_oauth":
-  tls_skip_verify_insecure: {{ .untrustedCA }}
+# oauth2-proxy sets this header on every request, so Grafana needs no login flow and stores no tokens.
+"auth.jwt":
   enabled: true
-  name: OAuth
-  org_role: Admin
-  allow_sign_up: true
-  oauth_auto_login: true
-  # $__env{} is Grafana's built-in environment variable interpolation for config values.
-  # See: https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#variable-expansion
-  client_id: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_ID}
-  client_secret: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
-  scopes: {{ join " " .oidcScopes }}
-  email_attribute_path: email
-  login_attribute_path: username
-  name_attribute_path: full_name
-  use_refresh_token: true
-  auth_url: {{ .oidcAuthUrl }}
-  token_url: {{ .oidcTokenUrl }}
-  api_url: {{ .oidcUserInfoUrl }}
+  header_name: Authorization
+  jwk_set_url: {{ .oidcJwksUrl }}
+  tls_skip_verify_insecure: {{ .untrustedCA }}
+  expect_claims: '{"iss": "{{ .oidcBaseUrl }}"}'
+  email_claim: email
+  username_claim: email
+  auto_sign_up: true
   role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'platform-admin') && 'Admin'
   role_attribute_strict: true
 log:

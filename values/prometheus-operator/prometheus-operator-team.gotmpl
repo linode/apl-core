@@ -171,14 +171,6 @@ grafana:
     userKey: admin-user
     passwordKey: admin-password
   envValueFrom:
-    GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
-      secretKeyRef:
-        name: grafana-oidc-secret
-        key: client_id
-    GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
-      secretKeyRef:
-        name: grafana-oidc-secret
-        key: client_secret
     GF_LOKI_BASIC_AUTH_PASSWORD:
       secretKeyRef:
         name: grafana-loki-datasource-secret
@@ -189,23 +181,16 @@ grafana:
       check_for_plugin_updates: false
       feedback_links_enabled: false
       reporting_enabled: false
-    auth.generic_oauth:
-      tls_skip_verify_insecure: {{ $v._derived.untrustedCA }}
+    # oauth2-proxy sets this header on every request, so Grafana needs no login flow and stores no tokens.
+    auth.jwt:
       enabled: true
-      name: OAuth
-      org_role: Admin
-      allow_sign_up: true
-      oauth_auto_login: true
-      client_id: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_ID}
-      client_secret: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
-      scopes: {{ join " " $v._derived.oidcScopes }}
-      email_attribute_path: email
-      login_attribute_path: username
-      name_attribute_path: full_name
-      use_refresh_token: true
-      auth_url: {{ $v._derived.oidcAuthUrl }}
-      token_url: {{ $v._derived.oidcTokenUrl }}
-      api_url: {{ $v._derived.oidcUserInfoUrl }}
+      header_name: Authorization
+      jwk_set_url: {{ $v._derived.oidcJwksUrl }}
+      tls_skip_verify_insecure: {{ $v._derived.untrustedCA }}
+      expect_claims: '{"iss": "{{ $v._derived.oidcBaseUrl }}"}'
+      email_claim: email
+      username_claim: email
+      auto_sign_up: true
       role_attribute_path: "contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'platform-admin') && 'Admin' || contains(groups[*], '{{ $teamGroupName }}') && 'Editor'"
       role_attribute_strict: true
     log:
