@@ -201,14 +201,16 @@ resources:
         namespaceSelector:
           matchLabels:
             type: team
+  {{- /* platform-forward keeps the token on the request, for apps that verify it themselves (Grafana auth.jwt). */}}
+  {{- range $name, $forward := dict "platform" false "platform-forward" true }}
   - apiVersion: security.istio.io/v1
     kind: RequestAuthentication
     metadata:
-      name: platform-auth
+      name: {{ $name }}-auth
     spec:
       selector:
         matchLabels:
-          otomi.io/auth: platform
+          otomi.io/auth: {{ $name }}
       {{- /* Applies the authentication request where the Authorization header is present */}}
       jwtRules:
         - issuer: {{ $v._derived.oidcBaseUrl }}
@@ -218,3 +220,5 @@ resources:
           fromHeaders:
             - name: Authorization
               prefix: "Bearer "
+          forwardOriginalToken: {{ $forward }}
+  {{- end }}
