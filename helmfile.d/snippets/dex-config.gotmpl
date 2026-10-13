@@ -9,12 +9,18 @@
 {{- end }}
 {{- $teamIds = sortAlpha $teamIds }}
 {{- $redirectUrls := list }}
+{{- /* Grafana's own login callbacks (platform and team Grafanas), for the grafana client. */}}
+{{- $grafanaRedirectUrls := list }}
 {{- range $coreApp := $v.adminApps }}
   {{- if $coreApp | get "ownHost" false }}
     {{- $host := printf "%s.%s" $coreApp.name $domainSuffix }}
     {{- $redirectUrls = append $redirectUrls (printf "https://%s/oauth2/callback" $host) }}
     {{- with $coreApp | get "oidcCallbackPath" "" }}
+    {{- if eq $coreApp.name "grafana" }}
+    {{- $grafanaRedirectUrls = append $grafanaRedirectUrls (printf "https://%s%s" $host .) }}
+    {{- else }}
     {{- $redirectUrls = append $redirectUrls (printf "https://%s%s" $host .) }}
+    {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}
@@ -24,12 +30,17 @@
       {{- $host := printf "%s-%s.%s" $teamApp.name $teamId $domainSuffix }}
       {{- $redirectUrls = append $redirectUrls (printf "https://%s/oauth2/callback" $host) }}
       {{- with $teamApp | get "oidcCallbackPath" "" }}
+      {{- if eq $teamApp.name "grafana" }}
+      {{- $grafanaRedirectUrls = append $grafanaRedirectUrls (printf "https://%s%s" $host .) }}
+      {{- else }}
       {{- $redirectUrls = append $redirectUrls (printf "https://%s%s" $host .) }}
+      {{- end }}
       {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}
 {{- $redirectUrls = sortAlpha $redirectUrls }}
+{{- $grafanaRedirectUrls = sortAlpha $grafanaRedirectUrls }}
 
 issuer: https://{{ $v._derived.dexDomain }}
 {{- /* theme stays default (light) — apl/styles.css only applies to password.html, which links it explicitly. Setting theme: apl here would apply it site-wide and break every other Dex screen. */}}
@@ -80,3 +91,13 @@ staticClients:
       - authorization_code
       - refresh_token
       - password
+  {{- /* Own audience, so tokens stored by Grafana are not valid on the platform. Code grant only. */}}
+  - id: grafana
+    name: Grafana
+    secret: "{{ `{{ .grafanaClientSecret }}` }}"
+    redirectURIs:
+      {{- range $url := $grafanaRedirectUrls }}
+      - {{ $url }}
+      {{- end }}
+    grantTypes:
+      - authorization_code

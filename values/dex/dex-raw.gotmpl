@@ -84,6 +84,10 @@ resources:
           remoteRef:
             key: dex
             property: sessionCookieEncryptionKey
+        - secretKey: grafanaClientSecret
+          remoteRef:
+            key: dex-grafana
+            property: clientSecret
         - secretKey: adminPassword
           remoteRef:
             key: platform-admin-initial-credentials
