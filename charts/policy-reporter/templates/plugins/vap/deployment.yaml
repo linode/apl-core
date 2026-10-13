@@ -1,0 +1,121 @@
+{{- if .Values.plugin.vap.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vap-plugin.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+  labels:
+    {{- include "vap-plugin.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.plugin.vap.replicaCount }}
+  revisionHistoryLimit: {{ .Values.plugin.vap.revisionHistoryLimit }}
+  {{- with .Values.plugin.vap.updateStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "vap-plugin.labels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print .Template.BasePath "/plugins/vap/config-secret.yaml") . | sha256sum | quote }}
+        {{- with .Values.plugin.vap.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "vap-plugin.labels" . | nindent 8 }}
+        {{- with .Values.plugin.vap.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.plugin.vap.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with .Values.plugin.vap.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "vap-plugin.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.plugin.vap.serviceAccount.automount }}
+      {{- if .Values.plugin.vap.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.plugin.vap.podSecurityContext | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: vap-plugin
+          image: "{{ .Values.plugin.vap.image.registry }}/{{ .Values.plugin.vap.image.repository }}:{{ .Values.plugin.vap.image.tag }}"
+          imagePullPolicy: {{ .Values.plugin.vap.image.pullPolicy }}
+          args: ["run", "--config=/etc/vap-plugin/config.yaml"]
+          securityContext:
+          {{- if .Values.plugin.vap.securityContext }}
+            {{- toYaml .Values.plugin.vap.securityContext | nindent 12 }}
+          {{- end }}
+          {{- if or .Values.plugin.vap.server.enabled .Values.plugin.vap.api.enabled }}
+          ports:
+            {{- if .Values.plugin.vap.server.enabled }}
+            - name: https
+              containerPort: 8443
+            {{- end }}
+            {{- if .Values.plugin.vap.api.enabled }}
+            - name: api
+              containerPort: {{ .Values.plugin.vap.api.port }}
+            {{- end }}
+          {{- end }}
+          {{- with .Values.plugin.vap.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.plugin.vap.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/vap-plugin
+              readOnly: true
+            {{- if .Values.plugin.vap.server.enabled }}
+            - name: tls
+              mountPath: /etc/vap-plugin/tls
+              readOnly: true
+            {{- end }}
+          {{- with .Values.plugin.vap.extraVolumes.volumeMounts }}
+          {{ toYaml . | nindent 12 | trim }}
+          {{- end }}
+          {{- with .Values.plugin.vap.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+          {{- with .Values.plugin.vap.envVars }}
+          {{- . | toYaml | trim | nindent 10 }}
+          {{- end }}
+      volumes:
+        - name: config
+          secret:
+            secretName: {{ include "vap-plugin.fullname" . }}
+        {{- if .Values.plugin.vap.server.enabled }}
+        - name: tls
+          secret:
+            secretName: {{ .Values.plugin.vap.tls.existingSecret | default (printf "%s-tls" (include "vap-plugin.fullname" .)) }}
+        {{- end }}
+        {{- with .Values.plugin.vap.extraVolumes.volumes }}
+        {{ toYaml . | nindent 8 | trim }}
+        {{- end }}
+      {{- with .Values.plugin.vap.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.plugin.vap.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.plugin.vap.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.plugin.vap.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

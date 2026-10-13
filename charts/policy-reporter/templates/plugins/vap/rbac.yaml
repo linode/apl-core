@@ -1,0 +1,45 @@
+{{- if .Values.plugin.vap.enabled -}}
+{{- if and (and .Values.plugin.vap.serviceAccount.create .Values.plugin.vap.rbac.enabled) .Values.plugin.vap.server.enabled -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "vap-plugin.fullname" . }}
+  labels:
+    {{- include "vap-plugin.labels" . | nindent 4 }}
+rules:
+  # Resolves resource -> kind for building Report.scope. Discovery only, not
+  # access to any object data.
+  - nonResourceURLs: ["/apis", "/apis/*", "/api", "/api/*"]
+    verbs: ["get"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["validatingadmissionpolicies", "validatingadmissionpolicybindings"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get"]
+    {{- with .Values.plugin.vap.rbac.extraResources }}
+      {{- toYaml . | nindent 2 }}
+    {{- end }}
+  - apiGroups: ["openreports.io"]
+    resources: ["reports", "clusterreports"]
+    verbs: ["get", "list", "create", "update"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "create", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "vap-plugin.fullname" . }}
+  labels:
+    {{- include "vap-plugin.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "vap-plugin.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "vap-plugin.serviceAccountName" . }}
+    namespace: {{ include "policyreporter.namespace" . }}
+{{- end }}
+{{- end }}
