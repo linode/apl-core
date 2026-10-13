@@ -1,0 +1,28 @@
+{{- if .Values.plugin.vap.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "vap-plugin.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+  labels:
+    {{- include "vap-plugin.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.plugin.vap.service.clusterIP }}
+  clusterIP: {{ . }}
+  {{- end }}
+  selector:
+    {{- include "vap-plugin.labels" . | nindent 4 }}
+  {{- if or .Values.plugin.vap.server.enabled .Values.plugin.vap.api.enabled }}
+  ports:
+    {{- if .Values.plugin.vap.server.enabled }}
+    - name: https
+      port: {{ .Values.plugin.vap.service.port }}
+      targetPort: https
+    {{- end }}
+    {{- if .Values.plugin.vap.api.enabled }}
+    - name: api
+      port: {{ .Values.plugin.vap.api.port }}
+      targetPort: api
+    {{- end }}
+  {{- end }}
+{{- end }}
