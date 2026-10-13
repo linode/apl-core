@@ -10,8 +10,15 @@ resources:
       name: dex-strict-mtls
       namespace: dex
     spec:
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: dex
       mtls:
         mode: STRICT
+      {{- /* istiod has no sidecar and fetches /keys over plain HTTP. The NetworkPolicy still limits who can connect. */}}
+      portLevelMtls:
+        5556:
+          mode: PERMISSIVE
 
   {{- /* Dex gRPC has no auth of its own; restrict it to otomi-api's identity. */}}
   - apiVersion: security.istio.io/v1

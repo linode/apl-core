@@ -32,6 +32,17 @@ spec:
           podSelector:
             matchLabels:
               app.kubernetes.io/name: oauth2-proxy
+    # istiod fetches /keys to verify JWTs (RequestAuthentication jwksUri)
+    - ports:
+        - protocol: TCP
+          port: 5556
+      from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+          podSelector:
+            matchLabels:
+              app: istiod
     # Allow monitoring access for metrics scraping
     - ports:
         - protocol: TCP
