@@ -191,6 +191,14 @@ logging:
 rest:
   # -- Enables the REST API
   enabled: false
+  # -- Wait for initial reports to be persisted before readiness and REST requests succeed. Requires REST and SQLite. Custom probes must use /healthz for liveness and /ready for readiness.
+  waitForInitialReports: false
+
+mcp:
+  # -- Enables the MCP Server
+  enabled: false
+  # -- Port for the MCP Server
+  port: 9090
 
 metrics:
   # -- Enables Prometheus Metrics
@@ -326,6 +334,8 @@ emailReports:
     restartPolicy: Never
     # -- List of receiver email addresses
     to: []
+    # -- Attach report data as CSV instead of rendering details in the email body (empty or csv). Channels configure this independently.
+    attachmentFormat: ""
     # -- (optional) Report filter
     filter: {}
     #  # remove ClusterPolicyResults from Reports
@@ -339,6 +349,7 @@ emailReports:
     # -- (optional) Channels can be used to to send only a subset of namespaces / sources to dedicated email addresses
     channels: []
     #  - to: ['team-a@company.org']
+    #    attachmentFormat: csv
     #    filter:
     #      disableClusterReports: true
     #      namespaces:
@@ -361,6 +372,8 @@ emailReports:
     restartPolicy: Never
     # -- List of receiver email addresses
     to: []
+    # -- Attach report data as CSV instead of rendering details in the email body (empty or csv). Channels configure this independently.
+    attachmentFormat: ""
     # -- (optional) Report filter
     filter: {}
     #  disableClusterReports: false # remove ClusterPolicyResults from Reports
@@ -373,6 +386,7 @@ emailReports:
     # -- (optional) Channels can be used to to send only a subset of namespaces / sources to dedicated email addresses
     channels: []
     #  - to: ['team-a@company.org']
+    #    attachmentFormat: csv
     #    filter:
     #      disableClusterReports: true
     #      namespaces:
@@ -998,13 +1012,13 @@ topologySpreadConstraints: []
 # -- Deployment livenessProbe for policy-reporter
 livenessProbe:
   httpGet:
-    path: /ready
+    path: /healthz
     port: http
 
 # -- Deployment readinessProbe for policy-reporter
 readinessProbe:
   httpGet:
-    path: /healthz
+    path: /ready
     port: http
 
 extraVolumes:
@@ -1036,7 +1050,7 @@ ui:
     # -- (string) Image PullPolicy
     pullPolicy: IfNotPresent
     # -- (string) Image tag
-    tag: "2.8.1"
+    tag: "2.9.0"
 
   crds:
     # -- Install UI CustomBoard CRDs
@@ -1427,7 +1441,7 @@ plugin:
       # -- (string) Image PullPolicy
       pullPolicy: IfNotPresent
       # -- (string) Image tag
-      tag: "0.7.1"
+      tag: "0.7.2"
 
     # -- Deployment replica count
     replicaCount: 1
@@ -1623,6 +1637,18 @@ plugin:
       #   cpu: 100m
       #   memory: 128Mi
 
+    # -- Deployment livenessProbe for policy-reporter-kyverno-plugin
+    livenessProbe:
+      httpGet:
+        path: /v1/policies
+        port: http
+
+    # -- Deployment readinessProbe for policy-reporter-kyverno-plugin
+    readinessProbe:
+      httpGet:
+        path: /v1/policies
+        port: http
+
     # required for HA mode
     # if "blockReports" is disabled, leaderElection is also disabled automatically
     # will be enabled when replicaCount > 1
@@ -1681,7 +1707,7 @@ plugin:
       pullPolicy: IfNotPresent
         # -- (string) Image tag
         # Defaults to `Chart.AppVersion` if omitted
-      tag: "0.5.1"
+      tag: "0.5.2"
 
     cli:
       image:
@@ -1693,7 +1719,7 @@ plugin:
         pullPolicy: IfNotPresent
           # -- (string) Image tag
           # Defaults to `Chart.AppVersion` if omitted
-        tag: "0.74.0"
+        tag: "0.75.0"
 
     # -- Additional container args.
     extraArgs: {}
@@ -1857,6 +1883,43 @@ plugin:
       #    hosts:
       #      - chart-example.local
 
+    httproute:
+      # -- Enable HTTPRoute resource (Gateway API alternative to Ingress)
+      # Requires Gateway API CRDs (v1) installed in cluster
+      # https://gateway-api.sigs.k8s.io/
+      enabled: false
+      # -- Additional HTTPRoute labels
+      labels: {}
+      # -- Additional HTTPRoute annotations
+      annotations: {}
+      # -- Gateway API parentRefs (list of Gateway references)
+      # Must reference an existing Gateway resource
+      parentRefs: []
+      #  - name: example-gateway
+      #    namespace: gateway-system
+      #    sectionName: https
+      # -- List of hostnames for HTTPRoute
+      hostnames: []
+      #  - policy-reporter-kyverno-plugin.example.com
+      # -- HTTPRoute rules configuration
+      # Allows advanced routing with matches and filters
+      rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
+          # Optional filters:
+          # filters:
+          #   - type: RequestHeaderModifier
+          #     requestHeaderModifier:
+          #       add:
+          #         - name: X-Custom-Header
+          #           value: value
+          # Optional timeouts configuration:
+          # timeouts:
+          #  request: 30s
+          #  backendRequest: 30s
+
     networkPolicy:
       # -- When true, use a NetworkPolicy to allow ingress to the webhook
       # This is useful on clusters using Calico and/or native k8s network policies in a default-deny setup.
@@ -1909,6 +1972,259 @@ plugin:
 
     # -- Extra configuration options appended to trivy plugin settings
     extraConfig: {}
+
+  vap:
+    # -- (bool) Enable ValidatingAdmissionPolicy Plugin
+    enabled: false
+    image:
+      # -- (string) Image registry
+      registry: ghcr.io
+      # -- (string) Image repository
+      repository: kyverno/policy-reporter/vap-plugin
+      # -- (string) Image PullPolicy
+      pullPolicy: IfNotPresent
+      # -- (string) Image tag
+      tag: "0.1.2"
+
+    replicaCount: 1
+
+    # -- Deployment priorityClassName
+    priorityClassName: ""
+
+    # -- Image pull secrets for image verification policies, this will define the `--imagePullSecrets` argument
+    imagePullSecrets: []
+      # regcred:
+      #   registry: foo.example.com
+      #   username: foobar
+      #   password: secret
+
+    rbac:
+      # -- Create RBAC resources
+      enabled: true
+      # -- Additional rules to add to the ClusterRole
+      extraResources: []
+
+    networkPolicy:
+      # -- When true, use a NetworkPolicy to allow ingress to the webhook
+      # This is useful on clusters using Calico and/or native k8s network policies in a default-deny setup.
+      enabled: false
+      # -- A list of valid from selectors according to https://kubernetes.io/docs/concepts/services-networking/network-policies.
+      # Enables Kubernetes API Server by default
+      egress:
+      - ports:
+        - protocol: TCP
+          port: 6443
+      # -- A list of valid from selectors according to https://kubernetes.io/docs/concepts/services-networking/network-policies.
+      ingress:
+      - ports:
+        - protocol: TCP
+          port: 8443
+      - ports:
+        - protocol: TCP
+          port: 8080
+
+    # -- Additional annotations to add to each pod
+    podAnnotations: {}
+
+    # -- Additional labels to add to each pod
+    podLabels: {}
+
+    # -- Custom selector labels, overwrites the default set
+    selectorLabels: {}
+
+    # -- Deployment update strategy.
+    # Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+    updateStrategy: {}
+    #  rollingUpdate:
+    #    maxSurge: 1
+    #    maxUnavailable: 40%
+    #  type: RollingUpdate
+
+    # -- The number of revisions to keep
+    revisionHistoryLimit: 10
+
+    # -- Security context for the pod
+    podSecurityContext:
+      runAsUser: 1234
+      runAsGroup: 1234
+
+    # -- Allow additional env variables to be added
+    envVars: []
+
+    securityContext:
+      runAsUser: 1234
+      runAsNonRoot: true
+      privileged: false
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+      seccompProfile:
+        type: RuntimeDefault
+
+    # -- Deployment livenessProbe for policy-reporter-vap-plugin
+    livenessProbe:
+      timeoutSeconds: 3
+      httpGet:
+        path: /v1/policies
+        port: api
+
+    # -- Deployment readinessProbe for policy-reporter-vap-plugin
+    readinessProbe:
+      timeoutSeconds: 3
+      httpGet:
+        path: /v1/policies
+        port: api
+
+    serviceAccount:
+      # -- Create ServiceAccount
+      create: true
+      # -- Enable ServiceAccount automount
+      automount: true
+      # -- Annotations for the ServiceAccount
+      annotations: {}
+      # -- The ServiceAccount name
+      name: ""
+
+    service:
+      # -- Service type.
+      type: ClusterIP
+      # -- Service port.
+      port: 8443
+      # -- Service annotations.
+      annotations: {}
+      # -- Service labels.
+      labels: {}
+      # -- Fixed ClusterIP for the service
+      clusterIP: ""
+
+    # enabled if replicaCount > 1
+    podDisruptionBudget:
+      # -- Configures the minimum available pods for kyvernoPlugin disruptions.
+      # Cannot be used if `maxUnavailable` is set.
+      minAvailable: 1
+      # -- Configures the maximum unavailable pods for kyvernoPlugin disruptions.
+      # Cannot be used if `minAvailable` is set.
+      maxUnavailable:
+
+    # TLS is required: the Kubernetes audit webhook backend only accepts HTTPS.
+    # Either point certManager at an Issuer you control, or set
+    # tls.existingSecret to a pre-provisioned TLS secret with tls.crt/tls.key.
+    tls:
+      certManager:
+        enabled: false
+        issuerRef:
+          name: ""
+          kind: ClusterIssuer
+      existingSecret: ""
+
+    # Set to false to disable the audit webhook receiver entirely, e.g. for a
+    # replica that only serves the plugin API (see config.api.enabled below).
+    # When disabled, the TLS listener port and volume are omitted too.
+    server:
+      enabled: true
+    webhook:
+      bufferSize: 1000
+      workers: 4
+    report:
+      severity: ""
+      category: ""
+      labels: {}
+      annotations: {}
+      # Whether Deny-action results (requests Kubernetes actually blocked)
+      # are persisted at all - see deploy/config.example.yaml for the
+      # rationale behind defaulting to false.
+      reportDenied: false
+    reconcile:
+      interval: 10m
+      orphanTTL: 24h
+    # Policy Reporter plugin API (list/get ValidatingAdmissionPolicy details
+    # for the Policy Reporter UI) - a separate plain-HTTP listener from the
+    # TLS audit webhook receiver above.
+    # Set to false to disable the plugin API server entirely, e.g. for a
+    # replica that only receives the audit webhook (see config.server.enabled
+    # above).
+    api:
+      enabled: true
+      port: 8080
+      debug: false
+    logging:
+      level: info
+      development: false
+    # Automatically sets GOMEMLIMIT based on the container's memory limit (or
+    # the host's memory when unset), so the Go runtime GCs proactively before
+    # hitting an OOM kill instead of waiting for GC pressure alone to trigger.
+    autoMemoryLimit:
+      enabled: true
+      # Fraction of the detected memory to reserve as GOMEMLIMIT. Must be
+      # greater than 0 and less than or equal to 1.
+      ratio: 0.9
+
+    # -- Resource constraints
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+    # -- Node labels for pod assignment
+    nodeSelector: {}
+
+    # -- List of node taints to tolerate
+    tolerations: []
+
+    # -- Affinity constraints.
+    affinity: {}
+
+    # -- Pod Topology Spread Constraints for the kyverno plugin.
+    topologySpreadConstraints: {}
+
+    extraVolumes:
+      # -- Deployment volumeMounts
+      volumeMounts: []
+
+      # -- Deployment values
+      volumes: []
+
+    httproute:
+      # -- Enable HTTPRoute resource (Gateway API alternative to Ingress)
+      # Requires Gateway API CRDs (v1) installed in cluster
+      # https://gateway-api.sigs.k8s.io/
+      enabled: false
+      # -- Additional HTTPRoute labels
+      labels: {}
+      # -- Additional HTTPRoute annotations
+      annotations: {}
+      # -- Gateway API parentRefs (list of Gateway references)
+      # Must reference an existing Gateway resource
+      parentRefs: []
+      #  - name: example-gateway
+      #    namespace: gateway-system
+      #    sectionName: https
+      # -- List of hostnames for HTTPRoute
+      hostnames: []
+      #  - policy-reporter-kyverno-plugin.example.com
+      # -- HTTPRoute rules configuration
+      # Allows advanced routing with matches and filters
+      rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
+          # Optional filters:
+          # filters:
+          #   - type: RequestHeaderModifier
+          #     requestHeaderModifier:
+          #       add:
+          #         - name: X-Custom-Header
+          #           value: value
+          # Optional timeouts configuration:
+          # timeouts:
+          #  request: 30s
+          #  backendRequest: 30s
 
 monitoring:
   # -- Enables the Prometheus Operator integration
