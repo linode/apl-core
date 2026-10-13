@@ -137,6 +137,8 @@ body.theme-body {
 .apl-field {
   display: grid;
   gap: 8px;
+  /* Dex's stock .dex-container centers all text. */
+  text-align: left;
 }
 
 .apl-field label {
