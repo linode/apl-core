@@ -14,9 +14,7 @@ spec:
       app.kubernetes.io/name: otomi-api
   policyTypes:
     - Ingress
-    {{- if .Values.otomiApi.egressEnabled }}
     - Egress
-    {{- end }}
   ingress:
     - ports:
         # Allow ingress to api endpoint
@@ -41,7 +39,6 @@ spec:
         - namespaceSelector:
             matchLabels:
               name: otomi
-  {{- if .Values.otomiApi.egressEnabled }}
   egress:
     # kube-system (DNS, and vendor-specific control-plane proxies). Namespace-only
     # selector since DNS pod labels (kube-dns/CoreDNS) differ across providers.
@@ -100,18 +97,14 @@ spec:
         - ipBlock:
             cidr: 0.0.0.0/0
             except:
-              {{- range .Values.otomiApi.blockedEgressCidrs }}
-              {{- if not (contains ":" .) }}
+              {{- range .Values.otomiApi.blockedEgressCidrsV4 }}
               - {{ . }}
-              {{- end }}
               {{- end }}
         - ipBlock:
             cidr: ::/0
             except:
-              {{- range .Values.otomiApi.blockedEgressCidrs }}
-              {{- if contains ":" . }}
+              {{- range .Values.otomiApi.blockedEgressCidrsV6 }}
               - {{ . }}
-              {{- end }}
               {{- end }}
       ports:
         - protocol: TCP
@@ -120,5 +113,4 @@ spec:
         - protocol: TCP
           port: {{ . }}
         {{- end }}
-  {{- end }}
 {{- end }}

@@ -16,9 +16,6 @@ otomiApi:
   gitServerEnabled: {{ $a | get "git-server.enabled" }}
   dexEnabled: {{ $a.dex.enabled }}
 
-  # Egress restriction (SSRF protection + known internal destinations).
-  # Disable if it breaks something on your cluster; falls back to unrestricted egress.
-  egressEnabled: {{ $oa.networkPolicies.egressEnabled }}
 
   # Real (post-DNAT) kube-apiserver port(s), in addition to 443. LKE uses 6443;
   # override via _rawValues if your provider's control-plane backend differs.
@@ -26,7 +23,7 @@ otomiApi:
     - 6443
 
   # IANA-reserved/private ranges (RFC1918)
-  blockedEgressCidrs:
+  blockedEgressCidrsV4:
     - '10.0.0.0/8'
     - '172.16.0.0/12'
     - '192.168.0.0/16'
@@ -37,6 +34,7 @@ otomiApi:
     - '198.18.0.0/15'
     - '224.0.0.0/4'
     - '240.0.0.0/4'
+  blockedEgressCidrsV6:
     - '::1/128'
     - 'fe80::/10'
     - 'fc00::/7'
