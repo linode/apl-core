@@ -14,7 +14,9 @@ spec:
       app.kubernetes.io/name: otomi-api
   policyTypes:
     - Ingress
+    {{- if .Values.otomiApi.egressEnabled }}
     - Egress
+    {{- end }}
   ingress:
     - ports:
         # Allow ingress to api endpoint
@@ -39,6 +41,7 @@ spec:
         - namespaceSelector:
             matchLabels:
               name: otomi
+  {{- if .Values.otomiApi.egressEnabled }}
   egress:
     # DNS resolution, needed to connect to team-supplied external git hosts
     - to:
@@ -53,7 +56,7 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
-    {{- if .Values.giteaEnabled }}
+    {{- if .Values.otomiApi.giteaEnabled }}
     # Internal Gitea (otomi-api's own values-repo git storage backend)
     - to:
         - namespaceSelector:
@@ -66,7 +69,7 @@ spec:
         - protocol: TCP
           port: 3000
     {{- end }}
-    {{- if .Values.dexEnabled }}
+    {{- if .Values.otomiApi.dexEnabled }}
     # Internal Dex gRPC (user provisioning: passwords/identities)
     - to:
         - namespaceSelector:
@@ -81,12 +84,11 @@ spec:
     {{- end }}
     # SSRF protection: public internet except private/reserved ranges, so a
     # user-supplied repository URL can't reach internal/cloud-metadata addresses.
-    # Port 6443 also needed here for LKE api server
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
             except:
-              {{- range .Values.blockedEgressCidrs }}
+              {{- range .Values.otomiApi.blockedEgressCidrs }}
               {{- if not (contains ":" .) }}
               - {{ . }}
               {{- end }}
@@ -94,7 +96,7 @@ spec:
         - ipBlock:
             cidr: ::/0
             except:
-              {{- range .Values.blockedEgressCidrs }}
+              {{- range .Values.otomiApi.blockedEgressCidrs }}
               {{- if contains ":" . }}
               - {{ . }}
               {{- end }}
@@ -102,6 +104,9 @@ spec:
       ports:
         - protocol: TCP
           port: 443
+        {{- range .Values.otomiApi.apiServerPorts }}
         - protocol: TCP
-          port: 6443
+          port: {{ . }}
+        {{- end }}
+  {{- end }}
 {{- end }}
