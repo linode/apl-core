@@ -14,6 +14,7 @@ spec:
       app.kubernetes.io/name: otomi-api
   policyTypes:
     - Ingress
+    - Egress
   ingress:
     - ports:
         # Allow ingress to api endpoint
@@ -38,4 +39,48 @@ spec:
         - namespaceSelector:
             matchLabels:
               name: otomi
+  egress:
+    # DNS resolution, needed to connect to team-supplied external git hosts
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Internal Gitea and Keycloak (admin API)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gitea
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: keycloak
+    # SSRF protection: public internet except private/reserved ranges, so a
+    # user-supplied repository URL can't reach internal/cloud-metadata addresses.
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              {{- range .Values.blockedEgressCidrs }}
+              {{- if not (contains ":" .) }}
+              - {{ . }}
+              {{- end }}
+              {{- end }}
+        - ipBlock:
+            cidr: ::/0
+            except:
+              {{- range .Values.blockedEgressCidrs }}
+              {{- if contains ":" . }}
+              - {{ . }}
+              {{- end }}
+              {{- end }}
+      ports:
+        - protocol: TCP
+          port: 443
 {{- end }}
