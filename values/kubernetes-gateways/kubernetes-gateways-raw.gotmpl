@@ -104,10 +104,13 @@ resources:
     {{- $_ := set $reserved $host "" }}
   {{- end }}
   {{- /* Owner names are set in helmfile-60.teams.yaml.gotmpl and prometheus-operator-team.gotmpl. */}}
-  {{- $owners := dict "tekton" "tekton-%s" "grafana" "%s-po-grafana" "alertmanager" "%s-po-alertmanager" }}
+  {{- /* Team Grafana is served from the grafana namespace, so no team-namespace object may claim its host. */}}
+  {{- $owners := dict "tekton" "tekton-%s" "grafana" "" "alertmanager" "%s-po-alertmanager" }}
   {{- range $teamId, $team := $v.teamConfig }}
     {{- range $app := $v._derived.teamHostnameApps }}
-      {{- $_ := set $reserved (printf "%s-%s.%s" $app $teamId $domainSuffix) (printf ($owners | get $app "%s") $teamId) }}
+      {{- $owner := "" }}
+      {{- with $owners | get $app "%s" }}{{ $owner = printf . $teamId }}{{ end }}
+      {{- $_ := set $reserved (printf "%s-%s.%s" $app $teamId $domainSuffix) $owner }}
     {{- end }}
   {{- end }}
   {{- $pairs := list }}
