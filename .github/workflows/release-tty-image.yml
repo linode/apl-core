@@ -1,4 +1,4 @@
-name: Release create from branch
+name: Release TTY from branch
 
 on:
   workflow_dispatch:
@@ -94,7 +94,7 @@ jobs:
           CONTAINER_IMAGE: ${{ env.CONTAINER_REGISTRY }}/${{ env.CONTAINER_IMAGE_NAME }}
         with:
           push: ${{ !inputs.dry_run }}
-          file: Dockerfile-tty
+          file: tools/Dockerfile-tty
           context: ./tools
           build-args: |
             VERSION=${{ env.GIT_TAG }}
