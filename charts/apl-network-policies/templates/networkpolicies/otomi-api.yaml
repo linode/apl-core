@@ -80,6 +80,19 @@ spec:
         - protocol: TCP
           port: 3000
     {{- end }}
+    {{- if .Values.otomiApi.gitServerEnabled }}
+    # Internal git-server (otomi-api's own values-repo git storage backend)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: git-server
+          podSelector:
+            matchLabels:
+              app: git-server
+      ports:
+        - protocol: TCP
+          port: 80
+    {{- end }}
     {{- if .Values.otomiApi.dexEnabled }}
     # Internal Dex gRPC (user provisioning: passwords/identities)
     - to:

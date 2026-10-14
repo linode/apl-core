@@ -13,6 +13,7 @@ netpols:
 # otomi-api-specific egress policy configuration
 otomiApi:
   giteaEnabled: {{ $a.gitea.enabled }}
+  gitServerEnabled: {{ $a | get "git-server.enabled" }}
   dexEnabled: {{ $a.dex.enabled }}
 
   # Egress restriction (SSRF protection + known internal destinations).
