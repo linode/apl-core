@@ -10,6 +10,9 @@ netpols:
   loki: {{ and $a.loki.enabled $a.loki.networkPolicies.enabled }}
   dex: {{ and $a.dex.enabled $a.dex.networkPolicies.enabled }}
 
+giteaEnabled: {{ $a.gitea.enabled }}
+dexEnabled: {{ $a.dex.enabled }}
+
 # IANA-reserved/private ranges (RFC1918)
 blockedEgressCidrs:
   - '10.0.0.0/8'

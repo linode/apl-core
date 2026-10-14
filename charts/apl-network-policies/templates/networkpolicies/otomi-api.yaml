@@ -53,14 +53,32 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
-    # Internal Gitea and Keycloak (admin API)
+    {{- if .Values.giteaEnabled }}
+    # Internal Gitea (otomi-api's own values-repo git storage backend)
     - to:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: gitea
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: gitea
+      ports:
+        - protocol: TCP
+          port: 3000
+    {{- end }}
+    {{- if .Values.dexEnabled }}
+    # Internal Dex gRPC (user provisioning: passwords/identities)
+    - to:
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: keycloak
+              kubernetes.io/metadata.name: dex
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: dex
+      ports:
+        - protocol: TCP
+          port: 5557
+    {{- end }}
     # SSRF protection: public internet except private/reserved ranges, so a
     # user-supplied repository URL can't reach internal/cloud-metadata addresses.
     - to:
