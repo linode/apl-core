@@ -81,6 +81,7 @@ spec:
     {{- end }}
     # SSRF protection: public internet except private/reserved ranges, so a
     # user-supplied repository URL can't reach internal/cloud-metadata addresses.
+    # Port 6443 also needed here for LKE api server
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
@@ -101,4 +102,6 @@ spec:
       ports:
         - protocol: TCP
           port: 443
+        - protocol: TCP
+          port: 6443
 {{- end }}
