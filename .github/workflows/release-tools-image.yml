@@ -15,7 +15,7 @@ on:
         type: boolean
 env:
   CONTAINER_REGISTRY: docker.io
-  CONTAINER_IMAGE_NAME: linode/apl-core
+  CONTAINER_IMAGE_NAME: linode/apl-tools
   RELEASE_BRANCH: ${{ github.ref_name }}
   RELEASE_BRANCH_PREFIX: ''
   RELEASE_TAG_PREFIX: 'tools-v'
