@@ -43,30 +43,18 @@ spec:
               name: otomi
   {{- if .Values.otomiApi.egressEnabled }}
   egress:
-    # DNS resolution, needed to connect to team-supplied external git hosts
+    # kube-system (DNS, and vendor-specific control-plane proxies). Namespace-only
+    # selector since DNS pod labels (kube-dns/CoreDNS) differ across providers.
     - to:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: kube-system
-          podSelector:
-            matchLabels:
-              k8s-app: kube-dns
-      ports:
-        - protocol: UDP
-          port: 53
-        - protocol: TCP
-          port: 53
-    # Istiod (mTLS cert signing + xDS config, required by every sidecar)
+    # Istio control plane. Namespace-only selector since pod labels/ports
+    # change across Istio versions and revisions.
     - to:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: istio-system
-          podSelector:
-            matchLabels:
-              app: istiod
-      ports:
-        - protocol: TCP
-          port: 15012
     {{- if .Values.otomiApi.giteaEnabled }}
     # Internal Gitea (otomi-api's own values-repo git storage backend)
     - to:
