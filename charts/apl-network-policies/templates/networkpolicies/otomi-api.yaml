@@ -56,6 +56,17 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
+    # Istiod (mTLS cert signing + xDS config, required by every sidecar)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: istio-system
+          podSelector:
+            matchLabels:
+              app: istiod
+      ports:
+        - protocol: TCP
+          port: 15012
     {{- if .Values.otomiApi.giteaEnabled }}
     # Internal Gitea (otomi-api's own values-repo git storage backend)
     - to:
