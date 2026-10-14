@@ -17,7 +17,7 @@ otomiApi:
 
   # Egress restriction (SSRF protection + known internal destinations).
   # Disable if it breaks something on your cluster; falls back to unrestricted egress.
-  egressEnabled: true
+  egressEnabled: {{ $oa.networkPolicies.egressEnabled }}
 
   # Real (post-DNAT) kube-apiserver port(s), in addition to 443. LKE uses 6443;
   # override via _rawValues if your provider's control-plane backend differs.

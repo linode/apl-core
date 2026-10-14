@@ -2093,7 +2093,14 @@ properties:
               tools:
                 $ref: '#/definitions/resources'
           networkPolicies:
-            $ref: '#/definitions/appNetworkPolicyConfig'
+            allOf:
+              - $ref: '#/definitions/appNetworkPolicyConfig'
+              - type: object
+                properties:
+                  egressEnabled:
+                    type: boolean
+                    default: true
+                    description: Restrict otomi-api's outbound traffic (SSRF protection + known internal destinations). Disable to fall back to unrestricted egress.
       otomi-console:
         additionalProperties: false
         properties:
