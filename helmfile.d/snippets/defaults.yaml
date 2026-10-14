@@ -804,7 +804,6 @@ environments:
             _rawValues: {}
             networkPolicies:
               enabled: true
-              egressEnabled: true
             resources:
               api:
                 limits:
