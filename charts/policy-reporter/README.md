@@ -3,7 +3,7 @@
 Policy Reporter watches for PolicyReport Resources.
 It creates Prometheus Metrics and can send rule validation events to different targets like Loki, Elasticsearch, Slack or Discord
 
-![Version: 3.11.0](https://img.shields.io/badge/Version-3.11.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.11.0](https://img.shields.io/badge/AppVersion-3.11.0-informational?style=flat-square)
+![Version: 3.11.1](https://img.shields.io/badge/Version-3.11.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.11.1](https://img.shields.io/badge/AppVersion-3.11.1-informational?style=flat-square)
 
 ## Documentation
 
@@ -74,6 +74,7 @@ Open `http://localhost:8082/` in your browser.
 | service.enabled | bool | `true` | Create Service |
 | service.type | string | `"ClusterIP"` | Service type |
 | service.port | int | `8080` | Service port |
+| service.mcpPort | int | `9090` | MCP Service port. |
 | service.annotations | object | `{}` | Service annotations |
 | service.labels | object | `{}` | Service labels |
 | podSecurityContext | object | `{"fsGroup":1234}` | Security context for the pod |
