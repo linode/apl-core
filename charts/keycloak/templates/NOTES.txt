@@ -9,7 +9,7 @@
 Keycloak was installed with a Gateway API HTTPRoute and ListenerSet.
 The ListenerSet {{ include "keycloak.fullname" . }} attaches listeners to the Gateway "{{ .Values.httpRoute.listenerSet.parentRef.name }}"{{ with .Values.httpRoute.listenerSet.parentRef.namespace }} in namespace "{{ . }}"{{ end }}.
 
-Ensure the Gateway is configured to allow ListenerSet attachment from namespace {{ .Release.Namespace }}.
+Ensure the Gateway is configured to allow ListenerSet attachment from namespace {{ include "keycloak.namespace" . }}.
 
 {{- else if .Values.httpRoute.enabled }}
 
@@ -20,7 +20,7 @@ Keycloak was installed with a Gateway API HTTPRoute attached to:
 
 {{- else if .Values.ingress.enabled }}
 
-Keycloak was installed with an Ingress and an be reached at the following URL(s):
+Keycloak was installed with an Ingress and can be reached at the following URL(s):
 {{ range $unused, $rule := .Values.ingress.rules }}
   {{- range $rule.paths }}
   - http{{ if $.Values.ingress.tls }}s{{ end }}://{{ tpl $rule.host $ }}{{ .path }}
@@ -42,7 +42,7 @@ Get its HTTPS URL with the following commands:
 
 export NODE_PORT=$(kubectl get --namespace {{ include "keycloak.namespace" . }} service {{ include "keycloak.fullname" . }}-http --template='{{"{{ range .spec.ports }}{{ if eq .name \"https\" }}{{ .nodePort }}{{ end }}{{ end }}"}}')
 export NODE_IP=$(kubectl get nodes --namespace {{ include "keycloak.namespace" . }} -o jsonpath="{.items[0].status.addresses[0].address}")
-echo "http://$NODE_IP:$NODE_PORT"
+echo "https://$NODE_IP:$NODE_PORT"
 {{- end }}
 
 {{- else if eq "LoadBalancer" .Values.service.type }}
@@ -50,7 +50,7 @@ echo "http://$NODE_IP:$NODE_PORT"
 Keycloak was installed with a Service of type LoadBalancer
 
 NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-     You can watch the status of by running 'kubectl get --namespace {{ include "keycloak.namespace" . }} service -w {{ include "keycloak.fullname" . }}'
+     You can watch the status by running 'kubectl get --namespace {{ include "keycloak.namespace" . }} service -w {{ include "keycloak.fullname" . }}-http'
 
 Get its HTTP URL with the following commands:
 
@@ -60,7 +60,7 @@ echo "http://$SERVICE_IP:{{ .Values.service.httpPort }}"
 Get its HTTPS URL with the following commands:
 
 export SERVICE_IP=$(kubectl get service --namespace {{ include "keycloak.namespace" . }} {{ include "keycloak.fullname" . }}-http --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
-echo "http://$SERVICE_IP:{{ .Values.service.httpsPort }}"
+echo "https://$SERVICE_IP:{{ .Values.service.httpsPort }}"
 
 {{- else if eq "ClusterIP" .Values.service.type }}
 
