@@ -118,7 +118,7 @@ releases:
     {{- end }}
   - name: grafana-dashboards-{{ $teamId }}
     installed: {{ $teamSettings | get "managedMonitoring.grafana" false }}
-    namespace: team-{{ $teamId }}
+    namespace: grafana
     chart: ../charts/grafana-dashboards
     labels:
       tag: teams
