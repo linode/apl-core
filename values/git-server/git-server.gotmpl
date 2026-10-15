@@ -5,6 +5,7 @@
 {{- with $v.otomi.linodeLkeImageRepository }}
 image:
   repository: "{{ . }}/docker/linode/apl-http-git-server"
+  tag: v0.3.2
 initImage:
   git:
     repository: "{{ . }}/docker/alpine/git"
