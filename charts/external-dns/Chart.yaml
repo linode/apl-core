@@ -1,23 +1,9 @@
 annotations:
   artifacthub.io/changes: |-
-    - kind: added
-      description: "Add value .sourceNamespace to watch a namespace which is different from the one that external-dns is installed into when .namespaced is true."
-    - kind: added
-      description: "Add option to enable Gateway API ListenerSet support."
-    - kind: added
-      description: "Add support for bool in extraArgs."
-    - kind: added
-      description: "Add value .namespaceOverride to render chart resources into a namespace different from the release namespace, for subchart installs that want their own namespace."
     - kind: changed
-      description: "Update ExternalDNS OCI image version to v0.21.0."
-    - kind: fixed
-      description: "Avoid creating cluster-scoped RBAC for Gateway API sources when running namespaced with gatewayNamespace set. Namespace listing permissions are now only added when gatewayNamespace is unset."
-    - kind: fixed
-      description: "Ensure container arguments are passed in as strings (#6264) @KhooHaoYit."
-    - kind: fixed
-      description: "Ensure container arguments are passed in as strings when extraArgs is a map (#6284) @vflaux."
+      description: "Update ExternalDNS OCI image version to v0.23.0."
 apiVersion: v2
-appVersion: 0.21.0
+appVersion: 0.23.0
 description: ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with
   DNS providers.
 home: https://github.com/kubernetes-sigs/external-dns/
@@ -38,4 +24,4 @@ name: external-dns
 sources:
 - https://github.com/kubernetes-sigs/external-dns/
 type: application
-version: 1.21.1
+version: 1.23.0
