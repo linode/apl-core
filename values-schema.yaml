@@ -1599,7 +1599,7 @@ properties:
                 description: The OAuth2 client identifier platform applications will use against Dex.
           replicas:
             type: integer
-            default: 1
+            default: 2
             description: Number of Dex replicas. More than one requires all replicas to share the same storage backend.
           resources:
             $ref: '#/definitions/resources'
