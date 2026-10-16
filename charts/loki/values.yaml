@@ -1613,7 +1613,7 @@ gateway:
     image:
       registry: ghcr.io
       repository: "jkroepke/access-log-exporter"
-      tag: "0.4.22"
+      tag: "0.5.0"
       pullPolicy: IfNotPresent
     # @schema additionalProperties:true
     resources:
