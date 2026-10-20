@@ -1,5 +1,16 @@
 # Upgrade guidelines
 
+## 0.124.1 to 0.125.0
+
+`manager.targetAllocatorImage` now defaults to `repository: ghcr.io/open-telemetry/opentelemetry-operator/target-allocator` and `tag: 0.160.0`, so by default the chart passes `--target-allocator-image` to the Operator. You can now override only `manager.targetAllocatorImage.repository`, for example to use a private registry, and keep the default tag.
+
+The Operator applies its configuration from the config file first, then environment variables, then command-line flags, so the command-line flag takes precedence. If you currently set the Target Allocator image through `manager.config` (`targetallocator-image`) or the `RELATED_IMAGE_TARGET_ALLOCATOR` environment variable, either:
+
+- move the override to `manager.targetAllocatorImage.repository` and `manager.targetAllocatorImage.tag`, or
+- set both `manager.targetAllocatorImage.repository` and `manager.targetAllocatorImage.tag` to `""` to keep using the config file or environment variable.
+
+Setting only one of these two values to `""` fails rendering. An image set in a TargetAllocator resource's `spec.image` still takes precedence over all of these.
+
 ## 0.115.x to 0.116.0
 
 The deprecated `manager.featureGates` value has been removed. It was replaced by `manager.featureGatesMap` back in 0.72.1, and setting it now fails schema validation.
