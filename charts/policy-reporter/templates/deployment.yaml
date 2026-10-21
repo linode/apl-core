@@ -72,6 +72,11 @@ spec:
             - name: {{ .Values.port.name }}
               containerPort: {{ .Values.port.number }}
               protocol: TCP
+          {{- if .Values.mcp.enabled }}
+            - name: mcp
+              containerPort: {{ .Values.mcp.port }}
+              protocol: TCP
+          {{- end }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
