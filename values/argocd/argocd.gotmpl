@@ -279,7 +279,6 @@ extraObjects:
                   replaceFullPath: /platform-logout
                 statusCode: 302
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" "argocd" "gatewayName" $v.ingress.platformClass.className "host" $hostname) | nindent 4 }}
-  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "argocd" "host" $hostname) | nindent 4 }}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
