@@ -12,12 +12,4 @@ spec:
           sourceIpAddressFiltering: 10.0.0.0/24
     platformClass:
         className: platform
-        entrypoint: ""
-        gateway:
-            resources:
-                limits:
-                    cpu: 2000m
-                    memory: 2048Mi
-                requests:
-                    cpu: 200m
-                    memory: 256Mi
+        entrypoint: ''

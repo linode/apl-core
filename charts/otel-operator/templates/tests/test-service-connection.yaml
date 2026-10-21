@@ -6,7 +6,7 @@ metadata:
   namespace: {{ template "opentelemetry-operator.namespace" . }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
-    app.kubernetes.io/component: controller-manager
+    app.kubernetes.io/component: test
   annotations:
     "helm.sh/hook": test
 spec:
@@ -65,7 +65,7 @@ metadata:
   namespace: {{ template "opentelemetry-operator.namespace" . }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
-    app.kubernetes.io/component: controller-manager
+    app.kubernetes.io/component: test
   annotations:
     "helm.sh/hook": test
 spec:

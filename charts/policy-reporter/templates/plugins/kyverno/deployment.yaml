@@ -59,13 +59,9 @@ spec:
               containerPort: {{ .Values.plugin.kyverno.server.port }}
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /v1/policies
-              port: http
+            {{- toYaml .Values.plugin.kyverno.livenessProbe | nindent 12 }}
           readinessProbe:
-            httpGet:
-              path: /v1/policies
-              port: http
+            {{- toYaml .Values.plugin.kyverno.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.plugin.kyverno.resources | nindent 12 }}
           volumeMounts:

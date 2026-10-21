@@ -3,7 +3,7 @@
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: {{ include "loki.name" . }}-namespace-only
+  name: {{ include "loki.resourceName" (dict "ctx" . "suffix" "namespace-only") }}
   namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.labels" . | nindent 4 }}
@@ -20,7 +20,7 @@ spec:
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: {{ include "loki.name" . }}-egress-dns
+  name: {{ include "loki.resourceName" (dict "ctx" . "suffix" "egress-dns") }}
   namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.labels" . | nindent 4 }}
@@ -42,7 +42,7 @@ spec:
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: {{ include "loki.name" . }}-ingress
+  name: {{ include "loki.resourceName" (dict "ctx" . "suffix" "ingress") }}
   namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.labels" . | nindent 4 }}
@@ -78,7 +78,7 @@ spec:
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: {{ include "loki.name" . }}-ingress-metrics
+  name: {{ include "loki.resourceName" (dict "ctx" . "suffix" "ingress-metrics") }}
   namespace: {{ include "loki.namespace" .}}
   labels:
     {{- include "loki.labels" . | nindent 4 }}
@@ -110,7 +110,7 @@ spec:
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: {{ include "loki.name" . }}-egress-alertmanager
+  name: {{ include "loki.resourceName" (dict "ctx" . "suffix" "egress-alertmanager") }}
   namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.labels" . | nindent 4 }}
@@ -138,7 +138,7 @@ spec:
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: {{ include "loki.name" . }}-egress-external-storage
+  name: {{ include "loki.resourceName" (dict "ctx" . "suffix" "egress-external-storage") }}
   namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.labels" . | nindent 4 }}
@@ -173,7 +173,7 @@ spec:
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
-  name: {{ include "loki.name" . }}-{{ $component }}-world-egress
+  name: {{ include "loki.resourceName" (dict "ctx" . "suffix" (printf "%s-world-egress" $component)) }}
   namespace: {{ include "loki.namespace" . }}
 spec:
   endpointSelector:
@@ -200,7 +200,7 @@ spec:
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
-  name: {{ include "loki.name" . }}-backend-kubeapiserver-egress
+  name: {{ include "loki.resourceName" (dict "ctx" . "suffix" "backend-kubeapiserver-egress") }}
   namespace: {{ include "loki.namespace" . }}
 spec:
   endpointSelector:
@@ -219,7 +219,7 @@ spec:
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: {{ include "loki.name" . }}-egress-discovery
+  name: {{ include "loki.resourceName" (dict "ctx" . "suffix" "egress-discovery") }}
   namespace: {{ include "loki.namespace" . }}
   labels:
     {{- include "loki.labels" . | nindent 4 }}

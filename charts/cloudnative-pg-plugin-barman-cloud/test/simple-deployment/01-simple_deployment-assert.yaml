@@ -15,7 +15,7 @@ spec:
           - --client-cert=/client/tls.crt
           - --server-address=:9090
           - --leader-elect
-          - --log-level=debug
+          - --log-level=info
         ports:
         - containerPort: 9090
           protocol: TCP

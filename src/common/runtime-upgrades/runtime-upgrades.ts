@@ -1,5 +1,6 @@
 import { OtomiDebugger } from '../debug'
 import { k8s } from '../k8s'
+import { removeTtyRoleBindings } from './remove-tty-rolebindings'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { stripOversizedLastAppliedAnnotations } from './strip-oversized-annotations'
 import { ApiException } from '@kubernetes/client-node'
@@ -59,6 +60,12 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           debug.warn('Failed to delete Gitea Valkey StatefulSet:', e)
         }
       }
+    },
+  },
+  {
+    version: '6.5.0',
+    pre: async ({ debug }) => {
+      await removeTtyRoleBindings().catch((e) => debug.warn('Failed to remove tty RoleBindings:', e))
     },
   },
 ]

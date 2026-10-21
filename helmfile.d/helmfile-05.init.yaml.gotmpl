@@ -28,14 +28,26 @@ releases:
     labels:
       pkg: argocd-image-updater
     <<: *default
+  - name: dex-artifacts
+    installed: {{ $a | get "dex.enabled" false }}
+    namespace: dex
+    labels:
+      pkg: dex
+    <<: *raw
+  - name: dex
+    installed: {{ $a | get "dex.enabled" false }}
+    namespace: dex
+    labels:
+      pkg: dex
+    <<: *default
   - name: keycloak-artifacts
-    installed: true
+    installed: {{ $a | get "keycloak.enabled" false }}
     namespace: keycloak
     labels:
       pkg: keycloak
     <<: *raw
   - name: keycloak
-    installed: true
+    installed: {{ $a | get "keycloak.enabled" false }}
     namespace: keycloak
     labels:
       pkg: keycloak

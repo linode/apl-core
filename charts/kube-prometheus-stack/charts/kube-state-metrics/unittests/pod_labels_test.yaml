@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/helm-unittest/helm-unittest/main/schema/helm-testsuite.json
-suite: test daemonset pod labels
+suite: test deployment pod labels
 templates:
-  - daemonset.yaml
+  - deployment.yaml
 tests:
   - it: should not put the chart version in the pod labels
     asserts:
@@ -10,17 +10,17 @@ tests:
       - exists:
           path: metadata.labels["helm.sh/chart"]
 
-  - it: should keep the pod template identical when only the chart version changes
+  - it: should keep the pod labels unchanged when only the chart version changes
     chart:
       version: 99.99.99
     asserts:
       - isSubset:
           path: spec.template.metadata.labels
           content:
-            app.kubernetes.io/name: prometheus-node-exporter
+            app.kubernetes.io/name: kube-state-metrics
             app.kubernetes.io/instance: RELEASE-NAME
             app.kubernetes.io/component: metrics
-            app.kubernetes.io/part-of: prometheus-node-exporter
+            app.kubernetes.io/part-of: kube-state-metrics
             app.kubernetes.io/managed-by: Helm
       - notExists:
           path: spec.template.metadata.labels["helm.sh/chart"]

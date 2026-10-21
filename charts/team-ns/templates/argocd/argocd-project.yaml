@@ -57,7 +57,8 @@ spec:
     kind: Sidecar
   - group: networking.istio.io
     kind: Gateway
-
+  - group: monitoring.coreos.com
+    kind: ScrapeConfig
   roles:
   - name: {{ $argoRoleName }}
     description: Team member privileges to {{ $projectName }}
