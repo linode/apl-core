@@ -821,16 +821,6 @@ environments:
               requests:
                 cpu: 50m
                 memory: 128Mi
-          otomi-operator:
-            resources:
-              operator:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: 200m
-                  memory: 256Mi
-            _rawValues: {}
           apl-harbor-operator:
             resources:
               operator:
@@ -1186,4 +1176,4 @@ environments:
             authenticationLayer: keycloak
         users: []
         versions:
-          specVersion: 75
+          specVersion: 76
