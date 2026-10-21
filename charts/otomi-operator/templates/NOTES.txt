@@ -1,1 +1,0 @@
-The otomi-operator has been deployed.

@@ -40,7 +40,6 @@ kubectl -n otomi rollout restart deployment/otomi-console
 kubectl rollout restart deployment -n apl-harbor-operator apl-harbor-operator
 kubectl rollout restart deployment -n apl-keycloak-operator apl-keycloak-operator
 kubectl rollout restart deployment -n apl-gitea-operator apl-gitea-operator
-kubectl rollout restart deployment -n otomi-operator otomi-operator
 kubectl rollout restart deployment -n apl-operator apl-operator
 
 echo "Resetting ACL"
