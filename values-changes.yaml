@@ -58,3 +58,6 @@ changes:
   - version: 75
     customFunctions:
       - deactivateGitServer
+  - version: 76
+    deletions:
+      - apps.otomi-operator
