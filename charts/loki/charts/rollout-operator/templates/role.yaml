@@ -42,6 +42,14 @@ rules:
 - apiGroups:
     - rollout-operator.grafana.com
   resources:
+    - replicatemplates
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
+    - rollout-operator.grafana.com
+  resources:
     - replicatemplates/scale
     - replicatemplates/status
   verbs:
