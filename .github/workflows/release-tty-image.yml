@@ -70,6 +70,11 @@ jobs:
           fetch-tags: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate image tag
+        run: |
+          IMAGE_TAG="${GIT_TAG#"$RELEASE_TAG_PREFIX"}"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
       - name: Configure git identity
         env:
           ACTOR_ID: ${{ github.actor_id }}
@@ -103,5 +108,5 @@ jobs:
           file: tools/Dockerfile-tty
           context: ./tools
           build-args: |
-            VERSION=${{ env.GIT_TAG }}
-          tags: ${{ env.CONTAINER_IMAGE }}:${{ env.GIT_TAG }},${{ env.CONTAINER_IMAGE }}:latest
+            VERSION=${{ env.IMAGE_TAG }}
+          tags: ${{ env.CONTAINER_IMAGE }}:${{ env.IMAGE_TAG }},${{ env.CONTAINER_IMAGE }}:latest
