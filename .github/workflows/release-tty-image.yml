@@ -15,7 +15,7 @@ on:
       is_prerelease:
         description: 'Pre-release — cuts RC tag (false strips RC suffix and cuts stable tag)'
         required: true
-        default: true
+        default: false
         type: boolean
       dry_run:
         description: 'Dry run — skip all writes (tag, Docker push)'
