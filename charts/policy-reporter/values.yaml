@@ -69,6 +69,8 @@ service:
   type: ClusterIP
   # -- Service port
   port: 8080
+  # -- MCP Service port.
+  mcpPort: 9090
   # -- Service annotations
   annotations: {}
   # -- Service labels
