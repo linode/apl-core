@@ -70,9 +70,10 @@ jobs:
           fetch-tags: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate image tag
+      - name: Derive image tag
         run: |
-          IMAGE_TAG="${GIT_TAG#"$RELEASE_TAG_PREFIX"}"
+          IMAGE_TAG="v${GIT_TAG#"$RELEASE_TAG_PREFIX"}"
+          echo "Image tag: $IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Configure git identity
