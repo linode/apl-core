@@ -23,6 +23,8 @@ on:
         default: true
         type: boolean
 env:
+  CONTAINER_REGISTRY: docker.io
+  CONTAINER_IMAGE_NAME: linode/apl-tty
   RELEASE_BRANCH: ${{ github.ref_name }}
   RELEASE_BRANCH_PREFIX: ''
   RELEASE_TAG_PREFIX: 'tty-v'
