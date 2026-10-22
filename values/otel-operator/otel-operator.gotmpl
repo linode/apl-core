@@ -5,11 +5,14 @@ replicaCount: {{ $o.operator.replicaCount }}
 nameOverride: otel-operator
 imagePullSecrets: []
 manager:
-{{- if $v.otomi.linodeLkeImageRepository }}
+{{- with $v.otomi.linodeLkeImageRepository }}
+  {{- $repoPrefix := print . "/ghcr/open-telemetry" }}
   image:
-    repository: "{{ $v.otomi.linodeLkeImageRepository }}/ghcr/open-telemetry/opentelemetry-operator/opentelemetry-operator"
+    repository: "{{ $repoPrefix }}/opentelemetry-operator/opentelemetry-operator"
   collectorImage:
-    repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/otel/opentelemetry-collector-contrib"
+    repository: "{{ $repoPrefix }}/opentelemetry-collector-releases/opentelemetry-collector-k8s"
+  targetAllocatorImage:
+    repository: "{{ $repoPrefix }}/opentelemetry-operator/target-allocator"
 {{- end }}
   resources: {{- $o.resources.manager | toYaml | nindent 4 }}
   serviceMonitor:
