@@ -14,10 +14,6 @@ global:
 applicationSet:
   replicas: {{ $a.applicationSet.replicas }}
   resources: {{- $a.resources.applicationSet | toYaml | nindent 4 }}
-  dnsConfig:
-    options:
-      - name: ndots
-        value: "1"
   metrics:
     enabled: true
     serviceMonitor:
@@ -29,10 +25,6 @@ applicationSet:
 controller:
   replicas: {{ $a.controller.replicas }}
   resources: {{- $a.resources.controller | toYaml | nindent 4 }}
-  dnsConfig:
-    options:
-      - name: ndots
-        value: "1"
   metrics:
     enabled: true
     serviceMonitor:
@@ -56,10 +48,6 @@ redisSecretInit:
 
 redis:
   resources: {{- $a.resources.redis | toYaml | nindent 4 }}
-  dnsConfig:
-    options:
-      - name: ndots
-        value: "1"
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{ $v.otomi.linodeLkeImageRepository }}/docker/redis"
