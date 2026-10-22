@@ -12,7 +12,7 @@ appsInfo:
     integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by App Platform to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: Argo CD
-    appVersion: 3.5.4
+    appVersion: 3.5.5
     repo: https://github.com/argoproj/argo-cd
     maintainers: Argo Project
     relatedLinks:
@@ -90,7 +90,7 @@ appsInfo:
     integration: App Platform uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
-    appVersion: 2.15.2
+    appVersion: 2.15.4
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
@@ -101,7 +101,7 @@ appsInfo:
     integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. App Platform runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
   istio:
     title: Istio
-    appVersion: 1.30.4
+    appVersion: 1.30.6
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -161,13 +161,6 @@ appsInfo:
       - https://kubeflow.org
     license: Apache 2.0
     about: Kubeflow pipelines are reusable end-to-end ML workflows built using the Kubeflow Pipelines SDK.
-    isDeprecated: true
-    deprecationInfo:
-      message: Kubeflow Pipelines is being deprecated.
-      reasons:
-        - Kubeflow Pipelines will no longer be maintained as part of App Platform.
-      options:
-        - Click 'I understand' to continue using Kubeflow Pipelines.
   tekton:
     title: Tekton Pipelines
     appVersion: 1.14.0
