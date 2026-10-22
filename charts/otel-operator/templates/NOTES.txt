@@ -2,6 +2,10 @@
 {{ fail "[ERROR] 'manager.collectorImage.repository' must be set. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/UPGRADING.md for instructions." }}
 {{ end }}
 
+{{- if ne (empty .Values.manager.targetAllocatorImage.repository) (empty .Values.manager.targetAllocatorImage.tag) }}
+{{ fail "[ERROR] 'manager.targetAllocatorImage.repository' and 'manager.targetAllocatorImage.tag' must both be set or both be empty. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/UPGRADING.md for instructions." }}
+{{ end }}
+
 {{- if not .Values.manager.resources }}
 [WARNING] No resource limits or requests were set. Consider setter resource requests and limits via the `resources` field.
 {{ end }}
