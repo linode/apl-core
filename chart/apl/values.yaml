@@ -145,6 +145,15 @@ affinity: {}
 command: []
 commandArgs: []
 
+# Appended to the cluster resolvers, as a fallback while CoreDNS starts.
+dnsConfig:
+  nameservers:
+    - 8.8.8.8
+    - 8.8.4.4
+  options:
+    - name: ndots
+      value: "1"
+
 # Keep in sync with charts/apl-operator; checked by npm run lint:operator-charts.
 podSecurityContext:
   runAsNonRoot: true
