@@ -31,6 +31,7 @@ This log lists the architectural decisions for apl-core.
 - [ADR-2026-08-19](2026-08-19-apl-addons-argocd-project.md) - apl-addons ArgoCD project for platform-admin addon deployments
 - [ADR-2026-09-11](2026-09-11-eso-generators-for-platform-secrets.md) - Generate platform secrets in-cluster with External Secrets Operator
 - [ADR-2026-09-18](2026-09-18-native-nodeselector.md) - Native nodeSelector for platform apps
+- [ADR-2026-10-22](2026-10-22-git-polling-interval.md) - Git polling uses a fixed delay after each cycle
 
 <!-- adrlogstop -->
 
