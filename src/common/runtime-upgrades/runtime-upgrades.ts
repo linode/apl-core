@@ -34,13 +34,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     pre: async ({ debug }) => {
       await stripOversizedLastAppliedAnnotations().catch((e) => debug.warn('Failed to strip oversized annotations:', e))
     },
-    applications: {
-      'istio-system-istiod': {
-        post: async () => {
-          await detectAndRestartOutdatedIstioSidecars(k8s.core())
-        },
-      },
-    },
   },
   {
     version: '6.4.0',
@@ -71,6 +64,13 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     post: async () => {
       // otomi-operator is replaced by ExternalSecrets.
       await removeApplication('otomi-operator-otomi-operator')
+    },
+    applications: {
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
     },
   },
 ]
