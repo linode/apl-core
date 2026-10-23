@@ -118,9 +118,6 @@ definitions:
       targetCPUUtilizationPercentage:
         type: integer
         default: 80
-      targetMemoryUtilizationPercentage:
-        type: integer
-        default: 80
   akamai:
     definitions:
       dns:
