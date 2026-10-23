@@ -38,6 +38,10 @@ dex:
 notifications:
   enabled: true
   resources: {{- $a.resources.notifications | toYaml | nindent 4 }}
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
 
 redisSecretInit:
   enabled: false
@@ -56,6 +60,10 @@ repoServer:
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.repoServer.targetMemoryUtilizationPercentage }}
     targetCPUUtilizationPercentage: {{ $a.autoscaling.repoServer.targetCPUUtilizationPercentage }}
   resources: {{- $a.resources.repo | toYaml | nindent 4 }}
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
   metrics:
     enabled: true
     serviceMonitor:
@@ -71,6 +79,10 @@ server:
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.server.targetMemoryUtilizationPercentage }}
     targetCPUUtilizationPercentage: {{ $a.autoscaling.server.targetCPUUtilizationPercentage }}
   resources: {{- $a.resources.server | toYaml | nindent 4 }}
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
   metrics:
     enabled: true
     serviceMonitor:
