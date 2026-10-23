@@ -584,7 +584,7 @@ jobs:
           while true; do
               sleep 30
               PUB_IP=$(kubectl get svc platform-istio -n istio-system -ojson | jq '.status.loadBalancer.ingress[0].ip' -r)
-              if [[ -n "$PUB_IP" ]]; then
+              if [[ -n "$PUB_IP" && "$PUB_IP" != "null" ]]; then
                 echo "apl-public-ip=$PUB_IP" >> "$GITHUB_OUTPUT"
                 break
               else
