@@ -118,6 +118,24 @@ definitions:
       targetCPUUtilizationPercentage:
         type: integer
         default: 80
+      targetMemoryUtilizationPercentage:
+        type: integer
+        default: 80
+  gatewayAutoscallingEnabled:
+    additionalProperties: false
+    properties:
+      enabled:
+        default: true
+        type: boolean
+      maxReplicas:
+        type: integer
+        default: 10
+      minReplicas:
+        type: integer
+        default: 1
+      targetCPUUtilizationPercentage:
+        type: integer
+        default: 80
   akamai:
     definitions:
       dns:
@@ -450,7 +468,7 @@ definitions:
           resources:
             $ref: '#/definitions/resources'
           autoscaling:
-            $ref: '#/definitions/autoscalingEnabled'
+            $ref: '#/definitions/gatewayAutoscallingEnabled'
   ipV4Address:
     type: string
     pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
