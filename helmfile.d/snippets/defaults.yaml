@@ -998,6 +998,8 @@ environments:
             _rawValues: {}
           trivy:
             enabled: false
+            compliance:
+              enabled: false
             operator:
               replicaCount: 1
             resources:

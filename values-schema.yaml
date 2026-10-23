@@ -2274,6 +2274,14 @@ properties:
           enabled:
             type: boolean
             default: false
+          compliance:
+            additionalProperties: false
+            properties:
+              enabled:
+                description: Run the cluster compliance scanner, which evaluates the CIS, NSA and Pod Security Standards specs and fills in their ClusterComplianceReports. Reports cover the namespaces Trivy scans (team namespaces).
+                type: boolean
+                default: false
+            type: object
           operator:
             properties:
               replicaCount:
