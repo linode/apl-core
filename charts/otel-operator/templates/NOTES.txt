@@ -6,6 +6,10 @@
 {{ fail "[ERROR] 'manager.targetAllocatorImage.repository' and 'manager.targetAllocatorImage.tag' must both be set or both be empty. See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/UPGRADING.md for instructions." }}
 {{ end }}
 
+{{- if and .Values.manager.metrics.tls (ne (empty .Values.manager.metrics.tls.certFile) (empty .Values.manager.metrics.tls.keyFile)) }}
+{{ fail "[ERROR] 'manager.metrics.tls.certFile' and 'manager.metrics.tls.keyFile' must both be set or both be empty." }}
+{{ end }}
+
 {{- if not .Values.manager.resources }}
 [WARNING] No resource limits or requests were set. Consider setter resource requests and limits via the `resources` field.
 {{ end }}
