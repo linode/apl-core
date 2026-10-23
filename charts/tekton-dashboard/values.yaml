@@ -5,7 +5,7 @@
 image:
   repository: ghcr.io/tektoncd/github.com/tektoncd/dashboard/cmd/dashboard
   pullPolicy: IfNotPresent
-  tag: "0.73.0"
+  tag: "v0.40.1"
 
 resources: {}
 nodeSelector: {}

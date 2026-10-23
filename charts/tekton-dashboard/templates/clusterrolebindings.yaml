@@ -1,27 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ template "tekton-dashboard.fullname" . }}-backend-view
+  name: {{ template "tekton-dashboard.fullname" . }}-backend
   labels: {{- include "tekton-dashboard.labels" . | indent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ template "tekton-dashboard.fullname" . }}-backend-view
-subjects:
-  - kind: ServiceAccount
-    name: tekton-dashboard
-    namespace: {{ .Release.Namespace }}
-{{- if .Values.teamId }}
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: {{ template "tekton-dashboard.fullname" . }}-tenant-view
-  labels: {{- include "tekton-dashboard.labels" . | indent 4 }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: {{ template "tekton-dashboard.fullname" . }}-tenant-view
+  name: {{ template "tekton-dashboard.fullname" . }}-backend
 subjects:
   - kind: ServiceAccount
     name: tekton-dashboard
@@ -30,12 +15,12 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ template "tekton-dashboard.fullname" . }}-backend-edit
+  name: {{ template "tekton-dashboard.fullname" . }}-tenant
   labels: {{- include "tekton-dashboard.labels" . | indent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ template "tekton-dashboard.fullname" . }}-backend-edit
+  name: {{ template "tekton-dashboard.fullname" . }}-tenant
 subjects:
   - kind: ServiceAccount
     name: tekton-dashboard
@@ -44,28 +29,13 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ template "tekton-dashboard.fullname" . }}-pipelines-edit
+  name: {{ template "tekton-dashboard.fullname" . }}-resources
   labels: {{- include "tekton-dashboard.labels" . | indent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: tekton-aggregate-edit
+  name: {{ template "tekton-dashboard.fullname" . }}-resources
 subjects:
   - kind: ServiceAccount
     name: tekton-dashboard
     namespace: {{ .Release.Namespace }}
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: {{ template "tekton-dashboard.fullname" . }}-triggers-edit
-  labels: {{- include "tekton-dashboard.labels" . | indent 4 }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: tekton-triggers-aggregate-edit
-subjects:
-  - kind: ServiceAccount
-    name: tekton-dashboard
-    namespace: {{ .Release.Namespace }}
-{{- end }}
