@@ -216,6 +216,13 @@ manager:
   ## for example: --labels, etc.
   extraArgs: []
 
+  ## List of additional volumes to mount into the manager pod, e.g. a Secret holding a TLS certificate and key
+  extraVolumes: []
+
+  ## List of additional volume mounts for the manager container.
+  ## manager.metrics.tls.certFile and keyFile must point to files inside a mounted path.
+  extraVolumeMounts: []
+
   ## Enable leader election mechanism for protecting against split brain if multiple operator pods/replicas are started.
   ## See more at https://docs.openshift.com/container-platform/4.10/operators/operator_sdk/osdk-leader-election.html
   leaderElection:
