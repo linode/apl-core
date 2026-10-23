@@ -65,3 +65,4 @@ changes:
     deletions:
       - ingress.platformClass.gateway.autoscaling.targetMemoryUtilizationPercentage
       - ingress.classes[].gateway.autoscaling.targetMemoryUtilizationPercentage
+      - apps.knative.serving.gateway.autoscaling.targetMemoryUtilizationPercentage

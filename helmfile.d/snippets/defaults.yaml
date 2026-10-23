@@ -365,7 +365,6 @@ environments:
                   minReplicas: 2
                   maxReplicas: 10
                   targetCPUUtilizationPercentage: 80
-                  targetMemoryUtilizationPercentage: 80
             resources:
               queueSidecar:
                 requests:

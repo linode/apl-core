@@ -1907,7 +1907,7 @@ properties:
                   resources:
                     $ref: '#/definitions/resources'
                   autoscaling:
-                    $ref: '#/definitions/autoscalingEnabled'
+                    $ref: '#/definitions/gatewayAutoscallingEnabled'
       kubeflow-pipelines:
         additionalProperties: false
         properties:
