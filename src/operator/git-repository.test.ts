@@ -136,7 +136,7 @@ describe('GitRepository', () => {
       expect(mockGit.clone).toHaveBeenCalledWith(
         'https://testuser:testpass@github.com:443/testorg/testrepo.git',
         '/tmp/repo',
-        ['-b', 'main'],
+        ['--single-branch', '-b', 'main'],
       )
       expect(fs.existsSync).toHaveBeenCalledWith('/tmp/repo/.git')
     })
