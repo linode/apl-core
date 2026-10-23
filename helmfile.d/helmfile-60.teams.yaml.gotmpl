@@ -84,7 +84,6 @@ releases:
                       value: /
                 {{- $httpRoute.authRules | toYaml | nindent 16 }}
           - {{ tpl (readFile "../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" (print "tekton-" $teamId) "gatewayName" $gatewayName "host" $tektonHostname) | nindent 12 }}
-          - {{ tpl (readFile "../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" (print "tekton-" $teamId) "host" $tektonHostname) | nindent 12 }}
   - name: prometheus-{{ $teamId }}
     installed: {{ or ($teamSettings | get "managedMonitoring.grafana" false) ($teamSettings | get "managedMonitoring.alertmanager" false) }}
     namespace: team-{{ $teamId }}
