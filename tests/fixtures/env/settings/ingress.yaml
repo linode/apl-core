@@ -10,6 +10,18 @@ spec:
           entrypoint: 11.0.1.1
           loadBalancerIP: 11.0.0.1
           sourceIpAddressFiltering: 10.0.0.0/24
+          autoscaling:
+              enabled: true
+              minReplicas: 3
+              maxReplicas: 10
+              targetCPUUtilizationPercentage: 80
+              targetMemoryUtilizationPercentage: 80
     platformClass:
         className: platform
         entrypoint: ''
+        autoscaling:
+            enabled: true
+            minReplicas: 3
+            maxReplicas: 10
+            targetCPUUtilizationPercentage: 80
+            targetMemoryUtilizationPercentage: 80
