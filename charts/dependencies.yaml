@@ -42,21 +42,21 @@ dependencies:
     repository: https://helm.goharbor.io
   - name: base
     alias: istio-base
-    version: 1.30.6
+    version: 1.30.7
     repository: https://istio-release.storage.googleapis.com/charts
   - name: cni
     alias: istio-cni
-    version: 1.30.6
+    version: 1.30.7
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
-    version: 1.30.6
+    version: 1.30.7
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
-    version: 1.30.6
+    version: 1.30.7
     repository: https://istio-release.storage.googleapis.com/charts
   - name: ztunnel
-    version: 1.30.6
+    version: 1.30.7
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
@@ -89,7 +89,7 @@ dependencies:
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
-    version: 0.126.1
+    version: 0.126.2
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   - name: policy-reporter
     version: 3.11.1
