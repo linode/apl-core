@@ -110,7 +110,8 @@ grafana:
   defaultDashboardsEnabled: false
   nameOverride: {{ $teamId }}-po-grafana
   fullnameOverride: {{ $teamId }}-po-grafana
-  namespaceOverride: null
+  {{- /* Outside the team namespace: teams must not reach the Grafana DB (stored OAuth tokens) or its secrets. */}}
+  namespaceOverride: grafana
   defaultDashboardsTimezone: browser
   assertNoLeakedSecrets: false
   image:
@@ -133,11 +134,18 @@ grafana:
       label: release
       labelValue: grafana-dashboards-{{ $teamId }}
       searchNamespace:
-        - team-{{ $teamId }}
+        - grafana
     datasources:
       defaultDatasourceEnabled: false
+      {{- /* Unique per team: all Grafanas in the grafana namespace share one datasource sidecar label. */}}
+      labelValue: {{ $teamGroupName }}
   serviceMonitor:
-    enabled: false
+    enabled: true
+    labels:
+      prometheus: system
+    relabelings:
+      - targetLabel: __address__
+        replacement: {{ $teamId }}-po-grafana.grafana.svc.cluster.local:80
   testFramework:
     enabled: false
   additionalDataSources:
@@ -173,15 +181,15 @@ grafana:
   envValueFrom:
     GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
       secretKeyRef:
-        name: grafana-oidc-secret
+        name: {{ $teamGroupName }}-grafana-oidc
         key: client_id
     GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
       secretKeyRef:
-        name: grafana-oidc-secret
+        name: {{ $teamGroupName }}-grafana-oidc
         key: client_secret
     GF_LOKI_BASIC_AUTH_PASSWORD:
       secretKeyRef:
-        name: grafana-loki-datasource-secret
+        name: {{ $teamGroupName }}-grafana-loki
         key: password
   grafana.ini:
     analytics:
@@ -252,5 +260,7 @@ kubelet:
 
 extraManifests:
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" (print "monitoring-" $teamId) "gatewayName" $gatewayName "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}
-  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" (print "monitoring-" $teamId) "allowGroups" (list "platform-admin" $teamGroupName) "excludeNamespace" $teamGroupName "excludeAccount" "monitoring/po-prometheus" "excludePaths" (list "/metrics")) | nindent 12 }}
+  {{- range $ns := list $teamGroupName "grafana" }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" (print "monitoring-" $teamId) "namespace" $ns "allowGroups" (list "platform-admin" $teamGroupName) "excludeNamespace" $teamGroupName "excludeAccount" "monitoring/po-prometheus" "excludePaths" (list "/metrics")) | nindent 12 }}
+  {{- end }}
   - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" (print "monitoring-" $teamId) "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}

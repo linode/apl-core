@@ -24,7 +24,7 @@ teamGrafanaSelectors:
 {{- if $team | get "settings.managedMonitoring.grafana" false }}
   - namespaceSelector:
       matchLabels:
-        name: team-{{ $teamId }}
+        name: grafana
     podSelector:
       matchLabels:
         app.kubernetes.io/name: {{ $teamId }}-po-grafana
