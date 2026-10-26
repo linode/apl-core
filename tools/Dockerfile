@@ -4,19 +4,19 @@ FROM ubuntu:26.04 AS builder
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=1.36.4
+ARG KUBECTL_VERSION=1.36.5
 # https://github.com/helm/helm/tags
-ARG HELM_VERSION=4.3.0
+ARG HELM_VERSION=4.3.1
 # https://github.com/databus23/helm-diff/releases
-ARG HELM_DIFF_VERSION=3.15.12
+ARG HELM_DIFF_VERSION=3.15.15
 # https://github.com/yannh/kubeconform/releases/
 ARG KUBECONFORM_VERSION=0.8.0
 # https://github.com/helmfile/helmfile/releases
-ARG HELMFILE_VERSION=1.7.4
+ARG HELMFILE_VERSION=1.8.2
 # https://nodejs.org/en/download/
 ARG NODE_VERSION=24
 # https://github.com/cloudnative-pg/cloudnative-pg/releases
-ARG CNPG_VERSION=1.30.0
+ARG CNPG_VERSION=1.30.1
 # https://github.com/jqlang/jq/releases/
 ARG JQ_VERSION=1.8.2
 
