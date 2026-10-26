@@ -32,13 +32,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     pre: async ({ debug }) => {
       await stripOversizedLastAppliedAnnotations().catch((e) => debug.warn('Failed to strip oversized annotations:', e))
     },
-    applications: {
-      'istio-system-istiod': {
-        post: async () => {
-          await detectAndRestartOutdatedIstioSidecars(k8s.core())
-        },
-      },
-    },
   },
   {
     version: '6.4.0',
@@ -59,6 +52,16 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           debug.warn('Failed to delete Gitea Valkey StatefulSet:', e)
         }
       }
+    },
+  },
+  {
+    version: '6.4.3',
+    applications: {
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
     },
   },
 ]
