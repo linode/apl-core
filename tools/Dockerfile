@@ -94,7 +94,7 @@ RUN set -uex && \
   apt-get update && \
   apt-get install -y nodejs
 
-FROM ubuntu:24.04 AS final
+FROM ubuntu:26.04 AS final
 
 RUN mkdir -p /home/app
 RUN groupadd -g 1001 app && \
