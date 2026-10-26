@@ -57,6 +57,16 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     },
   },
   {
+    version: '6.4.3',
+    applications: {
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
+    },
+  },
+  {
     version: '6.5.0',
     pre: async ({ debug }) => {
       await removeTtyRoleBindings().catch((e) => debug.warn('Failed to remove tty RoleBindings:', e))
@@ -64,13 +74,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     post: async () => {
       // otomi-operator is replaced by ExternalSecrets.
       await removeApplication('otomi-operator-otomi-operator')
-    },
-    applications: {
-      'istio-system-istiod': {
-        post: async () => {
-          await detectAndRestartOutdatedIstioSidecars(k8s.core())
-        },
-      },
     },
   },
 ]
