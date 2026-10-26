@@ -4,4 +4,4 @@ consoleLogin: main
 tasks: main
 tools: main
 aplCharts: main
-tty: "1.2.8"
+tty: "v1.2.9"
