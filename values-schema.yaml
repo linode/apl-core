@@ -121,6 +121,21 @@ definitions:
       targetMemoryUtilizationPercentage:
         type: integer
         default: 80
+  gatewayAutoscallingEnabled:
+    additionalProperties: false
+    properties:
+      enabled:
+        default: true
+        type: boolean
+      maxReplicas:
+        type: integer
+        default: 10
+      minReplicas:
+        type: integer
+        default: 1
+      targetCPUUtilizationPercentage:
+        type: integer
+        default: 80
   akamai:
     definitions:
       dns:
@@ -453,7 +468,7 @@ definitions:
           resources:
             $ref: '#/definitions/resources'
           autoscaling:
-            $ref: '#/definitions/autoscalingEnabled'
+            $ref: '#/definitions/gatewayAutoscallingEnabled'
   ipV4Address:
     type: string
     pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
@@ -1365,39 +1380,6 @@ definitions:
     required:
       - name
       - url
-  user:
-    type: object
-    description: A user in keycloak, who can be a platform admin, a team admin, or a team member.
-    properties:
-      name:
-        type: string
-      email:
-        $ref: '#/definitions/email'
-        x-secret: ''
-      firstName:
-        type: string
-        x-secret: ''
-      lastName:
-        type: string
-        x-secret: ''
-      isPlatformAdmin:
-        type: boolean
-        x-secret: ''
-      isTeamAdmin:
-        type: boolean
-        x-secret: ''
-      teams:
-        type: array
-        items:
-          type: string
-          x-secret: ''
-      initialPassword:
-        type: string
-        x-secret: ''
-    required:
-      - email
-      - firstName
-      - lastName
   codeRepo:
     type: object
     description: Define location of code repository to build
@@ -1616,6 +1598,30 @@ properties:
             type: boolean
             default: false
             description: Use CNPG plugin for platform database backups
+      dex:
+        additionalProperties: false
+        description: Dex is an OIDC identity broker, installed by default. otomi.oidc.authenticationLayer decides whether it is actually used.
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          idp:
+            additionalProperties: false
+            properties:
+              clientID:
+                $ref: '#/definitions/wordCharacterPattern'
+                default: otomi
+                description: The OAuth2 client identifier platform applications will use against Dex.
+          replicas:
+            type: integer
+            default: 1
+            description: Number of Dex replicas. More than one requires all replicas to share the same storage backend.
+          resources:
+            $ref: '#/definitions/resources'
+          networkPolicies:
+            $ref: '#/definitions/appNetworkPolicyConfig'
       external-dns:
         additionalProperties: false
         properties:
@@ -1767,6 +1773,10 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: true
+            description: Whether Keycloak is deployed. Independent of otomi.oidc.authenticationLayer — enabling Keycloak does not select it as the issuer.
           idp:
             additionalProperties: false
             properties:
@@ -1899,7 +1909,7 @@ properties:
                   resources:
                     $ref: '#/definitions/resources'
                   autoscaling:
-                    $ref: '#/definitions/autoscalingEnabled'
+                    $ref: '#/definitions/gatewayAutoscallingEnabled'
       kubeflow-pipelines:
         additionalProperties: false
         properties:
@@ -2090,6 +2100,8 @@ properties:
           editorInactivityTimeout:
             type: integer
             default: 10
+          kubeconfigExpirationSeconds:
+            type: integer
           resources:
             additionalProperties: false
             properties:
@@ -2120,16 +2132,6 @@ properties:
                       - username
                       - password
         type: object
-      otomi-operator:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          resources:
-            additionalProperties: false
-            properties:
-              operator:
-                $ref: '#/definitions/resources'
       apl-harbor-operator:
         additionalProperties: false
         properties:
@@ -2538,6 +2540,16 @@ properties:
         type: boolean
         description: Defines if APL is installed and managed by Linode
         default: false
+      oidc:
+        additionalProperties: false
+        properties:
+          authenticationLayer:
+            type: string
+            enum:
+              - dex
+              - keycloak
+            default: keycloak
+            description: Which app every consumer authenticates against.
       aiEnabled:
         type: boolean
         description: Defines if APL enables AI/ML components
@@ -2905,9 +2917,5 @@ properties:
             type: string
       helm:
         type: object
-  users:
-    type: array
-    items:
-      $ref: '#/definitions/user'
 required:
   - cluster

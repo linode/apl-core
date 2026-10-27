@@ -1,0 +1,24 @@
+{{- $v := .Values }}
+resources:
+  - apiVersion: external-secrets.io/v1
+    kind: ExternalSecret
+    metadata:
+      name: git-server-credentials
+    spec:
+      {{- /** Secret needs to be removed manually and server restarted if credentials change */}}
+      refreshInterval: "0"
+      secretStoreRef:
+        name: core-secrets-store
+        kind: ClusterSecretStore
+      target:
+        name: git-server-credentials
+        template:
+          data:
+            {{- /**
+                Note this is unlikely to work if the username is empty.
+                Defaults and password truncation are only for creating valid values for git-server startup
+                in case of using an external Git repository with PAT. */}}
+            htpasswd: '{{ `{{ htpasswd (index . "username" | default "otomi-admin") (.password | trunc 72) "bcrypt" }}` }}'
+      dataFrom:
+        - extract:
+            key: apl-git-config

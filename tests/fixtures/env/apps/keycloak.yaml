@@ -4,6 +4,7 @@ metadata:
 spec:
     _rawValues: {}
     adminUsername: otomi-admin
+    enabled: true
     idp:
         alias: redkubes-azure
         clientID: otomi

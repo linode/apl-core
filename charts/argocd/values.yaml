@@ -1286,7 +1286,7 @@ dex:
     # -- Dex image repository
     repository: ghcr.io/dexidp/dex
     # -- Dex image tag
-    tag: v2.45.1
+    tag: v2.46.0
     # -- Dex imagePullPolicy
     # @default -- `""` (defaults to global.image.imagePullPolicy)
     imagePullPolicy: ""
@@ -1562,6 +1562,12 @@ redis:
   # @default -- `""` (defaults to global.runtimeClassName)
   runtimeClassName: ""
 
+  # -- Existing Secret name for the embedded Redis password. The Secret must contain the key `auth`.
+  # Only used when `redisSecretInit.enabled` is `false`, otherwise the secret name is `argocd-redis`.
+  # Only applies to the single node Redis deployment. With `redis-ha.enabled` use `redis-ha.existingSecret` instead,
+  # and for external Redis use `externalRedis.existingSecret`.
+  existingSecret: ""
+
   ## Redis Pod Disruption Budget
   ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   pdb:
@@ -1638,7 +1644,7 @@ redis:
       # -- Repository to use for the redis-exporter
       repository: ghcr.io/oliver006/redis_exporter
       # -- Tag to use for the redis-exporter
-      tag: v1.91.1
+      tag: v1.94.0
       # -- Image pull policy for the redis-exporter
       # @default -- `""` (defaults to global.image.imagePullPolicy)
       imagePullPolicy: ""
@@ -1931,7 +1937,7 @@ redis-ha:
     # -- Repository to use for the redis-exporter
     image: ghcr.io/oliver006/redis_exporter
     # -- Tag to use for the redis-exporter
-    tag: v1.75.0
+    tag: v1.94.0
   persistentVolume:
     # -- Configures persistence on Redis nodes
     enabled: false
@@ -1988,6 +1994,7 @@ redis-ha:
   auth: true
   # -- Existing Secret to use for redis-ha authentication.
   # By default the redis-secret-init Job is generating this Secret.
+  # When `redisSecretInit.enabled` is `false`, the Argo CD components read the Redis password from this Secret too (key `redis-ha.authKey`).
   existingSecret: argocd-redis
 
   # -- Whether the Redis server pods should be forced to run on separate nodes.
@@ -2133,6 +2140,9 @@ redisSecretInit:
 
 ## Server
 server:
+  # -- Enable Argo CD server. Set to `false` for an Argo CD Core installation (see [Argo CD Core](#argo-cd-core))
+  enabled: true
+
   # -- Argo CD server name
   name: server
 

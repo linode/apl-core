@@ -1,0 +1,16 @@
+{{- if .Values.plugin.vap.enabled -}}
+{{- if (gt (int .Values.plugin.vap.replicaCount) 1) }}
+apiVersion: {{ include "policyreporter.podDisruptionBudget.apiVersion" . }}
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "vap-plugin.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+  labels:
+    {{- include "vap-plugin.labels" . | nindent 4 }}
+spec:
+{{- include "vap-plugin.podDisruptionBudget" . | indent 2 }}
+  selector:
+    matchLabels:
+      {{- include "vap-plugin.selectorLabels" . | nindent 6 }}
+{{- end }}
+{{- end }}

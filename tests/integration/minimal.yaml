@@ -19,11 +19,6 @@ apps:
       image:
         repository: docker.io/linode/apl-console
         imagePullPolicy: Always
-  otomi-operator:
-    _rawValues:
-      image:
-        repository: docker.io/linode/apl-tasks
-        imagePullPolicy: Always
   apl-harbor-operator:
     _rawValues:
       image:

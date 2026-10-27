@@ -23,13 +23,12 @@ jest.mock('src/common/envalid', () => ({
 }))
 
 describe('initializeGitConfig', () => {
-  test('should call getInitialGitConfig, setGitConfig and setGitServerConfig when isInitial', async () => {
+  test('should call getInitialGitConfig and setGitConfig when isInitial', async () => {
     const originalNodeEnv = process.env.NODE_ENV
     process.env.NODE_ENV = 'production'
     const deps = {
       getInitialGitConfig: jest.fn().mockResolvedValue({ config: {}, isInitial: true }),
       setGitConfig: jest.fn().mockResolvedValue({}),
-      setGitServerConfig: jest.fn(),
       createRepoConfig: jest.fn().mockReturnValue({}),
     }
     try {
@@ -39,7 +38,6 @@ describe('initializeGitConfig', () => {
     }
     expect(deps.getInitialGitConfig).toHaveBeenCalledTimes(1)
     expect(deps.setGitConfig).toHaveBeenCalledTimes(1)
-    expect(deps.setGitServerConfig).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -182,16 +180,10 @@ describe('Bootstrapping values', () => {
     })
   })
   describe('processing values', () => {
+    const internalRepoUrl = 'http://git-server.git-server.svc.cluster.local:3000/otomi-admin/values.git'
+    const externalRepoUrl = 'https://example.com/values.git'
     const generatedSecrets = { gen: 'x' }
-    const generatedPassword = 'generated-password'
-    const usersWithPasswords = [
-      { id: 'user1', initialPassword: 'existing-password' },
-      { id: 'user2', initialPassword: generatedPassword },
-    ]
-    // Users stored directly in allSecrets (keycloak-operator derives groups from raw fields)
-
     const ca = { a: 'cert' }
-    const mergedSecretsWithGen = merge(cloneDeep(secrets), cloneDeep(generatedSecrets))
     let deps
     beforeEach(() => {
       deps = {
@@ -202,10 +194,9 @@ describe('Bootstrapping values', () => {
         loadYaml: jest.fn(),
         terminal,
         writeValues: jest.fn(),
-        getUsers: jest.fn().mockReturnValue(usersWithPasswords),
-        getSchemaSecretsPaths: jest.fn().mockResolvedValue(['users', 'deep', 'deep.nested', 'secret', 'a']),
+        getSchemaSecretsPaths: jest.fn().mockResolvedValue(['deep', 'deep.nested', 'secret', 'a']),
         stripAllSecrets: jest.fn().mockImplementation((v) => {
-          return omit(v, ['users', 'deep', 'deep.nested', 'secret', 'a'])
+          return omit(v, ['deep', 'deep.nested', 'secret', 'a'])
         }),
       }
     })
@@ -236,31 +227,23 @@ describe('Bootstrapping values', () => {
         const res = await processValues(deps)
         // mergedForDisk includes allSecrets (stripAllSecrets mock is identity, real impl strips x-secret paths)
         expect(deps.writeValues).toHaveBeenNthCalledWith(1, {
+          apps: { 'git-server': { enabled: true } },
           cluster: { name: 'bla', provider: 'dida' },
         })
         expect(res.originalInput).toEqual({
+          apps: { 'git-server': { enabled: true } },
           cluster: { name: 'bla', provider: 'dida' },
-          users: [
-            { id: 'user1', initialPassword: 'existing-password' },
-            { id: 'user2', initialPassword: 'generated-password' },
-          ],
         })
       })
-      it('should merge originalInput + allSecrets + users for disk (stripAllSecrets removes x-secret paths)', async () => {
-        // mergedForDisk = merge(originalInput, allSecrets, { users })
-        // allSecrets = merge(ca, storedSecrets, generatedSecrets) + users: usersWithPasswords
-        const allSecretsExpected = merge(cloneDeep(ca), secrets, {
-          users: usersWithPasswords,
-        })
-        deps.loadYaml.mockReturnValue({ ...ca, ...secrets, ...values, users })
-        deps.getUsers.mockReturnValue(usersWithPasswords)
+      it('should merge originalInput + allSecrets for disk (stripAllSecrets removes x-secret paths)', async () => {
+        const allSecretsExpected = merge(cloneDeep(ca), secrets)
+        deps.loadYaml.mockReturnValue({ ...ca, ...secrets, ...values })
         const res = await processValues(deps)
         expect(deps.writeValues).toHaveBeenNthCalledWith(1, values)
         expect(res.originalInput).toEqual({
           ...ca,
           ...secrets,
           ...values,
-          users: usersWithPasswords,
         })
         expect(res.allSecrets).toEqual(allSecretsExpected)
       })
@@ -275,30 +258,43 @@ describe('Bootstrapping values', () => {
         deps.loadYaml.mockReturnValue({ ...ca, ...secrets, values })
         deps.createCustomCA.mockReturnValue(ca)
         const result = await processValues(deps)
-        // allSecrets should contain full unstripped secrets including pre-processed users
-        expect(result.allSecrets).toEqual(merge(cloneDeep(ca), secrets, { users: usersWithPasswords }))
+        expect(result.allSecrets).toEqual(merge(cloneDeep(ca), secrets))
       })
-      it('should store users as-is in allSecrets (keycloak-operator derives groups)', async () => {
-        const storedUsers = [
-          {
-            email: 'platform-admin@example.com',
-            firstName: 'platform',
-            lastName: 'admin',
-            initialPassword: 'existing-pass',
-            isPlatformAdmin: true,
-            teams: ['dev'],
-          },
-        ]
-        deps.loadYaml.mockReturnValue({})
-        deps.getStoredClusterSecrets.mockReturnValue({ users: storedUsers })
-        deps.generateSecrets.mockReturnValue({})
-        deps.createCustomCA.mockReturnValue({})
-        deps.getUsers.mockReturnValue(storedUsers)
-
-        const result = await processValues(deps)
-
-        // Users stored directly — no groups transformation
-        expect(result.allSecrets.users).toEqual(storedUsers)
+      it('should enable the internal git-server when no repo URL is given', async () => {
+        deps.loadYaml.mockReturnValue({ cluster: { name: 'bla', provider: 'dida' } })
+        const res = await processValues(deps)
+        expect(res.originalInput.apps['git-server'].enabled).toBe(true)
+      })
+      it('should enable the internal git-server when the repo URL points at the in-cluster git server', async () => {
+        deps.loadYaml.mockReturnValue({
+          cluster: { name: 'bla', provider: 'dida' },
+          otomi: { git: { repoUrl: internalRepoUrl } },
+        })
+        const res = await processValues(deps)
+        expect(res.originalInput.apps['git-server'].enabled).toBe(true)
+      })
+      it('should not enable the internal git-server when the repo URL is external', async () => {
+        deps.loadYaml.mockReturnValue({
+          cluster: { name: 'bla', provider: 'dida' },
+          otomi: { git: { repoUrl: externalRepoUrl } },
+        })
+        const res = await processValues(deps)
+        expect(res.originalInput.apps?.['git-server']).toBeUndefined()
+      })
+      it('should keep an explicitly disabled git-server disabled', async () => {
+        deps.loadYaml.mockReturnValue({
+          apps: { 'git-server': { enabled: false } },
+        })
+        const res = await processValues(deps)
+        expect(res.originalInput.apps['git-server'].enabled).toBe(false)
+      })
+      it('should keep an explicitly enabled git-server enabled', async () => {
+        deps.loadYaml.mockReturnValue({
+          apps: { 'git-server': { enabled: true } },
+          otomi: { git: { repoUrl: externalRepoUrl } },
+        })
+        const res = await processValues(deps)
+        expect(res.originalInput.apps['git-server'].enabled).toBe(true)
       })
     })
   })

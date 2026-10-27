@@ -205,17 +205,6 @@ export async function getInitialGitConfig(): Promise<{ config: Record<string, an
 }
 
 /**
- * Creates the Git Server config for an initial installation
- */
-export async function setGitServerConfig(config: GitRepoConfig): Promise<void> {
-  const api = k8s.core()
-  const { username, password } = config
-  const htpasswd = (await $`htpasswd -nbB ${username} ${password}`).stdout.trim()
-  await ensureNamespaceExists(GIT_SERVER_NAMESPACE)
-  await createUpdateGenericSecret(api, GIT_SERVER_SECRET_NAME, GIT_SERVER_NAMESPACE, { htpasswd }, false)
-}
-
-/**
  * Creates or updates the Git configuration Secret
  */
 export async function setGitConfig(config: Record<string, any>, coreV1Api?: CoreV1Api): Promise<GitRepoConfig> {

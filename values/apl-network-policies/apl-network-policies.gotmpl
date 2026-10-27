@@ -12,6 +12,7 @@ netpols:
   # The linode DNS-01 solver webhook only exists when linode is the DNS provider.
   certManagerWebhookLinode: {{ and ($cm.networkPolicies.enabled) (hasKey $dnsProvider "linode") }}
   loki: {{ and $a.loki.enabled $a.loki.networkPolicies.enabled }}
+  dex: {{ and $a.dex.enabled $a.dex.networkPolicies.enabled }}
 
 ingressGatewaySelectors:
   - namespaceSelector:

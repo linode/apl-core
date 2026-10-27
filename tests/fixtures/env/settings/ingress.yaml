@@ -8,16 +8,20 @@ spec:
                 value: true
           className: net-a
           entrypoint: 11.0.1.1
+          gateway:
+              autoscaling:
+                  enabled: true
+                  maxReplicas: 10
+                  minReplicas: 3
+                  targetCPUUtilizationPercentage: 80
           loadBalancerIP: 11.0.0.1
           sourceIpAddressFiltering: 10.0.0.0/24
     platformClass:
         className: platform
         entrypoint: ""
         gateway:
-            resources:
-                limits:
-                    cpu: 2000m
-                    memory: 2048Mi
-                requests:
-                    cpu: 200m
-                    memory: 256Mi
+            autoscaling:
+                enabled: true
+                maxReplicas: 10
+                minReplicas: 3
+                targetCPUUtilizationPercentage: 80

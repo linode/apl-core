@@ -66,7 +66,7 @@ generate_helm_templates() {
 
 export NODE_ENV=test
 if [ -z "$srcDirA" ]; then
-  branchA='main'
+  branchA="${COMPARE_BASE_BRANCH:-main}"
   # branchB current branch
   branchB=$(git rev-parse --abbrev-ref HEAD)
   if [ "$branchB" = "HEAD" ]; then

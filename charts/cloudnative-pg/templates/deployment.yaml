@@ -166,8 +166,9 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-      - emptyDir: {}
-        name: scratch-data
+      - name: scratch-data
+        emptyDir:
+          {{- toYaml .Values.scratchData.emptyDir | nindent 10 }}
       - name: webhook-certificates
         secret:
           defaultMode: 420

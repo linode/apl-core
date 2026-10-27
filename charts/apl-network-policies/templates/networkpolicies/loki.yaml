@@ -80,7 +80,7 @@ spec:
               name: otel
           podSelector:
             matchLabels:
-              app.kubernetes.io/name: platform-logs-collector
+              app.kubernetes.io/instance: otel.platform-logs
 ---
 # Log querying: only Grafana instances may reach the multi-tenant reverse
 # proxy that fronts the read path. Grafana connects to the headless service,

@@ -2,7 +2,7 @@
 apiVersion: security.openshift.io/v1
 kind: SecurityContextConstraints
 metadata:
-  name: {{ include "loki.name" . }}
+  name: {{ include "loki.fullname" . }}
   labels:
     {{- include "loki.labels" . | nindent 4 }}
 allowHostDirVolumePlugin: {{ .Values.rbac.sccAllowHostDirVolumePlugin }}

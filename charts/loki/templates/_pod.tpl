@@ -141,7 +141,7 @@ spec:
       {{- include "loki.configVolume" . | nindent 6 }}
     - name: runtime-config
       configMap:
-        name: {{ template "loki.name" . }}-runtime
+        name: {{ template "loki.runtime.name" . }}
     {{- if not (or (dig "persistence" "volumeClaimsEnabled" false $component) (dig "persistence" "enabled" false $component)) }}
     - name: {{ eq $target "single-binary" | ternary "storage" "data" }}
       {{- if dig "persistence" "inMemory" false $component }}

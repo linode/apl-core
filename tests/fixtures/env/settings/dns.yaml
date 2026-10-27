@@ -6,8 +6,5 @@ spec:
         - otomi.cloud
     policy: upsert-only
     provider:
-        # cloudflare: {}
         linode: {}
-        # akamai:
-        #     host: akamai.com
     zoneIdFilters: []

@@ -105,6 +105,8 @@ alertmanager:
 
 grafana:
   enabled: {{ $teamSettings | get "managedMonitoring.grafana" false }}
+  rbac:
+    namespaced: true
   defaultDashboardsEnabled: false
   nameOverride: {{ $teamId }}-po-grafana
   fullnameOverride: {{ $teamId }}-po-grafana
@@ -130,6 +132,8 @@ grafana:
       enabled: true
       label: release
       labelValue: grafana-dashboards-{{ $teamId }}
+      searchNamespace:
+        - team-{{ $teamId }}
     datasources:
       defaultDatasourceEnabled: false
   serviceMonitor:
@@ -249,4 +253,3 @@ kubelet:
 extraManifests:
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" (print "monitoring-" $teamId) "gatewayName" $gatewayName "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" (print "monitoring-" $teamId) "allowGroups" (list "platform-admin" $teamGroupName) "excludeNamespace" $teamGroupName "excludeAccount" "monitoring/po-prometheus" "excludePaths" (list "/metrics")) | nindent 12 }}
-  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" (print "monitoring-" $teamId) "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}

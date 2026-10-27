@@ -77,7 +77,7 @@
           "type": "string"
         },
         "tag": {
-          "type": ["string", "integer"]
+          "type": ["string", "integer", "number"]
         },
         "digest": {
           "type": "string"
@@ -146,10 +146,13 @@
       "type": "array"
     },
     "http": {
-      "relativePath": "string",
-      "managementRelativePath": "string",
-      "internalPort": "string",
-      "internalScheme": "string"
+      "type": "object",
+      "properties": {
+        "relativePath": { "type": "string" },
+        "managementRelativePath": { "type": "string" },
+        "internalPort": { "type": ["string", "integer"] },
+        "internalScheme": { "type": "string" }
+      }
     },
     "httpRoute": {
       "allOf": [
@@ -270,366 +273,366 @@
             }
           }
         }
-      },
-      "lifecycleHooks": {
-        "type": "string"
-      },
-      "livenessProbe": {
-        "type": "string"
-      },
-      "nameOverride": {
-        "type": "string"
-      },
-      "namespaceOverride": {
-        "type": "string"
-      },
-      "nodeSelector": {
-        "type": "object"
-      },
-      "dbchecker": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "image": {
-            "$ref": "#/definitions/image"
-          },
-          "resources": {
-            "type": "object",
-            "properties": {
-              "limits": {
-                "type": "object",
-                "properties": {
-                  "cpu": {
-                    "type": "string"
-                  },
-                  "memory": {
-                    "type": "string"
-                  }
+      }
+    },
+    "lifecycleHooks": {
+      "type": "string"
+    },
+    "livenessProbe": {
+      "type": "string"
+    },
+    "nameOverride": {
+      "type": "string"
+    },
+    "namespaceOverride": {
+      "type": "string"
+    },
+    "nodeSelector": {
+      "type": "object"
+    },
+    "dbchecker": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "limits": {
+              "type": "object",
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
                 }
-              },
-              "requests": {
-                "type": "object",
-                "properties": {
-                  "cpu": {
-                    "type": "string"
-                  },
-                  "memory": {
-                    "type": "string"
-                  }
+              }
+            },
+            "requests": {
+              "type": "object",
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
                 }
               }
             }
-          },
-          "securityContext": {
-            "type": "object"
           }
+        },
+        "securityContext": {
+          "type": "object"
         }
-      },
-      "podAnnotations": {
-        "type": "object"
-      },
-      "podDisruptionBudget": {
-        "type": "object"
-      },
-      "podLabels": {
-        "type": "object"
-      },
-      "podManagementPolicy": {
-        "type": "string"
-      },
-      "updateStrategy": {
-        "type": "string"
-      },
-      "podSecurityContext": {
-        "type": "object"
-      },
-      "cache": {
-        "type": "object",
-        "properties": {
-          "stack": {
-            "type": "string"
-          }
-        }
-      },
-      "proxy": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "mode": {
-            "type": "string"
-          }
-        }
-      },
-      "metrics": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        }
-      },
-      "health": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        }
-      },
-      "database": {
-        "type": "object",
-        "properties": {
-          "vendor": {
-            "type": "string"
-          },
-          "hostname": {
-            "type": "string"
-          },
-          "port": {
-            "type": "integer"
-          },
-          "username": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "database": {
-            "type": "string"
-          },
-          "existingSecret": {
-            "type": "string"
-          }
-        }
-      },
-      "priorityClassName": {
-        "type": "string"
-      },
-      "prometheusRule": {
-        "type": "object"
-      },
-      "serviceMonitor": {
-        "type": "object"
-      },
-      "extraServiceMonitor": {
-        "type": "object"
-      },
-      "readinessProbe": {
-        "type": "string"
-      },
-      "replicas": {
-        "type": "integer"
-      },
-      "resources": {
-        "type": "object"
-      },
-      "restartPolicy": {
-        "type": "string"
-      },
-      "route": {
-        "type": "object",
-        "properties": {
-          "annotations": {
-            "type": "object"
-          },
-          "enabled": {
-            "type": "boolean"
-          },
-          "host": {
-            "type": "string"
-          },
-          "labels": {
-            "type": "object"
-          },
-          "path": {
-            "type": "string"
-          },
-          "tls": {
-            "type": "object"
-          }
-        }
-      },
-      "secrets": {
-        "type": "object"
-      },
-      "securityContext": {
-        "type": "object"
-      },
-      "service": {
-        "type": "object",
-        "properties": {
-          "annotations": {
-            "type": "object"
-          },
-          "extraPorts": {
-            "type": "array"
-          },
-          "loadBalancerSourceRanges": {
-            "type": "array"
-          },
-          "httpNodePort": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "httpPort": {
-            "type": "integer"
-          },
-          "httpsNodePort": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "httpsPort": {
-            "type": "integer"
-          },
-          "labels": {
-            "type": "object"
-          },
-          "nodePort": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "type": {
-            "type": "string"
-          },
-          "loadBalancerIP": {
-            "type": "string"
-          },
-          "internalTrafficPolicy": {
-            "type": "string"
-          },
-          "sessionAffinity": {
-            "type": "string"
-          },
-          "sessionAffinityConfig": {
-            "type": "object"
-          }
-        }
-      },
-      "serviceHeadless": {
-        "type": "object",
-        "properties": {
-          "annotations": {
-            "type": "object"
-          },
-          "extraPorts": {
-            "type": "array"
-          },
-          "labels": {
-            "type": "object"
-          }
-        }
-      },
-      "serviceAccount": {
-        "type": "object",
-        "properties": {
-          "annotations": {
-            "type": "object"
-          },
-          "create": {
-            "type": "boolean"
-          },
-          "allowReadPods": {
-            "type": "boolean"
-          },
-          "imagePullSecrets": {
-            "$ref": "#/definitions/imagePullSecrets"
-          },
-          "labels": {
-            "type": "object"
-          },
-          "name": {
-            "type": "string"
-          },
-          "automountServiceAccountToken": {
-            "type": "boolean"
-          }
-        }
-      },
-      "rbac": {
-        "type": "object",
-        "properties": {
-          "create": {
-            "type": "boolean"
-          },
-          "rules": {
-            "type": "array"
-          }
-        }
-      },
-      "statefulsetAnnotations": {
-        "type": "object"
-      },
-      "statefulsetLabels": {
-        "type": "object"
-      },
-      "terminationGracePeriodSeconds": {
-        "type": "integer"
-      },
-      "autoscaling": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "labels": {
-            "type": "object"
-          },
-          "minReplicas": {
-            "type": "integer"
-          },
-          "maxReplicas": {
-            "type": "integer"
-          },
-          "metrics": {
-            "type": "array"
-          },
-          "behavior": {
-            "type": "object"
-          }
-        }
-      },
-      "test": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "image": {
-            "$ref": "#/definitions/image"
-          },
-          "podSecurityContext": {
-            "type": "object"
-          },
-          "securityContext": {
-            "type": "object"
-          }
-        }
-      },
-      "tolerations": {
-        "type": "array"
       }
+    },
+    "podAnnotations": {
+      "type": "object"
+    },
+    "podDisruptionBudget": {
+      "type": "object"
+    },
+    "podLabels": {
+      "type": "object"
+    },
+    "podManagementPolicy": {
+      "type": "string"
+    },
+    "updateStrategy": {
+      "type": "string"
+    },
+    "podSecurityContext": {
+      "type": "object"
+    },
+    "cache": {
+      "type": "object",
+      "properties": {
+        "stack": {
+          "type": "string"
+        }
+      }
+    },
+    "proxy": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "mode": {
+          "type": "string"
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "health": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "database": {
+      "type": "object",
+      "properties": {
+        "vendor": {
+          "type": ["string", "null"]
+        },
+        "hostname": {
+          "type": ["string", "null"]
+        },
+        "port": {
+          "type": ["integer", "null"]
+        },
+        "username": {
+          "type": ["string", "null"]
+        },
+        "password": {
+          "type": ["string", "null"]
+        },
+        "database": {
+          "type": ["string", "null"]
+        },
+        "existingSecret": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "priorityClassName": {
+      "type": "string"
+    },
+    "prometheusRule": {
+      "type": "object"
+    },
+    "serviceMonitor": {
+      "type": "object"
+    },
+    "extraServiceMonitor": {
+      "type": "object"
+    },
+    "readinessProbe": {
+      "type": "string"
+    },
+    "replicas": {
+      "type": "integer"
+    },
+    "resources": {
+      "type": "object"
+    },
+    "restartPolicy": {
+      "type": "string"
+    },
+    "route": {
+      "type": "object",
+      "properties": {
+        "annotations": {
+          "type": "object"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "host": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "object"
+        },
+        "path": {
+          "type": "string"
+        },
+        "tls": {
+          "type": "object"
+        }
+      }
+    },
+    "secrets": {
+      "type": "object"
+    },
+    "securityContext": {
+      "type": "object"
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "annotations": {
+          "type": "object"
+        },
+        "extraPorts": {
+          "type": "array"
+        },
+        "loadBalancerSourceRanges": {
+          "type": "array"
+        },
+        "httpNodePort": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "httpPort": {
+          "type": "integer"
+        },
+        "httpsNodePort": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "httpsPort": {
+          "type": "integer"
+        },
+        "labels": {
+          "type": "object"
+        },
+        "nodePort": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "type": {
+          "type": "string"
+        },
+        "loadBalancerIP": {
+          "type": "string"
+        },
+        "internalTrafficPolicy": {
+          "type": "string"
+        },
+        "sessionAffinity": {
+          "type": "string"
+        },
+        "sessionAffinityConfig": {
+          "type": "object"
+        }
+      }
+    },
+    "serviceHeadless": {
+      "type": "object",
+      "properties": {
+        "annotations": {
+          "type": "object"
+        },
+        "extraPorts": {
+          "type": "array"
+        },
+        "labels": {
+          "type": "object"
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "annotations": {
+          "type": "object"
+        },
+        "create": {
+          "type": "boolean"
+        },
+        "allowReadPods": {
+          "type": "boolean"
+        },
+        "imagePullSecrets": {
+          "$ref": "#/definitions/imagePullSecrets"
+        },
+        "labels": {
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        },
+        "automountServiceAccountToken": {
+          "type": "boolean"
+        }
+      }
+    },
+    "rbac": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "rules": {
+          "type": "array"
+        }
+      }
+    },
+    "statefulsetAnnotations": {
+      "type": "object"
+    },
+    "statefulsetLabels": {
+      "type": "object"
+    },
+    "terminationGracePeriodSeconds": {
+      "type": "integer"
+    },
+    "autoscaling": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "labels": {
+          "type": "object"
+        },
+        "minReplicas": {
+          "type": "integer"
+        },
+        "maxReplicas": {
+          "type": "integer"
+        },
+        "metrics": {
+          "type": "array"
+        },
+        "behavior": {
+          "type": "object"
+        }
+      }
+    },
+    "test": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "podSecurityContext": {
+          "type": "object"
+        },
+        "securityContext": {
+          "type": "object"
+        }
+      }
+    },
+    "tolerations": {
+      "type": "array"
     }
   }
 }
