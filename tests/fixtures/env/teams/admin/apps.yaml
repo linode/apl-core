@@ -16,7 +16,7 @@ spec:
         resources:
             grafana:
                 limits:
-                    cpu: '1'
+                    cpu: "1"
                     memory: 1Gi
                 requests:
                     cpu: 10m
@@ -32,7 +32,7 @@ spec:
         resources:
             buildpacksTask:
                 limits:
-                    cpu: '2'
+                    cpu: "2"
                     memory: 2Gi
                 requests:
                     cpu: 500m
@@ -46,21 +46,21 @@ spec:
                     memory: 64Mi
             gitCloneTask:
                 limits:
-                    cpu: '2'
+                    cpu: "2"
                     memory: 2Gi
                 requests:
                     cpu: 500m
                     memory: 512Mi
             grypeTask:
                 limits:
-                    cpu: '2'
+                    cpu: "2"
                     memory: 2Gi
                 requests:
                     cpu: 500m
                     memory: 512Mi
             kanikoTask:
                 limits:
-                    cpu: '2'
+                    cpu: "2"
                     memory: 2Gi
                 requests:
                     cpu: 500m
