@@ -61,3 +61,8 @@ changes:
   - version: 76
     deletions:
       - apps.otomi-operator
+  - version: 77
+    deletions:
+      - ingress.platformClass.gateway.autoscaling.targetMemoryUtilizationPercentage
+      - ingress.classes[].gateway.autoscaling.targetMemoryUtilizationPercentage
+      - apps.knative.serving.gateway.autoscaling.targetMemoryUtilizationPercentage
