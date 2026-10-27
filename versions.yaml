@@ -1,7 +1,7 @@
-api: v5.5.0
-console: v5.3.0
-consoleLogin: v5.3.0
-tasks: v4.1.1
-tools: v3.1.1
+api: v5.5.1
+console: v5.3.1
+consoleLogin: v5.3.1
+tasks: v4.1.2
+tools: v3.2.0
 aplCharts: v1.5.1
-tty: v1.2.9
+tty: v1.2.11
