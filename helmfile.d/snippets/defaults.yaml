@@ -367,7 +367,6 @@ environments:
                   minReplicas: 2
                   maxReplicas: 10
                   targetCPUUtilizationPercentage: 80
-                  targetMemoryUtilizationPercentage: 80
             resources:
               queueSidecar:
                 requests:
@@ -823,16 +822,6 @@ environments:
               requests:
                 cpu: 50m
                 memory: 128Mi
-          otomi-operator:
-            resources:
-              operator:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: 200m
-                  memory: 256Mi
-            _rawValues: {}
           apl-harbor-operator:
             resources:
               operator:
@@ -1166,7 +1155,6 @@ environments:
                 minReplicas: 3
                 maxReplicas: 10
                 targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
           classes: []
         alerts:
           receivers:
@@ -1188,4 +1176,4 @@ environments:
             authenticationLayer: keycloak
         users: []
         versions:
-          specVersion: 75
+          specVersion: 77
