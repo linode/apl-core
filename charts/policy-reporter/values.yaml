@@ -997,6 +997,9 @@ podDisruptionBudget:
   # Cannot be used if `minAvailable` is set.
   maxUnavailable:
 
+# -- Additional hostname mappings for Policy Reporter pods
+hostAliases: []
+
 # -- Node labels for pod assignment
 # ref: https://kubernetes.io/docs/user-guide/node-selection/
 nodeSelector: {}
@@ -1052,7 +1055,7 @@ ui:
     # -- (string) Image PullPolicy
     pullPolicy: IfNotPresent
     # -- (string) Image tag
-    tag: "2.9.0"
+    tag: "2.9.1"
 
   crds:
     # -- Install UI CustomBoard CRDs
@@ -1443,7 +1446,7 @@ plugin:
       # -- (string) Image PullPolicy
       pullPolicy: IfNotPresent
       # -- (string) Image tag
-      tag: "0.7.2"
+      tag: "0.7.3"
 
     # -- Deployment replica count
     replicaCount: 1
@@ -1709,7 +1712,7 @@ plugin:
       pullPolicy: IfNotPresent
         # -- (string) Image tag
         # Defaults to `Chart.AppVersion` if omitted
-      tag: "0.5.2"
+      tag: "0.5.3"
 
     cli:
       image:
@@ -1721,7 +1724,7 @@ plugin:
         pullPolicy: IfNotPresent
           # -- (string) Image tag
           # Defaults to `Chart.AppVersion` if omitted
-        tag: "0.75.0"
+        tag: "0.76.1"
 
     # -- Additional container args.
     extraArgs: {}
@@ -1986,7 +1989,7 @@ plugin:
       # -- (string) Image PullPolicy
       pullPolicy: IfNotPresent
       # -- (string) Image tag
-      tag: "0.1.2"
+      tag: "0.1.3"
 
     replicaCount: 1
 
