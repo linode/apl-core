@@ -43,7 +43,7 @@ spec:
   {{- else }}
   clusterResourceWhitelist: []
   {{- end }}
-  # Allow all namespaced-scoped resources to be created, except for ResourceQuota, LimitRange, NetworkPolicy
+  # Allow all namespaced-scoped resources to be created, except for the ones below
   namespaceResourceBlacklist:
   - group: ''
     kind: ResourceQuota
@@ -51,13 +51,19 @@ spec:
     kind: LimitRange
   - group: ''
     kind: NetworkPolicy
+  # Can redirect traffic to other namespaces, see kubernetes/kubernetes#103675
+  - group: ''
+    kind: Endpoints
+  - group: discovery.k8s.io
+    kind: EndpointSlice
   - group: networking.istio.io
     kind: VirtualService
   - group: networking.istio.io
     kind: Sidecar
   - group: networking.istio.io
     kind: Gateway
-
+  - group: monitoring.coreos.com
+    kind: ScrapeConfig
   roles:
   - name: {{ $argoRoleName }}
     description: Team member privileges to {{ $projectName }}

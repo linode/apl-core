@@ -114,6 +114,10 @@ on:
         description: 'Check the box if you dont want to pull from ORCS'
         type: boolean
         default: false
+      enableDex:
+        description: 'Check the box to install Dex (patched fork with group claims) as the OIDC issuer instead of Keycloak'
+        type: boolean
+        default: false
       enableWiz:
         description: 'Check the box to enable Wiz integration'
         type: boolean
@@ -490,6 +494,7 @@ jobs:
           CERTIFICATE: ${{ inputs.certificate }}
           IS_PRE_INSTALLED: ${{ inputs.is_pre_installed }}
           DISABLE_ORCS: ${{ inputs.disableORCS }}
+          ENABLE_DEX: ${{ inputs.enableDex }}
           BYO_GIT: ${{ inputs.BYO_GIT }}
           CACHE_REGISTRY: ${{ env.CACHE_REGISTRY }}
           CACHE_REPO: ${{ env.CACHE_REPO }}
@@ -497,9 +502,6 @@ jobs:
           BOT_PULL_TOKEN: ${{ secrets.BOT_PULL_TOKEN }}
         run: |
           touch values.yaml
-          adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
-          # Treat the admin password as sensitive information and mask it in the logs
-          echo "::add-mask::$adminPassword"
 
           install_args=(
             "otomi" "chart/apl" "--wait" "--wait-for-jobs" "--timeout" "90m0s"
@@ -511,7 +513,6 @@ jobs:
             "--set" "cluster.k8sContext=${LINODE_CLUSTER_CONTEXT}"
             "--set" "cluster.domainSuffix=${DOMAIN}"
             "--set" "otomi.hasExternalDNS=true"
-            "--set" "otomi.adminPassword=$adminPassword"
             "--set" "otomi.version=${GITHUB_REF##*/}"
             "--set" "apps.linode-cfw.enabled=true"
             "--set" "operator.image.repository=docker.io/linode/apl-core"
@@ -552,6 +553,14 @@ jobs:
             fi
           fi
 
+          if [[ "$ENABLE_DEX" == 'true' ]]; then
+            install_args+=(
+              "--set" "apps.dex.enabled=true"
+              "--set" "apps.keycloak.enabled=false"
+              "--set" "otomi.oidc.authenticationLayer=dex"
+            )
+          fi
+
           if [[ "$BYO_GIT" == 'true' ]]; then
             install_args+=(--set otomi.git.repoUrl="$BYO_GIT_URL")
             install_args+=(--set otomi.git.password="$BYO_GIT_PAT")
@@ -575,7 +584,7 @@ jobs:
           while true; do
               sleep 30
               PUB_IP=$(kubectl get svc platform-istio -n istio-system -ojson | jq '.status.loadBalancer.ingress[0].ip' -r)
-              if [[ -n "$PUB_IP" ]]; then
+              if [[ -n "$PUB_IP" && "$PUB_IP" != "null" ]]; then
                 echo "apl-public-ip=$PUB_IP" >> "$GITHUB_OUTPUT"
                 break
               else

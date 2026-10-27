@@ -1,7 +1,5 @@
-import { randomUUID } from 'crypto'
 import { existsSync } from 'fs'
 import { copyFile, cp, mkdir, writeFile } from 'fs/promises'
-import { generate as generatePassword } from 'generate-password'
 import { cloneDeep, get, merge, pick, set, unset } from 'lodash'
 import { pki } from 'node-forge'
 import path from 'path'
@@ -26,13 +24,7 @@ import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { migrate } from './migrate'
-import {
-  createRepoConfig,
-  getInitialGitConfig,
-  GitRepoConfig,
-  setGitConfig,
-  setGitServerConfig,
-} from '../common/git-config'
+import { createRepoConfig, getInitialGitConfig, GitRepoConfig, setGitConfig } from '../common/git-config'
 
 const cmdName = getFilename(__filename)
 
@@ -72,50 +64,6 @@ export const getStoredClusterSecrets = async (
     return undefined
   }
   return undefined
-}
-
-export const addPlatformAdmin = (users: any[], domainSuffix: string) => {
-  const defaultPlatformAdminEmail = `platform-admin@${domainSuffix}`
-  const platformAdminExists = users.find((user) => user.email === defaultPlatformAdminEmail)
-  if (platformAdminExists) return
-  const platformAdmin = {
-    email: defaultPlatformAdminEmail,
-    firstName: 'platform',
-    lastName: 'admin',
-    isPlatformAdmin: true,
-    isTeamAdmin: false,
-    teams: [],
-  }
-  users.push(platformAdmin)
-}
-
-export const addInitialPasswords = (users: any[], deps = { generatePassword }) => {
-  for (const user of users) {
-    if (!user.initialPassword) {
-      user.initialPassword = deps.generatePassword({
-        length: 20,
-        numbers: true,
-        symbols: '!@#$%&*',
-        lowercase: true,
-        uppercase: true,
-        strict: true,
-      })
-    }
-  }
-}
-
-export const getUsers = (originalInput: any, deps = { generatePassword, addInitialPasswords, addPlatformAdmin }) => {
-  const users = get(originalInput, 'users', []) as any[]
-  const { hasExternalIDP } = get(originalInput, 'otomi', {})
-  if (!hasExternalIDP) {
-    const { domainSuffix }: { domainSuffix: string } = get(originalInput, 'cluster', {})
-    deps.addPlatformAdmin(users, domainSuffix)
-  }
-  deps.addInitialPasswords(users)
-  users.forEach((user) => {
-    set(user, 'name', user.name || randomUUID())
-  })
-  return users
 }
 
 export const copyBasicFiles = async (
@@ -162,7 +110,6 @@ export const processValues = async (
     loadYaml,
     writeValues,
     createCustomCA,
-    getUsers,
     getSchemaSecretsPaths,
     stripAllSecrets,
   },
@@ -171,6 +118,12 @@ export const processValues = async (
   const { VALUES_INPUT } = env
   d.log(`Loading app values from ${VALUES_INPUT}`)
   const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
+  const repoUrl = get(originalValues, 'otomi.git.repoUrl')
+  const gitServerEnabled = get(originalValues, 'apps.git-server.enabled')
+  if ((!repoUrl || repoUrl.includes('git-server.git-server.svc.cluster.local')) && gitServerEnabled === undefined) {
+    // If any other Git URL is set, assume it is a Git repo external to the cluster
+    set(originalValues, 'apps.git-server.enabled', true)
+  }
   // This part should be stored in a secret by initializeGitConfig
   unset(originalValues, 'otomi.git')
   const secretPaths = await deps.getSchemaSecretsPaths(Object.keys(get(originalValues, 'teamConfig', {})))
@@ -183,21 +136,13 @@ export const processValues = async (
   } else {
     caSecrets = deps.createCustomCA()
   }
-  // add default platform admin & generate initial passwords for users if they don't have one
-  const users = deps.getUsers(originalValues)
-  // Store users in allSecrets for sealed secret generation
-  // The keycloak-operator derives groups from isPlatformAdmin/isTeamAdmin/teams directly
   const allSecrets = merge(cloneDeep(caSecrets), extractedSecrets)
-  set(allSecrets, 'users', users)
-  // Include users in originalInput — getUsers() may return a detached array
-  // when originalInput had no 'users' key initially
-  const newInput = merge(cloneDeep(originalValues), { users })
   // Write only non-secret values to disk — secrets are stored exclusively in SealedSecrets
   // Include allSecrets so non-secret fields like customRootCA are preserved (stripAllSecrets removes only x-secret paths)
   const mergedForDisk = merge(cloneDeep(caSecrets), originalValues)
   const valuesForDisk = deps.stripAllSecrets(mergedForDisk, secretPaths)
   await deps.writeValues(valuesForDisk)
-  return { originalInput: newInput, allSecrets }
+  return { originalInput: originalValues, allSecrets }
 }
 
 // create file structure based on file entry
@@ -286,7 +231,6 @@ export const initializeGitConfig = async (
   deps = {
     getInitialGitConfig,
     setGitConfig,
-    setGitServerConfig,
     createRepoConfig,
   },
 ): Promise<GitRepoConfig> => {
@@ -294,9 +238,7 @@ export const initializeGitConfig = async (
   const isTest = process.env.NODE_ENV === 'test'
   const { config: data, isInitial } = await deps.getInitialGitConfig()
   if (isInitial && !isTest) {
-    const config = await deps.setGitConfig(data)
-    await deps.setGitServerConfig(config)
-    return config
+    return await deps.setGitConfig(data)
   } else {
     return deps.createRepoConfig(data)
   }

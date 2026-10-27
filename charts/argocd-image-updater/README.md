@@ -48,6 +48,18 @@ For full list of changes please check ArtifactHub [changelog].
 
 Highlighted versions provide information about additional steps that should be performed by user when upgrading to newer version.
 
+### 1.2.0 (app version 1.2.0)
+
+Starting with this release, the webhook server runs with **TLS enabled by default**. If you previously relied on plain HTTP, you must explicitly opt out by setting the `--disable-tls` flag or the `DISABLE_TLS` environment variable like below.
+
+```yaml
+extraEnv:
+  - name: DISABLE_TLS
+    value: "false"
+```
+
+For details, see [TLS Configuration](https://argocd-image-updater.readthedocs.io/en/stable/configuration/webhook/#tls-configuration).
+
 ### 1.0.3 (app version 1.0.2)
 
 The upstream project changed the recommended installation namespace from `argocd-image-updater-system` to the same
@@ -82,6 +94,11 @@ The `config.registries` value can be used exactly as it looks in the documentati
 | authScripts.enabled | bool | `false` | Whether to mount the defined scripts that can be used to authenticate with a registry, the scripts will be mounted at `/scripts` |
 | authScripts.name | string | `"argocd-image-updater-authscripts"` | Name of the authentication scripts ConfigMap |
 | authScripts.scripts | object | `{}` | Map of key-value pairs where the key consists of the name of the script and the value the contents. |
+| certificateSecret.annotations | object | `{}` | Annotations to be added to argocd-repo-server-tls secret |
+| certificateSecret.crt | string | `""` | Certificate data. Must contain SANs of Repo service (ie: argocd-repo-server, argocd-repo-server.argo-cd.svc) |
+| certificateSecret.enabled | bool | `false` | Create argocd-repo-server-tls secret |
+| certificateSecret.key | string | `""` | Certificate private key |
+| certificateSecret.labels | object | `{}` | Labels to be added to argocd-repo-server-tls secret |
 | config."git.commit-message-template" | string | `""` | Changing the Git commit message |
 | config."git.commit-sign-off" | bool | `false` | Enables sign off on commits |
 | config."git.commit-signing-key" | string | `""` | Path to public SSH key mounted in container, or GPG key ID used to sign commits |
@@ -129,12 +146,15 @@ The `config.registries` value can be used exactly as it looks in the documentati
 | metrics.service.labels | object | `{}` | Metrics service labels |
 | metrics.service.servicePort | int | `8443` | Metrics service port |
 | metrics.serviceMonitor.additionalLabels | object | `{}` | Prometheus ServiceMonitor labels |
+| metrics.serviceMonitor.authorization | object | `{}` | Prometheus ServiceMonitor authorization |
 | metrics.serviceMonitor.enabled | bool | `false` | Enable a prometheus ServiceMonitor |
 | metrics.serviceMonitor.interval | string | `"30s"` | Prometheus ServiceMonitor interval |
 | metrics.serviceMonitor.metricRelabelings | list | `[]` | Prometheus [MetricRelabelConfigs] to apply to samples before ingestion |
 | metrics.serviceMonitor.namespace | string | `""` | Prometheus ServiceMonitor namespace |
 | metrics.serviceMonitor.relabelings | list | `[]` | Prometheus [RelabelConfigs] to apply to samples before scraping |
+| metrics.serviceMonitor.scheme | string | `"https"` | Prometheus ServiceMonitor scheme |
 | metrics.serviceMonitor.selector | object | `{}` | Prometheus ServiceMonitor selector |
+| metrics.serviceMonitor.tlsConfig | object | `{"insecureSkipVerify":true}` | Prometheus ServiceMonitor tlsConfig |
 | nameOverride | string | `""` | Global name (argocd-image-updater.name in _helpers.tpl) override |
 | namespaceOverride | string | `""` | Global namespace (argocd-image-updater.namespace in _helpers.tpl) override |
 | nodeSelector | object | `{}` | Kubernetes nodeSelector settings for the deployment |

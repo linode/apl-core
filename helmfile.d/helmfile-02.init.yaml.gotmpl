@@ -63,6 +63,13 @@ releases:
       tag: ingress
       pkg: kubernetes-gateways
     <<: *raw
+  - name: git-server-artifacts
+    installed: {{ $a | get "git-server.enabled" }}
+    namespace: git-server
+    labels:
+      pkg: git-server
+      app: core
+    <<: *raw
   - name: cloudnative-pg
     installed: true
     namespace: cnpg-system

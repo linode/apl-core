@@ -38,3 +38,5 @@ export interface ObjectMetadata {
 export interface ObjectMetadataCollection {
   items: Array<ObjectMetadata>
 }
+export const PLATFORM_ADMIN_CREDENTIALS_SECRET = 'platform-admin-initial-credentials'
+export const PLATFORM_ADMIN_CREDENTIALS_NAMESPACE = 'apl-secrets'

@@ -135,8 +135,21 @@ testFramework:
     repository: bats/bats
     tag: "1.14.0"
   imagePullPolicy: IfNotPresent
-  securityContext: {}
-  containerSecurityContext: {}
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 472
+    runAsGroup: 472
+    seccompProfile:
+      type: RuntimeDefault
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    privileged: false
+    capabilities:
+      drop:
+      - ALL
+    seccompProfile:
+      type: RuntimeDefault
+    readOnlyRootFilesystem: true
   resources: {}
   #  limits:
   #    cpu: 100m
@@ -224,6 +237,7 @@ downloadDashboards:
       - ALL
     seccompProfile:
       type: RuntimeDefault
+    readOnlyRootFilesystem: true
   envValueFrom: {}
   #  ENV_NAME:
   #    configMapKeyRef:
@@ -1076,6 +1090,7 @@ sidecar:
       - ALL
     seccompProfile:
       type: RuntimeDefault
+    readOnlyRootFilesystem: true
   # Set to true to skip tls verification for kube api calls. Can be overridden per sidecar
   # skipTlsVerify: true
   enableUniqueFilenames: false
@@ -1623,14 +1638,21 @@ imageRenderer:
   # image-renderer deployment hostUsers
   hostUsers: ~
   # image-renderer deployment securityContext
-  securityContext: {}
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
   # image-renderer deployment container securityContext
   containerSecurityContext:
+    runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
     capabilities:
       drop: ['ALL']
     allowPrivilegeEscalation: false
+    privileged: false
     readOnlyRootFilesystem: true
   ## image-renderer pod annotation
   podAnnotations: {}

@@ -1,17 +1,12 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Add alpha-config.source and alpha-config.name helpers for centralized alpha config resolution
+    - kind: changed
+      description: Bump OAuth2 Proxy app version to 7.15.5
       links:
         - name: GitHub PR
-          url: https://github.com/oauth2-proxy/manifests/pull/405
-    - kind: added
-      description: Add deprecation guards for invalid alphaConfig combinations
-      links:
-        - name: GitHub PR
-          url: https://github.com/oauth2-proxy/manifests/pull/405
+          url: https://github.com/oauth2-proxy/manifests/pull/424
 apiVersion: v2
-appVersion: 7.15.3
+appVersion: 7.15.5
 dependencies:
 - condition: redis-ha.enabled
   name: redis-ha
@@ -40,4 +35,4 @@ name: oauth2-proxy
 sources:
 - https://github.com/oauth2-proxy/oauth2-proxy
 - https://github.com/oauth2-proxy/manifests
-version: 10.7.0
+version: 10.7.1

@@ -10,6 +10,7 @@ netpols:
   otomiApi: {{ $oa.networkPolicies.enabled}}
   externalSecrets: {{ $es.networkPolicies.enabled}}
   loki: {{ and $a.loki.enabled $a.loki.networkPolicies.enabled }}
+  dex: {{ and $a.dex.enabled $a.dex.networkPolicies.enabled }}
 
 ingressGatewaySelectors:
   - namespaceSelector:

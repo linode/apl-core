@@ -4,7 +4,6 @@ cluster:
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
   version: 'OTOMI_VERSION_PLACEHOLDER'
-  adminPassword: welcomeotomi
 apps:
   otomi-api:
     _rawValues:
@@ -19,11 +18,6 @@ apps:
     _rawValues:
       image:
         repository: docker.io/linode/apl-console
-        imagePullPolicy: Always
-  otomi-operator:
-    _rawValues:
-      image:
-        repository: docker.io/linode/apl-tasks
         imagePullPolicy: Always
   apl-harbor-operator:
     _rawValues:
@@ -53,7 +47,6 @@ apps:
     enabled: true
   loki:
     enabled: true
-    adminPassword: blablabla
   otel:
     enabled: true
   prometheus:
@@ -69,7 +62,6 @@ apps:
 teamConfig:
   demo:
     settings:
-      password: somesecretvalue
       id: demo
       selfService:
         service:

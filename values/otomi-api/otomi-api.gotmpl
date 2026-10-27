@@ -41,11 +41,16 @@ env:
   EDITOR_INACTIVITY_TIMEOUT: {{ $o.editorInactivityTimeout }}
   SSO_ISSUER: {{ $v._derived.oidcBaseUrl }}
   SSO_JWKS_URI: {{ $v._derived.oidcJwksUrl }}
+  AUTH_PROVIDER: {{ $v.otomi.oidc.authenticationLayer }}
+  {{- if eq $v.otomi.oidc.authenticationLayer "dex" }}
+  DEX_GRPC_ADDRESS: dex.dex.svc:5557
+  {{- end }}
   {{- with $v.otomi.linodeLkeImageRepository }}
   TTY_IMAGE_REPOSITORY: "{{ . }}/docker/linode/apl-tty"
   {{- end }}
   TTY_IMAGE_TAG: {{ $v.versions.tty | quote }}
   RESERVED_SERVICE_NAMES: {{ sortAlpha $reservedServiceNames | join "," | quote }}
+  KUBECONFIG_EXPIRATION_SECONDS: {{ $o.kubeconfigExpirationSeconds | quote }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
@@ -75,6 +80,10 @@ httpRoute:
 
 extraManifests:
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" "tty" "gatewayName" $v.ingress.platformClass.className "host" $v._derived.ttyDomain) | nindent 4 }}
-  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "otomi-api" "hosts" (list $v._derived.apiDomain $v._derived.ttyDomain)) | nindent 4 }}
 
 nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 2 }}
+
+dnsConfig:
+  options:
+    - name: ndots
+      value: "1"

@@ -211,6 +211,12 @@ spec:
                           description: Keyless sets the configuration to verify the
                             authority against a Fulcio instance.
                           properties:
+                            additionalExtensions:
+                              additionalProperties:
+                                type: string
+                              description: AdditionalExtensions are certificate-extensions
+                                used for keyless signing.
+                              type: object
                             identities:
                               description: Identities sets a list of identities.
                               items:
@@ -219,6 +225,9 @@ spec:
                                   log.
                                   Issuer/Subject uses a strict match, while IssuerRegExp and SubjectRegExp
                                   apply a regexp for matching.
+                                  For a dynamic subject, use SubjectExpression which accepts a CEL expression
+                                  evaluated at admission time. The result is used as a regexp match against the
+                                  certificate SAN URI, so it can be either a literal string or a regexp pattern.
                                 properties:
                                   issuer:
                                     description: Issuer defines the issuer for this
@@ -231,6 +240,11 @@ spec:
                                   subject:
                                     description: Subject defines the subject for this
                                       identity.
+                                    type: string
+                                  subjectExpression:
+                                    description: |-
+                                      SubjectExpression defines a CEL expression that evaluates to the subject string,
+                                      matched as a regexp against the certificate SAN URI. Mutually exclusive with SubjectRegExp.
                                     type: string
                                   subjectRegExp:
                                     description: SubjectRegExp specifies a regular
@@ -281,6 +295,29 @@ spec:
                                 TagPrefix is an optional prefix that signature and attestations have.
                                 This is the 'tag based discovery' and in the future once references are
                                 fully supported that should likely be the preferred way to handle these.
+                              type: string
+                          type: object
+                        trustedRoot:
+                          description: |-
+                            TrustedRoot is the sigstore-go TrustedRoot JSON
+                            (mediaType application/vnd.dev.sigstore.trustedroot+json;version=0.1).
+                            When set, Kyverno uses this trust material directly instead of fetching
+                            trusted_root.json from the Sigstore TUF repository. Use this field when
+                            verifying attestations from providers that do not operate a TUF server,
+                            such as GitHub Actions. Takes precedence over the tuf field.
+                            Supports an inline JSON value or a CEL expression (e.g. variables.myRoot).
+                          oneOf:
+                          - required:
+                            - value
+                          - required:
+                            - expression
+                          properties:
+                            expression:
+                              description: Expression defines the a CEL expression
+                                input.
+                              type: string
+                            value:
+                              description: Value defines the raw string input.
                               type: string
                           type: object
                         tuf:
@@ -478,7 +515,7 @@ spec:
                   mode:
                     description: |-
                       Mode is the mode of policy evaluation.
-                      Allowed values are "Kubernetes" or "JSON".
+                      Allowed values are "Kubernetes", "HTTP" or "Envoy".
                       Optional. Default value is "Kubernetes".
                     type: string
                 type: object
@@ -1284,6 +1321,13 @@ spec:
                                           to verify the authority against a Fulcio
                                           instance.
                                         properties:
+                                          additionalExtensions:
+                                            additionalProperties:
+                                              type: string
+                                            description: AdditionalExtensions are
+                                              certificate-extensions used for keyless
+                                              signing.
+                                            type: object
                                           identities:
                                             description: Identities sets a list of
                                               identities.
@@ -1293,6 +1337,9 @@ spec:
                                                 log.
                                                 Issuer/Subject uses a strict match, while IssuerRegExp and SubjectRegExp
                                                 apply a regexp for matching.
+                                                For a dynamic subject, use SubjectExpression which accepts a CEL expression
+                                                evaluated at admission time. The result is used as a regexp match against the
+                                                certificate SAN URI, so it can be either a literal string or a regexp pattern.
                                               properties:
                                                 issuer:
                                                   description: Issuer defines the
@@ -1306,6 +1353,11 @@ spec:
                                                 subject:
                                                   description: Subject defines the
                                                     subject for this identity.
+                                                  type: string
+                                                subjectExpression:
+                                                  description: |-
+                                                    SubjectExpression defines a CEL expression that evaluates to the subject string,
+                                                    matched as a regexp against the certificate SAN URI. Mutually exclusive with SubjectRegExp.
                                                   type: string
                                                 subjectRegExp:
                                                   description: SubjectRegExp specifies
@@ -1358,6 +1410,30 @@ spec:
                                               TagPrefix is an optional prefix that signature and attestations have.
                                               This is the 'tag based discovery' and in the future once references are
                                               fully supported that should likely be the preferred way to handle these.
+                                            type: string
+                                        type: object
+                                      trustedRoot:
+                                        description: |-
+                                          TrustedRoot is the sigstore-go TrustedRoot JSON
+                                          (mediaType application/vnd.dev.sigstore.trustedroot+json;version=0.1).
+                                          When set, Kyverno uses this trust material directly instead of fetching
+                                          trusted_root.json from the Sigstore TUF repository. Use this field when
+                                          verifying attestations from providers that do not operate a TUF server,
+                                          such as GitHub Actions. Takes precedence over the tuf field.
+                                          Supports an inline JSON value or a CEL expression (e.g. variables.myRoot).
+                                        oneOf:
+                                        - required:
+                                          - value
+                                        - required:
+                                          - expression
+                                        properties:
+                                          expression:
+                                            description: Expression defines the a
+                                              CEL expression input.
+                                            type: string
+                                          value:
+                                            description: Value defines the raw string
+                                              input.
                                             type: string
                                         type: object
                                       tuf:
@@ -1559,7 +1635,7 @@ spec:
                                 mode:
                                   description: |-
                                     Mode is the mode of policy evaluation.
-                                    Allowed values are "Kubernetes" or "JSON".
+                                    Allowed values are "Kubernetes", "HTTP" or "Envoy".
                                     Optional. Default value is "Kubernetes".
                                   type: string
                               type: object
@@ -2506,6 +2582,12 @@ spec:
                           description: Keyless sets the configuration to verify the
                             authority against a Fulcio instance.
                           properties:
+                            additionalExtensions:
+                              additionalProperties:
+                                type: string
+                              description: AdditionalExtensions are certificate-extensions
+                                used for keyless signing.
+                              type: object
                             identities:
                               description: Identities sets a list of identities.
                               items:
@@ -2514,6 +2596,9 @@ spec:
                                   log.
                                   Issuer/Subject uses a strict match, while IssuerRegExp and SubjectRegExp
                                   apply a regexp for matching.
+                                  For a dynamic subject, use SubjectExpression which accepts a CEL expression
+                                  evaluated at admission time. The result is used as a regexp match against the
+                                  certificate SAN URI, so it can be either a literal string or a regexp pattern.
                                 properties:
                                   issuer:
                                     description: Issuer defines the issuer for this
@@ -2526,6 +2611,11 @@ spec:
                                   subject:
                                     description: Subject defines the subject for this
                                       identity.
+                                    type: string
+                                  subjectExpression:
+                                    description: |-
+                                      SubjectExpression defines a CEL expression that evaluates to the subject string,
+                                      matched as a regexp against the certificate SAN URI. Mutually exclusive with SubjectRegExp.
                                     type: string
                                   subjectRegExp:
                                     description: SubjectRegExp specifies a regular
@@ -2576,6 +2666,29 @@ spec:
                                 TagPrefix is an optional prefix that signature and attestations have.
                                 This is the 'tag based discovery' and in the future once references are
                                 fully supported that should likely be the preferred way to handle these.
+                              type: string
+                          type: object
+                        trustedRoot:
+                          description: |-
+                            TrustedRoot is the sigstore-go TrustedRoot JSON
+                            (mediaType application/vnd.dev.sigstore.trustedroot+json;version=0.1).
+                            When set, Kyverno uses this trust material directly instead of fetching
+                            trusted_root.json from the Sigstore TUF repository. Use this field when
+                            verifying attestations from providers that do not operate a TUF server,
+                            such as GitHub Actions. Takes precedence over the tuf field.
+                            Supports an inline JSON value or a CEL expression (e.g. variables.myRoot).
+                          oneOf:
+                          - required:
+                            - value
+                          - required:
+                            - expression
+                          properties:
+                            expression:
+                              description: Expression defines the a CEL expression
+                                input.
+                              type: string
+                            value:
+                              description: Value defines the raw string input.
                               type: string
                           type: object
                         tuf:
@@ -2773,7 +2886,7 @@ spec:
                   mode:
                     description: |-
                       Mode is the mode of policy evaluation.
-                      Allowed values are "Kubernetes" or "JSON".
+                      Allowed values are "Kubernetes", "HTTP" or "Envoy".
                       Optional. Default value is "Kubernetes".
                     type: string
                 type: object
@@ -3579,6 +3692,13 @@ spec:
                                           to verify the authority against a Fulcio
                                           instance.
                                         properties:
+                                          additionalExtensions:
+                                            additionalProperties:
+                                              type: string
+                                            description: AdditionalExtensions are
+                                              certificate-extensions used for keyless
+                                              signing.
+                                            type: object
                                           identities:
                                             description: Identities sets a list of
                                               identities.
@@ -3588,6 +3708,9 @@ spec:
                                                 log.
                                                 Issuer/Subject uses a strict match, while IssuerRegExp and SubjectRegExp
                                                 apply a regexp for matching.
+                                                For a dynamic subject, use SubjectExpression which accepts a CEL expression
+                                                evaluated at admission time. The result is used as a regexp match against the
+                                                certificate SAN URI, so it can be either a literal string or a regexp pattern.
                                               properties:
                                                 issuer:
                                                   description: Issuer defines the
@@ -3601,6 +3724,11 @@ spec:
                                                 subject:
                                                   description: Subject defines the
                                                     subject for this identity.
+                                                  type: string
+                                                subjectExpression:
+                                                  description: |-
+                                                    SubjectExpression defines a CEL expression that evaluates to the subject string,
+                                                    matched as a regexp against the certificate SAN URI. Mutually exclusive with SubjectRegExp.
                                                   type: string
                                                 subjectRegExp:
                                                   description: SubjectRegExp specifies
@@ -3653,6 +3781,30 @@ spec:
                                               TagPrefix is an optional prefix that signature and attestations have.
                                               This is the 'tag based discovery' and in the future once references are
                                               fully supported that should likely be the preferred way to handle these.
+                                            type: string
+                                        type: object
+                                      trustedRoot:
+                                        description: |-
+                                          TrustedRoot is the sigstore-go TrustedRoot JSON
+                                          (mediaType application/vnd.dev.sigstore.trustedroot+json;version=0.1).
+                                          When set, Kyverno uses this trust material directly instead of fetching
+                                          trusted_root.json from the Sigstore TUF repository. Use this field when
+                                          verifying attestations from providers that do not operate a TUF server,
+                                          such as GitHub Actions. Takes precedence over the tuf field.
+                                          Supports an inline JSON value or a CEL expression (e.g. variables.myRoot).
+                                        oneOf:
+                                        - required:
+                                          - value
+                                        - required:
+                                          - expression
+                                        properties:
+                                          expression:
+                                            description: Expression defines the a
+                                              CEL expression input.
+                                            type: string
+                                          value:
+                                            description: Value defines the raw string
+                                              input.
                                             type: string
                                         type: object
                                       tuf:
@@ -3854,7 +4006,7 @@ spec:
                                 mode:
                                   description: |-
                                     Mode is the mode of policy evaluation.
-                                    Allowed values are "Kubernetes" or "JSON".
+                                    Allowed values are "Kubernetes", "HTTP" or "Envoy".
                                     Optional. Default value is "Kubernetes".
                                   type: string
                               type: object
@@ -4800,6 +4952,12 @@ spec:
                           description: Keyless sets the configuration to verify the
                             authority against a Fulcio instance.
                           properties:
+                            additionalExtensions:
+                              additionalProperties:
+                                type: string
+                              description: AdditionalExtensions are certificate-extensions
+                                used for keyless signing.
+                              type: object
                             identities:
                               description: Identities sets a list of identities.
                               items:
@@ -4808,6 +4966,9 @@ spec:
                                   log.
                                   Issuer/Subject uses a strict match, while IssuerRegExp and SubjectRegExp
                                   apply a regexp for matching.
+                                  For a dynamic subject, use SubjectExpression which accepts a CEL expression
+                                  evaluated at admission time. The result is used as a regexp match against the
+                                  certificate SAN URI, so it can be either a literal string or a regexp pattern.
                                 properties:
                                   issuer:
                                     description: Issuer defines the issuer for this
@@ -4820,6 +4981,11 @@ spec:
                                   subject:
                                     description: Subject defines the subject for this
                                       identity.
+                                    type: string
+                                  subjectExpression:
+                                    description: |-
+                                      SubjectExpression defines a CEL expression that evaluates to the subject string,
+                                      matched as a regexp against the certificate SAN URI. Mutually exclusive with SubjectRegExp.
                                     type: string
                                   subjectRegExp:
                                     description: SubjectRegExp specifies a regular
@@ -4870,6 +5036,29 @@ spec:
                                 TagPrefix is an optional prefix that signature and attestations have.
                                 This is the 'tag based discovery' and in the future once references are
                                 fully supported that should likely be the preferred way to handle these.
+                              type: string
+                          type: object
+                        trustedRoot:
+                          description: |-
+                            TrustedRoot is the sigstore-go TrustedRoot JSON
+                            (mediaType application/vnd.dev.sigstore.trustedroot+json;version=0.1).
+                            When set, Kyverno uses this trust material directly instead of fetching
+                            trusted_root.json from the Sigstore TUF repository. Use this field when
+                            verifying attestations from providers that do not operate a TUF server,
+                            such as GitHub Actions. Takes precedence over the tuf field.
+                            Supports an inline JSON value or a CEL expression (e.g. variables.myRoot).
+                          oneOf:
+                          - required:
+                            - value
+                          - required:
+                            - expression
+                          properties:
+                            expression:
+                              description: Expression defines the a CEL expression
+                                input.
+                              type: string
+                            value:
+                              description: Value defines the raw string input.
                               type: string
                           type: object
                         tuf:
@@ -5067,7 +5256,7 @@ spec:
                   mode:
                     description: |-
                       Mode is the mode of policy evaluation.
-                      Allowed values are "Kubernetes" or "JSON".
+                      Allowed values are "Kubernetes", "HTTP" or "Envoy".
                       Optional. Default value is "Kubernetes".
                     type: string
                 type: object
@@ -5873,6 +6062,13 @@ spec:
                                           to verify the authority against a Fulcio
                                           instance.
                                         properties:
+                                          additionalExtensions:
+                                            additionalProperties:
+                                              type: string
+                                            description: AdditionalExtensions are
+                                              certificate-extensions used for keyless
+                                              signing.
+                                            type: object
                                           identities:
                                             description: Identities sets a list of
                                               identities.
@@ -5882,6 +6078,9 @@ spec:
                                                 log.
                                                 Issuer/Subject uses a strict match, while IssuerRegExp and SubjectRegExp
                                                 apply a regexp for matching.
+                                                For a dynamic subject, use SubjectExpression which accepts a CEL expression
+                                                evaluated at admission time. The result is used as a regexp match against the
+                                                certificate SAN URI, so it can be either a literal string or a regexp pattern.
                                               properties:
                                                 issuer:
                                                   description: Issuer defines the
@@ -5895,6 +6094,11 @@ spec:
                                                 subject:
                                                   description: Subject defines the
                                                     subject for this identity.
+                                                  type: string
+                                                subjectExpression:
+                                                  description: |-
+                                                    SubjectExpression defines a CEL expression that evaluates to the subject string,
+                                                    matched as a regexp against the certificate SAN URI. Mutually exclusive with SubjectRegExp.
                                                   type: string
                                                 subjectRegExp:
                                                   description: SubjectRegExp specifies
@@ -5947,6 +6151,30 @@ spec:
                                               TagPrefix is an optional prefix that signature and attestations have.
                                               This is the 'tag based discovery' and in the future once references are
                                               fully supported that should likely be the preferred way to handle these.
+                                            type: string
+                                        type: object
+                                      trustedRoot:
+                                        description: |-
+                                          TrustedRoot is the sigstore-go TrustedRoot JSON
+                                          (mediaType application/vnd.dev.sigstore.trustedroot+json;version=0.1).
+                                          When set, Kyverno uses this trust material directly instead of fetching
+                                          trusted_root.json from the Sigstore TUF repository. Use this field when
+                                          verifying attestations from providers that do not operate a TUF server,
+                                          such as GitHub Actions. Takes precedence over the tuf field.
+                                          Supports an inline JSON value or a CEL expression (e.g. variables.myRoot).
+                                        oneOf:
+                                        - required:
+                                          - value
+                                        - required:
+                                          - expression
+                                        properties:
+                                          expression:
+                                            description: Expression defines the a
+                                              CEL expression input.
+                                            type: string
+                                          value:
+                                            description: Value defines the raw string
+                                              input.
                                             type: string
                                         type: object
                                       tuf:
@@ -6148,7 +6376,7 @@ spec:
                                 mode:
                                   description: |-
                                     Mode is the mode of policy evaluation.
-                                    Allowed values are "Kubernetes" or "JSON".
+                                    Allowed values are "Kubernetes", "HTTP" or "Envoy".
                                     Optional. Default value is "Kubernetes".
                                   type: string
                               type: object

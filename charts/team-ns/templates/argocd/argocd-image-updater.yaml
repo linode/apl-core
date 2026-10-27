@@ -8,16 +8,59 @@
   {{- end }}
 {{- end }}
 {{ if $autoUpdaterApps }}
+{{- if $v.apps.harbor.enabled }}
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: team-{{ $v.teamId }}-harbor-pullsecret
+spec:
+  conditions:
+    - namespaces:
+        - argocd
+  provider:
+    kubernetes:
+      remoteNamespace: team-{{ $v.teamId }}
+      server:
+        url: "https://kubernetes.default.svc"
+        caProvider:
+          type: ConfigMap
+          name: kube-root-ca.crt
+          namespace: external-secrets
+          key: ca.crt
+      auth:
+        serviceAccount:
+          name: eso-store-sa
+          namespace: external-secrets
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: team-{{ $v.teamId }}-harbor-pullsecret
+  namespace: argocd
+spec:
+  refreshInterval: 1m
+  secretStoreRef:
+    name: team-{{ $v.teamId }}-harbor-pullsecret
+    kind: ClusterSecretStore
+  target:
+    name: team-{{ $v.teamId }}-harbor-pullsecret
+    creationPolicy: Owner
+    template:
+      type: kubernetes.io/dockerconfigjson
+  dataFrom:
+    - extract:
+        key: harbor-pullsecret
+---
+{{- end }}
 apiVersion: argocd-image-updater.argoproj.io/v1alpha1
 kind: ImageUpdater
 metadata:
   name: team-{{ $v.teamId }}
   namespace: argocd
 spec:
-  namespace: argocd
   commonUpdateSettings:
     forceUpdate: true
-    pullSecret: pullsecret:argocd/copy-team-{{ $v.teamId }}-harbor-pullsecret
+    pullSecret: pullsecret:argocd/team-{{ $v.teamId }}-harbor-pullsecret
   applicationRefs:
     {{- range $autoUpdaterApps }}
     {{- $a := .imageUpdateStrategy }}

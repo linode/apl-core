@@ -167,6 +167,10 @@ resources: {}
   #   cpu: 100m
   #   memory: 100Mi
 
+scratchData:
+  # -- EmptyDir options for the scratch-data volume.
+  emptyDir: {}
+
 # -- Nodeselector for the operator to be installed.
 nodeSelector: {}
 
