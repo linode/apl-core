@@ -14,9 +14,9 @@ spec:
         grafana: true
     resourceQuota:
         - name: pods
-          value: '50'
+          value: "50"
         - name: services.loadbalancers
-          value: '0'
+          value: "0"
     selfService:
         apps: []
         policies:
