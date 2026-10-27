@@ -33,6 +33,17 @@
 #   * Monitoring namespace (for metrics scraping)
 #   * Internal otomi namespace communication
 #
+# For cert-manager-webhook-linode (netpols.certManagerWebhookLinode: true):
+# - Creates a NetworkPolicy in the cert-manager namespace, scoped to the linode DNS-01 solver
+#   webhook pods (labelled `app: cert-manager-webhook-linode`, which the cert-manager chart's own
+#   webhook policy does not select)
+# - Allows ingress from:
+#   * anywhere on 443 — the apiserver's discovery probe for the aggregated APIService, which has
+#     no address a selector or ipBlock can pin down on a managed control plane
+# The chart renders this policy purely on the netpols.certManagerWebhookLinode flag. apl-core's
+# values rendering is what sets that flag, and it only sets it when linode is the configured DNS
+# provider — the chart itself does not check.
+#
 # For Loki (netpols.loki: true):
 # - Creates NetworkPolicies in the monitoring namespace
 # - Denies all ingress to Loki pods, except:
