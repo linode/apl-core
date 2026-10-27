@@ -6,7 +6,7 @@ dependencies:
     version: 10.10.5
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
-    version: 1.3.1
+    version: 1.3.2
     repository: oci://ghcr.io/argoproj/argo-helm/argocd-image-updater
   - name: cert-manager
     version: v1.21.2
@@ -32,31 +32,31 @@ dependencies:
     version: 1.21.1
     repository: https://kubernetes-sigs.github.io/external-dns
   - name: external-secrets
-    version: 2.12.0
+    version: 2.14.0
     repository: https://charts.external-secrets.io
   - name: gitea
     version: 12.7.0
     repository: https://dl.gitea.io/charts
   - name: harbor
-    version: 1.19.2
+    version: 1.19.4
     repository: https://helm.goharbor.io
   - name: base
     alias: istio-base
-    version: 1.30.4
+    version: 1.30.7
     repository: https://istio-release.storage.googleapis.com/charts
   - name: cni
     alias: istio-cni
-    version: 1.30.4
+    version: 1.30.7
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
-    version: 1.30.4
+    version: 1.30.7
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
-    version: 1.30.4
+    version: 1.30.7
     repository: https://istio-release.storage.googleapis.com/charts
   - name: ztunnel
-    version: 1.30.4
+    version: 1.30.7
     repository: https://istio-release.storage.googleapis.com/charts
   - name: keycloakx
     alias: keycloak
@@ -76,7 +76,7 @@ dependencies:
     version: 91.9.0
     repository: https://prometheus-community.github.io/helm-charts
   - name: kyverno
-    version: 3.9.1
+    version: 3.9.2
     repository: https://kyverno.github.io/kyverno/
   - name: loki
     version: 18.17.1
@@ -89,13 +89,13 @@ dependencies:
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
-    version: 0.123.1
+    version: 0.126.2
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   - name: policy-reporter
-    version: 3.11.0
+    version: 3.11.2
     repository: https://kyverno.github.io/policy-reporter
   - name: prometheus-blackbox-exporter
-    version: 11.19.1
+    version: 11.20.2
     repository: https://prometheus-community.github.io/helm-charts
   - name: prometheus-msteams
     version: 1.3.6

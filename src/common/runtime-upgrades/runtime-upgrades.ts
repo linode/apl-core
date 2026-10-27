@@ -1,5 +1,6 @@
 import { OtomiDebugger } from '../debug'
 import { k8s } from '../k8s'
+import { removeApplication } from '../../cmd/apply-as-apps'
 import { removeTtyRoleBindings } from './remove-tty-rolebindings'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { stripOversizedLastAppliedAnnotations } from './strip-oversized-annotations'
@@ -33,13 +34,6 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     pre: async ({ debug }) => {
       await stripOversizedLastAppliedAnnotations().catch((e) => debug.warn('Failed to strip oversized annotations:', e))
     },
-    applications: {
-      'istio-system-istiod': {
-        post: async () => {
-          await detectAndRestartOutdatedIstioSidecars(k8s.core())
-        },
-      },
-    },
   },
   {
     version: '6.4.0',
@@ -63,9 +57,23 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     },
   },
   {
+    version: '6.4.3',
+    applications: {
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
+    },
+  },
+  {
     version: '6.5.0',
     pre: async ({ debug }) => {
       await removeTtyRoleBindings().catch((e) => debug.warn('Failed to remove tty RoleBindings:', e))
+    },
+    post: async () => {
+      // otomi-operator is replaced by ExternalSecrets.
+      await removeApplication('otomi-operator-otomi-operator')
     },
   },
 ]

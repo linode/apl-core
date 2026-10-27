@@ -1,0 +1,113 @@
+name: Release TTY from branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type (major, minor, patch) — determines how the version is bumped'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+      is_prerelease:
+        description: 'Pre-release — cuts RC tag (false strips RC suffix and cuts stable tag)'
+        required: true
+        default: false
+        type: boolean
+      dry_run:
+        description: 'Dry run — skip all writes (tag, Docker push)'
+        required: true
+        default: true
+        type: boolean
+env:
+  CONTAINER_REGISTRY: docker.io
+  CONTAINER_IMAGE_NAME: linode/apl-tty
+  RELEASE_BRANCH: ${{ github.ref_name }}
+  RELEASE_TAG_PREFIX: 'tty-v'
+
+jobs:
+  release-get-tag:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    outputs:
+      release_tag: ${{ steps.compute-tag.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_BRANCH }}
+          fetch-depth: 1
+          fetch-tags: true
+
+      - name: Compute release tag
+        id: compute-tag
+        uses: linode/apl-gh-actions/actions/release-bump-tag@v0.5.0
+        with:
+          is_prerelease: ${{ inputs.is_prerelease }}
+          bump_type: ${{ inputs.release_type }}
+          release_branch: ${{ env.RELEASE_BRANCH }}
+          release_tag_prefix: ${{ env.RELEASE_TAG_PREFIX }}
+          require_rc_before_stable: false
+
+  release-software:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    needs:
+      - release-get-tag
+    env:
+      GIT_TAG: ${{ needs.release-get-tag.outputs.release_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_BRANCH }}
+          fetch-depth: 1
+          fetch-tags: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Derive image tag
+        run: |
+          IMAGE_TAG="v${GIT_TAG#"$RELEASE_TAG_PREFIX"}"
+          echo "Image tag: $IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Configure git identity
+        env:
+          ACTOR_ID: ${{ github.actor_id }}
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "${ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
+
+      - name: Create and push git tag
+        uses: linode/apl-gh-actions/actions/release-tag@v0.5.0
+        with:
+          release_tag: ${{ env.GIT_TAG }}
+          dry_run: ${{ inputs.dry_run }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to OCI registry
+        if: ${{ !inputs.dry_run }}
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.CONTAINER_REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_LINODEBOT_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
+
+      - name: Push to OCI registry
+        uses: docker/build-push-action@v7
+        env:
+          CONTAINER_IMAGE: ${{ env.CONTAINER_REGISTRY }}/${{ env.CONTAINER_IMAGE_NAME }}
+        with:
+          push: ${{ !inputs.dry_run }}
+          file: tools/Dockerfile-tty
+          context: ./tools
+          build-args: |
+            VERSION=${{ env.IMAGE_TAG }}
+          tags: ${{ env.CONTAINER_IMAGE }}:${{ env.IMAGE_TAG }},${{ env.CONTAINER_IMAGE }}:latest

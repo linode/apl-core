@@ -121,6 +121,21 @@ definitions:
       targetMemoryUtilizationPercentage:
         type: integer
         default: 80
+  gatewayAutoscallingEnabled:
+    additionalProperties: false
+    properties:
+      enabled:
+        default: true
+        type: boolean
+      maxReplicas:
+        type: integer
+        default: 10
+      minReplicas:
+        type: integer
+        default: 1
+      targetCPUUtilizationPercentage:
+        type: integer
+        default: 80
   akamai:
     definitions:
       dns:
@@ -453,7 +468,7 @@ definitions:
           resources:
             $ref: '#/definitions/resources'
           autoscaling:
-            $ref: '#/definitions/autoscalingEnabled'
+            $ref: '#/definitions/gatewayAutoscallingEnabled'
   ipV4Address:
     type: string
     pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
@@ -1892,7 +1907,7 @@ properties:
                   resources:
                     $ref: '#/definitions/resources'
                   autoscaling:
-                    $ref: '#/definitions/autoscalingEnabled'
+                    $ref: '#/definitions/gatewayAutoscallingEnabled'
       kubeflow-pipelines:
         additionalProperties: false
         properties:
@@ -2115,16 +2130,6 @@ properties:
                       - username
                       - password
         type: object
-      otomi-operator:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          resources:
-            additionalProperties: false
-            properties:
-              operator:
-                $ref: '#/definitions/resources'
       apl-harbor-operator:
         additionalProperties: false
         properties:
