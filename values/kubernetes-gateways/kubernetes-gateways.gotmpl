@@ -53,6 +53,7 @@ gateways:
             - name: {{ $v._derived.tlsSecretName }}
         allowedRoutes:
           namespaces:
+
             from: All
     {{- with $ingress | get "loadBalancerIP" nil }}
     loadBalancerIP: {{ . | quote }}
@@ -86,12 +87,6 @@ gateways:
             target:
               type: Utilization
               averageUtilization: {{ $hpaSettings | get "targetCPUUtilizationPercentage" 80 }}
-        - type: Resource
-          resource:
-            name: memory
-            target:
-              type: Utilization
-              averageUtilization: {{ $hpaSettings | get "targetMemoryUtilizationPercentage" 80 }}
     {{- end }}{{- /* if $hpaEnabled */}}
     {{- end }}{{- /* with $gateway */}}
 
@@ -116,6 +111,7 @@ gateways:
           namespaces:
             from: All
     {{- with $v.apps.knative.serving.gateway }}
+
     replicas: {{ .replicas }}
     minAvailable: {{ .minAvailable }}
     nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
@@ -133,12 +129,6 @@ gateways:
             target:
               type: Utilization
               averageUtilization: {{ .targetCPUUtilizationPercentage }}
-        - type: Resource
-          resource:
-            name: memory
-            target:
-              type: Utilization
-              averageUtilization: {{ .targetMemoryUtilizationPercentage }}
     {{- end }}{{- /* if .enabled */}}
     {{- end }}{{- /* with .autoscaling */}}
     {{- end }}{{- /* with $v.apps.knative.serving.gateway */}}
