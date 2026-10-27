@@ -9,6 +9,6 @@ spec:
             domain: demo.local
             mode: AllowAll
             ports:
-                - number: '123456'
+                - number: "123456"
                   protocol: HTTPS
         type: egress
