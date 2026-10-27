@@ -6,28 +6,28 @@ FROM ubuntu:26.04
 
 # Version definitions and checksums
 # https://github.com/mikefarah/yq/releases
-ARG YQ_VERSION=4.53.3
-ARG YQ_CHECKSUM=sha256:fa52a4e758c63d38299163fbdd1edfb4c4963247918bf9c1c5d31d84789eded4
+ARG YQ_VERSION=4.54.1
+ARG YQ_CHECKSUM=sha256:8e34fc298390875de416e6a4afcb8cabeceb25d9aa8506c1a2f9353cf702ea5f
 
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=1.36.3
-ARG KUBECTL_CHECKSUM=sha256:ebbd080e7c2e275093b55915722043257eb24004363e20acb3c4d71919f88336
+ARG KUBECTL_VERSION=1.36.5
+ARG KUBECTL_CHECKSUM=sha256:33bc88a24c3b09cf55bfd59e6ca977881b61fc3f25ab65bc80c65b430248648e
 
 # https://github.com/derailed/k9s/releases
 ARG K9S_VERSION=0.51.0
 ARG K9S_CHECKSUM=sha256:c3752ad51a5a4015a113819c4eeb6e55a4d0e4b8e652494797532f6fc8161dd7
 
 # https://github.com/helm/helm/releases
-ARG HELM_VERSION=4.2.3
-ARG HELM_CHECKSUM=sha256:e9b88b4ee95b18c706839c28d3a0220e5bc470e9cd9262410c90793c45ff8b7c
+ARG HELM_VERSION=4.3.1
+ARG HELM_CHECKSUM=sha256:0403a88ae20913d11b10a2467b50087721fea7581736da6b9d3992f5357fe54b
 
 # https://github.com/tektoncd/cli/releases
-ARG TKN_VERSION=0.44.2
-ARG TKN_CHECKSUM=sha256:fd63384104ba628e29fdbc2c1cd5b202445b7c59aafd31a4425a726c3a3bd902
+ARG TKN_VERSION=0.46.2
+ARG TKN_CHECKSUM=sha256:f6d86bc7960d85af94eb46f8f480ac8d113aa78e78b15d6f8d2f53d80daab2ce
 
 # https://github.com/cloudnative-pg/cloudnative-pg/releases
-ARG CNPG_VERSION=1.30.0
-ARG CNPG_CHECKSUM=sha256:96e69dbc8ab3786662938912da4551ed030ce9c32b09dd864c34bc90f53953d2
+ARG CNPG_VERSION=1.30.1
+ARG CNPG_CHECKSUM=sha256:12a54d93c1fcf6b3b37deba5cd2c5c6fe4fbd2029dc5cb1f7c02d5e93fa14838
 
 
 # Installing curl, vim, wget, tmux ttyd and bash-completion
