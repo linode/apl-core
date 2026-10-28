@@ -261,5 +261,5 @@ kubelet:
 extraManifests:
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" (print "monitoring-" $teamId) "gatewayName" $gatewayName "hosts" (list $alertmanagerHostname $grafanaHostname)) | nindent 12 }}
   {{- range $ns := list $teamGroupName "grafana" }}
-  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" (print "monitoring-" $teamId) "allowGroups" (list "platform-admin" $teamGroupName) "excludeNamespace" $teamGroupName "excludeAccount" "monitoring/po-prometheus" "excludePaths" (list "/metrics")) | nindent 12 }}
+  - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-jwt.gotmpl") (dict "name" (print "monitoring-" $teamId) "namespace" $ns "allowGroups" (list "platform-admin" $teamGroupName) "excludeNamespace" $teamGroupName "excludeAccount" "monitoring/po-prometheus" "excludePaths" (list "/metrics")) | nindent 12 }}
   {{- end }}
