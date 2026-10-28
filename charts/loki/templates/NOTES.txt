@@ -23,9 +23,6 @@ Installed components:
 {{- if .Values.gateway.enabled }}
 * gateway
 {{- end }}
-{{- if .Values.minio.enabled }}
-* minio
-{{- end }}
 {{- if eq (include "loki.deployment.isScalable" .) "true" }}
 * read
 * write
@@ -57,7 +54,7 @@ Sending logs to Loki
 
 {{- if .Values.gateway.enabled }}
 
-Loki has been configured with a gateway (nginx) to support reads and writes from a single component.
+Loki has been configured with a gateway ({{ .Values.gateway.type }}) to support reads and writes from a single component.
 
 {{- end }}
 

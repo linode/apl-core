@@ -228,14 +228,6 @@ Generated storage config for loki common config
 {{- $bucketName := required "Please define loki.storage.bucketNames.chunks" (dig "storage" "bucketNames" "chunks" "" .Values.loki) }}
 object_store:
   {{- include "loki.thanosStorageConfig" (dict "ctx" . "bucketName" $bucketName) | nindent 2 }}
-{{- else if .Values.minio.enabled -}}
-s3:
-  endpoint: {{ include "loki.minio" $ }}
-  bucketnames: chunks
-  secret_access_key: {{ $.Values.minio.rootPassword }}
-  access_key_id: {{ $.Values.minio.rootUser }}
-  s3forcepathstyle: true
-  insecure: true
 {{- else if (eq (include "loki.isUsingObjectStorage" . ) "true")  -}}
 {{- $bucketName := "" }}
 {{- if not (or (dig "aws" "s3" "" .Values.loki.storage_config) (dig "aws" "bucketnames" "" .Values.loki.storage_config)) -}}
@@ -254,10 +246,6 @@ Storage config for ruler
 {{- define "loki.rulerStorageConfig" -}}
 {{- if eq (dig "storage" "type" "" .Values.loki.rulerConfig) "local" -}}
 type: "local"
-{{- else if .Values.minio.enabled -}}
-type: "s3"
-s3:
-  bucketnames: ruler
 {{- else if (eq (include "loki.isUsingObjectStorage" . ) "true") }}
 type: {{ .Values.loki.storage.type | quote }}
 {{- $bucketName := required "Please define loki.storage.bucketNames.ruler" (dig "storage" "bucketNames" "ruler" "" .Values.loki) }}
@@ -532,15 +520,6 @@ Params:
 {{- end -}}
 {{- end -}}
 
-{{/*
-Create the service endpoint including port for MinIO.
-*/}}
-{{- define "loki.minio" -}}
-{{- if .Values.minio.enabled -}}
-{{- .Values.minio.address | default (printf "%s-%s.%s.svc:%s" .Release.Name "minio" (include "loki.namespace" .) (.Values.minio.service.port | toString)) -}}
-{{- end -}}
-{{- end -}}
-
 {{/* Determine if deployment is using object storage */}}
 {{- define "loki.isUsingObjectStorage" -}}
 {{- has .Values.loki.storage.type (list "s3" "gcs" "azure" "swift" "alibabacloud" "cos" "bos") }}
@@ -668,6 +647,12 @@ http {
       {{- with .Values.gateway.nginxConfig.locationSnippet }}
       {{- tpl . $ | nindent 6 }}
       {{- end }}
+      return 200 'OK';
+      auth_basic off;
+    }
+
+    location = /livez {
+      access_log off;
       return 200 'OK';
       auth_basic off;
     }
@@ -1083,17 +1068,6 @@ enableServiceLinks: {{ $ctx.Values.loki.enableServiceLinks }}
 checksum/config: {{ include "loki.configMapOrSecretContentHash" (dict "ctx" . "name" "/config.yaml") }}
 {{- end -}}
 
-
-{{/*
-Return the object store type for use with the test schema.
-*/}}
-{{- define "loki.testSchemaObjectStore" -}}
-  {{- if .Values.minio.enabled -}}
-    s3
-  {{- else -}}
-    filesystem
-  {{- end -}}
-{{- end -}}
 
 {{/*
 compute a ConfigMap or Secret checksum only based on its .data content.
