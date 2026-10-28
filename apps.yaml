@@ -12,7 +12,7 @@ appsInfo:
     integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by App Platform to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: Argo CD
-    appVersion: 3.5.5
+    appVersion: 3.5.6
     repo: https://github.com/argoproj/argo-cd
     maintainers: Argo Project
     relatedLinks:
@@ -58,7 +58,7 @@ appsInfo:
     integration: ExternalDNS is used by App Platform to make public service domains accessible by registering them with App Platform's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then App Platform will rely on nip.io to create host names for all services.
   external-secrets:
     title: External Secrets
-    appVersion: 2.12.0
+    appVersion: 2.14.0
     repo: https://github.com/external-secrets/external-secrets
     maintainers: External Secrets
     relatedLinks:

@@ -89,6 +89,8 @@ environments:
             _rawValues: {}
           cert-manager:
             issuer: custom-ca
+            networkPolicies:
+              enabled: false
             resources:
               certManager:
                 requests:
@@ -365,7 +367,6 @@ environments:
                   minReplicas: 2
                   maxReplicas: 10
                   targetCPUUtilizationPercentage: 80
-                  targetMemoryUtilizationPercentage: 80
             resources:
               queueSidecar:
                 requests:
@@ -1154,7 +1155,6 @@ environments:
                 minReplicas: 3
                 maxReplicas: 10
                 targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
           classes: []
         alerts:
           receivers:
@@ -1176,4 +1176,4 @@ environments:
             authenticationLayer: keycloak
         users: []
         versions:
-          specVersion: 76
+          specVersion: 77
