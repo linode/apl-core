@@ -1,0 +1,16 @@
+{{- if .Values.sidecar.repositories.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ include "grafana.fullname" . }}-repository-sync
+  namespace: {{ include "grafana.namespace" . }}
+data:
+  repository-sync.py: |
+    {{- .Files.Get "files/repository-sync.py" | nindent 4 }}
+{{- end }}
