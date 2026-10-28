@@ -5,3 +5,4 @@ tasks: main
 tools: main
 aplCharts: main
 tty: v1.2.11
+gitServer: v0.3.2
