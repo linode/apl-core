@@ -5,7 +5,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: otel/otel-operator-serving-cert
-    controller-gen.kubebuilder.io/version: v0.22.0
+    controller-gen.kubebuilder.io/version: v0.23.0
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: opentelemetry-operator
@@ -3892,17 +3892,20 @@ spec:
                                   message:
                                     type: string
                                   reason:
+                                    minLength: 1
                                     type: string
                                   status:
                                     enum:
                                     - DataLoss
                                     - Degraded
                                     - Inaccessible
+                                    minLength: 1
                                     type: string
                                 required:
                                 - reason
                                 - status
                                 type: object
+                              maxItems: 16
                               type: array
                               x-kubernetes-list-map-keys:
                               - status
@@ -9375,17 +9378,20 @@ spec:
                                   message:
                                     type: string
                                   reason:
+                                    minLength: 1
                                     type: string
                                   status:
                                     enum:
                                     - DataLoss
                                     - Degraded
                                     - Inaccessible
+                                    minLength: 1
                                     type: string
                                 required:
                                 - reason
                                 - status
                                 type: object
+                              maxItems: 16
                               type: array
                               x-kubernetes-list-map-keys:
                               - status
