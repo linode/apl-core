@@ -163,7 +163,7 @@ appsInfo:
     about: Kubeflow pipelines are reusable end-to-end ML workflows built using the Kubeflow Pipelines SDK.
   tekton:
     title: Tekton Pipelines
-    appVersion: 1.14.0
+    appVersion: 1.15.3
     repo: https://github.com/tektoncd/pipeline
     maintainers: Tekton
     relatedLinks:
