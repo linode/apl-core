@@ -3,10 +3,10 @@
 annotations:
   {{- if $v.otomi.hasExternalDNS }}
   externaldns: "true"
-  external-dns.alpha.kubernetes.io/hostname: "{{ print "*." $v.cluster.domainSuffix }}"
+  external-dns.kubernetes.io/hostname: "{{ print "*." $v.cluster.domainSuffix }}"
   {{- if $v | get "dns.provider.linode" nil }}
   {{- /* Check Linode Api documentation for allowed values in seconds: https://techdocs.akamai.com/linode-api/reference/post-domain */}}
-  external-dns.alpha.kubernetes.io/ttl: "1h"
+  external-dns.kubernetes.io/ttl: "1h"
   {{- end }}
   {{- else }}
   {}
