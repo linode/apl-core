@@ -38,6 +38,7 @@ image:
 {{- end }}
 
 extraArgs:
+- --enable-legacy-annotation-prefix
 {{- range $dns | get "zoneIdFilters" list }}
 - --zone-id-filter={{ . }}
 {{- end }}
