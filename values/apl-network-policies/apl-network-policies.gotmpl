@@ -19,12 +19,9 @@ otomiApi:
   giteaEnabled: {{ $a.gitea.enabled }}
   gitServerEnabled: {{ $a | get "git-server.enabled" }}
   dexEnabled: {{ $a.dex.enabled }}
-  # LKE-Enterprise runs Cilium (no apiserver pod/stable CIDR to match on);
-  cilium: {{ eq $v.cluster.linode.tier "enterprise" }}
 
-
-  # Real (post-DNAT) kube-apiserver port(s), in addition to 443. LKE uses 6443;
-  # override via _rawValues if your provider's control-plane backend differs.
+  # Fallback apiserver port(s) when the live Endpoints lookup is unavailable
+  # (e.g. offline render/lint). LKE uses 6443 in addition to 443.
   apiServerPorts:
     - 6443
 

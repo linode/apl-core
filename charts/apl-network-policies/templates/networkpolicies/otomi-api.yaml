@@ -40,6 +40,25 @@ spec:
             matchLabels:
               name: otomi
   egress:
+    {{- $apiEndpoints := lookup "v1" "Endpoints" "default" "kubernetes" }}
+    {{- if $apiEndpoints }}
+    # kube-apiserver's real backend(s), resolved live from the "kubernetes"
+    # Endpoints. CNIs enforce egress post-DNAT, so matching the Service's
+    # ClusterIP doesn't work; this matches the actual address on the wire,
+    # regardless of CNI/provider.
+    {{- range $subset := $apiEndpoints.subsets }}
+    - to:
+        {{- range $addr := $subset.addresses }}
+        - ipBlock:
+            cidr: {{ $addr.ip }}/32
+        {{- end }}
+      ports:
+        {{- range $port := $subset.ports }}
+        - protocol: {{ $port.protocol | default "TCP" }}
+          port: {{ $port.port }}
+        {{- end }}
+    {{- end }}
+    {{- end }}
     # kube-system (DNS, and vendor-specific control-plane proxies). Namespace-only
     # selector since DNS pod labels (kube-dns/CoreDNS) differ across providers.
     - to:
