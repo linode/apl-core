@@ -24,7 +24,7 @@ controller:
     sidecarlogresults: "{{ $tektonRegistry }}/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.15.3@sha256:208aaf920aacc9c06b6e1d720f7d77bdbaad335acd17435acb0ebe53d958271a"
     workingdirinit: "{{ $tektonRegistry }}/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.15.3@sha256:1281e928781efd8b7a80f66e597f7226fb613bca1ef6c5bb1484ee9fcc5e99e1"
     {{- /* Note the image digest for Busybox differs from the upstream chart, as the old version used there is not available on Docker Hub */}}
-    shellImage: "{{ $shellRegistry }}/chainguard/busybox@sha256:41cb1dbc33180ea94dcc96cbce7b53d872e728e755d872897db78b6eb3a988ef"
+    shellImage: "{{ $shellRegistry }}/chainguard/busybox@sha256:829d7d69eb5546619f5c42ed3f67f460050506522410f258113dd1bf3d5ec75e"
 
 remoteresolver:
   resources: {{- $t.resources.pipelinesRemoteresolver | toYaml | nindent 4 }}
