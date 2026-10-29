@@ -74,7 +74,7 @@ provider:
             key: EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN
 
     args:
-      {{- range $dns | get "zoneIdFilters" list }}
+      {{- range $dns | get "domainFilters" list }}
       - --domain-filter={{ . }}
       {{- end }}
       - --zones-cache-duration=5m
@@ -92,7 +92,7 @@ provider:
           secretKeyRef:
             name: do-token
             key: DO_TOKEN
-      {{- with $dns | get "zoneIdFilters" list }}
+      {{- with $dns | get "domainFilters" list }}
       - name: DO_DOMAIN_FILTER
         value: {{ join "," . | quote }}
       {{- end }}
