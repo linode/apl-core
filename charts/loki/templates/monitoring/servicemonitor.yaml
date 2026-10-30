@@ -47,6 +47,12 @@ spec:
         - action: "replace"
           replacement: {{ tpl $.Values.monitoring.appInstanceLabelValue $ | quote }}
           targetLabel: {{ $.Values.monitoring.appInstanceLabelName | quote }}
+        {{- if and $.Values.gateway.enabled (eq $.Values.gateway.type "envoy") $.Values.gateway.metrics.enabled }}
+        - sourceLabels: [__meta_kubernetes_service_name]
+          regex: {{ printf "^%s-exporter$" (include "loki.gatewayFullname" $) | quote }}
+          replacement: /stats/prometheus
+          targetLabel: __metrics_path__
+        {{- end }}
         {{- if and $.Values.monitoring.multiCluster.enabled $.Values.monitoring.multiCluster.clusterName }}
         - action: "replace"
           replacement: "{{ tpl $.Values.monitoring.multiCluster.clusterName $ }}"
