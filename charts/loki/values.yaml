@@ -1,4 +1,5 @@
 # $schema: ./values.schema.json
+# helm-schema-args: --schema-root.additional-properties=false
 
 # -- Overrides the version used to determine compatibility of resources with the target Kubernetes cluster.
 # This is useful when using `helm template`, because then helm will use the client version of kubectl as the Kubernetes version,
@@ -157,10 +158,10 @@ defaults:
   enableServiceLinks: true
   service:
     # @schema additionalProperties:{"type":"string"}
-    # -- Common annotations for all services
+    # -- Common annotations for all non-headless services
     annotations: {}
     # @schema additionalProperties:{"type":"string"}
-    # -- Common labels for all services
+    # -- Common labels for all non-headless services
     labels: {}
     # -- trafficDistribution for services
     # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#traffic-distribution
@@ -175,6 +176,13 @@ defaults:
     # withdrawn as soon as it becomes unready, instead of staying routable for the full termination
     # window. Overridable per component via <component>.service.publishNotReadyAddresses.
     publishNotReadyAddresses: true
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Common annotations for all headless services
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Common labels for all headless services
+      labels: {}
   # -- KEDA autoscaling shared configuration for all components that support KEDA
   kedaAutoscaling:
     # -- Prometheus server address for KEDA triggers
@@ -262,10 +270,10 @@ loki:
   # -- Common labels for all pods
   podLabels: {}
   # @schema additionalProperties:{"type":"string"}
-  # -- Common annotations for all services
+  # -- Common annotations for all non-headless services
   serviceAnnotations: {}
   # @schema additionalProperties:{"type":"string"}
-  # -- Common labels for all services
+  # -- Common labels for all non-headless services
   serviceLabels: {}
   # -- The number of old ReplicaSets to retain to allow rollback
   revisionHistoryLimit: 10
@@ -565,14 +573,25 @@ loki:
     max_join_retries: 10
     min_join_backoff: 1s
     rejoin_interval: 90s
-  # -- Tenants list to be created on nginx htpasswd file, with name and password or passwordHash keys<br><br>
+  # @schema item:object
+  # @schema itemProperties:{"name":{"type":"string","minLength":1},"password":{"type":["string","null"]},"passwordHash":{"type":["string","null"]},"basicAuthUsername":{"type":["string","null"]},"clientCertificateCN":{"type":"array","items":{"type":"string","minLength":1},"uniqueItems":true},"jwtSubClaim":{"type":"array","items":{"type":"string","minLength":1},"uniqueItems":true}}
+  # @schema allOf:[{"type":"array","items":{"required":["name"]}}]
+  # -- Tenants used by the gateway for authentication and `X-Scope-OrgID` mapping. Only `name`, `password`, and `passwordHash` are supported by both gateway implementations; `basicAuthUsername`, `clientCertificateCN`, and `jwtSubClaim` are supported only when `gateway.type` is `envoy`. `name` is the value assigned to `X-Scope-OrgID` and the default Basic Auth username. It can be a single Loki tenant ID or, when multi-tenant queries are enabled, a pipe-separated list of tenant IDs. `jwtSubClaim` entries are rendered with `tpl`, allowing values such as `system:serviceaccount:{{ .Release.Namespace }}:loki-canary`. Envoy Basic Auth accepts a `{SHA}` `passwordHash`, or derives one from `password`; JWT-only Envoy tenants do not need either.<br><br>
   # Example:
   # <pre>
   # tenants:<br>
   #   - name: "test-user-1"<br>
   #     password: "test-password-1"<br>
   #   - name: "test-user-2"<br>
-  #     passwordHash: "$2y$10$7O40CaY1yz7fu9O24k2/u.ct/wELYHRBsn25v/7AyuQ8E8hrLqpva" # generated using `htpasswd -nbBC10 test-user-2 test-password-2`
+  #     passwordHash: "$2y$10$7O40CaY1yz7fu9O24k2/u.ct/wELYHRBsn25v/7AyuQ8E8hrLqpva" # NGINX: generated using `htpasswd -nbBC10 test-user-2 test-password-2`
+  #   # Map requests authenticated as the dedicated user "grafana" to all three tenants by<br>
+  #   # setting X-Scope-OrgID to "cluster1|cluster2|cluster3".<br>
+  #   - name: "cluster1|cluster2|cluster3"<br>
+  #     basicAuthUsername: "grafana"<br>
+  #     clientCertificateCN:<br>
+  #       - "grafana-client"<br>
+  #     jwtSubClaim:<br>
+  #       - "system:serviceaccount:grafana:grafana"
   # </pre>
   tenants: []
   # @schema skipProperties:true;additionalProperties:true
@@ -600,6 +619,10 @@ loki:
     # -- ipFamilies for all services
     # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
     ipFamilies: []
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Loki services
+      annotations: {}
   # @schema skipProperties:true;additionalProperties:true
   # -- Limits config
   limits_config:
@@ -772,7 +795,7 @@ loki:
     configs:
       - from: 2024-04-01
         store: tsdb
-        object_store: '{{ include "loki.testSchemaObjectStore" . }}'
+        object_store: filesystem
         schema: v13
         index:
           prefix: index_
@@ -1085,6 +1108,14 @@ lokiCanary:
     # @schema type:[string, null]
     # -- Password of the gateway for Basic auth for loki-canary
     password: null
+    bearerToken:
+      # -- Use a projected Kubernetes ServiceAccount token with loki-canary's `-bearer-token-file` option instead of Basic Auth. Requires a loki-canary build that supports this option.
+      enabled: false
+      # -- Requested audience for the projected ServiceAccount token. Rendered with `tpl`; this must match an Envoy JWT audience when audience validation is enabled.
+      audience: '{{ include "loki.name" . }}.{{ include "loki.namespace" . }}'
+      # @schema minimum:600;maximum:31536000
+      # -- Lifetime in seconds for the projected ServiceAccount token.
+      expirationSeconds: 3600
   serviceAccount:
     # -- Specifies whether a ServiceAccount should be created
     create: true
@@ -1145,6 +1176,10 @@ rbac:
 networkPolicy:
   # -- Specifies whether Network Policies should be created
   enabled: false
+  gatewayJwks:
+    # @schema item:string
+    # -- CIDRs allowed for Envoy gateway JWKS egress in the standard NetworkPolicy. Empty permits the configured JWKS port to any destination because Kubernetes NetworkPolicy cannot select the API server Service by name.
+    cidrs: []
   metrics:
     # -- Specifies the Pods which are allowed to access the metrics port.
     # As this is cross-namespace communication, you also need the namespaceSelector.
@@ -1212,6 +1247,9 @@ memberlist:
 gateway:
   # -- Specifies whether the gateway should be enabled
   enabled: true
+  # @schema enum:[nginx, envoy]
+  # -- Selects the gateway proxy implementation. The Envoy implementation is EXPERIMENTAL and opt-in; its values under `gateway.envoyConfig` and the rendered Envoy configuration may change in minor releases.
+  type: nginx
   # -- Number of replicas for the gateway
   replicas: 1
   # -- Default container port
@@ -1276,17 +1314,31 @@ gateway:
   deploymentStrategy:
     type: RollingUpdate
   image:
-    # -- The Docker registry for the gateway image
+    # -- The Docker registry for the NGINX gateway image
     registry: docker.io
-    # -- The gateway image repository
+    # -- The NGINX gateway image repository
     repository: nginxinc/nginx-unprivileged
-    # -- The gateway image tag
+    # -- The NGINX gateway image tag
     tag: 1.31-alpine
     # @schema type:[string, null]
-    # -- Overrides the gateway image tag with an image digest
+    # -- Overrides the NGINX gateway image tag with an image digest
     digest: null
-    # -- The gateway image pull policy
+    # -- The NGINX gateway image pull policy
     pullPolicy: IfNotPresent
+  envoy:
+    image:
+      # -- The Docker registry for the Envoy gateway image
+      registry: docker.io
+      # -- The Envoy gateway image repository
+      repository: envoyproxy/envoy
+      # renovate: docker=docker.io/envoyproxy/envoy
+      # -- The Envoy gateway image tag. Uses the official distroless variant by default.
+      tag: distroless-v1.39.1
+      # @schema type:[string, null]
+      # -- Overrides the Envoy gateway image tag with an image digest
+      digest: null
+      # -- The Envoy gateway image pull policy
+      pullPolicy: IfNotPresent
   # @schema type:[string, null]
   # -- The name of the PriorityClass for gateway pods
   priorityClassName: null
@@ -1478,30 +1530,63 @@ gateway:
     # -- The basic auth username for the gateway
     username: null
     # @schema type:[string, null]
-    # -- The basic auth password for the gateway
+    # -- The basic auth password. The Envoy gateway derives its required `{SHA}` hash from this value.
     password: null
+    # @schema type:[string, null]
+    # -- The `{SHA}` password hash for the Envoy gateway when `loki.tenants` is empty. This takes precedence over `password`. Generate it with `printf %s 'password' | openssl dgst -sha1 -binary | openssl base64 -A` and prefix the result with `{SHA}`.
+    passwordHash: null
     # -- Uses the specified users from the `loki.tenants` list to create the htpasswd file.
-    # if `loki.tenants` is not set, the `gateway.basicAuth.username` and `gateway.basicAuth.password` are used.
+    # If `loki.tenants` is not set, the `gateway.basicAuth.username` and matching password value are used.
     # The value is templated using `tpl`. Override this to use a custom htpasswd, e.g. in case the default causes
-    # high CPU load.
-    # @default -- Either `loki.tenants` or `gateway.basicAuth.username` and `gateway.basicAuth.password`.
+    # high CPU load. The native Envoy Basic Auth filter requires `{SHA}` password hashes; NGINX supports
+    # the existing bcrypt hashes. Envoy derives `{SHA}` hashes from plaintext password inputs.
+    # @default -- Either `loki.tenants` or `gateway.basicAuth.username` and password or passwordHash.
     htpasswd: |
+      {{- $isEnvoy := eq .Values.gateway.type "envoy" }}
       {{- with $tenants := .Values.loki.tenants }}
         {{- range $t := $tenants }}
-          {{- $username := required "All tenants must have a 'name' set" $t.name }}
-          {{- if $passwordHash := $t.passwordHash }}
+          {{- $tenantName := required "All tenants must have a 'name' set" $t.name }}
+          {{- $username := ternary ($t.basicAuthUsername | default $tenantName) $tenantName $isEnvoy }}
+          {{- if and $isEnvoy (or $t.passwordHash $t.password) }}
+            {{- $passwordHash := $t.passwordHash }}
+            {{- if not $passwordHash }}
+              {{- $passwordHash = include "loki.gatewayEnvoySHA1" (required "All tenants must have a 'password' or 'passwordHash' set" $t.password) }}
+            {{- end }}
+            {{- if not (regexMatch "^\\{SHA\\}[A-Za-z0-9+/]{27}=$" $passwordHash) }}
+              {{- fail "Envoy Basic Auth passwordHash values must contain a valid {SHA} Base64-encoded SHA-1 digest" }}
+            {{- end }}
             {{- printf "%s:%s\n" $username $passwordHash }}
-          {{- else if $password := $t.password }}
-            {{- printf "%s\n" (htpasswd $username $password) }}
+          {{- else if $isEnvoy }}
+            {{- if not (or $t.jwtSubClaim $t.clientCertificateCN) }}
+              {{- fail (printf "Tenant %q must set 'password' or 'passwordHash', or an Envoy identity (jwtSubClaim or clientCertificateCN)" $tenantName) }}
+            {{- end }}
           {{- else }}
+            {{- if $passwordHash := $t.passwordHash }}
+            {{- printf "%s:%s\n" $username $passwordHash }}
+            {{- else if $password := $t.password }}
+            {{- printf "%s\n" (htpasswd $username $password) }}
+            {{- else }}
             {{- fail "All tenants must have a 'password' or 'passwordHash' set" }}
+            {{- end }}
           {{- end }}
         {{- end }}
       {{- else }}
-        {{- printf "%s\n" (htpasswd (required "'gateway.basicAuth.username' is required" .Values.gateway.basicAuth.username) (required "'gateway.basicAuth.password' is required" .Values.gateway.basicAuth.password)) }}
+        {{- $username := required "'gateway.basicAuth.username' is required" .Values.gateway.basicAuth.username }}
+        {{- if $isEnvoy }}
+          {{- $passwordHash := .Values.gateway.basicAuth.passwordHash }}
+          {{- if not $passwordHash }}
+            {{- $passwordHash = include "loki.gatewayEnvoySHA1" (required "'gateway.basicAuth.password' or 'gateway.basicAuth.passwordHash' is required for the Envoy gateway" .Values.gateway.basicAuth.password) }}
+          {{- end }}
+          {{- if not (regexMatch "^\\{SHA\\}[A-Za-z0-9+/]{27}=$" $passwordHash) }}
+            {{- fail "gateway.basicAuth.passwordHash must use the {SHA} format for the Envoy gateway" }}
+          {{- end }}
+          {{- printf "%s:%s\n" $username $passwordHash }}
+        {{- else }}
+          {{- printf "%s\n" (htpasswd $username (required "'gateway.basicAuth.password' is required" .Values.gateway.basicAuth.password)) }}
+        {{- end }}
       {{- end }}
     # @schema type:[string, null]
-    # -- Existing basic auth secret to use. Must contain '.htpasswd'
+    # -- Existing basic auth secret to use. Must contain `.htpasswd`; Envoy requires every entry to use the `{SHA}` format. Envoy reads this file at startup; after rotating an existing Secret, restart the gateway Deployment or change gateway.podAnnotations to trigger a rollout.
     existingSecret: null
   # -- Gateway API routes configuration. Mutually exclusive with gateway.ingress.
   # Use either ingress or route, but not both at once.
@@ -1557,10 +1642,10 @@ gateway:
       # -- Timeouts for the default rule
       timeouts: {}
   # @schema skipProperties:true;additionalProperties:true
-  # -- liveness probe for the nginx container in the gateway pods.
+  # -- Liveness probe for the selected gateway container. Envoy defaults to `/livez` on its HTTP listener when this is empty.
   livenessProbe: {}
   # @schema skipProperties:true;additionalProperties:true
-  # Configures the readiness probe for the gateway
+  # -- Readiness probe for the gateway. The default remains compatible with custom NGINX configurations. Envoy replaces this default with HTTP `/ready` on `gateway.envoyConfig.adminPort`; custom probes are preserved.
   readinessProbe:
     httpGet:
       path: /
@@ -1568,10 +1653,10 @@ gateway:
     initialDelaySeconds: 15
     timeoutSeconds: 1
   # @schema skipProperties:true;additionalProperties:true
-  # -- startup probe for the nginx container in the gateway pods.
+  # -- Startup probe for the selected gateway container.
   startupProbe: {}
   nginxConfig:
-    # -- Which schema to be used when building URLs. Can be 'http' or 'https'.
+    # -- Which schema to be used when building upstream URLs. Can be `http` or `https`. Also used by the generated Envoy configuration.
     schema: http
     # -- Enable listener for IPv6, disable on IPv4-only systems
     enableIPv6: true
@@ -1592,13 +1677,13 @@ gateway:
     # -- Whether ssl should be appended to the listen directive of the server block or not.
     ssl: false
     # @schema type:[string, null]
-    # -- Override Read URL
+    # -- Override Read URL. Also used by the generated Envoy configuration, which accepts scheme, host and port only (no path).
     customReadUrl: null
     # @schema type:[string, null]
-    # -- Override Write URL
+    # -- Override Write URL. Also used by the generated Envoy configuration, which accepts scheme, host and port only (no path).
     customWriteUrl: null
     # @schema type:[string, null]
-    # -- Override Backend URL
+    # -- Override Backend URL. Also used by the generated Envoy configuration, which accepts scheme, host and port only (no path).
     customBackendUrl: null
     # -- Allows overriding the DNS resolver address nginx will use.
     resolver: ""
@@ -1607,19 +1692,98 @@ gateway:
     file: |
       {{- include "loki.nginxFile" . -}}
 
+  # -- EXPERIMENTAL: Settings for the Envoy gateway implementation, used when `gateway.type` is `envoy`.
+  # @default -- See values.yaml
+  envoyConfig:
+    # -- Dual-stack Envoy administration port used by the readiness probe. Only `/ready` is accessible unless gateway metrics are enabled, which also allows `/stats/prometheus`.
+    adminPort: 9901
+    # -- Enable an IPv4-compatible IPv6 listener for dual-stack gateway pods.
+    enableIPv6: true
+    # -- Timeout for connections from Envoy to Loki components.
+    connectTimeout: 5s
+    # -- Request timeout. Use `0s` for streaming Loki requests.
+    requestTimeout: 0s
+    # -- Idle timeout for downstream HTTP streams.
+    streamIdleTimeout: 600s
+    # -- Enable TCP keep-alive on listener and upstream connections.
+    tcpKeepAlive: true
+    # -- Use HTTP/2 over cleartext (h2c) for Loki upstreams. WebSocket streams automatically use HTTP/1.1.
+    upstreamHTTP2: true
+    upstreamTLS:
+      # -- CA bundle for HTTPS Loki upstreams. The default is present in the Envoy distroless image. Mount a custom CA with gateway.extraVolumes and gateway.extraVolumeMounts when needed.
+      caCertificateFile: /etc/ssl/certs/ca-certificates.crt
+      # -- Disable certificate chain and hostname verification for HTTPS Loki upstreams. Use only when explicitly required.
+      insecureSkipVerify: false
+    # -- Envoy access log format. Logs are written to stdout; `/livez` is always excluded.
+    logFormat: |
+      [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %UPSTREAM_HOST% "%REQ(USER-AGENT)%" "%REQ(X-FORWARDED-FOR)%"
+    tls:
+      # -- Terminate TLS at Envoy. Required when tenants define `clientCertificateCN`.
+      enabled: false
+      # @schema type:[string, null]
+      # -- Secret containing the server certificate/private key and, for client-certificate authentication, the client CA.
+      existingSecret: null
+      # -- Secret key containing the PEM server certificate.
+      certificateFile: tls.crt
+      # -- Secret key containing the PEM server private key.
+      privateKeyFile: tls.key
+      # -- Secret key containing the CA certificates used to verify client certificates.
+      clientCAFile: ca.crt
+    jwt:
+      # -- Verify bearer JWTs with a remote JWKS before mapping `jwtSubClaim` values to Loki tenants. Defaults target the Kubernetes ServiceAccount issuer.
+      enabled: false
+      # -- Expected JWT issuer (`iss`).
+      issuer: 'https://kubernetes.default.svc.{{ .Values.global.clusterDomain }}'
+      # @schema item:string
+      # -- Allowed JWT audiences (`aud`). Each value is rendered with `tpl`; the default matches the loki-canary projected ServiceAccount token. Leave empty to skip audience validation.
+      audiences:
+        - '{{ include "loki.name" . }}.{{ include "loki.namespace" . }}'
+      remoteJwks:
+        # -- HTTPS or HTTP URI used by Envoy to fetch the JWKS. The value is rendered with `tpl`. The default is the Kubernetes ServiceAccount JWKS endpoint, addressed by its absolute DNS name to skip resolver search-domain lookups.
+        uri: 'https://kubernetes.default.svc.{{ .Values.global.clusterDomain }}./openid/v1/jwks'
+        # @schema type:[string, null]
+        # -- File whose contents Envoy sends as `Authorization: Bearer` when fetching the JWKS, through a loopback credential-injector listener. The default path is a projected token of the gateway ServiceAccount that the chart mounts and Envoy reloads on rotation; the Kubernetes API accepts it for the JWKS endpoint without extra RBAC. Point this at another mounted file for a different credential, or set it to `null` to fetch the JWKS anonymously.
+        bearerTokenFile: /etc/envoy/kubernetes/token
+        # -- Loopback port of the Envoy listener that adds the bearer token to JWKS requests. Only bound on 127.0.0.1 inside the gateway pod. Used when `bearerTokenFile` is set.
+        credentialInjectorPort: 9902
+        # -- Timeout for each remote JWKS request.
+        requestTimeout: 5s
+        # @schema minimum:0
+        # -- Number of times Envoy retries a failed JWKS request (connection failure, reset or 5xx) with a short exponential backoff before giving up on that fetch. Retries during startup keep the listener from serving JWT requests until the JWKS arrives, which also covers the first fetch racing the loopback credential-injector listener. Set to `0` to disable retries.
+        retries: 3
+        # -- How long Envoy caches the fetched JWKS.
+        cacheDuration: 300s
+        # -- Fetch the JWKS asynchronously during listener initialization.
+        asyncFetch: true
+        # -- CA bundle used to validate an HTTPS JWKS endpoint. The Kubernetes root CA is mounted here when JWT verification is enabled. Override this for an external issuer.
+        caCertificateFile: /etc/envoy/kubernetes/ca.crt
+    # -- Config file contents for Envoy. Passed through the `tpl` function to allow templating.
+    # @default -- See values.yaml
+    file: |
+      {{- include "loki.envoyFile" . -}}
+
+  # @schema additionalProperties:{"type":"string"}
+  # -- Additional Envoy configuration files. Keys are mounted in `/etc/envoy` and values are passed through `tpl`. The name `envoy.yaml` is reserved.
+  configs: {}
+
   metrics:
-    # -- Whether gateway metrics should be exported
+    # -- Whether gateway metrics should be exposed. NGINX uses the exporter sidecar; Envoy exposes native Prometheus metrics.
     enabled: true
     image:
+      # -- NGINX access log exporter image registry. Not used by the Envoy gateway.
       registry: ghcr.io
+      # -- NGINX access log exporter image repository. Not used by the Envoy gateway.
       repository: "jkroepke/access-log-exporter"
-      tag: "0.5.1"
+      # -- NGINX access log exporter image tag. Not used by the Envoy gateway.
+      tag: "0.5.2"
+      # -- NGINX access log exporter image pull policy. Not used by the Envoy gateway.
       pullPolicy: IfNotPresent
     # @schema additionalProperties:true
+    # -- Resource requests and limits for the NGINX metrics exporter. Not used by the Envoy gateway.
     resources:
       requests: {}
       limits: {}
-    # -- Container resize policy for the gateway metrics exporter
+    # -- Container resize policy for the NGINX gateway metrics exporter. Not used by the Envoy gateway.
     # Example:
     # resizePolicy:
     #   - resourceName: cpu
@@ -1628,7 +1792,7 @@ gateway:
     #     restartPolicy: RestartContainer
     resizePolicy: []
     # @schema skipProperties:true;additionalProperties:true
-    # -- The SecurityContext for memcached exporter containers
+    # -- The SecurityContext for the NGINX gateway metrics exporter. Not used by the Envoy gateway.
     containerSecurityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
@@ -1640,10 +1804,10 @@ gateway:
       runAsNonRoot: true
       runAsUser: 65532
       runAsGroup: 65532
-    # -- Extra args to add to the exporter container.
+    # -- Extra args to add to the NGINX gateway metrics exporter. Not used by the Envoy gateway.
     extraArgs: []
     # @schema skipProperties:true;additionalProperties:true
-    # -- Liveness probe for memcached exporter
+    # -- Liveness probe for the NGINX gateway metrics exporter. Not used by the Envoy gateway.
     livenessProbe:
       httpGet:
         path: /health
@@ -1653,7 +1817,7 @@ gateway:
       timeoutSeconds: 5
       failureThreshold: 3
     # @schema skipProperties:true;additionalProperties:true
-    # -- Readiness probe for memcached exporter
+    # -- Readiness probe for the NGINX gateway metrics exporter. Not used by the Envoy gateway.
     readinessProbe:
       httpGet:
         path: /health
@@ -1663,7 +1827,7 @@ gateway:
       timeoutSeconds: 3
       failureThreshold: 3
     # @schema skipProperties:true;additionalProperties:true
-    # -- Startup probe for memcached exporter
+    # -- Startup probe for the NGINX gateway metrics exporter. Not used by the Envoy gateway.
     startupProbe: {}
     service:
       # @schema additionalProperties:{"type":"string"}
@@ -2021,6 +2185,13 @@ singleBinary:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless single binary Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for single binary Service
+      labels: {}
   # -- Comma-separated list of Loki modules to load for the single binary
   targetModule: "all"
   # -- Labels for single binary service
@@ -2255,6 +2426,13 @@ write:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless SimpleScalable write Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless SimpleScalable write Service
+      labels: {}
   # -- Additional CLI args for the write
   extraArgs: []
   # -- Environment variables to add to the write pods
@@ -2527,6 +2705,13 @@ read:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless SimpleScalable read Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless SimpleScalable read Service
+      labels: {}
   # -- Additional CLI args for the read
   extraArgs: []
   # @schema type:[string, array, null]
@@ -2766,6 +2951,13 @@ backend:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the backend
   extraArgs: []
   # -- Environment variables to add to the backend pods
@@ -3076,6 +3268,13 @@ ingester:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed ingester Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed ingester Service
+      labels: {}
   # -- Additional CLI args for the ingester
   extraArgs: []
   # -- Environment variables to add to the ingester pods
@@ -3320,6 +3519,9 @@ ingester:
     # -- The migration block allows migrating non zone aware ingesters to zone aware ingesters.
     migration:
       enabled: false
+      # -- Exclude the `zone-default` ingesters from the distributor and ruler ring
+      # by adding `-distributor.excluded-zones=zone-default`. Enable it once the zone aware
+      # ingesters receive all writes, before scaling down the default ingesters.
       excludeDefaultZone: false
       readPath: false
       writePath: false
@@ -3481,6 +3683,13 @@ distributor:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the distributor
   extraArgs: []
   # -- Environment variables to add to the distributor pods
@@ -3748,6 +3957,13 @@ querier:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the querier
   extraArgs: []
   # -- Environment variables to add to the querier pods
@@ -4015,6 +4231,13 @@ queryFrontend:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the query-frontend
   extraArgs: []
   # -- Environment variables to add to the query-frontend pods
@@ -4216,6 +4439,13 @@ queryScheduler:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the query-scheduler
   extraArgs: []
   # -- Environment variables to add to the query-scheduler pods
@@ -4405,6 +4635,13 @@ indexGateway:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the index-gateway
   extraArgs: []
   # -- Environment variables to add to the index-gateway pods
@@ -4660,6 +4897,13 @@ compactor:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the compactor
   extraArgs: []
   # -- Environment variables to add to the compactor pods
@@ -4895,6 +5139,13 @@ bloomGateway:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the bloom-gateway
   extraArgs: []
   # -- Environment variables to add to the bloom-gateway pods
@@ -5120,6 +5371,13 @@ bloomPlanner:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the bloom-planner
   extraArgs: []
   # -- Environment variables to add to the bloom-planner pods
@@ -5385,6 +5643,13 @@ bloomBuilder:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the bloom-builder
   extraArgs: []
   # -- Environment variables to add to the bloom-builder pods
@@ -5810,6 +6075,13 @@ ruler:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the ruler
   extraArgs: []
   # -- Environment variables to add to the ruler pods
@@ -6086,6 +6358,13 @@ overridesExporter:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless overridesExporter service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless overridesExporter Service
+      labels: {}
   # -- Additional CLI args for the overrides-exporter
   extraArgs: []
   # -- Environment variables to add to the overrides-exporter pods
@@ -6264,13 +6543,15 @@ memcached:
 memcachedExporter:
   # -- Whether memcached metrics should be exported
   enabled: true
+  # -- Port used by the memcached exporter to expose metrics
+  port: 9150
   image:
     # -- Memcached exporter Docker image registry
     registry: docker.io
     # -- Memcached exporter Docker image repository
     repository: prom/memcached-exporter
     # -- Memcached exporter Docker image tag
-    tag: v0.17.0
+    tag: v0.18.0
     # -- Memcached exporter Docker image pull policy
     pullPolicy: IfNotPresent
   # @schema additionalProperties:true
@@ -6850,48 +7131,6 @@ rollout_operator:
     timeoutSeconds: 10
     # -- Validating and mutating webhook failure policy. `Ignore` or `Fail`.
     failurePolicy: "Ignore"
-# -- Ignore MinIO deprecation validation when `minio.enabled=true`. This is a temporary compatibility escape hatch.
-ignoreMinioDeprecation: false
-
-# @schema skipProperties:true;additionalProperties:true
-# -- Configuration for the minio subchart (deprecated)
-minio:
-  enabled: false
-  replicas: 1
-  # Minio requires 2 to 16 drives for erasure code (drivesPerNode * replicas)
-  # https://docs.min.io/docs/minio-erasure-code-quickstart-guide
-  # Since we only have 1 replica, that means 2 drives must be used.
-  drivesPerNode: 2
-  # root user
-  rootUser: root-user
-  rootPassword: supersecretpassword
-  # The first user in the list below is used for Loki authentication.
-  # You can add additional users if desired; they will not impact Loki.
-  # `accessKey` = username, `secretKey` = password
-  users:
-    - accessKey: logs-user
-      secretKey: supersecretpassword
-      policy: readwrite
-  buckets:
-    - name: chunks
-      policy: none
-      purge: false
-    - name: ruler
-      policy: none
-      purge: false
-  persistence:
-    size: 5Gi
-    # @schema additionalProperties:{"type":"string"}
-    annotations: {}
-  # @schema additionalProperties:true
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-  # @schema type:[string, null]
-  # Allow the address used by Loki to refer to Minio to be overridden
-  address: null
-
 # @schema type:[array, object, string, null]
 # Create extra manifests via values
 # Can be a list or dictionary, both are passed through `tpl`.  If dict, keys are ignored and only values are used.
@@ -7273,6 +7512,13 @@ tableManager:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless tableManager Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless tableManager compactor Service
+      labels: {}
   # -- Additional CLI args for the table-manager
   extraArgs: []
   # -- Environment variables to add to the table-manager pods
