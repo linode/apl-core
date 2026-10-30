@@ -404,6 +404,25 @@
                                 }
                             }
                         },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
                         "ipFamilies": {
                             "description": "ipFamilies for backend Service Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services",
                             "type": "array"
@@ -910,6 +929,25 @@
                                 }
                             }
                         },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
                         "ipFamilies": {
                             "description": "ipFamilies for bloom-builder Service Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services",
                             "type": "array"
@@ -1346,6 +1384,25 @@
                                 "grpc": {
                                     "description": "Set the optional grpc service protocol. Ex: \"grpc\", \"http2\" or \"https\"",
                                     "type": "string"
+                                }
+                            }
+                        },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
                                 }
                             }
                         },
@@ -1790,6 +1847,25 @@
                                 "grpc": {
                                     "description": "Set the optional grpc service protocol. Ex: \"grpc\", \"http2\" or \"https\"",
                                     "type": "string"
+                                }
+                            }
+                        },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
                                 }
                             }
                         },
@@ -2820,6 +2896,25 @@
                                 }
                             }
                         },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
                         "ipFamilies": {
                             "description": "ipFamilies for compactor Service Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services",
                             "type": "array"
@@ -3121,10 +3216,29 @@
                     "type": "object",
                     "properties": {
                         "annotations": {
-                            "description": "Common annotations for all services",
+                            "description": "Common annotations for all non-headless services",
                             "type": "object",
                             "additionalProperties": {
                                 "type": "string"
+                            }
+                        },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Common annotations for all headless services",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Common labels for all headless services",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
                             }
                         },
                         "ipFamilies": {
@@ -3136,7 +3250,7 @@
                             "type": "string"
                         },
                         "labels": {
-                            "description": "Common labels for all services",
+                            "description": "Common labels for all non-headless services",
                             "type": "object",
                             "additionalProperties": {
                                 "type": "string"
@@ -3536,6 +3650,25 @@
                                 }
                             }
                         },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
                         "ipFamilies": {
                             "description": "ipFamilies for distributor Service Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services",
                             "type": "array"
@@ -3747,18 +3880,25 @@
                             "type": "boolean"
                         },
                         "existingSecret": {
-                            "description": "Existing basic auth secret to use. Must contain '.htpasswd'",
+                            "description": "Existing basic auth secret to use. Must contain `.htpasswd`; Envoy requires every entry to use the `{SHA}` format. Envoy reads this file at startup; after rotating an existing Secret, restart the gateway Deployment or change gateway.podAnnotations to trigger a rollout.",
                             "type": [
                                 "string",
                                 "null"
                             ]
                         },
                         "htpasswd": {
-                            "description": "Uses the specified users from the `loki.tenants` list to create the htpasswd file. if `loki.tenants` is not set, the `gateway.basicAuth.username` and `gateway.basicAuth.password` are used. The value is templated using `tpl`. Override this to use a custom htpasswd, e.g. in case the default causes high CPU load.",
+                            "description": "Uses the specified users from the `loki.tenants` list to create the htpasswd file. If `loki.tenants` is not set, the `gateway.basicAuth.username` and matching password value are used. The value is templated using `tpl`. Override this to use a custom htpasswd, e.g. in case the default causes high CPU load. The native Envoy Basic Auth filter requires `{SHA}` password hashes; NGINX supports the existing bcrypt hashes. Envoy derives `{SHA}` hashes from plaintext password inputs.",
                             "type": "string"
                         },
                         "password": {
-                            "description": "The basic auth password for the gateway",
+                            "description": "The basic auth password. The Envoy gateway derives its required `{SHA}` hash from this value.",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "passwordHash": {
+                            "description": "The `{SHA}` password hash for the Envoy gateway when `loki.tenants` is empty. This takes precedence over `password`. Generate it with `printf %s 'password' | openssl dgst -sha1 -binary | openssl base64 -A` and prefix the result with `{SHA}`.",
                             "type": [
                                 "string",
                                 "null"
@@ -3771,6 +3911,13 @@
                                 "null"
                             ]
                         }
+                    }
+                },
+                "configs": {
+                    "description": "Additional Envoy configuration files. Keys are mounted in `/etc/envoy` and values are passed through `tpl`. The name `envoy.yaml` is reserved.",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
                     }
                 },
                 "containerPort": {
@@ -3798,6 +3945,183 @@
                 "enabled": {
                     "description": "Specifies whether the gateway should be enabled",
                     "type": "boolean"
+                },
+                "envoy": {
+                    "type": "object",
+                    "properties": {
+                        "image": {
+                            "type": "object",
+                            "properties": {
+                                "digest": {
+                                    "description": "Overrides the Envoy gateway image tag with an image digest",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "pullPolicy": {
+                                    "description": "The Envoy gateway image pull policy",
+                                    "type": "string"
+                                },
+                                "registry": {
+                                    "description": "The Docker registry for the Envoy gateway image",
+                                    "type": "string"
+                                },
+                                "repository": {
+                                    "description": "The Envoy gateway image repository",
+                                    "type": "string"
+                                },
+                                "tag": {
+                                    "description": "The Envoy gateway image tag. Uses the official distroless variant by default.",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "envoyConfig": {
+                    "description": "EXPERIMENTAL: Settings for the Envoy gateway implementation, used when `gateway.type` is `envoy`.",
+                    "type": "object",
+                    "properties": {
+                        "adminPort": {
+                            "description": "Dual-stack Envoy administration port used by the readiness probe. Only `/ready` is accessible unless gateway metrics are enabled, which also allows `/stats/prometheus`.",
+                            "type": "integer"
+                        },
+                        "connectTimeout": {
+                            "description": "Timeout for connections from Envoy to Loki components.",
+                            "type": "string"
+                        },
+                        "enableIPv6": {
+                            "description": "Enable an IPv4-compatible IPv6 listener for dual-stack gateway pods.",
+                            "type": "boolean"
+                        },
+                        "file": {
+                            "description": "Config file contents for Envoy. Passed through the `tpl` function to allow templating.",
+                            "type": "string"
+                        },
+                        "jwt": {
+                            "type": "object",
+                            "properties": {
+                                "audiences": {
+                                    "description": "Allowed JWT audiences (`aud`). Each value is rendered with `tpl`; the default matches the loki-canary projected ServiceAccount token. Leave empty to skip audience validation.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "enabled": {
+                                    "description": "Verify bearer JWTs with a remote JWKS before mapping `jwtSubClaim` values to Loki tenants. Defaults target the Kubernetes ServiceAccount issuer.",
+                                    "type": "boolean"
+                                },
+                                "issuer": {
+                                    "description": "Expected JWT issuer (`iss`).",
+                                    "type": "string"
+                                },
+                                "remoteJwks": {
+                                    "type": "object",
+                                    "properties": {
+                                        "asyncFetch": {
+                                            "description": "Fetch the JWKS asynchronously during listener initialization.",
+                                            "type": "boolean"
+                                        },
+                                        "bearerTokenFile": {
+                                            "description": "File whose contents Envoy sends as `Authorization: Bearer` when fetching the JWKS, through a loopback credential-injector listener. The default path is a projected token of the gateway ServiceAccount that the chart mounts and Envoy reloads on rotation; the Kubernetes API accepts it for the JWKS endpoint without extra RBAC. Point this at another mounted file for a different credential, or set it to `null` to fetch the JWKS anonymously.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "caCertificateFile": {
+                                            "description": "CA bundle used to validate an HTTPS JWKS endpoint. The Kubernetes root CA is mounted here when JWT verification is enabled. Override this for an external issuer.",
+                                            "type": "string"
+                                        },
+                                        "cacheDuration": {
+                                            "description": "How long Envoy caches the fetched JWKS.",
+                                            "type": "string"
+                                        },
+                                        "credentialInjectorPort": {
+                                            "description": "Loopback port of the Envoy listener that adds the bearer token to JWKS requests. Only bound on 127.0.0.1 inside the gateway pod. Used when `bearerTokenFile` is set.",
+                                            "type": "integer"
+                                        },
+                                        "requestTimeout": {
+                                            "description": "Timeout for each remote JWKS request.",
+                                            "type": "string"
+                                        },
+                                        "retries": {
+                                            "description": "Number of times Envoy retries a failed JWKS request (connection failure, reset or 5xx) with a short exponential backoff before giving up on that fetch. Retries during startup keep the listener from serving JWT requests until the JWKS arrives, which also covers the first fetch racing the loopback credential-injector listener. Set to `0` to disable retries.",
+                                            "type": "integer",
+                                            "minimum": 0
+                                        },
+                                        "uri": {
+                                            "description": "HTTPS or HTTP URI used by Envoy to fetch the JWKS. The value is rendered with `tpl`. The default is the Kubernetes ServiceAccount JWKS endpoint, addressed by its absolute DNS name to skip resolver search-domain lookups.",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "logFormat": {
+                            "description": "Envoy access log format. Logs are written to stdout; `/livez` is always excluded.",
+                            "type": "string"
+                        },
+                        "requestTimeout": {
+                            "description": "Request timeout. Use `0s` for streaming Loki requests.",
+                            "type": "string"
+                        },
+                        "streamIdleTimeout": {
+                            "description": "Idle timeout for downstream HTTP streams.",
+                            "type": "string"
+                        },
+                        "tcpKeepAlive": {
+                            "description": "Enable TCP keep-alive on listener and upstream connections.",
+                            "type": "boolean"
+                        },
+                        "tls": {
+                            "type": "object",
+                            "properties": {
+                                "certificateFile": {
+                                    "description": "Secret key containing the PEM server certificate.",
+                                    "type": "string"
+                                },
+                                "clientCAFile": {
+                                    "description": "Secret key containing the CA certificates used to verify client certificates.",
+                                    "type": "string"
+                                },
+                                "enabled": {
+                                    "description": "Terminate TLS at Envoy. Required when tenants define `clientCertificateCN`.",
+                                    "type": "boolean"
+                                },
+                                "existingSecret": {
+                                    "description": "Secret containing the server certificate/private key and, for client-certificate authentication, the client CA.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "privateKeyFile": {
+                                    "description": "Secret key containing the PEM server private key.",
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "upstreamHTTP2": {
+                            "description": "Use HTTP/2 over cleartext (h2c) for Loki upstreams. WebSocket streams automatically use HTTP/1.1.",
+                            "type": "boolean"
+                        },
+                        "upstreamTLS": {
+                            "type": "object",
+                            "properties": {
+                                "caCertificateFile": {
+                                    "description": "CA bundle for HTTPS Loki upstreams. The default is present in the Envoy distroless image. Mount a custom CA with gateway.extraVolumes and gateway.extraVolumeMounts when needed.",
+                                    "type": "string"
+                                },
+                                "insecureSkipVerify": {
+                                    "description": "Disable certificate chain and hostname verification for HTTPS Loki upstreams. Use only when explicitly required.",
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
                 },
                 "extraArgs": {
                     "description": "Additional CLI args for the gateway",
@@ -3837,26 +4161,26 @@
                     "type": "object",
                     "properties": {
                         "digest": {
-                            "description": "Overrides the gateway image tag with an image digest",
+                            "description": "Overrides the NGINX gateway image tag with an image digest",
                             "type": [
                                 "string",
                                 "null"
                             ]
                         },
                         "pullPolicy": {
-                            "description": "The gateway image pull policy",
+                            "description": "The NGINX gateway image pull policy",
                             "type": "string"
                         },
                         "registry": {
-                            "description": "The Docker registry for the gateway image",
+                            "description": "The Docker registry for the NGINX gateway image",
                             "type": "string"
                         },
                         "repository": {
-                            "description": "The gateway image repository",
+                            "description": "The NGINX gateway image repository",
                             "type": "string"
                         },
                         "tag": {
-                            "description": "The gateway image tag",
+                            "description": "The NGINX gateway image tag",
                             "type": "string"
                         }
                     }
@@ -3979,7 +4303,7 @@
                     "type": "object"
                 },
                 "livenessProbe": {
-                    "description": "liveness probe for the nginx container in the gateway pods.",
+                    "description": "Liveness probe for the selected gateway container. Envoy defaults to `/livez` on its HTTP listener when this is empty.",
                     "type": "object",
                     "additionalProperties": true
                 },
@@ -3987,50 +4311,55 @@
                     "type": "object",
                     "properties": {
                         "containerSecurityContext": {
-                            "description": "The SecurityContext for memcached exporter containers",
+                            "description": "The SecurityContext for the NGINX gateway metrics exporter. Not used by the Envoy gateway.",
                             "type": "object",
                             "additionalProperties": true
                         },
                         "enabled": {
-                            "description": "Whether gateway metrics should be exported",
+                            "description": "Whether gateway metrics should be exposed. NGINX uses the exporter sidecar; Envoy exposes native Prometheus metrics.",
                             "type": "boolean"
                         },
                         "extraArgs": {
-                            "description": "Extra args to add to the exporter container.",
+                            "description": "Extra args to add to the NGINX gateway metrics exporter. Not used by the Envoy gateway.",
                             "type": "array"
                         },
                         "image": {
                             "type": "object",
                             "properties": {
                                 "pullPolicy": {
+                                    "description": "NGINX access log exporter image pull policy. Not used by the Envoy gateway.",
                                     "type": "string"
                                 },
                                 "registry": {
+                                    "description": "NGINX access log exporter image registry. Not used by the Envoy gateway.",
                                     "type": "string"
                                 },
                                 "repository": {
+                                    "description": "NGINX access log exporter image repository. Not used by the Envoy gateway.",
                                     "type": "string"
                                 },
                                 "tag": {
+                                    "description": "NGINX access log exporter image tag. Not used by the Envoy gateway.",
                                     "type": "string"
                                 }
                             }
                         },
                         "livenessProbe": {
-                            "description": "Liveness probe for memcached exporter",
+                            "description": "Liveness probe for the NGINX gateway metrics exporter. Not used by the Envoy gateway.",
                             "type": "object",
                             "additionalProperties": true
                         },
                         "readinessProbe": {
-                            "description": "Readiness probe for memcached exporter",
+                            "description": "Readiness probe for the NGINX gateway metrics exporter. Not used by the Envoy gateway.",
                             "type": "object",
                             "additionalProperties": true
                         },
                         "resizePolicy": {
-                            "description": "Container resize policy for the gateway metrics exporter Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
+                            "description": "Container resize policy for the NGINX gateway metrics exporter. Not used by the Envoy gateway. Example: resizePolicy: - resourceName: cpu restartPolicy: NotRequired - resourceName: memory restartPolicy: RestartContainer",
                             "type": "array"
                         },
                         "resources": {
+                            "description": "Resource requests and limits for the NGINX metrics exporter. Not used by the Envoy gateway.",
                             "type": "object",
                             "properties": {
                                 "limits": {
@@ -4062,7 +4391,7 @@
                             }
                         },
                         "startupProbe": {
-                            "description": "Startup probe for memcached exporter",
+                            "description": "Startup probe for the NGINX gateway metrics exporter. Not used by the Envoy gateway.",
                             "type": "object",
                             "additionalProperties": true
                         }
@@ -4076,21 +4405,21 @@
                             "type": "string"
                         },
                         "customBackendUrl": {
-                            "description": "Override Backend URL",
+                            "description": "Override Backend URL. Also used by the generated Envoy configuration, which accepts scheme, host and port only (no path).",
                             "type": [
                                 "string",
                                 "null"
                             ]
                         },
                         "customReadUrl": {
-                            "description": "Override Read URL",
+                            "description": "Override Read URL. Also used by the generated Envoy configuration, which accepts scheme, host and port only (no path).",
                             "type": [
                                 "string",
                                 "null"
                             ]
                         },
                         "customWriteUrl": {
-                            "description": "Override Write URL",
+                            "description": "Override Write URL. Also used by the generated Envoy configuration, which accepts scheme, host and port only (no path).",
                             "type": [
                                 "string",
                                 "null"
@@ -4121,7 +4450,7 @@
                             "type": "string"
                         },
                         "schema": {
-                            "description": "Which schema to be used when building URLs. Can be 'http' or 'https'.",
+                            "description": "Which schema to be used when building upstream URLs. Can be `http` or `https`. Also used by the generated Envoy configuration.",
                             "type": "string"
                         },
                         "serverSnippet": {
@@ -4212,6 +4541,7 @@
                     ]
                 },
                 "readinessProbe": {
+                    "description": "Readiness probe for the gateway. The default remains compatible with custom NGINX configurations. Envoy replaces this default with HTTP `/ready` on `gateway.envoyConfig.adminPort`; custom probes are preserved.",
                     "type": "object",
                     "additionalProperties": true
                 },
@@ -4421,7 +4751,7 @@
                     }
                 },
                 "startupProbe": {
-                    "description": "startup probe for the nginx container in the gateway pods.",
+                    "description": "Startup probe for the selected gateway container.",
                     "type": "object",
                     "additionalProperties": true
                 },
@@ -4438,6 +4768,14 @@
                     "items": {
                         "type": "object"
                     }
+                },
+                "type": {
+                    "description": "Selects the gateway proxy implementation. The Envoy implementation is EXPERIMENTAL and opt-in; its values under `gateway.envoyConfig` and the rendered Envoy configuration may change in minor releases.",
+                    "type": "string",
+                    "enum": [
+                        "nginx",
+                        "envoy"
+                    ]
                 },
                 "verboseLogging": {
                     "description": "Enable logging of 2xx and 3xx HTTP requests",
@@ -4507,10 +4845,6 @@
                     ]
                 }
             }
-        },
-        "ignoreMinioDeprecation": {
-            "description": "Ignore MinIO deprecation validation when `minio.enabled=true`. This is a temporary compatibility escape hatch.",
-            "type": "boolean"
         },
         "imagePullSecrets": {
             "description": "Image pull secrets for Docker images",
@@ -4824,6 +5158,25 @@
                                 "grpc": {
                                     "description": "Set the optional grpc service protocol. Ex: \"grpc\", \"http2\" or \"https\"",
                                     "type": "string"
+                                }
+                            }
+                        },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
                                 }
                             }
                         },
@@ -5382,6 +5735,25 @@
                                 }
                             }
                         },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless Distributed ingester Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless Distributed ingester Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
                         "ipFamilies": {
                             "description": "ipFamilies for ingester Service Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services",
                             "type": "array"
@@ -5576,6 +5948,7 @@
                                     "type": "boolean"
                                 },
                                 "excludeDefaultZone": {
+                                    "description": "Exclude the `zone-default` ingesters from the distributor and ruler ring by adding `-distributor.excluded-zones=zone-default`. Enable it once the zone aware ingesters receive all writes, before scaling down the default ingesters.",
                                     "type": "boolean"
                                 },
                                 "readPath": {
@@ -6023,6 +6396,18 @@
                 "service": {
                     "type": "object",
                     "properties": {
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless Loki services",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
                         "ipFamilies": {
                             "description": "ipFamilies for all services Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services",
                             "type": "array"
@@ -6038,14 +6423,14 @@
                     }
                 },
                 "serviceAnnotations": {
-                    "description": "Common annotations for all services",
+                    "description": "Common annotations for all non-headless services",
                     "type": "object",
                     "additionalProperties": {
                         "type": "string"
                     }
                 },
                 "serviceLabels": {
-                    "description": "Common labels for all services",
+                    "description": "Common labels for all non-headless services",
                     "type": "object",
                     "additionalProperties": {
                         "type": "string"
@@ -6071,8 +6456,60 @@
                     "additionalProperties": true
                 },
                 "tenants": {
-                    "description": "Tenants list to be created on nginx htpasswd file, with name and password or passwordHash keys\u003cbr\u003e\u003cbr\u003e Example: \u003cpre\u003e tenants:\u003cbr\u003e - name: \"test-user-1\"\u003cbr\u003e password: \"test-password-1\"\u003cbr\u003e - name: \"test-user-2\"\u003cbr\u003e passwordHash: \"$2y$10$7O40CaY1yz7fu9O24k2/u.ct/wELYHRBsn25v/7AyuQ8E8hrLqpva\" # generated using `htpasswd -nbBC10 test-user-2 test-password-2` \u003c/pre\u003e",
-                    "type": "array"
+                    "description": "Tenants used by the gateway for authentication and `X-Scope-OrgID` mapping. Only `name`, `password`, and `passwordHash` are supported by both gateway implementations; `basicAuthUsername`, `clientCertificateCN`, and `jwtSubClaim` are supported only when `gateway.type` is `envoy`. `name` is the value assigned to `X-Scope-OrgID` and the default Basic Auth username. It can be a single Loki tenant ID or, when multi-tenant queries are enabled, a pipe-separated list of tenant IDs. `jwtSubClaim` entries are rendered with `tpl`, allowing values such as `system:serviceaccount:{{ .Release.Namespace }}:loki-canary`. Envoy Basic Auth accepts a `{SHA}` `passwordHash`, or derives one from `password`; JWT-only Envoy tenants do not need either.\u003cbr\u003e\u003cbr\u003e Example: \u003cpre\u003e tenants:\u003cbr\u003e - name: \"test-user-1\"\u003cbr\u003e password: \"test-password-1\"\u003cbr\u003e - name: \"test-user-2\"\u003cbr\u003e passwordHash: \"$2y$10$7O40CaY1yz7fu9O24k2/u.ct/wELYHRBsn25v/7AyuQ8E8hrLqpva\" # NGINX: generated using `htpasswd -nbBC10 test-user-2 test-password-2` # Map requests authenticated as the dedicated user \"grafana\" to all three tenants by\u003cbr\u003e # setting X-Scope-OrgID to \"cluster1|cluster2|cluster3\".\u003cbr\u003e - name: \"cluster1|cluster2|cluster3\"\u003cbr\u003e basicAuthUsername: \"grafana\"\u003cbr\u003e clientCertificateCN:\u003cbr\u003e - \"grafana-client\"\u003cbr\u003e jwtSubClaim:\u003cbr\u003e - \"system:serviceaccount:grafana:grafana\" \u003c/pre\u003e",
+                    "allOf": [
+                        {
+                            "type": "array",
+                            "items": {
+                                "required": [
+                                    "name"
+                                ]
+                            }
+                        }
+                    ],
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "basicAuthUsername": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "clientCertificateCN": {
+                                "type": "array",
+                                "uniqueItems": true,
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "jwtSubClaim": {
+                                "type": "array",
+                                "uniqueItems": true,
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "name": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "password": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "passwordHash": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
                 },
                 "testSchemaConfig": {
                     "type": "object",
@@ -6392,6 +6829,25 @@
                     "description": "Tenant to use for loki-canary",
                     "type": "object",
                     "properties": {
+                        "bearerToken": {
+                            "type": "object",
+                            "properties": {
+                                "audience": {
+                                    "description": "Requested audience for the projected ServiceAccount token. Rendered with `tpl`; this must match an Envoy JWT audience when audience validation is enabled.",
+                                    "type": "string"
+                                },
+                                "enabled": {
+                                    "description": "Use a projected Kubernetes ServiceAccount token with loki-canary's `-bearer-token-file` option instead of Basic Auth. Requires a loki-canary build that supports this option.",
+                                    "type": "boolean"
+                                },
+                                "expirationSeconds": {
+                                    "description": "Lifetime in seconds for the projected ServiceAccount token.",
+                                    "type": "integer",
+                                    "maximum": 31536000,
+                                    "minimum": 600
+                                }
+                            }
+                        },
                         "name": {
                             "description": "Name of the tenant for loki-canary",
                             "type": "string"
@@ -6585,6 +7041,10 @@
                     "type": "object",
                     "additionalProperties": true
                 },
+                "port": {
+                    "description": "Port used by the memcached exporter to expose metrics",
+                    "type": "integer"
+                },
                 "readinessProbe": {
                     "description": "Readiness probe for memcached exporter",
                     "type": "object",
@@ -6632,11 +7092,6 @@
                     }
                 }
             }
-        },
-        "minio": {
-            "description": "Configuration for the minio subchart (deprecated)",
-            "type": "object",
-            "additionalProperties": true
         },
         "monitoring": {
             "description": "Monitoring section determines which monitoring features to enable",
@@ -6984,6 +7439,18 @@
                         }
                     }
                 },
+                "gatewayJwks": {
+                    "type": "object",
+                    "properties": {
+                        "cidrs": {
+                            "description": "CIDRs allowed for Envoy gateway JWKS egress in the standard NetworkPolicy. Empty permits the configured JWKS port to any destination because Kubernetes NetworkPolicy cannot select the API server Service by name.",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
                 "ingress": {
                     "type": "object",
                     "properties": {
@@ -7260,6 +7727,25 @@
                                 "grpc": {
                                     "description": "Set the optional grpc service protocol. Ex: \"grpc\", \"http2\" or \"https\"",
                                     "type": "string"
+                                }
+                            }
+                        },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless overridesExporter service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless overridesExporter Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
                                 }
                             }
                         },
@@ -8158,6 +8644,25 @@
                                 }
                             }
                         },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
                         "ipFamilies": {
                             "description": "ipFamilies for querier Service Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services",
                             "type": "array"
@@ -8653,6 +9158,25 @@
                                 }
                             }
                         },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
                         "ipFamilies": {
                             "description": "ipFamilies for query-frontend Service Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services",
                             "type": "array"
@@ -9016,6 +9540,25 @@
                                 "grpc": {
                                     "description": "Set the optional grpc service protocol. Ex: \"grpc\", \"http2\" or \"https\"",
                                     "type": "string"
+                                }
+                            }
+                        },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
                                 }
                             }
                         },
@@ -9485,6 +10028,25 @@
                                 "grpc": {
                                     "description": "Set the optional grpc service protocol. Ex: \"grpc\", \"http2\" or \"https\"",
                                     "type": "string"
+                                }
+                            }
+                        },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless SimpleScalable read Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless SimpleScalable read Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
                                 }
                             }
                         },
@@ -10271,6 +10833,25 @@
                                 }
                             }
                         },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless Distributed compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
                         "ipFamilies": {
                             "description": "ipFamilies for ruler Service Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services",
                             "type": "array"
@@ -10953,6 +11534,25 @@
                                 }
                             }
                         },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless single binary Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for single binary Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
                         "ipFamilies": {
                             "description": "ipFamilies for single binary Service Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services",
                             "type": "array"
@@ -11186,6 +11786,25 @@
                                 "grpc": {
                                     "description": "Set the optional grpc service protocol. Ex: \"grpc\", \"http2\" or \"https\"",
                                     "type": "string"
+                                }
+                            }
+                        },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless tableManager Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless tableManager compactor Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
                                 }
                             }
                         },
@@ -11750,6 +12369,25 @@
                                 }
                             }
                         },
+                        "headlessService": {
+                            "type": "object",
+                            "properties": {
+                                "annotations": {
+                                    "description": "Additional annotations for headless SimpleScalable write Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Additional labels for headless SimpleScalable write Service",
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
                         "ipFamilies": {
                             "description": "ipFamilies for write Service Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services",
                             "type": "array"
@@ -11861,7 +12499,7 @@
             }
         }
     },
-    "additionalProperties": true,
+    "additionalProperties": false,
     "$defs": {
         "_definitions.json": {
             "definitions": {

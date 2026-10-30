@@ -12,6 +12,16 @@ loki:
         index:
           prefix: loki_index_
           period: 24h
+  storage:
+    type: s3
+    # Point these at your own S3-compatible object storage
+    bucketNames:
+      chunks: FIXME
+      ruler: FIXME
+    s3:
+      endpoint: FIXME
+      accessKeyId: FIXME
+      secretAccessKey: FIXME
   ingester:
     chunk_encoding: snappy
   tracing:
@@ -38,10 +48,6 @@ read:
 write:
   replicas: 3
 
-# Enable minio for storage
-minio:
-  enabled: true
-
 # Zero out replica counts of other deployment modes
 singleBinary:
   replicas: 0
@@ -59,8 +65,6 @@ distributor:
 compactor:
   replicas: 0
 indexGateway:
-  replicas: 0
-bloomCompactor:
   replicas: 0
 bloomGateway:
   replicas: 0
