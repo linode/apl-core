@@ -66,3 +66,6 @@ changes:
       - ingress.platformClass.gateway.autoscaling.targetMemoryUtilizationPercentage
       - ingress.classes[].gateway.autoscaling.targetMemoryUtilizationPercentage
       - apps.knative.serving.gateway.autoscaling.targetMemoryUtilizationPercentage
+  - version: 78
+    customFunctions:
+      - backfillApiServerEndpoint

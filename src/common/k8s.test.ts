@@ -3,6 +3,7 @@ import {
   AppsV1Api,
   CoreV1Api,
   CustomObjectsApi,
+  DiscoveryV1Api,
   Exec,
   KubeConfig,
   PatchStrategy,
@@ -23,10 +24,12 @@ import {
   appRevisionMatches,
   argoCdHasUnrecoverableErrors,
   deleteStatefulSetPods,
+  ensureApiServerEndpoint,
   getSealedSecretsPEM,
   patchArgoCdApp,
   patchContainerResourcesOfSts,
   patchStatefulSetResources,
+  resolveApiServerEndpoint,
 } from './k8s'
 
 const ARGOCD_BASE_MANIFEST = {
@@ -1038,5 +1041,139 @@ describe('getSealedSecretsPEM', () => {
     const result = await getSealedSecretsPEM()
     expect(result).toBe(mockPem)
     expect(MockX509Certificate).toHaveBeenCalledWith('single-cert')
+  })
+})
+
+describe('resolveApiServerEndpoint', () => {
+  const makeDiscovery = (items: Record<string, any>[]) => ({
+    listNamespacedEndpointSlice: jest.fn().mockResolvedValue({ items }),
+  })
+
+  it('returns the ip and port from the kubernetes EndpointSlice', async () => {
+    const discovery = makeDiscovery([{ endpoints: [{ addresses: ['172.233.54.96'] }], ports: [{ port: 6443 }] }])
+
+    const result = await resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api })
+
+    expect(result).toEqual({ ips: ['172.233.54.96'], port: 6443 })
+    expect(discovery.listNamespacedEndpointSlice).toHaveBeenCalledWith({
+      namespace: 'default',
+      labelSelector: 'kubernetes.io/service-name=kubernetes',
+    })
+  })
+
+  it('collects a backend from every endpoint across every slice (HA control plane)', async () => {
+    const discovery = makeDiscovery([
+      {
+        endpoints: [{ addresses: ['172.233.54.96'] }, { addresses: ['172.233.54.97'] }],
+        ports: [{ port: 6443 }],
+      },
+      { endpoints: [{ addresses: ['172.233.54.98'] }], ports: [{ port: 6443 }] },
+    ])
+
+    const result = await resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api })
+
+    expect(result).toEqual({ ips: ['172.233.54.96', '172.233.54.97', '172.233.54.98'], port: 6443 })
+  })
+
+  it('excludes endpoints explicitly marked not ready', async () => {
+    const discovery = makeDiscovery([
+      {
+        endpoints: [
+          { addresses: ['172.233.54.96'], conditions: { ready: true } },
+          { addresses: ['172.233.54.97'], conditions: { ready: false } },
+        ],
+        ports: [{ port: 6443 }],
+      },
+    ])
+
+    const result = await resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api })
+
+    expect(result).toEqual({ ips: ['172.233.54.96'], port: 6443 })
+  })
+
+  it('returns undefined when no EndpointSlice is found', async () => {
+    const discovery = makeDiscovery([])
+
+    const result = await resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api })
+
+    expect(result).toBeUndefined()
+  })
+
+  it('propagates errors from the API call', async () => {
+    const discovery = { listNamespacedEndpointSlice: jest.fn().mockRejectedValue(new Error('unreachable')) }
+
+    await expect(resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api })).rejects.toThrow(
+      'unreachable',
+    )
+  })
+})
+
+describe('ensureApiServerEndpoint', () => {
+  const originalNodeEnv = process.env.NODE_ENV
+  beforeEach(() => {
+    process.env.NODE_ENV = 'production'
+  })
+  afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv
+  })
+
+  it('sets cluster.apiServerIps and apiServerPort when resolution succeeds', async () => {
+    const values: Record<string, any> = { cluster: {} }
+    const deps = {
+      resolveApiServerEndpoint: jest.fn().mockResolvedValue({ ips: ['172.233.54.96', '172.233.54.97'], port: 6443 }),
+    }
+
+    await ensureApiServerEndpoint(values, deps, terminal('test'))
+
+    expect(values.cluster).toMatchObject({ apiServerIps: ['172.233.54.96', '172.233.54.97'], apiServerPort: 6443 })
+  })
+
+  it('does not override apiServerIps and apiServerPort already set', async () => {
+    const values: Record<string, any> = { cluster: { apiServerIps: ['1.2.3.4'], apiServerPort: 1234 } }
+    const deps = { resolveApiServerEndpoint: jest.fn() }
+
+    await ensureApiServerEndpoint(values, deps, terminal('test'))
+
+    expect(values.cluster).toMatchObject({ apiServerIps: ['1.2.3.4'], apiServerPort: 1234 })
+    expect(deps.resolveApiServerEndpoint).not.toHaveBeenCalled()
+  })
+
+  it('defaults apiServerPort to 6443 when the user sets only apiServerIps', async () => {
+    const values: Record<string, any> = { cluster: { apiServerIps: ['1.2.3.4'] } }
+    const deps = { resolveApiServerEndpoint: jest.fn() }
+
+    await ensureApiServerEndpoint(values, deps, terminal('test'))
+
+    expect(values.cluster).toMatchObject({ apiServerIps: ['1.2.3.4'], apiServerPort: 6443 })
+    expect(deps.resolveApiServerEndpoint).not.toHaveBeenCalled()
+  })
+
+  it('skips resolution when NODE_ENV is test', async () => {
+    process.env.NODE_ENV = 'test'
+    const values: Record<string, any> = { cluster: {} }
+    const deps = { resolveApiServerEndpoint: jest.fn() }
+
+    await ensureApiServerEndpoint(values, deps, terminal('test'))
+
+    expect(values.cluster.apiServerIps).toBeUndefined()
+    expect(deps.resolveApiServerEndpoint).not.toHaveBeenCalled()
+  })
+
+  it('throws when resolution finds nothing', async () => {
+    const values: Record<string, any> = { cluster: {} }
+    const deps = { resolveApiServerEndpoint: jest.fn().mockResolvedValue(undefined) }
+
+    await expect(ensureApiServerEndpoint(values, deps, terminal('test'))).rejects.toThrow(
+      'Could not resolve kube-apiserver endpoint',
+    )
+  })
+
+  it('throws when resolution rejects', async () => {
+    const values: Record<string, any> = { cluster: {} }
+    const deps = { resolveApiServerEndpoint: jest.fn().mockRejectedValue(new Error('unreachable')) }
+
+    await expect(ensureApiServerEndpoint(values, deps, terminal('test'))).rejects.toThrow(
+      'Could not resolve kube-apiserver endpoint',
+    )
   })
 })
