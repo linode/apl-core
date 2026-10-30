@@ -138,6 +138,10 @@ resources:
             request.resource.resource in ['listenersets', 'gateways']
               ? (has(object.spec.listeners) ? object.spec.listeners.map(l, has(l.hostname) ? l.hostname : '') : [])
               : (has(object.spec.hostnames) ? object.spec.hostnames : [])
+      {{- /* Let objects that are being deleted finish deleting. */}}
+      matchConditions:
+        - name: exclude-deleting
+          expression: '!has(object.metadata.deletionTimestamp) || object.spec != oldObject.spec'
       validations:
         - expression: 'size(variables.hostnames) > 0 && !variables.hostnames.exists(h, h == "")'
           message: 'every hostname must be set: an empty hostname binds the whole cluster domain'
@@ -189,6 +193,8 @@ resources:
         - name: exclude-api
           expression: |
             request.userInfo.username != 'system:serviceaccount:otomi:otomi-api'
+        - name: exclude-deleting
+          expression: '!has(object.metadata.deletionTimestamp) || object.spec != oldObject.spec'
       validations:
         - expression: |
             variables.hostnames.all(h, h != '{{ $v._derived.ttyDomain }}')
