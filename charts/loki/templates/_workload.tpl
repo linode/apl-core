@@ -296,6 +296,9 @@ rules:
     resourceNames:
       - {{ $newStatefulSet.metadata.name }}
     verbs:
+      - get
+      - list
+      - watch
       - delete
   {{- if $templates }}
   - apiGroups:
