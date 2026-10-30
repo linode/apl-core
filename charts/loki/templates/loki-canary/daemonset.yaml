@@ -1,4 +1,5 @@
 {{- if .Values.lokiCanary.enabled -}}
+{{- $bearerToken := .Values.lokiCanary.tenant.bearerToken -}}
 ---
 apiVersion: apps/v1
 kind: {{ .Values.lokiCanary.kind }}
@@ -73,9 +74,14 @@ spec:
             - -labelname={{ .Values.lokiCanary.labelname }}
             - -labelvalue=$(POD_NAME)
             {{- if $.Values.loki.auth_enabled }}
-            - -user={{ dig "selfMonitoring" "tenant" "name" $.Values.lokiCanary.tenant.name $.Values.monitoring }}
             - -tenant-id={{ dig "selfMonitoring" "tenant" "name" $.Values.lokiCanary.tenant.name $.Values.monitoring }}
+            {{- if not $bearerToken.enabled }}
+            - -user={{ dig "selfMonitoring" "tenant" "name" $.Values.lokiCanary.tenant.name $.Values.monitoring }}
             - -pass={{ dig "selfMonitoring" "tenant" "password" $.Values.lokiCanary.tenant.password $.Values.monitoring }}
+            {{- end }}
+            {{- end }}
+            {{- if $bearerToken.enabled }}
+            - -bearer-token-file=/var/run/secrets/loki-canary/bearer-token/token
             {{- end }}
             {{- if .Values.lokiCanary.push }}
             - -push=true
@@ -87,9 +93,16 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.lokiCanary.extraVolumeMounts }}
+          {{- if or $bearerToken.enabled .Values.lokiCanary.extraVolumeMounts }}
           volumeMounts:
+            {{- if $bearerToken.enabled }}
+            - name: bearer-token
+              mountPath: /var/run/secrets/loki-canary/bearer-token
+              readOnly: true
+            {{- end }}
+            {{- with .Values.lokiCanary.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
           ports:
             - name: http-metrics
@@ -143,8 +156,19 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.lokiCanary.extraVolumes }}
+      {{- if or $bearerToken.enabled .Values.lokiCanary.extraVolumes }}
       volumes:
+        {{- if $bearerToken.enabled }}
+        - name: bearer-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: token
+                  audience: {{ tpl $bearerToken.audience $ | quote }}
+                  expirationSeconds: {{ $bearerToken.expirationSeconds }}
+        {{- end }}
+        {{- with .Values.lokiCanary.extraVolumes }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- end }}
 {{- end }}
