@@ -7,6 +7,9 @@
   {{- else }}
     {{- $args = list "-distributor.zone-awareness-enabled=true" }}
   {{- end }}
+  {{- if and .Values.ingester.zoneAwareReplication.migration.enabled .Values.ingester.zoneAwareReplication.migration.excludeDefaultZone }}
+    {{- $args = append $args "-distributor.excluded-zones=zone-default" }}
+  {{- end }}
 {{- end }}
 {{/* Inject -shutdown-delay before extraArgs so a user-supplied extraArgs override can't drop it. "0s" (default) renders nothing. */}}
 {{- with .Values.distributor.shutdownDelay }}
