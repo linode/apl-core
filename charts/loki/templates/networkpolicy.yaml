@@ -177,6 +177,34 @@ spec:
   {{- end }}
 {{- end }}
 
+{{- if and .Values.gateway.enabled (eq .Values.gateway.type "envoy") .Values.gateway.envoyConfig.jwt.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "loki.resourceName" (dict "ctx" . "suffix" "gateway-jwks-egress") }}
+  namespace: {{ include "loki.namespace" . }}
+  labels:
+    {{- include "loki.labels" . | nindent 4 }}
+spec:
+  policyTypes:
+    - Egress
+  podSelector:
+    matchLabels:
+      {{- include "loki.gatewaySelectorLabels" . | nindent 6 }}
+  egress:
+    - ports:
+        - port: {{ include "loki.gatewayEnvoyJwksPort" . }}
+          protocol: TCP
+      {{- with .Values.networkPolicy.gatewayJwks.cidrs }}
+      to:
+        {{- range . }}
+        - ipBlock:
+            cidr: {{ . | quote }}
+        {{- end }}
+      {{- end }}
+{{- end }}
+
 {{- end }}
 
 {{- if .Values.networkPolicy.discovery.port }}
