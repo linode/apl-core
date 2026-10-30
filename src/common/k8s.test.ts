@@ -1054,11 +1054,41 @@ describe('resolveApiServerEndpoint', () => {
 
     const result = await resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api })
 
-    expect(result).toEqual({ ip: '172.233.54.96', port: 6443 })
+    expect(result).toEqual({ ips: ['172.233.54.96'], port: 6443 })
     expect(discovery.listNamespacedEndpointSlice).toHaveBeenCalledWith({
       namespace: 'default',
       labelSelector: 'kubernetes.io/service-name=kubernetes',
     })
+  })
+
+  it('collects a backend from every endpoint across every slice (HA control plane)', async () => {
+    const discovery = makeDiscovery([
+      {
+        endpoints: [{ addresses: ['172.233.54.96'] }, { addresses: ['172.233.54.97'] }],
+        ports: [{ port: 6443 }],
+      },
+      { endpoints: [{ addresses: ['172.233.54.98'] }], ports: [{ port: 6443 }] },
+    ])
+
+    const result = await resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api })
+
+    expect(result).toEqual({ ips: ['172.233.54.96', '172.233.54.97', '172.233.54.98'], port: 6443 })
+  })
+
+  it('excludes endpoints explicitly marked not ready', async () => {
+    const discovery = makeDiscovery([
+      {
+        endpoints: [
+          { addresses: ['172.233.54.96'], conditions: { ready: true } },
+          { addresses: ['172.233.54.97'], conditions: { ready: false } },
+        ],
+        ports: [{ port: 6443 }],
+      },
+    ])
+
+    const result = await resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api })
+
+    expect(result).toEqual({ ips: ['172.233.54.96'], port: 6443 })
   })
 
   it('returns undefined when no EndpointSlice is found', async () => {
@@ -1087,22 +1117,34 @@ describe('ensureApiServerEndpoint', () => {
     process.env.NODE_ENV = originalNodeEnv
   })
 
-  it('sets cluster.apiServerIp and apiServerPort when resolution succeeds', async () => {
+  it('sets cluster.apiServerIps and apiServerPort when resolution succeeds', async () => {
     const values: Record<string, any> = { cluster: {} }
-    const deps = { resolveApiServerEndpoint: jest.fn().mockResolvedValue({ ip: '172.233.54.96', port: 6443 }) }
+    const deps = {
+      resolveApiServerEndpoint: jest.fn().mockResolvedValue({ ips: ['172.233.54.96', '172.233.54.97'], port: 6443 }),
+    }
 
     await ensureApiServerEndpoint(values, deps, terminal('test'))
 
-    expect(values.cluster).toMatchObject({ apiServerIp: '172.233.54.96', apiServerPort: 6443 })
+    expect(values.cluster).toMatchObject({ apiServerIps: ['172.233.54.96', '172.233.54.97'], apiServerPort: 6443 })
   })
 
-  it('does not override an apiServerIp already set', async () => {
-    const values: Record<string, any> = { cluster: { apiServerIp: '1.2.3.4' } }
+  it('does not override apiServerIps and apiServerPort already set', async () => {
+    const values: Record<string, any> = { cluster: { apiServerIps: ['1.2.3.4'], apiServerPort: 1234 } }
     const deps = { resolveApiServerEndpoint: jest.fn() }
 
     await ensureApiServerEndpoint(values, deps, terminal('test'))
 
-    expect(values.cluster.apiServerIp).toBe('1.2.3.4')
+    expect(values.cluster).toMatchObject({ apiServerIps: ['1.2.3.4'], apiServerPort: 1234 })
+    expect(deps.resolveApiServerEndpoint).not.toHaveBeenCalled()
+  })
+
+  it('defaults apiServerPort to 6443 when the user sets only apiServerIps', async () => {
+    const values: Record<string, any> = { cluster: { apiServerIps: ['1.2.3.4'] } }
+    const deps = { resolveApiServerEndpoint: jest.fn() }
+
+    await ensureApiServerEndpoint(values, deps, terminal('test'))
+
+    expect(values.cluster).toMatchObject({ apiServerIps: ['1.2.3.4'], apiServerPort: 6443 })
     expect(deps.resolveApiServerEndpoint).not.toHaveBeenCalled()
   })
 
@@ -1113,7 +1155,7 @@ describe('ensureApiServerEndpoint', () => {
 
     await ensureApiServerEndpoint(values, deps, terminal('test'))
 
-    expect(values.cluster.apiServerIp).toBeUndefined()
+    expect(values.cluster.apiServerIps).toBeUndefined()
     expect(deps.resolveApiServerEndpoint).not.toHaveBeenCalled()
   })
 

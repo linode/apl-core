@@ -40,12 +40,15 @@ spec:
             matchLabels:
               name: otomi
   egress:
-    {{- if .Values.otomiApi.apiServerIp }}
+    {{- if .Values.otomiApi.apiServerIps }}
     # The Service's ClusterIP doesn't work here: CNIs enforce egress post-DNAT
-    # against the real backend, resolved by the operator (see derived.gotmpl).
+    # against the real backends, resolved by the operator at bootstrap. An HA
+    # control plane can have more than one, so all of them are allowed.
     - to:
+        {{- range .Values.otomiApi.apiServerIps }}
         - ipBlock:
-            cidr: {{ .Values.otomiApi.apiServerIp }}/32
+            cidr: {{ . }}{{ if contains ":" . }}/128{{ else }}/32{{ end }}
+        {{- end }}
       ports:
         - protocol: TCP
           port: {{ .Values.otomiApi.apiServerResolvedPort }}

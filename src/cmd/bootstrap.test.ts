@@ -198,7 +198,7 @@ describe('Bootstrapping values', () => {
         stripAllSecrets: jest.fn().mockImplementation((v) => {
           return omit(v, ['deep', 'deep.nested', 'secret', 'a'])
         }),
-        resolveApiServerEndpoint: jest.fn().mockResolvedValue({ ip: '127.0.0.1', port: 6443 }),
+        resolveApiServerEndpoint: jest.fn().mockResolvedValue({ ips: ['127.0.0.1'], port: 6443 }),
       }
     })
     describe('Creating CA', () => {
@@ -229,11 +229,11 @@ describe('Bootstrapping values', () => {
         // mergedForDisk includes allSecrets (stripAllSecrets mock is identity, real impl strips x-secret paths)
         expect(deps.writeValues).toHaveBeenNthCalledWith(1, {
           apps: { 'git-server': { enabled: true } },
-          cluster: { name: 'bla', provider: 'dida', apiServerIp: '127.0.0.1', apiServerPort: 6443 },
+          cluster: { name: 'bla', provider: 'dida', apiServerIps: ['127.0.0.1'], apiServerPort: 6443 },
         })
         expect(res.originalInput).toEqual({
           apps: { 'git-server': { enabled: true } },
-          cluster: { name: 'bla', provider: 'dida', apiServerIp: '127.0.0.1', apiServerPort: 6443 },
+          cluster: { name: 'bla', provider: 'dida', apiServerIps: ['127.0.0.1'], apiServerPort: 6443 },
         })
       })
       it('should merge originalInput + allSecrets for disk (stripAllSecrets removes x-secret paths)', async () => {
@@ -299,11 +299,11 @@ describe('Bootstrapping values', () => {
       })
     })
     describe('resolving the apiserver endpoint', () => {
-      it('sets cluster.apiServerIp and apiServerPort when resolution succeeds', async () => {
+      it('sets cluster.apiServerIps and apiServerPort when resolution succeeds', async () => {
         deps.loadYaml.mockReturnValue({ cluster: { name: 'bla', provider: 'dida' } })
-        deps.resolveApiServerEndpoint.mockResolvedValue({ ip: '172.233.54.96', port: 6443 })
+        deps.resolveApiServerEndpoint.mockResolvedValue({ ips: ['172.233.54.96'], port: 6443 })
         const res = await processValues(deps)
-        expect(res.originalInput.cluster).toMatchObject({ apiServerIp: '172.233.54.96', apiServerPort: 6443 })
+        expect(res.originalInput.cluster).toMatchObject({ apiServerIps: ['172.233.54.96'], apiServerPort: 6443 })
       })
       it('throws when resolution finds nothing', async () => {
         deps.loadYaml.mockReturnValue({ cluster: { name: 'bla', provider: 'dida' } })
@@ -317,10 +317,10 @@ describe('Bootstrapping values', () => {
         await expect(processValues(deps)).rejects.toThrow('Could not resolve kube-apiserver endpoint')
         expect(deps.writeValues).not.toHaveBeenCalled()
       })
-      it('does not override an apiServerIp the user already set', async () => {
-        deps.loadYaml.mockReturnValue({ cluster: { name: 'bla', provider: 'dida', apiServerIp: '1.2.3.4' } })
+      it('does not override apiServerIps the user already set, and defaults the port', async () => {
+        deps.loadYaml.mockReturnValue({ cluster: { name: 'bla', provider: 'dida', apiServerIps: ['1.2.3.4'] } })
         const res = await processValues(deps)
-        expect(res.originalInput.cluster.apiServerIp).toBe('1.2.3.4')
+        expect(res.originalInput.cluster).toMatchObject({ apiServerIps: ['1.2.3.4'], apiServerPort: 6443 })
         expect(deps.resolveApiServerEndpoint).not.toHaveBeenCalled()
       })
       it('skips resolution when NODE_ENV is test (no cluster to resolve against)', async () => {
@@ -329,7 +329,7 @@ describe('Bootstrapping values', () => {
         try {
           deps.loadYaml.mockReturnValue({ cluster: { name: 'bla', provider: 'dida' } })
           const res = await processValues(deps)
-          expect(res.originalInput.cluster.apiServerIp).toBeUndefined()
+          expect(res.originalInput.cluster.apiServerIps).toBeUndefined()
           expect(deps.resolveApiServerEndpoint).not.toHaveBeenCalled()
         } finally {
           process.env.NODE_ENV = orNodeEnv

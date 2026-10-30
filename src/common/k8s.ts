@@ -97,16 +97,23 @@ export const k8s = {
 
 export const resolveApiServerEndpoint = async (
   deps = { discovery: k8s.discovery },
-): Promise<{ ip: string; port: number } | undefined> => {
+): Promise<{ ips: string[]; port: number } | undefined> => {
   const slices = await deps.discovery().listNamespacedEndpointSlice({
     namespace: 'default',
     labelSelector: 'kubernetes.io/service-name=kubernetes',
   })
-  const slice = slices.items[0]
-  const address = slice?.endpoints?.[0]?.addresses?.[0]
-  const port = slice?.ports?.[0]?.port
-  if (!address || !port) return undefined
-  return { ip: address, port }
+  const ips = new Set<string>()
+  let port: number | undefined
+  for (const slice of slices.items) {
+    port ??= slice.ports?.[0]?.port
+    for (const endpoint of slice.endpoints ?? []) {
+      if (endpoint.conditions?.ready === false) continue
+      const address = endpoint.addresses?.[0]
+      if (address) ips.add(address)
+    }
+  }
+  if (!ips.size || !port) return undefined
+  return { ips: [...ips], port }
 }
 
 export const ensureApiServerEndpoint = async (
@@ -114,9 +121,14 @@ export const ensureApiServerEndpoint = async (
   deps: { resolveApiServerEndpoint: typeof resolveApiServerEndpoint },
   d: OtomiDebugger,
 ): Promise<void> => {
-  if (get(values, 'cluster.apiServerIp') || process.env.NODE_ENV === 'test') return
+  const apiServerIps = get(values, 'cluster.apiServerIps')
+  if (Array.isArray(apiServerIps) && apiServerIps.length) {
+    if (!get(values, 'cluster.apiServerPort')) set(values, 'cluster.apiServerPort', 6443)
+    return
+  }
+  if (process.env.NODE_ENV === 'test') return
 
-  let endpoint: { ip: string; port: number } | undefined
+  let endpoint: { ips: string[]; port: number } | undefined
   try {
     endpoint = await deps.resolveApiServerEndpoint()
   } catch (error) {
@@ -125,7 +137,7 @@ export const ensureApiServerEndpoint = async (
   if (!endpoint) {
     throw new Error('Could not resolve kube-apiserver endpoint. otomi-api will be unable to reach the apiserver.')
   }
-  set(values, 'cluster.apiServerIp', endpoint.ip)
+  set(values, 'cluster.apiServerIps', endpoint.ips)
   set(values, 'cluster.apiServerPort', endpoint.port)
 }
 
