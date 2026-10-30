@@ -43,7 +43,7 @@ env:
   SSO_JWKS_URI: {{ $v._derived.oidcJwksUrl }}
   AUTH_PROVIDER: {{ $v.otomi.oidc.authenticationLayer }}
   {{- if eq $v.otomi.oidc.authenticationLayer "dex" }}
-  DEX_GRPC_ADDRESS: dex.dex.svc:5557
+  DEX_GRPC_ADDRESS: dex.dex.svc.cluster.local:5557
   {{- end }}
   {{- with $v.otomi.linodeLkeImageRepository }}
   TTY_IMAGE_REPOSITORY: "{{ . }}/docker/linode/apl-tty"
