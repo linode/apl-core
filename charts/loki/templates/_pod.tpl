@@ -20,7 +20,7 @@ metadata:
     {{- end }}
     kubectl.kubernetes.io/default-container: "{{ replace "single-binary" "loki" $target }}"
   labels:
-    {{- include "loki.labels" . | nindent 4 }}
+    {{- include "loki.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: {{ $target }}
     {{- if $memberlist }}
     app.kubernetes.io/part-of: memberlist
@@ -29,7 +29,8 @@ metadata:
     name: {{ if $component.addIngesterNamePrefix }}loki-{{ end }}{{ $target }}-{{ $rolloutZoneName }}
     rollout-group: {{ with $component.rolloutGroupPrefix }}{{ . }}-{{ end }}{{ $target }}
     {{- end }}
-    {{- $podLabels := mergeOverwrite (dict) .Values.loki.podLabels .Values.defaults.podLabels $component.podLabels }}
+    {{- /* commonLabels has the lowest precedence; reserved keys are stripped below */}}
+    {{- $podLabels := mergeOverwrite (dict) (.Values.commonLabels | default (dict)) .Values.loki.podLabels .Values.defaults.podLabels $component.podLabels }}
     {{- /* labels referenced by the workload selectors (and, for zone-aware ingesters, the
     per-zone headless Services and grafana/rollout-operator) are chart-owned and must win */}}
     {{- $reserved := list "app.kubernetes.io/name" "app.kubernetes.io/instance" "app.kubernetes.io/component" }}
