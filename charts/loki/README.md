@@ -14,7 +14,6 @@ The Following are installed via subchart
 
 | Repository | Name |
 |------------|------|
-| https://charts.min.io/ | minio(minio) |
 | https://grafana.github.io/helm-charts | rollout_operator(rollout-operator) |
 
 Find more information in the Loki Helm Chart [documentation](https://grafana.com/docs/loki/latest/setup/install/helm/).
@@ -44,6 +43,68 @@ To remove all of the Kubernetes objects associated with the Helm chart release:
 ```console
 helm delete RELEASE-NAME
 ```
+
+## Gateway proxy
+
+The chart uses NGINX for the Loki gateway by default. Envoy is available as an opt-in, experimental implementation; its `gateway.envoyConfig` values and the rendered Envoy configuration may change in minor releases:
+
+```yaml
+gateway:
+  type: envoy
+```
+
+The generated Envoy configuration keeps the same Loki API routing and deployment-mode targets as the generated NGINX configuration, including an unauthenticated `200` for `/` and `/livez`. Unknown paths return `404` instead of being proxied. It accepts HTTP/1.1 and cleartext HTTP/2, listens on IPv4 and IPv6 by default, enables frontend and backend keep-alive, and writes access logs to stdout. Envoy exposes native Prometheus metrics from the existing gateway metrics Service at `/stats/prometheus`; its administration listener allows only `/ready` and `/stats/prometheus`. Kubernetes readiness checks use `/ready` on the administration listener, while liveness checks use `/livez`, which is excluded from proxy access logs.
+
+Envoy uses Loki's cleartext HTTP/2 support for regular upstream requests by default. WebSocket tail requests use a dedicated HTTP/1.1 upstream cluster. Disable `gateway.envoyConfig.upstreamHTTP2` for older Loki versions or custom upstreams that support only HTTP/1.1.
+
+For HTTPS Loki upstreams, Envoy verifies the certificate chain against the image's system CA bundle and checks the upstream hostname. Set `gateway.envoyConfig.upstreamTLS.caCertificateFile` to a mounted custom CA bundle when needed. `gateway.envoyConfig.upstreamTLS.insecureSkipVerify: true` explicitly disables both checks.
+
+Use `gateway.envoyConfig` to configure listeners, timeouts, logging, TLS, remote JWKS validation, upstream HTTP/2, or the complete Envoy configuration. The existing `gateway.nginxConfig.schema` and `customReadUrl`/`customWriteUrl`/`customBackendUrl` values are also honored; Envoy accepts scheme, host and port in these URLs and rejects a path component, because its routes forward the original request path unchanged.
+
+Envoy uses its native Basic Auth filter and the existing `gateway.basicAuth` `.htpasswd` Secret contract, so no authorization sidecar is added. The native filter only accepts `{SHA}` htpasswd entries, an unsalted SHA-1 digest that is weaker than the bcrypt hashes NGINX uses by default and can be brute-forced offline by anyone who can read the Secret; the chart derives that format from plaintext `password` values, while other `passwordHash` formats remain supported by NGINX only. Generate an Envoy hash with `printf %s 'password' | openssl dgst -sha1 -binary | openssl base64 -A`, then prefix the result with `{SHA}`. When `loki.tenants` is configured and at least one authentication method is enabled, the gateway overwrites any client-supplied `X-Scope-OrgID` header with the mapped tenant name; with only `gateway.basicAuth.username` and no tenants, Basic Auth is enforced but the client header passes through unchanged, as with NGINX. A tenant that defines `jwtSubClaim` or `clientCertificateCN` accepts Basic Auth only when it also sets `password` or `passwordHash`. Only `name`, `password`, and `passwordHash` are shared by both gateway implementations; `basicAuthUsername`, `clientCertificateCN`, and `jwtSubClaim` are Envoy-only. `basicAuthUsername` defaults to the tenant name and can map a distinct username to one or more Loki tenants:
+
+```yaml
+loki:
+  tenants:
+    - name: "cluster1|cluster2|cluster3"
+      basicAuthUsername: grafana
+      passwordHash: "{SHA}eJy+BAeECxwgQcszRS/2Dxm/WMw="
+```
+
+Envoy reads the `.htpasswd` Secret when it starts and the chart deliberately adds no password-derived checksum to the pod template, because such a checksum would expose the unsalted hash to anyone who can read pods. After changing chart-managed credentials or rotating an `existingSecret`, restart the gateway Deployment or change `gateway.podAnnotations` to trigger a rollout.
+
+Tenant entries can additionally set lists of `clientCertificateCN` and `jwtSubClaim` aliases. Client-certificate mapping requires Envoy TLS termination with `gateway.envoyConfig.tls.enabled` and a Secret containing `tls.crt`, `tls.key`, and `ca.crt`. JWT mapping requires `gateway.envoyConfig.jwt.enabled`. Its defaults validate Kubernetes projected ServiceAccount tokens with issuer `https://kubernetes.default.svc.<global.clusterDomain>` and the Helm-templated audience `{{ include "loki.name" . }}.{{ include "loki.namespace" . }}`, and fetch JWKS from `https://kubernetes.default.svc.<global.clusterDomain>./openid/v1/jwks`, using the namespace `kube-root-ca.crt` ConfigMap. Envoy fetches and caches the JWKS over HTTP(S), validates the token signature, issuer, expiration, and optional audiences, and only then maps `sub`; JWT verification keys are not mounted from disk.
+
+Envoy's `jwt_authn` filter cannot attach credentials to its JWKS requests, so the chart routes them through a loopback listener (`gateway.envoyConfig.jwt.remoteJwks.credentialInjectorPort`, bound to `127.0.0.1` only) whose credential injector adds `Authorization: Bearer` from `gateway.envoyConfig.jwt.remoteJwks.bearerTokenFile`. By default that file is a projected token of the gateway ServiceAccount mounted at `/etc/envoy/kubernetes/token`; Kubernetes grants every ServiceAccount the `system:service-account-issuer-discovery` ClusterRole, so the JWKS fetch needs no extra RBAC and keeps working with `--anonymous-auth=false` and `rbac.namespaced: true`. Envoy reloads the token when the kubelet rotates it. Failed JWKS requests are retried with a short backoff (`gateway.envoyConfig.jwt.remoteJwks.retries`) before the listener starts serving; if every retry fails, JWT requests are rejected with `401` until the next fetch succeeds about a second later. Point `bearerTokenFile` at another mounted file to send a different credential, or set it to `null` to fetch the JWKS anonymously.
+
+The chart's loki-canary authenticates with Basic Auth by default. A loki-canary build that supports the `-bearer-token-file` option (see [grafana/loki#24533](https://github.com/grafana/loki/pull/24533)) can authenticate through the JWT path instead. Enable its projected token and map the canary ServiceAccount subject to its tenant:
+
+```yaml
+lokiCanary:
+  tenant:
+    bearerToken:
+      enabled: true
+
+gateway:
+  type: envoy
+  envoyConfig:
+    jwt:
+      enabled: true
+
+loki:
+  tenants:
+    - name: self-monitoring
+      jwtSubClaim:
+        - system:serviceaccount:<namespace>:<canary-service-account-name>
+```
+
+When the JWKS is fetched anonymously (`bearerTokenFile: null`), the JWKS endpoint must be readable without credentials. Kubernetes only grants the built-in `system:service-account-issuer-discovery` ClusterRole to `system:serviceaccounts` by default, so the chart's default bearer token is the recommended way to reach the Kubernetes JWKS endpoint. The chart does not create cluster-wide RBAC for anonymous access; use an existing binding or an external issuer when disabling the bearer token.
+
+When `networkPolicy.enabled` and Envoy JWT verification are enabled, the chart allows gateway egress on the JWKS URI's TCP port. Kubernetes NetworkPolicy cannot select the API server Service by name, so the rule permits any destination on that port by default. Set `networkPolicy.gatewayJwks.cidrs` to restrict destinations when your cluster's API server address is stable; verify CIDR matching with your network plugin because Service address translation can affect policy evaluation. Cilium-specific policies are not supported by this chart.
+
+Clusters configured with a custom Kubernetes ServiceAccount issuer or audience must override `gateway.envoyConfig.jwt.issuer`, `gateway.envoyConfig.jwt.audiences`, `gateway.envoyConfig.jwt.remoteJwks.uri`, and `lokiCanary.tenant.bearerToken.audience` together.
+
+`gateway.configs` accepts any number of extra templated configuration files. Envoy can reference them at `/etc/envoy/<name>` from an overridden `gateway.envoyConfig.file`.
 
 ## Changelog
 
@@ -94,6 +155,38 @@ This chart emits `apiVersion: v1` and `kind: PersistentVolumeClaim` on each VCT.
 ---
 
 ## Upgrading
+
+### From 19.x to 20.0.0
+
+**Breaking** The MinIO subchart, deprecated since 17.0.0, has been removed together with the `minio` and `ignoreMinioDeprecation` values and the `loki.minio` template helper. Setting `minio.enabled` no longer deploys MinIO or configures Loki storage.
+
+If you still run the built-in MinIO, finish the migration to an external object storage backend on 19.x first, following the 17.0.0 notes below, and upgrade to 20.0.0 only after the old data has aged out. Alternatively, deploy MinIO separately and point `loki.storage.s3` at it.
+
+`loki.testSchemaConfig` now always uses the `filesystem` object store.
+
+The example `monolithic-values.yaml`, `simple-scalable-values.yaml` and `distributed-values.yaml` files now expect an external S3-compatible object store; replace the `FIXME` placeholders under `loki.storage`.
+
+**Breaking** The values schema no longer allows unknown top-level keys. `helm install`, `helm upgrade` and `helm template` now fail with `additional properties '<key>' not allowed` when your values contain a top-level key the chart does not define, for example a typo or a leftover such as `minio`, `ignoreMinioDeprecation` or `bloomCompactor`. Remove those keys before upgrading. Keys under `global` are still accepted as-is.
+
+### From 19.2.x to 19.3.0 ([#809](https://github.com/grafana-community/helm-charts/pull/809))
+
+Pod templates no longer carry `helm.sh/chart` or `app.kubernetes.io/version`. `helm.sh/chart` changed on every chart version bump, and because it sat inside the pod template it rolled every workload on upgrade even when neither the configuration nor the image had changed. They remain on the objects themselves, so `kubectl get deploy -L helm.sh/chart` is unaffected.
+
+If you group metrics by pod label (`kube_pod_labels` joined on `label_app_kubernetes_io_version`, for example), those series will stop being populated for Loki pods. Use the object-level label, or add the value you need through `commonLabels` or a component `podLabels` block.
+
+`commonLabels` still applies to the pod templates of the Loki components. The gateway, canary and memcached pod templates do not carry it, as before.
+
+### From 18.x to 19.0.0 ([#883](https://github.com/grafana-community/helm-charts/pull/883))
+
+The `.Values.loki.service.headlessService`, `.Values.defaults.service.headlessService` and `.Values.component.service.headlessService` blocks have been introduced to separate the management of labels and annotations for the headless and primary service.
+
+**Breaking** annotations that had previously been inherited by the headless services from `loki.serviceAnnotations`, `defaults.service.annotations`, `.Values.component.service.annotations` are no longer applied to the headless service, and will only apply to the primary service.
+
+If you wish to continue applying the same annotations to both the headless and primary service, these values need to be copied directly into  `.Values.loki.service.headlessService`, `.Values.defaults.service.headlessService` or `.Values.component.service.headlessService` respectively.
+
+**Breaking** labels that had previously been inherited by the headless services from `loki.serviceLabels`, `defaults.service.labels`, `.Values.component.service.labels` are no longer applied to the headless service, and will only apply to the primary service.
+
+If you wish to continue applying the same labels to both the headless and primary service, these values need to be copied directly into  `.Values.defaults.service.headlessService` or `.Values.component.service.headlessService` respectively.
 
 ### From 17.x to 18.0.0 ([#193](https://github.com/grafana-community/helm-charts/pull/193))
 
