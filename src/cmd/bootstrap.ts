@@ -6,9 +6,9 @@ import path from 'path'
 import { bootstrapGit } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
-import { terminal } from 'src/common/debug'
+import { OtomiDebugger, terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
-import { getK8sSecret, secretId } from 'src/common/k8s'
+import { getK8sSecret, resolveApiServerEndpoint, secretId } from 'src/common/k8s'
 import { bootstrapSealedSecrets, stripAllSecrets } from 'src/common/sealed-secrets'
 import {
   ensureManifestDirectories,
@@ -102,6 +102,26 @@ export const copyBasicFiles = async (
   await Promise.allSettled(['core.yaml'].map((val) => deps.copyFile(`${rootDir}/${val}`, `${ENV_DIR}/${val}`)))
 }
 
+export const ensureApiServerEndpoint = async (
+  originalValues: Record<string, any>,
+  deps: { resolveApiServerEndpoint: typeof resolveApiServerEndpoint },
+  d: OtomiDebugger,
+): Promise<void> => {
+  if (get(originalValues, 'cluster.apiServerIp')) return
+
+  let endpoint: { ip: string; port: number } | undefined
+  try {
+    endpoint = await deps.resolveApiServerEndpoint()
+  } catch (error) {
+    d.error(`Failed to resolve kube-apiserver endpoint: ${(error as Error).message}`)
+  }
+  if (!endpoint) {
+    throw new Error('Could not resolve kube-apiserver endpoint. otomi-api will be unable to reach the apiserver.')
+  }
+  set(originalValues, 'cluster.apiServerIp', endpoint.ip)
+  set(originalValues, 'cluster.apiServerPort', endpoint.port)
+}
+
 // retrieves input values from either VALUES_INPUT or ENV_DIR
 // and creates missing secrets as well (and stores them in a secret in app mode)
 export const processValues = async (
@@ -112,12 +132,16 @@ export const processValues = async (
     createCustomCA,
     getSchemaSecretsPaths,
     stripAllSecrets,
+    resolveApiServerEndpoint,
   },
 ): Promise<{ originalInput: Record<string, any>; allSecrets: Record<string, any> }> => {
   const d = deps.terminal(`cmd:${cmdName}:processValues`)
   const { VALUES_INPUT } = env
   d.log(`Loading app values from ${VALUES_INPUT}`)
   const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
+
+  await ensureApiServerEndpoint(originalValues, deps, d)
+
   const repoUrl = get(originalValues, 'otomi.git.repoUrl')
   const gitServerEnabled = get(originalValues, 'apps.git-server.enabled')
   if ((!repoUrl || repoUrl.includes('git-server.git-server.svc.cluster.local')) && gitServerEnabled === undefined) {

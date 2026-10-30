@@ -3,6 +3,7 @@ import {
   AppsV1Api,
   CoreV1Api,
   CustomObjectsApi,
+  DiscoveryV1Api,
   Exec,
   KubeConfig,
   PatchStrategy,
@@ -27,6 +28,7 @@ import {
   patchArgoCdApp,
   patchContainerResourcesOfSts,
   patchStatefulSetResources,
+  resolveApiServerEndpoint,
 } from './k8s'
 
 const ARGOCD_BASE_MANIFEST = {
@@ -1038,5 +1040,39 @@ describe('getSealedSecretsPEM', () => {
     const result = await getSealedSecretsPEM()
     expect(result).toBe(mockPem)
     expect(MockX509Certificate).toHaveBeenCalledWith('single-cert')
+  })
+})
+
+describe('resolveApiServerEndpoint', () => {
+  const makeDiscovery = (items: Record<string, any>[]) => ({
+    listNamespacedEndpointSlice: jest.fn().mockResolvedValue({ items }),
+  })
+
+  it('returns the ip and port from the kubernetes EndpointSlice', async () => {
+    const discovery = makeDiscovery([{ endpoints: [{ addresses: ['172.233.54.96'] }], ports: [{ port: 6443 }] }])
+
+    const result = await resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api })
+
+    expect(result).toEqual({ ip: '172.233.54.96', port: 6443 })
+    expect(discovery.listNamespacedEndpointSlice).toHaveBeenCalledWith({
+      namespace: 'default',
+      labelSelector: 'kubernetes.io/service-name=kubernetes',
+    })
+  })
+
+  it('returns undefined when no EndpointSlice is found', async () => {
+    const discovery = makeDiscovery([])
+
+    const result = await resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api })
+
+    expect(result).toBeUndefined()
+  })
+
+  it('propagates errors from the API call', async () => {
+    const discovery = { listNamespacedEndpointSlice: jest.fn().mockRejectedValue(new Error('unreachable')) }
+
+    await expect(
+      resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api }),
+    ).rejects.toThrow('unreachable')
   })
 })

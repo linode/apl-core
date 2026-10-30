@@ -95,6 +95,20 @@ export const k8s = {
   },
 }
 
+export const resolveApiServerEndpoint = async (
+  deps = { discovery: k8s.discovery },
+): Promise<{ ip: string; port: number } | undefined> => {
+  const slices = await deps.discovery().listNamespacedEndpointSlice({
+    namespace: 'default',
+    labelSelector: 'kubernetes.io/service-name=kubernetes',
+  })
+  const slice = slices.items[0]
+  const address = slice?.endpoints?.[0]?.addresses?.[0]
+  const port = slice?.ports?.[0]?.port
+  if (!address || !port) return undefined
+  return { ip: address, port }
+}
+
 export const getK8sSecret = async (
   name: string,
   namespace: string,
