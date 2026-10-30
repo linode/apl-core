@@ -105,14 +105,11 @@ alertmanager:
 
 grafana:
   enabled: {{ $teamSettings | get "managedMonitoring.grafana" false }}
+  {{- /* Own RBAC: the chart Role exposes all Secrets in the shared grafana namespace. */}}
   rbac:
-    namespaced: true
-    {{- /* ConfigMaps only: the chart Role would expose all Secrets in the shared grafana namespace. */}}
-    useExistingRole: {{ $teamId }}-po-grafana-sidecar
-    {{- /* Teams add dashboard ConfigMaps in their own namespace (custom metrics docs). */}}
-    namespaces:
-      - {{ $teamGroupName }}
+    create: false
   extraObjects:
+    {{- /* Teams add dashboard ConfigMaps in their own namespace (custom metrics docs). */}}
     {{- range $ns := list $teamGroupName "grafana" }}
     - apiVersion: rbac.authorization.k8s.io/v1
       kind: Role
@@ -123,6 +120,20 @@ grafana:
         - apiGroups: [""]
           resources: ["configmaps"]
           verbs: ["get", "watch", "list"]
+    {{- /* New name: the old chart RoleBinding has an immutable roleRef. */}}
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: {{ $teamId }}-po-grafana-sidecar
+        namespace: {{ $ns }}
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: Role
+        name: {{ $teamId }}-po-grafana-sidecar
+      subjects:
+        - kind: ServiceAccount
+          name: {{ $teamId }}-po-grafana
+          namespace: grafana
     {{- end }}
   defaultDashboardsEnabled: false
   nameOverride: {{ $teamId }}-po-grafana
