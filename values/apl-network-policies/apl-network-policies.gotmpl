@@ -20,8 +20,8 @@ otomiApi:
   gitServerEnabled: {{ $a | get "git-server.enabled" }}
   dexEnabled: {{ $a.dex.enabled }}
 
-  apiServerIp: {{ $v.cluster | get "apiServerIp" "" | quote }}
-  apiServerResolvedPort: {{ $v.cluster | get "apiServerPort" "" | quote }}
+  apiServerIp: {{ $v.cluster.apiServerIp }}
+  apiServerResolvedPort: {{ $v.cluster.apiServerPort }}
 
   # Used when apiServerIp above wasn't resolved. LKE uses 6443 besides 443.
   apiServerPorts:

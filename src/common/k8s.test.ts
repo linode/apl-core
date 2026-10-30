@@ -1071,8 +1071,8 @@ describe('resolveApiServerEndpoint', () => {
   it('propagates errors from the API call', async () => {
     const discovery = { listNamespacedEndpointSlice: jest.fn().mockRejectedValue(new Error('unreachable')) }
 
-    await expect(
-      resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api }),
-    ).rejects.toThrow('unreachable')
+    await expect(resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api })).rejects.toThrow(
+      'unreachable',
+    )
   })
 })
