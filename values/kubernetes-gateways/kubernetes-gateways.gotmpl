@@ -9,6 +9,7 @@ gateways:
   {{- $gatewayAnnotations := dict }}
   {{- if and ($ingress | get "entrypoint" nil) $v.otomi.hasExternalDNS }}
   {{- $_ := set $gatewayAnnotations "external-dns.alpha.kubernetes.io/target" $ingress.entrypoint }}
+  {{- $_ = set $gatewayAnnotations "external-dns.kubernetes.io/target" $ingress.entrypoint }}
   {{- end }}
 
   {{- $serviceAnnotations := dict }}

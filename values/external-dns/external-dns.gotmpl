@@ -1,10 +1,10 @@
 {{- $v := .Values }}
 {{- $externalDns := $v.apps | get "external-dns" }}
 {{- $dns := $v | get "dns" dict }}
+{{- $isWebhookProvider := or (hasKey $dns.provider "akamai") (hasKey $dns.provider "digialocean") }}
 sources:
 - gateway-httproute
 - gateway-tlsroute
-## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
 
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
 annotationFilter: "externaldns=true"
@@ -38,32 +38,103 @@ image:
 {{- end }}
 
 extraArgs:
+- --enable-legacy-annotation-prefix
 {{- range $dns | get "zoneIdFilters" list }}
 - --zone-id-filter={{ . }}
 {{- end }}
 
-
-{{- if hasKey $dns.provider "akamai" }}
+{{- if $isWebhookProvider }}
 provider:
-  name: akamai
-env:
-- name: EXTERNAL_DNS_AKAMAI_SERVICECONSUMERDOMAIN
-  value: "{{ $dns.provider.akamai.host }}"
-- name: EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN
-  valueFrom:
-    secretKeyRef:
-      name: akamai-dns
-      key: EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN
-- name: EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN
-  valueFrom:
-    secretKeyRef:
-      name: akamai-dns
-      key: EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN
-- name: EXTERNAL_DNS_AKAMAI_CLIENT_SECRET
-  valueFrom:
-    secretKeyRef:
-      name: akamai-dns
-      key: EXTERNAL_DNS_AKAMAI_CLIENT_SECRET
+  name: webhook
+  webhook:
+    {{- if hasKey $dns.provider "akamai" }}
+    image:
+      # TODO: Add ORCS image repository
+      repository: ghcr.io/pixibixi/external-dns-akamai-webhook
+      tag: "0.7.0"
+      pullPolicy: IfNotPresent
+
+    env:
+      - name: AKAMAI_SERVICECONSUMERDOMAIN
+        value: {{ $dns.provider.akamai.host | quote }}
+      - name: AKAMAI_CLIENT_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: akamai-dns
+            key: EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN
+      - name: AKAMAI_CLIENT_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: akamai-dns
+            key: EXTERNAL_DNS_AKAMAI_CLIENT_SECRET
+      - name: AKAMAI_ACCESS_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: akamai-dns
+            key: EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN
+
+    args:
+      {{- range $dns | get "domainFilters" list }}
+      - --domain-filter={{ . }}
+      {{- end }}
+      - --zones-cache-duration=5m
+      - --log-format=json
+
+    {{- else if hasKey $dns.provider "digitalocean" }}
+    image:
+      # TODO: Add ORCS image repository
+      repository: ghcr.io/amoniacou/external-dns-digitalocean-webhook
+      tag: "1.0.4"
+      pullPolicy: IfNotPresent
+    env:
+      - name: DO_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: do-token
+            key: DO_TOKEN
+      {{- with $dns | get "domainFilters" list }}
+      - name: DO_DOMAIN_FILTER
+        value: {{ join "," . | quote }}
+      {{- end }}
+    args:
+      - --port=8888
+      - --health-port=8080
+      - --log-format=json
+
+    {{- else }}
+    {{ fail "Unsupported webhook provider" }}
+    {{- end }}
+
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 128Mi
+
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+      seccompProfile:
+        type: RuntimeDefault
+
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: http-webhook
+      initialDelaySeconds: 10
+      periodSeconds: 30
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: http-webhook
+      initialDelaySeconds: 5
+      periodSeconds: 10
 {{- end }}
 
 {{- if hasKey $dns.provider "linode" }}
@@ -75,17 +146,6 @@ env:
     secretKeyRef:
       name: linode-dns-api-token
       key: LINODE_TOKEN
-{{- end }}
-
-{{- if hasKey $dns.provider "digitalocean" }}
-provider:
-  name: digitalocean
-env:
-- name: DO_TOKEN
-  valueFrom:
-    secretKeyRef:
-      name: do-token
-      key: DO_TOKEN
 {{- end }}
 
 {{- if hasKey $dns.provider "cloudflare" }}
