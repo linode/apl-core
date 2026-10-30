@@ -323,6 +323,18 @@ describe('Bootstrapping values', () => {
         expect(res.originalInput.cluster.apiServerIp).toBe('1.2.3.4')
         expect(deps.resolveApiServerEndpoint).not.toHaveBeenCalled()
       })
+      it('skips resolution when NODE_ENV is test (no cluster to resolve against)', async () => {
+        const orNodeEnv = process.env.NODE_ENV
+        process.env.NODE_ENV = 'test'
+        try {
+          deps.loadYaml.mockReturnValue({ cluster: { name: 'bla', provider: 'dida' } })
+          const res = await processValues(deps)
+          expect(res.originalInput.cluster.apiServerIp).toBeUndefined()
+          expect(deps.resolveApiServerEndpoint).not.toHaveBeenCalled()
+        } finally {
+          process.env.NODE_ENV = orNodeEnv
+        }
+      })
     })
   })
 })

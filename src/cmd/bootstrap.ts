@@ -6,9 +6,9 @@ import path from 'path'
 import { bootstrapGit } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
-import { OtomiDebugger, terminal } from 'src/common/debug'
+import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
-import { getK8sSecret, resolveApiServerEndpoint, secretId } from 'src/common/k8s'
+import { ensureApiServerEndpoint, getK8sSecret, resolveApiServerEndpoint, secretId } from 'src/common/k8s'
 import { bootstrapSealedSecrets, stripAllSecrets } from 'src/common/sealed-secrets'
 import {
   ensureManifestDirectories,
@@ -100,26 +100,6 @@ export const copyBasicFiles = async (
 
   // copy these files from core
   await Promise.allSettled(['core.yaml'].map((val) => deps.copyFile(`${rootDir}/${val}`, `${ENV_DIR}/${val}`)))
-}
-
-export const ensureApiServerEndpoint = async (
-  originalValues: Record<string, any>,
-  deps: { resolveApiServerEndpoint: typeof resolveApiServerEndpoint },
-  d: OtomiDebugger,
-): Promise<void> => {
-  if (get(originalValues, 'cluster.apiServerIp')) return
-
-  let endpoint: { ip: string; port: number } | undefined
-  try {
-    endpoint = await deps.resolveApiServerEndpoint()
-  } catch (error) {
-    d.error(`Failed to resolve kube-apiserver endpoint: ${(error as Error).message}`)
-  }
-  if (!endpoint) {
-    throw new Error('Could not resolve kube-apiserver endpoint. otomi-api will be unable to reach the apiserver.')
-  }
-  set(originalValues, 'cluster.apiServerIp', endpoint.ip)
-  set(originalValues, 'cluster.apiServerPort', endpoint.port)
 }
 
 // retrieves input values from either VALUES_INPUT or ENV_DIR

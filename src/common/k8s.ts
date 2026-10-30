@@ -20,7 +20,7 @@ import {
 } from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
 import { X509Certificate } from 'crypto'
-import { isEqual, map, mapValues } from 'lodash'
+import { get, isEqual, map, mapValues, set } from 'lodash'
 import { Writable } from 'stream'
 import { parse } from 'yaml'
 import { $ } from 'zx'
@@ -107,6 +107,26 @@ export const resolveApiServerEndpoint = async (
   const port = slice?.ports?.[0]?.port
   if (!address || !port) return undefined
   return { ip: address, port }
+}
+
+export const ensureApiServerEndpoint = async (
+  values: Record<string, any>,
+  deps: { resolveApiServerEndpoint: typeof resolveApiServerEndpoint },
+  d: OtomiDebugger,
+): Promise<void> => {
+  if (get(values, 'cluster.apiServerIp') || process.env.NODE_ENV === 'test') return
+
+  let endpoint: { ip: string; port: number } | undefined
+  try {
+    endpoint = await deps.resolveApiServerEndpoint()
+  } catch (error) {
+    d.error(`Failed to resolve kube-apiserver endpoint: ${(error as Error).message}`)
+  }
+  if (!endpoint) {
+    throw new Error('Could not resolve kube-apiserver endpoint. otomi-api will be unable to reach the apiserver.')
+  }
+  set(values, 'cluster.apiServerIp', endpoint.ip)
+  set(values, 'cluster.apiServerPort', endpoint.port)
 }
 
 export const getK8sSecret = async (

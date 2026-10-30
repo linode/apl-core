@@ -24,6 +24,7 @@ import {
   appRevisionMatches,
   argoCdHasUnrecoverableErrors,
   deleteStatefulSetPods,
+  ensureApiServerEndpoint,
   getSealedSecretsPEM,
   patchArgoCdApp,
   patchContainerResourcesOfSts,
@@ -1073,6 +1074,64 @@ describe('resolveApiServerEndpoint', () => {
 
     await expect(resolveApiServerEndpoint({ discovery: () => discovery as unknown as DiscoveryV1Api })).rejects.toThrow(
       'unreachable',
+    )
+  })
+})
+
+describe('ensureApiServerEndpoint', () => {
+  const originalNodeEnv = process.env.NODE_ENV
+  beforeEach(() => {
+    process.env.NODE_ENV = 'production'
+  })
+  afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv
+  })
+
+  it('sets cluster.apiServerIp and apiServerPort when resolution succeeds', async () => {
+    const values: Record<string, any> = { cluster: {} }
+    const deps = { resolveApiServerEndpoint: jest.fn().mockResolvedValue({ ip: '172.233.54.96', port: 6443 }) }
+
+    await ensureApiServerEndpoint(values, deps, terminal('test'))
+
+    expect(values.cluster).toMatchObject({ apiServerIp: '172.233.54.96', apiServerPort: 6443 })
+  })
+
+  it('does not override an apiServerIp already set', async () => {
+    const values: Record<string, any> = { cluster: { apiServerIp: '1.2.3.4' } }
+    const deps = { resolveApiServerEndpoint: jest.fn() }
+
+    await ensureApiServerEndpoint(values, deps, terminal('test'))
+
+    expect(values.cluster.apiServerIp).toBe('1.2.3.4')
+    expect(deps.resolveApiServerEndpoint).not.toHaveBeenCalled()
+  })
+
+  it('skips resolution when NODE_ENV is test', async () => {
+    process.env.NODE_ENV = 'test'
+    const values: Record<string, any> = { cluster: {} }
+    const deps = { resolveApiServerEndpoint: jest.fn() }
+
+    await ensureApiServerEndpoint(values, deps, terminal('test'))
+
+    expect(values.cluster.apiServerIp).toBeUndefined()
+    expect(deps.resolveApiServerEndpoint).not.toHaveBeenCalled()
+  })
+
+  it('throws when resolution finds nothing', async () => {
+    const values: Record<string, any> = { cluster: {} }
+    const deps = { resolveApiServerEndpoint: jest.fn().mockResolvedValue(undefined) }
+
+    await expect(ensureApiServerEndpoint(values, deps, terminal('test'))).rejects.toThrow(
+      'Could not resolve kube-apiserver endpoint',
+    )
+  })
+
+  it('throws when resolution rejects', async () => {
+    const values: Record<string, any> = { cluster: {} }
+    const deps = { resolveApiServerEndpoint: jest.fn().mockRejectedValue(new Error('unreachable')) }
+
+    await expect(ensureApiServerEndpoint(values, deps, terminal('test'))).rejects.toThrow(
+      'Could not resolve kube-apiserver endpoint',
     )
   })
 })
