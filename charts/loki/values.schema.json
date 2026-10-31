@@ -3802,6 +3802,10 @@
                 }
             }
         },
+        "enabled": {
+            "description": "Not used by this chart. Lets a parent chart use `\u003calias\u003e.enabled` as the condition of its Loki dependency without failing schema validation.",
+            "type": "boolean"
+        },
         "extraObjects": {
             "type": [
                 "array",
@@ -4589,7 +4593,7 @@
                                     "type": "array"
                                 },
                                 "hostnames": {
-                                    "description": "Hostnames for the route",
+                                    "description": "Hostnames for the route. Optional: when empty, the route inherits the hostnames of the listeners it is attached to, e.g. the ones of a ListenerSet referenced in `parentRefs`.",
                                     "type": "array"
                                 },
                                 "kind": {
@@ -4624,7 +4628,7 @@
                                     }
                                 },
                                 "parentRefs": {
-                                    "description": "Parent gateway references to attach the route to",
+                                    "description": "Parent references to attach the route to. A Gateway or a ListenerSet (see `listenerSet`).",
                                     "type": "array"
                                 },
                                 "timeouts": {
@@ -4961,10 +4965,6 @@
                         "array",
                         "null"
                     ]
-                },
-                "joinMemberlist": {
-                    "description": "Whether the index gateway should join the memberlist hashring",
-                    "type": "boolean"
                 },
                 "kind": {
                     "description": "Kind of index-gateway deployment. StatefulSet and Deployment are supported.",
@@ -6167,6 +6167,47 @@
         "kubeVersionOverride": {
             "description": "Overrides the version used to determine compatibility of resources with the target Kubernetes cluster. This is useful when using `helm template`, because then helm will use the client version of kubectl as the Kubernetes version, which may or may not match your cluster's server version. Example: 'v1.24.4'. Set to null to use the version that helm devises.",
             "type": "string"
+        },
+        "listenerSet": {
+            "description": "BETA: Configure Gateway API ListenerSet resources for the chart here. ListenerSet allows attaching additional listeners to an existing Gateway. More listener sets can be added by adding a dictionary key like the 'main' entry. The key \"main\" produces a ListenerSet named after the loki fullname; any other key appends the key as a suffix. Attach a route to it with a parentRef of `kind: ListenerSet` in `route.*.parentRefs` or `gateway.route.*.parentRefs`. The parent Gateway must allow ListenerSets via `spec.allowedListeners`. Being BETA this can/will change in the future without notice, do not use unless you want to take that risk [[ref]](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#listenerset)",
+            "type": "object",
+            "properties": {
+                "main": {
+                    "type": "object",
+                    "properties": {
+                        "annotations": {
+                            "description": "Annotations for the ListenerSet",
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        },
+                        "apiVersion": {
+                            "description": "Set the ListenerSet apiVersion, e.g. gateway.networking.k8s.io/v1",
+                            "type": "string"
+                        },
+                        "enabled": {
+                            "description": "Enables or disables the listener set",
+                            "type": "boolean"
+                        },
+                        "labels": {
+                            "description": "Labels for the ListenerSet",
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        },
+                        "listeners": {
+                            "description": "List of listeners to attach to the parent Gateway (templating is supported)",
+                            "type": "array"
+                        },
+                        "parentRef": {
+                            "description": "Reference to the parent Gateway this ListenerSet attaches to",
+                            "type": "object"
+                        }
+                    }
+                }
+            }
         },
         "loki": {
             "description": "Configuration for running Loki",
@@ -10478,7 +10519,7 @@
                             "type": "boolean"
                         },
                         "hostnames": {
-                            "description": "Hostnames for the route",
+                            "description": "Hostnames for the route. Optional: when empty, the route inherits the hostnames of the listeners it is attached to, e.g. the ones of a ListenerSet referenced in `parentRefs`.",
                             "type": "array"
                         },
                         "kind": {
@@ -10493,7 +10534,7 @@
                             }
                         },
                         "parentRefs": {
-                            "description": "Parent references for the route (required for Gateway API)",
+                            "description": "Parent references for the route (required for Gateway API). A Gateway or a ListenerSet (see `listenerSet`).",
                             "type": "array"
                         },
                         "paths": {
