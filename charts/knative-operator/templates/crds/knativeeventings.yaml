@@ -1685,6 +1685,57 @@ spec:
                     description: Labels overrides labels for the namespace and its template.
                     type: object
                 type: object
+              patches:
+                description: Patches customize generated resources after all built-in transformations have been applied.
+                items:
+                  description: ResourcePatch customizes one generated Kubernetes resource.
+                  properties:
+                    patch:
+                      description: Patch defines the patch type and content to apply.
+                      properties:
+                        content:
+                          description: Content is a JSON or YAML patch document.
+                          minLength: 1
+                          type: string
+                        type:
+                          description: 'Type is the patch type: "json", "merge", or "strategic".'
+                          enum:
+                          - json
+                          - merge
+                          - strategic
+                          type: string
+                      required:
+                      - content
+                      - type
+                      type: object
+                    target:
+                      description: Target identifies exactly one generated resource to patch.
+                      properties:
+                        apiVersion:
+                          description: APIVersion is the API version of the target resource, for example "apps/v1".
+                          minLength: 1
+                          type: string
+                        kind:
+                          description: Kind is the Kubernetes kind of the target resource, for example "Deployment".
+                          minLength: 1
+                          type: string
+                        name:
+                          description: Name is the name of the target resource, for example "activator".
+                          minLength: 1
+                          type: string
+                        namespace:
+                          description: Namespace optionally disambiguates resources with the same API version, kind, and name.
+                          type: string
+                      required:
+                      - apiVersion
+                      - kind
+                      - name
+                      type: object
+                  required:
+                  - patch
+                  - target
+                  type: object
+                type: array
               podDisruptionBudgets:
                 description: PodDisruptionBudgetOverride overrides PodDisruptionBudget configurations via minAvailable.
                 items:
