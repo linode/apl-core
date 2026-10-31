@@ -156,6 +156,14 @@ This chart emits `apiVersion: v1` and `kind: PersistentVolumeClaim` on each VCT.
 
 ## Upgrading
 
+### From 20.0.2 to 20.0.3 ([#941](https://github.com/grafana-community/helm-charts/pull/941))
+
+The memberlist Service, used as the seed list for `memberlist.join_members`, now only selects components that always run a memberlist listener. query-frontend, query-scheduler, index-gateway, the bloom components and overrides-exporter no longer carry the `app.kubernetes.io/part-of: memberlist` pod label. They still join the memberlist cluster through the seed nodes when their configuration needs it.
+
+The unused `indexGateway.joinMemberlist` value has been removed.
+
+If you run custom NetworkPolicies that allow port 7946 only between pods labeled `app.kubernetes.io/part-of: memberlist`, also allow the components that listen in some setups: query-frontend and query-scheduler with `loki.query_scheduler.use_scheduler_ring`, index-gateway and the bloom components with `loki.index_gateway.mode: ring`, and every component with `loki.ui.enabled`.
+
 ### From 19.x to 20.0.0
 
 **Breaking** The MinIO subchart, deprecated since 17.0.0, has been removed together with the `minio` and `ignoreMinioDeprecation` values and the `loki.minio` template helper. Setting `minio.enabled` no longer deploys MinIO or configures Loki storage.

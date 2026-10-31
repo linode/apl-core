@@ -1,4 +1,4 @@
 {{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
 {{- if $isDistributed }}
-{{- include "loki.component" (dict "ctx" . "component" .Values.queryScheduler "target" "query-scheduler") }}
+{{- include "loki.component" (dict "ctx" . "component" .Values.queryScheduler "target" "query-scheduler" "memberlist" false) }}
 {{- end }}
