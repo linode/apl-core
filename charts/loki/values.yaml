@@ -7,6 +7,10 @@
 # devises.
 kubeVersionOverride: ""
 
+# -- Not used by this chart. Lets a parent chart use `<alias>.enabled` as the condition of its Loki dependency
+# without failing schema validation.
+enabled: true
+
 global:
   # @schema type:[string, null]
   # -- Overrides the Docker registry globally for all images (standard format).
@@ -1226,6 +1230,10 @@ networkPolicy:
 ######################################################################################################################
 
 # Configuration for the memberlist service
+# The service selects pods labeled `app.kubernetes.io/part-of: memberlist` and is used as the seed list for
+# `memberlist.join_members`. Only components that always run a memberlist listener get this label. Components that
+# only use memberlist with some configurations (query-frontend, query-scheduler, index-gateway, bloom components,
+# overrides-exporter; all of them when `loki.ui.enabled` is true) still join the cluster through these seed nodes.
 memberlist:
   service:
     publishNotReadyAddresses: false
@@ -1608,10 +1616,11 @@ gateway:
       # @schema additionalProperties:{"type":"string"}
       # -- Additional labels for the route
       labels: {}
-      # -- Hostnames for the route
+      # -- Hostnames for the route. Optional: when empty, the route inherits the hostnames of the
+      # listeners it is attached to, e.g. the ones of a ListenerSet referenced in `parentRefs`.
       hostnames: []
       # - gateway.loki.example.com
-      # -- Parent gateway references to attach the route to
+      # -- Parent references to attach the route to. A Gateway or a ListenerSet (see `listenerSet`).
       parentRefs: []
       # - name: my-gateway
       #   namespace: gateway-namespace
@@ -1775,7 +1784,7 @@ gateway:
       # -- NGINX access log exporter image repository. Not used by the Envoy gateway.
       repository: "jkroepke/access-log-exporter"
       # -- NGINX access log exporter image tag. Not used by the Envoy gateway.
-      tag: "0.5.2"
+      tag: "1.0.1"
       # -- NGINX access log exporter image pull policy. Not used by the Envoy gateway.
       pullPolicy: IfNotPresent
     # @schema additionalProperties:true
@@ -1936,10 +1945,13 @@ route:
     # @schema additionalProperties:{"type":"string"}
     # -- Labels for the route
     labels: {}
-    # -- Hostnames for the route
+    # -- Hostnames for the route. Optional: when empty, the route inherits the hostnames of the
+    # listeners it is attached to, e.g. the ones of a ListenerSet referenced in `parentRefs`.
     hostnames: []
-    # -- Parent references for the route (required for Gateway API)
+    # -- Parent references for the route (required for Gateway API). A Gateway or a ListenerSet (see `listenerSet`).
     parentRefs: []
+    # - name: my-gateway
+    #   namespace: gateway-namespace
     # -- Additional rules to prepend before the generated path-routing rules.
     # Each entry is rendered into spec.rules as written (templating is supported),
     # so any HTTPRoute/GRPCRoute rule shape is accepted — including filter-only rules
@@ -2007,6 +2019,50 @@ route:
       # If deployment mode is SingleBinary, the requests are forwarded to the central/single k8s service.
       compactor:
         - /loki/api/v1/delete
+
+# -- BETA: Configure Gateway API ListenerSet resources for the chart here.
+# ListenerSet allows attaching additional listeners to an existing Gateway.
+# More listener sets can be added by adding a dictionary key like the 'main' entry.
+# The key "main" produces a ListenerSet named after the loki fullname; any other key appends the key as a suffix.
+# Attach a route to it with a parentRef of `kind: ListenerSet` in `route.*.parentRefs` or `gateway.route.*.parentRefs`.
+# The parent Gateway must allow ListenerSets via `spec.allowedListeners`.
+# Being BETA this can/will change in the future without notice, do not use unless you want to take that risk
+# [[ref]](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#listenerset)
+listenerSet:
+  main:
+    # -- Enables or disables the listener set
+    enabled: false
+
+    # -- Set the ListenerSet apiVersion, e.g. gateway.networking.k8s.io/v1
+    apiVersion: gateway.networking.k8s.io/v1
+
+    # @schema additionalProperties:{"type":"string"}
+    # -- Annotations for the ListenerSet
+    annotations: {}
+    # @schema additionalProperties:{"type":"string"}
+    # -- Labels for the ListenerSet
+    labels: {}
+
+    # -- Reference to the parent Gateway this ListenerSet attaches to
+    parentRef: {}
+    # name: my-gateway
+    # namespace: default
+    # group: gateway.networking.k8s.io
+    # kind: Gateway
+
+    # -- List of listeners to attach to the parent Gateway (templating is supported)
+    listeners: []
+    # - name: https
+    #   port: 443
+    #   protocol: HTTPS
+    #   hostname: loki.example.com
+    #   tls:
+    #     mode: Terminate
+    #     certificateRefs:
+    #       - name: loki-tls
+    #   allowedRoutes:
+    #     namespaces:
+    #       from: Same
 
 ######################################################################################################################
 #
@@ -4559,8 +4615,6 @@ indexGateway:
   # -- Number of replicas for the index-gateway. Set to null to omit spec.replicas from the workload,
   # allowing an external controller (e.g. HPA, KEDA, rollout-operator) to manage replica counts without Helm resetting them.
   replicas: 0
-  # -- Whether the index gateway should join the memberlist hashring
-  joinMemberlist: true
   # @schema additionalProperties:true
   # -- DNSConfig for index-gateway pods
   dnsConfig: {}
