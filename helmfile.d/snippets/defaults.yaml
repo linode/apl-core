@@ -804,7 +804,7 @@ environments:
             kubeconfigExpirationSeconds: 28800
             _rawValues: {}
             networkPolicies:
-              enabled: true
+              enabled: false
             resources:
               api:
                 limits:
