@@ -4,6 +4,7 @@ Pod helper
 
 {{- define "loki.podTemplate" -}}
 {{- $target := .target -}}
+{{- $lokiTarget := .lokiTarget | default (replace "single-binary" "all" $target) -}}
 {{- $ctx := .ctx -}}
 {{- $component := .component -}}
 {{- $args := .args -}}
@@ -223,7 +224,7 @@ spec:
         - -config.file=/etc/loki/config/config.yaml
         - -config.expand-env=true
         - -memberlist.advertise-addr=$(POD_IP)
-        - -target={{ replace "single-binary" "all" $target }}{{- if and .Values.loki.ui.enabled (has $target (list "single-binary" "read" "query-frontend" "querier")) }},ui{{- end }}
+        - -target={{ $lokiTarget }}{{- if and .Values.loki.ui.enabled (has $target (list "single-binary" "read" "query-frontend" "querier")) }},ui{{- end }}
         {{- end }}
         {{- with $args }}
         {{- toYaml . | nindent 8 }}
