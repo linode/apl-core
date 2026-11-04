@@ -98,6 +98,10 @@ spec:
             httpGet:
               path: {{ .Values.imageRenderer.healthcheckPath }}
               port: {{ .Values.imageRenderer.service.portName }}
+          {{- with .Values.imageRenderer.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           env:
             - name: HTTP_PORT
               value: {{ .Values.imageRenderer.service.targetPort | quote }}
