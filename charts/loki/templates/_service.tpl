@@ -50,14 +50,14 @@ spec:
       port: {{ .Values.loki.server.grpc_listen_port }}
       targetPort: grpc
       protocol: TCP
-      {{- with (dig "appProtocol" "grpc" $component.service.appProtocol.grpc $component) }}
+      {{- with (dig "appProtocol" "grpc" "" $component | default $component.service.appProtocol.grpc) }}
       appProtocol: {{ . }}
       {{- end }}
     - name: grpclb
       port: 9096
       targetPort: grpc
       protocol: TCP
-      {{- with (dig "appProtocol" "grpc" $component.service.appProtocol.grpc $component) }}
+      {{- with (dig "appProtocol" "grpc" "" $component | default $component.service.appProtocol.grpc) }}
       appProtocol: {{ . }}
       {{- end }}
   selector:
@@ -119,14 +119,14 @@ spec:
       port: {{ .Values.loki.server.grpc_listen_port }}
       targetPort: grpc
       protocol: TCP
-      {{- with (dig "appProtocol" "grpc" $component.service.appProtocol.grpc $component) }}
+      {{- with (dig "appProtocol" "grpc" "" $component | default $component.service.appProtocol.grpc) }}
       appProtocol: {{ . }}
       {{- end }}
     - name: grpclb
       port: 9096
       targetPort: grpc
       protocol: TCP
-      {{- with (dig "appProtocol" "grpc" $component.service.appProtocol.grpc $component) }}
+      {{- with (dig "appProtocol" "grpc" "" $component | default $component.service.appProtocol.grpc) }}
       appProtocol: {{ . }}
       {{- end }}
   selector:
