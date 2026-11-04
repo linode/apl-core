@@ -215,7 +215,7 @@ appsInfo:
         - Click 'I understand' to continue using RabbitMQ.
   sealed-secrets:
     title: Sealed Secrets
-    appVersion: 0.40.0
+    appVersion: 0.41.2
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:
