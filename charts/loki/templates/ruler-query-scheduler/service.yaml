@@ -1,0 +1,3 @@
+{{- if eq (include "loki.ruler.dedicatedQueryPathEnabled" .) "true" }}
+{{- include "loki.service" (dict "target" "ruler-query-scheduler" "component" .Values.rulerQueryScheduler "ctx" .) }}
+{{- end }}
