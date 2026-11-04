@@ -402,10 +402,24 @@ chunk_delimiter: {{ . }}
 {{- end -}}
 {{- end -}}
 
+{{/* Return "true" when the ruler evaluates rules through its own ruler-query-frontend, ruler-query-scheduler and ruler-querier */}}
+{{- define "loki.ruler.dedicatedQueryPathEnabled" -}}
+{{- and (eq (include "loki.deployment.isDistributed" .) "true") .Values.ruler.enabled .Values.ruler.remoteEvaluationDedicatedQueryPath -}}
+{{- end }}
+
 {{/* Loki ruler config */}}
 {{- define "loki.rulerConfig" }}
+{{- $rulerConfig := dict "storage" (include "loki.rulerStorageConfig" . | fromYaml) -}}
+{{- if eq (include "loki.ruler.dedicatedQueryPathEnabled" .) "true" -}}
+{{- $_ := set $rulerConfig "evaluation" (dict
+  "mode" "remote"
+  "query_frontend" (dict
+    "address" (printf "dns:///%s" (include "loki.rulerQueryFrontendAddress" .))
+  )
+) -}}
+{{- end -}}
 ruler:
-{{- mergeOverwrite (dict "storage" (include "loki.rulerStorageConfig" . | fromYaml)) (.Values.loki.rulerConfig | default dict) | toYaml | nindent 2 }}
+{{- mergeOverwrite $rulerConfig (deepCopy (.Values.loki.rulerConfig | default dict)) | toYaml | nindent 2 }}
 {{- end }}
 
 {{/* Ruler Thanos Storage Config */}}
@@ -1020,6 +1034,16 @@ enableServiceLinks: {{ $ctx.Values.loki.enableServiceLinks }}
 {{- $querierAddress = $querierUrl }}
 {{- end -}}
 {{- printf "%s" $querierAddress }}
+{{- end }}
+
+{{/* Determine ruler-query-scheduler address */}}
+{{- define "loki.rulerQuerySchedulerAddress" -}}
+{{- printf "%s-headless.%s.svc.%s:%s" (include "loki.resourceName" (dict "ctx" . "component" "ruler-query-scheduler")) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) -}}
+{{- end }}
+
+{{/* Determine ruler-query-frontend address */}}
+{{- define "loki.rulerQueryFrontendAddress" -}}
+{{- printf "%s-headless.%s.svc.%s:%s" (include "loki.resourceName" (dict "ctx" . "component" "ruler-query-frontend")) (include "loki.namespace" .) .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) -}}
 {{- end }}
 
 {{/* Determine index-gateway address */}}

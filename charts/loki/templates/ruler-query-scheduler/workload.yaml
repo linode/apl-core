@@ -1,0 +1,6 @@
+{{- if eq (include "loki.ruler.dedicatedQueryPathEnabled" .) "true" }}
+{{- $args := list
+  "-query-scheduler.ring.prefix=ruler-query-scheduler/"
+}}
+{{- include "loki.component" (dict "ctx" . "component" .Values.rulerQueryScheduler "target" "ruler-query-scheduler" "lokiTarget" "query-scheduler" "args" $args "memberlist" false) }}
+{{- end }}

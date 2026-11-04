@@ -31,7 +31,14 @@ Installed components:
 * compactor
 * index gateway
 * query scheduler
+{{- if .Values.ruler.enabled }}
 * ruler
+{{- end }}
+{{- if eq (include "loki.ruler.dedicatedQueryPathEnabled" .) "true" }}
+* ruler querier
+* ruler query frontend
+* ruler query scheduler
+{{- end }}
 * distributor
 * ingester
 * querier
