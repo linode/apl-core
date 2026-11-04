@@ -60,6 +60,11 @@ indexGateway:
   replicas: 2
   maxUnavailable: 1
 
+# Uncomment to evaluate rules through a dedicated query path
+# (ruler-query-frontend, ruler-query-scheduler, ruler-querier)
+#ruler:
+#  remoteEvaluationDedicatedQueryPath: true
+
 # optional experimental components
 bloomPlanner:
   replicas: 0
