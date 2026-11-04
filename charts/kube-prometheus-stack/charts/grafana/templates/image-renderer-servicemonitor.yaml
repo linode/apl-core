@@ -35,6 +35,28 @@ spec:
       {{- toYaml . | nindent 6 }}
     {{- end }}
   jobLabel: "{{ .Release.Name }}-image-renderer"
+  {{- with .Values.imageRenderer.serviceMonitor.scrapeProtocols }}
+  scrapeProtocols:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if not (kindIs "invalid" .Values.imageRenderer.serviceMonitor.scrapeNativeHistograms) }}
+  scrapeNativeHistograms: {{ .Values.imageRenderer.serviceMonitor.scrapeNativeHistograms }}
+  {{- end }}
+  {{- if not (kindIs "invalid" .Values.imageRenderer.serviceMonitor.scrapeClassicHistograms) }}
+  scrapeClassicHistograms: {{ .Values.imageRenderer.serviceMonitor.scrapeClassicHistograms }}
+  {{- end }}
+  {{- if not (kindIs "invalid" .Values.imageRenderer.serviceMonitor.convertClassicHistogramsToNHCB) }}
+  convertClassicHistogramsToNHCB: {{ .Values.imageRenderer.serviceMonitor.convertClassicHistogramsToNHCB }}
+  {{- end }}
+  {{- if not (kindIs "invalid" .Values.imageRenderer.serviceMonitor.nativeHistogramBucketLimit) }}
+  nativeHistogramBucketLimit: {{ .Values.imageRenderer.serviceMonitor.nativeHistogramBucketLimit }}
+  {{- end }}
+  {{- if not (kindIs "invalid" .Values.imageRenderer.serviceMonitor.nativeHistogramMinBucketFactor) }}
+  nativeHistogramMinBucketFactor: {{ .Values.imageRenderer.serviceMonitor.nativeHistogramMinBucketFactor | quote }}
+  {{- end }}
+  {{- with .Values.imageRenderer.serviceMonitor.fallbackScrapeProtocol }}
+  fallbackScrapeProtocol: {{ . | quote }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "grafana.imageRenderer.selectorLabels" . | nindent 6 }}
