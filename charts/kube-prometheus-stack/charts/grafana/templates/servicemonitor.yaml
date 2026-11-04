@@ -44,6 +44,28 @@ spec:
       {{- toYaml . | nindent 6 }}
     {{- end }}
   jobLabel: "{{ .Release.Name }}"
+  {{- with .Values.serviceMonitor.scrapeProtocols }}
+  scrapeProtocols:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if not (kindIs "invalid" .Values.serviceMonitor.scrapeNativeHistograms) }}
+  scrapeNativeHistograms: {{ .Values.serviceMonitor.scrapeNativeHistograms }}
+  {{- end }}
+  {{- if not (kindIs "invalid" .Values.serviceMonitor.scrapeClassicHistograms) }}
+  scrapeClassicHistograms: {{ .Values.serviceMonitor.scrapeClassicHistograms }}
+  {{- end }}
+  {{- if not (kindIs "invalid" .Values.serviceMonitor.convertClassicHistogramsToNHCB) }}
+  convertClassicHistogramsToNHCB: {{ .Values.serviceMonitor.convertClassicHistogramsToNHCB }}
+  {{- end }}
+  {{- if not (kindIs "invalid" .Values.serviceMonitor.nativeHistogramBucketLimit) }}
+  nativeHistogramBucketLimit: {{ .Values.serviceMonitor.nativeHistogramBucketLimit }}
+  {{- end }}
+  {{- if not (kindIs "invalid" .Values.serviceMonitor.nativeHistogramMinBucketFactor) }}
+  nativeHistogramMinBucketFactor: {{ .Values.serviceMonitor.nativeHistogramMinBucketFactor | quote }}
+  {{- end }}
+  {{- with .Values.serviceMonitor.fallbackScrapeProtocol }}
+  fallbackScrapeProtocol: {{ . | quote }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "grafana.selectorLabels" . | nindent 6 }}
