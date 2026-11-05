@@ -1,9 +1,15 @@
 import { execFileSync } from 'child_process'
 
-export function extractPrNumbers(releaseBody: string): number[] {
+export function extractPrNumbers(commitSubjects: string[]): number[] {
   const numbers = new Set<number>()
-  for (const match of releaseBody.matchAll(/pull\/(\d+)/g)) {
-    numbers.add(Number(match[1]))
+  for (const subject of commitSubjects) {
+    const squash = subject.match(/\(#(\d+)\)\s*$/)
+    if (squash) {
+      numbers.add(Number(squash[1]))
+      continue
+    }
+    const merge = subject.match(/^Merge pull request #(\d+)/)
+    if (merge) numbers.add(Number(merge[1]))
   }
   return [...numbers].sort((a, b) => a - b)
 }
@@ -25,14 +31,21 @@ export function parseReleaseRef(input: string): { repo?: string; tag: string } {
 
 const DEFAULT_REPO = 'linode/apl-core'
 
-function ghApi(endpoint: string, jq: string): string {
-  return execFileSync('gh', ['api', endpoint, '--jq', jq], {
+function ghApi(endpoint: string, jq: string, paginate = false): string {
+  const args = ['api', endpoint, '--jq', jq]
+  if (paginate) args.push('--paginate')
+  return execFileSync('gh', args, {
     encoding: 'utf8',
   }).trim()
 }
 
-function fetchReleaseBody(repo: string, tag: string): string {
-  return ghApi(`repos/${repo}/releases/tags/${tag}`, '.body')
+function fetchCommitSubjects(repo: string, baseTag: string, headTag: string): string[] {
+  const output = ghApi(
+    `repos/${repo}/compare/${baseTag}...${headTag}?per_page=100`,
+    '.commits[].commit.message | split("\n")[0]',
+    true,
+  )
+  return output ? output.split('\n') : []
 }
 
 function fetchBranchName(repo: string, prNumber: number): string {
@@ -40,18 +53,18 @@ function fetchBranchName(repo: string, prNumber: number): string {
 }
 
 function main() {
-  const [releaseArg, repoArg] = process.argv.slice(2)
+  const [baseArg, headArg, repoArg] = process.argv.slice(2)
 
-  if (!releaseArg) {
-    console.error('Usage: tsx src/extract-apl-branches.ts <release-tag|release-url> [owner/repo]')
+  if (!baseArg || !headArg) {
+    console.error('Usage: tsx src/extract-apl-branches.ts <base-tag> <head-tag|release-url> [owner/repo]')
     process.exit(1)
   }
 
-  const { repo: repoFromUrl, tag } = parseReleaseRef(releaseArg)
+  const { repo: repoFromUrl, tag } = parseReleaseRef(headArg)
   const repo = repoArg ?? repoFromUrl ?? DEFAULT_REPO
 
-  const body = fetchReleaseBody(repo, tag)
-  const prNumbers = extractPrNumbers(body)
+  const subjects = fetchCommitSubjects(repo, baseArg, tag)
+  const prNumbers = extractPrNumbers(subjects)
   const branches = prNumbers.map((prNumber) => fetchBranchName(repo, prNumber))
   const aplBranches = filterAplBranches(branches)
 
