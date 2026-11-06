@@ -36,7 +36,6 @@ topologySpreadConstraints:
         app.kubernetes.io/instance: dex
 {{- end }}
 
-# Feature-flagged while unreleased upstream. Needed for SSO across apps and real logout.
 env:
   DEX_SESSIONS_ENABLED: "true"
   DEX_API_SESSIONS_IDENTITIES_CRUD: "true"

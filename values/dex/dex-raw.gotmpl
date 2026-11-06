@@ -15,7 +15,8 @@ resources:
           app.kubernetes.io/name: dex
       mtls:
         mode: STRICT
-      {{- /* istiod has no sidecar and fetches /keys over plain HTTP. The NetworkPolicy still limits who can connect. */}}
+      {{- /* istiod has no sidecar and fetches /keys over plain HTTP; mTLS cannot be enforced here.
+           The NetworkPolicy restricts port 5556 to the istiod pod only (app: istiod in istio-system). */}}
       portLevelMtls:
         5556:
           mode: PERMISSIVE

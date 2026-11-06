@@ -14,6 +14,21 @@ netpols:
   loki: {{ and $a.loki.enabled $a.loki.networkPolicies.enabled }}
   dex: {{ and $a.dex.enabled $a.dex.networkPolicies.enabled }}
 
+# dex-specific egress policy configuration
+dex:
+  # Real (post-DNAT) kube-apiserver port(s), in addition to 443. LKE uses 6443;
+  # override via _rawValues if your provider's control-plane backend differs.
+  apiServerPorts:
+    - 6443
+  blockedEgressCidrsV4:
+    - '10.0.0.0/8'
+    - '172.16.0.0/12'
+    - '192.168.0.0/16'
+    - '100.64.0.0/10'
+    - '169.254.0.0/16'
+  blockedEgressCidrsV6:
+    - 'fc00::/7'
+
 # otomi-api-specific egress policy configuration
 otomiApi:
   giteaEnabled: {{ $a.gitea.enabled }}
