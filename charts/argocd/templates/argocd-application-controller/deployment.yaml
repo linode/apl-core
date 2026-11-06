@@ -238,6 +238,18 @@ spec:
                 name: argocd-cmd-params-cm
                 key: redis.server
                 optional: true
+          - name: REDIS_SENTINEL_HOSTS
+            valueFrom:
+              configMapKeyRef:
+                name: argocd-cmd-params-cm
+                key: redis.sentinel.hosts
+                optional: true
+          - name: REDIS_SENTINEL_MASTER
+            valueFrom:
+              configMapKeyRef:
+                name: argocd-cmd-params-cm
+                key: redis.sentinel.master
+                optional: true
           - name: REDIS_COMPRESSION
             valueFrom:
               configMapKeyRef:
@@ -249,6 +261,12 @@ spec:
               configMapKeyRef:
                 name: argocd-cmd-params-cm
                 key: redis.db
+                optional: true
+          - name: ARGOCD_REDIS_KEY_PREFIX
+            valueFrom:
+              configMapKeyRef:
+                name: argocd-cmd-params-cm
+                key: redis.key.prefix
                 optional: true
           - name: REDIS_USERNAME
             valueFrom:
@@ -293,6 +311,18 @@ spec:
               configMapKeyRef:
                 name: argocd-cmd-params-cm
                 key: otlp.headers
+                optional: true
+          - name: ARGOCD_APPLICATION_CONTROLLER_OTLP_ATTRS
+            valueFrom:
+              configMapKeyRef:
+                name: argocd-cmd-params-cm
+                key: otlp.attrs
+                optional: true
+          - name: ARGOCD_APPLICATION_CONTROLLER_OTLP_SAMPLE_RATIO
+            valueFrom:
+              configMapKeyRef:
+                name: argocd-cmd-params-cm
+                key: otlp.sample.ratio
                 optional: true
           - name: ARGOCD_APPLICATION_NAMESPACES
             valueFrom:
@@ -405,6 +435,9 @@ spec:
           name: argocd-home
         - name: argocd-cmd-params-cm
           mountPath: /home/argocd/params
+        # CA for the OTLP collector, looked up by --otlp-address host.
+        - name: tls-certs
+          mountPath: /app/config/tls
       {{- with .Values.controller.extraContainers }}
         {{- tpl (toYaml .) $ | nindent 6 }}
       {{- end }}
@@ -465,6 +498,10 @@ spec:
           items:
           - key: controller.profile.enabled
             path: profiler.enabled
+      - name: tls-certs
+        configMap:
+          name: argocd-tls-certs-cm
+          optional: true
       {{- if .Values.controller.hostNetwork }}
       hostNetwork: {{ .Values.controller.hostNetwork }}
       {{- end }}
