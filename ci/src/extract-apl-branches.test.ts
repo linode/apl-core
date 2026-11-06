@@ -1,22 +1,32 @@
 import { extractPrNumbers, filterAplBranches, parseReleaseRef } from './extract-apl-branches'
 
 describe('extractPrNumbers', () => {
-  it('extracts a PR number from a pull link', () => {
-    const body = '* fix: something by @user in https://github.com/linode/apl-core/pull/3595'
-    expect(extractPrNumbers(body)).toEqual([3595])
+  it('extracts a PR number from a squash-merge commit subject', () => {
+    const subjects = ['fix: disable apl-api netpols by default (#3833)']
+    expect(extractPrNumbers(subjects)).toEqual([3833])
   })
 
-  it('returns unique, ascending PR numbers across multiple links', () => {
-    const body = [
-      '* a in https://github.com/linode/apl-core/pull/3610',
-      '* b in https://github.com/linode/apl-core/pull/3595',
-      '* c in https://github.com/linode/apl-core/pull/3610',
-    ].join('\n')
-    expect(extractPrNumbers(body)).toEqual([3595, 3610])
+  it('extracts a PR number from a merge commit subject', () => {
+    const subjects = ['Merge pull request #3595 from linode/APL-1283-cas']
+    expect(extractPrNumbers(subjects)).toEqual([3595])
   })
 
-  it('returns an empty array when there are no pull links', () => {
-    expect(extractPrNumbers('no links here')).toEqual([])
+  it('returns unique, ascending PR numbers across multiple commits', () => {
+    const subjects = [
+      'feat: a (#3610)',
+      'fix: b (#3595)',
+      'chore: c (#3610)',
+    ]
+    expect(extractPrNumbers(subjects)).toEqual([3595, 3610])
+  })
+
+  it('ignores issue references that are not trailing PR markers', () => {
+    const subjects = ['fix: resolves #123 without a PR marker', 'docs: update readme']
+    expect(extractPrNumbers(subjects)).toEqual([])
+  })
+
+  it('returns an empty array when there are no commits', () => {
+    expect(extractPrNumbers([])).toEqual([])
   })
 })
 
