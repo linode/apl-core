@@ -75,8 +75,6 @@ staticClients:
     postLogoutRedirectURIs:
       - https://{{ $v._derived.consoleDomain }}
       - https://{{ $v._derived.consoleDomain }}/oauth2/start
-    {{- /* Dex only accepts the password grant from a client that opts in explicitly. */}}
     grantTypes:
       - authorization_code
       - refresh_token
-      - password
