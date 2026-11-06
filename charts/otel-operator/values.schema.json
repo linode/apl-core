@@ -300,6 +300,7 @@
           "required": [
             "java",
             "nodejs",
+            "php",
             "python",
             "dotnet",
             "go",
@@ -343,6 +344,36 @@
               "type": "object",
               "default": {},
               "title": "The nodejs Schema",
+              "additionalProperties": false,
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "default": "",
+                  "title": "The repository Schema",
+                  "examples": [
+                    ""
+                  ]
+                },
+                "tag": {
+                  "type": "string",
+                  "default": "",
+                  "title": "The tag Schema",
+                  "examples": [
+                    ""
+                  ]
+                }
+              },
+              "examples": [
+                {
+                  "repository": "",
+                  "tag": ""
+                }
+              ]
+            },
+            "php": {
+              "type": "object",
+              "default": {},
+              "title": "The php Schema",
               "additionalProperties": false,
               "properties": {
                 "repository": {
@@ -561,6 +592,10 @@
                 "tag": ""
               },
               "nodejs": {
+                "repository": "",
+                "tag": ""
+              },
+              "php": {
                 "repository": "",
                 "tag": ""
               },
@@ -1202,6 +1237,17 @@
               },
               "additionalProperties": false
             },
+            "php": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Enable PHP auto-instrumentation"
+                }
+              },
+              "additionalProperties": false
+            },
             "ruby": {
               "type": "object",
               "properties": {
@@ -1215,7 +1261,8 @@
             }
           },
           "required": [
-            "go"
+            "go",
+            "php"
           ]
         },
         "metrics": {
@@ -1301,6 +1348,10 @@
               "tag": ""
             },
             "nodejs": {
+              "repository": "",
+              "tag": ""
+            },
+            "php": {
               "repository": "",
               "tag": ""
             },
@@ -2082,6 +2133,10 @@
             "tag": ""
           },
           "nodejs": {
+            "repository": "",
+            "tag": ""
+          },
+          "php": {
             "repository": "",
             "tag": ""
           },
