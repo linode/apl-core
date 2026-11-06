@@ -20,9 +20,10 @@ otomiApi:
   gitServerEnabled: {{ $a | get "git-server.enabled" }}
   dexEnabled: {{ $a.dex.enabled }}
 
+  apiServerIps: {{ $v.cluster.apiServerIps | toJson }}
+  apiServerResolvedPort: {{ $v.cluster.apiServerPort }}
 
-  # Real (post-DNAT) kube-apiserver port(s), in addition to 443. LKE uses 6443;
-  # override via _rawValues if your provider's control-plane backend differs.
+  # Used when apiServerIps above wasn't resolved. LKE uses 6443 besides 443.
   apiServerPorts:
     - 6443
 
