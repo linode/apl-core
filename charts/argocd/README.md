@@ -84,6 +84,33 @@ Without the API server, use the CLI in core mode (`argocd login --core`) or `arg
 
 Switching an existing release to `server.enabled: false` deletes the server Deployment, Services, Ingress or Routes and certificates. Shared resources such as `argocd-secret` and the ConfigMaps are kept.
 
+## Redis TLS
+
+With `redis.tls`, the single node Redis serves TLS only. The Argo CD server, repo server and application controller then connect to it with `--redis-use-tls`, and verify its certificate with the CA stored in the same Secret under `redis.tls.caCertFile`, or with the system CAs when `caCertFile` is empty. The Secret's keys default to those of a `kubernetes.io/tls` Secret (`tls.crt`, `tls.key`, `ca.crt`); `certFile`, `keyFile` and `caCertFile` rename them, as in the `tls` values of `redis-ha`. The certificate must name the Redis Service, `argocd-redis` for a release named `argocd`. For example, with a [cert-manager](https://cert-manager.io/) CA issuer:
+
+```yaml
+redis:
+  tls:
+    enabled: true
+    secretName: argocd-redis-tls
+
+extraObjects:
+  - apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: argocd-redis
+    spec:
+      secretName: argocd-redis-tls
+      dnsNames:
+        - argocd-redis
+        - argocd-redis.argocd.svc
+      issuerRef:
+        kind: ClusterIssuer
+        name: my-ca-issuer
+```
+
+Redis reads its certificate when it starts, so restart it after a renewal, for example with [Reloader](https://github.com/stakater/Reloader). `redis.tls` does not apply to `redis-ha` or to an external Redis.
+
 ## Ingress configuration
 
 Please refer to the [Operator Manual](https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#ingress-configurationh) for details as the samples
@@ -400,7 +427,7 @@ server:
       namespace: gateway-system
 ```
 
-Combined with an HTTPRoute to route traffic through the listener to the Argo CD server. The HTTPRoute automatically targets the ListenerSet and inherits the hostname from `global.domain` — no extra configuration needed:
+Combined with an HTTPRoute to route traffic through the listener to the Argo CD server. The HTTPRoute automatically targets the ListenerSet and, when `httproute.hostnames` is empty, inherits the hostnames of the matched listener(s) — no extra configuration needed. Set `httproute.hostnames` only to narrow the route further. When `listeners` is provided, the route targets the listener named `listenerName` (default `https`) if one exists, and otherwise attaches to all listeners of the ListenerSet. Set `httproute.parentRefs` with a `sectionName` to choose explicitly:
 
 ```yaml
 global:
@@ -524,6 +551,14 @@ kubectl apply -k "https://github.com/argoproj/argo-cd/manifests/crds?ref=v2.4.9"
 For full list of changes please check ArtifactHub [changelog].
 
 Highlighted versions provide information about additional steps that should be performed by user when upgrading to newer version.
+
+### 10.13.0
+
+The chart now creates a headless Service for the application controller, named like the controller StatefulSet. If you created that Service yourself, Helm cannot adopt it and the upgrade fails. Delete it before upgrading:
+
+```bash
+kubectl delete service <application-controller-statefulset-name> --namespace <namespace>
+```
 
 ### 10.0.0
 
@@ -1456,7 +1491,7 @@ NAME: my-release
 | server.listenerset.enabled | bool | `false` | Enable ListenerSet resource for Argo CD server (Gateway API) |
 | server.listenerset.hostname | string | `""` | Hostname for the synthesized listener. Defaults to global.domain when empty. |
 | server.listenerset.labels | object | `{}` | Additional ListenerSet labels |
-| server.listenerset.listenerName | string | `"https"` | Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs. |
+| server.listenerset.listenerName | string | `"https"` | Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs. When `listeners` is set, sectionName is only kept if one of the listeners has this name. |
 | server.listenerset.listeners | list | `[]` (See [values.yaml]) | Listeners to attach to the parent Gateway. When non-empty, used verbatim and all synthesized listener fields above are ignored. |
 | server.listenerset.parentRef | object | `{}` (See [values.yaml]) | Gateway API parentRef for the ListenerSet |
 | server.listenerset.port | int | `443` | Port for the synthesized listener |
@@ -1701,7 +1736,7 @@ NAME: my-release
 | redis.exporter.env | list | `[]` | Environment variables to pass to the Redis exporter |
 | redis.exporter.image.imagePullPolicy | string | `""` (defaults to global.image.imagePullPolicy) | Image pull policy for the redis-exporter |
 | redis.exporter.image.repository | string | `"ghcr.io/oliver006/redis_exporter"` | Repository to use for the redis-exporter |
-| redis.exporter.image.tag | string | `"v1.96.0"` | Tag to use for the redis-exporter |
+| redis.exporter.image.tag | string | `"v1.97.0"` | Tag to use for the redis-exporter |
 | redis.exporter.livenessProbe.enabled | bool | `false` | Enable Kubernetes liveness probe for Redis exporter |
 | redis.exporter.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the [probe] to be considered failed after having succeeded |
 | redis.exporter.livenessProbe.initialDelaySeconds | int | `30` | Number of seconds after the container has started before [probe] is initiated |
@@ -1776,6 +1811,11 @@ NAME: my-release
 | redis.serviceAccount.name | string | `""` | Service account name for redis pod |
 | redis.servicePort | int | `6379` | Redis service port |
 | redis.terminationGracePeriodSeconds | int | `30` | terminationGracePeriodSeconds for container lifecycle hook |
+| redis.tls.caCertFile | string | `"ca.crt"` | Key of the CA certificate in that Secret, which the Argo CD components verify Redis with. Leave empty to verify Redis against the system CAs. |
+| redis.tls.certFile | string | `"tls.crt"` | Key of the server certificate in that Secret |
+| redis.tls.enabled | bool | `false` | Serve Redis over TLS only, and connect the Argo CD server, repo server and application controller to it over TLS. Only applies to the single node Redis deployment. |
+| redis.tls.keyFile | string | `"tls.key"` | Key of the server private key in that Secret |
+| redis.tls.secretName | string | `""` | Name of the Secret holding the Redis server certificate and key, such as one cert-manager creates. The certificate must name the Redis Service, which the Argo CD components connect to. |
 | redis.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
 | redis.topologySpreadConstraints | list | `[]` (defaults to global.topologySpreadConstraints) | Assign custom [TopologySpreadConstraints] rules to redis |
 | redis.volumeMounts | list | `[]` | Additional volumeMounts to the redis container |
@@ -1804,7 +1844,7 @@ The main options are listed here:
 | redis-ha.existingSecret | string | `"argocd-redis"` | Existing Secret to use for redis-ha authentication. By default the redis-secret-init Job is generating this Secret. When `redisSecretInit.enabled` is `false`, the Argo CD components read the Redis password from this Secret too (key `redis-ha.authKey`). |
 | redis-ha.exporter.enabled | bool | `false` | Enable Prometheus redis-exporter sidecar |
 | redis-ha.exporter.image | string | `"ghcr.io/oliver006/redis_exporter"` | Repository to use for the redis-exporter |
-| redis-ha.exporter.tag | string | `"v1.96.0"` | Tag to use for the redis-exporter |
+| redis-ha.exporter.tag | string | `"v1.97.0"` | Tag to use for the redis-exporter |
 | redis-ha.haproxy.additionalAffinities | object | `{}` | Additional affinities to add to the haproxy pods. |
 | redis-ha.haproxy.affinity | string | `""` | Assign custom [affinity] rules to the haproxy pods. |
 | redis-ha.haproxy.containerSecurityContext | object | See [values.yaml] | HAProxy container-level security context |
@@ -1944,7 +1984,7 @@ If you use an External Redis (See Option 3 above), this Job is not deployed.
 | applicationSet.listenerset.enabled | bool | `false` | Enable ListenerSet resource for Argo CD ApplicationSet webhook (Gateway API) |
 | applicationSet.listenerset.hostname | string | `""` | Hostname for the synthesized listener. Defaults to global.domain when empty. |
 | applicationSet.listenerset.labels | object | `{}` | Additional ListenerSet labels |
-| applicationSet.listenerset.listenerName | string | `"https"` | Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs. |
+| applicationSet.listenerset.listenerName | string | `"https"` | Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs. When `listeners` is set, sectionName is only kept if one of the listeners has this name. |
 | applicationSet.listenerset.listeners | list | `[]` (See [values.yaml]) | Listeners to attach to the parent Gateway. When non-empty, used verbatim and all synthesized listener fields above are ignored. |
 | applicationSet.listenerset.parentRef | object | `{}` (See [values.yaml]) | Gateway API parentRef for the ListenerSet |
 | applicationSet.listenerset.port | int | `443` | Port for the synthesized listener |

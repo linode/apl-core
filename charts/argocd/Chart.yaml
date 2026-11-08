@@ -1,12 +1,14 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: changed
-      description: Bump argo-cd to v3.5.7
+    - kind: added
+      description: Serve the single node Redis over TLS with redis.tls, and connect the Argo CD components to it over TLS
+    - kind: fixed
+      description: Render server.service.externalIPs as a list so more than one IP works. A string value no longer renders, so set it as a list
   artifacthub.io/signKey: |
     fingerprint: 2B8F22F57260EFA67BE1C5824B11F800CD9D2252
     url: https://argoproj.github.io/argo-helm/pgp_keys.asc
 apiVersion: v2
-appVersion: v3.5.7
+appVersion: v3.6.1
 dependencies:
 - condition: redis-ha.enabled
   name: redis-ha
@@ -28,4 +30,4 @@ name: argo-cd
 sources:
 - https://github.com/argoproj/argo-cd
 - https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd
-version: 10.11.7
+version: 10.15.0
