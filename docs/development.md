@@ -5,6 +5,7 @@ Effective development starts with an understanding the code structure and the re
 # Table of Contents
 
 - [Navigating through code](#Navigating-through-code)
+- [GitHub Actions runtimes](#github-actions-runtimes)
 - [Values and data flow](#Values-repo-and-data-flow)
 - [Integrating core apps](#Integrating-core-apps)
 - [Working with the team-ns chart](#working-with-the-team-ns-chart)
@@ -36,6 +37,14 @@ apl-core
 ├── values-schema.yaml            # JSON schema that defines APL interface
 └── versions.yaml                 # Version tags of otomi-api, otomi-console and otomi-tasks
 ```
+
+## GitHub Actions runtimes
+
+JavaScript actions must use Node.js 24 or newer, including actions called by composite actions. Node.js setup steps use the latest available 24.x patch (`check-latest: true`); the JavaScript action runtime itself is supplied and patched by the GitHub-hosted runner.
+
+The Linode CLI action currently calls a Node.js 20-based Python setup action. Workflows set up Python with `actions/setup-python@v7` and pass `setup-python: false` to the CLI action to skip that legacy step. Keep this pairing in every job that installs the CLI until its upstream action is updated.
+
+PR auto-approval uses `actions/github-script`, and release notifications use Slack's official action. Slack notifications include the release name, link, and notes as message text instead of converting GitHub Markdown into Slack blocks.
 
 ## Reusable code snippets
 
