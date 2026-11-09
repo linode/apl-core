@@ -11,6 +11,15 @@ jobs:
     name: Notify Slack on Release
     steps:
       - name: Notify Slack on Releases
-        uses: amendx/slackbot-release@1.0.1
+        uses: slackapi/slack-github-action@v4
         with:
-          slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          errors: true
+          payload: |
+            {
+              "text": ${{ toJSON(format('{0} has been released in {1}
+            <{2}>
+
+            {3}', github.event.release.name || github.event.release.tag_name, github.repository, github.event.release.html_url, github.event.release.body)) }}
+            }
