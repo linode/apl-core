@@ -97,10 +97,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
       - name: Install the Linode CLI
         uses: linode/action-linode-cli@v1
         with:
           token: ${{ secrets.LINODE_TOKEN }}
+          setup-python: false # Skip the CLI action's nested Node.js 20 action.
       - name: Deploy to dev
         env:
           DEV_CLUSTER_ID: ${{ secrets.DEV_CLUSTER_ID }}

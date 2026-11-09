@@ -14,6 +14,25 @@ jobs:
     if: github.actor == 'dependabot[bot]' || github.event.pull_request.user.login == 'svcAPLBot'
     steps:
       - name: Auto approve PRs
-        uses: hmarr/auto-approve-action@v4
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pullRequest = { ...context.repo, pull_number: context.payload.pull_request.number };
+            const [{ data: pr }, reviews] = await Promise.all([
+              github.rest.pulls.get(pullRequest),
+              github.paginate(github.rest.pulls.listReviews, pullRequest),
+            ]);
+            const reviewer = 'github-actions[bot]';
+            const latestReview = reviews.reverse().find(review => review.user?.login === reviewer);
+            const requested = pr.requested_reviewers?.some(user => user.login === reviewer);
+            if (latestReview?.state === 'APPROVED' && !requested) {
+              core.info(`Already approved PR #${pr.number}`);
+              return;
+            }
+            await github.rest.pulls.createReview({
+              ...pullRequest,
+              commit_id: pr.head.sha,
+              event: 'APPROVE',
+            });
+            core.info(`Approved PR #${pr.number}`);
