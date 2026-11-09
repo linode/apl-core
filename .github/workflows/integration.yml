@@ -246,10 +246,15 @@ jobs:
       linode-cluster-id: ${{ steps.retrieve-cluster-id.outputs.linode-cluster-id }}
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
       - name: Install the Linode CLI
         uses: linode/action-linode-cli@v1
         with:
           token: ${{ secrets.LINODE_TOKEN }}
+          setup-python: false # Skip the CLI action's nested Node.js 20 action.
       - name: Check if cluster is running
         env:
           LINODE_CLUSTER_NAME: ${{ needs.preprocess-linode-input.outputs.linode-cluster-name }}
@@ -352,10 +357,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
       - name: Install the Linode CLI
         uses: linode/action-linode-cli@v1
         with:
           token: ${{ secrets.LINODE_TOKEN }}
+          setup-python: false # Skip the CLI action's nested Node.js 20 action.
       - name: Set kubeconfig
         id: save-kubectl-config
         env:
