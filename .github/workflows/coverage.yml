@@ -18,14 +18,14 @@ jobs:
       - name: Checkout PR branch
         uses: actions/checkout@v7
 
-      - name: Install Node
-        run: |
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          nvm install
-          nvm use
-          node -v
-          npm install
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          check-latest: true
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Compare Coverage
         continue-on-error: true
