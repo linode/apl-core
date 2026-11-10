@@ -300,11 +300,13 @@
           "required": [
             "java",
             "nodejs",
+            "php",
             "python",
             "dotnet",
             "go",
             "apacheHttpd",
-            "nginx"
+            "nginx",
+            "ruby"
           ],
           "additionalProperties": false,
           "properties": {
@@ -342,6 +344,36 @@
               "type": "object",
               "default": {},
               "title": "The nodejs Schema",
+              "additionalProperties": false,
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "default": "",
+                  "title": "The repository Schema",
+                  "examples": [
+                    ""
+                  ]
+                },
+                "tag": {
+                  "type": "string",
+                  "default": "",
+                  "title": "The tag Schema",
+                  "examples": [
+                    ""
+                  ]
+                }
+              },
+              "examples": [
+                {
+                  "repository": "",
+                  "tag": ""
+                }
+              ]
+            },
+            "php": {
+              "type": "object",
+              "default": {},
+              "title": "The php Schema",
               "additionalProperties": false,
               "properties": {
                 "repository": {
@@ -517,6 +549,40 @@
                   "tag": ""
                 }
               ]
+            },
+            "ruby": {
+              "type": "object",
+              "default": {},
+              "title": "The ruby Schema",
+              "required": [
+                "repository",
+                "tag"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "default": "",
+                  "title": "The repository Schema",
+                  "examples": [
+                    ""
+                  ]
+                },
+                "tag": {
+                  "type": "string",
+                  "default": "",
+                  "title": "The tag Schema",
+                  "examples": [
+                    ""
+                  ]
+                }
+              },
+              "examples": [
+                {
+                  "repository": "",
+                  "tag": ""
+                }
+              ]
             }
           },
           "examples": [
@@ -526,6 +592,10 @@
                 "tag": ""
               },
               "nodejs": {
+                "repository": "",
+                "tag": ""
+              },
+              "php": {
                 "repository": "",
                 "tag": ""
               },
@@ -980,6 +1050,18 @@
             []
           ]
         },
+        "extraVolumes": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "extraVolumeMounts": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
         "leaderElection": {
           "type": "object",
           "default": {},
@@ -1154,10 +1236,33 @@
                 }
               },
               "additionalProperties": false
+            },
+            "php": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Enable PHP auto-instrumentation"
+                }
+              },
+              "additionalProperties": false
+            },
+            "ruby": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Enable Ruby auto-instrumentation"
+                }
+              },
+              "additionalProperties": false
             }
           },
           "required": [
-            "go"
+            "go",
+            "php"
           ]
         },
         "metrics": {
@@ -1243,6 +1348,10 @@
               "tag": ""
             },
             "nodejs": {
+              "repository": "",
+              "tag": ""
+            },
+            "php": {
               "repository": "",
               "tag": ""
             },
@@ -2024,6 +2133,10 @@
             "tag": ""
           },
           "nodejs": {
+            "repository": "",
+            "tag": ""
+          },
+          "php": {
             "repository": "",
             "tag": ""
           },

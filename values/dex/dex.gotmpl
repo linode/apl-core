@@ -5,7 +5,6 @@
 
 image:
   repository: ghcr.io/dexidp/dex
-  tag: master
 
 {{- with $v.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
@@ -14,9 +13,33 @@ imagePullSecrets:
 
 replicaCount: {{ $d.replicas }}
 
+# Config Secret comes from ESO, so the chart checksum is off. Hash the rendered template to roll pods on change (e.g. new team redirect URIs).
+podAnnotations:
+  checksum/config: {{ tpl (readFile "../../helmfile.d/snippets/dex-config.gotmpl") . | sha256sum }}
+
+{{- if gt (int $d.replicas) 1 }}
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+strategy:
+  rollingUpdate:
+    maxUnavailable: 0
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: dex
+        app.kubernetes.io/instance: dex
+{{- end }}
+
 # Feature-flagged while unreleased upstream. Needed for SSO across apps and real logout.
 env:
   DEX_SESSIONS_ENABLED: "true"
+  DEX_API_SESSIONS_IDENTITIES_CRUD: "true"
 
 # config is an ExternalSecret (dex-raw.gotmpl), not helm values — it embeds the OAuth2 secret.
 configSecret:

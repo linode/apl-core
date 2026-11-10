@@ -37,7 +37,7 @@ securityContext:
   runAsUser: 1001
 
 configs:
-  tls: 
+  tls:
     certificates: {}
 
 resources: {}
@@ -53,6 +53,8 @@ resources: {}
   #   memory: 128Mi
 
 nodeSelector: {}
+
+dnsConfig: {}
 
 tolerations: []
 

@@ -6,10 +6,6 @@
 {{- fail "Helm test requires the Loki Canary to be enabled"}}
 {{- end }}
 
-{{- if and .Values.minio.enabled (not .Values.ignoreMinioDeprecation) }}
-{{- fail "The Loki chart builtin MinIO dependency is deprecated and will be removed 2026-10-31. Configure an external object storage backend instead. To proceed temporarily, set ignoreMinioDeprecation=true."}}
-{{- end }}
-
 {{- $monolithicReplicas := int .Values.singleBinary.replicas }}
 {{- $isUsingFilesystem := eq (include "loki.isUsingObjectStorage" .) "false" }}
 {{- $atLeastOneScalableReplica := or (gt (int .Values.backend.replicas) 0) (gt (int .Values.read.replicas) 0) (gt (int .Values.write.replicas) 0) }}
@@ -35,10 +31,16 @@
 {{- fail "You have more than zero replicas configured for both the monolithic and simple scalable targets. If this was intentional change the deploymentMode to the transitional 'Monolithic<->SimpleScalable' mode"}}
 {{- end }}
 
+{{- if and .Values.ruler.enabled .Values.ruler.remoteEvaluationDedicatedQueryPath (ne (include "loki.deployment.isDistributed" .) "true") }}
+{{- fail "ruler.remoteEvaluationDedicatedQueryPath requires deploymentMode Distributed (or SimpleScalable<->Distributed) with an object storage backend." }}
+{{- end }}
+
 {{- include "loki.validateAutoscaling" (dict "component" .Values.querier "name" "querier") }}
 {{- include "loki.validateAutoscaling" (dict "component" .Values.distributor "name" "distributor") }}
 {{- include "loki.validateAutoscaling" (dict "component" .Values.ingester "name" "ingester") }}
 {{- include "loki.validateAutoscaling" (dict "component" .Values.queryFrontend "name" "query-frontend") }}
+{{- include "loki.validateAutoscaling" (dict "component" .Values.rulerQuerier "name" "ruler-querier") }}
+{{- include "loki.validateAutoscaling" (dict "component" .Values.rulerQueryFrontend "name" "ruler-query-frontend") }}
 {{- include "loki.validateAutoscaling" (dict "component" .Values.bloomBuilder "name" "bloom-builder") }}
 {{- include "loki.validateAutoscaling" (dict "component" .Values.bloomGateway "name" "bloom-gateway") }}
 {{- include "loki.validateAutoscaling" (dict "component" .Values.bloomPlanner "name" "bloom-planner") }}

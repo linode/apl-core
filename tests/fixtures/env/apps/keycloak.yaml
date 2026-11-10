@@ -3,8 +3,8 @@ metadata:
     name: keycloak
 spec:
     _rawValues: {}
-    enabled: true
     adminUsername: otomi-admin
+    enabled: true
     idp:
         alias: redkubes-azure
         clientID: otomi

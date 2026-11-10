@@ -117,29 +117,6 @@ spec:
               {{- end }}
         {{- end }}
       {{- end }}{{- /* any headers */}}
----
-apiVersion: networking.istio.io/v1
-kind: ServiceEntry
-metadata:
-  name: {{ $serviceName }}-internal
-  {{- with $serviceNamespace }}
-  namespace: {{ . }}
-  {{- end }}
-spec:
-  hosts:
-    - {{ $defaultHostname }}
-    {{- if $useCname }}
-    - {{ $cnameDomain }}
-    {{- end }}
-  location: MESH_INTERNAL
-  ports:
-    - number: 80
-      name: http
-      protocol: HTTP
-    - number: 443
-      name: https
-      protocol: TLS
-  resolution: DNS
 {{- end }}{{- /* $isKnativeService */}}
 {{- end }}{{- /* range services */}}
 

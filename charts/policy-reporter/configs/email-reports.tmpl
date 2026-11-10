@@ -11,6 +11,9 @@ emailReports:
   {{- end }}
 
   summary:
+    {{- with .Values.emailReports.summary.attachmentFormat }}
+    attachmentFormat: {{ . | quote }}
+    {{- end }}
     {{- with .Values.emailReports.summary.to }}
     to:
       {{- toYaml . | nindent 6 }}
@@ -25,6 +28,9 @@ emailReports:
     {{- end }}
 
   violations:
+    {{- with .Values.emailReports.violations.attachmentFormat }}
+    attachmentFormat: {{ . | quote }}
+    {{- end }}
     {{- with .Values.emailReports.violations.to }}
     to:
       {{- toYaml . | nindent 6 }}

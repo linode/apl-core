@@ -1,0 +1,16 @@
+{{- if eq (include "loki.ruler.dedicatedQueryPathEnabled" .) "true" }}
+{{- $args := list
+  "-querier.frontend-address="
+  (printf "-querier.scheduler-address=%s" (include "loki.rulerQuerySchedulerAddress" .))
+  "-query-scheduler.ring.prefix=ruler-query-scheduler/"
+}}
+{{- if .Values.ingester.zoneAwareReplication.enabled }}
+  {{- if and (.Values.ingester.zoneAwareReplication.migration.enabled) (not .Values.ingester.zoneAwareReplication.migration.readPath) }}
+    {{- $args = append $args "-distributor.zone-awareness-enabled=false" }}
+  {{- else }}
+    {{- $args = append $args "-distributor.zone-awareness-enabled=true" }}
+  {{- end }}
+{{- end }}
+---
+{{- include "loki.component" (dict "ctx" . "component" .Values.rulerQuerier "target" "ruler-querier" "lokiTarget" "querier" "args" $args) }}
+{{- end }}

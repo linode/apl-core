@@ -1,0 +1,24 @@
+{{- if .Values.plugin.vap.enabled -}}
+{{- if .Values.plugin.vap.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels: {{- include "vap-plugin.labels" . | nindent 4 }}
+  name: {{ include "vap-plugin.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+spec:
+  podSelector:
+    matchLabels: {{- include "vap-plugin.selectorLabels" . | nindent 6 }}
+  policyTypes:
+  - Ingress
+  - Egress
+  {{- with .Values.plugin.vap.networkPolicy.ingress }}
+  ingress:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- with .Values.plugin.vap.networkPolicy.egress }}
+  egress:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- end }}

@@ -15,7 +15,7 @@ jest.mock('simple-git', () => {
     getRemotes: jest.fn(),
     remote: jest.fn(),
   }
-  return jest.fn().mockImplementation(() => mockGit)
+  return { simpleGit: jest.fn().mockImplementation(() => mockGit) }
 })
 
 jest.mock('../common/debug', () => ({
@@ -55,7 +55,7 @@ describe('GitRepository', () => {
       gitOpTimeoutMs: 10000,
     }
 
-    const simpleGit = require('simple-git')
+    const { simpleGit } = require('simple-git')
     mockGit = simpleGit()
     mockGit.clean.mockResolvedValue(undefined)
 
@@ -136,7 +136,7 @@ describe('GitRepository', () => {
       expect(mockGit.clone).toHaveBeenCalledWith(
         'https://testuser:testpass@github.com:443/testorg/testrepo.git',
         '/tmp/repo',
-        ['-b', 'main'],
+        ['--single-branch', '-b', 'main'],
       )
       expect(fs.existsSync).toHaveBeenCalledWith('/tmp/repo/.git')
     })

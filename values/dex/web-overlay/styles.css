@@ -137,6 +137,7 @@ body.theme-body {
 .apl-field {
   display: grid;
   gap: 8px;
+  text-align: left;
 }
 
 .apl-field label {

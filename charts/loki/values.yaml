@@ -1,10 +1,15 @@
 # $schema: ./values.schema.json
+# helm-schema-args: --schema-root.additional-properties=false
 
 # -- Overrides the version used to determine compatibility of resources with the target Kubernetes cluster.
 # This is useful when using `helm template`, because then helm will use the client version of kubectl as the Kubernetes version,
 # which may or may not match your cluster's server version. Example: 'v1.24.4'. Set to null to use the version that helm
 # devises.
 kubeVersionOverride: ""
+
+# -- Not used by this chart. Lets a parent chart use `<alias>.enabled` as the condition of its Loki dependency
+# without failing schema validation.
+enabled: true
 
 global:
   # @schema type:[string, null]
@@ -157,10 +162,10 @@ defaults:
   enableServiceLinks: true
   service:
     # @schema additionalProperties:{"type":"string"}
-    # -- Common annotations for all services
+    # -- Common annotations for all non-headless services
     annotations: {}
     # @schema additionalProperties:{"type":"string"}
-    # -- Common labels for all services
+    # -- Common labels for all non-headless services
     labels: {}
     # -- trafficDistribution for services
     # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#traffic-distribution
@@ -175,6 +180,13 @@ defaults:
     # withdrawn as soon as it becomes unready, instead of staying routable for the full termination
     # window. Overridable per component via <component>.service.publishNotReadyAddresses.
     publishNotReadyAddresses: true
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Common annotations for all headless services
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Common labels for all headless services
+      labels: {}
   # -- KEDA autoscaling shared configuration for all components that support KEDA
   kedaAutoscaling:
     # -- Prometheus server address for KEDA triggers
@@ -262,10 +274,10 @@ loki:
   # -- Common labels for all pods
   podLabels: {}
   # @schema additionalProperties:{"type":"string"}
-  # -- Common annotations for all services
+  # -- Common annotations for all non-headless services
   serviceAnnotations: {}
   # @schema additionalProperties:{"type":"string"}
-  # -- Common labels for all services
+  # -- Common labels for all non-headless services
   serviceLabels: {}
   # -- The number of old ReplicaSets to retain to allow rollback
   revisionHistoryLimit: 10
@@ -565,14 +577,25 @@ loki:
     max_join_retries: 10
     min_join_backoff: 1s
     rejoin_interval: 90s
-  # -- Tenants list to be created on nginx htpasswd file, with name and password or passwordHash keys<br><br>
+  # @schema item:object
+  # @schema itemProperties:{"name":{"type":"string","minLength":1},"password":{"type":["string","null"]},"passwordHash":{"type":["string","null"]},"basicAuthUsername":{"type":["string","null"]},"clientCertificateCN":{"type":"array","items":{"type":"string","minLength":1},"uniqueItems":true},"jwtSubClaim":{"type":"array","items":{"type":"string","minLength":1},"uniqueItems":true}}
+  # @schema allOf:[{"type":"array","items":{"required":["name"]}}]
+  # -- Tenants used by the gateway for authentication and `X-Scope-OrgID` mapping. Only `name`, `password`, and `passwordHash` are supported by both gateway implementations; `basicAuthUsername`, `clientCertificateCN`, and `jwtSubClaim` are supported only when `gateway.type` is `envoy`. `name` is the value assigned to `X-Scope-OrgID` and the default Basic Auth username. It can be a single Loki tenant ID or, when multi-tenant queries are enabled, a pipe-separated list of tenant IDs. `jwtSubClaim` entries are rendered with `tpl`, allowing values such as `system:serviceaccount:{{ .Release.Namespace }}:loki-canary`. Envoy Basic Auth accepts a `{SHA}` `passwordHash`, or derives one from `password`; JWT-only Envoy tenants do not need either.<br><br>
   # Example:
   # <pre>
   # tenants:<br>
   #   - name: "test-user-1"<br>
   #     password: "test-password-1"<br>
   #   - name: "test-user-2"<br>
-  #     passwordHash: "$2y$10$7O40CaY1yz7fu9O24k2/u.ct/wELYHRBsn25v/7AyuQ8E8hrLqpva" # generated using `htpasswd -nbBC10 test-user-2 test-password-2`
+  #     passwordHash: "$2y$10$7O40CaY1yz7fu9O24k2/u.ct/wELYHRBsn25v/7AyuQ8E8hrLqpva" # NGINX: generated using `htpasswd -nbBC10 test-user-2 test-password-2`
+  #   # Map requests authenticated as the dedicated user "grafana" to all three tenants by<br>
+  #   # setting X-Scope-OrgID to "cluster1|cluster2|cluster3".<br>
+  #   - name: "cluster1|cluster2|cluster3"<br>
+  #     basicAuthUsername: "grafana"<br>
+  #     clientCertificateCN:<br>
+  #       - "grafana-client"<br>
+  #     jwtSubClaim:<br>
+  #       - "system:serviceaccount:grafana:grafana"
   # </pre>
   tenants: []
   # @schema skipProperties:true;additionalProperties:true
@@ -600,6 +623,10 @@ loki:
     # -- ipFamilies for all services
     # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
     ipFamilies: []
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Loki services
+      annotations: {}
   # @schema skipProperties:true;additionalProperties:true
   # -- Limits config
   limits_config:
@@ -772,7 +799,7 @@ loki:
     configs:
       - from: 2024-04-01
         store: tsdb
-        object_store: '{{ include "loki.testSchemaObjectStore" . }}'
+        object_store: filesystem
         schema: v13
         index:
           prefix: index_
@@ -1085,6 +1112,14 @@ lokiCanary:
     # @schema type:[string, null]
     # -- Password of the gateway for Basic auth for loki-canary
     password: null
+    bearerToken:
+      # -- Use a projected Kubernetes ServiceAccount token with loki-canary's `-bearer-token-file` option instead of Basic Auth. Requires a loki-canary build that supports this option.
+      enabled: false
+      # -- Requested audience for the projected ServiceAccount token. Rendered with `tpl`; this must match an Envoy JWT audience when audience validation is enabled.
+      audience: '{{ include "loki.name" . }}.{{ include "loki.namespace" . }}'
+      # @schema minimum:600;maximum:31536000
+      # -- Lifetime in seconds for the projected ServiceAccount token.
+      expirationSeconds: 3600
   serviceAccount:
     # -- Specifies whether a ServiceAccount should be created
     create: true
@@ -1145,6 +1180,10 @@ rbac:
 networkPolicy:
   # -- Specifies whether Network Policies should be created
   enabled: false
+  gatewayJwks:
+    # @schema item:string
+    # -- CIDRs allowed for Envoy gateway JWKS egress in the standard NetworkPolicy. Empty permits the configured JWKS port to any destination because Kubernetes NetworkPolicy cannot select the API server Service by name.
+    cidrs: []
   metrics:
     # -- Specifies the Pods which are allowed to access the metrics port.
     # As this is cross-namespace communication, you also need the namespaceSelector.
@@ -1191,6 +1230,10 @@ networkPolicy:
 ######################################################################################################################
 
 # Configuration for the memberlist service
+# The service selects pods labeled `app.kubernetes.io/part-of: memberlist` and is used as the seed list for
+# `memberlist.join_members`. Only components that always run a memberlist listener get this label. Components that
+# only use memberlist with some configurations (query-frontend, query-scheduler, index-gateway, bloom components,
+# overrides-exporter; all of them when `loki.ui.enabled` is true) still join the cluster through these seed nodes.
 memberlist:
   service:
     publishNotReadyAddresses: false
@@ -1212,6 +1255,9 @@ memberlist:
 gateway:
   # -- Specifies whether the gateway should be enabled
   enabled: true
+  # @schema enum:[nginx, envoy]
+  # -- Selects the gateway proxy implementation. The Envoy implementation is EXPERIMENTAL and opt-in; its values under `gateway.envoyConfig` and the rendered Envoy configuration may change in minor releases.
+  type: nginx
   # -- Number of replicas for the gateway
   replicas: 1
   # -- Default container port
@@ -1276,17 +1322,31 @@ gateway:
   deploymentStrategy:
     type: RollingUpdate
   image:
-    # -- The Docker registry for the gateway image
+    # -- The Docker registry for the NGINX gateway image
     registry: docker.io
-    # -- The gateway image repository
+    # -- The NGINX gateway image repository
     repository: nginxinc/nginx-unprivileged
-    # -- The gateway image tag
+    # -- The NGINX gateway image tag
     tag: 1.31-alpine
     # @schema type:[string, null]
-    # -- Overrides the gateway image tag with an image digest
+    # -- Overrides the NGINX gateway image tag with an image digest
     digest: null
-    # -- The gateway image pull policy
+    # -- The NGINX gateway image pull policy
     pullPolicy: IfNotPresent
+  envoy:
+    image:
+      # -- The Docker registry for the Envoy gateway image
+      registry: docker.io
+      # -- The Envoy gateway image repository
+      repository: envoyproxy/envoy
+      # renovate: docker=docker.io/envoyproxy/envoy
+      # -- The Envoy gateway image tag. Uses the official distroless variant by default.
+      tag: distroless-v1.39.1
+      # @schema type:[string, null]
+      # -- Overrides the Envoy gateway image tag with an image digest
+      digest: null
+      # -- The Envoy gateway image pull policy
+      pullPolicy: IfNotPresent
   # @schema type:[string, null]
   # -- The name of the PriorityClass for gateway pods
   priorityClassName: null
@@ -1478,30 +1538,63 @@ gateway:
     # -- The basic auth username for the gateway
     username: null
     # @schema type:[string, null]
-    # -- The basic auth password for the gateway
+    # -- The basic auth password. The Envoy gateway derives its required `{SHA}` hash from this value.
     password: null
+    # @schema type:[string, null]
+    # -- The `{SHA}` password hash for the Envoy gateway when `loki.tenants` is empty. This takes precedence over `password`. Generate it with `printf %s 'password' | openssl dgst -sha1 -binary | openssl base64 -A` and prefix the result with `{SHA}`.
+    passwordHash: null
     # -- Uses the specified users from the `loki.tenants` list to create the htpasswd file.
-    # if `loki.tenants` is not set, the `gateway.basicAuth.username` and `gateway.basicAuth.password` are used.
+    # If `loki.tenants` is not set, the `gateway.basicAuth.username` and matching password value are used.
     # The value is templated using `tpl`. Override this to use a custom htpasswd, e.g. in case the default causes
-    # high CPU load.
-    # @default -- Either `loki.tenants` or `gateway.basicAuth.username` and `gateway.basicAuth.password`.
+    # high CPU load. The native Envoy Basic Auth filter requires `{SHA}` password hashes; NGINX supports
+    # the existing bcrypt hashes. Envoy derives `{SHA}` hashes from plaintext password inputs.
+    # @default -- Either `loki.tenants` or `gateway.basicAuth.username` and password or passwordHash.
     htpasswd: |
+      {{- $isEnvoy := eq .Values.gateway.type "envoy" }}
       {{- with $tenants := .Values.loki.tenants }}
         {{- range $t := $tenants }}
-          {{- $username := required "All tenants must have a 'name' set" $t.name }}
-          {{- if $passwordHash := $t.passwordHash }}
+          {{- $tenantName := required "All tenants must have a 'name' set" $t.name }}
+          {{- $username := ternary ($t.basicAuthUsername | default $tenantName) $tenantName $isEnvoy }}
+          {{- if and $isEnvoy (or $t.passwordHash $t.password) }}
+            {{- $passwordHash := $t.passwordHash }}
+            {{- if not $passwordHash }}
+              {{- $passwordHash = include "loki.gatewayEnvoySHA1" (required "All tenants must have a 'password' or 'passwordHash' set" $t.password) }}
+            {{- end }}
+            {{- if not (regexMatch "^\\{SHA\\}[A-Za-z0-9+/]{27}=$" $passwordHash) }}
+              {{- fail "Envoy Basic Auth passwordHash values must contain a valid {SHA} Base64-encoded SHA-1 digest" }}
+            {{- end }}
             {{- printf "%s:%s\n" $username $passwordHash }}
-          {{- else if $password := $t.password }}
-            {{- printf "%s\n" (htpasswd $username $password) }}
+          {{- else if $isEnvoy }}
+            {{- if not (or $t.jwtSubClaim $t.clientCertificateCN) }}
+              {{- fail (printf "Tenant %q must set 'password' or 'passwordHash', or an Envoy identity (jwtSubClaim or clientCertificateCN)" $tenantName) }}
+            {{- end }}
           {{- else }}
+            {{- if $passwordHash := $t.passwordHash }}
+            {{- printf "%s:%s\n" $username $passwordHash }}
+            {{- else if $password := $t.password }}
+            {{- printf "%s\n" (htpasswd $username $password) }}
+            {{- else }}
             {{- fail "All tenants must have a 'password' or 'passwordHash' set" }}
+            {{- end }}
           {{- end }}
         {{- end }}
       {{- else }}
-        {{- printf "%s\n" (htpasswd (required "'gateway.basicAuth.username' is required" .Values.gateway.basicAuth.username) (required "'gateway.basicAuth.password' is required" .Values.gateway.basicAuth.password)) }}
+        {{- $username := required "'gateway.basicAuth.username' is required" .Values.gateway.basicAuth.username }}
+        {{- if $isEnvoy }}
+          {{- $passwordHash := .Values.gateway.basicAuth.passwordHash }}
+          {{- if not $passwordHash }}
+            {{- $passwordHash = include "loki.gatewayEnvoySHA1" (required "'gateway.basicAuth.password' or 'gateway.basicAuth.passwordHash' is required for the Envoy gateway" .Values.gateway.basicAuth.password) }}
+          {{- end }}
+          {{- if not (regexMatch "^\\{SHA\\}[A-Za-z0-9+/]{27}=$" $passwordHash) }}
+            {{- fail "gateway.basicAuth.passwordHash must use the {SHA} format for the Envoy gateway" }}
+          {{- end }}
+          {{- printf "%s:%s\n" $username $passwordHash }}
+        {{- else }}
+          {{- printf "%s\n" (htpasswd $username (required "'gateway.basicAuth.password' is required" .Values.gateway.basicAuth.password)) }}
+        {{- end }}
       {{- end }}
     # @schema type:[string, null]
-    # -- Existing basic auth secret to use. Must contain '.htpasswd'
+    # -- Existing basic auth secret to use. Must contain `.htpasswd`; Envoy requires every entry to use the `{SHA}` format. Envoy reads this file at startup; after rotating an existing Secret, restart the gateway Deployment or change gateway.podAnnotations to trigger a rollout.
     existingSecret: null
   # -- Gateway API routes configuration. Mutually exclusive with gateway.ingress.
   # Use either ingress or route, but not both at once.
@@ -1523,10 +1616,11 @@ gateway:
       # @schema additionalProperties:{"type":"string"}
       # -- Additional labels for the route
       labels: {}
-      # -- Hostnames for the route
+      # -- Hostnames for the route. Optional: when empty, the route inherits the hostnames of the
+      # listeners it is attached to, e.g. the ones of a ListenerSet referenced in `parentRefs`.
       hostnames: []
       # - gateway.loki.example.com
-      # -- Parent gateway references to attach the route to
+      # -- Parent references to attach the route to. A Gateway or a ListenerSet (see `listenerSet`).
       parentRefs: []
       # - name: my-gateway
       #   namespace: gateway-namespace
@@ -1557,10 +1651,10 @@ gateway:
       # -- Timeouts for the default rule
       timeouts: {}
   # @schema skipProperties:true;additionalProperties:true
-  # -- liveness probe for the nginx container in the gateway pods.
+  # -- Liveness probe for the selected gateway container. Envoy defaults to `/livez` on its HTTP listener when this is empty.
   livenessProbe: {}
   # @schema skipProperties:true;additionalProperties:true
-  # Configures the readiness probe for the gateway
+  # -- Readiness probe for the gateway. The default remains compatible with custom NGINX configurations. Envoy replaces this default with HTTP `/ready` on `gateway.envoyConfig.adminPort`; custom probes are preserved.
   readinessProbe:
     httpGet:
       path: /
@@ -1568,10 +1662,10 @@ gateway:
     initialDelaySeconds: 15
     timeoutSeconds: 1
   # @schema skipProperties:true;additionalProperties:true
-  # -- startup probe for the nginx container in the gateway pods.
+  # -- Startup probe for the selected gateway container.
   startupProbe: {}
   nginxConfig:
-    # -- Which schema to be used when building URLs. Can be 'http' or 'https'.
+    # -- Which schema to be used when building upstream URLs. Can be `http` or `https`. Also used by the generated Envoy configuration.
     schema: http
     # -- Enable listener for IPv6, disable on IPv4-only systems
     enableIPv6: true
@@ -1592,13 +1686,13 @@ gateway:
     # -- Whether ssl should be appended to the listen directive of the server block or not.
     ssl: false
     # @schema type:[string, null]
-    # -- Override Read URL
+    # -- Override Read URL. Also used by the generated Envoy configuration, which accepts scheme, host and port only (no path).
     customReadUrl: null
     # @schema type:[string, null]
-    # -- Override Write URL
+    # -- Override Write URL. Also used by the generated Envoy configuration, which accepts scheme, host and port only (no path).
     customWriteUrl: null
     # @schema type:[string, null]
-    # -- Override Backend URL
+    # -- Override Backend URL. Also used by the generated Envoy configuration, which accepts scheme, host and port only (no path).
     customBackendUrl: null
     # -- Allows overriding the DNS resolver address nginx will use.
     resolver: ""
@@ -1607,19 +1701,98 @@ gateway:
     file: |
       {{- include "loki.nginxFile" . -}}
 
+  # -- EXPERIMENTAL: Settings for the Envoy gateway implementation, used when `gateway.type` is `envoy`.
+  # @default -- See values.yaml
+  envoyConfig:
+    # -- Dual-stack Envoy administration port used by the readiness probe. Only `/ready` is accessible unless gateway metrics are enabled, which also allows `/stats/prometheus`.
+    adminPort: 9901
+    # -- Enable an IPv4-compatible IPv6 listener for dual-stack gateway pods.
+    enableIPv6: true
+    # -- Timeout for connections from Envoy to Loki components.
+    connectTimeout: 5s
+    # -- Request timeout. Use `0s` for streaming Loki requests.
+    requestTimeout: 0s
+    # -- Idle timeout for downstream HTTP streams.
+    streamIdleTimeout: 600s
+    # -- Enable TCP keep-alive on listener and upstream connections.
+    tcpKeepAlive: true
+    # -- Use HTTP/2 over cleartext (h2c) for Loki upstreams. WebSocket streams automatically use HTTP/1.1.
+    upstreamHTTP2: true
+    upstreamTLS:
+      # -- CA bundle for HTTPS Loki upstreams. The default is present in the Envoy distroless image. Mount a custom CA with gateway.extraVolumes and gateway.extraVolumeMounts when needed.
+      caCertificateFile: /etc/ssl/certs/ca-certificates.crt
+      # -- Disable certificate chain and hostname verification for HTTPS Loki upstreams. Use only when explicitly required.
+      insecureSkipVerify: false
+    # -- Envoy access log format. Logs are written to stdout; `/livez` is always excluded.
+    logFormat: |
+      [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %UPSTREAM_HOST% "%REQ(USER-AGENT)%" "%REQ(X-FORWARDED-FOR)%"
+    tls:
+      # -- Terminate TLS at Envoy. Required when tenants define `clientCertificateCN`.
+      enabled: false
+      # @schema type:[string, null]
+      # -- Secret containing the server certificate/private key and, for client-certificate authentication, the client CA.
+      existingSecret: null
+      # -- Secret key containing the PEM server certificate.
+      certificateFile: tls.crt
+      # -- Secret key containing the PEM server private key.
+      privateKeyFile: tls.key
+      # -- Secret key containing the CA certificates used to verify client certificates.
+      clientCAFile: ca.crt
+    jwt:
+      # -- Verify bearer JWTs with a remote JWKS before mapping `jwtSubClaim` values to Loki tenants. Defaults target the Kubernetes ServiceAccount issuer.
+      enabled: false
+      # -- Expected JWT issuer (`iss`).
+      issuer: 'https://kubernetes.default.svc.{{ .Values.global.clusterDomain }}'
+      # @schema item:string
+      # -- Allowed JWT audiences (`aud`). Each value is rendered with `tpl`; the default matches the loki-canary projected ServiceAccount token. Leave empty to skip audience validation.
+      audiences:
+        - '{{ include "loki.name" . }}.{{ include "loki.namespace" . }}'
+      remoteJwks:
+        # -- HTTPS or HTTP URI used by Envoy to fetch the JWKS. The value is rendered with `tpl`. The default is the Kubernetes ServiceAccount JWKS endpoint, addressed by its absolute DNS name to skip resolver search-domain lookups.
+        uri: 'https://kubernetes.default.svc.{{ .Values.global.clusterDomain }}./openid/v1/jwks'
+        # @schema type:[string, null]
+        # -- File whose contents Envoy sends as `Authorization: Bearer` when fetching the JWKS, through a loopback credential-injector listener. The default path is a projected token of the gateway ServiceAccount that the chart mounts and Envoy reloads on rotation; the Kubernetes API accepts it for the JWKS endpoint without extra RBAC. Point this at another mounted file for a different credential, or set it to `null` to fetch the JWKS anonymously.
+        bearerTokenFile: /etc/envoy/kubernetes/token
+        # -- Loopback port of the Envoy listener that adds the bearer token to JWKS requests. Only bound on 127.0.0.1 inside the gateway pod. Used when `bearerTokenFile` is set.
+        credentialInjectorPort: 9902
+        # -- Timeout for each remote JWKS request.
+        requestTimeout: 5s
+        # @schema minimum:0
+        # -- Number of times Envoy retries a failed JWKS request (connection failure, reset or 5xx) with a short exponential backoff before giving up on that fetch. Retries during startup keep the listener from serving JWT requests until the JWKS arrives, which also covers the first fetch racing the loopback credential-injector listener. Set to `0` to disable retries.
+        retries: 3
+        # -- How long Envoy caches the fetched JWKS.
+        cacheDuration: 300s
+        # -- Fetch the JWKS asynchronously during listener initialization.
+        asyncFetch: true
+        # -- CA bundle used to validate an HTTPS JWKS endpoint. The Kubernetes root CA is mounted here when JWT verification is enabled. Override this for an external issuer.
+        caCertificateFile: /etc/envoy/kubernetes/ca.crt
+    # -- Config file contents for Envoy. Passed through the `tpl` function to allow templating.
+    # @default -- See values.yaml
+    file: |
+      {{- include "loki.envoyFile" . -}}
+
+  # @schema additionalProperties:{"type":"string"}
+  # -- Additional Envoy configuration files. Keys are mounted in `/etc/envoy` and values are passed through `tpl`. The name `envoy.yaml` is reserved.
+  configs: {}
+
   metrics:
-    # -- Whether gateway metrics should be exported
+    # -- Whether gateway metrics should be exposed. NGINX uses the exporter sidecar; Envoy exposes native Prometheus metrics.
     enabled: true
     image:
+      # -- NGINX access log exporter image registry. Not used by the Envoy gateway.
       registry: ghcr.io
+      # -- NGINX access log exporter image repository. Not used by the Envoy gateway.
       repository: "jkroepke/access-log-exporter"
-      tag: "0.4.21"
+      # -- NGINX access log exporter image tag. Not used by the Envoy gateway.
+      tag: "1.0.1"
+      # -- NGINX access log exporter image pull policy. Not used by the Envoy gateway.
       pullPolicy: IfNotPresent
     # @schema additionalProperties:true
+    # -- Resource requests and limits for the NGINX metrics exporter. Not used by the Envoy gateway.
     resources:
       requests: {}
       limits: {}
-    # -- Container resize policy for the gateway metrics exporter
+    # -- Container resize policy for the NGINX gateway metrics exporter. Not used by the Envoy gateway.
     # Example:
     # resizePolicy:
     #   - resourceName: cpu
@@ -1628,7 +1801,7 @@ gateway:
     #     restartPolicy: RestartContainer
     resizePolicy: []
     # @schema skipProperties:true;additionalProperties:true
-    # -- The SecurityContext for memcached exporter containers
+    # -- The SecurityContext for the NGINX gateway metrics exporter. Not used by the Envoy gateway.
     containerSecurityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
@@ -1640,10 +1813,10 @@ gateway:
       runAsNonRoot: true
       runAsUser: 65532
       runAsGroup: 65532
-    # -- Extra args to add to the exporter container.
+    # -- Extra args to add to the NGINX gateway metrics exporter. Not used by the Envoy gateway.
     extraArgs: []
     # @schema skipProperties:true;additionalProperties:true
-    # -- Liveness probe for memcached exporter
+    # -- Liveness probe for the NGINX gateway metrics exporter. Not used by the Envoy gateway.
     livenessProbe:
       httpGet:
         path: /health
@@ -1653,7 +1826,7 @@ gateway:
       timeoutSeconds: 5
       failureThreshold: 3
     # @schema skipProperties:true;additionalProperties:true
-    # -- Readiness probe for memcached exporter
+    # -- Readiness probe for the NGINX gateway metrics exporter. Not used by the Envoy gateway.
     readinessProbe:
       httpGet:
         path: /health
@@ -1663,7 +1836,7 @@ gateway:
       timeoutSeconds: 3
       failureThreshold: 3
     # @schema skipProperties:true;additionalProperties:true
-    # -- Startup probe for memcached exporter
+    # -- Startup probe for the NGINX gateway metrics exporter. Not used by the Envoy gateway.
     startupProbe: {}
     service:
       # @schema additionalProperties:{"type":"string"}
@@ -1772,10 +1945,13 @@ route:
     # @schema additionalProperties:{"type":"string"}
     # -- Labels for the route
     labels: {}
-    # -- Hostnames for the route
+    # -- Hostnames for the route. Optional: when empty, the route inherits the hostnames of the
+    # listeners it is attached to, e.g. the ones of a ListenerSet referenced in `parentRefs`.
     hostnames: []
-    # -- Parent references for the route (required for Gateway API)
+    # -- Parent references for the route (required for Gateway API). A Gateway or a ListenerSet (see `listenerSet`).
     parentRefs: []
+    # - name: my-gateway
+    #   namespace: gateway-namespace
     # -- Additional rules to prepend before the generated path-routing rules.
     # Each entry is rendered into spec.rules as written (templating is supported),
     # so any HTTPRoute/GRPCRoute rule shape is accepted — including filter-only rules
@@ -1843,6 +2019,50 @@ route:
       # If deployment mode is SingleBinary, the requests are forwarded to the central/single k8s service.
       compactor:
         - /loki/api/v1/delete
+
+# -- BETA: Configure Gateway API ListenerSet resources for the chart here.
+# ListenerSet allows attaching additional listeners to an existing Gateway.
+# More listener sets can be added by adding a dictionary key like the 'main' entry.
+# The key "main" produces a ListenerSet named after the loki fullname; any other key appends the key as a suffix.
+# Attach a route to it with a parentRef of `kind: ListenerSet` in `route.*.parentRefs` or `gateway.route.*.parentRefs`.
+# The parent Gateway must allow ListenerSets via `spec.allowedListeners`.
+# Being BETA this can/will change in the future without notice, do not use unless you want to take that risk
+# [[ref]](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#listenerset)
+listenerSet:
+  main:
+    # -- Enables or disables the listener set
+    enabled: false
+
+    # -- Set the ListenerSet apiVersion, e.g. gateway.networking.k8s.io/v1
+    apiVersion: gateway.networking.k8s.io/v1
+
+    # @schema additionalProperties:{"type":"string"}
+    # -- Annotations for the ListenerSet
+    annotations: {}
+    # @schema additionalProperties:{"type":"string"}
+    # -- Labels for the ListenerSet
+    labels: {}
+
+    # -- Reference to the parent Gateway this ListenerSet attaches to
+    parentRef: {}
+    # name: my-gateway
+    # namespace: default
+    # group: gateway.networking.k8s.io
+    # kind: Gateway
+
+    # -- List of listeners to attach to the parent Gateway (templating is supported)
+    listeners: []
+    # - name: https
+    #   port: 443
+    #   protocol: HTTPS
+    #   hostname: loki.example.com
+    #   tls:
+    #     mode: Terminate
+    #     certificateRefs:
+    #       - name: loki-tls
+    #   allowedRoutes:
+    #     namespaces:
+    #       from: Same
 
 ######################################################################################################################
 #
@@ -2021,6 +2241,13 @@ singleBinary:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless single binary Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for single binary Service
+      labels: {}
   # -- Comma-separated list of Loki modules to load for the single binary
   targetModule: "all"
   # -- Labels for single binary service
@@ -2255,6 +2482,13 @@ write:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless SimpleScalable write Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless SimpleScalable write Service
+      labels: {}
   # -- Additional CLI args for the write
   extraArgs: []
   # -- Environment variables to add to the write pods
@@ -2527,6 +2761,13 @@ read:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless SimpleScalable read Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless SimpleScalable read Service
+      labels: {}
   # -- Additional CLI args for the read
   extraArgs: []
   # @schema type:[string, array, null]
@@ -2766,6 +3007,13 @@ backend:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the backend
   extraArgs: []
   # -- Environment variables to add to the backend pods
@@ -3076,6 +3324,13 @@ ingester:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed ingester Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed ingester Service
+      labels: {}
   # -- Additional CLI args for the ingester
   extraArgs: []
   # -- Environment variables to add to the ingester pods
@@ -3320,6 +3575,9 @@ ingester:
     # -- The migration block allows migrating non zone aware ingesters to zone aware ingesters.
     migration:
       enabled: false
+      # -- Exclude the `zone-default` ingesters from the distributor and ruler ring
+      # by adding `-distributor.excluded-zones=zone-default`. Enable it once the zone aware
+      # ingesters receive all writes, before scaling down the default ingesters.
       excludeDefaultZone: false
       readPath: false
       writePath: false
@@ -3481,6 +3739,13 @@ distributor:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the distributor
   extraArgs: []
   # -- Environment variables to add to the distributor pods
@@ -3671,12 +3936,14 @@ querier:
     # Ref: https://keda.sh/docs/latest/reference/scaledobject-spec/#advanced
     behavior: {}
     # -- KEDA triggers for the querier. Defaults to a Prometheus trigger using inflight requests.
+    # The default query tells the two schedulers apart by the `container` label, which Prometheus Operator ServiceMonitors and PodMonitors set.
+    # Without that label, the ruler-query-scheduler queue also drives querier scaling when `ruler.remoteEvaluationDedicatedQueryPath` is true.
     triggers:
       - type: prometheus
         name: querier_autoscaling_metric
         metadata:
           serverAddress: "{{ .Values.defaults.kedaAutoscaling.prometheusAddress }}"
-          query: sum(max_over_time(loki_query_scheduler_inflight_requests{quantile="0.75"}[2m]))
+          query: sum(max_over_time(loki_query_scheduler_inflight_requests{container!="ruler-query-scheduler",quantile="0.75"}[2m]))
           threshold: "4"
           unsafeSsl: "{{ .Values.defaults.kedaAutoscaling.unsafeSsl }}"
           ignoreNullValues: "{{ .Values.defaults.kedaAutoscaling.ignoreNullValues }}"
@@ -3748,6 +4015,13 @@ querier:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the querier
   extraArgs: []
   # -- Environment variables to add to the querier pods
@@ -4015,6 +4289,13 @@ queryFrontend:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the query-frontend
   extraArgs: []
   # -- Environment variables to add to the query-frontend pods
@@ -4216,6 +4497,13 @@ queryScheduler:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the query-scheduler
   extraArgs: []
   # -- Environment variables to add to the query-scheduler pods
@@ -4329,8 +4617,6 @@ indexGateway:
   # -- Number of replicas for the index-gateway. Set to null to omit spec.replicas from the workload,
   # allowing an external controller (e.g. HPA, KEDA, rollout-operator) to manage replica counts without Helm resetting them.
   replicas: 0
-  # -- Whether the index gateway should join the memberlist hashring
-  joinMemberlist: true
   # @schema additionalProperties:true
   # -- DNSConfig for index-gateway pods
   dnsConfig: {}
@@ -4405,6 +4691,13 @@ indexGateway:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the index-gateway
   extraArgs: []
   # -- Environment variables to add to the index-gateway pods
@@ -4660,6 +4953,13 @@ compactor:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the compactor
   extraArgs: []
   # -- Environment variables to add to the compactor pods
@@ -4895,6 +5195,13 @@ bloomGateway:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the bloom-gateway
   extraArgs: []
   # -- Environment variables to add to the bloom-gateway pods
@@ -5120,6 +5427,13 @@ bloomPlanner:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the bloom-planner
   extraArgs: []
   # -- Environment variables to add to the bloom-planner pods
@@ -5385,6 +5699,13 @@ bloomBuilder:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the bloom-builder
   extraArgs: []
   # -- Environment variables to add to the bloom-builder pods
@@ -5658,7 +5979,42 @@ patternIngester:
   # The value will be passed through tpl.
   topologySpreadConstraints: []
   tolerations: []
+  service:
+    # @schema additionalProperties:{"type":"string"}
+    # -- Annotations for pattern ingester Service
+    annotations: {}
+    # @schema additionalProperties:{"type":"string"}
+    # -- Additional labels for pattern ingester Service
+    labels: {}
+    # -- Service Type for pattern ingester Service
+    type: "ClusterIP"
+    # -- trafficDistribution for pattern ingester Service
+    trafficDistribution: ""
+    # -- Session affinity for pattern ingester Service
+    sessionAffinity: ""
+    # @schema additionalProperties:true
+    # -- Session affinity config for pattern ingester Service
+    sessionAffinityConfig: {}
+    # -- ipFamilyPolicy for pattern ingester Service
+    # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ipFamilyPolicy: ""
+    # -- ipFamilies for pattern ingester Service
+    # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ipFamilies: []
+    # -- Adds the appProtocol field to the pattern ingester service. This allows pattern ingester to work with istio protocol selection.
+    appProtocol:
+    # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
+      grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless pattern ingester Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless pattern ingester Service
+      labels: {}
+  # @schema additionalProperties:true;deprecated:true
   # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
+  # @deprecated -- This option is deprecated in favor of `patternIngester.service.appProtocol`
   appProtocol:
     grpc: ""
   persistence:
@@ -5728,6 +6084,11 @@ patternIngester:
 ruler:
   # -- The ruler component is optional and can be disabled if desired.
   enabled: true
+  # -- If set to true, a dedicated query path (`ruler-querier`, `ruler-query-frontend`,
+  # and `ruler-query-scheduler`) is deployed for the ruler and `ruler.evaluation.mode` is configured to `remote`.
+  # This isolates ruler queries from other query workloads (API/Grafana).
+  # Requires a Distributed deployment mode with object storage; rendering fails otherwise.
+  remoteEvaluationDedicatedQueryPath: false
   # -- Kind of ruler deployment. StatefulSet and Deployment are supported.
   kind: StatefulSet
   # -- EXPERIMENTAL: Enable creating a Job to recreate the ruler StatefulSet when the ruler configuration is changed.
@@ -5810,6 +6171,13 @@ ruler:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless Distributed compactor Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless Distributed compactor Service
+      labels: {}
   # -- Additional CLI args for the ruler
   extraArgs: []
   # -- Environment variables to add to the ruler pods
@@ -6003,6 +6371,696 @@ ruler:
     # -- Set this toggle to false to opt out of automounting API credentials for the service account
     automountServiceAccountToken: true
 
+# -- Configuration for the ruler-querier. Only deployed when `deploymentMode` is `Distributed`, `ruler.enabled` is `true`, and `ruler.remoteEvaluationDedicatedQueryPath` is `true`.
+rulerQuerier:
+  # -- Kind of ruler-querier workload. StatefulSet and Deployment are supported.
+  kind: Deployment
+  # @schema type:[integer, null]
+  # -- Number of replicas for the ruler-querier. Set to null to omit spec.replicas from the workload,
+  # allowing an external controller (e.g. HPA, KEDA, rollout-operator) to manage replica counts without Helm resetting them.
+  replicas: 2
+  # @schema skipProperties:true;additionalProperties:true
+  # -- Strategy for the ruler-querier.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 15%
+      # @schema type:[string, integer, null]
+      # -- RollingUpdate maxUnavailable
+      maxUnavailable: 0
+  # -- hostAliases to add
+  hostAliases: []
+  # @schema type:[boolean, null]
+  # -- Use the host's user namespace in the ruler-querier
+  hostUsers: null
+  autoscaling:
+    # -- Enable autoscaling for the ruler-querier
+    enabled: false
+    # -- Minimum autoscaling replicas for the ruler-querier
+    minReplicas: 1
+    # -- Maximum autoscaling replicas for the ruler-querier
+    maxReplicas: 3
+    # @schema type:[integer, null]
+    # -- Target CPU utilization percentage for the ruler-querier
+    targetCPUUtilizationPercentage: 60
+    # @schema type:[integer, null]
+    # -- Target memory utilization percentage for the ruler-querier
+    targetMemoryUtilizationPercentage: null
+    # -- Allows one to define custom metrics using the HPA/v2 schema (for example, Pods, Object or External metrics)
+    customMetrics: []
+    # @schema skipProperties:true;additionalProperties:true
+    # -- HPA behavior configuration, passed directly as a Kubernetes HPA behavior object.
+    behavior:
+      # -- Enable autoscaling behaviors
+      enabled: false
+      # -- Define scale down policies, must conform to HPAScalingRules
+      scaleDown: {}
+      # -- Define scale up policies, must conform to HPAScalingRules
+      scaleUp: {}
+  kedaAutoscaling:
+    # -- Enable KEDA autoscaling for the ruler-querier. Mutually exclusive with autoscaling.enabled
+    enabled: false
+    # @schema type:[integer, null]
+    # -- Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.
+    pollingInterval: null
+    # -- Minimum replicas for KEDA autoscaling
+    minReplicas: 1
+    # -- Maximum replicas for KEDA autoscaling
+    maxReplicas: 10
+    # @schema type:[integer, null]
+    # -- Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds).
+    # Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.
+    cooldownPeriod: null
+    # @schema additionalProperties:true
+    # -- Fallback configuration for KEDA ScaledObject. Applied when the trigger metric cannot be retrieved.
+    # Ref: https://keda.sh/docs/latest/reference/scaledobject-spec/#fallback
+    fallback: {}
+    # @schema skipProperties:true;additionalProperties:true
+    # -- Behavior configuration for KEDA ScaledObject (horizontalPodAutoscalerConfig.behavior).
+    # Ref: https://keda.sh/docs/latest/reference/scaledobject-spec/#advanced
+    behavior: {}
+    # -- KEDA triggers for the ruler-querier. Defaults to a Prometheus trigger using ruler-query-scheduler inflight requests.
+    # The default query selects on the `container` label, which Prometheus Operator ServiceMonitors and PodMonitors set.
+    # Without that label, the query returns no data and the ruler-querier stays at `minReplicas`.
+    triggers:
+      - type: prometheus
+        name: ruler_querier_autoscaling_metric
+        metadata:
+          serverAddress: "{{ .Values.defaults.kedaAutoscaling.prometheusAddress }}"
+          query: sum(max_over_time(loki_query_scheduler_inflight_requests{container="ruler-query-scheduler",quantile="0.75"}[2m]))
+          threshold: "4"
+          unsafeSsl: "{{ .Values.defaults.kedaAutoscaling.unsafeSsl }}"
+          ignoreNullValues: "{{ .Values.defaults.kedaAutoscaling.ignoreNullValues }}"
+          customHeaders: "{{ .Values.defaults.kedaAutoscaling.customHeaders }}"
+          authModes: "{{ .Values.defaults.kedaAutoscaling.authentication.authModes }}"
+  image:
+    # @schema type:[string, null]
+    # -- The Docker registry for the ruler-querier image. Overrides `loki.image.registry`
+    registry: null
+    # @schema type:[string, null]
+    # -- Docker image repository for the ruler-querier image. Overrides `loki.image.repository`
+    repository: null
+    # @schema type:[string, null]
+    # -- Docker image tag for the ruler-querier image. Overrides `loki.image.tag`
+    tag: null
+    # @schema type:[string, null]
+    # -- Overrides the image tag with an image digest. Overrides `loki.image.digest`
+    digest: null
+    # @schema type:[string, null]
+    # -- Docker image pull policy for the ruler-querier image. Overrides `loki.image.pullPolicy`
+    pullPolicy: null
+  # @schema type:[string, null]
+  # -- Command to execute instead of defined in Docker image
+  command: null
+  # @schema type:[string, null]
+  # -- The name of the PriorityClass for ruler-querier pods
+  priorityClassName: null
+  # @schema additionalProperties:{"type":"string"}
+  # -- Labels for ruler-querier
+  labels: {}
+  # @schema additionalProperties:{"type":"string"}
+  # -- Annotations for ruler-querier
+  annotations: {}
+  # @schema additionalProperties:{"type":"string"}
+  # -- Labels for ruler-querier pods
+  podLabels: {}
+  # @schema additionalProperties:{"type":"string"}
+  # -- Annotations for ruler-querier pods
+  podAnnotations: {}
+  service:
+    # @schema additionalProperties:{"type":"string"}
+    # -- Annotations for ruler-querier Service
+    annotations: {}
+    # @schema additionalProperties:{"type":"string"}
+    # -- Additional labels for ruler-querier Service
+    labels: {}
+    # -- Service Type for ruler-querier Service
+    type: "ClusterIP"
+    # @schema type:[boolean, null]
+    # -- publishNotReadyAddresses for ruler-querier Service. Defaults to `defaults.service.publishNotReadyAddresses` if not set.
+    publishNotReadyAddresses: null
+    # -- trafficDistribution for ruler-querier Service
+    trafficDistribution: ""
+    # -- Session affinity for ruler-querier Service
+    sessionAffinity: ""
+    # @schema additionalProperties:true
+    # -- Session affinity config for ruler-querier Service
+    sessionAffinityConfig: {}
+    # -- ipFamilyPolicy for ruler-querier Service
+    # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ipFamilyPolicy: ""
+    # -- ipFamilies for ruler-querier Service
+    # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ipFamilies: []
+    # -- Adds the appProtocol field to the ruler-querier Service. This allows ruler-querier to work with Istio protocol selection.
+    appProtocol:
+      # -- Set the optional gRPC service protocol. Ex: "grpc", "http2" or "https"
+      grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless ruler-querier Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless ruler-querier Service
+      labels: {}
+  # -- Additional CLI args for the ruler-querier
+  extraArgs: []
+  # -- Environment variables to add to the ruler-querier pods
+  extraEnv: []
+  # -- Environment variables from Secrets or ConfigMaps to add to the ruler-querier pods
+  extraEnvFrom: []
+  # -- Volume mounts to add to the ruler-querier pods
+  extraVolumeMounts: []
+  # -- Volumes to add to the ruler-querier pods
+  extraVolumes: []
+  # @schema skipProperties:true;additionalProperties:true
+  # -- Readiness probe settings for ruler-querier pods. If empty, use `loki.readinessProbe`
+  readinessProbe: {}
+  # @schema skipProperties:true;additionalProperties:true
+  # -- Liveness probe settings for ruler-querier pods. If empty, use `loki.livenessProbe`
+  livenessProbe: {}
+  # @schema skipProperties:true;additionalProperties:true
+  # -- Startup probe settings for ruler-querier pods. If empty, use `loki.startupProbe`
+  startupProbe: {}
+  # -- Lifecycle for the ruler-querier container
+  lifecycle: {}
+  # @schema additionalProperties:true
+  # -- Resource requests and limits for the ruler-querier
+  resources: {}
+  # -- Container resize policy for the ruler-querier
+  resizePolicy: []
+  # @schema type:[string, array, null]
+  # -- Containers to add to the ruler-querier pods
+  extraContainers: []
+  # @schema type:[string, array, null]
+  # -- Init containers to add to the ruler-querier pods
+  initContainers: []
+  # -- Grace period to allow the ruler-querier to shut down before it is killed
+  terminationGracePeriodSeconds: 30
+  podDisruptionBudget:
+    # -- Enable Pod Disruption Budget
+    enabled: true
+    # @schema additionalProperties:{"type":"string"}
+    # -- Annotations for Pod Disruption Budget
+    annotations: {}
+    # @schema additionalProperties:{"type":"string"}
+    # -- Labels for Pod Disruption Budget
+    labels: {}
+    # @schema type:[string, integer, null]
+    # -- Pod Disruption Budget minAvailable
+    minAvailable: null
+    # @schema type:[string, integer, null]
+    # -- Pod Disruption Budget maxUnavailable
+    maxUnavailable: 1
+    # @schema type:[string, null]
+    # -- Pod Disruption Budget unhealthyPodEvictionPolicy
+    unhealthyPodEvictionPolicy: null
+  # @schema item:object
+  # -- Topology Spread Constraints for ruler-querier pods.
+  # @default -- Defaults to allow skew no more than 1 node
+  # The value will be passed through tpl.
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/component: ruler-querier
+          app.kubernetes.io/name: '{{ include "loki.name" . }}'
+          app.kubernetes.io/instance: '{{ .Release.Name }}'
+  # @schema type:[object, null];skipProperties:true;additionalProperties:true
+  # -- Affinity for ruler-querier pods.
+  # @default -- Hard node anti-affinity
+  # The value will be passed through tpl.
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: ruler-querier
+              app.kubernetes.io/name: '{{ include "loki.name" . }}'
+              app.kubernetes.io/instance: '{{ .Release.Name }}'
+          topologyKey: kubernetes.io/hostname
+  # @schema additionalProperties:true
+  # -- Node selector for ruler-querier pods
+  nodeSelector: {}
+  # -- Tolerations for ruler-querier pods
+  tolerations: []
+  # @schema additionalProperties:true
+  # -- DNSConfig for ruler-querier pods
+  dnsConfig: {}
+  serviceAccount:
+    # -- Specifies whether a ServiceAccount should be created
+    create: false
+    # @schema type:[string, null]
+    # -- The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: null
+    # @schema item:object;itemProperties:{"name": {"type": "string"}}
+    # -- Image pull secrets for the service account
+    imagePullSecrets: []
+    # @schema additionalProperties:{"type":"string"}
+    # -- Annotations for the service account
+    annotations: {}
+    # @schema additionalProperties:{"type":"string"}
+    # -- Labels for the service account
+    labels: {}
+    # -- Set this toggle to false to opt out of automounting API credentials for the service account
+    automountServiceAccountToken: true
+
+# -- Configuration for the ruler-query-frontend. Only deployed when `deploymentMode` is `Distributed`, `ruler.enabled` is `true`, and `ruler.remoteEvaluationDedicatedQueryPath` is `true`.
+rulerQueryFrontend:
+  # -- Kind of ruler-query-frontend workload. StatefulSet and Deployment are supported.
+  kind: Deployment
+  # @schema type:[integer, null]
+  # -- Number of replicas for the ruler-query-frontend. Set to null to omit spec.replicas from the workload,
+  # allowing an external controller (e.g. HPA, KEDA, rollout-operator) to manage replica counts without Helm resetting them.
+  replicas: 2
+  # @schema skipProperties:true;additionalProperties:true
+  # -- Strategy for the ruler-query-frontend.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 15%
+      # @schema type:[string, integer, null]
+      # -- RollingUpdate maxUnavailable
+      maxUnavailable: 0
+  # -- hostAliases to add
+  hostAliases: []
+  # @schema type:[boolean, null]
+  # -- Use the host's user namespace in the ruler-query-frontend
+  hostUsers: null
+  autoscaling:
+    # -- Enable autoscaling for the ruler-query-frontend
+    enabled: false
+    # -- Minimum autoscaling replicas for the ruler-query-frontend
+    minReplicas: 1
+    # -- Maximum autoscaling replicas for the ruler-query-frontend
+    maxReplicas: 3
+    # @schema type:[integer, null]
+    # -- Target CPU utilization percentage for the ruler-query-frontend
+    targetCPUUtilizationPercentage: 60
+    # @schema type:[integer, null]
+    # -- Target memory utilization percentage for the ruler-query-frontend
+    targetMemoryUtilizationPercentage: null
+    # -- Allows one to define custom metrics using the HPA/v2 schema (for example, Pods, Object or External metrics)
+    customMetrics: []
+    # @schema skipProperties:true;additionalProperties:true
+    # -- HPA behavior configuration, passed directly as a Kubernetes HPA behavior object.
+    behavior:
+      # -- Enable autoscaling behaviors
+      enabled: false
+      # -- Define scale down policies, must conform to HPAScalingRules
+      scaleDown: {}
+      # -- Define scale up policies, must conform to HPAScalingRules
+      scaleUp: {}
+  kedaAutoscaling:
+    # -- Enable KEDA autoscaling for the ruler-query-frontend. Mutually exclusive with autoscaling.enabled
+    enabled: false
+    # @schema type:[integer, null]
+    # -- Interval (seconds) to poll each trigger. Defaults to defaults.kedaAutoscaling.pollingInterval if not set.
+    pollingInterval: null
+    # -- Minimum replicas for KEDA autoscaling
+    minReplicas: 1
+    # -- Maximum replicas for KEDA autoscaling
+    maxReplicas: 3
+    # @schema type:[integer, null]
+    # -- Period to wait after the last trigger reported active before scaling the resource back to 0 (seconds).
+    # Defaults to defaults.kedaAutoscaling.cooldownPeriod if not set.
+    cooldownPeriod: null
+    # @schema additionalProperties:true
+    # -- Fallback configuration for KEDA ScaledObject. Applied when the trigger metric cannot be retrieved.
+    # Ref: https://keda.sh/docs/latest/reference/scaledobject-spec/#fallback
+    fallback: {}
+    # @schema skipProperties:true;additionalProperties:true
+    # -- Behavior configuration for KEDA ScaledObject (horizontalPodAutoscalerConfig.behavior).
+    # Ref: https://keda.sh/docs/latest/reference/scaledobject-spec/#advanced
+    behavior: {}
+    # -- KEDA triggers for the ruler-query-frontend.
+    # Ref: https://keda.sh/docs/latest/scalers/
+    triggers: []
+  image:
+    # @schema type:[string, null]
+    # -- The Docker registry for the ruler-query-frontend image. Overrides `loki.image.registry`
+    registry: null
+    # @schema type:[string, null]
+    # -- Docker image repository for the ruler-query-frontend image. Overrides `loki.image.repository`
+    repository: null
+    # @schema type:[string, null]
+    # -- Docker image tag for the ruler-query-frontend image. Overrides `loki.image.tag`
+    tag: null
+    # @schema type:[string, null]
+    # -- Overrides the image tag with an image digest. Overrides `loki.image.digest`
+    digest: null
+    # @schema type:[string, null]
+    # -- Docker image pull policy for the ruler-query-frontend image. Overrides `loki.image.pullPolicy`
+    pullPolicy: null
+  # @schema type:[string, null]
+  # -- Command to execute instead of defined in Docker image
+  command: null
+  # @schema type:[string, null]
+  # -- The name of the PriorityClass for ruler-query-frontend pods
+  priorityClassName: null
+  # @schema additionalProperties:{"type":"string"}
+  # -- Labels for ruler-query-frontend
+  labels: {}
+  # @schema additionalProperties:{"type":"string"}
+  # -- Annotations for ruler-query-frontend
+  annotations: {}
+  # @schema additionalProperties:{"type":"string"}
+  # -- Labels for ruler-query-frontend pods
+  podLabels: {}
+  # @schema additionalProperties:{"type":"string"}
+  # -- Annotations for ruler-query-frontend pods
+  podAnnotations: {}
+  service:
+    # @schema additionalProperties:{"type":"string"}
+    # -- Annotations for ruler-query-frontend Service
+    annotations: {}
+    # @schema additionalProperties:{"type":"string"}
+    # -- Additional labels for ruler-query-frontend Service
+    labels: {}
+    # -- Service Type for ruler-query-frontend Service
+    type: "ClusterIP"
+    # @schema type:[boolean, null]
+    # -- publishNotReadyAddresses for ruler-query-frontend Service. Defaults to false so terminating pods are withdrawn from headless DNS during shutdown delay.
+    publishNotReadyAddresses: false
+    # -- trafficDistribution for ruler-query-frontend Service
+    trafficDistribution: ""
+    # -- Session affinity for ruler-query-frontend Service
+    sessionAffinity: ""
+    # @schema additionalProperties:true
+    # -- Session affinity config for ruler-query-frontend Service
+    sessionAffinityConfig: {}
+    # -- ipFamilyPolicy for ruler-query-frontend Service
+    # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ipFamilyPolicy: ""
+    # -- ipFamilies for ruler-query-frontend Service
+    # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ipFamilies: []
+    # -- Adds the appProtocol field to the ruler-query-frontend Service. This allows ruler-query-frontend to work with Istio protocol selection.
+    appProtocol:
+      # -- Set the optional gRPC service protocol. Ex: "grpc", "http2" or "https"
+      grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless ruler-query-frontend Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless ruler-query-frontend Service
+      labels: {}
+  # -- Additional CLI args for the ruler-query-frontend
+  extraArgs: []
+  # -- Environment variables to add to the ruler-query-frontend pods
+  extraEnv: []
+  # -- Environment variables from Secrets or ConfigMaps to add to the ruler-query-frontend pods
+  extraEnvFrom: []
+  # -- Volume mounts to add to the ruler-query-frontend pods
+  extraVolumeMounts: []
+  # -- Volumes to add to the ruler-query-frontend pods
+  extraVolumes: []
+  # @schema skipProperties:true;additionalProperties:true
+  # -- Readiness probe settings for ruler-query-frontend pods. If empty, use `loki.readinessProbe`
+  readinessProbe: {}
+  # @schema skipProperties:true;additionalProperties:true
+  # -- Liveness probe settings for ruler-query-frontend pods. If empty, use `loki.livenessProbe`
+  livenessProbe: {}
+  # @schema skipProperties:true;additionalProperties:true
+  # -- Startup probe settings for ruler-query-frontend pods. If empty, use `loki.startupProbe`
+  startupProbe: {}
+  # -- Lifecycle for the ruler-query-frontend container
+  lifecycle: {}
+  # @schema additionalProperties:true
+  # -- Resource requests and limits for the ruler-query-frontend
+  resources: {}
+  # -- Container resize policy for the ruler-query-frontend
+  resizePolicy: []
+  # @schema type:[string, array, null]
+  # -- Init containers to add to the ruler-query-frontend pods
+  initContainers: []
+  # @schema type:[string, array, null]
+  # -- Containers to add to the ruler-query-frontend pods
+  extraContainers: []
+  # @schema type:[string, null]
+  # -- On SIGTERM, report 503 on /ready and wait this long before shutdown so the ruler's gRPC client re-resolves DNS and stops sending to this pod.
+  # Pair with `-server.grpc.keepalive.max-connection-age=30s`, which forces that re-resolution. "0s" disables.
+  # Keep terminationGracePeriodSeconds above shutdownDelay + server.graceful_shutdown_timeout.
+  shutdownDelay: 90s
+  # -- Grace period to allow the ruler-query-frontend to shut down before it is killed
+  terminationGracePeriodSeconds: 120
+  podDisruptionBudget:
+    # -- Enable Pod Disruption Budget
+    enabled: true
+    # @schema additionalProperties:{"type":"string"}
+    # -- Annotations for Pod Disruption Budget
+    annotations: {}
+    # @schema additionalProperties:{"type":"string"}
+    # -- Labels for Pod Disruption Budget
+    labels: {}
+    # @schema type:[string, integer, null]
+    # -- Pod Disruption Budget minAvailable
+    minAvailable: null
+    # @schema type:[string, integer, null]
+    # -- Pod Disruption Budget maxUnavailable
+    maxUnavailable: 1
+    # @schema type:[string, null]
+    # -- Pod Disruption Budget unhealthyPodEvictionPolicy
+    unhealthyPodEvictionPolicy: null
+  # @schema type:[object, null];skipProperties:true;additionalProperties:true
+  # -- Affinity for ruler-query-frontend pods.
+  # @default -- Hard node anti-affinity
+  # The value will be passed through tpl.
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: ruler-query-frontend
+              app.kubernetes.io/name: '{{ include "loki.name" . }}'
+              app.kubernetes.io/instance: '{{ .Release.Name }}'
+          topologyKey: kubernetes.io/hostname
+  # @schema additionalProperties:true
+  # -- Node selector for ruler-query-frontend pods
+  nodeSelector: {}
+  # @schema item:object
+  # -- Topology Spread Constraints for ruler-query-frontend pods
+  # The value will be passed through tpl.
+  topologySpreadConstraints: []
+  # -- Tolerations for ruler-query-frontend pods
+  tolerations: []
+  # @schema additionalProperties:true
+  # -- DNSConfig for ruler-query-frontend pods
+  dnsConfig: {}
+  serviceAccount:
+    # -- Specifies whether a ServiceAccount should be created
+    create: false
+    # @schema type:[string, null]
+    # -- The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: null
+    # @schema item:object;itemProperties:{"name": {"type": "string"}}
+    # -- Image pull secrets for the service account
+    imagePullSecrets: []
+    # @schema additionalProperties:{"type":"string"}
+    # -- Annotations for the service account
+    annotations: {}
+    # @schema additionalProperties:{"type":"string"}
+    # -- Labels for the service account
+    labels: {}
+    # -- Set this toggle to false to opt out of automounting API credentials for the service account
+    automountServiceAccountToken: true
+
+# -- Configuration for the ruler-query-scheduler. Only deployed when `deploymentMode` is `Distributed`, `ruler.enabled` is `true`, and `ruler.remoteEvaluationDedicatedQueryPath` is `true`.
+rulerQueryScheduler:
+  # -- Kind of ruler-query-scheduler workload. StatefulSet and Deployment are supported.
+  kind: Deployment
+  # @schema type:[integer, null]
+  # -- Number of replicas for the ruler-query-scheduler.
+  # It should be lower than `-querier.max-concurrent` to avoid generating back-pressure in queriers;
+  # it is also recommended that this value evenly divides the latter.
+  # Set to null to omit spec.replicas from the workload, allowing an external controller
+  # (e.g. HPA, KEDA, rollout-operator) to manage replica counts without Helm resetting them.
+  replicas: 2
+  # @schema skipProperties:true;additionalProperties:true
+  # -- Strategy for the ruler-query-scheduler.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      # @schema type:[string, integer, null]
+      # -- RollingUpdate maxUnavailable
+      maxUnavailable: 0
+  # @schema additionalProperties:true
+  # -- DNSConfig for ruler-query-scheduler pods
+  dnsConfig: {}
+  # -- hostAliases to add
+  hostAliases: []
+  # @schema type:[boolean, null]
+  # -- Use the host's user namespace in the ruler-query-scheduler
+  hostUsers: null
+  image:
+    # @schema type:[string, null]
+    # -- The Docker registry for the ruler-query-scheduler image. Overrides `loki.image.registry`
+    registry: null
+    # @schema type:[string, null]
+    # -- Docker image repository for the ruler-query-scheduler image. Overrides `loki.image.repository`
+    repository: null
+    # @schema type:[string, null]
+    # -- Docker image tag for the ruler-query-scheduler image. Overrides `loki.image.tag`
+    tag: null
+    # @schema type:[string, null]
+    # -- Overrides the image tag with an image digest. Overrides `loki.image.digest`
+    digest: null
+    # @schema type:[string, null]
+    # -- Docker image pull policy for the ruler-query-scheduler image. Overrides `loki.image.pullPolicy`
+    pullPolicy: null
+  # @schema type:[string, null]
+  # -- Command to execute instead of defined in Docker image
+  command: null
+  # @schema type:[string, null]
+  # -- The name of the PriorityClass for ruler-query-scheduler pods
+  priorityClassName: null
+  # @schema additionalProperties:{"type":"string"}
+  # -- Labels for ruler-query-scheduler
+  labels: {}
+  # @schema additionalProperties:{"type":"string"}
+  # -- Annotations for ruler-query-scheduler
+  annotations: {}
+  # @schema additionalProperties:{"type":"string"}
+  # -- Labels for ruler-query-scheduler pods
+  podLabels: {}
+  # @schema additionalProperties:{"type":"string"}
+  # -- Annotations for ruler-query-scheduler pods
+  podAnnotations: {}
+  service:
+    # @schema additionalProperties:{"type":"string"}
+    # -- Annotations for ruler-query-scheduler Service
+    annotations: {}
+    # @schema additionalProperties:{"type":"string"}
+    # -- Additional labels for ruler-query-scheduler Service
+    labels: {}
+    # -- Service Type for ruler-query-scheduler Service
+    type: "ClusterIP"
+    # @schema type:[boolean, null]
+    # -- publishNotReadyAddresses for ruler-query-scheduler Service. Defaults to `defaults.service.publishNotReadyAddresses` if not set.
+    publishNotReadyAddresses: null
+    # -- trafficDistribution for ruler-query-scheduler Service
+    trafficDistribution: ""
+    # -- Session affinity for ruler-query-scheduler Service
+    sessionAffinity: ""
+    # @schema additionalProperties:true
+    # -- Session affinity config for ruler-query-scheduler Service
+    sessionAffinityConfig: {}
+    # -- ipFamilyPolicy for ruler-query-scheduler Service
+    # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ipFamilyPolicy: ""
+    # -- ipFamilies for ruler-query-scheduler Service
+    # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ipFamilies: []
+    # -- Adds the appProtocol field to the ruler-query-scheduler Service. This allows ruler-query-scheduler to work with Istio protocol selection.
+    appProtocol:
+      # -- Set the optional gRPC service protocol. Ex: "grpc", "http2" or "https"
+      grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless ruler-query-scheduler Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless ruler-query-scheduler Service
+      labels: {}
+  # -- Additional CLI args for the ruler-query-scheduler
+  extraArgs: []
+  # -- Environment variables to add to the ruler-query-scheduler pods
+  extraEnv: []
+  # -- Environment variables from Secrets or ConfigMaps to add to the ruler-query-scheduler pods
+  extraEnvFrom: []
+  # -- Volume mounts to add to the ruler-query-scheduler pods
+  extraVolumeMounts: []
+  # -- Volumes to add to the ruler-query-scheduler pods
+  extraVolumes: []
+  # @schema skipProperties:true;additionalProperties:true
+  # -- Readiness probe settings for ruler-query-scheduler pods. If empty, use `loki.readinessProbe`
+  readinessProbe: {}
+  # @schema skipProperties:true;additionalProperties:true
+  # -- Liveness probe settings for ruler-query-scheduler pods. If empty, use `loki.livenessProbe`
+  livenessProbe: {}
+  # @schema skipProperties:true;additionalProperties:true
+  # -- Startup probe settings for ruler-query-scheduler pods. If empty, use `loki.startupProbe`
+  startupProbe: {}
+  # -- Lifecycle for the ruler-query-scheduler container
+  lifecycle: {}
+  # @schema additionalProperties:true
+  # -- Resource requests and limits for the ruler-query-scheduler
+  resources: {}
+  # -- Container resize policy for the ruler-query-scheduler
+  resizePolicy: []
+  # @schema type:[string, array, null]
+  # -- Init containers to add to the ruler-query-scheduler pods
+  initContainers: []
+  # @schema type:[string, array, null]
+  # -- Containers to add to the ruler-query-scheduler pods
+  extraContainers: []
+  # -- Grace period to allow the ruler-query-scheduler to shut down before it is killed
+  terminationGracePeriodSeconds: 30
+  # @schema type:[object, null];skipProperties:true;additionalProperties:true
+  # -- Affinity for ruler-query-scheduler pods.
+  # @default -- Hard node anti-affinity
+  # The value will be passed through tpl.
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: ruler-query-scheduler
+              app.kubernetes.io/name: '{{ include "loki.name" . }}'
+              app.kubernetes.io/instance: '{{ .Release.Name }}'
+          topologyKey: kubernetes.io/hostname
+  podDisruptionBudget:
+    # -- Enable Pod Disruption Budget
+    enabled: true
+    # @schema additionalProperties:{"type":"string"}
+    # -- Annotations for Pod Disruption Budget
+    annotations: {}
+    # @schema additionalProperties:{"type":"string"}
+    # -- Labels for Pod Disruption Budget
+    labels: {}
+    # @schema type:[string, integer, null]
+    # -- Pod Disruption Budget minAvailable
+    minAvailable: null
+    # @schema type:[string, integer, null]
+    # -- Pod Disruption Budget maxUnavailable
+    maxUnavailable: 1
+    # @schema type:[string, null]
+    # -- Pod Disruption Budget unhealthyPodEvictionPolicy
+    unhealthyPodEvictionPolicy: null
+  # @schema additionalProperties:true
+  # -- Node selector for ruler-query-scheduler pods
+  nodeSelector: {}
+  # @schema item:object
+  # -- Topology Spread Constraints for ruler-query-scheduler pods
+  # The value will be passed through tpl.
+  topologySpreadConstraints: []
+  # -- Tolerations for ruler-query-scheduler pods
+  tolerations: []
+  serviceAccount:
+    # -- Specifies whether a ServiceAccount should be created
+    create: false
+    # @schema type:[string, null]
+    # -- The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: null
+    # @schema item:object;itemProperties:{"name": {"type": "string"}}
+    # -- Image pull secrets for the service account
+    imagePullSecrets: []
+    # @schema additionalProperties:{"type":"string"}
+    # -- Annotations for the service account
+    annotations: {}
+    # @schema additionalProperties:{"type":"string"}
+    # -- Labels for the service account
+    labels: {}
+    # -- Set this toggle to false to opt out of automounting API credentials for the service account
+    automountServiceAccountToken: true
+
 # -- Configuration for the overrides-exporter
 overridesExporter:
   # -- The overrides-exporter component is optional and can be disabled if desired.
@@ -6086,6 +7144,13 @@ overridesExporter:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless overridesExporter service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless overridesExporter Service
+      labels: {}
   # -- Additional CLI args for the overrides-exporter
   extraArgs: []
   # -- Environment variables to add to the overrides-exporter pods
@@ -6264,13 +7329,15 @@ memcached:
 memcachedExporter:
   # -- Whether memcached metrics should be exported
   enabled: true
+  # -- Port used by the memcached exporter to expose metrics
+  port: 9150
   image:
     # -- Memcached exporter Docker image registry
     registry: docker.io
     # -- Memcached exporter Docker image repository
     repository: prom/memcached-exporter
     # -- Memcached exporter Docker image tag
-    tag: v0.17.0
+    tag: v0.18.0
     # -- Memcached exporter Docker image pull policy
     pullPolicy: IfNotPresent
   # @schema additionalProperties:true
@@ -6850,48 +7917,6 @@ rollout_operator:
     timeoutSeconds: 10
     # -- Validating and mutating webhook failure policy. `Ignore` or `Fail`.
     failurePolicy: "Ignore"
-# -- Ignore MinIO deprecation validation when `minio.enabled=true`. This is a temporary compatibility escape hatch.
-ignoreMinioDeprecation: false
-
-# @schema skipProperties:true;additionalProperties:true
-# -- Configuration for the minio subchart (deprecated)
-minio:
-  enabled: false
-  replicas: 1
-  # Minio requires 2 to 16 drives for erasure code (drivesPerNode * replicas)
-  # https://docs.min.io/docs/minio-erasure-code-quickstart-guide
-  # Since we only have 1 replica, that means 2 drives must be used.
-  drivesPerNode: 2
-  # root user
-  rootUser: root-user
-  rootPassword: supersecretpassword
-  # The first user in the list below is used for Loki authentication.
-  # You can add additional users if desired; they will not impact Loki.
-  # `accessKey` = username, `secretKey` = password
-  users:
-    - accessKey: logs-user
-      secretKey: supersecretpassword
-      policy: readwrite
-  buckets:
-    - name: chunks
-      policy: none
-      purge: false
-    - name: ruler
-      policy: none
-      purge: false
-  persistence:
-    size: 5Gi
-    # @schema additionalProperties:{"type":"string"}
-    annotations: {}
-  # @schema additionalProperties:true
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-  # @schema type:[string, null]
-  # Allow the address used by Loki to refer to Minio to be overridden
-  address: null
-
 # @schema type:[array, object, string, null]
 # Create extra manifests via values
 # Can be a list or dictionary, both are passed through `tpl`.  If dict, keys are ignored and only values are used.
@@ -6932,7 +7957,7 @@ sidecar:
     # -- The Docker registry and image for the k8s sidecar
     repository: kiwigrid/k8s-sidecar
     # -- Docker image tag
-    tag: 2.11.2
+    tag: 2.14.3
     # -- Docker image sha. If empty, no sha will be used
     sha: ""
     # -- Docker image pull policy
@@ -7273,6 +8298,13 @@ tableManager:
     appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
       grpc: ""
+    headlessService:
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional annotations for headless tableManager Service
+      annotations: {}
+      # @schema additionalProperties:{"type":"string"}
+      # -- Additional labels for headless tableManager compactor Service
+      labels: {}
   # -- Additional CLI args for the table-manager
   extraArgs: []
   # -- Environment variables to add to the table-manager pods

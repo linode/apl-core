@@ -69,8 +69,6 @@ k8s:
     - name: monitoring
       disableIstioInjection: true
     - name: otomi
-    - name: otomi-operator
-      disableIstioInjection: true
     - name: rabbitmq
       app: rabbitmq
       disableIstioInjection: true

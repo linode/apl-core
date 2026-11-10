@@ -1,0 +1,22 @@
+{{- if .Values.plugin.vap.enabled -}}
+{{- if and (and .Values.plugin.vap.serviceAccount.create .Values.plugin.vap.rbac.enabled) (and .Values.plugin.vap.server.enabled (gt (int .Values.plugin.vap.replicaCount) 1)) -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    {{- include "vap-plugin.labels" . | nindent 4 }}
+  name: {{ include "vap-plugin.fullname" . }}-leaderelection
+  namespace: {{ include "policyreporter.namespace" . }}
+rules:
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - delete
+  - get
+  - patch
+  - update
+{{- end }}
+{{- end }}

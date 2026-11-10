@@ -12,6 +12,16 @@ loki:
         index:
           prefix: loki_index_
           period: 24h
+  storage:
+    type: s3
+    # Point these at your own S3-compatible object storage
+    bucketNames:
+      chunks: FIXME
+      ruler: FIXME
+    s3:
+      endpoint: FIXME
+      accessKeyId: FIXME
+      secretAccessKey: FIXME
   ingester:
     chunk_encoding: snappy
   tracing:
@@ -50,6 +60,11 @@ indexGateway:
   replicas: 2
   maxUnavailable: 1
 
+# Uncomment to evaluate rules through a dedicated query path
+# (ruler-query-frontend, ruler-query-scheduler, ruler-querier)
+#ruler:
+#  remoteEvaluationDedicatedQueryPath: true
+
 # optional experimental components
 bloomPlanner:
   replicas: 0
@@ -57,10 +72,6 @@ bloomBuilder:
   replicas: 0
 bloomGateway:
   replicas: 0
-
-# Enable minio for storage
-minio:
-  enabled: true
 
 # Zero out replica counts of other deployment modes
 backend:

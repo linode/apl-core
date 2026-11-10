@@ -6,7 +6,7 @@ metadata:
 spec:
     cname:
         domain: hello-demo.cname.com
-        tlsSecretName: "hello-crt"
+        tlsSecretName: hello-crt
     headers:
         response:
             set:
@@ -16,10 +16,10 @@ spec:
                   value: same-origin
     ksvc:
         predeployed: true
+    namespace: should-be-ignored
     port: 80
     trafficControl:
         enabled: true
         weightV1: 70
         weightV2: 30
     useCname: true
-    namespace: should-be-ignored

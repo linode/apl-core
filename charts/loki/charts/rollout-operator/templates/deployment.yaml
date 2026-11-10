@@ -62,6 +62,7 @@ spec:
           - -server-tls.enabled=true
           - -server-tls.self-signed-cert.secret-name={{ .Values.webhooks.selfSignedCertSecretName }}
           - -server-tls.self-signed-cert.dns-name={{ include "rollout-operator.fullname" . }}.{{ .Release.Namespace }}.svc
+          - -replica-templates.watch-enabled=true
           {{- end }}
           {{- range .Values.extraArgs  }}
           - {{ . }}

@@ -8,6 +8,6 @@ spec:
         egress:
             domain: "*.wikipedia.org"
             ports:
-              - number: "443"
-                protocol: HTTPS
+                - number: "443"
+                  protocol: HTTPS
         type: egress

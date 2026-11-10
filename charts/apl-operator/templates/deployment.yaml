@@ -34,11 +34,11 @@ spec:
       labels:
         {{- include "apl-operator.selectorLabels" . | nindent 8 }}
     spec:
+      {{- with .Values.dnsConfig }}
       # Appended to the cluster resolvers, as a fallback while CoreDNS starts.
       dnsConfig:
-        nameservers:
-          - 8.8.8.8
-          - 8.8.4.4
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.imagePullSecretNames }}
       imagePullSecrets:
         {{- range . }}

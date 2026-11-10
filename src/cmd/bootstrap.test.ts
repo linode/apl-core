@@ -180,9 +180,10 @@ describe('Bootstrapping values', () => {
     })
   })
   describe('processing values', () => {
+    const internalRepoUrl = 'http://git-server.git-server.svc.cluster.local:3000/otomi-admin/values.git'
+    const externalRepoUrl = 'https://example.com/values.git'
     const generatedSecrets = { gen: 'x' }
     const ca = { a: 'cert' }
-    const mergedSecretsWithGen = merge(cloneDeep(secrets), cloneDeep(generatedSecrets))
     let deps
     beforeEach(() => {
       deps = {
@@ -226,9 +227,11 @@ describe('Bootstrapping values', () => {
         const res = await processValues(deps)
         // mergedForDisk includes allSecrets (stripAllSecrets mock is identity, real impl strips x-secret paths)
         expect(deps.writeValues).toHaveBeenNthCalledWith(1, {
+          apps: { 'git-server': { enabled: true } },
           cluster: { name: 'bla', provider: 'dida' },
         })
         expect(res.originalInput).toEqual({
+          apps: { 'git-server': { enabled: true } },
           cluster: { name: 'bla', provider: 'dida' },
         })
       })
@@ -256,6 +259,42 @@ describe('Bootstrapping values', () => {
         deps.createCustomCA.mockReturnValue(ca)
         const result = await processValues(deps)
         expect(result.allSecrets).toEqual(merge(cloneDeep(ca), secrets))
+      })
+      it('should enable the internal git-server when no repo URL is given', async () => {
+        deps.loadYaml.mockReturnValue({ cluster: { name: 'bla', provider: 'dida' } })
+        const res = await processValues(deps)
+        expect(res.originalInput.apps['git-server'].enabled).toBe(true)
+      })
+      it('should enable the internal git-server when the repo URL points at the in-cluster git server', async () => {
+        deps.loadYaml.mockReturnValue({
+          cluster: { name: 'bla', provider: 'dida' },
+          otomi: { git: { repoUrl: internalRepoUrl } },
+        })
+        const res = await processValues(deps)
+        expect(res.originalInput.apps['git-server'].enabled).toBe(true)
+      })
+      it('should not enable the internal git-server when the repo URL is external', async () => {
+        deps.loadYaml.mockReturnValue({
+          cluster: { name: 'bla', provider: 'dida' },
+          otomi: { git: { repoUrl: externalRepoUrl } },
+        })
+        const res = await processValues(deps)
+        expect(res.originalInput.apps?.['git-server']).toBeUndefined()
+      })
+      it('should keep an explicitly disabled git-server disabled', async () => {
+        deps.loadYaml.mockReturnValue({
+          apps: { 'git-server': { enabled: false } },
+        })
+        const res = await processValues(deps)
+        expect(res.originalInput.apps['git-server'].enabled).toBe(false)
+      })
+      it('should keep an explicitly enabled git-server enabled', async () => {
+        deps.loadYaml.mockReturnValue({
+          apps: { 'git-server': { enabled: true } },
+          otomi: { git: { repoUrl: externalRepoUrl } },
+        })
+        const res = await processValues(deps)
+        expect(res.originalInput.apps['git-server'].enabled).toBe(true)
       })
     })
   })

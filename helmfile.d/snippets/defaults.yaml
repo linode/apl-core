@@ -89,6 +89,8 @@ environments:
             _rawValues: {}
           cert-manager:
             issuer: custom-ca
+            networkPolicies:
+              enabled: false
             resources:
               certManager:
                 requests:
@@ -138,7 +140,7 @@ environments:
             _rawValues: {}
           dex:
             enabled: false
-            replicas: 1
+            replicas: 2
             idp:
               clientID: otomi
             networkPolicies:
@@ -162,7 +164,7 @@ environments:
                 cpu: 10m
           git-server:
             _rawValues: { }
-            enabled: true
+            enabled: false
             resources:
               requests:
                 cpu: 50m
@@ -365,7 +367,6 @@ environments:
                   minReplicas: 2
                   maxReplicas: 10
                   targetCPUUtilizationPercentage: 80
-                  targetMemoryUtilizationPercentage: 80
             resources:
               queueSidecar:
                 requests:
@@ -455,17 +456,17 @@ environments:
             resources:
               cacheDeployer:
                 requests:
-                  cpu: 10m
-                  memory: 8Mi
-                limits:
                   cpu: 100m
                   memory: 32Mi
+                limits:
+                  cpu: 200m
+                  memory: 64Mi
               cacheServer:
                 requests:
-                  cpu: 20m
+                  cpu: 100m
                   memory: 32Mi
                 limits:
-                  cpu: 100m
+                  cpu: 200m
                   memory: 64Mi
               metadataEnvoy:
                 requests:
@@ -497,35 +498,35 @@ environments:
                   memory: 1Gi
               mlPipelinePersistenceagent:
                 requests:
-                  cpu: 20m
-                  memory: 16Mi
+                  cpu: 100m
+                  memory: 64Mi
                 limits:
                   cpu: 200m
                   memory: 128Mi
               mlPipelineScheduledworkflow:
                 requests:
-                  cpu: 20m
-                  memory: 32Mi
-                limits:
                   cpu: 100m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
                   memory: 128Mi
               mlPipelineUi:
                 requests:
-                  cpu: 20m
+                  cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 256Mi
               mlPipelineViewer:
                 requests:
-                  cpu: 20m
-                  memory: 32Mi
+                  cpu: 100m
+                  memory: 64Mi
                 limits:
                   cpu: 200m
                   memory: 128Mi
               mlPipelineVisualizationserver:
                 requests:
-                  cpu: 20m
+                  cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: 200m
@@ -539,10 +540,10 @@ environments:
                   memory: 1Gi
               workflowController:
                 requests:
-                  cpu: 20m
-                  memory: 32Mi
-                limits:
                   cpu: 100m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
                   memory: 128Mi
             _rawValues: {}
           kyverno:
@@ -800,9 +801,10 @@ environments:
             _rawValues: {}
           otomi-api:
             editorInactivityTimeout: 1
+            kubeconfigExpirationSeconds: 28800
             _rawValues: {}
             networkPolicies:
-              enabled: true
+              enabled: false
             resources:
               api:
                 limits:
@@ -820,16 +822,6 @@ environments:
               requests:
                 cpu: 50m
                 memory: 128Mi
-          otomi-operator:
-            resources:
-              operator:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: 200m
-                  memory: 256Mi
-            _rawValues: {}
           apl-harbor-operator:
             resources:
               operator:
@@ -1153,17 +1145,16 @@ environments:
               minAvailable: 1
               resources:
                 requests:
-                  cpu: 100m
+                  cpu: 250m
                   memory: 128Mi
                 limits:
-                  cpu: 1000m
-                  memory: 1024Mi
+                  cpu: 250m
+                  memory: 256Mi
               autoscaling:
                 enabled: true
                 minReplicas: 3
                 maxReplicas: 10
                 targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
           classes: []
         alerts:
           receivers:
@@ -1185,4 +1176,4 @@ environments:
             authenticationLayer: keycloak
         users: []
         versions:
-          specVersion: 74
+          specVersion: 77

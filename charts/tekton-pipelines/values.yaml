@@ -25,13 +25,13 @@ serviceaccount:
 # Values for tekton-pipelines-controller
 controller:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.14.0@sha256:5209c1969c407d36d9c2c5217a8b0700a9fb52b3068b6fbdce0d88ead397ea75
+    image: ghcr.io/tektoncd/pipeline/controller-10a3e32792f33651396d02b6855a6e36:v1.15.3@sha256:b37f1ab9493f13134ae2d2e53661849d194a536e1f0abff7b3e1bba25895e934
     labels: {}
   images:
-    entrypoint: "ghcr.io/tektoncd/pipeline/entrypoint-bff0a22da108bc2f16c818c97641a296:v1.14.0@sha256:e3e7a41a23f8d8cafac7b964187d414d5fcbe503b34d50e2b579ce2a36cfa522"
-    nop: "ghcr.io/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.14.0@sha256:4768edf4d3ccaa7b0e590a7840176a1d12af4cd9ed4fcdccf46a7aa57b80649f"
-    sidecarlogresults: "ghcr.io/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.14.0@sha256:db616ab753d84dd2e27dac8c4bafe50b81b638d92933390cfaa2cff0169c26f4"
-    workingdirinit: "ghcr.io/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.14.0@sha256:7f9394bf30aa055e03a81b1c2882152b9df947353ffd17c681e205488fd7762d"
+    entrypoint: "ghcr.io/tektoncd/pipeline/entrypoint-bff0a22da108bc2f16c818c97641a296:v1.15.3@sha256:921ce1877b61ab463f4cbe3735f55a16933e7872deea295ac9f379d933046ffc"
+    nop: "ghcr.io/tektoncd/pipeline/nop-8eac7c133edad5df719dc37b36b62482:v1.15.3@sha256:5699415b90fefa379ecde7caea3f0b0dc97ef232a31108c343a71e5c6daa3db2"
+    sidecarlogresults: "ghcr.io/tektoncd/pipeline/sidecarlogresults-7501c6a20d741631510a448b48ab098f:v1.15.3@sha256:208aaf920aacc9c06b6e1d720f7d77bdbaad335acd17435acb0ebe53d958271a"
+    workingdirinit: "ghcr.io/tektoncd/pipeline/workingdirinit-0c558922ec6a1b739e550e349f2d5fc1:v1.15.3@sha256:1281e928781efd8b7a80f66e597f7226fb613bca1ef6c5bb1484ee9fcc5e99e1"
     shellImage: "cgr.dev/chainguard/busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791"
     shellImageWin: "mcr.microsoft.com/powershell:nanoserver@sha256:b6d5ff841b78bdf2dfed7550000fd4f3437385b8fa686ec0f010be24777654d6"
   pod:
@@ -58,7 +58,7 @@ controller:
 # Values for tekton-pipelines-webhook
 webhook:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.14.0@sha256:dab27b10a60e56cbeb444d84356835b145c3d8491a7afe77353b1b999eb3a867
+    image: ghcr.io/tektoncd/pipeline/webhook-d4749e605405422fd87700164e31b2d1:v1.15.3@sha256:f0f587620f9fb5a77ecfde7949a0104d5905276988f1359dc0b054f9ce6afc40
     labels: {}
   pod:
     labels: {}
@@ -79,10 +79,18 @@ webhook:
   # Secrets used to pull the webhook image from a private registry.
   imagePullSecrets: []
   # - name: my-registry-secret
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 500m
+      memory: 500Mi
 # Values to amend tekton-pipelines-remote-resolvers
 remoteresolver:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.14.0@sha256:7516b1750c7147fbe2e48e8d334acff74a02aad68696c9cf2f32a2790bc4dbf9
+    image: ghcr.io/tektoncd/pipeline/resolvers-ff86b24f130c42b88983d3c13993056d:v1.15.3@sha256:a0b11089b7be39806cca023d790a86f4cae3f328cdc630fe314cf7500326112c
   affinity: {}
   tolerations: []
   nodeSelector: {}
@@ -99,7 +107,7 @@ remoteresolver:
 # Values for tekton-events-controller
 eventscontroller:
   deployment:
-    image: ghcr.io/tektoncd/pipeline/events-a9042f7efb0cbade2a868a1ee5ddd52c:v1.14.0@sha256:7ccdab7772fc5aa74987b53a5246e5c6863a653d13484bf535a3a15d96e3cd21
+    image: ghcr.io/tektoncd/pipeline/events-a9042f7efb0cbade2a868a1ee5ddd52c:v1.15.3@sha256:00797eeb0de769880a8f2b17de58cfc5f95e362836a1ec49edf255208a1acf04
   # Secrets used to pull the events controller image from a private registry.
   imagePullSecrets: []
   # - name: my-registry-secret
@@ -175,6 +183,12 @@ configDefaults:
     # before requeuing the TaskRun to retry, specifying 0 here is equivalent to fail fast
     # possible values could be 1m, 5m, 10s, 1h, etc
     # default-imagepullbackoff-timeout: "5m"
+
+    # default-create-container-error-timeout contains the default duration to wait
+    # before failing a TaskRun when a container fails with "context deadline exceeded"
+    # (e.g. CRI-O under heavy load). Specifying 0 here is equivalent to fail fast.
+    # possible values could be 1m, 5m, 10s, 1h, etc
+    # default-create-container-error-timeout: "5m"
 
     # default-maximum-resolution-timeout specifies the default duration used by the
     # resolution controller before timing out when exceeded.
@@ -276,6 +290,13 @@ gitResolverConfig:
   # "never"  - Never cache resolved resources
   # "auto"   - Only cache when revision is a commit hash
   # default-cache-mode: "auto"
+  # Optional: Backoff configuration for retrying failed git resolution requests.
+  # These settings control the exponential backoff behavior when transient errors occur.
+  # backoff-duration: "2s"
+  # backoff-factor: "2.0"
+  # backoff-jitter: "0.1"
+  # backoff-steps: "2"  # total number of resolution attempts (must be >= 1)
+  # backoff-cap: "10s"
 # feature flags to put in feature-flags ConfigMap
 featureFlags:
   # Setting this flag will determine how PipelineRun Pods are scheduled with Affinity Assistant.
@@ -402,3 +423,13 @@ featureFlags:
   # Alpha feature — this is a short-term measure. External result storage
   # (TEP-0164) will address the underlying 4KB limitation.
   enable-termination-message-compression: "false"
+  # Controls whether informer cache transforms are enabled. When enabled (default),
+  # the controller strips large, unnecessary metadata fields (managedFields and the
+  # kubectl last-applied-configuration annotation) from PipelineRuns, TaskRuns,
+  # CustomRuns, and Pods stored in the informer cache to reduce memory usage.
+  #
+  # Set to "false" to disable if you encounter issues with missing data in cached objects.
+  # Changes require a controller restart to take effect.
+  #
+  # See https://github.com/tektoncd/pipeline/issues/7691 for more info.
+  enable-informer-cache-transforms: "true"

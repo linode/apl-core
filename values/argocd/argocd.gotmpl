@@ -38,6 +38,10 @@ dex:
 notifications:
   enabled: true
   resources: {{- $a.resources.notifications | toYaml | nindent 4 }}
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
 
 redisSecretInit:
   enabled: false
@@ -56,6 +60,10 @@ repoServer:
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.repoServer.targetMemoryUtilizationPercentage }}
     targetCPUUtilizationPercentage: {{ $a.autoscaling.repoServer.targetCPUUtilizationPercentage }}
   resources: {{- $a.resources.repo | toYaml | nindent 4 }}
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
   metrics:
     enabled: true
     serviceMonitor:
@@ -71,6 +79,10 @@ server:
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.server.targetMemoryUtilizationPercentage }}
     targetCPUUtilizationPercentage: {{ $a.autoscaling.server.targetCPUUtilizationPercentage }}
   resources: {{- $a.resources.server | toYaml | nindent 4 }}
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
   metrics:
     enabled: true
     serviceMonitor:
@@ -279,7 +291,6 @@ extraObjects:
                   replaceFullPath: /platform-logout
                 statusCode: 302
   - {{ tpl (readFile "../../helmfile.d/snippets/authpolicy-oauth2-ext.gotmpl") (dict "prefix" "argocd" "gatewayName" $v.ingress.platformClass.className "host" $hostname) | nindent 4 }}
-  - {{ tpl (readFile "../../helmfile.d/snippets/serviceentry.gotmpl") (dict "name" "argocd" "host" $hostname) | nindent 4 }}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:

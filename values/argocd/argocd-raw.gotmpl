@@ -11,7 +11,7 @@ resources:
     data:
       custom-ca-certificates.crt: {{ .Values._derived.caCert | b64enc }}
 {{- end }}
-{{- if contains "gitea-http.gitea.svc.cluster.local" $v.otomi.git.repoUrl }}
+{{- if eq $v._derived.gitValuesSource "gitea" }}
   {{- $gitSecretName = "argocd-repo-creds-gitea-internal" }}
   {{- /* Additional secret specifically for external Git URL of Gitea */}}
   - apiVersion: external-secrets.io/v1
@@ -41,7 +41,7 @@ resources:
         - extract:
             key: apl-git-config
 
-{{- else if contains "git-server.git-server.svc.cluster.local" $v.otomi.git.repoUrl }}
+{{- else if eq $v._derived.gitValuesSource "internal" }}
   {{- $gitSecretName = "argocd-repo-creds-git-server" }}
 {{- end }}
   - apiVersion: external-secrets.io/v1

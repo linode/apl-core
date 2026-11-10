@@ -1,14 +1,40 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $oa := $v.apps | get "otomi-api" }}
+{{- $cm := $v.apps | get "cert-manager" }}
+{{- $dnsProvider := $v | get "dns.provider" dict }}
 
 # Simple per-app network policy configuration
 netpols:
   gitServer: {{ not ($a | get "git-server.enabled") }}
   gitea: {{ $a.gitea.networkPolicies.enabled}}
   otomiApi: {{ $oa.networkPolicies.enabled}}
+  # The linode DNS-01 solver webhook only exists when linode is the DNS provider.
+  certManagerWebhookLinode: {{ and ($cm.networkPolicies.enabled) (hasKey $dnsProvider "linode") }}
   loki: {{ and $a.loki.enabled $a.loki.networkPolicies.enabled }}
   dex: {{ and $a.dex.enabled $a.dex.networkPolicies.enabled }}
+
+# otomi-api-specific egress policy configuration
+otomiApi:
+  giteaEnabled: {{ $a.gitea.enabled }}
+  gitServerEnabled: {{ $a | get "git-server.enabled" }}
+  dexEnabled: {{ $a.dex.enabled }}
+
+
+  # Real (post-DNAT) kube-apiserver port(s), in addition to 443. LKE uses 6443;
+  # override via _rawValues if your provider's control-plane backend differs.
+  apiServerPorts:
+    - 6443
+
+  # Private, CGNAT and link-local (cloud metadata) ranges
+  blockedEgressCidrsV4:
+    - '10.0.0.0/8'
+    - '172.16.0.0/12'
+    - '192.168.0.0/16'
+    - '100.64.0.0/10'
+    - '169.254.0.0/16'
+  blockedEgressCidrsV6:
+    - 'fc00::/7'
 
 ingressGatewaySelectors:
   - namespaceSelector:
@@ -24,7 +50,7 @@ teamGrafanaSelectors:
 {{- if $team | get "settings.managedMonitoring.grafana" false }}
   - namespaceSelector:
       matchLabels:
-        name: team-{{ $teamId }}
+        name: grafana
     podSelector:
       matchLabels:
         app.kubernetes.io/name: {{ $teamId }}-po-grafana

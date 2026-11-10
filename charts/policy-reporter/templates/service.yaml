@@ -25,6 +25,12 @@ spec:
       targetPort: {{ .Values.port.name }}
       protocol: TCP
       name: http
+  {{- if .Values.mcp.enabled }}
+    - port: {{ .Values.service.mcpPort }}
+      targetPort: mcp
+      protocol: TCP
+      name: mcp
+  {{- end }}
   selector:
     {{- include "policyreporter.selectorLabels" . | nindent 4 }}
 {{- end }}

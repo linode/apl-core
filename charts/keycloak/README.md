@@ -683,6 +683,16 @@ ingress:
 
 Notes for upgrading from previous Keycloak chart versions.
 
+### From chart < 7.4.0
+
+* Keycloak is updated to 26.8.1
+
+Keycloak 26.8 contains database schema changes, so a downgrade to 26.7 is not possible after the upgrade. Back up your database before upgrading.
+
+Rolling updates are only supported between patch releases of the same Keycloak minor version. If you run more than one replica, avoid running 26.7 and 26.8 pods side by side, e.g. by scaling the StatefulSet to 0 before upgrading.
+
+Please read the additional notes about [Migrating to 26.8.0](https://www.keycloak.org/docs/latest/upgrading/index.html#migrating-to-26-8-0) in the Keycloak documentation.
+
 ### From chart < 18.0.0
 
 * Keycloak is updated to 18.0.0

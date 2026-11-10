@@ -1,0 +1,38 @@
+server:
+    enabled: {{ .Values.plugin.vap.server.enabled }}
+    port: 8443
+    tlsCertFile: /etc/vap-plugin/tls/tls.crt
+    tlsKeyFile: /etc/vap-plugin/tls/tls.key
+webhook:
+    bufferSize: {{ .Values.plugin.vap.webhook.bufferSize }}
+    workers: {{ .Values.plugin.vap.webhook.workers }}
+report:
+    severity: {{ .Values.plugin.vap.report.severity | quote }}
+    category: {{ .Values.plugin.vap.report.category | quote }}
+    labels:
+    {{- toYaml .Values.plugin.vap.report.labels | nindent 8 }}
+    annotations:
+    {{- toYaml .Values.plugin.vap.report.annotations | nindent 8 }}
+    reportDenied: {{ .Values.plugin.vap.report.reportDenied }}
+leaderElection:
+    enabled: {{ gt (int .Values.plugin.vap.replicaCount) 1 }}
+    namespace: {{ include "policyreporter.namespace" . }}
+    leaseName: {{ include "vap-plugin.fullname" . }}
+reconcile:
+    interval: {{ .Values.plugin.vap.reconcile.interval }}
+    orphanTTL: {{ .Values.plugin.vap.reconcile.orphanTTL }}
+api:
+    enabled: {{ .Values.plugin.vap.api.enabled }}
+    port: {{ .Values.plugin.vap.api.port }}
+    debug: {{ .Values.plugin.vap.api.debug }}
+    {{- if and .Values.basicAuth.username .Values.basicAuth.password }}
+    basicAuth:
+        username: {{ .Values.basicAuth.username | quote }}
+        password: {{ .Values.basicAuth.password | quote }}
+    {{- end }}
+logging:
+    level: {{ .Values.plugin.vap.logging.level }}
+    development: {{ .Values.plugin.vap.logging.development }}
+autoMemoryLimit:
+    enabled: {{ .Values.plugin.vap.autoMemoryLimit.enabled }}
+    ratio: {{ .Values.plugin.vap.autoMemoryLimit.ratio }}

@@ -1,12 +1,12 @@
 import * as fs from 'fs'
+import { isEqual } from 'lodash'
 import * as path from 'path'
-import simpleGit, { SimpleGit } from 'simple-git'
+import { simpleGit, SimpleGit } from 'simple-git'
 import { setIdentity } from '../common/bootstrap'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { GitRepoConfig } from '../common/git-config'
 import { OperatorError } from './errors'
 import { getErrorMessage } from './utils'
-import { isEqual } from 'lodash'
 
 export interface GitRepositoryConfig {
   authenticatedUrl: string // Full URL with credentials already embedded
@@ -39,6 +39,8 @@ export class GitRepository {
     this.git = simpleGit({
       baseDir: this.repoPath,
       timeout: { block: config.gitOpTimeoutMs },
+      // simple-git v4 strips GIT_* env vars unless allowed; bootstrapGit sets this one
+      allowEnvironment: ['GIT_SSL_NO_VERIFY'],
     })
     this._config = {
       repoUrl: config.repoUrl,
@@ -80,7 +82,7 @@ export class GitRepository {
     } else {
       this.d.info(`Cloning repository to ${this.repoPath}`)
       try {
-        await this.git.clone(this._config.authenticatedUrl, this.repoPath, ['-b', this.branch])
+        await this.git.clone(this._config.authenticatedUrl, this.repoPath, ['--single-branch', '-b', this.branch])
         this.d.info(`Repository cloned successfully`)
       } catch (error) {
         this.d.error('Failed to clone repository:', getErrorMessage(error))

@@ -14,6 +14,7 @@ spec:
       app.kubernetes.io/name: otomi-api
   policyTypes:
     - Ingress
+    - Egress
   ingress:
     - ports:
         # Allow ingress to api endpoint
@@ -38,4 +39,78 @@ spec:
         - namespaceSelector:
             matchLabels:
               name: otomi
+  egress:
+    # kube-system (DNS, and vendor-specific control-plane proxies). Namespace-only
+    # selector since DNS pod labels (kube-dns/CoreDNS) differ across providers.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+    # Istio control plane. Namespace-only selector since pod labels/ports
+    # change across Istio versions and revisions.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: istio-system
+    {{- if .Values.otomiApi.giteaEnabled }}
+    # Internal Gitea (otomi-api's own values-repo git storage backend)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gitea
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: gitea
+      ports:
+        - protocol: TCP
+          port: 3000
+    {{- end }}
+    {{- if .Values.otomiApi.gitServerEnabled }}
+    # Internal git-server (otomi-api's own values-repo git storage backend)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: git-server
+          podSelector:
+            matchLabels:
+              app: git-server
+      ports:
+        - protocol: TCP
+          port: 80
+    {{- end }}
+    {{- if .Values.otomiApi.dexEnabled }}
+    # Internal Dex gRPC (user provisioning: passwords/identities)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: dex
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: dex
+      ports:
+        - protocol: TCP
+          port: 5557
+    {{- end }}
+    # SSRF protection: public internet except private/reserved ranges, so a
+    # user-supplied repository URL can't reach internal/cloud-metadata addresses.
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              {{- range .Values.otomiApi.blockedEgressCidrsV4 }}
+              - {{ . }}
+              {{- end }}
+        - ipBlock:
+            cidr: ::/0
+            except:
+              {{- range .Values.otomiApi.blockedEgressCidrsV6 }}
+              - {{ . }}
+              {{- end }}
+      ports:
+        - protocol: TCP
+          port: 443
+        {{- range .Values.otomiApi.apiServerPorts }}
+        - protocol: TCP
+          port: {{ . }}
+        {{- end }}
 {{- end }}

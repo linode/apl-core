@@ -72,6 +72,11 @@ spec:
             - name: {{ .Values.port.name }}
               containerPort: {{ .Values.port.number }}
               protocol: TCP
+          {{- if .Values.mcp.enabled }}
+            - name: mcp
+              containerPort: {{ .Values.mcp.port }}
+              protocol: TCP
+          {{- end }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
@@ -131,6 +136,10 @@ spec:
         {{- end }}
       {{- with .Values.extraVolumes.volumes }}
       {{ toYaml . | nindent 6 | trim }}
+      {{- end }}
+      {{- with .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

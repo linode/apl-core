@@ -160,11 +160,11 @@ spec:
           image: {{ include "loki.image" (dict "ctx" $.ctx "component" $.ctx.Values.memcachedExporter.image) }}
           imagePullPolicy: {{ $.ctx.Values.memcachedExporter.image.pullPolicy }}
           ports:
-            - containerPort: 9150
+            - containerPort: {{ $.ctx.Values.memcachedExporter.port }}
               name: http-metrics
           args:
             - "--memcached.address=localhost:{{ .port }}"
-            - "--web.listen-address=0.0.0.0:9150"
+            - "--web.listen-address=0.0.0.0:{{ $.ctx.Values.memcachedExporter.port }}"
             {{- range $key, $value := $.ctx.Values.memcachedExporter.extraArgs }}
             - "--{{ $key }}{{ if $value }}={{ $value }}{{ end }}"
             {{- end }}

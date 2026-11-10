@@ -1,4 +1,9 @@
 {{- $isDistributed := eq (include "loki.deployment.isDistributed" .) "true" -}}
 {{- if $isDistributed }}
-{{- include "loki.component" (dict "ctx" . "component" .Values.ruler "target" "ruler") }}
+{{- $args := list }}
+{{- $zoneAware := .Values.ingester.zoneAwareReplication }}
+{{- if and $zoneAware.enabled $zoneAware.migration.enabled $zoneAware.migration.excludeDefaultZone }}
+  {{- $args = list "-distributor.excluded-zones=zone-default" }}
+{{- end }}
+{{- include "loki.component" (dict "ctx" . "component" .Values.ruler "target" "ruler" "args" $args) }}
 {{- end }}

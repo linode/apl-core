@@ -5,13 +5,13 @@ metadata:
         apl.io/teamId: demo
 spec:
     externalRepo: true
+    imageName: demo-java1
     mode:
         docker:
             path: ./Dockerfile
             repoUrl: https://github.com/buildpacks/samples
             revision: HEAD
         type: docker
-    imageName: demo-java1
     scanSource: true
     tag: v0.0.1
     trigger: true

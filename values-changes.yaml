@@ -55,3 +55,14 @@ changes:
     additions:
       - apps.keycloak.enabled: true
       - otomi.oidc.authenticationLayer: keycloak
+  - version: 75
+    customFunctions:
+      - deactivateGitServer
+  - version: 76
+    deletions:
+      - apps.otomi-operator
+  - version: 77
+    deletions:
+      - ingress.platformClass.gateway.autoscaling.targetMemoryUtilizationPercentage
+      - ingress.classes[].gateway.autoscaling.targetMemoryUtilizationPercentage
+      - apps.knative.serving.gateway.autoscaling.targetMemoryUtilizationPercentage

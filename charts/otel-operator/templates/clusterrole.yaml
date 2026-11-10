@@ -105,6 +105,15 @@ rules:
       - watch
   - apiGroups:
       - apps
+    resources:
+      - deployments/finalizers
+    verbs:
+      - get
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - apps
       - extensions
     resources:
       - replicasets
@@ -232,6 +241,7 @@ rules:
     verbs:
       - get
       - list
+      - watch
   - apiGroups:
       - events.k8s.io
     resources:

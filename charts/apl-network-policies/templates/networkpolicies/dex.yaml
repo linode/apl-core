@@ -21,6 +21,10 @@ spec:
         {{- with .Values.ingressGatewaySelectors }}
         {{- . | toYaml | nindent 8 }}
         {{- end }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
     # Allow monitoring access for metrics scraping
     - ports:
         - protocol: TCP

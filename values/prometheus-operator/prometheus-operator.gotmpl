@@ -180,6 +180,8 @@ prometheus:
       {{- . | nindent 6 }}
       {{- end }}
     {{- end }}
+    arbitraryFSAccessThroughSMs:
+      deny: true
   route:
     main:
       enabled: true

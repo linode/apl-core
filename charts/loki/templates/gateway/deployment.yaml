@@ -1,4 +1,42 @@
 {{- if and .Values.gateway.enabled }}
+{{- $isEnvoy := eq .Values.gateway.type "envoy" }}
+{{- $gatewayImage := ternary .Values.gateway.envoy.image .Values.gateway.image $isEnvoy }}
+{{- $livenessProbe := deepCopy .Values.gateway.livenessProbe }}
+{{- $readinessProbe := deepCopy .Values.gateway.readinessProbe }}
+{{- $startupProbe := deepCopy .Values.gateway.startupProbe }}
+{{- $hasEnvoyLogLevelArg := false }}
+{{- range .Values.gateway.extraArgs }}
+  {{- $arg := toString . }}
+  {{- if or (eq $arg "-l") (eq $arg "--log-level") (hasPrefix "--log-level=" $arg) }}
+    {{- $hasEnvoyLogLevelArg = true }}
+  {{- end }}
+{{- end }}
+{{- if $isEnvoy }}
+  {{- if empty $livenessProbe }}
+    {{- $livenessProbe = dict "httpGet" (dict "path" "/livez" "port" "http") "initialDelaySeconds" 15 "timeoutSeconds" 1 }}
+  {{- end }}
+  {{- $readinessGet := get $readinessProbe "httpGet" }}
+  {{- if and (kindIs "map" $readinessGet) (eq (get $readinessGet "path") "/") (eq (toString (get $readinessGet "port")) "http") (not (hasKey $readinessGet "scheme")) }}
+    {{- $_ := set $readinessGet "path" "/ready" }}
+    {{- $_ := set $readinessGet "port" .Values.gateway.envoyConfig.adminPort }}
+    {{- $_ := set $readinessGet "scheme" "HTTP" }}
+  {{- end }}
+{{- end }}
+{{- if and $isEnvoy .Values.gateway.envoyConfig.tls.enabled }}
+  {{- $adminPort := toString .Values.gateway.envoyConfig.adminPort }}
+  {{- $dataPort := toString .Values.gateway.containerPort }}
+  {{- range $probe := list $livenessProbe $readinessProbe $startupProbe }}
+    {{- $httpGet := get $probe "httpGet" }}
+    {{- if and (kindIs "map" $httpGet) (not (hasKey $httpGet "scheme")) }}
+      {{- $probePort := toString (get $httpGet "port") }}
+      {{- if or (eq $probePort "http-metrics") (eq $probePort $adminPort) }}
+        {{- $_ := set $httpGet "scheme" "HTTP" }}
+      {{- else if or (eq $probePort "http") (eq $probePort $dataPort) }}
+        {{- $_ := set $httpGet "scheme" "HTTPS" }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -65,13 +103,32 @@ spec:
         {{- toYaml .Values.gateway.podSecurityContext | nindent 8 }}
       terminationGracePeriodSeconds: {{ .Values.gateway.terminationGracePeriodSeconds }}
       containers:
-        - name: nginx
-          image: {{ include "loki.image" (dict "ctx" . "component" .Values.gateway.image) }}
-          imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
+        - name: {{ .Values.gateway.type }}
+          image: {{ include "loki.image" (dict "ctx" . "component" $gatewayImage) }}
+          imagePullPolicy: {{ $gatewayImage.pullPolicy }}
+          {{- if $isEnvoy }}
+          args:
+            - -c
+            - /etc/envoy/envoy.yaml
+            - --service-cluster
+            - {{ include "loki.gatewayFullname" . }}
+            {{- if not $hasEnvoyLogLevelArg }}
+            - --log-level
+            - warning
+            {{- end }}
+            {{- range .Values.gateway.extraArgs }}
+            - {{ toString . | quote }}
+            {{- end }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.gateway.containerPort }}
               protocol: TCP
+            {{- if and $isEnvoy .Values.gateway.metrics.enabled }}
+            - name: http-metrics
+              containerPort: {{ .Values.gateway.envoyConfig.adminPort }}
+              protocol: TCP
+            {{- end }}
           {{- with .Values.gateway.extraEnv }}
           env:
             {{- toYaml . | nindent 12 }}
@@ -80,15 +137,15 @@ spec:
           envFrom:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.gateway.livenessProbe }}
+          {{- with $livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.gateway.readinessProbe }}
+          {{- with $readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.gateway.startupProbe }}
+          {{- with $startupProbe }}
           startupProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -100,15 +157,28 @@ spec:
           {{- end }}
           volumeMounts:
             - name: config
-              mountPath: /etc/nginx
+              mountPath: {{ ternary "/etc/envoy" "/etc/nginx" $isEnvoy }}
             {{- if .Values.gateway.basicAuth.enabled }}
             - name: auth
-              mountPath: /etc/nginx/secrets
+              mountPath: {{ ternary "/etc/envoy/secrets" "/etc/nginx/secrets" $isEnvoy }}
+              readOnly: true
+            {{- end }}
+            {{- if and $isEnvoy .Values.gateway.envoyConfig.tls.enabled }}
+            - name: envoy-tls
+              mountPath: /etc/envoy/tls
+              readOnly: true
+            {{- end }}
+            {{- if and $isEnvoy .Values.gateway.envoyConfig.jwt.enabled }}
+            - name: envoy-kubernetes
+              mountPath: /etc/envoy/kubernetes
+              readOnly: true
             {{- end }}
             - name: tmp
               mountPath: /tmp
+            {{- if not $isEnvoy }}
             - name: docker-entrypoint-d-override
               mountPath: /docker-entrypoint.d
+            {{- end }}
             {{- if .Values.gateway.extraVolumeMounts }}
             {{- toYaml .Values.gateway.extraVolumeMounts | nindent 12 }}
             {{- end }}
@@ -120,7 +190,7 @@ spec:
           resizePolicy:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- if .Values.gateway.metrics.enabled }}
+      {{- if and (not $isEnvoy) .Values.gateway.metrics.enabled }}
         - name: exporter
           image: {{ include "loki.image" (dict "ctx" . "component" .Values.gateway.metrics.image) }}
           imagePullPolicy: {{ .Values.gateway.metrics.image.pullPolicy }}
@@ -198,10 +268,32 @@ spec:
           secret:
             secretName: {{ include "loki.gatewayAuthSecret" . }}
         {{- end }}
+        {{- if and $isEnvoy .Values.gateway.envoyConfig.tls.enabled }}
+        - name: envoy-tls
+          secret:
+            secretName: {{ required "gateway.envoyConfig.tls.existingSecret is required when Envoy TLS is enabled" .Values.gateway.envoyConfig.tls.existingSecret }}
+        {{- end }}
+        {{- if and $isEnvoy .Values.gateway.envoyConfig.jwt.enabled }}
+        - name: envoy-kubernetes
+          projected:
+            sources:
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                    - key: ca.crt
+                      path: ca.crt
+              {{- if eq (include "loki.gatewayEnvoyJwksBearerTokenFile" .) (include "loki.gatewayEnvoyJwksProjectedTokenFile" .) }}
+              - serviceAccountToken:
+                  path: token
+                  expirationSeconds: 3600
+              {{- end }}
+        {{- end }}
         - name: tmp
           emptyDir: {}
+        {{- if not $isEnvoy }}
         - name: docker-entrypoint-d-override
           emptyDir: {}
+        {{- end }}
         {{- if .Values.gateway.extraVolumes }}
         {{- toYaml .Values.gateway.extraVolumes | nindent 8 }}
         {{- end }}
