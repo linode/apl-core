@@ -35,6 +35,18 @@ spec:
               plugin-barman-cloud ../../
         - assert:
             file: ./02-loglevel_override-assert.yaml
+    - name: Set pod annotations
+      try:
+        - script:
+            content: |
+              helm upgrade \
+              --install \
+              --namespace $NAMESPACE \
+              --values ./03-pod_annotations.yaml \
+              --wait \
+              plugin-barman-cloud ../../
+        - assert:
+            file: ./03-pod_annotations-assert.yaml
     - name: Cleanup
       try:
         - script:
