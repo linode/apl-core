@@ -11,7 +11,9 @@ export const validateCluster = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:validateCluster`)
   try {
     const versionInfo = await k8s.version().getCode()
-    const k8sVersion = `${versionInfo.major}.${versionInfo.minor}`
+    // For removing any common suffixes from the minor version, e.g. 32+
+    const minorVersion = Number.parseInt(versionInfo.minor)
+    const k8sVersion = !Number.isNaN(minorVersion) ? `${versionInfo.major}.${minorVersion}` : versionInfo.major
     d.info(`Cluster Kubernetes version: ${k8sVersion}`)
     if (!supportedK8sVersions.includes(k8sVersion)) {
       const k8sVersions = supportedK8sVersions.join(', ')
