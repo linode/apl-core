@@ -19,7 +19,6 @@ export const validateCluster = async (): Promise<void> => {
       d.error(
         `The cluster with kubernetes version ${k8sVersion} is utilizing a less compatible version for otomi. For optimal performance and features, we recommend using one of our supported versions: [${k8sVersions}]. Make sure to align your cluster with these versions to take full advantage of our services.`,
       )
-      process.exit(1)
     } else d.log('Cluster validation SUCCESS')
   } catch (e) {
     d.warn(e)
