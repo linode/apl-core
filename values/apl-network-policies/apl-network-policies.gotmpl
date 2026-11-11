@@ -20,10 +20,11 @@ dex:
   # override via _rawValues if your provider's control-plane backend differs.
   apiServerPorts:
     - 6443
+  # RFC-1918 private ranges are intentionally NOT blocked here: on Enterprise/private clusters
+  # the Kubernetes API server lives at a private IP (e.g. 10.3.x.x on LKE Enterprise).
+  # Dex does not process user-supplied URLs so SSRF via private IPs is low risk.
+  # Cloud metadata and CGNAT are still blocked as those are the high-value SSRF targets.
   blockedEgressCidrsV4:
-    - '10.0.0.0/8'
-    - '172.16.0.0/12'
-    - '192.168.0.0/16'
     - '100.64.0.0/10'
     - '169.254.0.0/16'
   blockedEgressCidrsV6:
