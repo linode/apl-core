@@ -13,6 +13,8 @@ import {
   V1ResourceRequirements,
   V1StatefulSet,
   V1Status,
+  VersionApi,
+  VersionInfo,
 } from '@kubernetes/client-node'
 import { X509Certificate } from 'crypto'
 import { ARGOCD_APP_PARAMS } from './constants'
@@ -80,6 +82,61 @@ const mockEnv = {
 ;(env as any).RANDOM = mockEnv.RANDOM
 ;(env as any).MIN_TIMEOUT = mockEnv.MIN_TIMEOUT
 ;(env as any).FACTOR = mockEnv.FACTOR
+
+describe('k8s.version', () => {
+  const mockKubeConfig = jest.mocked(new KubeConfig())
+  const mockVersionApi = jest.mocked(new VersionApi({} as any))
+
+  beforeAll(() => {
+    jest.spyOn(k8s.k8s, 'kc').mockReturnValue(mockKubeConfig)
+    mockKubeConfig.makeApiClient.mockReturnValue(mockVersionApi)
+  })
+
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  afterAll(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('should create and reuse the version client using the configured kubeconfig', () => {
+    expect(k8s.k8s.version()).toBe(mockVersionApi)
+    expect(k8s.k8s.version()).toBe(mockVersionApi)
+    expect(k8s.k8s.kc).toHaveBeenCalledTimes(1)
+    expect(mockKubeConfig.makeApiClient).toHaveBeenCalledTimes(1)
+    expect(mockKubeConfig.makeApiClient).toHaveBeenCalledWith(VersionApi)
+  })
+
+  it('should expose server version information returned directly by getCode', async () => {
+    const versionInfo: VersionInfo = {
+      major: '1',
+      minor: '34',
+      gitVersion: 'v1.34.1',
+      gitCommit: 'test-commit',
+      gitTreeState: 'clean',
+      buildDate: '2025-09-01T00:00:00Z',
+      goVersion: 'go1.24.0',
+      compiler: 'gc',
+      platform: 'linux/amd64',
+    }
+    mockVersionApi.getCode.mockResolvedValue(versionInfo)
+
+    const result = await k8s.k8s.version().getCode()
+
+    expect(result).toEqual(versionInfo)
+    expect(result.gitVersion).toBe('v1.34.1')
+    expect(mockVersionApi.getCode).toHaveBeenCalledWith()
+  })
+
+  it('should propagate errors from the version API', async () => {
+    const error = new Error('Unable to fetch Kubernetes version')
+    mockVersionApi.getCode.mockRejectedValue(error)
+
+    await expect(k8s.k8s.version().getCode()).rejects.toBe(error)
+  })
+})
+
 describe('createGenericSecret', () => {
   const mockCoreV1Api = new CoreV1Api({} as any) as jest.Mocked<CoreV1Api>
 
