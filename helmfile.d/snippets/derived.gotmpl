@@ -5,6 +5,7 @@
 {{- $obj := $v.obj.provider }}
 {{- $cm := index $v.apps "cert-manager" }}
 {{- $versions := (readFile "../versions.yaml" | fromYaml) }}
+{{- $versions = mergeOverwrite $versions (pick $v.versions "console" "consoleLogin" "api" "tasks") }}
 {{- /* core.yaml is merged into values further down this file, so read it directly here. */}}
 {{- $core := (readFile "../core.yaml" | fromYaml) }}
 {{- $pkgVersion := (readFile "../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" }}

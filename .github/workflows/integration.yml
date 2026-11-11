@@ -38,6 +38,30 @@ on:
         description: 'Check the box to enable Wiz integration'
         type: boolean
         default: true
+      disableORCS:
+        description: 'Check the box if you dont want to pull from ORCS'
+        type: boolean
+        default: false
+      enableDex:
+        description: 'Install Dex instead of Keycloak'
+        type: boolean
+        default: false
+      BYO_GIT:
+        description: 'Use the predefined external values repo'
+        type: boolean
+        default: false
+      console_version:
+        description: 'Console image version; empty uses the APL Core image default'
+        type: string
+        default: ''
+      api_version:
+        description: 'API image version; empty uses the APL Core image default'
+        type: string
+        default: ''
+      tasks_version:
+        description: 'Tasks image version; empty uses the APL Core image default'
+        type: string
+        default: ''
   workflow_dispatch:
     inputs:
       lke_tier:
@@ -162,6 +186,9 @@ jobs:
           IS_PRE_INSTALLED: ${{ inputs.is_pre_installed }}
           DISABLE_ORCS: ${{ inputs.disableORCS }}
           BYO_GIT: ${{ inputs.BYO_GIT }}
+          CONSOLE_VERSION: ${{ inputs.console_version }}
+          API_VERSION: ${{ inputs.api_version }}
+          TASKS_VERSION: ${{ inputs.tasks_version }}
         run: |
           echo "ref: $COMMIT_REF"
           echo "install_profile: $INSTALL_PROFILE"
@@ -173,6 +200,22 @@ jobs:
           echo "is_pre_installed: $IS_PRE_INSTALLED"
           echo "disableORCS: $DISABLE_ORCS"
           echo "BYO_GIT: $BYO_GIT"
+          echo "console_version: $CONSOLE_VERSION"
+          echo "api_version: $API_VERSION"
+          echo "tasks_version: $TASKS_VERSION"
+
+      - name: Validate component versions
+        env:
+          CONSOLE_VERSION: ${{ inputs.console_version }}
+          API_VERSION: ${{ inputs.api_version }}
+          TASKS_VERSION: ${{ inputs.tasks_version }}
+        run: |
+          for version in "$CONSOLE_VERSION" "$API_VERSION" "$TASKS_VERSION"; do
+            if [[ -n "$version" && ! "$version" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$ ]]; then
+              echo "::error::Component versions must be valid container image tags, not branch names containing slashes."
+              exit 1
+            fi
+          done
 
       - name: Validate BYO_GIT secrets
         if: ${{ inputs.BYO_GIT }}
@@ -510,6 +553,9 @@ jobs:
           CACHE_REPO: ${{ env.CACHE_REPO }}
           BOT_USERNAME: ${{ vars.BOT_USERNAME }}
           BOT_PULL_TOKEN: ${{ secrets.BOT_PULL_TOKEN }}
+          CONSOLE_VERSION: ${{ inputs.console_version }}
+          API_VERSION: ${{ inputs.api_version }}
+          TASKS_VERSION: ${{ inputs.tasks_version }}
         run: |
           touch values.yaml
 
@@ -527,6 +573,15 @@ jobs:
             "--set" "apps.linode-cfw.enabled=true"
             "--set" "operator.image.repository=docker.io/linode/apl-core"
           )
+
+          if [[ -n "$CONSOLE_VERSION" ]]; then
+            install_args+=(
+              "--set-string" "versions.console=${CONSOLE_VERSION}"
+              "--set-string" "versions.consoleLogin=${CONSOLE_VERSION}"
+            )
+          fi
+          [[ -z "$API_VERSION" ]] || install_args+=("--set-string" "versions.api=${API_VERSION}")
+          [[ -z "$TASKS_VERSION" ]] || install_args+=("--set-string" "versions.tasks=${TASKS_VERSION}")
 
           if [[ "$DOMAIN_ZONE" == 'Zone-Linode' ]]; then
             if [[ -z "$LINODE_DNS_TOKEN" ]]; then
