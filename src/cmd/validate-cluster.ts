@@ -7,9 +7,8 @@ import { k8s } from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
-export const validateCluster = async (): Promise<void> => {
+export const validateCluster = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:validateCluster`)
-  d.info('Cluster validation STARTED')
   try {
     const versionInfo = await k8s.version().getCode()
     const k8sVersion = `${versionInfo.major}.${versionInfo.minor}`
@@ -19,13 +18,13 @@ export const validateCluster = async (): Promise<void> => {
       d.error(
         `The cluster utilizes Kubernetes version ${k8sVersion} which is potentially incompatible with App Platform. For optimal performance and features, we recommend using one of our supported versions: [${k8sVersions}].`,
       )
-    } else {
-      d.info('Cluster validation SUCCESS')
+      return false
     }
   } catch (e) {
     d.warn(e)
-    d.warn('Could not validate cluster kubernetes version. Assuming that it is compatible. Proceeding.')
+    d.warn('Could not validate cluster Kubernetes version. Assuming that it is compatible. Proceeding.')
   }
+  return true
 }
 
 export const module = {
@@ -35,6 +34,8 @@ export const module = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await validateCluster()
+    if (!(await validateCluster())) {
+      process.exit(1)
+    }
   },
 }
