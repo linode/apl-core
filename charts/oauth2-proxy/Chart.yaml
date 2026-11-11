@@ -1,12 +1,12 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: changed
-      description: Bump OAuth2 Proxy app version to 7.15.5
+    - kind: fixed
+      description: Compare the image version semantically when choosing the readiness probe path, so image tags without a "v" prefix (e.g. 7.15.5) use /ready
       links:
         - name: GitHub PR
-          url: https://github.com/oauth2-proxy/manifests/pull/424
+          url: https://github.com/oauth2-proxy/manifests/pull/427
 apiVersion: v2
-appVersion: 7.15.5
+appVersion: 7.15.6
 dependencies:
 - condition: redis-ha.enabled
   name: redis-ha
@@ -35,4 +35,4 @@ name: oauth2-proxy
 sources:
 - https://github.com/oauth2-proxy/oauth2-proxy
 - https://github.com/oauth2-proxy/manifests
-version: 10.7.1
+version: 10.7.3

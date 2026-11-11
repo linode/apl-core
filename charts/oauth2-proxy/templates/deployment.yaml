@@ -288,7 +288,8 @@ spec:
 {{- if .Values.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
-            path: {{ if gt (include "oauth2-proxy.version" .) "7.4.0" }}/ready{{ else }}/ping{{ end }}
+            {{- $version := include "oauth2-proxy.version" . | trimPrefix "v" | regexFind "^[0-9]+\\.[0-9]+\\.[0-9]+" }}
+            path: {{ if or (not $version) (semverCompare ">7.4.0" $version) }}/ready{{ else }}/ping{{ end }}
             port: {{ .Values.httpScheme }}
             scheme: {{ .Values.httpScheme | upper }}
           initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
