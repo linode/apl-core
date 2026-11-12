@@ -5,10 +5,10 @@
 {{- /** Only set if Linode image repository is used */}}
 {{- $imageRepo = print . "/gcr/knative-releases/knative.dev" }}
 {{- end }}
-{{- $knativeServingVersion := "1.23" }}
-{{- $tag := "v1.23.0" }}
-{{- $netIstioTag := "v1.23.0" }}
-{{- $netGatewayTag := "v1.23.0" }}
+{{- $knativeServingVersion := "1.24" }}
+{{- $tag := "v1.24.0" }}
+{{- $netIstioTag := "v1.24.0" }}
+{{- $netGatewayTag := "v1.24.0" }}
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
