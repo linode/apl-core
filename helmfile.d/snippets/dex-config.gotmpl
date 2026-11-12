@@ -58,7 +58,7 @@ enablePasswordDB: true
 staticPasswords:
   - email: platform-admin@{{ $domainSuffix }}
     username: platform-admin
-    userID: apl-platform-admin
+    userID: platform-admin
     hash: "{{ `{{ .adminPassword | bcrypt }}` }}"
     groups:
       - platform-admin
