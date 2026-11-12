@@ -6,7 +6,7 @@ resources:
   {{- /* enableAutoMtls is on mesh-wide. Kubernetes API server uses its own CA, not Istio's workload
        certificates, so auto-mTLS negotiation fails (TLS handshake timeout). Tell Envoy to pass Dex's
        own TLS through untouched for kubernetes.default. */}}
-  - apiVersion: networking.istio.io/v1
+  - apiVersion: networking.istio.io/v1beta1
     kind: DestinationRule
     metadata:
       name: dex-kubernetes-api-tls-passthrough
