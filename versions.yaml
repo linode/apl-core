@@ -1,8 +1,7 @@
-api: main
-console: main
-consoleLogin: main
-tasks: main
-tools: main
-aplCharts: main
+api: v5.6.0
+console: v5.4.0
+consoleLogin: v5.4.0
+tasks: v4.2.0
+tools: v3.2.0
+aplCharts: v1.5.1
 tty: v1.2.11
-gitServer: v0.3.2
