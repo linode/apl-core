@@ -53,6 +53,9 @@ metadata:
 {{ toYaml .Values.knative_operator.operator_webhook.annotations | indent 4 }}
 {{- end }}
 spec:
+{{- if ne .Values.knative_operator.operator_webhook.replicas nil }}
+  replicas: {{ .Values.knative_operator.operator_webhook.replicas }}
+{{- end }}
   selector:
     matchLabels:
       app: operator-webhook
@@ -77,6 +80,10 @@ spec:
 {{- end }}
 {{- with .Values.knative_operator.operator_webhook.tolerations }}
       tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.knative_operator.operator_webhook.nodeSelector }}
+      nodeSelector:
 {{ toYaml . | indent 8 }}
 {{- end }}
 {{- if and .Values.knative_operator.operator_webhook.securityContext }}
@@ -806,6 +813,10 @@ spec:
 {{- end }}
 {{- with .Values.knative_operator.knative_operator.tolerations }}
       tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.knative_operator.knative_operator.nodeSelector }}
+      nodeSelector:
 {{ toYaml . | indent 8 }}
 {{- end }}
       serviceAccountName: knative-operator
