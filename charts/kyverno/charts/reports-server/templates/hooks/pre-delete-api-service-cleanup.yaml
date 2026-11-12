@@ -37,7 +37,7 @@ spec:
       {{- end }}
       containers:
         - name: kubectl
-          image: "{{ .Values.apiServicesManagement.image.registry }}/{{ .Values.apiServicesManagement.image.repository }}:{{ .Values.apiServicesManagement.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.apiServicesManagement.image.registry }}/{{ .Values.apiServicesManagement.image.repository }}:{{ .Values.apiServicesManagement.image.tag }}"
           imagePullPolicy: {{ .Values.apiServicesManagement.image.pullPolicy }}
           command:
             - /bin/bash
@@ -45,7 +45,7 @@ spec:
             - |-
               set -euo pipefail
               kubectl wait -n {{ $.Release.Namespace }} pod --for=condition=ready -l app.kubernetes.io/name={{ include "reports-server.name" . }} --timeout=120s
-              kubectl delete apiservice v1alpha2.wgpolicyk8s.io v1.reports.kyverno.io --ignore-not-found=true
+              kubectl delete apiservice v1alpha2.wgpolicyk8s.io v1.reports.kyverno.io v1alpha1.openreports.io --ignore-not-found=true
           {{- with .Values.apiServicesManagement.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}

@@ -55,6 +55,9 @@ spec:
             - --storereports={{ .Values.apiServicesManagement.installApiServices.enabled }}
             - --storeephemeralreports={{ .Values.apiServicesManagement.installApiServices.installEphemeralReportsService }}
             - --storeopenreports={{ .Values.apiServicesManagement.installApiServices.installOpenreportsService }}
+            {{- if .Values.config.skipMigration }}
+            - --skipmigration=true
+            {{- end }}
             - --cert-dir=/tmp
             - --secure-port=4443
             {{- if .Values.metrics.enabled }}
@@ -77,6 +80,12 @@ spec:
               {{- include "reports-server.dbUser" . | nindent 14 }}
             - name: DB_PASSWORD
               {{- include "reports-server.dbPassword" . | nindent 14 }}
+            - name: HEADLESS_SERVICE
+              value: {{ include "reports-server.fullname" . }}-headless.{{ $.Release.Namespace }}.svc.cluster.local
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
           {{- with $env }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
