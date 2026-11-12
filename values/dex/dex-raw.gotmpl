@@ -92,7 +92,7 @@ resources:
             property: sessionCookieEncryptionKey
         - secretKey: adminPasswordHash
           remoteRef:
-            key: platform-admin-initial-credentials
+            key: dex-platform-admin
             property: passwordHash
         {{- if $v.otomi.hasExternalIDP }}
         - secretKey: externalIdpClientID
