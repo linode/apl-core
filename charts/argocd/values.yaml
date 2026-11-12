@@ -96,8 +96,10 @@ global:
   addPrometheusAnnotations: false
 
   # -- Toggle and define pod-level security context.
-  # @default -- `{}` (See [values.yaml])
-  securityContext: {}
+  # @default -- See [values.yaml]
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
   #  runAsUser: 999
   #  runAsGroup: 999
   #  fsGroup: 999
@@ -318,7 +320,9 @@ configs:
       jqPathExpressions:
         - '.metadata.annotations."notified.notifications.argoproj.io"'
         - '.metadata.annotations."argocd.argoproj.io/refresh"'
+        - '.metadata.annotations."argocd.argoproj.io/refresh-timestamp"'
         - '.metadata.annotations."argocd.argoproj.io/hydrate"'
+        - '.metadata.annotations."argocd.argoproj.io/hydrate-timestamp"'
         - '.operation'
     # -- Ignore Argo Rollouts generated fields
     # @default -- See [values.yaml]
@@ -738,9 +742,10 @@ configs:
   #    background: linear-gradient(to bottom, #999, #777, #333, #222, #111);
   #  }
 
-# -- Array of extra K8s manifests to deploy
+# -- (list) Extra K8s manifests to deploy, as a list or a map. A map can be split over several values files, because Helm merges maps but replaces lists.
+# @default -- `[]`
 ## Note: Supports use of custom Helm templates
-extraObjects: []
+extraObjects:
   # - apiVersion: secrets-store.csi.x-k8s.io/v1
   #   kind: SecretProviderClass
   #   metadata:
@@ -1194,6 +1199,16 @@ dex:
   # @default -- `""` (defaults to global.runtimeClassName)
   runtimeClassName: ""
 
+  # -- The number of Dex server pods to run
+  ## Values above 1 need a persistent storage backend in `configs.cm."dex.config"`, the in-memory default does not share state.
+  replicas: 1
+
+  storage:
+    # -- Dex storage type. Renders the RBAC for `kubernetes` storage and validates `dex.replicas`.
+    ## Only set it when `configs.cm.create` is false, so the chart cannot read `configs.cm."dex.config"`.
+    # @default -- `""` (read from `storage.type` in `configs.cm."dex.config"`, `memory` when unset)
+    type: ""
+
   metrics:
     # -- Deploy metrics service
     enabled: false
@@ -1242,7 +1257,7 @@ dex:
     # -- Number of pods that are available after eviction as number or percentage (eg.: 50%)
     # @default -- `""` (defaults to 0 if not specified)
     minAvailable: ""
-    # -- Number of pods that are unavailble after eviction as number or percentage (eg.: 50%).
+    # -- Number of pods that are unavailable after eviction as number or percentage (eg.: 50%).
     ## Has higher precedence over `dex.pdb.minAvailable`
     maxUnavailable: ""
     # -- Policy for evicting unhealthy (not ready) pods, either `IfHealthyBudget` or `AlwaysAllow`
@@ -1571,6 +1586,23 @@ redis:
   # and for external Redis use `externalRedis.existingSecret`.
   existingSecret: ""
 
+  ## TLS for the single node Redis deployment
+  ## Ref: https://redis.io/docs/latest/operate/oss_and_stack/management/security/encryption/
+  tls:
+    # -- Serve Redis over TLS only, and connect the Argo CD server, repo server and application controller to it over TLS.
+    # Only applies to the single node Redis deployment.
+    enabled: false
+    # -- Name of the Secret holding the Redis server certificate and key, such as one cert-manager creates.
+    # The certificate must name the Redis Service, which the Argo CD components connect to.
+    secretName: ""
+    # -- Key of the server certificate in that Secret
+    certFile: tls.crt
+    # -- Key of the server private key in that Secret
+    keyFile: tls.key
+    # -- Key of the CA certificate in that Secret, which the Argo CD components verify Redis with.
+    # Leave empty to verify Redis against the system CAs.
+    caCertFile: ca.crt
+
   ## Redis Pod Disruption Budget
   ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   pdb:
@@ -1583,7 +1615,7 @@ redis:
     # -- Number of pods that are available after eviction as number or percentage (eg.: 50%)
     # @default -- `""` (defaults to 0 if not specified)
     minAvailable: ""
-    # -- Number of pods that are unavailble after eviction as number or percentage (eg.: 50%).
+    # -- Number of pods that are unavailable after eviction as number or percentage (eg.: 50%).
     ## Has higher precedence over `redis.pdb.minAvailable`
     maxUnavailable: ""
     # -- Policy for evicting unhealthy (not ready) pods, either `IfHealthyBudget` or `AlwaysAllow`
@@ -1647,7 +1679,7 @@ redis:
       # -- Repository to use for the redis-exporter
       repository: ghcr.io/oliver006/redis_exporter
       # -- Tag to use for the redis-exporter
-      tag: v1.96.0
+      tag: v1.97.0
       # -- Image pull policy for the redis-exporter
       # @default -- `""` (defaults to global.image.imagePullPolicy)
       imagePullPolicy: ""
@@ -1940,7 +1972,7 @@ redis-ha:
     # -- Repository to use for the redis-exporter
     image: ghcr.io/oliver006/redis_exporter
     # -- Tag to use for the redis-exporter
-    tag: v1.96.0
+    tag: v1.97.0
   persistentVolume:
     # -- Configures persistence on Redis nodes
     enabled: false
@@ -2106,7 +2138,10 @@ redisSecretInit:
       type: RuntimeDefault
 
   # -- Redis secret-init Job pod-level security context
-  securityContext: {}
+  # @default -- See [values.yaml]
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
 
   serviceAccount:
     # -- Create a service account for the redis pod
@@ -3012,8 +3047,8 @@ server:
   # Gateway API ListenerSet configuration
   # NOTE: Gateway API support is in EXPERIMENTAL status
   # ListenerSet allows attaching additional listeners to an existing Gateway
-  # Requires Gateway API v1alpha2 and a controller that supports ListenerSet
-  # Refer to https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1alpha2.ListenerSet
+  # Requires Gateway API v1.5+ and a controller that supports ListenerSet
+  # Refer to https://gateway-api.sigs.k8s.io/reference/api-spec/1.5/spec/#listenerset
   listenerset:
     # -- Enable ListenerSet resource for Argo CD server (Gateway API)
     enabled: false
@@ -3029,7 +3064,7 @@ server:
       # namespace: example-gateway-namespace
     # -- Hostname for the synthesized listener. Defaults to global.domain when empty.
     hostname: ""
-    # -- Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs.
+    # -- Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs. When `listeners` is set, sectionName is only kept if one of the listeners has this name.
     listenerName: https
     # -- Port for the synthesized listener
     port: 443
@@ -4027,8 +4062,8 @@ applicationSet:
   ## Ref: https://argocd-applicationset.readthedocs.io/en/master/Generators-Git/#webhook-configuration
   # NOTE: Gateway API support is in EXPERIMENTAL status
   # ListenerSet allows attaching additional listeners to an existing Gateway
-  # Requires Gateway API v1alpha2 and a controller that supports ListenerSet
-  # Refer to https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1alpha2.ListenerSet
+  # Requires Gateway API v1.5+ and a controller that supports ListenerSet
+  # Refer to https://gateway-api.sigs.k8s.io/reference/api-spec/1.5/spec/#listenerset
   listenerset:
     # -- Enable ListenerSet resource for Argo CD ApplicationSet webhook (Gateway API)
     enabled: false
@@ -4044,7 +4079,7 @@ applicationSet:
       # namespace: example-gateway-namespace
     # -- Hostname for the synthesized listener. Defaults to global.domain when empty.
     hostname: ""
-    # -- Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs.
+    # -- Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs. When `listeners` is set, sectionName is only kept if one of the listeners has this name.
     listenerName: https
     # -- Port for the synthesized listener
     port: 443

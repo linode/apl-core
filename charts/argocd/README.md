@@ -84,10 +84,86 @@ Without the API server, use the CLI in core mode (`argocd login --core`) or `arg
 
 Switching an existing release to `server.enabled: false` deletes the server Deployment, Services, Ingress or Routes and certificates. Shared resources such as `argocd-secret` and the ConfigMaps are kept.
 
+## Redis TLS
+
+With `redis.tls`, the single node Redis serves TLS only. The Argo CD server, repo server and application controller then connect to it with `--redis-use-tls`, and verify its certificate with the CA stored in the same Secret under `redis.tls.caCertFile`, or with the system CAs when `caCertFile` is empty. The Secret's keys default to those of a `kubernetes.io/tls` Secret (`tls.crt`, `tls.key`, `ca.crt`); `certFile`, `keyFile` and `caCertFile` rename them, as in the `tls` values of `redis-ha`. The certificate must name the Redis Service, `argocd-redis` for a release named `argocd`. For example, with a [cert-manager](https://cert-manager.io/) CA issuer:
+
+```yaml
+redis:
+  tls:
+    enabled: true
+    secretName: argocd-redis-tls
+
+extraObjects:
+  - apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: argocd-redis
+    spec:
+      secretName: argocd-redis-tls
+      dnsNames:
+        - argocd-redis
+        - argocd-redis.argocd.svc
+      issuerRef:
+        kind: ClusterIssuer
+        name: my-ca-issuer
+```
+
+Redis reads its certificate when it starts, so restart it after a renewal, for example with [Reloader](https://github.com/stakater/Reloader). `redis.tls` does not apply to `redis-ha` or to an external Redis.
+
+## Extra objects
+
+`extraObjects` takes a list or a map. A list is enough when all objects are in one values file:
+
+```yaml
+extraObjects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: my-config
+    data:
+      key: value
+```
+
+With a map, each values file can add its own objects, because Helm merges maps but replaces lists. For example, plain manifests in `values.yaml` and a Secret in an encrypted `secrets.yaml`:
+
+```yaml
+# values.yaml
+extraObjects:
+  argocd-network-policy:
+    apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: argocd
+    spec:
+      podSelector: {}
+      policyTypes: [Ingress]
+      ingress:
+        - from:
+            - podSelector: {}
+```
+
+```yaml
+# secrets.yaml
+extraObjects:
+  repo-credentials:
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: repo-credentials
+      labels:
+        argocd.argoproj.io/secret-type: repository
+    stringData:
+      url: https://github.com/example/repo.git
+      password: my-token
+```
+
+The map keys are only names. Use a unique key for each object.
+
 ## Ingress configuration
 
 Please refer to the [Operator Manual](https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#ingress-configurationh) for details as the samples
-below corespond to their respective sections.
+below correspond to their respective sections.
 
 ### SSL-Passthrough
 
@@ -400,7 +476,7 @@ server:
       namespace: gateway-system
 ```
 
-Combined with an HTTPRoute to route traffic through the listener to the Argo CD server. The HTTPRoute automatically targets the ListenerSet and inherits the hostname from `global.domain` — no extra configuration needed:
+Combined with an HTTPRoute to route traffic through the listener to the Argo CD server. The HTTPRoute automatically targets the ListenerSet and, when `httproute.hostnames` is empty, inherits the hostnames of the matched listener(s) — no extra configuration needed. Set `httproute.hostnames` only to narrow the route further. When `listeners` is provided, the route targets the listener named `listenerName` (default `https`) if one exists, and otherwise attaches to all listeners of the ListenerSet. Set `httproute.parentRefs` with a `sectionName` to choose explicitly:
 
 ```yaml
 global:
@@ -524,6 +600,26 @@ kubectl apply -k "https://github.com/argoproj/argo-cd/manifests/crds?ref=v2.4.9"
 For full list of changes please check ArtifactHub [changelog].
 
 Highlighted versions provide information about additional steps that should be performed by user when upgrading to newer version.
+
+### 10.17.0
+
+Pod templates no longer carry the `helm.sh/chart` label. It changed on every chart
+release, and because it sat inside the pod template every component was recreated on
+`helm upgrade` even when neither the image nor the configuration had changed. The label
+remains on the objects themselves, so `kubectl get deploy -L helm.sh/chart` is unaffected.
+
+**Upgrading rolls every Argo CD pod once**, as the pod templates change for the last
+time. After that a chart release on its own no longer restarts anything. If you select
+pods on `helm.sh/chart` (a `kube_pod_labels` join, a NetworkPolicy, a policy engine),
+move to the object-level label or add your own through `global.podLabels`.
+
+### 10.13.0
+
+The chart now creates a headless Service for the application controller, named like the controller StatefulSet. If you created that Service yourself, Helm cannot adopt it and the upgrade fails. Delete it before upgrading:
+
+```bash
+kubectl delete service <application-controller-statefulset-name> --namespace <namespace>
+```
 
 ### 10.0.0
 
@@ -727,7 +823,7 @@ This version adds `global.affinity` options that are used as a presets. Override
 ### 5.19.0
 
 This version consolidates config for custom repository TLS certificates and SSH known hosts. If you provided these values (`configs.knownHosts.*`, `configs.knownHostsAnnotations`, `configs.tlsCerts`, `configs.tlsCertsAnnotations`) please move them into new `configs.ssh` and `configs.tls` sections.
-You can also use new option `configs.ssh.extraHosts` to configure your SSH keys without maintaing / overwritting keys for public Git repositories.
+You can also use new option `configs.ssh.extraHosts` to configure your SSH keys without maintaining / overwriting keys for public Git repositories.
 
 ### 5.13.0
 
@@ -990,7 +1086,7 @@ NAME: my-release
 | crds.keep | bool | `true` | Keep CRDs on chart uninstall |
 | createAggregateRoles | bool | `false` | Create aggregated roles that extend existing cluster roles to interact with argo-cd resources |
 | createClusterRoles | bool | `true` | Create cluster roles for cluster-wide installation. |
-| extraObjects | list | `[]` | Array of extra K8s manifests to deploy |
+| extraObjects | list | `[]` | Extra K8s manifests to deploy, as a list or a map. A map can be split over several values files, because Helm merges maps but replaces lists. |
 | fullnameOverride | string | `""` | String to fully override `"argo-cd.fullname"` |
 | kubeVersionOverride | string | `""` | Override the Kubernetes version, which is used to evaluate certain manifests |
 | nameOverride | string | `"argocd"` | Provide a name in place of `argocd` |
@@ -1034,7 +1130,7 @@ NAME: my-release
 | global.priorityClassName | string | `""` | Default priority class for all components |
 | global.revisionHistoryLimit | int | `3` | Number of old deployment ReplicaSets to retain. The rest will be garbage collected. |
 | global.runtimeClassName | string | `""` | Runtime class name for all components |
-| global.securityContext | object | `{}` (See [values.yaml]) | Toggle and define pod-level security context. |
+| global.securityContext | object | See [values.yaml] | Toggle and define pod-level security context. |
 | global.statefulsetAnnotations | object | `{}` | Annotations for the all deployed Statefulsets |
 | global.statefulsetLabels | object | `{}` | Labels for the all deployed Statefulsets |
 | global.tolerations | list | `[]` | Default tolerations for all components |
@@ -1456,7 +1552,7 @@ NAME: my-release
 | server.listenerset.enabled | bool | `false` | Enable ListenerSet resource for Argo CD server (Gateway API) |
 | server.listenerset.hostname | string | `""` | Hostname for the synthesized listener. Defaults to global.domain when empty. |
 | server.listenerset.labels | object | `{}` | Additional ListenerSet labels |
-| server.listenerset.listenerName | string | `"https"` | Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs. |
+| server.listenerset.listenerName | string | `"https"` | Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs. When `listeners` is set, sectionName is only kept if one of the listeners has this name. |
 | server.listenerset.listeners | list | `[]` (See [values.yaml]) | Listeners to attach to the parent Gateway. When non-empty, used verbatim and all synthesized listener fields above are ignored. |
 | server.listenerset.parentRef | object | `{}` (See [values.yaml]) | Gateway API parentRef for the ListenerSet |
 | server.listenerset.port | int | `443` | Port for the synthesized listener |
@@ -1629,7 +1725,7 @@ NAME: my-release
 | dex.pdb.annotations | object | `{}` | Annotations to be added to Dex server pdb |
 | dex.pdb.enabled | bool | `false` | Deploy a [PodDisruptionBudget] for the Dex server |
 | dex.pdb.labels | object | `{}` | Labels to be added to Dex server pdb |
-| dex.pdb.maxUnavailable | string | `""` | Number of pods that are unavailble after eviction as number or percentage (eg.: 50%). |
+| dex.pdb.maxUnavailable | string | `""` | Number of pods that are unavailable after eviction as number or percentage (eg.: 50%). |
 | dex.pdb.minAvailable | string | `""` (defaults to 0 if not specified) | Number of pods that are available after eviction as number or percentage (eg.: 50%) |
 | dex.pdb.unhealthyPodEvictionPolicy | string | `""` | Policy for evicting unhealthy (not ready) pods, either `IfHealthyBudget` or `AlwaysAllow` |
 | dex.podAnnotations | object | `{}` | Annotations to be added to the Dex server pods |
@@ -1644,6 +1740,7 @@ NAME: my-release
 | dex.readinessProbe.periodSeconds | int | `10` | How often (in seconds) to perform the [probe] |
 | dex.readinessProbe.successThreshold | int | `1` | Minimum consecutive successes for the [probe] to be considered successful after having failed |
 | dex.readinessProbe.timeoutSeconds | int | `1` | Number of seconds after which the [probe] times out |
+| dex.replicas | int | `1` | The number of Dex server pods to run |
 | dex.resources | object | `{}` | Resource limits and requests for dex |
 | dex.runtimeClassName | string | `""` (defaults to global.runtimeClassName) | Runtime class name for Dex |
 | dex.serviceAccount.annotations | object | `{}` | Annotations applied to created service account |
@@ -1664,6 +1761,7 @@ NAME: my-release
 | dex.startupProbe.periodSeconds | int | `10` | How often (in seconds) to perform the [probe] |
 | dex.startupProbe.successThreshold | int | `1` | Minimum consecutive successes for the [probe] to be considered successful after having failed |
 | dex.startupProbe.timeoutSeconds | int | `1` | Number of seconds after which the [probe] times out |
+| dex.storage.type | string | `""` (read from `storage.type` in `configs.cm."dex.config"`, `memory` when unset) | Dex storage type. Renders the RBAC for `kubernetes` storage and validates `dex.replicas`. |
 | dex.terminationGracePeriodSeconds | int | `30` | terminationGracePeriodSeconds for container lifecycle hook |
 | dex.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
 | dex.topologySpreadConstraints | list | `[]` (defaults to global.topologySpreadConstraints) | Assign custom [TopologySpreadConstraints] rules to dex |
@@ -1701,7 +1799,7 @@ NAME: my-release
 | redis.exporter.env | list | `[]` | Environment variables to pass to the Redis exporter |
 | redis.exporter.image.imagePullPolicy | string | `""` (defaults to global.image.imagePullPolicy) | Image pull policy for the redis-exporter |
 | redis.exporter.image.repository | string | `"ghcr.io/oliver006/redis_exporter"` | Repository to use for the redis-exporter |
-| redis.exporter.image.tag | string | `"v1.96.0"` | Tag to use for the redis-exporter |
+| redis.exporter.image.tag | string | `"v1.97.0"` | Tag to use for the redis-exporter |
 | redis.exporter.livenessProbe.enabled | bool | `false` | Enable Kubernetes liveness probe for Redis exporter |
 | redis.exporter.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the [probe] to be considered failed after having succeeded |
 | redis.exporter.livenessProbe.initialDelaySeconds | int | `30` | Number of seconds after the container has started before [probe] is initiated |
@@ -1753,7 +1851,7 @@ NAME: my-release
 | redis.pdb.annotations | object | `{}` | Annotations to be added to Redis pdb |
 | redis.pdb.enabled | bool | `false` | Deploy a [PodDisruptionBudget] for the Redis |
 | redis.pdb.labels | object | `{}` | Labels to be added to Redis pdb |
-| redis.pdb.maxUnavailable | string | `""` | Number of pods that are unavailble after eviction as number or percentage (eg.: 50%). |
+| redis.pdb.maxUnavailable | string | `""` | Number of pods that are unavailable after eviction as number or percentage (eg.: 50%). |
 | redis.pdb.minAvailable | string | `""` (defaults to 0 if not specified) | Number of pods that are available after eviction as number or percentage (eg.: 50%) |
 | redis.pdb.unhealthyPodEvictionPolicy | string | `""` | Policy for evicting unhealthy (not ready) pods, either `IfHealthyBudget` or `AlwaysAllow` |
 | redis.podAnnotations | object | `{}` | Annotations to be added to the Redis server pods |
@@ -1776,6 +1874,11 @@ NAME: my-release
 | redis.serviceAccount.name | string | `""` | Service account name for redis pod |
 | redis.servicePort | int | `6379` | Redis service port |
 | redis.terminationGracePeriodSeconds | int | `30` | terminationGracePeriodSeconds for container lifecycle hook |
+| redis.tls.caCertFile | string | `"ca.crt"` | Key of the CA certificate in that Secret, which the Argo CD components verify Redis with. Leave empty to verify Redis against the system CAs. |
+| redis.tls.certFile | string | `"tls.crt"` | Key of the server certificate in that Secret |
+| redis.tls.enabled | bool | `false` | Serve Redis over TLS only, and connect the Argo CD server, repo server and application controller to it over TLS. Only applies to the single node Redis deployment. |
+| redis.tls.keyFile | string | `"tls.key"` | Key of the server private key in that Secret |
+| redis.tls.secretName | string | `""` | Name of the Secret holding the Redis server certificate and key, such as one cert-manager creates. The certificate must name the Redis Service, which the Argo CD components connect to. |
 | redis.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
 | redis.topologySpreadConstraints | list | `[]` (defaults to global.topologySpreadConstraints) | Assign custom [TopologySpreadConstraints] rules to redis |
 | redis.volumeMounts | list | `[]` | Additional volumeMounts to the redis container |
@@ -1804,7 +1907,7 @@ The main options are listed here:
 | redis-ha.existingSecret | string | `"argocd-redis"` | Existing Secret to use for redis-ha authentication. By default the redis-secret-init Job is generating this Secret. When `redisSecretInit.enabled` is `false`, the Argo CD components read the Redis password from this Secret too (key `redis-ha.authKey`). |
 | redis-ha.exporter.enabled | bool | `false` | Enable Prometheus redis-exporter sidecar |
 | redis-ha.exporter.image | string | `"ghcr.io/oliver006/redis_exporter"` | Repository to use for the redis-exporter |
-| redis-ha.exporter.tag | string | `"v1.96.0"` | Tag to use for the redis-exporter |
+| redis-ha.exporter.tag | string | `"v1.97.0"` | Tag to use for the redis-exporter |
 | redis-ha.haproxy.additionalAffinities | object | `{}` | Additional affinities to add to the haproxy pods. |
 | redis-ha.haproxy.affinity | string | `""` | Assign custom [affinity] rules to the haproxy pods. |
 | redis-ha.haproxy.containerSecurityContext | object | See [values.yaml] | HAProxy container-level security context |
@@ -1873,7 +1976,7 @@ If you use an External Redis (See Option 3 above), this Job is not deployed.
 | redisSecretInit.priorityClassName | string | `""` (defaults to global.priorityClassName) | Priority class for Redis secret-init Job |
 | redisSecretInit.resources | object | `{}` | Resource limits and requests for Redis secret-init Job |
 | redisSecretInit.runtimeClassName | string | `""` (defaults to global.runtimeClassName) | Runtime class name for the Redis secret-init Job |
-| redisSecretInit.securityContext | object | `{}` | Redis secret-init Job pod-level security context |
+| redisSecretInit.securityContext | object | See [values.yaml] | Redis secret-init Job pod-level security context |
 | redisSecretInit.serviceAccount.annotations | object | `{}` | Annotations applied to created service account |
 | redisSecretInit.serviceAccount.automountServiceAccountToken | bool | `true` | Automount API credentials for the Service Account |
 | redisSecretInit.serviceAccount.create | bool | `true` | Create a service account for the redis pod |
@@ -1944,7 +2047,7 @@ If you use an External Redis (See Option 3 above), this Job is not deployed.
 | applicationSet.listenerset.enabled | bool | `false` | Enable ListenerSet resource for Argo CD ApplicationSet webhook (Gateway API) |
 | applicationSet.listenerset.hostname | string | `""` | Hostname for the synthesized listener. Defaults to global.domain when empty. |
 | applicationSet.listenerset.labels | object | `{}` | Additional ListenerSet labels |
-| applicationSet.listenerset.listenerName | string | `"https"` | Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs. |
+| applicationSet.listenerset.listenerName | string | `"https"` | Name of the synthesized listener. Also used as sectionName in auto-derived httproute parentRefs. When `listeners` is set, sectionName is only kept if one of the listeners has this name. |
 | applicationSet.listenerset.listeners | list | `[]` (See [values.yaml]) | Listeners to attach to the parent Gateway. When non-empty, used verbatim and all synthesized listener fields above are ignored. |
 | applicationSet.listenerset.parentRef | object | `{}` (See [values.yaml]) | Gateway API parentRef for the ListenerSet |
 | applicationSet.listenerset.port | int | `443` | Port for the synthesized listener |
