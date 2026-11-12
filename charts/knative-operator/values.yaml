@@ -22,18 +22,19 @@ knative_operator:
     plugins: []
     # plugins:
     #   - name: secretreader
-    #     image: registry.k8s.io/cluster-inventory-api/secretreader:v0.1.3
+    #     image: registry.k8s.io/cluster-inventory-api/secretreader:v0.2.0
     #     mountPath: /access-plugins/secretreader
     #   - name: kubeconfig-secretreader
-    #     image: registry.k8s.io/cluster-inventory-api/kubeconfig-secretreader:v0.1.3
+    #     image: registry.k8s.io/cluster-inventory-api/kubeconfig-secretreader:v0.2.0
     #     mountPath: /access-plugins/kubeconfig-secretreader
     # Polling cadence for spoke deployment readiness.
     remoteDeploymentsPollInterval: 10s
   knative_operator:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
-    tag: v1.23.1
+    tag: v1.24.0
     affinity: {}
     tolerations: []
+    nodeSelector: {}
     containerSecurityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
@@ -47,7 +48,8 @@ knative_operator:
         memory: 1000Mi
   operator_webhook:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
-    tag: v1.23.1
+    tag: v1.24.0
+    replicas: null
     affinity:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       podAntiAffinity:
@@ -59,6 +61,7 @@ knative_operator:
               topologyKey: kubernetes.io/hostname
             weight: 100
     tolerations: []
+    nodeSelector: {}
     containerSecurityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
@@ -71,3 +74,13 @@ knative_operator:
         cpu: 500m
         memory: 500Mi
   kubernetes_min_version: v1.25.0
+
+# extraObjects renders arbitrary manifests alongside the operator, e.g. extra
+# RBAC or platform-specific resources such as OpenShift SCC bindings or
+# NetworkPolicies.
+extraObjects: []
+# extraObjects:
+#   - apiVersion: v1
+#     kind: ConfigMap
+#     metadata:
+#       name: example
