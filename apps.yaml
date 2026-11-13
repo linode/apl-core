@@ -122,7 +122,7 @@ appsInfo:
     integration: The SSO login page for App Platform is served by Keycloak. Keycloak is used as an identity broker or provider for all App Platform integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of App Platform and is always enabled.
   knative:
     title: Knative Operator
-    appVersion: 1.23.1
+    appVersion: 1.24.0
     repo: https://github.com/knative/serving
     maintainers: Knative
     relatedLinks:
@@ -187,7 +187,7 @@ appsInfo:
     integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When App Platform is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. App Platform shortcuts can be used to provide selections of logs based on interest.
   prometheus:
     title: Prometheus
-    appVersion: 3.15.1
+    appVersion: 3.16.0
     repo: https://github.com/prometheus/prometheus
     maintainers: Prometheus
     relatedLinks:
