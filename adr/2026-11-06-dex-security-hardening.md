@@ -1,35 +1,18 @@
-# Dex security hardening — OAuth2 grant types, egress policy, fork cleanup, and istiod ingress scoping
+# Dex security hardening — egress policy, fork cleanup, istiod ingress scoping, and pod security context
 
 - Status: accepted
 
-Four security issues were found during a review of the Dex OIDC implementation and fixed in this change.
+Five security findings were addressed during a review of the Dex OIDC implementation.
 
-## 1 — Remove the ROPC (password) grant type
+## 1 — Password grant type retained
 
-The `password` OAuth2 grant type was enabled on the platform OIDC client alongside `authorization_code` and `refresh_token`. The Resource Owner Password Credentials grant lets any party POST a username and password directly to Dex's `/token` endpoint without going through the browser redirect flow, bypassing PKCE protection and making automated credential attacks trivial.
+The `password` OAuth2 grant type (Resource Owner Password Credentials) allows a client to POST credentials directly to Dex's `/token` endpoint without the browser redirect flow, bypassing PKCE. It was initially removed in this change but was subsequently restored because it is required by platform tooling that authenticates non-interactively against Dex.
 
-No code in `apl-console` or `apl-api` uses the password grant against Dex. It was removed from `grantTypes` in `helmfile.d/snippets/dex-config.gotmpl`. The client now accepts only `authorization_code` and `refresh_token`, which require the browser login flow and are safe against automated stuffing.
+The grant remains in `grantTypes` in `helmfile.d/snippets/dex-config.gotmpl` alongside `authorization_code` and `refresh_token`. The risk is accepted and mitigated by the egress NetworkPolicy (§2) and the absence of an external connector — the password grant is only exercised against the local password database.
 
-### PKCE
+### PKCE background
 
-PKCE stands for Proof Key for Code Exchange (pronounced "pixie"). It's a security extension to the OAuth2 authorization code flow.
-
-The problem it solves
-
-In the standard authorization code flow, after the user logs in, the browser receives a short-lived code and exchanges it for a token. If an attacker can intercept that code (e.g. via a malicious app on the same device reading redirect URIs, or a browser history leak), they can exchange it
-themselves.
-
-How PKCE prevents this
-
-Before starting the login flow, the client generates a random secret called the code verifier. It hashes it (SHA-256) to produce the code challenge and sends that hash to the authorization server upfront. When the client later exchanges the code for a token, it also sends the original
-unhashed verifier. The server checks that hash(verifier) == the challenge it received earlier.
-
-An attacker who intercepts the code doesn't know the original verifier — they can't complete the exchange.
-
-Why it matters for the password grant removal
-
-The password grant completely bypasses the authorization code flow — there's no redirect, no code, no PKCE. The user's credentials go directly to the token endpoint. PKCE has nothing to protect here because the entire secure flow is skipped. That's why removing the password grant and
-forcing use of authorization_code (which supports PKCE) is the right fix — it puts the login back through the browser flow where PKCE can do its job.
+PKCE (Proof Key for Code Exchange) protects the authorization code flow against code interception: the client commits to a hashed verifier before the redirect, then proves it owns the verifier when exchanging the code. The password grant bypasses this flow entirely — credentials go straight to the token endpoint. PKCE cannot compensate for a password grant; the compensating control here is network-level restriction.
 
 ## 2 — Remove stale fork warning
 
@@ -61,6 +44,22 @@ The compensating control is the NetworkPolicy. The previous ingress rule allowed
 - Added `port: 5556` restriction so only the JWKS/OIDC endpoint is reachable, not gRPC or telemetry.
 
 Any other pod in `istio-system` that is compromised can no longer pivot directly to Dex's login endpoint, bypassing the ingress gateway.
+
+## 5 — Harden pod and container security context
+
+Neither `podSecurityContext` nor `securityContext` was set in `values/dex/dex.gotmpl`, leaving the Dex pod with default (permissive) kernel-level controls. The following settings were added:
+
+**Pod security context:**
+- `runAsNonRoot: true` — the pod spec itself rejects a root-UID container image, independent of Dex's own `USER` directive.
+- `runAsUser: 1001` / `runAsGroup: 1001` — matches the `dex` user baked into `ghcr.io/dexidp/dex`.
+- `seccompProfile: { type: RuntimeDefault }` — restricts syscalls to the container runtime's safe baseline, blocking unusual syscalls that an exploit might need.
+
+**Container security context:**
+- `allowPrivilegeEscalation: false` — prevents any setuid/setgid binary from gaining elevated privileges, even if one were planted in the image.
+- `capabilities: { drop: [ALL] }` — removes all Linux capabilities. Dex listens on port 5556 (non-privileged), so no capability is needed.
+- `readOnlyRootFilesystem: true` — the container filesystem is immutable at runtime; an attacker cannot write payloads, cron entries, or modified binaries to disk. All Dex state lives in Kubernetes CRDs, not on-disk.
+
+A `/tmp` `emptyDir` volume was added to `volumes`/`volumeMounts` to give the Go runtime a writable temp directory (Go's `os.TempDir()` resolves to `/tmp`). All other writable paths used by Dex (config secret, web overlay ConfigMap) are already volume mounts and are unaffected by `readOnlyRootFilesystem`.
 
 ## Open items
 
