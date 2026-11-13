@@ -5,3 +5,4 @@ tasks: v4.2.0
 tools: v3.2.0
 aplCharts: v1.5.1
 tty: v1.2.11
+gitServer: v0.3.2
