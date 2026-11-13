@@ -22,15 +22,15 @@ dependencies:
 - condition: nodeExporter.enabled
   name: prometheus-node-exporter
   repository: oci://ghcr.io/prometheus-community/charts
-  version: 4.60.1
+  version: 5.0.0
 - condition: grafana.enabled
   name: grafana
   repository: oci://ghcr.io/grafana-community/helm-charts
-  version: 14.3.1
+  version: 14.4.0
 - condition: windowsMonitoring.enabled
   name: prometheus-windows-exporter
   repository: oci://ghcr.io/prometheus-community/charts
-  version: 0.12.*
+  version: 0.14.0
 description: kube-prometheus-stack collects Kubernetes manifests, Grafana dashboards,
   and Prometheus rules combined with documentation and scripts to provide easy to
   operate end-to-end Kubernetes cluster monitoring with Prometheus using the Prometheus
@@ -69,4 +69,4 @@ sources:
 - https://github.com/prometheus-community/helm-charts
 - https://github.com/prometheus-operator/kube-prometheus
 type: application
-version: 92.18.0
+version: 92.22.0
