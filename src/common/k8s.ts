@@ -17,6 +17,7 @@ import {
   V1ResourceRequirements,
   V1Secret,
   V1Status,
+  VersionApi,
 } from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
 import { X509Certificate } from 'crypto'
@@ -46,6 +47,7 @@ let customClient: CustomObjectsApi
 let discoveryClient: DiscoveryV1Api
 let objectClient: KubernetesObjectApi
 let extensionsClient: ApiextensionsV1Api
+let versionClient: VersionApi
 export const k8s = {
   kc: (): KubeConfig => {
     if (kc) return kc
@@ -92,6 +94,11 @@ export const k8s = {
     if (extensionsClient) return extensionsClient
     extensionsClient = k8s.kc().makeApiClient(ApiextensionsV1Api)
     return extensionsClient
+  },
+  version: (): VersionApi => {
+    if (versionClient) return versionClient
+    versionClient = k8s.kc().makeApiClient(VersionApi)
+    return versionClient
   },
 }
 
