@@ -47,6 +47,17 @@ See the [changelog](https://grafana-community.github.io/helm-charts/changelog/?c
 A major chart version change (like v1.2.3 -> v2.0.0) indicates that there is an
 incompatible breaking change needing manual actions.
 
+### To 14.4.0
+
+Pod templates no longer carry `helm.sh/chart`. The label changed on every chart version
+bump, and because it sat inside the pod template it rolled the Grafana pods on upgrade
+even when neither the configuration nor the image had changed. It remains on the objects
+themselves, so `kubectl get deploy -L helm.sh/chart` is unaffected.
+
+If you group metrics by pod label (`kube_pod_labels` joined on `label_helm_sh_chart`, for
+example), those series stop being populated for Grafana pods. Use the object-level label,
+or add the value you need through `extraLabels`.
+
 ### To 4.0.0 (And 3.12.1)
 
 This version requires Helm >= 2.12.0.
