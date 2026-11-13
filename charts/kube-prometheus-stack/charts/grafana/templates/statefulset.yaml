@@ -31,7 +31,7 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "grafana.labels" . | nindent 8 }}
+        {{- include "grafana.podLabels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
