@@ -2894,6 +2894,18 @@ properties:
         $ref: '#/definitions/team'
   versions:
     properties:
+      console:
+        $ref: '#/definitions/imageTag'
+        description: Override the console image version from APL Core.
+      consoleLogin:
+        $ref: '#/definitions/imageTag'
+        description: Override the console image version used for the Keycloak login theme.
+      api:
+        $ref: '#/definitions/imageTag'
+        description: Override the API image version from APL Core.
+      tasks:
+        $ref: '#/definitions/imageTag'
+        description: Override the tasks image version used by platform operators.
       specVersion:
         type: integer
         description: DO NOT CHANGE! Holds the values-schema version. For more details, see `otomi migrate`.

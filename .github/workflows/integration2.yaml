@@ -1,0 +1,126 @@
+name: Deploy APL with component versions
+on:
+  workflow_dispatch:
+    inputs:
+      console_version:
+        description: 'Console image version (including login theme); blank uses the Core default'
+        type: string
+        default: ''
+      api_version:
+        description: 'API image version; blank uses the Core default'
+        type: string
+        default: ''
+      tasks_version:
+        description: 'Tasks image version; blank uses the Core default'
+        type: string
+        default: ''
+      lke_tier:
+        description: 'Linode Kubernetes Engine Tier'
+        type: choice
+        default: standard
+        options:
+          - standard
+          - enterprise
+      ha_control_plane:
+        description: 'Enable HA control plane for LKE Standard tier (ignored for enterprise)'
+        type: boolean
+        default: true
+      kubernetes_version:
+        description: 'Kubernetes version (select version compatible with lke_tier)'
+        type: choice
+        options:
+          - 'v1.32.9+lke4'
+          - 'v1.33.6+lke7'
+          - 'v1.34.6+lke2'
+          - '1.34'
+          - '1.35'
+          - '1.36'
+          - '1.37'
+        default: '1.37'
+      linode_types:
+        description: 'Linode instance types'
+        type: choice
+        options:
+          - g6-dedicated-2
+          - g6-dedicated-4
+          - g6-dedicated-8
+          - g6-dedicated-16
+          - g6-dedicated-32
+          - g6-dedicated-48
+          - g6-dedicated-50
+          - g6-dedicated-56
+        default: g6-dedicated-4
+      install_profile:
+        description: 'APL installation profile'
+        default: minimal-with-team
+        type: choice
+        options:
+          - minimal
+          - minimal-with-team
+          - monitoring-with-team
+          - full
+          - no-apl
+      domain_zone:
+        type: choice
+        description: 'Select Domain Zone'
+        options:
+          - Zone-1
+          - Zone-2
+          - Zone-Linode
+          - Random
+        default: Random
+      certificate:
+        type: choice
+        description: 'Select certificate issuer'
+        options:
+          - gen_custom_ca
+          - letsencrypt_staging
+          - letsencrypt_production
+        default: letsencrypt_production
+      is_pre_installed:
+        type: choice
+        description: 'Fake if Otomi is pre-installed by Installer'
+        options:
+          - 'true'
+          - 'false'
+        default: 'true'
+      disableORCS:
+        description: 'Check the box if you dont want to pull from ORCS'
+        type: boolean
+        default: false
+      enableDex:
+        description: 'Install Dex instead of Keycloak'
+        type: boolean
+        default: false
+      enableWiz:
+        description: 'Check the box to enable Wiz integration'
+        type: boolean
+        default: true
+      BYO_GIT:
+        description: 'BYO git. Use predefined external values repo with branch named after the cluster.domainSuffix'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/integration.yml
+    secrets: inherit
+    with:
+      console_version: ${{ inputs.console_version }}
+      api_version: ${{ inputs.api_version }}
+      tasks_version: ${{ inputs.tasks_version }}
+      lke_tier: ${{ inputs.lke_tier }}
+      ha_control_plane: ${{ inputs.ha_control_plane }}
+      kubernetes_version: ${{ inputs.kubernetes_version }}
+      linode_types: ${{ inputs.linode_types }}
+      install_profile: ${{ inputs.install_profile }}
+      domain_zone: ${{ inputs.domain_zone }}
+      certificate: ${{ inputs.certificate }}
+      is_pre_installed: ${{ inputs.is_pre_installed }}
+      disableORCS: ${{ inputs.disableORCS }}
+      enableDex: ${{ inputs.enableDex }}
+      enableWiz: ${{ inputs.enableWiz }}
+      BYO_GIT: ${{ inputs.BYO_GIT }}
