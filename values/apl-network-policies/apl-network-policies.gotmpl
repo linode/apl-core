@@ -14,22 +14,6 @@ netpols:
   loki: {{ and $a.loki.enabled $a.loki.networkPolicies.enabled }}
   dex: {{ and $a.dex.enabled $a.dex.networkPolicies.enabled }}
 
-# dex-specific egress policy configuration
-dex:
-  # Real (post-DNAT) kube-apiserver port(s), in addition to 443. LKE uses 6443;
-  # override via _rawValues if your provider's control-plane backend differs.
-  apiServerPorts:
-    - 6443
-  # RFC-1918 private ranges are intentionally NOT blocked here: on Enterprise/private clusters
-  # the Kubernetes API server lives at a private IP (e.g. 10.3.x.x on LKE Enterprise).
-  # Dex does not process user-supplied URLs so SSRF via private IPs is low risk.
-  # Cloud metadata and CGNAT are still blocked as those are the high-value SSRF targets.
-  blockedEgressCidrsV4:
-    - '100.64.0.0/10'
-    - '169.254.0.0/16'
-  blockedEgressCidrsV6:
-    - 'fc00::/7'
-
 # otomi-api-specific egress policy configuration
 otomiApi:
   giteaEnabled: {{ $a.gitea.enabled }}

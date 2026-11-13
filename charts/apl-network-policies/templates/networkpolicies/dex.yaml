@@ -14,7 +14,6 @@ spec:
       app.kubernetes.io/name: dex
   policyTypes:
     - Ingress
-    - Egress
   ingress:
     # Allow access from public ingress gateway to the web login/OIDC endpoints
     - ports:
@@ -58,38 +57,4 @@ spec:
           podSelector:
             matchLabels:
               app.kubernetes.io/name: otomi-api
-  egress:
-    # DNS
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-    # Istio control plane
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: istio-system
-    # Kubernetes API server — Dex stores all state (passwords, tokens, sessions, signing keys)
-    # as CRDs and needs cluster-scoped API access. The ipBlock approach (post-DNAT destination)
-    # works on LKE where the control-plane endpoint is a public IP.
-    - to:
-        - ipBlock:
-            cidr: 0.0.0.0/0
-            except:
-              {{- range .Values.dex.blockedEgressCidrsV4 }}
-              - {{ . }}
-              {{- end }}
-        - ipBlock:
-            cidr: ::/0
-            except:
-              {{- range .Values.dex.blockedEgressCidrsV6 }}
-              - {{ . }}
-              {{- end }}
-      ports:
-        - protocol: TCP
-          port: 443
-        {{- range .Values.dex.apiServerPorts }}
-        - protocol: TCP
-          port: {{ . }}
-        {{- end }}
 {{- end }}
