@@ -38,6 +38,10 @@ spec:
     type: Recreate
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
       labels:
         {{- include "plugin-barman-cloud.selectorLabels" . | nindent 8 }}
         {{- with .Values.podLabels }}
@@ -70,6 +74,7 @@ spec:
         {{- tpl (.Values.additionalEnv | toYaml) . | nindent 8 }}
         {{- end }}
         image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: barman-cloud
         ports:
         - containerPort: 9090

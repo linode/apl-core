@@ -8,6 +8,7 @@ spec:
     spec:
       containers:
       - name: barman-cloud
+        imagePullPolicy: IfNotPresent
         args:
           - operator
           - --server-cert=/server/tls.crt
