@@ -20,7 +20,7 @@ import {
 } from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
 import { X509Certificate } from 'crypto'
-import { isEqual, map, mapValues } from 'lodash'
+import { get, isEqual, map, mapValues, set } from 'lodash'
 import { Writable } from 'stream'
 import { parse } from 'yaml'
 import { $ } from 'zx'
@@ -93,6 +93,52 @@ export const k8s = {
     extensionsClient = k8s.kc().makeApiClient(ApiextensionsV1Api)
     return extensionsClient
   },
+}
+
+export const resolveApiServerEndpoint = async (
+  deps = { discovery: k8s.discovery },
+): Promise<{ ips: string[]; port: number } | undefined> => {
+  const slices = await deps.discovery().listNamespacedEndpointSlice({
+    namespace: 'default',
+    labelSelector: 'kubernetes.io/service-name=kubernetes',
+  })
+  const ips = new Set<string>()
+  let port: number | undefined
+  for (const slice of slices.items) {
+    port ??= slice.ports?.[0]?.port
+    for (const endpoint of slice.endpoints ?? []) {
+      if (endpoint.conditions?.ready === false) continue
+      const address = endpoint.addresses?.[0]
+      if (address) ips.add(address)
+    }
+  }
+  if (!ips.size || !port) return undefined
+  return { ips: [...ips], port }
+}
+
+export const ensureApiServerEndpoint = async (
+  values: Record<string, any>,
+  deps: { resolveApiServerEndpoint: typeof resolveApiServerEndpoint },
+  d: OtomiDebugger,
+): Promise<void> => {
+  const apiServerIps = get(values, 'cluster.apiServerIps')
+  if (Array.isArray(apiServerIps) && apiServerIps.length) {
+    if (!get(values, 'cluster.apiServerPort')) set(values, 'cluster.apiServerPort', 6443)
+    return
+  }
+  if (process.env.NODE_ENV === 'test') return
+
+  let endpoint: { ips: string[]; port: number } | undefined
+  try {
+    endpoint = await deps.resolveApiServerEndpoint()
+  } catch (error) {
+    d.error(`Failed to resolve kube-apiserver endpoint: ${(error as Error).message}`)
+  }
+  if (!endpoint) {
+    throw new Error('Could not resolve kube-apiserver endpoint. otomi-api will be unable to reach the apiserver.')
+  }
+  set(values, 'cluster.apiServerIps', endpoint.ips)
+  set(values, 'cluster.apiServerPort', endpoint.port)
 }
 
 export const getK8sSecret = async (

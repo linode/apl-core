@@ -804,7 +804,7 @@ environments:
             kubeconfigExpirationSeconds: 28800
             _rawValues: {}
             networkPolicies:
-              enabled: false
+              enabled: true
             resources:
               api:
                 limits:
@@ -1176,4 +1176,4 @@ environments:
             authenticationLayer: keycloak
         users: []
         versions:
-          specVersion: 77
+          specVersion: 78
