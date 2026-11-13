@@ -2530,6 +2530,16 @@ properties:
         type: string
         description: Claim name passed by Keycloak as a unique user identifier. Best to not change this from the default.
         default: sub
+      groupsClaimMapper:
+        type: string
+        description: Claim name the identity provider uses for group membership. Some providers require a namespaced name instead of "groups". (Dex only)
+        default: groups
+      scopes:
+        type: array
+        description: OIDC scopes requested from the external identity provider. (Dex only)
+        items:
+          type: string
+        default: [openid, profile, email, groups]
     required:
       - clientID
       - issuer
