@@ -16,6 +16,10 @@ replicaCount: {{ $d.replicas }}
 # Config Secret comes from ESO, so the chart checksum is off. Hash the rendered template to roll pods on change (e.g. new team redirect URIs).
 podAnnotations:
   checksum/config: {{ tpl (readFile "../../helmfile.d/snippets/dex-config.gotmpl") . | sha256sum }}
+  # Exclude Kubernetes API ports from Envoy interception. The API server uses its own CA (not
+  # Istio's workload certs), so letting Envoy route these connections causes TLS mismatch or RST.
+  # NetworkPolicy still enforces the egress boundary at the kernel level.
+  traffic.sidecar.istio.io/excludeOutboundPorts: "443,6443"
 
 {{- if gt (int $d.replicas) 1 }}
 podDisruptionBudget:
@@ -36,7 +40,6 @@ topologySpreadConstraints:
         app.kubernetes.io/instance: dex
 {{- end }}
 
-# Feature-flagged while unreleased upstream. Needed for SSO across apps and real logout.
 env:
   DEX_SESSIONS_ENABLED: "true"
   DEX_API_SESSIONS_IDENTITIES_CRUD: "true"
@@ -105,15 +108,33 @@ resources: {{- toYaml $d.resources | nindent 2 }}
 
 priorityClassName: otomi-critical
 
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+
 # Overlays custom login page onto the image's stock /srv/dex/web, no custom image needed.
 # CSS mounts under static/ (not themes/<name>/) so it's page-scoped via password.html's own
 # <link>, instead of frontend.theme, which would apply it to every Dex screen, not just this one.
 volumes:
+  - name: tmp
+    emptyDir: {}
   - name: web-overlay
     configMap:
       name: dex-web-overlay
 
 volumeMounts:
+  - name: tmp
+    mountPath: /tmp
   - name: web-overlay
     mountPath: /srv/dex/web/templates/password.html
     subPath: password.html

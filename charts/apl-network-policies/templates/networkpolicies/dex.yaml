@@ -9,7 +9,9 @@ metadata:
     {{- include "apl-network-policies.labels" . | nindent 4 }}
     app: dex
 spec:
-  podSelector: {}
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dex
   policyTypes:
     - Ingress
   ingress:
@@ -21,10 +23,18 @@ spec:
         {{- with .Values.ingressGatewaySelectors }}
         {{- . | toYaml | nindent 8 }}
         {{- end }}
-    - from:
+    # Allow istiod to fetch JWKS (/keys) over plain HTTP — istiod has no sidecar so cannot do mTLS.
+    # Scoped to the istiod pod only; port 5556 only.
+    - ports:
+        - protocol: TCP
+          port: 5556
+      from:
         - namespaceSelector:
             matchLabels:
               name: istio-system
+          podSelector:
+            matchLabels:
+              app: istiod
     # Allow monitoring access for metrics scraping
     - ports:
         - protocol: TCP
