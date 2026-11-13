@@ -76,6 +76,23 @@ app.kubernetes.io/version: {{ mustRegexReplaceAllLiteral "@sha.*" (tpl (toString
 {{- end }}
 
 {{/*
+Pod labels
+
+Same as grafana.labels without helm.sh/chart. That label changes on every chart
+version bump, and inside a pod template it rolls the pods on upgrade even when
+neither the configuration nor the image has changed. It stays on the objects.
+*/}}
+{{- define "grafana.podLabels" -}}
+{{ include "grafana.selectorLabels" . }}
+{{- if or .Chart.AppVersion .Values.image.tag }}
+app.kubernetes.io/version: {{ mustRegexReplaceAllLiteral "@sha.*" (tpl (toString .Values.image.tag) .) "" | default .Chart.AppVersion | trimSuffix "-distroless" | trunc 63 | trimSuffix "-" | quote }}
+{{- end }}
+{{- with .Values.extraLabels }}
+{{ toYaml . }}
+{{- end }}
+{{- end }}
+
+{{/*
 Selector labels
 */}}
 {{- define "grafana.selectorLabels" -}}
