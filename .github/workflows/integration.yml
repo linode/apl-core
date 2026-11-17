@@ -115,7 +115,7 @@ on:
         type: boolean
         default: false
       enableDex:
-        description: 'Check the box to install Dex (patched fork with group claims) as the OIDC issuer instead of Keycloak'
+        description: 'Check the box to install Dex as authentication layer'
         type: boolean
         default: false
       enableWiz:
