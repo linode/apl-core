@@ -7,7 +7,7 @@ import { module as validateValuesModule } from '../cmd/validate-values'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { HelmArguments } from '../common/yargs'
 import { module as installModule } from '../cmd/install'
-import { module as validateClusterModule } from '../cmd/validate-cluster'
+import { validateCluster } from '../cmd/validate-cluster'
 import { OperatorError } from './errors'
 import { getErrorMessage } from './utils'
 
@@ -114,7 +114,7 @@ export class AplOperations {
     this.d.info('Validating cluster')
 
     try {
-      await validateClusterModule.handler({} as HelmArguments)
+      await validateCluster()
       this.d.info('Cluster validation completed successfully')
     } catch (error) {
       this.d.error('Cluster validation failed:', getErrorMessage(error))
