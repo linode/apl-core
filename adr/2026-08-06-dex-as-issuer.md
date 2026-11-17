@@ -13,8 +13,7 @@ Keycloak serves as both OIDC issuer and user store, costing ~650m CPU / 1.25Gi m
 
 ## Consequences
 
-- **Runs a fork of Dex.** The `groups` field is our unpublished patch; until dexidp/dex#4972 merges, apl-core builds and rebases its own Dex image.
-- **Runs a pre-release Dex.** Auth sessions and RP-initiated logout are merged upstream but unreleased (dexidp/dex#4560); the image is pinned to a master digest with `DEX_SESSIONS_ENABLED=true`. **APL must not be released while this pin stands.** This now stacks two sets of unmerged/unreleased changes on the same image.
+- **Runs upstream Dex.** The `groups` field patch (dexidp/dex#4972) and auth sessions / RP-initiated logout (dexidp/dex#4560) are both merged upstream; apl-core now tracks the official `ghcr.io/dexidp/dex` image with no fork or master-pinned digest.
 - **`apl-api` owns user provisioning end-to-end** — it computes the password hash and calls Dex directly, with no independent render step to verify what reached Dex.
 - **SSO needs explicit config**: `sessions.ssoSharedWithDefault` is set to `all` (default `none` gives no SSO).
 - **Every claim must be requested** — Dex only emits `groups` when its scope is requested, unlike Keycloak's protocol-mapper approach.
@@ -26,5 +25,5 @@ Keycloak serves as both OIDC issuer and user store, costing ~650m CPU / 1.25Gi m
 
 - Migration decided in [ADR-2026-08-06](2026-08-06-keycloak-to-dex-migration-path.md)
 - Builds on [ADR-2026-06-25](2026-06-25-drop-sops-for-sealedsecrets.md)
-- [dexidp/dex#4560](https://github.com/dexidp/dex/issues/4560) — auth sessions, merged but unreleased
-- [dexidp/dex#4972](https://github.com/dexidp/dex/issues/4972) — our patch adding `groups` to the gRPC `Password` message; unmerged, APL runs a fork carrying it
+- [dexidp/dex#4560](https://github.com/dexidp/dex/issues/4560) — auth sessions, merged and released
+- [dexidp/dex#4972](https://github.com/dexidp/dex/issues/4972) — `groups` field in gRPC `Password` message, merged upstream
