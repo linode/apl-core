@@ -1,6 +1,7 @@
 import { OtomiDebugger } from '../debug'
 import { k8s } from '../k8s'
 import { removeApplication } from '../../cmd/apply-as-apps'
+import { removeTeamGrafanaSecrets } from './remove-team-grafana-secrets'
 import { removeTtyRoleBindings } from './remove-tty-rolebindings'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { stripOversizedLastAppliedAnnotations } from './strip-oversized-annotations'
@@ -71,9 +72,11 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     pre: async ({ debug }) => {
       await removeTtyRoleBindings().catch((e) => debug.warn('Failed to remove tty RoleBindings:', e))
     },
-    post: async () => {
+    post: async ({ debug }) => {
       // otomi-operator is replaced by ExternalSecrets.
       await removeApplication('otomi-operator-otomi-operator')
+      // Grafana moved to the 'grafana' namespace; remove the secrets the old PushSecrets left in team namespaces.
+      await removeTeamGrafanaSecrets().catch((e) => debug.warn('Failed to remove team Grafana secrets:', e))
     },
   },
 ]
