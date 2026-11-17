@@ -3,28 +3,30 @@ import { getFilename } from 'src/common/utils'
 import { BasicArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { Argv } from 'yargs'
-import { $ } from 'zx'
+import { k8s } from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
-export const validateCluster = async (): Promise<void> => {
+export const validateCluster = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:validateCluster`)
-  d.log('Cluster validation STARTED')
   try {
-    const result = await $`kubectl version -o json`
-    const data = JSON.parse(result.stdout)
-    const k8sVersion: string = data.serverVersion.gitVersion.slice(1, 5)
+    const versionInfo = await k8s.version().getCode()
+    // For removing any common suffixes from the minor version, e.g. 32+
+    const minorVersion = Number.parseInt(versionInfo.minor)
+    const k8sVersion = !Number.isNaN(minorVersion) ? `${versionInfo.major}.${minorVersion}` : versionInfo.major
+    d.info(`Cluster Kubernetes version: ${k8sVersion}`)
     if (!supportedK8sVersions.includes(k8sVersion)) {
       const k8sVersions = supportedK8sVersions.join(', ')
       d.error(
-        `The cluster with kubernetes version ${k8sVersion} is utilizing a less compatible version for otomi. For optimal performance and features, we recommend using one of our supported versions: [${k8sVersions}]. Make sure to align your cluster with these versions to take full advantage of our services.`,
+        `The cluster utilizes Kubernetes version ${k8sVersion} which is potentially incompatible with App Platform. For optimal performance and features, we recommend using one of our supported versions: [${k8sVersions}].`,
       )
-      process.exit(1)
-    } else d.log('Cluster validation SUCCESS')
+      return false
+    }
   } catch (e) {
     d.warn(e)
-    d.warn('Could not validate cluster kubernetes version. Assuming that it is compatible. Proceeding.')
+    d.warn('Could not validate cluster Kubernetes version. Assuming that it is compatible. Proceeding.')
   }
+  return true
 }
 
 export const module = {
@@ -34,6 +36,8 @@ export const module = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await validateCluster()
+    if (!(await validateCluster())) {
+      process.exit(1)
+    }
   },
 }
