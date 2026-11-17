@@ -71,12 +71,12 @@ export const runtimeUpgrades: RuntimeUpgrades = [
     version: '6.5.0',
     pre: async ({ debug }) => {
       await removeTtyRoleBindings().catch((e) => debug.warn('Failed to remove tty RoleBindings:', e))
-      // Grafana moved to the 'grafana' namespace; remove the secrets the old PushSecrets left in team namespaces.
-      await removeTeamGrafanaSecrets().catch((e) => debug.warn('Failed to remove team Grafana secrets:', e))
     },
-    post: async () => {
+    post: async ({ debug }) => {
       // otomi-operator is replaced by ExternalSecrets.
       await removeApplication('otomi-operator-otomi-operator')
+      // Grafana moved to the 'grafana' namespace; remove the secrets the old PushSecrets left in team namespaces.
+      await removeTeamGrafanaSecrets().catch((e) => debug.warn('Failed to remove team Grafana secrets:', e))
     },
   },
 ]
