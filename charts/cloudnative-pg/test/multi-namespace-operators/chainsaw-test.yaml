@@ -1,0 +1,105 @@
+##
+# This test verifies that two single-namespace operators installed under the same release name coexist on one
+# Kubernetes cluster, each reconciling only its watched namespaces through namespace-suffixed webhooks.
+# The first operator watches an explicit list of namespaces, the second falls back to its own namespace.
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: multi-namespace-operators
+spec:
+  description: Deploy the operator in multi-namespace mode
+  timeouts:
+    apply: 1s
+    assert: 5m
+    exec: 5m
+    cleanup: 2m
+  steps:
+    # The watched namespaces must exist before the install, since the chart creates a Role and RoleBinding in each.
+    - name: Create the operator and watched namespaces
+      try:
+        - script:
+            content: |
+              for namespace in cnpg-multi-1 cnpg-multi-2 dev-1 prod-1 test-ignore; do
+                kubectl create namespace $namespace --dry-run=client -o yaml | kubectl apply -f -
+              done
+      cleanup:
+        - script:
+            content: |
+              kubectl delete namespace cnpg-multi-1 cnpg-multi-2 dev-1 prod-1 test-ignore --ignore-not-found --wait=false
+    - name: Install the first operator watching dev-1 and prod-1
+      try:
+        - script:
+            content: |
+              helm upgrade \
+                --install \
+                --namespace cnpg-multi-1 \
+                --set config.clusterWide=false \
+                --set config.data.WATCH_NAMESPACE='dev-1\,prod-1' \
+                --wait \
+                cnpg ../../
+      cleanup:
+        - script:
+            content: |
+              helm uninstall --namespace cnpg-multi-1 --ignore-not-found cnpg
+    # The CRDs are shared and already owned by the first release. No WATCH_NAMESPACE is set, so the operator
+    # falls back to watching its own namespace.
+    - name: Install the second operator watching its own namespace
+      try:
+        - script:
+            content: |
+              helm upgrade \
+                --install \
+                --namespace cnpg-multi-2 \
+                --set crds.create=false \
+                --set config.clusterWide=false \
+                --wait \
+                cnpg ../../
+      cleanup:
+        - script:
+            content: |
+              helm uninstall --namespace cnpg-multi-2 --ignore-not-found cnpg
+    - name: Deploy a cluster in a watched namespace of each operator and in an unwatched one
+      try:
+        - apply:
+            file: ./01-multi_namespace_operators.yaml
+        - assert:
+            file: ./01-multi_namespace_operators-assert.yaml
+      catch:
+        - script:
+            content: kubectl describe clusters.postgresql.cnpg.io --all-namespaces
+        - podLogs:
+            namespace: cnpg-multi-1
+            selector: app.kubernetes.io/name=cloudnative-pg
+        - podLogs:
+            namespace: cnpg-multi-2
+            selector: app.kubernetes.io/name=cloudnative-pg
+    # The watched clusters became ready in the previous step, so by now a watched operator would have created
+    # instance pods for the cluster in test-ignore too.
+    - name: Verify the cluster in the unwatched namespace is ignored by both operators
+      try:
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                namespace: test-ignore
+    # maxSyncReplicas above the instance count is only rejected by the operator's validating webhook, not by the
+    # CRD schema, so this error proves the request was routed to the operator watching prod-1.
+    - name: Verify the validating webhook rejects an invalid cluster in a watched namespace
+      try:
+        - apply:
+            resource:
+              apiVersion: postgresql.cnpg.io/v1
+              kind: Cluster
+              metadata:
+                name: cluster-invalid
+                namespace: prod-1
+              spec:
+                instances: 1
+                maxSyncReplicas: 2
+                storage:
+                  size: 256Mi
+            expect:
+              - check:
+                  ($error != null): true
+                  (contains($error, 'maxSyncReplicas must be lower than the number of instances')): true

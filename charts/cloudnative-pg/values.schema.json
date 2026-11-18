@@ -15,6 +15,20 @@
       },
       "type": "array"
     },
+    "additionalVolumeMounts": {
+      "description": "Array containing extra volume mounts to be added to the operator container, which can be templated.",
+      "items": {
+        "required": []
+      },
+      "type": "array"
+    },
+    "additionalVolumes": {
+      "description": "Array containing extra volumes to be added to the operator pod, which can be templated.",
+      "items": {
+        "required": []
+      },
+      "type": "array"
+    },
     "affinity": {
       "description": "Affinity for the operator to be installed.",
       "required": [],
@@ -30,7 +44,7 @@
       "properties": {
         "clusterWide": {
           "default": true,
-          "description": "This option determines if the operator is responsible for observing\nevents across the entire Kubernetes cluster or if its focus should be\nnarrowed down to the specific namespace within which it has been deployed.",
+          "description": "This option determines if the operator is responsible for observing\nevents across the entire Kubernetes cluster or if its focus should be\nnarrowed down to the specific namespace within which it has been deployed.\nWhen `false`, webhook configurations and cluster-scoped RBAC objects are\nsuffixed with the namespace, and webhooks only intercept the watched\nnamespaces. Requires operator \u003e= 1.30.0. See \"Single namespace\ninstallation\" in the README.",
           "type": "boolean"
         },
         "create": {
@@ -230,6 +244,23 @@
             "required": []
           },
           "type": "array"
+        },
+        "podMonitorScheme": {
+          "default": "",
+          "description": "Scheme to use when scraping the metrics endpoint. Set it to `https` when\nTLS is enabled on the operator metrics server through `METRICS_CERT_DIR`.",
+          "enum": [
+            "",
+            "http",
+            "https",
+            "HTTP",
+            "HTTPS"
+          ],
+          "type": "string"
+        },
+        "podMonitorTLSConfig": {
+          "description": "TLS configuration to use when scraping the metrics endpoint, which can be templated.",
+          "required": [],
+          "type": "object"
         }
       },
       "required": [],

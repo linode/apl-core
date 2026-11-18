@@ -21,7 +21,7 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: cnpg-mutating-webhook-configuration
+  name: cnpg-mutating-webhook-configuration{{- if not .Values.config.clusterWide }}-{{ include "cloudnative-pg.namespace" . }}{{- end }}
   {{- with .Values.commonAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -39,6 +39,9 @@ webhooks:
       port: {{ .Values.service.port }}
   failurePolicy: {{ .Values.webhook.mutating.failurePolicy }}
   name: mbackup.cnpg.io
+  {{- with include "cloudnative-pg.webhookNamespaceSelector" . }}
+  {{- . | nindent 2 }}
+  {{- end }}
   rules:
   - apiGroups:
     - postgresql.cnpg.io
@@ -60,6 +63,9 @@ webhooks:
       port: {{ .Values.service.port }}
   failurePolicy: {{ .Values.webhook.mutating.failurePolicy }}
   name: mcluster.cnpg.io
+  {{- with include "cloudnative-pg.webhookNamespaceSelector" . }}
+  {{- . | nindent 2 }}
+  {{- end }}
   rules:
   - apiGroups:
     - postgresql.cnpg.io
@@ -81,6 +87,9 @@ webhooks:
       port: {{ .Values.service.port }}
   failurePolicy: {{ .Values.webhook.mutating.failurePolicy }}
   name: mdatabase.cnpg.io
+  {{- with include "cloudnative-pg.webhookNamespaceSelector" . }}
+  {{- . | nindent 2 }}
+  {{- end }}
   rules:
   - apiGroups:
     - postgresql.cnpg.io
@@ -102,6 +111,9 @@ webhooks:
       port: {{ .Values.service.port }}
   failurePolicy: {{ .Values.webhook.mutating.failurePolicy }}
   name: mscheduledbackup.cnpg.io
+  {{- with include "cloudnative-pg.webhookNamespaceSelector" . }}
+  {{- . | nindent 2 }}
+  {{- end }}
   rules:
   - apiGroups:
     - postgresql.cnpg.io

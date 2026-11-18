@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cnpg-cloudnative-pg
+  namespace: cnpg-system
+status:
+  availableReplicas: 1
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+  namespace: cnpg-system
+status:
+  readyInstances: 1
+  phase: Cluster in healthy state
