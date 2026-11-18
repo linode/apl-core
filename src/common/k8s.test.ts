@@ -769,6 +769,73 @@ describe('helm operations in progress check', () => {
       namespace: 'ns-2',
     })
   })
+
+  it('should delete existing revision secrets only for releases stuck in uninstalling state', async () => {
+    const mockCoreApi = new CoreV1Api({} as any) as jest.Mocked<CoreV1Api>
+    mockCoreApi.listSecretForAllNamespaces.mockResolvedValue({
+      items: [
+        {
+          metadata: {
+            name: 'sh.helm.release.v1.argocd-artifacts.v1',
+            namespace: 'argocd',
+            labels: { status: 'uninstalling', name: 'argocd-artifacts', app_version: '' },
+          },
+        },
+        {
+          metadata: {
+            name: 'sh.helm.release.v1.release-2.v41',
+            namespace: 'ns-2',
+            labels: { status: 'superseded', name: 'release-2', app_version: '' },
+          },
+        },
+        {
+          metadata: {
+            name: 'sh.helm.release.v1.release-2.v42',
+            namespace: 'ns-2',
+            labels: { status: 'uninstalling', name: 'release-2', app_version: '' },
+          },
+        },
+        {
+          metadata: {
+            name: 'sh.helm.release.v1.release-4.v1',
+            namespace: 'ns-4',
+            labels: { status: 'uninstalled', name: 'release-4', app_version: '' },
+          },
+        },
+        {
+          metadata: {
+            name: 'sh.helm.release.v1.apl.v1',
+            namespace: 'otomi',
+            labels: { status: 'uninstalling', name: 'apl', app_version: '' },
+          },
+        },
+        {
+          metadata: {
+            name: 'sh.helm.release.v1.release-3.v1',
+            namespace: 'ns-3',
+            labels: { status: 'failed', name: 'release-3', app_version: '' },
+          },
+        },
+      ],
+    } as any)
+    mockCoreApi.deleteNamespacedSecret.mockResolvedValue({} as any)
+    jest.spyOn(k8s.k8s, 'core').mockReturnValue(mockCoreApi)
+
+    await k8s.deletePendingHelmReleases()
+    expect(mockCoreApi.deleteNamespacedSecret).toHaveBeenCalledTimes(3)
+    expect(mockCoreApi.deleteNamespacedSecret).toHaveBeenCalledWith({
+      name: 'sh.helm.release.v1.argocd-artifacts.v1',
+      namespace: 'argocd',
+    })
+    expect(mockCoreApi.deleteNamespacedSecret).toHaveBeenCalledWith({
+      name: 'sh.helm.release.v1.release-2.v41',
+      namespace: 'ns-2',
+    })
+    expect(mockCoreApi.deleteNamespacedSecret).toHaveBeenCalledWith({
+      name: 'sh.helm.release.v1.release-2.v42',
+      namespace: 'ns-2',
+    })
+  })
 })
 
 describe('restartOtomiApiDeployment', () => {
