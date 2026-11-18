@@ -22,15 +22,21 @@ spec:
       {{- include "opentelemetry-operator.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: controller-manager
   endpoints:
-  {{- toYaml .Values.manager.serviceMonitor.metricsEndpoints | nindent 4 }}
-      {{- with .Values.manager.serviceMonitor.relabelings }}
+    {{- range .Values.manager.serviceMonitor.metricsEndpoints }}
+    - {{ toYaml . | indent 6 | trim }}
+      {{- if not (hasKey . "relabelings") }}
+      {{- with $.Values.manager.serviceMonitor.relabelings }}
       relabelings:
       {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.manager.serviceMonitor.metricRelabelings }}
+      {{- end }}
+      {{- if not (hasKey . "metricRelabelings") }}
+      {{- with $.Values.manager.serviceMonitor.metricRelabelings }}
       metricRelabelings:
       {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- end }}
+    {{- end }}
   namespaceSelector:
     matchNames:
       - {{ template "opentelemetry-operator.namespace" . }}
