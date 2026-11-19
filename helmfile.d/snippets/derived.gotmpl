@@ -1,7 +1,6 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $k := $a | get "keycloak" dict }}
-{{- $o := $v | get "oidc" dict }}
 {{- $obj := $v.obj.provider }}
 {{- $cm := index $v.apps "cert-manager" }}
 {{- $versions := (readFile "../versions.yaml" | fromYaml) }}
@@ -269,10 +268,11 @@ environments:
           egressGatewayLabel: {{ $egressGatewayLabel }}
           ingressClassNames: {{- $ingressClassNames | toYaml | nindent 12 }}
           gitValuesSource: {{ $gitValuesSource }}
-          {{- /* Hostnames the platform serves itself. auth is oauth2-proxy's own route; the bare domain must stay unclaimed too. */}}
+          {{- /* Hostnames the platform serves itself. auth is oauth2-proxy's own route, git is git-server (values repo); the bare domain must stay unclaimed too. */}}
           platformHostnames:
             - {{ $domainSuffix }}
             - {{ printf "auth.%s" $domainSuffix }}
+            - {{ printf "git.%s" $domainSuffix }}
             {{- range $app := $core.adminApps }}
             {{- if $app | get "ownHost" false }}
             - {{ printf "%s.%s" $app.name $domainSuffix }}

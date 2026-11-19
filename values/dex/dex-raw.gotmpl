@@ -15,7 +15,8 @@ resources:
           app.kubernetes.io/name: dex
       mtls:
         mode: STRICT
-      {{- /* istiod has no sidecar and fetches /keys over plain HTTP. The NetworkPolicy still limits who can connect. */}}
+      {{- /* istiod has no sidecar and fetches /keys over plain HTTP; mTLS cannot be enforced here.
+           The NetworkPolicy restricts port 5556 to the istiod pod only (app: istiod in istio-system). */}}
       portLevelMtls:
         5556:
           mode: PERMISSIVE
@@ -62,14 +63,13 @@ resources:
       favicon.png: {{ readFile "web-overlay/favicon.png" | b64enc }}
       apl-logo.svg: {{ readFile "web-overlay/apl-logo.svg" | b64enc }}
 
-  {{- /* adminPassword is hashed by ESO itself (sprig bcrypt), never stored or rendered as a hash. */}}
   - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: dex-config
       namespace: dex
     spec:
-      refreshPolicy: OnChange
+      refreshInterval: 1m
       secretStoreRef:
         name: core-secrets-store
         kind: ClusterSecretStore
@@ -91,7 +91,18 @@ resources:
           remoteRef:
             key: dex
             property: sessionCookieEncryptionKey
-        - secretKey: adminPassword
+        - secretKey: adminPasswordHash
           remoteRef:
-            key: platform-admin-initial-credentials
-            property: password
+            key: dex-platform-admin
+            property: passwordHash
+        {{- if $v.otomi.hasExternalIDP }}
+        - secretKey: externalIdpClientID
+          remoteRef:
+            key: oidc-secrets
+            property: clientID
+        - secretKey: externalIdpClientSecret
+          remoteRef:
+            key: oidc-secrets
+            property: clientSecret
+        {{- end }}
+
