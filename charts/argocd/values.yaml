@@ -3320,9 +3320,7 @@ repoServer:
   podLabels: {}
 
   # -- Resource limits and requests for the repo server pods
-  resources:
-    requests:
-      cpu: 200m
+  resources: {}
   #  limits:
   #    cpu: 50m
   #    memory: 128Mi
