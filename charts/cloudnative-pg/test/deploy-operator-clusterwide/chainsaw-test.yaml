@@ -1,0 +1,49 @@
+##
+# This test verifies that the operator installed with the default values deploys and brings a cluster to a
+# healthy state.
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: deploy-operator-clusterwide
+spec:
+  description: Deploy the operator in cluster-wide mode
+  timeouts:
+    apply: 1s
+    assert: 5m
+    exec: 5m
+    cleanup: 2m
+  catch:
+    - script:
+        content: kubectl describe clusters.postgresql.cnpg.io --all-namespaces
+    - podLogs:
+        namespace: cnpg-system
+        selector: app.kubernetes.io/name=cloudnative-pg
+  steps:
+    - name: Create the operator namespace
+      try:
+        - script:
+            content: |
+              kubectl create namespace cnpg-system --dry-run=client -o yaml | kubectl apply -f -
+      cleanup:
+        - script:
+            content: |
+              kubectl delete namespace cnpg-system --ignore-not-found --wait=false
+    - name: Install the operator with the default values
+      try:
+        - script:
+            content: |
+              helm upgrade \
+                --install \
+                --namespace cnpg-system \
+                --wait \
+                cnpg ../../
+      cleanup:
+        - script:
+            content: |
+              helm uninstall --namespace cnpg-system --ignore-not-found cnpg
+    - name: Deploy a cluster and wait for it to be healthy
+      try:
+        - apply:
+            file: ./01-deploy_operator_clusterwide.yaml
+        - assert:
+            file: ./01-deploy_operator_clusterwide-assert.yaml

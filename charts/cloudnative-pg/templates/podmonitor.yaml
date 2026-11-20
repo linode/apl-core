@@ -37,6 +37,13 @@ spec:
       {{- include "cloudnative-pg.selectorLabels" . | nindent 6 }}
   podMetricsEndpoints:
     - port: metrics
+      {{- with .Values.monitoring.podMonitorScheme }}
+      scheme: {{ . }}
+      {{- end }}
+      {{- with .Values.monitoring.podMonitorTLSConfig }}
+      tlsConfig:
+      {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
       {{- with .Values.monitoring.podMonitorMetricRelabelings }}
       metricRelabelings:
       {{- toYaml . | nindent 6 }}

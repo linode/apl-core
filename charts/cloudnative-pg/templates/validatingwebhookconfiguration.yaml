@@ -21,7 +21,7 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  name: cnpg-validating-webhook-configuration
+  name: cnpg-validating-webhook-configuration{{- if not .Values.config.clusterWide }}-{{ include "cloudnative-pg.namespace" . }}{{- end }}
   labels:
     {{- include "cloudnative-pg.labels" . | nindent 4 }}
   {{- with .Values.rbac.annotations }}
@@ -39,6 +39,9 @@ webhooks:
       port: {{ .Values.service.port }}
   failurePolicy: {{ .Values.webhook.validating.failurePolicy }}
   name: vbackup.cnpg.io
+  {{- with include "cloudnative-pg.webhookNamespaceSelector" . }}
+  {{- . | nindent 2 }}
+  {{- end }}
   rules:
   - apiGroups:
     - postgresql.cnpg.io
@@ -60,6 +63,9 @@ webhooks:
       port: {{ .Values.service.port }}
   failurePolicy: {{ .Values.webhook.validating.failurePolicy }}
   name: vcluster.cnpg.io
+  {{- with include "cloudnative-pg.webhookNamespaceSelector" . }}
+  {{- . | nindent 2 }}
+  {{- end }}
   rules:
   - apiGroups:
     - postgresql.cnpg.io
@@ -81,6 +87,9 @@ webhooks:
       port: {{ .Values.service.port }}
   failurePolicy: {{ .Values.webhook.validating.failurePolicy }}
   name: vscheduledbackup.cnpg.io
+  {{- with include "cloudnative-pg.webhookNamespaceSelector" . }}
+  {{- . | nindent 2 }}
+  {{- end }}
   rules:
   - apiGroups:
     - postgresql.cnpg.io
@@ -102,6 +111,9 @@ webhooks:
       port: {{ .Values.service.port }}
   failurePolicy: {{ .Values.webhook.validating.failurePolicy }}
   name: vdatabase.cnpg.io
+  {{- with include "cloudnative-pg.webhookNamespaceSelector" . }}
+  {{- . | nindent 2 }}
+  {{- end }}
   rules:
   - apiGroups:
     - postgresql.cnpg.io
@@ -123,6 +135,9 @@ webhooks:
       port: {{ .Values.service.port }}
   failurePolicy: {{ .Values.webhook.validating.failurePolicy }}
   name: vpooler.cnpg.io
+  {{- with include "cloudnative-pg.webhookNamespaceSelector" . }}
+  {{- . | nindent 2 }}
+  {{- end }}
   rules:
     - apiGroups:
         - postgresql.cnpg.io
