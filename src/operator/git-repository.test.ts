@@ -382,7 +382,10 @@ describe('GitRepository', () => {
 
       await customBranchRepo.syncAndAnalyzeChanges()
 
-      expect(mockGit.fetch).toHaveBeenCalledWith('origin', 'feature-branch')
+      expect(mockGit.fetch).toHaveBeenCalledWith(
+        'origin',
+        '+refs/heads/feature-branch:refs/remotes/origin/feature-branch',
+      )
     })
 
     test('should handle fetch failure', async () => {
@@ -431,6 +434,15 @@ describe('GitRepository', () => {
       await gitRepository.reloadConfig({ ...newConfig, branch: 'new-branch' })
 
       expect((gitRepository as any).branch).toBe('new-branch')
+    })
+
+    test('should reset lastRevision when branch changes', async () => {
+      mockGit.remote.mockResolvedValue(undefined)
+      ;(gitRepository as any)._lastRevision = 'abc123'
+
+      await gitRepository.reloadConfig({ ...newConfig, branch: 'new-branch' })
+
+      expect(gitRepository.lastRevision).toBe('')
     })
 
     test('should call setIdentity with updated username and email', async () => {
