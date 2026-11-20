@@ -3,6 +3,9 @@ metadata:
     name: cluster
 spec:
     apiServer: https://1.1.1.1:8443
+    apiServerIps:
+        - 10.128.0.1
+    apiServerPort: 6443
     domainSuffix: dev.linode-apl.net
     k8sContext: linode-dev
     linode:

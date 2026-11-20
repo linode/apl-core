@@ -278,6 +278,14 @@ definitions:
       apiServer:
         description: Used to generate KUBECONFIG for download, for local access to target cluster.
         pattern: '^https:\/\/.*'
+      apiServerIps:
+        type: array
+        items:
+          type: string
+        description: kube-apiserver's real backend IPs, resolved at bootstrap.
+      apiServerPort:
+        type: integer
+        description: kube-apiserver's real backend port, resolved at bootstrap.
       domainSuffix:
         $ref: '#/definitions/domain'
         description: Domain suffix for the cluster. Also added to list of dns zones in the Otomi Console.

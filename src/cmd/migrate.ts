@@ -13,7 +13,16 @@ import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { cd, sleep } from 'zx'
 import { EXTERNAL_SECRET_PARAMS, SEALED_SECRETS_NAMESPACE } from '../common/constants'
-import { applyCrd, createUpdateGenericSecret, getArgoCdApp, getK8sSecret, k8s, setArgoCdAppSync } from '../common/k8s'
+import {
+  applyCrd,
+  createUpdateGenericSecret,
+  ensureApiServerEndpoint,
+  getArgoCdApp,
+  getK8sSecret,
+  k8s,
+  resolveApiServerEndpoint,
+  setArgoCdAppSync,
+} from '../common/k8s'
 import { generate } from 'generate-password'
 
 const cmdName = getFilename(__filename)
@@ -778,6 +787,10 @@ const migrateGeneratedSecrets = async (values: Record<string, any>) => {
   }
 }
 
+const backfillApiServerEndpoint = async (values: Record<string, any>) => {
+  await ensureApiServerEndpoint(values, { resolveApiServerEndpoint }, terminal('backfillApiServerEndpoint'))
+}
+
 const deactivateGitServer = async (values: Record<string, any>) => {
   const d = terminal('deactivateGitServer')
   if (
@@ -799,6 +812,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   removeSopsConfig,
   migrateGeneratedSecrets,
   deactivateGitServer,
+  backfillApiServerEndpoint,
 }
 
 /**

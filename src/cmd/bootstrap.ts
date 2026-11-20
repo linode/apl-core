@@ -8,7 +8,7 @@ import { prepareEnvironment } from 'src/common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
-import { getK8sSecret, secretId } from 'src/common/k8s'
+import { ensureApiServerEndpoint, getK8sSecret, resolveApiServerEndpoint, secretId } from 'src/common/k8s'
 import { bootstrapSealedSecrets, stripAllSecrets } from 'src/common/sealed-secrets'
 import {
   ensureManifestDirectories,
@@ -112,12 +112,16 @@ export const processValues = async (
     createCustomCA,
     getSchemaSecretsPaths,
     stripAllSecrets,
+    resolveApiServerEndpoint,
   },
 ): Promise<{ originalInput: Record<string, any>; allSecrets: Record<string, any> }> => {
   const d = deps.terminal(`cmd:${cmdName}:processValues`)
   const { VALUES_INPUT } = env
   d.log(`Loading app values from ${VALUES_INPUT}`)
   const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
+
+  await ensureApiServerEndpoint(originalValues, deps, d)
+
   const repoUrl = get(originalValues, 'otomi.git.repoUrl')
   const gitServerEnabled = get(originalValues, 'apps.git-server.enabled')
   if ((!repoUrl || repoUrl.includes('git-server.git-server.svc.cluster.local')) && gitServerEnabled === undefined) {
