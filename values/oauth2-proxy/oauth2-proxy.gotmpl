@@ -68,9 +68,9 @@ config:
     cookie_domains = {{ $cookieDomains | toJson }}
     # lax is enough for the redirect-based OIDC login and blocks cross-site delivery
     cookie_samesite = "lax"
-    # set to the same as keycloak realm's accessCodeLifespan
+    # same as the IdP access/ID token lifetime (1m)
     cookie_refresh = "1m"
-    # set to the same as keycloak client idle timeout
+    # same as the IdP session idle timeout (30m)
     cookie_expire = "30m"
     set_authorization_header = true
     pass_authorization_header = true
