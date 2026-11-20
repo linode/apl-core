@@ -133,13 +133,13 @@ metrics:
 resources:
   # -- Container resource limits
   limits:
-    # cpu: 100m
-    # memory: 128Mi
+  # cpu: 100m
+  # memory: 128Mi
 
   # -- Container resource requests
   requests:
-    # cpu: 100m
-    # memory: 128Mi
+  # cpu: 100m
+  # memory: 128Mi
 
 autoscaling:
   # -- Enable autoscaling
@@ -151,11 +151,30 @@ autoscaling:
   # -- Max number of replicas
   maxReplicas: 100
 
-  # -- Target CPU utilisation
+  # -- Target CPU utilisation percentage
   targetCPUUtilizationPercentage: 80
 
-  # -- Target Memory utilisation
+  # -- Target memory utilization percentage
   targetMemoryUtilizationPercentage: ~
+
+  # -- Configures custom HPA metrics
+  # Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+  metrics: []
+
+  # -- Configures the scaling behavior of the target in both Up and Down directions.
+  behavior: {}
+  # scaleDown:
+  #  stabilizationWindowSeconds: 300
+  #  policies:
+  #    - type: Pods
+  #      value: 1
+  #      periodSeconds: 180
+  # scaleUp:
+  #   stabilizationWindowSeconds: 300
+  #   policies:
+  #     - type: Pods
+  #       value: 2
+  #       periodSeconds: 60
 
 # -- Using a PDB is highly recommended for highly available deployments. Defaults to enabled. The default configuration doesn't prevent disruption when using a single replica
 pdb:
@@ -183,6 +202,9 @@ service:
   port: 443
 
 config:
+  # -- Skip database migration on startup
+  skipMigration: false
+
   etcd:
     enabled: false
     endpoints: ~
@@ -248,12 +270,11 @@ apiServicesManagement:
 
   image:
     # -- (string) Image registry
-    registry: docker.io
+    registry: registry.k8s.io
     # -- Image repository
-    repository: bitnamilegacy/kubectl
+    repository: kubectl
     # -- Image tag
-    # Defaults to `latest` if omitted
-    tag: "1.30.2"
+    tag: v1.34.1
     # -- (string) Image pull policy
     # Defaults to image.pullPolicy if omitted
     pullPolicy: ~
@@ -300,3 +321,7 @@ apiServicesManagement:
       type: RuntimeDefault
 
 extraObjects: []
+
+openreports:
+  # -- Deploy openreports-api CRDs
+  enabled: false

@@ -3,10 +3,6 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  labels:
-    {}
-  annotations:
-    {}
   name: imagevalidatingpolicies.policies.kyverno.io
 spec:
   group: policies.kyverno.io
@@ -7132,3 +7128,4 @@ spec:
     storage: true
     subresources:
       status: {}
+

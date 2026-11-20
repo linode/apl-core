@@ -1,6 +1,10 @@
 annotations:
   artifacthub.io/changes: |
     - kind: fixed
+      description: Grant the background controller every permission the chart aggregates into the admin and view roles, so generate rules can create RoleBindings to admin again.
+    - kind: fixed
+      description: Bump bundled reports-server dependency to v0.1.7 to fix APIServices being de-registered on pod termination when another replica is still ready.
+    - kind: fixed
       description: Ensure spec.template.metadata isn't null
     - kind: removed
       description: Remove the `delete` permission for policyexceptions in the admission controller
@@ -17,20 +21,20 @@ annotations:
   artifacthub.io/operator: "false"
   artifacthub.io/prerelease: "false"
 apiVersion: v2
-appVersion: v1.19.2
+appVersion: v1.20.0
 dependencies:
 - condition: grafana.enabled
   name: grafana
   repository: ""
-  version: 3.9.2
+  version: 3.10.0
 - condition: crds.install
   name: crds
   repository: ""
-  version: 3.9.2
+  version: 3.10.0
 - condition: crds.install
   name: kyverno-api
   repository: https://kyverno.github.io/api
-  version: 0.0.1-alpha.4
+  version: 0.0.1-alpha.5
 - condition: openreports.installCrds
   name: openreports
   repository: https://openreports.github.io/reports-api
@@ -38,7 +42,7 @@ dependencies:
 - condition: reportsServer.enabled
   name: reports-server
   repository: https://kyverno.github.io/reports-server/
-  version: 0.1.6
+  version: 0.1.7
 description: Kubernetes Native Policy Management
 home: https://kyverno.io/
 icon: https://github.com/kyverno/kyverno/raw/main/img/logo.png
@@ -59,4 +63,4 @@ name: kyverno
 sources:
 - https://github.com/kyverno/kyverno
 type: application
-version: 3.9.2
+version: 3.10.0

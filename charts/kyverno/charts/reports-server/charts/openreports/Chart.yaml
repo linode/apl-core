@@ -1,0 +1,21 @@
+annotations:
+  artifacthub.io/crds: |
+    - kind: ClusterReport
+      version: v1alpha1
+      name: clusterreports.openreports.io
+      displayName: Cluster Report
+      description: ClusterReport is the Schema for the ClusterReport API
+    - kind: Report
+      version: v1alpha1
+      name: reports.openreports.io
+      displayName: Report
+      description: Report is the Schema for the Report API
+  artifacthub.io/home: https://github.com/openreports/openreports
+  artifacthub.io/operator: "false"
+  artifacthub.io/prerelease: "false"
+  artifacthub.io/sources: https://github.com/openreports/openreports
+apiVersion: v2
+appVersion: latest
+description: A Helm chart for installing openreports APIs.
+name: openreports
+version: 0.2.1

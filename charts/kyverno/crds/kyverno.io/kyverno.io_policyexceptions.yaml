@@ -8,10 +8,11 @@ metadata:
     app.kubernetes.io/instance: release-name
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: release-name-crds
-    app.kubernetes.io/version: 3.9.2
-    helm.sh/chart: crds-3.9.2
+    app.kubernetes.io/version: 3.10.0
+    helm.sh/chart: crds-3.10.0
   annotations:
     controller-gen.kubebuilder.io/version: v0.20.0
+    helm.sh/resource-policy: keep
   name: policyexceptions.kyverno.io
 spec:
   group: kyverno.io
@@ -1313,3 +1314,4 @@ spec:
         type: object
     served: true
     storage: false
+
