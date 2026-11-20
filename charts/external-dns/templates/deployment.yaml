@@ -12,7 +12,11 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  replicas: 1
+  {{- /* values.schema.json bounds replicaCount to 0-1, but that is skipped by e.g. `helm template | kubectl apply`, so guard here too. */}}
+  {{- if gt (int .Values.replicaCount) 1 }}
+  {{- fail "replicaCount must be 0 or 1: external-dns does not support leader election" }}
+  {{- end }}
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       {{- include "external-dns.selectorLabels" . | nindent 6 }}
@@ -49,6 +53,9 @@ spec:
       {{- with .Values.shareProcessNamespace }}
       shareProcessNamespace: {{ . }}
       {{- end }}
+      {{- if not (kindIs "invalid" .Values.hostUsers) }}
+      hostUsers: {{ .Values.hostUsers }}
+      {{- end }}
       {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
@@ -64,6 +71,10 @@ spec:
       {{- end }}
       {{- with .Values.dnsConfig }}
       dnsConfig:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hostAliases }}
+      hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.initContainers }}
@@ -89,8 +100,14 @@ spec:
             - --log-level={{ .Values.logLevel }}
             - --log-format={{ .Values.logFormat }}
             - --interval={{ .Values.interval }}
+            {{- range .Values.fqdnTemplates }}
+            - --fqdn-template={{ . }}
+            {{- end }}
             {{- if .Values.triggerLoopOnEvent }}
             - --events
+            {{- end }}
+            {{- range .Values.eventsEmit }}
+            - --events-emit={{ . }}
             {{- end }}
             {{- range .Values.sources }}
             - --source={{ . }}
