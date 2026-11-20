@@ -143,7 +143,8 @@ export class GitRepository {
       // to avoid re-creating deleted teams and users
       // and to clean-up the untracked files
       await this.git.clean('f', ['-X'])
-      await this.git.fetch('origin', this.branch)
+      // Explicit refspec: clone is --single-branch, so a plain fetch of another branch never creates origin/<branch>
+      await this.git.fetch('origin', `+refs/heads/${this.branch}:refs/remotes/origin/${this.branch}`)
       await this.git.reset(['--hard', `origin/${this.branch}`])
       return this.getCurrentRevision()
     } catch (error) {
@@ -211,6 +212,8 @@ export class GitRepository {
     }
     try {
       await this.git.remote(['set-url', 'origin', config.authenticatedUrl])
+      // Other repo or branch: old revision may not exist there, so force a full apply on next sync
+      if (config.repoUrl !== this._config.repoUrl || config.branch !== this._config.branch) this._lastRevision = ''
       this.branch = config.branch
       this.username = config.username ?? 'otomi-admin'
       this.email = config.email
