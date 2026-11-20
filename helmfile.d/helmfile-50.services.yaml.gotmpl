@@ -21,6 +21,13 @@ releases:
     labels:
       pkg: trivy-operator
     <<: *default
+    # The release is named trivy-operator but the app is trivy, so common.gotmpl's
+    # apps.<release>._rawValues lookup never finds apps.trivy._rawValues. Inject it
+    # here, the same way prometheus-operator injects apps.prometheus._rawValues.
+    values:
+      - ../values/trivy-operator/trivy-operator.gotmpl
+      - snippets/common.gotmpl
+      - {{- $a | get "trivy._rawValues" dict | toYaml | nindent 8 }}
   - name: kubeflow-pipelines-artifacts
     installed: {{ $a | get "kubeflow-pipelines.enabled" }}
     namespace: kfp
