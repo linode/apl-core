@@ -1,6 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": [
+    "policy"
+  ],
   "properties": {
     "affinity": {
       "description": "Affinity settings for `Pod` [scheduling](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/). If an explicit label selector is not provided for pod affinity or pod anti-affinity one will be created from the pod selector labels.",
@@ -80,6 +83,19 @@
       "description": "[Environment variables](https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/) for the `external-dns` container.",
       "type": "array"
     },
+    "eventsEmit": {
+      "description": "_Kubernetes_ events to emit; valid values are `RecordReady`, `RecordDeleted` \u0026 `RecordError`. Setting this also grants the RBAC permission to create `events.k8s.io` events.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "RecordReady",
+          "RecordDeleted",
+          "RecordError"
+        ]
+      }
+    },
     "excludeDomains": {
       "description": "Intentionally exclude domains from being managed.",
       "type": "array"
@@ -108,6 +124,17 @@
       "description": "Extra [volumes](https://kubernetes.io/docs/concepts/storage/volumes/) for the `Pod`.",
       "type": "array"
     },
+    "fqdnTemplates": {
+      "description": "[FQDN templates](https://kubernetes-sigs.github.io/external-dns/latest/docs/advanced/fqdn-templating) to use for generating DNS records.",
+      "type": [
+        "array",
+        "null"
+      ],
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
     "fullnameOverride": {
       "description": "Override the full name of the chart.",
       "type": [
@@ -133,6 +160,17 @@
           }
         }
       }
+    },
+    "hostAliases": {
+      "description": "[Host aliases](https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/) to add to the `Pod` definition, injected into the pod's `/etc/hosts`.",
+      "type": "array"
+    },
+    "hostUsers": {
+      "description": "Whether the `Pod` shares the host's [user namespace](https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/). Set to `false` to run the `Pod` in its own user namespace, if not set the Kubernetes default will be used.",
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "image": {
       "type": "object",
@@ -297,8 +335,7 @@
       }
     },
     "policy": {
-      "description": "How DNS records are synchronized between sources and providers; available values are `create-only`, `sync`, \u0026 `upsert-only`.",
-      "default": "upsert-only",
+      "description": "How DNS records are synchronized between sources and providers; must be set explicitly to one of `create-only`, `sync`, or `upsert-only`.",
       "type": "string",
       "enum": [
         "create-only",
@@ -496,8 +533,30 @@
               "type": "object"
             },
             "securityContext": {
-              "description": "[Pod security context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container) for the `webhook` container.",
-              "type": "object"
+              "description": "[Security context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container) for the `webhook` container.",
+              "type": "object",
+              "properties": {
+                "allowPrivilegeEscalation": {
+                  "type": "boolean"
+                },
+                "capabilities": {
+                  "type": "object",
+                  "properties": {
+                    "drop": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "privileged": {
+                  "type": "boolean"
+                },
+                "readOnlyRootFilesystem": {
+                  "type": "boolean"
+                }
+              }
             },
             "service": {
               "type": "object",
@@ -598,15 +657,22 @@
       }
     },
     "registry": {
-      "description": "Specify the registry for storing ownership and labels. Valid values are `txt`, `aws-sd`, `dynamodb` \u0026 `noop`.",
+      "description": "Specify the registry for storing ownership and labels. Valid values are `txt`, `aws-sd`, `crd`, `dynamodb` \u0026 `noop`.",
       "default": "txt",
       "type": "string",
       "enum": [
         "txt",
         "aws-sd",
+        "crd",
         "dynamodb",
         "noop"
       ]
+    },
+    "replicaCount": {
+      "description": "Number of replicas of the `external-dns` `Deployment`. external-dns does not support leader election, so this must be `0` or `1` to avoid duplicate or conflicting DNS record updates. Set to `0` to scale the `Deployment` down.",
+      "type": "integer",
+      "maximum": 1,
+      "minimum": 0
     },
     "resources": {
       "description": "[Resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) for the `external-dns` container.",
@@ -712,6 +778,10 @@
         "annotations": {
           "description": "Service annotations.",
           "type": "object"
+        },
+        "enabled": {
+          "description": "If `true`, create a `Service` Kubernetes.",
+          "type": "boolean"
         },
         "ipFamilies": {
           "description": "Service IP families (e.g. IPv4 and/or IPv6).",
