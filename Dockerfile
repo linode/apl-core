@@ -1,4 +1,4 @@
-ARG APL_TOOLS_IMAGE=linode/apl-tools:v3.2.0
+ARG APL_TOOLS_IMAGE=linode/apl-tools:v4.0.0-rc.1
 FROM ${APL_TOOLS_IMAGE} AS ci
 
 ENV APP_HOME=/home/app/stack
