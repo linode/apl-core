@@ -187,6 +187,53 @@ export const deletePendingHelmReleases = async (): Promise<void> => {
       await deleteSecretForHelmRelease(release.name, release.namespace, release.revision)
     }
   }
+  await deleteStuckUninstallingHelmReleases()
+}
+
+/**
+ * When a first install fails with --rollback-on-failure, Helm uninstalls the release: it marks the
+ * release as 'uninstalling', deletes the resources and only then removes the release secrets.
+ * If that uninstall is interrupted (timeout, resource deletion error, pod restart), the release secret
+ * is left behind in 'uninstalling' state and every subsequent `helm upgrade --install` fails with
+ * "has no deployed releases". Finish the uninstall by removing all existing revision secrets of such releases.
+ * Releases deliberately uninstalled with --keep-history ('uninstalled') are left untouched.
+ */
+export const deleteStuckUninstallingHelmReleases = async (): Promise<void> => {
+  const d = terminal('common:k8s:deleteStuckUninstallingHelmReleases')
+  const secretsResponse = await k8s.core().listSecretForAllNamespaces({ labelSelector: 'owner=helm,status' })
+
+  const releases: Record<
+    string,
+    { name: string; namespace: string; latest: number; status: string; revisions: number[] }
+  > = {}
+  for (const secret of secretsResponse.items) {
+    const { name: secretName, namespace, labels } = secret.metadata ?? {}
+    if (!secretName || !namespace || !labels) continue
+    if (labels.name === 'apl' || labels.name === 'otomi') continue
+    const match = secretName.match(/^sh\.helm\.release\.v1\.(.+)\.v(\d+)$/)
+    if (!match) continue
+    const [, name, revisionString] = match
+    const revision = parseInt(revisionString)
+    const key = `${namespace}/${name}`
+    releases[key] ??= { name, namespace, latest: 0, status: '', revisions: [] }
+    const release = releases[key]
+    release.revisions.push(revision)
+    if (revision > release.latest) {
+      release.latest = revision
+      release.status = labels.status
+    }
+  }
+
+  const stuckReleases = Object.values(releases).filter((release) => release.status === 'uninstalling')
+  if (stuckReleases.length === 0) return
+  d.warn(
+    `Helm releases stuck in 'uninstalling' state detected (likely an interrupted rollback of a failed install): ${stuckReleases.map((r) => `${r.namespace}/${r.name}:v${r.latest}`).join(', ')}. removing release secrets...`,
+  )
+  for (const release of stuckReleases) {
+    for (const revision of release.revisions) {
+      await deleteSecretForHelmRelease(release.name, release.namespace, revision)
+    }
+  }
 }
 
 export const getPendingHelmReleases = async (): Promise<HelmRelease[]> => {
