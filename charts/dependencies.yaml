@@ -3,7 +3,7 @@ description: APL Helm chart dependencies
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 10.11.7
+    version: 10.18.2
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
     version: 1.4.2
@@ -16,7 +16,7 @@ dependencies:
     repository: https://cloudnative-pg.github.io/charts
   - name: plugin-barman-cloud
     alias: cloudnative-pg-plugin-barman-cloud
-    version: 0.8.1
+    version: 0.9.0
     repository: https://cloudnative-pg.github.io/charts
   - name: cloud-firewall-crd
     version: 0.2.0
