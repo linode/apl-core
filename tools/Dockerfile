@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.6
 
-ARG NODE_VERSION=24
+ARG NODE_VERSION=24.22.3
 FROM node:${NODE_VERSION}-alpine AS binaries
 
 ARG TARGETARCH
