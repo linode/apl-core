@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plugin-barman-cloud
+spec:
+  template:
+    metadata:
+      annotations:
+        example.com/static: "static-value"
+        example.com/release: "plugin-barman-cloud"
