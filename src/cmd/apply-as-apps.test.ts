@@ -2,10 +2,13 @@ import { statSync } from 'fs'
 import { glob } from 'glob'
 import { ARGOCD_APP_PARAMS } from '../common/constants'
 import { env } from '../common/envalid'
+import { getStoredGitRepoConfig } from '../common/git-config'
+import { hf, hfValues } from '../common/hf'
 import { getNames } from '../common/utils'
 import {
   addGitOpsApps,
   applyArgocdApp,
+  applyAsApps,
   applyGitOpsApps,
   ArgocdAppManifest,
   calculateGitOpsAppsSyncState,
@@ -14,6 +17,7 @@ import {
   getArgocdCoreAppManifest,
   getArgocdGitopsManifest,
   removeGitOpsApps,
+  updateOperatorApplication,
 } from './apply-as-apps'
 
 jest.mock('glob')
@@ -25,6 +29,18 @@ jest.mock('fs', () => ({
   existsSync: jest.fn(),
 }))
 jest.mock('../common/envalid')
+jest.mock('../common/cli', () => ({
+  cleanupHandler: jest.fn(),
+  prepareEnvironment: jest.fn(),
+}))
+jest.mock('../common/hf', () => ({
+  hf: jest.fn().mockResolvedValue({ stdout: '' }),
+  hfValues: jest.fn(),
+}))
+jest.mock('fs/promises', () => ({
+  ...jest.requireActual('fs/promises'),
+  readFile: jest.fn().mockResolvedValue('operator-values'),
+}))
 jest.mock('../common/git-config', () => ({
   getStoredGitRepoConfig: jest.fn().mockResolvedValue({ repoUrl: 'https://git.example.com/otomi/values.git' }),
 }))
@@ -40,6 +56,9 @@ jest.mock('../common/debug', () => ({
 }))
 
 const mockGlob = glob as jest.MockedFunction<typeof glob>
+const mockHf = hf as jest.MockedFunction<any>
+const mockHfValues = hfValues as jest.MockedFunction<typeof hfValues>
+const mockStoredGitRepoConfig = getStoredGitRepoConfig as jest.MockedFunction<any>
 const mockStatSync = statSync as jest.MockedFunction<any>
 const mockGetApplications = jest.fn() as jest.MockedFunction<typeof getApplications>
 const mockApplyArgoCdApp = jest.fn() as jest.MockedFunction<typeof applyArgocdApp>
@@ -51,6 +70,7 @@ const mockGetArgocdGitopsManifest = jest.fn() as jest.MockedFunction<typeof getA
 const mockPatchNamespacedCustomObject = jest.fn()
 const mockDeleteNamespacedCustomObject = jest.fn()
 const mockListNamespacedCustomObject = jest.fn()
+const mockGetNamespacedCustomObject = jest.fn()
 const mockRestartStatefulSet = jest.fn()
 const mockArgoCdHasUnrecoverableErrors = jest.fn()
 const mockPatchContainerResourcesOfSts = jest.fn()
@@ -72,10 +92,14 @@ jest.mock('../common/k8s', () => ({
       patchNamespacedCustomObject: (...args: any[]) => mockPatchNamespacedCustomObject(...args),
       deleteNamespacedCustomObject: (...args: any[]) => mockDeleteNamespacedCustomObject(...args),
       listNamespacedCustomObject: (...args: any[]) => mockListNamespacedCustomObject(...args),
+      getNamespacedCustomObject: (...args: any[]) => mockGetNamespacedCustomObject(...args),
     }),
     app: () => ({}),
     core: () => ({}),
   },
+  // The self-update check runs the real revision comparison against the mocked Kubernetes API
+  appRevisionMatches: (...args: any[]) => jest.requireActual('../common/k8s').appRevisionMatches(...args),
+  patchArgoCdApp: (...args: any[]) => jest.requireActual('../common/k8s').patchArgoCdApp(...args),
   argoCdHasUnrecoverableErrors: (...args: any[]) => mockArgoCdHasUnrecoverableErrors(...args),
   restartStatefulSet: (...args: any[]) => mockRestartStatefulSet(...args),
   patchContainerResourcesOfSts: (...args: any[]) => mockPatchContainerResourcesOfSts(...args),
@@ -104,6 +128,7 @@ describe('getArgocdGitopsManifest', () => {
         },
         annotations: {
           'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
+          'argocd.argoproj.io/manifest-generate-paths': '.',
         },
         finalizers: ['resources-finalizer.argocd.argoproj.io'],
       },
@@ -120,7 +145,7 @@ describe('getArgocdGitopsManifest', () => {
           {
             path: 'env/manifests/global',
             repoURL,
-            targetRevision: branch,
+            targetRevision: 'refs/heads/main',
             directory: {
               recurse: true,
             },
@@ -149,6 +174,7 @@ describe('getArgocdGitopsManifest', () => {
         },
         annotations: {
           'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
+          'argocd.argoproj.io/manifest-generate-paths': '.',
         },
         finalizers: ['resources-finalizer.argocd.argoproj.io'],
       },
@@ -165,7 +191,7 @@ describe('getArgocdGitopsManifest', () => {
           {
             path: 'env/manifests/namespaces/my-namespace',
             repoURL,
-            targetRevision: branch,
+            targetRevision: 'refs/heads/main',
             directory: {
               recurse: true,
             },
@@ -176,6 +202,16 @@ describe('getArgocdGitopsManifest', () => {
           namespace: 'my-namespace',
         },
       },
+    })
+  })
+  it.each([
+    ['namespace directory', 'my-namespace'],
+    ['global directory', undefined],
+  ])('should omit only the manifest-generate-paths annotation for the %s when switched off', (_, targetNamespace) => {
+    const manifest = getArgocdGitopsManifest('my-app', repoURL, branch, targetNamespace, false)
+
+    expect(manifest.metadata.annotations).toEqual({
+      'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
     })
   })
 })
@@ -536,7 +572,7 @@ describe('addGitOpsApps', () => {
 
     await addGitOpsApps(appNames, namespaceDirs, mockDeps)
 
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global', repoUrl, branch)
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global', repoUrl, branch, undefined, true)
     expect(mockApplyArgoCdApp).toHaveBeenCalledWith(mockManifest)
   })
 
@@ -546,9 +582,9 @@ describe('addGitOpsApps', () => {
 
     await addGitOpsApps(appNames, namespaceDirs, mockDeps)
 
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', repoUrl, branch, 'a')
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', repoUrl, branch, 'b')
-    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-ns-c', repoUrl, branch, 'c')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', repoUrl, branch, 'a', true)
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', repoUrl, branch, 'b', true)
+    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-ns-c', repoUrl, branch, 'c', true)
     expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(2)
   })
 
@@ -558,8 +594,8 @@ describe('addGitOpsApps', () => {
 
     await addGitOpsApps(appNames, namespaceDirs, mockDeps)
 
-    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-global', repoUrl, branch)
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', repoUrl, branch, 'a')
+    expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalledWith('gitops-global', repoUrl, branch, undefined, true)
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', repoUrl, branch, 'a', true)
   })
 
   it('should continue processing when app creation fails', async () => {
@@ -574,9 +610,9 @@ describe('addGitOpsApps', () => {
     await addGitOpsApps(appNames, namespaceDirs, mockDeps)
 
     expect(mockApplyArgoCdApp).toHaveBeenCalledTimes(3)
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global', repoUrl, branch)
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', repoUrl, branch, 'a')
-    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', repoUrl, branch, 'b')
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-global', repoUrl, branch, undefined, true)
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-a', repoUrl, branch, 'a', true)
+    expect(mockGetArgocdGitopsManifest).toHaveBeenCalledWith('gitops-ns-b', repoUrl, branch, 'b', true)
   })
 
   it('should handle empty appNames set', async () => {
@@ -587,6 +623,45 @@ describe('addGitOpsApps', () => {
 
     expect(mockGetArgocdGitopsManifest).not.toHaveBeenCalled()
     expect(mockApplyArgoCdApp).not.toHaveBeenCalled()
+  })
+})
+
+describe('manifest-generate-paths switch in the platform values', () => {
+  const MANIFEST_GENERATE_PATHS = 'argocd.argoproj.io/manifest-generate-paths'
+  const switchedOff = { apps: { argocd: { manifestGeneratePaths: { enabled: false } } } }
+  const appliedApplications = (): ArgocdAppManifest[] =>
+    mockPatchNamespacedCustomObject.mock.calls.map(([request]) => request.body)
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockHfValues.mockReset()
+    mockPatchNamespacedCustomObject.mockReset().mockResolvedValue({})
+    mockStoredGitRepoConfig.mockResolvedValue({ repoUrl: 'https://git.example.com/otomi/values.git', branch: 'main' })
+  })
+
+  it('should apply gitops Applications without the annotation when switched off', async () => {
+    mockHfValues.mockResolvedValueOnce(switchedOff)
+
+    await addGitOpsApps(new Set(['gitops-global', 'gitops-ns-a']), ['a'])
+
+    const applied = appliedApplications()
+    expect(applied.map((app) => app.metadata.name).sort()).toEqual(['gitops-global', 'gitops-ns-a'])
+    applied.forEach((app) => expect(Object.keys(app.metadata.annotations ?? {})).not.toContain(MANIFEST_GENERATE_PATHS))
+  })
+
+  it('should apply Core app Applications without the annotation when switched off', async () => {
+    const release = { name: 'kyverno', namespace: 'kyverno', installed: true, chart: '../charts/kyverno' }
+    mockHfValues.mockResolvedValue({ otomi: { version: 'v6.5.0' }, ...switchedOff })
+    mockHf.mockImplementation(({ args }) =>
+      Promise.resolve({ stdout: args.includes('list') ? JSON.stringify([release]) : '' }),
+    )
+    mockListNamespacedCustomObject.mockResolvedValue({ items: [] })
+
+    await applyAsApps({} as any)
+
+    const applied = appliedApplications()
+    expect(applied.map((app) => app.metadata.name)).toEqual(['kyverno-kyverno'])
+    applied.forEach((app) => expect(Object.keys(app.metadata.annotations ?? {})).not.toContain(MANIFEST_GENERATE_PATHS))
   })
 })
 
@@ -727,5 +802,91 @@ describe('getArgocdCoreAppManifest', () => {
     const manifest = getArgocdCoreAppManifest(istioBase, {}, '1.0.0')
 
     expect(manifest.spec.syncPolicy.syncOptions).toContain('ServerSideApply=true')
+  })
+
+  it('should carry the manifest-generate-paths annotation', () => {
+    const manifest = getArgocdCoreAppManifest(release, {}, '1.0.0')
+
+    expect(manifest.metadata.annotations).toEqual({
+      'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
+      'argocd.argoproj.io/manifest-generate-paths': '.',
+    })
+  })
+
+  it('should omit only the manifest-generate-paths annotation when switched off', () => {
+    const manifest = getArgocdCoreAppManifest(release, {}, '1.0.0', false)
+
+    expect(manifest.metadata.annotations).toEqual({
+      'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
+    })
+  })
+
+  it('should write a release version as a fully qualified tag reference', () => {
+    const manifest = getArgocdCoreAppManifest(release, {}, 'v6.5.0')
+
+    expect(manifest.spec.source.targetRevision).toBe('refs/tags/v6.5.0')
+  })
+
+  it('should write a release candidate as a fully qualified tag reference', () => {
+    const manifest = getArgocdCoreAppManifest(release, {}, 'v6.5.0-rc.5')
+
+    expect(manifest.spec.source.targetRevision).toBe('refs/tags/v6.5.0-rc.5')
+  })
+
+  it.each([
+    ['a commit SHA', '4dc60f330a1b2c3d4e5f60718293a4b5c6d7e8f9'],
+    ['a branch-derived tag', 'main'],
+    ['a branch-derived tag that starts with v', 'vault-upgrade'],
+    ['an incomplete version', 'v6.5'],
+    ['an already qualified reference', 'refs/tags/v6.5.0'],
+  ])('should pass %s through unchanged', (_, revision) => {
+    const manifest = getArgocdCoreAppManifest(release, {}, revision)
+
+    expect(manifest.spec.source.targetRevision).toBe(revision)
+  })
+
+  it('should prefer an explicitly supplied apps revision over the platform version', () => {
+    ;(env as any).APPS_REVISION = 'v6.6.0-rc.1'
+
+    const manifest = getArgocdCoreAppManifest(release, {}, 'v6.5.0')
+
+    expect(manifest.spec.source.targetRevision).toBe('refs/tags/v6.6.0-rc.1')
+  })
+})
+
+describe('updateOperatorApplication', () => {
+  const operatorAppAt = (targetRevision: string) => ({ spec: { source: { targetRevision } } })
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockPatchNamespacedCustomObject.mockReset().mockResolvedValue({})
+  })
+
+  it('should report no pending update when the Application already carries the qualified platform revision', async () => {
+    mockGetNamespacedCustomObject.mockResolvedValue(operatorAppAt('refs/tags/v6.5.0'))
+
+    await expect(updateOperatorApplication('v6.5.0')).resolves.toBe(false)
+    expect(mockPatchNamespacedCustomObject).not.toHaveBeenCalled()
+  })
+
+  it('should report no pending update when the Application carries the same release spelled without the tag prefix', async () => {
+    mockGetNamespacedCustomObject.mockResolvedValue(operatorAppAt('v6.5.0'))
+
+    await expect(updateOperatorApplication('v6.5.0')).resolves.toBe(false)
+    expect(mockPatchNamespacedCustomObject).not.toHaveBeenCalled()
+  })
+
+  it('should update the Application to the qualified platform revision when the release differs', async () => {
+    mockGetNamespacedCustomObject.mockResolvedValue(operatorAppAt('refs/tags/v6.4.0'))
+
+    await expect(updateOperatorApplication('v6.5.0')).resolves.toBe(true)
+    expect(mockPatchNamespacedCustomObject).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'apl-operator-apl-operator',
+        body: expect.arrayContaining([
+          { op: 'replace', path: '/spec/source/targetRevision', value: 'refs/tags/v6.5.0' },
+        ]),
+      }),
+    )
   })
 })

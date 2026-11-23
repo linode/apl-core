@@ -19,6 +19,21 @@ otomi.io/team: {{ .Values.teamId }}
 {{- range $k, $v := .list -}}{{- if not $local.first -}}{{ $.sep }}{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
 {{- end -}}
 
+{{/*
+Annotation that makes Argo CD regenerate an Application's manifests only when a commit touches the paths it reads.
+"." is resolved relative to each source's own path. "paths" lists absolute paths in the values repo and is required
+for every file an Application reads outside its own source path.
+Usage: include "team-ns.manifestGeneratePaths" (dict "Values" .Values "paths" (list "/env/file.yaml"))
+See adr/2026-11-23-argocd-manifest-paths-and-qualified-refs.md
+*/}}
+{{- define "team-ns.manifestGeneratePaths" -}}
+{{- /* On unless explicitly switched off; tolerates the setting being absent or null */}}
+{{- $enabled := (((.Values.apps).argocd).manifestGeneratePaths).enabled -}}
+{{- if ne (toString $enabled) "false" -}}
+argocd.argoproj.io/manifest-generate-paths: {{ prepend (.paths | default list) "." | join ";" | quote }}
+{{- end -}}
+{{- end -}}
+
 {{- define "flatten-name" -}}
 {{- $res := regexReplaceAll "[()/_-]{1}" . "" -}}
 {{- regexReplaceAll "[|.]{1}" $res "-" | trimAll "-" | lower -}}

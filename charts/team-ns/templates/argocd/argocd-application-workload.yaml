@@ -5,6 +5,12 @@
 {{- if and $workload.imageUpdateStrategy $workload.imageUpdateStrategy.type  }}
 {{- $includeManagedValuesFile = not (eq  $workload.imageUpdateStrategy.type  "disabled") }}
 {{- end }}
+{{- /* Absolute paths, in the values repo, of every values file this Application reads */}}
+{{- $valuesDir := printf "/env/teams/%s/workloadValues" $v.teamId }}
+{{- $valuesFiles := list (printf "%s/%s.yaml" $valuesDir $workload.name) }}
+{{- if $includeManagedValuesFile }}
+{{- $valuesFiles = append $valuesFiles (printf "%s/%s.managed.yaml" $valuesDir $workload.name) }}
+{{- end }}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -15,6 +21,10 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    {{- /* One annotation applies to every source, so it covers the chart source (".") and the values files */}}
+    {{- with include "team-ns.manifestGeneratePaths" (dict "Values" $v "paths" $valuesFiles) }}
+    {{- . | nindent 4 }}
+    {{- end }}
     {{- if eq $v.teamId "admin" }}
     # Admin workloads use ServerSideApply, which implies Server-Side Diff since Argo CD 3.6.
     # Set it explicitly and include mutation webhooks, consistent with the core apps.
@@ -43,12 +53,11 @@ spec:
         {{- end }}
       {{- end }}
       valueFiles:
-      - $values/env/teams/{{ $v.teamId }}/workloadValues/{{ $workload.name }}.yaml
-      {{- if $includeManagedValuesFile }}
-      - $values/env/teams/{{ $v.teamId }}/workloadValues/{{ $workload.name }}.managed.yaml
+      {{- range $valuesFiles }}
+      - $values{{ . }}
       {{- end }}
   - repoURL: {{ $v.gitOps.workloadValuesRepoUrl | quote }}
-    targetRevision: {{ $v.gitOps.branch | quote }}
+    targetRevision: {{ printf "refs/heads/%s" $v.gitOps.branch | quote }}
     ref: values
   syncPolicy:
     automated:

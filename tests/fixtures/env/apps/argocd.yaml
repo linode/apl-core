@@ -22,6 +22,8 @@ spec:
         replicas: 1
     controllerOperationProcessors: 10
     controllerStatusProcessors: 20
+    manifestGeneratePaths:
+        enabled: true
     resources:
         applicationSet:
             limits:

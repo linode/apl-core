@@ -23,12 +23,12 @@ Core app Applications and Team GitOps Applications gain little from the annotati
 
 - The values repo branch is written as `refs/heads/<branch>` on every Application source that targets the values repo. The prefix is added where the Application's target revision is written, not to the branch setting itself, because the image updater's write-back branch reads the same setting and needs the plain branch name.
 - The platform revision is qualified by one rule: a value shaped like a release version (`v` followed by a semantic version, pre-release suffixes included) becomes `refs/tags/<value>`; anything else, including a commit SHA or a branch-derived build tag, is passed through unchanged. The value alone does not say whether it is a tag, a branch or a commit, so only the unambiguous shape is qualified.
-- The apl-operator's self-update check compares the target revision of its own Core app Application with the expected platform revision by string equality and pauses the apply when they differ. The check and the Core app Application generator must use the same rule.
+- The apl-operator's self-update check compares the target revision of its own Core app Application with the expected platform revision and pauses the apply when they differ. The check applies the shared rule to both values before comparing them, so an Application written by a version that did not qualify revisions still matches the same release. Comparing by plain string equality would make the first apply after an upgrade see `v6.5.0` against `refs/tags/v6.5.0`, patch the Application and pause until the next reconcile, because the respelling renders identical manifests and no restart follows. The check and the Core app Application generator must use the same rule.
 - A Team workload Application's own chart revision and the Team GitOps Application's `HEAD` are not qualified. The first is user input and may be a chart version.
 
 ### Switch
 
-A boolean under the ArgoCD app settings, on by default, removes the annotation from all generated Applications. It does not affect fully qualified references. It is a temporary safeguard and is to be removed once the regression below is fixed in the ArgoCD version APL ships.
+A boolean under the ArgoCD app settings, `apps.argocd.manifestGeneratePaths.enabled`, on by default, removes the annotation from all generated Applications. It does not affect fully qualified references. It is a temporary safeguard and is to be removed once the regression below is fixed in the ArgoCD version APL ships.
 
 ### Accepted risks
 
