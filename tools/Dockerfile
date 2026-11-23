@@ -61,6 +61,7 @@ RUN curl -fsSLo /tmp/kubeconform.tar.gz "https://github.com/yannh/kubeconform/re
 FROM node:${NODE_VERSION}-alpine
 
 RUN apk add --no-cache \
+  bash \
   ca-certificates \
   git \
   rsync \
