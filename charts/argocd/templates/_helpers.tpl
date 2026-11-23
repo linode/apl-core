@@ -38,6 +38,14 @@ Create Dex server endpoint
 {{- end }}
 
 {{/*
+Dex storage type: dex.storage.type, else storage.type from configs.cm."dex.config", else memory
+*/}}
+{{- define "argo-cd.dex.storageType" -}}
+{{- $config := dig "dex.config" "" .Values.configs.cm | fromYaml | default dict -}}
+{{- .Values.dex.storage.type | default (dig "storage" "type" "memory" $config) -}}
+{{- end -}}
+
+{{/*
 Create the name of the dex service account to use
 */}}
 {{- define "argo-cd.dex.serviceAccountName" -}}
@@ -62,6 +70,53 @@ Create redis name and version as used by the chart label.
     {{- end -}}
 {{- else -}}
 {{- printf "%s-%s" (include "argo-cd.fullname" .) .Values.redis.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return true when the single node Redis serves TLS
+*/}}
+{{- define "argo-cd.redis.tlsEnabled" -}}
+{{- $redisHa := (index .Values "redis-ha") -}}
+{{- if and .Values.redis.enabled (not $redisHa.enabled) .Values.redis.tls.enabled -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Arguments that connect an Argo CD component to the single node Redis over TLS
+*/}}
+{{- define "argo-cd.redis.tlsArgs" -}}
+{{- if include "argo-cd.redis.tlsEnabled" . -}}
+- --redis-use-tls
+{{- if .Values.redis.tls.caCertFile }}
+- --redis-ca-certificate=/app/config/redis-tls/ca.crt
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Volume mount of the CA that an Argo CD component verifies the single node Redis with
+*/}}
+{{- define "argo-cd.redis.tlsCaVolumeMount" -}}
+{{- if and (include "argo-cd.redis.tlsEnabled" .) .Values.redis.tls.caCertFile -}}
+- mountPath: /app/config/redis-tls
+  name: redis-tls-ca
+  readOnly: true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Volume of that CA: the CA key of the Redis TLS Secret only, not the server key
+*/}}
+{{- define "argo-cd.redis.tlsCaVolume" -}}
+{{- if and (include "argo-cd.redis.tlsEnabled" .) .Values.redis.tls.caCertFile -}}
+- name: redis-tls-ca
+  secret:
+    secretName: {{ .Values.redis.tls.secretName }}
+    items:
+    - key: {{ .Values.redis.tls.caCertFile }}
+      path: ca.crt
 {{- end -}}
 {{- end -}}
 
