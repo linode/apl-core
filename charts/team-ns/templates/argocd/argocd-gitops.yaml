@@ -6,23 +6,27 @@ metadata:
   namespace: argocd
   labels:
     otomi.io/app: team-gitops
+  {{- with include "team-ns.manifestGeneratePaths" (dict "Values" $v) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: team-{{ $v.teamId }}
   sources:
   - repoURL: {{ $v.gitOps.valuesRepoUrl }}
-    targetRevision: {{ $v.gitOps.branch }}
+    targetRevision: refs/heads/{{ $v.gitOps.branch }}
     path: 'env/teams/{{ $v.teamId }}/sealedsecrets'
     {{- if $v.aiEnabled }}
   - repoURL: {{ $v.gitOps.valuesRepoUrl }}
-    targetRevision: {{ $v.gitOps.branch }}
+    targetRevision: refs/heads/{{ $v.gitOps.branch }}
     path: 'env/teams/{{ $v.teamId }}/knowledgebases'
   - repoURL: {{ $v.gitOps.valuesRepoUrl }}
-    targetRevision: {{ $v.gitOps.branch }}
+    targetRevision: refs/heads/{{ $v.gitOps.branch }}
     path: 'env/teams/{{ $v.teamId }}/databases'
   - repoURL: {{ $v.gitOps.valuesRepoUrl }}
-    targetRevision: {{ $v.gitOps.branch }}
+    targetRevision: refs/heads/{{ $v.gitOps.branch }}
     path: 'env/teams/{{ $v.teamId }}/agents'
     {{- end }}
   destination:

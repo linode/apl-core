@@ -4,6 +4,12 @@ The platform layer that installs, configures, and reconciles all APL components 
 
 ## Language
 
+### Platform
+
+**Core app**: A platform component (e.g. Istio, Keycloak, Harbor) that APL installs and manages as one Helmfile release from a chart in apl-core.
+
+**Platform revision**: The apl-core git revision that all core app Applications track. On a released platform it is the release tag; on development builds it is a commit or a branch.
+
 ### GitOps
 
 **Values repo**: The single git repository (`ENV_DIR`) that is the source of truth for all platform configuration, Helm values, and raw Kubernetes manifests. The apl-operator reads from and writes to it; ArgoCD reconciles it continuously.
@@ -32,6 +38,17 @@ _Avoid_: project, argo project
 
 **gitops-ns Application**: An ArgoCD Application named `gitops-ns-{namespace}` created by the apl-operator for each namespace directory. Syncs all manifests in that directory into the corresponding namespace with `prune: true` and `CreateNamespace: true`.
 _Avoid_: parent app, bootstrap app
+
+**Core app Application**: The ArgoCD Application named `{namespace}-{release}` that the apl-operator creates for a core app. Sourced from apl-core at the platform revision.
+_Avoid_: core app (when the Application is meant)
+
+**Team workload Application**: The ArgoCD Application named `team-{id}-{workload}` that deploys a team's Helm chart, with its values held in the values repo.
+
+**Team GitOps Application**: The ArgoCD Application named `team-{id}` that syncs a team's own git repo into the team namespace.
+_Avoid_: team repo app
+
+**Team values Application**: The ArgoCD Application named `team-{id}-values-gitops` that syncs a team's platform-managed resources from the values repo into the team namespace.
+_Avoid_: team gitops app
 
 **App-of-Apps**: The pattern where one ArgoCD Application manages a directory of other Application CRs. The `gitops-ns-apl-addons` Application is an App-of-Apps: it syncs Application CRs into the `apl-addons` namespace, where ArgoCD picks them up via the "app in any namespace" feature.
 

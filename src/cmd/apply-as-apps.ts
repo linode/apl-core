@@ -5,7 +5,7 @@ import { glob } from 'glob'
 import { appPatches, genericPatch } from 'src/applicationPatches.json'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
-import { hf } from 'src/common/hf'
+import { hf, hfValues } from 'src/common/hf'
 import {
   appRevisionMatches,
   argoCdHasUnrecoverableErrors,
@@ -14,8 +14,8 @@ import {
   patchContainerResourcesOfSts,
   restartStatefulSet,
 } from 'src/common/k8s'
+import { qualifyPlatformRevision } from 'src/common/platform-revision'
 import { getFilename, getNames, loadYaml, objectToYaml } from 'src/common/utils'
-import { getImageTagFromValues } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { operatorEnv } from 'src/operator/validators'
 import { Argv, CommandModule } from 'yargs'
@@ -94,7 +94,18 @@ const getAppName = (release: HelmRelease): string => {
   return `${release.namespace}-${release.name}`
 }
 
-const getArgoCdAppManifest = (name: string, appLabel: string, spec: Record<string, any>): ArgocdAppManifest => {
+// Reads the switch from merged platform values, so the default applies when the user has set nothing
+const isManifestGeneratePathsEnabled = (values: Record<string, any> | undefined): boolean =>
+  values?.apps?.argocd?.manifestGeneratePaths?.enabled !== false
+
+// Every Application generated here is annotated the same way: Argo CD resolves `.` relative to each source's own path.
+// See adr/2026-11-23-argocd-manifest-paths-and-qualified-refs.md
+const getArgoCdAppManifest = (
+  name: string,
+  appLabel: string,
+  spec: Record<string, any>,
+  manifestGeneratePaths: boolean,
+): ArgocdAppManifest => {
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
@@ -106,6 +117,7 @@ const getArgoCdAppManifest = (name: string, appLabel: string, spec: Record<strin
       namespace: 'argocd',
       annotations: {
         'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
+        ...(manifestGeneratePaths && { 'argocd.argoproj.io/manifest-generate-paths': '.' }),
       },
       finalizers: ['resources-finalizer.argocd.argoproj.io'],
     },
@@ -117,32 +129,44 @@ export const getArgocdCoreAppManifest = (
   release: HelmRelease,
   values: Record<string, any>,
   otomiVersion: string,
+  manifestGeneratePaths = true,
 ): ArgocdAppManifest => {
   const name = getAppName(release)
   const patch = (appPatches[name] || genericPatch) as Record<string, any>
 
-  return getArgoCdAppManifest(name, ARGOCD_APP_DEFAULT_LABEL, {
-    syncPolicy: ARGOCD_APP_DEFAULT_SYNC_POLICY,
-    project: 'default',
-    revisionHistoryLimit: 2,
-    source: {
-      path: release.chart.replace('../', ''),
-      repoURL: env.APPS_REPO_URL,
-      targetRevision: env.APPS_REVISION || otomiVersion,
-      helm: {
-        releaseName: release.name,
-        values: objectToYaml(values),
+  return getArgoCdAppManifest(
+    name,
+    ARGOCD_APP_DEFAULT_LABEL,
+    {
+      syncPolicy: ARGOCD_APP_DEFAULT_SYNC_POLICY,
+      project: 'default',
+      revisionHistoryLimit: 2,
+      source: {
+        path: release.chart.replace('../', ''),
+        repoURL: env.APPS_REPO_URL,
+        targetRevision: qualifyPlatformRevision(env.APPS_REVISION || otomiVersion),
+        helm: {
+          releaseName: release.name,
+          values: objectToYaml(values),
+        },
       },
+      destination: {
+        server: 'https://kubernetes.default.svc',
+        namespace: release.namespace,
+      },
+      ...patch,
     },
-    destination: {
-      server: 'https://kubernetes.default.svc',
-      namespace: release.namespace,
-    },
-    ...patch,
-  })
+    manifestGeneratePaths,
+  )
 }
 
-export const getArgocdGitopsManifest = (name: string, repoURL: string, branch: string, targetNamespace?: string) => {
+export const getArgocdGitopsManifest = (
+  name: string,
+  repoURL: string,
+  branch: string,
+  targetNamespace?: string,
+  manifestGeneratePaths = true,
+) => {
   const syncPolicy = {
     automated: {
       selfHeal: true,
@@ -157,24 +181,29 @@ export const getArgocdGitopsManifest = (name: string, repoURL: string, branch: s
   const path = targetNamespace
     ? `${operatorEnv.GITOPS_NS_MANIFESTS_RELATIVE_PATH}/${targetNamespace}`
     : operatorEnv.GITOPS_GLOBAL_MANIFESTS_RELATIVE_PATH
-  return getArgoCdAppManifest(name, ARGOCD_APP_GITOPS_LABEL, {
-    project: 'default',
-    syncPolicy,
-    sources: [
-      {
-        path,
-        repoURL,
-        targetRevision: branch,
-        directory: {
-          recurse: true,
+  return getArgoCdAppManifest(
+    name,
+    ARGOCD_APP_GITOPS_LABEL,
+    {
+      project: 'default',
+      syncPolicy,
+      sources: [
+        {
+          path,
+          repoURL,
+          targetRevision: `refs/heads/${branch}`,
+          directory: {
+            recurse: true,
+          },
         },
+      ],
+      destination: {
+        server: 'https://kubernetes.default.svc',
+        namespace: targetNamespace,
       },
-    ],
-    destination: {
-      server: 'https://kubernetes.default.svc',
-      namespace: targetNamespace,
     },
-  })
+    manifestGeneratePaths,
+  )
 }
 
 const setFinalizers = async (name: string) => {
@@ -288,9 +317,13 @@ const readAppValues = async (release: HelmRelease): Promise<Record<string, any>>
   return (await loadYaml(valuesPath, { noError: true })) || {}
 }
 
-const createArgocdAppManifest = async (release: HelmRelease, otomiVersion: string): Promise<ArgocdAppManifest> => {
+const createArgocdAppManifest = async (
+  release: HelmRelease,
+  otomiVersion: string,
+  manifestGeneratePaths: boolean,
+): Promise<ArgocdAppManifest> => {
   const values = await readAppValues(release)
-  return getArgocdCoreAppManifest(release, values, otomiVersion)
+  return getArgocdCoreAppManifest(release, values, otomiVersion, manifestGeneratePaths)
 }
 
 const getAplOperatorValues = async (): Promise<string> => {
@@ -302,7 +335,8 @@ const getAplOperatorValues = async (): Promise<string> => {
   return await readFile(`${valuesDir}/apl-operator-apl-operator.yaml`, 'utf-8')
 }
 
-export const updateOperatorApplication = async (expectedRevision: string): Promise<boolean> => {
+export const updateOperatorApplication = async (platformRevision: string): Promise<boolean> => {
+  const expectedRevision = qualifyPlatformRevision(platformRevision)
   d.info('Checking running revision of apl-operator...')
   try {
     const operatorRevisionMatches = await appRevisionMatches(
@@ -356,7 +390,9 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
   setup()
-  const otomiVersion = await getImageTagFromValues()
+  const values = await hfValues()
+  const otomiVersion: string = values!.otomi!.version
+  const manifestGeneratePaths = isManifestGeneratePathsEnabled(values)
   const res = await hf({
     fileOpts: argv.file,
     labelOpts: argv.label,
@@ -392,7 +428,7 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
         }
 
         if (release.installed) {
-          const manifest = await createArgocdAppManifest(release, otomiVersion)
+          const manifest = await createArgocdAppManifest(release, otomiVersion, manifestGeneratePaths)
           manifestsToApply.push(manifest)
         } else {
           const appName = getAppName(release)
@@ -439,9 +475,16 @@ export const addGitOpsApps = async (
 ): Promise<void> => {
   d.info(`Adding GitOps apps: ${Array.from(appNames).join(', ')}`)
   const { repoUrl, branch } = await deps.getStoredGitRepoConfig(true)
+  const manifestGeneratePaths = isManifestGeneratePathsEnabled(await hfValues())
   if (appNames.has(ARGOCD_APP_GITOPS_GLOBAL_NAME)) {
     d.debug('Creating GitOps apps for cluster resources')
-    const appManifest = deps.getArgocdGitopsManifest(ARGOCD_APP_GITOPS_GLOBAL_NAME, repoUrl, branch)
+    const appManifest = deps.getArgocdGitopsManifest(
+      ARGOCD_APP_GITOPS_GLOBAL_NAME,
+      repoUrl,
+      branch,
+      undefined,
+      manifestGeneratePaths,
+    )
     try {
       await deps.applyArgocdApp(appManifest)
     } catch (e) {
@@ -453,7 +496,7 @@ export const addGitOpsApps = async (
       const appName = `${ARGOCD_APP_GITOPS_NS_PREFIX}-${dirName}`
       if (appNames.has(appName)) {
         d.debug(`Creating GitOps app for ${dirName}`)
-        const appManifest = deps.getArgocdGitopsManifest(appName, repoUrl, branch, dirName)
+        const appManifest = deps.getArgocdGitopsManifest(appName, repoUrl, branch, dirName, manifestGeneratePaths)
         try {
           await deps.applyArgocdApp(appManifest)
         } catch (e) {

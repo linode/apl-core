@@ -25,6 +25,8 @@ apps:
     enabled: {{ $a.knative.enabled }}
   argocd:
     enabled: {{ $a.argocd.enabled }}
+    manifestGeneratePaths:
+      enabled: {{ $a.argocd.manifestGeneratePaths.enabled }}
   kyverno:
     enabled: {{ $a.kyverno.enabled }}
   tekton:

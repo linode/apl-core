@@ -33,6 +33,7 @@ import {
 } from './constants'
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
+import { qualifyPlatformRevision } from './platform-revision'
 import { loadYaml } from './utils'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
@@ -804,7 +805,9 @@ export async function appRevisionMatches(appName: string, expectedRevision: stri
     name: appName,
   })
   const targetRevision = application?.spec?.source?.targetRevision
-  return expectedRevision === targetRevision
+  if (typeof targetRevision !== 'string') return false
+  // Both sides are qualified, so an Application written before revisions were qualified still matches
+  return qualifyPlatformRevision(expectedRevision) === qualifyPlatformRevision(targetRevision)
 }
 
 export async function patchArgoCdApp(

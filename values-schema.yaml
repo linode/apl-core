@@ -1296,7 +1296,9 @@ definitions:
         enum: ['helm', 'git']
         default: git
       path:
-        description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
+        description: |
+          A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
+          The chart must be self-contained under this path. Files elsewhere in the repository are not watched for changes.
         $ref: '#/definitions/wordCharacterPattern'
       chart:
         description: Chart is a Helm chart name, and must be specified for applications sourced from a Helm repo.
@@ -1504,6 +1506,18 @@ properties:
             replicas:
               default: 1
               type: integer
+          manifestGeneratePaths:
+            type: object
+            additionalProperties: false
+            description: Temporary safeguard, to be removed once argoproj/argo-cd#27875 is fixed in the Argo CD version that is shipped.
+            properties:
+              enabled:
+                default: true
+                description: |
+                  Sets the argocd.argoproj.io/manifest-generate-paths annotation on every Argo CD Application the platform generates,
+                  so that an Application regenerates its manifests only when a commit touches the paths it reads.
+                  Set to false to remove the annotation from all generated Applications.
+                type: boolean
           autoscaling:
             repoServer:
               $ref: '#/definitions/autoscalingEnabled'

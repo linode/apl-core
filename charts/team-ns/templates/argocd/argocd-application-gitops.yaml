@@ -6,6 +6,10 @@ kind: Application
 metadata:
   name: team-{{ $v.teamId }}
   namespace: argocd
+  {{- with include "team-ns.manifestGeneratePaths" (dict "Values" $v) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

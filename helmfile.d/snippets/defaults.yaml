@@ -23,6 +23,8 @@ environments:
               replicas: 1
             controller:
               replicas: 1
+            manifestGeneratePaths:
+              enabled: true
             autoscaling:
               repoServer:
                 enabled: true
