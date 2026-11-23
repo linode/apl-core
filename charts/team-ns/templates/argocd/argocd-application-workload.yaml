@@ -15,6 +15,11 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    {{- if eq $v.teamId "admin" }}
+    # Admin workloads use ServerSideApply, which implies Server-Side Diff since Argo CD 3.6.
+    # Set it explicitly and include mutation webhooks, consistent with the core apps.
+    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
+    {{- end }}
 spec:
   {{- if and ( eq $v.teamId "admin" ) .namespace }}
   project: 'default' # project is not restricted
