@@ -33,7 +33,17 @@ A Kyverno policy restarts the Dex Deployment whenever the data of the `dex-confi
 - On a cluster with Kyverno disabled, Dex must be restarted by hand after every change to `dex-config`, including the creation of a team. For those clusters this is a regression from the checksum, and it is accepted.
 - The policy is event-driven. On a fresh install, an update to `dex-config` made before Kyverno has registered the policy goes unseen. Nothing is known to update the Secret that early.
 
-## To verify on a cluster before release
+## Verified on a cluster
 
-- Kyverno carries the match conditions into a webhook entry that leaves other Secret writes untouched while Kyverno is down. If it does not, the policy switches to `Ignore`, and a change made during a Kyverno outage can then be missed.
-- ArgoCD self-heal leaves in place the restart annotation that Kyverno adds to the Dex pod template.
+Checked on 2026-11-24 with a prototype of the policy, on Kyverno 1.19.2 with ArgoCD managing Dex through server-side apply and self-heal.
+
+- Kyverno gives the policy its own fail-closed webhook entry, limited to updates of Secrets and carrying the match conditions. With the admission controller down, updates to `dex-config` were rejected while updates to other Secrets, in `dex` and elsewhere, went through.
+- A change to the Secret's data restarted Dex within ten seconds, with both replicas ready throughout. A metadata-only update did not, and neither did ESO's periodic refresh.
+- ArgoCD left Kyverno's restart annotation in place. The Application stayed Synced through a hard refresh and a forced sync, with no extra rollout.
+- A Role in the `dex` namespace is enough for the background controller. Kyverno rejects the policy, even on a dry run, until that Role exists.
+
+Not verified:
+
+- That ESO retries a rejected write and Dex then restarts. The rejection and the later acceptance were observed; the retry was not.
+- The path from a values repo commit to the Secret. The test changed the Secret directly, and ESO's write restoring it was the second trigger.
+- That ArgoCD can sync the policy and its Role from the same Application. ArgoCD dry-runs resources before applying them, so the policy may fail the first sync if its Role is not already on the cluster.
