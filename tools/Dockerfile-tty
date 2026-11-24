@@ -61,6 +61,7 @@ RUN apk add --no-cache \
   bash \
   bash-completion \
   ca-certificates \
+  coreutils \
   curl \
   jq \
   less \
