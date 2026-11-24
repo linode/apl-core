@@ -21,6 +21,14 @@ _Avoid_: system directory, reserved directory
 
 **Platform-admin-owned directory**: A namespace directory whose name starts with `apl-` and whose contents are written by human platform admins, not the apl-operator program. `apl-addons/` is the only current example. The operator bootstraps the directory but does not manage its contents.
 
+### Operator lifecycle
+
+**Installation phase**: The first of the apl-operator's two phases, in which the operator installs the platform itself and repeats until it succeeds. It ends before any ArgoCD Application exists.
+_Avoid_: first installation phase, bootstrap phase
+
+**GitOps operations phase**: The second of the apl-operator's two phases, in which the operator follows the values repo and hands every release to ArgoCD as an Application. Applications sync in parallel, with no ordering between them.
+_Avoid_: second installation phase, post-install phase
+
 ### ArgoCD model
 
 **AppProject**: An ArgoCD `AppProject` resource that scopes which source repos, destination namespaces/clusters, and Kubernetes resource types an Application is permitted to use.

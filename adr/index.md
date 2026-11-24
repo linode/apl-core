@@ -34,6 +34,7 @@ This log lists the architectural decisions for apl-core.
 - [ADR-2026-10-06](2026-10-06-dex-logout-session-propagation.md) - Dex logout does not propagate to other apps' oauth2-proxy sessions
 - [ADR-2026-10-22](2026-10-22-git-polling-interval.md) - Git polling uses a fixed delay after each cycle
 - [ADR-2026-11-06](2026-11-06-dex-security-hardening.md) - Dex security hardening — OAuth2 grant types, egress policy, fork cleanup, and istiod ingress scoping
+- [ADR-2026-11-24](2026-11-24-kyverno-restarts-dex-on-config-change.md) - Kyverno restarts Dex when its config Secret changes
 
 <!-- adrlogstop -->
 
