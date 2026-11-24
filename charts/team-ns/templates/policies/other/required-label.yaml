@@ -2,8 +2,8 @@
 {{- $p := index $v.policies "require-labels" }}
 {{- if and $v.apps.kyverno.enabled $p $p.customValues }}
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: NamespacedValidatingPolicy
 metadata:
   name: require-labels
   annotations:
@@ -16,34 +16,16 @@ metadata:
       This policy validates that labels are specified with some value, as this is required for using network policies.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ $p.action }}
-  background: true
-  failurePolicy: Fail
-  rules:
-  - name: check-for-label
-    match:
-      any:
-      - resources:
-          kinds:
-          - Pod
-    exclude:
-      any:
-        - resources:
-            annotations:
-              tekton.dev/tags: image-build
-        - resources:
-            annotations:
-              tekton.dev/tags: CLI, grype
-        - resources:
-            annotations:
-              tekton.dev/tags: git
-    skipBackgroundRequests: true
-    validate:
-      message: "Setting an app label is required for the workload."
-      pattern:
-        metadata:
-          labels:
-            {{- range $labelName := $p.customValues }}
-            {{ $labelName }}: "?*"
-            {{- end }}
+  {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
+  matchConditions:
+    - name: exclude-tekton-tasks
+      expression: {{ include "team-ns.policy.notTektonTask" . | quote }}
+  variables:
+    - name: requiredLabels
+      expression: {{ $p.customValues | toJson | quote }}
+  validations:
+    - message: "Setting an app label is required for the workload."
+      expression: >-
+        variables.requiredLabels.all(label,
+          object.metadata.?labels[?label].orValue('') != '')
 {{- end }}

@@ -1,9 +1,17 @@
 {{- $v := .Values }}
 {{- $p := index $v.policies "allowed-image-repositories" }}
 {{- if and $v.apps.kyverno.enabled $p }}
+{{- $exempt := list "docker.io/istio/proxyv2" "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-" "docker.io/grafana/grafana" "quay.io/kiwigrid/k8s-sidecar" "quay.io/prometheus/alertmanager" "quay.io/prometheus-operator/prometheus-config-reloader" "gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard" }}
+{{- with $v.linodeLkeImageRepository }}
+{{- $exempt = list (printf "%s/docker/istio/proxyv2" .) (printf "%s/ghcr/open-telemetry/opentelemetry-operator/autoinstrumentation-" .) (printf "%s/docker/grafana/grafana" .) (printf "%s/quay/kiwigrid/k8s-sidecar" .) (printf "%s/quay/prometheus/alertmanager" .) (printf "%s/quay/prometheus-operator/prometheus-config-reloader" .) (printf "%s/gcr/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard" .) }}
+{{- end }}
+{{- $allowedRegexes := list }}
+{{- range $p.customValues }}
+{{- $allowedRegexes = append $allowedRegexes (include "team-ns.policy.globToRegex" .) }}
+{{- end }}
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: NamespacedValidatingPolicy
 metadata:
   name: allowed-image-repos
   annotations:
@@ -19,64 +27,22 @@ metadata:
       designated list.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ $p.action }}
-  background: true
-  failurePolicy: Fail
-  rules:
-    - name: good-repos
-      match:
-        any:
-        - resources:
-            kinds:
-              - Pod
-      exclude:
-        any:
-          - resources:
-              annotations:
-                tekton.dev/tags: image-build
-          - resources:
-              annotations:
-                tekton.dev/tags: CLI, grype
-          - resources:
-              annotations:
-                tekton.dev/tags: git
-      skipBackgroundRequests: true
-      validate:
-        message: >-
-          All images in this Pod must come from an authorized repository.
-        foreach:
-          - list: request.object.spec.[ephemeralContainers, initContainers, containers][].image
-            preconditions:
-              all:
-              - key: "{{`{{ element }}`}}"
-                operator: NotIn
-                value:
-                  {{- with $v.linodeLkeImageRepository }}
-                  - "{{ . }}/docker/istio/proxyv2*"
-                  - "{{ . }}/ghcr/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
-                  - "{{ . }}/docker/grafana/grafana*"
-                  - "{{ . }}/quay/kiwigrid/k8s-sidecar*"
-                  - "{{ . }}/quay/prometheus/alertmanager*"
-                  - "{{ . }}/quay/prometheus-operator/prometheus-config-reloader*"
-                  - "{{ . }}/gcr/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard*"
-                  {{- else }}
-                  - "docker.io/istio/proxyv2*"
-                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
-                  - "docker.io/grafana/grafana*"
-                  - "quay.io/kiwigrid/k8s-sidecar*"
-                  - "quay.io/prometheus/alertmanager*"
-                  - "quay.io/prometheus-operator/prometheus-config-reloader*"
-                  - "gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard*"
-                  {{- end }}
-            deny:
-              conditions:
-                all:
-                - key: "{{`{{ element }}`}}"
-                  operator: NotEquals
-                  value: "{{ $v.harborDomain }}/*"
-                {{- if $p.customValues }}
-                - key: "{{`{{ element }}`}}"
-                  operator: AnyNotIn
-                  value: {{ $p.customValues | toYaml | nindent 18 }}
-                {{- end }}
+  {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
+  matchConditions:
+    - name: exclude-tekton-tasks
+      expression: {{ include "team-ns.policy.notTektonTask" . | quote }}
+  variables:
+    {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
+    - name: exemptPrefixes
+      expression: {{ $exempt | toJson | quote }}
+    - name: allowedRegexes
+      expression: {{ $allowedRegexes | toJson | quote }}
+  validations:
+    - message: >-
+        All images in this Pod must come from an authorized repository.
+      expression: >-
+        variables.allContainers.all(c,
+          variables.exemptPrefixes.exists(prefix, c.image.startsWith(prefix)) ||
+          c.image.startsWith({{ printf "%s/" $v.harborDomain | quote }}) ||
+          variables.allowedRegexes.exists(re, c.image.matches(re)))
 {{- end }}

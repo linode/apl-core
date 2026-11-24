@@ -2,8 +2,8 @@
 {{- $p := index $v.policies "disallow-host-ports" }}
 {{- if and $v.apps.kyverno.enabled $p }}
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: NamespacedValidatingPolicy
 metadata:
   name: disallow-host-ports
   annotations:
@@ -11,39 +11,21 @@ metadata:
     policies.kyverno.io/category: Pod Security Standards (Baseline)
     policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod
-    kyverno.io/kyverno-version: 1.6.0
-    kyverno.io/kubernetes-version: "1.22-1.23"
     policies.kyverno.io/description: >-
       Access to host ports allows potential snooping of network traffic and should not be
       allowed, or at minimum restricted to a known list. This policy ensures the `hostPort`
       field is unset or set to `0`.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ $p.action }}
-  background: true
-  failurePolicy: Fail
-  rules:
-    - name: host-ports-none
-      match:
-        any:
-        - resources:
-            kinds:
-              - Pod
-      skipBackgroundRequests: true
-      validate:
-        message: >-
-          Use of host ports is disallowed. The fields spec.containers[*].ports[*].hostPort
-          , spec.initContainers[*].ports[*].hostPort, and spec.ephemeralContainers[*].ports[*].hostPort
-          must either be unset or set to `0`.
-        pattern:
-          spec:
-            =(ephemeralContainers):
-              - =(ports):
-                  - =(hostPort): 0
-            =(initContainers):
-              - =(ports):
-                  - =(hostPort): 0
-            containers:
-              - =(ports):
-                  - =(hostPort): 0
+  {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
+  variables:
+    {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
+  validations:
+    - message: >-
+        Use of host ports is disallowed. The fields spec.containers[*].ports[*].hostPort
+        , spec.initContainers[*].ports[*].hostPort, and spec.ephemeralContainers[*].ports[*].hostPort
+        must either be unset or set to `0`.
+      expression: >-
+        variables.allContainers.all(c,
+          c.?ports.orValue([]).all(port, port.?hostPort.orValue(0) == 0))
 {{- end }}

@@ -2,8 +2,8 @@
 {{- $p := index $v.policies "restrict-sysctls" }}
 {{- if and $v.apps.kyverno.enabled $p }}
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: NamespacedValidatingPolicy
 metadata:
   name: restrict-sysctls
   annotations:
@@ -11,7 +11,6 @@ metadata:
     policies.kyverno.io/category: Pod Security Standards (Baseline)
     policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod
-    kyverno.io/kyverno-version: 1.6.0
     policies.kyverno.io/description: >-
       Sysctls can disable security mechanisms or affect all containers on a
       host, and should be disallowed except for an allowed "safe" subset. A
@@ -21,27 +20,16 @@ metadata:
       a Pod.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ $p.action }}
-  background: true
-  failurePolicy: Fail
-  rules:
-    - name: check-sysctls
-      match:
-        any:
-        - resources:
-            kinds:
-              - Pod
-      skipBackgroundRequests: true
-      validate:
-        message: >-
-          Setting additional sysctls above the allowed type is disallowed.
-          The field spec.securityContext.sysctls must be unset or not use any other names
-          than kernel.shm_rmid_forced, net.ipv4.ip_local_port_range,
-          net.ipv4.ip_unprivileged_port_start, net.ipv4.tcp_syncookies and
-          net.ipv4.ping_group_range.
-        pattern:
-          spec:
-            =(securityContext):
-              =(sysctls):
-                - =(name): "kernel.shm_rmid_forced | net.ipv4.ip_local_port_range | net.ipv4.ip_unprivileged_port_start | net.ipv4.tcp_syncookies | net.ipv4.ping_group_range"
+  {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
+  validations:
+    - message: >-
+        Setting additional sysctls above the allowed type is disallowed.
+        The field spec.securityContext.sysctls must be unset or not use any other names
+        than kernel.shm_rmid_forced, net.ipv4.ip_local_port_range,
+        net.ipv4.ip_unprivileged_port_start, net.ipv4.tcp_syncookies and
+        net.ipv4.ping_group_range.
+      expression: >-
+        object.spec.?securityContext.?sysctls.orValue([]).all(s,
+          !has(s.name) || s.name in ['kernel.shm_rmid_forced', 'net.ipv4.ip_local_port_range',
+            'net.ipv4.ip_unprivileged_port_start', 'net.ipv4.tcp_syncookies', 'net.ipv4.ping_group_range'])
 {{- end }}

@@ -2,14 +2,13 @@
 {{- $p := index $v.policies "disallow-latest-tag" }}
 {{- if and $v.apps.kyverno.enabled $p }}
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: NamespacedValidatingPolicy
 metadata:
   name: disallow-latest-tag
   annotations:
     policies.kyverno.io/title: Disallow Latest Tag
     policies.kyverno.io/category: best-practice
-    policies.kyverno.io/minversion: 1.6.0
     policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod
     policies.kyverno.io/description: >-
@@ -19,39 +18,13 @@ metadata:
       specifies a tag and that it is not called `latest`.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ $p.action }}
-  background: true
-  failurePolicy: Fail
-  rules:
-  - name: require-image-tag
-    match:
-      any:
-      - resources:
-          kinds:
-          - Pod
-    skipBackgroundRequests: true
-    validate:
-      message: "An image tag is required."
-      pattern:
-        spec:
-          containers:
-          - image: "*:*"
-  - name: validate-image-tag
-    match:
-      any:
-      - resources:
-          kinds:
-          - Pod
-    exclude:
-      any:
-      - resources:
-          annotations:
-            policy.otomi.io/ignore: banned-image-tags
-    skipBackgroundRequests: true
-    validate:
-      message: "Using a mutable image tag e.g. 'latest' is not allowed."
-      pattern:
-        spec:
-          containers:
-          - image: "!*:latest"
+  {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
+  validations:
+    - message: "An image tag is required."
+      expression: >-
+        object.spec.containers.all(c, c.image.contains(':'))
+    - message: "Using a mutable image tag e.g. 'latest' is not allowed."
+      expression: >-
+        object.metadata.?annotations[?'policy.otomi.io/ignore'].orValue('') == 'banned-image-tags' ||
+        object.spec.containers.all(c, !c.image.endsWith(':latest'))
 {{- end }}

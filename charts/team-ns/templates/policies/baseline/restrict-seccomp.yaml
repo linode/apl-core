@@ -2,8 +2,8 @@
 {{- $p := index $v.policies "restrict-seccomp" }}
 {{- if and $v.apps.kyverno.enabled $p }}
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: NamespacedValidatingPolicy
 metadata:
   name: restrict-seccomp
   annotations:
@@ -11,48 +11,25 @@ metadata:
     policies.kyverno.io/category: Pod Security Standards (Baseline)
     policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod
-    kyverno.io/kyverno-version: 1.6.0
-    kyverno.io/kubernetes-version: "1.22-1.23"
     policies.kyverno.io/description: >-
       The seccomp profile must not be explicitly set to Unconfined. This policy,
       requiring Kubernetes v1.19 or later, ensures that seccomp is unset or
       set to `RuntimeDefault` or `Localhost`.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ $p.action }}
-  background: true
-  failurePolicy: Fail
-  rules:
-    - name: check-seccomp
-      match:
-        any:
-        - resources:
-            kinds:
-              - Pod
-      skipBackgroundRequests: true
-      validate:
-        message: >-
-          Use of custom Seccomp profiles is disallowed. The fields
-          spec.securityContext.seccompProfile.type,
-          spec.containers[*].securityContext.seccompProfile.type,
-          spec.initContainers[*].securityContext.seccompProfile.type, and
-          spec.ephemeralContainers[*].securityContext.seccompProfile.type
-          must be unset or set to `RuntimeDefault` or `Localhost`.
-        pattern:
-          spec:
-            =(securityContext):
-              =(seccompProfile):
-                =(type): "RuntimeDefault | Localhost"
-            =(ephemeralContainers):
-            - =(securityContext):
-                =(seccompProfile):
-                  =(type): "RuntimeDefault | Localhost"
-            =(initContainers):
-            - =(securityContext):
-                =(seccompProfile):
-                  =(type): "RuntimeDefault | Localhost"
-            containers:
-            - =(securityContext):
-                =(seccompProfile):
-                  =(type): "RuntimeDefault | Localhost"
+  {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
+  variables:
+    {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
+  validations:
+    - message: >-
+        Use of custom Seccomp profiles is disallowed. The fields
+        spec.securityContext.seccompProfile.type,
+        spec.containers[*].securityContext.seccompProfile.type,
+        spec.initContainers[*].securityContext.seccompProfile.type, and
+        spec.ephemeralContainers[*].securityContext.seccompProfile.type
+        must be unset or set to `RuntimeDefault` or `Localhost`.
+      expression: >-
+        object.spec.?securityContext.?seccompProfile.?type.orValue('RuntimeDefault') in ['RuntimeDefault', 'Localhost'] &&
+        variables.allContainers.all(c,
+          c.?securityContext.?seccompProfile.?type.orValue('RuntimeDefault') in ['RuntimeDefault', 'Localhost'])
 {{- end }}

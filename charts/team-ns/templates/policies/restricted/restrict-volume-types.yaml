@@ -2,8 +2,8 @@
 {{- $p := index $v.policies "restrict-volume-types" }}
 {{- if and $v.apps.kyverno.enabled $p }}
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: NamespacedValidatingPolicy
 metadata:
   name: restrict-volume-types
   annotations:
@@ -11,41 +11,21 @@ metadata:
     policies.kyverno.io/category: Pod Security Standards (Restricted)
     policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod,Volume
-    policies.kyverno.io/minversion: 1.6.0
-    kyverno.io/kyverno-version: 1.6.0
     policies.kyverno.io/description: >-
       In addition to restricting HostPath volumes, the restricted pod security profile
       limits usage of non-core volume types to those defined through PersistentVolumes.
       This policy blocks any other type of volume other than those in the allow list.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ $p.action }}
-  background: true
-  failurePolicy: Fail
-  rules:
-    - name: restricted-volumes
-      match:
-        any:
-        - resources:
-            kinds:
-              - Pod
-      preconditions:
-        all:
-        - key: "{{`{{ request.operation || 'BACKGROUND' }}`}}"
-          operator: NotEquals
-          value: DELETE
-      skipBackgroundRequests: true
-      validate:
-        message: >-
-          Only the following types of volumes may be used: configMap, csi, downwardAPI,
-          emptyDir, ephemeral, persistentVolumeClaim, projected, and secret.
-        deny:
-          conditions:
-            all:
-            - key: "{{`{{ request.object.spec.volumes[].keys(@)[] || '' }}`}}"
-              operator: AnyNotIn
-              value:
-              - name
-              - ''
-              {{- $p.customValues | toYaml | nindent 14 }}
+  {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
+  variables:
+    - name: allowedVolumeFields
+      expression: {{ concat (list "name") ($p.customValues | default list) | toJson | quote }}
+  validations:
+    - message: >-
+        Only the following types of volumes may be used: configMap, csi, downwardAPI,
+        emptyDir, ephemeral, persistentVolumeClaim, projected, and secret.
+      expression: >-
+        object.spec.?volumes.orValue([]).all(vol,
+          vol.all(field, field in variables.allowedVolumeFields))
 {{- end }}

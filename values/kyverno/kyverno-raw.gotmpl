@@ -1,8 +1,8 @@
 {{- $v := .Values -}}
 {{- if $v.otomi.linodeLkeImageRepository }}
 resources:
-  - apiVersion: kyverno.io/v1
-    kind: ClusterPolicy
+  - apiVersion: policies.kyverno.io/v1
+    kind: ValidatingPolicy
     metadata:
       name: orcs-compliance-cluster
       annotations:
@@ -14,35 +14,40 @@ resources:
           Enforces OCI Registry Cache Service (ORCS) compliance across all namespaces
           by ensuring all container images are pulled through the designated ORCS registry
           for supply chain security and vulnerability management.
-        pod-policies.kyverno.io/autogen-controllers: "none"
     spec:
-      validationFailureAction: Audit
-      background: true
+      validationActions: [Audit]
       failurePolicy: Fail
-      rules:
-      - name: validate-orcs-registry-cluster
-        match:
-          any:
-          - resources:
-              kinds:
-              - Pod
-        exclude:
-          any:
-          # Exclude team namespaces (they have their own ORCS policies)
-          - resources:
-              namespaces:
-              - "team-*"
-              - "kube-system"
-        skipBackgroundRequests: false
-        validate:
-          foreach:
-          - list: request.object.spec.[containers, initContainers, ephemeralContainers][]
-            deny:
-              conditions:
-                all:
-                # Require images to come from ORCS registry
-                - key: "{{`{{ element.image }}`}}"
-                  operator: NotEquals
-                  value: "{{ $v.otomi.linodeLkeImageRepository }}/*"
+      evaluation:
+        background:
+          enabled: true
+      # Only validate Pods, do not generate rules for pod controllers
+      autogen:
+        podControllers:
+          controllers: []
+      matchConstraints:
+        resourceRules:
+          - apiGroups: [""]
+            apiVersions: [v1]
+            operations: [CREATE, UPDATE]
+            resources: [pods]
+      matchConditions:
+        # Exclude team namespaces (they have their own ORCS policies) and kube-system
+        - name: exclude-namespaces
+          expression: >-
+            !object.metadata.namespace.startsWith('team-') &&
+            object.metadata.namespace != 'kube-system'
+      variables:
+        - name: allContainers
+          expression: >-
+            object.spec.containers +
+            object.spec.?initContainers.orValue([]) +
+            object.spec.?ephemeralContainers.orValue([])
+      validations:
+        # Require images to come from ORCS registry
+        - message: >-
+            All container images must be pulled through the ORCS registry
+            ({{ $v.otomi.linodeLkeImageRepository }}).
+          expression: >-
+            variables.allContainers.all(c, c.image.startsWith({{ printf "%s/" $v.otomi.linodeLkeImageRepository | quote }}))
 
 {{- end }}

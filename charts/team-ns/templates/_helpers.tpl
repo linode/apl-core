@@ -35,6 +35,59 @@ otomi.io/team: {{ .Values.teamId }}
 {{- end }}
 {{- end -}}
 
+{{/*
+Kyverno CEL policy helpers (policies.kyverno.io NamespacedValidatingPolicy)
+*/}}
+
+{{/* Map the APL policy action (Audit | Enforce) to Kyverno validationActions */}}
+{{- define "team-ns.policy.validationActions" -}}
+{{- if eq (toString .) "Enforce" -}}
+[Deny]
+{{- else -}}
+[Audit]
+{{- end -}}
+{{- end -}}
+
+{{/* Common spec fields: actions, failure policy, background scanning and Pod matching.
+     Note: do not add objectSelector or excludeResourceRules here, that disables autogen for pod controllers. */}}
+{{- define "team-ns.policy.podSpec" -}}
+validationActions: {{ include "team-ns.policy.validationActions" .action }}
+failurePolicy: Fail
+evaluation:
+  background:
+    enabled: true
+matchConstraints:
+  resourceRules:
+    - apiGroups: [""]
+      apiVersions: [v1]
+      operations: [CREATE, UPDATE]
+      resources: [pods]
+{{- end -}}
+
+{{/* CEL expression that is true when the Pod is NOT a Tekton build/scan/git task Pod */}}
+{{- define "team-ns.policy.notTektonTask" -}}
+!(object.metadata.?annotations[?'tekton.dev/tags'].orValue('') in ['image-build', 'CLI, grype', 'git'])
+{{- end -}}
+
+{{/* CEL variable with all containers of a Pod (ephemeral, init and regular) */}}
+{{- define "team-ns.policy.allContainersVar" -}}
+- name: allContainers
+  expression: >-
+    object.spec.containers +
+    object.spec.?initContainers.orValue([]) +
+    object.spec.?ephemeralContainers.orValue([])
+{{- end -}}
+
+{{/* CEL expression that is true for images exempted from securityContext checks (istio proxy, otel autoinstrumentation) */}}
+{{- define "team-ns.policy.isExemptImage" -}}
+(c.image.contains('/istio/proxyv2') || c.image.startsWith('ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-'))
+{{- end -}}
+
+{{/* Convert a Kyverno style wildcard pattern (* and ?) to an anchored RE2 regex */}}
+{{- define "team-ns.policy.globToRegex" -}}
+^{{ regexQuoteMeta (toString .) | replace "\\*" ".*" | replace "\\?" "." }}$
+{{- end -}}
+
 {{- define "common.capabilities.kubeVersion" -}}
 {{- default .Capabilities.KubeVersion.Version .Values.kubeVersionOverride -}}
 {{- end -}}
