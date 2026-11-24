@@ -113,6 +113,15 @@ const getArgoCdAppManifest = (name: string, appLabel: string, spec: Record<strin
   }
 }
 
+// ESO re-pushes a PushSecret's secret while foregroundDeletion holds it, leaving an orphan; prune in the background.
+const getSyncPolicy = (release: HelmRelease) =>
+  release.name.startsWith('team-secrets-')
+    ? {
+        ...ARGOCD_APP_DEFAULT_SYNC_POLICY,
+        syncOptions: [...ARGOCD_APP_DEFAULT_SYNC_POLICY.syncOptions, 'PrunePropagationPolicy=background'],
+      }
+    : ARGOCD_APP_DEFAULT_SYNC_POLICY
+
 export const getArgocdCoreAppManifest = (
   release: HelmRelease,
   values: Record<string, any>,
@@ -122,7 +131,7 @@ export const getArgocdCoreAppManifest = (
   const patch = (appPatches[name] || genericPatch) as Record<string, any>
 
   return getArgoCdAppManifest(name, ARGOCD_APP_DEFAULT_LABEL, {
-    syncPolicy: ARGOCD_APP_DEFAULT_SYNC_POLICY,
+    syncPolicy: getSyncPolicy(release),
     project: 'default',
     revisionHistoryLimit: 2,
     source: {

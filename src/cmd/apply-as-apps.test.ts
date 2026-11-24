@@ -728,4 +728,14 @@ describe('getArgocdCoreAppManifest', () => {
 
     expect(manifest.spec.syncPolicy.syncOptions).toContain('ServerSideApply=true')
   })
+
+  it('should prune team-secrets apps in the background and leave other apps on the default', () => {
+    const teamSecrets = { ...release, name: 'team-secrets-demo', namespace: 'team-demo' }
+
+    expect(getArgocdCoreAppManifest(teamSecrets, {}, '1.0.0').spec.syncPolicy.syncOptions).toEqual([
+      'ServerSideApply=true',
+      'PrunePropagationPolicy=background',
+    ])
+    expect(getArgocdCoreAppManifest(release, {}, '1.0.0').spec.syncPolicy.syncOptions).toEqual(['ServerSideApply=true'])
+  })
 })
