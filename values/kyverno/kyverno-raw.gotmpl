@@ -1,5 +1,6 @@
 {{- $v := .Values }}
-resources:
+{{- $dexEnabled := $v.apps | get "dex.enabled" false }}
+resources:{{ if not (or $v.otomi.linodeLkeImageRepository $dexEnabled) }} []{{ end }}
 {{- if $v.otomi.linodeLkeImageRepository }}
   - apiVersion: kyverno.io/v1
     kind: ClusterPolicy
@@ -45,7 +46,7 @@ resources:
                   operator: NotEquals
                   value: "{{ $v.otomi.linodeLkeImageRepository }}/*"
 {{- end }}
-{{- if $v.apps | get "dex.enabled" false }}
+{{- if $dexEnabled }}
   {{- /* Dex reads its config only at startup. See ADR-2026-11-24. */}}
   - apiVersion: kyverno.io/v1
     kind: Policy
