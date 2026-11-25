@@ -1801,7 +1801,7 @@ NAME: my-release
 | redis.exporter.env | list | `[]` | Environment variables to pass to the Redis exporter |
 | redis.exporter.image.imagePullPolicy | string | `""` (defaults to global.image.imagePullPolicy) | Image pull policy for the redis-exporter |
 | redis.exporter.image.repository | string | `"ghcr.io/oliver006/redis_exporter"` | Repository to use for the redis-exporter |
-| redis.exporter.image.tag | string | `"v1.97.0"` | Tag to use for the redis-exporter |
+| redis.exporter.image.tag | string | `"v1.99.0"` | Tag to use for the redis-exporter |
 | redis.exporter.livenessProbe.enabled | bool | `false` | Enable Kubernetes liveness probe for Redis exporter |
 | redis.exporter.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the [probe] to be considered failed after having succeeded |
 | redis.exporter.livenessProbe.initialDelaySeconds | int | `30` | Number of seconds after the container has started before [probe] is initiated |
@@ -1909,7 +1909,7 @@ The main options are listed here:
 | redis-ha.existingSecret | string | `"argocd-redis"` | Existing Secret to use for redis-ha authentication. By default the redis-secret-init Job is generating this Secret. When `redisSecretInit.enabled` is `false`, the Argo CD components read the Redis password from this Secret too (key `redis-ha.authKey`). |
 | redis-ha.exporter.enabled | bool | `false` | Enable Prometheus redis-exporter sidecar |
 | redis-ha.exporter.image | string | `"ghcr.io/oliver006/redis_exporter"` | Repository to use for the redis-exporter |
-| redis-ha.exporter.tag | string | `"v1.97.0"` | Tag to use for the redis-exporter |
+| redis-ha.exporter.tag | string | `"v1.99.0"` | Tag to use for the redis-exporter |
 | redis-ha.haproxy.additionalAffinities | object | `{}` | Additional affinities to add to the haproxy pods. |
 | redis-ha.haproxy.affinity | string | `""` | Assign custom [affinity] rules to the haproxy pods. |
 | redis-ha.haproxy.containerSecurityContext | object | See [values.yaml] | HAProxy container-level security context |
@@ -2138,6 +2138,7 @@ If you use an External Redis (See Option 3 above), this Job is not deployed.
 | notifications.affinity | object | `{}` (defaults to global.affinity preset) | Assign custom [affinity] rules |
 | notifications.argocdUrl | string | `""` (defaults to https://`global.domain`) | Argo CD dashboard url; used in place of {{.context.argocdUrl}} in templates |
 | notifications.automountServiceAccountToken | bool | `true` | Automount API credentials for the Service Account into the pod. |
+| notifications.clusterRoleRules.enabled | bool | `false` | Create the notifications controller's ClusterRole and ClusterRoleBinding when no automatic condition applies |
 | notifications.clusterRoleRules.rules | list | `[]` | List of custom rules for the notifications controller's ClusterRole resource |
 | notifications.cm.create | bool | `true` | Whether helm chart creates notifications controller config map |
 | notifications.containerPorts.metrics | int | `9001` | Metrics container port |
