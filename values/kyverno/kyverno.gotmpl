@@ -14,10 +14,14 @@ global:
 
 admissionController:
   {{- if eq $kv.mode "DevTest" }}
-  replicas: 1
+  replicas: 2
   {{- else if eq $kv.mode "Prod" }}
   replicas: 3
   {{- end }}
+  priorityClassName: otomi-critical
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
   initContainer:
     resources:
       limits:
