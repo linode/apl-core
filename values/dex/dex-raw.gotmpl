@@ -106,3 +106,29 @@ resources:
             property: clientSecret
         {{- end }}
 
+  {{- if $v.apps | get "kyverno.enabled" false }}
+  {{- /* Lets the Kyverno policy that restarts Dex on a dex-config change patch the Deployment. See ADR-2026-11-24.
+       Kept apart from the policy's release: Kyverno rejects the policy until this Role exists. */}}
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      name: kyverno-restart-dex
+      namespace: dex
+    rules:
+      - apiGroups: ["apps"]
+        resources: ["deployments"]
+        verbs: ["get", "update"]
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+      name: kyverno-restart-dex
+      namespace: dex
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: Role
+      name: kyverno-restart-dex
+    subjects:
+      - kind: ServiceAccount
+        name: kyverno-background-controller
+        namespace: kyverno
+  {{- end }}

@@ -1,6 +1,6 @@
-{{- $v := .Values -}}
-{{- if $v.otomi.linodeLkeImageRepository }}
+{{- $v := .Values }}
 resources:
+{{- if $v.otomi.linodeLkeImageRepository }}
   - apiVersion: kyverno.io/v1
     kind: ClusterPolicy
     metadata:
@@ -44,5 +44,55 @@ resources:
                 - key: "{{`{{ element.image }}`}}"
                   operator: NotEquals
                   value: "{{ $v.otomi.linodeLkeImageRepository }}/*"
-
+{{- end }}
+{{- if $v.apps | get "dex.enabled" false }}
+  {{- /* Dex reads its config only at startup. See ADR-2026-11-24. */}}
+  - apiVersion: kyverno.io/v1
+    kind: Policy
+    metadata:
+      name: restart-dex-on-config-change
+      namespace: dex
+      annotations:
+        policies.kyverno.io/title: Restart Dex on config change
+        policies.kyverno.io/subject: Secret, Deployment
+        policies.kyverno.io/description: >-
+          Restarts the Dex Deployment whenever the data of the dex-config Secret changes.
+    spec:
+      background: false
+      {{- /* Fail closed, so a change made while Kyverno is down is retried by ESO instead of missed.
+           The match conditions keep every other Secret out of this webhook entry. */}}
+      webhookConfiguration:
+        failurePolicy: Fail
+        matchConditions:
+          - name: only-dex-config
+            expression: "object.metadata.namespace == 'dex' && object.metadata.name == 'dex-config'"
+      rules:
+        - name: restart-dex
+          match:
+            any:
+              - resources:
+                  kinds:
+                    - Secret
+                  names:
+                    - dex-config
+                  operations:
+                    - UPDATE
+          preconditions:
+            all:
+              - key: "{{`{{ request.object.data }}`}}"
+                operator: NotEquals
+                value: "{{`{{ request.oldObject.data }}`}}"
+          mutate:
+            targets:
+              - apiVersion: apps/v1
+                kind: Deployment
+                name: dex
+                namespace: dex
+            patchStrategicMerge:
+              spec:
+                template:
+                  metadata:
+                    annotations:
+                      {{- /* Only needs to differ on every update, and must not be derived from the Secret's content. */}}
+                      apl.io/dex-config-version: "{{`{{ request.object.metadata.resourceVersion }}`}}"
 {{- end }}

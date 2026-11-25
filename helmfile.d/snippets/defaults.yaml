@@ -547,7 +547,7 @@ environments:
                   memory: 128Mi
             _rawValues: {}
           kyverno:
-            enabled: false
+            enabled: true
             mode: DevTest
             resources:
               admissionController:
@@ -1176,4 +1176,4 @@ environments:
             authenticationLayer: keycloak
         users: []
         versions:
-          specVersion: 77
+          specVersion: 78

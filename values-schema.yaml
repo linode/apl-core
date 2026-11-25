@@ -1836,7 +1836,8 @@ properties:
         properties:
           enabled:
             type: boolean
-            default: false
+            default: true
+            description: Disabling Kyverno also stops the automatic restart of Dex when its configuration changes, for example after a team is created. Dex must then be restarted manually.
           _rawValues:
             $ref: '#/definitions/rawValues'
           mode:
