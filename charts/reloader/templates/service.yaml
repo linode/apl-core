@@ -1,0 +1,36 @@
+{{- if .Values.reloader.service }}
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+{{ include "reloader-helm3.annotations" . | indent 4 }}
+{{- if .Values.reloader.service.annotations }}
+{{ tpl (toYaml .Values.reloader.service.annotations) . | indent 4 }}
+{{- end }}
+  labels:
+{{ include "reloader-labels.chart" . | indent 4 }}
+{{- if .Values.reloader.service.labels }}
+{{ tpl (toYaml .Values.reloader.service.labels) . | indent 4 }}
+{{- end }}
+  name: {{ template "reloader-fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+spec:
+  selector:
+{{- if .Values.reloader.deployment.labels }}
+{{ tpl (toYaml .Values.reloader.deployment.labels) . | indent 4 }}
+{{- end }}
+{{- if .Values.reloader.matchLabels }}
+{{ tpl (toYaml .Values.reloader.matchLabels) . | indent 4 }}
+{{- end }}
+{{- if .Values.reloader.service.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.reloader.service.ipFamilyPolicy }}
+{{- end }}
+{{- if .Values.reloader.service.ipFamilies }}
+  ipFamilies: {{ .Values.reloader.service.ipFamilies | toYaml | nindent 2 }}
+{{- end }}
+  ports:
+  - port: {{ .Values.reloader.service.port }}
+    name: http
+    protocol: TCP
+    targetPort: http
+{{- end }}
