@@ -31,10 +31,10 @@ reloader:
   # because the annotation carries a new timestamp. So Reloader does not catch up on changes it missed.
   syncAfterRestart: false
   # One replica, without leader election.
-  enableHA: false
+  enableHA: true
   readOnlyRootFileSystem: true
   deployment:
-    replicas: 1
+    replicas: 2
     nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
     containerSecurityContext:
       allowPrivilegeEscalation: false
