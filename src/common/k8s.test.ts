@@ -20,6 +20,7 @@ import { X509Certificate } from 'crypto'
 import { ARGOCD_APP_PARAMS } from './constants'
 import { terminal } from './debug'
 import { env } from './envalid'
+import { makeK8sApiClient } from './k8s-client'
 import * as k8s from './k8s'
 import {
   appRevisionMatches,
@@ -65,6 +66,7 @@ class MockApiException<T> extends ApiException<T> {
 }
 
 jest.mock('@kubernetes/client-node')
+jest.mock('./k8s-client')
 jest.mock('async-retry')
 jest.mock('./envalid')
 jest.mock('crypto', () => ({
@@ -84,12 +86,10 @@ const mockEnv = {
 ;(env as any).FACTOR = mockEnv.FACTOR
 
 describe('k8s.version', () => {
-  const mockKubeConfig = jest.mocked(new KubeConfig())
   const mockVersionApi = jest.mocked(new VersionApi({} as any))
 
   beforeAll(() => {
-    jest.spyOn(k8s.k8s, 'kc').mockReturnValue(mockKubeConfig)
-    mockKubeConfig.makeApiClient.mockReturnValue(mockVersionApi)
+    jest.mocked(makeK8sApiClient).mockReturnValue(mockVersionApi)
   })
 
   afterEach(() => {
@@ -103,9 +103,8 @@ describe('k8s.version', () => {
   it('should create and reuse the version client using the configured kubeconfig', () => {
     expect(k8s.k8s.version()).toBe(mockVersionApi)
     expect(k8s.k8s.version()).toBe(mockVersionApi)
-    expect(k8s.k8s.kc).toHaveBeenCalledTimes(1)
-    expect(mockKubeConfig.makeApiClient).toHaveBeenCalledTimes(1)
-    expect(mockKubeConfig.makeApiClient).toHaveBeenCalledWith(VersionApi)
+    expect(makeK8sApiClient).toHaveBeenCalledTimes(1)
+    expect(makeK8sApiClient).toHaveBeenCalledWith(VersionApi)
   })
 
   it('should expose server version information returned directly by getCode', async () => {
@@ -985,7 +984,6 @@ describe('exec utility test', () => {
     jest.clearAllMocks()
     mockKubeConfig = new KubeConfig() as jest.Mocked<KubeConfig>
     mockKubeConfig.loadFromDefault = jest.fn()
-    k8s.k8s.kc = jest.fn().mockResolvedValue(mockKubeConfig)
     mockExec = jest.mocked(new Exec(mockKubeConfig), { shallow: true }) as jest.Mocked<Exec>
     mockWebsocket = {
       once: jest.fn().mockImplementation((event, callback) => {

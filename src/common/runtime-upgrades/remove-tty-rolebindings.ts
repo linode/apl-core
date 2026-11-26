@@ -1,6 +1,6 @@
 import { ApiException, RbacAuthorizationV1Api } from '@kubernetes/client-node'
 import { terminal } from '../debug'
-import { k8s } from '../k8s'
+import { makeK8sApiClient } from '../k8s-client'
 
 const TEAM_NAMESPACE_PREFIX = 'team-'
 const TTY_ROLE_BINDING_PREFIX = 'tty-'
@@ -10,7 +10,7 @@ const TTY_ROLE_BINDING_PREFIX = 'tty-'
  */
 export const removeTtyRoleBindings = async (
   deps = {
-    getRbacApi: (): RbacAuthorizationV1Api => k8s.kc().makeApiClient(RbacAuthorizationV1Api),
+    getRbacApi: (): RbacAuthorizationV1Api => makeK8sApiClient(RbacAuthorizationV1Api),
   },
 ): Promise<void> => {
   const log = terminal('removeTtyRoleBindings')

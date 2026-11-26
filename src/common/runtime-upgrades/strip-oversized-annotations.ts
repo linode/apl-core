@@ -8,7 +8,7 @@ const LAST_APPLIED_PATCH_PATH = '/metadata/annotations/kubectl.kubernetes.io~1la
 
 export const stripOversizedLastAppliedAnnotations = async (
   deps = {
-    getCrdApi: (): ApiextensionsV1Api => k8s.kc().makeApiClient(ApiextensionsV1Api),
+    getCrdApi: (): ApiextensionsV1Api => k8s.extensions(),
     getCoreApi: (): CoreV1Api => k8s.core(),
   },
 ): Promise<void> => {

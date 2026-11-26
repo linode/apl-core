@@ -15,6 +15,8 @@ Effective development starts with an understanding the code structure and the re
 
 # Navigating through code
 
+Kubernetes Node-client HTTP requests are logged at DEBUG under `common:k8s:http` with a request ID, method, pathname, response status, and elapsed time. Common and operator clients share the cached kubeconfig owned by `src/common/k8s-client.ts`; create clients with `makeK8sApiClient(ApiType)`. A start without a corresponding response/failure indicates a pending HTTP request. Response logs mark receipt of headers, not completion of body processing. Headers, query strings, and bodies are not logged. This does not cover kubectl/Helm subprocess traffic or authentication before the HTTP request.
+
 ## Project structure
 
 ```
