@@ -1,0 +1,68 @@
+{{- $v := .Values }}
+{{- /* What Reloader lists on every Secret event, in its own and in each watched namespace. */}}
+{{- $readRules := list
+  (dict "apiGroups" (list "") "resources" (list "secrets") "verbs" (list "list" "watch"))
+  (dict "apiGroups" (list "apps") "resources" (list "deployments" "daemonsets" "statefulsets") "verbs" (list "list"))
+}}
+{{- /* The only workload Reloader may restart in each watched namespace. A new consumer adds its Deployment here. */}}
+{{- $restartable := dict "dex" "dex" }}
+
+# These rules are verified against Reloader v1.4.25. Verify them again when the chart is upgraded.
+resources:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      name: reloader
+      namespace: reloader
+    rules:
+      {{- $readRules | toYaml | nindent 6 }}
+      # Reloader publishes its build and options to this ConfigMap at startup. A create cannot be limited by name.
+      - apiGroups: [""]
+        resources: ["configmaps"]
+        verbs: ["create"]
+      - apiGroups: [""]
+        resources: ["configmaps"]
+        resourceNames: ["reloader-meta-info"]
+        verbs: ["get", "update"]
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+      name: reloader
+      namespace: reloader
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: Role
+      name: reloader
+    subjects:
+      - kind: ServiceAccount
+        name: reloader
+        namespace: reloader
+  {{- range $ns := $v._derived.reloaderWatchedNamespaces }}
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      name: reloader
+      namespace: {{ $ns }}
+    rules:
+      {{- $readRules | toYaml | nindent 6 }}
+      - apiGroups: ["apps"]
+        resources: ["deployments"]
+        resourceNames: [{{ index $restartable $ns | quote }}]
+        verbs: ["get", "update", "patch"]
+      - apiGroups: [""]
+        resources: ["events"]
+        verbs: ["create", "patch"]
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+      name: reloader
+      namespace: {{ $ns }}
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: Role
+      name: reloader
+    subjects:
+      - kind: ServiceAccount
+        name: reloader
+        namespace: reloader
+  {{- end }}

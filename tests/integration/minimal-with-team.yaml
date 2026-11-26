@@ -43,8 +43,6 @@ apps:
     enabled: true
   harbor:
     enabled: true
-  reloader:
-    enabled: false
   tekton:
     enabled: true
 teamConfig:

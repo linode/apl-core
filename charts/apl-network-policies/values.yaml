@@ -53,6 +53,11 @@
 #   * Platform and team Grafana instances, towards the multi-tenant
 #     reverse proxy of the read path (port 3101)
 #
+# For Reloader (netpols.reloader: true):
+# - Creates a NetworkPolicy in the reloader namespace
+# - Denies all ingress to the Reloader pods, except:
+#   * Prometheus (for metrics scraping on port 9090)
+#
 # The complex network policy rules are baked into the chart templates,
 # so users only need to toggle network policies on/off per application.
 

@@ -1,1 +1,46 @@
-{}
+{{- $v := .Values }}
+{{- $r := $v.apps.reloader }}
+
+# Fixes the names of the Deployment and the ServiceAccount, which the Roles in reloader-raw.gotmpl bind to.
+fullnameOverride: reloader
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+global:
+  imagePullSecrets:
+    - name: otomi-pullsecret-global
+{{- end }}
+
+{{- with $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: {{ . }}/ghcr/stakater/reloader
+{{- end }}
+
+reloader:
+  # Reloader acts only in watched namespaces, so it gets Roles there and no ClusterRole.
+  watchGlobally: false
+  namespaces: {{ $v._derived.reloaderWatchedNamespaces | toJson }}
+  # The chart's Role can mutate every workload in a watched namespace. The Roles in reloader-raw.gotmpl replace it.
+  rbac:
+    enabled: false
+  # Only Secrets trigger a config restart, and only Deployments are restarted. The Roles grant nothing on the rest.
+  ignoreConfigMaps: true
+  ignoreJobs: true
+  ignoreCronJobs: true
+  # A restart is recorded as a pod template annotation. This is the strategy Reloader provides for GitOps tools.
+  reloadStrategy: annotations
+  reloadOnCreate: true
+  # With the annotations strategy, syncAfterRestart restarts every consumer each time Reloader starts,
+  # because the annotation carries a new timestamp. So Reloader does not catch up on changes it missed.
+  syncAfterRestart: false
+  # One replica, without leader election.
+  enableHA: false
+  readOnlyRootFileSystem: true
+  deployment:
+    replicas: 1
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+    resources: {{- toYaml $r.resources | nindent 6 }}

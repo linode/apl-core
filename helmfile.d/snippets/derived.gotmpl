@@ -26,6 +26,11 @@
 {{- $giteaUrl := printf "https://gitea.%s" $domainSuffix }}
 {{- $keycloakBaseUrl := printf "https://keycloak.%s" $domainSuffix }}
 {{- $dexDomain := printf "dex.%s" $domainSuffix }}
+{{- /* Watched namespaces: where Reloader may read Secrets and start config restarts. A new consumer adds its namespace here. */}}
+{{- $reloaderWatchedNamespaces := list }}
+{{- if $a | get "dex.enabled" false }}
+  {{- $reloaderWatchedNamespaces = append $reloaderWatchedNamespaces "dex" }}
+{{- end }}
 {{- $oidcBaseUrl := printf "%s/realms/otomi" $keycloakBaseUrl }}
 {{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
 {{- $oidcBaseUrlBackchannel := "http://keycloak-keycloakx-http.keycloak:8080/realms/otomi" }}
@@ -263,6 +268,7 @@ environments:
           giteaDbUsername: gitea
           keycloakDomain: {{ printf "keycloak.%s" $domainSuffix }}
           dexDomain: {{ $dexDomain }}
+          reloaderWatchedNamespaces: {{ $reloaderWatchedNamespaces | toJson }}
           harborDomain: {{ printf "harbor.%s" $domainSuffix }}
           tlsSecretName: {{ $tlsSecretName }}
           egressGatewayName: {{ $egressGatewayName }}

@@ -39,5 +39,3 @@ apps:
       image:
         repository: docker.io/linode/apl-core
         imagePullPolicy: Always
-  reloader:
-    enabled: false
