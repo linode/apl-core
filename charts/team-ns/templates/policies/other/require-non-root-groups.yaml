@@ -19,8 +19,13 @@ spec:
   {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
   variables:
     {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
-    - name: notTektonTask
-      expression: {{ include "team-ns.policy.notTektonTask" . | quote }}
+    {{- include "team-ns.policy.checkedContainersVar" . | nindent 4 }}
+    # Only the runAsGroup check below exempts Tekton task Pods
+    - name: isTektonTask
+      expression: {{ include "team-ns.policy.isTektonTask" . | quote }}
+    # A container without runAsGroup inherits the Pod-level value
+    - name: podRunAsGroup
+      expression: object.spec.?securityContext.?runAsGroup.orValue(0)
   validations:
     - message: >-
         Running with root group IDs is disallowed. The fields
@@ -29,10 +34,9 @@ spec:
         spec.ephemeralContainers[*].securityContext.runAsGroup must be
         set to a value greater than zero.
       expression: >-
-        !variables.notTektonTask ||
-        variables.allContainers.all(c,
-          {{ include "team-ns.policy.isExemptImage" . }} ||
-          c.?securityContext.?runAsGroup.orValue(object.spec.?securityContext.?runAsGroup.orValue(0)) > 0)
+        variables.isTektonTask ||
+        variables.checkedContainers.all(c,
+          c.?securityContext.?runAsGroup.orValue(variables.podRunAsGroup) > 0)
     - message: >-
         Containers cannot run with a root primary or supplementary GID. The field
         spec.securityContext.supplementalGroups must be unset or

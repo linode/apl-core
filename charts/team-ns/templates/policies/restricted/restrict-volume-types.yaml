@@ -19,6 +19,7 @@ metadata:
 spec:
   {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
   variables:
+    # A volume is a map like {name: x, emptyDir: {...}}, the volume type is the key next to `name`
     - name: allowedVolumeFields
       expression: {{ concat (list "name") ($p.customValues | default list) | toJson | quote }}
   validations:

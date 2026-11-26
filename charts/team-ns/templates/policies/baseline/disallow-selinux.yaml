@@ -18,12 +18,14 @@ metadata:
 spec:
   {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
   variables:
+    {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
+    # The seLinuxOptions of the Pod and of every container, so both levels are checked the same way
     - name: seLinuxOptions
       expression: >-
         [object.spec.?securityContext.?seLinuxOptions.orValue({})] +
-        (object.spec.containers +
-         object.spec.?initContainers.orValue([]) +
-         object.spec.?ephemeralContainers.orValue([])).map(c, c.?securityContext.?seLinuxOptions.orValue({}))
+        variables.allContainers.map(c, c.?securityContext.?seLinuxOptions.orValue({}))
+    - name: allowedTypes
+      expression: "['container_t', 'container_init_t', 'container_kvm_t']"
   validations:
     - message: >-
         Setting the SELinux type is restricted. The fields
@@ -32,7 +34,7 @@ spec:
         must either be unset or set to one of the allowed values (container_t, container_init_t, or container_kvm_t).
       expression: >-
         variables.seLinuxOptions.all(o,
-          !has(o.type) || o.type in ['container_t', 'container_init_t', 'container_kvm_t'])
+          !has(o.type) || o.type in variables.allowedTypes)
     - message: >-
         Setting the SELinux user or role is forbidden. The fields
         spec.securityContext.seLinuxOptions.user, spec.securityContext.seLinuxOptions.role,

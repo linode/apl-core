@@ -18,8 +18,7 @@ metadata:
 spec:
   {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
   matchConditions:
-    - name: exclude-tekton-tasks
-      expression: {{ include "team-ns.policy.notTektonTask" . | quote }}
+    {{- include "team-ns.policy.excludeTektonTasks" . | nindent 4 }}
   variables:
     - name: requiredLabels
       expression: {{ $p.customValues | toJson | quote }}

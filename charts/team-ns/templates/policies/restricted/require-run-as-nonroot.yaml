@@ -18,10 +18,13 @@ metadata:
 spec:
   {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
   matchConditions:
-    - name: exclude-tekton-tasks
-      expression: {{ include "team-ns.policy.notTektonTask" . | quote }}
+    {{- include "team-ns.policy.excludeTektonTasks" . | nindent 4 }}
   variables:
     {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
+    {{- include "team-ns.policy.checkedContainersVar" . | nindent 4 }}
+    # A container without runAsNonRoot inherits the Pod-level value
+    - name: podRunAsNonRoot
+      expression: object.spec.?securityContext.?runAsNonRoot.orValue(false)
   validations:
     - message: >-
         Running as root is not allowed. Either the field spec.securityContext.runAsNonRoot
@@ -29,7 +32,6 @@ spec:
         spec.initContainers[*].securityContext.runAsNonRoot, and spec.ephemeralContainers[*].securityContext.runAsNonRoot
         must be set to `true`.
       expression: >-
-        variables.allContainers.all(c,
-          {{ include "team-ns.policy.isExemptImage" . }} ||
-          c.?securityContext.?runAsNonRoot.orValue(object.spec.?securityContext.?runAsNonRoot.orValue(false)) == true)
+        variables.checkedContainers.all(c,
+          c.?securityContext.?runAsNonRoot.orValue(variables.podRunAsNonRoot) == true)
 {{- end }}

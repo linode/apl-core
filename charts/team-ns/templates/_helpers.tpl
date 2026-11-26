@@ -37,6 +37,25 @@ otomi.io/team: {{ .Values.teamId }}
 
 {{/*
 Kyverno CEL policy helpers (policies.kyverno.io NamespacedValidatingPolicy)
+
+How these policies are evaluated:
+  1. matchConstraints  - which resources/operations the policy applies to (Pods on CREATE/UPDATE)
+  2. matchConditions   - every expression must be true, otherwise the policy is skipped (used for exclusions)
+  3. variables         - named values, referenced as `variables.<name>`; a variable may use earlier variables
+  4. validations       - every expression must be true, otherwise the request is denied/audited with `message`
+
+CEL cheat sheet (with the old Kyverno JMESPath equivalent where useful):
+  object                            the Pod being validated               (request.object)
+  x.?a.?b.orValue(d)                x.a.b if set, otherwise d             ({{ x.a.b || d }})
+  map[?'some/key'].orValue(d)       map lookup for keys with dots/slashes
+  has(x.field)                      true if field is set
+  list.all(c, <cond>)               every item matches                    (foreach + deny)
+  list.exists(c, <cond>)            at least one item matches             (AnyIn)
+  list.filter(c, <cond>)            items that match                      (foreach preconditions)
+  list.map(c, <expr>)               transform every item
+  value in [a, b]                   membership                            (AnyIn / AllIn)
+  s.startsWith(p) / s.contains(p)   string checks                         ("prefix*" / "*part*")
+  s.matches(re)                     RE2 regex match
 */}}
 
 {{/* Map the APL policy action (Audit | Enforce) to Kyverno validationActions */}}
@@ -64,9 +83,30 @@ matchConstraints:
       resources: [pods]
 {{- end -}}
 
+{{/* CEL expression that is true when the Pod is a Tekton build/scan/git task Pod */}}
+{{- define "team-ns.policy.isTektonTask" -}}
+object.metadata.?annotations[?'tekton.dev/tags'].orValue('') in ['image-build', 'CLI, grype', 'git']
+{{- end -}}
+
 {{/* CEL expression that is true when the Pod is NOT a Tekton build/scan/git task Pod */}}
 {{- define "team-ns.policy.notTektonTask" -}}
-!(object.metadata.?annotations[?'tekton.dev/tags'].orValue('') in ['image-build', 'CLI, grype', 'git'])
+!({{ include "team-ns.policy.isTektonTask" . }})
+{{- end -}}
+
+{{/* matchCondition that skips the policy for Tekton build/scan/git task Pods */}}
+{{- define "team-ns.policy.excludeTektonTasks" -}}
+- name: exclude-tekton-tasks
+  expression: {{ include "team-ns.policy.notTektonTask" . | quote }}
+{{- end -}}
+
+{{/* matchCondition that skips the policy for the team's own monitoring Pods and TTY Pods.
+     Expects the team id as context. */}}
+{{- define "team-ns.policy.excludeTeamMonitoringAndTty" -}}
+- name: exclude-team-monitoring-and-tty
+  expression: >-
+    !(object.metadata.?labels[?'app.kubernetes.io/instance'].orValue('') in
+      [{{ printf "%s-po-alertmanager" . | quote }}, {{ printf "prometheus-%s" . | quote }}, {{ printf "tekton-dashboard-%s" . | quote }}]) &&
+    object.metadata.?labels[?'otomi'].orValue('') != 'tty'
 {{- end -}}
 
 {{/* CEL variable with all containers of a Pod (ephemeral, init and regular) */}}
@@ -81,6 +121,14 @@ matchConstraints:
 {{/* CEL expression that is true for images exempted from securityContext checks (istio proxy, otel autoinstrumentation) */}}
 {{- define "team-ns.policy.isExemptImage" -}}
 (c.image.contains('/istio/proxyv2') || c.image.startsWith('ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-'))
+{{- end -}}
+
+{{/* CEL variable with all containers except the exempted images (see isExemptImage).
+     Must be declared after allContainersVar. */}}
+{{- define "team-ns.policy.checkedContainersVar" -}}
+- name: checkedContainers
+  expression: >-
+    variables.allContainers.filter(c, !{{ include "team-ns.policy.isExemptImage" . }})
 {{- end -}}
 
 {{/* Convert a Kyverno style wildcard pattern (* and ?) to an anchored RE2 regex */}}

@@ -20,10 +20,15 @@ metadata:
 spec:
   {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
   matchConditions:
-    - name: exclude-tekton-tasks
-      expression: {{ include "team-ns.policy.notTektonTask" . | quote }}
+    {{- include "team-ns.policy.excludeTektonTasks" . | nindent 4 }}
   variables:
     {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
+    {{- include "team-ns.policy.checkedContainersVar" . | nindent 4 }}
+    # A container without a seccomp profile inherits the Pod-level profile; unset at both levels is not allowed
+    - name: podProfileType
+      expression: object.spec.?securityContext.?seccompProfile.?type.orValue('')
+    - name: allowedTypes
+      expression: "['RuntimeDefault', 'Localhost']"
   validations:
     - message: >-
         Use of custom Seccomp profiles is disallowed. The fields
@@ -33,8 +38,6 @@ spec:
         spec.ephemeralContainers[*].securityContext.seccompProfile.type
         must be set to `RuntimeDefault` or `Localhost`.
       expression: >-
-        variables.allContainers.all(c,
-          {{ include "team-ns.policy.isExemptImage" . }} ||
-          c.?securityContext.?seccompProfile.?type.orValue(object.spec.?securityContext.?seccompProfile.?type.orValue(''))
-            in ['RuntimeDefault', 'Localhost'])
+        variables.checkedContainers.all(c,
+          c.?securityContext.?seccompProfile.?type.orValue(variables.podProfileType) in variables.allowedTypes)
 {{- end }}

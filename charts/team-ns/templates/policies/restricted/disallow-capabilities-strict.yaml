@@ -19,20 +19,24 @@ spec:
   {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
   variables:
     {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
-    - name: notTektonTask
-      expression: {{ include "team-ns.policy.notTektonTask" . | quote }}
+    {{- include "team-ns.policy.checkedContainersVar" . | nindent 4 }}
+    # Only the drop ALL check below exempts Tekton task Pods
+    - name: isTektonTask
+      expression: {{ include "team-ns.policy.isTektonTask" . | quote }}
+    # The added capabilities check only exempts the istio proxy (not otel autoinstrumentation)
+    - name: nonIstioContainers
+      expression: >-
+        variables.allContainers.filter(c, !c.image.contains('/istio/proxyv2'))
   validations:
     - message: >-
         Containers must drop `ALL` capabilities.
       expression: >-
-        !variables.notTektonTask ||
-        variables.allContainers.all(c,
-          {{ include "team-ns.policy.isExemptImage" . }} ||
+        variables.isTektonTask ||
+        variables.checkedContainers.all(c,
           'ALL' in c.?securityContext.?capabilities.?drop.orValue([]))
     - message: >-
         Any capabilities added other than NET_BIND_SERVICE are disallowed.
       expression: >-
-        variables.allContainers.all(c,
-          c.image.contains('/istio/proxyv2') ||
+        variables.nonIstioContainers.all(c,
           c.?securityContext.?capabilities.?add.orValue([]).all(cap, cap == 'NET_BIND_SERVICE'))
 {{- end }}

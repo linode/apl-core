@@ -18,18 +18,33 @@ spec:
   {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
   variables:
     {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
+    # Istio's init container needs NET_ADMIN and NET_RAW to set up iptables
+    - name: istioInitContainers
+      expression: >-
+        object.spec.?initContainers.orValue([]).filter(c, c.image.contains('/istio/proxyv2'))
+    - name: istioInitAllowedCaps
+      expression: >-
+        ['NET_ADMIN', 'NET_RAW', 'AUDIT_WRITE', 'CHOWN', 'DAC_OVERRIDE', 'FOWNER', 'FSETID', 'KILL',
+         'MKNOD', 'NET_BIND_SERVICE', 'SETFCAP', 'SETGID', 'SETPCAP', 'SETUID', 'SYS_CHROOT']
+    # All other containers are checked against the configured list
+    - name: regularContainers
+      expression: >-
+        variables.allContainers.filter(c, !c.image.contains('/istio/proxyv2'))
+    - name: allowedCaps
+      expression: {{ $p.customValues | toJson | quote }}
   validations:
+    - message: >-
+        Istio init containers may only add NET_ADMIN, NET_RAW and the allowed capabilities (AUDIT_WRITE,
+        CHOWN, DAC_OVERRIDE, FOWNER, FSETID, KILL, MKNOD, NET_BIND_SERVICE, SETFCAP, SETGID, SETPCAP,
+        SETUID, SYS_CHROOT).
+      expression: >-
+        variables.istioInitContainers.all(c,
+          c.?securityContext.?capabilities.?add.orValue([]).all(cap, cap in variables.istioInitAllowedCaps))
     - message: >-
         Any capabilities added beyond the allowed list (AUDIT_WRITE, CHOWN, DAC_OVERRIDE, FOWNER,
         FSETID, KILL, MKNOD, NET_BIND_SERVICE, SETFCAP, SETGID, SETPCAP, SETUID, SYS_CHROOT)
         are disallowed.
       expression: >-
-        object.spec.?initContainers.orValue([]).all(c,
-          !c.image.contains('/istio/proxyv2') ||
-          c.?securityContext.?capabilities.?add.orValue([]).all(cap, cap in
-            ['NET_ADMIN', 'NET_RAW', 'AUDIT_WRITE', 'CHOWN', 'DAC_OVERRIDE', 'FOWNER', 'FSETID', 'KILL',
-             'MKNOD', 'NET_BIND_SERVICE', 'SETFCAP', 'SETGID', 'SETPCAP', 'SETUID', 'SYS_CHROOT'])) &&
-        variables.allContainers.all(c,
-          c.image.contains('/istio/proxyv2') ||
-          c.?securityContext.?capabilities.?add.orValue([]).all(cap, cap in {{ $p.customValues | toJson }}))
+        variables.regularContainers.all(c,
+          c.?securityContext.?capabilities.?add.orValue([]).all(cap, cap in variables.allowedCaps))
 {{- end }}

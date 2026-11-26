@@ -18,10 +18,13 @@ metadata:
 spec:
   {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
   matchConditions:
-    - name: exclude-tekton-tasks
-      expression: {{ include "team-ns.policy.notTektonTask" . | quote }}
+    {{- include "team-ns.policy.excludeTektonTasks" . | nindent 4 }}
   variables:
     {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
+    {{- include "team-ns.policy.checkedContainersVar" . | nindent 4 }}
+    # A container without runAsUser inherits the Pod-level value
+    - name: podRunAsUser
+      expression: object.spec.?securityContext.?runAsUser.orValue(0)
   validations:
     - message: >-
         Running as root is not allowed. The fields spec.securityContext.runAsUser,
@@ -29,7 +32,6 @@ spec:
         and spec.ephemeralContainers[*].securityContext.runAsUser must be unset or
         set to a number greater than zero.
       expression: >-
-        variables.allContainers.all(c,
-          {{ include "team-ns.policy.isExemptImage" . }} ||
-          c.?securityContext.?runAsUser.orValue(object.spec.?securityContext.?runAsUser.orValue(0)) > 0)
+        variables.checkedContainers.all(c,
+          c.?securityContext.?runAsUser.orValue(variables.podRunAsUser) > 0)
 {{- end }}

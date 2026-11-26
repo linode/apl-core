@@ -26,13 +26,8 @@ spec:
     podControllers:
       controllers: [daemonsets, deployments, statefulsets]
   matchConditions:
-    - name: exclude-tekton-tasks
-      expression: {{ include "team-ns.policy.notTektonTask" . | quote }}
-    - name: exclude-team-monitoring-and-tty
-      expression: >-
-        !(object.metadata.?labels[?'app.kubernetes.io/instance'].orValue('') in
-          [{{ printf "%s-po-alertmanager" $v.teamId | quote }}, {{ printf "prometheus-%s" $v.teamId | quote }}, {{ printf "tekton-dashboard-%s" $v.teamId | quote }}]) &&
-        object.metadata.?labels[?'otomi'].orValue('') != 'tty'
+    {{- include "team-ns.policy.excludeTektonTasks" . | nindent 4 }}
+    {{- include "team-ns.policy.excludeTeamMonitoringAndTty" $v.teamId | nindent 4 }}
   validations:
     - message: "Startup probe is required for all containers."
       expression: >-

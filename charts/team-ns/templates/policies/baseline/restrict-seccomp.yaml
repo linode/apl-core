@@ -20,6 +20,11 @@ spec:
   {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
   variables:
     {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
+    # An unset profile type counts as RuntimeDefault
+    - name: podProfileType
+      expression: object.spec.?securityContext.?seccompProfile.?type.orValue('RuntimeDefault')
+    - name: allowedTypes
+      expression: "['RuntimeDefault', 'Localhost']"
   validations:
     - message: >-
         Use of custom Seccomp profiles is disallowed. The fields
@@ -29,7 +34,7 @@ spec:
         spec.ephemeralContainers[*].securityContext.seccompProfile.type
         must be unset or set to `RuntimeDefault` or `Localhost`.
       expression: >-
-        object.spec.?securityContext.?seccompProfile.?type.orValue('RuntimeDefault') in ['RuntimeDefault', 'Localhost'] &&
+        variables.podProfileType in variables.allowedTypes &&
         variables.allContainers.all(c,
-          c.?securityContext.?seccompProfile.?type.orValue('RuntimeDefault') in ['RuntimeDefault', 'Localhost'])
+          c.?securityContext.?seccompProfile.?type.orValue('RuntimeDefault') in variables.allowedTypes)
 {{- end }}

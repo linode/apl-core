@@ -29,20 +29,24 @@ metadata:
 spec:
   {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
   matchConditions:
-    - name: exclude-tekton-tasks
-      expression: {{ include "team-ns.policy.notTektonTask" . | quote }}
+    {{- include "team-ns.policy.excludeTektonTasks" . | nindent 4 }}
   variables:
     {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
-    - name: exemptPrefixes
+    # Images from the platform Harbor registry
+    - name: harborPrefix
+      expression: {{ printf "'%s/'" $v.harborDomain | quote }}
+    # Platform images injected into team Pods (sidecars, dashboards, monitoring)
+    - name: platformImagePrefixes
       expression: {{ $exempt | toJson | quote }}
-    - name: allowedRegexes
+    # Repositories configured for the team; wildcards (* and ?) are converted to regexes at render time
+    - name: allowedRepoPatterns
       expression: {{ $allowedRegexes | toJson | quote }}
   validations:
     - message: >-
         All images in this Pod must come from an authorized repository.
       expression: >-
         variables.allContainers.all(c,
-          variables.exemptPrefixes.exists(prefix, c.image.startsWith(prefix)) ||
-          c.image.startsWith({{ printf "%s/" $v.harborDomain | quote }}) ||
-          variables.allowedRegexes.exists(re, c.image.matches(re)))
+          c.image.startsWith(variables.harborPrefix) ||
+          variables.platformImagePrefixes.exists(prefix, c.image.startsWith(prefix)) ||
+          variables.allowedRepoPatterns.exists(pattern, c.image.matches(pattern)))
 {{- end }}
