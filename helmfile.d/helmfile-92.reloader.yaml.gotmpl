@@ -15,12 +15,6 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: reloader-artifacts
-    installed: {{ $a | get "reloader.enabled" }}
-    namespace: reloader
-    labels:
-      pkg: reloader
-    <<: *raw
   - name: reloader
     installed: {{ $a | get "reloader.enabled" }}
     namespace: reloader
