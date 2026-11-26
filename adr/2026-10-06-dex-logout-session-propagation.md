@@ -1,6 +1,6 @@
 # Dex logout does not propagate to other apps' oauth2-proxy sessions
 
-- Status: proposed
+- Status: accepted
 
 ## Context and Problem Statement
 
@@ -41,6 +41,10 @@ Every app behind oauth2-proxy gets its own session cookie, scoped to its own hos
 
 Sessions live in a shared Redis (`sessionStorage.type: redis`), but oauth2-proxy keys each session by a random per-cookie ticket, not by user, and half the decryption secret exists only in the browser's cookie, never server-side. There is no way to enumerate or delete "every session belonging to user X" from outside oauth2-proxy without patching it.
 
+### Logout is scoped to a single cookie domain
+
+Logging out of one cookie domain never invalidates the session of another (e.g. logging out of Harbor does not invalidate the console cookie, and vice versa).
+
 ## Decision Drivers
 
 - Must not reopen the InfoSec finding that motivated per-host `cookie_domains`.
@@ -53,7 +57,3 @@ Sessions live in a shared Redis (`sessionStorage.type: redis`), but oauth2-proxy
 - **Sequential top-level redirect chain** through every platform app's own `/oauth2/sign_out` on logout. Reuses the existing `backend_logout_url` mechanism and respects `cookie_samesite = "lax"` (top-level navigations carry cookies; cross-origin iframes/fetches do not). Redirect count scales with the number of apps/teams on the cluster.
 - **Scoped redirect chain** — same mechanism, but only chain through apps the user actually visited this session (tracked client-side), keeping the chain short in practice.
 - **User-indexed Redis session store** for a true single-request kill-all, no visible redirect chain. Best UX, but requires patching or wrapping oauth2-proxy to maintain a user → session-key index; meaningfully bigger and riskier than the other options.
-
-## Decision Outcome
-
-Pending. Tracked in [TBD: Jira ticket link].
