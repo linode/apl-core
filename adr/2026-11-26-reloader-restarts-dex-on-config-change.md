@@ -22,7 +22,7 @@ A first attempt used a Kyverno policy (#3893, PR #3894). It was closed after rev
 - **Reloader catches up on missed changes.** Each time it starts, it compares the current Secret with what the Dex pod template last recorded and restarts Dex if they differ. A change made while Reloader was down or switched off is applied late, not lost.
 - **Reloader records a restart as a pod template annotation,** not as an environment variable. This is the strategy Reloader provides for GitOps tools.
 - **Reloader ships in the GitOps operations phase,** with no ordering against Dex. Catch-up makes ordering unnecessary.
-- **Reloader uses the Role its chart ships.**
+- **Reloader uses explicit, namespace-scoped RBAC.** Its roles grant only the permissions needed to run and watch Secrets, with Deployment mutation restricted to the named Dex Deployment. The exact read and metadata permissions must be verified against the selected Reloader version.
 - **Reloader gets an ingress-only NetworkPolicy** behind `apps.reloader.networkPolicies.enabled`, like the other platform apps that have one.
 - **Kyverno's default is not changed** by this decision.
 
@@ -35,13 +35,13 @@ A first attempt used a Kyverno policy (#3893, PR #3894). It was closed after rev
 - **No toggle, with Reloader following Dex.** Not chosen; the kill switch is wanted.
 - **Keeping the checksum as a fallback when Reloader is switched off.** Not chosen. It is a second restart path that has the very gaps this decision removes.
 - **Restarting Dex on a change to anything it mounts.** Not chosen; only the named Secret triggers a restart.
-- **A hand-written minimal Role.** Not chosen. Chart upgrades are automated, so a Reloader version that needs one more permission would stop Dex restarts with no visible symptom.
+- **The chart's built-in Role.** Not chosen because it grants workload mutation permissions beyond those needed for Dex. Explicit roles need verification when Reloader is upgraded.
 - **An egress allowlist for Reloader.** Deferred. The Kubernetes API port differs per provider, and no platform NetworkPolicy restricts egress today.
 
 ## Consequences
 
 - Reloader writes an unsalted SHA-1 of the data of `dex-config` to the Dex pod template, where anyone who can read Deployments, ReplicaSets or Pods in `dex` can see it. This is accepted because the hashed configuration always contains two independently generated 32-character secrets, so no single field can be guessed offline. That holds only while `dex-config` keeps containing at least one generated high-entropy secret.
-- Reloader can read every Secret in `dex`: `dex-config` and, where one is configured, the global pull secret. The chart's Role also lets it update DaemonSets and StatefulSets and create and delete Jobs in `dex`, none of which it needs.
+- Reloader's Secret watch may require read access to every Secret in `dex`, including the global pull secret when configured. Its actual read permissions and ability to operate with the explicit roles must be verified.
 - With Reloader switched off, Dex must be restarted by hand after every app configuration change, including the creation of a team.
 - The first time Reloader starts on a cluster, the Dex pod template has no recorded hash, so Dex rolls once. On an upgrade this is in addition to the rollout caused by removing the checksum annotation.
 - Deleting and re-creating `dex-config` restarts Dex.
