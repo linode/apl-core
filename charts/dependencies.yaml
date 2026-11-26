@@ -55,6 +55,9 @@ dependencies:
   - name: istiod
     version: 1.30.8
     repository: https://istio-release.storage.googleapis.com/charts
+  - name: reloader
+    version: 2.2.21
+    repository: https://stakater.github.io/stakater-charts
   - name: ztunnel
     version: 1.30.8
     repository: https://istio-release.storage.googleapis.com/charts
