@@ -1,0 +1,117 @@
+{{- if and .Values.reloader.watchGlobally (.Values.reloader.rbac.enabled) }}
+{{- if  (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+apiVersion: rbac.authorization.k8s.io/v1
+{{ else }}
+apiVersion: rbac.authorization.k8s.io/v1beta1
+{{- end }}
+kind: ClusterRole
+metadata:
+  annotations:
+{{ include "reloader-helm3.annotations" . | indent 4 }}
+  labels:
+{{ include "reloader-labels.chart" . | indent 4 }}
+{{- if .Values.reloader.rbac.labels }}
+{{ tpl (toYaml .Values.reloader.rbac.labels) . | indent 4 }}
+{{- end }}
+{{- if .Values.reloader.matchLabels }}
+{{ tpl (toYaml .Values.reloader.matchLabels) . | indent 4 }}
+{{- end }}
+  name: {{ template "reloader-fullname" . }}-role
+rules:
+  - apiGroups:
+      - ""
+    resources:
+{{- if .Values.reloader.ignoreSecrets }}{{- else }}
+      - secrets
+{{- end }}
+{{- if .Values.reloader.ignoreConfigMaps }}{{- else }}
+      - configmaps
+{{- end }}
+    verbs:
+      - list
+      - get
+      - watch
+{{- if (include "reloader-namespaceSelector" .) }}
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+{{- end }}
+{{- if and (.Capabilities.APIVersions.Has "apps.openshift.io/v1") (.Values.reloader.isOpenshift) }}
+  - apiGroups:
+      - "apps.openshift.io"
+      - ""
+    resources:
+      - deploymentconfigs
+    verbs:
+      - list
+      - get
+      - update
+      - patch
+{{- end }}
+{{- if and (.Capabilities.APIVersions.Has "argoproj.io/v1alpha1") (.Values.reloader.isArgoRollouts) }}
+  - apiGroups:
+      - "argoproj.io"
+      - ""
+    resources:
+      - rollouts
+    verbs:
+      - list
+      - get
+      - update
+      - patch
+{{- end }}
+  - apiGroups:
+      - "apps"
+    resources:
+      - deployments
+      - daemonsets
+      - statefulsets
+    verbs:
+      - list
+      - get
+      - update
+      - patch
+{{- if .Values.reloader.ignoreCronJobs }}{{- else }}
+  - apiGroups:
+      - "batch"
+    resources:
+      - cronjobs
+    verbs:
+      - list
+      - get
+{{- end }}
+{{- if .Values.reloader.ignoreJobs }}{{- else }}
+  - apiGroups:
+      - "batch"
+    resources:
+      - jobs
+    verbs:
+      - create
+      - delete
+      - list
+      - get
+{{- end}}
+{{- if .Values.reloader.enableCSIIntegration }}
+  - apiGroups:
+      - "secrets-store.csi.x-k8s.io"
+    resources:
+      - secretproviderclasspodstatuses
+      - secretproviderclasses
+    verbs:
+      - list
+      - get
+      - watch
+{{- end}}
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+{{- end }}
