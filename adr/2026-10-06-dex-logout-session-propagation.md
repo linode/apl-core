@@ -1,6 +1,6 @@
 # Dex logout does not propagate to other apps' oauth2-proxy sessions
 
-- Status: accepted
+- Status: proposed
 
 ## Context and Problem Statement
 

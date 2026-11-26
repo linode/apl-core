@@ -16,7 +16,7 @@ A security review of the Dex OIDC implementation found several weaknesses. We fi
 
 Open findings that are not addressed by this decision:
 
-- `insecure_oidc_allow_unverified_email = true` in oauth2-proxy becomes a risk if an external connector is added.
+- `insecure_oidc_allow_unverified_email = true` in oauth2-proxy remains a risk for deployments using the external OIDC connector enabled by `otomi.hasExternalIDP`; `passwordConnector: local` does not constrain browser authentication through that connector.
 - `ssoSharedWithDefault: all` with `skipApprovalScreen: true` silently authenticates a user to all registered clients.
 - The static `platform-admin` account cannot be disabled after bootstrap.
 - Email uniqueness is not enforced in Dex.
