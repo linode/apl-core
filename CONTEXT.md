@@ -52,5 +52,5 @@ _Avoid_: parent app, bootstrap app
 **Config restart**: A rolling restart of a platform app's workload, started by an app configuration change.
 _Avoid_: reload, hot reload
 
-**Watched namespace**: A namespace in which Reloader may read Secrets and start config restarts. `dex` is the only current example.
+**Watched namespace**: A namespace in which Reloader acts on a changed Secret and starts config restarts. `dex` is the only current example. Reloader can read Secrets in every namespace, but it acts only in watched namespaces.
 _Avoid_: reloader namespace (that is where Reloader itself runs)

@@ -15,14 +15,14 @@ A first attempt used a Kyverno policy (#3893, PR #3894). It was closed after rev
 
 [Stakater Reloader](https://github.com/stakater/reloader) starts a config restart of the Dex Deployment whenever the data of the `dex-config` Secret changes. Reloader watches the stored Secret, so the restart starts after the write and covers every app configuration change, whatever caused it. The `checksum/config` annotation is removed, so each change causes one rollout.
 
-- **Reloader runs in its own `reloader` namespace and acts only in watched namespaces.** It gets a Role in each watched namespace and no ClusterRole. The list of watched namespaces is derived, not user input: `dex` when Dex is enabled. Istio injection is off in the `reloader` namespace.
+- **Reloader runs in its own `reloader` namespace and acts only there and in watched namespaces.** A namespace selector limits where it acts. The list of watched namespaces is derived, not user input: `dex` when Dex is enabled. Istio injection is off in the `reloader` namespace.
 - **Only the `dex-config` Secret triggers a restart, and it is named explicitly** on the Dex Deployment. Reloader ignores ConfigMaps.
 - **`apps.reloader.enabled` is a kill switch, on by default.** It exists so that an admin can switch Reloader off if it misbehaves. Reloader is installed whenever it is enabled, including on clusters where Dex is disabled and there is nothing to watch.
 - **There is no fallback.** With Reloader switched off, Dex is not restarted automatically.
 - **Reloader records a restart as a pod template annotation,** not as an environment variable. This is the strategy Reloader provides for GitOps tools.
 - **Reloader does not catch up on missed changes.** It restarts Dex when `dex-config` changes or is created while Reloader is running. A change made while Reloader was down or switched off is not applied until Dex is restarted by hand or by a later change. The reason is given under Considered Options.
 - **Reloader ships in the GitOps operations phase,** with no ordering against Dex. A change to `dex-config` made before Reloader is watching is missed, as any other change made while it is down.
-- **Reloader uses explicit, namespace-scoped RBAC.** The Roles are verified against Reloader v1.4.25 and must be verified again when the chart is upgraded. In its own namespace and in each watched namespace Reloader may list and watch Secrets and list Deployments, DaemonSets and StatefulSets. In `dex` it may also update the named Dex Deployment and write Events. In its own namespace it may also write the `reloader-meta-info` ConfigMap. Jobs and CronJobs are ignored, so the Roles grant nothing on them.
+- **Reloader uses the ClusterRole of its chart.** The chart renders the ClusterRole only when Reloader watches all namespaces, so Reloader's rights are cluster-wide although it acts only in selected namespaces. It may read every Secret and every Namespace, update every Deployment, DaemonSet and StatefulSet, and write Events. ConfigMaps, Jobs and CronJobs are ignored, which removes them from the ClusterRole. No Roles are written by hand.
 - **Reloader gets an ingress-only NetworkPolicy** behind `apps.reloader.networkPolicies.enabled`, like the other platform apps that have one.
 - **Kyverno's default is not changed** by this decision.
 
@@ -33,21 +33,24 @@ A first attempt used a Kyverno policy (#3893, PR #3894). It was closed after rev
 - **Reloader inside the `dex` namespace.** Not chosen. It would add a second workload to a hardened, Istio-injected namespace, and a second consumer would need a second Reloader.
 - **Catching up when Reloader starts** (`syncAfterRestart` with `reloadOnCreate`). Not chosen. With the annotations strategy, Reloader v1.4.25 does not compare the recorded hash. It writes the annotation again with a new timestamp, so Dex restarts every time the Reloader pod starts. This was verified on a cluster.
 - **The env-vars strategy with catch-up.** Not chosen. It compares the recorded hash, so it catches up without restarting Dex on every Reloader start. But it records the restart as a container environment variable, which is not the strategy Reloader provides for GitOps tools.
-- **A cluster-wide Reloader, opt-in by annotation.** Not chosen. It would need to read every Secret in the cluster, including those in team namespaces.
+- **A Reloader that acts in every namespace, opt-in by annotation.** Not chosen. It would restart any workload that carries a reload annotation, including team workloads. The namespace selector keeps it to watched namespaces.
 - **No toggle, with Reloader following Dex.** Not chosen; the kill switch is wanted.
 - **Keeping the checksum as a fallback when Reloader is switched off.** Not chosen. It is a second restart path that has the very gaps this decision removes.
 - **Restarting Dex on a change to anything it mounts.** Not chosen; only the named Secret triggers a restart.
-- **The chart's built-in Role.** Not chosen because it grants workload mutation permissions beyond those needed for Dex. Explicit roles need verification when Reloader is upgraded.
+- **Explicit namespace-scoped Roles** in `reloader` and `dex`, with update limited to the named Dex Deployment. Implemented first and not kept, because relying on the chart's RBAC was preferred. They hold the fewest rights, but they are written by hand, live in a second ArgoCD Application, and need verifying against Reloader's source on every chart upgrade.
+- **The chart's namespaced Roles,** rendered for a list of namespaces in place of the ClusterRole. Not chosen. They would limit Reloader's rights to `reloader` and `dex`.
 - **An egress allowlist for Reloader.** Deferred. The Kubernetes API port differs per provider, and no platform NetworkPolicy restricts egress today.
 
 ## Consequences
 
 - Reloader writes an unsalted SHA-1 of the data of `dex-config` to the Dex pod template, where anyone who can read Deployments, ReplicaSets or Pods in `dex` can see it. This is accepted because the hashed configuration always contains two independently generated 32-character secrets, so no single field can be guessed offline. That holds only while `dex-config` keeps containing at least one generated high-entropy secret.
-- Reloader lists and watches every Secret in `dex` and in `reloader`, including the global pull secret when configured.
+- Reloader's service account can read every Secret in the cluster, including those in team namespaces, and can update every Deployment, DaemonSet and StatefulSet. Anyone who can use that service account holds these rights.
+- Reloader keeps every Secret of the cluster in memory, so its memory use grows with the number of Secrets.
+- The namespace selector is never empty, because Reloader acts in every namespace when no selector is set. With Dex disabled it names only the `reloader` namespace.
 - With Reloader switched off, Dex must be restarted by hand after every app configuration change, including the creation of a team.
-- A change to `dex-config` made while Reloader is not running is not applied when Reloader starts again. Dex keeps the old configuration until it is restarted by hand or `dex-config` changes again. This includes the time before Reloader's Roles are synced, because the Roles and Reloader belong to separate ArgoCD Applications.
+- A change to `dex-config` made while Reloader is not running is not applied when Reloader starts again. Dex keeps the old configuration until it is restarted by hand or `dex-config` changes again.
 - Reloader's first start on a cluster does not restart Dex. An upgrade causes one Dex rollout, from removing the checksum annotation.
 - Deleting and re-creating `dex-config` restarts Dex.
 - A change to the `dex-web-overlay` ConfigMap (the login page) still does not reach running Dex pods until something else restarts them. It is mounted by `subPath`, which Kubernetes never refreshes in a running pod.
-- Reloader's egress is not restricted, although it can read `dex-config`. Dex's egress is not restricted either: the allowlist described in [ADR-2026-11-06](2026-11-06-dex-security-hardening.md) §3 is not present in the code.
-- On a cluster with Dex disabled, Reloader runs with nothing to watch.
+- Reloader's egress is not restricted, although it can read every Secret in the cluster. Dex's egress is not restricted either: the allowlist described in [ADR-2026-11-06](2026-11-06-dex-security-hardening.md) §3 is not present in the code.
+- On a cluster with Dex disabled, Reloader has no watched namespace, but it still reads every Secret in the cluster.
