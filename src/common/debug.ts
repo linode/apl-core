@@ -66,7 +66,10 @@ export const terminal = (namespace: string): OtomiDebugger => {
   const trace = (...args: any[]) =>
     (logLevel() >= logLevels.TRACE ? createDebugger(`${namespace}:trace`) : noop).call(undefined, ...args)
   const debug = (...args: any[]) =>
-    (logLevel() >= logLevels.DEBUG ? createDebugger(`${namespace}:debug`) : noop).call(undefined, ...args)
+    (logLevel() >= logLevels.DEBUG || Debug.enabled(`otomi:${namespace}:debug`)
+      ? createDebugger(`${namespace}:debug`)
+      : noop
+    ).call(undefined, ...args)
   const info = (...args: any[]) =>
     (logLevel() >= logLevels.INFO ? createDebugger(`${namespace}:info`) : noop).call(undefined, ...args)
   const warn = (...args: any[]) =>
