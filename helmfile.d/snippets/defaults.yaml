@@ -592,6 +592,9 @@ environments:
                 cpu: "1"
                 memory: 512Mi
             _rawValues: {}
+          reloader:
+            enabled: false
+            _rawValues: {}
           tekton:
             enabled: false
             resources:

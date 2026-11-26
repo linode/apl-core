@@ -64,6 +64,8 @@ apps:
     enabled: false
   rabbitmq:
     enabled: true
+  reloader:
+    enabled: false
   trivy:
     enabled: true
   kyverno:

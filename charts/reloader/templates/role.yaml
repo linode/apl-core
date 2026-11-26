@@ -1,0 +1,97 @@
+{{- if and .Values.reloader.watchGlobally .Values.reloader.namespaces }}
+{{- fail "reloader.namespaces is set but reloader.watchGlobally is true; set reloader.watchGlobally=false to use scoped namespace mode." }}
+{{- end }}
+{{- if and (not (.Values.reloader.watchGlobally)) (.Values.reloader.rbac.enabled) }}
+{{- $apiVersion := "rbac.authorization.k8s.io/v1" }}
+{{- if not (.Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1") }}
+{{- $apiVersion = "rbac.authorization.k8s.io/v1beta1" }}
+{{- end }}
+{{- if .Values.reloader.namespaces }}
+{{- range $ns := (include "reloader-watchNamespaces" . | mustFromJson) }}
+apiVersion: {{ $apiVersion }}
+kind: Role
+metadata:
+  annotations:
+{{ include "reloader-helm3.annotations" $ | indent 4 }}
+  labels:
+{{ include "reloader-labels.chart" $ | indent 4 }}
+{{- if $.Values.reloader.rbac.labels }}
+{{ tpl (toYaml $.Values.reloader.rbac.labels) $ | indent 4 }}
+{{- end }}
+{{- if $.Values.reloader.matchLabels }}
+{{ tpl (toYaml $.Values.reloader.matchLabels) $ | indent 4 }}
+{{- end }}
+  name: {{ template "reloader-fullname" $ }}-role
+  namespace: {{ $ns }}
+rules:
+{{- include "reloader-namespaced-rules" $ }}
+---
+{{- end }}
+{{- else }}
+apiVersion: {{ $apiVersion }}
+kind: Role
+metadata:
+  annotations:
+{{ include "reloader-helm3.annotations" . | indent 4 }}
+  labels:
+{{ include "reloader-labels.chart" . | indent 4 }}
+{{- if .Values.reloader.rbac.labels }}
+{{ tpl (toYaml .Values.reloader.rbac.labels) . | indent 4 }}
+{{- end }}
+{{- if .Values.reloader.matchLabels }}
+{{ tpl (toYaml .Values.reloader.matchLabels) . | indent 4 }}
+{{- end }}
+  name: {{ template "reloader-fullname" . }}-role
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+rules:
+{{- include "reloader-namespaced-rules" . }}
+{{- end }}
+{{- end }}
+
+---
+
+{{- if .Values.reloader.rbac.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  annotations:
+{{ include "reloader-helm3.annotations" . | indent 4 }}
+  labels:
+{{ include "reloader-labels.chart" . | indent 4 }}
+{{- if .Values.reloader.rbac.labels }}
+{{ tpl (toYaml .Values.reloader.rbac.labels) . | indent 4 }}
+{{- end }}
+{{- if .Values.reloader.matchLabels }}
+{{ tpl (toYaml .Values.reloader.matchLabels) . | indent 4 }}
+{{- end }}
+  name: {{ template "reloader-fullname" . }}-metadata-role
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - list
+      - get
+      - watch
+      - create
+      - update
+{{- if .Values.reloader.enableHA }}
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - leases
+    verbs:
+      - create
+  - apiGroups:
+      - "coordination.k8s.io"
+    resourceNames:
+      - stakater-reloader-lock
+    resources:
+      - leases
+    verbs:
+      - get
+      - update
+{{- end}}
+{{- end }}

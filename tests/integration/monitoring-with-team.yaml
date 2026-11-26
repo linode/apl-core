@@ -57,6 +57,8 @@ apps:
     tracing:
       enabled: true
       samplingRatio: '100'
+  reloader:
+    enabled: false
   tekton:
     enabled: true
 teamConfig:
