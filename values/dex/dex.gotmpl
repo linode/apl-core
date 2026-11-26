@@ -16,6 +16,7 @@ replicaCount: {{ $d.replicas }}
 # Config Secret comes from ESO, so the chart checksum is off. Hash the rendered template to roll pods on change (e.g. new team redirect URIs).
 podAnnotations:
   checksum/config: {{ tpl (readFile "../../helmfile.d/snippets/dex-config.gotmpl") . | sha256sum }}
+  checksum/favicon: {{ readFile "web-overlay/favicon.png" | sha256sum }}
   # Exclude Kubernetes API ports from Envoy interception. The API server uses its own CA (not
   # Istio's workload certs), so letting Envoy route these connections causes TLS mismatch or RST.
   # NetworkPolicy still enforces the egress boundary at the kernel level.
@@ -151,5 +152,5 @@ volumeMounts:
     mountPath: /srv/dex/web/static/apl-logo.svg
     subPath: apl-logo.svg
   - name: web-overlay
-    mountPath: /srv/dex/web/static/apl-favicon.png
+    mountPath: /srv/dex/web/themes/light/favicon.png
     subPath: favicon.png
