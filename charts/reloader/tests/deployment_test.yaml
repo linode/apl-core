@@ -1,0 +1,263 @@
+suite: Deployment
+
+templates:
+  - deployment.yaml
+
+tests:
+  - it: sets readOnlyRootFilesystem in container securityContext when reloader.readOnlyRootFileSystem is true
+    set:
+      reloader:
+        readOnlyRootFileSystem: true
+        deployment:
+          containerSecurityContext:
+            readOnlyRootFilesystem: false
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+
+  - it: sets readOnlyRootFilesystem in container securityContext even if reloader.deployment.containerSecurityContext is null
+    set:
+      reloader:
+        readOnlyRootFileSystem: true
+        deployment:
+          containerSecurityContext: null
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+
+  - it: does not override readOnlyRootFilesystem in container securityContext based on reloader.readOnlyRootFileSystem
+    set:
+      reloader:
+        readOnlyRootFileSystem: false
+        deployment:
+          containerSecurityContext:
+            readOnlyRootFilesystem: true
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+
+  - it: template is still valid with no defined containerSecurityContext
+    set:
+      reloader:
+        readOnlyRootFileSystem: false
+        deployment:
+          containerSecurityContext: null
+    asserts:
+      - isEmpty:
+          path: spec.template.spec.containers[0].securityContext
+
+  - it: template still sets POD_NAME and POD_NAMESPACE environment variables when enableHA is true
+    set:
+      reloader:
+        enableHA: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+
+  - it: sets ignored-workload-types argument when ignoreJobs is true
+    set:
+      reloader:
+        ignoreJobs: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--ignored-workload-types=jobs"
+
+  - it: sets ignored-workload-types argument when ignoreCronJobs is true
+    set:
+      reloader:
+        ignoreCronJobs: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--ignored-workload-types=cronjobs"
+
+  - it: sets ignored-workload-types argument when both ignoreJobs and ignoreCronJobs are true
+    set:
+      reloader:
+        ignoreJobs: true
+        ignoreCronJobs: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--ignored-workload-types=jobs,cronjobs"
+
+  - it: does not set ignored-workload-types argument when both ignoreJobs and ignoreCronJobs are false
+    set:
+      reloader:
+        ignoreJobs: false
+        ignoreCronJobs: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].args
+          content: "--ignored-workload-types=jobs"
+      - notContains:
+          path: spec.template.spec.containers[0].args
+          content: "--ignored-workload-types=cronjobs"
+
+  - it: sets runtimeClassName when reloader.deployment.runtimeClassName is set
+    set:
+      reloader:
+        deployment:
+          runtimeClassName: gvisor
+    asserts:
+      - equal:
+          path: spec.template.spec.runtimeClassName
+          value: gvisor
+
+  - it: does not set runtimeClassName by default
+    asserts:
+      - notExists:
+          path: spec.template.spec.runtimeClassName
+
+  - it: sets schedulerName when reloader.deployment.schedulerName is set
+    set:
+      reloader:
+        deployment:
+          schedulerName: my-scheduler
+    asserts:
+      - equal:
+          path: spec.template.spec.schedulerName
+          value: my-scheduler
+
+  - it: does not set schedulerName by default
+    asserts:
+      - notExists:
+          path: spec.template.spec.schedulerName
+
+  - it: sets leader election arguments when enableHA is true
+    set:
+      reloader:
+        enableHA: true
+        leaderElection:
+          leaseDuration: 30s
+          renewDeadline: 20s
+          retryPeriod: 4s
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--leader-election-lease-duration=30s"
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--leader-election-renew-deadline=20s"
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--leader-election-retry-period=4s"
+
+  - it: only sets the leader election arguments that are configured
+    set:
+      reloader:
+        enableHA: true
+        leaderElection:
+          leaseDuration: 30s
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].args
+          value:
+            - "--log-level=info"
+            - "--enable-ha=true"
+            - "--leader-election-lease-duration=30s"
+
+  - it: does not set leader election arguments when enableHA is false
+    set:
+      reloader:
+        enableHA: false
+        leaderElection:
+          leaseDuration: 30s
+          renewDeadline: 20s
+          retryPeriod: 4s
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].args
+          value:
+            - "--log-level=info"
+
+  - it: keeps the client-go defaults by not setting leader election arguments when enableHA is true and no timings are configured
+    set:
+      reloader:
+        enableHA: true
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].args
+          value:
+            - "--log-level=info"
+            - "--enable-ha=true"
+
+  - it: template is still valid when leaderElection is null
+    set:
+      reloader:
+        enableHA: true
+        leaderElection: null
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--enable-ha=true"
+
+  - it: does not enable HA when replicas are raised without enableHA, since replicas are clamped to 1
+    set:
+      reloader:
+        enableHA: false
+        deployment:
+          replicas: 2
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 1
+      - notContains:
+          path: spec.template.spec.containers[0].args
+          content: "--enable-ha=true"
+
+  - it: enables HA and keeps the requested replicas when enableHA is true
+    set:
+      reloader:
+        enableHA: true
+        deployment:
+          replicas: 3
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 3
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--enable-ha=true"
+
+  - it: renders a templated repository and digest through tpl
+    set:
+      global:
+        azure:
+          images:
+            reloader:
+              registry: acr.example.invalid
+              image: reloader-enterprise
+              digest: "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+      image:
+        repository: "{{ .Values.global.azure.images.reloader.registry }}/{{ .Values.global.azure.images.reloader.image }}"
+        digest: "{{ .Values.global.azure.images.reloader.digest }}"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: "acr.example.invalid/reloader-enterprise@sha256:4444444444444444444444444444444444444444444444444444444444444444"
+
+  - it: renders a templated repository and tag through tpl when no digest is set
+    set:
+      global:
+        azure:
+          images:
+            reloader:
+              registry: acr.example.invalid
+              image: reloader-enterprise
+      image:
+        repository: "{{ .Values.global.azure.images.reloader.registry }}/{{ .Values.global.azure.images.reloader.image }}"
+        tag: "v9.9.9"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: "acr.example.invalid/reloader-enterprise:v9.9.9"
