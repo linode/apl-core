@@ -21,6 +21,14 @@ _Avoid_: system directory, reserved directory
 
 **Platform-admin-owned directory**: A namespace directory whose name starts with `apl-` and whose contents are written by human platform admins, not the apl-operator program. `apl-addons/` is the only current example. The operator bootstraps the directory but does not manage its contents.
 
+### Operator lifecycle
+
+**Installation phase**: The first of the apl-operator's two phases, in which the operator installs the platform itself and repeats until it succeeds. It ends before any ArgoCD Application exists.
+_Avoid_: first installation phase, bootstrap phase
+
+**GitOps operations phase**: The second of the apl-operator's two phases, in which the operator follows the values repo and hands every release to ArgoCD as an Application. Applications sync in parallel, with no ordering between them.
+_Avoid_: second installation phase, post-install phase
+
 ### ArgoCD model
 
 **AppProject**: An ArgoCD `AppProject` resource that scopes which source repos, destination namespaces/clusters, and Kubernetes resource types an Application is permitted to use.
@@ -36,3 +44,13 @@ _Avoid_: parent app, bootstrap app
 **App-of-Apps**: The pattern where one ArgoCD Application manages a directory of other Application CRs. The `gitops-ns-apl-addons` Application is an App-of-Apps: it syncs Application CRs into the `apl-addons` namespace, where ArgoCD picks them up via the "app in any namespace" feature.
 
 **App in any namespace**: The ArgoCD feature (controlled by `application.namespaces` in `argocd-cm`) that allows ArgoCD to watch and reconcile Application CRs living in namespaces other than `argocd`.
+
+### App configuration
+
+**App configuration change**: A change to the configuration a platform app reads only at startup, whatever caused it: an edited app setting, a created team, or a rotated secret.
+
+**Config restart**: A rolling restart of a platform app's workload, started by an app configuration change.
+_Avoid_: reload, hot reload
+
+**Watched namespace**: A namespace in which Reloader may read Secrets and start config restarts. `dex` is the only current example.
+_Avoid_: reloader namespace (that is where Reloader itself runs)
