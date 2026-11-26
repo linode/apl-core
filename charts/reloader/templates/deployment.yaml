@@ -1,0 +1,366 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+{{ include "reloader-helm3.annotations" . | indent 4 }}
+{{- if .Values.reloader.deployment.annotations }}
+{{ tpl (toYaml .Values.reloader.deployment.annotations) . | indent 4 }}
+{{- end }}
+  labels:
+{{ include "reloader-labels.chart" . | indent 4 }}
+{{- if .Values.reloader.deployment.labels }}
+{{ tpl (toYaml .Values.reloader.deployment.labels) . | indent 4 }}
+{{- end }}
+{{- if .Values.reloader.matchLabels }}
+{{ tpl (toYaml .Values.reloader.matchLabels) . | indent 4 }}
+{{- end }}
+  name: {{ template "reloader-fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+spec:
+{{- if not (.Values.reloader.enableHA) }}
+  replicas: {{ min .Values.reloader.deployment.replicas 1 }}
+{{- else }}
+  replicas: {{ .Values.reloader.deployment.replicas }}
+{{- end}}
+  revisionHistoryLimit: {{ .Values.reloader.deployment.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+{{ include "reloader-match-labels.chart" . | indent 6 }}
+{{- if .Values.reloader.matchLabels }}
+{{ tpl (toYaml .Values.reloader.matchLabels) . | indent 6 }}
+{{- end }}
+  template:
+    metadata:
+{{- if .Values.reloader.deployment.pod.annotations }}
+      annotations:
+{{ tpl (toYaml .Values.reloader.deployment.pod.annotations) . | indent 8 }}
+{{- end }}
+      labels:
+{{ include "reloader-labels.chart" . | indent 8 }}
+{{- if .Values.reloader.deployment.labels }}
+{{ tpl (toYaml .Values.reloader.deployment.labels) . | indent 8 }}
+{{- end }}
+{{- if .Values.reloader.matchLabels }}
+{{ tpl (toYaml .Values.reloader.matchLabels) . | indent 8 }}
+{{- end }}
+    spec:
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+{{ include "reloader-imagePullSecrets" . | indent 8 }}
+      {{- end }}
+      {{- if kindIs "bool" .Values.reloader.deployment.hostUsers }}
+      hostUsers: {{ .Values.reloader.deployment.hostUsers }}
+      {{- end }}
+      {{- if .Values.reloader.deployment.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.reloader.deployment.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if or (.Values.reloader.deployment.affinity) (.Values.reloader.enableHA) }}
+      affinity:
+      {{- if .Values.reloader.deployment.affinity }}
+{{ toYaml .Values.reloader.deployment.affinity | indent 8 }}
+      {{- else }}
+{{ include "reloader-podAntiAffinity" . | indent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.reloader.deployment.tolerations }}
+      tolerations:
+{{ toYaml .Values.reloader.deployment.tolerations | indent 8 }}
+      {{- end }}
+      {{- if .Values.reloader.deployment.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ toYaml .Values.reloader.deployment.topologySpreadConstraints | indent 8 }}
+      {{- end }}
+      {{- if .Values.reloader.deployment.priorityClassName }}
+      priorityClassName: {{ .Values.reloader.deployment.priorityClassName }}
+      {{- end }}
+      {{- if .Values.reloader.deployment.runtimeClassName }}
+      runtimeClassName: {{ .Values.reloader.deployment.runtimeClassName }}
+      {{- end }}
+      {{- if .Values.reloader.deployment.schedulerName }}
+      schedulerName: {{ .Values.reloader.deployment.schedulerName }}
+      {{- end }}
+      {{- with .Values.reloader.deployment.dnsConfig }}
+      dnsConfig:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      {{- $repository := tpl (.Values.image.repository | toString) . }}
+      {{- $tag := tpl (.Values.image.tag | toString) . }}
+      {{- $digest := tpl (.Values.image.digest | default "" | toString) . }}
+      {{- if .Values.global.imageRegistry }}
+      - image: "{{ .Values.global.imageRegistry }}/{{ .Values.image.name }}:{{ $tag }}"
+      {{- else }}
+      {{- if $digest }}
+      - image: "{{ $repository }}@{{ $digest }}"
+      {{- else }}
+      - image: "{{ $repository }}:{{ $tag }}"
+      {{- end }}
+      {{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: {{ template "reloader-fullname" . }}
+        env:
+        - name: GOMAXPROCS
+        {{- if .Values.reloader.deployment.gomaxprocsOverride }}
+          value: {{ .Values.reloader.deployment.gomaxprocsOverride | quote }}
+        {{- else }}
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
+              divisor: '1'
+        {{- end }}
+        - name: GOMEMLIMIT
+        {{- if .Values.reloader.deployment.gomemlimitOverride }}
+          value: {{ .Values.reloader.deployment.gomemlimitOverride | quote }}
+        {{- else }}
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+              divisor: '1'
+        {{- end }}
+      {{- range $name, $value := .Values.reloader.deployment.env.open }}
+      {{- if not (empty $value) }}
+        - name: {{ $name | quote }}
+          value: {{ $value | quote }}
+      {{- end }}
+      {{- end }}
+      {{- $secret_name := include "reloader-fullname" . }}
+      {{- range $name, $value := .Values.reloader.deployment.env.secret }}
+      {{- if not ( empty $value) }}
+        - name: {{ $name | quote }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: {{ $name | quote }}
+      {{- end }}
+      {{- end }}
+      {{- range $secret, $values := .Values.reloader.deployment.env.existing }}
+      {{- range $name, $key := $values }}
+      {{- if not ( empty $name) }}
+        - name: {{ $name | quote }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret | quote }}
+              key: {{ $key | quote }}
+      {{- end }}
+      {{- end }}
+      {{- end }}
+      {{- range $name, $value := .Values.reloader.deployment.env.field }}
+      {{- if not ( empty $value) }}
+        - name: {{ $name | quote }}
+          valueFrom:
+            fieldRef:
+              fieldPath: {{ $value | quote}}
+      {{- end }}
+      {{- end }}
+      {{- if and (eq .Values.reloader.watchGlobally false) (not .Values.reloader.namespaces) }}
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      {{- end }}
+
+        - name: RELOADER_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+
+        - name: RELOADER_DEPLOYMENT_NAME
+          value: {{ template "reloader-fullname" . }}
+
+      {{- if .Values.reloader.enableHA }}
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      {{- end }}
+      {{- if .Values.reloader.enableMetricsByNamespace }}
+        - name: METRICS_COUNT_BY_NAMESPACE
+          value: enabled
+      {{- end }}
+        ports:
+        - name: http
+          containerPort: 9090
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: http
+          timeoutSeconds: {{ .Values.reloader.deployment.livenessProbe.timeoutSeconds | default "5" }}
+          failureThreshold: {{ .Values.reloader.deployment.livenessProbe.failureThreshold | default "5" }}
+          periodSeconds: {{ .Values.reloader.deployment.livenessProbe.periodSeconds | default "10" }}
+          successThreshold: {{ .Values.reloader.deployment.livenessProbe.successThreshold | default "1" }}
+          initialDelaySeconds: {{ .Values.reloader.deployment.livenessProbe.initialDelaySeconds | default "10" }}
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: http
+          timeoutSeconds: {{ .Values.reloader.deployment.readinessProbe.timeoutSeconds | default "5" }}
+          failureThreshold: {{ .Values.reloader.deployment.readinessProbe.failureThreshold | default "5" }}
+          periodSeconds: {{ .Values.reloader.deployment.readinessProbe.periodSeconds | default "10" }}
+          successThreshold: {{ .Values.reloader.deployment.readinessProbe.successThreshold | default "1" }}
+          initialDelaySeconds: {{ .Values.reloader.deployment.readinessProbe.initialDelaySeconds | default "10" }}
+
+        {{- $containerSecurityContext := .Values.reloader.deployment.containerSecurityContext | default dict }}
+        {{- if .Values.reloader.readOnlyRootFileSystem }}
+          {{- $_ := set $containerSecurityContext "readOnlyRootFilesystem" true }}
+        {{- end }}
+
+        securityContext:
+          {{- toYaml $containerSecurityContext | nindent 10 }}
+
+      {{- if (or (.Values.reloader.deployment.volumeMounts) (eq .Values.reloader.readOnlyRootFileSystem true)) }}
+        volumeMounts:
+          {{- if eq .Values.reloader.readOnlyRootFileSystem true }}
+          - mountPath: /tmp/
+            name: tmp-volume
+          {{- end }}
+          {{- with .Values.reloader.deployment.volumeMounts }}
+          {{- . | toYaml | nindent 10 }}
+          {{- end }}
+      {{- end }}
+      {{- if or (.Values.reloader.logFormat) (.Values.reloader.logLevel) (.Values.reloader.ignoreSecrets) (and .Values.reloader.ignoreNamespaces .Values.reloader.watchGlobally) (.Values.reloader.namespaces) (include "reloader-namespaceSelector" .) (.Values.reloader.resourceLabelSelector) (.Values.reloader.ignoreConfigMaps) (.Values.reloader.custom_annotations) (eq .Values.reloader.isArgoRollouts true) (eq .Values.reloader.reloadOnCreate true) (eq .Values.reloader.reloadOnDelete true) (ne .Values.reloader.reloadStrategy "default") (.Values.reloader.enableHA) (.Values.reloader.autoReloadAll) (.Values.reloader.ignoreJobs) (.Values.reloader.ignoreCronJobs) (.Values.reloader.enableCSIIntegration)}}
+        args:
+          {{- if .Values.reloader.logFormat }}
+          - "--log-format={{ .Values.reloader.logFormat }}"
+          {{- end }}
+          {{- if .Values.reloader.logLevel }}
+          - "--log-level={{ .Values.reloader.logLevel }}"
+          {{- end }}
+          {{- if .Values.reloader.ignoreSecrets }}
+          - "--resources-to-ignore=secrets"
+          {{- end }}
+          {{- if .Values.reloader.ignoreConfigMaps }}
+          - "--resources-to-ignore=configmaps"
+          {{- end }}
+          {{- if and (.Values.reloader.ignoreJobs) (.Values.reloader.ignoreCronJobs) }}
+          - "--ignored-workload-types=jobs,cronjobs"
+          {{- else if .Values.reloader.ignoreJobs }}
+          - "--ignored-workload-types=jobs"
+          {{- else if .Values.reloader.ignoreCronJobs }}
+          - "--ignored-workload-types=cronjobs"
+          {{- end }}
+          {{- if .Values.reloader.namespaces }}
+          - "--namespaces={{ include "reloader-watchNamespaces-csv" . }}"
+          {{- end }}
+          {{- if and .Values.reloader.ignoreNamespaces .Values.reloader.watchGlobally }}
+          - "--namespaces-to-ignore={{ .Values.reloader.ignoreNamespaces }}"
+          {{- end }}
+          {{- if (include "reloader-namespaceSelector" .) }}
+          - "--namespace-selector=\"{{ include "reloader-namespaceSelector" . }}\""
+          {{- end }}
+          {{- if .Values.reloader.resourceLabelSelector }}
+          - "--resource-label-selector={{ .Values.reloader.resourceLabelSelector }}"
+          {{- end }}
+          {{- if .Values.reloader.enablePProf }}
+          - "--enable-pprof"
+          {{- if and .Values.reloader.pprofAddr }}
+          - "--pprof-addr={{ .Values.reloader.pprofAddr }}"
+          {{- end }}
+          {{- end }}
+          {{- if .Values.reloader.enableCSIIntegration }}
+          - "--enable-csi-integration=true"
+          {{- end }}
+          {{- if .Values.reloader.custom_annotations }}
+            {{- if .Values.reloader.custom_annotations.configmap }}
+          - "--configmap-annotation"
+          - "{{ .Values.reloader.custom_annotations.configmap }}"
+            {{- end }}
+            {{- if .Values.reloader.custom_annotations.secret }}
+          - "--secret-annotation"
+          - "{{ .Values.reloader.custom_annotations.secret }}"
+            {{- end }}
+            {{- if .Values.reloader.custom_annotations.auto }}
+          - "--auto-annotation"
+          - "{{ .Values.reloader.custom_annotations.auto }}"
+            {{- end }}
+            {{- if .Values.reloader.custom_annotations.secret_auto }}
+          - "--secret-auto-annotation"
+          - "{{ .Values.reloader.custom_annotations.secret_auto }}"
+            {{- end }}
+            {{- if .Values.reloader.custom_annotations.configmap_auto }}
+          - "--configmap-auto-annotation"
+          - "{{ .Values.reloader.custom_annotations.configmap_auto }}"
+            {{- end }}
+            {{- if .Values.reloader.custom_annotations.search }}
+          - "--auto-search-annotation"
+          - "{{ .Values.reloader.custom_annotations.search }}"
+            {{- end }}
+            {{- if .Values.reloader.custom_annotations.match }}
+          - "--search-match-annotation"
+          - "{{ .Values.reloader.custom_annotations.match }}"
+            {{- end }}
+            {{- if .Values.reloader.custom_annotations.ignore }}
+          - "--ignore-annotation"
+          - "{{ .Values.reloader.custom_annotations.ignore }}"
+            {{- end }}
+            {{- if .Values.reloader.custom_annotations.pausePeriod }}
+          - "--pause-deployment-annotation"
+          - "{{ .Values.reloader.custom_annotations.pausePeriod }}"
+            {{- end }}
+            {{- if .Values.reloader.custom_annotations.pauseTime }}
+          - "--pause-deployment-time-annotation"
+          - "{{ .Values.reloader.custom_annotations.pauseTime }}"
+            {{- end }}
+            {{- if .Values.reloader.webhookUrl }}
+          - "--webhook-url"
+          - "{{ .Values.reloader.webhookUrl }}"
+            {{- end }}
+          {{- end }}
+          {{- if eq .Values.reloader.isArgoRollouts true }}
+          - "--is-Argo-Rollouts={{ .Values.reloader.isArgoRollouts }}"
+          {{- end }}
+          {{- if eq .Values.reloader.reloadOnCreate true }}
+          - "--reload-on-create={{ .Values.reloader.reloadOnCreate }}"
+          {{- end }}
+          {{- if eq .Values.reloader.reloadOnDelete true }}
+          - "--reload-on-delete={{ .Values.reloader.reloadOnDelete }}"
+          {{- end }}
+          {{- if eq .Values.reloader.syncAfterRestart true }}
+          - "--sync-after-restart={{ .Values.reloader.syncAfterRestart }}"
+          {{- end }}
+          {{- if ne .Values.reloader.reloadStrategy "default" }}
+          - "--reload-strategy={{ .Values.reloader.reloadStrategy }}"
+          {{- end }}
+          {{- if .Values.reloader.enableHA }}
+          - "--enable-ha=true"
+          {{- with .Values.reloader.leaderElection }}
+          {{- with .leaseDuration }}
+          - "--leader-election-lease-duration={{ . }}"
+          {{- end }}
+          {{- with .renewDeadline }}
+          - "--leader-election-renew-deadline={{ . }}"
+          {{- end }}
+          {{- with .retryPeriod }}
+          - "--leader-election-retry-period={{ . }}"
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- if eq .Values.reloader.autoReloadAll true }}
+          - "--auto-reload-all=true"
+          {{- end -}}
+      {{- end }}
+      {{- if .Values.reloader.deployment.resources }}
+        resources:
+{{ toYaml .Values.reloader.deployment.resources | indent 10 }}
+      {{- end }}
+{{- if .Values.reloader.deployment.securityContext }}
+      securityContext: {{ toYaml .Values.reloader.deployment.securityContext | nindent 8 }}
+{{- end }}
+      serviceAccountName: {{ template "reloader-serviceAccountName" . }}
+{{- if hasKey .Values.reloader.deployment "automountServiceAccountToken" }}
+      automountServiceAccountToken: {{ .Values.reloader.deployment.automountServiceAccountToken }}
+{{- end }}
+    {{- if (or (.Values.reloader.deployment.volumes) (eq .Values.reloader.readOnlyRootFileSystem true)) }}
+      volumes:
+        {{- if eq .Values.reloader.readOnlyRootFileSystem true }}
+        - emptyDir: {}
+          name: tmp-volume
+        {{- end }}
+        {{- with .Values.reloader.deployment.volumes }}
+          {{- . | toYaml | nindent 8 }}
+        {{- end }}
+    {{- end }}

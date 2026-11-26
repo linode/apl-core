@@ -1,0 +1,404 @@
+# Generated from deployments/kubernetes/templates/chart/values.yaml.tmpl
+global:
+  ## Reference to one or more secrets to be used when pulling images
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ##
+  imageRegistry: ""
+  imagePullSecrets: []
+  #imagePullSecrets:
+  #  - name: my-pull-secret
+  #imagePullSecrets:
+  #  - my-pull-secret
+
+kubernetes:
+  host: https://kubernetes.default
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  name: stakater/reloader
+  repository: ghcr.io/stakater/reloader
+  tag: v1.4.25
+  # digest: sha256:1234567
+  # repository, tag and digest are rendered with tpl, so they may reference other values.
+  pullPolicy: IfNotPresent
+
+reloader:
+  autoReloadAll: false
+  isArgoRollouts: false
+  isOpenshift: false
+  ignoreSecrets: false
+  ignoreConfigMaps: false
+  # Set to true to exclude Job workloads from automatic reload monitoring
+  # Useful when you don't want Jobs to be restarted when their referenced ConfigMaps/Secrets change
+  ignoreJobs: false
+  # Set to true to exclude CronJob workloads from automatic reload monitoring
+  # Useful when you don't want CronJobs to be restarted when their referenced ConfigMaps/Secrets change
+  ignoreCronJobs: false
+  reloadOnCreate: false
+  reloadOnDelete: false
+  syncAfterRestart: false
+  reloadStrategy: default # Set to default, env-vars or annotations
+  ignoreNamespaces: "" # Comma separated list of namespaces to ignore
+  namespaceSelector: "" # Comma separated list of k8s label selectors for namespaces selection
+  resourceLabelSelector: "" # Comma separated list of k8s label selectors for configmap/secret selection
+  logFormat: "" # json
+  logLevel: info # Log level to use (trace, debug, info, warning, error, fatal and panic)
+  watchGlobally: true
+  # Scoped mode: explicit list of namespaces to watch. When non-empty (and watchGlobally
+  # is false), Reloader watches exactly these namespaces and the chart creates a namespace
+  # scoped Role + RoleBinding in each one — no ClusterRole is created. The release namespace
+  # is always included automatically. Leave empty ([]) for the default single-namespace or
+  # global behavior controlled by watchGlobally.
+  # Accepts either a YAML list (e.g. ["team-a", "team-b"]) or a comma-separated string
+  # (e.g. "team-a,team-b")
+  namespaces: []
+  # Set to true to enable leadership election allowing you to run multiple replicas
+  enableHA: false
+  # Leader election timings, only applied when enableHA is true. Leave empty to keep the
+  # client-go defaults (leaseDuration 15s, renewDeadline 10s, retryPeriod 2s).
+  # leaseDuration must be a whole number of seconds and greater than renewDeadline, and
+  # renewDeadline must be greater than retryPeriod multiplied by the jitter factor (1.2).
+  leaderElection:
+    leaseDuration: ""
+    renewDeadline: ""
+    retryPeriod: ""
+  # Set to true to enable pprof for profiling
+  enablePProf: false
+  enableCSIIntegration: false
+  # Address to start pprof server on. Default is ":6060"
+  pprofAddr: ":6060"
+  # Set to true if you have a pod security policy that enforces readOnlyRootFilesystem
+  readOnlyRootFileSystem: false
+  legacy:
+    rbac: false
+  matchLabels: {}
+  # Set to true to expose a prometheus counter of reloads by namespace (this metric may have high cardinality in clusters with many namespaces)
+  enableMetricsByNamespace: false
+  deployment:
+    # Specifies the deployment DNS configuration.
+    dnsConfig: {}
+    # nameservers:
+    #   - 1.2.3.4
+    # searches:
+    #   - ns1.svc.cluster-domain.example
+    #   - my.dns.search.suffix
+    # options:
+    #   - name: ndots
+    #     value: "1"
+    #   - name: attempts
+    #     value: "3"
+
+    # If you wish to run multiple replicas set reloader.enableHA = true
+    replicas: 1
+
+    revisionHistoryLimit: 2
+
+    hostUsers: null
+
+    nodeSelector:
+    # cloud.google.com/gke-nodepool: default-pool
+
+    # An affinity stanza to be applied to the Deployment.
+    # Example:
+    #   affinity:
+    #     nodeAffinity:
+    #       requiredDuringSchedulingIgnoredDuringExecution:
+    #         nodeSelectorTerms:
+    #         - matchExpressions:
+    #           - key: "node-role.kubernetes.io/infra-worker"
+    #             operator: "Exists"
+    affinity: {}
+
+    volumeMounts: []
+    volumes: []
+
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65534
+      seccompProfile:
+        type: RuntimeDefault
+
+    containerSecurityContext:
+      {}
+      # capabilities:
+      #   drop:
+      #     - ALL
+      # allowPrivilegeEscalation: false
+      # readOnlyRootFilesystem: true
+
+    # A list of tolerations to be applied to the Deployment.
+    # Example:
+    #   tolerations:
+    #   - key: "node-role.kubernetes.io/infra-worker"
+    #     operator: "Exists"
+    #     effect: "NoSchedule"
+    tolerations: []
+
+    # Topology spread constraints for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+    # Example:
+    # topologySpreadConstraints:
+    #   - maxSkew: 1
+    #     topologyKey: zone
+    #     whenUnsatisfiable: DoNotSchedule
+    #     labelSelector:
+    #       matchLabels:
+    #         app.kubernetes.io/instance: my-app
+    topologySpreadConstraints: []
+
+    annotations: {}
+    labels:
+      provider: stakater
+      group: com.stakater.platform
+      version: v1.4.25
+    # Support for extra environment variables.
+    env:
+      # Open supports Key value pair as environment variables.
+      open:
+      # secret supports Key value pair as environment variables. It gets the values based on keys from default reloader secret if any.
+      secret:
+      #  ALERT_ON_RELOAD: <"true"|"false">
+      #  ALERT_SINK: <"slack"> # By default it will be a raw text based webhook
+      #  ALERT_WEBHOOK_URL: <"webhook_url">
+      #  ALERT_ADDITIONAL_INFO: <"Additional Info like Cluster Name if needed">
+      # field supports Key value pair as environment variables. It gets the values from other fields of pod.
+      field:
+      # existing secret, you can specify multiple existing secrets, for each
+      # specify the env var name followed by the key in existing secret that
+      # will be used to populate the env var
+      existing:
+      #  existing_secret_name:
+      #    ALERT_ON_RELOAD: alert_on_reload_key
+      #    ALERT_SINK: alert_sink_key
+      #    ALERT_WEBHOOK_URL: alert_webhook_key
+      #    ALERT_ADDITIONAL_INFO: alert_additional_info_key
+
+    # Liveness and readiness probe timeout values.
+    livenessProbe: {}
+    #  timeoutSeconds: 5
+    #  failureThreshold: 5
+    #  periodSeconds: 10
+    #  successThreshold: 1
+    readinessProbe: {}
+    #  timeoutSeconds: 15
+    #  failureThreshold: 5
+    #  periodSeconds: 10
+    #  successThreshold: 1
+
+    # Specify resource requests/limits for the deployment.
+    # Example:
+    # resources:
+    #   limits:
+    #     cpu: "100m"
+    #     memory: "512Mi"
+    #   requests:
+    #     cpu: "10m"
+    #     memory: "128Mi"
+    resources: {}
+    pod:
+      annotations: {}
+    priorityClassName: ""
+    # Set the runtimeClassName for the pod
+    runtimeClassName: ""
+    # Set the schedulerName for the pod
+    schedulerName: ""
+    # imagePullSecrets:
+    #   - name: myregistrykey
+
+    # Put "0" in either to have go runtime ignore the set value.
+    # Otherwise, see https://pkg.go.dev/runtime#hdr-Environment_Variables for GOMAXPROCS and GOMEMLIMIT
+    gomaxprocsOverride: ""
+    gomemlimitOverride: ""
+
+  service:
+    {}
+
+    # labels: {}
+    # annotations: {}
+    # port: 9090
+    # For IPv4 and IPv6 dual stack support.
+    # Specify the IP family policy for the service. Supported values are SingleStack, PreferDualStack, and RequireDualStack.
+    # ipFamilyPolicy: "SingleStack"
+    # Specify the IP protocol family or dual-stack preference for the service. Supported values: ["IPv4"], ["IPv6"], ["IPv4","IPv6"], or ["IPv6","IPv4"].
+    # ipFamilies: ["IPv4"]
+
+  rbac:
+    enabled: true
+    labels: {}
+  # Service account config for the agent pods
+  serviceAccount:
+    # Specifies whether a ServiceAccount should be created
+    create: true
+    labels: {}
+    annotations: {}
+    # The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name:
+  # Optional flags to pass to the Reloader entrypoint
+  # Example:
+  #   custom_annotations:
+  #     configmap: "my.company.com/configmap"
+  #     secret: "my.company.com/secret"
+  #     ignore: "my.company.com/reloader-ignore"
+  custom_annotations: {}
+
+  serviceMonitor:
+    # Deprecated: Service monitor will be removed in future releases of reloader in favour of Pod monitor
+    # Enabling this requires service to be enabled as well, or no endpoints will be found
+    enabled: false
+    # Set the namespace the ServiceMonitor should be deployed
+    # namespace: monitoring
+
+    # Fallback to the prometheus default unless specified
+    # interval: 10s
+
+    ## scheme: HTTP scheme to use for scraping. Can be used with `tlsConfig` for example if using istio mTLS.
+    # scheme: ""
+
+    ## tlsConfig: TLS configuration to use when scraping the endpoint. For example if using istio mTLS.
+    ## Of type: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#tlsconfig
+    # tlsConfig: {}
+
+    # bearerTokenFile:
+    # Fallback to the prometheus default unless specified
+    # timeout: 30s
+
+    ## Used to pass Labels that are used by the Prometheus installed in your cluster to select Service Monitors to work with
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#prometheusspec
+    labels: {}
+
+    ## Used to pass annotations that are used by the Prometheus installed in your cluster to select Service Monitors to work with
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#prometheusspec
+    annotations: {}
+
+    # Retain the job and instance labels of the metrics pushed to the Pushgateway
+    # [Scraping Pushgateway](https://github.com/prometheus/pushgateway#configure-the-pushgateway-as-a-target-to-scrape)
+    honorLabels: true
+
+    ## Metric relabel configs to apply to samples before ingestion.
+    ## [Metric Relabeling](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs)
+    metricRelabelings: []
+    # - action: keep
+    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
+    #   sourceLabels: [__name__]
+
+    ## Relabel configs to apply to samples before ingestion.
+    ## [Relabeling](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config)
+    relabelings: []
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace
+
+    targetLabels: []
+
+  podMonitor:
+    enabled: false
+    # Set the namespace the podMonitor should be deployed
+    # namespace: monitoring
+
+    # Fallback to the prometheus default unless specified
+    # interval: 10s
+
+    ## scheme: HTTP scheme to use for scraping. Can be used with `tlsConfig` for example if using istio mTLS.
+    # scheme: ""
+
+    ## tlsConfig: TLS configuration to use when scraping the endpoint. For example if using istio mTLS.
+    ## Of type: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#tlsconfig
+    # tlsConfig: {}
+
+    # bearerTokenSecret:
+    # Fallback to the prometheus default unless specified
+    # timeout: 30s
+
+    ## Used to pass Labels that are used by the Prometheus installed in your cluster to select Service Monitors to work with
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#prometheusspec
+    labels: {}
+
+    ## Used to pass annotations that are used by the Prometheus installed in your cluster to select Service Monitors to work with
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#prometheusspec
+    annotations: {}
+
+    # Retain the job and instance labels of the metrics pushed to the Pushgateway
+    # [Scraping Pushgateway](https://github.com/prometheus/pushgateway#configure-the-pushgateway-as-a-target-to-scrape)
+    honorLabels: true
+
+    ## Metric relabel configs to apply to samples before ingestion.
+    ## [Metric Relabeling](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs)
+    metricRelabelings: []
+    # - action: keep
+    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
+    #   sourceLabels: [__name__]
+
+    ## Relabel configs to apply to samples before ingestion.
+    ## [Relabeling](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config)
+    relabelings: []
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace
+
+    podTargetLabels: []
+
+  podDisruptionBudget:
+    enabled: false
+    # Set the minimum available replicas
+    # minAvailable: 1
+    # OR Set the maximum unavailable replicas
+    # maxUnavailable: 1
+    # If both defined only maxUnavailable will be used
+
+  netpol:
+    enabled: false
+    from: []
+    # - podSelector:
+    #     matchLabels:
+    #       app.kubernetes.io/name: prometheus
+    # Deprecated: use reloader.netpol.egress with custom to blocks instead
+    to: []
+    egress:
+      - ports:
+          - port: 443
+            protocol: TCP
+      #   to:
+      #     - ipBlock:
+      #         cidr: 0.0.0.0/0
+
+  # Enable vertical pod autoscaler
+  verticalPodAutoscaler:
+    enabled: false
+
+    # Recommender responsible for generating recommendation for the object.
+    # List should be empty (then the default recommender will generate the recommendation)
+    # or contain exactly one recommender.
+    # recommenders:
+    # - name: custom-recommender-performance
+
+    # List of resources that the vertical pod autoscaler can control. Defaults to cpu and memory
+    controlledResources: []
+    # Specifies which resource values should be controlled: RequestsOnly or RequestsAndLimits.
+    # controlledValues: RequestsAndLimits
+
+    # Define the max allowed resources for the pod
+    maxAllowed: {}
+    # cpu: 200m
+    # memory: 100Mi
+    # Define the min allowed resources for the pod
+    minAllowed: {}
+    # cpu: 200m
+    # memory: 100Mi
+
+    updatePolicy:
+      # Specifies minimal number of replicas which need to be alive for VPA Updater to attempt pod eviction
+      # minReplicas: 1
+      # Specifies whether recommended updates are applied when a Pod is started and whether recommended updates
+      # are applied during the life of a Pod. Possible values are "Off", "Initial", "Recreate", and "Auto".
+      updateMode: Auto
+
+  webhookUrl: ""
