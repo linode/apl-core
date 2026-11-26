@@ -33,27 +33,25 @@ RUN mkdir -p /out
 ADD --chmod=755 --checksum=${YQ_CHECKSUM} https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64 /out/yq
 
 # Installing kubectl
-ADD --checksum=${KUBECTL_CHECKSUM} https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl /tmp/kubectl
-RUN install -o root -g root -m 0755 /tmp/kubectl /out/kubectl && rm /tmp/kubectl
+ADD --chmod=755 --checksum=${KUBECTL_CHECKSUM} https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl /out/kubectl
 
 # Installing k9s
 ADD --checksum=${K9S_CHECKSUM} https://github.com/derailed/k9s/releases/download/v${K9S_VERSION}/k9s_Linux_amd64.tar.gz /tmp/k9s.tar.gz
-RUN tar zxf /tmp/k9s.tar.gz -C /out/ k9s && rm /tmp/k9s.tar.gz
+RUN tar zxf /tmp/k9s.tar.gz -C /out/ k9s
 
 # Installing helm
 ADD --checksum=${HELM_CHECKSUM} https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz /tmp/helm.tar.gz
 RUN tar xzf /tmp/helm.tar.gz -C /tmp linux-amd64/helm && \
   mv /tmp/linux-amd64/helm /out/helm && \
-  chmod +x /out/helm && \
-  rm -rf /tmp/helm.tar.gz /tmp/linux-amd64
+  chmod +x /out/helm
 
 # Installing tekton cli
 ADD --checksum=${TKN_CHECKSUM} https://github.com/tektoncd/cli/releases/download/v${TKN_VERSION}/tkn_${TKN_VERSION}_Linux_x86_64.tar.gz /tmp/tkn.tar.gz
-RUN tar zxf /tmp/tkn.tar.gz -C /out/ tkn && rm /tmp/tkn.tar.gz
+RUN tar zxf /tmp/tkn.tar.gz -C /out/ tkn
 
 # Installing kubectl-cnpg
 ADD --checksum=${CNPG_CHECKSUM} https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CNPG_VERSION}/kubectl-cnpg_${CNPG_VERSION}_linux_x86_64.tar.gz /tmp/kubectl-cnpg.tar.gz
-RUN tar zxf /tmp/kubectl-cnpg.tar.gz -C /out/ kubectl-cnpg && rm /tmp/kubectl-cnpg.tar.gz
+RUN tar zxf /tmp/kubectl-cnpg.tar.gz -C /out/ kubectl-cnpg
 
 FROM alpine:3.23
 
