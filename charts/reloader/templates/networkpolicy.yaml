@@ -1,0 +1,41 @@
+{{- if and ( .Values.reloader.netpol.enabled ) }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  annotations:
+{{ include "reloader-helm3.annotations" . | indent 4 }}
+  labels:
+{{ include "reloader-labels.chart" . | indent 4 }}
+{{- if .Values.reloader.matchLabels }}
+{{ tpl (toYaml .Values.reloader.matchLabels) . | indent 4 }}
+{{- end }}
+  name: {{ template "reloader-fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+{{ include "reloader-match-labels.chart" . | indent 6 }}
+{{- if .Values.reloader.matchLabels }}
+{{ tpl (toYaml .Values.reloader.matchLabels) . | indent 6 }}
+{{- end }}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+    - ports:
+        - port: http
+      {{- with .Values.reloader.netpol.from}}
+      from:
+        {{- toYaml .| nindent 8 }}
+      {{- end }}
+  {{- if .Values.reloader.netpol.to }}
+  egress:
+    - ports:
+        - port: 443
+      to:
+        {{- toYaml .Values.reloader.netpol.to | nindent 8 }}
+  {{- else if .Values.reloader.netpol.egress }}
+  egress:
+    {{- toYaml .Values.reloader.netpol.egress | nindent 4 }}
+  {{- end }}
+{{- end }}
