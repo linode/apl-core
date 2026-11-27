@@ -118,9 +118,19 @@ object.metadata.?annotations[?'tekton.dev/tags'].orValue('') in ['image-build', 
     object.spec.?ephemeralContainers.orValue([])
 {{- end -}}
 
-{{/* CEL expression that is true for images exempted from securityContext checks (istio proxy, otel autoinstrumentation) */}}
+{{/* Image prefix of the otel autoinstrumentation init containers, pulled through the ORCS mirror when configured */}}
+{{- define "team-ns.policy.otelAutoinstrumentationPrefix" -}}
+{{- with .Values.linodeLkeImageRepository -}}
+{{ . }}/ghcr/open-telemetry/opentelemetry-operator/autoinstrumentation-
+{{- else -}}
+ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-
+{{- end -}}
+{{- end -}}
+
+{{/* CEL expression that is true for images exempted from securityContext checks (istio proxy, otel autoinstrumentation).
+     Expects the root context. */}}
 {{- define "team-ns.policy.isExemptImage" -}}
-(c.image.contains('/istio/proxyv2') || c.image.startsWith('ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-'))
+(c.image.contains('/istio/proxyv2') || c.image.startsWith('{{ include "team-ns.policy.otelAutoinstrumentationPrefix" . }}'))
 {{- end -}}
 
 {{/* CEL variable with all containers except the exempted images (see isExemptImage).

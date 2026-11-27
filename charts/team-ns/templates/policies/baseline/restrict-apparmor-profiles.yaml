@@ -15,13 +15,19 @@ metadata:
       On supported hosts, the 'runtime/default' AppArmor profile is applied by default.
       The default policy should prevent overriding or disabling the policy, or restrict
       overrides to an allowed set of profiles. This policy ensures Pods do not
-      specify any other AppArmor profiles than `runtime/default` or `localhost/*`.
+      specify any other AppArmor profiles than `runtime/default` or `localhost/*`,
+      both via the (deprecated) annotation and the securityContext.appArmorProfile field.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
   variables:
+    {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
+    # Deprecated annotation based profiles (before Kubernetes 1.30)
     - name: annotations
       expression: object.metadata.?annotations.orValue({})
+    # Field based profiles (spec.securityContext.appArmorProfile), an unset type counts as RuntimeDefault
+    - name: allowedProfileTypes
+      expression: "['RuntimeDefault', 'Localhost']"
   validations:
     - message: >-
         Specifying other AppArmor profiles is disallowed. The annotation
@@ -32,4 +38,14 @@ spec:
           !key.startsWith('container.apparmor.security.beta.kubernetes.io/') ||
           variables.annotations[key] == 'runtime/default' ||
           variables.annotations[key].startsWith('localhost/'))
+    - message: >-
+        Specifying other AppArmor profiles is disallowed. The fields
+        spec.securityContext.appArmorProfile.type, spec.containers[*].securityContext.appArmorProfile.type,
+        spec.initContainers[*].securityContext.appArmorProfile.type, and
+        spec.ephemeralContainers[*].securityContext.appArmorProfile.type
+        must be unset or set to `RuntimeDefault` or `Localhost`.
+      expression: >-
+        object.spec.?securityContext.?appArmorProfile.?type.orValue('RuntimeDefault') in variables.allowedProfileTypes &&
+        variables.allContainers.all(c,
+          c.?securityContext.?appArmorProfile.?type.orValue('RuntimeDefault') in variables.allowedProfileTypes)
 {{- end }}
