@@ -54,3 +54,11 @@ _Avoid_: reload, hot reload
 
 **Watched namespace**: A namespace in which Reloader acts on a changed Secret and starts config restarts. `dex` is the only current example. Reloader can read Secrets in every namespace, but it acts only in watched namespaces.
 _Avoid_: reloader namespace (that is where Reloader itself runs)
+
+### Teams
+
+**Team apply**: The apply the apl-operator runs instead of a full apply when every change in the values repo is inside team directories. It deploys only team releases.
+_Avoid_: teams-only apply, partial apply
+
+**Team release**: A release deployed in a team apply. This covers releases that belong to a single team (e.g. `team-ns-{id}`) and platform releases whose output depends on the list of teams or on any team's contents (e.g. `dex-artifacts`).
+_Avoid_: team-dependent release (both kinds are team releases)
