@@ -9,11 +9,12 @@ global:
     - name: otomi-pullsecret-global
 {{- end }}
 
+{{- /* TODO what until the image is added to ORCS
 {{- with $v.otomi.linodeLkeImageRepository }}
 image:
   repository: {{ . }}/ghcr/stakater/reloader
 {{- end }}
-
+*/ -}}
 reloader:
   # Reloader uses the chart's ClusterRole, which is rendered only when it watches globally.
   # The selector limits where it acts to its own namespace and the watched namespaces.
