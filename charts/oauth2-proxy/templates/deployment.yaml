@@ -78,7 +78,7 @@ spec:
         {{- end }}
       {{- if and $redisEnabled .Values.initContainers.waitForRedis.enabled }}
       - name: wait-for-redis
-        image: "{{ .Values.initContainers.waitForRedis.image.repository }}:{{ .Values.initContainers.waitForRedis.image.tag }}"
+        image: "{{ with .Values.global.imageRegistry }}{{ tpl . $ }}/{{ end }}{{ .Values.initContainers.waitForRedis.image.repository }}:{{ .Values.initContainers.waitForRedis.image.tag }}"
         imagePullPolicy: {{ .Values.initContainers.waitForRedis.image.pullPolicy }}
         command: ["/bin/sh", "-c", "/scripts/check-redis.sh"]
         env:
@@ -288,7 +288,8 @@ spec:
 {{- if .Values.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
-            path: {{ if gt (include "oauth2-proxy.version" .) "7.4.0" }}/ready{{ else }}/ping{{ end }}
+            {{- $version := include "oauth2-proxy.version" . | trimPrefix "v" | regexFind "^[0-9]+\\.[0-9]+\\.[0-9]+" }}
+            path: {{ if or (not $version) (semverCompare ">7.4.0" $version) }}/ready{{ else }}/ping{{ end }}
             port: {{ .Values.httpScheme }}
             scheme: {{ .Values.httpScheme | upper }}
           initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
