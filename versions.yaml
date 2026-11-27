@@ -4,5 +4,5 @@ consoleLogin: main
 tasks: main
 tools: main
 aplCharts: main
-tty: v1.2.11
+tty: v2.0.0
 gitServer: v0.3.2
