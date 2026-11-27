@@ -35,6 +35,7 @@ This log lists the architectural decisions for apl-core.
 - [ADR-2026-10-22](2026-10-22-git-polling-interval.md) - Git polling uses a fixed delay after each cycle
 - [ADR-2026-11-06](2026-11-06-dex-security-hardening.md) - Dex security hardening — OAuth2 grant types, egress policy, fork cleanup, and istiod ingress scoping
 - [ADR-2026-11-26](2026-11-26-reloader-restarts-dex-on-config-change.md) - Reloader restarts Dex when its config Secret changes
+- [ADR-2026-11-27](2026-11-27-team-releases-deployed-on-team-apply.md) - Team releases are labelled and deployed on every team apply
 
 <!-- adrlogstop -->
 
