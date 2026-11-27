@@ -53,6 +53,9 @@ k8s:
     - name: kyverno
       app: kyverno
       disableIstioInjection: true
+    - name: reloader
+      app: reloader
+      disableIstioInjection: true
     - name: tekton-dashboard
       app: tekton-pipelines
     - name: tekton-pipelines
