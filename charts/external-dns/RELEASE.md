@@ -1,16 +1,12 @@
+
 ### Added
 
-- Add value `.sourceNamespace` to watch a namespace which is different from the one that external-dns is installed into when `.namespaced` is true. ([#6297](https://github.com/kubernetes-sigs/external-dns/pull/6297)) _@jplitza_
-- Add option to enable Gateway API ListenerSet support. ([#6381](https://github.com/kubernetes-sigs/external-dns/pull/6381)) _@speer_
-- Add support for bool in extraArgs. ([#6179](https://github.com/kubernetes-sigs/external-dns/pull/6179)) _@farodin91_
-- Add value `.namespaceOverride` to render chart resources into a namespace different from the release namespace, for subchart installs that want their own namespace. ([#6389](https://github.com/kubernetes-sigs/external-dns/pull/6389)) _@alliasgher_
+- Add value `.fqdnTemplates` to configure [FQDN templates](https://kubernetes-sigs.github.io/external-dns/latest/docs/advanced/fqdn-templating) for generating DNS records. [#6394](https://github.com/kubernetes-sigs/external-dns/pull/6394) @Schluggi
+- Add value `eventsEmit` to set the _Kubernetes_ events _ExternalDNS_ emits and grant the matching RBAC to create `events.k8s.io` events. [#6817](https://github.com/kubernetes-sigs/external-dns/pull/6817) @dlanov
+- Add value `hostUsers` to set the `Pod` `hostUsers` field, so that the `Pod` can run in a [user namespace](https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/). [#6827](https://github.com/kubernetes-sigs/external-dns/pull/6827) @A-RYAN-1
 
 ### Changed
 
-- Update _ExternalDNS_ OCI image version to [v0.21.0](https://github.com/kubernetes-sigs/external-dns/releases/tag/v0.21.0). ([#6354](https://github.com/kubernetes-sigs/external-dns/pull/6354)) _@vflaux_
-
-### Fixed
-
-- Avoid creating cluster-scoped RBAC for Gateway API sources when running namespaced with `gatewayNamespace` set. Namespace listing permissions are now only added when `gatewayNamespace` is unset. ([#5843](https://github.com/kubernetes-sigs/external-dns/pull/5843)) _@TobyTheHutt_
-- Ensure container arguments are passed in as strings ([#6264](https://github.com/kubernetes-sigs/external-dns/pull/6264)) _@KhooHaoYit_
-- Ensure container arguments are passed in as strings when extraArgs is a map ([#6284](https://github.com/kubernetes-sigs/external-dns/pull/6284)) _@vflaux_
+- Update bundled `DNSEndpoint` and `DNSRecord` CRDs with admission validation. [#6620](https://github.com/kubernetes-sigs/external-dns/pull/6620) @mloiseleur
+- Default `provider.webhook.securityContext` to no privilege escalation, no capabilities and a read-only root filesystem, like the `external-dns` container, so the `Pod` meets the _restricted_ Pod Security Standard. [#6785](https://github.com/kubernetes-sigs/external-dns/pull/6785) @LorbusChris
+- Update _ExternalDNS_ OCI image version to [`v0.24.0`](https://github.com/kubernetes-sigs/external-dns/releases/tag/v0.24.0). [#6914](https://github.com/kubernetes-sigs/external-dns/pull/6914) @samuelmasuy
