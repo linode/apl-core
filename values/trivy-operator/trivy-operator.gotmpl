@@ -18,7 +18,7 @@ operator:
   replicas: {{ $t.operator.replicaCount }}
   metricsVulnIdEnabled: false
   infraAssessmentScannerEnabled: false
-  clusterComplianceEnabled: false
+  clusterComplianceEnabled: {{ $t | get "compliance.enabled" false }}
   metricsImageInfo: true
 
 service:
