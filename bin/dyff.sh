@@ -92,10 +92,46 @@ echo "$diff_output" | while read -r line; do
   elif [[ $line =~ ^Only[[:space:]]+in[[:space:]]+(.+):[[:space:]]+(.+)$ ]]; then
     only_in_dir="${BASH_REMATCH[1]}"
     only_in_file="${BASH_REMATCH[2]}"
+    full_path="$only_in_dir/$only_in_file"
+    
     if [[ "$only_in_dir" == "$targetDirA"* ]]; then
-      print_comment "New file added: $(join_relative_path "$(to_relative_path "$only_in_dir" "$targetDirA")" "$only_in_file")"
+      file_path=$(join_relative_path "$(to_relative_path "$only_in_dir" "$targetDirA")" "$only_in_file")
+      if [[ -d "$full_path" ]]; then
+        print_comment "New directory added: $file_path"
+        # Recursively show all files in the new directory
+        find "$full_path" -type f | sort | while read -r new_file; do
+          rel_file=$(to_relative_path "$new_file" "$targetDirA")
+          print_comment "  New file: $rel_file"
+          dyff between /dev/null "$new_file" --omit-header \
+            --exclude "data.tls.key" --exclude "/data/ca.crt" --exclude "/data/tls.crt" --exclude "/data/tls.key" \
+            --exclude-regexp "/checksum" --exclude-regexp "/webhooks.*" --ignore-order-changes "${miscArgs[@]}" || true
+        done
+      else
+        print_comment "New file added: $file_path"
+        # Show the contents of the new file
+        dyff between /dev/null "$full_path" --omit-header \
+          --exclude "data.tls.key" --exclude "/data/ca.crt" --exclude "/data/tls.crt" --exclude "/data/tls.key" \
+          --exclude-regexp "/checksum" --exclude-regexp "/webhooks.*" --ignore-order-changes "${miscArgs[@]}" || true
+      fi
     elif [[ "$only_in_dir" == "$targetDirB"* ]]; then
-      print_comment "Old file deleted: $(join_relative_path "$(to_relative_path "$only_in_dir" "$targetDirB")" "$only_in_file")"
+      file_path=$(join_relative_path "$(to_relative_path "$only_in_dir" "$targetDirB")" "$only_in_file")
+      if [[ -d "$full_path" ]]; then
+        print_comment "Old directory deleted: $file_path"
+        # Recursively show all files in the deleted directory
+        find "$full_path" -type f | sort | while read -r old_file; do
+          rel_file=$(to_relative_path "$old_file" "$targetDirB")
+          print_comment "  Old file: $rel_file"
+          dyff between "$old_file" /dev/null --omit-header \
+            --exclude "data.tls.key" --exclude "/data/ca.crt" --exclude "/data/tls.crt" --exclude "/data/tls.key" \
+            --exclude-regexp "/checksum" --exclude-regexp "/webhooks.*" --ignore-order-changes "${miscArgs[@]}" || true
+        done
+      else
+        print_comment "Old file deleted: $file_path"
+        # Show the contents of the deleted file
+        dyff between "$full_path" /dev/null --omit-header \
+          --exclude "data.tls.key" --exclude "/data/ca.crt" --exclude "/data/tls.crt" --exclude "/data/tls.key" \
+          --exclude-regexp "/checksum" --exclude-regexp "/webhooks.*" --ignore-order-changes "${miscArgs[@]}" || true
+      fi
     else
       print_comment "$line"
     fi
