@@ -46,6 +46,14 @@ The Linode CLI action currently calls a Node.js 20-based Python setup action. Wo
 
 PR auto-approval uses `actions/github-script`, and release notifications use Slack's official action. Slack notifications include the release name, link, and notes as message text instead of converting GitHub Markdown into Slack blocks.
 
+## Integration deployments with component versions
+
+In GitHub Actions, select **Deploy APL with component versions** (`integration2.yaml`), click **Run workflow**, select the APL Core branch or tag, and enter published console, API, and tasks image versions. Leave any version blank to use that Core image's `versions.yaml` default. Use image tags, such as `main`, `v1.2.3`, or a published branch-derived tag with slashes replaced by hyphens; the workflow does not build component images.
+
+The new workflow reuses `integration.yml` with the same cluster and installation options and inherited repository secrets. It passes nonempty versions to Helm as string values under `versions.console`, `versions.api`, and `versions.tasks`. The console selection also sets `versions.consoleLogin`, keeping the Keycloak login theme on the same console image. These user-supplied overrides are stored in the cluster's values repository and take precedence over Core defaults during Helmfile rendering, including subsequent reconciliations. Neither workflow edits or commits the Core repository's `versions.yaml`.
+
+The selected Core image must include support for these overrides, so publish an image containing this change before using the new inputs. Older Core images do not honor them. The existing **Deploy APL** workflow remains available with unchanged defaults. Disabling ORCS uses Docker Hub directly for component images, which can be useful for newly published tags not yet available through the mirror.
+
 ## Reusable code snippets
 
 It is important that you get familiar with reusable code snippets located at `helmfile.d/snippets`. Below, I describe the most essential ones:

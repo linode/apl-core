@@ -207,6 +207,15 @@ describe('Bootstrapping values', () => {
       })
     })
     describe('processing app values', () => {
+      it('should persist only supplied component version overrides', async () => {
+        const versions = { console: 'feature-console', consoleLogin: 'feature-console', api: 'v1.2.3', tasks: 'main' }
+        deps.loadYaml.mockReturnValue({ ...values, versions })
+        const result = await processValues(deps)
+        expect(result.originalInput.versions).toEqual(versions)
+        expect(deps.writeValues).toHaveBeenCalledWith(expect.objectContaining({ versions }))
+        expect(result.originalInput.versions).not.toHaveProperty('tools')
+        expect(result.originalInput.versions).not.toHaveProperty('core')
+      })
       it('should create a custom ca if issuer is custom-ca or undefined and no CA yet exists', async () => {
         deps.loadYaml.mockReturnValue({ apps: { 'cert-manager': { issuer: 'custom-ca' } } })
         await processValues(deps)
