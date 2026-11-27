@@ -2284,6 +2284,20 @@ properties:
               msgTopologyOperator:
                 description: Controller which is used to create RabbitMQ queues and policies
                 $ref: '#/definitions/resources'
+      reloader:
+        additionalProperties: false
+        description: Reloader restarts Dex when the data of its configuration Secret changes.
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: true
+            description: A switch for turning Reloader off if it misbehaves. While it is off, Dex is not restarted automatically when its configuration changes, also not after a team is created, and must be restarted by hand.
+          networkPolicies:
+            $ref: '#/definitions/appNetworkPolicyConfig'
+          resources:
+            $ref: '#/definitions/resources'
       trivy:
         properties:
           _rawValues:
