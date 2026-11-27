@@ -1,123 +1,75 @@
 # syntax=docker/dockerfile:1.6
-FROM ubuntu:26.04 AS builder
 
-ARG DEBIAN_FRONTEND=noninteractive
+ARG NODE_VERSION=24.22.3
+FROM node:${NODE_VERSION}-alpine AS binaries
+
 ARG TARGETARCH
 # https://github.com/kubernetes/kubernetes/releases
 ARG KUBECTL_VERSION=1.36.5
 # https://github.com/helm/helm/tags
 ARG HELM_VERSION=4.3.1
-# https://github.com/databus23/helm-diff/releases
-ARG HELM_DIFF_VERSION=3.15.15
 # https://github.com/yannh/kubeconform/releases/
 ARG KUBECONFORM_VERSION=0.8.0
 # https://github.com/helmfile/helmfile/releases
 ARG HELMFILE_VERSION=1.8.2
-# https://nodejs.org/en/download/
-ARG NODE_VERSION=24
 # https://github.com/cloudnative-pg/cloudnative-pg/releases
 ARG CNPG_VERSION=1.30.1
-# https://github.com/jqlang/jq/releases/
-ARG JQ_VERSION=1.8.2
 
-ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-${TARGETARCH}.tar.gz
-WORKDIR /
-
-# Install all required packages in one layer
-# tini is needed to properly handle signals and avoid zombie processes when running the container
-RUN apt-get update && apt-get install -y \
-  curl \
+RUN apk add --no-cache \
   coreutils \
-  apache2-utils \
-  apt-transport-https \
-  ca-certificates \
-  git \
-  locales \
-  rsync \
-  tini && \
-  rm -rf /var/lib/apt/lists/* && \
-  locale-gen en_US.UTF-8
+  curl
 
-# jq
-RUN curl -LO "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-linux-${TARGETARCH}" && \
-  curl -L "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/sha256sum.txt" | grep "jq-linux-${TARGETARCH}" > sha256sum.txt && \
-  echo sha256sum --check sha256sum.txt && \
-  mv jq-linux-${TARGETARCH} /usr/bin/jq && \
-  chmod +x /usr/bin/jq
-
-# yq
-COPY --from=mikefarah/yq:4 /usr/bin/yq /usr/bin/yq
-
-RUN mkdir -p /home/app
-RUN groupadd -g 1001 app && \
-    groupadd -g 2000 appfsgroup && \
-    useradd -u 1001 -g app -G appfsgroup -d /home/app -s /sbin/nologin -c "Docker image user" app
-
-ENV HOME=/home/app
-ENV APP_HOME=/home/app/tools
-RUN mkdir $APP_HOME
-WORKDIR $APP_HOME
-ENV PATH $PATH:$APP_HOME
+WORKDIR /out
 
 # kubectl
-RUN curl -LO "https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/$TARGETARCH/kubectl" && \
-  curl -LO "https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/$TARGETARCH/kubectl.sha256" && \
-  echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check && \
+RUN curl -fsSLo kubectl "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl" && \
+  curl -fsSLo /tmp/kubectl.sha256 "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl.sha256" && \
+  echo "$(cat /tmp/kubectl.sha256)  kubectl" | sha256sum --check && \
   chmod +x kubectl
 
 # cnpg kubectl plugin
-RUN CNPG_ARCH=$(if [ "${TARGETARCH}" = "amd64" ]; then echo "x86_64"; else echo "${TARGETARCH}"; fi) && \
-  curl -LO "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CNPG_VERSION}/kubectl-cnpg_${CNPG_VERSION}_linux_${CNPG_ARCH}.tar.gz" && \
-  tar -zxvf kubectl-cnpg_${CNPG_VERSION}_linux_${CNPG_ARCH}.tar.gz && \
-  chmod +x kubectl-cnpg && \
-  rm kubectl-cnpg_${CNPG_VERSION}_linux_${CNPG_ARCH}.tar.gz
+RUN case "${TARGETARCH}" in \
+    amd64) CNPG_ARCH=x86_64 ;; \
+    arm64) CNPG_ARCH=arm64 ;; \
+    *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
+  esac && \
+  curl -fsSLo /tmp/kubectl-cnpg.tar.gz "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CNPG_VERSION}/kubectl-cnpg_${CNPG_VERSION}_linux_${CNPG_ARCH}.tar.gz" && \
+  tar -zxf /tmp/kubectl-cnpg.tar.gz kubectl-cnpg && \
+  chmod +x kubectl-cnpg
 
 # helm
-ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
-RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp && mv /tmp/linux-${TARGETARCH}/helm helm && rm -rf /tmp/*
-RUN helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION} --verify=false
-RUN echo "exec \$*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
+ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-${TARGETARCH}.tar.gz
+RUN curl -fsSLo /tmp/${HELM_FILE_NAME} "https://get.helm.sh/${HELM_FILE_NAME}" && \
+  tar -zxf /tmp/${HELM_FILE_NAME} -C /tmp linux-${TARGETARCH}/helm && \
+  mv /tmp/linux-${TARGETARCH}/helm /out/helm
 
 # helmfile
-ADD https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz /tmp
-RUN tar -zxvf /tmp/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz -C /tmp && mv /tmp/helmfile helmfile
+RUN curl -fsSLo /tmp/helmfile.tar.gz "https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz" && \
+  tar -zxf /tmp/helmfile.tar.gz -C /out helmfile
 
 # kubeconform
-ADD https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-${TARGETARCH}.tar.gz /tmp
-RUN tar -zxvf /tmp/kubeconform-linux-${TARGETARCH}.tar.gz -C /tmp && mv /tmp/kubeconform kubeconform
+RUN curl -fsSLo /tmp/kubeconform.tar.gz "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-${TARGETARCH}.tar.gz" && \
+  tar -zxf /tmp/kubeconform.tar.gz -C /out kubeconform
 
-# node
-# https://github.com/nodesource/distributions
-RUN set -uex && \
-  curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x -o nodesource_setup.sh && \
-  bash nodesource_setup.sh && \
-  apt-get update && \
-  apt-get install -y nodejs
+FROM node:${NODE_VERSION}-alpine
 
-FROM ubuntu:26.04 AS final
+RUN apk add --no-cache \
+  bash \
+  ca-certificates \
+  git \
+  rsync \
+  tini
 
-RUN mkdir -p /home/app
-RUN groupadd -g 1001 app && \
-    groupadd -g 2000 appfsgroup && \
-    useradd -u 1001 -g app -G appfsgroup -d /home/app -s /sbin/nologin -c "Docker image user" app
+RUN addgroup -g 1001 app && \
+  addgroup -g 2000 appfsgroup && \
+  adduser -D -u 1001 -G appfsgroup -h /home/app -s /sbin/nologin -g "Docker image user" app
+
 ENV HOME=/home/app
 ENV APP_HOME=/home/app/tools
-RUN mkdir $APP_HOME
-WORKDIR $APP_HOME
-ENV PATH $PATH:$APP_HOME
-ENV PATH="/usr/local/bin:${PATH}"
+ENV PATH="${PATH}:${APP_HOME}"
+WORKDIR ${APP_HOME}
 
-# Copy over binaries
-COPY --from=builder /usr/bin /usr/bin
-# Copy over node_modules (npm)
-COPY --from=builder /usr/lib /usr/lib
-# Copy over tools
-COPY --from=builder $APP_HOME $APP_HOME
-COPY --from=builder $HOME/.local/share/helm/plugins $HOME/.local/share/helm/plugins
-# Copy over trust store
-COPY --from=builder /etc/ssl /etc/ssl
+COPY --from=binaries /out/ ${APP_HOME}/
 
 RUN chown -R app:app /home/app
 USER app
-
-CMD ["/bin/bash"]
