@@ -1,8 +1,9 @@
-import { ApiException, CoreV1Api, KubeConfig } from '@kubernetes/client-node'
+import { ApiException, CoreV1Api } from '@kubernetes/client-node'
 import { writeFileSync } from 'fs'
 import { APL_OPERATOR_NS, PLATFORM_AUTH_RESTART_STATE_CM } from '../common/constants'
 import { terminal } from '../common/debug'
 import { getErrorMessage } from './utils'
+import { makeK8sApiClient } from '../common/k8s-client'
 
 export type ApplyStatus = 'succeeded' | 'failed' | 'in-progress' | 'unknown'
 
@@ -14,18 +15,11 @@ export interface ApplyState {
   errorMessage?: string
 }
 
-let kc: KubeConfig
 let coreClient: CoreV1Api
 export const k8s = {
-  kc: (): KubeConfig => {
-    if (kc) return kc
-    kc = new KubeConfig()
-    kc.loadFromDefault()
-    return kc
-  },
   core: (): CoreV1Api => {
     if (coreClient) return coreClient
-    coreClient = k8s.kc().makeApiClient(CoreV1Api)
+    coreClient = makeK8sApiClient(CoreV1Api)
     return coreClient
   },
 }

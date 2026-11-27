@@ -80,6 +80,10 @@ spec:
               value: {{ .Values.operator.installRetries | quote }}
             - name: INSTALL_MAX_TIMEOUT_MS
               value: {{ .Values.operator.installMaxTimeoutMs | quote }}
+            {{- with .Values.operator.debug }}
+            - name: DEBUG
+              value: {{ . | quote }}
+            {{- end }}
           livenessProbe:
             exec:
               command:

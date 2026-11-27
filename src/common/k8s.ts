@@ -7,7 +7,6 @@ import {
   CustomObjectsApi,
   DiscoveryV1Api,
   Exec,
-  KubeConfig,
   KubernetesObjectApi,
   NetworkingV1Api,
   PatchStrategy,
@@ -34,11 +33,10 @@ import {
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
 import { loadYaml } from './utils'
+import { getKubeConfig, makeK8sApiClient } from './k8s-client'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
-// Warning don't use this with asynchronous code and multiple kubeconfigs it will override the kubeconfig
-let kc: KubeConfig
 let coreClient: CoreV1Api
 let appClient: AppsV1Api
 let batchClient: BatchV1Api
@@ -49,55 +47,49 @@ let objectClient: KubernetesObjectApi
 let extensionsClient: ApiextensionsV1Api
 let versionClient: VersionApi
 export const k8s = {
-  kc: (): KubeConfig => {
-    if (kc) return kc
-    kc = new KubeConfig()
-    kc.loadFromDefault()
-    return kc
-  },
   core: (): CoreV1Api => {
     if (coreClient) return coreClient
-    coreClient = k8s.kc().makeApiClient(CoreV1Api)
+    coreClient = makeK8sApiClient(CoreV1Api)
     return coreClient
   },
   app: (): AppsV1Api => {
     if (appClient) return appClient
-    appClient = k8s.kc().makeApiClient(AppsV1Api)
+    appClient = makeK8sApiClient(AppsV1Api)
     return appClient
   },
   batch: (): BatchV1Api => {
     if (batchClient) return batchClient
-    batchClient = k8s.kc().makeApiClient(BatchV1Api)
+    batchClient = makeK8sApiClient(BatchV1Api)
     return batchClient
   },
   networking: (): NetworkingV1Api => {
     if (networkingClient) return networkingClient
-    networkingClient = k8s.kc().makeApiClient(NetworkingV1Api)
+    networkingClient = makeK8sApiClient(NetworkingV1Api)
     return networkingClient
   },
   discovery: (): DiscoveryV1Api => {
     if (discoveryClient) return discoveryClient
-    discoveryClient = k8s.kc().makeApiClient(DiscoveryV1Api)
+    discoveryClient = makeK8sApiClient(DiscoveryV1Api)
     return discoveryClient
   },
   custom: (): CustomObjectsApi => {
     if (customClient) return customClient
-    customClient = k8s.kc().makeApiClient(CustomObjectsApi)
+    customClient = makeK8sApiClient(CustomObjectsApi)
     return customClient
   },
   object: (): KubernetesObjectApi => {
     if (objectClient) return objectClient
-    objectClient = k8s.kc().makeApiClient(KubernetesObjectApi)
+    objectClient = makeK8sApiClient(KubernetesObjectApi)
     return objectClient
   },
   extensions: (): ApiextensionsV1Api => {
     if (extensionsClient) return extensionsClient
-    extensionsClient = k8s.kc().makeApiClient(ApiextensionsV1Api)
+    extensionsClient = makeK8sApiClient(ApiextensionsV1Api)
     return extensionsClient
   },
   version: (): VersionApi => {
     if (versionClient) return versionClient
-    versionClient = k8s.kc().makeApiClient(VersionApi)
+    versionClient = makeK8sApiClient(VersionApi)
     return versionClient
   },
 }
@@ -271,7 +263,7 @@ export async function exec(
   command: string[],
   timeout: number = 30000,
 ): Promise<ExecResult> {
-  const execApi = new Exec(k8s.kc())
+  const execApi = new Exec(getKubeConfig())
 
   let stdout = ''
   let stderr = ''

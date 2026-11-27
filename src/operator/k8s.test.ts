@@ -12,6 +12,11 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
+jest.mock('../common/k8s-client', () => ({
+  getKubeConfig: jest.fn(),
+  makeK8sApiClient: (api) => new api(),
+}))
+
 jest.mock('@kubernetes/client-node', () => {
   const mocks = {
     readNamespacedConfigMap: jest.fn(),

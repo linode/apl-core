@@ -199,6 +199,10 @@ operator:
     # 30 minutes. If the operator has not installed the platform by then, something is off.
     progressDeadlineSeconds: 1800
 
+  ## More verbose log output for specific components.
+  ## For example "otomi:common:k8s:http:debug" shows Kubernetes HTTP request and response times.
+  debug: ""
+
 installation:
   mode: standard
   # Skip deployment of the operator
