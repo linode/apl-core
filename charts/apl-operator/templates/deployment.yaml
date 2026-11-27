@@ -98,7 +98,7 @@ spec:
                 {{- if .Values.operator.readiness.gateOnReadiness }}
                 - "test -f /tmp/ready"
                 {{- else }}
-                - "pgrep -f 'apl-operator' > /dev/null"
+                - "pgrep -f 'operator/main.js' > /dev/null"
                 {{- end }}
             initialDelaySeconds: 30
             periodSeconds: 10

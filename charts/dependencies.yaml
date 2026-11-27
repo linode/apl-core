@@ -6,7 +6,7 @@ dependencies:
     version: 10.18.2
     repository: https://argoproj.github.io/argo-helm
   - name: argocd-image-updater
-    version: 1.4.2
+    version: 1.5.0
     repository: oci://ghcr.io/argoproj/argo-helm/argocd-image-updater
   - name: cert-manager
     version: v1.21.3
@@ -55,6 +55,9 @@ dependencies:
   - name: istiod
     version: 1.30.8
     repository: https://istio-release.storage.googleapis.com/charts
+  - name: reloader
+    version: 2.2.21
+    repository: https://stakater.github.io/stakater-charts
   - name: ztunnel
     version: 1.30.8
     repository: https://istio-release.storage.googleapis.com/charts
@@ -85,7 +88,7 @@ dependencies:
     version: 3.14.0
     repository: https://kubernetes-sigs.github.io/metrics-server
   - name: oauth2-proxy
-    version: 10.7.1
+    version: 10.7.4
     repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator

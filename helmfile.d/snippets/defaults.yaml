@@ -26,7 +26,7 @@ environments:
             autoscaling:
               repoServer:
                 enabled: true
-                minReplicas: 2
+                minReplicas: 1
                 maxReplicas: 5
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
@@ -591,6 +591,18 @@ environments:
               limits:
                 cpu: "1"
                 memory: 512Mi
+            _rawValues: {}
+          reloader:
+            enabled: true
+            networkPolicies:
+              enabled: true
+            resources:
+              limits:
+                cpu: 100m
+                memory: 256Mi
+              requests:
+                cpu: 10m
+                memory: 32Mi
             _rawValues: {}
           tekton:
             enabled: false
