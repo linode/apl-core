@@ -13,9 +13,12 @@ imagePullSecrets:
 
 replicaCount: {{ $d.replicas }}
 
-# Config Secret comes from ESO, so the chart checksum is off. Hash the rendered template to roll pods on change (e.g. new team redirect URIs).
+# Dex reads its config only at startup. Reloader starts a config restart when the data of this Secret changes.
+# The annotation has no effect while Reloader is disabled.
+deploymentAnnotations:
+  secret.reloader.stakater.com/reload: dex-config
+
 podAnnotations:
-  checksum/config: {{ tpl (readFile "../../helmfile.d/snippets/dex-config.gotmpl") . | sha256sum }}
   # Exclude Kubernetes API ports from Envoy interception. The API server uses its own CA (not
   # Istio's workload certs), so letting Envoy route these connections causes TLS mismatch or RST.
   # NetworkPolicy still enforces the egress boundary at the kernel level.
