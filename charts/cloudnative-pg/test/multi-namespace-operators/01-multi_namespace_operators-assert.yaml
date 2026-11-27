@@ -1,0 +1,170 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cnpg-cloudnative-pg
+  namespace: cnpg-multi-1
+spec:
+  template:
+    spec:
+      containers:
+        - name: manager
+          env:
+            - name: OPERATOR_IMAGE_NAME
+            - name: OPERATOR_NAMESPACE
+            - name: MONITORING_QUERIES_CONFIGMAP
+            - name: WATCH_NAMESPACE
+              value: dev-1,prod-1
+            - name: ENABLE_WEBHOOK_NAMESPACE_SUFFIX
+              value: "true"
+status:
+  availableReplicas: 1
+---
+# No WATCH_NAMESPACE was set, so the chart falls back to the release namespace.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cnpg-cloudnative-pg
+  namespace: cnpg-multi-2
+spec:
+  template:
+    spec:
+      containers:
+        - name: manager
+          env:
+            - name: OPERATOR_IMAGE_NAME
+            - name: OPERATOR_NAMESPACE
+            - name: MONITORING_QUERIES_CONFIGMAP
+            - name: WATCH_NAMESPACE
+              value: cnpg-multi-2
+            - name: ENABLE_WEBHOOK_NAMESPACE_SUFFIX
+              value: "true"
+status:
+  availableReplicas: 1
+---
+# Every webhook is rendered from the same helper, so the namespace selector is checked on the cluster webhook,
+# which is the one exercised by the invalid cluster step.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: cnpg-mutating-webhook-configuration-cnpg-multi-1
+webhooks:
+  - name: mbackup.cnpg.io
+  - name: mcluster.cnpg.io
+    clientConfig:
+      service:
+        name: cnpg-webhook-service
+        namespace: cnpg-multi-1
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+            - dev-1
+            - prod-1
+  - name: mdatabase.cnpg.io
+  - name: mscheduledbackup.cnpg.io
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: cnpg-validating-webhook-configuration-cnpg-multi-1
+webhooks:
+  - name: vbackup.cnpg.io
+  - name: vcluster.cnpg.io
+    clientConfig:
+      service:
+        name: cnpg-webhook-service
+        namespace: cnpg-multi-1
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+            - dev-1
+            - prod-1
+  - name: vscheduledbackup.cnpg.io
+  - name: vdatabase.cnpg.io
+  - name: vpooler.cnpg.io
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: cnpg-mutating-webhook-configuration-cnpg-multi-2
+webhooks:
+  - name: mbackup.cnpg.io
+  - name: mcluster.cnpg.io
+    clientConfig:
+      service:
+        name: cnpg-webhook-service
+        namespace: cnpg-multi-2
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+            - cnpg-multi-2
+  - name: mdatabase.cnpg.io
+  - name: mscheduledbackup.cnpg.io
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: cnpg-validating-webhook-configuration-cnpg-multi-2
+webhooks:
+  - name: vbackup.cnpg.io
+  - name: vcluster.cnpg.io
+    clientConfig:
+      service:
+        name: cnpg-webhook-service
+        namespace: cnpg-multi-2
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+            - cnpg-multi-2
+  - name: vscheduledbackup.cnpg.io
+  - name: vdatabase.cnpg.io
+  - name: vpooler.cnpg.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cnpg-cloudnative-pg-cnpg-multi-1
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cnpg-cloudnative-pg-cnpg-multi-1
+subjects:
+  - kind: ServiceAccount
+    name: cnpg-cloudnative-pg
+    namespace: cnpg-multi-1
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cnpg-cloudnative-pg-cnpg-multi-2
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cnpg-cloudnative-pg-cnpg-multi-2
+subjects:
+  - kind: ServiceAccount
+    name: cnpg-cloudnative-pg
+    namespace: cnpg-multi-2
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+  namespace: dev-1
+status:
+  readyInstances: 1
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+  namespace: cnpg-multi-2
+status:
+  readyInstances: 1

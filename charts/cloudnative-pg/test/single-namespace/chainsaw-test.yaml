@@ -1,0 +1,63 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: single-namespace
+spec:
+  description: Deploy the operator in single-namespace mode
+  timeouts:
+    apply: 1s
+    assert: 5m
+    exec: 5m
+    cleanup: 2m
+  catch:
+    - script:
+        content: kubectl describe clusters.postgresql.cnpg.io --all-namespaces
+    - podLogs:
+        namespace: single-install
+        selector: app.kubernetes.io/name=cloudnative-pg
+  steps:
+    - name: Deploy the operator
+      try:
+        - script:
+            content: |
+              helm upgrade \
+                --install \
+                --namespace single-install \
+                --create-namespace \
+                --set config.clusterWide=false \
+                --wait \
+                cnpg ../../
+      cleanup:
+        - script:
+            content: |
+              helm uninstall --namespace single-install --ignore-not-found cnpg
+              kubectl delete namespace single-install --ignore-not-found --wait=false
+    - name: Deploy a cluster
+      try:
+        - apply:
+            file: ./01-single_namespace.yaml
+    - name: Verify that the cluster is ready
+      try:
+        - assert:
+            file: ./01-single_namespace-assert.yaml
+    - name: Create a separate namespace
+      try:
+        - script:
+            content: |
+              kubectl create namespace test-ignore --dry-run=client -o yaml | kubectl apply -f -
+      cleanup:
+        - script:
+            content: |
+              kubectl delete namespace test-ignore --ignore-not-found --wait=false
+    - name: Deploy a cluster in 'test-ignore'
+      try:
+        - apply:
+            file: ./02-test_ignore.yaml
+    - name: Verify the cluster in 'test-ignore' is being ignored
+      try:
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                namespace: test-ignore

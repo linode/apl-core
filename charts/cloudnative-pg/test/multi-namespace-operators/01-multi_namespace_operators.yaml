@@ -1,0 +1,30 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+  namespace: dev-1
+spec:
+  instances: 1
+  storage:
+    size: 256Mi
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+  namespace: cnpg-multi-2
+spec:
+  instances: 1
+  storage:
+    size: 256Mi
+---
+# No operator watches test-ignore, so this cluster must never be reconciled.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+  namespace: test-ignore
+spec:
+  instances: 1
+  storage:
+    size: 256Mi

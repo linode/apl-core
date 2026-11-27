@@ -1,0 +1,9 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+  namespace: cnpg-system
+spec:
+  instances: 1
+  storage:
+    size: 256Mi

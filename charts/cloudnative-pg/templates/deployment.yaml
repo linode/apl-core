@@ -91,7 +91,9 @@ spec:
           value: "{{ .Values.monitoringQueriesConfigMap.name }}"
         {{- if not .Values.config.clusterWide }}
         - name: WATCH_NAMESPACE
-          value: "{{ include "cloudnative-pg.namespace" . }}"
+          value: {{ include "cloudnative-pg.watchedNamespaces" . | fromJsonArray | join "," | quote }}
+        - name: ENABLE_WEBHOOK_NAMESPACE_SUFFIX
+          value: "true"
         {{- end }}
         {{- if .Values.additionalEnv }}
         {{- tpl (.Values.additionalEnv | toYaml) . | nindent 8 }}
@@ -142,6 +144,9 @@ spec:
           name: scratch-data
         - mountPath: /run/secrets/cnpg.io/webhook
           name: webhook-certificates
+        {{- with .Values.additionalVolumeMounts }}
+        {{- tpl (toYaml .) $ | nindent 8 }}
+        {{- end }}
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName }}
       {{- end }}
@@ -174,3 +179,6 @@ spec:
           defaultMode: 420
           optional: true
           secretName: cnpg-webhook-cert
+      {{- with .Values.additionalVolumes }}
+      {{- tpl (toYaml .) $ | nindent 6 }}
+      {{- end }}

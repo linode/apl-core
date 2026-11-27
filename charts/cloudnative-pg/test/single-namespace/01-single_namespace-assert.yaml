@@ -1,0 +1,7 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+  namespace: single-install
+status:
+  readyInstances: 3

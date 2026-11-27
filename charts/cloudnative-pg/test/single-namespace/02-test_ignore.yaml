@@ -1,0 +1,10 @@
+# The operator only watches single-install, so this cluster must never be reconciled.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+  namespace: test-ignore
+spec:
+  instances: 3
+  storage:
+    size: 1Gi
