@@ -13,6 +13,7 @@ netpols:
   certManagerWebhookLinode: {{ and ($cm.networkPolicies.enabled) (hasKey $dnsProvider "linode") }}
   loki: {{ and $a.loki.enabled $a.loki.networkPolicies.enabled }}
   dex: {{ and $a.dex.enabled $a.dex.networkPolicies.enabled }}
+  reloader: {{ and $a.reloader.enabled $a.reloader.networkPolicies.enabled }}
 
 # otomi-api-specific egress policy configuration
 otomiApi:

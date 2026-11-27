@@ -1,0 +1,23 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/defaults.gotmpl
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: reloader
+    installed: {{ $a | get "reloader.enabled" }}
+    namespace: reloader
+    labels:
+      pkg: reloader
+    <<: *default
