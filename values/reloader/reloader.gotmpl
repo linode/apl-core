@@ -1,0 +1,44 @@
+{{- $v := .Values }}
+{{- $r := $v.apps.reloader }}
+
+fullnameOverride: reloader
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+global:
+  imagePullSecrets:
+    - name: otomi-pullsecret-global
+{{- end }}
+
+{{- with $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: {{ . }}/ghcr/stakater/reloader
+{{- end }}
+
+reloader:
+  # Reloader uses the chart's ClusterRole, which is rendered only when it watches globally.
+  # The selector limits where it acts to its own namespace and the watched namespaces.
+  # Without a selector it would act in every namespace, so the selector is never empty.
+  watchGlobally: true
+  namespaceSelector: {{ printf "kubernetes.io/metadata.name in (%s)" (concat (list .Release.Namespace) $v._derived.reloaderWatchedNamespaces | uniq | sortAlpha | join ",") | quote }}
+  # Only Secrets trigger a config restart. Ignoring the rest also removes it from the ClusterRole.
+  ignoreConfigMaps: true
+  ignoreJobs: true
+  ignoreCronJobs: true
+  # A restart is recorded as a pod template annotation. This is the strategy Reloader provides for GitOps tools.
+  reloadStrategy: annotations
+  reloadOnCreate: true
+  # With the annotations strategy, syncAfterRestart restarts every consumer each time Reloader starts,
+  # because the annotation carries a new timestamp. So Reloader does not catch up on changes it missed.
+  syncAfterRestart: false
+  # One replica, without leader election.
+  enableHA: true
+  readOnlyRootFileSystem: true
+  deployment:
+    replicas: 2
+    nodeSelector: {{- toYaml $v.otomi.nodeSelector | nindent 6 }}
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+    resources: {{- toYaml $r.resources | nindent 6 }}
