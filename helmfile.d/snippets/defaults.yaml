@@ -592,6 +592,18 @@ environments:
                 cpu: "1"
                 memory: 512Mi
             _rawValues: {}
+          reloader:
+            enabled: true
+            networkPolicies:
+              enabled: true
+            resources:
+              limits:
+                cpu: 100m
+                memory: 256Mi
+              requests:
+                cpu: 10m
+                memory: 32Mi
+            _rawValues: {}
           tekton:
             enabled: false
             resources:
