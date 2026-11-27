@@ -33,6 +33,8 @@ releases:
     namespace: dex
     labels:
       pkg: dex
+      # Dex artifacts need to be redeployed on team changes
+      team: true
     <<: *raw
   - name: dex
     installed: {{ $a | get "dex.enabled" false }}
