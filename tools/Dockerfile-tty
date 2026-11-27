@@ -1,8 +1,7 @@
 # syntax=docker/dockerfile:1.6
 # The above is needed for the "--checksum" aurgument to work in the ADD instruction
 
-# Using ubuntu:resolute base image
-FROM ubuntu:26.04
+FROM alpine:3.23 AS binaries
 
 # Version definitions and checksums
 # https://github.com/mikefarah/yq/releases
@@ -27,37 +26,51 @@ ARG TKN_CHECKSUM=sha256:f6d86bc7960d85af94eb46f8f480ac8d113aa78e78b15d6f8d2f53d8
 
 # https://github.com/cloudnative-pg/cloudnative-pg/releases
 ARG CNPG_VERSION=1.30.1
-ARG CNPG_CHECKSUM=sha256:12a54d93c1fcf6b3b37deba5cd2c5c6fe4fbd2029dc5cb1f7c02d5e93fa14838
-
-
-# Installing curl, vim, wget, tmux ttyd and bash-completion
-RUN apt update && apt upgrade -y && apt install -y ttyd jq curl vim wget less tmux bash-completion && rm -rf /var/lib/apt/lists/*
+ARG CNPG_CHECKSUM=sha256:784bc46f176b24a150d5de84d0691f10ff613b59456af86b1a4868e1bacb9953
+RUN mkdir -p /out
 
 # Installing yq
-ADD --chmod=755 --checksum=${YQ_CHECKSUM} https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64 /usr/local/bin/yq
+ADD --chmod=755 --checksum=${YQ_CHECKSUM} https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64 /out/yq
 
 # Installing kubectl
-ADD --checksum=${KUBECTL_CHECKSUM} https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl /tmp/kubectl
-RUN install -o root -g root -m 0755 /tmp/kubectl /usr/local/bin/kubectl && rm /tmp/kubectl
+ADD --chmod=755 --checksum=${KUBECTL_CHECKSUM} https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl /out/kubectl
 
 # Installing k9s
-ADD --checksum=${K9S_CHECKSUM} https://github.com/derailed/k9s/releases/download/v${K9S_VERSION}/k9s_Linux_amd64.tar.gz /tmp/
-RUN tar zxf /tmp/k9s_Linux_amd64.tar.gz -C /usr/local/bin/ k9s && rm /tmp/k9s_Linux_amd64.tar.gz
+ADD --checksum=${K9S_CHECKSUM} https://github.com/derailed/k9s/releases/download/v${K9S_VERSION}/k9s_Linux_amd64.tar.gz /tmp/k9s.tar.gz
+RUN tar zxf /tmp/k9s.tar.gz -C /out/ k9s
 
 # Installing helm
-ADD --checksum=${HELM_CHECKSUM} https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz /tmp/
-RUN tar zxvf /tmp/helm-v${HELM_VERSION}-linux-amd64.tar.gz linux-amd64/helm -O > /usr/local/bin/helm && chmod +x /usr/local/bin/helm && rm /tmp/helm-v${HELM_VERSION}-linux-amd64.tar.gz
+ADD --checksum=${HELM_CHECKSUM} https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz /tmp/helm.tar.gz
+RUN tar xzf /tmp/helm.tar.gz -C /tmp linux-amd64/helm && \
+  mv /tmp/linux-amd64/helm /out/helm && \
+  chmod +x /out/helm
 
 # Installing tekton cli
-ADD --checksum=${TKN_CHECKSUM} https://github.com/tektoncd/cli/releases/download/v${TKN_VERSION}/tkn_${TKN_VERSION}_Linux_x86_64.tar.gz /tmp/
-RUN tar zxvf /tmp/tkn_${TKN_VERSION}_Linux_x86_64.tar.gz -C /usr/local/bin/ tkn && rm /tmp/tkn_${TKN_VERSION}_Linux_x86_64.tar.gz
+ADD --checksum=${TKN_CHECKSUM} https://github.com/tektoncd/cli/releases/download/v${TKN_VERSION}/tkn_${TKN_VERSION}_Linux_x86_64.tar.gz /tmp/tkn.tar.gz
+RUN tar zxf /tmp/tkn.tar.gz -C /out/ tkn
 
 # Installing kubectl-cnpg
-ADD --checksum=${CNPG_CHECKSUM} https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CNPG_VERSION}/kubectl-cnpg_${CNPG_VERSION}_linux_x86_64.deb /tmp/
-RUN dpkg -i /tmp/kubectl-cnpg_${CNPG_VERSION}_linux_x86_64.deb && rm /tmp/kubectl-cnpg_${CNPG_VERSION}_linux_x86_64.deb
+ADD --checksum=${CNPG_CHECKSUM} https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CNPG_VERSION}/kubectl-cnpg_${CNPG_VERSION}_linux_x86_64.tar.gz /tmp/kubectl-cnpg.tar.gz
+RUN tar zxf /tmp/kubectl-cnpg.tar.gz -C /out/ kubectl-cnpg
 
-# Creating user named user
-RUN groupadd --gid 1001 user && useradd --uid 1001 --gid 1001 user --create-home --home-dir /home/user
+FROM alpine:3.23
+
+RUN apk add --no-cache \
+  bash \
+  bash-completion \
+  ca-certificates \
+  coreutils \
+  curl \
+  jq \
+  less \
+  tmux \
+  ttyd \
+  vim \
+  wget
+
+COPY --from=binaries /out/ /usr/local/bin/
+
+RUN addgroup -g 1001 user && adduser -D -u 1001 -G user -h /home/user user
 
 # Set up kubeconfig generation
 RUN mkdir /etc/kconfig && \
@@ -66,7 +79,6 @@ RUN mkdir /etc/kconfig && \
   echo 'kubectl config set-context default-context --cluster=apl --namespace=${NAMESPACE} --user=default-user' >> /etc/kconfig/kconfig.sh && \
   echo 'kubectl config use-context default-context' >> /etc/kconfig/kconfig.sh
 
-# Switching to user user
 USER user
 
 # Setting up kubectl autocompletion
@@ -76,7 +88,6 @@ RUN touch ~/.bashrc && \
   echo 'complete -o default -F __start_kubectl k' >> ~/.bashrc && \
   echo 'source /etc/kconfig/kconfig.sh > /dev/null' >> ~/.bashrc
 
-# Setting the working directory
 WORKDIR /home/user
 
 # Command to start a tmux session and expose it via ttyd.
