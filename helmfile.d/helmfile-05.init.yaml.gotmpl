@@ -34,7 +34,7 @@ releases:
     labels:
       pkg: dex
       # Dex artifacts need to be redeployed on team changes
-      team: true
+      pipeline: otomi-task-teams
     <<: *raw
   - name: dex
     installed: {{ $a | get "dex.enabled" false }}
