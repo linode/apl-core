@@ -2,8 +2,8 @@
 {{- $p := index $v.policies "disallow-host-namespaces" }}
 {{- if and $v.apps.kyverno.enabled $p }}
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: NamespacedValidatingPolicy
 metadata:
   name: disallow-host-namespaces
   annotations:
@@ -18,24 +18,13 @@ metadata:
       fields which make use of these host namespaces are unset or set to `false`.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ $p.action }}
-  background: true
-  failurePolicy: Fail
-  rules:
-    - name: host-namespaces
-      match:
-        any:
-        - resources:
-            kinds:
-              - Pod
-      skipBackgroundRequests: true
-      validate:
-        message: >-
-          Sharing the host namespaces is disallowed. The fields spec.hostNetwork,
-          spec.hostIPC, and spec.hostPID must be unset or set to `false`.
-        pattern:
-          spec:
-            =(hostPID): false
-            =(hostIPC): false
-            =(hostNetwork): false
+  {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
+  validations:
+    - message: >-
+        Sharing the host namespaces is disallowed. The fields spec.hostNetwork,
+        spec.hostIPC, and spec.hostPID must be unset or set to `false`.
+      expression: >-
+        object.spec.?hostPID.orValue(false) == false &&
+        object.spec.?hostIPC.orValue(false) == false &&
+        object.spec.?hostNetwork.orValue(false) == false
 {{- end }}

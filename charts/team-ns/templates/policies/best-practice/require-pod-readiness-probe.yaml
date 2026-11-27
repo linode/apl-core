@@ -2,12 +2,11 @@
 {{- $p := index $v.policies "require-readiness-probe" }}
 {{- if and $v.apps.kyverno.enabled $p }}
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: NamespacedValidatingPolicy
 metadata:
   name: require-pod-readiness-probe
   annotations:
-    pod-policies.kyverno.io/autogen-controllers: DaemonSet,Deployment,StatefulSet
     policies.kyverno.io/title: Require Pod Readyness Probes
     policies.kyverno.io/category: best-practice
     policies.kyverno.io/severity: {{ $p.severity }}
@@ -19,59 +18,15 @@ metadata:
       This policy validates that all containers have a readinessProbe defined.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ $p.action }}
-  background: true
-  failurePolicy: Fail
-  rules:
-  - name: validate-readiness-probe
-    match:
-      any:
-      - resources:
-          kinds:
-          - Pod
-    exclude:
-      any:
-        - resources:
-            annotations:
-              tekton.dev/tags: image-build
-        - resources:
-            annotations:
-              tekton.dev/tags: CLI, grype
-        - resources:
-            annotations:
-              tekton.dev/tags: git
-        - resources:
-            selector:
-              matchLabels:
-                app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
-        - resources:
-            selector:
-              matchLabels:
-                app.kubernetes.io/instance: prometheus-{{ $v.teamId }}
-        - resources:
-            selector:
-              matchLabels:
-                app.kubernetes.io/instance: tekton-dashboard-{{ $v.teamId }}
-        - resources:
-            selector:
-              matchLabels:
-                otomi: tty
-    preconditions:
-      all:
-      - key: "{{`{{request.operation || 'BACKGROUND'}}`}}"
-        operator: AnyIn
-        value:
-        - CREATE
-        - UPDATE
-    skipBackgroundRequests: true
-    validate:
-      message: "Readiness are required for all containers."
-      foreach:
-      - list: request.object.spec.containers[]
-        deny:
-          conditions:
-            all:
-            - key: readinessProbe
-              operator: AllNotIn
-              value: "{{`{{ element.keys(@)[] }}`}}"
+  {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
+  autogen:
+    podControllers:
+      controllers: [daemonsets, deployments, statefulsets]
+  matchConditions:
+    {{- include "team-ns.policy.excludeTektonTasks" . | nindent 4 }}
+    {{- include "team-ns.policy.excludeTeamMonitoringAndTty" $v.teamId | nindent 4 }}
+  validations:
+    - message: "Readiness are required for all containers."
+      expression: >-
+        object.spec.containers.all(c, has(c.readinessProbe))
 {{- end }}

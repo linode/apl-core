@@ -1,6 +1,6 @@
 # reports-server
 
-![Version: 0.1.6](https://img.shields.io/badge/Version-0.1.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.1.6](https://img.shields.io/badge/AppVersion-v0.1.6-informational?style=flat-square)
+![Version: 0.1.7](https://img.shields.io/badge/Version-0.1.7-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.1.7](https://img.shields.io/badge/AppVersion-v0.1.7-informational?style=flat-square)
 
 TODO
 
@@ -61,8 +61,10 @@ helm install reports-server --namespace reports-server --create-namespace report
 | autoscaling.enabled | bool | `false` | Enable autoscaling |
 | autoscaling.minReplicas | int | `1` | Min number of replicas |
 | autoscaling.maxReplicas | int | `100` | Max number of replicas |
-| autoscaling.targetCPUUtilizationPercentage | int | `80` | Target CPU utilisation |
-| autoscaling.targetMemoryUtilizationPercentage | string | `nil` | Target Memory utilisation |
+| autoscaling.targetCPUUtilizationPercentage | int | `80` | Target CPU utilisation percentage |
+| autoscaling.targetMemoryUtilizationPercentage | string | `nil` | Target memory utilization percentage |
+| autoscaling.metrics | list | `[]` | Configures custom HPA metrics Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/ |
+| autoscaling.behavior | object | `{}` | Configures the scaling behavior of the target in both Up and Down directions. |
 | pdb | object | `{"enabled":true,"maxUnavailable":"50%","minAvailable":null}` | Using a PDB is highly recommended for highly available deployments. Defaults to enabled. The default configuration doesn't prevent disruption when using a single replica |
 | pdb.enabled | bool | `true` | Enable PodDisruptionBudget |
 | pdb.minAvailable | string | `nil` | minAvailable pods for PDB, cannot be used together with maxUnavailable |
@@ -72,6 +74,7 @@ helm install reports-server --namespace reports-server --create-namespace report
 | affinity | object | `{}` | Affinity |
 | service.type | string | `"ClusterIP"` | Service type |
 | service.port | int | `443` | Service port |
+| config.skipMigration | bool | `false` | Skip database migration on startup |
 | config.etcd.enabled | bool | `false` |  |
 | config.etcd.endpoints | string | `nil` |  |
 | config.etcd.insecure | bool | `true` |  |
@@ -95,9 +98,9 @@ helm install reports-server --namespace reports-server --create-namespace report
 | apiServicesManagement.installApiServices.enabled | bool | `true` | Store reports in reports-server |
 | apiServicesManagement.installApiServices.installEphemeralReportsService | bool | `true` | Store ephemeral reports in reports-server |
 | apiServicesManagement.installApiServices.installOpenreportsService | bool | `true` | Store open reports in reports-server |
-| apiServicesManagement.image.registry | string | `"docker.io"` | Image registry |
-| apiServicesManagement.image.repository | string | `"bitnamilegacy/kubectl"` | Image repository |
-| apiServicesManagement.image.tag | string | `"1.30.2"` | Image tag Defaults to `latest` if omitted |
+| apiServicesManagement.image.registry | string | `"registry.k8s.io"` | Image registry |
+| apiServicesManagement.image.repository | string | `"kubectl"` | Image repository |
+| apiServicesManagement.image.tag | string | `"v1.34.1"` | Image tag |
 | apiServicesManagement.image.pullPolicy | string | `nil` | Image pull policy Defaults to image.pullPolicy if omitted |
 | apiServicesManagement.imagePullSecrets | list | `[]` | Image pull secrets |
 | apiServicesManagement.podSecurityContext | object | `{}` | Security context for the pod |
@@ -110,6 +113,7 @@ helm install reports-server --namespace reports-server --create-namespace report
 | apiServicesManagement.nodeAffinity | object | `{}` | Node affinity constraints. |
 | apiServicesManagement.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":65534,"runAsNonRoot":true,"runAsUser":65534,"seccompProfile":{"type":"RuntimeDefault"}}` | Security context for the hook containers |
 | extraObjects | list | `[]` |  |
+| openreports.enabled | bool | `false` | Deploy openreports-api CRDs |
 
 ## Source Code
 
@@ -121,6 +125,7 @@ Kubernetes: `>=1.16.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
+| oci://ghcr.io/openreports/charts | openreports | 0.2.1 |
 | oci://registry-1.docker.io/bitnamicharts | postgresql | 13.4.1 |
 
 ## Maintainers

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "reports-server.fullname" . }}-headless
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "reports-server.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: https
+    port: {{ .Values.service.port }}
+    protocol: TCP
+    targetPort: https
+  selector:
+    {{- include "reports-server.selectorLabels" . | nindent 4 }}

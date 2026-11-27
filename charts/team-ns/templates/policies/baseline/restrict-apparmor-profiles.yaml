@@ -2,8 +2,8 @@
 {{- $p := index $v.policies "restrict-apparmor-profiles" }}
 {{- if and $v.apps.kyverno.enabled $p }}
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: NamespacedValidatingPolicy
 metadata:
   name: restrict-apparmor-profiles
   annotations:
@@ -11,34 +11,41 @@ metadata:
     policies.kyverno.io/category: Pod Security Standards (Baseline)
     policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod, Annotation
-    policies.kyverno.io/minversion: 1.3.0
-    kyverno.io/kyverno-version: 1.6.0
-    kyverno.io/kubernetes-version: "1.22-1.23"
     policies.kyverno.io/description: >-
       On supported hosts, the 'runtime/default' AppArmor profile is applied by default.
       The default policy should prevent overriding or disabling the policy, or restrict
       overrides to an allowed set of profiles. This policy ensures Pods do not
-      specify any other AppArmor profiles than `runtime/default` or `localhost/*`.
+      specify any other AppArmor profiles than `runtime/default` or `localhost/*`,
+      both via the (deprecated) annotation and the securityContext.appArmorProfile field.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ $p.action }}
-  background: true
-  failurePolicy: Fail
-  rules:
-    - name: app-armor
-      match:
-        any:
-        - resources:
-            kinds:
-              - Pod
-      skipBackgroundRequests: true
-      validate:
-        message: >-
-          Specifying other AppArmor profiles is disallowed. The annotation
-          `container.apparmor.security.beta.kubernetes.io` if defined
-          must not be set to anything other than `runtime/default` or `localhost/*`.
-        pattern:
-          =(metadata):
-            =(annotations):
-              =(container.apparmor.security.beta.kubernetes.io/*): "runtime/default | localhost/*"
+  {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
+  variables:
+    {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
+    # Deprecated annotation based profiles (before Kubernetes 1.30)
+    - name: annotations
+      expression: object.metadata.?annotations.orValue({})
+    # Field based profiles (spec.securityContext.appArmorProfile), an unset type counts as RuntimeDefault
+    - name: allowedProfileTypes
+      expression: "['RuntimeDefault', 'Localhost']"
+  validations:
+    - message: >-
+        Specifying other AppArmor profiles is disallowed. The annotation
+        `container.apparmor.security.beta.kubernetes.io` if defined
+        must not be set to anything other than `runtime/default` or `localhost/*`.
+      expression: >-
+        variables.annotations.all(key,
+          !key.startsWith('container.apparmor.security.beta.kubernetes.io/') ||
+          variables.annotations[key] == 'runtime/default' ||
+          variables.annotations[key].startsWith('localhost/'))
+    - message: >-
+        Specifying other AppArmor profiles is disallowed. The fields
+        spec.securityContext.appArmorProfile.type, spec.containers[*].securityContext.appArmorProfile.type,
+        spec.initContainers[*].securityContext.appArmorProfile.type, and
+        spec.ephemeralContainers[*].securityContext.appArmorProfile.type
+        must be unset or set to `RuntimeDefault` or `Localhost`.
+      expression: >-
+        object.spec.?securityContext.?appArmorProfile.?type.orValue('RuntimeDefault') in variables.allowedProfileTypes &&
+        variables.allContainers.all(c,
+          c.?securityContext.?appArmorProfile.?type.orValue('RuntimeDefault') in variables.allowedProfileTypes)
 {{- end }}

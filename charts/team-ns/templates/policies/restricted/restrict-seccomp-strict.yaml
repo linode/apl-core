@@ -2,8 +2,8 @@
 {{- $p := index $v.policies "restrict-seccomp-strict" }}
 {{- if and $v.apps.kyverno.enabled $p }}
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: NamespacedValidatingPolicy
 metadata:
   name: restrict-seccomp-strict
   annotations:
@@ -11,60 +11,33 @@ metadata:
     policies.kyverno.io/category: Pod Security Standards (Restricted)
     policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod
-    kyverno.io/kyverno-version: 1.6.0
     policies.kyverno.io/description: >-
       The seccomp profile in the Restricted group must not be explicitly set to Unconfined
       but additionally must also not allow an unset value. This policy,
       requiring Kubernetes v1.19 or later, ensures that seccomp is
-      set to `RuntimeDefault` or `Localhost`. A known issue prevents a policy such as this
-      using `anyPattern` from being persisted properly in Kubernetes 1.23.0-1.23.2.
+      set to `RuntimeDefault` or `Localhost`.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ $p.action }}
-  background: true
-  failurePolicy: Fail
-  rules:
-    - name: check-seccomp-strict
-      match:
-        any:
-        - resources:
-            kinds:
-              - Pod
-      exclude:
-        any:
-          - resources:
-              annotations:
-                tekton.dev/tags: image-build
-          - resources:
-              annotations:
-                tekton.dev/tags: git
-          - resources:
-              annotations:
-                tekton.dev/tags: 'CLI, grype'
-      skipBackgroundRequests: true
-      validate:
-        message: >-
-          Use of custom Seccomp profiles is disallowed. The fields
-          spec.securityContext.seccompProfile.type,
-          spec.containers[*].securityContext.seccompProfile.type,
-          spec.initContainers[*].securityContext.seccompProfile.type, and
-          spec.ephemeralContainers[*].securityContext.seccompProfile.type
-          must be set to `RuntimeDefault` or `Localhost`.
-        foreach:
-          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
-            preconditions:
-              all:
-              - key: "{{`{{ element.image }}`}}"
-                operator: NotIn
-                value:
-                  - "*/istio/proxyv2*"
-                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
-            deny:
-              conditions:
-                all:
-                - key: "{{`{{ element.securityContext.seccompProfile.type || request.object.spec.securityContext.seccompProfile.type || '' }}`}}"
-                  operator: AnyNotIn
-                  value:
-                  - RuntimeDefault
-                  - Localhost
+  {{- include "team-ns.policy.podSpec" $p | nindent 2 }}
+  matchConditions:
+    {{- include "team-ns.policy.excludeTektonTasks" . | nindent 4 }}
+  variables:
+    {{- include "team-ns.policy.allContainersVar" . | nindent 4 }}
+    {{- include "team-ns.policy.checkedContainersVar" . | nindent 4 }}
+    # A container without a seccomp profile inherits the Pod-level profile; unset at both levels is not allowed
+    - name: podProfileType
+      expression: object.spec.?securityContext.?seccompProfile.?type.orValue('')
+    - name: allowedTypes
+      expression: "['RuntimeDefault', 'Localhost']"
+  validations:
+    - message: >-
+        Use of custom Seccomp profiles is disallowed. The fields
+        spec.securityContext.seccompProfile.type,
+        spec.containers[*].securityContext.seccompProfile.type,
+        spec.initContainers[*].securityContext.seccompProfile.type, and
+        spec.ephemeralContainers[*].securityContext.seccompProfile.type
+        must be set to `RuntimeDefault` or `Localhost`.
+      expression: >-
+        variables.checkedContainers.all(c,
+          c.?securityContext.?seccompProfile.?type.orValue(variables.podProfileType) in variables.allowedTypes)
 {{- end }}
